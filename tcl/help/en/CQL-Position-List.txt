@@ -2256,7 +2256,7 @@ independent from side to move.
 
 <note>
 Please note that in mode <i>movetime</i> the specification of the milli-seconds
-will be rounded to centi-seconds if the engine is restricted to
+will be rounded up to centi-seconds if the engine is restricted to
 <nobr>WinBoard</nobr>/<nobr>XBoard</nobr> protocol. If the UCI
 protocol is available then the exact number of milli-seconds will be used.
 </note>
@@ -2449,7 +2449,7 @@ The seventh parameter is either <i>sidetomove</i> or <i>absolute</i>.
 
 <note>
 Please note that in mode <i>movetime</i> the specification of the milli-seconds
-will be rounded to centi-seconds if the engine is restricted to
+will be rounded up to centi-seconds if the engine is restricted to
 <nobr>WinBoard</nobr>/<nobr>XBoard</nobr> protocol. If the UCI
 protocol is available then the exact number of milli-seconds will be used.
 </note>

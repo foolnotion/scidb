@@ -210,7 +210,16 @@ Un database nel vecchio formato consiste di quattro file:
 <abbr>PGN</abbr> (<abbr>.pgn</abbr>, <abbr>.pgn.gz</abbr>, <abbr>.zip</abbr>)
 </h2>
 
-Il formato <abbr>PGN</abbr> (Portable Game Notation) è uno standard comune per lo scambio di partite di scacchi. L'apertura di un file <abbr>PGN</abbr> è permessa in sola lettura. Se si hanno grandi collezioni di partite in questo formato si consiglia di convertirle nel formato di Scidb.
+Il formato <abbr>PGN</abbr> (Portable Game Notation) è uno standard comune per lo
+scambio di partite di scacchi.
+<NEW><!-- Old content
+L'apertura di un file <abbr>PGN</abbr> è permessa in sola lettura.
+--> <!-- New content: -->
+Opening a <abbr>PGN</abbr> file will be done in reading mode, but it is
+possible to set it writeable if the file has writing permission.
+</NEW>
+Se si hanno grandi collezioni di partite in questo formato si consiglia di
+convertirle nel formato di Scidb.
 
 <p>
 Secondo lo

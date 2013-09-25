@@ -1808,7 +1808,7 @@
 ::dialog::save::mc::Event							"Evento"
 
 ::dialog::save::mc::MatchesExtraTags			"Concordanze Tag / Estranee"
-::dialog::save::mc::PressToSelect				"Premi da Ctrl+0 a Ctrl+9 (o tasto sinistro del mouse) per selezionare"
+::dialog::save::mc::PressToSelect				"Premi da Ctrl-0 a Ctrl-9 (o tasto sinistro del mouse) per selezionare"
 ::dialog::save::mc::PressForWhole				"Premi da Alt-0 a Alt-9 (o tasto centrale del mouse) per l'intera selezione dati"
 ::dialog::save::mc::EditTags						"Modifica Tag"
 ::dialog::save::mc::RemoveThisTag				"Eliminare tag '%s'?"

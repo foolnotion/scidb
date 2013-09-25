@@ -1806,7 +1806,7 @@
 ::dialog::save::mc::Event			"Esemény"
 
 ::dialog::save::mc::MatchesExtraTags		"Játszmák / Extraneous Tags"
-::dialog::save::mc::PressToSelect		"Kiválasztáshoz nyomja meg a Ctrl+0-tól Ctrl+9-ig (vagy bal egérgomb)"
+::dialog::save::mc::PressToSelect		"Kiválasztáshoz nyomja meg a Ctrl-0-tól Ctrl-9-ig (vagy bal egérgomb)"
 ::dialog::save::mc::PressForWhole		"Nyomj Alt-0-9 -et (vagy jobb egérgomb) az egész adathalmazhoz"
 ::dialog::save::mc::EditTags			"Cimkék szerkesztése"
 ::dialog::save::mc::RemoveThisTag		"Törölni kívánja a '%s' cimkét?"

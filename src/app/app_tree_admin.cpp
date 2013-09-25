@@ -107,7 +107,7 @@ bool
 TreeAdmin::isUpToDate(db::Database const& referenceBase, db::Game const& game, Key const& key) const
 {
 	TreeP tree(db::Tree::lookup(referenceBase, game.currentBoard(), key.mode(), key.ratingType()));
-	return tree ? tree->key() == key : false;
+	return tree ? tree->key() == key && tree->isComplete() : false;
 }
 
 
@@ -251,7 +251,7 @@ TreeAdmin::finishUpdate(db::Database const* referenceBase,
 			if (tree && sortAttr != db::attribute::tree::LastColumn)
 				tree->sort(sortAttr);
 
-			if (!m_currentTree)
+			if (!m_currentTree || tree->prevGameCount() != tree->countGames())
 				updated = true;
 
 			if (m_currentTree != tree)

@@ -111,7 +111,7 @@ vorhanden ist.
 
 <p>
 Über diesen Verweis werden die Inhalte des Müllkorbs aufgelistet.
-<note/>Dieser Verweis existiert nur nicht auf allen Systemen.
+<note/>Dieser Verweis existiert nicht auf allen Systemen.
 </p>
 
 <h4><img src="../images/fsbox-home.png" /> %::fsbox::mc::Home%</h4>

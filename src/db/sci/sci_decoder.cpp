@@ -1575,7 +1575,7 @@ Decoder::searchForPosition(Board const& position, bool skipVariations)
 					{
 						m_position.push();
 						m_position.board().undoMove(move, m_variant);
-						move = findExactPosition(position, false);
+						move = searchForPosition(position, false);
 						m_position.pop();
 
 						if (move)

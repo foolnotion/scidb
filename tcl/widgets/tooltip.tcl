@@ -229,6 +229,7 @@ proc init {} {
 proc background	{} { return [set [namespace current]::G(background)] }
 proc delay			{} { return [set [namespace current]::G(delay)] }
 proc enabled		{} { return [set [namespace current]::G(enabled)] }
+proc disabled		{} { return [expr {![set [namespace current]::G(enabled)]}] }
 proc font			{} { return [set [namespace current]::G(font)] }
 
 

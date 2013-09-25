@@ -826,6 +826,7 @@ bind Button <Map> {
 # well if it is called twice (this may happen under some circumstances).
 
 rename tk::ButtonEnter tk::ButtonEnter_theme_orig_
+rename tk::MbEnter     tk::MbEnter_theme_orig_
 rename ttk::entry::CharSelect ttk::entry::CharSelect_theme_orig_
 rename ttk::entry::WordSelect ttk::entry::WordSelect_theme_orig_
 rename ttk::entry::LineSelect ttk::entry::LineSelect_theme_orig_

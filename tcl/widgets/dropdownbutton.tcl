@@ -26,6 +26,9 @@ namespace eval dropdownbutton {
 array set Options { foreground "" background "" activebackground "" activeforeground "" }
 array set Icons {}
 
+set Locked 0
+set Active ""
+
 
 proc activebackground {} {
 	variable Options
@@ -57,7 +60,8 @@ proc Build {w args} {
 		-arrowactivebackground ""
 		-arrowactiveforeground ""
 		-takefocus ""
-		-arrowrelief raised
+		-arrowrelief flat
+		-arrowoverrelief raised
 		-arrowborderwidth 1
 		-state normal
 	}
@@ -87,9 +91,10 @@ proc Build {w args} {
 	grid $w.m -row 0 -column 1 -sticky ns
 
 	set Priv(arrow:size) 0
-	set Priv(arrow:locked) 0
 	set Priv(arrow:state) normal
-	foreach opt {menucmd tooltip tooltipvar arrowttip arrowttipvar} { set Priv($opt) "" }
+	foreach opt {menucmd tooltip tooltipvar arrowttip arrowttipvar arrowrelief arrowoverrelief} {
+		set Priv($opt) ""
+	}
 
 	bind $w <Destroy> [list catch [list namespace delete [namespace current]::${w}]]
 	bind $w.b <Configure> [namespace code [list SetIcon $w %h]]
@@ -108,13 +113,14 @@ proc Build {w args} {
 
 proc WidgetProc {w command args} {
 	variable ${w}::Priv
+	variable Locked
 
 	switch -- $command {
 		cget { return [$w.b cget {*}$args] }
 		bind { return [bind $w.b {*}$args] }
 
 		configure {
-			if {$Priv(arrow:locked)} { return $w }
+			if {$Locked} { return $w }
 
 			array set opts $args
 
@@ -138,12 +144,14 @@ proc WidgetProc {w command args} {
 			}
 
 			foreach opt [array names opts] {
-				if {[string match -arrow* $opt] && ![string match *ttip* $opt]} {
+				if {	[string match -arrow* $opt]
+					&& ![string match *ttip* $opt]
+					&& ![string match *overrelief $opt]} {
 					$w.m configure -[string range $opt 6 end] $opts($opt)
 				}
 			}
 
-			foreach opt {menucmd tooltip tooltipvar arrowttip arrowttipvar} {
+			foreach opt {menucmd tooltip tooltipvar arrowttip arrowttipvar arrowrelief arrowoverrelief} {
 				if {[info exists opts(-$opt)]} {
 					set Priv($opt) $opts(-$opt)
 				}
@@ -238,6 +246,7 @@ proc SetTooltips {w} {
 
 proc Tooltip {mode w btn attr} {
 	variable ${w}::Priv
+	variable Active
 
 	if {[$btn cget -state] eq "disabled"} { return }
 
@@ -259,6 +268,8 @@ proc Tooltip {mode w btn attr} {
 
 proc BuildMenu {w} {
 	variable ${w}::Priv
+	variable Locked
+	variable Active
 
 	set m $w.m.__dropdownbutton__
 	catch { destroy $m }
@@ -276,13 +287,24 @@ proc BuildMenu {w} {
 		-direction below \
 		;
 
-	EnterArrow $w ;# probably we entered while another menu button is active
-	set Priv(arrow:locked) 1
+	if {[string length $Active] && $Active ne $w && [winfo exists $Active]} {
+		LeaveArrow $Active
+	}
+
+	if {$Active ne $w} {
+		EnterArrow $w ;# probably we entered while another menu button is active
+	}
+
+	set Active $w
+	incr Locked 1
+	::tooltip::disable
 }
 
 
 proc ReleaseMenu {w unpost} {
 	variable ${w}::Priv
+	variable Locked
+	variable Active
 
 	if {$unpost} { ::tk::MenuUnpost $w.m.__dropdownbutton__ }
 
@@ -291,10 +313,13 @@ proc ReleaseMenu {w unpost} {
 		-activebackground $Priv(arrowactivebackground) \
 		-image $Priv(arrow:icon:normal) \
 		;
-	set Priv(arrow:locked) 0
+	if {[incr Locked -1] == 0} {
+		set Active ""
+		::tooltip::enable
+	}
 
 	if {$Priv(arrow:state) eq "normal"} {
-		LeaveArrow $w
+		after 10 [namespace code [list LeaveArrow $w 1]]
 	} else {
 		EnterArrow $w
 	}
@@ -303,37 +328,51 @@ proc ReleaseMenu {w unpost} {
 
 proc EnterArrow {w} {
 	variable ${w}::Priv
+	variable Locked
+	variable Active
 
 	if {[$w.m cget -state] eq "disabled"} { return }
 
 	set Priv(arrow:state) active
 
-	if {!$Priv(arrow:locked)} {
-		set relief $Priv(overrelief)
-		$w.b configure -relief $relief -overrelief $relief -background $Priv(activebackground)
-		$w.m configure -image $Priv(arrow:icon:active)
+	if {$w ne $Active} {
+		$w.m configure -image $Priv(arrow:icon:active) -relief $Priv(arrowoverrelief)
 
 		if {[string length $Priv(arrowttip)] || [string length $Priv(arrowttipvar)]} {
 			Tooltip show $w $w.m arrowttip
 		}
 	}
+
+	if {!$Locked} {
+		set relief $Priv(overrelief)
+		$w.b configure -relief $relief -overrelief $relief -background $Priv(activebackground)
+	}
 }
 
 
-proc LeaveArrow {w} {
+proc LeaveArrow {w {force 0}} {
 	variable ${w}::Priv
+	variable Locked
+	variable Active
 
 	if {[$w.m cget -state] eq "disabled"} { return }
 
 	set Priv(arrow:state) normal
 
-	if {!$Priv(arrow:locked)} {
-		$w.b configure -relief $Priv(relief) -background $Priv(background)
-		$w.m configure -image $Priv(arrow:icon:normal)
+	if {$w ne $Active} {
+		$w.m configure -image $Priv(arrow:icon:normal) -relief $Priv(arrowrelief)
+	}
 
-		if {[string length $Priv(arrowttip)] || [string length $Priv(arrowttipvar)]} {
-			Tooltip hide $w $w.m arrowttip
-		}
+	if {[string length $Priv(arrowttip)] || [string length $Priv(arrowttipvar)]} {
+		Tooltip hide $w $w.m arrowttip
+	}
+
+	if {$force || !$Locked} {
+		$w.b configure -relief $Priv(relief) -background $Priv(background)
+	}
+
+	if {!$Locked && [winfo containing -displayof $w {*}[winfo pointerxy $w]] eq "$w.b"} {
+		$w.b configure -relief $Priv(overrelief)
 	}
 }
 

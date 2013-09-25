@@ -121,10 +121,18 @@ se han guardado se mostrará un aviso de seguridad antes de cerrar la base.
 <p>
 <menuitem>%::database::switcher::mc::ReadOnly%</menuitem>
 Establecer esta base como de sólo-lectura o editable.
+<NEW><!-- Replace old content:
 Esto sólo es posible para las bases Scidb y Scid
 (<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>).
 <note/>Los archivos <abbr>PGN</abbr> y las bases ChessBase siempre son de sólo-lectura.
 <note/>La <a href="Clipbase.html">Base temporal</a> no puede establecerse como de sólo-lectura.
+--><!-- with new content: -->
+This is possibly only for Scidb and Scid databases
+(<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>),
+and PGN archives (<abbr>.pgn</abbr>, <abbr>.pgn.gz</abbr>).
+<note/>ChessBase databases and Zip archives (<abbr>.zip</abbr>)
+are always read-only.
+</NEW>
 </p>
 
 <p>
@@ -236,11 +244,11 @@ the games will be copied into the destination database.
 </p>
 
 <p>
-To copy all games (of one <a href="Chess-Variants.html">chess variant</a>) of
-one database to another, drag the games while holding the left mouse button and
-drop the games into the destination field. It is required that the destination
-database is writeable and not disabled.  This is an important way to manage and
-copy games within databases.
+To copy all games of one database to another (optional for only one
+<a href="Chess-Variants.html">chess variant</a>), drag the games while holding
+the left mouse button and drop the games into the destination field. It is
+required that the destination database is writeable and not disabled.
+This is an important way to manage and copy games within databases.
 </p>
 </NEW>
 

@@ -514,7 +514,7 @@ eine Endstellung sein.
 </verb>
 
 <p>
-Dies isr tatsächlich eine sinnvolle Abfrage. Wir nehmen an, daß eine
+Dies ist tatsächlich eine sinnvolle Abfrage. Wir nehmen an, daß eine
 der Partien mit folgender Position beginnt (beschrieben mit der
 <a href="FEN.html">Forsyth-Edwards-Notation</a>):
 </p>
@@ -2330,7 +2330,7 @@ Bewertungswerte unabhängig davon.
 
 <note>
 Beachte daß im Modus <i>movetime</i> die Angabe der Millisekunden auf
-Centisekunden gerundet wird, wenn das verwendete Schachprogramm auf das
+Centisekunden aufgerundet wird, wenn das verwendete Schachprogramm auf das
 Protokoll <nobr>WinBoard</nobr>/<nobr>XBoard</nobr> eingeschränkt ist.
 Steht dem Schachprogramm das UCI-Protokoll zur Verfügung, so wird die exakte
 Millisekundenangabe verwendet.
@@ -2529,7 +2529,7 @@ unabhängig davon.
 
 <note>
 Beachte daß im Modus <i>movetime</i> die Angabe der Millisekunden auf
-Centisekunden gerundet wird, wenn das verwendete Schachprogramm auf das
+Centisekunden aufgerundet wird, wenn das verwendete Schachprogramm auf das
 Protokoll <nobr>WinBoard</nobr>/<nobr>XBoard</nobr> eingeschränkt ist.
 Steht dem Schachprogramm das UCI-Protokoll zur Verfügung, so wird die exakte
 Millisekundenangabe verwendet.

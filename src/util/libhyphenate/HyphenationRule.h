@@ -50,11 +50,11 @@ namespace hyphenate
 	{
 	private:
 
-		int del_pre, skip_post;
-		mstl::string key, insert_pre, insert_post;
-		mstl::vector<char> priorities;
+		int m_del_pre, m_skip_post;
+		mstl::string m_key, m_insert_pre, m_insert_post;
+		mstl::vector<char> m_priorities;
 
-		mstl::string replacement;
+		//mstl::string m_replacement;
 
 	public:
 
@@ -90,24 +90,24 @@ namespace hyphenate
 		int apply_second(mstl::string& word) const;
 
 		/// Returns true iff there is a priority value != 0 for this offset or a larger one.
-		inline bool hasPriority(unsigned offset) const { return priorities.size() > offset; }
+		inline bool hasPriority(unsigned offset) const { return m_priorities.size() > offset; }
 
 		/// Returns the hyphenation priority for a hyphen preceding the byte
 		/// at the given offset.
-		inline char priority(unsigned offset) const { return priorities[offset]; }
+		inline char priority(unsigned offset) const { return m_priorities[offset]; }
 
 		/// Returns the pattern to match for this rule to apply.
-		inline mstl::string& getKey() { return key; }
+		inline mstl::string& getKey() { return m_key; }
 
 		/// Returns the amount of bytes that will additionally be needed
 		/// in front of the hyphen if this rule is applied. 0 for standard
 		/// hyphenation, 1 for Schiff-fahrt.
-		inline int spaceNeededPreHyphen() const { return insert_pre.size() - del_pre; }
+		inline int spaceNeededPreHyphen() const { return m_insert_pre.size() - m_del_pre; }
 
 		/// Returns true iff this rule is not a standard hyphenation rule.
 		inline bool isNonStandard() const
 		{
-			return del_pre != 0 || skip_post != 0 || !insert_pre.empty() || !insert_post.empty();
+			return m_del_pre != 0 || m_skip_post != 0 || !m_insert_pre.empty() || !m_insert_post.empty();
 		}
 	};
 }

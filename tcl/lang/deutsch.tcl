@@ -1798,7 +1798,7 @@
 ::dialog::save::mc::Event							"Turnier"
 
 ::dialog::save::mc::MatchesExtraTags			"Entsprechungen / Zusätzliche Tags"
-::dialog::save::mc::PressToSelect				"Drücke Strg+0 bis Strg+9 zur Auswahl (oder linker Mausklick)"
+::dialog::save::mc::PressToSelect				"Drücke Strg-0 bis Strg-9 zur Auswahl (oder linker Mausklick)"
 ::dialog::save::mc::PressForWhole				"Drücke Alt-0 bis Alt-9 für ganzen Datensatz (oder mittlerer Mausklick)"
 ::dialog::save::mc::EditTags						"Tags bearbeiten"
 ::dialog::save::mc::RemoveThisTag				"Tag '%s' entfernen?"

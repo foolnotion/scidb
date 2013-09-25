@@ -1849,7 +1849,7 @@ proc MakePreview {foreground background preview path} {
 }
 
 
-proc ChooseColor {parent title what initialcolor previewcolor background usedColors eraser} {
+proc ChooseColor {parent title what initialColor previewColor background usedColors eraser} {
 	variable RecentColors
 	variable Colors
 
@@ -1880,12 +1880,12 @@ proc ChooseColor {parent title what initialcolor previewcolor background usedCol
 		
 		foreground {
 			set baseColors $Colors
-			set embedcmd [namespace code [list MakePreview $initialcolor $previewcolor foreground]]
+			set embedcmd [namespace code [list MakePreview $initialColor $previewColor foreground]]
 		}
 
 		background {
 			if {![string match table* $what]} {
-				set embedcmd [namespace code [list MakePreview $previewcolor $initialcolor background]]
+				set embedcmd [namespace code [list MakePreview $previewColor $initialColor background]]
 			}
 		}
 	}
@@ -1893,7 +1893,7 @@ proc ChooseColor {parent title what initialcolor previewcolor background usedCol
 	set selection [::colormenu::popup $parent              \
 							-class Dialog                        \
 							-basecolors $baseColors              \
-							-initialcolor $initialcolor          \
+							-initialcolor $initialColor          \
 							-recentcolors [namespace current]::RecentColors($recent) \
 							-usedcolors $usedColors              \
 							-eraser $eraser                      \
@@ -1904,9 +1904,9 @@ proc ChooseColor {parent title what initialcolor previewcolor background usedCol
 							]
 	
 	if {[llength $selection]} {
-		set initialcolor [::dialog::choosecolor::getActualColor $initialcolor]
+		set initialColor [::dialog::choosecolor::getActualColor $initialColor]
 		set RecentColors($recent) \
-			[::dialog::choosecolor::addToList $RecentColors($recent) $initialcolor]
+			[::dialog::choosecolor::addToList $RecentColors($recent) $initialColor]
 	}
 
 	return $selection
@@ -1919,27 +1919,29 @@ proc SelectTableColor {table id parent title which} {
 
 	switch $which {
 		foreground - disabledforeground {
-			set previewcolor $Options(-background)
+			set previewColor $Options(-background)
 			set attrs {foreground disabledforeground selectionforeground}
 		}
 
 		selectionforeground {
-			set previewcolor $Options(-selectionbackground)
+			set previewColor $Options(-selectionbackground)
 			set attrs {foreground disabledforeground selectionforeground}
 		}
 
 		background - highlightcolor {
-			set previewcolor $Options(-foreground:$id)
-			if {[llength $previewcolor] == 0} {
-				set previewcolor $Options(-foreground)
+			if {[llength $previewColor] == 0} {
+				set previewColor $Options(-foreground)
+			} else {
+				set previewColor $Options(-foreground:$id)
 			}
 			set attrs background
 		}
 
 		selectionbackground {
-			set previewcolor $Options(-selectionforeground:$id)
-			if {[llength $previewcolor] == 0} {
-				set previewcolor $Options(-selectionforeground)
+			if {[llength $previewColor] == 0} {
+				set previewColor $Options(-selectionforeground)
+			} else {
+				set previewColor $Options(-selectionforeground:$id)
 			}
 			set attrs background
 		}
@@ -1948,20 +1950,23 @@ proc SelectTableColor {table id parent title which} {
 	set usedColors {}
 	foreach i $Vars(columns) {
 		foreach attr $attrs {
-			set color [::dialog::choosecolor::getActualColor $Options(-$attr:$i)]
+			set color [::dialog::choosecolor::getActualColor [lookupColor $Options(-$attr:$i)]]
 			if {[llength $color] && $color ni $usedColors} {
 				lappend usedColors $color
 			}
 		}
 	}
 
+	set initialColor [lookupColor $Options(-$which)]
+	set previewColor [lookupColor $previewColor]
+
 	set parent $parent.b$which
 	set color [ChooseColor \
 		$parent             \
 		[set mc::$title]    \
 		table-$which        \
-		$Options(-$which)   \
-		$previewcolor       \
+		$initialColor       \
+		$previewColor       \
 		{}                  \
 		$usedColors         \
 		false               \
@@ -2044,6 +2049,9 @@ proc SelectColor {table id parent title which} {
 	} else {
 		set eraser true
 	}
+
+	set initialColor [lookupColor $initialColor]
+	set previewColor [lookupColor $previewColor]
 
 	set color [ChooseColor \
 		$parent             \

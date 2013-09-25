@@ -182,6 +182,7 @@ array set Colors {
 	-inactiveforeground		fsbox,inactiveforeground
 	-activebackground			fsbox,activebackground
 	-activeforeground			fsbox,activeforeground
+	-emphasizebackground		fsbox,emphasizebackground
 }
 
 array set ColorLookup {
@@ -194,6 +195,7 @@ array set ColorLookup {
 	fsbox,inactiveforeground		black
 	fsbox,activebackground			#ebf4f5
 	fsbox,activeforeground			black
+	fsbox,emphasizebackground		BlanchedAlmond
 }
 
 
@@ -255,8 +257,8 @@ proc fsbox {w type args} {
 	if {$opts(-multiple)} { set opts(-selectmode) extended } else { set opts(-selectmode) single }
 
 	foreach option {	selectionbackground selectionforeground font multiple savemode
-							activebackground activeforeground defaultextension defaultencoding
-							inactivebackground inactiveforeground filetypes fileencodings
+							activebackground activeforeground emphasizebackground defaultextension
+							defaultencoding inactivebackground inactiveforeground filetypes fileencodings
 							fileicons filecursors showhidden sizecommand selectencodingcommand
 							validatecommand deletecommand renamecommand duplicatecommand okcommand
 							cancelcommand inspectcommand filetypecommand initialfile bookmarkswidth
@@ -3461,8 +3463,10 @@ proc DetailsLayout {w} {
 		{*}$copts(name)                        \
 		;
 	if {$Vars(type) ne "dir"} {
+		set bg [lookupColor $Vars(emphasizebackground)]
 		$t column create                         \
 			-background $background               \
+			-itembackground $bg                   \
 			-text [Tr Size]                       \
 			-tags size                            \
 			-justify right                        \

@@ -579,7 +579,6 @@ uninstall: uninstall-scripts uninstall-pieces uninstall-cursors uninstall-flags 
 			rmdir $(SHAREDIR);                                                              \
 		fi;                                                                                \
 		if [ -d $(SHAREDIR)/photos ]; then                                                 \
-			echo "";                                                                        \
 			echo "Type 'make uninstall-photos' if you want to uninstall all player photos"; \
 		fi;                                                                                \
 	fi

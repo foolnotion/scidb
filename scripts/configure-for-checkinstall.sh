@@ -1,1 +1,1 @@
-./configure --force-bundled-zziplib=yes $*
+./configure --tcl-version=8.5 --force-bundled-zziplib=yes --destdir=/usr/local $*

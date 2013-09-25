@@ -154,6 +154,7 @@ read_dictionary(mstl::auto_ptr<Hyphenator::Lookup>& output, mstl::string const& 
 ///\param lang The language for which hyphenation patterns will be
 ///            loaded.
 Hyphenator::Hyphenator(Language const& lang)
+	:m_is_german(lang.is_german())
 {
 	mstl::string path;
 
@@ -270,7 +271,7 @@ Hyphenator::dump_lookup(mstl::ostream& strm) const
 
 	for (unsigned i = 0; i < m_lookup->container().size(); ++i)
 	{
-		strm.write(m_lookup->container()[i].s);
+		strm.write(m_lookup->container()[i].m_s);
 		strm.put('\n');
 	}
 }
@@ -360,7 +361,7 @@ Hyphenator::hyphenate_word(mstl::string const& word, mstl::string const& hyphen)
 		Lookup::const_iterator i = m_lookup->find(word);
 
 		if (i != m_lookup->end())
-			return replace_hyphens(word, i->s, hyphen);
+			return replace_hyphens(word, i->m_s, hyphen);
 	}
 
 	mstl::auto_ptr<mstl::vector<HyphenationRule const*> > rules = m_dictionary->applyPatterns(word);

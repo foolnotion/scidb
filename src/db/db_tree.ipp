@@ -72,6 +72,7 @@ inline TreeInfo const& Tree::total() const				{ return m_total; }
 inline Database& Tree::database() const					{ return *m_base; }
 inline Filter const& Tree::filter() const					{ return m_filter; }
 inline unsigned Tree::countGames() const					{ return m_filter.count(); }
+inline unsigned Tree::prevGameCount() const				{ return m_prevGameCount; }
 inline Tree::Key const& Tree::key() const					{ return m_key; }
 inline uint64_t Tree::hash() const							{ return m_key.hash(); }
 inline Tree::Position const& Tree::position() const	{ return m_key.position(); }

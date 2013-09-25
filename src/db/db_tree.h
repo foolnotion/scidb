@@ -103,6 +103,7 @@ public:
 	Database& database() const;
 	Filter const& filter() const;
 	unsigned countGames() const;
+	unsigned prevGameCount() const;
 #ifndef NDEBUG
 	unsigned numGamesParsed() const;
 #endif
@@ -217,6 +218,7 @@ private:
 	Key				m_key;
 	unsigned			m_index;
 	unsigned			m_last;
+	unsigned			m_prevGameCount;
 	bool				m_complete;
 	InfoList			m_infoList;
 	TreeInfo			m_total;

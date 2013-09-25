@@ -73,13 +73,6 @@ Makefile.in:
 	@echo "****** Please use the 'configure' script before building Scidb ******"
 	@exit 1
 
-checkinstall:
-	@$(MAKE) -C man install
-	@$(MAKE) -C src install
-	@$(MAKE) -C engines install
-	@$(MAKE) -C tcl install
-	@$(MAKE) -C freedesktop.org checkinstall
-
 install-subdirs:
 	@$(MAKE) -C man install
 	@$(MAKE) -C src install
@@ -94,24 +87,32 @@ uninstall-subdirs:
 	@$(MAKE) -C tcl uninstall
 
 install-xdg:
-	@if [ -n "$(shell xdg-icon-resource --version 2>/dev/null)" ]; then \
-		if [ -n "$(shell xdg-mime --version 2>/dev/null)" ]; then        \
-			$(MAKE) -C freedesktop.org install-mime;                      \
-		fi;                                                              \
-	fi
-	@if [ -n "$(shell xdg-desktop-menu --version 2>/dev/null)" ]; then  \
-		$(MAKE) -C freedesktop.org install-desktop-menu;                 \
+	@if [ -z "$(XDGDIR)" ]; then                                          \
+		if [ -n "$(shell xdg-icon-resource --version 2>/dev/null)" ]; then \
+			if [ -n "$(shell xdg-mime --version 2>/dev/null)" ]; then       \
+				$(MAKE) -C freedesktop.org install-mime;                     \
+			fi;                                                             \
+		fi;                                                                \
+		if [ -n "$(shell xdg-desktop-menu --version 2>/dev/null)" ]; then  \
+			$(MAKE) -C freedesktop.org install-desktop-menu;                \
+		fi;                                                                \
+	else                                                                  \
+		$(MAKE) -C freedesktop.org distribute;                             \
 	fi
 
 uninstall-xdg:
-	@if [ -n "$(shell xdg-icon-resource --version 2>/dev/null)" ]; then \
-		if [ -n "$(shell xdg-mime --version 2>/dev/null)" ]; then        \
-			$(MAKE) -C freedesktop.org uninstall-mime;                    \
-		fi;                                                              \
-	fi
-	@if [ -n "$(shell xdg-desktop-menu --version 2>/dev/null)" ]; then  \
-		$(MAKE) -C freedesktop.org uninstall-desktop-menu;               \
-	fi
+	@if [ -z "$(XDGDIR)" ]; then                                          \
+		if [ -n "$(shell xdg-icon-resource --version 2>/dev/null)" ]; then \
+			if [ -n "$(shell xdg-mime --version 2>/dev/null)" ]; then       \
+				$(MAKE) -C freedesktop.org uninstall-mime;                   \
+			fi;                                                             \
+		fi;                                                                \
+		if [ -n "$(shell xdg-desktop-menu --version 2>/dev/null)" ]; then  \
+			$(MAKE) -C freedesktop.org uninstall-desktop-menu;              \
+		fi;                                                                \
+	else                                                                  \
+		$(MAKE) -C freedesktop.org remove                                  \
+	fi;
 
 update-magic:
 	@echo "Update magic file"

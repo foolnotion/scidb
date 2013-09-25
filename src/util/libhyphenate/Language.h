@@ -46,7 +46,7 @@ namespace rfc_3066
 
 		// This is a list of the components, all in lowercase; for example,
 		// for de-AT the list would have the two elements "de" and "at".
-		mstl::list<mstl::string> components;
+		mstl::list<mstl::string> m_components;
 
 	public:
 
@@ -59,6 +59,9 @@ namespace rfc_3066
 
 		/// Re-string to a RFC-3066-compliant string.
 		operator mstl::string() const;
+
+		/// Check whether it's the German language (may use eszet)
+		bool is_german() const;
 
 		/// Concat only the first 'elements' elements of the language 
 		/// identifier and seperate them with the separator.

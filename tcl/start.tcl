@@ -676,7 +676,7 @@ array set Colors {
 	lite:help,foreground:gray				#999999
 	lite:help,foreground:litegray			#696969
 	lite:help,background:gray				#f5f5f5
-	lite:help,background:emphasize		lightgoldenrod
+	lite:help,background:emphasize		LightGoldenrod
 
 	lite:table,background					white
 	lite:table,foreground					black
@@ -685,6 +685,7 @@ array set Colors {
 	lite:table,disabledforeground			#555555
 	lite:table,labelforeground				black
 	lite:table,labelbackground				#d9d9d9
+	lite:fsbox,emphasizebackground		BlanchedAlmond
 
 	lite:save,number							darkred
 	lite:save,frequency						darkgreen
@@ -696,7 +697,7 @@ array set Colors {
 	lite:save,eventDate						darkblue
 	lite:save,eventCountry					darkblue
 	lite:save,taglistOutline				gray
-	lite:save,taglistBackground			lightYellow
+	lite:save,taglistBackground			LightYellow
 	lite:save,taglistHighlighting			#ebf4f5
 	lite:save,taglistCurrent				blue
 	lite:save,matchlistBackground			#ebf4f5

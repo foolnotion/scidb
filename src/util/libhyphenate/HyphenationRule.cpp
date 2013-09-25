@@ -45,8 +45,8 @@ using namespace hyphenate;
 
 
 HyphenationRule::HyphenationRule(mstl::string const& dpattern)
-	:del_pre(0)
-	,skip_post(0)
+	:m_del_pre(0)
+	,m_skip_post(0)
 {
 	int priority = 0;
 	unsigned i;
@@ -59,16 +59,16 @@ HyphenationRule::HyphenationRule(mstl::string const& dpattern)
 		}
 		else
 		{
-			key += dpattern[i];
-			priorities.push_back(priority);
+			m_key += dpattern[i];
+			m_priorities.push_back(priority);
 			priority = 0;
 		}
 	}
 
 	// Complete and simplify the array.
-	priorities.push_back(priority);
-	while (priorities.back() == 0)
-		priorities.pop_back();
+	m_priorities.push_back(priority);
+	while (m_priorities.back() == 0)
+		m_priorities.pop_back();
 
 	// Now check for nonstandard hyphenation. First, parse it.
 	if (i < dpattern.size() && dpattern[i] == '/')
@@ -85,9 +85,9 @@ HyphenationRule::HyphenationRule(mstl::string const& dpattern)
 			else if (field == 4 && (dpattern[i] < '0' || dpattern[i] > '9'))
 				break;
 			else if (field == 1)
-				insert_pre += dpattern[i];
+				m_insert_pre += dpattern[i];
 			else if (field == 2)
-				insert_post += dpattern[i];
+				m_insert_post += dpattern[i];
 			else if (field == 3)
 				start = start * 10 + dpattern[i] - '0';
 			else if (field == 4)
@@ -95,19 +95,19 @@ HyphenationRule::HyphenationRule(mstl::string const& dpattern)
 		}
 
 		if (field < 4) // There was no fourth field
-			cut = key.size() - start;
+			cut = m_key.size() - start;
 		if (field < 3)
 			start = 1;
 
-		skip_post = cut;
+		m_skip_post = cut;
 
-		for (unsigned j = start; j < start+cut && j < priorities.size(); j++)
+		for (unsigned j = start; j < start+cut && j < m_priorities.size(); j++)
 		{
-			if (mstl::is_odd(priorities[j-1]))
+			if (mstl::is_odd(m_priorities[j-1]))
 				break;
 
-			del_pre++;
-			skip_post--;
+			m_del_pre++;
+			m_skip_post--;
 		}
 	}
 }
@@ -124,10 +124,10 @@ HyphenationRule::apply(mstl::string& word, mstl::string const& hyph) const
 void
 HyphenationRule::apply_first(mstl::string& word, mstl::string const& hyph) const
 {
-	if (del_pre > 0)
-		word.erase(word.size() - del_pre);
+	if (m_del_pre > 0)
+		word.erase(word.size() - m_del_pre);
 
-	word += insert_pre;
+	word += m_insert_pre;
 	word += hyph;
 }
 
@@ -135,11 +135,11 @@ HyphenationRule::apply_first(mstl::string& word, mstl::string const& hyph) const
 int
 HyphenationRule::apply_second(mstl::string& word) const
 {
-   if (del_pre > 0)
-		word.erase(word.size() - del_pre);
+   if (m_del_pre > 0)
+		word.erase(word.size() - m_del_pre);
 
-	word += insert_post;
-	return skip_post;
+	word += m_insert_post;
+	return m_skip_post;
 }
 
 // vi:set ts=3 sw=3:

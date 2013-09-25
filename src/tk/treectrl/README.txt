@@ -68,7 +68,7 @@ and new commands:
 		header). The list may be empty. Assume all columns if no
 		list is given.
 
-	<pathName> element configure <elem-id> -font2 <font>
+	<pathName> element configure <elem-id> -specialfont <font>
 		Sets a second font that wil be used for any unicode
 		point >= 256.
 

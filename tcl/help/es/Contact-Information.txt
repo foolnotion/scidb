@@ -64,31 +64,31 @@ Los usuarios de Scidb hallarán interesantes los siguientes sitios web:
 
 <ul>
   <li><p>
-    <a href="http://sourceforge.net/tracker/?atid=1294800&amp;group_id=307371&amp;func=browse"
+    <a href="http://sourceforge.net/p/scidb/feature-requests/?source=navbar"
        style="line-height: 150%;">
-    Rastreador: Pedido de características</a><br/>
+    Tracker: Feature Requests</a><br/>
     Envíe los pedidos de características; por favor, tenga en cuenta el actual
     <a href="Development-Roadmap.html">Mapa de ruta del desarrollo</a>.
   </p></li>
 
   <li><p>
-    <a href="http://sourceforge.net/tracker/?atid=1294797&amp;group_id=307371&amp;func=browse"
+    <a href="http://sourceforge.net/p/scidb/bugs/?source=navbar"
        style="line-height: 150%;">
-    Rastreador: Errores</a><br/>
+    Tracker: Bugs</a><br/>
     Comunique problemas con Scidb.
   </p></li>
 
   <li><p>
     <a href="http://sourceforge.net/projects/scidb/reviews/"
        style="line-height: 150%;">
-    Reseñas de Scidb</a><br/>
+    Reviews for Scidb</a><br/>
     Este sitio Web ofrece la oportunidad de dejar una reseña acerca de Scidb.
   </p></li>
 
   <li><p>
     <a href="https://lists.sourceforge.net/lists/listinfo/scidb-users"
        style="line-height: 150%;">
-    Suscríbase a la Lista de Correos de los Usuarios de Scidb</a><br/>
+    Subscribe Scidb Users Mailing List</a><br/>
     En este lugar usted puede poner una entrada en la lista de miembros de la "Lista
     de Correos de los Usuarios de Scidb". Esta lista de usuarios proporciona 
     información, novedades y propuestas. Los miembros de la lista pueden enviar mensajes 
@@ -98,7 +98,7 @@ Los usuarios de Scidb hallarán interesantes los siguientes sitios web:
   <li><p>
     <a href="http://sourceforge.net/apps/aguestbook/scidb/sign.php"
        style="line-height: 150%;">
-    Libro de visitas de Scidb</a><br/>
+    Scidb Guestbook</a><br/>
     En este sitio se encuentra disponible el libro de visitas.
   </p></li>
 

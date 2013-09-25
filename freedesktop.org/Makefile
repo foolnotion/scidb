@@ -216,13 +216,18 @@ install-desktop-menu: prepare-install-desktop install-app-icons install-desktop-
 
 uninstall-desktop-menu: uninstall-app-icons uninstall-desktop-menu-entry uninstall-desktop-database
 
-### DISTRIBUTION FOR CHECKINSTALL ######################################
+### DISTRIBUTION ######################################################
 
-checkinstall:
+distribute:
 	@echo "Distribute freedesktop.org stuff"
-	@install -m 755 -d /usr/local/share/scidb-beta/freedesktop.org
-	@install -m 755 update-mimeapps.list.tcl /usr/local/share/scidb-beta/freedesktop.org
-	@chmod 0555 /usr/local/share/scidb-beta/freedesktop.org/update-mimeapps.list.tcl
-	@install -m 644 *.* Makefile /usr/local/share/scidb-beta/freedesktop.org
+	@install -m 755 -d $(SHAREDIR)/freedesktop.org
+	@install -m 755 update-mimeapps.list.tcl $(SHAREDIR)/freedesktop.org
+	@chmod 0555 $(SHAREDIR)/freedesktop.org/update-mimeapps.list.tcl
+	@install -m 644 *.* Makefile $(SHAREDIR)/freedesktop.org
+
+remove:
+	@echo "Remove freedesktop.org stuff"
+	@rm -f $(SHAREDIR)/freedesktop.org/*
+	@rm -f $(SHAREDIR)/freedesktop.org
 
 # vi:set ts=3 sw=3:

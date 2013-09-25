@@ -247,8 +247,15 @@ A database in old format consists of only four files:
 
 <p>
 El formato <abbr>PGN</abbr> (Portable Game Notation) es un estándar común para la
-transferencia de partidas de ajedrez. Sólo se permite la apertura de un archivo <abbr>PGN</abbr> en modo de sólo-lectura. Se recomienda convertir las grandes colecciones
-de partidas <abbr>PGN</abbr> al formato Scidb.
+transferencia de partidas de ajedrez.
+<span class='NEW'><!-- Old content
+Sólo se permite la apertura de un archivo <abbr>PGN</abbr> en modo de sólo-lectura.
+--> <!-- New content: -->
+Opening a <abbr>PGN</abbr> file will be done in reading mode, but it is
+possible to set it writeable if the file has writing permission.
+</span>
+Se recomienda convertir las grandes colecciones de partidas <abbr>PGN</abbr> al
+formato Scidb.
 </p>
 
 <p>

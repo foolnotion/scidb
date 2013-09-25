@@ -41,12 +41,12 @@ BEGIN
   <tr>
     <td><expr>misc/pawns-only</expr></td>
     <td><expr>&#x2001;</expr></td>
-    <td><expr>wild/19</expr></td>
+    <td><expr>wild/5</expr></td>
   </tr>
   <tr>
     <td><expr>misc/pyramid</expr></td>
     <td><expr>&#x2001;</expr></td>
-    <td><expr>wild/5</expr></td>
+    <td><expr>wild/7</expr></td>
   </tr>
   <tr>
     <td><expr>misc/queen-rooks</expr></td>
@@ -56,7 +56,7 @@ BEGIN
   <tr>
     <td><expr>misc/queens-only</expr></td>
     <td><expr>&#x2001;</expr></td>
-    <td><expr></expr></td>
+    <td><expr>wild/19</expr></td>
   </tr>
   <tr>
     <td><expr>misc/rooks-only</expr></td>

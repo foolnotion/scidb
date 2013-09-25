@@ -52,8 +52,8 @@ namespace hyphenate
 
 		class HyphenationNode;
 
-		HyphenationNode* root;
-		unsigned start_safe, end_safe;
+		HyphenationNode* m_root;
+		unsigned m_start_safe, m_end_safe;
 
 	public:
 

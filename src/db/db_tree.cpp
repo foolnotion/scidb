@@ -646,6 +646,7 @@ Tree::makeTree(TreeP tree,
 		}
 
 		progress.update(tree->m_index);
+		tree->m_prevGameCount = tree->m_filter.size();
 	}
 	else
 	{
@@ -654,6 +655,7 @@ Tree::makeTree(TreeP tree,
 		tree->m_key.set(mode, ratingType, myPosition.hash(), myPosition.exactZHPosition());
 		tree->m_index = 0;
 		tree->m_last = mstl::numeric_limits<unsigned>::max();
+		tree->m_prevGameCount = 0;
 		tree->m_complete = false;
 		tree->m_base = &base;
 		tree->m_variant = base.variant();

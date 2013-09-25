@@ -308,7 +308,7 @@ callbackSaveYourself(SmcConn smcConn,
 							int saveStyle,
 							Bool shutdown,
 							int interactStyle,
-							Bool fast) // ignored, no one is using this flag
+							Bool fast __attribute((unused))) // ignored, no one is using this flag
 {
 	if (m_setProps)
 	{

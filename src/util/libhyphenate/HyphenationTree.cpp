@@ -146,16 +146,16 @@ public:
 
 
 HyphenationTree::HyphenationTree()
-	:root(new HyphenationNode())
-	,start_safe(1)
-	,end_safe(1)
+	:m_root(new HyphenationNode())
+	,m_start_safe(1)
+	,m_end_safe(1)
 {
 }
 
 
 HyphenationTree::~HyphenationTree()
 {
-	delete root;
+	delete m_root;
 }
 
 
@@ -175,7 +175,7 @@ HyphenationTree::insert(mstl::auto_ptr<HyphenationRule> pattern)
 		sys::utf8::append(lowerCaseKey, sys::utf8::toLower(code));
 	}
 
-	root->insert(lowerCaseKey, pattern);
+	m_root->insert(lowerCaseKey, pattern);
 }
 
 
@@ -277,7 +277,7 @@ HyphenationTree::applyPatterns(mstl::string const& word, size_t stop_at) const
 	// That way, each possible match is found. Note the pointer arithmetics
 	// in the first and second argument.
 	for (unsigned i = 0; i < w.size() - 1 && i <= stop_at; ++i)
-		root->apply_patterns((&pri[i]), &rules[i], w.c_str() + i);
+		m_root->apply_patterns((&pri[i]), &rules[i], w.c_str() + i);
 
 	// Copy the results to a shorter vector.
 	mstl::auto_ptr<mstl::vector<const HyphenationRule*> > output_rules(
@@ -289,12 +289,12 @@ HyphenationTree::applyPatterns(mstl::string const& word, size_t stop_at) const
 	unsigned ind_start	= 1;
 	unsigned ind_end		= w.size() - 1;
 
-	for (unsigned skip = 0; skip < start_safe && ind_start < w.size(); ++ind_start)
+	for (unsigned skip = 0; skip < m_start_safe && ind_start < w.size(); ++ind_start)
 	{
 		if (sys::utf8::isFirst(w[ind_start]))
 			++skip;
 	}
-	for (unsigned skip = 0; skip < end_safe && ind_end > 0; --ind_end)
+	for (unsigned skip = 0; skip < m_end_safe && ind_end > 0; --ind_end)
 	{
 		if (sys::utf8::isFirst(w[ind_end]))
 			++skip;
@@ -332,7 +332,7 @@ HyphenationTree::loadPatterns(mstl::istream &i)
 			// The output operation.
 			if (pattern.size() && numeric && num_field <= 1)
 			{
-				((num_field == 0) ? start_safe : end_safe) = ::atoi(pattern.c_str());
+				((num_field == 0) ? m_start_safe : m_end_safe) = ::atoi(pattern.c_str());
 				++num_field;
 			}
 			else if (pattern.size())

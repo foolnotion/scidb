@@ -1806,7 +1806,7 @@
 ::dialog::save::mc::Event							"Tävling"
 
 ::dialog::save::mc::MatchesExtraTags			"Matcher / Extra Taggar"
-::dialog::save::mc::PressToSelect				"Tryck Ctrl+0 till Ctrl+9 (eller vänster musknapp) för att välja"
+::dialog::save::mc::PressToSelect				"Tryck Ctrl-0 till Ctrl-9 (eller vänster musknapp) för att välja"
 ::dialog::save::mc::PressForWhole				"Tryck Alt-0 till Alt-9 (eller mellersta musknappen) för helt dataset"
 ::dialog::save::mc::EditTags						"Bearbeta taggar"
 ::dialog::save::mc::RemoveThisTag				"Radera tag '%s'?"

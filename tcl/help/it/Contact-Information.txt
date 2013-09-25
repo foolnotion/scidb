@@ -64,15 +64,15 @@ Gli utenti di Scidb posso avere interesse nel visitare i seguenti siti:
 
 <ul>
   <li><p>
-    <a href="http://sourceforge.net/tracker/?atid=1294800&amp;group_id=307371&amp;func=browse"
+    <a href="http://sourceforge.net/p/scidb/feature-requests/?source=navbar"
        style="line-height: 150%;">
-    Tracker: Richiesta Funzioni</a><br/>
+    Tracker: Feature Requests</a><br/>
     Manda richieste per una funzione; per favore considera l'esistente
     <a href="Development-Roadmap.html">piano di sviluppo</a>.
   </p></li>
 
   <li><p>
-    <a href="http://sourceforge.net/tracker/?atid=1294797&amp;group_id=307371&amp;func=browse"
+    <a href="http://sourceforge.net/p/scidb/bugs/?source=navbar"
        style="line-height: 150%;">
     Tracker: Bugs</a><br/>
     Segnala problemi con Scidb.
@@ -81,7 +81,7 @@ Gli utenti di Scidb posso avere interesse nel visitare i seguenti siti:
   <li><p>
     <a href="http://sourceforge.net/projects/scidb/reviews/"
        style="line-height: 150%;">
-    Recensioni di Scidb</a><br/>
+    Reviews for Scidb</a><br/>
     Questo sito offre la possibilità di recensire l'applicazione.
   </p></li>
   <li><p>
@@ -98,7 +98,7 @@ Gli utenti di Scidb posso avere interesse nel visitare i seguenti siti:
   <li><p>
     <a href="http://sourceforge.net/apps/aguestbook/scidb/sign.php"
        style="line-height: 150%;">
-    Il guestbook di Scidb</a><br/>
+    Scidb Guestbook</a><br/>
     A questo sito è disponibile un libro degli ospiti.
   </p></li>
 

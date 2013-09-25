@@ -64,7 +64,7 @@ Scidb:
 </ol>
 
 <p>
-Divertitevi con Scidb, il cui sviluppo ha richiesto già quattro anni!
+Divertitevi con Scidb, il cui sviluppo ha richiesto già cinque anni!
 </p>
 
 <h2>Links</h2>

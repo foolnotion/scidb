@@ -592,7 +592,7 @@ winboard::Engine::sendStartAnalysis()
 	}
 	else if (searchTime())
 	{
-		send("time " + ::toStr((searchTime() + 5)/10));
+		send("time " + ::toStr((searchTime() + 9)/10));
 	}
 	else if (hasFeature(app::Engine::Feature_Analyze))
 	{

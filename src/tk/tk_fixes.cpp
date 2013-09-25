@@ -25,7 +25,7 @@
 
 #ifndef DISCARD_TK_FIXES
 
-//#define FIX_TK_POINTER_EVENTS
+#define FIX_TK_POINTER_EVENTS
 #define FIX_TK_GRAB_STATE
 
 
@@ -291,6 +291,10 @@ TkPointerEvent(
 	if (dispPtr->grabWinPtr != NULL) {
 	    if (outsideGrabTree && appGrabbed) {
 		if (!ancestorOfGrab) {
+		    /* FIX: Allow menu buttons events */
+		    const char* cls = (const char*)Tk_Class(winPtr);
+		    if (cls == NULL || ::strcmp((char*)Tk_Class(winPtr), "Menubutton"))
+		    /* FIX end */
 		    return 0;
 		}
 		switch (eventPtr->xcrossing.detail) {

@@ -323,9 +323,9 @@ proc build {w width height} {
 	set Vars(cmd:edit-comment)			[list [namespace parent]::pgn::editComment after]
 	set Vars(cmd:shift:edit-comment)	[list [namespace parent]::pgn::editComment before]
 	set Vars(cmd:edit-marks)			[namespace parent]::pgn::openMarksPalette
-	set Vars(cmd:add-new-game)			[list [namespace parent]::pgn::saveGame add]
-	set Vars(cmd:replace-game)			[list [namespace parent]::pgn::saveGame replace]
-	set Vars(cmd:replace-moves)		[list [namespace parent]::pgn::saveGame moves]
+	set Vars(cmd:add-new-game)			[namespace code [list SaveGame add]]
+	set Vars(cmd:replace-game)			[namespace code [list SaveGame replace]]
+	set Vars(cmd:replace-moves)		[namespace code [list SaveGame moves]]
 	set Vars(cmd:trial-mode)			::game::flipTrialMode
 
 	LanguageChanged
@@ -1604,7 +1604,7 @@ proc ShowCrossTable {parent} {
 }
 
 
-proc SaveGame {} {
+proc SaveGame {{mode ""}} {
 	variable ::scidb::scratchbaseName
 	variable ::scidb::clipbaseName
 	variable Vars
@@ -1612,10 +1612,12 @@ proc SaveGame {} {
 	set position [::scidb::game::current]
 
 	if {0 <= $position && $position < 9} {
-		if {[lindex [::scidb::game::link? $position] 0] eq $scratchbaseName} {
-			set mode add
-		} else {
-			set mode replace
+		if {[string length $mode] == 0} {
+			if {[lindex [::scidb::game::link? $position] 0] eq $scratchbaseName} {
+				set mode add
+			} else {
+				set mode replace
+			}
 		}
 		[namespace parent]::pgn::saveGame $mode
 	}

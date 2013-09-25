@@ -1803,7 +1803,7 @@
 ::dialog::save::mc::Event							"Evento"
 
 ::dialog::save::mc::MatchesExtraTags			"Etiquetas iguales / Extra Etiquetas"
-::dialog::save::mc::PressToSelect				"Presione Ctrl+0 a Ctrl+9 (o el botón izquierdo del ratón) para seleccionar"
+::dialog::save::mc::PressToSelect				"Presione Ctrl-0 a Ctrl-9 (o el botón izquierdo del ratón) para seleccionar"
 ::dialog::save::mc::PressForWhole				"Presione Alt-0 a Alt-9 (o el botón medio del ratón) para grupo de datos completo"
 ::dialog::save::mc::EditTags						"Editar etiquetas"
 ::dialog::save::mc::RemoveThisTag				"Eliminar etiqueta '%s'?"

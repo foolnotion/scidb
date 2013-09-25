@@ -255,6 +255,7 @@ proc BuildContributionsFrame {w} {
 	}
 
 	::html $w.t \
+		-background lightgoldenrod \
 		-imagecmd [namespace code GetImage] \
 		-center yes \
 		-fittowidth yes \

@@ -136,8 +136,7 @@ proc open {parent {file ""} args} {
 	set dlg .help
 	if {[winfo exists $dlg]} {
 		if {[string length $file] == 0} { ShowIndex }
-		raise $dlg
-		focus $dlg
+		::widget::dialogRaise $dlg
 		set Priv(current:file) [FullPath $file]
 		set Priv(current:lang) [helpLanguage]
 		ReloadCurrentPage no
@@ -189,13 +188,13 @@ proc open {parent {file ""} args} {
 	::tooltip::tooltip $buttons.collapse [namespace current]::mc::CollapseAllItems
 	ttk::button $buttons.prev \
 		-image $::icon::16x16::previous \
-		-command [namespace code [list GotoTopic prev]] \
+		-command [namespace code [list GotoTopic -1]] \
 		-state disabled \
 		;
 	set Priv(button:prev) $buttons.prev
 	ttk::button $buttons.next \
 		-image $::icon::16x16::next \
-		-command [namespace code [list GotoTopic next]] \
+		-command [namespace code [list GotoTopic +1]] \
 		-state disabled \
 		;
 	set Priv(button:next) $buttons.next
@@ -266,8 +265,8 @@ proc open {parent {file ""} args} {
 	bind $dlg <Alt-End>					[namespace code [list Goto @end]]
 	bind $dlg <Alt-Down>					[namespace code [list Goto @down]]
 	bind $dlg <Alt-Up>					[namespace code [list Goto @up]]
-	bind $dlg <Control-Up>				[namespace code [list GotoTopic prev]]
-	bind $dlg <Control-Down>			[namespace code [list GotoTopic next]]
+	bind $dlg <Control-Up>				[namespace code [list GotoTopic -1]]
+	bind $dlg <Control-Down>			[namespace code [list GotoTopic +1]]
 	bind $dlg <Control-plus>			[namespace code [list ChangeFontSize +1]]
 	bind $dlg <Control-KP_Add>			[namespace code [list ChangeFontSize +1]]
 	bind $dlg <Control-minus>			[namespace code [list ChangeFontSize -1]]
@@ -628,17 +627,36 @@ proc LoadPage {t item} {
 	variable [namespace parent]::Links
 	variable [namespace parent]::ExternalLinks
 
-	if {[info exists Priv(uri:$item)]} {
-		set path [$Priv(uri:$item) path]
+	if {![info exists Priv(uri:$item)]} { return 0 }
 
-		if {[string match http* $path] || [string match ftp* $path]} {
-			::web::open $Priv(html) $path
-			set ExternalLinks($path) 1
-		} else {
-			set fragment [$Priv(uri:$item) fragment]
-			set Links($path) [[namespace parent]::Load $path {} $fragment]
-		}
+	set path [$Priv(uri:$item) path]
+
+	if {[string match http* $path] || [string match ftp* $path]} {
+		::web::open $Priv(html) $path
+		set ExternalLinks($path) 1
+	} else {
+		set fragment [$Priv(uri:$item) fragment]
+		set Links($path) [[namespace parent]::Load $path {} $fragment]
 	}
+
+	return 1
+}
+
+
+proc NextSibling {t item direction} {
+	variable [namespace parent]::Priv
+
+	set parent [$t item parent $item]
+	set first [$t item firstchild $parent]
+	set last [$t item lastchild $parent]
+	set childs [$t item children $parent]
+
+	do {
+		incr item $direction
+	} while {$first <= $item && $item <= $last && ($item ni $childs || ![$t item enabled $item])}
+
+	if {$item in $childs} { return $item }
+	return 0
 }
 
 
@@ -648,14 +666,14 @@ proc DetectSiblings {} {
 	set file [file tail $Priv(current:file)]
 	if {$file eq "Overview.html"} { return }
 	if {![info exists Priv(contents:item:$file)]} { return }
-	set item $Priv(contents:item:$file)
 	set t $Priv(contents:tree)
+	set item [$t item id $Priv(contents:item:$file)]
 
-	set prev [$t item prevsibling $item]
-	set next [$t item nextsibling $item]
+	set prev [NextSibling $t $item -1]
+	set next [NextSibling $t $item +1]
 
-	if {[llength $prev]} { set prev normal } else { set prev disabled }
-	if {[llength $next]} { set next normal } else { set next disabled }
+	if {$prev > 0} { set prev normal } else { set prev disabled }
+	if {$next > 0} { set next normal } else { set next disabled }
 
 	$Priv(button:prev) configure -state $prev
 	$Priv(button:next) configure -state $next
@@ -668,15 +686,16 @@ proc GotoSibling {direction} {
 	set file [file tail $Priv(current:file)]
 	if {![info exists Priv(contents:item:$file)]} { return }
 	set t $Priv(contents:tree)
-	set item [$t item ${direction}sibling $Priv(contents:item:$file)]
+	set item [NextSibling $t [$t item id $Priv(contents:item:$file)] $direction]
 
-	if {[llength $item]} {
+	if {$item > 0} {
 		set tag [lindex [$t item tag names $item] 0]
 
 		if {[LoadPage $t $tag]} {
 			$t selection clear
 			$t selection add $tag
 			$t activate $tag
+			$t see $tag
 		}
 	}
 }
@@ -796,7 +815,7 @@ proc Update {type} {
 proc LoadPage {type item} {
 	variable [namespace parent]::Priv
 
-	if {[string length $item] == 0} { return }
+	if {[string length $item] == 0} { return 0 }
 	lassign $Priv($type:path:$item) path fragment
 
 	if {[string match http* $path] || [string match ftp* $path]} {
@@ -1039,8 +1058,8 @@ proc StandardBindings {w} {
 	$w bind <Alt-Up>		{+ break }
 	$w bind <Alt-Down>	{+ break }
 
-	$w bind <Control-Up>		[namespace code [list GotoTopic prev]]
-	$w bind <Control-Down>	[namespace code [list GotoTopic next]]
+	$w bind <Control-Up>		[namespace code [list GotoTopic -1]]
+	$w bind <Control-Down>	[namespace code [list GotoTopic +1]]
 	$w bind <Control-Up>		{+ break }
 	$w bind <Control-Down>	{+ break }
 }
@@ -1155,13 +1174,21 @@ proc RecordGeometry {pw} {
 
 proc ExpandAllItems {} {
 	variable Priv
-	$Priv(contents:tree) expand
+
+	set t $Priv(contents:tree)
+	set active [$t item id active]
+	$t expand
+	if {[llength $active]} { $t see $active }
 }
 
 
 proc CollapseAllItems {} {
 	variable Priv
-	$Priv(contents:tree) collapse
+
+	set t $Priv(contents:tree)
+	set active [$t item id active]
+	$t collapse
+	if {[llength $active]} { $t see $active }
 }
 
 
@@ -1198,7 +1225,7 @@ proc PopupMenu {dlg tab} {
 			set prev [$Priv(button:prev) cget -state]
 			set next [$Priv(button:next) cget -state]
 			$m add command \
-				-command [namespace code [list GotoTopic prev]] \
+				-command [namespace code [list GotoTopic -1]] \
 				-label " $mc::PrevTopic" \
 				-accel "$::mc::Key(Ctrl)-$::mc::Key(Up)" \
 				-image $::icon::16x16::previous \
@@ -1206,7 +1233,7 @@ proc PopupMenu {dlg tab} {
 				-state $prev \
 				;
 			$m add command \
-				-command [namespace code [list GotoTopic next]] \
+				-command [namespace code [list GotoTopic +1]] \
 				-label " $mc::NextTopic" \
 				-accel "$::mc::Key(Ctrl)-$::mc::Key(Down)" \
 				-image $::icon::16x16::next \

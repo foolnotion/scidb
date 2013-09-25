@@ -1797,7 +1797,7 @@ ln -sf ../# ====================================================================
 ::dialog::save::mc::Event							"Event"
 
 ::dialog::save::mc::MatchesExtraTags			"Matches / Extra Tags"
-::dialog::save::mc::PressToSelect				"Press Ctrl+0 to Ctrl+9 (or left mouse button) to select"
+::dialog::save::mc::PressToSelect				"Press Ctrl-0 to Ctrl-9 (or left mouse button) to select"
 ::dialog::save::mc::PressForWhole				"Press Alt-0 to Alt-9 (or middle mouse button) for whole data set"
 ::dialog::save::mc::EditTags						"Edit Tags"
 ::dialog::save::mc::RemoveThisTag				"Remove tag '%s'?"
