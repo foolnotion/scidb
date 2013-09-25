@@ -4,7 +4,7 @@ shift
 checkinstall --type=$type \
 	--pkgname="scidb-beta" \
 	--pkgversion="1.0" \
-	--pkgrelease="r952" \
+	--pkgrelease="r953" \
 	--pkglicense="GPL" \
 	--pkggroup="Application/Games" \
 	--pkgsource="http://sourceforge.net/projects/scidb" \
