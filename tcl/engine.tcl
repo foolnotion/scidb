@@ -776,8 +776,7 @@ proc showEngineDictionary {parent} {
 	FillHeader $lb
 
 	if {![info exists Priv(engines)]} {
-		# XXX something is broken in sorting routine (-decreasing is wrong!)
-		set engines [::scidb::misc::sort -decreasing -dictionary -nopunct -unique [::scidb::engine::list]]
+		set engines [::scidb::misc::sort -dictionary -nopunct -unique [::scidb::engine::list]]
 		set Priv(engines) {}
 
 		foreach name $engines {
