@@ -122,7 +122,7 @@ inline
 static int
 latin1Diff(int lhs, int rhs)
 {
-	return mapToLatin1(rhs) - mapToLatin1(lhs);
+	return mapToLatin1(lhs) - mapToLatin1(rhs);
 }
 
 
@@ -759,7 +759,7 @@ sys::utf8::latin1::dictionaryCompare(char const* lhs, char const* rhs, bool skip
 				if (!isdigit(*rhs))
 				{
 					if (isdigit(*lhs))
-						return 1;
+						return -1;
 
 					if (diff)
 						return diff;
@@ -768,7 +768,7 @@ sys::utf8::latin1::dictionaryCompare(char const* lhs, char const* rhs, bool skip
 				}
 				else if (!isdigit(*lhs))
 				{
-					return -1;
+					return +1;
 				}
 			}
 		}
@@ -794,7 +794,7 @@ sys::utf8::latin1::dictionaryCompare(char const* lhs, char const* rhs, bool skip
 			}
 			else
 			{
-				diff = int(Byte(*rhs)) - int(Byte(*lhs));
+				diff = int(Byte(*lhs)) - int(Byte(*rhs));
 				break;
 			}
 
@@ -807,7 +807,7 @@ sys::utf8::latin1::dictionaryCompare(char const* lhs, char const* rhs, bool skip
 				if (*rhs != 's')
 				{
 					::utfToUniChar(rhs, urhs);
-					return int(toLower(urhs)) - int('s');
+					return int('s') - int(toLower(urhs));
 				}
 			}
 			else if (urhs == 0xdf)
@@ -815,16 +815,16 @@ sys::utf8::latin1::dictionaryCompare(char const* lhs, char const* rhs, bool skip
 				if (*lhs != 's')
 				{
 					::utfToUniChar(rhs, ulhs);
-					return int('s') - int(toLower(ulhs));
+					return int(toLower(ulhs)) - int('s');
 				}
 			}
 
 			if (secondaryDiff == 0)
 			{
 				if (isUpper(ulhs) && isLower(urhs))
-					secondaryDiff = -1;
+					secondaryDiff = +1;
 				else if (isUpper(urhs) && isLower(ulhs))
-					secondaryDiff = 1;
+					secondaryDiff = -1;
 			}
 		}
 	}
@@ -847,7 +847,7 @@ sys::utf8::latin1::compare(char const* lhs, char const* rhs, bool noCase, bool s
 	while (true)
 	{
 		if (*lhs == '\0' || *rhs == '\0')
-			return int(Byte(*rhs)) - int(Byte(*lhs));
+			return int(Byte(*lhs)) - int(Byte(*rhs));
 
 		if (skipPunct)
 		{
@@ -886,7 +886,7 @@ sys::utf8::latin1::compare(char const* lhs, char const* rhs, bool noCase, bool s
 				::utfToUniChar(rhs, urhs);
 				if (noCase)
 					urhs = toLower(urhs);
-				return int(urhs) - int('s');
+				return int('s') - int(urhs);
 			}
 		}
 		else if (urhs == 0xdf)
@@ -896,7 +896,7 @@ sys::utf8::latin1::compare(char const* lhs, char const* rhs, bool noCase, bool s
 				::utfToUniChar(rhs, ulhs);
 				if (noCase)
 					ulhs = toLower(ulhs);
-				return int('s') - int(ulhs);
+				return int(ulhs) - int('s');
 			}
 		}
 	}
