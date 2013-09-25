@@ -43,8 +43,7 @@ clean:
 
 clean-man:
 	@echo "Clean `pwd`"
-	@rm -f $(SCRIPT).1.gz cbh2si4.1.gz
-	@rm -f $(SCRIPT).1.gz cdb2sci.1.gz
+	@rm -f $(SCRIPT).1.gz cbh2si4.1.gz cdb2sci.1.gz
 
 clean-properly:
 	clean-man

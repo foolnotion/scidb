@@ -47,7 +47,7 @@ depend:
 	@$(MAKE) -C tcl depend
 
 clean-subdirs:
-	@$(MAKE) -C man clean
+	@$(MAKE) -C man clean-properly
 	@$(MAKE) -C src clean
 	@$(MAKE) -C engines clean
 	@$(MAKE) -C tcl clean
