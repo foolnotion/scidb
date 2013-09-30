@@ -8,7 +8,7 @@ fi
 checkinstall --type=$type \
 	--pkgname="scidb-beta" \
 	--pkgversion="1.0" \
-	--pkgrelease="r958" \
+	--pkgrelease="r960" \
 	--pkglicense="GPL" \
 	--pkggroup="Application/Games" \
 	--pkgsource="http://sourceforge.net/projects/scidb" \
