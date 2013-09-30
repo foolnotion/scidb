@@ -164,6 +164,7 @@ array set force {
     zlib    no
     zziplib no
     expat   no
+    gdbm    no
 }
 
 array set environment {
@@ -1367,7 +1368,9 @@ proc SystemHasGdbm {} {
 #    Checks whether the system has the gdbm library installed,
 #
 proc checkGdbm {} {
-    global environment subdir package
+    global environment subdir package force
+
+    if {$force(expat)} { return 0 }
 
     if {[string first "libgdbm." $environment(LDFLAGS)] >= 0} {
         return
@@ -2080,6 +2083,7 @@ proc usage {rc} {
     puts "  --force-bundled-zlib       \[default=no\]"
     puts "  --force-bundled-zziplib    \[default=no\]"
     puts "  --force-bundled-expat      \[default=no\]"
+    puts "  --force-bundled-gdbm       \[default=no\]"
     puts ""
     puts "Optional Features:"
     puts "  --disable-FEATURE          do not include FEATURE (same as --enable-FEATURE=no)"
