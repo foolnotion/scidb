@@ -40,6 +40,7 @@ public:
 
 	unsigned countMatches() const;
 	unsigned matchPosition(unsigned i) const;
+
 	mstl::string const& title() const;
 
 	bool parse(char const* document, unsigned length, char const* search, unsigned searchLen);

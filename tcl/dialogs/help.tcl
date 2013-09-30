@@ -91,7 +91,7 @@ array set Priv {
 	matchCase		no
 	entireWord		no
 	titleOnly		no
-	currentOnly		no
+	currentPage		no
 	latinligatures	no
 	minsize:tree	300
 	minsize:html	400
@@ -473,6 +473,17 @@ proc SetupPieceLetters {} {
 			"<span class='piece'>&#x265e;</span>" [string tolower [lindex $letters 4]] \
 			"<span class='piece'>&#x265f;</span>" [string tolower [lindex $letters 5]] \
 		]
+		if {$lang eq "en"} {
+			lappend Priv(pieceletters) \
+				"<span class='cqlpiece'>&#x2b1c;</span>" A \
+				"<span class='cqlpiece'>&#x2b1b;</span>" a \
+				"<span class='cqlpiece'>&#x25b3;</span>" M \
+				"<span class='cqlpiece'>&#x25b2;</span>" m \
+				"<span class='cqlpiece'>&#x25bd;</span>" I \
+				"<span class='cqlpiece'>&#x25bc;</span>" i \
+				"<span class='cqlpiece'>&#x25e8;</span>" U \
+				;
+		}
 	}
 }
 
@@ -884,7 +895,7 @@ proc BuildFrame {w} {
 		;
 	ttk::checkbutton $top.current \
 		-textvariable [namespace parent]::mc::CurrentPageOnly \
-		-variable [namespace parent]::Priv(currentOnly) \
+		-variable [namespace parent]::Priv(currentPage) \
 		;
 
 	grid $top.search  -row 0 -column 0 -sticky ew
@@ -922,9 +933,9 @@ proc Search {t} {
 	if {[string length $search] == 0} { return }
 
 	lappend options -max 50
-	if {!$Priv(matchCase)}	{ lappend options -noCase }
-	if {$Priv(entireWord)}	{ lappend options -entireWord }
-	if {$Priv(titleOnly)}	{ lappend options -titleOnly }
+	if {!$Priv(matchCase)}	{ lappend options -nocase }
+	if {$Priv(entireWord)}	{ lappend options -entireword }
+	if {$Priv(titleOnly)}	{ lappend options -titleonly }
 
 	array unset Priv match:*
 	set lang [[namespace parent]::helpLanguage]
@@ -934,7 +945,7 @@ proc Search {t} {
 	set activate 1
 	::log::open [set [namespace parent]::mc::Help]
 
-	if {$Priv(currentOnly)} {
+	if {$Priv(currentPage)} {
 		set files [list $Priv(current:file)]
 	} else {
 		set files [glob -nocomplain -directory $directory *.html]
@@ -958,16 +969,25 @@ proc Search {t} {
 				set exceededMsg 1
 			}
 			if {[llength $positions] > 0} {
-				if {[string length $title] == 0} { set title [FindTitle $file $Contents] }
-				if {[string length $title] > 0} {
-					lappend results [list [llength $positions] $path $positions $title $search]
+				if {$Priv(currentPage)} {
+					set number 0
+					foreach pos $positions {
+						lappend results [list 1 $path $positions [incr number] $search]
+					}
+				} else {
+					if {[string length $title] == 0} { set title [FindTitle $file $Contents] }
+					if {[string length $title] > 0} {
+						lappend results [list [llength $positions] $path $positions $title $search]
+					}
 				}
 			}
 		}
 	}
 
 	::log::close
-	set results [lsort -integer -decreasing -index 0 $results]
+	if {!$Priv(currentPage)} {
+		set results [lsort -integer -decreasing -index 0 $results]
+	}
 	$t clear
 
 	if {[llength $results] == 0} {
@@ -980,7 +1000,9 @@ proc Search {t} {
 		set count 0
 		foreach match $results {
 			set tag "t-$count"
-			$t add 0 -text [lindex $match 3] -tag $tag
+			set title [lindex $match 3]
+			if {$Priv(currentPage)} { set title "#$title" }
+			$t add 0 -text $title -tag $tag
 			set Priv(match:$tag) $match
 			incr count
 		}
@@ -1894,7 +1916,12 @@ proc Load {file {wantedFile {}} {match {}} {position {}} {reload no}} {
 		}
 	} else {
 		if {[llength $match]} {
-			SeeNode [$Priv(html) root]
+			set title [lindex $match 3]
+			if {[string is integer -strict $title]} {
+				Goto "_match__${title}_"
+			} else {
+				SeeNode [$Priv(html) root]
+			}
 		} else {
 			set remember [Goto $position]
 		}
@@ -1981,16 +2008,20 @@ proc Parse {file {wantedFile {}} {match {}} {position {}}} {
 		set match {}
 		set rc 0
 	} elseif {[llength $match]} {
-		lassign $match _ _ positions _ search
+		lassign $match _ _ positions title search
 
 		set len [string length $search]
 		set str $content
 		set content ""
 		set from 0
+		set useId [string is integer -strict $title]
+		set id 0
 
 		foreach pos $positions {
 			append content [string range $str $from [expr {$pos - 1}]]
-			append content "<span class='match'>"
+			append content "<span class='match'"
+			if {$useId} { append content " id='_match__[incr id]_'" }
+			append content ">"
 			append content [string range $str $pos [expr {$pos + $len - 1}]]
 			append content "</span>"
 			set from [expr {$pos + $len}]

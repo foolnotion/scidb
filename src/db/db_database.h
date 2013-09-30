@@ -167,6 +167,8 @@ public:
 	Time modified() const;
 	/// Returns time of creation.
 	Time created() const;
+	/// Returns time of creation.
+	uint32_t creationTime() const;
 	/// Returns statistic of database
 	Statistic const& statistic() const;
 	/// Returh maximal length of description.
@@ -303,8 +305,8 @@ public:
 	void setType(Type type);
 	/// Set variant of database games.
 	void setVariant(variant::Type variant);
-	/// Set description of database.
-	void setupDescription(mstl::string const& description);
+	/// Set description (and creation time) of database.
+	void setupDescription(mstl::string const& description, uint32_t creationTime = 0);
 	/// Change description of database.
 	void updateDescription(mstl::string const& description);
 	/// Set/unset read-only flag.

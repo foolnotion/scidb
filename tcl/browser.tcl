@@ -451,7 +451,7 @@ proc refresh {{unused -1}} {
 
 	foreach position [array names Active] {
 		variable ${position}::Vars
-		::pgn::setup::setupStyle browser $pos
+		::pgn::setup::setupStyle browser $position
 		::pgn::setup::configureText $Vars(frame)
 		::scidb::game::refresh $position -immediate
 	}

@@ -629,6 +629,7 @@ cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	int n = v.exportGames(	sys::file::internalName(filename),
 									encoding,
 									db.description(),
+									0,
 									type,
 									flags,
 									excludeIllegal ? ::db::copy::ExcludeIllegal : ::db::copy::AllGames,

@@ -231,6 +231,13 @@ MultiCursor::countGames() const
 }
 
 
+bool
+MultiCursor::setReadonly(bool flag)
+{
+	return m_leader->base().setReadonly(flag);
+}
+
+
 void
 MultiCursor::close()
 {

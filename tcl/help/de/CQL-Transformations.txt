@@ -54,8 +54,8 @@ Hauptdiagonalen.
 </table>
 
 <p>
-Beispielsweise ist die diagonale Spiegelung von <expr>[Aa][a-h1-2,f6,h7]</expr>
-gleich <expr>[Aa][a-b1-8,f6,g8]</expr>.
+Beispielsweise ist die diagonale Spiegelung von <expr>[&A;&a;][a-h1-2,f6,h7]</expr>
+gleich <expr>[&A;&a;][a-b1-8,f6,g8]</expr>.
 </p>
 
 <p>

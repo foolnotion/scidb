@@ -208,6 +208,7 @@ public:
 	unsigned exportGames(	mstl::string const& filename,
 									mstl::string const& encoding,
 									mstl::string const& description,
+									uint32_t creationTime,
 									db::type::ID type,
 									unsigned flags,
 									db::copy::Mode copyMode,

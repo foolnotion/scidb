@@ -53,8 +53,8 @@ each square in its square set about the main diagonal.
 </table>
 
 <p>
-For example, the diagonal flip of <expr>[Aa][a-h1-2,f6,h7]</expr> is
-<expr>[Aa][a-b1-8,f6,g8]</expr>.
+For example, the diagonal flip of <expr>[&A;&a;][a-h1-2,f6,h7]</expr> is
+<expr>[&A;&a;][a-b1-8,f6,g8]</expr>.
 </p>
 
 <p>
@@ -393,7 +393,7 @@ c3 and a black queen on g3, or in which a white rook is on c3 and a black
 queen is on c7.
 </p>
 
-<verb id=":flip">
+<verb>
 (position &R;c3 &q;g3 <keyword>:flip</keyword>)
 </verb>
 

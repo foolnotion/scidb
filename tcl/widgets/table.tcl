@@ -998,6 +998,7 @@ proc Configure {table w h} {
 	set Vars(labelHeight) $hdrHeight
 	setHeight $table $height
 	after idle [namespace code [list UpdateColunnWidths $table]]
+	event generate $table <<TableConfigured>>
 }
 
 

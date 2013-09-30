@@ -1,1 +1,15 @@
-fc-cache -f /usr/local/share/fonts/truetype/Scidb
+if [ -d /usr/local/share/fonts/truetype/Scidb ]; then
+	fontdir=/usr/local/share/fonts/truetype/Scidb
+else
+	# On Fedora /usr/local/share/fonts/truetype/ cannot be used
+	fontdir=/usr/share/fonts/truetype/Scidb
+fi
+remove=no
+if [ ! -d $fontdir ]; then
+	mkdir -p $fontdir
+	remove=yes
+fi
+fc-cache -f $fontdir
+if [ "$remove" = "yes" ]; then
+	rmdir $fontdir
+fi

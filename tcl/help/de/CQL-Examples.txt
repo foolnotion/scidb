@@ -184,7 +184,7 @@ und verwandelt sich dann.
   (position
     <cql>position:initial</cql>
     <cql>position:tagmatch</cql> bauer &P;?2
-    <cql>position:gappedsequence</cql> ((position <cql>position:movefrom</cql> $bauer <cql>position:promote</cql> U))
+    <cql>position:gappedsequence</cql> ((position <cql>position:movefrom</cql> $bauer <cql>position:promote</cql> &U;))
     <cql>position:flipcolor</cql>))
 </verbatim>
 
@@ -202,7 +202,7 @@ Partie.
 
 <verbatim>
 (match
-  <cql>match:forany</cql> schachgeber A
+  <cql>match:forany</cql> schachgeber &A;
   (position
     <cql>position:btm</cql>
     <cql>position:attackcount</cql> $schachgeber &k; 1
@@ -228,7 +228,7 @@ Viertes Beispiel: ein Springer gibt Matt mit seinem ersten Zug.
 <h2 id="more">Noch mehr Beispiele</h2>
 
 <verbatim>
-<comment>; Finde isolierte Triplebauern auf verbundenen Feldern</comment>
+<comment>; Finde isolierte Trippelbauern auf verbundenen Feldern</comment>
 <comment>; Beispiel: 8/p4pk1/8/2R1P1N1/6P1/6P1/2P2KP1/1r5r w - - 0 1</comment>
 
 (match
@@ -274,7 +274,7 @@ Viertes Beispiel: ein Springer gibt Matt mit seinem ersten Zug.
 (match
   (position
     <cql>position:flipcolor</cql>            <comment>; Jede Farbe</comment>
-    <cql>position:attackcount</cql> &k; [A.] 0 <comment>; König ist von eigenen Figuren umzingelt</comment>
+    <cql>position:attackcount</cql> &k; [&A;.] 0 <comment>; König ist von eigenen Figuren umzingelt</comment>
     <cql>position:mate</cql>))               <comment>; und ist matt</comment>
 </verbatim>
 

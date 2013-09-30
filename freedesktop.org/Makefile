@@ -150,65 +150,71 @@ uninstall-desktop-menu-entry:
 	fi
 
 install-desktop-database:
-	@if [ -z "$(XDGDIR)" ]; then                                         \
-		echo "Update desktop databases";                                  \
-		if [ "`id -u`" -eq 0 ]; then                                      \
-			xdgdir=/usr/share;                                             \
-			if [ -z "$(XDG_DATA_DIRS)" ]; then                             \
-				if [ -f /usr/local/share/applications/mimeapps.list ]; then \
-					xdgdir=/usr/local/share;                                 \
-				fi;                                                         \
-			else                                                           \
-				for p in ${XDG_DATA_HOME//:/ }; do                          \
-					if [ -d $$p/applications ] ; then                        \
-						xdgdir=$$p;                                           \
-						break;                                                \
-					fi;                                                      \
-				done;                                                       \
-			fi;                                                            \
-		else                                                              \
-			xdgdir=~/.local/share;                                         \
-			if [ ! -z "$(XDG_DATA_HOME)" ]; then                           \
-				if [ -d $(XDG_DATA_HOME) ]; then                            \
-					xdgdir=$(XDG_DATA_HOME);                                 \
-				fi;                                                         \
-			fi;                                                            \
-		fi;                                                               \
-		appdir=$$xdgdir/applications;                                     \
-		./update-mimeapps.list.tcl add $$appdir/mimeapps.list;            \
-		update-desktop-database $$appdir 2>/dev/null;                     \
-	else                                                                 \
-		echo "SKIP - Update desktop databases";                           \
+	@if [ -z "$(XDGDIR)" ]; then                                            \
+		if [ -z "`type update-desktop-database 2>/dev/null`" ]; then         \
+			echo "Cannot install desktop files";                              \
+		else                                                                 \
+			echo "Update desktop databases";                                  \
+			if [ "`id -u`" -eq 0 ]; then                                      \
+				xdgdir=/usr/share;                                             \
+				if [ -z "$(XDG_DATA_DIRS)" ]; then                             \
+					if [ -f /usr/local/share/applications/mimeapps.list ]; then \
+						xdgdir=/usr/local/share;                                 \
+					fi;                                                         \
+				else                                                           \
+					for p in ${XDG_DATA_HOME//:/ }; do                          \
+						if [ -d $$p/applications ] ; then                        \
+							xdgdir=$$p;                                           \
+							break;                                                \
+						fi;                                                      \
+					done;                                                       \
+				fi;                                                            \
+			else                                                              \
+				xdgdir=~/.local/share;                                         \
+				if [ ! -z "$(XDG_DATA_HOME)" ]; then                           \
+					if [ -d $(XDG_DATA_HOME) ]; then                            \
+						xdgdir=$(XDG_DATA_HOME);                                 \
+					fi;                                                         \
+				fi;                                                            \
+			fi;                                                               \
+			appdir=$$xdgdir/applications;                                     \
+			./update-mimeapps.list.tcl add $$appdir/mimeapps.list;            \
+			update-desktop-database $$appdir 2>/dev/null;                     \
+		fi;                                                                  \
+	else                                                                    \
+		echo "SKIP - Update desktop databases";                              \
 	fi
 
 uninstall-desktop-database:
-	@if [ -z "$(XDGDIR)" ]; then                                         \
-		echo "Update desktop databases";                                  \
-		if [ "`id -u`" -eq 0 ]; then                                      \
-			xdgdir=/usr/share;                                             \
-			if [ -z "$(XDG_DATA_DIRS)" ]; then                             \
-				if [ -f /usr/local/share/applications/mimeapps.list ]; then \
-					xdgdir=/usr/local/share;                                 \
-				fi;                                                         \
-			else                                                           \
-				for p in ${XDG_DATA_HOME//:/ }; do                          \
-					if [ -d $$p/applications ] ; then                        \
-						xdgdir=$$p;                                           \
-						break;                                                \
-					fi;                                                      \
-				done;                                                       \
-			fi;                                                            \
-		else                                                              \
-			xdgdir=~/.local/share;                                         \
-			if [ ! -z "$(XDG_DATA_HOME)" ]; then                           \
-				if [ -d $(XDG_DATA_HOME) ]; then                            \
-					xdgdir=$(XDG_DATA_HOME);                                 \
-				fi;                                                         \
-			fi;                                                            \
-		fi;                                                               \
-		appdir=$$xdgdir/applications;                                     \
-		./update-mimeapps.list.tcl remove $$appdir/mimeapps.list;         \
-		update-desktop-database $$appdir 2>/dev/null;                     \
+	@if [ -z "$(XDGDIR)" ]; then                                            \
+		if [ -n "`type update-desktop-database 2>/dev/null`" ]; then         \
+			echo "Update desktop databases";                                  \
+			if [ "`id -u`" -eq 0 ]; then                                      \
+				xdgdir=/usr/share;                                             \
+				if [ -z "$(XDG_DATA_DIRS)" ]; then                             \
+					if [ -f /usr/local/share/applications/mimeapps.list ]; then \
+						xdgdir=/usr/local/share;                                 \
+					fi;                                                         \
+				else                                                           \
+					for p in ${XDG_DATA_HOME//:/ }; do                          \
+						if [ -d $$p/applications ] ; then                        \
+							xdgdir=$$p;                                           \
+							break;                                                \
+						fi;                                                      \
+					done;                                                       \
+				fi;                                                            \
+			else                                                              \
+				xdgdir=~/.local/share;                                         \
+				if [ ! -z "$(XDG_DATA_HOME)" ]; then                           \
+					if [ -d $(XDG_DATA_HOME) ]; then                            \
+						xdgdir=$(XDG_DATA_HOME);                                 \
+					fi;                                                         \
+				fi;                                                            \
+			fi;                                                               \
+			appdir=$$xdgdir/applications;                                     \
+			./update-mimeapps.list.tcl remove $$appdir/mimeapps.list;         \
+			update-desktop-database $$appdir 2>/dev/null;                     \
+		fi;                                                                  \
 	fi
 
 install-desktop-menu: prepare-install-desktop install-app-icons install-desktop-menu-entry \

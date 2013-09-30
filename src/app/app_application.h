@@ -236,6 +236,8 @@ public:
 	int getLastGameIndex(unsigned position = InvalidPosition) const;
 	int getRandomGameIndex(unsigned position = InvalidPosition) const;
 
+	MultiCursor& multiCursor();
+	MultiCursor const& multiCursor() const;
 	MultiCursor& multiCursor(mstl::string const& name);
 	MultiCursor const& multiCursor(mstl::string const& name) const;
 	db::MultiBase& multiBase(mstl::string const& name);
@@ -288,7 +290,7 @@ public:
 						unsigned index,
 						checksum_t crcIndex,
 						checksum_t crcMoves);
-	bool setReadonly(Cursor& cursor, bool flag);
+	bool setReadonly(MultiCursor& cursor, bool flag);
 	void setIsWriting(mstl::string const& name = mstl::string::empty_string);
 	db::save::State writeGame(	unsigned position,
 										mstl::string const& filename,

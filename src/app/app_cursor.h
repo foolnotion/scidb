@@ -86,6 +86,9 @@ public:
 	db::format::Type format() const;
 	db::variant::Type variant() const;
 
+	MultiCursor const& multiCursor() const;
+	MultiCursor& multiCursor();
+
 	/// Count number of loaded items.
 	unsigned count(db::table::Type type) const;
 	/// Return maximal view number

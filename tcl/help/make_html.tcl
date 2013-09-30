@@ -156,6 +156,14 @@ set HtmlMapping {
 	&b;				{<span class='piece'>&#x265d;</span>}
 	&n;				{<span class='piece'>&#x265e;</span>}
 	&p;				{<span class='piece'>&#x265f;</span>}
+
+	&A;				{<span class='cqlpiece'>&#x2b1c;</span>}
+	&a;				{<span class='cqlpiece'>&#x2b1b;</span>}
+	&M;				{<span class='cqlpiece'>&#x25b3;</span>}
+	&m;				{<span class='cqlpiece'>&#x25b2;</span>}
+	&I;				{<span class='cqlpiece'>&#x25bd;</span>}
+	&i;				{<span class='cqlpiece'>&#x25bc;</span>}
+	&U;				{<span class='cqlpiece'>&#x25e8;</span>}
 }
 
 switch [tk windowingsystem] {

@@ -1,4 +1,10 @@
-fc-cache -f /usr/local/share/fonts/truetype/Scidb
+if [ -d /usr/local/share/fonts/truetype/Scidb ]; then
+	fontdir=/usr/local/share/fonts/truetype/Scidb
+else
+	# On Fedora /usr/local/share/fonts/truetype/ cannot be used
+	fontdir=/usr/share/fonts/truetype/Scidb
+fi
+fc-cache -f $fontdir
 cd /usr/local/share/scidb-beta/freedesktop.org
 chmod 0555 update-mimeapps.list.tcl
 make -f Makefile install-mime

@@ -102,6 +102,8 @@ public:
 	void setClipbase();
 	/// Mark this database as a scratchbase.
 	void setScratchbase();
+	/// Change readonly flag.
+	bool setReadonly(bool flag);
 	/// Close all databases.
 	void close();
 	/// Change the variant; requires an empty database.

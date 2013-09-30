@@ -25,14 +25,15 @@
 #	- option -gridsize added; in this case option -minsize is declaring
 #    the base size
 #
-# Bugs:
+# Issues:
 #	- option "-opaqueresize" will be ignored (always on)
 #	- "-cursor" option should not be changed with "configure"
 #	- the cursor of the panes should not be set to "" after
 #	  they are added to the paned window
 #
 # Why not using ttk::panedwindow?
-#	- the design is a bit halfhearted (.e.g. no -minsize option)
+#	- the design is quite halfhearted, for example no -minsize option, so
+#    this widget is somewhat useless
 # ======================================================================
 
 package provide panedwindow 1.0
@@ -337,16 +338,17 @@ proc MoveSash {w index x y offs} {
 	set cy [expr {$y - $offs}]
 
 	set pane [lindex $panes $index]
+	set gridsize $GridSize($pane)
 
-	if {$GridSize($pane) > 1} {
+	if {$gridsize > 1} {
 		lassign [$w sash coord $index] x1 y1
 
 		if {[string match h* [$w cget -orient]]} {
-			set fx [expr {($cx - $x1 - $GridSize($pane)/2)/$GridSize($pane)}]
-			set cx [expr {$x1 + $fx*$GridSize($pane)}]
+			set fx [expr {($cx - $x1 - $gridsize/2)/$gridsize}]
+			set cx [expr {$x1 + $fx*$gridsize}]
 		} else {
-			set fy [expr {($cy - $y1 + $GridSize($pane)/2)/$GridSize($pane)}]
-			set cy [expr {$y1 + $fy*$GridSize($pane)}]
+			set fy [expr {($cy - $y1 + $gridsize/2)/$gridsize}]
+			set cy [expr {$y1 + $fy*$gridsize}]
 		}
 	}
 
@@ -357,7 +359,7 @@ proc MoveSash {w index x y offs} {
 
 	$w sash place $index $cx $cy
 
-	if {[string match h* [$w cget -orient]]} {
+	if {[string index [$w cget -orient] 0] == "h"} {
 		if {$index > 0} {
 			lassign [$w sash coord [expr {$index - 1}]] sx sy
 			incr sx $sashSize

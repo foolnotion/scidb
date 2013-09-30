@@ -675,6 +675,7 @@ unsigned
 View::exportGames(mstl::string const& filename,
 						mstl::string const& encoding,
 						mstl::string const& description,
+						uint32_t creationTime,
 						type::ID type,
 						unsigned flags,
 						copy::Mode copyMode,
@@ -700,7 +701,7 @@ View::exportGames(mstl::string const& filename,
 									storage::OnDisk,
 									m_cursor.m_db->variant(),
 									type);
-		destination.setupDescription(description);
+		destination.setupDescription(description, creationTime);
 		progress.message("write-game");
 
 		WriteGuard guard(m_app, destination);
@@ -732,7 +733,7 @@ View::exportGames(mstl::string const& filename,
 									storage::OnDisk,
 									m_cursor.m_db->variant(),
 									type);
-		destination.setupDescription(description);
+		destination.setupDescription(description, creationTime);
 
 		WriteGuard guard(m_app, destination);
 

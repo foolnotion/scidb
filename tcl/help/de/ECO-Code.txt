@@ -26,7 +26,7 @@ TITLE ECO-Code
 Mit der Bezeichnung ECO-Code (Encyclopedia of Chess Openings, deutsch auch ECO-Schlüssel)
 wird ein international verwendetes System zur Systematisierung von Eröffnungen des
 Schachspiels bezeichnet. Die Eröffnungsvarianten werden durchwegs mit Symbolen dargestellt
-und bewertet, auf Worte wird verzichtet, so dass die Ausgaben international verständlich sind.
+und bewertet, auf Worte wird verzichtet, so daß die Ausgaben international verständlich sind.
 </p>
 
 <ul>

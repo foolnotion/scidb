@@ -41,7 +41,7 @@ Beispiel:
 </p>
 
 <verb>
-(position <keyword>:relation</keyword> (<cql>relation:missingpiececount</cql> A 1 unlimited))
+(position <keyword>:relation</keyword> (<cql>relation:missingpiececount</cql> &A; 1 unlimited))
 </verb>
 
 <p>
@@ -129,7 +129,7 @@ beeinflußt den Figurenbezeichner dieses Schlüsselworts.
 
 <p>
 Der Standardfigurenbezeichner für <cql>:missingpiececount</cql> ist
-<code>U</code>, und der Standardbereich ist Null. D.h. standardmäßig darf
+<code>&U;</code>, und der Standardbereich ist Null. D.h. standardmäßig darf
 es keine fehlenden Figuren geben.
 </p>
 
@@ -151,7 +151,7 @@ beeinflußt den Figurenbezeichner dieses Schlüsselworts.
 
 <p>
 Der Standardfigurenbezeichner für <cql>:newpiececount</cql> ist
-<code>U</code>, und der Standardbereich ist Null. D.h. standardmäßig darf
+<code>&U;</code>, und der Standardbereich ist Null. D.h. standardmäßig darf
 es keine zusätzlichen Figuren geben.
 </p>
 

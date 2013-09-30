@@ -41,7 +41,7 @@ Example:
 </p>
 
 <verb>
-(position <keyword>:relation</keyword> (<cql>relation:missingpiececount</cql> A 1 unlimited))
+(position <keyword>:relation</keyword> (<cql>relation:missingpiececount</cql> &A; 1 unlimited))
 </verb>
 
 <p>
@@ -124,7 +124,7 @@ affect the piece designator in this keyword.
 
 <p>
 The default piece designator for <cql>:missingpiececount</cql> is
-<code>U</code> and the default range is zero. That is, by default there can
+<code>&U;</code> and the default range is zero. That is, by default there can
 be no missing pieces. 
 </p>
 
@@ -141,7 +141,7 @@ containing position list affect the piece designator in this keyword.
 </p>
 
 <p>
-The default piece designator for <cql>:newiececount</cql> is <code>U</code> and
+The default piece designator for <cql>:newiececount</cql> is <code>&U;</code> and
 the default range is zero. That is, by default there can be no new pieces. 
 </p>
 

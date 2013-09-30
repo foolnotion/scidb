@@ -326,7 +326,7 @@ proc build {w width height} {
 	set Vars(cmd:add-new-game)			[namespace code [list SaveGame add]]
 	set Vars(cmd:replace-game)			[namespace code [list SaveGame replace]]
 	set Vars(cmd:replace-moves)		[namespace code [list SaveGame moves]]
-	set Vars(cmd:trial-mode)			::game::flipTrialMode
+	set Vars(cmd:trial-mode)			[namespace parent]::pgn::flipTrialMode
 
 	LanguageChanged
 	BuildBoard $canv

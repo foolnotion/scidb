@@ -458,7 +458,7 @@ proc openBase {parent file byUser args} {
 		return [::remote::busyOperation { OpenArchive $parent $file $byUser {*}$args }]
 	}
 
-	array set opts { -readonly -1 -encoding "" -switchToBase 1 }
+	array set opts { -readonly -1 -encoding "" -switchToBase 1 -variant Undetermined }
 	array set opts $args
 
 	if {$opts(-encoding) eq $::encoding::mc::AutoDetect} {
@@ -566,6 +566,11 @@ proc openBase {parent file byUser args} {
 	}
 
 	if {$opts(-switchToBase)} { Switch $file }
+
+	if {$opts(-variant) ne "Undetermined"} {
+		 SwitchVariant $opts(-variant)
+	}
+
 	return 1
 }
 

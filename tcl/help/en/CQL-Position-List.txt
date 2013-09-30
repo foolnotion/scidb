@@ -277,7 +277,7 @@ Examples:
       <comment>; is attacked once and is in mate</comment>
       (position
         <cql>position:attackcount</cql> &k; . 8
-        <cql>position:attackcount</cql> A &k; 1
+        <cql>position:attackcount</cql> &A; &k; 1
         <cql>position:mate</cql>
         <cql>position:btm</cql>)
       <comment>; check that no neighbor of the black king is</comment>
@@ -285,7 +285,7 @@ Examples:
       (position
         <keyword>:not</keyword>
         <cql>position:attackcount</cql> &k; .e4 1
-        <cql>position:attackcount</cql> A .e4 2 unlimited
+        <cql>position:attackcount</cql> &A; .e4 2 unlimited
         <cql>position:shift</cql>))))
 </verbatim>
 
@@ -308,7 +308,7 @@ is equivalent to
 </p>
 
 <verb>
-(position [a&Q;&B;&N;&P;&K;.]a3)
+(position [&a;&Q;&B;&N;&P;&K;.]a3)
 </verb>
 
 <h3 id="position:or">:or</h3>
@@ -428,9 +428,9 @@ Normally this is equivalent to following query:
 <verbatim>
 <cql>position:or</cql> (
   <comment>; black king only</comment>
-  (<cql>position:piececount</cql> a 1)
+  (<cql>position:piececount</cql> &a; 1)
   <comment>; black king and black minor piece only</comment>
-  (<cql>position:piececount</cql> a 2 <cql>position:piececount</cql> i 1))
+  (<cql>position:piececount</cql> &a; 2 <cql>position:piececount</cql> &i; 1))
 </verbatim>
 
 <p>
@@ -641,12 +641,12 @@ query:
       <cql>position:piececount</cql> &Q; 1
       <cql>position:piececount</cql> &q; 1
       <cql>position:piececount</cql> [&R;&r;] 0
-      <cql>position:piececount</cql> I 0 1
-      <cql>position:piececount</cql> i 0 1)
+      <cql>position:piececount</cql> &I; 0 1
+      <cql>position:piececount</cql> &i; 0 1)
     (position
       <cql>position:piececount</cql> &Q; 1
       <cql>position:piececount</cql> &R; 0
-      <cql>position:piececount</cql> I 0 1
+      <cql>position:piececount</cql> &I; 0 1
       <cql>position:piececount</cql> &q; 0
       <cql>position:power</cql> [&r;&b;&n;] 0 16
       <cql>position:flipcolor</cql>)))
@@ -855,14 +855,14 @@ Normally this is equivalent to this query:
 <verbatim>
 <cql>position:or</cql> (
   <comment>; king versus king</comment>
-  (<cql>position:piececount</cql> U 2)
+  (<cql>position:piececount</cql> &U; 2)
   <comment>; king and minor piece versus king</comment>
-  (<cql>position:piececount</cql> U 3 <cql>position:piececount</cql> [Ii] 1)
+  (<cql>position:piececount</cql> &U; 3 <cql>position:piececount</cql> [&I;&i;] 1)
   <comment>; king and bishop versus king and bishop with the bishops on the same color</comment>
-  (<cql>position:piececount</cql> U 4
+  (<cql>position:piececount</cql> &U; 4
    <cql>position:piececount</cql> [&B;&b;][a1,a3,a5,a7,b2,b4,b6,b8,c1,c3,c5,c7,d2,d4,
      d6,d8,e1,e3,e5,e7,f2,f4,f6,f8,g1,g3,g5,g7,h2,h4,h6,h8] 2)
-  (<cql>position:piececount</cql> U 4
+  (<cql>position:piececount</cql> &U; 4
    <cql>position:piececount</cql> [&B;&b;][a2,a4,a6,a8,b1,b3,b5,b7,c2,c4,c6,c8,d1,d3,
      d5,d7,e2,e4,e6,e8,f1,f3,f5,f7,g2,g4,g6,g8,h1,h3,h5,h7] 2))
 </verbatim>
@@ -939,9 +939,9 @@ Normally this is equivalent to following query:
 <verbatim>
 <cql>position:or</cql> (
   <comment>; white king only</comment>
-  (<cql>position:piececount</cql> A 1)
+  (<cql>position:piececount</cql> &A; 1)
   <comment>; white king and white minor piece only</comment>
-  (<cql>position:piececount</cql> A 2 <cql>position:piececount</cql> I 1))
+  (<cql>position:piececount</cql> &A; 2 <cql>position:piececount</cql> &I; 1))
 </verbatim>
 
 <p>
@@ -1141,7 +1141,7 @@ Examples:
 </p>
 
 <verb>
-(position <keyword>:attackcount</keyword> A &k; 2)
+(position <keyword>:attackcount</keyword> &A; &k; 2)
 </verb>
 
 <p>
@@ -1151,7 +1151,7 @@ Matches any position in which white has a double attack on the black king
 </p>
 
 <verb>
-(position <keyword>:attackcount</keyword> A &k; 2 <cql>position:flipcolor</cql>)
+(position <keyword>:attackcount</keyword> &A; &k; 2 <cql>position:flipcolor</cql>)
 </verb>
 
 <p>
@@ -1160,7 +1160,7 @@ Matches any position in which a king is under double attack
 </p>
 
 <verb>
-(position <keyword>:attackcount</keyword> A .h3 1)
+(position <keyword>:attackcount</keyword> &A; .h3 1)
 </verb>
 
 <p>
@@ -1294,7 +1294,7 @@ Examples:
 </p>
 
 <verb>
-(position <keyword>:power</keyword> a 6)
+(position <keyword>:power</keyword> &a; 6)
 </verb>
 
 <p>
@@ -1303,7 +1303,7 @@ board equals 6.
 </p>
 
 <verb>
-(position <keyword>:power</keyword> A[a-h1-4] 10 25)
+(position <keyword>:power</keyword> &A;[a-h1-4] 10 25)
 </verb>
 
 <p>
@@ -1327,7 +1327,7 @@ Examples:
 </p>
 
 <verb>
-(position <keyword>:powerdifference</keyword> U 4)
+(position <keyword>:powerdifference</keyword> &U; 4)
 </verb>
 
 <p>
@@ -1359,7 +1359,7 @@ This matches positions in which black is up at least an exchange.
     <cql>position:sequence</cql> (
       (position
         <keyword>:powerdifference</keyword> [&Q;&q;] unlimited -9
-        <keyword>:powerdifference</keyword> U unlimited -9)
+        <keyword>:powerdifference</keyword> &U; unlimited -9)
       (position <keyword>:powerdifference</keyword> [&Q;&q;] unlimited -9)
       (position <keyword>:powerdifference</keyword> [&Q;&q;] unlimited -9)
       (position <keyword>:powerdifference</keyword> [&Q;&q;] unlimited -9)
@@ -1471,7 +1471,7 @@ Examples:
 </p>
 
 <verb>
-(position <keyword>:rayattack</keyword> (A a &k;))
+(position <keyword>:rayattack</keyword> (&A; &a; &k;))
 </verb>
 
 <p>
@@ -1479,7 +1479,7 @@ Matches a position in which a black piece is pinned to the black king.
 </p>
 
 <verb>
-(position <keyword>:rayattack</keyword> (Ad5 a [&r;&k;][a-h1-4]) 3)
+(position <keyword>:rayattack</keyword> (&A;d5 &a; [&r;&k;][a-h1-4]) 3)
 </verb>
 
 <p>
@@ -1489,7 +1489,7 @@ piece on d5 against either a black rook or king in the first four ranks.
 
 <verb>
 (position <cql>position:stalemate</cql> <keyword>:rayattack</keyword>
-(A a &k;) 2 8 <cql>position:flipcolor</cql>)
+(&A; &a; &k;) 2 8 <cql>position:flipcolor</cql>)
 </verb>
 
 <p>
@@ -1605,7 +1605,7 @@ Matches a position in which the next move is of a white rook on a3.
 </p>
 
 <verb>
-(position <keyword>:movefrom</keyword> U?8)
+(position <keyword>:movefrom</keyword> &U;?8)
 </verb>
 
 <p>
@@ -1664,7 +1664,7 @@ Examples:
 </p>
 
 <verb>
-(position <keyword>:moveto</keyword> U)
+(position <keyword>:moveto</keyword> &U;)
 </verb>
 
 <p>
@@ -2380,7 +2380,7 @@ Examples:
 </p>
 
 <verb>
-(position <keyword>:maxswapevaluation</keyword> A a 1 unlimited)
+(position <keyword>:maxswapevaluation</keyword> &A; &a; 1 unlimited)
 </verb>
 
 <p>
@@ -2459,7 +2459,7 @@ Examples:
 </p>
 
 <verb>
-<keyword>:moveevaluation</keyword> U ? depth 4 3.0 unlimited sidetomove
+<keyword>:moveevaluation</keyword> &U; ? depth 4 3.0 unlimited sidetomove
 </verb>
 
 <p>
@@ -2468,7 +2468,7 @@ This means that last move was (probably) a blunder.
 </p>
 
 <verb>
-<keyword>:moveevaluation</keyword> A a depth 4 unlimited -3.0 absolute
+<keyword>:moveevaluation</keyword> &A; &a; depth 4 unlimited -3.0 absolute
 </verb>
 
 <p>
@@ -2481,7 +2481,7 @@ Only capture moves were evaluated.
 (match
   (position <keyword>:moveevaluation</keyword> [&P;&p;] ?[?1,?8]
              unlimited 0.0 movetime 5000 absolute)
-  (position <cql>position:promotion</cql> U <cql>position:cut</cql>)))
+  (position <cql>position:promotion</cql> &U; <cql>position:cut</cql>)))
   (position <cql>position:preceding</cql>)
 </verbatim>
 

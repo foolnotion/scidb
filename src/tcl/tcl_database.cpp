@@ -1344,12 +1344,12 @@ cmdSet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case Cmd_Readonly:
 			if (objc == 4)
 			{
-				setResult(scidb->setReadonly(	scidb->cursor(stringFromObj(objc, objv, 2)),
+				setResult(scidb->setReadonly(	scidb->multiCursor(stringFromObj(objc, objv, 2)),
 														boolFromObj(objc, objv, 3)));
 			}
 			else
 			{
-				setResult(scidb->setReadonly(scidb->cursor(), boolFromObj(objc, objv, 2)));
+				setResult(scidb->setReadonly(scidb->multiCursor(), boolFromObj(objc, objv, 2)));
 			}
 			break;
 
@@ -1563,11 +1563,11 @@ getModified(char const* database = 0)
 
 
 static int
-getReadonly(char const* database, variant::Type variant)
+getReadonly(char const* database, variant::Type variant __attribute__((unused)))
 {
 	M_ASSERT(database == 0 || Scidb->contains(database, variant));
-	Cursor const& cursor = database ? Scidb->cursor(database, variant) : Scidb->cursor();
-	::tcl::setResult(cursor.database().isReadonly());
+	MultiCursor const& cursor = database ? Scidb->multiCursor(database) : Scidb->multiCursor();
+	::tcl::setResult(cursor.isReadonly());
 	return TCL_OK;
 }
 
@@ -4225,6 +4225,7 @@ cmdUpgrade(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		setResult(v.exportGames(sys::file::internalName(filename),
 										sys::utf8::Codec::utf8(),
 										db.description(),
+										db.creationTime(),
 										type,
 										0,
 										::db::copy::AllGames,

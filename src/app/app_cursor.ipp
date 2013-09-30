@@ -37,6 +37,8 @@ inline bool Cursor::hasTreeView() const			{ return m_treeView != -1; }
 inline int Cursor::treeViewIdentifier() const			{ return m_treeView; }
 inline unsigned Cursor::maxViewNumber() const			{ return m_viewList.size() - 1; }
 inline Cursor::SubscriberP Cursor::subscriber() const	{ return m_subscriber; }
+inline MultiCursor const& Cursor::multiCursor() const	{ return m_cursor; }
+inline MultiCursor& Cursor::multiCursor()					{ return m_cursor; }
 
 inline void Cursor::setReferenceBase(bool flag)	{ m_isRefBase = flag; }
 inline void Cursor::setActive(bool flag)			{ m_isActive = flag; }

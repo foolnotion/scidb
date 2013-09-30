@@ -575,6 +575,14 @@ proc scroll {args} {
 }
 
 
+proc flipTrialMode {} {
+	variable Vars
+
+	set Vars(current:[::scidb::game::current]) ""
+	::game::flipTrialMode
+}
+
+
 proc undo {} { Undo undo }
 proc redo {} { Undo redo }
 
@@ -1189,7 +1197,7 @@ proc ProcessGoto {position w key succKey} {
 
 	if {$Vars(current:$position) ne $key} {
 		::scidb::game::variation unfold
-		foreach k $Vars(next:$position) {#
+		foreach k $Vars(next:$position) {
 			$w tag configure $k -background [::colors::lookup $Colors(background)] }
 		set Vars(next:$position) [::scidb::game::next keys $position]
 		if {$Vars(active:$position) eq $key} { $w configure -cursor {} }
@@ -2172,7 +2180,7 @@ proc PopupMenu {parent position} {
 			-label " $mc::StopTrialMode" \
 			-image $::icon::16x16::delete \
 			-compound left \
-			-command ::game::flipTrialMode \
+			-command [namespace code flipTrialMode] \
 			-accel "$::mc::Key(Ctrl)-[set [namespace parent]::board::mc::Accel(trial-mode)]" \
 			;
 		$menu add separator

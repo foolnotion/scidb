@@ -77,10 +77,10 @@ proc openDialog {parent primary secondary} {
 			temporary		{}
 			clipbaseNo		-1
 			state				{}
-			checksum			0
 			view				-1
 			used:0			0
 			current			0
+			script			{}
 		}
 
 		foreach opt {indent:amount indent:max tabstop:1 tabstop:2 tabstop:3 tabstop:4} {
@@ -92,11 +92,16 @@ proc openDialog {parent primary secondary} {
 
 		tk::toplevel $dlg -class Dialog
 		wm withdraw $dlg
-		set preview [ttk::frame $dlg.preview -borderwidth 0 -takefocus 0]
-		set control [ttk::frame $dlg.control -borderwidth 0 -takefocus 0]
 
-		pack $control -fill both -side left
-		pack $preview -fill both -side left -expand true
+		set pw [panedwindow $dlg.main -orient horizontal -borderwidth 0 -opaqueresize true -sashwidth 6]
+#			$pw configure -background [::theme::getColor background]
+		::theme::configurePanedWindow $pw
+		pack $pw -fill both -expand yes
+
+		set control [ttk::frame $pw.control -borderwidth 0 -takefocus 0]
+		set preview [ttk::frame $pw.preview -borderwidth 0 -takefocus 0]
+		$pw add $control -sticky nsew -stretch never
+		$pw add $preview -sticky nsew -stretch always
 
 		::game::freeze $primary [namespace current]::mc::GameisLocked
 		::scidb::db::new $mergebaseName Undetermined [::application::database::lookupType Clipbase]
@@ -129,6 +134,7 @@ proc openDialog {parent primary secondary} {
 			-selectcmd [namespace code ShowGame] \
 		]
 		::bind $table <<TableCheckbutton>> [namespace code { TableCheckbutton %d }]
+		::bind $table <<TableConfigured>> [namespace code { TableConfigured %W }]
 		::scidb::db::subscribe gameList [namespace current]::Update {} $tb
 
 		set btns [ttk::frame $control.buttons -borderwidth 2 -relief ridge]
@@ -138,6 +144,7 @@ proc openDialog {parent primary secondary} {
 		grid rowconfigure $control 1 -weight 1
 		grid rowconfigure $control {0 2 4} -minsize $::theme::pady
 		grid columnconfigure $control {0} -minsize $::theme::padx
+		grid columnconfigure $control {1} -weight 1
 
 		set Priv(table) $tb
 
@@ -249,6 +256,10 @@ proc openDialog {parent primary secondary} {
 
 		### popup dialog ###########################################
 
+		update idletasks
+		$pw paneconfigure $control -minsize [winfo reqwidth $control]
+		$pw paneconfigure $preview -minsize 600
+
 		::widget::dialogButtons $dlg {cancel} -default save
 		::widget::dialogButtonAdd $dlg saveAs [namespace current]::mc::SaveAs \
 			$::icon::16x16::saveAs -position start
@@ -274,9 +285,9 @@ proc openDialog {parent primary secondary} {
 		::gametable::focus $Priv(table)
 		set Priv(selection) 0
 
-		after 10 [list gametable::select $Priv(table) 0]
-		after 10 [namespace code [list ShowGame "" "" $number ""]]
-		after 10 [namespace code UpdatePreview]
+		lappend Priv(script) [list gametable::select $Priv(table) 0]
+		lappend Priv(script) [namespace code [list ShowGame "" "" $number ""]]
+		lappend Priv(script) [namespace code UpdatePreview]
 	} elseif {$Priv(primary) != $primary} {
 		::dialog::error \
 			-parent $parent \
@@ -318,7 +329,8 @@ proc openDialog {parent primary secondary} {
 	::scidb::game::load $temporary $mergebaseName $variant $number
 	::scidb::game::langSet $temporary *
 	set Priv(used:$number) 1
-	::gametable::setState $Priv(table) $number check
+	set cmd [list ::gametable::setState $Priv(table) $number check]
+	if {[llength $Priv(games)] > 1} { {*}$cmd } else { lappend Priv(script) $cmd }
 	lappend Priv(games) $temporary
 	lappend Priv(temporary) $temporary
 	ConfigureUpdateButton
@@ -347,6 +359,17 @@ proc alreadyMerged {primary secondary} {
 	if {[winfo exists .mergeDialog] && $id2 in $Priv(secondaries)} { return 1 }
 
 	return 0
+}
+
+
+proc TableConfigured {t} {
+	variable Priv
+
+	foreach cmd $Priv(script) {
+		{*}$cmd
+	}
+
+	bind $t <<TableConfigured>> {#}
 }
 
 

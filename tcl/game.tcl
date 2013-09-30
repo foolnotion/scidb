@@ -1068,7 +1068,7 @@ proc openGame {parent index} {
 	set rc 1
 	set parent [winfo toplevel $parent]
 
-	if {[::application::database::openBase $parent $base no -encoding $encoding]} {
+	if {[::application::database::openBase $parent $base no -encoding $encoding -variant $variant]} {
 		if {$variant ni [::scidb::db::get variants $base]} {
 			::dialog::warning -buttons {ok} -parent $parent -message $mc::VariantHasChanged
 			set rc 0

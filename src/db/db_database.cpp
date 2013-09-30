@@ -1651,15 +1651,18 @@ Database::updateDescription(mstl::string const& description)
 
 
 void
-Database::setupDescription(mstl::string const& description)
+Database::setupDescription(mstl::string const& description, uint32_t creationTime)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(isMemoryOnly() || !isReadonly());
 	M_REQUIRE(isMemoryOnly() || isWritable());
 
-	if (m_description != description)
+	if (m_description != description || (creationTime && m_created != creationTime))
 	{
 		m_description = description;
+
+		if (creationTime)
+			m_created = creationTime;
 
 		if (m_codec->maxDescriptionLength() < m_description.size())
 			m_description.set_size(m_codec->maxDescriptionLength());

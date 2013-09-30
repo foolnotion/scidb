@@ -623,12 +623,12 @@ Decoder::decodeComment(MoveNode* node, unsigned length, move::Position position)
 						++i;
 					break;
 
-				case 0xa2: str.append(char(0x01)); useXml = true; break;
-				case 0xa3: str.append(char(0x02)); useXml = true; break;
-				case 0xa4: str.append(char(0x03)); useXml = true; break;
-				case 0xa5: str.append(char(0x04)); useXml = true; break;
-				case 0xa6: str.append(char(0x05)); useXml = true; break;
-				case 0xa7: str.append(char(0x06)); useXml = true; break;
+				case 0xa2: str.append(char(0x01)); useXml = true; break;		// King
+				case 0xa3: str.append(char(0x02)); useXml = true; break;		// Queen
+				case 0xa4: str.append(char(0x05)); useXml = true; break;		// Knight
+				case 0xa5: str.append(char(0x04)); useXml = true; break;		// Bishop
+				case 0xa6: str.append(char(0x03)); useXml = true; break;		// Rook
+				case 0xa7: str.append(char(0x06)); useXml = true; break;		// Pawn
 
 				case 0x82: nag = nag::Attack; break; 								// "->"
 				case 0x83: nag = nag::Initiative; break;							// "|^"

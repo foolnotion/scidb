@@ -95,13 +95,13 @@ These are the allowed piecetype designators:
   <p><b>Additional piecetype designators</b></p>
   <table>
     <tr><td><expr>.&emsp;</expr></td><td>empty square</td></tr>
-    <tr><td><expr>A&emsp;</expr></td><td>any white piece</td></tr>
-    <tr><td><expr>a&emsp;</expr></td><td>any black piece</td></tr>
-    <tr><td><expr>M&emsp;</expr></td><td>white major piece</td></tr>
-    <tr><td><expr>m&emsp;</expr></td><td>black major piece</td></tr>
-    <tr><td><expr>I&emsp;</expr></td><td>white minor piece</td></tr>
-    <tr><td><expr>i&emsp;</expr></td><td>black minor piece</td></tr>
-    <tr><td><expr>U&emsp;</expr></td><td>any piece at all</td></tr>
+    <tr><td><expr>&A;&emsp;</expr></td><td>any white piece</td></tr>
+    <tr><td><expr>&a;&emsp;</expr></td><td>any black piece</td></tr>
+    <tr><td><expr>&M;&emsp;</expr></td><td>white major piece</td></tr>
+    <tr><td><expr>&m;&emsp;</expr></td><td>black major piece</td></tr>
+    <tr><td><expr>&I;&emsp;</expr></td><td>white minor piece</td></tr>
+    <tr><td><expr>&i;&emsp;</expr></td><td>black minor piece</td></tr>
+    <tr><td><expr>&U;&emsp;</expr></td><td>any piece at all</td></tr>
     <tr><td><expr>?&emsp;</expr></td><td>any piece or an empty square</td></tr>
    </table>
    <p></p>

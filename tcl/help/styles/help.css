@@ -57,6 +57,12 @@ span.piece {
 	font-size: 90%;
 }
 
+span.cqlpiece {
+	font-weight: normal;
+	font-style: normal;
+	font-size: 120%;
+}
+
 span.awesome {
 	font-family: 'FontAwesome';
 	font-weight: normal;

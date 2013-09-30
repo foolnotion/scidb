@@ -313,7 +313,7 @@ proc ReleaseMenu {w unpost} {
 		-activebackground $Priv(arrowactivebackground) \
 		-image $Priv(arrow:icon:normal) \
 		;
-	if {[incr Locked -1] == 0} {
+	if {$Locked == 0 || [incr Locked -1] == 0} {
 		set Active ""
 		::tooltip::enable
 	}

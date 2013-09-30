@@ -1655,17 +1655,22 @@ proc MakeEmoticonMenu {w menu} {
 proc MakeSymbolMenu {w menu} {
 	variable NagSet
 	variable DingbatSet
+	variable Vars
 
 	set m [menu $menu.figurine -tearoff 0]
 	$menu add cascade -menu $m -label $mc::Figurine
 
+	set i 0
 	foreach {fig} {K Q R B N P} {
+		# TODO: only use accelerator if piece is ASCII symbols
+		set piece [lindex $::figurines::langSet($Vars(mc)) $i]
 		$m add command \
 			-font $::font::figurine(text:normal) \
 			-label [string map $::figurines::pieceMap $fig] \
+			-accelerator "$::mc::Key(Ctrl)-$::mc::Key(Shift)-$piece" \
 			-command [namespace code [list InsertFigurine $w $fig]] \
-			-columnbreak [expr {$fig eq "B"}] \
 			;
+		incr i
 	}
 
 	foreach type {prefix suffix} {

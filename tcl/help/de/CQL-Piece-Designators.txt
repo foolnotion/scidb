@@ -98,13 +98,13 @@ Dies sind die zul‰ssigen Figurenartbezeichner:
   <p><b>Zus‰tzliche Figurenartbezeichner</b></p>
   <table>
     <tr><td><expr>.&emsp;</expr></td><td>Leerfeld</td></tr>
-    <tr><td><expr>A&emsp;</expr></td><td>beliebige weiﬂe Figur</td></tr>
-    <tr><td><expr>a&emsp;</expr></td><td>beliebige schwarze Figur</td></tr>
-    <tr><td><expr>M&emsp;</expr></td><td>weiﬂe Schwerfigur</td></tr>
-    <tr><td><expr>m&emsp;</expr></td><td>schwarze Schwerfigur</td></tr>
-    <tr><td><expr>I&emsp;</expr></td><td>weiﬂe Leichtfigur</td></tr>
-    <tr><td><expr>i&emsp;</expr></td><td>schwarze Leichtfigur</td></tr>
-    <tr><td><expr>U&emsp;</expr></td><td>irgendeine Figur</td></tr>
+    <tr><td><expr>&A;&emsp;</expr></td><td>beliebige weiﬂe Figur</td></tr>
+    <tr><td><expr>&a;&emsp;</expr></td><td>beliebige schwarze Figur</td></tr>
+    <tr><td><expr>&M;&emsp;</expr></td><td>weiﬂe Schwerfigur</td></tr>
+    <tr><td><expr>&m;&emsp;</expr></td><td>schwarze Schwerfigur</td></tr>
+    <tr><td><expr>&I;&emsp;</expr></td><td>weiﬂe Leichtfigur</td></tr>
+    <tr><td><expr>&i;&emsp;</expr></td><td>schwarze Leichtfigur</td></tr>
+    <tr><td><expr>&U;&emsp;</expr></td><td>irgendeine Figur</td></tr>
     <tr><td><expr>?&emsp;</expr></td><td>irgendeine Figur oder ein Leerfeld</td></tr>
    </table>
    <p></p>

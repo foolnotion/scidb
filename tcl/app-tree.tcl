@@ -1513,7 +1513,6 @@ proc PopupMenu {table x y} {
 		-compound left \
 		;
 	::theme::configureCheckEntry $m
-	$m add separator
 	$m add checkbutton \
 		-label $mc::LockReferenceBase \
 		-variable [namespace current]::Options(base:lock) \

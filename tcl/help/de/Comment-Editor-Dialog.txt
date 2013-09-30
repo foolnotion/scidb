@@ -705,7 +705,7 @@ Wiederherstellungstext abweicht.
 
 <p>
 <menuitem>%::comment::mc::SwitchLanguage%</menuitem>
-Andere Sprache auswählen.
+Eine andere Sprache auswählen.
 </p>
 
 <p>
