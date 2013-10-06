@@ -466,6 +466,12 @@ proc shiftIsHeldDown? {state} {
 }
 
 
+proc altIsHeldDown? {state} {
+	variable AltMask
+	return [expr {$state & $AltMask}]
+}
+
+
 proc databasePath {file} {
 	variable Extensions
 

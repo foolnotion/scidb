@@ -89,8 +89,8 @@ Reihe.
 Eine <b>vertikale Spiegelungstransformation</b>, angewendet auf einen
 Figurenbezeichner, reflektiert jedes Feld auf das Feld gegenüber der
 vertikalen Halbierungslinie des Schachbretts. Beispielsweise ist die vertikale
-Spiegelung von <expr>Uf6</expr>, kennzeichnend eine Figur auf f6, gleich
-<expr>Uc6</expr>.
+Spiegelung von <expr>&U;f6</expr>, kennzeichnend eine Figur auf f6, gleich
+<expr>&U;c6</expr>.
 </p>
 
 <table width="100%" border="0">
@@ -110,7 +110,7 @@ Spiegelung von <expr>Uf6</expr>, kennzeichnend eine Figur auf f6, gleich
 Eine <b>horizontale Spiegelungstransformation</b>, angewendet auf einen
 Figurenbezeichner, reflektiert jedes Feld auf das Feld gegenüber der
 horizontalen Halbierungslinie des Schachbretts. Beispielsweise ist die horizontale
-Spiegelung von <expr>Uf6</expr> gleich <expr>Uf3</expr>.
+Spiegelung von <expr>&U;f6</expr> gleich <expr>&U;f3</expr>.
 </p>
 
 <table width="100%" border="0">

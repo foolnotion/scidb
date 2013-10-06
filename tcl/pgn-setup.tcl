@@ -183,6 +183,7 @@ array set DefaultOptions {
 	show:diagram		1
 	show:emoticon		1
 	show:opening		1
+	show:result			1
 	show:nagtext		1
 	indent:amount		25
 	indent:max			2
@@ -539,6 +540,7 @@ proc openSetupDialog {parent context position args} {
 
 	::scidb::game::unsubscribe pgn $position [namespace current]::UpdateDisplay
 	set Options(show:opening) 1
+	set Options(show:result) 1
 
 	if {[llength $Priv(color:attr)]} {
 		addToList [namespace current]::Recent($Priv(color:attr)) \
@@ -566,7 +568,8 @@ proc ApplyOptions {context position close} {
 	variable Priv
 
 	incr Priv(applied)
-	set show $Options(show:opening)
+	set show:opening $Options(show:opening)
+	set show:result $Options(show:result)
 
 	array set Options [array get New_Options]
 	array set Colors [array get New_Colors]
@@ -586,7 +589,8 @@ proc ApplyOptions {context position close} {
 	::font::registerFigurineFonts $context
 	::font::registerSymbolFonts $context
 
-	set Options(show:opening) $show
+	set Options(show:opening) $show:opening
+	set Options(show:result) $show:result
 	foreach cxt $ContextList { ::pgn::${cxt}::refresh yes }
 
 	if {$close} {
@@ -1424,6 +1428,7 @@ proc SelectionChanged {mw context position tag {blink yes}} {
 
 		Diagrams - Layout - MoveStyle {
 			set Options(show:opening) 0
+			set Options(show:result) 0
 			set Colors(background:nextmove) $Colors(background)
 			set data $Games([string tolower $tag])
 			set pane $tag 
@@ -1489,6 +1494,7 @@ proc SelectionChanged {mw context position tag {blink yes}} {
 			::dialog::choosefont::setup $dlg {*}$args
 			bind $dlg <<FontSelected>> [namespace code $cmd]
 			set Options(show:opening) 0
+			set Options(show:result) 0
 			set Options(show:moveinfo) 1
 			set data $Games(colors)
 			set pane Font
@@ -1498,6 +1504,8 @@ proc SelectionChanged {mw context position tag {blink yes}} {
 			set Options(spacing:paragraph) 0
 			set Options(style:column) 0
 			set Options(show:moveinfo) 1
+			set Options(show:opening) 1
+			set Options(show:result) 1
 
 			switch $tag {
 				start-position		{ set Priv(color:attr) foreground:opening }
@@ -1683,12 +1691,17 @@ proc Blink {context position compl} {
 					}
 					current {
 						set key [::scidb::game::position $position key]
-						$w tag configure $key -foreground [::colors::lookup $Colors($Priv(color:attr))]
+						set bg [::colors::lookup $Colors($Priv(color:attr))]
+						$w tag configure $key -foreground $bg
+						$w tag configure $key -background $bg
 					}
 					nextmove {
 						set keys [::scidb::game::next keys $position] 
+						set bg [::colors::lookup $Colors($Priv(color:attr))]
 						foreach key $keys {
-							$w tag configure $key -foreground [::colors::lookup $Colors($Priv(color:attr))] }
+							$w tag configure $key -background $bg
+							$w tag configure $key -foreground $bg
+						}
 					}
 					default {
 						$w configure -selectborderwidth 1
@@ -1751,6 +1764,7 @@ proc WriteOptions {chan} {
 	foreach path [array names Context] {
 		set cxt $Context($path)
 		set [namespace parent]::${cxt}::Options(show:opening) 1 ;# to be sure
+		set [namespace parent]::${cxt}::Options(show:result) 1 ;# to be sure
 		if {$cxt ni $context} { lappend context $cxt }
 	}
 

@@ -429,6 +429,8 @@ MultiBase::importGames(Producer& producer, util::Progress& progress, GameCount* 
 
 					if (count)
 						(*count)[i] = cnt;
+
+					base->setEncodingFailed(producer.encodingFailed());
 				}
 			}
 		}

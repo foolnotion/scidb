@@ -694,6 +694,8 @@ View::exportGames(mstl::string const& filename,
 	mstl::string	ext	= util::misc::file::suffix(filename);
 	unsigned			count	= 0;
 
+	ext.tolower();
+
 	if (ext == "sci")
 	{
 		Database destination(filename,

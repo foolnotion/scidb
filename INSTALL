@@ -130,10 +130,10 @@ For the built of packages in a temporary directory some fine tuning parameters
 should be used, for example:
 
    ./configure \
-      --prefix=$pkgdir/usr \
-      --exec-prefix=$pkgdir/usr \
-      --enginesdir=$pkgdir/usr/bin \
-      --destdir=/usr
+      --prefix=/usr \
+      --exec-prefix=/usr \
+      --enginesdir=/usr/bin \
+      --destdir=$pkgdir
 
 In this example the installation will be done in $pkgdir/usr, but the
 destination directory for the package is determined as /usr. Without
@@ -144,18 +144,13 @@ Without the --destdir parameter the configure script would choose the path
 /usr/share/fonts/truetype/Scidb for the installation of the truetype fonts,
 because in a normal user installation this is the wanted directory, but
 in this example $pkgdir/usr/share/fonts/truetype/Scidb will be used instead.
-Furthermore --destdir will be used for the determination of Scidb's shared
-directory at run time.
-
-Note that only the directories /usr and /usr/local are useful as argument
-to --destdir.
 
 IMPORTANT NOTE:
 With parameter --destdir the setup of the truetype fonts and the
 freedesktop.org stuff will be skipped. This means that the packager has to
 integrate the scripts postinstall-pak, postremove-pak, and preremove-pak.
-But before integration of these scripts the paths used inside the scripts has
-to be adjusted to $pkgdir.
+But before integration of these scripts the paths used inside the scripts
+has to be adjusted.
 
 IMPORTANT NOTE:
 Without setup of the truetype fonts Scidb will not run properly.

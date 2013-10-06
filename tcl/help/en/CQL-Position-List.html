@@ -294,7 +294,7 @@ Examples:
       <span class='comment'>; is attacked once and is in mate</span>
       (position
         <a href="CQL-Position-List.html#position:attackcount"><span style='white-space:nowrap;'>:attackcount</span></a> <span class='piece'>&#x265a;</span> . 8
-        <a href="CQL-Position-List.html#position:attackcount"><span style='white-space:nowrap;'>:attackcount</span></a> <span class='cqlpiece'>&#x2b1c;</span> <span class='piece'>&#x265a;</span> 1
+        <a href="CQL-Position-List.html#position:attackcount"><span style='white-space:nowrap;'>:attackcount</span></a> <span class='cqlpiece'>&#x25cb;</span> <span class='piece'>&#x265a;</span> 1
         <a href="CQL-Position-List.html#position:mate"><span style='white-space:nowrap;'>:mate</span></a>
         <a href="CQL-Position-List.html#position:btm"><span style='white-space:nowrap;'>:btm</span></a>)
       <span class='comment'>; check that no neighbor of the black king is</span>
@@ -302,7 +302,7 @@ Examples:
       (position
         <span class='keyword'>:not</span>
         <a href="CQL-Position-List.html#position:attackcount"><span style='white-space:nowrap;'>:attackcount</span></a> <span class='piece'>&#x265a;</span> .e4 1
-        <a href="CQL-Position-List.html#position:attackcount"><span style='white-space:nowrap;'>:attackcount</span></a> <span class='cqlpiece'>&#x2b1c;</span> .e4 2 unlimited
+        <a href="CQL-Position-List.html#position:attackcount"><span style='white-space:nowrap;'>:attackcount</span></a> <span class='cqlpiece'>&#x25cb;</span> .e4 2 unlimited
         <a href="CQL-Position-List.html#position:shift"><span style='white-space:nowrap;'>:shift</span></a>))))<!--
 --></code></pre></div>
 
@@ -325,7 +325,7 @@ is equivalent to
 </p>
 
 <div class='verb'><code>
-(position [<span class='cqlpiece'>&#x2b1b;</span><span class='piece'>&#x2655;</span><span class='piece'>&#x2657;</span><span class='piece'>&#x2658;</span><span class='piece'>&#x2659;</span><span class='piece'>&#x2654;</span>.]a3)
+(position [<span class='cqlpiece'>&#x25cf;</span><span class='piece'>&#x2655;</span><span class='piece'>&#x2657;</span><span class='piece'>&#x2658;</span><span class='piece'>&#x2659;</span><span class='piece'>&#x2654;</span>.]a3)
 </code></div>
 
 <h3 id="position:or">:or</h3>
@@ -445,9 +445,9 @@ Normally this is equivalent to following query:
 <div class='box'><pre><code><!--
 --><a href="CQL-Position-List.html#position:or"><span style='white-space:nowrap;'>:or</span></a> (
   <span class='comment'>; black king only</span>
-  (<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='cqlpiece'>&#x2b1b;</span> 1)
+  (<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='cqlpiece'>&#x25cf;</span> 1)
   <span class='comment'>; black king and black minor piece only</span>
-  (<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='cqlpiece'>&#x2b1b;</span> 2 <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='cqlpiece'>&#x25bc;</span> 1))<!--
+  (<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='cqlpiece'>&#x25cf;</span> 2 <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='cqlpiece'>&#x25bc;</span> 1))<!--
 --></code></pre></div>
 
 <p>
@@ -872,14 +872,14 @@ Normally this is equivalent to this query:
 <div class='box'><pre><code><!--
 --><a href="CQL-Position-List.html#position:or"><span style='white-space:nowrap;'>:or</span></a> (
   <span class='comment'>; king versus king</span>
-  (<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='cqlpiece'>&#x25e8;</span> 2)
+  (<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='cqlpiece'>&#x25d1;</span> 2)
   <span class='comment'>; king and minor piece versus king</span>
-  (<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='cqlpiece'>&#x25e8;</span> 3 <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> [<span class='cqlpiece'>&#x25bd;</span><span class='cqlpiece'>&#x25bc;</span>] 1)
+  (<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='cqlpiece'>&#x25d1;</span> 3 <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> [<span class='cqlpiece'>&#x25bd;</span><span class='cqlpiece'>&#x25bc;</span>] 1)
   <span class='comment'>; king and bishop versus king and bishop with the bishops on the same color</span>
-  (<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='cqlpiece'>&#x25e8;</span> 4
+  (<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='cqlpiece'>&#x25d1;</span> 4
    <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> [<span class='piece'>&#x2657;</span><span class='piece'>&#x265d;</span>][a1,a3,a5,a7,b2,b4,b6,b8,c1,c3,c5,c7,d2,d4,
      d6,d8,e1,e3,e5,e7,f2,f4,f6,f8,g1,g3,g5,g7,h2,h4,h6,h8] 2)
-  (<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='cqlpiece'>&#x25e8;</span> 4
+  (<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='cqlpiece'>&#x25d1;</span> 4
    <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> [<span class='piece'>&#x2657;</span><span class='piece'>&#x265d;</span>][a2,a4,a6,a8,b1,b3,b5,b7,c2,c4,c6,c8,d1,d3,
      d5,d7,e2,e4,e6,e8,f1,f3,f5,f7,g2,g4,g6,g8,h1,h3,h5,h7] 2))<!--
 --></code></pre></div>
@@ -956,9 +956,9 @@ Normally this is equivalent to following query:
 <div class='box'><pre><code><!--
 --><a href="CQL-Position-List.html#position:or"><span style='white-space:nowrap;'>:or</span></a> (
   <span class='comment'>; white king only</span>
-  (<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='cqlpiece'>&#x2b1c;</span> 1)
+  (<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='cqlpiece'>&#x25cb;</span> 1)
   <span class='comment'>; white king and white minor piece only</span>
-  (<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='cqlpiece'>&#x2b1c;</span> 2 <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='cqlpiece'>&#x25bd;</span> 1))<!--
+  (<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='cqlpiece'>&#x25cb;</span> 2 <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='cqlpiece'>&#x25bd;</span> 1))<!--
 --></code></pre></div>
 
 <p>
@@ -1158,7 +1158,7 @@ Examples:
 </p>
 
 <div class='verb'><code>
-(position <span class='keyword'>:attackcount</span> <span class='cqlpiece'>&#x2b1c;</span> <span class='piece'>&#x265a;</span> 2)
+(position <span class='keyword'>:attackcount</span> <span class='cqlpiece'>&#x25cb;</span> <span class='piece'>&#x265a;</span> 2)
 </code></div>
 
 <p>
@@ -1168,7 +1168,7 @@ Matches any position in which white has a double attack on the black king
 </p>
 
 <div class='verb'><code>
-(position <span class='keyword'>:attackcount</span> <span class='cqlpiece'>&#x2b1c;</span> <span class='piece'>&#x265a;</span> 2 <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a>)
+(position <span class='keyword'>:attackcount</span> <span class='cqlpiece'>&#x25cb;</span> <span class='piece'>&#x265a;</span> 2 <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a>)
 </code></div>
 
 <p>
@@ -1177,7 +1177,7 @@ Matches any position in which a king is under double attack
 </p>
 
 <div class='verb'><code>
-(position <span class='keyword'>:attackcount</span> <span class='cqlpiece'>&#x2b1c;</span> .h3 1)
+(position <span class='keyword'>:attackcount</span> <span class='cqlpiece'>&#x25cb;</span> .h3 1)
 </code></div>
 
 <p>
@@ -1311,7 +1311,7 @@ Examples:
 </p>
 
 <div class='verb'><code>
-(position <span class='keyword'>:power</span> <span class='cqlpiece'>&#x2b1b;</span> 6)
+(position <span class='keyword'>:power</span> <span class='cqlpiece'>&#x25cf;</span> 6)
 </code></div>
 
 <p>
@@ -1320,7 +1320,7 @@ board equals 6.
 </p>
 
 <div class='verb'><code>
-(position <span class='keyword'>:power</span> <span class='cqlpiece'>&#x2b1c;</span>[a-h1-4] 10 25)
+(position <span class='keyword'>:power</span> <span class='cqlpiece'>&#x25cb;</span>[a-h1-4] 10 25)
 </code></div>
 
 <p>
@@ -1344,7 +1344,7 @@ Examples:
 </p>
 
 <div class='verb'><code>
-(position <span class='keyword'>:powerdifference</span> <span class='cqlpiece'>&#x25e8;</span> 4)
+(position <span class='keyword'>:powerdifference</span> <span class='cqlpiece'>&#x25d1;</span> 4)
 </code></div>
 
 <p>
@@ -1376,7 +1376,7 @@ This matches positions in which black is up at least an exchange.
     <a href="CQL-Position-List.html#position:sequence"><span style='white-space:nowrap;'>:sequence</span></a> (
       (position
         <span class='keyword'>:powerdifference</span> [<span class='piece'>&#x2655;</span><span class='piece'>&#x265b;</span>] unlimited -9
-        <span class='keyword'>:powerdifference</span> <span class='cqlpiece'>&#x25e8;</span> unlimited -9)
+        <span class='keyword'>:powerdifference</span> <span class='cqlpiece'>&#x25d1;</span> unlimited -9)
       (position <span class='keyword'>:powerdifference</span> [<span class='piece'>&#x2655;</span><span class='piece'>&#x265b;</span>] unlimited -9)
       (position <span class='keyword'>:powerdifference</span> [<span class='piece'>&#x2655;</span><span class='piece'>&#x265b;</span>] unlimited -9)
       (position <span class='keyword'>:powerdifference</span> [<span class='piece'>&#x2655;</span><span class='piece'>&#x265b;</span>] unlimited -9)
@@ -1488,7 +1488,7 @@ Examples:
 </p>
 
 <div class='verb'><code>
-(position <span class='keyword'>:rayattack</span> (<span class='cqlpiece'>&#x2b1c;</span> <span class='cqlpiece'>&#x2b1b;</span> <span class='piece'>&#x265a;</span>))
+(position <span class='keyword'>:rayattack</span> (<span class='cqlpiece'>&#x25cb;</span> <span class='cqlpiece'>&#x25cf;</span> <span class='piece'>&#x265a;</span>))
 </code></div>
 
 <p>
@@ -1496,7 +1496,7 @@ Matches a position in which a black piece is pinned to the black king.
 </p>
 
 <div class='verb'><code>
-(position <span class='keyword'>:rayattack</span> (<span class='cqlpiece'>&#x2b1c;</span>d5 <span class='cqlpiece'>&#x2b1b;</span> [<span class='piece'>&#x265c;</span><span class='piece'>&#x265a;</span>][a-h1-4]) 3)
+(position <span class='keyword'>:rayattack</span> (<span class='cqlpiece'>&#x25cb;</span>d5 <span class='cqlpiece'>&#x25cf;</span> [<span class='piece'>&#x265c;</span><span class='piece'>&#x265a;</span>][a-h1-4]) 3)
 </code></div>
 
 <p>
@@ -1506,7 +1506,7 @@ piece on d5 against either a black rook or king in the first four ranks.
 
 <div class='verb'><code>
 (position <a href="CQL-Position-List.html#position:stalemate"><span style='white-space:nowrap;'>:stalemate</span></a> <span class='keyword'>:rayattack</span>
-(<span class='cqlpiece'>&#x2b1c;</span> <span class='cqlpiece'>&#x2b1b;</span> <span class='piece'>&#x265a;</span>) 2 8 <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a>)
+(<span class='cqlpiece'>&#x25cb;</span> <span class='cqlpiece'>&#x25cf;</span> <span class='piece'>&#x265a;</span>) 2 8 <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a>)
 </code></div>
 
 <p>
@@ -1622,7 +1622,7 @@ Matches a position in which the next move is of a white rook on a3.
 </p>
 
 <div class='verb'><code>
-(position <span class='keyword'>:movefrom</span> <span class='cqlpiece'>&#x25e8;</span>?8)
+(position <span class='keyword'>:movefrom</span> <span class='cqlpiece'>&#x25d1;</span>?8)
 </code></div>
 
 <p>
@@ -1681,7 +1681,7 @@ Examples:
 </p>
 
 <div class='verb'><code>
-(position <span class='keyword'>:moveto</span> <span class='cqlpiece'>&#x25e8;</span>)
+(position <span class='keyword'>:moveto</span> <span class='cqlpiece'>&#x25d1;</span>)
 </code></div>
 
 <p>
@@ -2397,7 +2397,7 @@ Examples:
 </p>
 
 <div class='verb'><code>
-(position <span class='keyword'>:maxswapevaluation</span> <span class='cqlpiece'>&#x2b1c;</span> <span class='cqlpiece'>&#x2b1b;</span> 1 unlimited)
+(position <span class='keyword'>:maxswapevaluation</span> <span class='cqlpiece'>&#x25cb;</span> <span class='cqlpiece'>&#x25cf;</span> 1 unlimited)
 </code></div>
 
 <p>
@@ -2476,7 +2476,7 @@ Examples:
 </p>
 
 <div class='verb'><code>
-<span class='keyword'>:moveevaluation</span> <span class='cqlpiece'>&#x25e8;</span> ? depth 4 3.0 unlimited sidetomove
+<span class='keyword'>:moveevaluation</span> <span class='cqlpiece'>&#x25d1;</span> ? depth 4 3.0 unlimited sidetomove
 </code></div>
 
 <p>
@@ -2485,7 +2485,7 @@ This means that last move was (probably) a blunder.
 </p>
 
 <div class='verb'><code>
-<span class='keyword'>:moveevaluation</span> <span class='cqlpiece'>&#x2b1c;</span> <span class='cqlpiece'>&#x2b1b;</span> depth 4 unlimited -3.0 absolute
+<span class='keyword'>:moveevaluation</span> <span class='cqlpiece'>&#x25cb;</span> <span class='cqlpiece'>&#x25cf;</span> depth 4 unlimited -3.0 absolute
 </code></div>
 
 <p>
@@ -2498,7 +2498,7 @@ Only capture moves were evaluated.
 -->(match
   (position <span class='keyword'>:moveevaluation</span> [<span class='piece'>&#x2659;</span><span class='piece'>&#x265f;</span>] ?[?1,?8]
              unlimited 0.0 movetime 5000 absolute)
-  (position <a href="CQL-Position-List.html#position:promotion"><span style='white-space:nowrap;'>:promotion</span></a> <span class='cqlpiece'>&#x25e8;</span> <a href="CQL-Position-List.html#position:cut"><span style='white-space:nowrap;'>:cut</span></a>)))
+  (position <a href="CQL-Position-List.html#position:promotion"><span style='white-space:nowrap;'>:promotion</span></a> <span class='cqlpiece'>&#x25d1;</span> <a href="CQL-Position-List.html#position:cut"><span style='white-space:nowrap;'>:cut</span></a>)))
   (position <a href="CQL-Position-List.html#position:preceding"><span style='white-space:nowrap;'>:preceding</span></a>)<!--
 --></code></pre></div>
 

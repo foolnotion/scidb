@@ -173,7 +173,7 @@ public:
 
 protected:
 
-	static void parseDescription(mstl::istream& strm, mstl::string& result);
+	static void parseDescription(mstl::istream& strm, mstl::string& result, mstl::string* encoding = 0);
 
 private:
 

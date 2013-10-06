@@ -556,7 +556,7 @@ proc openBase {parent file byUser args} {
 		set type [::scidb::db::get type $file]
 		$Vars(switcher) add $file $type $opts(-readonly) $opts(-encoding)
 		AddRecentFile $type $file $opts(-encoding) $readonly
-		CheckEncoding $parent $file [::scidb::db::get encoding $file]
+		CheckEncoding $parent $file [::scidb::db::get usedencoding $file]
 	} else {
 		$Vars(switcher) see $file
 		if {$byUser} {
@@ -2002,8 +2002,8 @@ proc Recode {file parent} {
 	variable RecentFiles
 	variable Vars
 
-	set enc [::scidb::db::get encoding $file]
-	set ext [$Vars(switcher) extension $file]
+	set enc [::scidb::db::get usedencoding $file]
+	set ext [string tolower [$Vars(switcher) extension $file]]
 	switch $ext {
 		cbh 		{ set defaultEncoding $::encoding::windowsEncoding }
 		cbf		{ set defaultEncoding $::encoding::dosEncoding }
@@ -2039,7 +2039,10 @@ proc Recode {file parent} {
 	set i [lsearch -exact -index 1 $RecentFiles $file]
 	if {$i >= 0} { lset RecentFiles $i 2 $encoding }
 
-	CheckEncoding $parent $file [::scidb::db::get encoding $file]
+	if {![string match *pgn $ext]} {
+		# openBase ic already checking the encoding status
+		CheckEncoding $parent $file [::scidb::db::get usedencoding $file]
+	}
 }
 
 

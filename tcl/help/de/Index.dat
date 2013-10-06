@@ -92,6 +92,7 @@ set Index {
   }
   { P
     {
+      {{Palette - Feldmarkierungen} {Mark-Palette-Dialog.html} {}}
       {{Partiemarkierungen} {Game-Flags.html} {}}
       {{Partien-Browser} {Game-Browser.html} {}}
       {{Partien-Übersichts-Browser} {Game-Overview.html} {}}

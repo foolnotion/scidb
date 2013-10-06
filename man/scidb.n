@@ -156,14 +156,14 @@ http://scidb.sourceforge.net
 For bug reports visit
 .br
 .ul
-http://sourceforge.net/tracker/?atid=1294797&group_id=307371&func=browse
+http://sourceforge.net/p/scidb/bugs
 .\" ==========================================================================
 .SH FEATURE REQUESTS
 .\" --------------------------------------------------------------------------
 For feature requests visit
 .br
 .ul
-http://sourceforge.net/tracker/?atid=1294800&group_id=307371&func=browse
+http://sourceforge.net/p/scidb/feature-requests
 .\" ==========================================================================
 .SH FILES
 .\" --------------------------------------------------------------------------
@@ -187,7 +187,7 @@ File containing the saved options from last session.
 .\" ==========================================================================
 .SH LICENSE
 .\" --------------------------------------------------------------------------
-Copyright (c) Gregor Cramer, 2011-2012.
+Copyright (c) Gregor Cramer, 2011-2013.
 .P
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

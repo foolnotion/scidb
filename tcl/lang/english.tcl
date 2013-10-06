@@ -1,4 +1,4 @@
-ln -sf ../# ====================================================================== .
+# ======================================================================
 # Author : $Author$
 # Version: $Revision$
 # Date   : $Date$
@@ -646,7 +646,7 @@ ln -sf ../# ====================================================================
 ::application::pgn::mc::StopTrialMode						"Stop Trial Mode"
 ::application::pgn::mc::Strip									"Strip"
 ::application::pgn::mc::InsertDiagram						"Insert Diagram"
-::application::pgn::mc::InsertDiagramFromBlack			"Insert Diagramm from Black's Perspective"
+::application::pgn::mc::InsertDiagramFromBlack			"Insert Diagram from Black's Perspective"
 ::application::pgn::mc::SuffixCommentaries				"Suffixed Commentaries"
 ::application::pgn::mc::StripOriginalComments			"Strip original comments"
 
@@ -1816,11 +1816,6 @@ ln -sf ../# ====================================================================
 ::dialog::save::mc::CurrentGameHasTrialMode	"Current game is in trial mode and cannot be saved."
 ::dialog::save::mc::LeaveTrialModeHint			"You have to leave trial mode beforehand, use shortcut %s."
 ::dialog::save::mc::OpenPlayerDictionary		"Open Player Dictionary"
-
-::dialog::save::mc::ConfigureSelection			"Configure Selection..."
-::dialog::save::mc::SecondRating					"Second rating"
-::dialog::save::mc::PlayerSection				"Player Section"
-::dialog::save::mc::EventSection					"Event Section"
 
 ::dialog::save::mc::LocalName						"&Local Name"
 ::dialog::save::mc::EnglishName					"E&nglish Name"

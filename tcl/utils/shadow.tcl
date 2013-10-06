@@ -53,6 +53,25 @@ proc prepare {w x y width height} {
 	if {[info exists Prevent($w)]} { return }
 
 	if {$width > 1 && $height > 1} {
+		variable Mapped
+
+		if {[info exists Geometry($w)] && [info exists Mapped($w)]} {
+			lassign $Geometry($w) x0 y0
+			if {$x != $x0 || $y != $y0} {
+				variable offset
+
+				set id $Mapped($w)
+				set b .__shadow__b__$id
+				set r .__shadow__r__$id
+				if {![winfo exists $b]} { return }
+				set bx [expr {$x + $offset}]
+				set by [expr {$y + $height}]
+				set rx [expr {$x + $width}]
+				set ry [expr {$y + $offset}]
+				wm geometry $b +${bx}+${by}
+				wm geometry $r +${rx}+${ry}
+			}
+		}
 		set Geometry($w) [list $x $y $width $height]
 	}
 }

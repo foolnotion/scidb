@@ -87,30 +87,38 @@ uninstall-subdirs:
 	@$(MAKE) -C tcl uninstall
 
 install-xdg:
-	@if [ -z "$(XDGDIR)" ]; then                                          \
+	@if [ "$(FREEDESKTOP)" = "yes" ]; then                                \
 		if [ -n "$(shell xdg-icon-resource --version 2>/dev/null)" ]; then \
 			if [ -n "$(shell xdg-mime --version 2>/dev/null)" ]; then       \
 				$(MAKE) -C freedesktop.org install-mime;                     \
+			else                                                            \
+				echo "SKIP - xdg-utils not installed";                       \
 			fi;                                                             \
 		fi;                                                                \
 		if [ -n "$(shell xdg-desktop-menu --version 2>/dev/null)" ]; then  \
 			$(MAKE) -C freedesktop.org install-desktop-menu;                \
+		else                                                               \
+			echo "SKIP - desktop-file-utils not installed";                 \
 		fi;                                                                \
-	else                                                                  \
+	elif [ -n "$(XDGDIR)" ]; then                                         \
 		$(MAKE) -C freedesktop.org distribute;                             \
 	fi
 
 uninstall-xdg:
-	@if [ -z "$(XDGDIR)" ]; then                                          \
+	@if [ "$(FREEDESKTOP)" = "yes" ]; then                                \
 		if [ -n "$(shell xdg-icon-resource --version 2>/dev/null)" ]; then \
 			if [ -n "$(shell xdg-mime --version 2>/dev/null)" ]; then       \
 				$(MAKE) -C freedesktop.org uninstall-mime;                   \
+			else                                                            \
+				echo "SKIP - xdg-utils not installed";                       \
 			fi;                                                             \
 		fi;                                                                \
 		if [ -n "$(shell xdg-desktop-menu --version 2>/dev/null)" ]; then  \
 			$(MAKE) -C freedesktop.org uninstall-desktop-menu;              \
+		else                                                               \
+			echo "SKIP - desktop-file-utils not installed";                 \
 		fi;                                                                \
-	else                                                                  \
+	elif [ -n "$(XDGDIR)" ]; then                                         \
 		$(MAKE) -C freedesktop.org remove;                                 \
 	fi;
 

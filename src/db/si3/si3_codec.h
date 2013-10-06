@@ -87,6 +87,7 @@ public:
 	unsigned minYear() const override;
 	unsigned maxYear() const override;
 	unsigned maxDescriptionLength() const override;
+	mstl::string const& defaultEncoding() const override;
 
 	unsigned gameFlags() const override;
 	unsigned blockSize() const;

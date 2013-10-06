@@ -131,6 +131,7 @@ public:
 	virtual unsigned maxYear() const = 0;
 	virtual unsigned maxDescriptionLength() const = 0;
 	virtual unsigned gameFlags() const = 0;
+	virtual mstl::string const& defaultEncoding() const = 0;
 
 	virtual tag::TagSet tagFilter(Section section, TagSet const& tags) const = 0;
 	virtual mstl::string const& extension() const = 0;

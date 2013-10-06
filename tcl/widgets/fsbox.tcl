@@ -5622,4 +5622,13 @@ bind FSBox <Leave> {
     TreeCtrl::MotionInItems %W
 }
 
+switch [tk windowingsystem] {
+	x11 {
+		bind FSBox <4> { %W yview scroll -5 units }
+		bind FSBox <5> { %W yview scroll +5 units }
+	}
+	aqua	{ bind FSBox <MouseWheel> { %W yview scroll [expr {-(%D)}] units } }
+	win32	{ bind FSBox <MouseWheel> { %W yview scroll [expr {-(%D/120)*4}] units } }
+}
+
 # vi:set ts=3 sw=3:

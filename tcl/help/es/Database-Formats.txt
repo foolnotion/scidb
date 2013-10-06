@@ -246,6 +246,12 @@ un archivo PGN está codificado con el grupo de caracteres <nobr>Latin-1</nobr>
 archivo PGN comienza con un marcador <nobr>UTF-8</nobr> (<nobr>UTF-8</nobr>-BOM:
 byte sequence EF BB BF) se prevee una codificación <nobr>UTF-8</nobr> (de acuerdo con la
 <a href="http://www.unicode.org/faq/utf_bom.html#BOM">Unicode FAQ</a>).
+<NEW>
+If the application is detecting an Unicode string when reading the file before a
+string with a different encoding (except ASCII) was recognized, then also Unicode
+encoding for the whole file will be expected, but only if not an explicit encoding
+is chosen when opening the file.
+</NEW>
 </p>
 
 <NEW>

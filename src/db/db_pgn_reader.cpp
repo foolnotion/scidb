@@ -36,6 +36,8 @@
 #include "db_pgn_aquarium.h"
 #include "db_exception.h"
 
+#include "nsUniversalDetector.h"
+
 #include "u_progress.h"
 #include "u_nul_string.h"
 
@@ -338,6 +340,18 @@ setTermination(db::TagSet& tags, termination::Reason reason)
 }
 
 
+namespace {
+
+struct CharsetDetector : public nsUniversalDetector
+{
+	CharsetDetector() :m_encoding(sys::utf8::Codec::latin1()) {}
+   void Report(const char* aCharset) override { m_encoding = aCharset; }
+	mstl::string m_encoding;
+};
+
+} // namespace
+
+
 PgnReader::Interruption::Interruption(Error code, mstl::string const& msg) :error(code), message(msg) {}
 PgnReader::Pos::Pos() : line(0), column(0) {}
 
@@ -380,12 +394,14 @@ PgnReader::PgnReader(mstl::istream& stream,
 	,m_isICS(false)
 	,m_hasCastled(false)
 	,m_resultCorrection(false)
+	,m_isAscii(encoding == sys::utf8::Codec::automatic())
 	,m_countRejected(0)
 	,m_postIndex(0)
 	,m_idn(0)
 	,m_variant(variant)
 	,m_givenVariant(variant)
 	,m_encoding(encoding)
+	,m_codec(0)
 {
 	M_REQUIRE(encoding == sys::utf8::Codec::automatic() || sys::utf8::Codec::checkEncoding(encoding));
 
@@ -394,21 +410,15 @@ PgnReader::PgnReader(mstl::istream& stream,
 
 	::memset(m_gameCount, 0, sizeof(m_gameCount));
 
-	if (encoding == sys::utf8::Codec::automatic())
-		m_codec = new sys::utf8::Codec(sys::utf8::Codec::latin1());
-	else
-		m_codec = new sys::utf8::Codec(encoding);
+	if (m_readMode == File)
+		parseDescription(m_stream, m_description, &m_encoding);
+
+	m_codec = new sys::utf8::Codec(m_isAscii ? sys::utf8::Codec::latin1() : m_encoding);
+	convertToUtf(m_description);
 
 	Producer::setVariant(variant);
 	::memset(m_countWarnings, 0, sizeof(m_countWarnings));
 	::memset(m_countErrors, 0, sizeof(m_countErrors));
-
-	if (m_readMode == File)
-	{
-		parseDescription(stream, m_description);
-		convertToUtf(m_description);
-		m_description.trim();
-	}
 }
 
 
@@ -1206,7 +1216,10 @@ PgnReader::handleError(Error code, mstl::string const& message)
 	{
 		mstl::string rest;
 
-		findNextEmptyLine(rest);
+		if (code == UnexpectedSymbol && m_atStart && consumer().variationLevel() > 0)
+			rest += '(';
+
+		searchTag(&rest);
 		rest.trim();
 
 		if (!::isEmpty(rest))
@@ -1353,9 +1366,45 @@ PgnReader::finishGame(bool skip)
 
 
 void
+PgnReader::setUtf8Codec()
+{
+	delete m_codec;
+	m_codec = new sys::utf8::Codec(sys::utf8::Codec::utf8());
+	m_isAscii = false;
+}
+
+
+void
 PgnReader::convertToUtf(mstl::string& s)
 {
-	m_codec->toUtf8(s);
+	if (s.empty() || sys::utf8::Codec::is7BitAscii(s))
+		return;
+
+	M_ASSERT(m_codec);
+
+	if (m_isAscii)
+	{
+		M_ASSERT(m_codec->encoding() == sys::utf8::Codec::latin1());
+		M_ASSERT(m_encoding == sys::utf8::Codec::automatic());
+
+		m_isAscii = false;
+
+		CharsetDetector detector;
+
+		detector.HandleData(s, s.size());
+		detector.DataEnd();
+		
+		if (detector.m_encoding == sys::utf8::Codec::utf8())
+		{
+			setUtf8Codec();
+		}
+		else
+		{
+			// the user has to choose the right encoding
+		}
+	}
+
+	m_codec->convertToUtf8(s, s);
 
 	if (!sys::utf8::validate(s))
 	{
@@ -1854,8 +1903,20 @@ PgnReader::get(bool allowEndOfInput)
 
 
 void
-PgnReader::skipLine()
+PgnReader::skipLine(mstl::string* str)
 {
+	if (str)
+	{
+		while (m_putback)
+			str += m_putbackBuf[--m_putback];
+
+		str->append(m_linePos, m_lineEnd);
+	}
+	else
+	{
+		m_putback = 0;
+	}
+
 	m_linePos = m_lineEnd;
 }
 
@@ -1942,47 +2003,29 @@ PgnReader::findNextEmptyLine()
 }
 
 
-void
-PgnReader::findNextEmptyLine(mstl::string& str)
-{
-	while (true)
-	{
-		int c = get(true);
-
-		switch (c)
-		{
-			case '\0':
-				return;
-
-			case '\n':
-				{
-					int d = get(true);
-
-					if (d == '\n' || d == '\0')
-						return;
-
-					::addSpace(str);
-					str += d;
-				}
-				break;
-
-			default:
-				str += c;
-				break;
-		}
-	}
-}
-
-
 PgnReader::Token
-PgnReader::searchTag()
+PgnReader::searchTag(mstl::string* str)
 {
+	enum { MaxSize = 2048u };
+
+	static char const* MaxSizeExceeded = "...\n(Maximal size exceeded)";
+
 	while (true)
 	{
 		int c = get(true);
 
 		while (::isspace(c))
+		{
+			if (str)
+			{
+				if (str->size() < MaxSize)
+					::addSpace(*str);
+				else
+					*str += MaxSizeExceeded;
+			}
+
 			c = get(true);
+		}
 
 		switch (c)
 		{
@@ -1990,39 +2033,40 @@ PgnReader::searchTag()
 				return kEoi;
 
 			case '[':
-				if (m_encoding == sys::utf8::Codec::automatic())
-				{
-					delete m_codec;
-					m_codec = new sys::utf8::Codec(sys::utf8::Codec::latin1());
-				}
-				m_currentOffset = m_lineOffset + m_currPos.column - 1;
+				if (str)
+					putback(c);
+				else
+					m_currentOffset = m_lineOffset + m_currPos.column - 1;
 				return kTag;
 
 			case 0xef:
 				if ((c = get(true)) == 0xbb)
 				{
 					if ((c = get(true)) == 0xbf)
-					{
-						// UTF-8 BOM detected
-						if (m_encoding == sys::utf8::Codec::automatic())
-						{
-							delete m_codec;
-							m_codec = new sys::utf8::Codec(sys::utf8::Codec::utf8());
-						}
-					}
+						setUtf8Codec(); // UTF-8 BOM detected
 					else
-					{
 						putback(c);
-					}
 				}
 				else
 				{
 					putback(c);
 				}
 				break;
+
+			default:
+				if (str)
+				{
+					if (str->size() >= MaxSize)
+						*str += MaxSizeExceeded;
+					else if (::isspace(c))
+						::addSpace(*str);
+					else
+						*str += c;
+				}
+				break;
 		}
 
-		skipLine();
+		skipLine(str);
 	}
 
 	return kEoi;	// satisfies the compiler
@@ -3645,15 +3689,13 @@ PgnReader::parseComment(Token prevToken, int c)
 		}
 		else if (!::isalpha(content[0]) && content.size() <= 5)
 		{
-			nag::ID nag = nag::fromSymbol(content);
+			unsigned length = 0;
+			nag::ID nag = nag::fromSymbol(content, &length);
 
-			if (nag != nag::Null)
+			if (nag != nag::Null && length == content.size())
 			{
-				if (::strlen(nag::toSymbol(nag)) == content.size())
-				{
-					putNag(nag::ID(nag));
-					return kNag;
-				}
+				putNag(nag::ID(nag));
+				return kNag;
 			}
 		}
 
@@ -4682,50 +4724,56 @@ PgnReader::parseQuestionMark(Token prevToken, int c)
 PgnReader::Token
 PgnReader::parseOpenParen(Token prevToken, int)
 {
-	// Move suffix: "(.)", "(+)", "(?)", "()", "(ep)", "(e.p.)"
+	// Move suffix: "(ep)", "(e.p.)"
+	// Move suffix: "()", "(+)", "(.)", "(?)"
+	// Parenthesized symbols: "(<any NAG>)"
 	// Start of variation
 
 	if (partOfMove(prevToken))
 	{
-		if (m_linePos[0] == ')')
+		if (m_currPos.column > 0)
 		{
-			advanceLinePos(1);
-			putNag(nag::Space);
-			return kNag;
+			unsigned length = 0;
+			nag::ID nag = nag::fromSymbol(m_linePos - 1, &length);
+
+			if (nag != nag::Null)
+			{
+				M_ASSERT(length > 0);
+				advanceLinePos(length - 2);
+				putNag(nag);
+				return kNag;
+			}
 		}
 
-		if (m_linePos[0])
+		char const* e = m_linePos;
+		while (e < m_lineEnd && *e != ')')
+			++e;
+
+		if (*e == ')' && e - m_linePos <= 5)
 		{
-			if (m_linePos[1] == ')')
-			{
-				switch (m_linePos[0])
-				{
-					case '.':
-						advanceLinePos(2);
-						putNag(nag::WhiteIsInZugzwang, nag::BlackIsInZugzwang);
-						return kNag;
+			mstl::string str;
+			str.hook(m_linePos, e - m_linePos);
 
-					case '+':
-						advanceLinePos(2);
-						putNag(nag::Zeitnot);
-						return kNag;
+			nag::ID nag = nag::fromSymbol(str);
 
-					case '?':
-						advanceLinePos(2);
-						putNag(nag::QuestionableMove);
-						return kNag;
-				}
-			}
-			else if (::equal(m_linePos, "ep)", 3))
+			if (nag != nag::Null)
 			{
-				advanceLinePos(3);
-				return prevToken;
+				advanceLinePos(str.size() + 1);
+				putNag(nag);
+				return kNag;
 			}
-			else if (::equal(m_linePos, "e.p.)", 5))
-			{
-				advanceLinePos(5);
-				return prevToken;
-			}
+		}
+
+		if (::equal(m_linePos, "ep)", 3))
+		{
+			advanceLinePos(3);
+			return prevToken;
+		}
+
+		if (::equal(m_linePos, "e.p.)", 5))
+		{
+			advanceLinePos(5);
+			return prevToken;
 		}
 	}
 

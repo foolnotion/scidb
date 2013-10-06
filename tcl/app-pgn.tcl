@@ -76,8 +76,8 @@ set ShufflePosition					"Shuffle position..." ;# currently unused
 set StartTrialMode					"Start Trial Mode"
 set StopTrialMode						"Stop Trial Mode"
 set Strip								"Strip"
-set InsertDiagram						"Insert Diagramm"
-set InsertDiagramFromBlack			"Insert Diagramm from Black's Perspective"
+set InsertDiagram						"Insert Diagram"
+set InsertDiagramFromBlack			"Insert Diagram from Black's Perspective"
 set SuffixCommentaries				"Suffixed Commentaries"
 set StripOriginalComments			"Strip original comments"
 
@@ -171,6 +171,7 @@ proc build {parent width height} {
 	for {set i 0} {$i < 9} {incr i} {
 		set pgn [::pgn::setup::buildText $edit.f$i editor]
 		bind $pgn <Button-3> [namespace code [list PopupMenu $edit $i]]
+		bind $pgn <Leave> [namespace code [list HidePosition $i $pgn]]
 		$panes add $edit.f$i
 		set Vars(pgn:$i) $pgn
 		set Vars(frame:$i) $edit.f$i
@@ -183,6 +184,9 @@ proc build {parent width height} {
 	set Vars(logo) $logo
 	set Vars(panes) $panes
 	set Vars(charwidth) [font measure [$Vars(pgn:0) cget -font] "0"]
+	set Vars(diagram:show) 0
+	set Vars(diagram:state) 0
+	set Vars(diagram:caps) 0
 
 	::pgn::setup::setupStyle editor {0 1 2 3 4 5 6 7 8}
 #	::scidb::game::undoSetup 20 9999
@@ -605,6 +609,53 @@ proc replaceMoves {parent base variant position number} {
 }
 
 
+proc checkKey {mode keysym state} {
+	variable Vars
+
+	set position $Vars(position)
+	if {$position < 0 || 9 <= $position} { return }
+
+	if {[string match Alt_? $keysym]} {
+		set w $Vars(pgn:$position)
+
+		switch $mode {
+			press {
+				if {!$Vars(diagram:show)} {
+					set key $Vars(active:$position)
+					if {[llength $key]} {
+						set Vars(diagram:show) 1
+						set Vars(diagram:state) $state
+						set Vars(diagram:caps) [expr {$state & $::util::LockMask}]
+						::browser::showPosition $w $position [[namespace parent]::board::rotated?] $key $state
+					}
+				}
+			}
+			release {
+				if {$Vars(diagram:show)} { HidePosition $position $w }
+			}
+		}
+	} elseif {	(	[string match Shift_? $keysym]
+					|| ($keysym eq "Caps_Lock" && $mode eq "press"))
+				&& $Vars(diagram:show)} {
+		set w $Vars(pgn:$position)
+		set key $Vars(active:$position)
+		if {$keysym ne "Caps_Lock"} {
+			set mask $::util::ShiftMask
+		} else {
+			set mask $::util::LockMask
+			if {$Vars(diagram:caps)} { set mode "release" }
+		}
+		if {$mode eq "press"} {
+			set state [expr {$state | $mask}]
+		} else {
+			set state [expr {$state & ~$mask}]
+		}
+		set Vars(diagram:caps) [expr {$state & $::util::LockMask}]
+		::browser::updatePosition $w $position [[namespace parent]::board::rotated?] $key $state
+	}
+}
+
+
 proc ensureScratchGame {} {
 	variable ::scidb::scratchbaseName
 	variable Vars
@@ -674,6 +725,7 @@ proc InitScratchGame {} {
 	set Vars(active:9) {}
 	set Vars(see:9) 1
 	set Vars(last:9) {}
+	set Vars(tags:9) {}
 
 	::scidb::game::subscribe board 9 [namespace parent]::board::update
 	::scidb::game::subscribe board 9 [namespace parent]::analysis::update
@@ -904,6 +956,9 @@ proc GameSwitched {position} {
 	if {[info exists Vars(lang:set:$position)]} {
 		UpdateLanguages $position $Vars(lang:set:$position)
 	}
+	if {[info exists Vars(successor:$position)]} {
+		ProcessGoto $position $position [::scidb::game::position key] $Vars(successor:$position)
+	}
 }
 
 
@@ -1076,7 +1131,7 @@ proc DoLayout {position data {context editor} {w {}}} {
 			}
 
 			result {
-				if {[llength $Vars(tags:$position)]} {
+				if {$Options(show:result)} {
 					set reason [::scidb::game::query $position termination]
 					set resultList [list {*}[lrange $node 1 end] $reason $Options(spacing:paragraph)]
 
@@ -1238,7 +1293,7 @@ proc UpdateHeader {context position w data} {
 
 	$w mark set current 1.0
 
-	if {[llength $Vars(tags:$position)] && ($Options(show:opening) || $position < 9)} {
+	if {$Options(show:opening) || $position < 9} {
 		set idn 0
 		set opening {}
 		set pos ""
@@ -1278,6 +1333,7 @@ proc UpdateHeader {context position w data} {
 
 		$w insert current "\n"
 	}
+
 	$w mark set m-start [$w index current]
 	$w mark gravity m-start left
 
@@ -1567,12 +1623,12 @@ proc PrintMove {context position w level key data annotation} {
 	}
 
 	if {$position < 9} {
-		$w tag bind $key <Any-Enter> [namespace code [list EnterMove $position $key]]
+		$w tag bind $key <Any-Enter> [namespace code [list EnterMove $position $key %s]]
 		$w tag bind $key <Any-Leave> [namespace code [list LeaveMove $position $key]]
 		$w tag bind $key <ButtonPress-1> [namespace code [list GotoMove $position $key]]
 		$w tag bind $key <ButtonPress-2> [namespace code [list ShowPosition $position $w $key %s]]
-		$w tag bind $key <ButtonRelease-2> [list ::browser::hidePosition $w]
-		$w tag bind $key <Any-Button> [list ::browser::hidePosition $w]
+		$w tag bind $key <ButtonRelease-2> [namespace code [list HidePosition $position $w]]
+		$w tag bind $key <Any-Button> [namespace code [list HidePosition $position $w]]
 	}
 
 	if {!$legal} {
@@ -1586,6 +1642,16 @@ proc PrintMove {context position w level key data annotation} {
 
 proc ShowPosition {position w key state} {
 	::browser::showPosition $w $position [[namespace parent]::board::rotated?] $key $state
+}
+
+
+proc HidePosition {position w} {
+	variable Vars
+
+	set Vars(diagram:show) 0
+	set Vars(diagram:state) 0
+	set Vars(diagram:caps) 0
+	::browser::hidePosition $w
 }
 
 
@@ -1858,17 +1924,25 @@ proc Mark {w key} {
 }
 
 
-proc EnterMove {position key} {
+proc EnterMove {position key {state 0}} {
 	variable ::pgn::editor::Colors
 	variable Vars
 
+	set w $Vars(pgn:$position)
+
 	if {$Vars(current:$position) ne $key} {
-		$Vars(pgn:$position) tag configure $key -background [::colors::lookup $Colors(hilite:move)]
+		$w tag configure $key -background [::colors::lookup $Colors(hilite:move)]
 		after cancel $Vars(after:$position)
 		set Vars(after:$position) [after 75 [namespace code [list ChangeCursor $position hand2]]]
 	}
 
 	set Vars(active:$position) $key
+
+	if {$Vars(diagram:show)} {
+		set Vars(diagram:state) $state
+		set Vars(diagram:caps) [expr {$state & $::util::LockMask}]
+		::browser::updatePosition $w $position [[namespace parent]::board::rotated?] $key $state
+	}
 }
 
 
@@ -1895,8 +1969,10 @@ proc LeaveMove {position key} {
 proc ChangeCursor {position cursor} {
 	variable Vars
 
-	set Vars(after:$position) {}
-	$Vars(pgn:$position) configure -cursor $cursor
+	if {[winfo exists $Vars(pgn:$position)]} {
+		set Vars(after:$position) {}
+		$Vars(pgn:$position) configure -cursor $cursor
+	}
 }
 
 
@@ -1965,6 +2041,8 @@ proc ToggleFold {w key triggerEnter} {
 proc SetCursor {w counter cursor} {
 	variable CursorCounter
 
+	if {![winfo exists $w]} { return }
+
 	if {$counter < $CursorCounter} { return }
 
 	if {[tk windowingsystem] eq "x11"} {
@@ -1978,6 +2056,7 @@ proc SetCursor {w counter cursor} {
 proc UnsetCursor {w counter} {
 	variable CursorCounter
 
+	if {![winfo exists $w]} { return }
 	if {$counter < $CursorCounter} { return }
 
 	if {[tk windowingsystem] eq "x11"} {
@@ -2143,6 +2222,8 @@ proc HasMoveInfo {} {
 
 proc UpdateButtons {} {
 	variable Vars
+
+	if {![winfo exists $Vars(button:show:moveinfo)]} { return }
 
 	if {[HasMoveInfo]} {
 		::toolbar::add $Vars(button:show:moveinfo)
@@ -2715,6 +2796,8 @@ proc PasteClipboardVariation {} {
 
 proc ShowCountry {cb okbtn} {
 	variable Vars
+
+	if {![winfo exists $cb]} { return }
 
 	set icon [$cb get flag]
 	if {[string length $icon]} {

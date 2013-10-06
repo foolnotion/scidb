@@ -308,6 +308,8 @@ proc build {w width height} {
 	bind <Control-KP_Add>		[list ::application::pgn::changeFontSize +1]
 	bind <Control-minus>			[list ::application::pgn::changeFontSize -1]
 	bind <Control-KP_Subtract>	[list ::application::pgn::changeFontSize -1]
+	bind <Any-KeyPress>			[list ::application::pgn::checkKey press %K %s]
+	bind <Any-KeyRelease>		[list ::application::pgn::checkKey release %K %s]
 	bind <<LanguageChanged>>	[namespace code LanguageChanged]
 
 	for {set i 1} {$i <= 9} {incr i} {

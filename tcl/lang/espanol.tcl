@@ -1823,11 +1823,6 @@
 ::dialog::save::mc::LeaveTrialModeHint			"You have to leave trial mode beforehand, use shortcut %s." ;# NEW
 ::dialog::save::mc::OpenPlayerDictionary		"Open Player Dictionary" ;# NEW
 
-::dialog::save::mc::ConfigureSelection			"Configure Selection..." ;# NEW
-::dialog::save::mc::SecondRating					"Second rating" ;# NEW
-::dialog::save::mc::PlayerSection				"Player Section" ;# NEW
-::dialog::save::mc::EventSection					"Event Section" ;# NEW
-
 ::dialog::save::mc::LocalName						"&Nombre local"
 ::dialog::save::mc::EnglishName					"Nombre I&nglés"
 ::dialog::save::mc::ShowRatingType				"Mostrar &rating"

@@ -1607,7 +1607,7 @@ proc Properties {w id popup} {
 	$f.tgames		configure -text $ngames
 	$f.treadonly	configure -text [expr {$readOnly ? $::mc::Yes : $::mc::No}]
 
-	set txt [::scidb::db::get encoding $file]
+	set txt [::scidb::db::get usedencoding $file]
 	if {[::scidb::db::get encodingState $file] ne "ok"} { append txt " ($mc::Failed)" }
 	$f.tencoding configure -text $txt
 

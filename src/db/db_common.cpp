@@ -3958,13 +3958,26 @@ nag::fromSymbol(char const* symbol, unsigned len)
 
 
 nag::ID
-nag::fromSymbol(char const* symbol)
+nag::fromSymbol(char const* symbol, unsigned* len)
 {
 	M_REQUIRE(symbol);
 
 	mstl::string str;
 	str.hook(const_cast<char*>(symbol), ::strlen(symbol));
-	return fromSymbol(str);
+
+	CommentToken const* p = mstl::lower_bound(Map, Map + U_NUMBER_OF(Map), symbol);
+
+	if (p == Map + U_NUMBER_OF(Map) || ::strncmp(symbol, p->token, p->token.size()) != 0)
+	{
+		if (len)
+			*len = 0;
+		return Null;
+	}
+
+	if (len)
+		*len = p->token.size();
+
+	return nag::ID(p->value);
 }
 
 

@@ -58,11 +58,6 @@ set CurrentGameHasTrialMode	"Current game is in trial mode and cannot be saved."
 set LeaveTrialModeHint			"You have to leave trial mode beforehand, use shortcut %s."
 set OpenPlayerDictionary		"Open Player Dictionary"
 
-set ConfigureSelection			"Configure Selection..."
-set SecondRating					"Second rating"
-set PlayerSection					"Player Section"
-set EventSection					"Event Section"
-
 set LocalName						"&Local Name"
 set EnglishName					"E&nglish Name"
 set ShowRatingType				"Show &rating"
@@ -1091,11 +1086,8 @@ proc Build {dlg base variant position number} {
 
 	# Dialog Buttons ##########################################
 	::widget::dialogButtons $dlg {ok cancel}
-	::widget::dialogButtonAdd $dlg configure [namespace current]::mc::ConfigureSelection {} -side right
-	::widget::dialogButtonAddSeparator $dlg -side right
 	$dlg.ok configure -command [namespace code [list Save $top $fields]]
 	$dlg.cancel configure -command [namespace code [list Withdraw $dlg]]
-	$dlg.configure configure -command [namespace code [list ConfigureSelection $dlg]]
 #	bind $dlg.ok <FocusIn> [namespace code [list ClearMatchList $top]]
 #	bind $dlg.cancel <FocusIn> [namespace code [list ClearMatchList $top]]
 	bind $dlg <Escape> [list $dlg.cancel invoke]
@@ -3128,59 +3120,6 @@ proc GetPlayerFromDict {dlg side} {
 
 	::playerdict::setReceiver [namespace code [list SetPlayerFromDict $dlg $side]]
 	::playerdict::open . -federation Fide -rating1 Elo -rating2 $Priv(${side}-rating)
-}
-
-
-proc ConfigureSelection {parent} {
-	set dlg [tk::toplevel $parent.configureSelection -class Scidb]
-	set top [ttk::frame $dlg.top -takefocus 0 -borderwidth 0]
-	pack $top -fill both -expand yes
-	wm withdraw $dlg
-	::widget::dialogButtons $dlg {ok}
-	$dlg.ok configure -command [list destroy $dlg]
-
-	set pl [ttk::labelframe $top.player -text $mc::PlayerSection]
-	set row 1
-	foreach attr {elo score title federation sex} {
-		ttk::checkbutton $pl.$attr \
-			-text $mc::Label($attr) \
-			-variable [namespace current]::Selection(player:$attr) \
-			;
-		grid $pl.$attr -column 1 -row $row -sticky ew
-		incr row 2
-	}
-	grid columnconfigure $pl {0 2} -minsize $::theme::padx
-	grid rowconfigure $pl {0 10} -minsize $::theme::pady
-
-	set ev [ttk::labelframe $top.event -text $mc::EventSection]
-	set row 1
-	foreach attr {country eventDate eventMode eventType timeMode} {
-		ttk::checkbutton $ev.$attr \
-			-text $mc::Label($attr) \
-			-variable [namespace current]::Selection(event:$attr) \
-			;
-		grid $ev.$attr -column 1 -row $row -sticky ew
-		incr row 2
-	}
-	grid columnconfigure $ev {0 2} -minsize $::theme::padx
-	grid rowconfigure $ev {0 12} -minsize $::theme::pady
-
-	grid $pl -row 1 -column 1 -sticky ewns
-	grid $ev -row 1 -column 3 -sticky ewns
-	grid columnconfigure $top {0 2 4} -minsize $::theme::padx
-	grid rowconfigure $top {0 2} -minsize $::theme::pady
-
-	wm title $dlg [lindex [split $mc::ConfigureSelection "..."] 0]
-	wm resizable $dlg no no
-	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
-	wm transient $dlg [winfo toplevel $parent]
-	::util::place $dlg -parent $parent -position center
-	wm deiconify $dlg
-	focus $pl.elo
-
-	::ttk::grabWindow $dlg
-	tkwait window $dlg
-	::ttk::releaseGrab $dlg
 }
 
 

@@ -103,6 +103,15 @@ Database::encoding() const
 
 
 inline
+mstl::string const&
+Database::usedEncoding() const
+{
+	M_REQUIRE(isOpen());
+	return m_usedEncoding;
+}
+
+
+inline
 Time
 Database::modified() const
 {

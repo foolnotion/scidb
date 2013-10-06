@@ -228,6 +228,12 @@ un file PGN ha codifica <nobr>Latin-1</nobr> (ISO-<nobr>8859-1</nobr>).
 Ma se un file PGN comincia con un marcatore <nobr>UTF-8</nobr>
 (<nobr>UTF-8</nobr>-BOM: byte sequence EF BB BF) ci si aspetterà un encoding <nobr>UTF-8</nobr>
 (in osservanza a <a href="http://www.unicode.org/faq/utf_bom.html#BOM">Unicode FAQ</a>).
+<NEW>
+If the application is detecting an Unicode string when reading the file before a
+string with a different encoding (except ASCII) was recognized, then also Unicode
+encoding for the whole file will be expected, but only if not an explicit encoding
+is chosen when opening the file.
+</NEW>
 </p>
 
 <p>

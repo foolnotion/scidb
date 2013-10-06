@@ -239,6 +239,10 @@ ist eine PGN-Datei mit dem Zeichensatz <nobr>Latin-1</nobr>
 <nobr>UTF-8</nobr>-Markierung (<nobr>UTF-8</nobr>-BOM: Bytesequenz EF BB BF) so wird
 eine <nobr>UTF-8</nobr>-Enkodierung angenommen (gemäß
 <a href="http://www.unicode.org/faq/utf_bom.html#BOM">Unicode-FAQ</a>).
+Wird beim Lesen einer PGN-Datei eine Unicode-Zeichenkette erkannt, bevor eine
+Zeichenkette in einer anderen Enkodierung (außer ASCII) gelesen wurde, so wird
+ebenfalls automatisch eine UTF-8-Kodierung für die gesamte Datei angenommen, aber
+nur wenn beim Öffnen der Datei keine explizite Enkodierung gewählt wurde.
 </p>
 
 <p>

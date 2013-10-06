@@ -367,6 +367,7 @@ unsigned Codec::maxYear() const					{ return Date::MaxYear; }
 unsigned Codec::maxDescriptionLength() const	{ return 109; }
 mstl::string const& Codec::extension() const	{ return Extension; }
 mstl::string const& Codec::encoding() const	{ return sys::utf8::Codec::utf8(); }
+mstl::string const& Codec::defaultEncoding() const override { return sys::utf8::Codec::utf8(); }
 bool Codec::encodingFailed() const				{ return false; }
 void Codec::reset()									{}
 

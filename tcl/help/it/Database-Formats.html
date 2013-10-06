@@ -246,6 +246,12 @@ un file PGN ha codifica <span style='white-space:nowrap;'>Latin-1</span> (ISO-<s
 Ma se un file PGN comincia con un marcatore <span style='white-space:nowrap;'>UTF-8</span>
 (<span style='white-space:nowrap;'>UTF-8</span>-BOM: byte sequence EF BB BF) ci si aspetterà un encoding <span style='white-space:nowrap;'>UTF-8</span>
 (in osservanza a <a href="http://www.unicode.org/faq/utf_bom.html#BOM" target="blank_">Unicode FAQ&nbsp;<span class="awesome">&#xf08e;</span></a>).
+<span class='NEW'>
+If the application is detecting an Unicode string when reading the file before a
+string with a different encoding (except ASCII) was recognized, then also Unicode
+encoding for the whole file will be expected, but only if not an explicit encoding
+is chosen when opening the file.
+</span>
 </p>
 
 <p>

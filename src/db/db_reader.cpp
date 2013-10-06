@@ -37,6 +37,7 @@
 #include "m_utility.h"
 
 #include "sys_file.h"
+#include "sys_utf8_codec.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -507,11 +508,13 @@ Reader::trimDescription(mstl::string& descr)
 
 		descr.erase(descr.begin(), n);
 	}
+
+	descr.trim();
 }
 
 
 void
-Reader::parseDescription(mstl::istream& strm, mstl::string& result)
+Reader::parseDescription(mstl::istream& strm, mstl::string& result, mstl::string* encoding)
 {
 	unsigned n = 0;
 
@@ -523,10 +526,33 @@ Reader::parseDescription(mstl::istream& strm, mstl::string& result)
 		{
 			case '\0':
 			case '[':
-				return trimDescription(result);
-
 			case EOF:
 				return trimDescription(result);
+
+			case 0xef:
+				strm.get();
+
+				if ((c = strm.peek()) == 0xbb)
+				{
+					strm.get();
+
+					if ((c = strm.peek()) == 0xbf)
+					{
+						strm.get();
+						*encoding = sys::utf8::Codec::utf8(); // UTF-8 BOM detected
+					}
+					else
+					{
+						result += 0xef;
+						result += 0xbb;
+						result += c;
+					}
+				}
+				else
+				{
+					result += 0xef;
+				}
+				break;
 
 			case '\n':
 				if (++n == 10)

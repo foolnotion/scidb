@@ -20,6 +20,7 @@ INDEX Feldmarkierungspalette
 INDEX Feldmarkierungen
 INDEX Zugmarkierungen
 INDEX Markierungen auf dem Schachbrett
+INDEX Palette - Feldmarkierungen
 
 TITLE Feldmarkierungspalette
 

@@ -817,6 +817,8 @@ app_multi_cursor.o: ../db/db_multi_base.h
 app_multi_cursor.o: ../db/db_file_offsets.h
 app_multi_cursor.o: ../db/db_file_offsets.ipp
 app_multi_cursor.o: ../db/db_multi_base.ipp
+app_multi_cursor.o: ../db/db_producer.h
+app_multi_cursor.o: ../db/db_producer.ipp
 app_multi_cursor.o: ../sys/sys_utf8_codec.h
 app_multi_cursor.o: ../sys/sys_utf8_codec.ipp
 app_multi_cursor.o: ../sys/sys_fam.h

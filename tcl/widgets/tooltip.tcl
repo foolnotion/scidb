@@ -382,6 +382,31 @@ proc showvar {w var {i cursor} {font {}}} {
 }
 
 
+proc updatePosition {w b} {
+	set screenw [winfo screenwidth $w]
+	set screenh [winfo screenheight $w]
+	set reqw [winfo reqwidth $b]
+	set reqh [winfo reqheight $b]
+
+	set py [winfo pointery $w]
+	set y [expr {$py + 20}]
+	if {$py < $screenh && $y + $reqh > $screenh} {
+		# show above if we would be offscreen
+		set y [expr {[winfo pointery $w] - $reqh - 5}]
+	}
+
+	set x [winfo pointerx $w]
+	# only readjust when we would appear right on the screen edge
+	if {$x < 0 && ($x + $reqw) > 0} {
+		set x 0
+	} elseif {($x < $screenw) && ($x + $reqw) > $screenw} {
+		set x [expr {$screenw - $reqw}]
+	}
+
+	wm geometry $b +${x}+${y}
+}
+
+
 proc popup {w b {at {}}} {
 	variable G
 

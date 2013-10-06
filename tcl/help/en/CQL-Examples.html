@@ -203,7 +203,7 @@ promotes.
   (position
     <a href="CQL-Position-List.html#position:initial"><span style='white-space:nowrap;'>:initial</span></a>
     <a href="CQL-Position-List.html#position:tagmatch"><span style='white-space:nowrap;'>:tagmatch</span></a> pawn <span class='piece'>&#x2659;</span>?2
-    <a href="CQL-Position-List.html#position:gappedsequence"><span style='white-space:nowrap;'>:gappedsequence</span></a> ((position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> $pawn <a href="CQL-Position-List.html#position:promote"><span style='white-space:nowrap;'>:promote</span></a> <span class='cqlpiece'>&#x25e8;</span>))
+    <a href="CQL-Position-List.html#position:gappedsequence"><span style='white-space:nowrap;'>:gappedsequence</span></a> ((position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> $pawn <a href="CQL-Position-List.html#position:promote"><span style='white-space:nowrap;'>:promote</span></a> <span class='cqlpiece'>&#x25d1;</span>))
     <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a>))<!--
 --></code></pre></div>
 
@@ -219,7 +219,7 @@ Third example: the same piece delivers at least 30 checks in the game.
 
 <div class='box'><pre><code><!--
 -->(match
-  <a href="CQL-Match-List.html#match:forany"><span style='white-space:nowrap;'>:forany</span></a> checker <span class='cqlpiece'>&#x2b1c;</span>
+  <a href="CQL-Match-List.html#match:forany"><span style='white-space:nowrap;'>:forany</span></a> checker <span class='cqlpiece'>&#x25cb;</span>
   (position
     <a href="CQL-Position-List.html#position:btm"><span style='white-space:nowrap;'>:btm</span></a>
     <a href="CQL-Position-List.html#position:attackcount"><span style='white-space:nowrap;'>:attackcount</span></a> $checker <span class='piece'>&#x265a;</span> 1
@@ -289,7 +289,7 @@ Fourth example: knight gives mate with its first move.
 (match
   (position
     <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a>            <span class='comment'>; either color</span>
-    <a href="CQL-Position-List.html#position:attackcount"><span style='white-space:nowrap;'>:attackcount</span></a> <span class='piece'>&#x265a;</span> [<span class='cqlpiece'>&#x2b1c;</span>.] 0 <span class='comment'>; king is smothered by own pieces</span>
+    <a href="CQL-Position-List.html#position:attackcount"><span style='white-space:nowrap;'>:attackcount</span></a> <span class='piece'>&#x265a;</span> [<span class='cqlpiece'>&#x25cb;</span>.] 0 <span class='comment'>; king is smothered by own pieces</span>
     <a href="CQL-Position-List.html#position:mate"><span style='white-space:nowrap;'>:mate</span></a>))               <span class='comment'>; and is mate</span><!--
 --></code></pre></div>
 

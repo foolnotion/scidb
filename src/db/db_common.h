@@ -1289,7 +1289,7 @@ namespace nag
 
 	char const* toSymbol(ID nag);
 	ID fromSymbol(mstl::string const& symbol);
-	ID fromSymbol(char const* symbol);
+	ID fromSymbol(char const* symbol, unsigned* len = 0);
 	ID fromSymbol(char const* symbol, unsigned len);
 
 	namespace prefix

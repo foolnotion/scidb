@@ -84,8 +84,8 @@ a file, is <expr>[&B;&b;][a-h8]</expr>, denoting a bishop on the eight rank.
 <p>
 A <b>vertical flip transformation</b> applied to a piece designator reflects
 each square in its square set about the vertical bisector of the board. For
-example, the vertical flip of <expr>Uf6</expr>, denoting a piece on f6, is
-<expr>Uc6</expr>.
+example, the vertical flip of <expr>&U;f6</expr>, denoting a piece on f6, is
+<expr>&U;c6</expr>.
 </p>
 
 <table width="100%" border="0">
@@ -104,8 +104,8 @@ example, the vertical flip of <expr>Uf6</expr>, denoting a piece on f6, is
 <p>
 A <b>horizontal flip transformation</b> applied to a piece designator
 reflects each square in its square set about the horizontal bisector of
-the board. For example, the horizontal flip of <expr>Uf6</expr> is
-<expr>Uf3</expr>.
+the board. For example, the horizontal flip of <expr>&U;f6</expr> is
+<expr>&U;f3</expr>.
 </p>
 
 <table width="100%" border="0">

@@ -475,13 +475,13 @@ proc SetupPieceLetters {} {
 		]
 		if {$lang eq "en"} {
 			lappend Priv(pieceletters) \
-				"<span class='cqlpiece'>&#x2b1c;</span>" A \
-				"<span class='cqlpiece'>&#x2b1b;</span>" a \
+				"<span class='cqlpiece'>&#x25cb;</span>" A \
+				"<span class='cqlpiece'>&#x25cf;</span>" a \
 				"<span class='cqlpiece'>&#x25b3;</span>" M \
 				"<span class='cqlpiece'>&#x25b2;</span>" m \
 				"<span class='cqlpiece'>&#x25bd;</span>" I \
 				"<span class='cqlpiece'>&#x25bc;</span>" i \
-				"<span class='cqlpiece'>&#x25e8;</span>" U \
+				"<span class='cqlpiece'>&#x25d1;</span>" U \
 				;
 		}
 	}

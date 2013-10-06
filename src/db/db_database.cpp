@@ -108,6 +108,7 @@ Database::Database(Database const& db, mstl::string const& name)
 	:DatabaseContent(name, db)
 	,m_codec(DatabaseCodec::makeCodec(name, DatabaseCodec::New))
 	,m_name(name)
+	,m_usedEncoding(m_encoding)
 	,m_id(Counter++)
 	,m_size(0)
 	,m_initialSize(0)
@@ -136,6 +137,7 @@ Database::Database(mstl::string const& name, mstl::string const& encoding)
 	:DatabaseContent(name, encoding, type::Unspecific)
 	,m_codec(DatabaseCodec::makeCodec(name, DatabaseCodec::Existing))
 	,m_name(name)
+	,m_usedEncoding(m_encoding)
 	,m_id(Counter++)
 	,m_size(0)
 	,m_initialSize(0)
@@ -147,6 +149,7 @@ Database::Database(mstl::string const& name, mstl::string const& encoding)
 	,m_descriptionHasChanged(false)
 	,m_usingAsyncReader(false)
 {
+	M_REQUIRE(encoding != sys::utf8::Codec::automatic());
 	M_ASSERT(m_codec);
 
 	// NOTE: we assume normalized (unique) file names.
@@ -169,6 +172,7 @@ Database::Database(	mstl::string const& name,
 	:DatabaseContent(name, encoding, type)
 	,m_codec(DatabaseCodec::makeCodec(name, DatabaseCodec::New))
 	,m_name(name)
+	,m_usedEncoding(m_encoding)
 	,m_id(Counter++)
 	,m_size(0)
 	,m_initialSize(0)
@@ -182,6 +186,7 @@ Database::Database(	mstl::string const& name,
 {
 	M_REQUIRE(storage != storage::Temporary);
 	M_REQUIRE(variant::isMainVariant(variant));
+	M_REQUIRE(encoding != sys::utf8::Codec::automatic());
 
 	M_ASSERT(m_codec);
 
@@ -227,6 +232,7 @@ Database::Database(	mstl::string const& name,
 	:DatabaseContent(name, encoding)
 	,m_codec(0)
 	,m_name(name)
+	,m_usedEncoding(encoding)
 	,m_id(Counter++)
 	,m_size(0)
 	,m_initialSize(0)
@@ -256,6 +262,9 @@ Database::Database(	mstl::string const& name,
 
 	if (!m_codec->isWritable())
 		m_writable = false;
+	
+	if (m_encoding == sys::utf8::Codec::automatic())
+		m_encoding = m_usedEncoding = m_codec->defaultEncoding();
 
 	try
 	{
@@ -280,6 +289,7 @@ Database::Database(mstl::string const& name, Producer& producer, util::Progress&
 	:DatabaseContent(name, producer.encoding())
 	,m_codec(0)
 	,m_name(name)
+	,m_usedEncoding(m_encoding)
 	,m_id(Counter++)
 	,m_size(0)
 	,m_initialSize(0)
@@ -303,6 +313,14 @@ Database::Database(mstl::string const& name, Producer& producer, util::Progress&
 	catch (mstl::ios_base::failure const& exc)
 	{
 		IO_RAISE(Unspecified, Open_Failed, "open failed");
+	}
+
+	if ((m_usedEncoding = producer.encoding()) == sys::utf8::Codec::automatic())
+	{
+		m_usedEncoding = m_encoding;
+
+		if (format() != format::Scidb)
+			m_encoding = m_usedEncoding;
 	}
 
 	m_initialSize = m_size = m_gameInfoList.size();
@@ -741,6 +759,7 @@ Database::reopen(mstl::string const& encoding, util::Progress& progress)
 	M_REQUIRE(!isMemoryOnly());
 	M_REQUIRE(!usingAsyncReader());
 	M_REQUIRE(!hasTemporaryStorage());
+	M_REQUIRE(format() != format::Scidb);
 
 	m_gameInfoList.clear();
 	m_namebases.clear();
@@ -751,7 +770,7 @@ Database::reopen(mstl::string const& encoding, util::Progress& progress)
 	m_size = 0;
 	m_initialSize = 0;
 	m_lastChange = sys::time::timestamp();
-	m_encoding = encoding;
+	m_usedEncoding = m_encoding = encoding;
 
 	delete m_codec;
 
@@ -1490,7 +1509,9 @@ Database::importGames(Producer& producer, util::Progress& progress)
 	M_REQUIRE(	producer.variant() == variant::Undetermined
 				|| variant::toMainVariant(producer.variant()) == variant());
 
-	return m_codec->importGames(producer, progress);
+	unsigned count = m_codec->importGames(producer, progress);
+	setEncodingFailed(producer.encodingFailed());
+	return count;
 }
 
 
@@ -1524,13 +1545,16 @@ Database::recode(mstl::string const& encoding, util::Progress& progress)
 	M_REQUIRE(!usingAsyncReader());
 	M_REQUIRE(namebases().isOriginal());
 
-	if (encoding == m_encoding)
+	if (encoding == m_usedEncoding)
 		return;
 
 	m_encodingFailed = false;
 	m_encodingOk = true;
 
-	m_codec->setEncoding(m_encoding = encoding);
+	if (format() != format::Scidb)
+		m_encoding = encoding;
+
+	m_codec->setEncoding(m_usedEncoding = encoding);
 	m_codec->reloadDescription();
 	m_codec->reloadNamebases(progress);
 
@@ -1695,6 +1719,14 @@ Database::setVariant(variant::Type variant)
 			::sys::file::changed(m_name, m_fileTime);
 		}
 	}
+}
+
+
+void
+Database::setUsedEncoding(mstl::string const& encoding)
+{
+	M_REQUIRE(encoding != sys::utf8::Codec::automatic());
+	m_usedEncoding = encoding;
 }
 
 

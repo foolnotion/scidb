@@ -194,7 +194,7 @@ of FICS games.
 This feature scans the database for extra PGN tags (such as "WhiteTeam").
 Then, one may strip some of these extra tags from the database. Removing
 unwanted tags will accalerate position search, but not before a compaction
-((<see/> <a href="#Compact">%::application::database::mc::FileCompact%</a>)
+(<see/> <a href="#Compact">%::application::database::mc::FileCompact%</a>)
 of the database is done.
 </p>
 

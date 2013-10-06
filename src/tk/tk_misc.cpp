@@ -48,6 +48,8 @@ initKeymapInfo(Tcl_Interp* ti)
 	XModifierKeymap*	modMap			= XGetModifierMapping(display);
 	int					maxKeyPerMod	= modMap->max_keypermod;
 	KeyCode*				keyCode			= modMap->modifiermap;
+	bool					mod1Mask			= false;
+	bool					mod5Mask			= false;
 
 	m_altModMask = 0;
 
@@ -57,13 +59,25 @@ initKeymapInfo(Tcl_Interp* ti)
 		{
 			KeySym keysym = KeycodeToKeysym(display, *keyCode, 0);
 
-			if (keysym == XK_Alt_L || keysym == XK_Alt_R)
-				m_altModMask |= (ShiftMask << (i/maxKeyPerMod));
+			switch (keysym)
+			{
+				case XK_Alt_L:
+					m_altModMask |= (ShiftMask << (i/maxKeyPerMod));
+					mod1Mask = true;
+					break;
+
+				case XK_Alt_R:
+					m_altModMask |= (ShiftMask << (i/maxKeyPerMod));
+					mod5Mask = true;
+					break;
+			}
 		}
 	}
 
-	if (m_altModMask == 0)
-		fprintf(stderr, "initKeymapInfo(): no Alt key mapped");
+	if (!mod1Mask)
+		m_altModMask |= Mod1Mask;
+	if (!mod5Mask)
+		m_altModMask |= Mod5Mask;
 
 	XFreeModifiermap(modMap);
 }

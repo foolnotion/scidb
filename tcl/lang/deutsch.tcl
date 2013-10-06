@@ -1818,11 +1818,6 @@
 ::dialog::save::mc::LeaveTrialModeHint			"Der Variantentest sollte zuvor verlassen werden, dazu kann das Tastaturkürzel %s verwendet werden."
 ::dialog::save::mc::OpenPlayerDictionary		"Spielerlexikon öffnen"
 
-::dialog::save::mc::ConfigureSelection			"Auswahl konfigurieren..."
-::dialog::save::mc::SecondRating					"Zweite Wertung"
-::dialog::save::mc::PlayerSection				"Spielersektion"
-::dialog::save::mc::EventSection					"Turniersektion"
-
 ::dialog::save::mc::LocalName						"&Heimatl. Name"
 ::dialog::save::mc::EnglishName					"E&nglischer Name"
 ::dialog::save::mc::ShowRatingType				"We&rtungszahl zeigen"

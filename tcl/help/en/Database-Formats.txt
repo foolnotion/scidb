@@ -235,6 +235,10 @@ a PGN file is encoded with character set <nobr>Latin-1</nobr> (ISO-<nobr>8859-1<
 But if a PGN file is starting with an <nobr>UTF-8</nobr> mark (<nobr>UTF-8</nobr>-BOM:
 byte sequence EF BB BF) an <nobr>UTF-8</nobr> encoding will be expected (according to
 <a href="http://www.unicode.org/faq/utf_bom.html#BOM">Unicode FAQ</a>).
+If the application is detecting an Unicode string when reading the file before a
+string with a different encoding (except ASCII) was recognized, then also Unicode
+encoding for the whole file will be expected, but only if not an explicit encoding
+is chosen when opening the file.
 </p>
 
 <p>

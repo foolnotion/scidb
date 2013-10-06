@@ -4432,6 +4432,12 @@ db_reader.o: ../util/u_misc.h
 db_reader.o: ../sys/sys_file.h
 db_reader.o: ../sys/sys_time.h
 db_reader.o: ../sys/sys_file.ipp
+db_reader.o: ../sys/sys_utf8_codec.h
+db_reader.o: ../mstl/m_list.h
+db_reader.o: ../mstl/m_list_node.h
+db_reader.o: ../mstl/m_list_node.ipp
+db_reader.o: ../mstl/m_list.ipp
+db_reader.o: ../sys/sys_utf8_codec.ipp
 db_search.o: db_search.h
 db_search.o: db_date.h
 db_search.o: ../util/u_crc.h
