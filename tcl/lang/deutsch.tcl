@@ -2033,6 +2033,7 @@
 ::help::mc::HideIndex				"Index ausblenden"
 ::help::mc::ShowIndex				"Index einblenden"
 ::help::mc::All						"Alle"
+::help::mc::DefaultFont				"Standardfont"
 
 ::help::mc::FileNotFound			"Datei nicht gefunden."
 ::help::mc::CantFindFile			"Die Datei %s kann nicht gefunden werden."

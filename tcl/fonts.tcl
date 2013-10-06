@@ -48,10 +48,10 @@ set DecreaseFontSize							"Decrease Font Size"
 namespace import ::tcl::mathfunc::int
 
 set DefaultHtmlFixedFamilies {
-	{Arial Monospaced} {Bitstream Vera Sans Mono} TkFixedFont {Nimbus Monoe L} {Lucida Typewriter}
+	{Arial Monospaced} {Nimbus Mono L} {Bitstream Vera Sans Mono} TkFixedFont {Lucida Typewriter}
 }
 set DefaultHtmlTextFamilies {
-	Abel Arial {Bitstream Vera Sans} TkTextFont {Helvetica Neue} {Helvetica Neue LT Std} {Nimbus Sans L} Verdana {Lucida Grande} Lucida {DejaVu Sans}
+	Arial {Nimbus Sans L} {Bitstream Vera Sans} TkTextFont {Helvetica Neue} {Helvetica Neue LT Std} Verdana {Lucida Grande} Lucida {DejaVu Sans}
 } 
 
 array set mapCodeToNag {

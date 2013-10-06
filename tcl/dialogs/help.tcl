@@ -59,6 +59,7 @@ set OnlyFirstMatches			"Only first %s matches per page will be shown."
 set HideIndex					"Hide index"
 set ShowIndex					"Show index"
 set All							"All"
+set DefaultFont				"Default font"
 
 set FileNotFound				"File not found."
 set CantFindFile				"Can't find the file at %s."
@@ -69,6 +70,7 @@ set PageNotAvailable			"This page is not available"
 } ;# namespace mc
 
 array set Options {
+	fonts			""
 	fonttable	{8 9 10 11 13 15 17}
 	piecelang	graphic
 	treewidth	320
@@ -95,6 +97,7 @@ array set Priv {
 	latinligatures	no
 	minsize:tree	300
 	minsize:html	400
+	fonts				{}
 }
 
 
@@ -1222,7 +1225,7 @@ proc PopupMenu {dlg tab} {
 
 	set m $dlg.popup
 	if {[winfo exists $m]} { destroy $m }
-	menu $m -tearoff false
+	menu $m
 	catch { wm attributes $m -type popup_menu }
 	set cursor [winfo pointerxy $dlg]
 
@@ -1313,6 +1316,26 @@ proc PopupMenu {dlg tab} {
 				-compound left \
 				-accel "$::mc::Key(Ctrl) \u2212" \
 				;
+
+			if {[llength $Priv(fonts)] > 1} {
+				$m add cascade \
+					-menu [menu $m.fonts] \
+					-label " $mc::DefaultFont" \
+					-compound left \
+					-image $::icon::16x16::fonts \
+					;
+				foreach fam $Priv(fonts) {
+					$m.fonts add radiobutton \
+						-compound left \
+						-label $fam \
+						-variable [namespace current]::Options(fonts) \
+						-value $fam \
+						-command [namespace code SetupDefaultFont] \
+						;
+					::theme::configureRadioEntry $m.fonts
+				}
+			}
+
 			$m add separator
 		}
 
@@ -1342,6 +1365,12 @@ proc PopupMenu {dlg tab} {
 
 	bind $m <<MenuUnpost>> +::tooltip::hide
 	tk_popup $m {*}$cursor
+}
+
+
+proc SetupDefaultFont {} {
+	variable Priv
+	$Priv(html) css [::html::defaultCSS [DefaultFixedFamilies] [DefaultTextFamilies]]
 }
 
 
@@ -1429,7 +1458,7 @@ proc BuildHtmlFrame {dlg w} {
 	set Priv(html:track:width) 0
 
 	# setup css script
-	set css [::html::defaultCSS [::font::htmlFixedFamilies] [::font::htmlTextFamilies]]
+	set css [::html::defaultCSS [DefaultFixedFamilies] [DefaultTextFamilies]]
 
 	# build HTML widget
 	::html $w \
@@ -1464,6 +1493,73 @@ proc BuildHtmlFrame {dlg w} {
 	bind $dlg <FocusOut>	[list $w focusout]
 
 	return [$w drawable]
+}
+
+
+proc SearchDefaultFonts {} {
+	variable Options
+	variable Priv
+
+	if {[llength $Priv(fonts)] == 0} {
+		set families [::dialog::::choosefont::fontFamilies no]
+		if {"arial" in $families} {
+			lappend Priv(fonts) "Arial"
+		} elseif {"nimbus sans l" in $families && "nimbus mono l" in $families} {
+			lappend Priv(fonts) "Nimbus Sans L"
+		}
+		if {"abel" in $families && "abell cond bold" in $families} {
+			lappend Priv(fonts) "Abel"
+		}
+		if {"bitstream vera sans" in $families && "bitstream vera sans mono" in $families} {
+			lappend Priv(fonts) "Bitstream Vera Sans"
+		}
+	}
+
+	if {[string length $Options(fonts)] == 0} {
+		set Options(fonts) [lindex $Priv(fonts) 0]
+	}
+}
+
+
+proc DefaultTextFamilies {} {
+	variable Options
+
+	SearchDefaultFonts
+
+	switch $Options(fonts) {
+		"Arial"						{ set families {Arial} }
+		"Nimbus Sans L"			{ set families {{Nimbus Sans L}} }
+		"Abel"						{ set families {Abel {Abell Cond Bold}} }
+		"Bitstream Vera Sans"	{ set families {{Bitstream Vera Sans}} }
+		default						{ set families {TkTextFont} }
+	}
+
+	foreach fam [::font::htmlTextFamilies] {
+		if {$fam ni $families} { lappend families $fam }
+	}
+
+	return $families
+}
+
+
+proc DefaultFixedFamilies {} {
+	variable Options
+
+	SearchDefaultFonts
+
+	switch $Options(fonts) {
+		"Arial"						{ set families {Arial Monospaced} }
+		"Nimbus Sans L"			{ set families {{Nimbus Mono L}} }
+		"Abel"						{ set families {Arial Monospaced} }
+		"Bitstream Vera Sans"	{ set families {Bitstream Vera Sans Mono} }
+		default						{ set families {TkFixedFont} }
+	}
+
+	foreach fam [::font::htmlFixedFamilies] {
+		if {$fam ni $families} { lappend families $fam }
+	}
+
+	return $families
 }
 
 

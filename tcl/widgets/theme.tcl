@@ -609,7 +609,7 @@ option add *Listbox.selectForeground black
 option add *Panedwindow.sashWidth 4
 option add *Panedwindow.sashRelief raised
 
-option add *Menu.TearOff 0
+option add *Menu.tearOff 0
 option add *Menu.activeBackground #678db2
 #option add *Menu.activeBackground #437597
 option add *Menu.activeForeground white

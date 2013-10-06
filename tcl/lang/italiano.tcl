@@ -2048,6 +2048,7 @@
 ::help::mc::HideIndex				"Nascondi Indice"
 ::help::mc::ShowIndex				"Mostra Indice"
 ::help::mc::All						"Tutti"
+::help::mc::DefaultFont				"Default font" ;# NEW
 
 ::help::mc::FileNotFound			"File non trovato."
 ::help::mc::CantFindFile			"Impossibile trovare file a %s."

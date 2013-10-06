@@ -2032,6 +2032,7 @@
 ::help::mc::HideIndex				"Hide index"
 ::help::mc::ShowIndex				"Show index"
 ::help::mc::All						"All"
+::help::mc::DefaultFont				"Default font"
 
 ::help::mc::FileNotFound			"File not found."
 ::help::mc::CantFindFile			"Can't find the file at %s."

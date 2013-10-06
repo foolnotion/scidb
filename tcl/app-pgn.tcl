@@ -2253,8 +2253,8 @@ proc PopupMenu {parent position} {
 
 	set menu $parent.__menu__
 	catch { destroy $menu }
-	menu $menu -tearoff 0
-	catch { wm attributes $menu -type popup_menu }
+	menu $menu -type popup_menu
+	catch { wm attributes $m -type popup_menu }
 
 	if {[::game::trialMode?]} {
 		$menu add command \
@@ -2323,7 +2323,7 @@ proc PopupMenu {parent position} {
 			-command [namespace code TransposeGame] \
 			;
 
-		menu $menu.strip -tearoff no
+		menu $menu.strip
 		set state "normal"
 		if {![::scidb::game::position isMainline?] || [::scidb::game::position atStart?]} {
 			set state "disabled"
@@ -2358,7 +2358,7 @@ proc PopupMenu {parent position} {
 		if {[::scidb::game::count comments] == 0} { set state disabled }
 		lassign [::scidb::game::link? $position] base variant index
 
-		menu $menu.strip.comments -tearoff no
+		menu $menu.strip.comments
 		$menu.strip add cascade \
 			-menu $menu.strip.comments \
 			-label " $mc::Command(strip:comments)" \
@@ -2680,7 +2680,7 @@ proc PopupMenu {parent position} {
 
 	$menu.display add separator
 
-	menu $menu.display.moveStyles -tearoff no
+	menu $menu.display.moveStyles
 	$menu.display add cascade \
 		-menu $menu.display.moveStyles \
 		-label $mc::MoveNotation \
@@ -2696,7 +2696,7 @@ proc PopupMenu {parent position} {
 		::theme::configureRadioEntry $menu.display.moveStyles
 	}
 
-	menu $menu.display.languages -tearoff no
+	menu $menu.display.languages
 	$menu.display add cascade \
 		-menu $menu.display.languages \
 		-label $mc::LanguageSelection \

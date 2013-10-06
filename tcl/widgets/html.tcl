@@ -528,6 +528,15 @@ proc WidgetProc {w command args} {
 			return
 		}
 
+		css {
+			if {[llength $args] != 1} {
+				error "wrong # args: should be \"[namespace current] $command <script>"
+			}
+			set Priv(css) [lindex $args 0]
+			SetupCSS $w
+			return
+		}
+
 		root {
 			return [$w.sub.html node]
 		}

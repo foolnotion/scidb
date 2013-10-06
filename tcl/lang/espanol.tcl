@@ -2038,6 +2038,7 @@
 ::help::mc::HideIndex				"Ocultar el úndice"
 ::help::mc::ShowIndex				"Mostrar el úndice"
 ::help::mc::All						"All" ;# NEW
+::help::mc::DefaultFont				"Default font" ;# NEW
 
 ::help::mc::FileNotFound			"No se encontró el archivo."
 ::help::mc::CantFindFile			"No se encuentrá el archivo en %s."
