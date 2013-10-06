@@ -147,6 +147,7 @@ array set fontFamilies {
 	}
 
 	Helvetica {
+		{Abel}
 		{Bitstream Vera Sans}
 		{DejaVu Sans}
 		{DejaVu LGC Sans}

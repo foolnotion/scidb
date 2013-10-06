@@ -1523,7 +1523,7 @@ proc Finish {parent} {
 }
 
 
-proc DoAlignment {tbf} 
+proc DoAlignment {tbf} {
 	variable Specs
 
 	set slaves [pack slaves $tbf.frame.scrolled]
