@@ -157,7 +157,7 @@ array set feature {
     assertions      no
     gprof-profiling no
     gcov-coverage   no
-    debug-si4       no
+    si4-debugging   no
     splash-screen   yes
 }
 
@@ -1881,7 +1881,7 @@ proc writeMakefile {success} {
     if {!$feature(assertions)}      { Append option(CXX_DEBUG) "-DNREQ" }
     if { $feature(gprof-profiling)} { Append option(PROFILING) "-pg" }
     if { $feature(gcov-coverage)}   { Append option(PROFILING) "-coverage" }
-    if { $feature(debug-si4)}       { Append option(EXTRA_DEBUG_FLAGS) "-DDEBUG_SI4" }
+    if { $feature(si4-debugging)}   { Append option(EXTRA_DEBUG_FLAGS) "-DDEBUG_SI4" }
 #   if {$feature(splash-screen)}    { set option(SPLASH) "yes" }
 #   if {!$feature(splash-screen)}   { set option(SPLASH) "no" }
 
@@ -2139,7 +2139,7 @@ proc usage {rc} {
 set environment(OPTIMIZE) ""
 set feature(symbols) yes
 set feature(assertions) yes
-set feature(debug-si4) yes
+set feature(si4-debugging) yes
 set configure(program-suffix) "-beta"
 
 if {[lsearch $argv -h] >= 0 || [lsearch $argv --help] >= 0} { usage 0 }
