@@ -1329,11 +1329,11 @@ proc PlaceToolbarFrame {tbf dir incr} {
 			set larrow $parent.__tba__${side}_l
 
 			if {$width < $rwidth} {
-				incr width -26 ;# XXX real width of arrow button required
+				MakeArrow $tbf r +1
+				MakeArrow $tbf l -1
+				incr width [expr {-([winfo reqwidth $larrow] + [winfo reqwidth $rarrow])}]
 				set offset [max $offset [expr {$width - $rwidth}]]
 				if {$rarrow ni [grid slaves $tbf]} {
-					MakeArrow $tbf r +1
-					MakeArrow $tbf l -1
 					grid $larrow -in $tbf -row 1 -column 0 -sticky ns
 					grid $rarrow -in $tbf -row 1 -column 2 -sticky ns
 				}
@@ -1394,11 +1394,11 @@ proc PlaceToolbarFrame {tbf dir incr} {
 			set barrow $parent.__tba__${side}_b
 
 			if {$height < $rheight} {
-				incr height -26 ;# XXX real height of arrow button required
+				MakeArrow $tbf b +1
+				MakeArrow $tbf t -1
+				incr height [expr {-([winfo reqheight $tarrow] + [winfo reqheight $barrow])}]
 				set offset [max $offset [expr {$height - $rheight}]]
 				if {$barrow ni [grid slaves $tbf]} {
-					MakeArrow $tbf b +1
-					MakeArrow $tbf t -1
 					grid $tarrow -in $tbf -row 0 -column 1 -sticky ew
 					grid $barrow -in $tbf -row 2 -column 1 -sticky ew
 				}
