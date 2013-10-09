@@ -2253,7 +2253,7 @@ proc PopupMenu {parent position} {
 
 	set menu $parent.__menu__
 	catch { destroy $menu }
-	menu $menu -type popup_menu
+	menu $menu
 	catch { wm attributes $m -type popup_menu }
 
 	if {[::game::trialMode?]} {
