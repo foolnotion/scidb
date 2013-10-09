@@ -44,6 +44,7 @@ public:
 		virtual void signalChanged(unsigned id, mstl::string const& path);
 		virtual void signalDeleted(unsigned id, mstl::string const& path);
 		virtual void signalCreated(unsigned id, mstl::string const& path);
+		virtual void signalUnmounted(unsigned id, mstl::string const& path);
 	};
 
 	void hook(mstl::string const& path, Callback& callback);

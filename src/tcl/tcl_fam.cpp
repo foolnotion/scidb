@@ -53,7 +53,7 @@ struct Monitor : public FileAlterationMonitor
 			Tcl_IncrRefCount(m_changed = Tcl_NewStringObj("changed", -1));
 			Tcl_IncrRefCount(m_deleted = Tcl_NewStringObj("deleted", -1));
 			Tcl_IncrRefCount(m_created = Tcl_NewStringObj("created", -1));
-			Tcl_IncrRefCount(m_id = Tcl_NewStringObj("id", -1));
+			Tcl_IncrRefCount(m_umount  = Tcl_NewStringObj("umount",  -1));
 		}
 	}
 
@@ -74,25 +74,25 @@ struct Monitor : public FileAlterationMonitor
 		Tcl_DecrRefCount(idObj);
 	}
 
-	void signalId(unsigned id, mstl::string const& path) override { signal(id, m_id, path); }
+	void signalId(unsigned id, mstl::string const& path) override			{}
+	void signalChanged(unsigned id, mstl::string const& path) override	{ signal(id, m_changed, path); }
+	void signalDeleted(unsigned id, mstl::string const& path) override	{ signal(id, m_deleted, path); }
+	void signalCreated(unsigned id, mstl::string const& path) override	{ signal(id, m_created, path); }
+	void signalUnmounted(unsigned id, mstl::string const& path) override	{ signal(id, m_umount, path); }
 
-	void signalChanged(unsigned id, mstl::string const& path) override { signal(id, m_changed, path); }
-	void signalDeleted(unsigned id, mstl::string const& path) override { signal(id, m_deleted, path); }
-	void signalCreated(unsigned id, mstl::string const& path) override { signal(id, m_created, path); }
-
-	Tcl_Obj*	m_proc;
-	unsigned	m_ref;
+	Tcl_Obj* m_proc;
+	unsigned m_ref;
 
 	static Tcl_Obj* m_changed;
 	static Tcl_Obj* m_deleted;
 	static Tcl_Obj* m_created;
-	static Tcl_Obj* m_id;
+	static Tcl_Obj* m_umount;
 };
 
 Tcl_Obj* Monitor::m_changed	= 0;
 Tcl_Obj* Monitor::m_deleted	= 0;
 Tcl_Obj* Monitor::m_created	= 0;
-Tcl_Obj* Monitor::m_id			= 0;
+Tcl_Obj* Monitor::m_umount		= 0;
 
 typedef mstl::hash<mstl::string, Monitor*> Map;
 

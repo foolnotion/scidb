@@ -160,6 +160,7 @@ namespace import ::tcl::mathfunc::max
 
 set HaveFAM 1
 set DuplicateFileSizeLimit 5000000
+set CurrentPath ""
 
 # possibly we should avoid "{}[]+=,;%", too - especially ';' should be avoided!?
 set reservedChars {\" \\ / : * < > ? |}
@@ -202,6 +203,7 @@ array set ColorLookup {
 proc fsbox {w type args} {
 	variable Options
 	variable Colors
+	variable CurrentPath
 	variable icon::16x16::filesystem
 
 	if {![namespace exists [namespace current]::${w}]} {
@@ -303,6 +305,7 @@ proc fsbox {w type args} {
 	set Vars(startup) 1
 	set Vars(extensions) {}
 	set Vars(onlyexecutables) 0
+	set Vars(usb-devices) {}
 
 	if {$type ne "save"} { set Vars(folder:trash) [::trash::directory] }
 	if {[llength $Vars(folder:desktop)]} { set Vars(lookup:$Vars(folder:desktop)) desktop }
@@ -500,11 +503,13 @@ proc fsbox {w type args} {
 
 	if {![file isdirectory $initialdir]} { set initialdir [pwd] }
 
+	set CurrentPath $w
 	CheckInitialFile $w
 	ChangeDir $w $initialdir
 	DirChanged $w 1
 	SelectInitialFile $w
 	focus $top.ent_filename
+
 	return $w
 }
 
@@ -512,6 +517,7 @@ proc fsbox {w type args} {
 proc reset {w type args} {
 	variable ${w}::Vars
 	variable Options
+	variable CurrentPath
 
 	array set opts {
 		-multiple					0 
@@ -553,10 +559,7 @@ proc reset {w type args} {
 	set trash $Vars(folder:trash)
 	set Vars(folder:trash) ""
 	if {$type ne "save"} { set Vars(folder:trash) [::trash::directory] }
-	if {$trash ne $Vars(folder:trash)} {
-		bookmarks::BuildBookmarks $w
-		bookmarks::LayoutBookmarks $w
-	}
+	bookmarks::BuildBookmarks $w
 
 	foreach option {	multiple defaultextension defaultencoding filetypes fileicons
 							filecursors fileencodings showhidden sizecommand validatecommand
@@ -626,6 +629,7 @@ proc reset {w type args} {
 	} else {
 		DirChanged $w 1
 	}
+	set CurrentPath $w
 	SelectInitialFile $w
 	changeFileDialogType $w $type
 	setFileTypes $w $Vars(filetypes) $Vars(defaultextension)
@@ -1241,6 +1245,7 @@ proc ConfigurePane {width} {
 
 
 proc VisitItem {w t mode item} {
+	if {![winfo exists $w]} { return }
 	variable ${w}::Vars
 
 	if {![winfo exists $w]} { return }
@@ -1411,7 +1416,7 @@ proc DirChanged {w {useHistory 1}} {
 	variable HaveFAM
 
 	if {$HaveFAM && [llength $Vars(fam)] == 0} {
-		set Vars(fam) [namespace code [list FAMHandler $w]]
+		set Vars(fam) [namespace current]::FAMHandler
 		set Vars(fam:lastid) 0
 		set Vars(fam:currentid) 0
 		if {[catch { ::fam::open $Vars(fam) } Vars(fam) err]} {
@@ -1420,6 +1425,8 @@ proc DirChanged {w {useHistory 1}} {
 			set HaveFAM 0
 		} elseif {[string length $Vars(fam)] == 0} {
 			set HaveFAM 0
+		} elseif {[tk windowingsystem] eq "x11" && [file isdirectory /media]} {
+			catch { ::fam::add $Vars(fam) /media }
 		}
 		if {!$HaveFAM} { set Vars(fam) {} }
 	}
@@ -1471,17 +1478,30 @@ proc DirChanged {w {useHistory 1}} {
 }
 
 
-proc FAMHandler {w id action path} {
+proc FAMHandler {id action path} {
+	set w [set [namespace current]::CurrentPath]
+	if {![winfo exists $w]} { return }
 	variable ${w}::Vars
 
-	# deletion events are triggered twice (bug in libfam?)
-
-	if {![winfo exists $w]} { return }
 	set Vars(fam:currentid) $id
 
+	if {[string match /media/* $path]} {
+		if {$action ne "deleted"} {
+			after 1000 [namespace code [list bookmarks::BuildBookmarks $w]]
+		}
+
+		if {$action eq "umount" && [string match $path* $Vars(folder)]} {
+			after idle [namespace code [list ChangeDir $w $Vars(folder:home) no]]
+			return
+		}
+	}
+
+	# deletion events are triggered twice (bug in libfam?)
 	if {$id ne $Vars(fam:lastid)} {
 		set Vars(fam:lastid) $id
-		after idle [namespace code [list filelist::RefreshFileList $w]]
+		if {[string match $Vars(folder)* $path]} {
+			after idle [namespace code [list filelist::RefreshFileList $w]]
+		}
 	}
 }
 
@@ -1494,10 +1514,12 @@ proc GetStartMenu {w} {
 		lappend start $Vars(icon:[string tolower $folder]) [Tr $folder] $folder
 	}
 	lappend start "" "" ""
-	foreach folder {FileSystem Desktop Trash Download Home} {
+	foreach folder [GetFolders $w] {
 		set id [string tolower $folder]
 		if {[llength $Vars(folder:$id)]} {
-			lappend start $Vars(icon:$id) [Tr $folder] $Vars(folder:$id)
+			set text $folder
+			catch { set text [Tr $folder] }
+			lappend start $Vars(icon:$id) $text $Vars(folder:$id)
 		}
 	}
 	if {[llength $Bookmarks(user)]} {
@@ -1513,8 +1535,69 @@ proc GetStartMenu {w} {
 }
 
 
-proc ChooseDir {w basename where} {
+proc GetFolders {w} {
 	variable ${w}::Vars
+
+	lappend folders FileSystem
+	set Vars(usb-devices) {}
+
+	switch [tk windowingsystem] {
+		x11 {
+			set list {}
+			catch { set list [exec cat /proc/mounts] }
+			foreach entry [split $list \n] {
+				set path [lindex $entry 1]
+				if {[string match /media/* $path]} {
+					set name [string range $path 7 end]
+					set id [string tolower $name]
+					set Vars(folder:$id) $path
+					set Vars(icon:$id) $icon::16x16::usb
+					set Vars(lookup:$path) usb
+					lappend Vars(usb-devices) $name
+					lappend folders $name
+				}
+			}
+		}
+		win32 {
+			foreach drive [file volumes] {
+				if {![string match c:* $drive]} {
+					set name [string index $drive 0 2]
+					set id [string tolower $name]
+					set Vars(folder:$id) $drive
+					set Vars(icon:$id) $Vars(folder:filesystem) 
+					lappend folders $name
+				}
+			}
+		}
+		aqua {
+			# TODO
+		}
+	}
+
+	lappend folders Desktop Trash Download Home
+	return $folders
+}
+
+
+proc ChooseDir {w folder path} {
+	variable ${w}::Vars
+
+	set sep [fileSeparator]
+	if {[string match $Vars(folder:home)$sep* $folder$sep]} {
+		set basename [Tr Home]
+		set where home
+	} else {
+		set basename [Tr FileSystem]
+		if {[info exists Vars(lookup:$path)]} { set where $path } else { set where filesystem }
+		foreach name $Vars(usb-devices) {
+			set id [string tolower $name]
+			if {[string match $Vars(folder:$id)$sep* "$path$sep"]} {
+				set basename $name
+				set where $id
+				break
+			}
+		}
+	}
 
 	if {![info exists Vars(folder:$where)]} { set where filesystem }
 	set prefix $Vars(folder:$where)
@@ -1570,7 +1653,7 @@ proc ChangeDir {w path {useHistory 1}} {
 					set message [Tr DirectoryRemoved $path]
 				}
 				set Vars(folder) $appPWD
-				ChooseDir $w [Tr FileSystem] filesystem
+				ChooseDir $w $Vars(folder) $path
 				::dialog::warning -parent $Vars(widget:main) -message $message -buttons {ok}
 				if {![file isdirectory $path]} { filelist::RefreshFileList $w }
 				return
@@ -1579,15 +1662,7 @@ proc ChangeDir {w path {useHistory 1}} {
 			set pwd [pwd]
 			if {[file normalize $path] eq $pwd} { set Vars(folder) $path } else { set Vars(folder) $pwd }
 			cd $appPWD
-			if {[string match $Vars(folder:home)* $Vars(folder)]} {
-				set basename [Tr Home]
-				set where home
-			} else {
-				set basename [Tr FileSystem]
-				if {[info exists Vars(lookup:$path)]} { set where $path } else { set where filesystem }
-			}
-			ChooseDir $w $basename $where
-#			$Vars(choosedir) tooltip [Tr FileSystem]
+			ChooseDir $w $Vars(folder) $path
 			set Vars(lastFolder) $Vars(folder)
 		}
 	}
@@ -1867,6 +1942,7 @@ proc CheckPath {w path} {
 
 
 proc Stimulate {w} {
+	if {![winfo exists $w]} { return }
 	variable ${w}::Vars
 
 	if {![winfo exists $w]} { return }
@@ -2026,6 +2102,7 @@ proc AskAboutAction {w destination uriFiles actions} {
 
 
 proc DoFileOperations {w action uriFiles destination trash} {
+	if {![winfo exists $w]} { return }
 	variable ${w}::Vars
 
 	if {![winfo exists $w]} { return }
@@ -2597,7 +2674,6 @@ proc Build {w path args} {
 	}
 
 	BuildBookmarks $w
-	LayoutBookmarks $w
 
 	$t activate 0
 	$t notify bind $t <Selection> [namespace code [list Selected $w %S]]
@@ -2607,27 +2683,24 @@ proc Build {w path args} {
 
 
 proc BuildBookmarks {w} {
+	if {![winfo exists $w]} { return }
 	variable [namespace parent]::${w}::Vars
 
 	set Vars(bookmarks) {
 		{ star			Favorites	}
 		{ visited		LastVisited	}
 		{ divider		""				}
-		{ filesystem	FileSystem	}
 	}
-	if {[string length $Vars(folder:desktop)]} {
-		lappend Vars(bookmarks) { desktop Desktop }
+	foreach folder [[namespace parent]::GetFolders $w] {
+		switch $folder {
+			Desktop - Trash - Download {
+				if {[string length $Vars(folder:[string tolower $folder])] == 0} { continue }
+			}
+		}
+		lappend Vars(bookmarks) [list [string tolower $folder] $folder]
 	}
-	if {[string length $Vars(folder:trash)]} {
-		lappend Vars(bookmarks) { trash Trash }
-	}
-	if {[string length $Vars(folder:download)]} {
-		lappend Vars(bookmarks) { download Download }
-	}
-	lappend Vars(bookmarks)         \
-		{ home			Home			} \
-		{ divider		""				} \
-		;
+	lappend Vars(bookmarks) { divider "" }
+	LayoutBookmarks $w
 }
 
 
@@ -2674,11 +2747,16 @@ proc LayoutBookmarks {w} {
 			$t item style set $item root styLine
 			$t item enabled $item false
 		} else {
+			if {[info exists [namespace parent]::icon::16x16::$icon]} {
+				set text [Tr $text]
+			} else {
+				set icon usb
+			}
 			set icon [set [namespace parent]::icon::16x16::$icon]
 			$t item style set $item root style
 			$t item element configure $item root \
 				elemImg -image $icon + \
-				elemTxt -text [Tr $text] \
+				elemTxt -text $text \
 				;
 		}
 		$t item lastchild root $item
@@ -2710,6 +2788,7 @@ proc LayoutBookmarks {w} {
 
 
 proc AddBookmark {w {folder ""}} {
+	if {![winfo exists $w]} { return }
 	variable [namespace parent]::${w}::Vars
 	variable Bookmarks
 
@@ -3058,6 +3137,7 @@ proc HandleDropEvent {w action types actions {x -1} {y -1}} {
 
 
 proc DoHandleDropEvent {w uriFiles} {
+	if {![winfo exists $w]} { return }
 	variable [namespace parent]::${w}::Vars
 
 	if {[llength $uriFiles] > 0} {
@@ -3958,7 +4038,10 @@ proc Glob {w refresh} {
 			Files - Desktop {
 				set filter *
 				if {$Vars(showhidden)} { lappend filter .* }
-				set folders [glob -nocomplain -directory $Vars(folder) -types d {*}$filter]
+				if {[catch { glob -nocomplain -directory $Vars(folder) -types d {*}$filter } folders]} {
+					[namespace parent]::unbusy [winfo toplevel $w]
+					return ;# may happen after umount of USB device
+				}
 				set folders [[namespace parent]::mySort -nocase $folders]
 			}
 
@@ -4109,6 +4192,7 @@ proc InvokeFile {w args} {
 
 
 proc RefreshFileList {w} {
+	if {![winfo exists $w]} { return }
 	variable [namespace parent]::${w}::Vars
 
 	if {![winfo exists $w]} { return }	;# may happen due to FAM service
@@ -4431,6 +4515,7 @@ proc DeleteFile {w} {
 
 
 proc ResetFamId {w} {
+	if {![winfo exists $w]} { return }
 	variable [namespace parent]::${w}::Vars
 	set Vars(fam:lastid) $Vars(fam:currentid)
 }
@@ -5413,6 +5498,20 @@ set desktop [image create photo -data {
 	4fKaZQz/vlwBavsBEECMyImImVtEUC91xgzn0KCw3z+A3nkNjChmBob3z959v7que8OrE3Pn
 	MPx8cwqo9AtMD0AAYeYBNh5OjZQliypP/PvvNPPHf5ngmTtZBFSCQUkPm3qAAMJhCjO7oH5Y
 	GaesWRqQJw1yHC61AAEGAA9ENHUsc2BpAAAAAElFTkSuQmCC
+}]
+
+set usb [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAAXNSR0IArs4c6QAAASlQTFRFAAAA
+	KysrAAAAAAAAAAAADQ0NLCwsXKnNKysrLCwsMDAwMTExQEBAQUFBRKXcQkJCRabdRERERERHSarg
+	S6vgSUpNSkpKUJYiTU1NUK/iTk5OT1BTVrbjVFVXV7jmVVVYVVZZVlZWWbrlWrjlW834WFlcWVpc
+	X77oYZOmY8HoZM/4Y6zHZtD4Z8XqaMPpacPsaZepbcbtbsfubsjtbs3wb9X5bGxsb8jub8nrb8nu
+	b9L4cMjub29vcXFxdMzudcvvdczudtT5dXZ7eMzueNf6eczve8/veqCwfdDwfdPwf9HwgNXwgNfw
+	gNvxgNv7gNHxguH0gKOxgtnxg+Dzh+X2id36iL3Tidf1k9/6k+P+leP+neT9nuP9n+T9oOb+oub+
+	p+f9q+j+sen+97pq5AAAAAF0Uk5TAEDm2GYAAAC9SURBVBgZBcHNLkNBGADQ881M0QaNHdFdFyQs
+	JRKJlefWnQcQkRBbIY0F+qfm3qvOCRQALSGXs/Mmeql50Ty2XRIXe2U7Znf1cL+7CIWdbuLk+bre
+	n6YBhbxqBk9/E+nhsEciL+rXwfpqvB4vgkJe3qxW69uj8ddsm0LMptO0t7v8UINCbn+rdf2jCYp4
+	i3fkTExDkj9ajFboXrMkjvt4HWAwCqE/nAMYfv4k5pcAl9+ErRIANm0tagoAm+ofQp9FGExmAIMA
+	AAAASUVORK5CYII=
 }]
 
 set download [image create photo -data {

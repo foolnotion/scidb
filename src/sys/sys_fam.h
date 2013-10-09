@@ -46,6 +46,7 @@ public:
 	virtual void signalChanged(unsigned id, mstl::string const& path) = 0;
 	virtual void signalDeleted(unsigned id, mstl::string const& path) = 0;
 	virtual void signalCreated(unsigned id, mstl::string const& path) = 0;
+	virtual void signalUnmounted(unsigned id, mstl::string const& path) = 0;
 
 	static bool isSupported();
 

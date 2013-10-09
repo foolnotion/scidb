@@ -57,6 +57,7 @@ struct Monitor
 	void signalChanged(unsigned id, char const* filename) const;
 	void signalDeleted(unsigned id, char const* filename) const;
 	void signalCreated(unsigned id, char const* filename) const;
+	void signalUnmounted(unsigned id, char const* filename) const;
 
 	void checkId(int id) const;
 
@@ -101,7 +102,7 @@ Monitor::signalChanged(unsigned id, char const* filename) const
 {
 	checkId(id);
 
-	if (m_request->m_isDir)
+	if (m_request->m_isDir && *filename)
 		m_fam->signalChanged(m_request->m_id, m_request->m_path + PathDelim + filename);
 	else
 		m_fam->signalChanged(m_request->m_id, m_request->m_path);
@@ -113,7 +114,7 @@ Monitor::signalDeleted(unsigned id, char const* filename) const
 {
 	checkId(id);
 
-	if (m_request->m_isDir)
+	if (m_request->m_isDir && *filename)
 		m_fam->signalDeleted(m_request->m_id, m_request->m_path + PathDelim + filename);
 	else
 		m_fam->signalDeleted(m_request->m_id, m_request->m_path);
@@ -125,10 +126,22 @@ Monitor::signalCreated(unsigned id, char const* filename) const
 {
 	checkId(id);
 
-	if (m_request->m_isDir)
+	if (m_request->m_isDir && *filename)
 		m_fam->signalCreated(m_request->m_id, m_request->m_path + PathDelim + filename);
 	else
 		m_fam->signalCreated(m_request->m_id, m_request->m_path);
+}
+
+
+void
+Monitor::signalUnmounted(unsigned id, char const* filename) const
+{
+	checkId(id);
+
+	if (m_request->m_isDir && *filename)
+		m_fam->signalUnmounted(m_request->m_id, m_request->m_path + PathDelim + filename);
+	else
+		m_fam->signalUnmounted(m_request->m_id, m_request->m_path);
 }
 
 
@@ -402,23 +415,28 @@ inotifyHandler(ClientData clientData, int)
 
 			for (unsigned i = 0; i < mlist.size(); ++i)
 			{
-				Monitor const& m = mlist[i];
-
-				if (event.e->mask & (IN_IGNORED | IN_UNMOUNT))
+				if (!(event.e->mask & IN_IGNORED))
 				{
-					m.signalDeleted(inotifyId, event.e->name);
-				}
-				else
-				{
-					if (event.e->mask & (IN_ISDIR & (IN_DELETE_SELF | IN_MOVE_SELF)))
-						m.signalDeleted(inotifyId, event.e->name);
+					Monitor const& m = mlist[i];
 
-					if (event.e->mask & (IN_DELETE | IN_MOVED_TO))
-						m.signalDeleted(inotifyId, event.e->name);
-					if (event.e->mask & (IN_CREATE | IN_MOVED_FROM))
-						m.signalCreated(inotifyId, event.e->name);
-					if (event.e->mask & IN_ATTRIB)
-						m.signalChanged(inotifyId, event.e->name);
+					mstl::string path(event.e->name, event.e->len);
+
+					if (event.e->mask & IN_UNMOUNT)
+					{
+						m.signalUnmounted(inotifyId, path);
+					}
+					else
+					{
+						if (event.e->mask & (IN_ISDIR & (IN_DELETE_SELF | IN_MOVE_SELF)))
+							m.signalDeleted(inotifyId, path);
+
+						if (event.e->mask & (IN_DELETE | IN_MOVED_TO))
+							m.signalDeleted(inotifyId, path);
+						if (event.e->mask & (IN_CREATE | IN_MOVED_FROM))
+							m.signalCreated(inotifyId, path);
+						if (event.e->mask & IN_ATTRIB)
+							m.signalChanged(inotifyId, path);
+					}
 				}
 			}
 		}
@@ -679,21 +697,23 @@ fcntlSignalHandler(int signum, siginfo_t* info, void*)
 			{
 				Monitor const& m = mlist[i];
 
+				mstl::string path(event.e->name, event.e->len);
+
 				if (event.e->mask & (IN_IGNORED | IN_UNMOUNT))
 				{
-					m.signalDeleted(signalId, event.e->name);
+					m.signalDeleted(signalId, path);
 				}
 				else
 				{
 					if (event.e->mask & (IN_ISDIR & (IN_DELETE_SELF | IN_MOVE_SELF)))
-						m.signalDeleted(signalId, event.e->name);
+						m.signalDeleted(signalId, path);
 
 					if (event.e->mask & (IN_DELETE | IN_MOVED_TO))
-						m.signalDeleted(signalId, event.e->name);
+						m.signalDeleted(signalId, path);
 					if (event.e->mask & (IN_CREATE | IN_MOVED_FROM))
-						m.signalCreated(signalId, event.e->name);
+						m.signalCreated(signalId, path);
 					if (event.e->mask & IN_ATTRIB)
-						m.signalChanged(signalId, event.e->name);
+						m.signalChanged(signalId, path);
 				}
 			}
 		}

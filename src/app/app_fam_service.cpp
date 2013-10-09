@@ -43,6 +43,7 @@ struct FAMService::FileAlterationMonitor : public sys::FileAlterationMonitor
 	void signalChanged(unsigned id, mstl::string const& path) override;
 	void signalDeleted(unsigned id, mstl::string const& path) override;
 	void signalCreated(unsigned id, mstl::string const& path) override;
+	void signalUnmounted(unsigned id, mstl::string const& path) override;
 
 	typedef mstl::map<mstl::string, FAMService::Callback*> Map;
 
@@ -83,6 +84,15 @@ FAMService::FileAlterationMonitor::signalCreated(unsigned id, mstl::string const
 	Map::iterator i = m_map.find(path);
 	if (i != m_map.end())
 		(*i).second->signalCreated(id, path);
+}
+
+
+void
+FAMService::FileAlterationMonitor::signalUnmounted(unsigned id, mstl::string const& path)
+{
+	Map::iterator i = m_map.find(path);
+	if (i != m_map.end())
+		(*i).second->signalUnmounted(id, path);
 }
 
 
