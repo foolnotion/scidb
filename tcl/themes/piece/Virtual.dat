@@ -23,8 +23,8 @@
   gradient,b,y1      {0}
   gradient,b,y2      {1}
   gradient,w,fill    {#9dff68}
-  gradient,w,start   {#fff3b5}
-  gradient,w,stop    {#ffbf00}
+  gradient,w,start   {#f3e9b3}
+  gradient,w,stop    {#fab20f}
   gradient,w,tx      {0}
   gradient,w,ty      {0}
   gradient,w,use     {true}
