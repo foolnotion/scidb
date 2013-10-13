@@ -412,6 +412,15 @@ proc insert {gamebar at id tags} {
 		PrepareAsHeader $gamebar -1
 	}
 
+	if {$at >= 0} {
+		set n $at
+		while {$n < $Specs(size:$gamebar)} {
+			set i $Specs(lookup:$n:$gamebar)
+			set Specs(lookup:[incr n]:$gamebar) $i
+			$gamebar itemconfigure digit$i -image $digit([expr {$n + 1}])
+		}
+	}
+
 	set Specs(lookup:$at:$gamebar) $id
 	set Specs(emphasize:$id:$gamebar) 0
 	if {$at >= 0} {
@@ -2290,7 +2299,6 @@ proc Layout {gamebar} {
 
 		if {$Specs(size:$gamebar) > 1} {
 			set id $Specs(lookup:0:$gamebar)
-
 			if {$id eq $Specs(selected:$gamebar)} { set id $Specs(lookup:1:$gamebar) }
 			lassign [$gamebar bbox white$id] x1 y1 x2 y2
 

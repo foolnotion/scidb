@@ -1999,6 +1999,10 @@ tcl_tree.o: ../db/db_edit_key.ipp
 tcl_tree.o: ../mstl/m_auto_ptr.h
 tcl_tree.o: ../mstl/m_auto_ptr.ipp
 tcl_tree.o: ../db/db_game.ipp
+tcl_tree.o: ../db/db_eco_table.h
+tcl_tree.o: ../mstl/m_hash.h
+tcl_tree.o: ../mstl/m_hash.ipp
+tcl_tree.o: ../db/db_eco_table.ipp
 tcl_tree.o: ../util/u_piped_progress.h
 tcl_tree.o: ../util/u_progress.h
 tcl_tree.o: ../util/u_progress.ipp

@@ -575,6 +575,11 @@ parser::parse_attr(char const* name, char const* value)
 			else
 				m_path.fill(parse_color(value));
 		}
+		else if (::match(name, "use-gradient"))
+		{
+			if (::match(value, "never"))
+				m_path.use_gradient(false);
+		}
 		else if (::match(name, "fill-opacity"))
 		{
 			m_path.fill_opacity(::parse_double(value, 0, 1));

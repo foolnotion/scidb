@@ -139,6 +139,7 @@ proc build {path columns args} {
 		minsize		{}
 		columns		{}
 		base			{}
+		variant		{}
 		after			{}
 	}
 

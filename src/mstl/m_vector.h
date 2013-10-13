@@ -90,6 +90,8 @@ public:
 	const_reverse_iterator rbegin() const;
 	const_reverse_iterator rend() const;
 
+	const_pointer data() const;
+
 	void push_back(const_reference v);
 	void push_back();
 	void push_front(const_reference v);

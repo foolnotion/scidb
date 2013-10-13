@@ -36,6 +36,7 @@
 #include "db_game.h"
 #include "db_database.h"
 #include "db_namebase_entry.h"
+#include "db_eco_table.h"
 
 #include "u_piped_progress.h"
 
@@ -345,7 +346,7 @@ cmdFinish(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		if (tree->isEmpty())
 		{
 			result = "empty";
-			m_key.clear();
+			m_key.clear(); // it doesn't matter
 		}
 		else if (tree->isTreeFor(Scidb->referenceBase().database(), m_key))
 		{

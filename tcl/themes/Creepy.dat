@@ -1,0 +1,7 @@
+::board::addStyle theme {
+  identifier   {Creepy|1381672489858|purple|gregor}
+  piece-set    {Skulls}
+  piece-style  {Khaki|1381672245561|purple|gregor}
+  square-style {Blue Sky|1381592499969|purple|gregor}
+  version      {1.0}
+}

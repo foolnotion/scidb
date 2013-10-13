@@ -50,6 +50,8 @@ set NoGamesAvailable					"No games available"
 set Searching							"Searching"
 set VariantsNotYetSupported		"Chess variants not yet supported."
 set End									"end"
+set ShowMoveOrders					"Show move orders"
+set ShowMoveTree						"Show move tree"
 
 set FromWhitesPerspective			"From whites perspective"
 set FromBlacksPerspective			"From blacks perspective"
@@ -111,13 +113,14 @@ array set Options {
 	rating:type			Elo
 	score:side			white
 	hilite:nextmove	0
+	show:tree			1
 
 	-background			tree,background
 	-emphasize			tree,emphasize
 	-stripes				tree,stripes
 }
 
-array set Defaults {
+array set Priv {
 	ratio:color			tree,ratio:color
 	score:color			tree,score:color
 	draws:color			tree,draws:color
@@ -140,7 +143,7 @@ proc build {parent width height gameTable} {
 	variable ::ratingbox::ratings
 	variable Columns
 	variable Options
-	variable Defaults
+	variable Priv
 	variable Vars
 
 	set bg [::colors::lookup $Options(-background)]
@@ -172,7 +175,6 @@ proc build {parent width height gameTable} {
 		-listmode 1 \
 		-fixedrows 1 \
 		-moveable 1 \
-		-setgrid 0 \
 		-takefocus 0 \
 		-fillcolumn end \
 		-stripes {} \
@@ -225,6 +227,7 @@ proc build {parent width height gameTable} {
 		set menu {}
 		set lock none
 		set stripes $Options(-stripes)
+		set visible 1
 
 		switch $id {
 			number - move {
@@ -243,9 +246,12 @@ proc build {parent width height gameTable} {
 					set stripes $Options(-emphasize)
 					set lock left
 				}
+				if {$id eq "number"} { set visible 0 }
 			}
 
 			eco {
+				set visible $Options(show:tree)
+				set Vars(eco:visible) $visible
 				set var ::gametable::mc::SortAscending
 			}
 
@@ -312,8 +318,6 @@ proc build {parent width height gameTable} {
 			}
 		}
 
-		if {$id eq "number"} { set visible 0 } else { set visible 1 }
-
 		if {[llength $var]} {
 			if {$id eq "ratio"} { set value "frequency" } else { set value $id }
 			lappend menu [list checkbutton \
@@ -352,7 +356,7 @@ proc build {parent width height gameTable} {
 		lappend Vars(styles) $id styTotal$id
 	}
 
-	::table::configure $tb move -specialfont [list  [list $::font::figurine(text:normal) 9812 9823]]
+	::table::configure $tb move -specialfont [list [list $::font::figurine(text:normal) 9812 9823]]
 
 	::table::bind $tb <ButtonPress-2>	[namespace code [list ShowPlayerInfo $tb %x %y]]
 	::table::bind $tb <ButtonRelease-2>	[namespace code [list HideInfo $tb]]
@@ -428,13 +432,13 @@ proc build {parent width height gameTable} {
 	set stm [::toolbar::add $tbSwitcher label -image $Vars(whiteKnob)]
 	::toolbar::add $tbSwitcher frame -width 2
 	foreach mode {exact fast} {
-		::toolbar::add $tbControl button \
+		set Vars(widget:$mode) [::toolbar::add $tbControl button \
 			-image [set ::icon::toolbar[string toupper $mode 0 0]] \
 			-variable [namespace current]::Options(search:mode) \
 			-tooltipvar [namespace current]::mc::Use[string toupper $mode 0 0]Mode \
 			-value $mode \
 			-command [list set [namespace current]::Options(search:mode) $mode] \
-			;
+		]
 	}
 	set tbProgress [::toolbar::toolbar $parent \
 		-id tree-progress \
@@ -445,7 +449,7 @@ proc build {parent width height gameTable} {
 		-allow {top bottom} \
 	]
 	set progress [::toolbar::add $tbProgress frame -width 130 -height 7 -borderwidth 1 -relief sunken]
-	tk::frame $progress.bar -background [::colors::lookup $Defaults(progress:color)] -height 5
+	tk::frame $progress.bar -background [::colors::lookup $Priv(progress:color)] -height 5
 	$switcher addcol text -id name
 	bind $switcher <<LanguageChanged>> [namespace code LanguageChanged]
 	bind $switcher <<ComboboxCurrent>> [namespace code [list SetReferenceBase $switcher]]
@@ -468,6 +472,7 @@ proc build {parent width height gameTable} {
 	set Vars(list) {}
 	set Vars(stm) $stm
 	set Vars(side) {}
+	set Vars(show:tree) $Options(show:tree)
 ### VARIANTS ####################################
 set Vars(force) 0
 set Vars(switcher) $switcher
@@ -510,7 +515,7 @@ proc update {position} {
 	variable Options
 
 	if {[::scidb::tree::isUpToDate?]} {
-		Enabled 1
+		Enabled true
 		return
 	}
 
@@ -637,7 +642,7 @@ set Vars(force) 1
 proc DoSearch {table} {
 	variable Vars
 	variable Options
-	variable Defaults
+	variable Priv
 
 ### VARIANTS ####################################
 if {[::scidb::game::query mainvariant?] ne "Normal"} { return }
@@ -645,7 +650,7 @@ if {[::scidb::game::query mainvariant?] ne "Normal"} { return }
 
 	if {[::scidb::tree::update $Options(rating:type) $Options(search:mode)]} {
 		if {$Vars(searching)} {
-			$Vars(progress) configure -background [::colors::lookup $Defaults(progress:finished)]
+			$Vars(progress) configure -background [::colors::lookup $Priv(progress:finished)]
 			place $Vars(progress) -x 1 -y 1 -width 127
 			set Vars(searching) 0
 		}
@@ -654,7 +659,7 @@ if {[::scidb::game::query mainvariant?] ne "Normal"} { return }
 		if {[llength $Vars(data)] == 0} { ShowMessage Searching }
 		set Vars(searching) 1
 		ConfigSearchButton $table Stop
-		$Vars(progress) configure -background [::colors::lookup $Defaults(progress:color)]
+		$Vars(progress) configure -background [::colors::lookup $Priv(progress:color)]
 		place forget $Vars(progress)
 	}
 }
@@ -700,14 +705,14 @@ proc Close {table base variant} {
 proc Tick {table n} {
 	variable Vars
 	variable Options
-	variable Defaults
+	variable Priv
 
 	if {[llength [::scidb::tree::get]] == 0} { return }
 
 	if {$n == 0} {
 		if {$Vars(searching)} {
 			place forget $Vars(progress)
-			$Vars(progress) configure -background [::colors::lookup $Defaults(progress:color)]
+			$Vars(progress) configure -background [::colors::lookup $Priv(progress:color)]
 			set Vars(searching) 0
 			ConfigSearchButton $table Start
 			# show "interrupted due to a database modification"
@@ -715,7 +720,7 @@ proc Tick {table n} {
 	} else {
 		if {!$Vars(searching)} {
 			ConfigSearchButton $table Stop
-			$Vars(progress) configure -background [::colors::lookup $Defaults(progress:color)]
+			$Vars(progress) configure -background [::colors::lookup $Priv(progress:color)]
 			set Vars(searching) 1
 		}
 
@@ -724,7 +729,7 @@ proc Tick {table n} {
 		if {$n == 255} {
 			set Vars(searching) 0
 			ConfigSearchButton $table Start
-			$Vars(progress) configure -background [::colors::lookup $Defaults(progress:finished)]
+			$Vars(progress) configure -background [::colors::lookup $Priv(progress:finished)]
 			after idle [namespace code [list SearchResultAvailable $table]]
 		}
 	}
@@ -1054,7 +1059,7 @@ proc SetItemState {table index} {
 
 proc FillTable {table} {
 	variable Options
-	variable Defaults
+	variable Priv
 	variable Columns
 	variable Vars
 	variable Bars
@@ -1120,7 +1125,7 @@ proc FillTable {table} {
 				ratio - score - draws {
 					set item [ComputeValue $id $item $total]
 					if {$Options($id:bar)} {
-						set color [::colors::lookup $Defaults($id:color)]
+						set color [::colors::lookup $Priv($id:color)]
 						set width [expr {($item + 10)/20}]
 						if {![info exists Bars($width:$color)]} {
 							set img [image create photo -width 51 -height 7]
@@ -1465,9 +1470,34 @@ proc DoAction {table row move action} {
 }
 
 
+proc ToggleView {table} {
+	variable Options
+	variable Vars
+
+	if {$Vars(show:tree) == $Options(show:tree)} { return }
+
+	if {$Options(show:tree)} {
+		if {$Vars(eco:visible)} {
+			::table::showColumn $table eco
+		}
+		::toolbar::childconfigure $Vars(widget:exact) -state normal
+		::toolbar::childconfigure $Vars(widget:fast) -state normal
+	} else {
+		set Vars(eco:visible) [::table::visible? $table eco]
+		::table::hideColumn $table eco
+		::toolbar::childconfigure $Vars(widget:exact) -state disabled
+		::toolbar::childconfigure $Vars(widget:fast) -state disabled
+	}
+
+	games::clear [winfo parent [winfo parent $Vars(mw)]].games
+	set Vars(show:tree) $Options(show:tree)
+}
+
+
 proc PopupMenu {table x y} {
 	variable ::scidb::clipbaseName
 	variable Vars
+	variable Options
 	variable _Current
 
 	set Vars(button) 3
@@ -1487,6 +1517,21 @@ proc PopupMenu {table x y} {
 		}
 	}
 
+#	$m add radiobutton \
+#		-label $mc::ShowMoveTree \
+#		-variable [namespace current]::Options(show:tree) \
+#		-value 1 \
+#		-command [namespace code [list ToggleView $table]] \
+#	;
+#	::theme::configureRadioEntry $m
+#	$m add radiobutton \
+#		-label $mc::ShowMoveOrders \
+#		-variable [namespace current]::Options(show:tree) \
+#		-value 0 \
+#		-command [namespace code [list ToggleView $table]] \
+#	;
+#	::theme::configureRadioEntry $m
+#	$m add separator
 	$m add command \
 		-label " $mc::StartSearch" \
 		-command [namespace code [list StartSearch $table]] \
@@ -1494,18 +1539,20 @@ proc PopupMenu {table x y} {
 		-compound left \
 		;
 	$m add separator
-	foreach {mode icon} {exact slow fast fast} {
-		set text " [set mc::Use[string toupper $mode 0 0]Mode]"
-		$m add radiobutton \
-			-label $text \
-			-variable [namespace current]::Options(search:mode) \
-			-image [set ::icon::16x16::$icon] \
-			-compound left \
-			-value $mode \
-			;
-		::theme::configureRadioEntry $m
+	if {$Options(show:tree)} {
+		foreach {mode icon} {exact slow fast fast} {
+			set text " [set mc::Use[string toupper $mode 0 0]Mode]"
+			$m add radiobutton \
+				-label $text \
+				-variable [namespace current]::Options(search:mode) \
+				-value $mode \
+				-image [set ::icon::16x16::$icon] \
+				-compound left \
+				;
+			::theme::configureRadioEntry $m
+		}
+		$m add separator
 	}
-	$m add separator
 	$m add checkbutton \
 		-label $mc::AutomaticSearch \
 		-variable [namespace current]::Options(search:automatic) \
@@ -1558,8 +1605,61 @@ proc PopupMenu {table x y} {
 }
 
 
+# proc ShowAllMoveOrders {parent} {
+# 	set parent [winfo toplevel $parent]
+# 	set dlg $parent.moveOrders
+# 	set top $dlg.top
+# 	set tb $top.table
+# 	set exists [winfo exists $dlg]
+# 	set lines [::scidb::game::lines]
+# 
+# 	if {$exists} {
+# 		$tb clear
+# 	} else {
+# 		wm withdraw [tk::toplevel $dlg -class Dialog]
+# 		set specialfont [list [list $::font::figurine(text:normal) 9812 9823]]
+# 		set stripes [::colors::lookup scrolledtable,stripes]
+# 		pack [ttk::frame $top -borderwidth 0 -takefocus 0] -fill both -expand yes
+# 		pack [tlistbox $tb \
+# 			-setgrid 1 \
+# 			-maxheight 20 \
+# 			-maxwidth 800 \
+# 			-stripes $stripes \
+# 			-takefocus 0
+# 		] -fill both -expand yes
+# 		$tb addcol text -id line -specialfont $specialfont -expand yes
+# 	}
+# 
+# 	foreach line $lines { $tb insert [list $line] }
+# 	$tb resize -force -dontshrink
+# 
+# 	if {$exists} {
+# 		widget::dialogRaise $dlg
+# 	} else {
+# 		::widget::dialogButtons $dlg {close}
+# 		::widget::dialogButtonAdd $dlg spread [namespace current]::mc::ComputeSpread {}
+# 		$dlg.close configure -command [list destroy $dlg]
+# 		$dlg.spread configure -command [namespace code [list ComputeSpread $tb]]
+# 		::widget::dialogWatch $dlg
+# 		wm protocol $dlg WM_DELETE_WINDOW [$dlg.close cget -command]
+# 		wm title $dlg $mc::MoveOrders
+# 		wm resizable $dlg true true
+# 		::util::place $dlg -parent $parent -position center
+# 		wm deiconify $dlg
+# 	}
+# 
+# 	focus $dlg.close
+# }
+
+
 proc WriteOptions {chan} {
+	variable Vars
+
 	::options::writeItem $chan [namespace current]::Options
+
+	puts $chan "::table::setOptions $Vars(table) {"
+	::options::writeArray $chan [::table::getOptions $Vars(table)]
+	puts $chan "}"
 }
 
 ::options::hookWriter [namespace current]::WriteOptions

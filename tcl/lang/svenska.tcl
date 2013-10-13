@@ -82,6 +82,7 @@
 ::mc::Lite					"Ljus"
 ::mc::Low					"Låg"
 ::mc::Modify				"Ändra"
+::mc::Monospaced			"Monospaced" ;# NEW monospaced font
 ::mc::No						"nej"
 ::mc::Normal				"Normal" ;# NEW
 ::mc::Number				"Nummer"
@@ -706,6 +707,11 @@
 ::application::tree::mc::Searching							"Searching" ;# NEW
 ::application::tree::mc::VariantsNotYetSupported		"Chess variants not yet supported." ;# NEW
 ::application::tree::mc::End									"end" ;# NEW
+::application::tree::mc::ShowAllMoveOrders				"Show all move orders" ;# NEW
+::application::tree::mc::MoveOrders							"Move Orders" ;# NEW
+::application::tree::mc::ComputeSpread						"Compute Spread" ;# NEW
+::application::tree::mc::ShowMoveTree						"Show move tree" ;# NEW
+::application::tree::mc::ShowMoveOrders					"Show move orders" ;# NEW
 
 ::application::tree::mc::FromWhitesPerspective			"Från vits sida"
 ::application::tree::mc::FromBlacksPerspective			"Från svarts sida"
@@ -2368,7 +2374,6 @@
 ::dialog::choosefont::mc::Filter				"Filter"
 ::dialog::choosefont::mc::Sample				"Exempel"
 ::dialog::choosefont::mc::SearchTitle		"Söker efter fonter med fast bredd."
-::dialog::choosefont::mc::SeveralMinutes	"Denna operation kan ta ungefär %d minuter."
 ::dialog::choosefont::mc::FontSelection	"Font Selection"
 ::dialog::choosefont::mc::Wait				"Vänta"
 

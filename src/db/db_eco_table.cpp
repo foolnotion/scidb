@@ -39,8 +39,6 @@
 #include "m_string.h"
 #include "m_vector.h"
 #include "m_map.h"
-#include "m_bitset.h"
-#include "m_bitfield.h"
 #include "m_assert.h"
 #include "m_stdio.h"
 
@@ -67,6 +65,31 @@ template <> struct hash_key<db::Eco>
 };
 
 } // namespace mstl
+
+
+EcoTable::MoveOrder::MoveOrder(MoveOrder const& line)
+	:m_buffer(0)
+{
+	M_REQUIRE(line.isEmpty());
+}
+
+
+void
+EcoTable::MoveOrder::assign(	uint16_t const* line1, unsigned length1,
+										uint16_t const* line2, unsigned length2)
+{
+	static_assert(sizeof(m_line.moves[0]) == 2, "type has changed");
+
+	M_ASSERT(line1 || length1 == 0);
+	M_ASSERT(line2 || length2 == 0);
+	M_ASSERT(line2 || !line1);
+
+	m_buffer = new uint16_t[m_line.length = length1 + length2];
+	m_line.moves = m_buffer;
+
+	::memcpy(const_cast<uint16_t*>(m_line.moves), line1, mstl::mul2(length1));
+	::memcpy(const_cast<uint16_t*>(m_line.moves + length1), line2, mstl::mul2(length2));
+}
 
 
 struct EcoTable::StoredLineNode
@@ -164,7 +187,8 @@ struct EcoTable::Node
 	Branch*	branches;
 	uint8_t	numBranches;
 	uint8_t	length;
-	uint8_t	ply;
+	uint8_t	ply:7;
+	uint8_t	flag:1;
 
 	mutable uint8_t flags;
 
@@ -342,7 +366,7 @@ void
 EcoTable::Node::dump(variant::Type variant)
 {
 	Codec codec(Codec::latin1());
-	Board board(Board::standardBoard());
+	Board board(Board::standardBoard(variant));
 	::printf("(%s)", eco.asString().c_str());
 	printName(codec, eco, 1);
 	::printf("\n");
@@ -404,7 +428,7 @@ EcoTable::Node::print(variant::Type variant)
 {
 	Variations		variations;
 	MoveList			moves;
-	Board				board(Board::standardBoard());
+	Board				board(Board::standardBoard(variant));
 	mstl::string	str;
 	Eco				prev(Eco::root());
 	Codec				codec(Codec::latin1());
@@ -501,7 +525,7 @@ EcoTable::Loader::Loader(mstl::istream& strm, EcoTable& specimen)
 	:m_strm(strm)
 	,m_specimen(specimen)
 	,m_ecoInfo(Eco::Max_Code + 1)
-	,m_board(Board::standardBoard())
+	,m_board(Board::standardBoard(specimen.variant()))
 	,m_codec(Codec::latin1())
 	,m_variant(specimen.variant())
 {
@@ -574,6 +598,7 @@ EcoTable::Loader::readNode(unsigned ply, Node* node, Eco storedLineKey, Entry co
 	node->branches = m_branchCurr;
 	node->length = entry->line.length;
 	node->ply = ply;
+	node->flag = 0;
 
 	if (node->numBranches & 0x80)
 	{
@@ -1015,7 +1040,7 @@ EcoTable::getEco(Board const& startBoard, Line const& line, EcoSet* reachable) c
 Eco
 EcoTable::getEco(Line const& line) const
 {
-	return getEco(Board::standardBoard(), line);
+	return getEco(Board::standardBoard(m_variant), line);
 }
 
 
@@ -1143,6 +1168,81 @@ EcoTable::lookup(	Line const& line,
 	}
 
 	return last->eco;
+}
+
+
+void
+EcoTable::getMoveOrders(Eco code, Node* node, Line const& rest, Trace& trace, Lines& result) const
+{
+	if (node->eco == code)
+	{
+		result.push_back();
+		result.back().assign(trace.data(), trace.size(), rest.moves, rest.length);
+	}
+	else if (!node->flag)
+	{
+		node->flag = 1;
+
+		for (unsigned i = 0; i < node->numBranches; ++i)
+		{
+			Branch& branch = node->branches[i];
+
+			trace.push_back(branch.move);
+			getMoveOrders(code, branch.node, rest, trace, result);
+			trace.pop_back();
+		}
+
+		node->flag = 0;
+	}
+}
+
+
+void
+EcoTable::getMoveOrders(Line const& line, Lines& result) const
+{
+	if (line.length == 0)
+		return;
+
+	Eco code(getEco(line));
+
+	if (code == 0)
+	{
+		result.push_back();
+		result.back().assign(line.moves, line.length, 0, 0);
+	}
+	else
+	{
+		Node const*	node(m_root);
+		unsigned		index(0);
+
+		while (node->eco != code)
+		{
+			M_ASSERT(index < line.length);
+
+			Node const*	next = 0;
+			uint16_t		move = line[index++];
+
+			for (unsigned i = 0; i < node->numBranches; ++i)
+			{
+				Branch const& branch = node->branches[i];
+
+				if (branch.move == move)
+				{
+					next = branch.node;
+					break;
+				}
+			}
+
+			M_ASSERT(next);
+			node = next;
+		}
+
+		Trace	trace;
+		Line	rest(line.moves + index, line.length - index);
+
+		trace.reserve(line.length);
+		getMoveOrders(code, m_root, rest, trace, result);
+	}
 }
 
 

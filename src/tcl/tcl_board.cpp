@@ -304,8 +304,7 @@ cmdMakeFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	color::ID		toMove	= ::tolower(*stm) == 'w' ? color::White : color::Black;
 	variant::Type	variant	= Scidb->game().variant();
 
-	Board pos;
-	pos.clear();
+	Board pos(Board::emptyBoard());
 
 	if (::strlen(board) != 64)
 		return error(CmdMakeFen, nullptr, nullptr, "invalid board: %s", board);

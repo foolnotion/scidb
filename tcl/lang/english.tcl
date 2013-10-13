@@ -81,6 +81,7 @@
 ::mc::Lite					"Light"
 ::mc::Low					"Low"
 ::mc::Modify				"Modify"
+::mc::Monospaced			"Monospaced"
 ::mc::No						"no"
 ::mc::Normal				"Normal"
 ::mc::Number				"Number"
@@ -703,6 +704,8 @@
 ::application::tree::mc::Searching							"Searching"
 ::application::tree::mc::VariantsNotYetSupported		"Chess variants not yet supported."
 ::application::tree::mc::End									"end"
+::application::tree::mc::ShowMoveTree						"Show move tree"
+::application::tree::mc::ShowMoveOrders					"Show move orders"
 
 ::application::tree::mc::FromWhitesPerspective			"From whites perspective"
 ::application::tree::mc::FromBlacksPerspective			"From blacks perspective"
@@ -2359,7 +2362,6 @@
 ::dialog::choosefont::mc::Filter				"Filter"
 ::dialog::choosefont::mc::Sample				"Sample"
 ::dialog::choosefont::mc::SearchTitle		"Searching for monospaced fonts"
-::dialog::choosefont::mc::SeveralMinutes	"This operation may take about %d minute(s)."
 ::dialog::choosefont::mc::FontSelection	"Font Selection"
 ::dialog::choosefont::mc::Wait				"Wait"
 

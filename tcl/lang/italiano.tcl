@@ -83,6 +83,7 @@
 ::mc::Lite					"Chiara"
 ::mc::Low					"Basso"
 ::mc::Modify				"Cambia"
+::mc::Monospaced			"Monospaced" ;# NEW monospaced font
 ::mc::No						"no"
 ::mc::Normal				"Normale"
 ::mc::Number				"Numero"
@@ -707,6 +708,11 @@
 ::application::tree::mc::Searching							"Ricerca"
 ::application::tree::mc::VariantsNotYetSupported		"Variante di scacchi non ancora supportata."
 ::application::tree::mc::End									"fine"
+::application::tree::mc::ShowAllMoveOrders				"Show all move orders" ;# NEW
+::application::tree::mc::MoveOrders							"Move Orders" ;# NEW
+::application::tree::mc::ComputeSpread						"Compute Spread" ;# NEW
+::application::tree::mc::ShowMoveTree						"Show move tree" ;# NEW
+::application::tree::mc::ShowMoveOrders					"Show move orders" ;# NEW
 
 ::application::tree::mc::FromWhitesPerspective			"Dalla prospettiva del bianco"
 ::application::tree::mc::FromBlacksPerspective			"Dalla prospettiva del nero"
@@ -2373,7 +2379,6 @@
 ::dialog::choosefont::mc::Filter				"Filtro"
 ::dialog::choosefont::mc::Sample				"Campione"
 ::dialog::choosefont::mc::SearchTitle		"Ricerca per font monospaced"
-::dialog::choosefont::mc::SeveralMinutes	"Questa operazione potrebbe richiedere %d minuti."
 ::dialog::choosefont::mc::FontSelection	"Seleziona Font"
 ::dialog::choosefont::mc::Wait				"Aspetta"
 

@@ -53,7 +53,9 @@ struct Line
 	bool operator==(Line const& line) const;
 	bool operator!=(Line const& line) const;
 	bool operator<=(Line const& line) const;
+
 	bool partialMatch(Line const& line) const;
+	bool contains(uint16_t move) const;
 
 	uint16_t operator[](unsigned n) const;
 
@@ -65,6 +67,7 @@ struct Line
 
 	void copy(Line const& line);
 	void copy(Line const& line, unsigned maxLength);
+	void copy(uint16_t const* line, unsigned maxLength);
 	Line& transpose(Line& dst) const;
 	Line& transpose();
 

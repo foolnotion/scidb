@@ -1,0 +1,30 @@
+::board::addStyle square {
+  borderline,gap           {0}
+  borderline,opacity       {80}
+  borderline,width         {0.006666666666666667}
+  dark,rotation            {0}
+  dark,solid               {#43a4ff}
+  dark,texture             {}
+  dark,x1                  {0}
+  dark,x2                  {0}
+  dark,y1                  {0}
+  dark,y2                  {0}
+  hilite,selected          {#7559e0}
+  hilite,suggested         {#e03046}
+  hint,background-color    {}
+  hint,background-rotation {0}
+  hint,background-tile     {misc denim.jpg}
+  hint,border-color        {#4777ca}
+  hint,border-rotation     {0}
+  hint,border-tile         {}
+  hint,coordinates         {#ffffff}
+  identifier               {Blue Sky|1381592499969|purple|gregor}
+  lite,rotation            {0}
+  lite,solid               {#c9ebff}
+  lite,texture             {}
+  lite,x1                  {0}
+  lite,x2                  {0}
+  lite,y1                  {0}
+  lite,y2                  {0}
+  version                  {1.0}
+}

@@ -278,7 +278,8 @@ if {[file exists [file join $::scidb::dir::user themes BlueTheme.dat]]} {
 }
 if {	![file exists [file join $::scidb::dir::user themes Primus.dat]]
 	|| ![file exists [file join $::scidb::dir::user themes Country-Style.dat]]
-	|| ![file exists [file join $::scidb::dir::user themes Blackjack.dat]]} {
+	|| ![file exists [file join $::scidb::dir::user themes Blackjack.dat]]
+	|| ![file exists [file join $::scidb::dir::user themes VirtualColored.dat]]} {
 	set update 1
 }
 if {[::process::testOption first-time]} {

@@ -452,6 +452,7 @@ proc doAction {action san {noMoveCmd {}}} {
 		}
 
 		trial {
+			::game::flipTrialMode
 			::scidb::game::trial $san
 			::scidb::game::go 1
 		}

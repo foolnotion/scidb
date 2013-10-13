@@ -2442,6 +2442,10 @@ db_guess.o: ../mstl/m_pair.ipp
 db_guess.o: ../mstl/m_map.ipp
 db_guess.o: ../mstl/m_hash.h
 db_guess.o: ../mstl/m_hash.ipp
+db_guess.o: ../mstl/m_list.h
+db_guess.o: ../mstl/m_list_node.h
+db_guess.o: ../mstl/m_list_node.ipp
+db_guess.o: ../mstl/m_list.ipp
 db_guess.o: ../mstl/m_bitset.h
 db_guess.o: ../mstl/m_bitset_iterator.h
 db_guess.o: ../mstl/m_bitset_iterator.ipp
@@ -3836,6 +3840,8 @@ db_pgn_reader.o: db_namebase_entry.ipp
 db_pgn_reader.o: db_pgn_aquarium.h
 db_pgn_reader.o: db_exception.h
 db_pgn_reader.o: ../util/u_exception.h
+db_pgn_reader.o: ../util/universalchardet/nsUniversalDetector.h
+db_pgn_reader.o: ../util/universalchardet/nstypes.h
 db_pgn_reader.o: ../util/u_progress.h
 db_pgn_reader.o: ../util/u_progress.ipp
 db_pgn_reader.o: ../util/u_nul_string.h
@@ -8026,6 +8032,10 @@ si3/si3_stored_line.o: ../mstl/m_pair.ipp
 si3/si3_stored_line.o: ../mstl/m_map.ipp
 si3/si3_stored_line.o: ../mstl/m_hash.h
 si3/si3_stored_line.o: ../mstl/m_hash.ipp
+si3/si3_stored_line.o: ../mstl/m_list.h
+si3/si3_stored_line.o: ../mstl/m_list_node.h
+si3/si3_stored_line.o: ../mstl/m_list_node.ipp
+si3/si3_stored_line.o: ../mstl/m_list.ipp
 si3/si3_stored_line.o: ../mstl/m_bitset.h
 si3/si3_stored_line.o: ../mstl/m_bitset_iterator.h
 si3/si3_stored_line.o: ../mstl/m_bitset_iterator.ipp
@@ -8726,6 +8736,10 @@ db_eco_table.o: ../mstl/m_pair.ipp
 db_eco_table.o: ../mstl/m_map.ipp
 db_eco_table.o: ../mstl/m_hash.h
 db_eco_table.o: ../mstl/m_hash.ipp
+db_eco_table.o: ../mstl/m_list.h
+db_eco_table.o: ../mstl/m_list_node.h
+db_eco_table.o: ../mstl/m_list_node.ipp
+db_eco_table.o: ../mstl/m_list.ipp
 db_eco_table.o: ../mstl/m_bitset.h
 db_eco_table.o: ../mstl/m_bitset_iterator.h
 db_eco_table.o: ../mstl/m_bitset_iterator.ipp
@@ -8752,10 +8766,6 @@ db_eco_table.o: ../util/u_exception.h
 db_eco_table.o: ../util/u_byte_stream.h
 db_eco_table.o: ../util/u_byte_stream.ipp
 db_eco_table.o: ../sys/sys_utf8_codec.h
-db_eco_table.o: ../mstl/m_list.h
-db_eco_table.o: ../mstl/m_list_node.h
-db_eco_table.o: ../mstl/m_list_node.ipp
-db_eco_table.o: ../mstl/m_list.ipp
 db_eco_table.o: ../sys/sys_utf8_codec.ipp
 db_eco_table.o: ../mstl/m_istream.h
 db_eco_table.o: ../mstl/m_ios.h
@@ -8811,6 +8821,10 @@ db_eco_table_stubs.o: ../mstl/m_pair.ipp
 db_eco_table_stubs.o: ../mstl/m_map.ipp
 db_eco_table_stubs.o: ../mstl/m_hash.h
 db_eco_table_stubs.o: ../mstl/m_hash.ipp
+db_eco_table_stubs.o: ../mstl/m_list.h
+db_eco_table_stubs.o: ../mstl/m_list_node.h
+db_eco_table_stubs.o: ../mstl/m_list_node.ipp
+db_eco_table_stubs.o: ../mstl/m_list.ipp
 db_eco_table_stubs.o: ../mstl/m_bitset.h
 db_eco_table_stubs.o: ../mstl/m_bitset_iterator.h
 db_eco_table_stubs.o: ../mstl/m_bitset_iterator.ipp

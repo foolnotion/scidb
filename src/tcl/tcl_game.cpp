@@ -90,6 +90,7 @@ static char const* CmdIndex			= "::scidb::game::index";
 static char const* CmdInfo				= "::scidb::game::info";
 static char const* CmdLangSet			= "::scidb::game::langSet";
 static char const* CmdLevel			= "::scidb::game::level";
+static char const* CmdLines			= "::scidb::game::lines";
 static char const* CmdLink				= "::scidb::game::link?";
 static char const* CmdLoad				= "::scidb::game::load";
 static char const* CmdMaterial		= "::scidb::game::material";
@@ -3708,6 +3709,32 @@ cmdVerify(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 }
 
 
+static int
+cmdLines(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	Game const& game = Scidb->game();
+
+	Line line(game.openingLine().moves, mstl::min(game.plyNumber(), game.openingLine().length));
+
+	EcoTable::Lines lines;
+	EcoTable::specimen(game.variant()).getMoveOrders(line, lines);
+
+	Tcl_Obj* objs[lines.size()];
+	unsigned index = 0;
+
+	for (EcoTable::Lines::const_iterator i = lines.begin(); i != lines.end(); ++i)
+	{
+		mstl::string opening;
+		i->line().print(opening, game.variant(), protocol::Scidb, encoding::Utf8);
+		objs[index++] = Tcl_NewStringObj(opening, opening.size());
+	}
+
+	setResult(lines.size(), objs);
+
+	return TCL_OK;
+}
+
+
 namespace tcl {
 namespace game {
 
@@ -3730,6 +3757,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdInfo,				cmdInfo);
 	createCommand(ti, CmdLangSet,			cmdLangSet);
 	createCommand(ti, CmdLevel,			cmdLevel);
+	createCommand(ti, CmdLines,			cmdLines);
 	createCommand(ti, CmdLink,				cmdLink);
 	createCommand(ti, CmdLoad,				cmdLoad);
 	createCommand(ti, CmdMaterial,		cmdMaterial);

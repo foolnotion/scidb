@@ -957,7 +957,7 @@ proc GameSwitched {position} {
 		UpdateLanguages $position $Vars(lang:set:$position)
 	}
 	if {[info exists Vars(successor:$position)]} {
-		ProcessGoto $position $position [::scidb::game::position key] $Vars(successor:$position)
+		ProcessGoto $position [::scidb::game::position key] $Vars(successor:$position)
 	}
 }
 
@@ -1027,7 +1027,7 @@ proc ConfigureEditor {} {
 	refresh
 
 	set Vars(current:$position) ""
-	ProcessGoto $position $Vars(pgn:$position) [::scidb::game::position key] $Vars(successor:$position)
+	ProcessGoto $position [::scidb::game::position key] $Vars(successor:$position)
 }
 
 
@@ -1109,7 +1109,7 @@ proc DoLayout {position data {context editor} {w {}}} {
 					}
 
 					marks	{ [namespace parent]::board::updateMarks [::scidb::game::query marks] }
-					goto	{ ProcessGoto $position $w [lindex $args 1] [lindex $args 2] }
+					goto	{ ProcessGoto $position [lindex $args 1] [lindex $args 2] }
 				}
 			}
 
@@ -1240,7 +1240,7 @@ proc Indent {context w level key} {
 }
 
 
-proc ProcessGoto {position w key succKey} {
+proc ProcessGoto {position key succKey} {
 	variable Vars
 	variable ::pgn::editor::Colors
 
@@ -1249,11 +1249,13 @@ proc ProcessGoto {position w key succKey} {
 	::move::reset
 	after cancel $Vars(after:$position)
 	set Vars(after:$position) {}
+	set w $Vars(pgn:$position)
 
 	if {$Vars(current:$position) ne $key} {
 		::scidb::game::variation unfold
 		foreach k $Vars(next:$position) {
-			$w tag configure $k -background [::colors::lookup $Colors(background)] }
+			$w tag configure $k -background [::colors::lookup $Colors(background)]
+		}
 		set Vars(next:$position) [::scidb::game::next keys $position]
 		if {$Vars(active:$position) eq $key} { $w configure -cursor {} }
 		if {[llength $Vars(previous:$position)]} {

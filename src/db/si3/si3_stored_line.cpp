@@ -315,7 +315,7 @@ StoredLine::initialize()
 
 	for (unsigned i = 0; i < U_NUMBER_OF(StoredLines); ++i)
 	{
-		Board			board	= Board::standardBoard();
+		Board			board	= Board::standardBoard(variant::Normal);
 		char const*	text	= StoredLines[i];
 		StoredLine&	line	= StoredLine::m_lines[i];
 

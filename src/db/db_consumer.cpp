@@ -236,7 +236,11 @@ Consumer::startGame(TagSet const& tags, Board const* board, uint16_t* idn)
 	}
 	else if (m_setupBoard)
 	{
-		setup(Board::standardBoard());
+		// In this case we have to use Crazyhouse setup,
+		// because we don't know yet whether its's standard
+		// chess or Crazyhouse. The hash code of the board
+		// doesn't matter here.
+		setup(Board::standardBoard(variant::Crazyhouse));
 		m_idn = variant::Standard;
 	}
 

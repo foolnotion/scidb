@@ -72,21 +72,24 @@ void path_renderer::render(PixFmt& pixf, agg::trans_affine const& mtx, ColorType
 
 			gradient const* gradient = 0;
 
-			if (attr.linearGradient.id.empty())
+			if (attr.use_gradient && !overrideFillColor())
 			{
-				if (!hasGradients)
+				if (attr.linearGradient.id.empty())
+				{
+					if (!hasGradients)
+						gradient = get_linear_gradient();
+				}
+				else if (get_linear_gradient() == 0)
+				{
+					gradient = &attr.linearGradient;
+				}
+				else
+				{
 					gradient = get_linear_gradient();
-			}
-			else if (get_linear_gradient() == 0)
-			{
-				gradient = &attr.linearGradient;
-			}
-			else
-			{
-				gradient = get_linear_gradient();
+				}
 			}
 
-			if (!gradient || overrideFillColor())
+			if (!gradient)
 			{
 				if (fabs(m_curved_trans_contour.width()) < 0.0001)
 				{

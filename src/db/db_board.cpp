@@ -110,6 +110,9 @@ Board Board::m_queenVsRooks;
 Board Board::m_upsideDown;
 Board Board::m_emptyBoard;
 
+static material::Count m_initialHolding;
+
+
 inline static int mul8(int x)				{ return x << 3; }
 inline static int mul16(int x)			{ return x << 4; }
 
@@ -591,10 +594,7 @@ inline
 void
 Board::incrMaterial<piece::King>(unsigned color)
 {
-	if (color == White)
-		m_whiteKing = (1 << ++m_material[White].king) - 1;
-	else
-		m_blackKing = (1 << ++m_material[Black].king) - 1;
+	(color == White ? m_whiteKing : m_blackKing) = (1 << ++m_material[color].king) - 1;
 }
 
 
@@ -648,10 +648,7 @@ inline
 void
 Board::decrMaterial<piece::King>(unsigned color)
 {
-	if (color == White)
-		m_whiteKing = (1 << --m_material[White].king) - 1;
-	else
-		m_blackKing = (1 << --m_material[Black].king) - 1;
+	(color == White ? m_whiteKing : m_blackKing) = (1 << --m_material[color].king) - 1;
 }
 
 
@@ -741,7 +738,7 @@ void
 Board::addToHolding<piece::Pawn>(variant::Type variant, unsigned color)
 {
 	if (variant == variant::Crazyhouse)
-		color = color ^ 1;
+		color ^= 1;
 	addToMyHolding<piece::Pawn>(variant, color);
 }
 
@@ -752,7 +749,7 @@ void
 Board::addToHolding<piece::Knight>(variant::Type variant, unsigned color)
 {
 	if (variant == variant::Crazyhouse)
-		color = color ^ 1;
+		color ^= 1;
 	addToMyHolding<piece::Knight>(variant, color);
 }
 
@@ -763,7 +760,7 @@ void
 Board::addToHolding<piece::Bishop>(variant::Type variant, unsigned color)
 {
 	if (variant == variant::Crazyhouse)
-		color = color ^ 1;
+		color ^= 1;
 	addToMyHolding<piece::Bishop>(variant, color);
 }
 
@@ -774,7 +771,7 @@ void
 Board::addToHolding<piece::Rook>(variant::Type variant, unsigned color)
 {
 	if (variant == variant::Crazyhouse)
-		color = color ^ 1;
+		color ^= 1;
 	addToMyHolding<piece::Rook>(variant, color);
 }
 
@@ -785,7 +782,7 @@ void
 Board::addToHolding<piece::Queen>(variant::Type variant, unsigned color)
 {
 	if (variant == variant::Crazyhouse)
-		color = color ^ 1;
+		color ^= 1;
 	addToMyHolding<piece::Queen>(variant, color);
 }
 
@@ -846,7 +843,7 @@ void
 Board::removeFromHolding<piece::Pawn>(variant::Type variant, unsigned color)
 {
 	if (variant == variant::Crazyhouse)
-		color = color ^ 1;
+		color ^= 1;
 	removeFromMyHolding<piece::Pawn>(variant, color);
 }
 
@@ -857,7 +854,7 @@ void
 Board::removeFromHolding<piece::Knight>(variant::Type variant, unsigned color)
 {
 	if (variant == variant::Crazyhouse)
-		color = color ^ 1;
+		color ^= 1;
 	removeFromMyHolding<piece::Knight>(variant, color);
 }
 
@@ -868,7 +865,7 @@ void
 Board::removeFromHolding<piece::Bishop>(variant::Type variant, unsigned color)
 {
 	if (variant == variant::Crazyhouse)
-		color = color ^ 1;
+		color ^= 1;
 	removeFromMyHolding<piece::Bishop>(variant, color);
 }
 
@@ -879,7 +876,7 @@ void
 Board::removeFromHolding<piece::Rook>(variant::Type variant, unsigned color)
 {
 	if (variant == variant::Crazyhouse)
-		color = color ^ 1;
+		color ^= 1;
 	removeFromMyHolding<piece::Rook>(variant, color);
 }
 
@@ -890,7 +887,7 @@ void
 Board::removeFromHolding<piece::Queen>(variant::Type variant, unsigned color)
 {
 	if (variant == variant::Crazyhouse)
-		color = color ^ 1;
+		color ^= 1;
 	removeFromMyHolding<piece::Queen>(variant, color);
 }
 
@@ -940,7 +937,7 @@ void
 Board::possiblyRemoveFromHolding<piece::Pawn>(variant::Type variant, unsigned color)
 {
 	if (variant == variant::Crazyhouse)
-		color = color ^ 1;
+		color ^= 1;
 
 	if (m_holding[color].pawn > 0)
 		hashHoldingRemove(::toPiece(piece::Pawn, color), --m_holding[color].pawn);
@@ -953,7 +950,7 @@ void
 Board::possiblyRemoveFromHolding<piece::Knight>(variant::Type variant, unsigned color)
 {
 	if (variant == variant::Crazyhouse)
-		color = color ^ 1;
+		color ^= 1;
 
 	if (m_holding[color].knight > 0)
 		hashHoldingRemove(::toPiece(piece::Knight, color), --m_holding[color].knight);
@@ -966,7 +963,7 @@ void
 Board::possiblyRemoveFromHolding<piece::Bishop>(variant::Type variant, unsigned color)
 {
 	if (variant == variant::Crazyhouse)
-		color = color ^ 1;
+		color ^= 1;
 
 	if (m_holding[color].bishop > 0)
 		hashHoldingRemove(::toPiece(piece::Bishop, color), --m_holding[color].bishop);
@@ -979,7 +976,7 @@ void
 Board::possiblyRemoveFromHolding<piece::Rook>(variant::Type variant, unsigned color)
 {
 	if (variant == variant::Crazyhouse)
-		color = color ^ 1;
+		color ^= 1;
 
 	if (m_holding[color].rook > 0)
 		hashHoldingRemove(::toPiece(piece::Rook, color), --m_holding[color].rook);
@@ -992,7 +989,7 @@ void
 Board::possiblyRemoveFromHolding<piece::Queen>(variant::Type variant, unsigned color)
 {
 	if (variant == variant::Crazyhouse)
-		color = color ^ 1;
+		color ^= 1;
 
 	if (m_holding[color].queen > 0)
 		hashHoldingRemove(::toPiece(piece::Queen, color), --m_holding[color].queen);
@@ -1806,8 +1803,15 @@ Board::transpose(variant::Type variant)
 	board.m_unambiguous[BlackKS] = m_unambiguous[BlackQS];
 	board.m_unambiguous[BlackQS] = m_unambiguous[BlackKS];
 
+	// TODO: how to hash promoted pieces?
 	board.m_promoted[White] = ::transpose(m_promoted[White]);
 	board.m_promoted[Black] = ::transpose(m_promoted[Black]);
+
+	board.m_holding[White] = m_holding[White];
+	board.m_holding[Black] = m_holding[Black];
+
+	board.m_checksGiven[White] = m_checksGiven[White];
+	board.m_checksGiven[Black] = m_checksGiven[Black];
 
 	static_cast<Signature&>(board) = static_cast<Signature const&>(*this);
 	static_cast<Signature&>(board).transpose();
@@ -1820,6 +1824,11 @@ Board::transpose(variant::Type variant)
 		hashEnPassant();
 	hashCastling(White);
 	hashCastling(Black);
+
+	if (variant::isZhouse(variant))
+		hashHolding(m_holding[White], m_holding[Black]);
+	else if (variant == variant::ThreeCheck)
+		hashChecksGiven(m_checksGiven[White], m_checksGiven[Black]);
 }
 
 
@@ -2661,7 +2670,7 @@ Board::parseHolding(char const* s)
 {
 	M_ASSERT(s);
 
-	clearHolding();
+	resetHolding();
 
 	for ( ; ::isalpha(*s); ++s)
 	{
@@ -2710,6 +2719,14 @@ Board::setHolding(char const* pieces)
 	hashHolding(m_holding[White], m_holding[Black]);
 	parseHolding(pieces);
 	hashHolding(m_holding[White], m_holding[Black]);
+}
+
+
+void
+Board::clearHolding()
+{
+	hashHolding(m_holding[White], m_holding[Black]);
+	resetHolding();
 }
 
 
@@ -2860,6 +2877,9 @@ Board::setup(char const* fen, variant::Type variant)
 
 	clear();
 
+	if (variant::isZhouse(variant))
+		m_holding[White] = m_holding[Black] = m_initialHolding;
+
 	for ( ; *p && *p != ' '; ++p)
 	{
 		if (*p == '/')
@@ -2878,7 +2898,7 @@ Board::setup(char const* fen, variant::Type variant)
 				}
 				else if (variant::isZhouse(variant))
 				{
-					clearHolding();
+					resetHolding();
 				}
 				// else:
 				// Some guys are ending the first part with a superfluous '/'.
@@ -2902,7 +2922,8 @@ Board::setup(char const* fen, variant::Type variant)
 			if (p == fen || !::isalpha(p[-1]))
 				return 0;
 
-			setPromoted(s - 1, variant);
+			if (variant::isZhouse(variant))
+				setPromoted(s - 1, variant);
 		}
 		else if (s > 63)
 		{
@@ -3059,8 +3080,6 @@ Board::setup(char const* fen, variant::Type variant)
 
 	if (variant::isZhouse(variant))
 		m_partner->hashHolding(m_partner->m_holding[White], m_partner->m_holding[Black]);
-	else
-		clearHolding();
 
 	// Set remainder of board data appropriately
 	m_occupied = m_occupiedBy[White] | m_occupiedBy[Black];
@@ -3239,14 +3258,14 @@ Board::setup(char const* fen, variant::Type variant)
 
 
 void
-Board::setup(ExactPosition const& position)
+Board::setup(ExactZHPosition const& position)
 {
 	// IMPORTANT NOTE: The information in 'position' is not sufficient
 	// to build a consistent board. The resulting board should not be
-	// used for playing or validation.
+	// used for playing or validation. Especially the hash code is not
+	// valid (missing promotion information).
 
 	clear();
-	clearHolding();
 
 	for (unsigned color = 0; color < 2; ++color)
 	{
@@ -3305,21 +3324,17 @@ Board::setup(ExactPosition const& position)
 
 	m_castle = position.m_castle;
 	m_epSquareFen = position.m_epSquare;
-}
 
-
-void
-Board::setup(ExactZHPosition const& position)
-{
-	// IMPORTANT NOTE: The information in 'position' is not sufficient
-	// to build a consistent board. The resulting board should not be
-	// used for playing or validation.
-
-	setup((ExactPosition const&)position);
 	m_holding[White] = position.m_holding[White];
 	m_holding[Black] = position.m_holding[Black];
+	// TODO: how to hash promoted pieces?
 	m_promoted[White] = position.m_promoted[White];
 	m_promoted[Black] = position.m_promoted[Black];
+	m_checksGiven[White] = position.m_checksGiven[White];
+	m_checksGiven[Black] = position.m_checksGiven[Black];
+
+	hashHolding(m_holding[White], m_holding[Black]);
+	hashChecksGiven(m_checksGiven[White], m_checksGiven[Black]);
 }
 
 
@@ -3602,6 +3617,7 @@ void
 Board::setup(unsigned idn, variant::Type variant)
 {
 	M_REQUIRE(idn > 0);
+	M_REQUIRE(idn <= 4*960 || variant == variant::Normal || variant == variant::ThreeCheck);
 
 	if (idn > 4*960)
 	{
@@ -3643,6 +3659,9 @@ Board::setup(unsigned idn, variant::Type variant)
 		}
 
 		*this = m_shuffleChessBoard;	// setup pawns, signature, and other stuff
+
+		if (variant::isZhouse(variant))
+			m_holding[White] = m_holding[Black] = m_initialHolding;
 
 		char placement[8];
 		::memcpy(placement, chess960::position(((idn - 1) % 960) + 1), 8);
@@ -7188,6 +7207,12 @@ Board::initialize()
 	base::initialize();
 #endif
 
+	m_initialHolding.queen = 1;
+	m_initialHolding.rook = 2;
+	m_initialHolding.bishop = 2;
+	m_initialHolding.knight = 2;
+	m_initialHolding.pawn = 8;
+
 	// Empty board
 	::memset(&m_emptyBoard, 0, sizeof(m_emptyBoard));
 	::memset(m_emptyBoard.m_destroyCastle, 0xff, sizeof(m_emptyBoard.m_destroyCastle));
@@ -7197,26 +7222,19 @@ Board::initialize()
 	m_emptyBoard.m_epSquareFen = Null;
 	m_emptyBoard.m_ksq[0] = Null;
 	m_emptyBoard.m_ksq[1] = Null;
-	m_emptyBoard.m_holding[White].pawn = 8;
-	m_emptyBoard.m_holding[White].knight = 2;
-	m_emptyBoard.m_holding[White].bishop = 2;
-	m_emptyBoard.m_holding[White].rook = 2;
-	m_emptyBoard.m_holding[White].queen = 1;
-	m_emptyBoard.m_holding[Black] = m_emptyBoard.m_holding[White];
 
 	// Standard board
 	m_standardBoard.setup(variant::fen(variant::Standard), variant::Normal);
+	assert(m_standardBoard.m_holding[White].value == 0);
+	assert(m_standardBoard.m_holding[Black].value == 0);
 	::memset(m_standardBoard.m_unambiguous, true, U_NUMBER_OF(m_standardBoard.m_unambiguous));
 	m_antichessBoard.setup(variant::fen(variant::NoCastling), variant::Antichess);
 
 	// Shuffle Chess board
 	m_shuffleChessBoard.setup("8/pppppppp/8/8/8/8/PPPPPPPP/8 w - - 0 1", variant::Normal);
-	// reverse hash of holding
-	m_shuffleChessBoard.hashHolding(	m_shuffleChessBoard.m_holding[White],
-												m_shuffleChessBoard.m_holding[Black]);
+	assert(m_shuffleChessBoard.m_holding[White].value == 0);
+	assert(m_shuffleChessBoard.m_holding[Black].value == 0);
 	::memset(m_shuffleChessBoard.m_unambiguous, true, U_NUMBER_OF(m_shuffleChessBoard.m_unambiguous));
-	m_shuffleChessBoard.m_holding[White] = m_standardBoard.m_holding[White];
-	m_shuffleChessBoard.m_holding[Black] = m_standardBoard.m_holding[Black];
 	m_shuffleChessBoard.m_material[White] = m_standardBoard.m_material[White];
 	m_shuffleChessBoard.m_material[Black] = m_standardBoard.m_material[Black];
 	m_shuffleChessBoard.m_matSig = m_standardBoard.m_matSig;

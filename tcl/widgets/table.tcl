@@ -162,6 +162,7 @@ proc table {args} {
 		set opts(-labelcommand) {}
 		array set opts [lrange $args 1 end]
 		set Options(-labelcommand) $opts(-labelcommand)
+		set Options(-takefocus) $opts(-takefocus)
 		unset opts
 
 		foreach key [array names Defaults] {
@@ -264,8 +265,8 @@ proc table {args} {
 	after idle [list $table.t xview moveto 0.0]
 	$table.t notify bind $table.sb <Scroll-x> [namespace code { SbSet %W %l %u }]
 	::bind $table.sb <Any-Button> [list ::tooltip::hide]
-	if {$Options(-takefocus)} {
-		::bind $table.sb <Any-Button> +[list ::focus $table.t]
+	if {$Options(-takefocus) eq 1} {
+		::bind $table.sb <Any-Button> +[namespace code [list focus $table]]
 	}
 
 	grid $table.t  -row 1 -column 1 -sticky nsew
@@ -642,6 +643,39 @@ proc setColumnMininumWidth {table id width} {
 }
 
 
+proc hideColumn {table id} {
+	variable ${table}::Options
+	variable ${table}::Vars
+
+	if {!$Options(-visible:$id)} { return }
+
+	$table.t column configure $id -visible 0
+	set Options(-visible:$id) 0
+	set i [lsearch -exact $Vars(visible) $id]
+	if {$i >= 0} { set Vars(visible) [lreplace $Vars(visible) $i $i] }
+	event generate $table <<TableHide>> -data $id
+	after idle [namespace code [list UpdateColunnWidths $table]]
+}
+
+
+proc showColumn {table id} {
+	variable ${table}::Options
+	variable ${table}::Vars
+
+	if {$Options(-visible:$id)} { return }
+
+	$table.t column configure $id -visible 1
+	set Options(-visible:$id) 1
+	set Vars(visible) {}
+	foreach i $Vars(columns) {
+		if {$Options(-visible:$i)} { lappend Vars(visible) $i }
+	}
+	event generate $table <<TableShow>> -data $id
+	event generate $table <<TableFill>> -data [list 0 $Vars(rows)]
+	after idle [namespace code [list UpdateColunnWidths $table]]
+}
+
+
 proc doSelection {table} {
 	variable ${table}::Vars
 
@@ -704,7 +738,7 @@ proc active {table} {
 
 
 proc focus {table} {
-	if {[$table.t cget -takefocus]} {
+	if {[$table.t cget -takefocus] eq 1} {
 		::focus $table.t
 	}
 }
@@ -1337,35 +1371,6 @@ proc VisitItem {table mode column item} {
 }
 
 
-proc Hide {table id} {
-	variable ${table}::Options
-	variable ${table}::Vars
-
-	$table.t column configure $id -visible 0
-	set Options(-visible:$id) 0
-	set i [lsearch -exact $Vars(visible) $id]
-	if {$i >= 0} { set Vars(visible) [lreplace $Vars(visible) $i $i] }
-	event generate $table <<TableHide>> -data $id
-	after idle [namespace code [list UpdateColunnWidths $table]]
-}
-
-
-proc Show {table id} {
-	variable ${table}::Options
-	variable ${table}::Vars
-
-	$table.t column configure $id -visible 1
-	set Options(-visible:$id) 1
-	set Vars(visible) {}
-	foreach i $Vars(columns) {
-		if {$Options(-visible:$i)} { lappend Vars(visible) $i }
-	}
-	event generate $table <<TableShow>> -data $id
-	event generate $table <<TableFill>> -data [list 0 $Vars(rows)]
-	after idle [namespace code [list UpdateColunnWidths $table]]
-}
-
-
 proc ToggleStretchable {table id} {
 	variable ${table}::Options
 	variable ${table}::Vars
@@ -1535,12 +1540,12 @@ proc PopupMenu {table x y X Y} {
 				} else {
 					set m $subm
 				}
-				$m add command -label $text -command [namespace code [list Show $table $cid]]
+				$m add command -label $text -command [namespace code [list showColumn $table $cid]]
 			}
 			if {[string length $name]} { incr index }
 		}
 		if {$tail} {
-			$subm add command -label $mc::FillColumn -command [namespace code [list Show $table $id]]
+			$subm add command -label $mc::FillColumn -command [namespace code [list showColumn $table $id]]
 		}
 	}
 
@@ -1549,7 +1554,7 @@ proc PopupMenu {table x y X Y} {
 			set needsSeparator 1
 			$menu add command \
 				-label $mc::Hide \
-				-command [namespace code [list Hide $table $id]] \
+				-command [namespace code [list hideColumn $table $id]] \
 				;
 		}
 		if {$Options(-configurable)} {

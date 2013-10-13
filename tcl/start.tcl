@@ -147,6 +147,7 @@ proc update {} {
 			{Staunton|1355510748081|yellow.color|gregor}
 			{Stone Floor|1244113337107|yellow.color|gregor}
 			{Virtual|1355495975711|yellow.color|gregor}
+			{Virtual - Colored|1381593501788|purple|gregor}
 			{Winboard|1228820514841|yellow.color|gregor}
 			{Woodgrain|1296150310528|yellow.color|gregor}
 		}
@@ -167,6 +168,7 @@ proc update {} {
 			{Orange - Lemon|1243778153963|yellow.color|gregor}
 			{Sand|1326983597299|yellow.color|gregor}
 			{Sycomore|1244122254189|yellow.color|gregor}
+			{Virtual|1381586796154|purple|gregor}
 			{Winboard|1228820514952|yellow.color|gregor}
 			{Yellow - Blue|1243787883127|yellow.color|gregor}
 		}
@@ -197,6 +199,7 @@ proc update {} {
 			{Stone Floor|1244113188050|yellow.color|gregor}
 			{Sycomore|1243762745547|yellow.color|gregor}
 			{Sycomore Gray|1244122565844|yellow.color|gregor}
+			{Virtual|1381592499969|purple|gregor}
 			{Winboard|1228820514851|yellow.color|gregor}
 			{Wood - Brown|1228820485412|yellow.color|gregor}
 			{Wood - Green|1244309414202|yellow.color|gregor}
@@ -691,6 +694,7 @@ array set Colors {
 	lite:table,disabledforeground			#555555
 	lite:table,labelforeground				black
 	lite:table,labelbackground				#d9d9d9
+
 	lite:fsbox,emphasizebackground		BlanchedAlmond
 
 	lite:save,number							darkred

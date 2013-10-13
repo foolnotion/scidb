@@ -111,7 +111,7 @@ doNotEscape(char c)
 	if (isalnum(c))
 		return true;
 
-	static char const* Marks = "-_.!~*'():%/";
+	static char const* Marks = "-_.!~*'():%/?=";
 	return bool(strchr(Marks, c));
 }
 

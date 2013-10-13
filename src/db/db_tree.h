@@ -225,7 +225,7 @@ private:
 	Filter			m_filter;
 
 #ifdef SHOW_TREE_INFO
-	unsigned		m_numGamesParsed;
+	unsigned			m_numGamesParsed;
 #endif
 };
 

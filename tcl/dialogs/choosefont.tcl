@@ -27,9 +27,9 @@ package provide choosefont 1.1
 
 namespace eval dialog {
 
-proc chooseFont {font args} { return [choosefont::choosefont $font {*}$args] }
+proc choosefont {font args} { return [choosefont::choosefont $font {*}$args] }
 
-namespace export chooseFont
+namespace export choosefont
 
 namespace eval choosefont {
 namespace eval mc {
@@ -55,7 +55,6 @@ set Effects				"Effects"
 set Filter				"Filter"
 set Sample				"Sample"
 set SearchTitle		"Searching for monospaced fonts"
-set SeveralMinutes	"This operation may take about %d minute(s)."
 set FontSelection		"Font Selection"
 set Wait					"Wait"
 #################################################################
@@ -349,7 +348,7 @@ proc setFonts {w {fonts {}}} {
 		set fixed {}
 		set lfixed {}
 
-		if {$S(fixed)} {
+		if {$S(monospaced)} {
 			set sysfonts $SystemFonts(fonts,fixed,lcase)
 			if {[llength $sysfonts] > 0} {
 				foreach font $fonts lfont $lfonts {
@@ -373,18 +372,29 @@ proc setFonts {w {fonts {}}} {
 		set Vars(fonts,fixed,lcase) $SystemFonts(fonts,fixed,lcase)
 	}
 
-	if {$S(fixed)} {
+	set S(fonts) $Vars(fonts)
+	set S(fonts,lcase) $Vars(fonts,lcase)
+
+	SetupFixedFonts $w
+}
+
+
+proc SetupFixedFonts {w} {
+	variable ${w}::S
+	variable Vars
+
+	if {![winfo exists $w]} { return 0 }
+
+	if {!$S(init) && $S(monospaced)} {
 		if {[llength $Vars(fonts,fixed)] == 0} {
-			if {![Filter $w]} { set S(fixed) 0 }
+			if {![Filter $w]} { return 0 }
 		}
+
 		set S(fonts) $Vars(fonts,fixed)
 		set S(fonts,lcase) $Vars(fonts,fixed,lcase)
 	}
 
-	if {!$S(fixed)} {
-		set S(fonts) $Vars(fonts)
-		set S(fonts,lcase) $Vars(fonts,lcase)
-	}
+	return 1
 }
 
 
@@ -533,7 +543,7 @@ proc OpenDialog {font options} {
 	BuildFrame $dlg $font 1 $options
 
 	variable ${dlg}::S
-	set S(apply) $opts(applyProc)
+	set S(applycmd) $opts(applycmd)
 
 	ttk::style configure fsbox.TButton -anchor w -width -1
 	set buttons [tk::frame $dlg.buttons]
@@ -572,11 +582,11 @@ proc OpenDialog {font options} {
 		tk::SetAmpText $buttons.cancel "   [Tr Cancel]   "
 	}
 
-	if {[llength $opts(applyProc)]} {
+	if {[llength $opts(applycmd)]} {
 		tk::AmpWidget ttk::button $buttons.apply \
 			-style fsbox.TButton \
 			-class TButton \
-			-command [namespace code [list Apply $dlg $opts(applyProc)]] \
+			-command [namespace code [list Apply $dlg $opts(applycmd)]] \
 			;
 		tk::AmpWidget ttk::button $buttons.reset \
 			-style fsbox.TButton \
@@ -607,7 +617,7 @@ proc OpenDialog {font options} {
 
 	grid rowconfigure $buttons 1 -minsize 5
 
-	if {[llength $opts(applyProc)]} {
+	if {[llength $opts(applycmd)]} {
 		grid $buttons.apply	-row 4 -sticky ew
 		grid $buttons.reset	-row 6 -sticky ew
 
@@ -675,14 +685,23 @@ proc OpenDialog {font options} {
 	wm minsize $dlg $uw $uh
 	wm deiconify $dlg
 
-	if {$ppts(modal)} { ::ttk::grabWindow $dlg }
+	if {$opts(modal)} { ::ttk::grabWindow $dlg }
 	focus $dlg.efont
-	tkwait window $dlg
-	if {$ppts(modal)} { ::ttk::releaseGrab $dlg }
+	set aborted 0
+	if {$S(monospaced)} {
+		tkwait visibility $dlg
+		if {![SetupFixedFonts $dlg]} { set aborted 1 }
+	}
+	if {!$aborted} {
+		Select $dlg
+		tkwait window $dlg
+	}
+	if {$opts(modal)} { ::ttk::releaseGrab $dlg }
 
 	set result [list $S(font) $S(size) [Weight $S(style)] [Slant $S(style)]]
 	namespace delete [namespace current]::$dlg
 
+	if {$aborted} { destroy $dlg }
 	return $result
 }
 
@@ -699,13 +718,16 @@ proc BuildFrame {w font isDialog options} {
 		set opts(effects) [expr {$::tcl_platform(platform) eq "windows"}]
 	}
 
-	set S(fixed) 0
+	set S(monospaced) $opts(monospaced)
+	set S(keep:monospaced) $opts(monospaced)
 	set S(recv) $opts(receiver)
 	set S(fontobj) $font
 	set S(color) $color
 	set S(map) 0
 	set S(locked) 0
 	set S(size,units) $Vars(size,units)
+	set S(init) 1
+	if {[llength $opts(sizes)]} { set S(sizes) $opts(sizes) }
 
 	foreach var {styles sizes} {
 		set S($var) $Vars($var)
@@ -713,6 +735,7 @@ proc BuildFrame {w font isDialog options} {
 	}
 
 	setStyles $w $opts(stylelist)
+	setSizes $w $opts(sizelist)
 	setFonts $w $opts(fontlist)
 
 	if {$isDialog} {
@@ -838,13 +861,13 @@ proc BuildFrame {w font isDialog options} {
 	ttk::labelframe $WF -text [Tr Filter]
 	if {$isDialog} {
 		tk::AmpWidget ttk::checkbutton $WF.fixed \
-			-variable [namespace current]::${w}::S(fixed) \
+			-variable [namespace current]::${w}::S(monospaced) \
 			-text [Tr FixedOnly] \
 			-command [namespace code [list Filter $w]] \
 			;
 	} else {
 		ttk::checkbutton $WF.fixed \
-			-variable [namespace current]::${w}::S(fixed) \
+			-variable [namespace current]::${w}::S(monospaced) \
 			-text [string map {& ""} [Tr FixedOnly]] \
 			-command [namespace code [list Filter $w]] \
 			;
@@ -948,6 +971,11 @@ proc BuildFrame {w font isDialog options} {
 	if {$opts(fixedsize)} {
 		$w.esize  configure -state disabled
 		$w.lsizes configure -state disabled
+		$WF.fixed configure -state disabled
+	}
+
+	if {!$opts(usestyle)} {
+		$w.estyle configure -state disabled
 	}
 
 	if {!$isDialog} {
@@ -955,6 +983,7 @@ proc BuildFrame {w font isDialog options} {
 	}
 
 	foreach item {font size style} { set S(prev,$item) {} }
+	set S(init) 0
 }
 
 
@@ -966,15 +995,19 @@ proc ParseArguments {setDefaults args} {
 			parent		.
 			effects		{}
 			class			""
-			apply			{}
+			applycmd		""
 			geometry		{}
-			modal			true
+			modal			1
 			fontlist		{}
 			stylelist	{}
+			sizelist		{}
 			fixedsize	0
 			color			""
 			receiver		{}
 			sample		""
+			sizes			{}
+			usestyle		1
+			monospaced	0
 		}
 		set opts(title) [Tr FontSelection]
 		set opts(app) [tk appname]
@@ -998,18 +1031,11 @@ proc ParseArguments {setDefaults args} {
 				set opts(parent) $value
 			}
 			
-			-effects {
-				if {[llength $value] && ![string is boolean $value]} {
-					return -code error "option \"$key\": expected boolean but got \"$value\""
-				}
-				set opts(effects) $value
-			}
-			
-			-modal {
+			-effects - -modal - -usestyle - -monospaced {
 				if {![string is boolean $value]} {
 					return -code error "option \"$key\": value should be boolean"
 				}
-				set modal $value
+				set opts([string range $key 1 end]) $value
 			}
 
 			-geometry {
@@ -1024,14 +1050,14 @@ proc ParseArguments {setDefaults args} {
 				}
 			}
 
-			-app - -color - -fixedsize - -class - -apply - -receiver - 
-			-title - -fontlist - -sample - -stylelist {
+			-app - -color - -fixedsize - -class - -applycmd - -receiver - 
+			-title - -fontlist - -sample - -stylelist - -sizelist {
 				set opts([string range $key 1 end]) $value
 			}
 
 			default {
 				return -code error \
-					"unknown option \"$key\": should be -app, -apply, \
+					"unknown option \"$key\": should be -app, -applycmd, \
 					-effects, -fontlist, -geometry, -modal, -parent, or -title"
 			}
 		}
@@ -1044,6 +1070,7 @@ proc ParseArguments {setDefaults args} {
 
 
 proc FocusOut {w attr} {
+	if {![namespace exists $w]} { return }
 	variable ${w}::S
 
 	$w.e$attr selection clear
@@ -1109,6 +1136,7 @@ proc RecordGeometry {dlg} {
 	if {[winfo toplevel $dlg] ne $dlg} { return }
 
 	variable ${dlg}::S
+	if {![info exists S(width)]} { return }
 	scan [wm geometry $dlg] "%dx%d%d%d" w h x y
 
 	if {$w > 1} {
@@ -1158,7 +1186,7 @@ proc Apply {dlg {func {}}} {
 		-overstrike $S(strike) \
 		-underline $S(under)
 
-	if {[llength $func]} { $func $S(fontobj) }
+	if {[llength $func]} { {*}$func $S(fontobj) }
 }
 
 
@@ -1173,20 +1201,27 @@ proc Reset {dlg} {
 
 	set S(style:tr) [set mc::$S(style)]
 
-	if {$S(fixed) && [string tolower $S(font)] ni $S(fonts)} {
-		set S(fixed) 0
+	if {!$S(keep:monospaced) && $S(monospaced) && [string tolower $S(font)] ni $S(fonts)} {
+		set S(monospaced) 0
 		set S(fonts) $Vars(fonts)
 		set S(fonts,lcase) $Vars(fonts,lcase)
 	}
 
 	Apply $dlg
+	{*}$S(applycmd) {}
 	Tracer $dlg
 }
 
 
 proc Done {dlg ok} {
-	variable ${dlg}::S
-	if {$ok} { Apply $dlg $S(apply) }
+	if {[namespace exists $dlg]} {
+		variable ${dlg}::S
+		if {$ok} {
+			Apply $dlg $S(applycmd)
+		} else {
+			Reset $dlg
+		}
+	}
 	destroy $dlg
 }
 
@@ -1197,9 +1232,15 @@ proc SearchFixed {w} {
 	variable Vars
 
 	if {[llength $SystemFonts(fonts,fixed)] == 0} {
+		variable Stop_
+
+		set dlg [winfo toplevel $w]
+		bind $dlg.progress <<Stop>> [list set [namespace current]::Stop_ 1]
+
 		foreach font $Vars(fonts) lfont $Vars(fonts,lcase) {
 			incr S(progress)
-			update idletasks
+			update
+			if {$Stop_} { return 0 }
 
 			if {[font metrics [list $font] -fixed] == 1} {
 				lappend Vars(fonts,fixed) $font
@@ -1227,34 +1268,26 @@ proc Filter {w} {
 	variable SystemFonts
 	variable Vars
 
-	if {$S(fixed)} {
+	if {$S(monospaced)} {
 		if {[llength $Vars(fonts,fixed)] == 0} {
 			if {[llength $SystemFonts(fonts,fixed)] == 0} {
 				# NOTE: estimated time per font: 0.3s (probed under Linux)
-				set estimated [expr 0.035*[llength $Vars(fonts)]]
-				if {[expr $estimated > 15]} {
-					set minutes [expr {(int($estimated) + 59)/60}]
-					set reply [messageBox \
-						[winfo toplevel $w] \
-						"[tk appname] - [Tr SearchTitle]" \
-						[format [Tr SeveralMinutes] $minutes] \
-						{ cancel continue } \
-						continue \
-					]
-				} else {
-					set reply "continue"
-				}
-				if {$reply eq "cancel"} {
-					set S(fixed) 0
+				variable Stop_
+				set Stop_ 0
+				set S(progress) 0
+				set dlg [winfo toplevel $w]
+				dialog::progressBar $dlg.progress \
+					-title [Tr Wait] \
+					-message "[Tr SearchTitle] ..." \
+					-maximum [llength $Vars(fonts)] \
+					-variable [namespace current]::${w}::S(progress) \
+					-command [namespace code [list SearchFixed $w]] \
+					-interrupt yes \
+					;
+				if {$Stop_} {
+					set S(monospaced) 0
+					set Vars(fonts,fixed) {}
 					return 0
-				} else {
-					set S(progress) 0
-					dialog::progressBar [winfo toplevel $w].progress \
-						-title [Tr Wait] \
-						-message "[Tr SearchTitle] ..." \
-						-maximum [llength $Vars(fonts)] \
-						-variable [namespace current]::${w}::S(progress) \
-						-command [namespace code [list SearchFixed $w]]
 				}
 			} else {
 				SearchFixed $w
@@ -1300,7 +1333,7 @@ proc Init {w} {
 		set S(color) black
 	}
 
-	# "font actual" may give a negative size
+	# "font actual" should give a negative size
 	if {$S(size) < 0} { set S(size) [expr {-$S(size)}] }
 
 	foreach var {font size style strike under color} {
@@ -1348,6 +1381,7 @@ proc Toggled {w who} {
 proc Select {w {autoComplete 0}} {
 	variable ${w}::S
 
+	if {![winfo exists $w]} { return }
 	if {$S(locked)} { return }
 
 	set changed {}
@@ -1494,6 +1528,8 @@ proc Show {w} {
 	variable ${w}::S
 	variable Vars
 	variable fontFamilies
+
+	if {![winfo exists $w]} { return }
 
 	set family ""
 

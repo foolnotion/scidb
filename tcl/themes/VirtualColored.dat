@@ -1,0 +1,7 @@
+::board::addStyle theme {
+  identifier   {Virtual - Colored|1381593501788|purple|gregor}
+  piece-set    {Virtual}
+  piece-style  {Virtual|1381586796154|purple|gregor}
+  square-style {Blue Sky|1381592499969|purple|gregor}
+  version      {1.0}
+}

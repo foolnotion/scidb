@@ -311,6 +311,7 @@ proc build {w width height} {
 	bind <Any-KeyPress>			[list ::application::pgn::checkKey press %K %s]
 	bind <Any-KeyRelease>		[list ::application::pgn::checkKey release %K %s]
 	bind <<LanguageChanged>>	[namespace code LanguageChanged]
+	bind <F1>						[list ::help::open .application]
 
 	for {set i 1} {$i <= 9} {incr i} {
 		bind <Key-$i>    [namespace code [list [namespace parent]::pgn::selectAt [expr {$i - 1}]]]

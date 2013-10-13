@@ -857,8 +857,7 @@ proc recover {parent} {
 	foreach file $files {
 		if {![::process::testOption dont-recover]} {
 			if {[file readable $file]} {
-				set position [string range [file tail $file] 5 end-4]
-				lappend Vars(slots) $position
+				set position [string range [file tail $file] 5 5]
 				set chan [open $file r]
 				fconfigure $chan -encoding utf-8
 				set content [read $chan]
@@ -886,6 +885,7 @@ proc recover {parent} {
 						-detail [format $mc::RenamedFile $file] \
 						;
 				} else {
+					lappend Vars(slots) $position
 					lassign $line3 time key crc crcLink encoding
 					lassign $key base _ index variant
 					if {$base ne $scratchbaseName && [lsearch -exact -index 0 $bases $base] == -1} {

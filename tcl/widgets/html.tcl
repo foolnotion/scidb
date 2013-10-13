@@ -133,17 +133,28 @@ proc defaultCSS {monoFamilies textFamilies} {
 
 
 proc monoStyle {families} {
-	append result "pre, tt, code, kbd { font-family: "
-	append result [join $families ","]
-	append result "; }"
+	append result "pre, tt, code, kbd { font-family: " [BuildFontString $families] "; }"
 	return $result
 }
 
 
 proc textStyle {families} {
-	append result "html { font-family: "
-	append result [join $families ","]
-	append result "; }"
+	append result "html { font-family: " [BuildFontString $families] "; }"
+	return $result
+}
+
+
+proc BuildFontString {families} {
+	set result ""
+	foreach fam $families {
+		set last [string index $result end]
+		if {$last ne "," && $last ne ""} { append result "," }
+		if {[string index $fam 0] eq "\""} {
+			append result $fam
+		} else {
+			append result "\"" $fam "\""
+		}
+	}
 	return $result
 }
 
@@ -522,9 +533,9 @@ proc WidgetProc {w command args} {
 			if {[llength $args] != 1} {
 				error "wrong # args: should be \"[namespace current] $command <font sizes>"
 			}
-			$w.sub.html configure -fonttable {*}$args
 			set Priv(fontsize) "body { font-size: [lindex $args 0 3]pt; }"
 			SetupCSS $w
+			$w.sub.html configure -fonttable {*}$args
 			return
 		}
 

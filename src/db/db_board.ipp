@@ -37,8 +37,9 @@ namespace db {
 
 inline Board::Board() :m_partner(this) {}
 
-inline void Board::Board::clear()			{ *this = m_emptyBoard; }
-inline void Board::Board::clearHolding()	{ m_holding[0].value = m_holding[1].value = 0; }
+inline void Board::resetHolding()			{ m_holding[0].value = m_holding[1].value = 0; }
+inline void Board::clear()						{ *this = m_emptyBoard; }
+inline void Board::setStandardPosition()	{ *this = m_standardBoard; }
 
 inline bool Board::isAttackedBy(unsigned color, Square square) const { return attacks(color, square);}
 
@@ -66,6 +67,7 @@ inline material::Count Board::materialCount(color::ID color) const	{ return m_ma
 inline unsigned Board::checksGiven(color::ID color) const				{ return m_checksGiven[color]; }
 inline Board::Material Board::holding() const								{ return m_holding[m_stm]; }
 inline Board::Material Board::holding(color::ID color) const			{ return m_holding[color]; }
+inline Board const& Board::emptyBoard()										{ return m_emptyBoard; }
 
 inline uint64_t Board::pieces() const						{ return m_occupied; }
 inline uint64_t Board::empty() const						{ return ~m_occupied; }
@@ -81,9 +83,6 @@ inline uint64_t Board::pieces(color::ID color) const	{ return m_occupiedBy[color
 inline uint64_t Board::hash() const							{ return m_hash; }
 inline uint64_t Board::pawnHash() const					{ return m_pawnHash; }
 
-inline Board const& Board::standardBoard()				{ return m_standardBoard; }
-inline Board const& Board::emptyBoard()					{ return m_emptyBoard; }
-
 inline void Board::destroyCastle(color::ID color)		{ m_castle &= ~castling::bothSides(color); }
 inline void Board::setToMove(color::ID color)			{ m_stm = color; }
 inline void Board::setPlyNumber(unsigned number)		{ m_plyNumber = number; }
@@ -92,18 +91,18 @@ inline void Board::setHalfMoveClock(unsigned number)	{ m_halfMoveClock = number;
 
 
 inline
-bool
-Board::anyOccupied(uint64_t squares) const
+Board const&
+Board::standardBoard(variant::Type variant)
 {
-	return m_occupied & squares;
+	return variant::isAntichessExceptLosers(variant) ? m_antichessBoard : m_standardBoard;
 }
 
 
 inline
-void
-Board::setStandardPosition()
+bool
+Board::anyOccupied(uint64_t squares) const
 {
-	*this = m_standardBoard;
+	return m_occupied & squares;
 }
 
 

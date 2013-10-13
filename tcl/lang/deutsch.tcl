@@ -81,6 +81,7 @@
 ::mc::Lite					"Hell"
 ::mc::Low					"Niedrig"
 ::mc::Modify				"Ändern"
+::mc::Monospaced			"Nichtproportional"
 ::mc::No						"nein"
 ::mc::Normal				"Normal"
 ::mc::Number				"Nummer"
@@ -705,6 +706,8 @@
 ::application::tree::mc::Searching							"Suche"
 ::application::tree::mc::VariantsNotYetSupported		"Schachformen (außer Normalschach) werden noch nicht unterstützt."
 ::application::tree::mc::End									"Ende"
+::application::tree::mc::ShowMoveTree						"Zugbaum anzeigen"
+::application::tree::mc::ShowMoveOrders					"Zugfolgen anzeigen"
 
 ::application::tree::mc::FromWhitesPerspective			"Aus weißer Sicht"
 ::application::tree::mc::FromBlacksPerspective			"Aus schwarzer Sicht"
@@ -2358,7 +2361,6 @@
 ::dialog::choosefont::mc::Filter				"Filter"
 ::dialog::choosefont::mc::Sample				"Probe"
 ::dialog::choosefont::mc::SearchTitle		"Suche nach dicktengleichen Zeichensätzen"
-::dialog::choosefont::mc::SeveralMinutes	"Diese Operation kann ungefähr %d Minute(n) in Anspruch nehmen."
 ::dialog::choosefont::mc::FontSelection	"Zeichensatzauswahl"
 ::dialog::choosefont::mc::Wait				"Fortschritt"
 

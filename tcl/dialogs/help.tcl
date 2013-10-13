@@ -1,4 +1,4 @@
-## ======================================================================
+# ======================================================================
 # Author : $Author$
 # Version: $Revision$
 # Date   : $Date$
@@ -69,8 +69,11 @@ set PageNotAvailable			"This page is not available"
 
 } ;# namespace mc
 
+
+# fonttable: xxsmall xsmall small medium large xlarge xxlarge
 array set Options {
 	fonts			""
+	userfonts	{}
 	fonttable	{8 9 10 11 13 15 17}
 	piecelang	graphic
 	treewidth	320
@@ -478,8 +481,8 @@ proc SetupPieceLetters {} {
 		]
 		if {$lang eq "en"} {
 			lappend Priv(pieceletters) \
-				"<span class='cqlpiece'>&#x25ef;</span>" A \
-				"<span class='cqlpiece'>&#x2b24;</span>" a \
+				"<span class='cqlpiece'>&#x25cb;</span>" A \
+				"<span class='cqlpiece'>&#x25cf;</span>" a \
 				"<span class='cqlpiece'>&#x25b3;</span>" M \
 				"<span class='cqlpiece'>&#x25b2;</span>" m \
 				"<span class='cqlpiece'>&#x25bd;</span>" I \
@@ -1219,6 +1222,7 @@ proc CollapseAllItems {} {
 
 proc PopupMenu {dlg tab} {
 	variable Priv
+	variable Options
 	variable Contents
 
 	::tooltip::hide
@@ -1317,25 +1321,61 @@ proc PopupMenu {dlg tab} {
 				-accel "$::mc::Key(Ctrl) \u2212" \
 				;
 
-			if {[llength $Priv(fonts)] > 1} {
+			set menu $m
+			set userfont [lindex $Options(userfonts) 0]
+			if {[llength $Priv(fonts)] > 0 || [string length $userfont] > 0} {
+				variable Family_
+				if {[llength $Options(fonts)] == 0 && [string length $userfont]} {
+					set Family_ $userfont
+				} else {
+					set Family_ $Options(fonts)
+				}
+				set menu $m.fonts
 				$m add cascade \
-					-menu [menu $m.fonts] \
+					-menu [menu $menu] \
 					-label " $mc::DefaultFont" \
 					-compound left \
 					-image $::icon::16x16::fonts \
 					;
 				foreach fam $Priv(fonts) {
-					$m.fonts add radiobutton \
+					$menu add radiobutton \
 						-compound left \
 						-label $fam \
-						-variable [namespace current]::Options(fonts) \
+						-variable [namespace current]::Family_ \
 						-value $fam \
 						-command [namespace code SetupDefaultFont] \
 						;
-					::theme::configureRadioEntry $m.fonts
+					::theme::configureRadioEntry $menu
 				}
+				if {[string length $userfont] > 0} {
+					$menu add radiobutton \
+						-compound left \
+						-label $userfont \
+						-variable [namespace current]::Family_ \
+						-value $userfont \
+						-command [namespace code SetupDefaultFont] \
+						;
+					::theme::configureRadioEntry $menu
+				}
+				$menu add separator
+				set options {}
+			} else {
+				set options -compound left -image $::icon::16x16::fonts
 			}
-
+			$menu add cascade \
+				-menu [menu $menu.sub] \
+				-label $::dialog::choosefont::mc::FontSelection \
+				;
+			$menu.sub add command \
+				-label $::mc::Normal \
+				-command [namespace code [list SelectFont $dlg 0]] \
+				;
+			if {[string length $Options(fonts)] == 0} { set state normal } else { set state disabled }
+			$menu.sub add command \
+				-label $::mc::Monospaced \
+				-command [namespace code [list SelectFont $dlg 1]] \
+				-state $state
+				;
 			$m add separator
 		}
 
@@ -1369,20 +1409,85 @@ proc PopupMenu {dlg tab} {
 
 
 proc SetupDefaultFont {} {
+	variable Options
 	variable Priv
+	variable Family_
+
+	if {$Family_ in $Priv(fonts)} {
+		set Options(fonts) $Family_
+	} else {
+		set Options(fonts) ""
+	}
+		
 	$Priv(html) css [::html::defaultCSS [DefaultFixedFamilies] [DefaultTextFamilies]]
+}
+
+
+proc SelectFont {parent monospaced} {
+	variable Options
+	variable Priv
+
+	set size [lindex $Options(fonttable) 3]
+	set Priv(old:fonts) $Options(fonts)
+	set Priv(old:userfonts) $Options(userfonts)
+	set Priv(old:fontsize) $size
+	catch { font delete [namespace current]::Font_ }
+	if {$monospaced} { set families [DefaultFixedFamilies] } else { set families [DefaultTextFamilies] }
+	font create [namespace current]::Font_ \
+		-family [lindex $families 0] \
+		-size $size \
+		;
+	set result [::dialog::choosefont [namespace current]::Font_ \
+		-parent $parent \
+		-monospaced $monospaced \
+		-fixedsize $monospaced \
+		-sizelist {8 9 10 11 12 13 14} \
+		-usestyle no \
+		-applycmd [namespace code [list ApplyFont $monospaced]] \
+	]
+}
+
+
+proc ApplyFont {monospaced font} {
+	variable Options
+	variable Priv
+
+	if {[llength $font] == 0} {
+		set Options(fonts) $Priv(old:fonts)
+		set Options(userfonts) $Priv(old:userfonts)
+		set size $Priv(old:fontsize)
+	} else {
+		set family [font configure [namespace current]::Font_ -family]
+		if {!$monospaced && $family in $Priv(fonts)} {
+			set Options(fonts) $family
+		} else {
+			set Options(fonts) ""
+			lset Options(userfonts) $monospaced $family
+		}
+		set size [expr {-[font configure [namespace current]::Font_ -size]}]
+	}
+
+	$Priv(html) css [::html::defaultCSS [DefaultFixedFamilies] [DefaultTextFamilies]]
+	SetupFontTable $size
 }
 
 
 proc ChangeFontSize {incr} {
 	variable Options
-	variable Priv
 
-	lassign $Options(fonttable) xxsmall xsmall small medium large xlarge xxlarge
+	set medium [lindex $Options(fonttable) 3]
 	incr medium $incr
 
 	if {$medium <  8} {set medium  8}
 	if {$medium > 14} {set medium 14}
+
+	SetupFontTable $medium
+}
+
+
+proc SetupFontTable {medium} {
+	variable Options
+	variable Priv
 
 	if {$medium == [lindex $Options(fonttable) 3]} { return }
 
@@ -1515,8 +1620,12 @@ proc SearchDefaultFonts {} {
 		}
 	}
 
-	if {[string length $Options(fonts)] == 0} {
+	if {[string length $Options(fonts)] == 0 && [llength $Options(userfonts)] == 0} {
 		set Options(fonts) [lindex $Priv(fonts) 0]
+	}
+
+	if {[lindex $Options(userfonts) 0] in $Priv(fonts)} {
+		lset Options(userfonts) 0 ""
 	}
 }
 
@@ -1526,12 +1635,16 @@ proc DefaultTextFamilies {} {
 
 	SearchDefaultFonts
 
+	if {[llength $Options(fonts)] == 0 && [string length [lindex $Options(userfonts) 0]]} {
+		lappend families [lindex $Options(userfonts) 0]
+	}
+
 	switch $Options(fonts) {
-		"Arial"						{ set families {Arial} }
-		"Nimbus Sans L"			{ set families {{Nimbus Sans L}} }
-		"Abel"						{ set families {Abel {Abell Cond Bold}} }
-		"Bitstream Vera Sans"	{ set families {{Bitstream Vera Sans}} }
-		default						{ set families {TkTextFont} }
+		"Arial"						{ lappend families Arial }
+		"Nimbus Sans L"			{ lappend families {Nimbus Sans L} }
+		"Abel"						{ lappend families Abel {Abell Cond Bold} }
+		"Bitstream Vera Sans"	{ lappend families {Bitstream Vera Sans} }
+		default						{ lappend families TkTextFont }
 	}
 
 	foreach fam [::font::htmlTextFamilies] {
@@ -1547,12 +1660,17 @@ proc DefaultFixedFamilies {} {
 
 	SearchDefaultFonts
 
+	if {[llength $Options(fonts)] == 0 && [string length [lindex $Options(userfonts) 0]]} {
+		lappend families [lindex $Options(userfonts) 1]
+	}
+
 	switch $Options(fonts) {
-		"Arial"						{ set families {Arial Monospaced} }
-		"Nimbus Sans L"			{ set families {{Nimbus Mono L}} }
-		"Abel"						{ set families {Arial Monospaced} }
-		"Bitstream Vera Sans"	{ set families {Bitstream Vera Sans Mono} }
-		default						{ set families {TkFixedFont} }
+		"Arial"						{ lappend families {Arial Monospaced} Arial }
+		"Nimbus Sans L"			{ lappend families {Nimbus Mono L} }
+		"Abel"						{ lappend families Fonotone {Ubuntu Mono} \
+												{Courier New} {Nimbus Mono L} {Arial Monospaced} Arial }
+		"Bitstream Vera Sans"	{ lappend families {Bitstream Vera Sans Mono} }
+		default						{ lappend families TkFixedFont }
 	}
 
 	foreach fam [::font::htmlFixedFamilies] {

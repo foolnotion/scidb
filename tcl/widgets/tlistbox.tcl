@@ -138,6 +138,7 @@ proc Build {w args} {
 		-ipady			0
 		-padding			5
 		-height			-1
+		-maxheight		10
 		-width			0
 		-minwidth		0
 		-maxwidth		0
@@ -180,7 +181,7 @@ proc Build {w args} {
 	proc ::$w {command args} "[namespace current]::WidgetProc $w \$command {*}\$args"
 
 	if {$opts(-height) < 0} {
-		set opts(-height) 10
+		set opts(-height) $opts(-maxheight)
 		set Priv(minheight) 0
 	} else {
 		set Priv(minheight) $opts(-height)
@@ -220,17 +221,27 @@ proc Build {w args} {
 		set Priv(dontsort) $opts(-dontsort)
 	}
 
+	if {$opts(-takefocus) == 0} {
+		bind $t <ButtonPress-1> { break }
+		bind $t <ButtonRelease-1> { break }
+	}
+
 	if {$opts(-width)} { $t configure -width $opts(-width) }
 	if {$opts(-usescroll)} {
 		$t configure -yscrollcommand [list $w.vsb set]
 		::ttk::scrollbar $w.vsb -orient vertical -command [list $t yview] -takefocus 0
-#		bind $w.vsb <Button-1> [namespace code [list Focus $t]]
 		grid $w.vsb -row 0 -column 1 -sticky ns
 	}
+	$t configure -xscrollcommand [list $w.hsb set]
+	::ttk::scrollbar $w.hsb -orient horizontal -command [list $t xview] -takefocus 0
 	if {$opts(-columns) > 1} {
 		$t configure -itemwidthequal yes -orient vertical -wrap window
 	}
 	set Priv(stripes) $opts(-stripes)
+	if {[llength $Priv(stripes)]} {
+		set colors [list [lookupColor $Priv(stripes)] [lookupColor $opts(-background)]]
+		$t column configure tail -itembackground $colors
+	}
 
 	$t notify install <Item-enter>
 	$t notify install <Item-leave>
@@ -287,7 +298,7 @@ proc Build {w args} {
 		set Priv($attr) $opts(-$attr)
 	}
 	foreach attr {maxwidth minwidth} {
-		set Priv($attr) [expr {max(0, $opts(-$attr) - 2*$opts(-borderwidth))}]
+		set Priv($attr) [expr {max(0, $opts(-$attr) - 2*$opts(-borderwidth) - 2)}]
 	}
 
 	set Priv(colwidth) {}
@@ -331,18 +342,18 @@ proc WidgetProc {w command args} {
 				error "wrong # args: should be \"[namespace current] $command text|image ?options?\""
 			}
 			array set opts {
-				-justify		left
-				-expand		no
-				-foreground	{}
-				-font			{}
-				-font2		{}
-				-squeeze		no
-				-steady		yes
-				-header		""
-				-headervar	""
-				-minwidth	0
-				-ellipsis	0
-				-resize		no
+				-justify			left
+				-expand			no
+				-foreground		{}
+				-font				{}
+				-specialfont	{}
+				-squeeze			no
+				-steady			yes
+				-header			""
+				-headervar		""
+				-minwidth		0
+				-ellipsis		0
+				-resize			no
 			}
 			set opts(-id) [llength $Priv(columns)]
 			set opts(-background) $Priv(background:normal)
@@ -413,7 +424,7 @@ proc WidgetProc {w command args} {
 			lappend Priv(types) $type
 			set Priv(foreground:$id) $opts(-foreground)
 			set Priv(font:$id) $opts(-font)
-			set Priv(font2:$id) $opts(-font2)
+			set Priv(specialfont:$id) $opts(-specialfont)
 			set Priv(minwidth:$id) $opts(-minwidth)
 			switch -- $type {
 				image		{ set Priv(type:$id) elemImg }
@@ -483,14 +494,14 @@ proc WidgetProc {w command args} {
 
 		insert {
 			array set opts {
-				-index		-1
-				-enabled		yes
-				-highlight	no
-				-types		{}
-				-font			{}
-				-font2		{}
-				-foreground	{}
-				-span			{}
+				-index			-1
+				-enabled			yes
+				-highlight		no
+				-types			{}
+				-font				{}
+				-specialfont	{}
+				-foreground		{}
+				-span				{}
 			}
 			array set opts [lrange $args 1 end]
 			set args [lindex $args 0]
@@ -558,10 +569,10 @@ proc WidgetProc {w command args} {
 					set font $opts(-font)
 				}
 				set textOpts [list -fill $fill -font $font]
-				if {[llength $opts(-font2)]} {
-					lappend textOpts -font2 $opts(-font2)
-				} elseif {[llength $Priv(font2:$id)]} {
-					lappend textOpts -font2 $Priv(font2:$id)
+				if {[llength $opts(-specialfont)]} {
+					lappend textOpts -specialfont $opts(-specialfont)
+				} elseif {[llength $Priv(specialfont:$id)]} {
+					lappend textOpts -specialfont $Priv(specialfont:$id)
 				}
 				switch -- $style {
 					elemImg - elemTxt {
@@ -599,15 +610,17 @@ proc WidgetProc {w command args} {
 
 		resize {
 			foreach arg $args {
-				if {$arg ni {-width -height -force -minwidth}} { error "unknown option \"$arg\"" }
+				if {$arg ni {-width -height -force -dontshrink}} { error "unknown option \"$arg\"" }
 			}
 			set checkScrollbar 0
+			set dontshrink [expr {"-dontshrink" in $args}]
 			if {"-height" in $args && "-width" ni $args} {
-				ComputeHeight $w
+				ComputeHeight $w $dontshrink
 				set checkScrollbar 1
 			} elseif {"-width" in $args && "-height" ni $args} {
+				# nothing to do
 			} elseif {!$Priv(resized) || "-force" in $args} {
-				ComputeHeight $w
+				ComputeHeight $w $dontshrink
 				set checkScrollbar 1
 			}
 			if {$checkScrollbar} {
@@ -620,10 +633,11 @@ proc WidgetProc {w command args} {
 				}
 			}
 			if {"-height" in $args && "-width" ni $args} {
+				# nothing to do
 			} elseif {"-width" in $args && "-height" ni $args} {
-				ComputeWidth $w
+				ComputeWidth $w $dontshrink
 			} elseif {!$Priv(resized) || "-force" in $args} {
-				ComputeWidth $w
+				ComputeWidth $w $dontshrink
 				set Priv(resized) 1
 			}
 		}
@@ -936,14 +950,14 @@ proc WidgetProc {w command args} {
 			}
 			array set opts $args
 			if {[info exists opts(-maxwidth)]} {
-				set Priv(maxwidth) [expr {max(0, $opts(-maxwidth) - 2*[$t cget -borderwidth])}]
+				set Priv(maxwidth) [expr {max(0, $opts(-maxwidth) - 2*[$t cget -borderwidth] - 2)}]
 				if {$Priv(width) == 0} {
 					ComputeWidth $w
 				}
 				array unset opts -maxwidth
 			}
 			if {[info exists opts(-minwidth)]} {
-				set Priv(minwidth) [expr {max(0, $opts(-minwidth) - 2*[$t cget -borderwidth])}]
+				set Priv(minwidth) [expr {max(0, $opts(-minwidth) - 2*[$t cget -borderwidth] - 2)}]
 				if {$Priv(width) == 0} {
 					ComputeWidth $w
 				}
@@ -1105,7 +1119,7 @@ proc FindMatch {w column code mapping} {
 }
 
 
-proc ComputeWidth {cb} {
+proc ComputeWidth {cb {dontshrink 0}} {
 	variable [namespace current]::${cb}::Priv
 
 	if {[llength $Priv(columns)] == 0} { return }
@@ -1125,8 +1139,13 @@ proc ComputeWidth {cb} {
 			if {[llength $w] == 0} { set w [$t column width $id] }
 			incr width [max $w $Priv(minwidth:$id)]
 		}
+		set neededwidth $width
 		set maxwidth $Priv(maxwidth)
 		set minwidth $Priv(minwidth)
+		if {$dontshrink} {
+			set w [expr {[winfo width $t] - 2*[$t cget -borderwidth] - 2}]
+			set minwidth [max $minwidth $w]
+		}
 		if {"$cb.vsb" in [grid slaves $cb]} {
 			if {$maxwidth} { set maxwidth [expr {$maxwidth - [winfo reqwidth $cb.vsb]}] }
 			if {$minwidth} { set minwidth [expr {$minwidth - [winfo reqwidth $cb.vsb]}] }
@@ -1138,11 +1157,16 @@ proc ComputeWidth {cb} {
 		if {$Priv(expand) eq [lindex $Priv(columns) end] && $Priv(numcolumns) == 1} {
 			$t column expand $Priv(expand)
 		}
+		if {$neededwidth > $width} {
+			grid $cb.hsb -row 1 -column 0 -sticky ew
+		} else {
+			grid forget $cb.hsb
+		}
 	}
 }
 
 
-proc ComputeHeight {cb} {
+proc ComputeHeight {cb {dontshrink 0}} {
 	variable [namespace current]::${cb}::Priv
 
 	if {[llength $Priv(columns)] == 0} { return }
@@ -1157,8 +1181,13 @@ proc ComputeHeight {cb} {
 	if {[$t cget -showheader]} {
 		incr height [$t headerheight]
 	}
-	if {$last < $Priv(minheight)} {
-		set height [expr {$height + ($Priv(minheight) - $last)*$Priv(linespace)}]
+	set minheight $Priv(minheight)
+	if {$dontshrink} {
+		set h [expr {[winfo height $t] - 2*[$t cget -borderwidth]}]
+		set minheight [max $minheight [expr {$h/$Priv(linespace)}]]
+	}
+	if {$last < $minheight} {
+		set height [expr {$height + ($minheight - $last)*$Priv(linespace)}]
 	}
 	$t configure -height $height
 }

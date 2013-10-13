@@ -42,6 +42,9 @@ inline typename vector<T>::iterator vector<T>::end()						{ return this->m_finis
 template <typename T>
 inline typename vector<T>::const_iterator vector<T>::end() const		{ return this->m_finish; }
 
+template <typename T>
+inline typename vector<T>::const_pointer vector<T>::data() const		{ return this->m_start; }
+
 
 template <typename T>
 inline

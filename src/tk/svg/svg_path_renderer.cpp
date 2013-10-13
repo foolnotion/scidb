@@ -52,6 +52,7 @@ path_renderer::path_attributes::path_attributes()
 	,line_cap(agg::butt_cap)
 	,miter_limit(4.0)
 	,stroke_width(1.0)
+	,use_gradient(true)
 {
 	// no action
 }
@@ -402,6 +403,13 @@ void
 path_renderer::miter_limit(double ml)
 {
 	cur_attr().miter_limit = ml;
+}
+
+
+void
+path_renderer::use_gradient(bool flag)
+{
+	cur_attr().use_gradient = flag;
 }
 
 

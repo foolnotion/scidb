@@ -576,7 +576,7 @@ public:
 	/// Remove some flags from game flags.
 	void removeFlags(unsigned flags);
 	/// Reset game for next load.
-	void resetForNextLoad();
+	void resetForNextLoad(variant::Type variant);
 	/// Set current language set.
 	void setLanguages(LanguageSet const& set);
 	/// Select all languages.

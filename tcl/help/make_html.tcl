@@ -157,8 +157,8 @@ set HtmlMapping {
 	&n;				{<span class='piece'>&#x265e;</span>}
 	&p;				{<span class='piece'>&#x265f;</span>}
 
-	&A;				{<span class='cqlpiece'>&#x25ef;</span>}
-	&a;				{<span class='cqlpiece'>&#x2b24;</span>}
+	&A;				{<span class='cqlpiece'>&#x25cb;</span>}
+	&a;				{<span class='cqlpiece'>&#x25cf;</span>}
 	&M;				{<span class='cqlpiece'>&#x25b3;</span>}
 	&m;				{<span class='cqlpiece'>&#x25b2;</span>}
 	&I;				{<span class='cqlpiece'>&#x25bd;</span>}

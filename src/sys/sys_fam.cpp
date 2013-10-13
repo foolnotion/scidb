@@ -695,25 +695,28 @@ fcntlSignalHandler(int signum, siginfo_t* info, void*)
 
 			for (unsigned i = 0; i < mlist.size(); ++i)
 			{
-				Monitor const& m = mlist[i];
-
-				mstl::string path(event.e->name, event.e->len);
-
-				if (event.e->mask & (IN_IGNORED | IN_UNMOUNT))
+				if (!(event.e->mask & IN_IGNORED))
 				{
-					m.signalDeleted(signalId, path);
-				}
-				else
-				{
-					if (event.e->mask & (IN_ISDIR & (IN_DELETE_SELF | IN_MOVE_SELF)))
-						m.signalDeleted(signalId, path);
+					Monitor const& m = mlist[i];
 
-					if (event.e->mask & (IN_DELETE | IN_MOVED_TO))
-						m.signalDeleted(signalId, path);
-					if (event.e->mask & (IN_CREATE | IN_MOVED_FROM))
-						m.signalCreated(signalId, path);
-					if (event.e->mask & IN_ATTRIB)
-						m.signalChanged(signalId, path);
+					mstl::string path(event.e->name, event.e->len);
+
+					if (event.e->mask & IN_UNMOUNT)
+					{
+						m.signalUnmounted(inotifyId, path);
+					}
+					else
+					{
+						if (event.e->mask & (IN_ISDIR & (IN_DELETE_SELF | IN_MOVE_SELF)))
+							m.signalDeleted(inotifyId, path);
+
+						if (event.e->mask & (IN_DELETE | IN_MOVED_TO))
+							m.signalDeleted(inotifyId, path);
+						if (event.e->mask & (IN_CREATE | IN_MOVED_FROM))
+							m.signalCreated(inotifyId, path);
+						if (event.e->mask & IN_ATTRIB)
+							m.signalChanged(inotifyId, path);
+					}
 				}
 			}
 		}

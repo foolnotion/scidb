@@ -32,7 +32,7 @@ using namespace db;
 
 GameData::GameData()
 	:m_startNode(new MoveNode)
-	,m_startBoard(Board::standardBoard())
+	,m_startBoard(Board::standardBoard(variant::Normal)) // it doesn't matter
 	,m_variant(variant::Normal)
 	,m_idn(variant::Standard)
 {

@@ -36,6 +36,19 @@
 using namespace db;
 
 
+bool
+Line::contains(uint16_t move) const
+{
+	for (unsigned i = 0; i < length; ++i)
+	{
+		if (moves[i] == move)
+			return true;
+	}
+
+	return false;
+}
+
+
 Line&
 Line::transpose(Line& dst) const
 {
@@ -58,7 +71,7 @@ Line::print(mstl::string& result,
 				protocol::ID protocol,
 				encoding::CharSet charSet) const
 {
-	Board board = Board::standardBoard();
+	Board board = Board::standardBoard(variant);
 
 	for (unsigned i = 0; i < length; ++i)
 	{

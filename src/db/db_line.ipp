@@ -50,7 +50,7 @@ Line::copy(Line const& line)
 
 	length = line.length;
 	static_assert(sizeof(moves[0]) == 2, "memcmp() cannot work");
-	::memcpy(const_cast<uint16_t*>(moves), line.moves, length << 1);
+	::memcpy(const_cast<uint16_t*>(moves), line.moves, mstl::mul2(length));
 }
 
 
@@ -62,7 +62,20 @@ Line::copy(Line const& line, unsigned maxLength)
 
 	length = mstl::min(line.length, maxLength);
 	static_assert(sizeof(moves[0]) == 2, "memcmp() cannot work");
-	::memcpy(const_cast<uint16_t*>(moves), line.moves, length << 1);
+	::memcpy(const_cast<uint16_t*>(moves), line.moves, mstl::mul2(length));
+}
+
+
+inline
+void
+Line::copy(uint16_t const* line, unsigned maxLength)
+{
+	M_REQUIRE(moves);
+	M_REQUIRE(line);
+
+	length = mstl::min(length, maxLength);
+	static_assert(sizeof(moves[0]) == 2, "memcmp() cannot work");
+	::memcpy(const_cast<uint16_t*>(moves), line, mstl::mul2(length));
 }
 
 
@@ -79,7 +92,7 @@ bool
 Line::operator==(Line const& line) const
 {
 	static_assert(sizeof(moves[0]) == 2, "memcmp() cannot work");
-	return length == line.length && ::memcmp(moves, line.moves, length << 1) == 0;
+	return length == line.length && ::memcmp(moves, line.moves, mstl::mul2(length)) == 0;
 }
 
 
@@ -88,7 +101,7 @@ bool
 Line::operator!=(Line const& line) const
 {
 	static_assert(sizeof(moves[0]) == 2, "memcmp() cannot work");
-	return length != line.length || ::memcmp(moves, line.moves, length << 1) != 0;
+	return length != line.length || ::memcmp(moves, line.moves, mstl::mul2(length)) != 0;
 }
 
 
@@ -97,7 +110,7 @@ bool
 Line::operator<=(Line const& line) const
 {
 	static_assert(sizeof(moves[0]) == 2, "memcmp() cannot work");
-	return length <= line.length && ::memcmp(moves, line.moves, length << 1) <= 0;
+	return length <= line.length && ::memcmp(moves, line.moves, mstl::mul2(length)) <= 0;
 }
 
 
@@ -107,7 +120,7 @@ Line::partialMatch(Line const& line) const
 {
 	M_REQUIRE(length <= line.length);
 	static_assert(sizeof(moves[0]) == 2, "memcmp() cannot work");
-	return ::memcmp(moves, line.moves, length << 1) == 0;
+	return ::memcmp(moves, line.moves, mstl::mul2(length)) == 0;
 }
 
 

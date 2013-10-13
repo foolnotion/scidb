@@ -81,6 +81,7 @@
 ::mc::Lite			"Világos"
 ::mc::Low					"Low" ;# NEW
 ::mc::Modify			"Módosít"
+::mc::Monospaced		"Monospaced" ;# NEW monospaced font
 ::mc::No			"Nem"
 ::mc::Normal			"Normal" ;# NEW
 ::mc::Number			"Szám"
@@ -707,6 +708,11 @@
 ::application::tree::mc::Searching			"Keresés"
 ::application::tree::mc::VariantsNotYetSupported	"Chess variants not yet supported." ;# NEW
 ::application::tree::mc::End				"end" ;# NEW
+::application::tree::mc::ShowAllMoveOrders		"Show all move orders" ;# NEW
+::application::tree::mc::MoveOrders			"Move Orders" ;# NEW
+::application::tree::mc::ComputeSpread			"Compute Spread" ;# NEW
+::application::tree::mc::ShowMoveTree			"Show move tree" ;# NEW
+::application::tree::mc::ShowMoveOrders			"Show move orders" ;# NEW
 
 ::application::tree::mc::FromWhitesPerspective		"Világos nézőpontjából"
 ::application::tree::mc::FromBlacksPerspective		"Sötét nézőpontjából"
@@ -2367,7 +2373,6 @@
 ::dialog::choosefont::mc::Filter			"Szűrő"
 ::dialog::choosefont::mc::Sample			"Minta"
 ::dialog::choosefont::mc::SearchTitle			"Azonos szélességű betűtípusok keresése"
-::dialog::choosefont::mc::SeveralMinutes		"Ez a művelet kb. %d percig tart."
 ::dialog::choosefont::mc::FontSelection			"Betűtypus választása"
 ::dialog::choosefont::mc::Wait				"Kérem várjon"
 

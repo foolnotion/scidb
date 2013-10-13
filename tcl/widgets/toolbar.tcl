@@ -913,14 +913,22 @@ proc Add {toolbar widgetCommand args} {
 				if {$variable ni $Specs(variables:$toolbar)} {
 					lappend Specs(variables:$toolbar) $variable
 				}
+			}
+			if {[llength $value]} {
+				set Specs(onvalue:$w:$toolbar) $value
 				set bg [$w cget -background]
 				set activebg [$w cget -activebackground]
 				set traceCmd "[namespace current]::Tracer1 $toolbar $variable $bg $activebg"
-				trace add variable $variable write $traceCmd
 				bind $w <Destroy> "+trace remove variable $variable write {$traceCmd}"
-			}
-			if {[llength $value] && [set $variable] eq $value} {
-				$w configure -relief solid -background [$w cget -activebackground]
+				trace add variable $variable write $traceCmd
+				set v [namespace current]::Specs(state:$w:$toolbar)
+				set traceCmd "[namespace current]::Tracer5 $toolbar $w $variable"
+				trace add variable $v write $traceCmd
+				bind $w <Destroy> "+trace remove variable $v write {$traceCmd}"
+
+				if {[set $variable] eq $value} {
+					$w configure -relief solid -background [$w cget -activebackground]
+				}
 			}
 		}
 		bind $w <Leave> [namespace code [list LeaveButton $toolbar $w $variable $value]]
@@ -1689,6 +1697,28 @@ proc Tracer4 {toolbar w var args} {
 		if {[CheckIfOn $toolbar $w $var]} {
 			after idle [list $w configure -relief sunken -overrelief sunken]
 		}
+	}
+}
+
+
+proc Tracer5 {toolbar w var args} {
+	variable Specs
+	variable Defaults
+
+	if {[winfo exists $toolbar.floating]} {
+		set v $Specs(child:$w:$toolbar.floating.frame)
+	} else {
+		set v $w
+	}
+
+	if {$Specs(state:$w:$toolbar) eq "disabled" || ![CheckIfOn $toolbar $w $var]} {
+		$w configure -background $Specs(frame:background)
+	} else {
+		$w configure -relief solid -overrelief solid -background $Defaults(button:selectcolor)
+	}
+
+	if {[winfo containing {*}[winfo pointerxy .]] eq $v} {
+		after idle [namespace code [list EnterButton $toolbar $w]]
 	}
 }
 

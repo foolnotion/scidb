@@ -1332,7 +1332,7 @@ Application::loadGame(	unsigned position,
 		EditGame& game	= *(isNew ? insertGame(position) : m_gameMap.find(position)->second);
 
 		if (!isNew)
-			game.data.game->resetForNextLoad();
+			game.data.game->resetForNextLoad(cursor.variant());
 
 		TagSet tags;
 		base.getGameTags(index, tags);

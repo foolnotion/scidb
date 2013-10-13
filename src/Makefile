@@ -193,7 +193,7 @@ depend:
 
 recursive:
 	@for dir in $(SUBDIRS); do           \
-		$(MAKE) -C $$dir;                 \
+		$(MAKE) -C $$dir;              \
 		if [ $$? != 0 ]; then exit 1; fi; \
 	done
 
@@ -220,6 +220,9 @@ util/libTeXt/libTeXt.a:
 
 util/universalchardet/chardet.a:
 	$(MAKE) -C util/universalchardet
+
+util/libhyphenate/libhyphenate.a:
+	$(MAKE) -C util/libhyphenate
 
 tcl/libtcl.a:
 	$(MAKE) -C tcl
@@ -369,6 +372,10 @@ best_move.o: mstl/m_pair.ipp
 best_move.o: mstl/m_map.ipp
 best_move.o: mstl/m_hash.h
 best_move.o: mstl/m_hash.ipp
+best_move.o: mstl/m_list.h
+best_move.o: mstl/m_list_node.h
+best_move.o: mstl/m_list_node.ipp
+best_move.o: mstl/m_list.ipp
 best_move.o: mstl/m_bitset.h
 best_move.o: mstl/m_bitset_iterator.h
 best_move.o: mstl/m_bitset_iterator.ipp
@@ -441,6 +448,10 @@ cbh2si4.o: mstl/m_pair.ipp
 cbh2si4.o: mstl/m_map.ipp
 cbh2si4.o: mstl/m_hash.h
 cbh2si4.o: mstl/m_hash.ipp
+cbh2si4.o: mstl/m_list.h
+cbh2si4.o: mstl/m_list_node.h
+cbh2si4.o: mstl/m_list_node.ipp
+cbh2si4.o: mstl/m_list.ipp
 cbh2si4.o: mstl/m_bitset.h
 cbh2si4.o: mstl/m_bitset_iterator.h
 cbh2si4.o: mstl/m_bitset_iterator.ipp
@@ -463,10 +474,6 @@ cbh2si4.o: mstl/m_byte_order.ipp
 cbh2si4.o: db/db_date.ipp
 cbh2si4.o: db/db_namebase_entry.ipp
 cbh2si4.o: db/db_player.h
-cbh2si4.o: mstl/m_list.h
-cbh2si4.o: mstl/m_list_node.h
-cbh2si4.o: mstl/m_list_node.ipp
-cbh2si4.o: mstl/m_list.ipp
 cbh2si4.o: db/db_player.ipp
 cbh2si4.o: db/db_namebase.ipp
 cbh2si4.o: db/db_namebases.ipp
@@ -603,6 +610,10 @@ cdb2sci.o: mstl/m_pair.ipp
 cdb2sci.o: mstl/m_map.ipp
 cdb2sci.o: mstl/m_hash.h
 cdb2sci.o: mstl/m_hash.ipp
+cdb2sci.o: mstl/m_list.h
+cdb2sci.o: mstl/m_list_node.h
+cdb2sci.o: mstl/m_list_node.ipp
+cdb2sci.o: mstl/m_list.ipp
 cdb2sci.o: mstl/m_bitset.h
 cdb2sci.o: mstl/m_bitset_iterator.h
 cdb2sci.o: mstl/m_bitset_iterator.ipp
@@ -625,10 +636,6 @@ cdb2sci.o: mstl/m_byte_order.ipp
 cdb2sci.o: db/db_date.ipp
 cdb2sci.o: db/db_namebase_entry.ipp
 cdb2sci.o: db/db_player.h
-cdb2sci.o: mstl/m_list.h
-cdb2sci.o: mstl/m_list_node.h
-cdb2sci.o: mstl/m_list_node.ipp
-cdb2sci.o: mstl/m_list.ipp
 cdb2sci.o: db/db_player.ipp
 cdb2sci.o: db/db_namebase.ipp
 cdb2sci.o: db/db_namebases.ipp
@@ -794,6 +801,10 @@ dump_eco.o: mstl/m_pair.ipp
 dump_eco.o: mstl/m_map.ipp
 dump_eco.o: mstl/m_hash.h
 dump_eco.o: mstl/m_hash.ipp
+dump_eco.o: mstl/m_list.h
+dump_eco.o: mstl/m_list_node.h
+dump_eco.o: mstl/m_list_node.ipp
+dump_eco.o: mstl/m_list.ipp
 dump_eco.o: mstl/m_bitset.h
 dump_eco.o: mstl/m_bitset_iterator.h
 dump_eco.o: mstl/m_bitset_iterator.ipp
@@ -1050,6 +1061,10 @@ pgn_split_eco.o: db/db_eco.h
 pgn_split_eco.o: db/db_eco.ipp
 pgn_split_eco.o: mstl/m_hash.h
 pgn_split_eco.o: mstl/m_hash.ipp
+pgn_split_eco.o: mstl/m_list.h
+pgn_split_eco.o: mstl/m_list_node.h
+pgn_split_eco.o: mstl/m_list_node.ipp
+pgn_split_eco.o: mstl/m_list.ipp
 pgn_split_eco.o: mstl/m_chunk_allocator.h
 pgn_split_eco.o: mstl/m_chunk_allocator.ipp
 pgn_split_eco.o: db/db_eco_table.ipp
@@ -1064,10 +1079,6 @@ pgn_split_eco.o: mstl/m_ostream.ipp
 pgn_split_eco.o: util/u_progress.h
 pgn_split_eco.o: util/u_progress.ipp
 pgn_split_eco.o: sys/sys_utf8_codec.h
-pgn_split_eco.o: mstl/m_list.h
-pgn_split_eco.o: mstl/m_list_node.h
-pgn_split_eco.o: mstl/m_list_node.ipp
-pgn_split_eco.o: mstl/m_list.ipp
 pgn_split_eco.o: sys/sys_utf8_codec.ipp
 pgn_split_eco.o: mstl/m_ifstream.h
 pgn_split_eco.o: mstl/m_file.h

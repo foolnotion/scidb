@@ -901,6 +901,7 @@ proc DrawFadingPiece {w sq piece dir} {
 
 
 proc AnimateMove {w} {
+	if {![namespace exists $w]} { return }
 	variable ${w}::Board
 
 	if {![winfo exists $w.c]} { return }

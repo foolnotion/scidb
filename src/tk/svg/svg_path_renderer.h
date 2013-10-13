@@ -85,6 +85,7 @@ public:
 		agg::line_cap_e		line_cap;
 		double					miter_limit;
 		double					stroke_width;
+		bool						use_gradient;
 		agg::trans_affine		transform;
 		gradient					linearGradient;
 		coordinates				coords;
@@ -192,6 +193,7 @@ protected:
 	void fill_rule(agg::filling_rule_e rule);
 	void line_cap(agg::line_cap_e cap);
 	void miter_limit(double ml);
+	void use_gradient(bool flag);
 	agg::trans_affine& transform();
 
 	// Make all polygons CCW-oriented

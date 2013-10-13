@@ -3629,11 +3629,12 @@ Game::setup(Board const& startPosition)
 
 
 void
-Game::resetForNextLoad()
+Game::resetForNextLoad(variant::Type variant)
 {
 	delete m_startNode;
 	delete m_editNode;
 
+	m_variant = variant;
 	m_startNode = m_currentNode = new MoveNode;
 	m_startNode->setNext(new MoveNode);
 	m_editNode = 0;
@@ -3646,7 +3647,7 @@ Game::resetForNextLoad()
 	m_isIrreversible = false;
 	m_isModified = false;
 	m_wasModified = false;
-	m_startBoard = Board::standardBoard();
+	m_startBoard = Board::standardBoard(m_variant);
 	m_currentBoard = m_startBoard;
 	m_finalBoard.clear();
 	m_tags.clear();
@@ -3826,16 +3827,12 @@ Game::finishLoad(variant::Type variant, mstl::string const* fen)
 	m_idn = 0;
 
 	if (variant::isAntichessExceptLosers(variant))
-	{
 		m_startBoard.removeCastlingRights();
-	}
-	else
-	{
-		Board	board(m_startBoard);
 
-		if (!(ok = checkConsistency(m_startNode->next(), board, OnlyIfRemainsConsistent)))
-			checkConsistency(m_startNode->next(), board, TruncateIfNeccessary);
-	}
+	Board	board(m_startBoard);
+
+	if (!(ok = checkConsistency(m_startNode->next(), board, OnlyIfRemainsConsistent)))
+		checkConsistency(m_startNode->next(), board, TruncateIfNeccessary);
 
 	m_startNode->finish(m_startBoard, m_variant);
 	m_currentBoard = m_startBoard;
