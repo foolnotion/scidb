@@ -64,9 +64,9 @@ set ShowTournamentTable "Show Tournament Table"
 set Long						"Long"
 set Short					"Short"
 
-set AccelBrowse			"W"
-set AccelOverview			"O"
-set AccelTournTable		"T"
+set Accel(browse)			"W"
+set Accel(overview)		"O"
+set Accel(tourntable)	"T"
 set Space					"Space"
 
 set F_Number				"#"
@@ -1676,6 +1676,7 @@ proc PopupMenu {path menu base variant index} {
 
 	set view [{*}$Vars(viewcmd) $base $variant]
 	if {[scidb::view::count games $base $variant $view] == 0} { return }
+	set Vars(menu) $menu
 
 	if {$index ne "outside"} {
 		if {$Vars(mode) eq "list"} {
@@ -1683,13 +1684,13 @@ proc PopupMenu {path menu base variant index} {
 				-compound left \
 				-image $::icon::16x16::browse \
 				-label " $::browser::mc::BrowseGame..." \
-				-command [namespace code [list OpenBrowser $path $index]] \
+				-command [namespace code [list Open(browse) $path $index]] \
 				;
 			$menu add command \
 				-compound left \
 				-image $::icon::16x16::overview \
 				-label " $::overview::mc::Overview..." \
-				-command [namespace code [list OpenOverview $path $index]] \
+				-command [namespace code [list Open(overview) $path $index]] \
 				;
 			$menu add command \
 				-compound left \
@@ -1712,7 +1713,7 @@ proc PopupMenu {path menu base variant index} {
 					-compound left \
 					-image $::icon::16x16::crossTable \
 					-label " $mc::ShowTournamentTable..." \
-					-command [namespace code [list OpenCrosstable $path $index]] \
+					-command [namespace code [list Open(tourntable) $path $index]] \
 					;
 			}
 		} else {
@@ -1720,16 +1721,22 @@ proc PopupMenu {path menu base variant index} {
 				-compound left \
 				-image $::icon::16x16::filetypeScidbBase \
 				-label " $::browser::mc::BrowseGame..." \
-				-accelerator $mc::AccelBrowse \
-				-command [namespace code [list OpenBrowser $path $index]] \
+				-accelerator $mc::Accel(browse) \
+				-command [namespace code [list Open(browse) $path $index]] \
 				;
+			set cmd [namespace code [list InvokeAction $menu browse $path $index]]
+			::bind $menu <Key-$mc::Accel(browse)> $cmd
+			::bind $menu <Key-[string tolower $mc::Accel(browse)]> $cmd
 			$menu add command \
 				-compound left \
 				-image $::icon::16x16::overview \
 				-label " $::overview::mc::Overview..." \
-				-accelerator $mc::AccelOverview \
-				-command [namespace code [list OpenOverview $path $index]] \
+				-accelerator $mc::Accel(overview) \
+				-command [namespace code [list Open(overview) $path $index]] \
 				;
+			set cmd [namespace code [list InvokeAction $menu overview $path $index]]
+			::bind $menu <Key-$mc::Accel(overview)> $cmd
+			::bind $menu <Key-[string tolower $mc::Accel(overview)]> $cmd
 			$menu add command \
 				-compound left \
 				-image $::icon::16x16::document \
@@ -1737,6 +1744,7 @@ proc PopupMenu {path menu base variant index} {
 				-accelerator $mc::Space \
 				-command [namespace code [list LoadGame $path $index]] \
 				;
+			::bind $menu <Key-space> [namespace code [list InvokeAction $menu load $path $index]]
 			if {$Vars(mode) ne "merge"} {
 				if {[::scidb::game::current] < 9} { set state normal } else { set state disabled }
 				set position [list $base $variant $view $index]
@@ -1752,9 +1760,12 @@ proc PopupMenu {path menu base variant index} {
 					-compound left \
 					-image $::icon::16x16::crossTable \
 					-label " $mc::ShowTournamentTable..." \
-					-accelerator $mc::AccelTournTable \
-					-command [namespace code [list OpenCrosstable $path $index]] \
+					-accelerator $mc::Accel(tourntable) \
+					-command [namespace code [list Open(tourntable) $path $index]] \
 					;
+				set cmd [namespace code [list InvokeAction $menu tourntable $path $index]]
+				::bind $menu <Key-$mc::Accel(tourntable)> $cmd
+				::bind $menu <Key-[string tolower $mc::Accel(tourntable)]> $cmd
 			}
 		}
 
@@ -1874,17 +1885,16 @@ proc SetFlag {base variant index view flag} {
 proc BindAccelerators {path} {
 	variable ${path}::Vars
 
-	foreach {accel proc} [list $mc::AccelBrowse OpenBrowser \
-										$mc::AccelOverview OpenOverview \
-										$mc::AccelTournTable OpenCrosstable] {
-		if {[info exists Vars(accel:$proc)]} {
-			bind $path <Key-[string toupper $Vars(accel:$proc)]> {}
-			bind $path <Key-[string tolower $Vars(accel:$proc)]> {}
+	foreach action {browse overview tourntable} {
+		if {[info exists Vars(accel:$action)]} {
+			bind $path <Key-[string toupper $Vars(accel:$action)]> {}
+			bind $path <Key-[string tolower $Vars(accel:$action)]> {}
 		}
-		set cmd [namespace code [list $proc $path]]
+		set cmd [namespace code [list Open($action) $path]]
+		set accel $mc::Accel($action)
 		bind $path <Key-[string toupper $accel]> [list ::util::doAccelCmd $accel %s $cmd]
 		bind $path <Key-[string tolower $accel]> [list ::util::doAccelCmd $accel %s $cmd]
-		set Vars(accel:$proc) $accel
+		set Vars(accel:$action) $accel
 	}
 }
 
@@ -1895,7 +1905,18 @@ proc LoadGame {path index} {
 }
 
 
-proc OpenBrowser {path {index -1}} {
+proc InvokeAction {m action path index} {
+	::tk::MenuUnpost $m
+	Open($action) $path $index
+}
+
+
+proc Open(load) {path index} {
+	LoadGame $path $index
+}
+
+
+proc Open(browse) {path {index -1}} {
 	variable ${path}::Vars
 
 	if {$index == -1} { set index [::scrolledtable::active $path] }
@@ -1912,7 +1933,7 @@ proc OpenBrowser {path {index -1}} {
 }
 
 
-proc OpenOverview {path {index -1}} {
+proc Open(overview) {path {index -1}} {
 	variable ${path}::Vars
 
 	if {$index == -1} { set index [::scrolledtable::active $path] }
@@ -1928,7 +1949,7 @@ proc OpenOverview {path {index -1}} {
 }
 
 
-proc OpenCrosstable {path {index -1}} {
+proc Open(tourntable) {path {index -1}} {
 	variable ${path}::Vars
 
 	if {$index == -1} { set index [::scrolledtable::active $path] }

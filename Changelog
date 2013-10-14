@@ -7,6 +7,8 @@ Scidb 1.0 BETA (rev. #969)
 
 * Font selection implemented in help dialog.
 
+* Game editor: Show diagram of hovered move while pressing Alt-key.
+
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #961)
 ------------------------------------------------------------------------------

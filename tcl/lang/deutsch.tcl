@@ -1151,9 +1151,9 @@
 ::gametable::mc::Long						"Lang"
 ::gametable::mc::Short						"Kurz"
 
-::gametable::mc::AccelBrowse				"R"
-::gametable::mc::AccelOverview			"U"
-::gametable::mc::AccelTournTable			"T"
+::gametable::mc::Accel(browse)			"R"
+::gametable::mc::Accel(overview)			"U"
+::gametable::mc::Accel(tourntable)		"T"
 ::gametable::mc::Space						"Leertaste"
 
 ::gametable::mc::F_Number					"#"
@@ -2413,7 +2413,7 @@
 ::fsbox::mc::Download						"Download"
 ::fsbox::mc::Home								"Heimverzeichnis"
 
-::fsbox::mc::SelectEncoding				"Auswahl der Zeichenkodierung für die Datenbank (öffnet einen Dialog)"
+::fsbox::mc::SelectEncoding				"Auswahl der Zeichenkodierung für die Datenbank"
 ::fsbox::mc::SelectWhichType				"Auswahl der anzuzeigenden Dateitypen"
 ::fsbox::mc::TimeFormat						"%d.%m.%Y %H:%M"
 

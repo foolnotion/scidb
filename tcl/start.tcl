@@ -125,6 +125,7 @@ proc update {} {
 			{Burly|1262881982561|yellow.color|gregor}
 			{Burnett|1228820485389|yellow.color|gregor}
 			{Country Style|1370798029772|INE543149|cmartins}
+			{Creepy|1381672489858|purple|gregor}
 			{Fantasy|1228820514842|yellow.color|gregor}
 			{Glass|1243787890671|yellow.color|gregor}
 			{Goldenrod|1243765848112|yellow.color|gregor}
@@ -161,6 +162,7 @@ proc update {} {
 			{Goldenrod|1243765822627|yellow.color|gregor}
 			{Gray|1248527841922|yellow.color|gregor}
 			{Green|1243460196909|yellow.color|gregor}
+			{Khaki|1381672245561|purple|gregor}
 			{Lemon|1251901475461|yellow.color|gregor}
 			{Lemon|1227320554192|yellow.color|gregor}
 			{Mayan - Red|1243775183896|yellow.color|gregor}
@@ -199,7 +201,7 @@ proc update {} {
 			{Stone Floor|1244113188050|yellow.color|gregor}
 			{Sycomore|1243762745547|yellow.color|gregor}
 			{Sycomore Gray|1244122565844|yellow.color|gregor}
-			{Virtual|1381592499969|purple|gregor}
+			{Blue Sky|1381592499969|purple|gregor}
 			{Winboard|1228820514851|yellow.color|gregor}
 			{Wood - Brown|1228820485412|yellow.color|gregor}
 			{Wood - Green|1244309414202|yellow.color|gregor}

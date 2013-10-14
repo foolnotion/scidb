@@ -1161,9 +1161,9 @@
 ::gametable::mc::Long						"Lång"
 ::gametable::mc::Short						"Kort"
 
-::gametable::mc::AccelBrowse				"W"
-::gametable::mc::AccelOverview			"O"
-::gametable::mc::AccelTournTable			"T"
+::gametable::mc::Accel(browse)			"W"
+::gametable::mc::Accel(overview)			"O"
+::gametable::mc::Accel(tourntable)		"T"
 ::gametable::mc::Space						"Space"
 
 ::gametable::mc::F_Number					"#"
@@ -2426,7 +2426,7 @@
 ::fsbox::mc::Download						"Hämtning"
 ::fsbox::mc::Home								"Hem"
 
-::fsbox::mc::SelectEncoding				"Välj kodning av databas (öppnar en dialog)"
+::fsbox::mc::SelectEncoding				"Välj kodning av databas"
 ::fsbox::mc::SelectWhichType				"Välj vilken filtyp som ska visas"
 ::fsbox::mc::TimeFormat						"%Y-%m-%d %H:%M"
 

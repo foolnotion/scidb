@@ -566,6 +566,11 @@ parser::parse_attr(char const* name, char const* value)
 		{
 			parse_style(value);
 		}
+		else if (::match(name, "scidb:usergradient"))
+		{
+			if (::match(value, "ignore"))
+				m_path.use_gradient(false);
+		}
 		else if (::match(name, "fill"))
 		{
 			if (::match(value, "none"))
@@ -574,11 +579,6 @@ parser::parse_attr(char const* name, char const* value)
 				m_path.fill(lookup_gradient(value + 5));
 			else
 				m_path.fill(parse_color(value));
-		}
-		else if (::match(name, "use-gradient"))
-		{
-			if (::match(value, "never"))
-				m_path.use_gradient(false);
 		}
 		else if (::match(name, "fill-opacity"))
 		{

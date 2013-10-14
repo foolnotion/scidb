@@ -1150,9 +1150,9 @@
 ::gametable::mc::Long						"Long"
 ::gametable::mc::Short						"Short"
 
-::gametable::mc::AccelBrowse				"W"
-::gametable::mc::AccelOverview			"O"
-::gametable::mc::AccelTournTable			"T"
+::gametable::mc::Accel(browse)			"W"
+::gametable::mc::Accel(overview)			"O"
+::gametable::mc::Accel(tourntable)		"T"
 ::gametable::mc::Space						"Space"
 
 ::gametable::mc::F_Number					"#"
@@ -2414,7 +2414,7 @@
 ::fsbox::mc::Download						"Download"
 ::fsbox::mc::Home								"Home"
 
-::fsbox::mc::SelectEncoding				"Select the encoding of the database (opens a dialog)"
+::fsbox::mc::SelectEncoding				"Select the encoding of the database"
 ::fsbox::mc::SelectWhichType				"Select which type of file are shown"
 ::fsbox::mc::TimeFormat						"%d/%m/%Y %I:%M %p"
 

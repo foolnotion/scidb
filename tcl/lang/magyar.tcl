@@ -1162,9 +1162,9 @@
 ::gametable::mc::Long						"Hosszú"
 ::gametable::mc::Short						"Rövid"
 
-::gametable::mc::AccelBrowse				"W"
-::gametable::mc::AccelOverview			"O"
-::gametable::mc::AccelTournTable			"T"
+::gametable::mc::Accel(browse)			"W"
+::gametable::mc::Accel(overview)		"O"
+::gametable::mc::Accel(tourntable)		"T"
 ::gametable::mc::Space						"Space"
 
 ::gametable::mc::F_Number					"#"
