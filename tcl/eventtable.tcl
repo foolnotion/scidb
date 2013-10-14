@@ -432,12 +432,17 @@ proc popdownInfo {path} {
 
 
 proc popupMenu {parent menu base variant view index source} {
+	set accel $::gametable::mc::Accel(tourntable)
 	$menu add command \
 		-compound left \
 		-image $::icon::16x16::crossTable \
 		-label " $::gametable::mc::ShowTournamentTable" \
+		-accelerator $accel \
 		-command [namespace code [list OpenCrosstable $parent $source $base $variant $view $index]] \
 		;
+	set cmd [namespace code [list OpenCrosstable $parent $source $base $variant $view $index $menu]]
+	::bind $menu <Key-$accel> $cmd
+	::bind $menu <Key-[string tolower $accel]> $cmd
 }
 
 
@@ -702,7 +707,7 @@ proc PopupMenu {path menu base variant index} {
 proc BindAccelerators {path} {
 	variable ${path}::Vars
 
-	foreach {accel proc} [list $::gametable::mc::AccelTournTable OpenCrosstable] {
+	foreach {accel proc} [list $::gametable::mc::Accel(tourntable) OpenCrosstable] {
 		set cmd [namespace code [list $proc $path event]]
 		bind $path <Key-[string toupper $accel]> [list ::util::doAccelCmd $accel %s $cmd]
 		bind $path <Key-[string tolower $accel]> [list ::util::doAccelCmd $accel %s $cmd]
@@ -710,7 +715,8 @@ proc BindAccelerators {path} {
 }
 
 
-proc OpenCrosstable {path source {base ""} {variant ""} {view -1} {index -1}} {
+proc OpenCrosstable {path source {base ""} {variant ""} {view -1} {index -1} {menu ""}} {
+	if {[string length $menu]} { ::tk::MenuUnpost $menu }
 	if {$index == -1} { set index [::scrolledtable::active $path] }
 	if {$index == -1} { return }
 
