@@ -331,12 +331,9 @@ proc open {parent base variant info view index {fen {}}} {
 	bind $dlg <Alt-KP_Add>				[namespace code [list ChangeBoardSize $position $lt.board max]]
 	bind $dlg <Alt-minus>				[namespace code [list ChangeBoardSize $position $lt.board min]]
 	bind $dlg <Alt-KP_Subtract>		[namespace code [list ChangeBoardSize $position $lt.board min]]
-	bind $dlg <Control-plus>			[list ::font::changeSize browser +1]
-	bind $dlg <Control-KP_Add>			[list ::font::changeSize browser +1]
-	bind $dlg <Control-minus>			[list ::font::changeSize browser -1]
-	bind $dlg <Control-KP_Subtract>	[list ::font::changeSize browser -1]
 	bind $dlg <F1>							[list ::help::open .application Game-Browser -parent $dlg]
 
+	::font::addChangeFontSizeBindings browser $dlg
 	SetupControlButtons $position
 
 	wm withdraw $dlg
@@ -1530,20 +1527,7 @@ proc PopupMenu {parent board position {what ""}} {
 	}
 
 	$menu add separator
-	$menu add command \
-		-label " $::font::mc::IncreaseFontSize" \
-		-image $::icon::16x16::font(incr) \
-		-compound left \
-		-command [list ::font::changeSize browser +1] \
-		-accel "$::mc::Key(Ctrl) +" \
-		;
-	$menu add command \
-		-label " $::font::mc::DecreaseFontSize" \
-		-image $::icon::16x16::font(decr) \
-		-compound left \
-		-command [list ::font::changeSize browser -1] \
-		-accel "$::mc::Key(Ctrl) \u2212" \
-		;
+	::font::addChangeFontSizeToMenu browser $menu
 	if {$::theme::useCustomStyleMenuEntries} {
 		if {$::pgn::browser::Options(style:column)} { set state Yes } else { set state No }
 		$menu add command \

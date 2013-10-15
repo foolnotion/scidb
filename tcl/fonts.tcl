@@ -42,17 +42,11 @@ set ChooseFigurineFont						"Choose figurine font"
 set ChooseSymbolFont							"Choose symbol font"
 set IncreaseFontSize							"Increase Font Size"
 set DecreaseFontSize							"Decrease Font Size"
+set DefaultFont								"Default font"
 
 } ;# namespace mc
 
 namespace import ::tcl::mathfunc::int
-
-set DefaultHtmlFixedFamilies {
-	{Arial Monospaced} {Nimbus Mono L} {Bitstream Vera Sans Mono} TkFixedFont {Lucida Typewriter}
-}
-set DefaultHtmlTextFamilies {
-	Arial {Nimbus Sans L} {Bitstream Vera Sans} TkTextFont {Helvetica Neue} {Helvetica Neue LT Std} Verdana {Lucida Grande} Lucida {DejaVu Sans}
-} 
 
 array set mapCodeToNag {
 	"\u203c"				3
@@ -1634,44 +1628,448 @@ proc makeBoldFont {font} {
 }
 
 
-proc htmlFixedFamilies {} {
-	variable DefaultHtmlFixedFamilies
-	variable _MonoFamilies
-
-	if {![info exists _MonoFamilies]} {
-		set _MonoFamilies {}
-		foreach fam $DefaultHtmlFixedFamilies {
-			array set attrs [font actual [list $fam]]
-			set f $attrs(-family)
-			if {($f eq $fam || [string match Tk* $fam]) && $f ni $_MonoFamilies} {
-				lappend _MonoFamilies $f
-			}
-		}
-		lappend _MonoFamilies Monospace Fixed
-	}
-
-	return $_MonoFamilies
+proc getFontFamilyName {font} {
+	array set opts [font actual [list $font]]
+	return $opts(-family)
 }
 
 
-proc htmlTextFamilies {} {
-	variable DefaultHtmlTextFamilies
-	variable _TextFamilies
+proc addChangeFontSizeBindings {context w {cmd {}}} {
+	bind $w <Control-plus>			[namespace code [list ChangeFontSize $context $cmd +1]]
+	bind $w <Control-KP_Add>		[namespace code [list ChangeFontSize $context $cmd +1]]
+	bind $w <Control-minus>			[namespace code [list ChangeFontSize $context $cmd -1]]
+	bind $w <Control-KP_Subtract>	[namespace code [list ChangeFontSize $context $cmd -1]]
+}
 
-	if {![info exists _TextFamilies]} {
-		set _TextFamilies {}
-		foreach fam $DefaultHtmlTextFamilies {
-			array set attrs [font actual [list $fam]]
-			set f $attrs(-family)
-			if {($f eq $fam || [string match Tk* $fam]) && $f ni $_TextFamilies} {
-				lappend _TextFamilies $f
-			}
-		}
-		lappend _TextFamilies Sans-Serif Helvetica
+
+proc addChangeFontSizeToMenu {context m {cmd {}} {stateIncr normal} {stateDecr normal}} {
+	if {$context eq "__HTML__"} {
+		set incrCmd [namespace code [list {*}$cmd +1]]
+		set decrCmd [namespace code [list {*}$cmd -1]]
+	} else {
+		set incrCmd [namespace code [list ChangeFontSize $context $cmd +1]]
+		set decrCmd [namespace code [list ChangeFontSize $context $cmd -1]]
+	}
+	$m add command \
+		-command $incrCmd \
+		-label " $mc::IncreaseFontSize" \
+		-image $::icon::16x16::font(incr) \
+		-compound left \
+		-accel "$::mc::Key(Ctrl) +" \
+		-state $stateIncr \
+		;
+	$m add command \
+		-command $decrCmd \
+		-label " $mc::DecreaseFontSize" \
+		-image $::icon::16x16::font(decr) \
+		-compound left \
+		-accel "$::mc::Key(Ctrl) \u2212" \
+		-state $stateDecr \
+		;
+}
+
+
+proc ChangeFontSize {context cmd incr} {
+	if {[changeSize $context $incr]} {
+		if {[llength $cmd]} { {*}$cmd }
+	}
+}
+
+namespace export getFontFamilyName
+
+namespace eval html {
+
+set DefaultFixedFamilies {
+	{Arial Monospaced} Arial {Nimbus Mono L} {DejaVu Sans Mono } {Bitstream Vera Sans Mono} TkFixedFont {Lucida Typewriter}
+}
+set DefaultTextFamilies {
+	Arial {Nimbus Sans L} {DejaVu Sans} {Bitstream Vera Sans} TkTextFont {Helvetica Neue} {Helvetica Neue LT Std} Verdana {Lucida Grande} Lucida
+} 
+variable DefaultFonts {}
+
+
+namespace import [namespace parent]::getFontFamilyName
+
+proc setupFonts {context {font ""}} {
+	variable [namespace parent]::Options
+
+	if {![info exists Options($context:html:family)]} {
+		set Options($context:html:family) ""
+		set Options($context:html:user) {"" ""}
+		set Options($context:html:size) 11
 	}
 
-	return $_TextFamilies
+	set defaultFonts [defaultFonts]
+
+	if {[string length $font]} {
+		if {$font in $defaultFonts} {
+			set Options($context:html:family) $font
+		} else {
+			set Options($context:html:family) ""
+			lset Options($context:html:user) 0 $font
+		}
+	}
+
+	if {[lindex $Options($context:html:user) 0] in $defaultFonts} {
+		set Options($context:html:family) [lindex $Options($context:html:user) 0]
+		lset Options($context:html:user) 0 ""
+	} elseif {	[string length [lindex $Options($context:html:user) 0]] == 0
+				&& $Options($context:html:family) ni $defaultFonts} {
+		set Options($context:html:family) [lindex $defaultFonts 0]
+	}
 }
+
+
+proc setupFixedFont {context {font ""}} {
+	variable [namespace parent]::Options
+	lset Options($context:html:user) 1 $font
+}
+
+
+proc setupFontSize {context size} {
+	variable [namespace parent]::Options
+	set Options($context:html:size) $size
+}
+
+
+proc saveFonts {context} {
+	variable [namespace parent]::Options
+	variable HtmlSave_
+
+	foreach attr [array names Options $context:html:*] {
+		set HtmlSave_($attr) $Options($attr)
+	}
+}
+
+
+proc restoreFonts {context} {
+	variable [namespace parent]::Options
+	variable HtmlSave_
+
+	array set Options [array get HtmlSave_]
+}
+
+
+proc textFont {context} {
+	variable [namespace parent]::Options
+
+	if {[string length $Options($context:html:family)]} {
+		return $Options($context:html:family)
+	}
+	return [lindex $Options($context:html:user) 0]
+}
+
+
+proc fixedFont {context} {
+	variable [namespace parent]::Options
+
+	if {[string length $Options($context:html:family)]} {
+		return [lindex [lookupFixedFonts $Options($context:html:family)] 0]
+	}
+	return [lindex $Options($context:html:user) 1]
+}
+
+
+proc userTextFont {context} {
+	variable [namespace parent]::Options
+	return [lindex $Options($context:html:user) 0]
+}
+
+
+proc userFixedFont {context} {
+	variable [namespace parent]::Options
+	return [lindex $Options($context:html:user) 1]
+}
+
+
+proc fontSize {context} {
+	variable [namespace parent]::Options
+	return $Options($context:html:size)
+}
+
+
+proc defaultFonts {} {
+	variable DefaultFonts
+
+	if {[string length $DefaultFonts] == 0} {
+		set families [::dialog::choosefont::fontFamilies no]
+		if {"arial" in $families} {
+			lappend DefaultFonts "Arial"
+		} elseif {"nimbus sans l" in $families && "nimbus mono l" in $families} {
+			lappend DefaultFonts "Nimbus Sans L"
+		}
+		if {"abel" in $families && "abell cond bold" in $families} {
+			lappend DefaultFonts "Abel"
+		}
+		set fam [getFontFamilyName TkTextFont]
+		if {$fam ni $DefaultFonts} {
+			lappend DefaultFonts $fam
+		}
+		if {	"DejaVu Sans" ni $DefaultFonts
+			&& "DejaVu Sans" in $families
+			&& "DejaVu Sans Mono" in $families} {
+			lappend DefaultFonts "DejaVu Sans"
+		}
+		if {	"DejaVu Sans" ni $DefaultFonts
+			&& "Bitstream Vera Sans" ni $DefaultFonts
+			&& "bitstream vera sans" in $families
+			&& "bitstream vera sans mono" in $families} {
+			lappend DefaultFonts "Bitstream Vera Sans"
+		}
+	}
+
+	return $DefaultFonts
+}
+
+
+proc defaultTextFonts {context} {
+	variable [namespace parent]::Options
+
+	set fonts {}
+
+	if {	[llength $Options($context:html:family)] == 0
+		&& [string length [lindex $Options($context:html:user) 0]]} {
+		lappend fonts [lindex $Options($context:html:user) 0]
+	} else {
+		lappend fonts $Options($context:html:family)
+	}
+
+	if {[llength $fonts]} {
+		if {[lindex $fonts 0] eq "Abel"} {
+			lappend fonts {Abell Cond Bold}
+		}
+	}
+
+	foreach fam [textFonts] {
+		if {[string match Tk* $fam]} { set fam [getFontFamilyName $fam] }
+		if {$fam ni $fonts} { lappend fonts $fam }
+	}
+
+	return $fonts
+}
+
+
+proc defaultFixedFonts {context} {
+	variable [namespace parent]::Options
+
+	if {	[llength $Options($context:html:family)] == 0
+		&& [string length [lindex $Options($context:html:user) 1]]} {
+		set fonts [list [lindex $Options($context:html:user) 1]]
+	} else {
+		set fonts [lookupFixedFonts $Options($context:html:family)]
+	}
+
+	foreach fam [fixedFonts] {
+		if {[string match Tk* $fam]} { set fam [getFontFamilyName $fam] }
+		if {$fam ni $fonts} { lappend fonts $fam }
+	}
+
+	return $fonts
+}
+
+
+proc lookupFixedFonts {textfont} {
+	switch $textfont {
+		"Arial"						{ lappend fonts {Arial Monospaced} Arial }
+		"Nimbus Sans L"			{ lappend fonts {Nimbus Mono L} }
+		"Abel"						{ lappend fonts Fonotone {Ubuntu Mono} \
+												{Courier New} {Nimbus Mono L} {Arial Monospaced} Arial }
+		"DejaVu Sans"				{ lappend fonts {DejaVu Sans Mono} }
+		"Bitstream Vera Sans"	{ lappend fonts {Bitstream Vera Sans Mono} }
+		default						{ lappend fonts [getFontFamilyName TkFixedFont] }
+	}
+
+	return $fonts
+}
+
+
+proc fixedFonts {} {
+	variable DefaultFixedFamilies
+	variable MonoFamilies_
+
+	if {![info exists MonoFamilies_]} {
+		set MonoFamilies_ {}
+		foreach fam $DefaultFixedFamilies {
+			set f [getFontFamilyName $fam]
+			if {($f eq $fam || [string match Tk* $fam]) && $f ni $MonoFamilies_} {
+				lappend MonoFamilies_ $f
+			}
+		}
+		foreach fam {Monospace Fixed} {
+			set fam [getFontFamilyName $fam]
+			if {$fam ni $MonoFamilies_} { lappend MonoFamilies_ $fam }
+		}
+	}
+
+	return $MonoFamilies_
+}
+
+
+proc textFonts {} {
+	variable DefaultTextFamilies
+	variable TextFamilies_
+
+	if {![info exists TextFamilies_]} {
+		set TextFamilies_ {}
+		foreach fam $DefaultTextFamilies {
+			set f [getFontFamilyName $fam]
+			if {($f eq $fam || [string match Tk* $fam]) && $f ni $TextFamilies_} {
+				lappend TextFamilies_ $f
+			}
+			foreach fam {Sans-Serif {Sans Serif} Helvetica} {
+				set fam [getFontFamilyName $fam]
+				if {$fam ni $TextFamilies_} { lappend TextFamilies_ $fam }
+			}
+		}
+	}
+
+	return $TextFamilies_
+}
+
+
+proc addChangeFontSizeBindings {context w {cmd {}}} {
+	bind $w <Control-plus>			[namespace code [list ChangeFontSize $context $cmd +1]]
+	bind $w <Control-KP_Add>		[namespace code [list ChangeFontSize $context $cmd +1]]
+	bind $w <Control-minus>			[namespace code [list ChangeFontSize $context $cmd -1]]
+	bind $w <Control-KP_Subtract>	[namespace code [list ChangeFontSize $context $cmd -1]]
+}
+
+
+proc addChangeFontSizeToMenu {context m cmd {min 1} {max 64}} {
+	set cmd [list [namespace current]::ChangeFontSize $context $cmd]
+	set size [fontSize $context]
+	set stateIncr [expr {$size < $max ? "normal" : "disabled"}]
+	set stateDecr [expr {$size > $min ? "normal" : "disabled"}]
+	[namespace parent]::addChangeFontSizeToMenu __HTML__ $m $cmd $stateIncr $stateDecr
+}
+
+
+proc addChangeFontToMenu {context m applycmd {textFontOnly no}} {
+	set menu $m
+	set defaultFonts [defaultFonts]
+	set userFont [userTextFont $context]
+	if {[llength $defaultFonts] > 0 || [string length $userFont] > 0} {
+		variable Family_
+		set Family_ [textFont $context]
+		set menu $m.fonts
+		$m add cascade \
+			-menu [menu $menu] \
+			-label " [set [namespace parent]::mc::DefaultFont]" \
+			-compound left \
+			-image $::icon::16x16::fonts \
+			;
+		foreach fam $defaultFonts {
+			$menu add radiobutton \
+				-compound left \
+				-label $fam \
+				-variable [namespace current]::Family_ \
+				-value $fam \
+				-command [namespace code [list SetFont $context $applycmd $fam]] \
+				;
+			::theme::configureRadioEntry $menu
+		}
+		if {[string length $userFont] > 0} {
+			$menu add radiobutton \
+				-compound left \
+				-label $userFont \
+				-variable [namespace current]::Family_ \
+				-value $userFont \
+				-command [namespace code [list SetFont $context $applycmd $userFont]] \
+				;
+			::theme::configureRadioEntry $menu
+		}
+		$menu add separator
+		set options {}
+		set space ""
+	} else {
+		set options -compound left -image $::icon::16x16::fonts
+		set space " "
+	}
+	if {$userFont ne [textFont $context]} { set textFontOnly 1 }
+	if {$textFontOnly} {
+		set dlg [winfo toplevel $m]
+		$menu add command \
+			-label "$space$::dialog::choosefont::mc::FontSelection..." \
+			-command [namespace code [list SelectFont $context $dlg 0 $applycmd]] \
+			{*}$options \
+			;
+	} else {
+		$menu add cascade \
+			-menu [menu $menu.sub] \
+			-label "$space$::dialog::choosefont::mc::FontSelection" \
+			{*}$options \
+			;
+		set dlg [winfo toplevel $m]
+		$menu.sub add command \
+			-label $::mc::Normal \
+			-command [namespace code [list SelectFont $context $dlg 0 $applycmd]] \
+			;
+		$menu.sub add command \
+			-label $::mc::Monospaced \
+			-command [namespace code [list SelectFont $context $dlg 1 $applycmd]] \
+			;
+	}
+}
+
+
+proc ChangeFontSize {context cmd incr} {
+	set size [expr {[::font::html::fontSize $context] + $incr}]
+	if {[llength $cmd]} { set size [{*}$cmd $size] }
+	setupFontSize $context $size
+}
+
+
+proc SetFont {context cmd font} {
+	::font::html::setupFonts $context $font
+	{*}$cmd
+}
+
+
+proc SelectFont {context parent monospaced applycmd} {
+	saveFonts $context
+	catch { font delete [namespace current]::Font_ }
+	if {$monospaced} {
+		set font [userFixedFont $context]
+		if {[string length $font] == 0} {
+			set font [getFontFamilyName TkTextFont]
+		}
+	} else {
+		set font [userTextFont $context]
+		if {[string length $font] == 0} {
+			set font [getFontFamilyName TkFixedFont]
+		}
+	}
+	font create [namespace current]::Font_ \
+		-family $font \
+		-size [fontSize $context] \
+		;
+	::dialog::choosefont [namespace current]::Font_ \
+		-parent $parent \
+		-monospaced $monospaced \
+		-fixedsize $monospaced \
+		-sizelist {8 9 10 11 12 13 14} \
+		-usestyle no \
+		-applycmd [namespace code [list ApplyFont $context $monospaced $applycmd]] \
+		;
+}
+
+
+proc ApplyFont {context monospaced applycmd font} {
+	if {[llength $font] == 0} {
+		restoreFonts $context
+	} else {
+		set fam [font configure [namespace current]::Font_ -family]
+		if {$monospaced} {
+			setupFixedFont $context $fam
+		} else {
+			setupFonts $context $fam
+		}
+		setupFontSize $context [expr {-[font configure [namespace current]::Font_ -size]}]
+	}
+	{*}$applycmd
+}
+
+} ;# namespace html
 
 
 if {$tcl_platform(platform) ne "windows"} {

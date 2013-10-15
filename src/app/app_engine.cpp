@@ -1694,8 +1694,11 @@ Engine::setVariation(unsigned no, db::MoveList const& moves)
 	M_REQUIRE(no < numVariations());
 	M_REQUIRE(!moves.isEmpty());
 
-	if (m_wantedMultiPV > m_maxMultiPV)
+	if (	m_wantedMultiPV > m_maxMultiPV	// support of multipv in winboard engines
+		|| no > m_usedMultiPV)					// bug in uci engine
+	{
 		no = insertPV(moves);
+	}
 
 	m_usedMultiPV = mstl::max(m_usedMultiPV, no + 1);
 	m_lines[no] = moves;

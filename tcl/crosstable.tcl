@@ -153,6 +153,7 @@ array set Defaults {
 	crosstableLimit	60
 }
 
+# fonttable: xxsmall xsmall small medium large xlarge xxlarge
 array set Options {
 	debug:log			0
 	debug:html			0
@@ -264,7 +265,8 @@ proc open {parent base variant index view source} {
 
 	ttk::frame $top
 	ttk::frame $canv
-	set css [::html::defaultCSS [::font::htmlFixedFamilies] [::font::htmlTextFamilies]]
+	::font::html::setupFonts crosstable
+	set css [DefaultCSS]
 	set dir [file join $::scidb::dir::share scripts]
 	::html $html \
 		-imagecmd [namespace code GetImage] \
@@ -273,6 +275,7 @@ proc open {parent base variant index view source} {
 		-fittowidth no \
 		-css $css \
 		-importdir $dir \
+		-fontsize [::font::html::fontSize crosstable] \
 		;
 	$html handler node td [namespace current]::NodeHandler
 	$html handler node span [namespace current]::NodeHandler
@@ -395,6 +398,8 @@ proc open {parent base variant index view source} {
 	grid columnconfigure $canv 0 -weight 1
 	grid rowconfigure $canv 0 -weight 1
 
+	::font::html::addChangeFontSizeBindings crosstable $dlg \
+		[list [namespace current]::ChangeFontSize $dlg]
 	bind $dlg <<LanguageChanged>> [namespace code [list LanguageChanged $dlg %W]]
 
 	if {$source eq "event"} {
@@ -1191,8 +1196,12 @@ proc BuildMenu {dlg m} {
 		;
 	$m add separator
 
-	$m add cascade -label $mc::Display -menu $sub
+	::font::html::addChangeFontSizeToMenu crosstable $m \
+		[list [namespace current]::ChangeFontSize $dlg] [::html::minFontSize] [::html::maxFontSize]
+	::font::html::addChangeFontToMenu crosstable $m [list [namespace current]::ApplyFont $dlg] yes
+	$m add separator
 
+	$m add cascade -label $mc::Display -menu $sub
 	set sub [menu $m.style]
 
 	menu $sub.spacing
@@ -1259,6 +1268,36 @@ proc BuildMenu {dlg m} {
 }
 
 
+proc ChangeFontSize {dlg size} {
+	variable ${dlg}::Vars
+
+	set oldSize [$Vars(html) fontsize?]
+	set newSize [$Vars(html) fontsize $size]
+
+	if {$oldSize != $newSize} {
+		$Vars(html) parse $Vars(output:html)
+	}
+
+	return $newSize
+}
+
+
+proc ApplyFont {dlg} {
+	variable ${dlg}::Vars
+
+	$Vars(html) css [DefaultCSS]
+	$Vars(html) fontsize $size
+	$Vars(html) parse $Vars(output:html)
+}
+
+
+proc DefaultCSS {} {
+	set textFonts [::font::html::defaultTextFonts crosstable]
+	set fixedFonts [::font::html::defaultFixedFonts crosstable]
+	return [::html::defaultCSS $fixedFonts $textFonts]
+}
+
+
 proc SaveAsHTML {dlg} {
 	variable ${dlg}::Vars
 	variable Options
@@ -1290,8 +1329,8 @@ proc SaveAsHTML {dlg} {
 	set html $Vars(output:html)
 	set html [regsub -all {[ ](recv|send|game)=[\"][^\"]*[\"]} $html ""]
 
-	append data "    " [::html::textStyle [::font::htmlTextFamilies]] \n
-	append data "    " [::html::monoStyle [::font::htmlFixedFamilies]] \n
+	append data "    " [::html::textStyle [::font::html::textFonts]] \n
+	append data "    " [::html::monoStyle [::font::html::fixedFonts]] \n
 	array set flags {}
 	while {[set n [string first "<td><img src=" $html]] != -1} {
 		set code [string range $html [expr {$n + 14}] [expr {$n + 16}]]

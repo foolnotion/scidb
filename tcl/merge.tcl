@@ -269,11 +269,7 @@ proc openDialog {parent primary secondary} {
 		$dlg.saveAs configure -command [namespace code [list Save $dlg new]]
 		$dlg.save configure -command [namespace code [list Save $dlg replace]]
 		bind $dlg.cancel <Destroy> [namespace code [list Destroy $dlg]]
-
-		bind $dlg <Control-plus>        [namespace code [list ChangeFontSize +1]]
-		bind $dlg <Control-KP_Add>      [namespace code [list ChangeFontSize +1]]
-		bind $dlg <Control-minus>       [namespace code [list ChangeFontSize -1]]
-		bind $dlg <Control-KP_Subtract> [namespace code [list ChangeFontSize -1]]
+		::font::addChangeFontSizeBindings merge $dlg
 
 		wm protocol $dlg WM_DELETE_WINDOW [$dlg.cancel cget -command]
 		wm withdraw $dlg
@@ -567,10 +563,8 @@ proc DoUpdateDisplay {pane position data} {
 proc ChangeFontSize {incr} {
 	variable Priv
 
-	if {[::font::changeSize merge $incr]} {
-		::pgn::setup::setupStyle merge $Priv(pos:merge)
-		::pgn::setup::setupStyle merge $Priv(pos:game)
-	}
+	::pgn::setup::setupStyle merge $Priv(pos:merge)
+	::pgn::setup::setupStyle merge $Priv(pos:game)
 }
 
 
@@ -601,20 +595,7 @@ proc PopupMenu {parent} {
 	menu $menu -tearoff 0
 	catch { wm attributes $menu -type popup_menu }
 
-	$menu add command \
-		-label " $::font::mc::IncreaseFontSize" \
-		-image $::icon::16x16::font(incr) \
-		-compound left \
-		-command [namespace code [list ChangeFontSize +1]] \
-		-accel "$::mc::Key(Ctrl) +" \
-		;
-	$menu add command \
-		-label " $::font::mc::DecreaseFontSize" \
-		-image $::icon::16x16::font(decr) \
-		-compound left \
-		-command [namespace code [list ChangeFontSize -1]] \
-		-accel "$::mc::Key(Ctrl) \u2212" \
-		;
+	::font::addChangeFontSizeToMenu merge $menu
 
 	menu $menu.moveStyles -tearoff no
 	$menu add cascade \

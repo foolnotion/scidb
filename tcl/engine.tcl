@@ -391,7 +391,7 @@ proc openAdmininstration {parent} {
 
 	### Tab: Features #####################################################
 	set features $nb.features
-	set css [::html::defaultCSS [::font::htmlFixedFamilies] [::font::htmlTextFamilies]]
+	set css [::html::defaultCSS [::font::html::fixedFonts] [::font::html::textFonts]]
 	::html $nb.features \
 		-imagecmd [namespace code GetImage] \
 		-center no \

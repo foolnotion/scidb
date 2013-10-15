@@ -218,7 +218,7 @@ proc Mouse1Up {w node} {
 
 
 proc BuildContributionsFrame {w} {
-	set css [::html::defaultCSS [::font::htmlFixedFamilies] [::font::htmlTextFamilies]]
+	set css [::html::defaultCSS [::font::html::fixedFonts] [::font::html::textFonts]]
 
 	append css {
 		h1 {

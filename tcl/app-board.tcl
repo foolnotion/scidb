@@ -274,6 +274,9 @@ proc build {w width height} {
 		-state disabled \
 		-image [set ::icon::toolbarCtrlLeaveVar] \
 		-command [namespace code GoUp]]
+
+	set Vars(need-binding) \
+		[list $Vars(widget:border) $Vars(widget:frame) [::board::diagram::canvas $board]]
 	
 	bind <Key-space>				::move::nextGuess
 	bind <Left>						[namespace code GoLeft]
@@ -304,14 +307,14 @@ proc build {w width height} {
 	bind <BackSpace>				[namespace parent]::pgn::undoLastMove
 	bind <Delete>					[list ::scidb::game::strip truncate]
 	bind <ButtonPress-3>			[namespace code { PopupMenu %W }]
-	bind <Control-plus>			[list ::application::pgn::changeFontSize +1]
-	bind <Control-KP_Add>		[list ::application::pgn::changeFontSize +1]
-	bind <Control-minus>			[list ::application::pgn::changeFontSize -1]
-	bind <Control-KP_Subtract>	[list ::application::pgn::changeFontSize -1]
 	bind <Any-KeyPress>			[list ::application::pgn::checkKey press %K %s]
 	bind <Any-KeyRelease>		[list ::application::pgn::checkKey release %K %s]
 	bind <<LanguageChanged>>	[namespace code LanguageChanged]
 	bind <F1>						[list ::help::open .application]
+
+	foreach w $Vars(need-binding) {
+		::font::addChangeFontSizeBindings editor $w ::application::pgn::fontSizeChanged
+	}
 
 	for {set i 1} {$i <= 9} {incr i} {
 		bind <Key-$i>    [namespace code [list [namespace parent]::pgn::selectAt [expr {$i - 1}]]]
@@ -467,13 +470,11 @@ proc rotated? {} {
 
 proc bind {key cmd} {
 	variable Vars
-	variable board
 
-	::bind $Vars(widget:frame) $key $cmd
-	::bind $Vars(widget:border) $key $cmd
-	::bind $Vars(widget:frame) $key {+ break }
-	::bind $Vars(widget:border) $key {+ break }
-	::board::diagram::bind $board $key $cmd
+	foreach w $Vars(need-binding) {
+		::bind $w $key $cmd
+		::bind $w $key {+ break }
+	}
 }
 
 

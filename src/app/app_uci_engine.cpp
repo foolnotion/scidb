@@ -584,7 +584,7 @@ uci::Engine::processMessage(mstl::string const& message)
 					break;
 
 				case 'n':
-					if ((isAnalyzing() || m_stopAnalyzeIsPending) && ::strncmp(message, "info ", 5) == 0)
+					if (isAnalyzing() && !m_stopAnalyzeIsPending && ::strncmp(message, "info ", 5) == 0)
 						parseInfo(::skipSpaces(message.c_str() + 5));
 					break;
 			}

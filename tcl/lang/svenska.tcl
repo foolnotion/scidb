@@ -1365,6 +1365,7 @@
 ::font::mc::ChooseSymbolFont						"Choose symbol font" ;# NEW
 ::font::mc::IncreaseFontSize						"Öka fontstorlek"
 ::font::mc::DecreaseFontSize						"Minska fontstorlek"
+::font::mc::DefaultFont								"Default font" ;# NEW
 
 ### gamebar ############################################################
 ::gamebar::mc::StartPosition					"Startposition"
@@ -2047,7 +2048,6 @@
 ::help::mc::HideIndex				"Dölj index"
 ::help::mc::ShowIndex				"Visa index"
 ::help::mc::All						"Alla"
-::help::mc::DefaultFont				"Default font" ;# NEW
 
 ::help::mc::FileNotFound			"Hittar ej filen."
 ::help::mc::CantFindFile			"Kan inte hitta filen på %s."

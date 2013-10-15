@@ -144,6 +144,26 @@ proc textStyle {families} {
 }
 
 
+proc minFontSize {} { return 8 }
+proc maxFontSize {} { return 14 }
+
+
+proc getFontTable {fontsize} {
+	if {8 > $fontsize || $fontsize > 14} {
+		error "unsupported font size '$fontsize': should be one of {8 9 10 11 12 13 14}"
+	}
+	switch $fontsize {
+		 8 { return { 5  6  7  8 10 12 14} }
+		 9 { return { 6  7  8  9 11 13 15} }
+		10 { return { 7  8  9 10 12 14 16} }
+		11 { return { 8  9 10 11 13 15 17} }
+		12 { return { 9 10 11 12 14 16 18} }
+		13 { return {10 11 12 13 15 17 19} }
+		14 { return {11 12 13 14 16 18 20} }
+	}
+}
+
+
 proc BuildFontString {families} {
 	set result ""
 	foreach fam $families {
@@ -182,6 +202,7 @@ proc Build {w args} {
 		-css					{}
 		-importdir			{}
 		-fonttable			{}
+		-fontsize			11
 	}
 
 	array set opts $args
@@ -199,7 +220,7 @@ proc Build {w args} {
 	foreach name [array names opts] {
 		switch -- $name {
 			-delay - -css - -center - -fittowidth - -fittoheight - -importdir -
-			-usehorzscroll - -usevertscroll - -keephorzscroll - -keepvertscroll {}
+			-usehorzscroll - -usevertscroll - -keephorzscroll - -keepvertscroll - -fontsize {}
 
 			-imagecmd - -doublebuffer - -latinligatures - -exportselection -
 			-selectbackground - -selectforeground - -inactiveselectbackground -
@@ -263,23 +284,29 @@ proc Build {w args} {
 		request			{}
 		bbox				{}
 		widgets			{}
+		minbbox			{}
 		pointer			{0 0}
 		focus				0
 		sel:state		0
+		styleCount		0
 	}
 
-	set Priv(delay)			$opts(-delay)
-	set Priv(center)			$opts(-center)
-	set Priv(fittowidth)		$opts(-fittowidth)
-	set Priv(fittoheight)	$opts(-fittoheight)
-	set Priv(bw)    			$opts(-borderwidth)
-	set Priv(css)   			$opts(-css)
-	set Priv(importdir)		$opts(-importdir)
-	set Priv(fontsize)		{}
-	set Priv(minbbox)			{}
-	set Priv(styleCount)		0
+	foreach attr {delay center fittowidth fittoheight borderwidth css importdir} {
+		set Priv($attr) $opts(-$attr)
+	}
 
-	if {[llength $Priv(bw)] == 0} { set Priv(bw) 0 }
+	if {[llength $Priv(borderwidth)] == 0} { set Priv(borderwidth) 0 }
+
+	if {[llength $opts(-fonttable)]} {
+		set opts(-fontsize) [lindex $opts(-fonttable) 3]
+		set Priv(fontsize) $opts(-fontsize)
+	} elseif {$opts(-fontsize) != 11} {
+		set opts(-fonttable) [getFontTable $opts(-fontsize)]
+		lappend htmlOptions -fonttable $opts(-fonttable)
+		set Priv(fontsize) $opts(-fontsize)
+	} else {
+		set Priv(fontsize) 11
+	}
 
 	rename ::$w $w.__html__
 	proc ::$w {command args} "[namespace current]::WidgetProc $w \$command {*}\$args"
@@ -384,6 +411,10 @@ proc WidgetProc {w command args} {
 	variable ${w}::Priv
 
 	switch -glob -- $command {
+		clear {
+			$w.sub.html reset
+		}
+
 		parse {
 			variable Margin
 			variable MaxWidth
@@ -526,6 +557,10 @@ proc WidgetProc {w command args} {
 			return [$w.sub.html yview moveto $fraction]
 		}
 
+		fonttable? {
+			return [$w.sub.html cget -fonttable]
+		}
+
 		fonttable {
 			if {[llength $args] == 0} {
 				return [$w.sub.html cget -fonttable]
@@ -533,10 +568,27 @@ proc WidgetProc {w command args} {
 			if {[llength $args] != 1} {
 				error "wrong # args: should be \"[namespace current] $command <font sizes>"
 			}
-			set Priv(fontsize) "body { font-size: [lindex $args 0 3]pt; }"
+			set Priv(fontsize) [lindex $args 0 3]
 			SetupCSS $w
 			$w.sub.html configure -fonttable {*}$args
 			return
+		}
+
+		fontsize? {
+			return $Priv(fontsize)
+		}
+
+		fontsize {
+			if {[llength $args] != 1} {
+				error "wrong # args: should be \"[namespace current] $command <pt>"
+			}
+			set size [expr {max(8, min(14, [lindex $args 0]))}]
+			if {$size != $Priv(fontsize)} {
+				set Priv(fontsize) $size
+				SetupCSS $w
+				$w.sub.html configure -fonttable [getFontTable $size]
+			}
+			return $size
 		}
 
 		css {
@@ -587,7 +639,7 @@ proc SetupCSS {w} {
 	variable ${w}::Priv
 
 	set css $Priv(css)
-	append css "\n$Priv(fontsize)"
+	append css "\nbody { font-size: ${Priv(fontsize)}pt; }"
 	set css [string trim $css]
 	if {[string length $css]} { $w.sub.html style -id user $css }
 }
@@ -644,7 +696,9 @@ proc Place {w} {
 	set ydelta [expr {max(0, ($height - $htmlHeight)/2)}]
 	if {$ydelta > 0} { set height $htmlHeight }
 	if {$xdelta > 0} { set width $htmlWidth }
-	$w.html configure -forcewidth 1 -width $width -height $height
+	if {$width < $htmlWidth || $height < $htmlHeight} {
+		$w.html configure -forcewidth 0 -width $width -height $height
+	}
 	place $w.html -x $xdelta -y $ydelta
 	$w.html xview scroll 0 units
 	$w.html yview scroll 0 units
@@ -661,7 +715,7 @@ proc Configure {parent width req} {
 	if {$req == $Priv(request)} { return }
 	set Priv(request) $req
 
-	$parent.sub.html configure -width [expr {max(1, $width - 2*$Priv(bw) - [VsbWidth $parent])}]
+	$parent.sub.html configure -width [expr {max(1, $width - 2*$Priv(borderwidth) - [VsbWidth $parent])}]
 }
 
 

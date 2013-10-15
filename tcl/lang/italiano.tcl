@@ -1367,6 +1367,7 @@
 ::font::mc::ChooseSymbolFont						"Scegli un font per i simboli"
 ::font::mc::IncreaseFontSize						"Aumenta Grandezza Font"
 ::font::mc::DecreaseFontSize						"Diminuisci Grandezza Font"
+::font::mc::DefaultFont								"Default font" ;# NEW
 
 ### gamebar ############################################################
 ::gamebar::mc::StartPosition					"Posizione di partenza"
@@ -2054,7 +2055,6 @@
 ::help::mc::HideIndex				"Nascondi Indice"
 ::help::mc::ShowIndex				"Mostra Indice"
 ::help::mc::All						"Tutti"
-::help::mc::DefaultFont				"Default font" ;# NEW
 
 ::help::mc::FileNotFound			"File non trovato."
 ::help::mc::CantFindFile			"Impossibile trovare file a %s."

@@ -1355,6 +1355,7 @@
 ::font::mc::ChooseSymbolFont						"Symbolzeichensatz auswählen"
 ::font::mc::IncreaseFontSize						"Zeichensatz vergrößern"
 ::font::mc::DecreaseFontSize						"Zeichensatz verkleinern"
+::font::mc::DefaultFont								"Standardfont"
 
 ### gamebar ############################################################
 ::gamebar::mc::StartPosition					"Startposition"
@@ -2036,7 +2037,6 @@
 ::help::mc::HideIndex				"Index ausblenden"
 ::help::mc::ShowIndex				"Index einblenden"
 ::help::mc::All						"Alle"
-::help::mc::DefaultFont				"Standardfont"
 
 ::help::mc::FileNotFound			"Datei nicht gefunden."
 ::help::mc::CantFindFile			"Die Datei %s kann nicht gefunden werden."

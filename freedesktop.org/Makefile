@@ -30,28 +30,32 @@ prepare-install-mime:
 
 install-mime-icons:
 	@echo "Install mime type icons"
-	@for app in scidb archive; do                                                \
-		for size in 16 22 32 48 64 128; do                                        \
-			if [ -f $$app-ft-$$size.png ]; then                                    \
-				xdg-icon-resource install --noupdate --novendor --context mimetypes \
-					--size $$size ./$$app-ft-$$size.png application-x-chess-$$app;   \
-			fi;                                                                    \
-		done;                                                                     \
+	@for size in 16 22 32 48 64 128; do                                                       \
+		for app in scidb archive pgn; do                                                       \
+			if [ -f $$app-ft-$$size.png ]; then                                                 \
+				xdg-icon-resource install --noupdate --novendor --context mimetypes              \
+					--size $$size ./$$app-ft-$$size.png application-x-chess-$$app;                \
+			fi;                                                                                 \
+		done;                                                                                  \
+		if [ -f chessbase-ft-$$size.png ]; then                                                \
+			xdg-icon-resource install --noupdate --novendor --context mimetypes                 \
+				--size $$size ./chessbase-ft-$$size.png application-x-chess-chessbase;           \
+			xdg-icon-resource install --noupdate --novendor --context mimetypes                 \
+				--size $$size ./chessbase-ft-$$size.png application-x-chess-chessbasedos;        \
+		fi;                                                                                    \
+		if [ -f scid-ft-$$size.png ]; then                                                     \
+			xdg-icon-resource install --noupdate --novendor --context mimetypes                 \
+				--size $$size ./scid-ft-$$size.png application-x-chess-scid3;                    \
+			xdg-icon-resource install --noupdate --novendor --context mimetypes                 \
+				--size $$size ./scid-ft-$$size.png application-x-chess-scid4;                    \
+		fi;                                                                                    \
 	done
-	@for size in 16 22 32 48 64 128; do                                                \
-		if [ -f chessbase-ft-$$size.png ]; then                                         \
-			xdg-icon-resource install --noupdate --novendor --context mimetypes          \
-				--size $$size ./chessbase-ft-$$size.png application-x-chess-chessbase;    \
-			xdg-icon-resource install --noupdate --novendor --context mimetypes          \
-				--size $$size ./chessbase-ft-$$size.png application-x-chess-chessbasedos; \
-		fi; \
-	done
-	@for size in 16 22 32 48 64 128; do                                       \
-		if [ -f scid-ft-$$size.png ]; then                                     \
-			xdg-icon-resource install --noupdate --novendor --context mimetypes \
-				--size $$size ./scid-ft-$$size.png application-x-chess-scid3;    \
-			xdg-icon-resource install --noupdate --novendor --context mimetypes \
-				--size $$size ./scid-ft-$$size.png application-x-chess-scid4;    \
+	@#for size in 16 22 32 48 64 128; do                                                      \
+		if [ ! -f /usr/share/icons/hicolor/32x32/mimetypes/application-x-chess-pgn.png ]; then \
+			if [ -f $$app-ft-$$size.png ]; then                                                 \
+				xdg-icon-resource install --noupdate --novendor --context mimetypes              \
+					--size $$size ./$$app-ft-$$size.png application-x-chess-$$app;                \
+			fi;                                                                                 \
 		fi; \
 	done
 

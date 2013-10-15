@@ -108,7 +108,7 @@ proc show {base variant args} {
 	bind $dlg <Destroy> [namespace code [list Destroy $dlg $key %W 1]]
 	wm withdraw $dlg
 
-	set css [::html::defaultCSS [::font::htmlFixedFamilies] [::font::htmlTextFamilies]]
+	set css [::html::defaultCSS [::font::html::fixedFonts] [::font::html::textFonts]]
 	set dir [file join $::scidb::dir::share scripts]
 	::html $dlg.content \
 		-imagecmd [namespace code [list GetImage $info]] \

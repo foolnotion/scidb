@@ -539,6 +539,19 @@ Search::htmlContent(void* cbData, XML_Char const* s, int len)
 
 	if (self->m_skip)
 		return;
+	
+	// NOTE:
+	// -----------------------------------------------------------------------------
+	// The user likes to find "Position Schach". Currently this function will not
+	// find this string inside the content "Position <a href=...>Schach-960</a>".
+	// We have to take the previous content into account to solve this problem.
+	//
+	// But finding this string will cause problems for the HTML editor, because
+	// the editor will highlight the found string with the following transformation:
+	// "<span color="yellow">Position <a href=...>Schach</span>-960</a>", which is
+	// ill-formed.
+	//
+	// As a result we will live with the current issue.
 
 	int pos	= self->stringFirstCmd(s, len);
 	int offs	= 0;
