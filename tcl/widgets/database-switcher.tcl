@@ -167,8 +167,6 @@ proc Build {w args} {
 	bind $canv <Up>				 [namespace code [list Traverse $w -line]]
 	bind $canv <Down>				 [namespace code [list Traverse $w +line]]
 	bind $canv <space>			 [namespace code [list ActivateBase $w]]
-bind $canv <Any-Key> {+ puts "Key: %K"}
-bind $canv <Alt-Key> {+ puts "Alt: %K"}
 
 	rename ::$w $w.__switcher__
 	proc ::$w {command args} "[namespace current]::WidgetProc $w \$command {*}\$args"

@@ -467,13 +467,19 @@ proc doAccelCmd {accel keyState cmd} {
 
 proc shiftIsHeldDown? {state} {
 	variable ShiftMask
-	return [expr {$state & $ShiftMask}]
+	return [expr {($state & $ShiftMask) != 0}]
 }
 
 
 proc altIsHeldDown? {state} {
 	variable AltMask
-	return [expr {$state & $AltMask}]
+	return [expr {($state & $AltMask) != 0}]
+}
+
+
+proc shiftIsLocked? {state} {
+	variable LockMask
+	return [expr {($state & $LockMask) != 0}]
 }
 
 

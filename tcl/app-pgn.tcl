@@ -607,50 +607,27 @@ proc replaceMoves {parent base variant position number} {
 }
 
 
-proc checkKey {mode keysym state} {
+proc showDiagram {w keysym state} {
+	variable ::util::ShiftMask
+	variable ::util::LockMask
 	variable Vars
 
+	if {$Vars(diagram:show)} { return }
 	set position $Vars(position)
 	if {$position < 0 || 9 <= $position} { return }
+	set key $Vars(active:$position)
+	if {[llength $key] == 0} { return }
 
-	if {[string match Alt_? $keysym]} {
-		set w $Vars(pgn:$position)
+	bind $w <Alt-KeyPress>		[namespace code [list CheckKey $w press %K %s]]
+	bind $w <Alt-KeyRelease>	[namespace code [list CheckKey $w release %K %s]]
 
-		switch $mode {
-			press {
-				if {!$Vars(diagram:show)} {
-					set key $Vars(active:$position)
-					if {[llength $key]} {
-						set Vars(diagram:show) 1
-						set Vars(diagram:state) $state
-						set Vars(diagram:caps) [expr {$state & $::util::LockMask}]
-						::browser::showPosition $w $position [[namespace parent]::board::rotated?] $key $state
-					}
-				}
-			}
-			release {
-				if {$Vars(diagram:show)} { HidePosition $position $w }
-			}
-		}
-	} elseif {	(	[string match Shift_? $keysym]
-					|| ($keysym eq "Caps_Lock" && $mode eq "press"))
-				&& $Vars(diagram:show)} {
-		set w $Vars(pgn:$position)
-		set key $Vars(active:$position)
-		if {$keysym ne "Caps_Lock"} {
-			set mask $::util::ShiftMask
-		} else {
-			set mask $::util::LockMask
-			if {$Vars(diagram:caps)} { set mode "release" }
-		}
-		if {$mode eq "press"} {
-			set state [expr {$state | $mask}]
-		} else {
-			set state [expr {$state & ~$mask}]
-		}
-		set Vars(diagram:caps) [expr {$state & $::util::LockMask}]
-		::browser::updatePosition $w $position [[namespace parent]::board::rotated?] $key $state
-	}
+	set Vars(diagram:show) 1
+	set Vars(diagram:state) $state
+	set Vars(diagram:caps) [expr {$state & $LockMask}]
+	set w $Vars(pgn:$position)
+	set mask [expr {$ShiftMask|$LockMask}]
+	if {($state & $mask) == $mask} { set state 0 }
+	::browser::showPosition $w $position [[namespace parent]::board::rotated?] $key $state
 }
 
 
@@ -670,6 +647,40 @@ proc ensureScratchGame {} {
 	add 0 $scratchbaseName Normal $tags
 	select 0
 	return 1
+}
+
+
+proc CheckKey {w mode keysym state} {
+	variable ::util::ShiftMask
+	variable ::util::LockMask
+	variable ::util::AltMask
+	variable Vars
+
+	if {!$Vars(diagram:show)} { return }
+	set position $Vars(position)
+	if {$position < 0 || 9 <= $position} { return }
+
+	if {$mode eq "release" && ($keysym == "Alt_L" || $keysym == "ISO_Level3_Shift")} {
+		bind $w <Alt-KeyPress> {#}
+		bind $w <Alt-KeyRelease> {#}
+		HidePosition $position $Vars(pgn:$position)
+	} elseif {[string match Shift_? $keysym] || ($keysym eq "Caps_Lock" && $mode eq "press")} {
+		set key $Vars(active:$position)
+		set w $Vars(pgn:$position)
+		if {$keysym ne "Caps_Lock"} {
+			set mask $ShiftMask
+		} else {
+			set mask $LockMask
+			if {$Vars(diagram:caps)} { set mode "release" }
+		}
+		if {$mode eq "press"} {
+			set state [expr {$state | $mask}]
+		} else {
+			set state [expr {$state & ~$mask}]
+		}
+		set Vars(diagram:caps) [expr {$state & $LockMask}]
+		::browser::updatePosition $w $position [[namespace parent]::board::rotated?] $key $state
+	}
 }
 
 
@@ -1926,6 +1937,7 @@ proc Mark {w key} {
 
 proc EnterMove {position key {state 0}} {
 	variable ::pgn::editor::Colors
+	variable ::util::LockMask
 	variable Vars
 
 	set w $Vars(pgn:$position)
@@ -1940,7 +1952,7 @@ proc EnterMove {position key {state 0}} {
 
 	if {$Vars(diagram:show)} {
 		set Vars(diagram:state) $state
-		set Vars(diagram:caps) [expr {$state & $::util::LockMask}]
+		set Vars(diagram:caps) [expr {$state & $LockMask}]
 		::browser::updatePosition $w $position [[namespace parent]::board::rotated?] $key $state
 	}
 }

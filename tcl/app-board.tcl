@@ -278,43 +278,42 @@ proc build {w width height} {
 	set Vars(need-binding) \
 		[list $Vars(widget:border) $Vars(widget:frame) [::board::diagram::canvas $board]]
 	
-	bind <Key-space>				::move::nextGuess
-	bind <Left>						[namespace code GoLeft]
-	bind <Right>					[namespace code GoRight]
-	bind <Prior>					[namespace code GoPrior]
-	bind <Next>						[namespace code GoNext]
-	bind <Home>						[namespace code GoHome]
-	bind <End>						[namespace code GoEnd]
-	bind <Down>						[namespace code GoDown]
-	bind <Up>						[namespace code GoUp]
-	bind <Control-Down>			[namespace code [list LoadGame(list) next]]
-	bind <Control-Up>				[namespace code [list LoadGame(list) prev]]
-	bind <Control-Home>			[namespace code [list LoadGame(list) first]]
-	bind <Control-End>			[namespace code [list LoadGame(list) last]]
-	bind <Shift-Control-Down>	[namespace code [list LoadGame(base) next]]
-	bind <Shift-Control-Up>		[namespace code [list LoadGame(base) prev]]
-	bind <Shift-Control-Home>	[namespace code [list LoadGame(base) first]]
-	bind <Shift-Control-End>	[namespace code [list LoadGame(base) last]]
-	bind <Shift-Up>				[list [namespace parent]::pgn::scroll -1 units]
-	bind <Shift-Down>				[list [namespace parent]::pgn::scroll +1 units]
-	bind <Shift-Prior>			[list [namespace parent]::pgn::scroll -1 pages]
-	bind <Shift-Next>				[list [namespace parent]::pgn::scroll +1 pages]
-	bind <Shift-Home>				[list [namespace parent]::pgn::scroll -9999 pages]
-	bind <Shift-End>				[list [namespace parent]::pgn::scroll +9999 pages]
-	bind <Control-0>				[namespace code InsertNullMove]
-	bind <<Undo>>					[namespace parent]::pgn::undo
-	bind <<Redo>>					[namespace parent]::pgn::redo
-	bind <BackSpace>				[namespace parent]::pgn::undoLastMove
-	bind <Delete>					[list ::scidb::game::strip truncate]
-	bind <ButtonPress-3>			[namespace code { PopupMenu %W }]
-	bind <Any-KeyPress>			[list ::application::pgn::checkKey press %K %s]
-	bind <Any-KeyRelease>		[list ::application::pgn::checkKey release %K %s]
-	bind <<LanguageChanged>>	[namespace code LanguageChanged]
-	bind <F1>						[list ::help::open .application]
+	bind <Key-space>					::move::nextGuess
+	bind <Left>							[namespace code GoLeft]
+	bind <Right>						[namespace code GoRight]
+	bind <Prior>						[namespace code GoPrior]
+	bind <Next>							[namespace code GoNext]
+	bind <Home>							[namespace code GoHome]
+	bind <End>							[namespace code GoEnd]
+	bind <Down>							[namespace code GoDown]
+	bind <Up>							[namespace code GoUp]
+	bind <Control-Down>				[namespace code [list LoadGame(list) next]]
+	bind <Control-Up>					[namespace code [list LoadGame(list) prev]]
+	bind <Control-Home>				[namespace code [list LoadGame(list) first]]
+	bind <Control-End>				[namespace code [list LoadGame(list) last]]
+	bind <Shift-Control-Down>		[namespace code [list LoadGame(base) next]]
+	bind <Shift-Control-Up>			[namespace code [list LoadGame(base) prev]]
+	bind <Shift-Control-Home>		[namespace code [list LoadGame(base) first]]
+	bind <Shift-Control-End>		[namespace code [list LoadGame(base) last]]
+	bind <Shift-Up>					[list [namespace parent]::pgn::scroll -1 units]
+	bind <Shift-Down>					[list [namespace parent]::pgn::scroll +1 units]
+	bind <Shift-Prior>				[list [namespace parent]::pgn::scroll -1 pages]
+	bind <Shift-Next>					[list [namespace parent]::pgn::scroll +1 pages]
+	bind <Shift-Home>					[list [namespace parent]::pgn::scroll -9999 pages]
+	bind <Shift-End>					[list [namespace parent]::pgn::scroll +9999 pages]
+	bind <Control-0>					[namespace code InsertNullMove]
+	bind <<Undo>>						[namespace parent]::pgn::undo
+	bind <<Redo>>						[namespace parent]::pgn::redo
+	bind <BackSpace>					[namespace parent]::pgn::undoLastMove
+	bind <Delete>						[list ::scidb::game::strip truncate]
+	bind <ButtonPress-3>				[namespace code { PopupMenu %W }]
+	bind <Alt-KeyPress-s>			[list ::application::pgn::showDiagram %W %K %s]
+	bind <Alt-KeyPress-S>			[list ::application::pgn::showDiagram %W %K %s]
+	bind <<LanguageChanged>>		[namespace code LanguageChanged]
+	bind <F1>							[list ::help::open .application]
 
 	foreach w $Vars(need-binding) {
 		::font::addChangeFontSizeBindings editor $w ::application::pgn::fontSizeChanged
-		::bind $w <Alt-Key> {+ if {1} {} } ;# this little trick enabled Alt-Key traversal
 	}
 
 	for {set i 1} {$i <= 9} {incr i} {
