@@ -42,6 +42,12 @@ Probably you have to install some required packages:
    On Debian/Ubuntu/Mint use:
       > sudo apt-get install libfontconfig1-dev
 
+6. libgdbm development package
+   (normally available, but especially missing under Ubuntu)
+
+   On Debian/Ubuntu/Mint use:
+      > sudo apt-get install libgdbm-dev
+
 A normal unix installation is made in three steps (after you've unpacked
 the source archive):
 

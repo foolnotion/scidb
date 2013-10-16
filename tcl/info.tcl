@@ -452,8 +452,12 @@ proc DisplayContributions {w} {
 			<h1>$mc::FlagsDesign</h1>
 			<hr/>
 			<table border='0'>
-				<tr><td>[Name {Mark James}]</td></tr>
-				<tr><td>[Name {Gregor Cramer}]</td></tr>
+				<tr><td>
+					[Name {Mark James}]\u2000\u2212\u2000[Url http://www.famfamfam.com/lab/icons/flags]
+				</td></tr>
+				<tr><td>
+					[Name {Gregor Cramer}]
+				</td></tr>
 			</table>
 		</div>
 		<div class='box'>

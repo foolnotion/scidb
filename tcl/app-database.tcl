@@ -683,7 +683,7 @@ proc selectPlayer {base variant index} {
 
 
 proc setFocus {} {
-	focus [set [namespace current]::Vars(switcher)]
+	[set [namespace current]::Vars(switcher)] focus
 }
 
 

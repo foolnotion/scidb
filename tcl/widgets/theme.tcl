@@ -842,7 +842,7 @@ proc ButtonEnter {w} {
 }
 
 
-# we want a fixed Alt key handling
+# we have to tweak the Alt key handling
 proc FindAltKeyTarget {path char} {
 	switch -- [winfo class $path] {
 		Button - Label - TButton - TLabel - TCheckbutton - TRadiobutton {
@@ -869,7 +869,7 @@ proc FindAltKeyTarget {path char} {
 }
 
 
-# we want a fixed Alt key handling
+# we have to tweak the Alt key handling
 proc AltKeyInDialog {path key} {
 	set target [tk::FindAltKeyTarget $path $key]
 	if {[llength $target] == 0} { return }

@@ -1133,6 +1133,11 @@ proc setup {} {
 }
 
 
+proc makeUniqueKey {name} {
+	return "$name|[clock milliseconds]|[info hostname]|$::tcl_platform(user)"
+}
+
+
 proc saveWorkingSet {name {which theme}} {
 	variable ${which}::Working
 	variable ::load::currentFile
@@ -1150,7 +1155,7 @@ proc saveWorkingSet {name {which theme}} {
 	set filename "$filename.dat"
 
 	array set style [array get Working]
-	set style(identifier) "$name|[clock milliseconds]|[info hostname]|$::tcl_platform(user)"
+	set style(identifier) [makeUniqueKey $name]
 	set style(Modified) false
 	set style(Filename) $filename
 	set currentFile $filename

@@ -314,6 +314,7 @@ proc build {w width height} {
 
 	foreach w $Vars(need-binding) {
 		::font::addChangeFontSizeBindings editor $w ::application::pgn::fontSizeChanged
+		::bind $w <Alt-Key> {+ if {1} {} } ;# this little trick enabled Alt-Key traversal
 	}
 
 	for {set i 1} {$i <= 9} {incr i} {

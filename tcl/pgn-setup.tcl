@@ -1102,7 +1102,7 @@ proc BuildFrame(MoveStyle) {w position context} {
 
 
 proc BuildFrame(Font) {w position context} {
-	::dialog::choosefont $w ::font::text(setup:normal)
+	::dialog::choosefont::embedFrame $w ::font::text(setup:normal)
 	return $w
 }
 

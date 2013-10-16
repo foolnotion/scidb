@@ -98,16 +98,15 @@ array set fontFamilies {
 		{Charter}
 		{Bitstream Charter}
 		{Charis SIL}
-		{Bitstream Vera Serif}
 		{DejaVu Serif}
+		{Bitstream Vera Serif}
 		{FreeSerif}
 		{Times New Roman}
 	}
 
 	Courier {
-		{Bitstream Vera Sans}
 		{DejaVu Sans}
-		{DejaVu LGC Sans}
+		{Bitstream Vera Sans}
 		{Courier}
 		{Cumberland AMT}
 		{Lucida Typewriter}
@@ -115,6 +114,7 @@ array set fontFamilies {
 	}
 
 	Fixed {
+		{DejaVu Sans Mono}
 		{Bitstream Vera Sans Mono}
 		{Monaco}
 		{Menlo}
@@ -125,8 +125,6 @@ array set fontFamilies {
 		{Anonymous}
 		{Liberation Mono}
 		{Courier 10 Pitch}
-		{DejaVu Sans Mono}
-		{DejaVu LGC Sans Mono}
 		{Lucida Console}
 		{Courier New}
 		{Luxi Mono}
@@ -138,17 +136,15 @@ array set fontFamilies {
 
 	Fourier {
 		{Utopia}
-		{Bitstream Vera Serif}
 		{DejaVu Serif}
-		{DejaVu LGC Serif}
+		{Bitstream Vera Serif}
 		{Times New Roman}
 		{Times}
 	}
 
 	Helvetica {
-		{Bitstream Vera Sans}
 		{DejaVu Sans}
-		{DejaVu LGC Sans}
+		{Bitstream Vera Sans}
 		{Liberation Sans}
 		{Arial}
 		{Helvetica Neue}
@@ -170,9 +166,8 @@ array set fontFamilies {
 		{CM Unicode}
 		{Latin Modern Roman}
 		{TeX Tyre Germes}
-		{Bitstream Vera Serif}
 		{DejaVu Serif}
-		{DejaVu LGC Serif}
+		{Bitstream Vera Serif}
 		{Times New Roman}
 		{Times}
 	}
@@ -190,9 +185,8 @@ array set fontFamilies {
 	}
 
 	Times {
-		{Bitstream Vera Serif}
 		{DejaVu Serif}
-		{DejaVu LGC Serif}
+		{Bitstream Vera Serif}
 		{Liberation Serif}
 		{Times New Roman}
 		{Nimbus Roman No9 L}

@@ -328,7 +328,6 @@ if {[::process::testOption use-clock]} {
 	database::finish $app
 	::splash::close
 	ChooseLanguage $app
-	focus $nb
 	TabChanged $nb $app
 	::load::writeLog
 	update idletasks
@@ -344,10 +343,8 @@ if {[::process::testOption use-clock]} {
 	::game::recover $app
 	::game::reopenLockedGames $app
 
-	if {[::process::testOption show-board]} {
-		after idle [namespace code [list switchTab board]]
-	}
-
+	if {[::process::testOption show-board]} { set tab board } else { set tab database }
+	after idle [namespace code [list switchTab $tab]]
 	after idle [list ::beta::welcomeToScidb $app]
 	::util::photos::checkForUpdate [namespace current]::InformAboutUpdates
 }
