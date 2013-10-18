@@ -545,6 +545,11 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	::bind $path <<LanguageChanged>> +[namespace code [list RefreshHeader $path 1]]
 	::bind $path <<LanguageChanged>> +[namespace code [list RefreshHeader $path 2]]
 
+	set specialfont [list [list $::font::figurine(text:normal) 9812 9823]]
+	foreach col {white black event} {
+		::scrolledtable::configure $path $col -specialfont $specialfont
+	}
+
 	set Vars(viewcmd) $getViewCmd
 
 	return $Vars(table)

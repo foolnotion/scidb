@@ -366,6 +366,7 @@ proc SetupCurrentTheme {} {
 #	option add *Button.background $background
 	option add *Spinbox.selectBackground [::ttk::style lookup [currentTheme] -selectbackground]
 	option add *Spinbox.disabledBackground $background
+	option add *Entry.selectBackground [::ttk::style lookup [currentTheme] -selectbackground]
 	option add *Scale.highlightBackground $background
 	option add *Scale.background $background
 	option add *Scale.troughColor [GetTroughColor]

@@ -58,6 +58,7 @@ set Accel(add-new-game)		"S"
 set Accel(replace-game)		"R"
 set Accel(replace-moves)	"V"
 set Accel(trial-mode)		"T"
+set Accel(export-game)		"E"
 
 } ;# namespace mc
 
@@ -333,6 +334,7 @@ proc build {w width height} {
 	set Vars(cmd:replace-game)			[namespace code [list SaveGame replace]]
 	set Vars(cmd:replace-moves)		[namespace code [list SaveGame moves]]
 	set Vars(cmd:trial-mode)			[namespace parent]::pgn::flipTrialMode
+	set Vars(cmd:export-game)			[list ::gamebar::exportGame .application]
 
 	LanguageChanged
 	BuildBoard $canv

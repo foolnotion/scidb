@@ -301,6 +301,8 @@ private:
 	Count					m_rejected;
 	Variants				m_variants;
 	sys::utf8::Codec*	m_codec;
+	mstl::string		m_buffer;
+	mstl::string		m_content;
 };
 
 } // namespace db

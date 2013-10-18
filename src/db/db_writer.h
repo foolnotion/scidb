@@ -139,7 +139,7 @@ protected:
 
 private:
 
-	mstl::string const& conv(mstl::string const& comment);
+	mstl::string const& encode(mstl::string const& comment);
 
 	void writeMove(Move const& move,
 						Annotation const& annotation,
@@ -155,7 +155,8 @@ private:
 	bool				m_needMoveNumber;
 	bool				m_needSpace;
 	result::ID		m_result;
-	mstl::string	m_stringBuf;
+	mstl::string	m_stringBuf1;
+	mstl::string	m_stringBuf2;
 };
 
 } // namespace db

@@ -203,6 +203,7 @@ proc Build {w args} {
 		-importdir			{}
 		-fonttable			{}
 		-fontsize			11
+		-textalign			"left"
 	}
 
 	array set opts $args
@@ -219,7 +220,7 @@ proc Build {w args} {
 	set htmlOptions {}
 	foreach name [array names opts] {
 		switch -- $name {
-			-delay - -css - -center - -fittowidth - -fittoheight - -importdir -
+			-delay - -css - -center - -fittowidth - -fittoheight - -importdir - -textalign -
 			-usehorzscroll - -usevertscroll - -keephorzscroll - -keepvertscroll - -fontsize {}
 
 			-imagecmd - -doublebuffer - -latinligatures - -exportselection -
@@ -285,13 +286,14 @@ proc Build {w args} {
 		bbox				{}
 		widgets			{}
 		minbbox			{}
+		script			""
 		pointer			{0 0}
 		focus				0
 		sel:state		0
 		styleCount		0
 	}
 
-	foreach attr {delay center fittowidth fittoheight borderwidth css importdir} {
+	foreach attr {delay center fittowidth fittoheight borderwidth css importdir textalign} {
 		set Priv($attr) $opts(-$attr)
 	}
 
@@ -416,6 +418,10 @@ proc WidgetProc {w command args} {
 		}
 
 		parse {
+			if {[llength $args] != 1} {
+				error "wrong # args: should be \"[namespace current] $command <html-script>\""
+			}
+
 			variable Margin
 			variable MaxWidth
 
@@ -431,6 +437,7 @@ proc WidgetProc {w command args} {
 			if {!$Priv(fittowidth)} {
 				$w.sub.html configure -fixedwidth $MaxWidth
 			}
+			set Priv(script) [lindex $args 0]
 			$w.sub.html parse -final [lindex $args 0]
 			SetupCSS $w
 			EvalWidgetCommands $w
@@ -629,6 +636,21 @@ proc WidgetProc {w command args} {
 			}
 			return
 		}
+
+		configure {
+			if {[llength $args] % 2 == 1} {
+				return error -code "value for \"[lindex $args end]\" missing"
+			}
+			array set opts $args
+			if {[info exists opts(-textalign)]} {
+				set Priv(textalign) $opts(-textalign)
+				SetupCSS $w
+				$w parse $Priv(script)
+				array unset opts -textalign
+			}
+			if {[array size opts] == 0} { return }
+			set args [array get opts]
+		}
 	}
 
 	return [$w.__html__ $command {*}$args]
@@ -640,6 +662,11 @@ proc SetupCSS {w} {
 
 	set css $Priv(css)
 	append css "\nbody { font-size: ${Priv(fontsize)}pt; }"
+	if {$Priv(textalign) ne "left"} {
+		append css "\np { text-align: $Priv(textalign); }"
+		append css "\nli { text-align: $Priv(textalign); }"
+		append css "\nspan.annotation { text-align: $Priv(textalign); }"
+	}
 	set css [string trim $css]
 	if {[string length $css]} { $w.sub.html style -id user $css }
 }

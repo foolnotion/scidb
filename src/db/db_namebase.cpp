@@ -1079,7 +1079,7 @@ Namebase::finishRenaming()
 	delete m_stringAllocator2;
 	m_stringAllocator2 = 0;
 
-	int (*cmpFunc)(void const*, void const*);
+	int (*cmpFunc)(void const*, void const*) = 0; // prevent compiler warning
 
 	switch (m_type)
 	{

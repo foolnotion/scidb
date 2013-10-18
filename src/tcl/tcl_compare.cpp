@@ -167,9 +167,15 @@ append(Tcl_DString* ds, sys::utf8::uchar uc)
 {
 	static_assert(sizeof(sys::utf8::uchar) == 2, "buffer too small");
 
-	char buf[2];
-	*reinterpret_cast<sys::utf8::uchar*>(buf) = uc;
-	Tcl_DStringAppend(ds, buf, 2);
+	union
+	{
+		char ch[2];
+		sys::utf8::uchar uc;
+	}
+	buf;
+
+	buf.uc = uc;
+	Tcl_DStringAppend(ds, buf.ch, 2);
 }
 
 

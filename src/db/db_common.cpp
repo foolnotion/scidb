@@ -584,7 +584,7 @@ static CommentToken const Map[] =
 inline static bool
 operator<(CommentToken const& commentToken, mstl::string const& token)
 {
-	return ::strncmp(commentToken.token, token, token.size()) < 0;
+	return ::strncmp(commentToken.token, token, commentToken.token.size()) < 0;
 }
 
 } // namespace nag
@@ -3954,6 +3954,31 @@ nag::fromSymbol(char const* symbol, unsigned len)
 	mstl::string str;
 	str.hook(const_cast<char*>(symbol), len);
 	return fromSymbol(str);
+}
+
+
+nag::ID
+nag::parseSymbol(char const* str, unsigned& len)
+{
+	M_REQUIRE(str);
+
+	CommentToken const* p = mstl::lower_bound(Map, Map + U_NUMBER_OF(Map), str);
+
+	if (p == Map + U_NUMBER_OF(Map) || ::strncmp(str, p->token, p->token.size()) != 0)
+		return Null;
+	
+	CommentToken const* q = p + 1;
+	
+	while (q < Map + U_NUMBER_OF(Map) && q->token[0] == *str)
+	{
+		if (q->token.size() > p->token.size() && strncmp(q->token, str, q->token.size()) == 0)
+			p = q;
+
+		q++;
+	}
+
+	len = p->token.size();
+	return nag::ID(p->value);
 }
 
 

@@ -126,6 +126,20 @@ variable unicodeMap {
 }
 
 
+proc mapToLocal {str lang} {
+	variable Map_
+	variable langSet
+
+	if {![info exists Map_($lang)]} {
+		foreach loc $langSet($lang) uni $langSet(graphic) {
+			lappend Map_($lang) $uni $loc
+		}
+	}
+
+	return [string map $Map_($lang) $str]
+}
+
+
 proc listbox {path args} {
 	variable langSet
 	variable unicodeMap

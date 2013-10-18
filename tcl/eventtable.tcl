@@ -180,6 +180,10 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	pack $path -fill both -expand yes
 	RefreshEventType $path
 
+	::scrolledtable::configure $path event \
+		-specialfont [list [list $::font::figurine(text:normal) 9812 9823]] \
+		;
+
 	::bind $path <<TableFill>>			[namespace code [list TableFill $path %d]]
 	::bind $path <<TableSelected>>	[namespace code [list TableSelected $path %d]]
 	::bind $path <<TableVisit>>		[namespace code [list TableVisit $path %d]]

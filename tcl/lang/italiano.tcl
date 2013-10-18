@@ -443,6 +443,7 @@
 ::application::board::mc::Accel(replace-game)		"R"
 ::application::board::mc::Accel(replace-moves)		"V"
 ::application::board::mc::Accel(trial-mode)			"T"
+::application::board::mc::Accel(export-game)			"E"
 
 ### application::database ##############################################
 ::application::database::mc::FileOpen							"Apri Database"
@@ -2061,6 +2062,10 @@
 ::help::mc::IncompleteHelpFiles	"I file di aiuto sono ancora incompleti. Ci scusiamo."
 ::help::mc::ProbablyTheHelp		"Probabilmente la pagina di aiuto in una lingua differente può essere una valida alternativa."
 ::help::mc::PageNotAvailable		"Questa pagina non è disponibile"
+
+::help::mc::TextAlignment			"Text alignment" ;# NEW
+::help::mc::FullJustification		"Full justification" ;# NEW
+::help::mc::LeftJustification		"Left justification" ;# NEW
 
 ### crosstable #########################################################
 ::crosstable::mc::TournamentTable			"Tabella Torneo"

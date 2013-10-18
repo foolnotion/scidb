@@ -32,6 +32,7 @@
 #include "db_comment.h"
 #include "db_game_info.h"
 
+#include "sys_utf8.h"
 #include "sys_utf8_codec.h"
 
 #include "m_string.h"
@@ -46,6 +47,14 @@ using namespace db;
 
 
 static Comment const lostResult("The game was declared lost for both players", false, false);
+
+
+static void
+appendNag(mstl::string& str, nag::ID nag)
+{
+	if (char const* symbol = nag::toSymbol(nag))
+		str.append(symbol);
+}
 
 
 Writer::Writer(format::Type srcFormat, unsigned flags, mstl::string const& encoding)
@@ -70,13 +79,49 @@ Writer::Writer(format::Type srcFormat, unsigned flags, mstl::string const& encod
 
 
 mstl::string const&
-Writer::conv(mstl::string const& comment)
+Writer::encode(mstl::string const& comment)
 {
 	if (codec().isUtf8())
 		return comment;
+	
+	m_stringBuf1.clear();
 
-	codec().fromUtf8(comment, m_stringBuf);
-	return m_stringBuf;
+	for (char const* p = comment; *p; p = sys::utf8::nextChar(p))
+	{
+		switch (sys::utf8::getChar(p))
+		{
+			// Figurine
+			case 0x2654: m_stringBuf1.append('K'); break;
+			case 0x2655: m_stringBuf1.append('Q'); break;
+			case 0x2656: m_stringBuf1.append('R'); break;
+			case 0x2657: m_stringBuf1.append('B'); break;
+			case 0x2658: m_stringBuf1.append('N'); break;
+			case 0x2659: m_stringBuf1.append('P'); break;
+
+			// Evaluation
+			case 0x203c: ::appendNag(m_stringBuf1, nag::VeryGoodMove); break;
+			case 0x2047: ::appendNag(m_stringBuf1, nag::VeryPoorMove); break;
+			case 0x2048: ::appendNag(m_stringBuf1, nag::QuestionableMove); break;
+			case 0x2049: ::appendNag(m_stringBuf1, nag::SpeculativeMove); break;
+			case 0x25a0: ::appendNag(m_stringBuf1, nag::SingularMove); break;
+			case 0x25a1: ::appendNag(m_stringBuf1, nag::SingularMove); break;
+			case 0x221e: ::appendNag(m_stringBuf1, nag::UnclearPosition); break;
+			case 0x2a72: ::appendNag(m_stringBuf1, nag::WhiteHasASlightAdvantage); break;
+			case 0x2a71: ::appendNag(m_stringBuf1, nag::BlackHasASlightAdvantage); break;
+			case 0x00b1: ::appendNag(m_stringBuf1, nag::WhiteHasAModerateAdvantage); break;
+			case 0x2213: ::appendNag(m_stringBuf1, nag::BlackHasAModerateAdvantage); break;
+
+			// Symbols
+			case 0x2212: m_stringBuf1.append('-'); break;		// Minus Sign
+			case 0x223c: m_stringBuf1.append('~'); break;		// Tilde operator
+			case 0x2026: m_stringBuf1.append("..."); break;		// Ellipsis
+
+			default: m_stringBuf1.append(p, sys::utf8::charLength(p)); break;
+		}
+	}
+
+	codec().fromUtf8(m_stringBuf1, m_stringBuf2);
+	return m_stringBuf2;
 }
 
 
@@ -192,7 +237,7 @@ Writer::endVariation(bool)
 void
 Writer::writeTag(tag::ID tag, mstl::string const& value)
 {
-	writeTag(tag::toName(tag), conv(value));
+	writeTag(tag::toName(tag), encode(value));
 }
 
 
@@ -389,7 +434,7 @@ Writer::beginGame(TagSet const& tags)
 	if (!test(Flag_Exclude_Extra_Tags))
 	{
 		for (unsigned i = 0; i < tags.countExtra(); ++i)
-			writeTag(tags.extra(i).name, conv(tags.extra(i).value));
+			writeTag(tags.extra(i).name, encode(tags.extra(i).value));
 	}
 
 	if (test(Flag_Use_Scidb_Import_Format))

@@ -101,7 +101,7 @@ array set NagSet {
 }
 
 variable DingbatSet {
-	"\u00bd" "\u2212" "\u2026" "\u2022" "\u2139" "\u20a4" "\u20ac" "\u270e" "\u2605" "\u25cf"
+	"\u00bd" "\u2212" "\u2026" "\u2022" "\u2139" "\u00a3" "\u20ac" "\u270e" "\u2605" "\u25cf"
 }
 variable Colors {darkgreen darkred darkblue darkgreen darkred darkblue}
 

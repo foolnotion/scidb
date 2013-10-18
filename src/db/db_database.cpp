@@ -1393,8 +1393,17 @@ Database::exportGames(	Destination& destination,
 
 	if (format::isScidFormat(dstFormat))
 		copyMode = copy::ExcludeIllegal;
+	
+	unsigned minFrequency;
 
-	unsigned frequency	= mstl::min(1000u, mstl::max(gameFilter.count()/100, 1u));
+	if (dstFormat == Format::Pgn)
+		minFrequency = 25;
+	else if (format::isChessBaseFormat(srcFormat))
+		minFrequency = 50;
+	else
+		minFrequency = 300;
+
+	unsigned frequency	= mstl::min(minFrequency, mstl::max(gameFilter.count()/100u, 1u));
 	unsigned reportAfter	= frequency;
 	unsigned count			= 0;
 	unsigned numGames		= 0;
@@ -2077,7 +2086,7 @@ bool
 Database::setReadonly(bool flag)
 {
 	M_REQUIRE(isOpen());
-	M_REQUIRE(!flag || isWritable());
+	M_REQUIRE(flag || isWritable());
 
 	if (flag != m_readOnly)
 	{

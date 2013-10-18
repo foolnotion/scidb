@@ -1101,7 +1101,95 @@ struct Flatten : public Comment::Callback
 	void startAttribute(Attribute attr) override				{}
 	void endAttribute(Attribute attr) override				{}
 
-	void content(mstl::string const& s) override				{ m_result += s; }
+	void content(mstl::string const& s) override
+	{
+		if (m_encoding == encoding::Utf8)
+		{
+			m_result.append(s);
+		}
+		else
+		{
+			char const* p = s.begin();
+			char const* e = s.end();
+
+			for ( ; p < e; p = sys::utf8::nextChar(p))
+			{
+				switch (sys::utf8::getChar(p))
+				{
+					case 0x2212: m_result.append('-'); break;		// Minus Sign
+					case 0x223c: m_result.append('~'); break;		// Tilde operator
+					case 0x2026: m_result.append("..."); break;	// Ellipsis
+					case 0x2022: m_result.append('*'); break;		// Bullet
+					case 0x2139: m_result.append('i'); break;		// Information Source
+					case 0x20ac: m_result.append("Euro"); break;	// Euro Sign
+					case 0x2605: m_result.append('*'); break;		// Black Star
+					case 0x25cf: m_result.append('*'); break;		// Black Circle
+
+					case 0x270e: // Lower Right Pencil
+						m_result.append(m_encoding == encoding::Latin1 ? "\xc2\xbb" : "->");
+						break;
+#if 0
+					case 0x203c: ::appendNag(m_result, nag::VeryGoodMove); break;
+					case 0x2047: ::appendNag(m_result, nag::VeryPoorMove); break;
+					case 0x2048: ::appendNag(m_result, nag::QuestionableMove); break;
+					case 0x2049: ::appendNag(m_result, nag::SpeculativeMove); break;
+					case 0x25a0: ::appendNag(m_result, nag::SingularMove); break;
+					case 0x25a1: ::appendNag(m_result, nag::SingularMove); break;
+					case 0x221e: ::appendNag(m_result, nag::UnclearPosition); break;
+					case 0x2a72: ::appendNag(m_result, nag::WhiteHasASlightAdvantage); break;
+					case 0x2a71: ::appendNag(m_result, nag::BlackHasASlightAdvantage); break;
+					case 0x00b1: ::appendNag(m_result, nag::WhiteHasAModerateAdvantage); break;
+					case 0x2213: ::appendNag(m_result, nag::BlackHasAModerateAdvantage); break;
+					case 0x21d1: ::appendNag(m_result, nag::WhiteHasALastingInitiative); break;
+					case 0x21d3: ::appendNag(m_result, nag::BlackHasALastingInitiative); break;
+					case 0x21c8: ::appendNag(m_result, nag::WhiteHasGoodRookPlacement); break;
+					case 0x21ca: ::appendNag(m_result, nag::BlackHasGoodRookPlacement); break;
+					case 0x25b3: // fallthru
+					case 0x2206: // fallthru
+					case 0x20e4: ::appendNag(m_result, nag::WithTheIdea); break;
+					case 0x22c1: // fallthru
+					case 0x2228: ::appendNag(m_result, nag::AimedAgainst); break;
+					case 0x2313: ::appendNag(m_result, nag::BetterMove); break;
+					case 0x2264: ::appendNag(m_result, nag::WorseMove); break;
+					case 0x2715: ::appendNag(m_result, nag::WeakPoint); break;
+					case 0x22a5: ::appendNag(m_result, nag::Endgame); break;
+					case 0x27fa: // fallthru
+					case 0x21d4: ::appendNag(m_result, nag::Line); break;
+					case 0x21d7: ::appendNag(m_result, nag::Diagonal); break;
+					case 0x25e8: ::appendNag(m_result, nag::BishopsOfOppositeColor); break;
+					case 0x2b12: ::appendNag(m_result, nag::Diagram); break;
+					case 0x2b13: ::appendNag(m_result, nag::DiagramFromBlack); break;
+					case 0x26af: ::appendNag(m_result, nag::SeparatedPawns); break;
+					case 0x26ae: ::appendNag(m_result, nag::UnitedPawns); break;
+					case 0x26a8: ::appendNag(m_result, nag::PassedPawn); break;
+					case 0x230a: ::appendNag(m_result, nag::With); break;
+					case 0x230b: ::appendNag(m_result, nag::Without); break;
+					case 0x229e: ::appendNag(m_result, nag::Center); break;
+					case 0x2014: ::appendNag(m_result, nag::See); break;
+					case 0x25dd: // fallthru
+					case 0x25ef: // fallthru
+					case 0x3007: ::appendNag(m_result, nag::Space); break;
+					case 0x2295: ::appendNag(m_result, nag::Zeitnot); break;
+					case 0x21bb: ::appendNag(m_result, nag::Development); break;
+					case 0x2299: ::appendNag(m_result, nag::Zugzwang); break;
+					case 0x2192: ::appendNag(m_result, nag::Attack); break;
+					case 0x2191: ::appendNag(m_result, nag::Initiative); break;
+					case 0x21c6: ::appendNag(m_result, nag::Counterplay); break;
+					case 0x25eb: ::appendNag(m_result, nag::PairOfBishops); break;
+					case 0x00bb: // fallthru
+					case 0x27eb: // fallthru
+					case 0x226b: // fallthru
+					case 0x300b: ::appendNag(m_result, nag::Kingside); break;
+					case 0x00ab: // fallthru
+					case 0x27ea: // fallthru
+					case 0x226a: // fallthru
+					case 0x300a: ::appendNag(m_result, nag::Queenside); break;
+#endif
+					default: m_result.append(p, sys::utf8::charLength(p)); break;
+				}
+			}
+		}
+	}
 
 	void symbol(char s) override
 	{
@@ -2403,9 +2491,60 @@ Comment::convertCommentToXml(	mstl::string const& comment,
 				++s;
 			}
 		}
-		else
+		else if (::isalnum(*s) && (!specialExpected || *s != 'o'))
 		{
-			if (::isprint(*s))
+			do
+				++s;
+			while (::isalnum(*s));
+		}
+		else if (::isspace(*s))
+		{
+			++s;
+
+			if (	s[0] == '<'
+				&& ::islower(s[1])
+				&& ::islower(s[2])
+				&& s[3] == '>'
+				&& s[4] == ' ')
+			{
+				if (!lang.empty())
+				{
+					result.m_content.append("</:", 3);
+					result.m_content.append(lang);
+					result.m_content.append(">", 1);
+				}
+
+				lang.assign(s + 1, 2);
+				result.m_content.append("<:", 2);
+				result.m_content.append(lang);
+				result.m_content.append(">", 1);
+				isXml = true;
+				s += 5;
+
+				if (s[1] == 'e' && s[2] == 'n')
+					result.m_engFlag = true;
+				else
+					result.m_othFlag = true;
+			}
+			else
+			{
+				result.m_content += ' ';
+			}
+
+			specialExpected = true;
+		}
+		else if (::isprint(*s))
+		{
+			unsigned	len;
+			nag::ID	nag = specialExpected ? nag::parseSymbol(s, len) : nag::Null;
+
+			if (nag != nag::Null)
+			{
+				result.m_content.format("<nag>%u</nag>", unsigned(nag));
+				s += len;
+				isXml = true;
+			}
+			else
 			{
 				switch (*s)
 				{
@@ -2455,72 +2594,28 @@ Comment::convertCommentToXml(	mstl::string const& comment,
 						break;
 
 					default:
-						if (::isDelimChar(*s))
+						if (*s == '$')
+						{
+							if (::isdigit(*++s))
+							{
+								char* e = const_cast<char*>(s);
+								unsigned nag = ::strtoul(s, &e, 10);
+
+								if (nag < nag::Scidb_Last)
+								{
+									result.m_content.append("<nag>", 5);
+									result.m_content.append(s, e - s);
+									result.m_content.append("</nag>", 6);
+									isXml = true;
+								}
+
+								s = e;
+							}
+						}
+						else if (::isDelimChar(*s))
 						{
 							result.m_content += *s++;
 							specialExpected = true;
-						}
-						else if (specialExpected)
-						{
-							switch (s[0])
-							{
-								case '$':
-									if (::isdigit(*s))
-									{
-										char* e = const_cast<char*>(s);
-										unsigned nag = ::strtoul(s, &e, 10);
-
-										if (nag < nag::Scidb_Last)
-										{
-											result.m_content.append("<nag>", 5);
-											result.m_content.append(s, e - s);
-											result.m_content.append("</nag>", 6);
-											isXml = true;
-										}
-
-										s = e + 1;
-									}
-									break;
-
-//								not working, e.g. "Ponomariov, R (2718)-Leko, P (2741)"
-//								case 'K': case 'Q': case 'R': case 'B': case 'N': case 'P':
-//									if (s[1] == '\0' || ::isDelimChar(s[1]))
-//									{
-//										result.m_content.append("<sym>", 5);
-//										result.m_content += *s++;
-//										result.m_content.append("</sym>", 6);
-//										isXml = true;
-//									}
-//									else
-//									{
-//										result.m_content += *s++;
-//									}
-//									break;
-
-								default:
-									{
-										unsigned	len = 1;
-										nag::ID	nag;
-
-										while (!::isDelimChar(s[len]))
-											++len;
-
-										if (len <= 5 && (nag = nag::fromSymbol(s, len)) != nag::Null)
-										{
-											result.m_content.format("<nag>%u</nag>", unsigned(nag));
-											isXml = true;
-										}
-										else
-										{
-											result.m_content.append(s, len);
-										}
-
-										s += len;
-									}
-									break;
-							}
-
-							specialExpected = false;
 						}
 						else
 						{
@@ -2529,42 +2624,11 @@ Comment::convertCommentToXml(	mstl::string const& comment,
 						break;
 				}
 			}
-			else if (::isspace(*s++))
-			{
-				if (	s[0] == '<'
-					&& ::islower(s[1])
-					&& ::islower(s[2])
-					&& s[3] == '>'
-					&& s[4] == ' ')
-				{
-					if (!lang.empty())
-					{
-						result.m_content.append("</:", 3);
-						result.m_content.append(lang);
-						result.m_content.append(">", 1);
-					}
-
-					lang.assign(s + 1, 2);
-					result.m_content.append("<:", 2);
-					result.m_content.append(lang);
-					result.m_content.append(">", 1);
-					isXml = true;
-					s += 5;
-
-					if (s[1] == 'e' && s[2] == 'n')
-						result.m_engFlag = true;
-					else
-						result.m_othFlag = true;
-				}
-				else
-				{
-					result.m_content += '\n';
-				}
-			}
-			else
-			{
-				result.m_content += '?';
-			}
+		}
+		else
+		{
+			result.m_content += '?';
+			++s;
 		}
 	}
 

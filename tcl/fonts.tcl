@@ -55,6 +55,7 @@ array set mapCodeToNag {
 	"\u2048"				6
 	"\u25a0"				7
 	"\u25a1"				8
+	"=="					11
 	"=\u223c"			12
 	"\u221e"				13
 	"\u2a72"				14
@@ -135,8 +136,8 @@ array set SymbolUtfEncoding {
 	 11 "=="
 	 12 "=\u223c"
 	 13 "\u221e"
-	 14 "\u00b1"
-	 15 "\u2213"
+	 14 "+/="
+	 15 "=/+"
 	 16 "\u00b1"
 	 17 "\u2213"
 	 18 "+\u2212"
@@ -249,7 +250,7 @@ array set SymbolUtfEncoding {
 
 array set SymbolDefaultEncoding {
 	  8 "\u00f4"
-	 10 "\u003d"
+	 10 "="
 	 11 "=="
 	 13 "\u02c7"
 	 14 "\u00a4"
@@ -258,6 +259,8 @@ array set SymbolDefaultEncoding {
 	 17 "\u220f"
 	 18 "+\u2212"
 	 19 "\u2212+"
+	 20 "+\u2212\u2212"
+	 21 "\u2212\u2212+"
 	 22 "\u00e1"
 	 23 "\u00e1"
 	 36 "\u00cf"
@@ -311,6 +314,10 @@ array set ScidbSymbolTravellerEncoding {
 	 15 "\uf00f"
 	 16 "\uf010"
 	 17 "\uf011"
+	 18 "+-"
+	 19 "-+"
+	 20 "+--"
+	 21 "--+"
 	 22 "\uf016"
 	 23 "\uf017"
 	 36 "\u00c9"
@@ -350,10 +357,12 @@ array set SymbolInformantEncoding {
 	 13 "\u00d5"
 	 14 "\u00a2"
 	 15 "\u00a3"
+	 16 "\u00a5"
 	 17 "\u00a4"
 	 18 "+\u2212"
 	 19 "\u2212+"
-	 16 "\u00a5"
+	 20 "+\u2212\u2212"
+	 21 "\u2212\u2212+"
 	 32 "\u00b6"
 	 33 "\u00b6"
 	 36 "\u00ef"
@@ -407,6 +416,8 @@ array set ScidbSymbolOleEncoding {
 	 17 "4"
 	 18 "+\u2212"
 	 19 "\u2212+"
+	 20 "+\u2212\u2212"
+	 21 "\u2212\u2212+"
 	 22 "J"
 	 23 "J"
 	 32 "E"
@@ -455,6 +466,8 @@ array set FigurineSymbolChessBaseEncoding {
 	 17 " \u00b5"
 	 18 "+\u2212"
 	 19 "\u2212+"
+	 20 "+\u2212\u2212"
+	 21 "\u2212\u2212+"
 	 22 "\u2021"
 	 23 "\u2021"
 	 26 "\u2020"
@@ -1996,7 +2009,7 @@ proc addChangeFontToMenu {context m applycmd {textFontOnly no}} {
 	} else {
 		$menu add cascade \
 			-menu [menu $menu.sub] \
-			-label "$space$::dialog::choosefont::mc::FontSelection" \
+			-label "$space$::dialog::choosefont::mc::FontSelection..." \
 			{*}$options \
 			;
 		set dlg [winfo toplevel $m]

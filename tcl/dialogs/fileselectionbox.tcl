@@ -92,40 +92,40 @@ array set FileSizeCache {}
 array set LastFolders {}
 
 set FileIcons [list                           \
-	.sci		$::icon::16x16::filetypeScidbBase \
-	.si4		$::icon::16x16::filetypeScid4Base \
-	.si3		$::icon::16x16::filetypeScid3Base \
-	.scv 		$::icon::16x16::filetypeArchive   \
-	.cbh		$::icon::16x16::filetypeChessBase \
+	.bpgn.gz	$::icon::16x16::filetypeBPGN      \
+	.bpgn		$::icon::16x16::filetypeBPGN      \
 	.cbf		$::icon::16x16::filetypeChessBase \
 	.CBF		$::icon::16x16::filetypeChessBase \
+	.cbh		$::icon::16x16::filetypeChessBase \
+	.htm		$::icon::16x16::filetypeHTML      \
+	.html		$::icon::16x16::filetypeHTML      \
+	.ltx		$::icon::16x16::filetypeTeX       \
+	.pdf		$::icon::16x16::filetypePDF       \
+	.pgn.gz	$::icon::16x16::filetypePGN       \
 	.pgn		$::icon::16x16::filetypePGN       \
 	.PGN		$::icon::16x16::filetypePGN       \
-	.pgn.gz	$::icon::16x16::filetypePGN       \
-	.bpgn		$::icon::16x16::filetypeBPGN      \
-	.bpgn.gz	$::icon::16x16::filetypeBPGN      \
+	.sci		$::icon::16x16::filetypeScidbBase \
+	.scv 		$::icon::16x16::filetypeArchive   \
+	.si3		$::icon::16x16::filetypeScid3Base \
+	.si4		$::icon::16x16::filetypeScid4Base \
+	.tex		$::icon::16x16::filetypeTeX       \
 	.zip		$::icon::16x16::filetypeZipFile   \
 	.ZIP		$::icon::16x16::filetypeZipFile   \
-	.pdf		$::icon::16x16::filetypePDF       \
-	.html		$::icon::16x16::filetypeHTML      \
-	.htm		$::icon::16x16::filetypeHTML      \
-	.tex		$::icon::16x16::filetypeTeX       \
-	.ltx		$::icon::16x16::filetypeTeX       \
 ]
 
 set FileEncodings [list                    \
-	.sci  	0 utf-8                        \
-	.si4 		1 utf-8                        \
-	.si3 		1 utf-8                        \
-	.scv 		0 utf-8                        \
-	.cbh 		1 $::encoding::windowsEncoding \
+	.bpgn 	1 $::encoding::defaultEncoding \
+	.bpgn.gz 1 $::encoding::defaultEncoding \
 	.cbf 		1 $::encoding::dosEncoding     \
 	.CBF 		1 $::encoding::dosEncoding     \
+	.cbh 		1 $::encoding::windowsEncoding \
 	.pgn 		1 $::encoding::defaultEncoding \
 	.PGN 		1 $::encoding::defaultEncoding \
-	.bpgn 	1 $::encoding::defaultEncoding \
 	.pgn.gz  1 $::encoding::defaultEncoding \
-	.bpgn.gz 1 $::encoding::defaultEncoding \
+	.sci  	0 utf-8                        \
+	.scv 		0 utf-8                        \
+	.si3 		1 utf-8                        \
+	.si4 		1 utf-8                        \
 	.zip  	1 $::encoding::defaultEncoding \
 	.ZIP  	1 $::encoding::defaultEncoding \
 ]
@@ -134,32 +134,32 @@ if {$tcl_platform(platform) eq "windows"} {
 }
 
 array set FileType [list                       \
-	.sci		ScidbDatabase                      \
-	.si4		ScidDatabase                       \
-	.si3		ScidDatabase                       \
-	.scv 		ScidbArchive                       \
-	.cbh		ChessBaseDatabase                  \
-	.cbf		ChessBaseDatabase                  \
-	.pgn		PortableGameFile                   \
-	.pgn.gz	PortableGameFileCompressed         \
+	.bin		BinaryFile                         \
 	.bpgn		BughousePortableGameFile           \
 	.bpgn.gz	BughousePortableGameFileCompressed \
-	.zip		ZipArchive                         \
-	.pdf		PortableDocumentFile               \
-	.html		HypertextFile                      \
-	.htm		HypertextFile                      \
-	.tex		TypesettingFile                    \
-	.ltx		TypesettingFile                    \
-	.ppm		ImageFile                          \
-	.png		ImageFile                          \
-	.gif		ImageFile                          \
-	.jpg		ImageFile                          \
-	.jpeg		ImageFile                          \
-	.txt		TextFile                           \
-	.log		TextFile                           \
-	.bin		BinaryFile                         \
+	.cbf		ChessBaseDatabase                  \
+	.cbh		ChessBaseDatabase                  \
 	.exe		Executable                         \
+	.gif		ImageFile                          \
+	.htm		HypertextFile                      \
+	.html		HypertextFile                      \
+	.jpeg		ImageFile                          \
+	.jpg		ImageFile                          \
+	.log		TextFile                           \
+	.ltx		TypesettingFile                    \
+	.pdf		PortableDocumentFile               \
+	.pgn.gz	PortableGameFileCompressed         \
+	.pgn		PortableGameFile                   \
+	.png		ImageFile                          \
+	.ppm		ImageFile                          \
+	.sci		ScidbDatabase                      \
+	.scv 		ScidbArchive                       \
 	.sh		ShellScript                        \
+	.si3		ScidDatabase                       \
+	.si4		ScidDatabase                       \
+	.tex		TypesettingFile                    \
+	.txt		TextFile                           \
+	.zip		ZipArchive                         \
 ]
 
 
@@ -639,6 +639,7 @@ proc FormatNumGames {filename count} {
 			.pgn - .pgn.gz - .bpgn - .bpgn.gz - .zip {
 				set count [RoundNumGames $count]
 				append result "~ "
+				if {$count <= 3} { set count 1 }
 			}
 
 			.cbh { append result "\u2264 " }

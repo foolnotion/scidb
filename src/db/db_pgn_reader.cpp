@@ -787,7 +787,7 @@ PgnReader::process(Progress& progress)
 		Token		token			= m_readMode == Variation ? kTag : searchTag();
 		unsigned	streamSize	= m_stream.size();
 		unsigned	numGames		= estimateNumberOfGames(streamSize);
-		unsigned	frequency	= progress.frequency(numGames, 1000);
+		unsigned	frequency	= mstl::min(35u, progress.frequency(numGames, 1000));
 		unsigned	reportAfter	= frequency;
 
 		variant::Type givenVariant = Reader::variant();
@@ -1119,13 +1119,17 @@ PgnReader::checkVariant()
 bool
 PgnReader::checkResult()
 {
-	unsigned state = board().checkState(m_variant);
-	bool rc(true);
+	result::ID given = result::fromString(m_tags.value(tag::Result));
+
+	if (given == result::Unknown)
+		return true;
+
+	unsigned	state	= board().checkState(m_variant);
+	bool		rc		= true;
 
 	if (state & Board::Losing)
 	{
-		result::ID given		= result::fromString(m_tags.value(tag::Result));
-		result::ID expected	= result::fromColor(board().sideToMove());
+		result::ID expected = result::fromColor(board().sideToMove());
 
 		if (given != expected)
 		{
@@ -1136,8 +1140,7 @@ PgnReader::checkResult()
 	}
 	else if (state & (Board::Checkmate | Board::ThreeChecks))
 	{
-		result::ID given		= result::fromString(m_tags.value(tag::Result));
-		result::ID expected	= result::fromColor(board().notToMove());
+		result::ID expected = result::fromColor(board().notToMove());
 
 		if (m_variant == variant::Losers)
 			expected = result::opponent(expected);
@@ -1151,7 +1154,6 @@ PgnReader::checkResult()
 	}
 	else if (state & Board::Stalemate)
 	{
-		result::ID given		= result::fromString(m_tags.value(tag::Result));
 		result::ID expected;
 
 		switch (int(m_variant))
@@ -1384,23 +1386,30 @@ PgnReader::convertToUtf(mstl::string& s)
 
 	if (m_isAscii)
 	{
-		M_ASSERT(m_codec->encoding() == sys::utf8::Codec::latin1());
-		M_ASSERT(m_encoding == sys::utf8::Codec::automatic());
-
-		m_isAscii = false;
-
-		CharsetDetector detector;
-
-		detector.HandleData(s, s.size());
-		detector.DataEnd();
-		
-		if (detector.m_encoding == sys::utf8::Codec::utf8())
+		if (m_encoding == sys::utf8::Codec::utf8())
 		{
 			setUtf8Codec();
 		}
 		else
 		{
-			// the user has to choose the right encoding
+			M_ASSERT(m_codec->encoding() == sys::utf8::Codec::latin1());
+			M_ASSERT(m_encoding == sys::utf8::Codec::automatic());
+
+			m_isAscii = false;
+
+			CharsetDetector detector;
+
+			detector.HandleData(s, s.size());
+			detector.DataEnd();
+			
+			if (detector.m_encoding == sys::utf8::Codec::utf8())
+			{
+				setUtf8Codec();
+			}
+			else
+			{
+				// the user has to choose the right encoding
+			}
 		}
 	}
 
@@ -3482,8 +3491,7 @@ PgnReader::parseComment(Token prevToken, int c)
 {
 	// Comment: '{' ... '}'
 
-	mstl::string content;
-
+	m_content.clear();
 	m_prevPos = m_currPos;
 
 	if (c == '{')
@@ -3497,7 +3505,7 @@ PgnReader::parseComment(Token prevToken, int c)
 		{
 			if (c == '\n' || c == '\r')
 			{
-				::appendSpace(content);
+				::appendSpace(m_content);
 
 				do
 					c = get();
@@ -3505,7 +3513,7 @@ PgnReader::parseComment(Token prevToken, int c)
 			}
 			else
 			{
-				content += c;
+				m_content += c;
 				c = get();
 			}
 		}
@@ -3522,7 +3530,7 @@ PgnReader::parseComment(Token prevToken, int c)
 
 		while (c && c != '\n' && c != '\r')
 		{
-			content += c;
+			m_content += c;
 			c = get();
 		}
 
@@ -3535,17 +3543,17 @@ PgnReader::parseComment(Token prevToken, int c)
 		return prevToken; // skip comment
 	}
 
-	bool isEmpty = content.empty();
+	bool isEmpty = m_content.empty();
 
-	if (m_marks.extractFromComment(content))
+	if (m_marks.extractFromComment(m_content))
 		m_hasNote = true;
 
 	if (m_modification == Normalize)
 	{
-		content.trim();
-		stripDiagram(content);
+		m_content.trim();
+		stripDiagram(m_content);
 
-		switch (content.size())
+		switch (m_content.size())
 		{
 			case 0:
 				if (!isEmpty)
@@ -3553,7 +3561,7 @@ PgnReader::parseComment(Token prevToken, int c)
 				break;
 
 			case 1:
-				switch (content[0])
+				switch (m_content[0])
 				{
 					case 'N':
 						if (partOfMove(prevToken))
@@ -3574,10 +3582,10 @@ PgnReader::parseComment(Token prevToken, int c)
 				break;
 
 			case 2:
-				switch (content[0])
+				switch (m_content[0])
 				{
 					case 'D':
-						if (content[1] == '\'')
+						if (m_content[1] == '\'')
 						{
 							putNag(nag::DiagramFromBlack);
 							return kNag;
@@ -3585,7 +3593,7 @@ PgnReader::parseComment(Token prevToken, int c)
 						break;
 
 					case 'R':
-						if (content[1] == 'R')
+						if (m_content[1] == 'R')
 						{
 							putNag(nag::EditorsRemark);
 							return kNag;
@@ -3597,9 +3605,9 @@ PgnReader::parseComment(Token prevToken, int c)
 
 		if (m_sourceIsChessOK)
 		{
-			::parseChessOkComment(content);
+			::parseChessOkComment(m_content);
 
-			char const* s = content;
+			char const* s = m_content;
 
 			while (::isdigit(*s))
 				++s;
@@ -3619,27 +3627,25 @@ PgnReader::parseComment(Token prevToken, int c)
 				case 'a' ... 'h':
 					if ('1' <= *p && *p <= '8' && p[1] == '\0')
 					{
-						mstl::string buf;
+						m_buffer.clear();
+						m_buffer.append("<xml><:>", 8);
+						m_buffer.append(m_content.begin(), s);
+						m_buffer.append("<sym>", 5);
+						m_buffer.append(*s);
+						m_buffer.append("</sym>", 6);
+						m_buffer.append(s + 1, m_content.end());
+						m_buffer.append('.');
+						m_buffer.append("</:></xml>", 10);
 
-						buf.append("<xml><:>", 8);
-						buf.append(content.begin(), s);
-						buf.append("<sym>", 5);
-						buf.append(*s);
-						buf.append("</sym>", 6);
-						buf.append(s + 1, content.end());
-						buf.append('.');
-						buf.append("</:></xml>", 10);
-
-						Comment comment(buf, false, false);
+						Comment comment(m_buffer, false, false);
 
 						if (!m_comments.empty() && m_postIndex < m_comments.size())
 						{
 							m_comments.back().append(comment, ' ');
 						}
-						else
+						else if (!comment.isEmpty())
 						{
-							if (!comment.isEmpty())
-								m_hasNote = true;
+							m_hasNote = true;
 							m_comments.push_back();
 							m_comments.back().swap(comment);
 						}
@@ -3652,16 +3658,16 @@ PgnReader::parseComment(Token prevToken, int c)
 
 		// Why the hell does Rybka Aquarium use comments for his annotation?
 		// Obviously this company is not interested in the PGN standard.
-		if (content[0] == '$')
+		if (m_content[0] == '$')
 		{
-			char const* s = content.c_str() + 1;
+			char const* s = m_content.c_str() + 1;
 
 			while (::isdigit(*s))
 				++s;
 
 			if (*s == '\0')
 			{
-				unsigned nag = ::strtoul(content.c_str() + 1, nullptr, 10);
+				unsigned nag = ::strtoul(m_content.c_str() + 1, nullptr, 10);
 
 				if (nag < nag::Pgn_Last)
 				{
@@ -3687,12 +3693,12 @@ PgnReader::parseComment(Token prevToken, int c)
 				}
 			}
 		}
-		else if (!::isalpha(content[0]) && content.size() <= 5)
+		else if (!::isalpha(m_content[0]) && m_content.size() <= 5)
 		{
 			unsigned length = 0;
-			nag::ID nag = nag::fromSymbol(content, &length);
+			nag::ID nag = nag::fromSymbol(m_content, &length);
 
-			if (nag != nag::Null && length == content.size())
+			if (nag != nag::Null && length == m_content.size())
 			{
 				putNag(nag::ID(nag));
 				return kNag;
@@ -3703,25 +3709,26 @@ PgnReader::parseComment(Token prevToken, int c)
 		// "(Rd6) +1.85/17 88s"
 		// "(Kc3) Draw accepted +0.00/18 510s"
 
-		consumer().preparseComment(content);
+		consumer().preparseComment(m_content);
 	}
 
-	if (m_modification == Raw || !content.empty() || isEmpty)
+	if (m_modification == Raw || !m_content.empty() || isEmpty)
 	{
 		Comment comment;
 
-		if (m_modification != Raw || !comment.fromHtml(content))
+		if (m_modification != Raw || !comment.fromHtml(m_content))
 		{
-			convertToUtf(content);
-			Comment::convertCommentToXml(
-				content, comment, encoding::Utf8);
+			convertToUtf(m_content);
+			Comment::convertCommentToXml(m_content, comment, encoding::Utf8);
 			comment.normalize();
 		}
 
 		if (!comment.isEmpty())
+		{
 			m_hasNote = true;
-		m_comments.push_back();
-		m_comments.back().swap(comment);
+			m_comments.push_back();
+			m_comments.back().swap(comment);
+		}
 	}
 
 	return kComment;

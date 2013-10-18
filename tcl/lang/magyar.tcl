@@ -439,10 +439,11 @@
 ::application::board::mc::Accel(edit-annotation)	"A"
 ::application::board::mc::Accel(edit-comment)		"C"
 ::application::board::mc::Accel(edit-marks)		"M"
-::application::board::mc::Accel(add-new-game)		"S" ;# NEW
-::application::board::mc::Accel(replace-game)		"R" ;# NEW
-::application::board::mc::Accel(replace-moves)		"V" ;# NEW
-::application::board::mc::Accel(trial-mode)		"T" ;# NEW
+::application::board::mc::Accel(add-new-game)		"S"
+::application::board::mc::Accel(replace-game)		"R"
+::application::board::mc::Accel(replace-moves)		"V"
+::application::board::mc::Accel(trial-mode)		"T"
+::application::board::mc::Accel(export-game)		"E"
 
 ### application::database ##############################################
 ::application::database::mc::FileOpen			"Fájl megnyitása"
@@ -2054,6 +2055,10 @@
 ::help::mc::IncompleteHelpFiles		"Úgy tűnik, hogy a súgó fájlok még nem véglegesek. Bocs!"
 ::help::mc::ProbablyTheHelp		"Valószínűleg egy más nylevű súgó segíthet"
 ::help::mc::PageNotAvailable		"Ez az oldal nem elérhető"
+
+::help::mc::TextAlignment		"Text alignment" ;# NEW
+::help::mc::FullJustification		"Full justification" ;# NEW
+::help::mc::LeftJustification		"Left justification" ;# NEW
 
 ### crosstable #########################################################
 ::crosstable::mc::TournamentTable		"Verseny tabella"

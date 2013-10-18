@@ -677,6 +677,7 @@ proc normalizePlayer {player} {
 	set player [regsub -all {  } $player " "]
 	set player [regsub -all {,,} $player ","]
 	set player [regsub -all {,([^ ])} $player {, \1}]
+	set player [::figurines::mapToLocal $player $::mc::langID]
 
 	return $player
 }
@@ -722,6 +723,41 @@ proc addVariantsToMenu {parent m {excludeNormal 0}} {
 
 proc mergeGame {parent position} {
 	::merge::openDialog $parent [::scidb::game::current] $position
+}
+
+
+proc exportGame {parent {position -1}} {
+	variable ::scidb::scratchbaseName
+
+	if {$position == -1} { set position [::scidb::game::current] }
+	lassign [::scidb::game::sink? $position] base variant index
+	set sink [lindex [::scidb::game::sink? $position] 0]
+	set mode original
+
+	if {[::scidb::game::query $position modified?]} {
+		if {$base ne $scratchbaseName} {
+			if {$sink eq $scratchbaseName} {
+				set mode modified
+			} else {
+				set mode [WhichVersion $parent $mc::ExportGame]
+			}
+		} else {
+			set mode modified
+		}
+	}
+
+	set mainVariant [::util::toMainVariant $variant]
+	foreach side {white black} {
+		set info [scidb::db::fetch ${side}PlayerInfo $index $base $mainVariant]
+		set $side [lindex [split [lindex $info 0] ","] 0]
+	}
+	if {[string length $white] && [string length $black]} {
+		set title "$white-$black"
+	} else {
+		set title [lindex [::scidb::game::sink? $position] 2]
+	}
+
+	::export::open $parent -base $base -variant $variant -index $index -title $title
 }
 
 
@@ -1544,7 +1580,8 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 			-label " $mc::ExportThisGame..." \
 			-image $::icon::16x16::fileExport \
 			-compound left \
-			-command [namespace code [list ExportGame $parent $position]] \
+			-command [namespace code [list exportGame $parent $position]] \
+			-accel "$::mc::Key(Ctrl)-$::application::board::mc::Accel(export-game)" \
 			;
 
 		set state $clipbaseState
@@ -1630,7 +1667,7 @@ proc CheckIfModified {parent position} {
 proc WhichVersion {parent title} {
 	variable Mode_
 
-	set Mode_ original
+	if {![info exists Mode_]} { set Mode_ original }
 
 	set dlg [tk::toplevel $parent.whichVersion -class Dialog]
 	set top [ttk::frame $dlg.top -takefocus 0]
@@ -1667,40 +1704,6 @@ proc WhichVersion {parent title} {
 	::ttk::releaseGrab $dlg
 
 	return $Mode_
-}
-
-
-proc ExportGame {parent position} {
-	variable ::scidb::scratchbaseName
-
-	lassign [::scidb::game::sink? $position] base variant index
-	set sink [lindex [::scidb::game::sink? $position] 0]
-	set mode original
-
-	if {[::scidb::game::query $position modified?]} {
-		if {$base ne $scratchbaseName} {
-			if {$sink eq $scratchbaseName} {
-				set mode modified
-			} else {
-				set mode [WhichVersion $parent $mc::ExportGame]
-			}
-		} else {
-			set mode modified
-		}
-	}
-
-	set mainVariant [::util::toMainVariant $variant]
-	foreach side {white black} {
-		set info [scidb::db::fetch ${side}PlayerInfo $index $base $mainVariant]
-		set $side [lindex [split [lindex $info 0] ","] 0]
-	}
-	if {[string length $white] && [string length $black]} {
-		set title "$white-$black"
-	} else {
-		set title [lindex [::scidb::game::sink? $position] 2]
-	}
-
-	::export::open $parent -base $base -variant $variant -index $index -title $title
 }
 
 

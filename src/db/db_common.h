@@ -1291,6 +1291,7 @@ namespace nag
 	ID fromSymbol(mstl::string const& symbol);
 	ID fromSymbol(char const* symbol, unsigned* len = 0);
 	ID fromSymbol(char const* symbol, unsigned len);
+	ID parseSymbol(char const* str, unsigned& len);
 
 	namespace prefix
 	{

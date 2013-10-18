@@ -442,6 +442,7 @@
 ::application::board::mc::Accel(replace-game)		"R"
 ::application::board::mc::Accel(replace-moves)		"T"
 ::application::board::mc::Accel(trial-mode)			"V"
+::application::board::mc::Accel(export-game)			"E"
 
 ### application::database ##############################################
 ::application::database::mc::FileOpen							"Datenbank öffnen"
@@ -495,7 +496,7 @@
 ::application::database::mc::FileIsNotWritable				"Die Datei '%s' ist nicht schreibbar. Um diese Datenbank zu sichern sollte entwerder der Exportdialog verwendet werden, oder aber die Datei sollte schreibbar gesetzt werden."
 ::application::database::mc::OverwriteOriginalFile			"Wichtiger Hinweis: Die Originaldatei '%s' wird dabei überschrieben."
 ::application::database::mc::SetupPgnOptions					"Möglicherweise sollten vor dem Speichern die PGN-Optionen bestimmt werden."
-::application::database::mc::CloseAllDeletedGames			"Alle gelöschte Partien der Datenbank '%s' schliessen?"
+::application::database::mc::CloseAllDeletedGames			"Alle gelöschten Partien der Datenbank '%s' schliessen?"
 ::application::database::mc::CannotCompactDatabase			"Die Datenbank kann nicht kompaktiert werden weil die folgenden Partien dieser Datenbank modifiziert sind:"
 
 ::application::database::mc::RecodingDatabase				"Umkodierung %base von %from nach %to"
@@ -2043,6 +2044,10 @@
 ::help::mc::IncompleteHelpFiles	"Es scheint das die Hilfeseiten leider noch nicht vollständig sind."
 ::help::mc::ProbablyTheHelp		"Möglicherweise ist die Hilfseite in einer anderen Sprache eine Alternative"
 ::help::mc::PageNotAvailable		"Diese Seite ist nicht verfügbar"
+
+::help::mc::TextAlignment			"Textausrichtung"
+::help::mc::FullJustification		"Blocksatz"
+::help::mc::LeftJustification		"Linksbündig"
 
 ### crosstable #########################################################
 ::crosstable::mc::TournamentTable			"Turniertabelle"

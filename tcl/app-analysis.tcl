@@ -292,11 +292,10 @@ proc build {parent width height} {
 		-wrap word \
 		-specialfont [list [list $::font::figurine(text:normal) 9812 9823]] \
 		;
-
 	$tree element create elemTextSym text \
 		-lines $Options(engine:nlines) \
 		-wrap word \
-		-specialfont $::font::symbol(text:normal) \
+		-font $::font::symbol(text:normal) \
 		;
 
 	$tree style create styleFig
@@ -309,7 +308,7 @@ proc build {parent width height} {
 	$tree style layout styleSym elemRect -detach yes -iexpand xy
 	$tree style layout styleSym elemTextSym -padx {4 4} -pady {2 2} -squeeze x -sticky ne
 
-	$tree column create -steady yes -tags Eval  -width [expr {5*$charwidth}] -itemjustify center
+	$tree column create -steady yes -tags Eval  -width [expr {6*$charwidth}] -itemjustify center
 	$tree column create -steady yes -tags Value -width [expr {8*$charwidth}] -itemjustify right
 	$tree column create -steady yes -tags Moves -expand yes -squeeze yes -weight 1 -itemjustify left
 
@@ -680,7 +679,7 @@ proc EvalText {score mate} {
 
 proc ScoreText {score mate} {
 	if {$mate == 0} { return [FormatScore $score] }
-	if {$mate < 0} { set sign "-" } else { set sign "+" }
+	if {$mate < 0} { set sign "\u2212" } else { set sign "+" }
 	return "$sign#[abs $mate]"
 }
 
@@ -689,9 +688,9 @@ proc FormatScore {score} {
 	set p [expr {abs($score)/100}]
 	set cp [expr {abs($score) % 100}]
 	if {$score < 0} {
-		set sign -
+		set sign "\u2212"
 	} elseif {$score > 0} {
-		set sign +
+		set sign "+"
 	} else {
 		set sign ""
 	}

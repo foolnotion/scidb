@@ -597,7 +597,6 @@ proc reset {w type args} {
 #	set Vars(sort-order) increasing
 
 	set Vars(type) $type
-
 	set utype [string toupper $Vars(type) 0 0]
 	if {$utype eq "Dir"} { set utype Open }
 	tk::SetAmpText $Vars(button:ok) " [Tr $utype]"
@@ -3442,6 +3441,8 @@ proc Build {w path args} {
 	bind $t <Double-Button-1> [namespace code [list InvokeFile $w %x %y]]
 	bind $t <Double-Button-1> {+ break }
 	bind $t <ButtonPress-3> [namespace code [list PopupMenu $w %x %y]]
+	bind $t <Control-a> [namespace code [list SelectAllFiles $w]]
+	bind $t <Control-A> [namespace code [list SelectAllFiles $w]]
 	bind $t <Key-space> [namespace code [list InvokeFile $w]]
 	bind $t <Return> [namespace code [list InvokeFile $w]]
 	bind $t <Return> {+ break }
@@ -4176,7 +4177,9 @@ proc InvokeFile {w args} {
 
 	if {$sel >= [llength $Vars(list:folder)]} {
 		SelectFiles $w [expr {$sel - [llength $Vars(list:folder)]}]]
-		if {!$Vars(multiple)} { [namespace parent]::Activate $w yes }
+		if {!$Vars(multiple) || [llength $Vars(selected:files)] == 1} {
+			[namespace parent]::Activate $w yes
+		}
 	} elseif {$Vars(type) ne "dir"} {
 		[namespace parent]::busy [winfo toplevel $w]
 		[namespace parent]::VisitItem $w $t leave [expr {$sel + 1}]
@@ -4306,6 +4309,51 @@ proc ConfigureButtons {w} {
 			set Vars(state:custom) disabled
 		}
 		::toolbar::childconfigure $Vars(button:custom) -state $Vars(state:custom)
+	}
+}
+
+
+proc SelectAllFiles {w} {
+	variable [namespace parent]::${w}::Vars
+
+	set t $Vars(widget:list:file)
+
+	if {[$t cget -selectmode] eq "extended" && [llength $Vars(list:file)] > 0} {
+		if {$Vars(type) eq "dir"} {
+			if {[llength $Vars(selected:folders)] == [llength $Vars(list:folder)]} {
+				set Vars(selected:folders) {}
+				$t selection clear
+				set Vars(initialfile) {}
+				ConfigureButtons $w
+			} else {
+				set first 0
+				set last [llength $Vars(list:folder)]
+				for {set i $first} {$i < $last} {incr i} {
+					if {![$t selection includes $i]} {
+						lappend selection $i
+						$t selection add $i
+					}
+				}
+				SelectFiles $w $selection
+			}
+		} else {
+			if {[llength $Vars(selected:files)] == [llength $Vars(list:file)]} {
+				set Vars(selected:files) {}
+				$t selection clear
+				set Vars(initialfile) {}
+				ConfigureButtons $w
+			} else {
+				set first [expr {[llength $Vars(list:folder)] + 1}]
+				set last [expr {$first + [llength $Vars(list:file)]}]
+				for {set i $first} {$i < $last} {incr i} {
+					if {![$t selection includes $i]} {
+						lappend selection $i
+						$t selection add $i
+					}
+				}
+				SelectFiles $w $selection
+			}
+		}
 	}
 }
 
@@ -4492,15 +4540,14 @@ proc DeleteFile {w} {
 	}
 
 	if {$trashIsUsable} {
-		set cmd [::trash::move $leader $extensions]
+		set cmd [list ::trash::move $leader $extensions]
 	} elseif {$ltype eq "file"} {
-		set cmd "file delete -force {*}$files"
-		catch $cmd
+		set cmd [list file delete -force {*}$files]
 	} else {
-		set cmd "file delete -force $file"
-		catch $cmd
+		set cmd [list file delete -force $file]
 	}
 
+	catch $cmd
 	RefreshFileList $w
 	[namespace parent]::bookmarks::LayoutBookmarks $w
 	after idle [namespace code [list ResetFamId $w]]

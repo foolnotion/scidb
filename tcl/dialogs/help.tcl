@@ -66,6 +66,10 @@ set IncompleteHelpFiles		"It seems that the help files are still incomplete. Sor
 set ProbablyTheHelp			"Probably the help page in a different language may be an alternative for you"
 set PageNotAvailable			"This page is not available"
 
+set TextAlignment				"Text alignment"
+set FullJustification		"Full justification"
+set LeftJustification		"Left justification"
+
 } ;# namespace mc
 
 
@@ -76,6 +80,7 @@ array set Options {
 	htmlwidth	600
 	geometry		""
 	lang			""
+	textalign	justify
 }
 
 array set Colors {
@@ -1300,6 +1305,31 @@ proc PopupMenu {dlg tab} {
 			::font::html::addChangeFontSizeToMenu help $m \
 				[list $Priv(html) fontsize] [::html::minFontSize] [::html::maxFontSize]
 			::font::html::addChangeFontToMenu help $m [namespace current]::ApplyFont
+			menu $m.textalign
+			$m add cascade \
+				-menu $m.textalign \
+				-label " $mc::TextAlignment" \
+				-image $::icon::16x16::leftalign \
+				-compound left \
+				;
+			$m.textalign add radiobutton \
+				-label " $mc::FullJustification" \
+				-image $::icon::16x16::fullalign \
+				-compound left \
+				-variable [namespace current]::Options(textalign) \
+				-value justify \
+				-command [list $Priv(html) configure -textalign justify] \
+				;
+			::theme::configureRadioEntry $m.textalign
+			$m.textalign add radiobutton \
+				-label " $mc::LeftJustification" \
+				-image $::icon::16x16::leftalign \
+				-compound left \
+				-variable [namespace current]::Options(textalign) \
+				-value left \
+				-command [list $Priv(html) configure -textalign left] \
+				;
+			::theme::configureRadioEntry $m.textalign
 			$m add separator
 		}
 
@@ -1424,6 +1454,7 @@ proc BuildHtmlFrame {dlg w} {
 		-showhyphens 1 \
 		-latinligatures $Priv(latinligatures) \
 		-fontsize [::font::html::fontSize help] \
+		-textalign $Options(textalign) \
 		;
 
 	$w handler node link [namespace current]::LinkHandler

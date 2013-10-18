@@ -106,8 +106,8 @@ set HtmlMapping {
 	<verbatim>		{<div class='box'><pre><code>}
 	</verbatim>		{</code></pre></div>}
 
-	<annotation>	{<div class='annotation'><img src='../images/annotation.png' style='float:left; margin:0 1em 0 0' alt='annotation' />}
-	</annotation>	{</div>}
+	<annotation>	{<div class='annotation'><span class='annotation'><img src='../images/annotation.png' style='float:left; margin:0 1em 0 0' alt='annotation' />}
+	</annotation>	{</span></div>}
 
 	<dir>				{<ul style='list-style-type: none'><li>}
 	</dir>			{</li></ul>}
