@@ -87,7 +87,7 @@ Any compound square designator not contained in brackets must be contained in br
     <td class="right">denotes the first two ranks plus a8 and h8.</td>
   </tr>
   <tr valign="top">
-    <td class="left"><expr>[]</expr></td>
+    <td class="left"><expr>[&thinsp;]</expr></td>
     <td class="right">denotes no squares at all. This is very different from the empty
         square designator, which designates all squares.</td>
   </tr>
@@ -115,7 +115,7 @@ Any compound square designator not contained in brackets must be contained in br
     <td class="right">will match any position with a white non-king piece at the corners.</td>
   </tr>
   <tr valign="top" class="stripes">
-    <td class="left"><expr>&B;[]</expr></td>
+    <td class="left"><expr>&B;[&thinsp;]</expr></td>
     <td class="right">denotes a white bishop on an empty set of squares. This can never match
         any position of course.</td>
   </tr>

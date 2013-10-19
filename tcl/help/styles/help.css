@@ -169,6 +169,13 @@ td.standard {
 	padding-right:		0.5em;
 }
 
+td.standard-justification {
+	padding-top:		0.5em;
+	padding-bottom:	0.5em;
+	padding-left:		0.5em;
+	padding-right:		0.5em;
+}
+
 td.l {
 	padding-left:	0.2em;
 	padding-right:	0.5em;

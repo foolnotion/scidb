@@ -63,7 +63,7 @@ enthaltenen Felderbezeichner.
 </p>
 
 <p>
-Ein Felderbezeichnerverbund muß syntaktisch in Klammern <expr>[]</expr>
+Ein Felderbezeichnerverbund muß syntaktisch in Klammern <expr>[&thinsp;]</expr>
 eingechlossen sein.
 </p>
 
@@ -91,7 +91,7 @@ eingechlossen sein.
     <td class="right">kennzeichnet die ersten beiden Reihen plus a8 und h8.</td>
   </tr>
   <tr valign="top">
-    <td class="left"><expr>[]</expr></td>
+    <td class="left"><expr>[&thinsp;]</expr></td>
     <td class="right">kennzeichnet eine leere Menge von Feldern. Dies ist absolut
         verschieden vom Leerfeldbezeichner, der alle Felder kennzeichnet.</td>
   </tr>
@@ -120,7 +120,7 @@ eingechlossen sein.
     <td class="right">findet jede Position mit einem weißen Nicht-König in den Ecken.</td>
   </tr>
   <tr valign="top" class="stripes">
-    <td class="left"><expr>&B;[]</expr></td>
+    <td class="left"><expr>&B;[&thinsp;]</expr></td>
     <td class="right">kennzeichnet einen weißen Läufer auf einem freien Feld. Dies
         kann natürlich nicht aufgefunden werden.</td>
   </tr>

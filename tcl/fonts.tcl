@@ -1693,10 +1693,10 @@ namespace export getFontFamilyName
 namespace eval html {
 
 set DefaultFixedFamilies {
-	{Arial Monospaced} Arial {Nimbus Mono L} {DejaVu Sans Mono } {Bitstream Vera Sans Mono} TkFixedFont {Lucida Typewriter}
+	{Arial Monospaced} {Courier 10 Pitch} Fonotone {DejaVu Sans Mono} {Bitstream Vera Sans Mono} TkFixedFont {Lucida Typewriter}
 }
 set DefaultTextFamilies {
-	Arial {Nimbus Sans L} {DejaVu Sans} {Bitstream Vera Sans} TkTextFont {Helvetica Neue} {Helvetica Neue LT Std} Verdana {Lucida Grande} Lucida
+	Arial {DejaVu Sans} {Bitstream Vera Sans} TkTextFont {Helvetica Neue} {Helvetica Neue LT Std} Verdana {Lucida Grande} Lucida
 } 
 variable DefaultFonts {}
 
@@ -1804,7 +1804,7 @@ proc fontSize {context} {
 proc defaultFonts {} {
 	variable DefaultFonts
 
-	if {[string length $DefaultFonts] == 0} {
+	if {[llength $DefaultFonts] == 0} {
 		set families [::dialog::choosefont::fontFamilies no]
 		if {"arial" in $families} {
 			lappend DefaultFonts "Arial"
@@ -1883,10 +1883,9 @@ proc defaultFixedFonts {context} {
 
 proc lookupFixedFonts {textfont} {
 	switch $textfont {
-		"Arial"						{ lappend fonts {Arial Monospaced} Arial }
-		"Nimbus Sans L"			{ lappend fonts {Nimbus Mono L} }
-		"Abel"						{ lappend fonts Fonotone {Ubuntu Mono} \
-												{Courier New} {Nimbus Mono L} {Arial Monospaced} Arial }
+		"Arial"						{ lappend fonts {Arial Monospaced} {Courier 10 Pitch} Fonotone }
+		"Nimbus Sans L"			{ lappend fonts {Courier 10 Pitch} Fonotone {Ubuntu Mono} {Nimbus Mono L} }
+		"Abel"						{ lappend fonts Fonotone {Ubuntu Mono} {Arial Monospaced} {Nimbus Mono L} }
 		"DejaVu Sans"				{ lappend fonts {DejaVu Sans Mono} }
 		"Bitstream Vera Sans"	{ lappend fonts {Bitstream Vera Sans Mono} }
 		default						{ lappend fonts [getFontFamilyName TkFixedFont] }

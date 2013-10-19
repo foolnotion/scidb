@@ -29,8 +29,8 @@
 namespace eval import {
 namespace eval mc {
 
-set ImportingPgnFile						"Importing PGN file '%s'"
-set ImportingDatabase					"Importing database '%s'"
+set ImportingPgnFile						"Importing PGN files"
+set ImportingDatabase					"Importing databases"
 set Line										"Line"
 set Column									"Column"
 set GameNumber								"Game"

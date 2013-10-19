@@ -49,7 +49,7 @@ Nella linea di comando sono disponibili le seguenti opzioni:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <tt>--</tt>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Dopo questa opzione tutti gli argomenti saranno interpretati come 
       nomi di file. Questo permette che nomi di file possano cominciare col 
       trattino ('-').
@@ -59,19 +59,19 @@ Nella linea di comando sono disponibili le seguenti opzioni:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <tt>--help</tt>
     </td>
-    <td class="standard">Mostra tutte le opzioni e termina.</td>
+    <td class="standard-justification">Mostra tutte le opzioni e termina.</td>
   </tr>
   <tr>
     <td class="standard" style="white-space:nowrap;" valign="top">
         <tt>--show-board</tt>
     </td>
-    <td class="standard">Va alla tab della scacchiera dopo l'inizializzazione.</td>
+    <td class="standard-justification">Va alla tab della scacchiera dopo l'inizializzazione.</td>
   </tr>
   <tr>
     <td class="standard" style="white-space:nowrap;" valign="top">
         <tt>--re-open</tt>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       All'inizializzazione apre tutti i database che erano aperti alla 
       fine dell'ultima sessione.
     </td>
@@ -80,7 +80,7 @@ Nella linea di comando sono disponibili le seguenti opzioni:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <tt>--fast-load</tt>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Carica solo i file dati richiesti dopo l'inizializzazione, questo 
       permette che il programma parta in modo decisamente più veloce. È 
       consigliato usare questa opzione solo per testing.
@@ -90,7 +90,7 @@ Nella linea di comando sono disponibili le seguenti opzioni:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <tt>--first-time</tt>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Apre il programma come se fosse la prima volta; questo significa 
       che reimposta le opzioni utente, elimina i file di ripristino e 
       copia tutti i temi scacchiera standard nella cartella dell'utente, 
@@ -102,7 +102,7 @@ Nella linea di comando sono disponibili le seguenti opzioni:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <tt>--elo-only</tt>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Non carica altri file di rating oltre a quelli relativi all'ELO. 
       Questo velocizza decisamente il programma dopo l'inizializzazione.
     </td>
@@ -111,7 +111,7 @@ Nella linea di comando sono disponibili le seguenti opzioni:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <tt>--print-recovery-files</tt>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Mostra tutti i file di ripristino che sono stati generati alla fine 
       dell'ultima sessione in virtù di modifiche non salvate, e termina. 
       L'output è vuoto se nessun file di ripristino esiste.
@@ -121,7 +121,7 @@ Nella linea di comando sono disponibili le seguenti opzioni:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <tt>--delete-recovery-files</tt>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Elimina tutti i file di ripristino dall'ultima sessione e termina il 
       programma. Non si tratta di un'eliminazione fisica, con l'opzione 
       <tt>--recover-old</tt> è possibile tornare ad usare quei file.
@@ -131,7 +131,7 @@ Nella linea di comando sono disponibili le seguenti opzioni:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <tt>--dont-recover</tt>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Apre il programma senza usare file di ripristino (che contengono 
       modifiche non salvate alle partite dall'ultima sessione). La rimozione
       non è fisica, con l'opzione <tt>--recover-old</tt> è possibile tornare a 
@@ -142,7 +142,7 @@ Nella linea di comando sono disponibili le seguenti opzioni:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <tt>--recover-old</tt>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Ripristina partite non salvate da vecchie sessioni. Partite non 
       salvate dall'ultima sessione saranno scartati.
     </td>
@@ -151,7 +151,7 @@ Nella linea di comando sono disponibili le seguenti opzioni:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>--update-player-photos</code>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Aggiorna o installa le foto dei giocatori. Successivamente il programma sarà terminato.
       <br/><br/>
       La raccomandazione basilare è di usare la funzionalità di aggiornamento o installazione dall'interfaccia grafica.
@@ -167,7 +167,7 @@ Nella linea di comando sono disponibili le seguenti opzioni:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <tt>--single-process</tt>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Forza un'altra istanza di Scidb. Questa opzione è pensata solo per il testing.
     </td>
   </tr>
@@ -175,7 +175,7 @@ Nella linea di comando sono disponibili le seguenti opzioni:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <tt>--force-grab</tt>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Il programma sopprime automaticamente i grab se aperto dentro un debugger,
       perché i grabs potrebbero portare al freeze dello schermo. Con questa opzione
       "grabbare" lo schermo sarà permesso automaticamente anche in modalità debug.
@@ -192,7 +192,7 @@ Le opzioni seguenti saranno riconosciute dalla libreria Tk:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <tt>-geometry GEOMETRY</tt>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Usa le informazioni geometriche per la finestra principale. Per
       esempio l'argomento <tt>-geometry</tt> <tt>600x800+20+10</tt>
       modificherà la grandezza della finestra principale a 600x800, 
@@ -203,7 +203,7 @@ Le opzioni seguenti saranno riconosciute dalla libreria Tk:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <tt>-display DISPLAY</tt>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Nome dello schermo su cui creare la finestra.
     </td>
   </tr>
@@ -211,7 +211,7 @@ Le opzioni seguenti saranno riconosciute dalla libreria Tk:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <tt>-sync</tt>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Usa la modalità sincrona per il display server.
     </td>
   </tr>

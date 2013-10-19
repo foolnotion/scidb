@@ -1539,8 +1539,8 @@
 ::setup::board::mc::Warning(UnsupportedVariant)		"La posición es una posición de inicio pero no corresponde a una posición de Shuffle Chess. ¿Está seguro?"
 
 ### import #############################################################
-::import::mc::ImportingPgnFile					"Importar archivo PGN '%s'"
-::import::mc::ImportingDatabase					"Importando base de datos '%s'"
+::import::mc::ImportingPgnFile					"Importar archivos PGN"
+::import::mc::ImportingDatabase					"Importando bases de datos"
 ::import::mc::Line									"Línea"
 ::import::mc::Column									"Columna"
 ::import::mc::GameNumber							"Partida"

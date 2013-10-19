@@ -1545,8 +1545,8 @@
 ::setup::board::mc::Warning(UnsupportedVariant)		"Positionen är en startposition men ingen Shuffle schackposition. Är du säker?"
 
 ### import #############################################################
-::import::mc::ImportingPgnFile					"Importerar PGN-fil '%s'"
-::import::mc::ImportingDatabase					"Importerar databas '%s'"
+::import::mc::ImportingPgnFile					"Importerar PGN-fil" ;# NEW change to 'Importing PGN files'
+::import::mc::ImportingDatabase					"Importerar databasen"
 ::import::mc::Line									"Rad"
 ::import::mc::Column									"Spalt"
 ::import::mc::GameNumber							"Parti"

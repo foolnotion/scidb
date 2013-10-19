@@ -49,7 +49,7 @@ Auf der Kommandozeile stehen folgende Optionen bei Programmstart zur Verfügung:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>--</code>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Nach dieser Option können nur noch Dateinamen folgen. Dies ermöglicht das Dateinamen
       mit einem Bindestrich beginnen können und nicht mit einer Option verwechselt werden.
     </td>
@@ -70,7 +70,7 @@ Auf der Kommandozeile stehen folgende Optionen bei Programmstart zur Verfügung:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>--re-open</code>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Alle Datenbanken, die beim Schliessen der letzten Sitzung noch offen waren, sofort
       nach Programmstart laden.
     </td>
@@ -79,7 +79,7 @@ Auf der Kommandozeile stehen folgende Optionen bei Programmstart zur Verfügung:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>--fast-load</code>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Nur die ausschliesslich erforderlichen Dateien nach Programmstart laden. Dies ermöglicht
       einen deutlich schnelleren Programmstart. Diese Option sollte i.A. nicht benutzt werden,
       sie dient vornehmlich dem Testen.
@@ -89,7 +89,7 @@ Auf der Kommandozeile stehen folgende Optionen bei Programmstart zur Verfügung:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>--first-time</code>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Das Programm wird gestartet wie beim ersten Mal, d.h. die Benutzeroptionen werden
       zurückgesetzt, die Wiederherstellungsdateien werden gelöscht, und die Standard-Brettthemen
       werden erneut in das benutzereigene Verzeichnis kopiert, sofern sie nicht modifiziert
@@ -110,7 +110,7 @@ Auf der Kommandozeile stehen folgende Optionen bei Programmstart zur Verfügung:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>--print-recovery-files</code>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Zeige die Wiederherstellungsdateien, die in der letzten Sitzung aufgrund
       ungespeicherter Partien erzeugt wurden, und terminiere das Programm.
       Möglicherweise existieren keine und es werden dann auch keine angezeigt.
@@ -120,7 +120,7 @@ Auf der Kommandozeile stehen folgende Optionen bei Programmstart zur Verfügung:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>--delete-recovery-files</code>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Die aus der letzten Sitzung existierenden Wiederherstellungsdateien,
       die ungespeicherte Partien enthalten, löschen und das Prgramm terminieren.
       Es erfolgt keine physikalische Löschung, mit der Option
@@ -131,7 +131,7 @@ Auf der Kommandozeile stehen folgende Optionen bei Programmstart zur Verfügung:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>--dont-recover</code>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Das Programm starten ohne Wiederherstellungsdateien, die ungespeicherte
       Partien enthalten, aus der letzten Sitzung zu laden. Diese Dateien werden
       nicht physikalisch gelöscht, mit der Option
@@ -142,7 +142,7 @@ Auf der Kommandozeile stehen folgende Optionen bei Programmstart zur Verfügung:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>--recover-old</code>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Ungespeicherte Partien aus älteren Sitzungen wiederherstellen. Die
       ungespeicherten Partien aus der letzten Sitzung werden nicht mehr
       berücksichtigt.
@@ -152,7 +152,7 @@ Auf der Kommandozeile stehen folgende Optionen bei Programmstart zur Verfügung:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>--update-player-photos</code>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Spielerphotos updaten bzw. installieren. Danach wird das Programm beendet.
       <br/><br/>
       Grundsätzlich wird empfohlen, den Update bzw. die Installation über
@@ -170,7 +170,7 @@ Auf der Kommandozeile stehen folgende Optionen bei Programmstart zur Verfügung:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>--single-process</code>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Erzwingt eine weitere Scidb-Instanz bei Programmstart. Diese Option
       dient nur dem Testen und sollte nicht verwendet werden.
     </td>
@@ -179,7 +179,7 @@ Auf der Kommandozeile stehen folgende Optionen bei Programmstart zur Verfügung:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>--force-grab</code>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Wird das Programm in einem Debugger gestartet werden Grabs automatisch
       unterdrückt, denn diese können zum Einfrieren des Bildschirms führen.
       Mit dieser Option werden die Grabs auch im Debugger zugelassen.
@@ -196,7 +196,7 @@ Die folgenden Optionen werden von der Tk-Bibliothek erkannt:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>-geometry GEOMETRY</code>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Benutze die Geometrieangaben für das Hauptfenster. Beispielsweise hat das
       Hauptfenster mit der Angabe <span style='white-space:nowrap;'><code>-geometry</code></span>
       <span style='white-space:nowrap;'><code>600x800+20+10</code></span> die Größe 600x800 und wird an der
@@ -207,7 +207,7 @@ Die folgenden Optionen werden von der Tk-Bibliothek erkannt:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>-display DISPLAY</code>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Benutze das mit DISPLAY angegebene Display.
     </td>
   </tr>
@@ -215,7 +215,7 @@ Die folgenden Optionen werden von der Tk-Bibliothek erkannt:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>-sync</code>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Benutze den Synchron-Modus für den Display-Server.
     </td>
   </tr>

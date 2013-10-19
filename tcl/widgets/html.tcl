@@ -665,7 +665,10 @@ proc SetupCSS {w} {
 	if {$Priv(textalign) ne "left"} {
 		append css "\np { text-align: $Priv(textalign); }"
 		append css "\nli { text-align: $Priv(textalign); }"
-		append css "\nspan.annotation { text-align: $Priv(textalign); }"
+		append css "\nspan.justification { text-align: $Priv(textalign); }"
+		append css "\ndiv.annotation { text-align: $Priv(textalign); }"
+		append css "\ntd.justification { text-align: $Priv(textalign); }"
+		append css "\ntd.standard-justification { text-align: $Priv(textalign); }"
 	}
 	set css [string trim $css]
 	if {[string length $css]} { $w.sub.html style -id user $css }

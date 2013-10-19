@@ -28,7 +28,7 @@ On the command line the following options are available at program start:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>--</code>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       After this option all arguments wil be interpreted as file names. This permits
       that file names may start with a hyphen.
     </td>
@@ -37,19 +37,19 @@ On the command line the following options are available at program start:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>--help</code>
     </td>
-    <td class="standard">Display all options and terminate.</td>
+    <td class="standard-justification">Display all options and terminate.</td>
   </tr>
   <tr>
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>--show-board</code>
     </td>
-    <td class="standard">Change to board tab after initialization.</td>
+    <td class="standard-justification">Change to board tab after initialization.</td>
   </tr>
   <tr>
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>--re-open</code>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Open all databases immediately after initialization which where open at the end
       of the last session.
     </td>
@@ -58,7 +58,7 @@ On the command line the following options are available at program start:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>--fast-load</code>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Load only the required data files after initialization, this enables a significant
       faster program start. It is not recommended to use this option except for testing.
     </td>
@@ -67,7 +67,7 @@ On the command line the following options are available at program start:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>--first-time</code>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Start the program as it would be the first time; this means reset all user options,
       delete the recovery files, and copy all standard board themes into the userown
       directory, unless the modified ones. This option may be useful if the initialization
@@ -78,7 +78,7 @@ On the command line the following options are available at program start:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>--elo-only</code>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Do not load other rating files than ELO rating. This speeds up program
       initialization.
     </td>
@@ -87,7 +87,7 @@ On the command line the following options are available at program start:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>--print-recovery-files</code>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Show all recovery files which where generated at the end of last session due
       to unsaved modifications, and terminate. The output is empty if no recovery
       file exists.
@@ -97,7 +97,7 @@ On the command line the following options are available at program start:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>--delete-recovery-files</code>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Delete all recovery files from last session and terminate the program.
       It is not a phyisical removal, with option
       <code>--recover-old</code> it is possible to reuse these files.
@@ -107,7 +107,7 @@ On the command line the following options are available at program start:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>--dont-recover</code>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Start the program without using the recovery files (which contains
       unsaved modified games from last session). The removal is not physical,
       with option <code>--recover-old</code> it is possible to reuse these files.
@@ -117,7 +117,7 @@ On the command line the following options are available at program start:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>--recover-old</code>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Recover unsaved games from older sessions. Unsaved games from last session
       will be discarded.
     </td>
@@ -126,7 +126,7 @@ On the command line the following options are available at program start:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>--update-player-photos</code>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Update or install player photos. Afterwards the program will be terminated.
       <br/><br/>
       The basic recommendation is to use the update or install functionality via
@@ -143,7 +143,7 @@ On the command line the following options are available at program start:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>--single-process</code>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Force another instance of Scidb. This option is intented only for testing.
     </td>
   </tr>
@@ -151,7 +151,7 @@ On the command line the following options are available at program start:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>--force-grab</code>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       The program is supressing grabs automaticaly if started inside a debugger,
       because gras may lead to frozen screens. With this option grabbing
       the screen will be allowed also in debug mode.
@@ -168,7 +168,7 @@ The following options will be recognized by the Tk library:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>-geometry GEOMETRY</code>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Use the geometric information for the main window. For example the
       argument <code>-geometry</code> <code>600x800+20+10</code>
       will resize the main window to 600x800, and the position of the window
@@ -179,7 +179,7 @@ The following options will be recognized by the Tk library:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>-display DISPLAY</code>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Name of screen on which to create window.
     </td>
   </tr>
@@ -187,7 +187,7 @@ The following options will be recognized by the Tk library:
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>-sync</code>
     </td>
-    <td class="standard">
+    <td class="standard-justification">
       Use synchronous mode for display server.
     </td>
   </tr>
