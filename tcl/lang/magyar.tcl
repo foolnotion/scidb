@@ -421,6 +421,7 @@
 ::application::board::mc::InsertNullMove		"Insert null move" ;# NEW
 ::application::board::mc::SelectStartPosition		"Select Start Position" ;# NEW
 ::application::board::mc::LoadRandomGame		"Load random game" ;# NEW
+::application::board::mc::AddNewGame			"új játszma hozzáadása..."
 
 ::application::board::mc::Tools				"Eszközök"
 ::application::board::mc::Control			"Kezelés"
@@ -1401,9 +1402,9 @@
 ::gamebar::mc::CloseGame			"Játszma bezárása"
 
 ::gamebar::mc::GameNew				"Új tábla"
-::gamebar::mc::AddNewGame			"Mentés: új játszma hozzáadása %s-hez..."
-::gamebar::mc::ReplaceGame			"Mentés: Játszma felülírása %s-ben..."
-::gamebar::mc::ReplaceMoves			"Mentés: Replace Moves Only in Game..."
+::gamebar::mc::AddNewGame			"új játszma hozzáadása %s-hez..."
+::gamebar::mc::ReplaceGame			"Játszma felülírása %s-ben..."
+::gamebar::mc::ReplaceMoves			"Replace Moves Only in Game..."
 
 ::gamebar::mc::Tip(Antichess)			"There is no check, no castling, the king\nis captured like an ordinary piece." ;# NEW
 ::gamebar::mc::Tip(Suicide)			"In case of stalemate the side with fewer\npieces will win (according to FICS rules)." ;# NEW

@@ -421,6 +421,7 @@
 ::application::board::mc::InsertNullMove				"Insert null move" ;# NEW
 ::application::board::mc::SelectStartPosition		"Select Start Position" ;# NEW
 ::application::board::mc::LoadRandomGame				"Load random game" ;# NEW
+::application::board::mc::AddNewGame					"Agregar nueva partida..."
 
 ::application::board::mc::Tools							"Herramientas"
 ::application::board::mc::Control						"Control"
@@ -1394,9 +1395,9 @@
 
 ::gamebar::mc::GameNew							"Nueva partida"
 
-::gamebar::mc::AddNewGame						"Guardar: Agregar nueva partida a %s..."
-::gamebar::mc::ReplaceGame						"Guardar: Reemplazar partida en %s..."
-::gamebar::mc::ReplaceMoves					"Guardar: Reemplazar jugadas sólo en la partida"
+::gamebar::mc::AddNewGame						"Agregar nueva partida a %s..."
+::gamebar::mc::ReplaceGame						"Reemplazar partida en %s..."
+::gamebar::mc::ReplaceMoves					"Reemplazar jugadas sólo en la partida"
 
 ::gamebar::mc::Tip(Antichess)					"There is no check, no castling, the king\nis captured like an ordinary piece." ;# NEW
 ::gamebar::mc::Tip(Suicide)					"In case of stalemate the side with fewer\npieces will win (according to FICS rules)." ;# NEW

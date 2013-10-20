@@ -419,6 +419,7 @@
 ::application::board::mc::InsertNullMove				"Insert null move"
 ::application::board::mc::SelectStartPosition		"Select Start Position"
 ::application::board::mc::LoadRandomGame				"Load random game"
+::application::board::mc::AddNewGame					"Add New Game..."
 
 ::application::board::mc::Tools							"Tools"
 ::application::board::mc::Control						"Control"
@@ -1389,9 +1390,9 @@
 ::gamebar::mc::CloseGame						"Close Game"
 
 ::gamebar::mc::GameNew							"New Game"
-::gamebar::mc::AddNewGame						"Save: Add New Game to %s..."
-::gamebar::mc::ReplaceGame						"Save: Replace Game in %s..."
-::gamebar::mc::ReplaceMoves					"Save: Replace Moves Only in Game..."
+::gamebar::mc::AddNewGame						"Add New Game to %s..."
+::gamebar::mc::ReplaceGame						"Replace Game in %s..."
+::gamebar::mc::ReplaceMoves					"Replace Moves Only in Game..."
 
 ::gamebar::mc::Tip(Antichess)					"There is no check, no castling, the king\nis captured like an ordinary piece."
 ::gamebar::mc::Tip(Suicide)					"In case of stalemate the side with fewer\npieces will win (according to FICS rules)."

@@ -977,6 +977,7 @@ proc LanguageChanged {dlg w} {
 	}
 	foreach fig $langSet($::mc::langID) eng $langSet(en) {
 		bind $t <Control-Shift-$fig> [namespace code [list InsertFigurine $t $eng]]
+		bind $t <Control-Shift-$fig> {+ break }
 	}
 	set Vars(mc) $::mc::langID
 

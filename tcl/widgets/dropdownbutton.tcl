@@ -23,7 +23,12 @@ proc dropdownbutton {w args} {
 
 namespace eval dropdownbutton {
 
-array set Options { foreground "" background "" activebackground "" activeforeground "" }
+array set Options {
+	foreground ""
+	background ""
+	activebackground ""
+	activeforeground ""
+}
 array set Icons {}
 
 set Locked 0
@@ -59,6 +64,7 @@ proc Build {w args} {
 		-arrowforeground ""
 		-arrowactivebackground ""
 		-arrowactiveforeground ""
+		-arrowdisabledforeground ""
 		-takefocus ""
 		-arrowrelief flat
 		-arrowoverrelief raised
@@ -72,7 +78,7 @@ proc Build {w args} {
 
 	InitActiveColors
 
-	foreach opt {activebackground activeforeground background foreground} {
+	foreach opt {activebackground activeforeground background foreground disabledforeground} {
 		if {[string length $opts(-arrow$opt)] == 0} {
 			set opts(-arrow$opt) $Options(arrow$opt)
 		}
@@ -129,10 +135,18 @@ proc WidgetProc {w command args} {
 				array unset opts -menucmd
 			}
 
-			foreach opt {state background takefocus} {
-				if {[info exists opts(-$opt)]} {
-					set opts(-arrow$opt) $opts(-$opt)
+			if {[info exists opts(-background)]} {
+				set opts(-arrowbackground) $opts(-background)
+			}
+
+			if {[info exists opts(-arrowstate)]} {
+				set Priv(arrow:state) $opts(-arrowstate)
+				if {[info exists Priv(arrow:icon:$Priv(arrow:state))]} {
+					$w.m configure -image $Priv(arrow:icon:$Priv(arrow:state))
 				}
+				if {$Priv(arrow:state) eq "disabled"} { set pref "" } else { set pref "arrowactive" }
+				$w.m configure -activebackground $Priv(${pref}background)
+				array unset opts -arrowstate
 			}
 
 			foreach entry [$w.b configure] {
@@ -191,10 +205,14 @@ proc Setup {w} {
 	set Priv(overrelief) [$w.b cget -overrelief]
 	set Priv(background) [$w.b cget -background]
 	set Priv(activebackground) [$w.b cget -activebackground]
-	set Priv(arrowactivebackground) [$w.m cget -activebackground]
 	set Priv(arrowactiveforeground) [$w.m cget -activeforeground]
+	set Priv(arrowdisabledforeground) [$w.m cget -disabledforeground]
 	set Priv(arrowforeground) [$w.m cget -foreground]
 	set Priv(arrowbackground) [$w.m cget -background]
+
+	if {$Priv(arrow:state) eq "normal"} {
+		set Priv(arrowactivebackground) [$w.m cget -activebackground]
+	}
 
 	SetTooltips $w
 }
@@ -217,7 +235,7 @@ proc SetIcon {w height} {
 	set size [expr {max(1, $size/2)}]
 
 	if {![info exists Icons($size:)]} {
-		foreach {state attr} {normal foreground active activeforeground} {
+		foreach {state attr} {normal foreground active activeforeground disabled disabledforeground} {
 			set img [image create photo -height $size -width [expr {$size + 1}]]
 			set svg [string map [list FILL $Priv(arrow$attr)] $svg::arrow]
 			::scidb::tk::image create svg $img
@@ -227,7 +245,9 @@ proc SetIcon {w height} {
 
 	set Priv(arrow:icon:normal) $Icons($size:normal)
 	set Priv(arrow:icon:active) $Icons($size:active)
-	$w.m configure -image $Icons($size:normal)
+	set Priv(arrow:icon:disabled) $Icons($size:disabled)
+
+	$w.m configure -image $Icons($size:$Priv(arrow:state))
 }
 
 
@@ -271,6 +291,7 @@ proc BuildMenu {w} {
 	variable Locked
 	variable Active
 
+	if {$Priv(arrow:state) eq "disabled"} { return }
 	set m $w.m.__dropdownbutton__
 	catch { destroy $m }
 	menu $m -tearoff 0
@@ -331,7 +352,7 @@ proc EnterArrow {w} {
 	variable Locked
 	variable Active
 
-	if {[$w.m cget -state] eq "disabled"} { return }
+	if {$Priv(arrow:state) eq "disabled"} { return }
 
 	set Priv(arrow:state) active
 
@@ -355,7 +376,7 @@ proc LeaveArrow {w {force 0}} {
 	variable Locked
 	variable Active
 
-	if {[$w.m cget -state] eq "disabled"} { return }
+	if {$Priv(arrow:state) eq "disabled"} { return }
 
 	set Priv(arrow:state) normal
 
@@ -383,7 +404,7 @@ proc InitActiveColors {} {
 	if {[string length $Options(activebackground)] == 0} {
 		set m ".__dropdownbutton__[clock milliseconds]"
 		menu $m
-		foreach opt {activebackground activeforeground background foreground} {
+		foreach opt {activebackground activeforeground background foreground disabledforeground} {
 			set Options(arrow$opt) [$m cget -$opt]
 		}
 		destroy $m

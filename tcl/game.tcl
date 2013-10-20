@@ -727,7 +727,8 @@ proc queryCloseApplication {parent} {
 			}
 		} elseif {$locked && $name ne $scratchbaseName && $name ne $clipbaseName} {
 			set index [expr {[::gamebar::getIndex [::application::pgn::gamebar] $pos] + 1}]
-			lappend LockedGames [list $index $time $crc $key $encoding]
+			set cursor [::scidb::game::query $pos current]
+			lappend LockedGames [list $index $time $crc $key $encoding $cursor]
 		}
 
 		incr pos
@@ -825,11 +826,12 @@ proc backup {} {
 			lassign [::scidb::game::link? $i] _ _ _ crcIndex crcMoves
 			set index [expr {[::gamebar::getIndex [::application::pgn::gamebar] $i] + 1}]
 			set filename [file join $::scidb::dir::backup game-$index.pgn]
+			set cursor [::scidb::game::query $i current]
 			set comment [lindex $Header 0]
 			append comment "\n"
 			append comment [lindex $Header 1]
 			append comment "\n"
-			append comment [list $time $key $crc [list $crcIndex $crcMoves] $encoding]
+			append comment [list $time $key $crc [list $crcIndex $crcMoves] $encoding $cursor]
 			::scidb::game::export $filename -comment $comment -position $i
 		}
 	}
@@ -875,7 +877,7 @@ proc recover {parent} {
 					|| ![regexp {Version ([0-9]+\.[0-9]+)} $line2 _ version]
 					|| $version != "1.0"
 					|| [catch { set length [llength $line3] }]
-					|| $length != 5
+					|| $length != 6
 					|| [llength [lindex $line3 1]] != 4
 					|| [llength [lindex $line3 2]] != 2
 					|| [llength [lindex $line3 3]] != 2} {
@@ -886,7 +888,7 @@ proc recover {parent} {
 						;
 				} else {
 					lappend Vars(slots) $position
-					lassign $line3 time key crc crcLink encoding
+					lassign $line3 time key crc crcLink encoding cursor
 					lassign $key base _ index variant
 					if {$base ne $scratchbaseName && [lsearch -exact -index 0 $bases $base] == -1} {
 						lappend bases [list $base $encoding]
@@ -910,6 +912,7 @@ proc recover {parent} {
 					::application::pgn::add $count $base $variant $tags
 					::application::pgn::setModified $count
 					::scidb::game::modified $count -irreversible yes
+					::scidb::game::go trykey $cursor
 					if {$position == $Selection} { set selection $count }
 					incr count
 				}
@@ -977,8 +980,8 @@ proc reopenLockedGames {parent} {
 	set Vars(slots) [lsort -integer -decreasing $Vars(slots)]
 
 	foreach entry $lockedGames {
-		lassign $entry position time crc key encoding
-		lassign $key base _ number variant
+		lassign $entry _ _ _ key encoding _
+		set base [lindex $key 0]
 
 		if {[lsearch -exact -index 0 $bases $base] == -1} {
 			lappend bases [list $base $encoding]
@@ -988,7 +991,7 @@ proc reopenLockedGames {parent} {
 	OpenAssociatedDatabases $parent $bases
 
 	foreach entry $lockedGames {
-		lassign $entry position time crc key
+		lassign $entry position time crc key encoding cursor
 		lassign $key base _ number variant
 
 		if {![::scidb::db::get open? $base]} {
@@ -1010,6 +1013,7 @@ proc reopenLockedGames {parent} {
 			Update _ $count
 			::application::pgn::add $count $base $variant $tags {*}$at
 			::application::pgn::lock $count
+			::scidb::game::go trykey $cursor
 			::process::setOption "show-board"
 			if {$position == $Selection} { set selection $count }
 			incr count

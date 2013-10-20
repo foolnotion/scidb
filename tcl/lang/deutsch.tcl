@@ -420,6 +420,7 @@
 ::application::board::mc::InsertNullMove				"Nullzug einfügen"
 ::application::board::mc::SelectStartPosition		"Startposition wählen"
 ::application::board::mc::LoadRandomGame				"Zufällige Partie laden"
+::application::board::mc::AddNewGame					"Partie hinzufügen..."
 
 ::application::board::mc::Tools							"Werkzeuge"
 ::application::board::mc::Control						"Steuerung"

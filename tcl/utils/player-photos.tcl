@@ -283,8 +283,8 @@ proc checkForUpdate {informProc} {
 	catch {
 		::http::geturl http://scidb-player-photos.googlecode.com/svn/trunk/TIMESTAMP \
 			-binary 1 \
-			-timeout 5000 \
 			-command [namespace code [list CheckForUpdateResponse $informProc]] \
+			;
 	}
 }
 

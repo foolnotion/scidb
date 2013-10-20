@@ -88,7 +88,8 @@ proc Build {w args} {
 	$t state define hilite
 	$t column create -tags game
 	$t element create elemHdr text -font $boldFont -lines 1 -fill darkred
-	$t element create elemTxt text -lines 1
+	set specialfont [list [list $::font::figurine(text:normal) 9812 9823]]
+	$t element create elemTxt text -lines 1 -specialfont $specialfont
 	$t element create elemSel rect -fill [list                          \
 		[::colors::lookup gamehistory,selected:focus]  {selected focus}  \
 		[::colors::lookup gamehistory,selected:hilite] {selected hilite} \

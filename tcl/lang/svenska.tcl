@@ -420,6 +420,7 @@
 ::application::board::mc::InsertNullMove				"Infoga nolldrag"
 ::application::board::mc::SelectStartPosition		"Välj startposition"
 ::application::board::mc::LoadRandomGame				"Ladda slumpvis parti"
+::application::board::mc::AddNewGame					"Lägg till nytt parti..."
 
 ::application::board::mc::Tools							"Verktyg"
 ::application::board::mc::Control						"Kontroll"
@@ -1400,9 +1401,9 @@
 ::gamebar::mc::CloseGame						"Stäng partiet"
 
 ::gamebar::mc::GameNew							"Nytt parti"
-::gamebar::mc::AddNewGame						"Spara: Lägg till nytt parti till %s..."
-::gamebar::mc::ReplaceGame						"Spara: Ersätt parti i %s..."
-::gamebar::mc::ReplaceMoves					"Spara: Ersätt bara dragen i partiet..."
+::gamebar::mc::AddNewGame						"Lägg till nytt parti till %s..."
+::gamebar::mc::ReplaceGame						"Ersätt parti i %s..."
+::gamebar::mc::ReplaceMoves					"Ersätt bara dragen i partiet..."
 
 ::gamebar::mc::Tip(Antichess)					"Det finns ingen schack, ingen rockad, kungen\ntas som en vanlig pjäs."
 ::gamebar::mc::Tip(Suicide)					"Om patt kommer spelaren med färre\npjäser att vinna (enligt FICS regler)."

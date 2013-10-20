@@ -36,6 +36,7 @@ set StopEngine					"Stop chess analysis engine"
 set InsertNullMove			"Insert null move"
 set SelectStartPosition		"Select Start Position"
 set LoadRandomGame			"Load random game"
+set AddNewGame					"Add New Game..."
 
 set Tools						"Tools"
 set Control						"Control"
@@ -247,10 +248,17 @@ proc build {w width height} {
 		-state disabled \
 	]
 	::toolbar::addSeparator $tbGame
-	set Vars(game:save) [::toolbar::add $tbGame button \
+	set Vars(game:replace) [::toolbar::add $tbGame button \
 		-image $::icon::toolbarSave \
-		-command [namespace code SaveGame] \
+		-command [namespace code [list SaveGame replace]] \
 		-state disabled \
+	]
+	set Vars(game:save) [::toolbar::add $tbGame dropdownbutton \
+		-image $::icon::toolbarSaveAs \
+		-command [namespace code [list SaveGame add]] \
+		-arrowttipvar [namespace current]::mc::AddNewGame \
+		-state disabled \
+		-menucmd ::gamebar::addDestinationsForSaveToMenu \
 	]
 
 	foreach {action key} {	GotoStart Home
@@ -1414,36 +1422,33 @@ proc UpdateSaveButton {} {
 	set position [::scidb::game::current]
 
 	if {$position == 9} {
+		::toolbar::childconfigure $Vars(game:replace) -state disabled
 		::toolbar::childconfigure $Vars(game:save) -state disabled
 	} elseif {$position >= 0} {
 		set actual [lindex [::scidb::game::link?] 0]
-		if {$actual eq $scratchbaseName} {
-			set replace 0
-			set actual [::scidb::db::get name]
-		} else {
-			set replace 1
+		set current [::scidb::db::get name]
+		set tip(replace) ""
+		set tip(save) ""
+		set state(replace) normal
+		set state(save) normal
+		if {$actual ne $scratchbaseName} {
+			set tip(replace) [format $::gamebar::mc::ReplaceGame [::util::databaseName $actual]]
 		}
 		if {	$actual eq $scratchbaseName
-			|| $actual eq $clipbaseName
 			|| ![::scidb::db::get open? $actual]
 			|| [::scidb::db::get readonly? $actual]
 			|| $Vars(variant) ni [::scidb::db::get variants $actual]} {
-			set state disabled
-		} else {
-			set state normal
+			set state(replace) disabled
+			set tip(replace) ""
 		}
-		::toolbar::childconfigure $Vars(game:save) -state $state
-		if {$replace} {
-			::toolbar::childconfigure $Vars(game:save) \
-				-image $::icon::toolbarSave \
-				-tooltip [format $::gamebar::mc::ReplaceGame [::util::databaseName $actual]] \
-				;
+		if {	$Vars(variant) in [::scidb::db::get variants $current]
+			&& ![::scidb::db::get readonly? $current $Vars(variant)]} {
+			set tip(save) [format $::gamebar::mc::AddNewGame [::util::databaseName $current]]
 		} else {
-			::toolbar::childconfigure $Vars(game:save) \
-				-image $::icon::toolbarSaveAs \
-				-tooltip [format $::gamebar::mc::AddNewGame [::util::databaseName $actual]] \
-				;
+			set state(save) disabled
 		}
+		::toolbar::childconfigure $Vars(game:replace) -state $state(replace) -tooltip $tip(replace)
+		::toolbar::childconfigure $Vars(game:save) -state $state(save) -tooltip $tip(save)
 	}
 }
 

@@ -61,9 +61,9 @@ set UnlockGame							"Unlock Game"
 set CloseGame							"Close Game"
 
 set GameNew								"New Game"
-set AddNewGame							"Save: Add New Game to %s..."
-set ReplaceGame						"Save: Replace Game in %s..."
-set ReplaceMoves						"Save: Replace Moves Only in Game..."
+set AddNewGame							"Add New Game to %s..."
+set ReplaceGame						"Replace Game in %s..."
+set ReplaceMoves						"Replace Moves Only in Game..."
 
 set Tip(Antichess)					"There is no check, no castling, the king\nis captured like an ordinary piece."
 set Tip(Suicide)						"In case of stalemate the side with fewer\npieces will win (according to FICS rules)."
@@ -692,10 +692,40 @@ proc popupMenu {gamebar parent {addGameHistory 1} {remove -1}} {
 }
 
 
+proc addDestinationsForSaveToMenu {parent m {discardActualBase 0}} {
+	variable ::scidb::clipbaseName
+
+	set actual [::scidb::db::get name]
+	set variant [::scidb::game::query Variant?]
+	set position [::scidb::game::current]
+	set result {}
+
+	foreach base [::scidb::tree::list] {
+		if {	(!$discardActualBase || $base ne $actual)
+			&& ![::scidb::db::get readonly? $base]
+			&& $variant in [::scidb::db::get variants $base]} {
+			lappend result $base
+		}
+	}
+
+	lappend result $clipbaseName
+
+	foreach base [lsort $result] {
+		$m add command \
+			-label [::util::databaseName $base] \
+			-command [list ::dialog::save::open $parent $base $variant $position] \
+			;
+	}
+
+	return [llength $result]
+}
+
+
 proc addVariantsToMenu {parent m {excludeNormal 0}} {
 	set variants {}
 	if {!$excludeNormal} { lappend variants Normal }
 	lappend variants ThreeCheck Crazyhouse
+	set count 0
 
 	foreach variant $variants {
 		$m add command \
@@ -704,6 +734,7 @@ proc addVariantsToMenu {parent m {excludeNormal 0}} {
 			-compound left \
 			-command [list ::menu::gameNew $parent $variant] \
 			;
+		incr count
 	}
 	foreach variant {Losers Suicide Giveaway} {
 		set lbl " $::mc::VariantName(Antichess) - $::mc::VariantName($variant)"
@@ -713,11 +744,14 @@ proc addVariantsToMenu {parent m {excludeNormal 0}} {
 			-image $::icon::16x16::variant($variant) \
 			-compound left \
 			;
+		incr count
 		set tip ""
 		if {$variant ne "Losers"} { append tip $mc::Tip(Antichess) "\n" }
 		append tip $mc::Tip($variant)
 		::tooltip::tooltip $m -index $lbl $tip
 	}
+
+	return $count
 }
 
 
@@ -1491,21 +1525,8 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 			;
 
 		menu $m.save
-		set count 0
-		foreach base [::scidb::tree::list] {
-			if {	$base ne $actual
-				&& ![::scidb::db::get readonly? $base]
-				&& $variant in [::scidb::db::get variants $base]} {
-				set name [::util::databaseName $base]
-				$m.save add command \
-					-label $name \
-					-command [list ::dialog::save::open $parent $base $variant $position] \
-					;
-				incr count
-			}
-		}
-
-		if {$count} { set state normal } else { set state disabled }
+		set state disabled
+		if {[addDestinationsForSaveToMenu $parent $m.save 1] > 0} { set state normal }
 		$m add cascade \
 			-menu $m.save \
 			-label " [format $mc::AddNewGame {}]" \

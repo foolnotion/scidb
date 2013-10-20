@@ -1693,7 +1693,7 @@ namespace export getFontFamilyName
 namespace eval html {
 
 set DefaultFixedFamilies {
-	{Arial Monospaced} {Courier 10 Pitch} Fonotone {DejaVu Sans Mono} {Bitstream Vera Sans Mono} TkFixedFont {Lucida Typewriter}
+	{Arial Monospaced} {Courier 10 Pitch} Fonotone {DejaVu Sans Mono} {Andale Mono} {Bitstream Vera Sans Mono} TkFixedFont {Lucida Typewriter}
 }
 set DefaultTextFamilies {
 	Arial {DejaVu Sans} {Bitstream Vera Sans} TkTextFont {Helvetica Neue} {Helvetica Neue LT Std} Verdana {Lucida Grande} Lucida
@@ -1736,6 +1736,22 @@ proc setupFonts {context {font ""}} {
 proc setupFixedFont {context {font ""}} {
 	variable [namespace parent]::Options
 	lset Options($context:html:user) 1 $font
+}
+
+
+proc setupTextFont {context {font ""}} {
+	variable [namespace parent]::Options
+
+	lset Options($context:html:user) 0 $font
+
+	if {[string length $font]} {
+		set Options($context:html:family) ""
+	}
+
+	if {	[string length [lindex $Options($context:html:user) 0]] == 0
+		&& $Options($context:html:family) ni [defaultFonts]} {
+		set Options($context:html:family) [lindex $defaultFonts 0]
+	}
 }
 
 
@@ -2074,7 +2090,7 @@ proc ApplyFont {context monospaced applycmd font} {
 		if {$monospaced} {
 			setupFixedFont $context $fam
 		} else {
-			setupFonts $context $fam
+			setupTextFont $context $fam
 		}
 		setupFontSize $context [expr {-[font configure [namespace current]::Font_ -size]}]
 	}
