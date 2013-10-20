@@ -182,7 +182,7 @@ Progress::interrupt(Tcl_Obj* inform)
 void
 Progress::start(unsigned total)
 {
-	Tcl_Obj* maximum = Tcl_NewLongObj(m_maximum = total);
+	Tcl_Obj* maximum = Tcl_NewWideIntObj(m_maximum = total);
 	Tcl_IncrRefCount(maximum);
 	int rc = invoke(__func__, m_cmd, ::m_start, m_arg, maximum, nullptr);
 	Tcl_DecrRefCount(maximum);
@@ -223,7 +223,7 @@ Progress::message(mstl::string const& msg)
 void
 Progress::tick(unsigned count)
 {
-	Tcl_Obj* value = Tcl_NewLongObj(count);
+	Tcl_Obj* value = Tcl_NewWideIntObj(count);
 	Tcl_IncrRefCount(value);
 	invoke(__func__, m_cmd, ::m_tick, m_arg, value, nullptr);
 	Tcl_DecrRefCount(value);
@@ -236,7 +236,7 @@ Progress::tick(unsigned count)
 void
 Progress::update(unsigned progress)
 {
-	Tcl_Obj* value = Tcl_NewLongObj(progress);
+	Tcl_Obj* value = Tcl_NewWideIntObj(progress);
 	Tcl_IncrRefCount(value);
 	invoke(__func__, m_cmd, ::m_update, m_arg, value, nullptr);
 	Tcl_DecrRefCount(value);
@@ -249,7 +249,7 @@ Progress::update(unsigned progress)
 int
 Progress::sendFinish() throw()
 {
-	Tcl_Obj* maximum = Tcl_NewLongObj(m_maximum);
+	Tcl_Obj* maximum = Tcl_NewWideIntObj(m_maximum);
 	Tcl_IncrRefCount(maximum);
 	int rc = invoke(__func__, m_cmd, ::m_finish, m_arg, maximum, nullptr);
 	Tcl_DecrRefCount(maximum);

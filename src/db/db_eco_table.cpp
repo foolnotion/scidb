@@ -1172,12 +1172,21 @@ EcoTable::lookup(	Line const& line,
 
 
 void
-EcoTable::getMoveOrders(Eco code, Node* node, Line const& rest, Trace& trace, Lines& result) const
+EcoTable::getMoveOrders(Eco code,
+								Node* node,
+								Line const& rest,
+								Trace& traceMoves,
+								Eco transposition,
+								Lines& result,
+								EcoSet* relations) const
 {
 	if (node->eco == code)
 	{
+		if (relations && transposition)
+			relations->set(transposition);
+
 		result.push_back();
-		result.back().assign(trace.data(), trace.size(), rest.moves, rest.length);
+		result.back().assign(traceMoves.data(), traceMoves.size(), rest.moves, rest.length);
 	}
 	else if (!node->flag)
 	{
@@ -1187,9 +1196,12 @@ EcoTable::getMoveOrders(Eco code, Node* node, Line const& rest, Trace& trace, Li
 		{
 			Branch& branch = node->branches[i];
 
-			trace.push_back(branch.move);
-			getMoveOrders(code, branch.node, rest, trace, result);
-			trace.pop_back();
+			if (transposition == Eco::root() &&  branch.transposition)
+				transposition = branch.node->eco;
+
+			traceMoves.push_back(branch.move);
+			getMoveOrders(code, branch.node, rest, traceMoves, transposition, result, relations);
+			traceMoves.pop_back();
 		}
 
 		node->flag = 0;
@@ -1198,14 +1210,15 @@ EcoTable::getMoveOrders(Eco code, Node* node, Line const& rest, Trace& trace, Li
 
 
 void
-EcoTable::getMoveOrders(Line const& line, Lines& result) const
+EcoTable::getMoveOrders(Line const& line, Eco code, Lines& result, EcoSet* relations) const
 {
+	if (relations)
+		relations->resize(Eco::Max_Code + 1);
+
 	if (line.length == 0)
 		return;
 
-	Eco code(getEco(line));
-
-	if (code == 0)
+	if (code == Eco::root())
 	{
 		result.push_back();
 		result.back().assign(line.moves, line.length, 0, 0);
@@ -1237,12 +1250,20 @@ EcoTable::getMoveOrders(Line const& line, Lines& result) const
 			node = next;
 		}
 
-		Trace	trace;
+		Trace	traceMoves;
 		Line	rest(line.moves + index, line.length - index);
 
-		trace.reserve(line.length);
-		getMoveOrders(code, m_root, rest, trace, result);
+		traceMoves.reserve(line.length);
+		getMoveOrders(code, m_root, rest, traceMoves, Eco(), result, relations);
 	}
+}
+
+
+void
+EcoTable::getMoveOrders(Line const& line, Lines& result, EcoSet* relations) const
+{
+	Eco code(getEco(Board::standardBoard(m_variant), line, relations));
+	getMoveOrders(line, code, result, relations);
 }
 
 

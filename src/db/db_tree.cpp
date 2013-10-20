@@ -716,6 +716,142 @@ Tree::makeTree(TreeP tree,
 }
 
 
+#if 0
+Tree*
+Tree::makeTree(TreeP tree,
+					Board myPosition,
+					Line myLine,
+					uint16_t hpSig,
+					Database& base,
+					tree::Mode mode,
+					rating::Type ratingType,
+					util::Progress& progress)
+{
+	M_REQUIRE(base::format() == format::Scidb);
+	M_REQUIRE(base.variant() == variant::Normal);
+
+	typedef bool (Tree::*BuildMeth)(	unsigned,
+												Board const&,
+												Board const&,
+												Line const&,
+												uint16_t,
+												Database const&,
+												tree::Mode,
+												ReachableFunc,
+												util::Progress&,
+												unsigned,
+												unsigned);
+
+	BuildMeth buildMeth;
+
+	if (myIdn == 0)
+		buildMeth = &Tree::buildTree0;
+	else if (myPosition.isStandardPosition(base.variant()))
+		buildMeth = &Tree::buildTreeStandard;
+	else if (myPosition.isStartPosition())
+		buildMeth = &Tree::buildTreeStart;
+	else if (myIdn == variant::Standard)
+		buildMeth = &Tree::buildTree518;
+	else
+		buildMeth = &Tree::buildTree960;
+
+	util::ProgressWatcher watcher(progress, base.countGames());
+
+	unsigned frequency = progress.frequency(base.countGames());
+
+	if (frequency == 0)
+		frequency = mstl::min(1000u, mstl::max(base.countGames()/1000u, 1u));
+
+	ReachableFunc reachableFunc;
+
+	if (mode == tree::Exact || base.format() != format::Scidb)
+		reachableFunc = Signature::isReachablePosition;
+	else
+		reachableFunc = Signature::isReachable;
+
+	::memset(::moveCache, 0, sizeof(::moveCache));
+
+	if (tree)
+	{
+		// we have to rebuild the move cache
+		for (unsigned i = 0; i < tree->m_infoList.size(); ++i)
+		{
+			TreeInfo& info = tree->m_infoList[i];
+			::moveCache[::index(info.move())] = &info;
+		}
+
+		progress.update(tree->m_index);
+		tree->m_prevGameCount = tree->m_filter.size();
+	}
+	else
+	{
+		tree.reset(new Tree);
+
+		tree->m_key.set(mode, ratingType, myPosition.hash(), myPosition.exactZHPosition());
+		tree->m_index = 0;
+		tree->m_last = mstl::numeric_limits<unsigned>::max();
+		tree->m_prevGameCount = 0;
+		tree->m_complete = false;
+		tree->m_base = &base;
+		tree->m_variant = base.variant();
+
+#ifdef SHOW_TREE_INFO
+		tree->m_numGamesParsed = 0;
+#endif
+	}
+
+	tree->m_filter.resize(base.countGames(), Filter::LeaveEmpty);
+
+	if ((tree.get()->*buildMeth)(	myIdn,
+											startPosition,
+											myPosition,
+											myLine,
+											hpSig,
+											base,
+											mode,
+											reachableFunc,
+											progress,
+											frequency,
+											mstl::min(base.countGames(), tree->m_last)))
+	{
+		uint16_t buf[opening::Max_Line_Length];
+		EcoTable const& ecoTable = EcoTable::specimen(base.variant());
+
+		Line line(buf);
+		line.copy(myLine);
+		line.length++;
+
+		for (unsigned i = 0; i < tree->m_infoList.size(); ++i)
+		{
+			TreeInfo& info = tree->m_infoList[i];
+
+			if (info.move())
+			{
+				info.move().setColor(myPosition.sideToMove());
+				myPosition.prepareForPrint(info.move(), base.variant(), Board::InternalRepresentation);
+			}
+
+			if (line.length <= opening::Max_Line_Length && !info.eco() && myIdn == variant::Standard)
+			{
+				buf[line.length - 1] = ::index(info.move());
+				info.setEco(ecoTable.getEco(line));
+			}
+
+			tree->m_total.add(info, tree->m_key.ratingType());
+		}
+
+		tree->m_complete = true;
+
+#ifdef SHOW_TREE_INFO
+		fprintf(stderr, "games parsed: %u\n", tree->m_numGamesParsed);
+#endif
+	}
+
+	return tree.release();
+}
+#endif
+
+
 void
 Tree::setIncomplete()
 {

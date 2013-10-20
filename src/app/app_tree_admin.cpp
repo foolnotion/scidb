@@ -106,6 +106,9 @@ TreeAdmin::TreeAdmin() :m_runnable(0) {}
 bool
 TreeAdmin::isUpToDate(db::Database const& referenceBase, db::Game const& game, Key const& key) const
 {
+	if (m_runnable)
+		return false;
+
 	TreeP tree(db::Tree::lookup(referenceBase, game.currentBoard(), key.mode(), key.ratingType()));
 	return tree ? tree->key() == key && tree->isComplete() : false;
 }
@@ -123,8 +126,6 @@ TreeAdmin::destroy()
 			m_runnable->m_tree->compressFilter();
 			db::Tree::addToCache(m_runnable->m_tree.get());
 		}
-
-		M_ASSERT(m_runnable == 0 || m_runnable->finished());
 
 		delete m_runnable;
 		m_runnable = 0;
@@ -147,8 +148,6 @@ TreeAdmin::stopUpdate()
 			db::Tree::addToCache(tree.get());
 		}
 
-		M_ASSERT(m_runnable == 0 || m_runnable->finished());
-
 		delete m_runnable;
 		m_runnable = 0;
 	}
@@ -159,7 +158,6 @@ void
 TreeAdmin::cancelUpdate()
 {
 	m_thread.stop();
-	M_ASSERT(m_runnable == 0 || m_runnable->finished());
 	delete m_runnable;
 	m_runnable = 0;
 }
@@ -172,6 +170,8 @@ TreeAdmin::startUpdate(	db::Database& referenceBase,
 								db::rating::Type ratingType,
 								PipedProgress& progress)
 {
+	stopUpdate();
+
 	TreeP tree(db::Tree::lookup(referenceBase, game.currentBoard(), mode, ratingType));
 
 	if (tree)
@@ -219,7 +219,6 @@ TreeAdmin::finishUpdate(db::Database const* referenceBase,
 			}
 		}
 
-		M_ASSERT(m_runnable == 0 || m_runnable->finished());
 		delete m_runnable;
 		m_runnable = 0;
 	}

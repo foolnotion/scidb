@@ -764,18 +764,21 @@ Application::close(mstl::string const& name)
 	{
 		if (multiCursor->exists(v))
 		{
+			Cursor* cursor = (*multiCursor)[v];
+
+			if (m_referenceBase == cursor)
+			{
+				cancelUpdateTree();
+				setReferenceBase(0, false);
+			}
+
 			if (m_subscriber)
 				m_subscriber->closeDatabase(name, variant::fromIndex(v));
-
-			Cursor* cursor = (*multiCursor)[v];
 
 			moveGamesToScratchbase(*cursor);
 
 			if (m_current == cursor)
 				setActiveBase(m_clipbase);
-
-			if (m_referenceBase == cursor)
-				setReferenceBase(0, false);
 		}
 	}
 
@@ -808,18 +811,16 @@ Application::closeAll(CloseMode mode)
 			{
 				if (Cursor* cursor = (*i->second)[v])
 				{
+					if (cursor == m_referenceBase)
+						cancelUpdateTree();
+
 					moveGamesToScratchbase(*cursor);
 
 					if (m_subscriber)
 						m_subscriber->closeDatabase(cursor->name(), variant::fromIndex(v));
 
-					if (cursor == m_referenceBase)
-					{
-						stopUpdateTree();
-
-						if (mode != Including_Clipbase)
-							refBase = clipbase(variant::Normal);
-					}
+					if (cursor == m_referenceBase && mode != Including_Clipbase)
+						refBase = clipbase(variant::Normal);
 				}
 			}
 

@@ -1735,6 +1735,14 @@ cmdGo(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			game.goTo(stringFromObj(objc, objv, index + 1));
 			break;
 
+		case 't': // trykey
+		{
+			::db::edit::Key key(stringFromObj(objc, objv, index + 1));
+			if (game.isValidKey(key))
+				game.goTo(key);
+			break;
+		}
+
 		default:
 		{
 			int count = intFromObj(objc, objv, index);

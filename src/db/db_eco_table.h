@@ -131,7 +131,13 @@ public:
 							mstl::string& openingShort,
 							mstl::string& variation,
 							mstl::string& subVar) const;
-	void getMoveOrders(Line const& line, Lines& result) const;
+	void getMoveOrders(	Line const& line,
+								Eco code,
+								Lines& result,
+								EcoSet* relations = 0) const;
+	void getMoveOrders(	Line const& line,
+								Lines& result,
+								EcoSet* relations = 0) const;
 
 	void print() const;
 	void dump() const;
@@ -163,7 +169,13 @@ private:
 	EcoTable& operator=(EcoTable const&);
 
 	Entry const& getEntry(Eco code) const;
-	void getMoveOrders(Eco code, Node* node, Line const& rest, Trace& trace, Lines& result) const;
+	void getMoveOrders(	Eco code,
+								Node* node,
+								Line const& rest,
+								Trace& traceMoves,
+								Eco transposition,
+								Lines& result,
+								EcoSet* relations) const;
 	void parse(mstl::istream& strm);
 
 	variant::Type	m_variant;

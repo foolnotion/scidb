@@ -332,7 +332,7 @@ void
 Thread::doSleep()
 {
 	InitializeConditionVariable(&m_condition);
-	EnterCriticalSection(&m_condMutext);
+	EnterCriticalSection(&m_condMutex);
 	m_wakeUp = false;
 	while (!m_wakeUp)
 		SleepConditionVariableCS(&m_condition, &m_condMutext);

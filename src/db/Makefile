@@ -5291,6 +5291,8 @@ db_tree_info.o: ../mstl/m_stack.h
 db_tree_info.o: ../mstl/m_stack.ipp
 db_tree_info.o: ../mstl/m_chunk_allocator.ipp
 db_tree_info.o: db_tournament_table.ipp
+db_tree_info.o: db_line.h
+db_tree_info.o: db_line.ipp
 db_tree_cache.o: db_tree_cache.h
 db_tree_cache.o: db_board.h
 db_tree_cache.o: db_move_list.h
@@ -5632,6 +5634,8 @@ db_writer.o: ../mstl/m_list_node.h
 db_writer.o: ../mstl/m_list_node.ipp
 db_writer.o: ../mstl/m_list.ipp
 db_writer.o: db_player.ipp
+db_writer.o: ../sys/sys_utf8.h
+db_writer.o: ../sys/sys_utf8.ipp
 db_writer.o: ../sys/sys_utf8_codec.h
 db_writer.o: ../sys/sys_utf8_codec.ipp
 db_writer.o: ../mstl/m_stdio.h

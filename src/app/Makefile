@@ -1299,6 +1299,8 @@ app_view.o: ../db/db_writer.ipp
 app_view.o: ../db/db_latex_writer.h
 app_view.o: ../db/db_document_writer.h
 app_view.o: ../util/libTeXt/T_TokenP.h
+app_view.o: ../db/db_exception.h
+app_view.o: ../util/u_exception.h
 app_view.o: ../db/sci/sci_codec.h
 app_view.o: ../mstl/m_fstream.h
 app_view.o: ../mstl/m_ifstream.h
@@ -1316,7 +1318,6 @@ app_view.o: ../db/sci/sci_encoder.h
 app_view.o: ../db/sci/sci_encoder_position.h
 app_view.o: ../db/sci/sci_encoder_position.ipp
 app_view.o: ../util/u_byte_stream.h
-app_view.o: ../util/u_exception.h
 app_view.o: ../util/u_byte_stream.ipp
 app_view.o: ../db/sci/sci_encoder.ipp
 app_view.o: ../db/sci/sci_common.h
