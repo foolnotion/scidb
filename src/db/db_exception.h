@@ -81,6 +81,7 @@ public:
 		Max_File_Size_Exceeded,
 		Load_Failed,
 		Not_Original_Version,
+		Cannot_Create_Thread,
 	};
 
 	IOException(FileType fileType,

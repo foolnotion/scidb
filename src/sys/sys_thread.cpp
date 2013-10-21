@@ -298,12 +298,11 @@ unsigned
 Thread::startThread(void* arg)
 {
 	startRoutine(static_cast<Thread*>(arg)->m_runnable, static_cast<Thread*>(arg)->m_exception);
-	InterlockedExchange(&(static_cast<Thread*>(arg)->m_cancel), 1);
 	return 0;
 }
 
 
-void
+bool
 Thread::createThread()
 {
 	M_ASSERT((&m_cancel & 0x1f) == 0);	// must be aligned to 32-bit boundary
@@ -312,7 +311,12 @@ Thread::createThread()
 	m_threadId = CreateThread(0, 0, &startThread, this, 0, 0);
 
 	if (m_threadId == 0)
-		M_RAISE("CreateThread() failed");
+	{
+		m_cancel = 1;
+		return false;
+	}
+
+	return true;
 }
 
 
@@ -358,12 +362,11 @@ void*
 Thread::startThread(void* arg)
 {
 	startRoutine(static_cast<Thread*>(arg)->m_runnable, static_cast<Thread*>(arg)->m_exception);
-	atomic_cmpxchg(&(static_cast<Thread*>(arg))->m_cancel, 0, 1);
 	return 0;
 }
 
 
-void
+bool
 Thread::createThread()
 {
 	pthread_attr_t attr;
@@ -379,14 +382,21 @@ Thread::createThread()
 
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
+#ifndef NDEBUG
+	if (++m_count > 1)
+		fprintf(stderr, "CRITICAL: more than one thread open\n");
+#endif
+
 	int rc = pthread_create(&m_threadId, &attr, &startThread, this);
 	pthread_attr_destroy(&attr);
 
 	if (rc != 0)
 	{
 		atomic_set(&m_cancel, 1);
-		M_RAISE("pthread_create() failed");
+		return false;
 	}
+
+	return true;
 }
 
 
@@ -397,6 +407,11 @@ Thread::cancelThread()
 		return false;
 
 	pthread_join(m_threadId, 0);
+
+#ifndef NDEBUG
+	--m_count;
+#endif
+
 	return true;
 }
 
@@ -437,6 +452,9 @@ Thread::Thread(ThreadId threadId)
 	:m_threadId(threadId)
 	,m_exception(0)
 	,m_wakeUp(false)
+#ifndef NDEBUG
+	,m_count(0)
+#endif
 {
 }
 
@@ -444,6 +462,9 @@ Thread::Thread(ThreadId threadId)
 Thread::Thread()
 	:m_exception(0)
 	,m_wakeUp(false)
+#ifndef NDEBUG
+	,m_count(0)
+#endif
 {
 	Guard::initLock(m_lock);
 	atomic_set(&m_cancel, 1);
@@ -489,7 +510,7 @@ Thread::mainThread()
 }
 
 
-void
+bool
 Thread::start(Runnable runnable)
 {
 	M_REQUIRE(this != mainThread());
@@ -498,12 +519,15 @@ Thread::start(Runnable runnable)
 
 #ifndef NDEBUG
 	if (::m_noThreads)
-		return m_runnable();
+	{
+		m_runnable();
+		return true;
+	}
 #endif
 
 	Guard guard(m_lock);	// really neccessary?
 	cancelThread();
-	createThread();
+	return createThread();
 }
 
 

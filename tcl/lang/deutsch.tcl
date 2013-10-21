@@ -498,7 +498,7 @@
 ::application::database::mc::OverwriteOriginalFile			"Wichtiger Hinweis: Die Originaldatei '%s' wird dabei überschrieben."
 ::application::database::mc::SetupPgnOptions					"Möglicherweise sollten vor dem Speichern die PGN-Optionen bestimmt werden."
 ::application::database::mc::CloseAllDeletedGames			"Alle gelöschten Partien der Datenbank '%s' schliessen?"
-::application::database::mc::CannotCompactDatabase			"Die Datenbank kann nicht kompaktiert werden weil die folgenden Partien dieser Datenbank modifiziert sind:"
+::application::database::mc::CannotCompactDatabase			"Die Datenbank kann nicht kompaktiert werden weil die folgenden Partien dieser Datenbank verändert wurden:"
 
 ::application::database::mc::RecodingDatabase				"Umkodierung %base von %from nach %to"
 ::application::database::mc::RecodedGames						"%s Partie(n) umkodiert"
@@ -668,7 +668,7 @@
 ::application::pgn::mc::MustBeOdd							"Die Eingabe muß eine ungerade Zahl sein."
 ::application::pgn::mc::CannotOpenCursorFiles			"Die Cursor-Dateien konnten nicht geöffnet werden: %s"
 ::application::pgn::mc::ReallyReplaceMoves				"Wirklich die Partiezüge der aktuellen Partie ersetzen?"
-::application::pgn::mc::CurrentGameIsNotModified		"Die aktuelle Partie ist nicht modifiziert."
+::application::pgn::mc::CurrentGameIsNotModified		"Die aktuelle Partie ist nicht verändert worden."
 ::application::pgn::mc::ShufflePosition					"Position mischen..."
 
 ::application::pgn::mc::EditAnnotation						"Anmerkungen bearbeiten"
@@ -1381,8 +1381,8 @@
 ::gamebar::mc::LoadGameNumber					"Lade Partie Nummer"
 ::gamebar::mc::ReloadCurrentGame				"Partie neu laden"
 ::gamebar::mc::OriginalVersion				"Die Originalversion aus der Datanbank"
-::gamebar::mc::ModifiedVersion				"Die modifizierte Version im Partieeditor"
-::gamebar::mc::WillCopyModifiedGame			"Diese Operation wird die modifizierte Partie aus dem Partieeditor kopieren. Die Originalversion kann nicht kopiert werden, denn die beeinhaltende Datenbank ist nicht geöffnet."
+::gamebar::mc::ModifiedVersion				"Die veränderte Version im Partieeditor"
+::gamebar::mc::WillCopyModifiedGame			"Diese Operation wird die veränderte Partie aus dem Partieeditor kopieren. Die Originalversion kann nicht kopiert werden, denn die beeinhaltende Datenbank ist nicht geöffnet."
 
 ::gamebar::mc::CopyGame							"Partie kopieren"
 ::gamebar::mc::ExportGame						"Partie exportieren"
@@ -1890,10 +1890,10 @@
 ### game ###############################################################
 ::game::mc::CloseDatabase					"Datenbank schliessen"
 ::game::mc::CloseAllGames					"Alle offenen Partien der Datenbank '%s' schliessen?"
-::game::mc::SomeGamesAreModified			"Einige Partien der Datenbank '%s' sind modifiziert. Trotzdem schliessen?"
+::game::mc::SomeGamesAreModified			"Einige Partien der Datenbank '%s' sind verändert. Trotzdem schliessen?"
 ::game::mc::AllSlotsOccupied				"Alle Partieaufnahmeplätze sind belegt."
 ::game::mc::ReleaseOneGame					"Bitte eine der Partien freigeben bevor eine neue geladen werden kann."
-::game::mc::GameAlreadyOpen				"Diese Partie ist bereits geöffnet. Soll die modifizierte Version verworfen werden?"
+::game::mc::GameAlreadyOpen				"Diese Partie ist bereits geöffnet. Soll die veränderte Version verworfen werden?"
 ::game::mc::GameAlreadyOpenDetail		"'%s' wird eine neue Partie öffnen."
 ::game::mc::GameHasChanged					"Die Partie ist verändert."
 ::game::mc::GameHasChangedDetail			"Dies ist möglicherweise nicht die erwartete Partie aufgrund von Datenbankveränderungen."

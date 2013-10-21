@@ -448,6 +448,7 @@ logIOError(IOException const& exc, unsigned gameNumber = 0)
 		case IOException::Encoding_Failed:
 		case IOException::Max_File_Size_Exceeded:
 		case IOException::Not_Original_Version:
+		case IOException::Cannot_Create_Thread:
 			return; // cannot happen
 	}
 

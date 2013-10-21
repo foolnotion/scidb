@@ -383,21 +383,22 @@ logIOError(IOException const& exc, unsigned gameNumber = 0)
 
 	switch (exc.errorType())
 	{
-		case IOException::Create_Failed:			error = "no permissions to create files"; break;
-		case IOException::Open_Failed:			error = "open failed"; break;
-		case IOException::Unknown_Error_Type:	error = "unknown error type"; break;
-		case IOException::Unknown_Version:		error = "unknown file version"; break;
-		case IOException::Unexpected_Version:	error = "unexpected file version"; break;
-		case IOException::Corrupted:				error = "corrupted data"; break;
-		case IOException::Invalid_Data:			error = "invalid data (file possibly corrupted)"; break;
-		case IOException::Read_Error:				error = "read error"; break;
-		case IOException::Load_Failed:			error = "load failed (too many event entries)"; break;
+		case IOException::Create_Failed:				error = "no permissions to create files"; break;
+		case IOException::Open_Failed:				error = "open failed"; break;
+		case IOException::Unknown_Error_Type:		error = "unknown error type"; break;
+		case IOException::Unknown_Version:			error = "unknown file version"; break;
+		case IOException::Unexpected_Version:		error = "unexpected file version"; break;
+		case IOException::Corrupted:					error = "corrupted data"; break;
+		case IOException::Invalid_Data:				error = "invalid data (file possibly corrupted)"; break;
+		case IOException::Read_Error:					error = "read error"; break;
+		case IOException::Load_Failed:				error = "load failed (too many event entries)"; break;
 
 		case IOException::Read_Only:
 		case IOException::Write_Failed:
 		case IOException::Encoding_Failed:
 		case IOException::Max_File_Size_Exceeded:
 		case IOException::Not_Original_Version:
+		case IOException::Cannot_Create_Thread:
 			return; // cannot happen
 	}
 

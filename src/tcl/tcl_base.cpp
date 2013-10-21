@@ -802,6 +802,7 @@ safeCall(void* clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			case IOException::Max_File_Size_Exceeded:	error = "MaxFileSizeExceeded"; break;
 			case IOException::Load_Failed:				error = "LoadFailed"; break;
 			case IOException::Not_Original_Version:	error = "NotOriginalVersion"; break;
+			case IOException::Cannot_Create_Thread:	error = "CannotCreateThread"; break;
 		}
 
 		rc = tcl::ioError(file, error, exc.what());
