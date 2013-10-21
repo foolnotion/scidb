@@ -385,6 +385,7 @@ set IOError(EncodingFailed)		"cannot write namebase file"
 set IOError(MaxFileSizeExceeded)	"maximal file size reached"
 set IOError(LoadFailed)				"load failed (too many event entries)"
 set IOError(NotOriginalVersion)	"file has changed outside from this session since last open"
+set IOError(CannotCreateThread)	"cannot create thread (low memory?)"
 
 set SelectionOwnerDidntRespond   "Timeout during drop action: selection owner didn't respond."
 

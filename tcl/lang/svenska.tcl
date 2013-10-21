@@ -196,6 +196,7 @@
 ::util::mc::IOError(MaxFileSizeExceeded)	"maximal filstorlek uppnådd"
 ::util::mc::IOError(LoadFailed)				"inläsningen misslyckades  (för många tävlingar)"
 ::util::mc::IOError(NotOriginalVersion)	"filen har ändrats av annat program sedan den öppnades"
+::util::mc::IOError(CannotCreateThread)	"cannot create thread (low memory?)" ;# NEW
 
 ::util::mc::SelectionOwnerDidntRespond		"Inget svar vid släpp: markerad ägare svarade inte."
 

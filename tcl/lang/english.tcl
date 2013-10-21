@@ -195,6 +195,7 @@
 ::util::mc::IOError(MaxFileSizeExceeded)	"maximal file size reached"
 ::util::mc::IOError(LoadFailed)				"load failed (too many event entries)"
 ::util::mc::IOError(NotOriginalVersion)	"file has changed outside from this session since last open"
+::util::mc::IOError(CannotCreateThread)	"cannot create thread (low memory?)"
 
 ::util::mc::SelectionOwnerDidntRespond		"Timeout during drop action: selection owner didn't respond."
 

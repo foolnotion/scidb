@@ -195,6 +195,7 @@
 ::util::mc::IOError(MaxFileSizeExceeded)	"túl nagy fájlméret"
 ::util::mc::IOError(LoadFailed)			"Betöltési hiba (túl sok bejegyzés)"
 ::util::mc::IOError(NotOriginalVersion)		"file has changed outside from this session since last open" ;# NEW
+::util::mc::IOError(CannotCreateThread)		"cannot create thread (low memory?)" ;# NEW
 
 ::util::mc::SelectionOwnerDidntRespond		"Timeout during drop action: selection owner didn't respond." ;# NEW
 

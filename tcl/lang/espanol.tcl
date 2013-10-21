@@ -197,6 +197,7 @@
 ::util::mc::IOError(MaxFileSizeExceeded)	"se alcanzó el tamaño máximo de archivo" 
 ::util::mc::IOError(LoadFailed)				"carga fallida (demasiadas entradas de evento)" 
 ::util::mc::IOError(NotOriginalVersion)	"file has changed outside from this session since last open" ;# NEW
+::util::mc::IOError(CannotCreateThread)	"cannot create thread (low memory?)" ;# NEW
 
 ::util::mc::SelectionOwnerDidntRespond		"Tiempo excedido durante la operación: el propietario de la selección no respondió."
 

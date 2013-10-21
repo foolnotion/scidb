@@ -197,6 +197,7 @@
 ::util::mc::IOError(MaxFileSizeExceeded)	"grandezza di file massima raggiunta"
 ::util::mc::IOError(LoadFailed)				"apertura fallita (troppi eventi inseriti)"
 ::util::mc::IOError(NotOriginalVersion)	"dall'ultima apertura i file sono stati modificati al di fuori di questa sessione"
+::util::mc::IOError(CannotCreateThread)	"cannot create thread (low memory?)" ;# NEW
 
 ::util::mc::SelectionOwnerDidntRespond		"Tempo scaduto durante operazione di trascinamento: intestatario selezione non ha risposto."
 
