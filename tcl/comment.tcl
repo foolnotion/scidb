@@ -1008,9 +1008,8 @@ proc MakeCountryList {} {
 proc SwitchLanguage {lang} {
 	variable Vars
 
-	foreach fmt {bold italic underline} {
-		if {$Vars(format:$fmt)} { ToggleFormat $fmt }
-	}
+	foreach fmt {bold italic underline} { set Vars(format:$fmt) 0 }
+	set Vars(format) ""
 
 	if {$lang eq $Vars(lang)} { return }
 

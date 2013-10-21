@@ -2691,12 +2691,14 @@ proc BuildBookmarks {w} {
 		{ divider		""				}
 	}
 	foreach folder [[namespace parent]::GetFolders $w] {
+		set icon ""
 		switch $folder {
 			Desktop - Trash - Download {
 				if {[string length $Vars(folder:[string tolower $folder])] == 0} { continue }
+				set icon [string tolower $folder]
 			}
 		}
-		lappend Vars(bookmarks) [list [string tolower $folder] $folder]
+		lappend Vars(bookmarks) [list $icon $folder]
 	}
 	lappend Vars(bookmarks) { divider "" }
 	LayoutBookmarks $w
@@ -2746,11 +2748,7 @@ proc LayoutBookmarks {w} {
 			$t item style set $item root styLine
 			$t item enabled $item false
 		} else {
-			if {[info exists [namespace parent]::icon::16x16::$icon]} {
-				set text [Tr $text]
-			} else {
-				set icon usb
-			}
+			if {[string length $icon] > 0} { set text [Tr $text] } else { set icon usb }
 			set icon [set [namespace parent]::icon::16x16::$icon]
 			$t item style set $item root style
 			$t item element configure $item root \

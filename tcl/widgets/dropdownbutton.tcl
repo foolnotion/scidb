@@ -291,9 +291,10 @@ proc BuildMenu {w} {
 	variable Locked
 	variable Active
 
-	if {$Priv(arrow:state) eq "disabled"} { return }
 	set m $w.m.__dropdownbutton__
 	catch { destroy $m }
+	$w.m configure -menu ""
+	if {$Priv(arrow:state) eq "disabled"} { return }
 	menu $m -tearoff 0
 
 	if {[string length $Priv(menucmd)]} {
