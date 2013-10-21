@@ -945,11 +945,14 @@ proc SearchResultAvailable {table} {
 proc FetchResult {table {force false}} {
 	variable Options
 	variable Vars
+	variable Priv
 
 ### VARIANTS ####################################
 if {[::scidb::game::query mainvariant?] ne "Normal"} { return }
 if {$Vars(force)} { set force true }
 #################################################
+
+	$Vars(progress) configure -background [::colors::lookup $Priv(progress:finished)]
 
 	set options {}
 	if {[llength $Options(sort:column)]} {

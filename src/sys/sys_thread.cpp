@@ -81,8 +81,9 @@ atomic_cmpxchg(atomic_t* v, int oldval, int newval)
 
 #elif defined( __WIN32__) ///////////////////////////////////////////////////////////
 
-# define atomic_read(v)		(*v)
-# define atomic_set(v, i)	(*v = i)
+# define atomic_read(v)				(*v)
+# define atomic_set(v, i)			(*v = i)
+# define atomic_cmpxchg(v, c, i)	InterlockedCompareExchange(v, c, i);
 
 #elif defined(__MacOSX__) ///////////////////////////////////////////////////////////
 
@@ -298,6 +299,7 @@ unsigned
 Thread::startThread(void* arg)
 {
 	startRoutine(static_cast<Thread*>(arg)->m_runnable, static_cast<Thread*>(arg)->m_exception);
+	static_cast<Thread*>(arg)->finishThread();
 	return 0;
 }
 
@@ -307,28 +309,15 @@ Thread::createThread()
 {
 	M_ASSERT((&m_cancel & 0x1f) == 0);	// must be aligned to 32-bit boundary
 
-	m_cancel = 0;	// we do not need a memory barrier
-	m_threadId = CreateThread(0, 0, &startThread, this, 0, 0);
-
-	if (m_threadId == 0)
-	{
-		m_cancel = 1;
-		return false;
-	}
-
-	return true;
+	return (m_threadId = CreateThread(0, 0, &startThread, this, 0, 0)) != 0;
 }
 
 
-bool
-Thread::cancelThread()
+void
+Thread::joinThread()
 {
-	if (InterlockedCompareExchange(&m_cancel, 0, 1) == 1)
-		return false;
-
 	WaitForSingleObject(m_threadId, INFINITE);
 	CloseHandle(m_threadId);
-	return true;
 }
 
 
@@ -362,6 +351,7 @@ void*
 Thread::startThread(void* arg)
 {
 	startRoutine(static_cast<Thread*>(arg)->m_runnable, static_cast<Thread*>(arg)->m_exception);
+	static_cast<Thread*>(arg)->finishThread();
 	return 0;
 }
 
@@ -374,45 +364,20 @@ Thread::createThread()
 	if (pthread_attr_init(&attr) != 0)
 		M_RAISE("pthread_attr_init() failed");
 
-	atomic_set(&m_cancel, 0);	// we do not need a memory barrier
-
 #if !defined(__hpux) // requires root privilege under HPUX 11.x
 	pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
 #endif
 
-	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
-
-#ifndef NDEBUG
-	if (++m_count > 1)
-		fprintf(stderr, "CRITICAL: more than one thread open\n");
-#endif
-
 	int rc = pthread_create(&m_threadId, &attr, &startThread, this);
 	pthread_attr_destroy(&attr);
-
-	if (rc != 0)
-	{
-		atomic_set(&m_cancel, 1);
-		return false;
-	}
-
-	return true;
+	return rc == 0;
 }
 
 
-bool
-Thread::cancelThread()
+void
+Thread::joinThread()
 {
-	if (atomic_cmpxchg(&m_cancel, 0, 1) == 1)
-		return false;
-
 	pthread_join(m_threadId, 0);
-
-#ifndef NDEBUG
-	--m_count;
-#endif
-
-	return true;
 }
 
 
@@ -452,9 +417,6 @@ Thread::Thread(ThreadId threadId)
 	:m_threadId(threadId)
 	,m_exception(0)
 	,m_wakeUp(false)
-#ifndef NDEBUG
-	,m_count(0)
-#endif
 {
 }
 
@@ -462,12 +424,10 @@ Thread::Thread(ThreadId threadId)
 Thread::Thread()
 	:m_exception(0)
 	,m_wakeUp(false)
-#ifndef NDEBUG
-	,m_count(0)
-#endif
 {
 	Guard::initLock(m_lock);
 	atomic_set(&m_cancel, 1);
+	atomic_set(&m_running, 0);
 }
 
 
@@ -526,8 +486,42 @@ Thread::start(Runnable runnable)
 #endif
 
 	Guard guard(m_lock);	// really neccessary?
+
 	cancelThread();
-	return createThread();
+
+	// we do not need a memory barrier
+	atomic_set(&m_cancel, 0);
+	atomic_set(&m_running, 1);
+
+	bool rc = createThread();
+
+	if (!rc)
+	{
+		atomic_set(&m_cancel, 1);
+		atomic_set(&m_running, 0);
+	}
+
+	return rc;
+}
+
+
+void
+Thread::finishThread()
+{
+	atomic_cmpxchg(&m_cancel, 0, 1);
+}
+
+
+bool
+Thread::cancelThread()
+{
+	if (atomic_cmpxchg(&m_running, 1, 0) == 0)
+		return false;
+
+	atomic_set(&m_cancel, 1);
+	joinThread();
+
+	return true;
 }
 
 

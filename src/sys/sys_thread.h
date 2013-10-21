@@ -88,6 +88,9 @@ private:
 	bool createThread();
 	bool cancelThread();
 
+	void joinThread();
+	void finishThread();
+
 	void doSleep();
 	void doAwake();
 
@@ -111,10 +114,7 @@ private:
 
 	mutable lock_t		m_lock;
 	mutable atomic_t	m_cancel;
-
-#ifndef NDEBUG
-	mutable unsigned m_count;
-#endif
+	mutable atomic_t	m_running;
 };
 
 } // namespace sys
