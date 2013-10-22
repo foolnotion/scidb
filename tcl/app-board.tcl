@@ -1616,6 +1616,7 @@ proc SaveGame {{mode ""}} {
 	variable ::scidb::clipbaseName
 	variable Vars
 
+	::tooltip::hide
 	set position [::scidb::game::current]
 
 	if {0 <= $position && $position < 9} {

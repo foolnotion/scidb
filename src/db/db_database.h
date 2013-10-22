@@ -265,7 +265,7 @@ public:
 	/// Attach database to a file.
 	void attach(mstl::string const& filename, util::Progress& progress);
 	/// Update database files.
-	void save(util::Progress& progress);
+	unsigned save(util::Progress& progress);
 	/// Compact database on disk.
 	void compact(Database& destination, util::Progress& progress);
 	/// Compact database in memory.

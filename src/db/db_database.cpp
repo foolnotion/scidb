@@ -438,7 +438,7 @@ Database::attach(mstl::string const& filename, util::Progress& progress)
 }
 
 
-void
+unsigned
 Database::save(util::Progress& progress)
 {
 	M_REQUIRE(isOpen());
@@ -447,7 +447,7 @@ Database::save(util::Progress& progress)
 	M_REQUIRE(!usingAsyncReader());
 
 	if (!m_namebases.isModified() && m_size == m_gameInfoList.size())
-		return;
+		return 0;
 
 	unsigned start = m_size;
 
@@ -470,6 +470,8 @@ Database::save(util::Progress& progress)
 								const_cast<GameInfoList const&>(m_gameInfoList).end(),
 								start == 0 ? Statistic::Reset : Statistic::Continue);
 	m_statistic.added = m_size - m_initialSize;
+
+	return m_statistic.added;
 }
 
 

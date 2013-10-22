@@ -641,6 +641,11 @@ struct Subscriber : public Application::Subscriber
 
 		Tcl_DecrRefCount(file);
 	}
+
+	void clearTreeCache() override
+	{
+		tcl::tree::clearCache();
+	}
 };
 
 } // namespace

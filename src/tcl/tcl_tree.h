@@ -36,6 +36,8 @@ namespace tcl {
 namespace tree {
 
 void referenceBaseChanged();
+void clearCache();
+
 Tcl_Obj* variantToString(::db::variant::Type variant);
 
 } // namespace tree

@@ -137,6 +137,13 @@ tcl::tree::referenceBaseChanged()
 }
 
 
+void
+tcl::tree::clearCache()
+{
+	m_key.clear();
+}
+
+
 Tcl_Obj*
 tcl::tree::variantToString(variant::Type variant)
 {
@@ -350,7 +357,7 @@ cmdFinish(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		}
 		else if (tree->isTreeFor(Scidb->referenceBase().database(), m_key))
 		{
-			result = "unchanged";
+			result = "changed";
 		}
 		else
 		{

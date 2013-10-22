@@ -713,7 +713,7 @@ proc addDestinationsForSaveToMenu {parent m {discardActualBase 0}} {
 	foreach base [lsort $result] {
 		$m add command \
 			-label [::util::databaseName $base] \
-			-command [list ::dialog::save::open $parent $base $variant $position] \
+			-command [list ::application::pgn::saveGame add] \
 			;
 	}
 
@@ -1480,10 +1480,6 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 				set state disabled
 			}
 
-			if {$base eq $clipbaseName && $sink eq $scratchbaseName} {
-				set state disabled
-			}
-
 			set name [::util::databaseName $base]
 			set number [expr {$index + 1}]
 
@@ -1508,7 +1504,6 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 		}
 
 		if {	$actual eq $scratchbaseName
-			|| $actual eq $clipbaseName
 			|| [::scidb::db::get readonly? $actual]
 			|| $variant ni [::scidb::db::get variants $actual]} {
 			set state disabled
@@ -1526,7 +1521,9 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 
 		menu $m.save
 		set state disabled
-		if {[addDestinationsForSaveToMenu $parent $m.save 1] > 0} { set state normal }
+		if {[addDestinationsForSaveToMenu $parent $m.save 1] > 1 || $actual ne $clipbaseName} {
+			set state normal
+		}
 		$m add cascade \
 			-menu $m.save \
 			-label " [format $mc::AddNewGame {}]" \

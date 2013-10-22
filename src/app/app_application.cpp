@@ -1977,7 +1977,10 @@ Application::clearBase(Cursor& cursor)
 			m_subscriber->updateList(m_updateCount++, cursor.name(), cursor.variant());
 
 		if (m_referenceBase == &cursor && !m_treeIsFrozen)
+		{
+			clearTreeCache();
 			m_subscriber->updateTree(m_referenceBase->name(), m_referenceBase->variant());
+		}
 	}
 }
 
@@ -1999,7 +2002,10 @@ Application::compactBase(Cursor& cursor, util::Progress& progress)
 			m_subscriber->updateList(m_updateCount++, cursor.name(), cursor.variant());
 
 		if (cursor.isReferenceBase() && !m_treeIsFrozen)
+		{
+			clearTreeCache();
 			m_subscriber->updateTree(m_referenceBase->name(), m_referenceBase->variant());
+		}
 	}
 }
 
@@ -2118,6 +2124,19 @@ Application::enumCursors(MultiCursorList& list) const
 }
 
 
+void
+Application::clearTreeCache()
+{
+	cancelUpdateTree();
+
+	if (m_subscriber)
+		m_subscriber->clearTreeCache();
+
+	for (Iterator i = begin(), e = end(); i != e; ++i)
+		Tree::clearCache(i->base());
+}
+
+
 save::State
 Application::saveGame(Cursor& cursor, bool replace)
 {
@@ -2131,17 +2150,10 @@ Application::saveGame(Cursor& cursor, bool replace)
 
 	if (cursor.isReferenceBase())
 	{
-		if (g.data.game->isModified())
-		{
-			cancelUpdateTree();
-
-			for (Iterator i = begin(), e = end(); i != e; ++i)
-				Tree::clearCache(i->base());
-		}
+		if (!replace || g.data.game->isModified())
+			clearTreeCache();
 		else
-		{
 			stopUpdateTree();
-		}
 	}
 
 	Database& db = cursor.base();
@@ -2246,12 +2258,7 @@ Application::updateMoves()
 	Cursor& cursor = this->cursor(sourceName());
 
 	if (cursor.isReferenceBase())
-	{
-		cancelUpdateTree();
-
-		for (Iterator i = begin(), e = end(); i != e; ++i)
-			Tree::clearCache(i->base());
-	}
+		clearTreeCache();
 
 	g.data.game->setIndex(g.link.index);
 
@@ -2307,8 +2314,9 @@ Application::updateCharacteristics(Cursor& cursor, unsigned index, TagSet const&
 	M_REQUIRE(!cursor.isReadonly());
 	M_REQUIRE(index < cursor.count(table::Games));
 
+	// be sure that we do not have conflicts
 	if (cursor.isReferenceBase())
-		cancelUpdateTree();
+		stopUpdateTree();
 
 	unsigned		position	= 0; // satisifes the compiler
 	save::State	state		= cursor.base().updateCharacteristics(index, tags);
@@ -2361,6 +2369,7 @@ Application::updateCharacteristics(Cursor& cursor, unsigned index, TagSet const&
 				game->data.game->updateSubscriber(Game::UpdatePgn);
 		}
 
+		// continue update of tree
 		if (cursor.isReferenceBase() && !m_treeIsFrozen)
 			m_subscriber->updateTree(name, variant);
 	}
@@ -2713,36 +2722,45 @@ Application::save(mstl::string const& name, util::Progress& progress)
 
 	WriteGuard guard(*this, multiCursor.cursor());
 
+	bool updateTree = false;
+
 	for (unsigned v = 0; v < variant::NumberOfVariants; ++v)
 	{
 		if (Cursor* cursor = multiCursor[v])
 		{
 			Database& dst(cursor->database());	// is calling stopUpdateTree()
 
-			dst.save(progress);
-			cursor->updateViews();
-
-			if (m_subscriber)
+			if (dst.save(progress) > 0)
 			{
-				m_subscriber->updateDatabaseInfo(dst.name(), dst.variant());
+				cursor->updateViews();
 
-				if (m_current == cursor)
+				if (cursor->isReferenceBase())
+					updateTree = true;
+
+				if (m_subscriber)
 				{
-					for (unsigned i = 0; i < cursor->maxViewNumber(); ++i)
+					m_subscriber->updateDatabaseInfo(dst.name(), dst.variant());
+
+					if (m_current == cursor)
 					{
-						if (cursor->isViewOpen(i))
-							m_subscriber->updateList(m_updateCount, dst.name(), dst.variant(), i);
+						for (unsigned i = 0; i < cursor->maxViewNumber(); ++i)
+						{
+							if (cursor->isViewOpen(i))
+								m_subscriber->updateList(m_updateCount, dst.name(), dst.variant(), i);
+						}
 					}
+
+					++m_updateCount;
 				}
-
-				++m_updateCount;
 			}
-
 		}
 	}
 
-	if (m_subscriber && m_referenceBase && !m_treeIsFrozen)
+	if (updateTree && m_subscriber && m_referenceBase && !m_treeIsFrozen)
+	{
+		clearTreeCache();
 		m_subscriber->updateTree(m_referenceBase->name(), m_referenceBase->variant());
+	}
 }
 
 
@@ -2782,7 +2800,10 @@ Application::save(mstl::string const& name,
 	}
 
 	if (m_subscriber && referenceBase)
+	{
+		clearTreeCache();
 		m_subscriber->updateTree(referenceBase->name(), referenceBase->variant());
+	}
 
 	return state;
 }
