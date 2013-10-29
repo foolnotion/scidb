@@ -760,7 +760,7 @@ array set Colors {
 	lite:playerdict,stripes					linen
 
 	lite:varslider,background				#ffdd76
-	lite:varslider,active					#ffc618
+	lite:varslider,hilite					#ffc618
 }
 # mapped from #ebf4f5
 array set Colors {

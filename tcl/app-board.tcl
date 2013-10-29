@@ -328,14 +328,20 @@ proc build {w width height} {
 	bind <Alt-KeyPress-S>			[list ::application::pgn::showDiagram %W %K %s]
 	bind <<LanguageChanged>>		[namespace code LanguageChanged]
 	bind <F1>							[list ::help::open .application]
-	bind <Escape>						{} ;# for sliding pane
-	bind <Return>						{} ;# for sliding pane
-	bind <Shift-Left>					{} ;# for sliding pane
-	bind <Shift-Right>				{} ;# for sliding pane
 
-	for {set i 0} {$i <= 9} {incr i} {
-		bind <Key-$i> {}		;# for sliding pane
-		bind <Key-KP_$i> {}	;# for sliding pane
+	# for sliding pane
+	foreach key {Escape Return Shift-Left Shift-Right} { bind <$key> {} }
+
+	# for sliding pane
+	for {set i 0} {$i <= 35} {incr i} {
+		if {$i < 10} {
+			bind <Key-$i> {}
+			bind <Key-KP_$i> {}
+		} else {
+			set k [::util::intToChar [expr {$i - 10}]]
+			bind <Key-$k> {}
+			bind <Key-[string tolower $k]> {}
+		}
 	}
 
 	foreach w $Vars(need-binding) {
@@ -522,8 +528,14 @@ proc FilterKey {key state cmd} {
 	variable Vars
 
 	switch [::variation::handle $key $state] {
-		0 { ::variation::hide; {*}$cmd }
-		1 { set Vars(select-var-is-pending) 0 }
+		0 {
+			::variation::hide
+			if {[llength $cmd]} { {*}$cmd }
+		}
+
+		1 {
+			set Vars(select-var-is-pending) 0
+		}
 	}
 }
 

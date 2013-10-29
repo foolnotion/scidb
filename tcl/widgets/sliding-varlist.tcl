@@ -36,10 +36,13 @@ array set Vars {
 	visible	0
 }
 
+array set Slide {
+	open	3
+	close	3
+}
+
 array set Options {
-	slide:open		6
-	slide:close		4
-	slide:position	bottom
+	slide:position bottom
 }
 
 
@@ -88,74 +91,67 @@ proc build {parent selectcmd} {
 	grid rowconfigure $f {1} -weight 1
 
 	$t state define hilite
+	$t state define current
 
 	$t element create elemMov text -lines 1
 	$t element create elemNum text -lines 1 -fill darkred
 	$t element create elemRec rect
 
-	set s [$t style create styMove]
-	$t style elements $s {elemRec elemNum elemMov}
-	$t style layout $s elemNum -padx {4 2} -pady {1 1} -expand ns -sticky e
+	set s [$t style create styMov]
+	$t style elements $s {elemRec elemMov}
 	$t style layout $s elemMov -padx {2 4} -pady {1 1} -expand ns -sticky w
+	$t style layout $s elemRec -detach yes -iexpand xy
+
+	set s [$t style create styNum]
+	$t style elements $s {elemRec elemNum}
+	$t style layout $s elemNum -padx {4 2} -pady {1 1} -expand ns -sticky w
 	$t style layout $s elemRec -detach yes -iexpand xy
 
 	$t notify install <Item-enter>
 	$t notify install <Item-leave>
-	$t notify bind $t <Item-enter> [namespace code { VisitItem enter %I }]
-	$t notify bind $t <Item-leave> [namespace code { VisitItem leave %I }]
+	$t notify bind $t <Item-enter> [namespace code { VisitItem enter %C %I }]
+	$t notify bind $t <Item-leave> [namespace code { VisitItem leave %C %I }]
 
-	$t column create  \
-		-expand no     \
-		-steady no     \
-		-borderwidth 0 \
-		-visible yes   \
-		-justify left  \
-		-button no     \
-		-expand no     \
-		-tag col       \
-		;
+	set item [$t item create]
+	$t item lastchild root $item
+	MakeColumn $t 1
 
 	set Vars(parent) $parent
 	set Vars(list) $t
 	set Vars(frame) $f
 	set Vars(selectcmd) $selectcmd
-	set Vars(active) 0
+	set Vars(current) 0
 	set Vars(size) 0
 
 	SetupOrientation
-	bind $t <Map> [namespace code { SetupElements %W }]
-}
-
-
-proc SetupElements {t} {
-	set font [list \
-		$::font::text(editor:normal) {!active} \
-		$::font::text(editor:bold) {active} \
-	]
-	set specialfont [list \
-		[list $::font::figurine(editor:normal) 9812 9823] {!active} \
-		[list $::font::figurine(editor:bold) 9812 9823] {active} \
-	]
-	set colors [list \
-		[::colors::lookup varslider,background] {!hilite} \
-		[::colors::lookup varslider,active] {hilite} \
-	]
-	$t element configure elemMov -font $font -specialfont $specialfont
-	$t element configure elemNum -font $font
-	$t element configure elemRec -fill $colors
 }
 
 
 proc SetupOrientation {} {
 	variable Vars
 
-	if {[vertical?]} { set orient vertical } else { set orient horizontal }
-	$Vars(list) configure -orient $orient
+	set t $Vars(list)
+
+	if {[vertical?]} {
+		set orient vertical
+		set justify left
+		foreach col [lrange [$t column list] 2 end] { $t column delete $col }
+	} else {
+		set orient horizontal
+		set justify center
+		catch { $t item delete 2 end }
+	}
+
+	$t configure -orient $orient
+
+	foreach col [$t column list] {
+		$t column configure $col -justify $justify
+	}
 }
 
 
 proc show {moves {slide 1}} {
-	variable Options
+	variable Slide
 	variable Vars
 
 	set Vars(size) [llength $moves]
@@ -168,16 +164,25 @@ proc show {moves {slide 1}} {
 	set t $Vars(list)
 	Resize $t [llength $moves]
 
-	set item 0
+	set item 1
+	set col 1
+	if {[horizontal?]} { set cincr 2; set iincr 0 } else { set cincr 0; set iincr 1 }
+	set color [::colors::lookup varslider,background]
 	foreach move $moves {
-		$t item element configure [incr item] col elemMov -text $move
+		set c1 c$col
+		set c2 c[expr {$col + 1}]
+		$t item element configure $item $c1 elemRec -fill $color
+		$t item element configure $item $c2 elemRec -fill $color
+		$t item element configure $item $c2 elemMov -text $move
+		incr item $iincr
+		incr col $cincr
 	}
 
 	Layout $t
 	raise $Vars(frame)
 
-	set Vars(active) 1
-	$t activate 1
+	set Vars(current) 0
+	SetCurrent 1
 	if {[horizontal?]} { set Vars(reqsize) reqheight } else { set Vars(reqsize) reqwidth }
 
 	if {$Vars(state) eq "active"} {
@@ -190,16 +195,16 @@ proc show {moves {slide 1}} {
 	} elseif {$Vars(state) ne "open"} {
 		set Vars(visible) 0
 		set Vars(state) open
-		set delay $Options(slide:open)
-		if {[vertical?]} { set delay [expr {$delay/2}] }
-		set Vars(afterid) [after $delay [namespace code [list SlideToShow $delay]]]]
+		set delay $Slide(open)
+		if {[vertical?]} { set delay [expr {$delay/3}] }
+		set Vars(afterid) [after $Slide(open) [namespace code [list SlideToShow $delay]]]]
 	}
 }
 
 
 proc hide {{slide 1}} {
 	variable ::application::board::board
-	variable Options
+	variable Slide
 	variable Vars
 
 	::board::diagram::clearAlternatives $board
@@ -210,8 +215,8 @@ proc hide {{slide 1}} {
 
 		if {$slide} {
 			set Vars(state) close
-			set delay $Options(slide:close)
-			if {[vertical?]} { set delay [expr {$delay/2}] }
+			set delay $Slide(close)
+			if {[vertical?]} { set delay [expr {$delay/3}] }
 			SlideToHide $delay
 		} else {
 			set Vars(state) hidden
@@ -223,6 +228,8 @@ proc hide {{slide 1}} {
 
 proc handle {key state} {
 	variable Vars
+
+	if {$Vars(state) eq "open"} { return 2 }
 
 	if {[string match KP_* $key]} {
 		set key [string range $key 3 end]
@@ -255,7 +262,7 @@ proc handle {key state} {
 
 			default {
 				if {[string is alnum -strict $key] && [string length $key] == 1} {
-					if {[string is alpha $key]} { set key [::util::charToInt $key] }
+					if {[string is alpha $key]} { set key [expr {[::util::charToInt $key] + 10}] }
 					if {$key < $Vars(size)} {
 						{*}$Vars(selectcmd) $key
 						return 1
@@ -294,7 +301,7 @@ proc Go {dir} {
 	variable Vars
 
 	set t $Vars(list)
-	set i $Vars(active)
+	set i $Vars(current)
 	set n $Vars(size)
 
 	if {[incr i $dir] == 0} {
@@ -303,72 +310,181 @@ proc Go {dir} {
 		set i 1
 	}
 
-	set Vars(active) $i
-	$t activate $i
+	SetCurrent $i
 }
 
 
-proc VisitItem {mode item} {
+proc ConfigureElement {weight} {
 	variable Vars
 
-	if {[string length $item] > 0} {
-		if {$mode eq "enter"} { set exclam "" } else { set exclam ! }
-		$Vars(list) item state set $item ${exclam}hilite
+	if {[horizontal?]} {
+		set item 1
+		set col [expr {2*($Vars(current) - 1) + 1}]
+	} else {
+		set item $Vars(current)
+		set col 1
+	}
+	set font [list [list $::font::text(editor:$weight)]]
+	set specialfont [list [list $::font::figurine(editor:$weight) 9812 9823]]
+	$Vars(list) item element configure $item c$col elemNum -font $font
+	$Vars(list) item element configure $item c[incr col] elemMov -font $font -specialfont $specialfont
+}
+
+
+proc SetCurrent {column} {
+	variable Vars
+
+	if {$Vars(current) > 0} { ConfigureElement normal }
+	set Vars(current) $column
+	ConfigureElement bold
+}
+
+
+proc VisitItem {mode col item} {
+	variable Vars
+
+	if {[string length $item] > 0 && [string length $col] > 0} {
+		if {$col % 2 == 1} { incr col -1 }
+		if {$mode eq "enter"} { set attr hilite } else { set attr background }
+		set color [::colors::lookup varslider,$attr]
+		$Vars(list) item element configure $item $col elemRec -fill $color
+		$Vars(list) item element configure $item [expr {$col + 1}] elemRec -fill $color
 	}
 }
 
 
-proc Select {item} {
+proc Select {item col} {
 	variable Vars
-	{*}$Vars(selectcmd) [expr {$item - 1}]
+
+	if {[horizontal?]} { set i [expr {($col + 2)/2}] } else { set i $item }
+	{*}$Vars(selectcmd) [expr {$i - 1}]
 }
 
 
 proc SelectActive {} {
 	variable Vars
-	Select $Vars(active)
+	{*}$Vars(selectcmd) [expr {$Vars(current) - 1}]
+}
+
+
+proc SetupElement {t item col num} {
+	set col [expr {2*($col - 1) + 1}]
+	$t item style set $item c$col styNum
+	if {$num >= 10} { set num [::util::intToChar [expr {$num - 10}]] }
+	$t item element configure $item c$col elemNum -text $num
+	$t item style set $item c[incr col] styMov
+}
+
+
+proc MakeColumn {t i} {
+	if {[vertical?]} { set justify left } else { set justify center }
+	set j [expr {2*($i - 1) + 1}]
+	set k [expr {$j + 1}]
+	$t column create     \
+		-justify $justify \
+		-expand no        \
+		-steady yes       \
+		-borderwidth 0    \
+		-visible yes      \
+		-button no        \
+		-expand no        \
+		-tag c$j          \
+		;
+	$t column create     \
+		-justify $justify \
+		-expand no        \
+		-steady yes       \
+		-borderwidth 0    \
+		-visible yes      \
+		-button no        \
+		-expand no        \
+		-tag c$k          \
+		;
+	SetupElement $t 1 $i [expr {$i - 1}]
 }
 
 
 proc Resize {t nentries} {
 	variable Options
 
-	set n [expr {[$t item count] - 1}]
+	if {[horizontal?]} {
+		set n [expr {[$t column count]/2}]
+		set k [expr {min($n,$nentries)}]
 
-	if {$n < $nentries} {
-		for {} {$n < $nentries} {incr n} {
-			set item [$t item create]
-			$t item lastchild root $item
-			$t item style set $item col styMove
-			set k $n
-			if {$k >= 10} { set k [::util::intToChar $k] }
-			$t item element configure $item col elemNum -text $k
+		for {set i 1} {$i <= $k} {incr i} {
+			set c [expr {2*($i - 1) + 1}]
+			$t column configure c$c -visible yes
+			$t column configure c[expr {$c + 1}] -visible yes
 		}
-	} elseif {$nentries < $n} {
-		$t item delete $n end
+
+		if {$i < $nentries} {
+			for {} {$i <= $nentries} {incr i} {
+				MakeColumn $t $i
+			}
+		} elseif {$nentries < $i} {
+			for {} {$i <= $n} {incr i} {
+				set c [expr {2*($i - 1) + 1}]
+				$t column configure c$c -visible no
+				$t column configure c[expr {$c + 1}] -visible no
+			}
+		}
+	} else {
+		set n [expr {[$t item count] - 1}]
+
+		if {$n < $nentries} {
+			for {incr n} {$n <= $nentries} {incr n} {
+				set item [$t item create]
+				$t item lastchild root $item
+				SetupElement $t $item 1 [expr {$n - 1}]
+			}
+		} elseif {$nentries < $n} {
+			$t item delete [expr {$nentries + 1}] end
+		}
 	}
 }
 
 
 proc Layout {t} {
-	update idletasks
-	$t column optimize
+	set font [list [list $::font::text(editor:bold)]]
+	set specialfont [list [list $::font::figurine(editor:bold) 9812 9823]]
+	set cols [$t column list -visible]
+	set items [expr {[$t item count] - 1}]
 
-	set n [expr {[$t item count] - 1}]
-	set w 0
-	set h 0
+	for {set i 1} {$i <= $items} {incr i} {
+		foreach {c1 c2} $cols {
+			$t item element configure $i $c1 elemNum -font $font
+			$t item element configure $i $c2 elemMov -font $font -specialfont $specialfont
+		}
+	}
+
+	$t column optimize
+	update idletasks
+
+	lassign [$t item bbox 1] x0 y0 x1 y1
+	set h [expr {$y1 - $y0}]
 
 	if {[vertical?]} {
-		for {set i 1} {$i <= $n} {incr i} {
-			lassign [$t item bbox $i] x0 y0 x1 y1
-			set h [expr {$h + $y1 - $y0}]
-			set w [expr {max($w, $x1 - $x0)}]
-		}
+		set w [expr {[$t column width c1] + [$t column width c2]}]
+		set h [expr {$items*$h}]
+		for {set i 1} {$i <= $items} {incr i} { lappend rows $i }
+		set cols {c1 c2}
 	} else {
-		for {set i 1} {$i <= $n} {incr i} {
-			lassign [$t item bbox $i] x0 y0 x1 y1
-			set h [expr {max($h, $y1 - $y0)}]
-			set w [expr {$w + $x1 - $x0}]
+		set w 0
+		foreach c $cols { incr w [$t column width $c] }
+		set rows {1}
+		set cols  [lrange $cols 2 end]
+	}
+
+	$t item element configure 1 c1 elemNum -font $font
+	$t item element configure 1 c2 elemMov -font $font -specialfont $specialfont
+
+	set font [list [list $::font::text(editor:normal)]]
+	set specialfont [list [list $::font::figurine(editor:normal) 9812 9823]]
+
+	foreach i $rows {
+		foreach {c1 c2} $cols {
+			$t item element configure $i $c1 elemNum -font $font
+			$t item element configure $i $c2 elemMov -font $font -specialfont $specialfont
 		}
 	}
 
@@ -387,7 +503,7 @@ proc PlacePane {} {
 
 		if {$Options(slide:position) eq "left"} {
 			set rel 0.0
-			set x [expr {$Vars(visible) - [winfo width $Vars(frame)]}]
+			set x [expr {$Vars(visible) - [winfo reqwidth $Vars(frame)]}]
 		} else {
 			set rel 1.0
 			set x [expr {-$Vars(visible)}]
@@ -401,7 +517,7 @@ proc PlacePane {} {
 
 		if {$Options(slide:position) eq "top"} {
 			set rel 0.0
-			set y [expr {$Vars(visible) - [winfo height $Vars(frame)]}]
+			set y [expr {$Vars(visible) - [winfo reqheight $Vars(frame)]}]
 		} else {
 			set rel 1.0
 			set y [expr {-$Vars(visible)}]
@@ -434,7 +550,8 @@ proc SlideToShow {delay} {
 		set y [expr {$y - [winfo rooty $t]}]
 		set id [$t identify $x $y]
 		if {[lindex $id 0] eq "item"} {
-			VisitItem enter [lindex $id 1]
+			TreeCtrl::CursorCheck $t $x $y
+			TreeCtrl::MotionInItems $t $x $y
 		}
 	}
 }
@@ -477,7 +594,7 @@ bind SlidingVarPane <ButtonPress-1> {
 	set id [%W identify %x %y]
 	if {$id eq ""} { return }
 	if {[lindex $id 0] eq "header"} { return }
-	::variation::Select [lindex $id 1]
+	::variation::Select [lindex $id 1] [lindex $id 3]
 }
 
 bind SlidingVarPane <Leave> {

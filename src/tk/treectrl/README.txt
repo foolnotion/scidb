@@ -4,24 +4,24 @@ by Gregor Cramer for the use in Scidb.
 It has a modified (and fixed) column layout algorithm, a few
 bug fixes, new options:
 
-	treeCtrl <pathName> -class <string>
+	treectrl <pathName> -class <string>
 		Sets the class name (cannot be used with 'configure').
 
-	treeCtrl <pathName> -fullstripes <boolean>
+	treectrl <pathName> -fullstripes <boolean>
 		If set, the whole area will be filled with stripes.
 		Defaults to "no".
 
-	treeCtrl <pathName> -keepuserwidth <boolean>
+	treectrl <pathName> -keepuserwidth <boolean>
 		If set, keeps the width of a column resized by user.
 		If not set, the column width may change if the treectrl
 		has resized. Defaults to "yes".
 	
-	treeCtrl <pathName> -expensivespanwidth <boolean>
+	treectrl <pathName> -expensivespanwidth <boolean>
 	   If set, use expensive calculation considering column
 		spans. If not set, column spans will be discarded
 		during the calculation. Defaults to "no".
 
-	treeCtrl <pathName> -state normal|disabled
+	treectrl <pathName> -state normal|disabled
 		Set one of the states for the treectrl. If set to
 		state normal the item/columns state will not be
 		superseeded, but if set to disabled the item/column
@@ -31,6 +31,13 @@ bug fixes, new options:
 		If set, keeps the width of a column after an element
 		of the column has changed (scrolling will be
 		significantly faster). Defaults to "no".
+
+	<pathName> element configure <elem-id> \
+				-specialfont <font> ?<first> <last>?
+		Sets a second font that wil be used for any unicode
+		point >= 256. Optional a range may given, in this case
+		this font will only be used for characters inside this
+		range (inclusive the border values).
 
 and new commands:
 
@@ -67,13 +74,6 @@ and new commands:
 		the visible width (excluding the needed width for the
 		header). The list may be empty. Assume all columns if no
 		list is given.
-
-	<pathName> element configure <elem-id> \
-				-specialfont <font> ?<first> <last>?
-		Sets a second font that wil be used for any unicode
-		point >= 256. Optional a range may given, in this case
-		this font will only be used for characters inside this
-		range (inclusive the border values).
 
 "pathName item sort itemDesc ?option ...?" has new option:
 
