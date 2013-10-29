@@ -559,6 +559,8 @@ cbh2si4.o: util/u_progress.h
 cbh2si4.o: util/u_progress.ipp
 cbh2si4.o: sys/sys_utf8_codec.h
 cbh2si4.o: sys/sys_utf8_codec.ipp
+cbh2si4.o: sys/sys_file.h
+cbh2si4.o: sys/sys_file.ipp
 cbh2si4.o: tcl/tcl_base.h
 cbh2si4.o: tcl/tcl_base.ipp
 cdb2sci.o: db/db_eco_table.h
@@ -719,8 +721,14 @@ cdb2sci.o: util/u_progress.h
 cdb2sci.o: util/u_progress.ipp
 cdb2sci.o: sys/sys_utf8_codec.h
 cdb2sci.o: sys/sys_utf8_codec.ipp
+cdb2sci.o: sys/sys_file.h
+cdb2sci.o: sys/sys_file.ipp
 cdb2sci.o: tcl/tcl_base.h
 cdb2sci.o: tcl/tcl_base.ipp
+cdb2sci.o: mstl/m_set.h
+cdb2sci.o: mstl/m_set.ipp
+cdb2sci.o: mstl/m_algorithm.h
+cdb2sci.o: mstl/m_algorithm.ipp
 code2eco.o: db/db_eco.h
 code2eco.o: util/u_base.h
 code2eco.o: mstl/m_types.h
