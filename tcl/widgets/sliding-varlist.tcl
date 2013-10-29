@@ -112,7 +112,7 @@ proc build {parent selectcmd} {
 	$t notify bind $t <Item-enter> [namespace code { VisitItem enter %C %I }]
 	$t notify bind $t <Item-leave> [namespace code { VisitItem leave %C %I }]
 
-	set item [$t item create]
+	set item [$t item create -tag r1]
 	$t item lastchild root $item
 	MakeColumn $t 1
 
@@ -139,7 +139,8 @@ proc SetupOrientation {} {
 	} else {
 		set orient horizontal
 		set justify center
-		catch { $t item delete 2 end }
+		set n [$t item count]
+		for {set i 2} {$i < $n} {incr i} { $t item delete r$i }
 	}
 
 	$t configure -orient $orient
@@ -171,9 +172,9 @@ proc show {moves {slide 1}} {
 	foreach move $moves {
 		set c1 c$col
 		set c2 c[expr {$col + 1}]
-		$t item element configure $item $c1 elemRec -fill $color
-		$t item element configure $item $c2 elemRec -fill $color
-		$t item element configure $item $c2 elemMov -text $move
+		$t item element configure r$item $c1 elemRec -fill $color
+		$t item element configure r$item $c2 elemRec -fill $color
+		$t item element configure r$item $c2 elemMov -text $move
 		incr item $iincr
 		incr col $cincr
 	}
@@ -231,11 +232,11 @@ proc handle {key state} {
 
 	if {$Vars(state) eq "open"} { return 2 }
 
-	if {[string match KP_* $key]} {
-		set key [string range $key 3 end]
-	}
-
 	if {$Vars(state) eq "active"} {
+		if {[string match KP_* $key]} {
+			set key [string range $key 3 end]
+		}
+
 		switch $key {
 			Escape			{ hide; return 2 }
 			Return - space	{ SelectActive; return 1 }
@@ -283,7 +284,7 @@ proc active? {} {
 
 
 proc addToMenu {m} {
-	foreach pos {hidden bottom top left right} {
+	foreach pos {hidden bottom top right left} {
 		$m add radiobutton \
 			-compound left \
 			-label [set ::mc::[string toupper $pos 0 0]] \
@@ -326,8 +327,8 @@ proc ConfigureElement {weight} {
 	}
 	set font [list [list $::font::text(editor:$weight)]]
 	set specialfont [list [list $::font::figurine(editor:$weight) 9812 9823]]
-	$Vars(list) item element configure $item c$col elemNum -font $font
-	$Vars(list) item element configure $item c[incr col] elemMov -font $font -specialfont $specialfont
+	$Vars(list) item element configure r$item c$col elemNum -font $font
+	$Vars(list) item element configure r$item c[incr col] elemMov -font $font -specialfont $specialfont
 }
 
 
@@ -344,11 +345,12 @@ proc VisitItem {mode col item} {
 	variable Vars
 
 	if {[string length $item] > 0 && [string length $col] > 0} {
-		if {$col % 2 == 1} { incr col -1 }
+		set col [string range [lindex [$Vars(list) column tag names $col] 0] 1 end]
+		if {$col % 2 == 0} { incr col -1 }
 		if {$mode eq "enter"} { set attr hilite } else { set attr background }
 		set color [::colors::lookup varslider,$attr]
-		$Vars(list) item element configure $item $col elemRec -fill $color
-		$Vars(list) item element configure $item [expr {$col + 1}] elemRec -fill $color
+		$Vars(list) item element configure $item c$col elemRec -fill $color
+		$Vars(list) item element configure $item c[expr {$col + 1}] elemRec -fill $color
 	}
 }
 
@@ -356,7 +358,9 @@ proc VisitItem {mode col item} {
 proc Select {item col} {
 	variable Vars
 
-	if {[horizontal?]} { set i [expr {($col + 2)/2}] } else { set i $item }
+	set item [string range [lindex [$Vars(list) item tag names $item] 0] 1 end]
+	set col [string range [lindex [$Vars(list) column tag names $col] 0] 1 end]
+	if {[horizontal?]} { set i [expr {($col + 1)/2}] } else { set i $item }
 	{*}$Vars(selectcmd) [expr {$i - 1}]
 }
 
@@ -379,33 +383,31 @@ proc SetupElement {t item col num} {
 proc MakeColumn {t i} {
 	if {[vertical?]} { set justify left } else { set justify center }
 	set j [expr {2*($i - 1) + 1}]
-	set k [expr {$j + 1}]
-	$t column create     \
-		-justify $justify \
-		-expand no        \
-		-steady yes       \
-		-borderwidth 0    \
-		-visible yes      \
-		-button no        \
-		-expand no        \
-		-tag c$j          \
-		;
-	$t column create     \
-		-justify $justify \
-		-expand no        \
-		-steady yes       \
-		-borderwidth 0    \
-		-visible yes      \
-		-button no        \
-		-expand no        \
-		-tag c$k          \
-		;
-	SetupElement $t 1 $i [expr {$i - 1}]
+
+	foreach c [list $j [expr {$j + 1}]] {
+		$t column create     \
+			-justify $justify \
+			-expand no        \
+			-steady yes       \
+			-borderwidth 0    \
+			-visible yes      \
+			-button no        \
+			-expand no        \
+			-tag c$c          \
+			;
+	}
+
+	set n [expr {[$t item count] - 1}]
+	set c [expr {$i - 1}]
+	for {set r 1} {$r <= $n} {incr r} {
+		SetupElement $t r$r $i $c
+	}
 }
 
 
 proc Resize {t nentries} {
 	variable Options
+	variable Vars
 
 	if {[horizontal?]} {
 		set n [expr {[$t column count]/2}]
@@ -433,12 +435,14 @@ proc Resize {t nentries} {
 
 		if {$n < $nentries} {
 			for {incr n} {$n <= $nentries} {incr n} {
-				set item [$t item create]
+				set item [$t item create -tag r$n]
 				$t item lastchild root $item
-				SetupElement $t $item 1 [expr {$n - 1}]
+				SetupElement $t r$n 1 [expr {$n - 1}]
 			}
 		} elseif {$nentries < $n} {
-			$t item delete [expr {$nentries + 1}] end
+			for {set i [expr {$nentries + 1}]} {$i <= $n} {incr i} {
+				$t item delete r$i
+			}
 		}
 	}
 }
@@ -452,8 +456,8 @@ proc Layout {t} {
 
 	for {set i 1} {$i <= $items} {incr i} {
 		foreach {c1 c2} $cols {
-			$t item element configure $i $c1 elemNum -font $font
-			$t item element configure $i $c2 elemMov -font $font -specialfont $specialfont
+			$t item element configure r$i $c1 elemNum -font $font
+			$t item element configure r$i $c2 elemMov -font $font -specialfont $specialfont
 		}
 	}
 
@@ -475,16 +479,16 @@ proc Layout {t} {
 		set cols  [lrange $cols 2 end]
 	}
 
-	$t item element configure 1 c1 elemNum -font $font
-	$t item element configure 1 c2 elemMov -font $font -specialfont $specialfont
+	$t item element configure r1 c1 elemNum -font $font
+	$t item element configure r1 c2 elemMov -font $font -specialfont $specialfont
 
 	set font [list [list $::font::text(editor:normal)]]
 	set specialfont [list [list $::font::figurine(editor:normal) 9812 9823]]
 
 	foreach i $rows {
 		foreach {c1 c2} $cols {
-			$t item element configure $i $c1 elemNum -font $font
-			$t item element configure $i $c2 elemMov -font $font -specialfont $specialfont
+			$t item element configure r$i $c1 elemNum -font $font
+			$t item element configure r$i $c2 elemMov -font $font -specialfont $specialfont
 		}
 	}
 
@@ -496,7 +500,7 @@ proc PlacePane {} {
 	variable Options
 	variable Vars
 
-	if {$Options(slide:position) eq "left" || $Options(slide:position) eq "right"} {
+	if {[vertical?]} {
 		set ph [winfo height $Vars(parent)]
 		set lh [winfo height $Vars(list)]
 		set y0 [expr {max(5, ($ph - $lh)/2)}]
