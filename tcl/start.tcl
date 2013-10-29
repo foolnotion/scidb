@@ -440,6 +440,16 @@ proc formatResult {result} {
 }
 
 
+proc charToInt {c} {
+   return [expr {int([scan [string toupper [string index $c 0]] "%c"]) - 65}]
+}
+
+
+proc intToChar {n} {
+	return [format "%c" [expr {$n + 65}]]
+}
+
+
 proc doAccelCmd {accel keyState cmd} {
 	switch -glob -- $accel {
 		Alt-* {

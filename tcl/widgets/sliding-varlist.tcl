@@ -253,10 +253,13 @@ proc handle {key state} {
 				}
 			}
 
-			0 - 1 - 2 - 3 - 4 - 5 - 6 - 7 - 8 - 9 {
-				if {$key < $Vars(size)} {
-					{*}$Vars(selectcmd) $key
-					return 1
+			default {
+				if {[string is alnum -strict $key] && [string length $key] == 1} {
+					if {[string is alpha $key]} { set key [::util::charToInt $key] }
+					if {$key < $Vars(size)} {
+						{*}$Vars(selectcmd) $key
+						return 1
+					}
 				}
 			}
 		}
@@ -337,10 +340,12 @@ proc Resize {t nentries} {
 			set item [$t item create]
 			$t item lastchild root $item
 			$t item style set $item col styMove
-			$t item element configure $item col elemNum -text $n
+			set k $n
+			if {$k >= 10} { set k [::util::intToChar $k] }
+			$t item element configure $item col elemNum -text $k
 		}
 	} elseif {$nentries < $n} {
-		$t item delete [expr {$n + 1}] end
+		$t item delete $n end
 	}
 }
 
