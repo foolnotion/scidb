@@ -155,7 +155,8 @@ extern uint64_t RaceMask[2][2][64];
 extern uint8_t IsOutside[256];
 
 
-uint64_t setBit(int s);
+constexpr uint64_t set1Bit(int s);
+constexpr uint64_t set2Bit(int s);
 
 uint64_t shiftDown(uint64_t m);
 uint64_t shift2Down(uint64_t m);

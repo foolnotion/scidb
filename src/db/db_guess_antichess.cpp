@@ -258,7 +258,7 @@ db::Guess::evaluateKingsSuicide(color::ID side)
 		// Mobility counts the number of squares the piece
 		// attacks, excluding squares with friendly pieces, and
 		// weighs each square according to centralization.
-		uint64_t moves = (kingAttacks(square) & ~m_occupiedBy[side]) | ::setBit(square);
+		uint64_t moves = (kingAttacks(square) & ~m_occupiedBy[side]) | ::set1Bit(square);
 
 		score -= count(moves & (FyleMaskA | FyleMaskH));
 		score += count(moves & (FyleMaskB | FyleMaskG));
@@ -304,7 +304,7 @@ db::Guess::evaluateKnightsSuicide(color::ID side, Flip flip)
 				D4 | E4 | D5 | E5,
 			};
 
-			uint64_t moves = (knightAttacks(square) & ~m_occupiedBy[side]) | ::setBit(square);
+			uint64_t moves = (knightAttacks(square) & ~m_occupiedBy[side]) | ::set1Bit(square);
 
 			score	-= penalty::LowerKnight;
 			score += count(moves & MobilityMask[0]);
@@ -354,7 +354,7 @@ db::Guess::evaluateBishopsSuicide(color::ID side, Flip flip)
 				D4 | E4 | D5 | E5,
 			};
 
-			uint64_t moves = (bishopAttacks(square) & ~m_occupiedBy[side]) | ::setBit(square);
+			uint64_t moves = (bishopAttacks(square) & ~m_occupiedBy[side]) | ::set1Bit(square);
 
 			score	-= penalty::LowerBishop;
 			score += count(moves & MobilityMask[0])*(1 + pair);
@@ -401,7 +401,7 @@ db::Guess::evaluateRooksSuicide(color::ID side)
 		// attacks, excluding squares with friendly pieces, and
 		// weighs each square according to centralization (fyle).
 		{
-			uint64_t moves = (rookAttacks(square) & ~m_occupiedBy[side]) | ::setBit(square);
+			uint64_t moves = (rookAttacks(square) & ~m_occupiedBy[side]) | ::set1Bit(square);
 
 			score	-= penalty::LowerRook;
 			score += count(moves & (FyleMaskA | FyleMaskH));
@@ -473,9 +473,9 @@ db::Guess::evaluatePawnsSuicide(color::ID side)
 
 		for (int sq = square; sq != last; sq = next, next += dir)
 		{
-			pawnMoves |= ::setBit(sq);
+			pawnMoves |= ::set1Bit(sq);
 
-			if (::setBit(next) & m_pawns)
+			if (::set1Bit(next) & m_pawns)
 				break;
 
 			int defenders = count(pawnAttacksOpponent[next] & myPawns);
@@ -670,7 +670,7 @@ db::Guess::evaluateKingsLosers(color::ID side)
 		// Mobility counts the number of squares the piece
 		// attacks, excluding squares with friendly pieces, and
 		// weighs each square according to centralization.
-		uint64_t moves = (knightAttacks(kingSq) & ~m_occupiedBy[side]) | ::setBit(kingSq);
+		uint64_t moves = (knightAttacks(kingSq) & ~m_occupiedBy[side]) | ::set1Bit(kingSq);
 
 		score += count(moves & (FyleMaskA | FyleMaskH));
 		score += count(moves & (FyleMaskB | FyleMaskG));
@@ -723,7 +723,7 @@ db::Guess::evaluateKnightsLosers(color::ID side, Flip flip)
 				D4 | E4 | D5 | E5,
 			};
 
-			uint64_t moves = (knightAttacks(square) & ~m_occupiedBy[side]) | ::setBit(square);
+			uint64_t moves = (knightAttacks(square) & ~m_occupiedBy[side]) | ::set1Bit(square);
 
 			score	-= penalty::LowerKnight;
 			score += count(moves & MobilityMask[0]);
@@ -779,7 +779,7 @@ db::Guess::evaluateBishopsLosers(color::ID side, Flip flip)
 				D4 | E4 | D5 | E5,
 			};
 
-			uint64_t moves = (bishopAttacks(square) & ~m_occupiedBy[side]) | ::setBit(square);
+			uint64_t moves = (bishopAttacks(square) & ~m_occupiedBy[side]) | ::set1Bit(square);
 
 			score	-= penalty::LowerBishop;
 			score += count(moves & MobilityMask[0])*(1 + pair);
@@ -851,7 +851,7 @@ db::Guess::evaluateRooksLosers(color::ID side)
 		// attacks, excluding squares with friendly pieces, and
 		// weighs each square according to centralization (fyle).
 		{
-			uint64_t moves = (rookAttacks(square) & ~m_occupiedBy[side]) | ::setBit(square);
+			uint64_t moves = (rookAttacks(square) & ~m_occupiedBy[side]) | ::set1Bit(square);
 
 			score	-= penalty::LowerRook;
 			score += count(moves & (FyleMaskA | FyleMaskH));

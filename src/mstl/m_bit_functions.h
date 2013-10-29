@@ -22,10 +22,12 @@
 namespace mstl {
 namespace bf {
 
-template <class T> unsigned count_bits(T x);
-template <class T> unsigned msb_index(T x);
-template <class T> unsigned lsb_index(T x);
-template <class T> T reverse(T x);
+template <typename T> unsigned count_bits(T x);
+template <typename T> unsigned msb_index(T x);
+template <typename T> unsigned lsb_index(T x);
+template <typename T> T reverse(T x);
+template <typename T> T rotate_left(T x, unsigned shift);
+template <typename T> T rotate_right(T x, unsigned shift);
 
 } // namespace bf
 } // namespace mstl

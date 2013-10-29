@@ -99,11 +99,11 @@ public:
 	const_iterator begin() const;
 	const_iterator end() const;
 
-	const_pointer find(key_type const& key) const;
+	pointer find(key_type const& key) const;
 	reference find_or_insert(key_type const& key, const_reference value);
 
 	bool insert_unique(key_type const& key, const_reference value);
-	void remove(key_type const& key);
+	bool remove(key_type const& key);
 
 	void clear() throw();
 	void rehash();
@@ -123,7 +123,7 @@ private:
 
 	bool fullness() const;
 
-	dict_node const* find_node(key_type const& key) const;
+	dict_node* find_node(key_type const& key) const;
 	dict_node* find_node(dict_node* node, key_type const& key) const;
 
 	static size_type bucket_length(dict_node const* node);

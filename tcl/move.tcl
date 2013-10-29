@@ -109,6 +109,7 @@ proc disable {} {
 	variable Disabled
 	variable Square
 
+	::variation::hide
 	set Disabled 1
 
 	if {$Square(selected) != -1} {
@@ -149,6 +150,8 @@ proc nextGuess {args} {
 	variable Square
 	variable Drop
 	variable Disabled
+
+	::variation::hide
 
 	if {$Disabled} { return }
 	if {$Square(current) == -1} { return }
@@ -272,6 +275,8 @@ proc pressSquare {square state} {
 	variable ::board::hilite
 	variable Square
 	variable Disabled
+
+	::variation::hide
 
 	if {$Disabled} { return }
 
@@ -406,7 +411,7 @@ proc addMove {confirmWindowType san {noMoveCmd {}} {myActions {}} {force no}} {
 	variable ::application::board::board
 
 	if {[::scidb::game::position atEnd?]} {
-		application::pgn::ensureScratchGame
+		::application::pgn::ensureScratchGame
 		set action "append"
 	} else {
 		if {!$force} {
@@ -469,6 +474,7 @@ proc doAction {action san {noMoveCmd {}}} {
 		}
 
 		append {
+			::application::pgn::ensureScratchGame
 			::scidb::game::move $san
 			::scidb::game::go 1
 		}

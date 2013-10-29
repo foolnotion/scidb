@@ -26,6 +26,7 @@
 
 namespace app {
 
+inline bool TreeAdmin::isRunning() const			{ return m_runnable; }
 inline TreeAdmin::TreeP TreeAdmin::tree() const	{ return m_currentTree; }
 inline sys::Thread& TreeAdmin::thread()			{ return m_thread; }
 

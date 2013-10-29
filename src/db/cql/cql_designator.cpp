@@ -1306,7 +1306,7 @@ flipdiagonal(uint64_t value)
 
 	while (Square sq = lsbClear(value))
 	{
-		uint64_t bit = setBit(sq);
+		uint64_t bit = set1Bit(sq);
 
 		int shift = 7*(int(rank(sq)) - int(fyle(sq)));
 
@@ -1315,7 +1315,7 @@ flipdiagonal(uint64_t value)
 		else if (shift > 0)
 			bit >>= shift;
 
-		result |= setBit(bit);
+		result |= set1Bit(bit);
 	}
 
 	return result;
@@ -1329,7 +1329,7 @@ flipoffdiagonal(uint64_t value)
 
 	while (Square sq = lsbClear(value))
 	{
-		uint64_t bit = setBit(sq);
+		uint64_t bit = set1Bit(sq);
 
 		int shift = 9*(7 - int(rank(sq)) - int(fyle(sq)));
 
@@ -1338,7 +1338,7 @@ flipoffdiagonal(uint64_t value)
 		else if (shift > 0)
 			bit <<= shift;
 
-		result |= setBit(bit);
+		result |= set1Bit(bit);
 	}
 
 	return result;
@@ -1351,7 +1351,7 @@ flipvertical(uint64_t value)
 	uint64_t result = 0;
 
 	while (Square sq = lsbClear(value))
-		result |= setBit(make(fyle(sq), flipRank(rank(sq))));
+		result |= set1Bit(make(fyle(sq), flipRank(rank(sq))));
 
 	return result;
 }
@@ -1363,7 +1363,7 @@ fliphorizontal(uint64_t value)
 	uint64_t result = 0;
 
 	while (Square sq = lsbClear(value))
-		result |= setBit(make(flipFyle(fyle(sq)), rank(sq)));
+		result |= set1Bit(make(flipFyle(fyle(sq)), rank(sq)));
 
 	return result;
 }
@@ -1383,17 +1383,17 @@ shifthorizontal(uint64_t& value, int step)
 
 		int r = int(rank(sq));
 
-		result |= setBit(make(Fyle(f), Rank(r)));
+		result |= set1Bit(make(Fyle(f), Rank(r)));
 
 		if (f == FyleA && step > 0)
 		{
 			for (int i = 1; i < step; ++i)
-				result |= setBit(make(Fyle(f - i), Rank(r)));
+				result |= set1Bit(make(Fyle(f - i), Rank(r)));
 		}
 		else if (f == FyleH && step < 0)
 		{
 			for (int i = 1; i < step; ++i)
-				result |= setBit(make(Fyle(f + i), Rank(r)));
+				result |= set1Bit(make(Fyle(f + i), Rank(r)));
 		}
 	}
 
@@ -1416,17 +1416,17 @@ shiftvertical(uint64_t& value, int step)
 
 		int f = int(fyle(sq));
 
-		result |= setBit(make(Fyle(f), Rank(r)));
+		result |= set1Bit(make(Fyle(f), Rank(r)));
 
 		if (r == Rank1 && step > 0)
 		{
 			for (int i = 1; i < step; ++i)
-				result |= setBit(make(Fyle(f), Rank(r - i)));
+				result |= set1Bit(make(Fyle(f), Rank(r - i)));
 		}
 		else if (r == Rank8 && step < 0)
 		{
 			for (int i = 1; i < step; ++i)
-				result |= setBit(make(Fyle(f), Rank(r + i)));
+				result |= set1Bit(make(Fyle(f), Rank(r + i)));
 		}
 	}
 
@@ -1937,7 +1937,7 @@ Designator::parseRange(char const* s, Error& error, uint64_t& squares)
 	for (Byte f = fyle1; f <= fyle2; ++f)
 	{
 		for (Byte r = rank1; r <= rank2; ++r)
-			squares |= setBit(make(Fyle(f), Rank(r)));
+			squares |= set1Bit(make(Fyle(f), Rank(r)));
 	}
 
 	return s;

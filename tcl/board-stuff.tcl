@@ -29,6 +29,10 @@
 namespace eval board {
 namespace eval diagram {
 
+namespace import ::dialog::choosecolor::hsv2rgb
+namespace import ::dialog::choosecolor::rgb2hsv
+namespace import ::dialog::choosecolor::getActualColor
+
 namespace export drawBorderlines
 
 namespace import ::tcl::mathfunc::max
@@ -74,6 +78,7 @@ proc new {w size args} {
 
 	set Board(flip) $opts(-flipped)
 	set Board(marks) {}
+	set Board(alternatives) {}
 	set Board(size) $size
 	set Board(data) ""
 	set Board(drag:square) -1
@@ -227,7 +232,10 @@ proc update {w {board {}}} {
 		CancelAnimation $w
 
 		# Remove all marks (incl. arrows) from the board:
-		if {!$redraw} { set Board(marks) {} }
+		if {!$redraw} {
+			set Board(marks) {}
+			set Board(alternatives) {}
+		}
 		$w.c delete mark
 
 		# Draw each square:
@@ -240,6 +248,7 @@ proc update {w {board {}}} {
 
 		# Redraw marks and arrows:
 		DrawAllMarks $w
+		DrawAllAlternatives $w
 	}
 
 	return $board
@@ -392,10 +401,12 @@ proc hilite {w i which} {
 		$w.c itemconfigure $which:$i -state normal
 		$w.c raise $which:$i
 		$w.c raise suggested:$i
-		$w.c raise piece:$i
+		$w.c raise piece
 		$w.c raise text
 		$w.c raise arrow
+		$w.c raise alternative
 		$w.c raise input
+		$w.c raise click
 	}
 }
 
@@ -409,7 +420,16 @@ proc clearMarks {w} {
 	variable ${w}::Board
 
 	set Board(marks) {}
+	set Board(alternative) {}
 	$w.c delete mark
+}
+
+
+proc clearAlternatives {w} {
+	variable ${w}::Board
+
+	set Board(alternative) {}
+	$w.c delete alternative
 }
 
 
@@ -417,6 +437,7 @@ proc updateMarks {w marks} {
 	variable ${w}::Board
 
 	set Board(marks) $marks
+	set Board(alternatives) {}
 	$w.c delete mark
 	DrawAllMarks $w
 }
@@ -447,6 +468,7 @@ proc removeAllMarkers {w} {
 proc raiseMarker {w} {
 	$w.c raise marker
 	$w.c raise input
+	$w.c raise click
 }
 
 
@@ -711,7 +733,7 @@ proc drawText {canv squareSize color x y text} {
 	if {$squareSize % 2} { incr size }
 	set x0 [expr {$x + $squareSize/2}]
 	set y0 [expr {$y + $squareSize/2}]
-	scan [::dialog::choosecolor::getActualColor $color] "\#%2x%2x%2x" r g b
+	scan [getActualColor $color] "\#%2x%2x%2x" r g b
 	set luma	[expr {$r*0.2125 + $g*0.7154 + $b*0.0721}]
 	set font [list [font configure TkFixedFont -family] $size bold]
 	set x1 [expr {$x0 + 1}]
@@ -744,6 +766,47 @@ proc drawCircle {canv squareSize color x y} {
 
 proc drawDisk {canv squareSize color x y} {
 	SetImage $canv $squareSize $x $y [MakeDisk $squareSize $color]
+}
+
+
+proc drawAlternative {w from to color cmd} {
+	variable ${w}::Board
+
+	if {$from == $to} { return }
+
+	set i [llength $Board(alternatives)]
+	lappend Board(alternatives) [list $from $to $color $i]
+
+	set size $Board(size)
+	set rows [expr {$to/8 - $from/8}]
+	set cols [expr {$to%8 - $from%8}]
+	set img [DrawArrow $w $from $to $color $i]
+	set cmdEnter [namespace code [list HiliteArrow $w $rows $cols $color $i click]]
+	set cmdLeave [namespace code [list HiliteArrow $w $rows $cols $color $i alternative]]
+
+	$w.c bind alt:$i <ButtonPress-1> $cmd
+	$w.c bind alt:$i <Enter> $cmdEnter
+	$w.c bind alt:$i <Leave> $cmdLeave
+	$w.c raise click
+}
+
+
+proc HiliteArrow {w rows cols color index type} {
+	variable ${w}::Board
+
+	if {![info exists Board(image,$type,$rows,$cols,$color)]} {
+		if {$type eq "click"} { set hilite [GetHiliteColor $color] } else { set hilite $color }
+		set Board(image,$type,$rows,$cols,$color) [MakeArrow $Board(size) $rows $cols $hilite click]
+	}
+
+	$w.c itemconfigure alternative:$index -image $Board(image,$type,$rows,$cols,$color)
+}
+
+
+proc GetHiliteColor {color} {
+	scan [getActualColor $color] "\#%2x%2x%2x" r g b
+	lassign [rgb2hsv $r $g $b] h s v
+	return [format "#%02x%02x%02x" {*}[hsv2rgb $h 1.0 1.0]]
 }
 
 
@@ -991,6 +1054,15 @@ proc DrawAllMarks {w} {
 }
 
 
+proc DrawAllAlternatives {w} {
+	variable ${w}::Board
+
+	foreach alt $Board(alternatives) { DrawArrow $w {*}$alt }
+	$w.c raise alternative
+	$w.c raise click
+}
+
+
 proc DrawText {w text square color} {
 	drawText $w.c [set ${w}::Board(size)] $color {*}[$w.c coords square:$square] $text
 }
@@ -1022,31 +1094,31 @@ proc MakeSquare {squareSize color} {
 }
 
 
-proc DrawSquare {w square color} {
+proc DrawSquare {w square color {tags {}}} {
 	variable ${w}::Board
 
 	if {![info exists Board(image,square,$color)]} {
 		set Board(image,square,$color) [MakeSquare $Board(size) $color]
 	}
 
-	SetImage $w.c $Board(size) {*}[$w.c coords square:$square] $Board(image,square,$color)
+	SetImage $w.c $Board(size) {*}[$w.c coords square:$square] $Board(image,square,$color) $tags
 }
 
 
 proc MakeCircle {squareSize color} {
-	variable Marks
+	variable Board
 
 	set size [expr {int(double($squareSize)*0.8 + 0.5)}]
 	if {($squareSize % 2) != ($size % 2)} { incr size }
-	if {![info exists Marks(circle,$color)]} {
+	if {![info exists Board(circle,$color)]} {
 		variable Circle
 		set img [image create photo -width [image width $Circle] -height [image height $Circle]]
 		$img copy $Circle
 		::scidb::tk::image colorize $color 0.7 $img
-		set Marks(circle,$color) $img
+		set Board(circle,$color) $img
 	}
 	set img [image create photo -width $size -height $size]
-	::scidb::tk::image copy $Marks(circle,$color) $img
+	::scidb::tk::image copy $Board(circle,$color) $img
 	::scidb::tk::image alpha 0.8 $img -composite overlay
 	return $img
 }
@@ -1064,19 +1136,19 @@ proc DrawCircle {w square color} {
 
 
 proc MakeDisk {squareSize color} {
-	variable Marks
+	variable Board
 
 	set size [expr {int(double($squareSize)*0.8 + 0.5)}]
 	if {($squareSize % 2) != ($size % 2)} { incr size }
-	if {![info exists Marks(disk,$color)]} {
+	if {![info exists Board(disk,$color)]} {
 		variable Disk
 		set img [image create photo -width [image width $Disk] -height [image height $Disk]]
 		$img copy $Disk
 		::scidb::tk::image colorize $color 0.7 $img
-		set Marks(disk,$color) $img
+		set Board(disk,$color) $img
 	}
 	set img [image create photo -width $size -height $size]
-	::scidb::tk::image copy $Marks(disk,$color) $img
+	::scidb::tk::image copy $Board(disk,$color) $img
 	::scidb::tk::image alpha 0.8 $img -composite overlay
 	return $img
 }
@@ -1084,7 +1156,6 @@ proc MakeDisk {squareSize color} {
 
 proc DrawDisk {w square color} {
 	variable ${w}::Board
-	variable Marks
 
 	if {![info exists Board(image,disk,$color)]} {
 		set Board(image,disk,$color) [MakeDisk $Board(size) $color]
@@ -1094,11 +1165,12 @@ proc DrawDisk {w square color} {
 }
 
 
-proc DrawArrow {w from to color} {
+proc DrawArrow {w from to color {index -1}} {
 	variable ${w}::Board
-	variable Marks
 
 	if {$from == $to} { return }
+
+	if {$index >= 0} { set type alternative } else { set type arrow }
 
 	set size $Board(size)
 	set sizh [expr {$size/2}]
@@ -1111,8 +1183,8 @@ proc DrawArrow {w from to color} {
 		set rows [expr {-$rows}]
 	}
 
-	if {![info exists Board(image,arrow,$rows,$cols,$color)]} {
-		set Board(image,arrow,$rows,$cols,$color) [MakeArrow $size $rows $cols $color]
+	if {![info exists Board(image,$type,$rows,$cols,$color)]} {
+		set Board(image,$type,$rows,$cols,$color) [MakeArrow $size $rows $cols $color $type]
 	}
 
 	lassign [$w.c coords square:$from] x1 y1
@@ -1122,15 +1194,49 @@ proc DrawArrow {w from to color} {
 	if {$cols} { incr x0 $sizh }
 	if {$rows} { incr y0 $sizh }
 
-	set img $Board(image,arrow,$rows,$cols,$color)
+	set img $Board(image,$type,$rows,$cols,$color)
+	set tags [list mark $type]
+
 	incr x0 [expr {-([image width  $img] - [expr {max(1, [abs $cols])*$size}])/2}]
 	incr y0 [expr {-([image height $img] - [expr {max(1, [abs $rows])*$size}])/2}]
 
-	$w.c create image $x0 $y0 -anchor nw -image $img -tag {mark arrow}
+	if {$type eq "alternative"} {
+		set iw [image width  $img]
+		set ih [image height $img]
+		set ah [expr {min(33.0/$size, max(0.5, 12.0/$size))}]	;# arrowhead width (= ah*size)
+		set as [expr {int(0.5*$ah*$size + 0.5)}]
+
+		if {($rows > 0) == ($cols > 0)} {
+			set x1 [expr {$x0 + $iw}]
+			set y1 [expr {$y0 + $as}]
+			set x2 [expr {$x0 + $iw - $as}]
+			set y2 $y0
+			set x3 $x0
+			set y3 [expr {$y0 + $ih - $as}]
+			set x4 [expr {$x0 + $as}]
+			set y4 [expr {$y0 + $ih}]
+		} else {
+			set x1 $x0
+			set y1 [expr {$y0 + $as}]
+			set x2 [expr {$x0 + $as}]
+			set y2 $y0
+			set x3 [expr {$x0 + $iw}]
+			set y3 [expr {$y0 + $ih - $as}]
+			set x4 [expr {$x0 + $iw - $as}]
+			set y4 [expr {$y0 + $ih}]
+		}
+
+		$w.c create polygon $x1 $y1 $x2 $y2 $x3 $y3 $x4 $y4 \
+			-tags [list mark click alt:$index] -width 4 -outline {} -fill {}
+
+		lappend tags alternative:$index
+	}
+
+	$w.c create image $x0 $y0 -anchor nw -image $img -tags $tags
 }
 
 
-proc MakeArrow {size rows cols color} {
+proc MakeArrow {size rows cols color type} {
 	set ncols [abs $cols]
 	set nrows [abs $rows]
 	set length [expr {$size*(max($nrows,$ncols)) - $size/4}]
@@ -1143,25 +1249,45 @@ proc MakeArrow {size rows cols color} {
 	if {$deg >  45.0} { set deg [expr {90.0 -  $deg}] }
 	set scalef [expr {1.0/cos([geometry::deg2rad $deg])}]
 
-	set ah [expr {min(22.0/$size, max(0.3, 8.0/$size))}]	;# arrowhead width (= ah*size)
+	###########################
+	#                         #
+	#   ^   ^       x         #
+	#   |   |      / \        #
+	#   |  hh     /   \       #
+	#   |   |    /     \      #
+	#  th   v   +-+   +-+     #
+	#   |   ^     |   |       #
+	#   |   |     |   |       #
+	#   |  sh     |   |       #
+	#   |   |     |   |       #
+	#   v   v     +---+       #
+	#             <--->   sw  #
+	#           <-------> hw  #
+	#                         #
+	###########################
+	switch $type {
+		arrow {
+			set ah [expr {min(22.0/$size, max(0.3, 8.0/$size))}]	;# arrowhead width (= ah*size)
+			set op 0.8	;# opacity
+			set as 0.4	;# arrow shaft ratio (shaft width = as*width)
+		}
+		alternative {
+			set ah [expr {min(33.0/$size, max(0.45, 12.0/$size))}]	;# arrowhead width (= ah*size)
+			set op 0.8	;# opacity
+			set as 0.5	;# arrow shaft ratio (shaft width = as*width)
+		}
+		click {
+			set ah [expr {min(33.0/$size, max(0.45, 12.0/$size))}]	;# arrowhead width (= ah*size)
+			set op 1.0	;# opacity
+			set as 0.5	;# arrow shaft ratio (shaft width = as*width)
+		}
+	}
 	set sf 1.0	;# stroke width factor
 	set ar 0.6	;# arrow head ratio (height = ar*width)
-	set as 0.4	;# arrow shaft ratio (shaft_width = as*width)
-	set op 0.8	;# opacity
 
-	#   ^   ^       x
-	#   |   |      / \
-	#   |  hh     /   \
-	#   |   |    /     \
-	#  th   v   +-+   +-+
-	#   |   ^     |   |
-	#   |   |     |   |
-	#   |  sh     |   |
-	#   |   |     |   |
-	#   v   v     +---+
-	#             <--->   sw
-	#           <-------> hw = tw
-	#
+	# we do a small correction to reduce an optical illusion
+	if {$rows == 0 || $cols == 0} { set as [expr {1.05*$as}] }
+
 	set hw 100.0
 	set sw [expr {$hw*$as}]
 	set hh [expr {$ar*$hw}]
@@ -1196,14 +1322,19 @@ proc MakeArrow {size rows cols color} {
 	set q(5,x) [expr {$p(5,x) - $delta}]; set q(5,y) [expr {$p(5,y) - $delta}]
 	lassign [geometry::intersection $q06 $q56] q(6,x) q(6,y)
 
-	scan [::dialog::choosecolor::getActualColor $color] "\#%2x%2x%2x" r g b
+	scan [getActualColor $color] "\#%2x%2x%2x" r g b
 	set lite [list $r $g $b]
-	lassign [::dialog::choosecolor::rgb2hsv {*}$lite] h s v
-	set edge [::dialog::choosecolor::hsv2rgb $h $s [expr {$v*0.15}]]
-	set dark [::dialog::choosecolor::hsv2rgb $h $s [expr {$v*0.70}]]
+	lassign [rgb2hsv {*}$lite] h s v
+	set dark [hsv2rgb $h $s [expr {min(1.0,$v*0.70)}]]
 	set lite [format "#%02x%02x%02x" {*}$lite]
-	set edge [format "#%02x%02x%02x" {*}$edge]
 	set dark [format "#%02x%02x%02x" {*}$dark]
+
+	if {$type eq "arrow"} {
+		set edge [hsv2rgb $h $s [expr {min(1.0,$v*0.15)}]]
+		set edge [format "#%02x%02x%02x" {*}$edge]
+	} else {
+		set edge #000000
+	}
 
 	append svg "<svg>"
 	append svg "<defs>"
@@ -1751,20 +1882,16 @@ set Rectangle "
   <g>
     <rect
        width=\"252\" height=\"252\" x=\"6\" y=\"6\"
-       style=\"opacity:1;color:#000000;fill:#000000;fill-opacity:0.50196078;fill-rule:evenodd;stroke:none;stroke-width:1.39999998;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-opacity:1\"
-	 />
+       style=\"opacity:1;color:#000000;fill:#000000;fill-opacity:0.50196078;fill-rule:evenodd;stroke:none;stroke-width:1.39999998;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-opacity:1\" />
     <rect
        width=\"250\" height=\"250\" x=\"5\" y=\"5\"
-       style=\"opacity:1;color:#000000;fill:#c#;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1.39999998;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;troke-opacity:1\"
-	 />
+       style=\"opacity:1;color:#000000;fill:#c#;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1.39999998;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;troke-opacity:1\" />
     <rect
        width=\"240\" height=\"240\" x=\"10\" y=\"10\"
-       style=\"opacity:1;color:#000000;fill:url(#linearGradient2196);fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1.39999998;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-opacity:1\"
-	 />
+       style=\"opacity:1;color:#000000;fill:url(#linearGradient2196);fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1.39999998;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-opacity:1\" />
   </g>
 </svg>
 "
-
 } ;# namespace diagram
 } ;# namespace board
 

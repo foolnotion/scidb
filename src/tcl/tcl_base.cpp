@@ -784,6 +784,7 @@ safeCall(void* clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			case IOException::Namebase:		file = "Namebase"; break;
 			case IOException::Annotation:		file = "Annotation"; break;
 			case IOException::PgnFile:			file = "PGN File"; break;
+			case IOException::BookFile:		file = "Book File"; break;
 		}
 
 		switch (exc.errorType())

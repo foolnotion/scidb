@@ -1033,7 +1033,7 @@ Decoder::decodeMoves(MoveNode* root, unsigned& count)
 				}
 				else
 				{
-					throw DecodingFailedException();
+					throw DecodingFailedException("corrupted data");
 				}
 				break;
 
@@ -1132,7 +1132,7 @@ Decoder::decodeMoves(MoveNode* root, unsigned& count, MoveNodeAllocator& allocat
 				}
 				else
 				{
-					throw DecodingFailedException();
+					throw DecodingFailedException("corrupted data");
 				}
 				break;
 

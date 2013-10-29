@@ -205,10 +205,10 @@ hash<Value,Key>::has_key(key_type const& key) const
 
 template <typename Value, typename Key>
 inline
-typename hash<Value,Key>::const_pointer
+typename hash<Value,Key>::pointer
 hash<Value,Key>::find(key_type const& key) const
 {
-	dict_node const* node = find_node(key);
+	dict_node* node = find_node(key);
 	return node ? &node->assoc.second : 0;
 }
 
@@ -408,7 +408,7 @@ hash<Value,Key>::find_node(dict_node* node, key_type const& key) const
 
 template <typename Value, typename Key>
 inline
-typename hash<Value,Key>::dict_node const*
+typename hash<Value,Key>::dict_node*
 hash<Value,Key>::find_node(key_type const& key) const
 {
 	size_type index = hash_key<key_type>::hash(key) & m_modulo;
@@ -506,7 +506,7 @@ hash<Value,Key>::remove(dict_node* prev, dict_node *node, size_type index)
 
 
 template <typename Value, typename Key>
-void
+bool
 hash<Value,Key>::remove(key_type const& key)
 {
 	size_type	index	= hash_key<key_type>::hash(key) & m_modulo;
@@ -519,11 +519,16 @@ hash<Value,Key>::remove(key_type const& key)
 		for ( ; node; node = node->next)
 		{
 			if (bits::equal(node->assoc.first, key))
-				return remove(prev, node, index);
+			{
+				remove(prev, node, index);
+				return true;
+			}
 
 			prev = node;
 		}
 	}
+
+	return false;
 }
 
 

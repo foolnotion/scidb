@@ -1,6 +1,22 @@
 [October 2013] ===============================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #985)
+------------------------------------------------------------------------------
+* Drawing of color cube shifted to C++ side.
+
+* Board pane: sliding pane for sub-variation traversal implemented (default,
+optional).
+
+* Board pane: now the user might use arrows for sub-variation traversal
+(optional).
+
+* Implementation of polyglot books on C++ side (extensions for chess variants
+not compatible to XBoard due to issues in the XBoard implementation).
+
+* Important fix in tk::menu implementation.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #976)
 ------------------------------------------------------------------------------
 * Help dialog now is using full-justification (optional).

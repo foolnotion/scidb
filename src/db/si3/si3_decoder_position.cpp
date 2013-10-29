@@ -41,7 +41,7 @@ __attribute__((noreturn))
 inline static void
 throwInvalidFen()
 {
-	IO_RAISE(Game, Corrupted, "invalid FEN");
+	M_THROW(DecodingFailedException("Invalid FEN"));
 }
 
 
@@ -70,7 +70,7 @@ Position::doMove(Move& move, unsigned pieceNum)
 	if (lookup.board.isValidMove(move, variant::Normal, move::DontAllowIllegalMove))
 		move.setLegalMove();
 	else if (!lookup.board.checkMove(move, variant::Normal, move::AllowIllegalMove))
-		IO_RAISE(Game, Corrupted, "invalid move");
+		M_THROW(DecodingFailedException("Invalid move"));
 
 	lookup.board.prepareUndo(move);
 
@@ -185,7 +185,7 @@ Position::setup(char const* fen)
 	board().fixBadCastlingRights();
 
 	if (board().validate(variant::Normal) != Board::Valid)
-		IO_RAISE(Game, Invalid_Data, "invalid FEN (%s)", fen);
+		throwInvalidFen();
 
 // WARNING: flags::Non_Standard_Start is possibly set wrong (Scid bug)
 //	M_ASSERT(!board().isStandardPosition(variant::Normal));

@@ -37,6 +37,7 @@
 #include "u_progress.h"
 
 #include "sys_utf8_codec.h"
+#include "sys_file.h"
 
 #include "tcl_base.h"
 
@@ -410,6 +411,7 @@ logIOError(IOException const& exc, unsigned gameNumber = 0)
 		case IOException::Namebase:		file = "namebase"; break;
 		case IOException::Annotation:		file = "annotation"; break;
 		case IOException::PgnFile:			/* cannot happen */ break;
+		case IOException::BookFile:		/* cannot happen */ break;
 	}
 
 	mstl::string msg("Error");
@@ -446,7 +448,7 @@ exportGames(Database& src, Consumer& dst, Progress& progress)
 	unsigned numGames		= src.countGames();
 
 	util::ProgressWatcher watcher(progress, numGames);
-	progress.setFrequency(mstl::min(5000u, mstl::max(numGames/100, 1u)));
+	progress.setFrequency(mstl::min(200u, mstl::max(numGames/1000, 50u)));
 
 	unsigned reportAfter	= progress.frequency();
 	unsigned count			= 0;
@@ -611,9 +613,7 @@ main(int argc, char* argv[])
 		cbhPath.append(".cbh");
 	}
 
-	mstl::ifstream	stream(cbhPath);
-
-	if (!stream)
+	if (access(sys::file::internalName(cbhPath), F_OK) != 0)
 	{
 		fprintf(stderr, "Cannot open file '%s'.\n", cbhPath.c_str());
 		exit(1);
@@ -623,7 +623,7 @@ main(int argc, char* argv[])
 
 	if (i < argc)
 	{
-		si4Path.append(argv[i]);
+		si4Path.append(sys::file::normalizedName(argv[i]));
 	}
 	else
 	{
@@ -651,7 +651,7 @@ main(int argc, char* argv[])
 	if (si4Path.size() < 4 || strcmp(si4Path.c_str() + si4Path.size() - 4, ".si4") != 0)
 		si4Path.append(".si4");
 	
-	if (!force && access(si4Path, R_OK) == 0)
+	if (!force && access(sys::file::internalName(si4Path), R_OK) == 0)
 	{
 		fprintf(stderr, "Database '%s' already exists.\n", si4Path.c_str());
 		exit(1);

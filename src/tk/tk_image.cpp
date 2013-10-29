@@ -27,6 +27,7 @@
 
 #include "u_base.h"
 
+#include "m_utility.h"
 #include "m_assert.h"
 
 #include "agg_pixfmt_rgb.h"
@@ -50,6 +51,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdarg.h>
+#include <math.h>
 
 using namespace tcl;
 
@@ -189,6 +191,79 @@ colorize(int channel, int value, double brighten)
 	};
 
 	return mstl::min(255, agg::iround(brighten*(channel + agg::iround(value*Table[channel]))));
+}
+
+
+static bool
+determine_color(double x, double y, double& h, double& t)
+{
+	h = (180.0/M_PI)*::atan2(y, x);
+
+	if (h < 0)
+		h += 360.0;
+
+	double y3 = y/1.732050808; // sqrt(3)
+	double a;
+	double b;
+
+	if (h < 60.0 || h >= 300.0)
+	{
+		a = y3 + 255.0 - x; // green
+		b = 255.0 - x - y3; // blue
+	}
+	else if (h < 180.0)
+	{
+		a = x + 255.0 - y3; // red
+		b = 255.0 - 2.0*y3; // blue
+	}
+	else
+	{
+		a = x + 255.0 + y3; // red
+		b = 2.0*y3 + 255.0; // green
+	}
+
+	int ra = ::round(a);
+	int rb = ::round(b);
+
+	if (ra < 0 || rb < 0 || 255 < ra || 255 < rb)
+		return false;
+
+	t = mstl::min(a, b);
+	return true;
+}
+
+
+static void
+hsv2rgb(double hue, double sat, unsigned char& r, unsigned char& g, unsigned char& b)
+{
+	if (sat < 5.0e-6)
+	{
+		// the color is on the bw center line
+		r = g = b = 255; // achromatic (grey)
+	}
+	else
+	{
+		if (hue >= 360.0)
+			hue -= 360;
+
+		double h = hue*(6.0/360.0);
+		double i = ::floor(h);
+		double f = h - i;
+
+		int p = int(::round(255.0*(1.0 - sat)));
+		int q = int(::round(255.0*(1.0 - (sat*f))));
+		int t = int(::round(255.0*(1.0 - (sat*(1.0 - f)))));
+
+		switch (unsigned(i))
+		{
+			case 0: r = 255; g = t; b = p; break;
+			case 1: r = q; g = 255; b = p; break;
+			case 2: r = p; g = 255; b = t; break;
+			case 3: r = p; g = q; b = 255; break;
+			case 4: r = t; g = p; b = 255; break;
+			case 5: r = 255; g = p; b = q; break;
+		}
+	}
 }
 
 
@@ -435,7 +510,7 @@ struct pixbuf
 				unsigned char* e = p + N*m_cols;
 
 				for ( ; p < e; p += N)
-					p[A] = agg::iround(p[A]*alpha);
+					p[A] = mstl::min(255, agg::iround(p[A]*alpha));
 			}
 		}
 		else
@@ -682,6 +757,50 @@ struct pixbuf
 		}
 	}
 
+	void color_cube(unsigned rings, unsigned sectors)
+	{
+		double xscale		= 510.0/(m_cols - 1);
+		double yscale		= 442.0/(m_rows - 1);
+		double cdist		= 255.0/rings;
+		double cdistinc	= cdist/2.0;
+		double cdist2		= cdist + cdistinc/rings;
+		double cdist255	= cdist/255.0;
+		double hdist		= 360.0/sectors;
+
+		for (int y = 0; y < m_rows; ++y)
+		{
+			unsigned char* p = scanline(y);
+
+			for (int x = 0; x < m_cols; ++x, p += N)
+			{
+				double xt = xscale*x - 255;
+				double yt = 221 - yscale*y;
+
+				double h, t;
+
+				if (::determine_color(xt, yt, h, t))
+				{
+					double s = ::floor((255.0 - t + cdistinc)/cdist2);
+
+					if (s == 0)
+					{
+						h = 0.0;
+					}
+					else
+					{
+						h = ::floor(h/hdist)*hdist;
+						s = s*cdist255;
+					}
+
+					::hsv2rgb(h, s, p[R], p[G], p[B]);
+
+					if (Alpha)
+						p[A] = 255;
+				}
+			}
+		}
+	}
+
 	static void set_alpha(unsigned char* p, int alpha) { p[A] = alpha; }
 
 	static void set_pixel(unsigned char* p, int r, int g, int b, int a)
@@ -892,6 +1011,17 @@ struct Rotate
 			case 3: rot270_image(src_buf, dst_buf); break;
 		}
 	}
+};
+
+
+struct ColorCube
+{
+	ColorCube(unsigned rings, unsigned sectors) :m_rings(rings), m_sectors(sectors) {}
+	unsigned m_rings;
+	unsigned m_sectors;
+
+	template <typename PixBuf>
+	void operator()(PixBuf& pixbuf) { pixbuf.color_cube(m_rings, m_sectors); }
 };
 
 
@@ -1717,9 +1847,6 @@ tk_set_alpha(	char const* subcmd,
 	static char const* options[] = { "-composite", "-area", 0 };
 	static char const* args[] = { "set|overlay", "x0 y0 x1 y1" };
 
-	if (0.0 > value || value > 1.0)
-		return tcl_error(subcmd, "invalid argument: alpha value is out of range");
-
 	char const* composite = "set";
 
 	int arg	= 0;
@@ -1764,6 +1891,9 @@ tk_set_alpha(	char const* subcmd,
 			return tcl_usage(subcmd, options, args);
 		}
 	}
+
+	if (0.0 > value || (value > 1.0 && ::strcmp(composite, "set") == 0))
+		return tcl_error(subcmd, "invalid argument: alpha value is out of range");
 
 	Tk_PhotoHandle handle = Tk_FindPhoto(ti, photo);
 
@@ -2594,13 +2724,30 @@ tk_recolor_image(	char const* subcmd,
 
 
 static int
+tk_color_cube(char const* subcmd, Tcl_Interp* ti, char const* photo, unsigned rings, unsigned sectors)
+{
+	Tk_PhotoHandle handle = Tk_FindPhoto(ti, photo);
+
+	if (!handle)
+		return tcl_error(subcmd, "invalid argument: '%s' is not a photo image", photo);
+
+	Tk_PhotoImageBlock block;
+	Tk_PhotoGetImage(handle, &block);
+
+	pixbuf<RGBA> pixb(block);
+	processImage(block, ColorCube(rings, sectors));
+	return Tk_PhotoPutBlock(ti, handle, &block, 0, 0, block.width, block.height, TK_PHOTO_COMPOSITE_SET);
+}
+
+
+static int
 tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	static char const* Subcommands[] =
 	{
 		"border", "copy", "create", "recolor", "disable",
 		"alpha", "diffuse", "boost", "colorize", "paintover",
-		"grayscale", "blur", "shadow", "darken", 0
+		"grayscale", "blur", "shadow", "darken", "colorcube", 0,
 	};
 	struct { char const* usage; int min_args; } const Definitions[] =
 	{
@@ -2618,12 +2765,13 @@ tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		{ "blur <radius> <photo> <out-photo>", 4 },
 		{ "shadow <opacity> <direction> <out-photo>", 4 },
 		{ "darken <alpha> <photo>", 3 },
+		{ "colorcube <photo> <sectors> <rings>", 4 },
 	};
 	enum
 	{
 		Cmd_Border, Cmd_Copy, Cmd_Create, Cmd_Recolor, Cmd_Disable,
 		Cmd_Alpha, Cmd_Diffuse, Cmd_Boost, Cmd_Colorize, Cmd_PaintOver,
-		Cmd_GrayScale, Cmd_Blur, Cmd_Shadow, Cmd_Darken,
+		Cmd_GrayScale, Cmd_Blur, Cmd_Shadow, Cmd_Darken, Cmd_ColorCube,
 	};
 
 	if (objc < 2)
@@ -2650,156 +2798,166 @@ tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	switch (index)
 	{
 		case Cmd_Border:
-			{
-				char const* str = Tcl_GetString(objv[0]);
-				return tk_make_border(Subcommands[index], ti, str, objc - 1, objv + 1);
-			}
+		{
+			char const* str = Tcl_GetString(objv[0]);
+			return tk_make_border(Subcommands[index], ti, str, objc - 1, objv + 1);
+		}
 
 		case Cmd_GrayScale:
-			{
-				char const* str = Tcl_GetString(objv[0]);
-				return tk_grayscale(Subcommands[index], ti, str, objc - 1, objv + 1);
-			}
+		{
+			char const* str = Tcl_GetString(objv[0]);
+			return tk_grayscale(Subcommands[index], ti, str, objc - 1, objv + 1);
+		}
 
 		case Cmd_Copy:
-			{
-				char const* str0 = Tcl_GetString(objv[0]);
-				char const* str1 = Tcl_GetString(objv[1]);
-				return tk_copy_image(Subcommands[index], ti, str0, str1, objc - 2, objv + 2);
-			}
+		{
+			char const* str0 = Tcl_GetString(objv[0]);
+			char const* str1 = Tcl_GetString(objv[1]);
+			return tk_copy_image(Subcommands[index], ti, str0, str1, objc - 2, objv + 2);
+		}
 
 		case Cmd_Create:
+		{
+			Tcl_Obj* svg_obj = Tcl_ObjGetVar2(ti, objv[0], 0, 0);
+
+			if (!svg_obj)
 			{
-				Tcl_Obj* svg_obj = Tcl_ObjGetVar2(ti, objv[0], 0, 0);
-
-				if (!svg_obj)
-				{
-					return tcl_error(	Subcommands[index],
-											"invalid argument: cannot find '%s'",
-											Tcl_GetString(objv[0]));
-				}
-
-				int svg_len;
-				char const* svg_data = Tcl_GetStringFromObj(svg_obj, &svg_len);
-				char const* str1 = Tcl_GetString(objv[1]);
-				return tk_create_image(Subcommands[index], ti, svg_data, svg_len, str1, objc - 2, objv + 2);
+				return tcl_error(	Subcommands[index],
+										"invalid argument: cannot find '%s'",
+										Tcl_GetString(objv[0]));
 			}
+
+			int svg_len;
+			char const* svg_data = Tcl_GetStringFromObj(svg_obj, &svg_len);
+			char const* str1 = Tcl_GetString(objv[1]);
+			return tk_create_image(Subcommands[index], ti, svg_data, svg_len, str1, objc - 2, objv + 2);
+		}
 
 		case Cmd_Darken:
-			{
-				char const* str0 = Tcl_GetString(objv[0]);
-				char const* str1 = Tcl_GetString(objv[1]);
-				return tk_darken_image(Subcommands[index], ti, str0, str1, objc - 2, objv + 2);
-			}
+		{
+			char const* str0 = Tcl_GetString(objv[0]);
+			char const* str1 = Tcl_GetString(objv[1]);
+			return tk_darken_image(Subcommands[index], ti, str0, str1, objc - 2, objv + 2);
+		}
 
 		case Cmd_Recolor:
-			{
-				char const* str0 = Tcl_GetString(objv[0]);
-				char const* str1 = Tcl_GetString(objv[1]);
-				return tk_recolor_image(Subcommands[index], ti, str0, str1, objc - 2, objv + 2);
-			}
+		{
+			char const* str0 = Tcl_GetString(objv[0]);
+			char const* str1 = Tcl_GetString(objv[1]);
+			return tk_recolor_image(Subcommands[index], ti, str0, str1, objc - 2, objv + 2);
+		}
 
 		case Cmd_Disable:
-			{
-				char const* str0 = Tcl_GetString(objv[0]);
-				char const* str1 = Tcl_GetString(objv[1]);
-				return tk_disable_image(Subcommands[index], ti, str0, str1, objc - 2, objv + 2);
-			}
+		{
+			char const* str0 = Tcl_GetString(objv[0]);
+			char const* str1 = Tcl_GetString(objv[1]);
+			return tk_disable_image(Subcommands[index], ti, str0, str1, objc - 2, objv + 2);
+		}
 
 		case Cmd_Alpha:
+		{
+			double value;
+			if (Tcl_GetDoubleFromObj(ti, objv[0], &value) != TCL_OK)
 			{
-				double value;
-				if (Tcl_GetDoubleFromObj(ti, objv[0], &value) != TCL_OK)
-				{
-					return tcl_error(	Subcommands[index],
-											"invalid argument: type 'double' for alpha value expected");
-				}
-				char const* str0 = Tcl_GetString(objv[1]);
-				return tk_set_alpha(Subcommands[index], ti, value, str0, objc - 2, objv + 2);
+				return tcl_error(	Subcommands[index],
+										"invalid argument: type 'double' for alpha value expected");
 			}
+			char const* str0 = Tcl_GetString(objv[1]);
+			return tk_set_alpha(Subcommands[index], ti, value, str0, objc - 2, objv + 2);
+		}
 
 		case Cmd_Diffuse:
+		{
+			double value;
+			if (Tcl_GetDoubleFromObj(ti, objv[0], &value) != TCL_OK)
 			{
-				double value;
-				if (Tcl_GetDoubleFromObj(ti, objv[0], &value) != TCL_OK)
-				{
-					return tcl_error(	Subcommands[index],
-											"invalid argument: type 'double' for alpha value expected");
-				}
-				char const* str0 = Tcl_GetString(objv[1]);
-				return tk_diffuse(Subcommands[index], ti, value, str0, objc - 2, objv + 2);
+				return tcl_error(	Subcommands[index],
+										"invalid argument: type 'double' for alpha value expected");
 			}
+			char const* str0 = Tcl_GetString(objv[1]);
+			return tk_diffuse(Subcommands[index], ti, value, str0, objc - 2, objv + 2);
+		}
 
 		case Cmd_Boost:
+		{
+			double min, max;
+			if (Tcl_GetDoubleFromObj(ti, objv[0], &min) != TCL_OK)
 			{
-				double min, max;
-				if (Tcl_GetDoubleFromObj(ti, objv[0], &min) != TCL_OK)
-				{
-					return tcl_error(	Subcommands[index],
-											"invalid argument: type 'double' for alpha value expected");
-				}
-				if (Tcl_GetDoubleFromObj(ti, objv[1], &max) != TCL_OK)
-				{
-					return tcl_error(	Subcommands[index],
-											"invalid argument: type 'double' for alpha value expected");
-				}
-				char const* str0 = Tcl_GetString(objv[2]);
-				return tk_boost(Subcommands[index], ti, min, max, str0, objc - 3, objv + 3);
+				return tcl_error(	Subcommands[index],
+										"invalid argument: type 'double' for alpha value expected");
 			}
+			if (Tcl_GetDoubleFromObj(ti, objv[1], &max) != TCL_OK)
+			{
+				return tcl_error(	Subcommands[index],
+										"invalid argument: type 'double' for alpha value expected");
+			}
+			char const* str0 = Tcl_GetString(objv[2]);
+			return tk_boost(Subcommands[index], ti, min, max, str0, objc - 3, objv + 3);
+		}
 
 		case Cmd_Colorize:
+		{
+			double brighten;
+			char const* str0 = Tcl_GetString(objv[0]);
+			char const* str1 = Tcl_GetString(objv[2]);
+			if (Tcl_GetDoubleFromObj(ti, objv[1], &brighten) != TCL_OK)
 			{
-				double brighten;
-				char const* str0 = Tcl_GetString(objv[0]);
-				char const* str1 = Tcl_GetString(objv[2]);
-				if (Tcl_GetDoubleFromObj(ti, objv[1], &brighten) != TCL_OK)
-				{
-					return tcl_error(	Subcommands[index],
-											"invalid argument: type 'double' for brighten value expected");
-				}
-				return tk_colorize(Subcommands[index], ti, str0, str1, brighten, objc - 3, objv + 3);
+				return tcl_error(	Subcommands[index],
+										"invalid argument: type 'double' for brighten value expected");
 			}
+			return tk_colorize(Subcommands[index], ti, str0, str1, brighten, objc - 3, objv + 3);
+		}
 
 		case Cmd_PaintOver:
+		{
+			double opacity;
+			char const* str0 = Tcl_GetString(objv[0]);
+			char const* str1 = Tcl_GetString(objv[2]);
+			if (Tcl_GetDoubleFromObj(ti, objv[1], &opacity) != TCL_OK)
 			{
-				double opacity;
-				char const* str0 = Tcl_GetString(objv[0]);
-				char const* str1 = Tcl_GetString(objv[2]);
-				if (Tcl_GetDoubleFromObj(ti, objv[1], &opacity) != TCL_OK)
-				{
-					return tcl_error(	Subcommands[index],
-											"invalid argument: type 'double' for opacity value expected");
-				}
-				return tk_paint_over(Subcommands[index], ti, str0, str1, opacity, objc - 3, objv + 3);
+				return tcl_error(	Subcommands[index],
+										"invalid argument: type 'double' for opacity value expected");
 			}
+			return tk_paint_over(Subcommands[index], ti, str0, str1, opacity, objc - 3, objv + 3);
+		}
 
 		case Cmd_Blur:
+		{
+			double radius;
+			if (Tcl_GetDoubleFromObj(ti, objv[0], &radius) != TCL_OK)
 			{
-				double radius;
-				if (Tcl_GetDoubleFromObj(ti, objv[0], &radius) != TCL_OK)
-				{
-					return tcl_error(	Subcommands[index],
-											"invalid argument: type 'double' for radius expected");
-				}
-				if (radius < 0.0)
-					return tcl_error(	Subcommands[index], "invalid argument: radius is negative");
-				char const* str0 = Tcl_GetString(objv[1]);
-				char const* str1 = Tcl_GetString(objv[2]);
-				return tk_blur(Subcommands[index], ti, str0, str1, radius, objc - 3, objv + 3);
+				return tcl_error(	Subcommands[index],
+										"invalid argument: type 'double' for radius expected");
 			}
+			if (radius < 0.0)
+				return tcl_error(	Subcommands[index], "invalid argument: radius is negative");
+			char const* str0 = Tcl_GetString(objv[1]);
+			char const* str1 = Tcl_GetString(objv[2]);
+			return tk_blur(Subcommands[index], ti, str0, str1, radius, objc - 3, objv + 3);
+		}
 
 		case Cmd_Shadow:
+		{
+			double opacity;
+			if (Tcl_GetDoubleFromObj(ti, objv[0], &opacity) != TCL_OK)
 			{
-				double opacity;
-				if (Tcl_GetDoubleFromObj(ti, objv[0], &opacity) != TCL_OK)
-				{
-					return tcl_error(	Subcommands[index],
-											"invalid argument: type 'double' for opacity value expected");
-				}
-				char const* str0 = Tcl_GetString(objv[1]);
-				char const* str1 = Tcl_GetString(objv[2]);
-				return tk_shadow(Subcommands[index], ti, str0, str1, opacity, objc - 3, objv + 3);
+				return tcl_error(	Subcommands[index],
+										"invalid argument: type 'double' for opacity value expected");
 			}
+			char const* str0 = Tcl_GetString(objv[1]);
+			char const* str1 = Tcl_GetString(objv[2]);
+			return tk_shadow(Subcommands[index], ti, str0, str1, opacity, objc - 3, objv + 3);
+		}
+
+		case Cmd_ColorCube:
+		{
+			int rings, sectors;
+			if (Tcl_GetIntFromObj(ti, objv[1], &sectors) != TCL_OK || sectors <= 0)
+				return tcl_error(Subcommands[index], "positive integer expected for number of sectors");
+			if (Tcl_GetIntFromObj(ti, objv[2], &rings) != TCL_OK || rings <= 0)
+				return tcl_error(Subcommands[index], "positive integer expected for number of rings");
+			return tk_color_cube(Subcommands[index], ti, Tcl_GetString(objv[0]), rings, sectors);
+		}
 	}
 
 	return TCL_OK;	// not reached

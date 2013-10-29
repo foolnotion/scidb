@@ -1660,6 +1660,16 @@ Game::nextMove() const
 }
 
 
+Move const&
+Game::nextMove(unsigned varno) const
+{
+	if (!isBeforeLineEnd() || varno >= m_currentNode->next()->variationCount())
+		return Move::empty();
+		
+	return m_currentNode->next()->variation(varno)->next()->move();
+}
+
+
 mstl::string
 Game::startKey() const
 {

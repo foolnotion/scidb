@@ -626,7 +626,7 @@ cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	if (type == type::PGNFile)
 		type = type::Unspecific;
 
-	int n = v.exportGames(	sys::file::internalName(filename),
+	int n = v.exportGames(	filename,
 									encoding,
 									db.description(),
 									0,

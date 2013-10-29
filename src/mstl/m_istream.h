@@ -41,6 +41,7 @@ public:
 	istream& read(char* buf, size_t size);
 	istream& read(unsigned char* buf, size_t size);
 	istream& seek_and_read(uint64_t pos, unsigned char* buf, size_t size);
+	istream& seek_and_read(int64_t pos, seekdir dir, unsigned char* buf, size_t size);
 	istream& ignore(unsigned long n, int delim = traits::eof);
 
 	size_t readsome(char* buf, size_t size);

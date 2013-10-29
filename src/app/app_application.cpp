@@ -2127,13 +2127,24 @@ Application::enumCursors(MultiCursorList& list) const
 void
 Application::clearTreeCache()
 {
-	cancelUpdateTree();
+	M_ASSERT(!m_treeAdmin.isRunning());
 
 	if (m_subscriber)
-		m_subscriber->clearTreeCache();
+		m_subscriber->invalidateTreeCache();
 
 	for (Iterator i = begin(), e = end(); i != e; ++i)
 		Tree::clearCache(i->base());
+}
+
+
+void
+Application::invalidateTreeCache(unsigned gameIndex)
+{
+	if (m_subscriber)
+		m_subscriber->invalidateTreeCache();
+
+	for (Iterator i = begin(), e = end(); i != e; ++i)
+		Tree::invalidateCache(i->base(), gameIndex);
 }
 
 
@@ -2149,12 +2160,7 @@ Application::saveGame(Cursor& cursor, bool replace)
 	save::State	state;
 
 	if (cursor.isReferenceBase())
-	{
-		if (!replace || g.data.game->isModified())
-			clearTreeCache();
-		else
-			stopUpdateTree();
-	}
+		stopUpdateTree();
 
 	Database& db = cursor.base();
 
@@ -2236,8 +2242,14 @@ Application::saveGame(Cursor& cursor, bool replace)
 		g.data.game->updateSubscriber(Game::UpdatePgn);
 	}
 
-	if (m_subscriber && cursor.isReferenceBase() && !m_treeIsFrozen)
-		m_subscriber->updateTree(db.name(), db.variant());
+	if (m_subscriber)
+	{ 
+		if (!replace || g.data.game->isModified())
+			invalidateTreeCache(g.sink.index);
+
+		if (cursor.isReferenceBase() && !m_treeIsFrozen)
+			m_subscriber->updateTree(db.name(), db.variant());
+	}
 
 	return state;
 }
@@ -2258,7 +2270,7 @@ Application::updateMoves()
 	Cursor& cursor = this->cursor(sourceName());
 
 	if (cursor.isReferenceBase())
-		clearTreeCache();
+		stopUpdateTree();
 
 	g.data.game->setIndex(g.link.index);
 
@@ -2298,6 +2310,8 @@ Application::updateMoves()
 				++m_updateCount;
 			}
 		}
+
+		invalidateTreeCache(g.link.index);
 
 		if (cursor.isReferenceBase() && !m_treeIsFrozen)
 			m_subscriber->updateTree(name, cursor.variant());

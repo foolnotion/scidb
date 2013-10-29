@@ -1,7 +1,7 @@
 // ======================================================================
 // Author : $Author$
-// Version: $Revision$
-// Date   : $Date$
+// Version: $Revision: 957 $
+// Date   : $Date: 2013-09-30 17:11:24 +0200 (Mon, 30 Sep 2013) $
 // Url    : $URL$
 // ======================================================================
 
@@ -24,65 +24,34 @@
 // (at your option) any later version.
 // ======================================================================
 
-#ifndef _cbf_decoder_position_included
-#define _cbf_decoder_position_included
+#ifndef _app_chessbase_book_included
+#define _app_chessbase_book_included
 
-#include "db_board.h"
-#include "db_move.h"
+#include "app_book.h"
 
-#include "m_stack.h"
+namespace app {
+namespace chessbase {
 
-namespace util { class ByteStream; }
-
-namespace db {
-namespace cbf {
-namespace decoder {
-
-class Position
+class Book : public app::Book
 {
 public:
 
-	Position();
+	Book(mstl::string const& filename);
 
-	unsigned variationLevel() const;
+	bool isReadonly() const override;
+	Format format() const override;
 
-	void setup();
-	void setup(util::ByteStream& strm, Byte h10, Byte h11);
+	db::Move probeNextMove(db::Board const& position, db::variant::Type variant) override;
+	bool probePosition(db::Board const& position, db::variant::Type variant, Entry& result) override;
 
-	void push();
-	void pop();
-
-	Board const& board() const;
-	Board& board();
-
-	::db::Move doMove(unsigned moveNumber);
-	void undoMove(::db::Move const& move);
-
-private:
-
-	struct Entry
-	{
-		Entry();
-
-		Board		board;
-		Square	epSquare;
-		Square	prevEpSquare;
-		bool		epFake;
-	};
-
-	typedef mstl::stack<Entry> Stack;
-
-	void reset();
-
-	Stack m_stack;
+	bool remove(db::Board const& position, db::variant::Type variant) override;
+	bool modify(db::Board const& position, db::variant::Type variant, Entry const& entry) override;
+	bool add(db::Board const& position, db::variant::Type variant, Entry const& entry) override;
 };
 
-} // namespace decoder
-} // namespace cbf
-} // namespace db
+} // namespace chessbase
+} // namespace app
 
-#include "cbf_decoder_position.ipp"
-
-#endif // _cbf_decoder_position_included
+#endif // _app_chessbase_book_included
 
 // vi:set ts=3 sw=3:

@@ -262,7 +262,7 @@ Database::Database(	mstl::string const& name,
 
 	if (!m_codec->isWritable())
 		m_writable = false;
-	
+
 	if (m_encoding == sys::utf8::Codec::automatic())
 		m_encoding = m_usedEncoding = m_codec->defaultEncoding();
 
@@ -464,7 +464,7 @@ Database::save(util::Progress& progress)
 
 	m_size = m_gameInfoList.size();
 	m_lastChange = sys::time::timestamp();
-	m_treeCache.setIncomplete(start);
+//	m_treeCache.setIncomplete(start);
 
 	m_statistic.compute(	const_cast<GameInfoList const&>(m_gameInfoList).begin() + start,
 								const_cast<GameInfoList const&>(m_gameInfoList).end(),
@@ -926,7 +926,7 @@ Database::addGame(Game& game)
 		m_lastChange = sys::time::timestamp();
 		m_statistic.add(*m_gameInfoList.back());
 		m_statistic.added = m_size - m_initialSize;
-		m_treeCache.setIncomplete();
+//		m_treeCache.setIncomplete();
 	}
 
 	return state;
@@ -989,7 +989,7 @@ Database::updateGame(Game& game)
 		info.setDirty(false);
 		game.setGameFlags(info.flags());
 		m_lastChange = sys::time::timestamp();
-		m_treeCache.setIncomplete(game.index());
+//		m_treeCache.setIncomplete(game.index());
 
 		m_statistic.compute(	const_cast<GameInfoList const&>(m_gameInfoList).begin(),
 									const_cast<GameInfoList const&>(m_gameInfoList).end(),
@@ -1057,7 +1057,7 @@ Database::updateMoves(Game& game)
 		info.setDirty(false);
 		game.setGameFlags(info.flags());
 		m_lastChange = sys::time::timestamp();
-		m_treeCache.setIncomplete(game.index());
+//		m_treeCache.setIncomplete(game.index());
 	}
 
 	return state;
@@ -1395,10 +1395,10 @@ Database::exportGames(	Destination& destination,
 
 	if (format::isScidFormat(dstFormat))
 		copyMode = copy::ExcludeIllegal;
-	
+
 	unsigned minFrequency;
 
-	if (dstFormat == Format::Pgn)
+	if (dstFormat == format::Pgn)
 		minFrequency = 25;
 	else if (format::isChessBaseFormat(srcFormat))
 		minFrequency = 50;
@@ -1503,7 +1503,7 @@ Database::importGame(Producer& producer, unsigned index)
 			::sys::file::changed(m_name, m_fileTime);
 		}
 
-		m_treeCache.setIncomplete();
+//		m_treeCache.setIncomplete();
 	}
 
 	return n;

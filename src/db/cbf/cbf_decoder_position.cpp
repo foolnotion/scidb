@@ -114,7 +114,7 @@ static const piece::Type PromotionTbl[] =
 } // namespace
 
 
-Position::Entry::Entry() :epFake(false) {}
+Position::Entry::Entry() :epSquare(sq::Null), prevEpSquare(sq::Null), epFake(false) {}
 
 
 Position::Position()
@@ -138,6 +138,7 @@ Position::doMove(unsigned moveNumber)
 {
 	Entry&		top			= m_stack.top();
 	Board&		board			= top.board;
+	Square&		epSquare		= top.epSquare;
 	color::ID	sideToMove	= board.sideToMove();
 	unsigned		count			= 0;
 	Move			move;
@@ -166,7 +167,7 @@ Position::doMove(unsigned moveNumber)
 						&& moveGen->df == 1
 						&& fyle == sq::FyleA
 						&& rank == (sideToMove == color::White ? sq::Rank5 : sq::Rank4)
-						&& board.enPassantSquareFen() == sq::Null)
+						&& epSquare == sq::Null)
 					{
 						++count;
 					}
@@ -277,7 +278,7 @@ Position::doMove(unsigned moveNumber)
 								// Wow! We can decode games which even ChessBase cannot decode
 								// correctly! It's a severe encoding/decoding bug in ChessBase.
 								// Try game #288 from
-								// <ftp://ftp.pitt.edu/group/student-activities/chess/PGN/Players/kburg-pg.zip>.
+								// <ftp://ftp.pitt.edu/group/student-activities/chess/CB/Players/kburg-cb.zip>.
 								++count;
 								break;
 							}
@@ -296,17 +297,28 @@ Position::doMove(unsigned moveNumber)
 							if (!board.isValidMove(move, variant::Normal, move::AllowIllegalMove))
 								IO_RAISE(Game, Corrupted, "corrupted game data");
 
-							Square epSq = board.enPassantSquareFen();
-
 							board.prepareUndo(move);
 							board.doMove(move, variant::Normal);
 
-							// Imitating the strange behaviour of ChessBase:
-							// ------------------------------------------------
-							// We restore the en passant square of previous ply
-							// if the last ply is a castling.
-							if ((top.epFake = (move.isCastling() && epSq != sq::Null)))
-								board.setEnPassantFyle(board.sideToMove(), sq::fyle(epSq));
+							top.prevEpSquare = epSquare; // used for undo
+
+							if ((top.epFake = (move.isCastling() && epSquare != sq::Null)))
+							{
+								// Imitating the strange behaviour of ChessBase:
+								// ------------------------------------------------
+								// We restore the en passant square of previous ply
+								// if the last ply is a castling.
+								board.setEnPassantFyle(board.sideToMove(), sq::fyle(epSquare));
+								epSquare = sq::makeEnPassant(sq::fyle(epSquare), board.sideToMove());
+							}
+							else if (move.isDoubleAdvance())
+							{
+								epSquare = sq::makeEnPassant(sq::fyle(move.from()), board.notToMove());
+							}
+							else
+							{
+								epSquare = sq::Null;
+							}
 
 							return move;
 						}
@@ -317,6 +329,16 @@ Position::doMove(unsigned moveNumber)
 	}
 
 	return move;
+}
+
+
+void
+Position::undoMove(Move const& move)
+{
+	Entry& top = m_stack.top();
+
+	top.board.undoMove(move, variant::Normal);
+	top.epSquare = top.prevEpSquare;
 }
 
 

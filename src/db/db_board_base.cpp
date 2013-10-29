@@ -156,12 +156,12 @@ board::base::initialize()
 	for (int i = 0; i < 64; ++i)
 	{
 		// Square masks
-		MaskL90[i] = setBit(RotateL90[i]);
-		MaskL45[i] = setBit(RotateL45[i]);
-		MaskR45[i] = setBit(RotateR45[i]);
+		MaskL90[i] = set1Bit(RotateL90[i]);
+		MaskL45[i] = set1Bit(RotateL45[i]);
+		MaskR45[i] = set1Bit(RotateR45[i]);
 
 		// Pawn moves and attacks
-		uint64_t mask = setBit(i);
+		uint64_t mask = set1Bit(i);
 
 		PawnAttacks[White][i]  = shiftUpLeft(mask);
 		PawnAttacks[White][i] |= shiftUpRight(mask);
@@ -207,9 +207,9 @@ board::base::initialize()
 			while (fyle(q) > 0 && rank(q) < 7)
 			{
 				q += 7;
-				mask |= setBit(q);
+				mask |= set1Bit(q);
 
-				if (b & (setBit(RotateL45[q]) >> ShiftL45[s]))
+				if (b & (set1Bit(RotateL45[q]) >> ShiftL45[s]))
 					break;
 			}
 
@@ -218,9 +218,9 @@ board::base::initialize()
 			while (fyle(q) < 7 && rank(q) > 0)
 			{
 				q -= 7;
-				mask |= setBit(q);
+				mask |= set1Bit(q);
 
-				if (b & (setBit(RotateL45[q]) >> ShiftL45[s]))
+				if (b & (set1Bit(RotateL45[q]) >> ShiftL45[s]))
 					break;
 			}
 
@@ -231,9 +231,9 @@ board::base::initialize()
 			while (fyle(q) < 7 && rank(q) < 7)
 			{
 				q += 9;
-				mask |= setBit(q);
+				mask |= set1Bit(q);
 
-				if (b & (setBit(RotateR45[q]) >> ShiftR45[s]))
+				if (b & (set1Bit(RotateR45[q]) >> ShiftR45[s]))
 					break;
 			}
 
@@ -242,9 +242,9 @@ board::base::initialize()
 			while (fyle(q) > 0 && rank(q) > 0)
 			{
 				q -= 9;
-				mask |= setBit(q);
+				mask |= set1Bit(q);
 
-				if (b & (setBit(RotateR45[q]) >> ShiftR45[s]))
+				if (b & (set1Bit(RotateR45[q]) >> ShiftR45[s]))
 					break;
 			}
 
@@ -265,7 +265,7 @@ board::base::initialize()
 
 			while (++fyle < 8)
 			{
-				RankAttacks[sq][bitrow] |= setBit(q);
+				RankAttacks[sq][bitrow] |= set1Bit(q);
 
 				if ((1 << fyle) & (bitrow << 1))
 					break;
@@ -278,7 +278,7 @@ board::base::initialize()
 
 			while (--fyle >= 0)
 			{
-				RankAttacks[sq][bitrow] |= setBit(q);
+				RankAttacks[sq][bitrow] |= set1Bit(q);
 
 				if ((1 << fyle) & (bitrow << 1))
 					break;
@@ -291,7 +291,7 @@ board::base::initialize()
 
 			while (++rank < 8)
 			{
-				FyleAttacks[sq][bitrow] |= setBit(q);
+				FyleAttacks[sq][bitrow] |= set1Bit(q);
 
 				if ((1 << (7 - rank)) & (bitrow << 1))
 					break;
@@ -304,7 +304,7 @@ board::base::initialize()
 
 			while (--rank >= 0)
 			{
-				FyleAttacks[sq][bitrow] |= setBit(q);
+				FyleAttacks[sq][bitrow] |= set1Bit(q);
 
 				if ((1 << (7 - rank)) & (bitrow << 1))
 					break;
@@ -342,10 +342,10 @@ board::base::initialize()
 			{
 				switch (dir)
 				{
-					case  1: Plus1Dir[i] |= setBit(sq); break;
-					case  8: Plus8Dir[i] |= setBit(sq); break;
-					case -1: Minus1Dir[i] |= setBit(sq); break;
-					case -8: Minus8Dir[i] |= setBit(sq); break;
+					case  1: Plus1Dir[i] |= set1Bit(sq); break;
+					case  8: Plus8Dir[i] |= set1Bit(sq); break;
+					case -1: Minus1Dir[i] |= set1Bit(sq); break;
+					case -8: Minus8Dir[i] |= set1Bit(sq); break;
 				}
 
 				lastSq = sq;
@@ -363,10 +363,10 @@ board::base::initialize()
 			{
 				switch (dir)
 				{
-					case  7: Plus7Dir[i] |= setBit(sq); break;
-					case  9: Plus9Dir[i] |= setBit(sq); break;
-					case -7: Minus7Dir[i] |= setBit(sq); break;
-					case -9: Minus9Dir[i] |= setBit(sq); break;
+					case  7: Plus7Dir[i] |= set1Bit(sq); break;
+					case  9: Plus9Dir[i] |= set1Bit(sq); break;
+					case -7: Minus7Dir[i] |= set1Bit(sq); break;
+					case -9: Minus9Dir[i] |= set1Bit(sq); break;
 				}
 
 				lastSq = sq;
@@ -506,14 +506,14 @@ board::base::initialize()
 
 	for (unsigned i = 0; i < 56; ++i)
 	{
-		MaskProtectedPawn[White][i] = setBit(i - 1) | setBit(i + 1);
-		MaskProtectedPawn[Black][i] = setBit(i - 1) | setBit(i + 1);
+		MaskProtectedPawn[White][i] = set1Bit(i - 1) | set1Bit(i + 1);
+		MaskProtectedPawn[Black][i] = set1Bit(i - 1) | set1Bit(i + 1);
 
 		if (i > 15)
-			MaskProtectedPawn[White][i] |= setBit(i - 7) | setBit(i - 9);
+			MaskProtectedPawn[White][i] |= set1Bit(i - 7) | set1Bit(i - 9);
 
 		if (i < 48)
-			MaskProtectedPawn[Black][i] |= setBit(i + 7) | setBit(i + 9);
+			MaskProtectedPawn[Black][i] |= set1Bit(i + 7) | set1Bit(i + 9);
 	}
 
 	memset(MaskDuoPawn, 0, sizeof(MaskDuoPawn));
@@ -524,20 +524,20 @@ board::base::initialize()
 		switch (fyle(i))
 		{
 			case 0:
-				MaskDuoPawn[i] = setBit(i + 1);
-				MaskPassedPawnConnected[i] = setBit(i + 1) | setBit(i - 7) | setBit(i + 9);
+				MaskDuoPawn[i] = set1Bit(i + 1);
+				MaskPassedPawnConnected[i] = set1Bit(i + 1) | set1Bit(i - 7) | set1Bit(i + 9);
 				break;
 
 			case 7:
-				MaskDuoPawn[i] = setBit(i - 1);
-				MaskPassedPawnConnected[i] = setBit(i - 1) | setBit(i - 9) | setBit(i + 7);
+				MaskDuoPawn[i] = set1Bit(i - 1);
+				MaskPassedPawnConnected[i] = set1Bit(i - 1) | set1Bit(i - 9) | set1Bit(i + 7);
 				break;
 
 			default:
-				MaskDuoPawn[i] = setBit(i - 1) | setBit(i + 1);
-				MaskPassedPawnConnected[i] = setBit(i - 1) | setBit(i + 1)
-															| setBit(i - 9) | setBit(i - 7)
-															| setBit(i + 9) | setBit(i + 7);
+				MaskDuoPawn[i] = set1Bit(i - 1) | set1Bit(i + 1);
+				MaskPassedPawnConnected[i] = set1Bit(i - 1) | set1Bit(i + 1)
+															| set1Bit(i - 9) | set1Bit(i - 7)
+															| set1Bit(i + 9) | set1Bit(i + 7);
 				break;
 		}
 	}
@@ -549,23 +549,23 @@ board::base::initialize()
 	{
 		if (i > 0)
 		{
-			MaskHiddenLeft[White][i] |= setBit(39 + i) | setBit(47 + i);
-			MaskHiddenLeft[Black][i] |= setBit(15 + i) | setBit( 7 + i);
+			MaskHiddenLeft[White][i] |= set1Bit(39 + i) | set1Bit(47 + i);
+			MaskHiddenLeft[Black][i] |= set1Bit(15 + i) | set1Bit( 7 + i);
 		}
 		if (i > 1)
 		{
-			MaskHiddenLeft[White][i] |= setBit(46 + i) | setBit(38 + i);
-			MaskHiddenLeft[Black][i] |= setBit( 6 + i) | setBit(14 + i);
+			MaskHiddenLeft[White][i] |= set1Bit(46 + i) | set1Bit(38 + i);
+			MaskHiddenLeft[Black][i] |= set1Bit( 6 + i) | set1Bit(14 + i);
 		}
 		if (i < 6)
 		{
-			MaskHiddenRight[White][i] |= setBit(50 + i) | setBit(42 + i);
-			MaskHiddenRight[Black][i] |= setBit(10 + i) | setBit(18 + i);
+			MaskHiddenRight[White][i] |= set1Bit(50 + i) | set1Bit(42 + i);
+			MaskHiddenRight[Black][i] |= set1Bit(10 + i) | set1Bit(18 + i);
 		}
 		if (i < 7)
 		{
-			MaskHiddenRight[White][i] |= setBit(41 + i) | setBit(49 + i);
-			MaskHiddenRight[Black][i] |= setBit(17 + i) | setBit( 9 + i);
+			MaskHiddenRight[White][i] |= set1Bit(41 + i) | set1Bit(49 + i);
+			MaskHiddenRight[Black][i] |= set1Bit(17 + i) | set1Bit( 9 + i);
 		}
 	}
 
@@ -608,45 +608,45 @@ board::base::initialize()
 			if (j < 16)
 			{
 				if (kingPawnSquare(sq::ID(j + 8), sq::ID(i), sq::ID(fyle(j) + 56), true))
-					RaceMask[White][White][j] |= setBit(i);
+					RaceMask[White][White][j] |= set1Bit(i);
 			}
 			else
 			{
 				if (kingPawnSquare(sq::ID(j), sq::ID(i), sq::ID(fyle(j) + 56), true))
-					RaceMask[White][White][j] |= setBit(i);
+					RaceMask[White][White][j] |= set1Bit(i);
 			}
 			// white pawn, btm
 			if (j < 16)
 			{
 				if (kingPawnSquare(sq::ID(j + 8), sq::ID(i), sq::ID(fyle(j) + 56), false))
-					RaceMask[White][Black][j] |= setBit(i);
+					RaceMask[White][Black][j] |= set1Bit(i);
 			}
 			else
 			{
 				if (kingPawnSquare(sq::ID(j), sq::ID(i), sq::ID(fyle(j) + 56), false))
-					RaceMask[White][Black][j] |= setBit(i);
+					RaceMask[White][Black][j] |= set1Bit(i);
 			}
 			// black pawn, wtm
 			if (j > 47)
 			{
 				if (kingPawnSquare(sq::ID(j - 8), sq::ID(i), sq::ID(fyle(j)), false))
-					RaceMask[Black][White][j] |= setBit(i);
+					RaceMask[Black][White][j] |= set1Bit(i);
 			}
 			else
 			{
 				if (kingPawnSquare(sq::ID(j), sq::ID(i), sq::ID(fyle(j)), false))
-					RaceMask[Black][White][j] |= setBit(i);
+					RaceMask[Black][White][j] |= set1Bit(i);
 			}
 			// black pawn, btm
 			if (j > 47)
 			{
 				if (kingPawnSquare(sq::ID(j - 8), sq::ID(i), sq::ID(fyle(j)), true))
-					RaceMask[Black][Black][j] |= setBit(i);
+					RaceMask[Black][Black][j] |= set1Bit(i);
 			}
 			else
 			{
 				if (kingPawnSquare(sq::ID(j), sq::ID(i), sq::ID(fyle(j)), true))
-					RaceMask[Black][Black][j] |= setBit(i);
+					RaceMask[Black][Black][j] |= set1Bit(i);
 			}
 		}
 	}
@@ -685,7 +685,7 @@ board::base::initialize()
 
 			for (unsigned r2 = r; r2 < 8; ++r2, t += 8)
 			{
-				mask |= setBit(t);
+				mask |= set1Bit(t);
 				MaskVertical[s][t] = MaskVertical[t][s] |= mask;
 			}
 		}
@@ -704,14 +704,14 @@ board::base::initialize()
 
 		for (int q = s; q < 64 && fyle(q) >= f; q += 9)
 		{
-			rmask |= setBit(q);
-			lmask |= setBit(flipFyle(sq::ID(q)));
+			rmask |= set1Bit(q);
+			lmask |= set1Bit(flipFyle(sq::ID(q)));
 		}
 
 		for (int q = s; q >= 0 && fyle(q) <= f; q -= 9)
 		{
-			rmask |= setBit(q);
-			lmask |= setBit(flipFyle(sq::ID(q)));
+			rmask |= set1Bit(q);
+			lmask |= set1Bit(flipFyle(sq::ID(q)));
 		}
 
 		MaskDiagonal[s] = rmask;

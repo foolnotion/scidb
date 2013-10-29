@@ -134,6 +134,14 @@ Tree::clearCache(Database& base)
 	base.treeCache().clear();
 }
 
+
+inline
+void
+Tree::invalidateCache(Database& base, unsigned gameIndex)
+{
+	base.treeCache().setIncomplete(gameIndex);
+}
+
 } // namespace db
 
 // vi:set ts=3 sw=3:

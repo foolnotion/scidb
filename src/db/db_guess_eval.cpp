@@ -1216,7 +1216,7 @@ db::Guess::evaluateKnights(color::ID side, Flip flip)
 				D4 | E4 | D5 | E5,
 			};
 
-			uint64_t moves = (knightAttacks(square) & ~m_occupiedBy[side]) | ::setBit(square);
+			uint64_t moves = (knightAttacks(square) & ~m_occupiedBy[side]) | ::set1Bit(square);
 
 			score	-= penalty::LowerKnight;
 			score += count(moves & MobilityMask[0]);
@@ -1322,10 +1322,10 @@ db::Guess::evaluateBishops(color::ID side, Flip flip)
 		// trap the bishop, or a pawn at b6 or g6 that has
 		// trapped the bishop already. Also test for the bishop
 		// at b8 or g8 as that might not be an escape.
-		if (	(flippedSquare == a7 && (enemyPawns & ::setBit(flip(b6))))
-			||	(flippedSquare == b8 && (enemyPawns & ::setBit(flip(c7))))
-			||	(flippedSquare == h7 && (enemyPawns & ::setBit(flip(g6))))
-			||	(flippedSquare == g8 && (enemyPawns & ::setBit(flip(f7)))))
+		if (	(flippedSquare == a7 && (enemyPawns & ::set1Bit(flip(b6))))
+			||	(flippedSquare == b8 && (enemyPawns & ::set1Bit(flip(c7))))
+			||	(flippedSquare == h7 && (enemyPawns & ::set1Bit(flip(g6))))
+			||	(flippedSquare == g8 && (enemyPawns & ::set1Bit(flip(f7)))))
 		{
 			score -= penalty::BishopTrapped;
 		}
@@ -1346,7 +1346,7 @@ db::Guess::evaluateBishops(color::ID side, Flip flip)
 				D4 | E4 | D5 | E5,
 			};
 
-			uint64_t moves = (bishopAttacks(square) & ~m_occupiedBy[side]) | ::setBit(square);
+			uint64_t moves = (bishopAttacks(square) & ~m_occupiedBy[side]) | ::set1Bit(square);
 
 			score	-= penalty::LowerBishop;
 			score += count(moves & MobilityMask[0])*(1 + pair);
@@ -1465,7 +1465,7 @@ db::Guess::evaluateRooks(color::ID side, Flip flip)
 		// attacks, excluding squares with friendly pieces, and
 		// weighs each square according to centralization (fyle).
 		{
-			uint64_t moves = (rookAttacks(square) & ~m_occupiedBy[side]) | ::setBit(square);
+			uint64_t moves = (rookAttacks(square) & ~m_occupiedBy[side]) | ::set1Bit(square);
 
 			score	-= penalty::LowerRook;
 			score += count(moves & (FyleMaskA | FyleMaskH));
@@ -1605,9 +1605,9 @@ db::Guess::evaluatePawns(color::ID side)
 
 		for (int sq = square; sq != last; sq = next, next += dir)
 		{
-			pawnMoves |= ::setBit(sq);
+			pawnMoves |= ::set1Bit(sq);
 
-			if (::setBit(next) & m_pawns)
+			if (::set1Bit(next) & m_pawns)
 				break;
 
 			int defenders = count(pawnAttacksOpponent[next] & myPawns);
@@ -1713,7 +1713,7 @@ db::Guess::evaluatePawns(color::ID side)
 
 			for (int sq = square; sq != last; sq = next, next += dir)
 			{
-				if (m_pawns & ::setBit(next))
+				if (m_pawns & ::set1Bit(next))
 					break;
 
 				defenders = count(pawnAttacksOpponent[sq] & pawnMoves);
@@ -1743,12 +1743,12 @@ db::Guess::evaluatePawns(color::ID side)
 		// but this is misleading, because the pawn at a6 is
 		// really passed when white plays b6.
 		if (	rank == Rank3
-			&& (enemyPawns & ::setBit(square + dir))
+			&& (enemyPawns & ::set1Bit(square + dir))
 			&& (	(	fyle < FyleH
-					&& (myPawns & ::setBit(square + (1 - dir)))
+					&& (myPawns & ::set1Bit(square + (1 - dir)))
 					&& !(enemyPawns & maskHiddenRight[fyle]))
 				|| (	fyle > FyleA
-					&& (myPawns & ::setBit(square + (1 - dir)))
+					&& (myPawns & ::set1Bit(square + (1 - dir)))
 					&& !(enemyPawns & maskHiddenLeft[fyle]))))
 		{
 			score += pawn::PassedPawnHidden;
@@ -1831,11 +1831,11 @@ db::Guess::evaluateKingsFyle(color::ID side, int whichFyle)
 			{
 				defects += pawn::HalfOpenFyle[fyle];
 			}
-			else if (!(myPawns & ::setBit(sq::make(fyle, PawnRank[side]))))
+			else if (!(myPawns & ::set1Bit(sq::make(fyle, PawnRank[side]))))
 			{
 				++defects;
 
-				if (!(myPawns & ::setBit(sq::make(fyle, EpRank[side]))))//XXX ok?
+				if (!(myPawns & ::set1Bit(sq::make(fyle, EpRank[side]))))//XXX ok?
 					++defects;
 			}
 		}
@@ -1957,7 +1957,7 @@ db::Guess::evaluatePassedPawns(color::ID side, Flip flip)
 		// If the pawn is blockaded by an enemy piece, it
 		// cannot move and is therefore not nearly as
 		// valuable as if it were free to advance.
-		if (m_piece[blocking] != piece::Empty && (m_occupiedBy[opponent] & ::setBit(blocking)))
+		if (m_piece[blocking] != piece::Empty && (m_occupiedBy[opponent] & ::set1Bit(blocking)))
 		{
 			int rank = ::rank(flip(blocking));
 			score -= pawn::BlockadingPassedPawnValue[rank];
@@ -2156,7 +2156,7 @@ db::Guess::evaluatePassedPawnRaces()
 
 				if (::fyle(right) - ::fyle(left) > 1)
 				{
-					if (!(RaceMask[side][sideToMove()][left] & ::setBit(right)))
+					if (!(RaceMask[side][sideToMove()][left] & ::set1Bit(right)))
 					{
 						int queenDistance = lastRank - ::rank(left);
 
@@ -2171,7 +2171,7 @@ db::Guess::evaluatePassedPawnRaces()
 						}
 					}
 
-					if (!(RaceMask[side][sideToMove()][right] & ::setBit(left)))
+					if (!(RaceMask[side][sideToMove()][right] & ::set1Bit(left)))
 					{
 						int queenDistance = lastRank - ::rank(right);
 
@@ -2241,8 +2241,8 @@ db::Guess::evaluatePassedPawnRaces()
 	// square in which case it's a draw.
 	if (queener[White] == queener[Black])
 	{
-		uint64_t occupied = (whitePieces() & ~::setBit(passedPawn[White])) | ::setBit(promoSq[White])
-								| (blackPieces() & ~::setBit(passedPawn[Black])) | ::setBit(promoSq[Black]);
+		uint64_t occupied = (whitePieces() & ~::set1Bit(passedPawn[White])) | ::set1Bit(promoSq[White])
+								| (blackPieces() & ~::set1Bit(passedPawn[Black])) | ::set1Bit(promoSq[Black]);
 
 		if (	!(::Obstructed[kingSq(Black)][promoSq[White]] & occupied)
 			|| (	!(::Obstructed[promoSq[Black]][promoSq[White]] & occupied)
@@ -2259,8 +2259,8 @@ db::Guess::evaluatePassedPawnRaces()
 	// square in which case it's a draw.
 	if (queener[Black] == queener[White] - 1)
 	{
-		uint64_t occupied = (whitePieces() & ~::setBit(passedPawn[White])) | ::setBit(promoSq[White])
-								| (blackPieces() & ~::setBit(passedPawn[Black])) | ::setBit(promoSq[Black]);
+		uint64_t occupied = (whitePieces() & ~::set1Bit(passedPawn[White])) | ::set1Bit(promoSq[White])
+								| (blackPieces() & ~::set1Bit(passedPawn[Black])) | ::set1Bit(promoSq[Black]);
 
 		if (	!(::Obstructed[kingSq(White)][promoSq[Black]] & occupied)
 			|| (	!(::Obstructed[promoSq[White]][promoSq[Black]] & occupied)

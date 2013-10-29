@@ -228,7 +228,7 @@ Decoder::decodeVariation(ByteStream& moves, ByteStream& text)
 					throwCorruptData();
 
 				m_position.push();
-				m_position.board().undoMove(move, variant::Normal);
+				m_position.undoMove(move);
 				current->addVariation(m_currentNode = new MoveNode);
 				decodeVariation(moves, text);
 				m_currentNode = current;
@@ -280,7 +280,7 @@ Decoder::decodeVariation(Consumer& consumer, ByteStream& moves, ByteStream& text
 					throwCorruptData();
 
 				m_position.push();
-				m_position.board().undoMove(move, variant::Normal);
+				m_position.undoMove(move);
 				consumer.startVariation();
 				decodeVariation(consumer, moves, text);
 				consumer.finishVariation();

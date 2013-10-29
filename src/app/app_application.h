@@ -145,7 +145,7 @@ public:
 		virtual void databaseSwitched(mstl::string const& name, db::variant::Type variant) = 0;
 		virtual void closeDatabase(mstl::string const& name, db::variant::Type variant) = 0;
 		virtual void updateTree(mstl::string const& name, db::variant::Type variant) = 0;
-		virtual void clearTreeCache() = 0;
+		virtual void invalidateTreeCache() = 0;
 	};
 
 	typedef mstl::ref_counted_ptr<Subscriber> SubscriberP;
@@ -506,6 +506,7 @@ private:
 	bool compact(Cursor& cursor, util::Progress& progress);
 	bool compact(Cursor& cursor);
 	void clearTreeCache();
+	void invalidateTreeCache(unsigned gameIndex);
 
 	Cursor*			m_current;
 	Cursor*			m_clipbase;

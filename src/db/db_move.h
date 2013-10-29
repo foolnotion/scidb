@@ -76,7 +76,7 @@ private:
 
 		Shift_EpSquare				= 12,
 		Shift_CastlingRights		= 20,
-		Shift_EpSquareExists		= 24,
+//		Shift_EpSquareExists		= 24,
 		Shift_CapturePromoted	= 25,
 		Shift_Prepared				= 26,
 		Shift_Fyle					= 27,
@@ -99,7 +99,7 @@ private:
 		Bit_DoubleCheck		= 1u << Shift_DoubleCheck,
 		Bit_Legality			= 1u << Shift_Legality,
 
-		Bit_EpSquareExists	= 1u << Shift_EpSquareExists,
+//		Bit_EpSquareExists	= 1u << Shift_EpSquareExists,
 		Bit_CapturePromoted	= 1u << Shift_CapturePromoted,
 		Bit_Prepared			= 1u << Shift_Prepared,
 		Bit_Fyle					= 1u << Shift_Fyle,
@@ -388,14 +388,12 @@ private:
 
 	void setUndo(	uint32_t halfMoves,
 						uint32_t epSquare,
-						uint32_t epSquareExists,
 						uint32_t castlingRights,
 						uint32_t capturePromoted);
 
 	uint32_t prevHalfMoves() const;
 	Square prevEpSquare() const;
 	Byte prevCastlingRights() const;
-	bool prevEpSquareExists() const;
 	bool prevCapturePromoted() const;
 
 	// The move definition 'm' bitfield layout:
@@ -435,7 +433,7 @@ private:
 	// 00000000 00000000 00001111 11111111 = half move clock   = bits  1-12    U
 	// 00000000 00001111 11110000 00000000 = prev. ep square   = bits 13-20    U
 	// 00000000 11110000 00000000 00000000 = castling rights   = bits 21-24    U
-	// 00000001 00000000 00000000 00000000 = ep sq exists?     = bit  25       U
+	// 00000001 00000000 00000000 00000000 = -unused-          = bit  25       U
 	// 00000010 00000000 00000000 00000000 = capture promoted? = bit  26       U
 	// 00000100 00000000 00000000 00000000 = undo prepared?    = bit  27       U
 	// 00001000 00000000 00000000 00000000 = SAN needs fyle    = bit  28       P

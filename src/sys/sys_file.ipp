@@ -16,6 +16,8 @@
 // (at your option) any later version.
 // ======================================================================
 
+#include "m_assert.h"
+
 inline
 char
 sys::file::pathDelim()
@@ -26,5 +28,39 @@ sys::file::pathDelim()
 	return '/';
 #endif
 }
+
+
+namespace sys {
+namespace file {
+
+inline bool Mapping::isOpen() const			{ return m_address; }
+inline bool Mapping::isWriteable() const	{ return m_writeable; }
+inline bool Mapping::isReadonly() const	{ return !m_writeable; }
+
+inline unsigned Mapping::size() const		{ return m_size; }
+inline unsigned Mapping::capacity() const	{ return m_capacity; }
+
+
+inline
+unsigned char const*
+Mapping::address() const
+{
+	M_REQUIRE(isOpen());
+	return static_cast<unsigned char const*>(m_address);
+}
+
+
+inline
+unsigned char*
+Mapping::address()
+{
+	M_REQUIRE(isOpen());
+	M_REQUIRE(isWriteable());
+
+	return static_cast<unsigned char*>(m_address);
+}
+
+} // namespace file
+} // namespace sys
 
 // vi:set ts=3 sw=3:

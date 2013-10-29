@@ -222,7 +222,7 @@ reverse(uint128_t x)
 
 /// \brief Computes the number of 1 bits in a number.
 /// \ingroup ConditionAlgorithms
-template <class T>
+template <typename T>
 unsigned
 count_bits(T x)
 {
@@ -232,7 +232,7 @@ count_bits(T x)
 
 /// \brief Computes the index of the most significant bit in a number.
 /// \ingroup ConditionAlgorithms
-template <class T>
+template <typename T>
 unsigned
 msb_index(T x)
 {
@@ -242,7 +242,7 @@ msb_index(T x)
 
 /// \brief Computes the index of the least significant bit in a number.
 /// \ingroup ConditionAlgorithms
-template <class T>
+template <typename T>
 unsigned
 lsb_index(T x)
 {
@@ -250,11 +250,37 @@ lsb_index(T x)
 }
 
 
-template <class T>
+template <typename T>
 T
 reverse(T x)
 {
 	return bits::reverse(static_cast<typename bits::remove_sign<sizeof(T)>::type>(x));
+}
+
+
+template <typename T>
+T
+rotate_left(T x, unsigned shift)
+{
+	// NOTE:
+	// Due to <http://chsc.wordpress.com/2010/01/13/compiler-optimization>
+	// the GNU compiler knows that the C code only rotates the bits and that
+	// this can be done with the x86 rol and ror instructions.
+	// Also see <http://gcc.gnu.org/bugzilla/show_bug.cgi?id=17886>.
+	return (x << shift) | (x >> (sizeof(T)*8 - shift));
+}
+
+
+template <typename T>
+T
+rotate_right(T x, unsigned shift)
+{
+	// NOTE:
+	// Due to <http://chsc.wordpress.com/2010/01/13/compiler-optimization>
+	// the GNU compiler knows that the C code only rotates the bits and that
+	// this can be done with the x86 rol and ror instructions.
+	// Also see <http://gcc.gnu.org/bugzilla/show_bug.cgi?id=17886>.
+	return (x >> shift) | (x << (sizeof(T)*8 - shift));
 }
 
 } // namespace bf

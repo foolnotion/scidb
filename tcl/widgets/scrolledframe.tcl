@@ -182,14 +182,14 @@ proc scrolledframe {w args} {
 	array unset opts -wheelunits
 	set args [array get opts]
 	if {[llength $args]} [list uplevel 1 [namespace current]::Config $w $args]
-	BindMousewheel $w $w 
-	BindMousewheel $w $w.scrolled
+	BindMouseWheel $w $w 
+	BindMouseWheel $w $w.scrolled
 	return $w
 }
 
 
-proc bindMousewheel {w recv} {
-	BindMousewheel [winfo parent $w] $recv
+proc bindMouseWheel {w recv} {
+	BindMouseWheel [winfo parent $w] $recv
 }
 
 
@@ -578,7 +578,7 @@ proc Yview {w {cmd ""} args} {
 }
 
 
-proc BindMousewheel {w recv} {
+proc BindMouseWheel {w recv} {
 	variable {}
 
 	set units $($w:wheelunits)

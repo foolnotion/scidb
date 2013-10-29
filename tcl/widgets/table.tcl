@@ -211,6 +211,20 @@ proc table {args} {
 		-fullstripes $Options(-fullstripes) \
 		-background $background             \
 		;
+	$table.t column dragconfigure -enable yes
+	$table.t notify install <ColumnDrag-receive>
+	$table.t notify install <Header-enter>
+	$table.t notify install <Header-leave>
+	$table.t notify install <Item-enter>
+	$table.t notify install <Item-leave>
+	$table.t notify install <Column-resized>
+	$table.t notify bind Table <ColumnDrag-receive> [namespace code [list MoveColumn $table %C %b]]
+	$table.t notify bind Table <Header-enter> [namespace code [list Tooltip $table show %C]]
+	$table.t notify bind Table <Header-leave> [namespace code [list Tooltip $table hide]]
+	$table.t notify bind Table <Item-enter> [namespace code [list VisitItem $table enter %C %I]]
+	$table.t notify bind Table <Item-leave> [namespace code [list VisitItem $table leave %C %I]]
+	$table.t notify bind Table <Column-resized> [namespace code [list UpdateColunnWidth $table %C %w]]
+
 	setColumnBackground $table tail [lookupColor $Options(-stripes)] [lookupColor $background]
 	$table.t state define deleted
 	$table.t state define check
@@ -433,19 +447,6 @@ proc addcol {table id args} {
 		-uniform uniform                                     \
 		-itembackground $colors                              \
 		;
-	$table.t column dragconfigure -enable yes
-	$table.t notify install <ColumnDrag-receive>
-	$table.t notify install <Header-enter>
-	$table.t notify install <Header-leave>
-	$table.t notify install <Item-enter>
-	$table.t notify install <Item-leave>
-	$table.t notify install <Column-resized>
-	$table.t notify bind Table <ColumnDrag-receive> [namespace code [list MoveColumn $table %C %b]]
-	$table.t notify bind Table <Header-enter> [namespace code [list Tooltip $table show %C]]
-	$table.t notify bind Table <Header-leave> [namespace code [list Tooltip $table hide]]
-	$table.t notify bind Table <Item-enter> [namespace code [list VisitItem $table enter %C %I]]
-	$table.t notify bind Table <Item-leave> [namespace code [list VisitItem $table leave %C %I]]
-	$table.t notify bind Table <Column-resized> [namespace code [list UpdateColunnWidth $table %C %w]]
 
 	set foreground $opts(-foreground)
 	if {[llength $foreground] == 0} { set foreground $Options(-foreground) }

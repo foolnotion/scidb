@@ -148,7 +148,7 @@ proc popup {parent args} {
 	set top [winfo toplevel $parent]${point}__colormenu__
 	if {[winfo exists $top]} { return }
 	
-	menu $top
+	menu $top -tearoff false
 	wm withdraw $top
 	tk::frame $top.f -relief raised -borderwidth 2
 	set bg [$top.f cget -background]

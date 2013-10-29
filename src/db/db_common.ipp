@@ -90,6 +90,13 @@ inline Rank rank(Square square) { return Rank(square >> 3); }
 
 inline ID make(Square fyle, Square rank) { return ID((rank << 3) | fyle); }
 
+inline
+ID
+makeEnPassant(Fyle fyle, color::ID color)
+{
+	return make(fyle, color::isWhite(color) ? sq::Rank3 : sq::Rank6);
+}
+
 inline char printFyle(Square square)	{ return 'a' + fyle(square); }
 inline char printFYLE(Square square)	{ return 'A' + fyle(square); }
 inline char printRank(Square square)	{ return '1' + rank(square); }

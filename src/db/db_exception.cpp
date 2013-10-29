@@ -87,6 +87,13 @@ IOException::FileType IOException::fileType() const	{ return m_fileType; }
 IOException::ErrorType IOException::errorType() const	{ return m_errorType; }
 
 
-DecodingFailedException::DecodingFailedException() :Exception() {}
+DecodingFailedException::DecodingFailedException(char const* fmt, ...)
+	:Exception()
+{
+	va_list args;
+	va_start(args, fmt);
+	set_message(fmt, args);
+	va_end(args);
+}
 
 // vi:set ts=3 sw=3:

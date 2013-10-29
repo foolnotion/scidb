@@ -273,6 +273,8 @@ public:
 	Move const& currentMove() const;
 	/// Return next move (empty if none available)
 	Move const& nextMove() const;
+	/// Return next move of given variation (empty if none available)
+	Move const& nextMove(unsigned varno) const;
 	/// Return side to move
 	color::ID sideToMove() const;
 	/// Return current move number

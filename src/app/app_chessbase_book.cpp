@@ -1,7 +1,7 @@
 // ======================================================================
 // Author : $Author$
-// Version: $Revision$
-// Date   : $Date$
+// Version: $Revision: 957 $
+// Date   : $Date: 2013-09-30 17:11:24 +0200 (Mon, 30 Sep 2013) $
 // Url    : $URL$
 // ======================================================================
 
@@ -24,65 +24,53 @@
 // (at your option) any later version.
 // ======================================================================
 
-#ifndef _cbf_decoder_position_included
-#define _cbf_decoder_position_included
+#include "app_chessbase_book.h"
 
-#include "db_board.h"
-#include "db_move.h"
+using namespace db;
+using namespace app::chessbase;
 
-#include "m_stack.h"
 
-namespace util { class ByteStream; }
-
-namespace db {
-namespace cbf {
-namespace decoder {
-
-class Position
+Book::Book(mstl::string const& filename)
 {
-public:
+}
 
-	Position();
 
-	unsigned variationLevel() const;
+bool Book::isReadonly() const			{ return true; }
+Book::Format Book::format() const	{ return ChessBase; }
 
-	void setup();
-	void setup(util::ByteStream& strm, Byte h10, Byte h11);
 
-	void push();
-	void pop();
+Move
+Book::probeNextMove(::db::Board const& position, variant::Type variant)
+{
+	return Move();
+}
 
-	Board const& board() const;
-	Board& board();
 
-	::db::Move doMove(unsigned moveNumber);
-	void undoMove(::db::Move const& move);
+bool
+Book::probePosition(::db::Board const& position, variant::Type variant, Entry& result)
+{
+	return false;
+}
 
-private:
 
-	struct Entry
-	{
-		Entry();
+bool
+Book::remove(::db::Board const& position, variant::Type variant)
+{
+	return false;
+}
 
-		Board		board;
-		Square	epSquare;
-		Square	prevEpSquare;
-		bool		epFake;
-	};
 
-	typedef mstl::stack<Entry> Stack;
+bool
+Book::modify(::db::Board const& position, variant::Type variant, Entry const& entry)
+{
+	return false;
+}
 
-	void reset();
 
-	Stack m_stack;
-};
-
-} // namespace decoder
-} // namespace cbf
-} // namespace db
-
-#include "cbf_decoder_position.ipp"
-
-#endif // _cbf_decoder_position_included
+bool
+Book::add(::db::Board const& position, variant::Type variant, Entry const& entry)
+{
+	return false;
+}
 
 // vi:set ts=3 sw=3:

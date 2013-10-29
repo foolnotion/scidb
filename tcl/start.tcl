@@ -748,6 +748,9 @@ array set Colors {
 	lite:gamehistory,hilite					#ebf4f5
 
 	lite:playerdict,stripes					linen
+
+	lite:varslider,background				#ffdd76
+	lite:varslider,active					#ffc618
 }
 # mapped from #ebf4f5
 array set Colors {

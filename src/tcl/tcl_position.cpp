@@ -62,6 +62,7 @@ static char const* CmdSearchDepth	= "::scidb::pos::searchDepth";
 static char const* CmdSetup			= "::scidb::pos::setup";
 static char const* CmdStm				= "::scidb::pos::stm";
 static char const* CmdValid			= "::scidb::pos::valid?";
+static char const* CmdVariations		= "::scidb::pos::variations";
 
 static Square		m_bestSquareCache[64];
 static Move			m_bestMoveCache[64];
@@ -246,6 +247,36 @@ static int
 cmdStm(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	setResult(color::isWhite(Scidb->game().currentBoard().sideToMove()) ? "w" : "b");
+	return TCL_OK;
+}
+
+
+static int
+cmdVariations(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	Tcl_Obj* result = Tcl_NewListObj(0, 0);
+
+	Game const& game = Scidb->game();
+
+	if (game.subVariationCount() > 0)
+	{
+		for (int i = -1; i < int(game.subVariationCount()); ++i)
+		{
+			mstl::string	san;
+			Move				move(i == -1 ? game.nextMove() : game.nextMove(i));
+
+			move.printSan(san, protocol::Scidb, encoding::Utf8);
+
+			Tcl_Obj* objs[3];
+			objs[0] = Tcl_NewStringObj(san, san.size());
+			objs[1] = Tcl_NewIntObj(move.from());
+			objs[2] = Tcl_NewIntObj(move.to());
+
+			Tcl_ListObjAppendElement(ti, result, Tcl_NewListObj(3, objs));
+		}
+	}
+
+	setResult(result);
 	return TCL_OK;
 }
 
@@ -613,6 +644,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdSetup,			cmdSetup);
 	createCommand(ti, CmdStm,				cmdStm);
 	createCommand(ti, CmdValid,			cmdValid);
+	createCommand(ti, CmdVariations,		cmdVariations);
 }
 
 } // namespace game

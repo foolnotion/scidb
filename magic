@@ -38,8 +38,13 @@
 #------------------------------------------------------------------------------
 # polyglot:  file(1) magic polyglot chess opening book files
 #
-# From Michel Van den Bergh 
+# From Michel Van den Bergh
+# http://hardy.uhasselt.be/Toga/pgheader-release/header.html
+#
+# Note; only a few applications (like Scidb) are using this proposal
 
 0		string	\x00\x00\x00\x00\x00\x00\x00\x00@PG@\x0a	Polyglot chess opening book
->13	string	1.0\x00\x00\x00\x00\x00\x00\x00\x00\x0a	(version 1.0)
+>13	byte		x														(version %d
+>14	string	.
+>15	byte		x														%d)
 

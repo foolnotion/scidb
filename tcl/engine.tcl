@@ -2500,7 +2500,7 @@ proc OpenSetupDialog(Options) {parent} {
 #	if {$vertical} { set expand x } else { set expand y }
 #	set scrolled [::scrolledframe $dlg.top -expand $expand]
 	set scrolled [::scrolledframe $dlg.top]
-	::scrolledframe::bindMousewheel $scrolled $dlg
+	::scrolledframe::bindMouseWheel $scrolled $dlg
 	pack $dlg.top
 	set top [ttk::frame $scrolled.f -borderwidth 0 -takefocus 0]
 	grid $scrolled.f -sticky nsew

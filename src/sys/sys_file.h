@@ -47,7 +47,44 @@ enum Type
 	Unknown,
 };
 
+class Mapping
+{
+public:
+
+	Mapping(char const* filename, Mode mode);
+	~Mapping();
+
+	bool isOpen() const;
+	bool isWriteable() const;
+	bool isReadonly() const;
+
+	unsigned size() const;
+	unsigned capacity() const;
+
+	unsigned char const* address() const;
+	unsigned char* address();
+
+	void resize(unsigned newSize);
+	void flush(unsigned size = 0);
+
+private:
+
+	void*		m_address;
+	unsigned	m_size;
+	unsigned	m_capacity;
+	bool		m_writeable;
+
+#ifdef __WIN32__
+	HANDLE m_file;
+	HANDLE m_mapping;
+#else
+	int m_fd;
+#endif
+};
+
+
 mstl::string internalName(char const* externalName);
+mstl::string normalizedName(char const* externalName);
 char pathDelim();
 
 bool access(char const* filename, Mode mode);
@@ -61,9 +98,6 @@ Type type(char const* filename);
 void rename(char const* oldFilename, char const* newFilename, bool preserveOldAttrs = false);
 void deleteIt(char const* filename);
 bool setModificationTime(char const* filename, uint32_t time);
-
-void* createMapping(char const* filename, Mode mode);
-void closeMapping(void*& address);
 
 bool lock(int fd);
 void unlock(int fd);

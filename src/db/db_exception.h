@@ -63,6 +63,7 @@ public:
 		Namebase,
 		Annotation,
 		PgnFile,
+		BookFile,
 	};
 
 	enum ErrorType
@@ -106,7 +107,7 @@ class DecodingFailedException : public Exception
 {
 public:
 
-	DecodingFailedException();
+	DecodingFailedException(char const* fmt, ...) __attribute__((__format__(__printf__, 2, 3)));
 };
 
 } // namespace db

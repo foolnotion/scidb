@@ -76,6 +76,7 @@
 ::mc::Filter				"Filter"
 ::mc::From					"Von"
 ::mc::Game					"Partie"
+::mc::Hidden				"Versteckt"
 ::mc::Layout				"Layout"
 ::mc::Left					"Links"
 ::mc::Lite					"Hell"
@@ -422,6 +423,8 @@
 ::application::board::mc::SelectStartPosition		"Startposition wählen"
 ::application::board::mc::LoadRandomGame				"Zufällige Partie laden"
 ::application::board::mc::AddNewGame					"Partie hinzufügen..."
+::application::board::mc::SlidingVarPanePosition	"Position der gleitenden Variantenanzeige"
+::application::board::mc::ShowVariationArrows		"Pfeile für Variantenauswahl"
 
 ::application::board::mc::Tools							"Werkzeuge"
 ::application::board::mc::Control						"Steuerung"

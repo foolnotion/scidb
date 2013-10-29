@@ -405,7 +405,7 @@ db::Guess::generateMoves(Square square, MoveList& result) const
 	MoveList moves;
 	Board::generateMoves(variant, moves);
 
-	uint64_t sqMask = setBit(square);
+	uint64_t sqMask = set1Bit(square);
 
 	if ((m_occupied & sqMask) && m_stm == (m_occupiedBy[White] & sqMask ? White : Black))
 	{
@@ -1127,7 +1127,7 @@ db::Guess::staticExchangeEvaluator(Move const& move) const
 	int target	= move.to();
 	int n			= 1;
 
-	uint64_t fromMask		= ::setBit(move.from());
+	uint64_t fromMask		= ::set1Bit(move.from());
 	uint64_t occupied		= m_occupiedBy[m_stm ^ 1] & ~fromMask;
 	uint64_t occupied2	= m_occupiedBy[m_stm] & ~fromMask;
 	uint64_t pawns			= PawnAttacks[m_stm][target] & m_pawns;
@@ -1149,21 +1149,21 @@ db::Guess::staticExchangeEvaluator(Move const& move) const
 		if (pawns & occupied)
 		{
 			int square = lsb(pawns & occupied);
-			occupied &= ~::setBit(square);
+			occupied &= ~::set1Bit(square);
 			occupied |= addXrayPiece(square, target);
 			swapList[n] = -swapList[n - 1] + attackedPiece;
 			attackedPiece = m_pieceValues[piece::Pawn];
 		}
 		else if (knights & occupied)
 		{
-			occupied &= ~::setBit(lsb(knights & occupied));
+			occupied &= ~::set1Bit(lsb(knights & occupied));
 			swapList[n] = -swapList[n - 1] + attackedPiece;
 			attackedPiece = m_pieceValues[piece::Knight];
 		}
 		else if (bishops & occupied)
 		{
 			int square = lsb(bishops & occupied);
-			occupied &= ~::setBit(square);
+			occupied &= ~::set1Bit(square);
 			occupied |= addXrayPiece(square, target);
 			swapList[n] = -swapList[n - 1] + attackedPiece;
 			attackedPiece = m_pieceValues[piece::Bishop];
@@ -1171,7 +1171,7 @@ db::Guess::staticExchangeEvaluator(Move const& move) const
 		else if (rooks & occupied)
 		{
 			int square = lsb(rooks & occupied);
-			occupied &= ~::setBit(square);
+			occupied &= ~::set1Bit(square);
 			occupied |= addXrayPiece(square, target);
 			swapList[n] = -swapList[n - 1] + attackedPiece;
 			attackedPiece = m_pieceValues[piece::Rook];
@@ -1179,14 +1179,14 @@ db::Guess::staticExchangeEvaluator(Move const& move) const
 		else if (queens & occupied)
 		{
 			int square = lsb(queens & occupied);
-			occupied &= ~::setBit(square);
+			occupied &= ~::set1Bit(square);
 			occupied |= addXrayPiece(square, target);
 			swapList[n] = -swapList[n - 1] + attackedPiece;
 			attackedPiece = m_pieceValues[piece::Queen];
 		}
 		else if (kings & occupied)
 		{
-			occupied &= ~::setBit(lsb(kings & occupied));
+			occupied &= ~::set1Bit(lsb(kings & occupied));
 			swapList[n] = -swapList[n - 1] + attackedPiece;
 			attackedPiece = m_pieceValues[piece::King];
 		}

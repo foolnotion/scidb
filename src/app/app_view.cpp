@@ -824,7 +824,7 @@ View::exportGames(mstl::string const& filename,
 		{
 			static uint32_t const MaxFileSize = (uint32_t(2) << 31) - 1;
 			IOException::ErrorType error = IOException::Write_Failed;
-			if (unsigned(sys::file::size(internalName)) == MaxFileSize)
+			if (unsigned(sys::file::size(filename)) == MaxFileSize)
 				error = IOException::Max_File_Size_Exceeded;
 			M_THROW(IOException(IOException::PgnFile, error, "write failed"));
 		}

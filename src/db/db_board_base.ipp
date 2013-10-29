@@ -26,7 +26,8 @@
 
 #include "m_bit_functions.h"
 
-inline uint64_t db::board::setBit(int s)					{ return uint64_t(1) << s; }
+inline constexpr uint64_t db::board::set1Bit(int s)	{ return uint64_t(1) << s; }
+inline constexpr uint64_t db::board::set2Bit(int s)	{ return uint64_t(3) << s; }
 
 inline uint64_t db::board::shiftDown(uint64_t m)		{ return m >> 8; }
 inline uint64_t db::board::shift2Down(uint64_t m)		{ return m >> 16; }

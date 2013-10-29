@@ -63,6 +63,11 @@
 #include <string.h>
 #include <ctype.h>
 
+#ifdef CODEBLOCKS
+# define SCIDB_VERSION	"1.0 BETA"
+# define SCIDB_REVISION	"978"
+#endif
+
 using namespace tcl;
 using namespace util;
 

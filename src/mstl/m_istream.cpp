@@ -198,6 +198,30 @@ istream::seek_and_read(uint64_t pos, unsigned char* buf, size_t size)
 }
 
 
+istream&
+istream::seek_and_read(int64_t pos, seekdir dir, unsigned char* buf, size_t size)
+{
+	if (size > 0)
+	{
+		flockfile(m_fp);
+		size_t n = fseek(m_fp, pos, fdir(dir)) ? 0 : fread_unlocked(buf, 1, size, m_fp);
+		funlockfile(m_fp);
+
+		if (n < size)
+		{
+			if (ferror(m_fp))
+				setstate(badbit);
+			else if (feof(m_fp))
+				setstate(eofbit | failbit);
+			else
+				setstate(failbit);
+		}
+	}
+
+	return *this;
+}
+
+
 size_t
 istream::readsome(char* buf, size_t size)
 {

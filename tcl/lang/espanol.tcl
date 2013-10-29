@@ -78,6 +78,7 @@
 ::mc::Filter				"Filter" ;# NEW
 ::mc::From					"De"
 ::mc::Game					"Partida"
+::mc::Hidden				"Hidden" ;# NEW
 ::mc::Layout				"Disposición"
 ::mc::Left					"Izquierda"
 ::mc::Lite					"Claras"
@@ -423,6 +424,8 @@
 ::application::board::mc::SelectStartPosition		"Select Start Position" ;# NEW
 ::application::board::mc::LoadRandomGame				"Load random game" ;# NEW
 ::application::board::mc::AddNewGame					"Agregar nueva partida..."
+::application::board::mc::SlidingVarPanePosition	"Sliding variation pane position" ;# NEW
+::application::board::mc::ShowVariationArrows		"Show variation arrows" ;# NEW
 
 ::application::board::mc::Tools							"Herramientas"
 ::application::board::mc::Control						"Control"

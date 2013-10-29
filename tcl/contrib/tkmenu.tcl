@@ -210,13 +210,8 @@ if {[tk windowingsystem] eq "x11"} {
 
 ### MODERNIZE begin ##########################################################
 
-switch [tk windowingsystem] {
-    win32   { set ::tk::MODERNIZE 1 }
-    default { set ::tk::MODERNIZE 0 }
-}
-
 namespace eval tk {
-    set MenuDelay       250
+    set MenuDelay       0 ;# 250
     set ShadowOffset    0
 }
 
@@ -283,6 +278,7 @@ proc ::tk::MbPost {w {x {}} {y {}}} {
     ### FIX begin ################################################################
     if {![info exists Priv(fix:active)]} {
         set Priv(fix:active) ""
+        set Priv(fix:popup) 0
     }
     ### FIX end ##################################################################
 
@@ -308,7 +304,8 @@ proc ::tk::MbPost {w {x {}} {y {}}} {
     set tearoff [expr {[tk windowingsystem] eq "x11" \
 	    || [$menu cget -type] eq "tearoff"}]
     if {[string first $w $menu] != 0} {
-	error "can't post $menu:  it isn't a descendant of $w (this is a new requirement in Tk versions 3.0 and later)"
+	return -code error -errorcode {TK MENUBUTTON POST_NONCHILD} \
+	    "can't post $menu: it isn't a descendant of $w"
     }
     set cur $Priv(postedMb)
     if {$cur ne ""} {
@@ -341,8 +338,8 @@ proc ::tk::MbPost {w {x {}} {y {}}} {
     	    	set x [winfo rootx $w]
     	    	set y [expr {[winfo rooty $w] - [winfo reqheight $menu]}]
 		# if we go offscreen to the top, show as 'below'
-		if {$y < 0} {
-		    set y [expr {[winfo rooty $w] + [winfo height $w]}]
+		if {$y < [winfo vrooty $w]} {
+		    set y [expr {[winfo vrooty $w] + [winfo rooty $w] + [winfo reqheight $w]}]
 		}
 		PostOverPoint $menu $x $y
     	    }
@@ -351,8 +348,8 @@ proc ::tk::MbPost {w {x {}} {y {}}} {
     	    	set y [expr {[winfo rooty $w] + [winfo height $w]}]
 		# if we go offscreen to the bottom, show as 'above'
 		set mh [winfo reqheight $menu]
-		if {($y + $mh) > [winfo screenheight $w]} {
-		    set y [expr {[winfo rooty $w] - $mh}]
+                if {($y + $mh) > ([winfo vrooty $w] + [winfo vrootheight $w])} {
+		    set y [expr {[winfo vrooty $w] + [winfo vrootheight $w] + [winfo rooty $w] - $mh}]
 		}
 		PostOverPoint $menu $x $y
     	    }
@@ -408,14 +405,12 @@ proc ::tk::MbPost {w {x {}} {y {}}} {
     	    	}
     	    }
 	}
-    } msg]} {
+    } msg opt]} {
 	# Error posting menu (e.g. bogus -postcommand). Unpost it and
 	# reflect the error.
 	
-	set savedInfo $errorInfo
 	MenuUnpost {}
-	error $msg $savedInfo
-
+	return -options $opt $msg
     }
 
     set Priv(tearoff) $tearoff
@@ -459,13 +454,6 @@ proc ::tk::MenuUnpost menu {
     # Unpost menu(s) and restore some stuff that's dependent on
     # what was posted.
 
-    if {$::tk::MODERNIZE} {
-        incr Priv(afterCount)
-        unset -nocomplain Priv(menuActivated)
-        unset -nocomplain Priv(postCascade)
-        unset -nocomplain Priv($menu:postIndex)
-    }
-
     ### FEATURE begin ############################################################
     if {[string length $mb]} {
         event generate $mb <<MenuWillUnpost>>
@@ -479,6 +467,13 @@ proc ::tk::MenuUnpost menu {
     # that an unmap event occurs before the corresponding map event occurs.
     update idletasks
     ### FIX end ##################################################################
+
+    if {$::tk::MenuDelay > 0} {
+        after cancel [array get Priv menuActivatedTimer]
+        unset -nocomplain Priv(menuActivated)
+        after cancel [array get Priv menuDeactivatedTimer]
+        unset -nocomplain Priv(menuDeactivated)
+    }
 
     catch {
 	if {$mb ne ""} {
@@ -496,8 +491,7 @@ proc ::tk::MenuUnpost menu {
 	} elseif {$Priv(popup) ne ""} {
 	    $Priv(popup) unpost
 	    set Priv(popup) {}
-	} elseif {[$menu cget -type] ne "menubar" \
-		&& [$menu cget -type] ne "tearoff"} {
+	} elseif {[$menu cget -type] ne "menubar" && [$menu cget -type] ne "tearoff"} {
 	    # We're in a cascaded sub-menu from a torn-off menu or popup.
 	    # Unpost all the menus up to the toplevel one (but not
 	    # including the top-level torn-off one) and deactivate the
@@ -505,8 +499,7 @@ proc ::tk::MenuUnpost menu {
 
 	    while {1} {
 		set parent [winfo parent $menu]
-		if {[winfo class $parent] ne "Menu" \
-			|| ![winfo ismapped $parent]} {
+		if {[winfo class $parent] ne "Menu" || ![winfo ismapped $parent]} {
 		    break
 		}
 		$parent activate none
@@ -519,7 +512,6 @@ proc ::tk::MenuUnpost menu {
 		set menu $parent
 	    }
 	    if {[$menu cget -type] ne "menubar"} {
-                $Priv(popup) unpost
 		$menu unpost
 	    }
 	}
@@ -532,12 +524,14 @@ proc ::tk::MenuUnpost menu {
 	    set grab [grab current $menu]
 	    if {$grab ne ""} {
 		grab release $grab
+                ### FIX begin ########################################################
+                array unset Priv fix:*
+                ### FIX end ##########################################################
                 ### FEATURE begin ####################################################
-		# We need a message after the grab is released,
-                # and after any menu button is invoked.
-                # This (simple) feature provides the possiblity
-                # to have popup menus with modal behavior, and
-                # this is very, very useful.
+		# We need a message after the grab is released, and after any menu
+                # button is invoked.
+                # This (simple) feature provides the possiblity to have popup menus
+                # with modal behavior, and this is very, very useful.
                 set m $menu
                 set parent [winfo parent $m]
                 while {[winfo class $parent] eq "Menu"} {
@@ -546,10 +540,6 @@ proc ::tk::MenuUnpost menu {
                 }
                 event generate $m <<MenuUnpost>>
                 ### FEATURE end ######################################################
-                ### FIX begin ########################################################
-                set Priv(fix:active) ""
-                set Priv(fix:popup) 0
-                ### FIX end ##########################################################
 	    }
 	}
 	RestoreOldGrab
@@ -640,9 +630,7 @@ proc ::tk::MbButtonUp w {
 proc ::tk::MenuMotion {menu x y state} {
     variable ::tk::Priv
     if {$menu eq $Priv(menu:window)} {
-        if {$::tk::MODERNIZE} {
-            set activeindex [$menu index active]
-        }
+        set activeindex [$menu index active]
 	if {[$menu cget -type] eq "menubar"} {
 	    if {[info exists Priv(focus)] && $menu ne $Priv(focus)} {
 		$menu activate @$x,$y
@@ -651,92 +639,28 @@ proc ::tk::MenuMotion {menu x y state} {
 	} else {
 	    $menu activate @$x,$y
 	    GenerateMenuSelect $menu
-            if {$::tk::MODERNIZE} {
-                if {[info exists Priv(postCascade)] && $menu eq $Priv(postCascade)} {
-                    incr Priv(afterCount)
-                }
-                if {[$menu index @$x,$y] ne $activeindex} {
-                    if {[info exists Priv($menu:postIndex)] && $Priv($menu:postIndex) ne "none"} {
-                        set Priv(activeindex) $Priv($menu:postIndex)
-                        after $::tk::MenuDelay [list ::tk::DeactiveMenu $menu]
-                        set Priv($menu:postIndex) none
-                    } elseif {[info exists Priv(postCascade)]} {
-                        set n [CountLevel $menu]
-                        set k [CountLevel $Priv(postCascade)]
-                        if {$k - $n >= 2} {
-                            after $::tk::MenuDelay [list ::tk::UnpostCascade $menu]
-                            set Priv($menu:postIndex) none
-                        }
+	}
+        if {$::tk::MenuDelay > 0} {
+            set index [$menu index @$x,$y]
+            if {[info exists Priv(menuActivated)] \
+                    && $index ne "none" \
+                    && $index ne $activeindex} {
+                set mode [option get $menu clickToFocus ClickToFocus]
+                if {[string is false $mode]} {
+                    set delay [expr {[$menu cget -type] eq "menubar" ? 0 : 50}]
+                    if {[$menu type $index] eq "cascade"} {
+                        set Priv(menuActivatedTimer) \
+                            [after $delay [list $menu postcascade active]]
+                    } else {
+                        set Priv(menuDeactivatedTimer) \
+                            [after $delay [list $menu postcascade none]]
                     }
                 }
             }
-	}
-    }
-
-    if {$::tk::MODERNIZE && [info exists activeindex]} {
-        set index [$menu index @$x,$y]
-        if {[info exists Priv(menuActivated)] &&
-                $index ne "none" &&
-                $activeindex ne "none" &&
-                ($index ne $activeindex ||
-                    ![info exists Priv($menu:postIndex)] ||
-                    $index ne $Priv($menu:postIndex)) &&
-                [$menu type $index] eq "cascade"} {
-            set mode [option get $menu clickToFocus ClickToFocus]
-            if {$mode eq "" || ([string is boolean $mode] && !$mode)} {
-                set delay [expr {[$menu cget -type] eq "menubar"? 0 : $::tk::MenuDelay}]
-                incr Priv(afterCount)
-                after $delay [list ::tk::PostCascade $menu $Priv(afterCount)]
-                set Priv(activeindex) -1
-            }
-        }
-    } else {
-        if {($state & 0x1f00) != 0} {
-            $menu postcascade active
         }
     }
 }
 
-### MODERNIZE begin ##########################################################
-
-proc ::tk::CountLevel {w} {
-    return [expr {[string length $w] - [string length [string map {. ""} $w]]}]
-}
-
-proc ::tk::DeactiveMenu {menu} {
-    variable ::tk::Priv
-
-    if {[winfo exists $menu] && $menu eq $Priv(menu:window)} {
-        lassign [winfo pointerxy $menu] x y
-        if {$Priv(activeindex) != -1 && [$menu index @$x,$y] != $Priv(activeindex)} {
-            $menu postcascade none
-            set Priv(activeindex) -1
-        }
-    }
-}
-
-proc ::tk::UnpostCascade {menu} {
-    variable ::tk::Priv
-
-    if {[winfo exists $menu] && $menu eq $Priv(menu:window)} {
-        $menu postcascade none
-        set Priv(activeindex) -1
-    }
-}
-
-proc ::tk::PostCascade {menu id} {
-    variable ::tk::Priv
-
-    if {$id == $Priv(afterCount)} {
-        catch {
-            set Priv(postCascade) [$menu entrycget active -menu]
-            set Priv($menu:postIndex) [$menu index active]
-            $menu postcascade active
-        }
-    }
-}
-
-### MODERNIZE end ############################################################
 
 # ::tk::MenuButtonDown --
 # Handles button presses in menus.  There are a couple of tricky things
@@ -761,14 +685,12 @@ proc ::tk::MenuButtonDown menu {
         return
     }
     $menu postcascade active
-    if {$::tk::MODERNIZE} {
-        set Priv(activeindex) -1
-    }
     if {$Priv(postedMb) ne "" && [winfo viewable $Priv(postedMb)]} {
 	grab -global $Priv(postedMb)
     } else {
         ### FIX begin ################################################################
         set Priv(fix:active) $menu
+        set Priv(fix:popup) 0
         ### FIX end ##################################################################
 
 	while {[$menu cget -type] eq "normal" \
@@ -783,11 +705,9 @@ proc ::tk::MenuButtonDown menu {
 		set Priv(cursor) [$menu cget -cursor]
 		$menu configure -cursor arrow
 	    }
-            if {$::tk::MODERNIZE} {
-                if {[$menu type active] eq "cascade"} {
-                    set Priv(menuActivated) $menu
-                }
-            }
+	    if {$::tk::MenuDelay > 0 && [$menu type active] eq "cascade"} {
+		set Priv(menuActivated) 1
+	    }
         }
 
 	# Don't update grab information if the grab window isn't changing.
@@ -845,6 +765,7 @@ proc ::tk::MenuLeave {menu rootx rooty state} {
 
 proc ::tk::MenuInvoke {w buttonRelease} {
     variable ::tk::Priv
+
     if {$buttonRelease && $Priv(menu:window) eq ""} {
 	# Mouse was pressed over a menu without a menu button, then
 	# dragged off the menu (possibly with a cascade posted) and
@@ -857,24 +778,28 @@ proc ::tk::MenuInvoke {w buttonRelease} {
 	return
     }
     if {[$w type active] eq "cascade"} {
-	$w postcascade active
-        if {$::tk::MODERNIZE} {
-            set Priv(activeindex) -1
+        ### FIX begin ################################################################
+        if {$buttonRelease && $Priv(fix:popup)} {
+            set Priv(fix:popup) 0
+            return
         }
+        ### FIX end ##################################################################
+	$w postcascade active
 	set menu [$w entrycget active -menu]
 	MenuFirstEntry $menu
     ### FIX begin ####################################################################
-    } elseif {     [string length $Priv(fix:active)]
-                && [info exists Priv(fix:active)]
-                && [winfo exists $Priv(fix:active)]
-                && [$Priv(fix:active) type active] eq "cascade"} {
-	$Priv(fix:active) postcascade active
-        if {$::tk::MODERNIZE} {
-            set Priv(activeindex) -1
-        }
-	set menu [$Priv(fix:active) entrycget active -menu]
-	MenuFirstEntry $menu
-        set Priv(fix:active) ""
+    } elseif {   [info exists Priv(fix:active)]
+              && [string length $Priv(fix:active)]
+              && [winfo exists $Priv(fix:active)]
+              && (   $Priv(fix:popup)
+                  || [$Priv(fix:active) type active] eq "cascade")} {
+        set Priv(fix:popup) 0
+        if {[$Priv(fix:active) type active] eq "cascade"} {
+            $Priv(fix:active) postcascade active
+            set menu [$Priv(fix:active) entrycget active -menu]
+            MenuFirstEntry $menu
+            set Priv(fix:active) ""
+    }
     ### FIX end ######################################################################
     } elseif {[$w type active] eq "tearoff"} {
 	::tk::TearOffMenu $w
@@ -920,12 +845,6 @@ proc ::tk::MenuInvoke {w buttonRelease} {
 # menu -		Name of the menu window.
 
 proc ::tk::MenuEscape menu {
-    if {$::tk::MODERNIZE} {
-        variable ::tk::Priv
-        if {[info exists Priv(postCascade)]} {
-            set menu $Priv(postCascade)
-        }
-    }
     set parent [winfo parent $menu]
     if {[winfo class $parent] ne "Menu"} {
 	MenuUnpost $menu
@@ -985,12 +904,6 @@ proc ::tk::MenuRightArrow {menu} {
 proc ::tk::MenuNextMenu {menu direction} {
     variable ::tk::Priv
  
-    if {$::tk::MODERNIZE} {
-        if {[info exists Priv(postCascade)]} {
-            set menu $Priv(postCascade)
-        }
-    }
-
     # First handle traversals into and out of cascaded menus.
 
     if {$direction eq "right"} {
@@ -998,11 +911,6 @@ proc ::tk::MenuNextMenu {menu direction} {
 	set parent [winfo parent $menu]
 	set class [winfo class $parent]
 	if {[$menu type active] eq "cascade"} {
-            if {$::tk::MODERNIZE} {
-                set Priv(activeindex) -1
-                unset -nocomplain Priv(postCascade)
-                unset -nocomplain Priv($menu:postIndex)
-            }
 	    $menu postcascade active
 	    set m2 [$menu entrycget active -menu]
 	    if {$m2 ne ""} {
@@ -1029,10 +937,6 @@ proc ::tk::MenuNextMenu {menu direction} {
 	    GenerateMenuSelect $menu
 	    tk_menuSetFocus $m2
 
-            if {$::tk::MODERNIZE} {
-                unset -nocomplain Priv(postCascade)
-                unset -nocomplain Priv($menu:postIndex)
-            }
 	    $m2 postcascade none
 
 	    if {[$m2 cget -type] ne "menubar"} {
@@ -1091,12 +995,6 @@ proc ::tk::MenuNextMenu {menu direction} {
 #				-1 means go to the next higher entry.
 
 proc ::tk::MenuNextEntry {menu count} {
-    if {$::tk::MODERNIZE} {
-        variable ::tk::Priv
-        if {[info exists Priv(postCascade)]} {
-            set menu $Priv(postCascade)
-        }
-    }
     if {[$menu index last] eq "none"} {
 	return
     }
@@ -1240,11 +1138,10 @@ proc ::tk::TraverseToMenu {w char} {
 	return
     }
     while {[winfo class $w] eq "Menu"} {
-	if {[$w cget -type] ne "menubar" && $Priv(postedMb) eq ""} {
-	    return
-	}
 	if {[$w cget -type] eq "menubar"} {
 	    break
+	} elseif {$Priv(postedMb) eq ""} {
+	    return
 	}
 	set w [winfo parent $w]
     }
@@ -1317,9 +1214,6 @@ proc ::tk::TraverseWithinMenu {w char} {
 	    if {[$w type $i] eq "cascade"} {
 		$w activate $i
 		$w postcascade active
-                if {$::tk::MODERNIZE} {
-                    set Priv(activeindex) -1
-                }
 		event generate $w <<MenuSelect>>
 		set m2 [$w entrycget $i -menu]
 		if {$m2 ne ""} {
@@ -1366,8 +1260,7 @@ proc ::tk::MenuFirstEntry menu {
 	    # otherwise, if the first entry of the cascade is a cascade,
 	    # we can get an annoying cascading effect resulting in a bunch of
 	    # menus getting posted (bug 676)
-	    if {[$menu type $i] eq "cascade" \
-		    && [$menu cget -type] eq "menubar"} {
+	    if {[$menu type $i] eq "cascade" && [$menu cget -type] eq "menubar"} {
 		set cascade [$menu entrycget $i -menu]
 		if {$cascade ne ""} {
 		    $menu postcascade $i
@@ -1435,24 +1328,34 @@ proc ::tk::PostOverPoint {menu x y {entry {}}}  {
 	}
         incr x [expr {-[winfo reqwidth $menu]/2}]
     }
-    if {$tcl_platform(platform) == "windows"} {
+
+    if {[tk windowingsystem] eq "win32"} {
+	# osVersion is not available in safe interps
+	set ver 5
+	if {[info exists tcl_platform(osVersion)]} {
+	    scan $tcl_platform(osVersion) %d ver
+	}
+
 	# We need to fix some problems with menu posting on Windows,
 	# where, if the menu would overlap top or bottom of screen,
 	# Windows puts it in the wrong place for us.  We must also
 	# subtract an extra amount for half the height of the current
 	# entry.  To be safe we subtract an extra 10.
-	set yoffset [expr {[winfo screenheight $menu] \
-		- $y - [winfo reqheight $menu] - 10}]
-	if {$yoffset < 0} {
-	    # The bottom of the menu is offscreen, so adjust upwards
-	    incr y $yoffset
-	    if {$y < 0} { set y 0 }
-	}
-	# If we're off the top of the screen (either because we were
-	# originally or because we just adjusted too far upwards),
-	# then make the menu popup on the top edge.
-	if {$y < 0} {
-	    set y 0
+	# NOTE: this issue appears to have been resolved in the Window
+	# manager provided with Vista and Windows 7.
+	if {$ver < 6} {
+	    set yoffset [expr {[winfo screenheight $menu] \
+		    - $y - [winfo reqheight $menu] - 10}]
+	    if {$yoffset < [winfo vrooty $menu]} {
+		# The bottom of the menu is offscreen, so adjust upwards
+		incr y [expr {$yoffset - [winfo vrooty $menu]}]
+	    }
+	    # If we're off the top of the screen (either because we were
+	    # originally or because we just adjusted too far upwards),
+	    # then make the menu popup on the top edge.
+	    if {$y < [winfo vrooty $menu]} {
+		set y [winfo vrooty $menu]
+	    }
 	}
     }
     $menu post $x $y
@@ -1540,18 +1443,15 @@ proc ::tk_popup {menu x y {entry {}}} {
 	tk::MenuUnpost {}
     }
     ### FIX begin ####################################################################
-    set Priv(fix:active) ""
+    set Priv(fix:active) $menu
     set Priv(fix:popup) 1
     ### FIX end ######################################################################
-    if {$::tk::MODERNIZE} { 
-        set Priv(activeindex) -1
-        set Priv(menuActivated) $menu
-    }
     tk::PostOverPoint $menu $x $y $entry 
     if {[tk windowingsystem] eq "x11" && [winfo viewable $menu]} {
         tk::SaveGrabInfo $menu
 	grab -global $menu
 	set Priv(popup) $menu
+	set Priv(menuActivated) 1
 	tk_menuSetFocus $menu
     }
     ### FIX begin ####################################################################
@@ -1567,12 +1467,8 @@ proc ::tk_popdown {menu parent} {
     if {$Priv(popup) ne "" || $Priv(postedMb) ne ""} {
 	tk::MenuUnpost {}
     }
-    set Priv(fix:active) ""
+    set Priv(fix:active) $menu
     set Priv(fix:popup) 1
-    if {$::tk::MODERNIZE} { 
-        set Priv(activeindex) -1
-        set Priv(menuActivated) $menu
-    }
     set x [winfo rootx $parent]
     set y [expr {[winfo rooty $parent] + [winfo height $parent]}]
     tk::PostOverPoint $menu $x $y
@@ -1580,6 +1476,7 @@ proc ::tk_popdown {menu parent} {
         tk::SaveGrabInfo $menu
 	grab -global $menu
 	set Priv(popup) $menu
+	set Priv(menuActivated) 1
 	tk_menuSetFocus $menu
     }
     # tk_menuSetFocus is not always sufficient

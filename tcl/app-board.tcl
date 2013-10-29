@@ -37,6 +37,8 @@ set InsertNullMove			"Insert null move"
 set SelectStartPosition		"Select Start Position"
 set LoadRandomGame			"Load random game"
 set AddNewGame					"Add New Game..."
+set SlidingVarPanePosition	"Sliding variation pane position"
+set ShowVariationArrows		"Show variation arrows"
 
 set Tools						"Tools"
 set Control						"Control"
@@ -75,6 +77,10 @@ variable Layouts {Normal Crazyhouse}
 
 set Defaults(coords-font-family) [font configure TkDefaultFont -family]
 
+array set Options {
+	variations:arrows	0
+}
+
 
 proc build {w width height} {
 	variable Dim
@@ -98,6 +104,8 @@ proc build {w width height} {
 	set board [::board::diagram::new $border.board $Dim(squaresize) -bordersize $Dim(edgethickness)]
 	::board::diagram::setTargets $board $border $canv
 	set boardc [::board::diagram::canvas $board]
+	::variation::build $canv [namespace code SelectAlternative]
+
 	set Vars(holding:w) [::board::holding::new $canv.holding-w w $Dim(squaresize) $boardc $border $canv]
 	set Vars(holding:b) [::board::holding::new $canv.holding-b b $Dim(squaresize) $boardc $border $canv]
 	::bind $Vars(holding:w) <<InHandSelection>> { ::move::inHandSelected %W %d }
@@ -120,12 +128,15 @@ proc build {w width height} {
 	set Vars(subscribe:close) {}
 	set Vars(current:game) {}
 	set Vars(load:method) base
+	set Vars(select-var-is-pending) 0
 	foreach layout $Layouts { set Vars(inuse:$layout) {}; set Vars(registered:$layout) 0 }
 
 	$board configure -cursor crosshair
 	::bind $canv <Configure> [namespace code { ConfigureWindow %W %w %h }]
 	::bind $canv <Destroy> [namespace code [list activate $w 0]]
 	::bind $canv <FocusIn> [namespace code { GotFocus %W }]
+	::bind $canv <FocusOut> [namespace code LostFocus]
+	::bind $canv <Any-Button> { ::variation::hide }
 
 	foreach {bind canvas} [list ::bind $canv ::bind $border ::board::diagram::bind $board] {
 		if {[tk windowingsystem] eq "x11"} {
@@ -139,20 +150,21 @@ proc build {w width height} {
 	::board::diagram::bind $board all <Enter>					{ ::move::enterSquare %q }
 	::board::diagram::bind $board all <Leave>					{ ::move::leaveSquare %q }
 	::board::diagram::bind $board all <ButtonPress-1>		{ ::move::pressSquare %q %s }
-	::board::diagram::bind $board all <ButtonPress-1>		{+focus %W }
+	::board::diagram::bind $board all <ButtonPress-1>		{+::focus %W }
 	::board::diagram::bind $board all <ButtonPress-2>		{ ::move::nextGuess %X %Y }
 	::board::diagram::bind $board all <ButtonRelease-1>	{ ::move::releaseSquare %X %Y %s }
 	::board::diagram::bind $board all <Button1-Motion>		{ ::move::dragPiece %X %Y %s }
 
 	::board::diagram::bind $board all <Control-ButtonPress-1>	{ ::marks::pressSquare %X %Y }
-	::board::diagram::bind $board all <Control-ButtonPress-1>	{+ ::move::disable }
+	::board::diagram::bind $board all <Control-ButtonPress-1>	{+::move::disable }
 	::board::diagram::bind $board all <Control-ButtonRelease-1>	{ ::marks::unpressSquare }
 
 	::bind .application <<ControlOn>>	{ ::move::disable }
 	::bind .application <<ControlOff>>	{ ::move::enable %X %Y }
-	::bind .application <<ControlOff>>	{+ ::marks::releaseSquare }
+	::bind .application <<ControlOff>>	{+::marks::releaseSquare }
 	::bind .application <FocusOut>		{ ::move::enable }
-	::bind .application <FocusOut>		{+ ::marks::releaseSquare }
+	::bind .application <FocusOut>		{+::marks::releaseSquare }
+	::bind .application <FocusOut>		+[namespace code LostFocus]
 
 	::board::diagram::update $board standard
 	::board::unregisterSize $Dim(squaresize)
@@ -278,24 +290,24 @@ proc build {w width height} {
 	set Vars(control:enterVar) [::toolbar::add $tbControl button \
 		-state disabled \
 		-image [set ::icon::toolbarCtrlEnterVar] \
-		-command [namespace code GoDown]]
+		-command [namespace code { Goto down }]]
 	set Vars(control:leaveVar) [::toolbar::add $tbControl button \
 		-state disabled \
 		-image [set ::icon::toolbarCtrlLeaveVar] \
-		-command [namespace code GoUp]]
+		-command [namespace code { Goto up }]]
 
 	set Vars(need-binding) \
 		[list $Vars(widget:border) $Vars(widget:frame) [::board::diagram::canvas $board]]
 	
 	bind <Key-space>					::move::nextGuess
-	bind <Left>							[namespace code GoLeft]
-	bind <Right>						[namespace code GoRight]
-	bind <Prior>						[namespace code GoPrior]
-	bind <Next>							[namespace code GoNext]
-	bind <Home>							[namespace code GoHome]
-	bind <End>							[namespace code GoEnd]
-	bind <Down>							[namespace code GoDown]
-	bind <Up>							[namespace code GoUp]
+	bind <Left>							[namespace code { Goto -1 }]
+	bind <Right>						[namespace code { Goto +1 }]
+	bind <Prior>						[namespace code { Goto -10 }]
+	bind <Next>							[namespace code { Goto +10 }]
+	bind <Home>							[namespace code { Goto start }]]
+	bind <End>							[namespace code { Goto end }]]
+	bind <Down>							[namespace code { Goto down }]
+	bind <Up>							[namespace code { Goto up }]
 	bind <Control-Down>				[namespace code [list LoadGame(any) next]]
 	bind <Control-Up>					[namespace code [list LoadGame(any) prev]]
 	bind <Control-Home>				[namespace code [list LoadGame(any) first]]
@@ -316,15 +328,24 @@ proc build {w width height} {
 	bind <Alt-KeyPress-S>			[list ::application::pgn::showDiagram %W %K %s]
 	bind <<LanguageChanged>>		[namespace code LanguageChanged]
 	bind <F1>							[list ::help::open .application]
+	bind <Escape>						{} ;# for sliding pane
+	bind <Return>						{} ;# for sliding pane
+	bind <Shift-Left>					{} ;# for sliding pane
+	bind <Shift-Right>				{} ;# for sliding pane
+
+	for {set i 0} {$i <= 9} {incr i} {
+		bind <Key-$i> {}		;# for sliding pane
+		bind <Key-KP_$i> {}	;# for sliding pane
+	}
 
 	foreach w $Vars(need-binding) {
 		::font::addChangeFontSizeBindings editor $w ::application::pgn::fontSizeChanged
 	}
 
 	for {set i 1} {$i <= 9} {incr i} {
-		bind <Key-$i>    [namespace code [list [namespace parent]::pgn::selectAt [expr {$i - 1}]]]
+		bind <Control-Key-$i>    [namespace code [list [namespace parent]::pgn::selectAt [expr {$i - 1}]]]
 		# NOTE: the working of the following depends on actual keyboard bindings!
-		bind <Key-KP_$i> [namespace code [list [namespace parent]::pgn::selectAt [expr {$i - 1}]]]
+		bind <Control-Key-KP_$i> [namespace code [list [namespace parent]::pgn::selectAt [expr {$i - 1}]]]
 	}
 
 	set Vars(after) {}
@@ -407,17 +428,19 @@ proc closeAnalysis {} {
 
 
 proc goto {step} {
-	variable ::browser::Options
 	variable Vars
 
+	set Vars(select-var-is-pending) 0
+	::variation::hide
 	::scidb::game::go -1 $step
 
 	if {$Vars(autoplay)} {
 		if {[::scidb::game::position -1 atEnd?]} {
 			ToggleAutoPlay
 		} else {
+			variable ::browser::Options
 			after cancel $Vars(afterid)
-			set Vars(afterid) [after $Options(autoplayDelay) [namespace code { Goto +1 }]]
+			set Vars(afterid) [after $Options(autoplayDelay) [namespace code { goto +1 }]]
 		}
 	}
 }
@@ -449,10 +472,12 @@ proc update {position cmd data} {
 		move	{ ::board::diagram::move $board $data }
 	}
 
+	set Vars(select-var-is-pending) 0
 	::board::diagram::clearMarks $board
 	UpdateSideToMove $Vars(widget:frame)
 	DrawMaterialValues $Vars(widget:frame)
 	UpdateControls
+	::variation::hide 0
 }
 
 
@@ -478,7 +503,7 @@ proc bind {key cmd} {
 	variable Vars
 
 	foreach w $Vars(need-binding) {
-		::bind $w $key $cmd
+		::bind $w $key [namespace code [list FilterKey %K %s $cmd]]
 		::bind $w $key {+ break }
 	}
 }
@@ -493,14 +518,56 @@ proc unbindGameControls {position base variant} {
 }
 
 
-proc GoLeft 	{} { goto -1 }
-proc GoRight	{} { goto +1 }
-proc GoPrior	{} { goto -10 }
-proc GoNext		{} { goto +10 }
-proc GoHome		{} { goto start }
-proc GoEnd		{} { goto end }
-proc GoDown		{} { goto down }
-proc GoUp		{} { goto up }
+proc FilterKey {key state cmd} {
+	variable Vars
+
+	switch [::variation::handle $key $state] {
+		0 { ::variation::hide; {*}$cmd }
+		1 { set Vars(select-var-is-pending) 0 }
+	}
+}
+
+
+proc Goto {step} {
+	variable Options
+	variable Vars
+	variable board
+
+	if {	$step == +1
+		&& !$Vars(select-var-is-pending)
+		&& ([::variation::use?] || $Options(variations:arrows))
+		&& [llength [set vars [::scidb::pos::variations]]]} {
+		set rvars [list {*}[lrange $vars 1 end] [lindex $vars 0]]
+		if {$Options(variations:arrows)} {
+			# draw main line last, a variation should not overlap the main line
+			set Vars(select-var-is-pending) 1
+			set i 1
+			foreach entry $rvars {
+				lassign $entry _ from to
+				if {$i == 0} { set color yellow } else { set color greenyellow }
+				set cmd [namespace code [list SelectAlternative $i]]
+				::board::diagram::drawAlternative $board $from $to $color $cmd
+				if {[incr i] == [llength $vars]} { set i 0 }
+			}
+		}
+		if {[::variation::use?]} {
+			set moves {}
+			foreach entry $vars { lappend moves [lindex $entry 0] }
+			::variation::show $moves
+		}
+	} else {
+		set Vars(select-var-is-pending) 0
+		goto $step
+	}
+}
+
+
+proc SelectAlternative {index} {
+	if {$index >= 0 && $index <= [::scidb::game::count variations]} {
+		if {$index > 0} { ::scidb::game::go variation [expr {$index - 1}] }
+		::scidb::game::go +1
+	}
+}
 
 
 proc LoadGame(any) {incr} {
@@ -633,8 +700,20 @@ proc SwitchGameButtons {} {
 
 
 proc GotFocus {w} {
+	variable Vars
+
 	# we have to skip the focus if no game is open
 	if {[::application::pgn::empty?]} { focus [::tk_focusNext $w] }
+	set Vars(select-var-is-pending) 0
+	::variation::hide 0
+}
+
+
+proc LostFocus {} {
+	variable Vars
+
+	set Vars(select-var-is-pending) 0
+	::variation::hide 0
 }
 
 
@@ -678,6 +757,7 @@ proc SetBackground {canv which {width 0} {height 0}} {
 
 
 proc PopupMenu {w} {
+	variable Options
 	variable Vars
 
 	set m $w.popup_menu
@@ -727,14 +807,6 @@ proc PopupMenu {w} {
 		-image $::icon::16x16::checker \
 		-label " $::setup::position::mc::SetStartPosition..." \
 		-command [namespace code [list SetStartPosition $Vars(widget:frame)]] \
-		;
-	if {[::board::options::isOpen]} { set state disabled } else { set state normal }
-	$m add command \
-		-compound left \
-		-image $::icon::16x16::setup \
-		-label " $::board::options::mc::BoardSetup..." \
-		-command [list ::board::options::openConfigDialog $w [namespace current]::Apply] \
-		-state $state \
 		;
 	
 	if {![::application::pgn::empty?] && ![::scidb::game::query over]} {
@@ -786,6 +858,30 @@ proc PopupMenu {w} {
 		-command [namespace code Apply] \
 		;
 	::theme::configureCheckEntry $m
+	$m add checkbutton \
+		-label $mc::ShowVariationArrows \
+		-variable [namespace current]::Options(variations:arrows) \
+		;
+	::theme::configureCheckEntry $m
+
+	$m add separator
+	if {[::board::options::isOpen]} { set state disabled } else { set state normal }
+	$m add command \
+		-compound left \
+		-image $::icon::16x16::setup \
+		-label " $::board::options::mc::BoardSetup..." \
+		-command [list ::board::options::openConfigDialog $w [namespace current]::Apply] \
+		-state $state \
+		;
+	set slider [menu $m.slider -tearoff false]
+	$m add cascade \
+		-menu $slider \
+		-compound left \
+		-image $::icon::16x16::none \
+		-label " $mc::SlidingVarPanePosition" \
+		;
+	::variation::addToMenu $slider
+
 	tk_popup $m {*}[winfo pointerxy $w]
 }
 
@@ -1677,6 +1773,13 @@ proc LanguageChanged {} {
 
 	UpdateSaveButton
 }
+
+
+proc WriteOptions {chan} {
+	::options::writeItem $chan [namespace current]::Options
+}
+
+::options::hookWriter [namespace current]::WriteOptions
 
 
 # 80x80

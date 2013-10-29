@@ -99,7 +99,7 @@ MoveFrom::match(Board const& board, Move const& move, Variant variant)
 	if (!move.isPieceDrop())
 	{
 		color::ID	color		= board.sideToMove();
-		uint64_t		position	= setBit(move.from());
+		uint64_t		position	= set1Bit(move.from());
 
 		switch (move.pieceMoved())
 		{
@@ -122,7 +122,7 @@ MoveTo::match(Board const& board, Move const& move, Variant variant)
 {
 	if (!move.isPieceDrop())
 	{
-		uint64_t pos = setBit(move.to());
+		uint64_t pos = set1Bit(move.to());
 
 		switch (move.captured())
 		{
@@ -147,7 +147,7 @@ PieceDrop::match(Board const& board, Move const& move, Variant variant)
 
 	if (move.isPieceDrop())
 	{
-		uint64_t		position	= setBit(move.to());
+		uint64_t		position	= set1Bit(move.to());
 		color::ID	color		= board.sideToMove();
 
 		switch (move.capturedOrDropped())
@@ -173,7 +173,7 @@ Promote::match(Board const& board, Move const& move, Variant variant)
 
 	if (move.isPromotion())
 	{
-		uint64_t		position	= setBit(move.to());
+		uint64_t		position	= set1Bit(move.to());
 		color::ID	color		= board.sideToMove();
 
 		switch (move.promoted())

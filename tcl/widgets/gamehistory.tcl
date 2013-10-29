@@ -75,7 +75,7 @@ proc Build {w args} {
 		-class GHist          \
 		-borderwidth 0        \
 		-highlightthickness 0 \
-		-takefocus 0          \
+		-takefocus 1          \
 		-showroot no          \
 		-showheader no        \
 		-showbuttons no       \
@@ -84,7 +84,7 @@ proc Build {w args} {
 		-font $font           \
 		-background white     \
 		;
-	::scrolledframe::bindMousewheel $parent $t
+	::scrolledframe::bindMouseWheel $parent $t
 	$t state define hilite
 	$t column create -tags game
 	$t element create elemHdr text -font $boldFont -lines 1 -fill darkred

@@ -138,7 +138,7 @@ tcl::tree::referenceBaseChanged()
 
 
 void
-tcl::tree::clearCache()
+tcl::tree::invalidateCache()
 {
 	m_key.clear();
 }

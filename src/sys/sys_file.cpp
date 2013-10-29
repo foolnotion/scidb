@@ -19,6 +19,7 @@
 #include "sys_file.h"
 #include "sys_base.h"
 
+#include "m_utility.h"
 #include "m_assert.h"
 
 #include <tcl.h>
@@ -36,6 +37,9 @@
 #if !TCL_PREREQ(8,5)
 # error  "unsupported TCL version"
 #endif
+
+
+using namespace sys::file;
 
 
 mstl::string
@@ -58,6 +62,29 @@ sys::file::internalName(char const* externalName)
 	else
 	{
 		result.assign(externalName);
+	}
+
+	return result;
+}
+
+
+mstl::string
+sys::file::normalizedName(char const* externalName)
+{
+	M_REQUIRE(externalName);
+
+	mstl::string result(externalName);
+
+	Tcl_Obj* pathObj = Tcl_NewStringObj(externalName, -1);
+
+	if (pathObj)
+	{
+		Tcl_IncrRefCount(pathObj);
+
+		if (Tcl_Obj* resultObj = Tcl_FSGetNormalizedPath(::tcl::interp(), pathObj))
+			result.assign(Tcl_GetString(resultObj));
+
+		Tcl_DecrRefCount(pathObj);
 	}
 
 	return result;
@@ -130,58 +157,100 @@ sys::file::changed(char const* filename, uint32_t& time)
 # include <windows.h>
 
 
-void*
-sys::file::createMapping(char const* filename, Mode mode)
+Mapping::Mapping(char const* filename, Mode mode)
+	:m_address(0)
+	,m_size(0)
+	,m_capacity(0)
+	,m_writeable(mode & Writeable)
+	,m_file(INVALID_HANDLE_VAlUE)
+	,m_mapping(INVALID_HANDLE_VAlUE)
 {
 	M_REQUIRE(filename);
+	M_REQUIRE(!(mode & Executable));
+	M_REQUIRE(mode & (Readable | Writeable));
 
-	HANDLE file = CreateFileA(
-							filename,
-							(mode & Writeable ? GENERIC_WRITE : 0) | (mode & Readable ? GENERIC_READ : 0),
+	m_file = CreateFileA(
+						filename,
+						(mode & Writeable ? GENERIC_WRITE : 0) | (mode & Readable ? GENERIC_READ : 0),
+						0,
+						0,
+						OPEN_EXISTING,
+						FILE_ATTRIBUTE_NORMAL | FILE_FLAG_RANDOM_ACCESS,
+						0);
+
+	if (m_file == INVALID_HANDLE_VAlUE)
+		return;
+
+	m_mapping = CreateFileMappingA(
+							m_file,
+							0,
+							PAGE_READONLY,
 							0,
 							0,
-							OPEN_EXISTING,
-							FILE_ATTRIBUTE_NORMAL | FILE_FLAG_RANDOM_ACCESS,
-							0);
+							filename);
 
-	if (file == 0)
-		return 0;
-
-	HANDLE mapping = CreateFileMappingA(
-								file,
-								0,
-								PAGE_READONLY,
-								0,
-								0,
-								filename);
-
-	if (mapping == 0)
+	if (m_mapping == INVALID_HANDLE_VAlUE)
 	{
-		CloseHandle(file);
-		return 0;
+		CloseHandle(m_file);
+		return;
 	}
 
-	void* address = MapViewOfFile(
-							handle->mapping,
-							(mode & Writeable ? FILE_MAP_WRITE : 0) | (mode & Readable ? FILE_MAP_READ : 0),
-							0,
-							0,
-							0);
+	m_address = MapViewOfFile(
+						m_mapping,
+						(mode & Writeable ? FILE_MAP_WRITE : 0) | (mode & Readable ? FILE_MAP_READ : 0),
+						0,
+						0,
+						0);
 
-	CloseHandle(mapping);
-	CloseHandle(file);
+	m_capacity = m_size = GetFileSize(m_file, 0);
+}
 
-	return address;
+
+Mapping::~Mapping()
+{
+	flush();
+
+	if (m_address)
+		UnmapViewOfFile(m_address);
+
+	CloseHandle(m_mapping);
+
+	if (m_size != m_capacity)
+	{
+		SetFilePointer(m_file, m_size, 0, FILE_BEGIN);
+		SetEndOfFile(m_file);
+	}
+
+	::CloseHandle(m_file);
 }
 
 
 void
-sys::file::closeMapping(void*& address)
+Mapping::flush(unsigned size)
 {
-	if (address)
-		UnmapViewOfFile(address);
+	if (m_address && m_writeable)
+		FlushViewOfFile(m_address, mstl::min(m_size, size));
+}
 
-	address = 0;
+
+void
+Mapping::resize(unsigned newSize)
+{
+	M_REQUIRE(isOpen());
+	M_REQUIRE(isWriteable());
+
+	if (newSize < m_capacity)
+	{
+		m_size = newSize;
+	}
+	else if (newSize > m_capacity)
+	{
+		UnmapViewOfFile(m_address);
+		CloseHandle(m_file);
+		m_file = CreateFileMapping(m_file, 0, PAGE_READWRITE, 0, newSize, 0);
+		m_address = MapViewOfFile(m_file, FILE_MAP_WRITE, 0, 0, 0);
+		m_capacity = m_size = newSize;
+	}
 }
 
 
@@ -215,9 +284,6 @@ sys::file::dirIsEmpty(char const* dirname)
 
 #else
 
-#include "m_map.h"
-#include "m_pair.h"
-
 # include <fcntl.h>
 # include <unistd.h>
 # include <errno.h>
@@ -228,13 +294,16 @@ sys::file::dirIsEmpty(char const* dirname)
 # include <dirent.h>
 
 
-static mstl::map<void*,mstl::pair<int,int> > FileMap;
-
-
-void*
-sys::file::createMapping(char const* filename, Mode mode)
+Mapping::Mapping(char const* filename, Mode mode)
+	:m_address(0)
+	,m_size(0)
+	,m_capacity(0)
+	,m_writeable(mode & Writeable)
+	,m_fd(-1)
 {
 	M_REQUIRE(filename);
+	M_REQUIRE(!(mode & Executable));
+	M_REQUIRE(mode & (Readable | Writeable));
 
 	int flags = 0;
 
@@ -245,16 +314,17 @@ sys::file::createMapping(char const* filename, Mode mode)
 	else
 		flags = O_RDONLY;
 
-	int fildes = ::open(internalName(filename), flags);
+	m_fd = ::open(internalName(filename), flags);
 
-	if (fildes == -1)
-		return 0;
+	if (m_fd == -1)
+		return;
 
 	struct ::stat st;
-	if (::fstat(fildes, &st) == -1)
+	if (::fstat(m_fd, &st) == -1)
 	{
-		::close(fildes);
-		return 0;
+		::close(m_fd);
+		m_fd = -1;
+		return;
 	}
 
 	int length = st.st_size;
@@ -263,33 +333,73 @@ sys::file::createMapping(char const* filename, Mode mode)
 	if (flags & Readable)	flags |= PROT_READ;
 	if (flags & Writeable)	flags |= PROT_WRITE;
 
-	void* address = ::mmap(0, length, flags, MAP_PRIVATE, fildes, 0);
+	m_address = ::mmap(0, length, flags, MAP_PRIVATE, m_fd, 0);
 
-	if (address == MAP_FAILED)
+	if (m_address == MAP_FAILED)
 	{
-		::close(fildes);
-		return 0;
+		::close(m_fd);
+		m_fd = -1;
+		m_address = 0;
+		return;
 	}
 
-	FileMap[address] = mstl::make_pair(fildes, length);
-	return address;
+	m_capacity = m_size = length;
+}
+
+
+Mapping::~Mapping()
+{
+	flush();
+
+	if (m_address)
+		::munmap(m_address, m_size);
+
+	if (m_fd != -1)
+	{
+		if (m_size != m_capacity)
+			::ftruncate(m_fd, m_size);
+
+		::close(m_fd);
+	}
 }
 
 
 void
-sys::file::closeMapping(void*& address)
+Mapping::flush(unsigned size)
 {
-	if (address)
+	if (m_address)
+		::msync(m_address, size ? mstl::min(size, m_size) : m_size, MS_SYNC);
+}
+
+
+void
+Mapping::resize(unsigned newSize)
+{
+	M_REQUIRE(isOpen());
+	M_REQUIRE(isWriteable());
+
+	if (newSize < m_size)
 	{
-		mstl::pair<int,int> p = FileMap[address];
-
-		::close(p.first);
-		::munmap(address, p.second);
-
-		FileMap.erase(address);
+		m_size = newSize;
 	}
+	else if (m_size < newSize)
+	{
+		::munmap(m_address, m_size);
+		::ftruncate(m_fd, newSize);
+		m_address = static_cast<char*>(::mmap(0, newSize, PROT_READ | PROT_WRITE, MAP_SHARED, m_fd, 0));
 
-	address = 0;
+		if (m_address == MAP_FAILED)
+		{
+			m_address = 0;
+			m_capacity = m_size = 0;
+			::close(m_fd);
+			m_fd = -1;
+		}
+		else
+		{
+			m_capacity = m_size = newSize;
+		}
+	}
 }
 
 

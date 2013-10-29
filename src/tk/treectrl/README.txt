@@ -1,5 +1,5 @@
 This is not the original treectrl. This version is modified
-by Gregor Cramer for use in Scidb.
+by Gregor Cramer for the use in Scidb.
 
 It has a modified (and fixed) column layout algorithm, a few
 bug fixes, new options:
@@ -68,15 +68,19 @@ and new commands:
 		header). The list may be empty. Assume all columns if no
 		list is given.
 
-	<pathName> element configure <elem-id> -specialfont <font>
+	<pathName> element configure <elem-id> \
+				-specialfont <font> ?<first> <last>?
 		Sets a second font that wil be used for any unicode
-		point >= 256.
+		point >= 256. Optional a range may given, in this case
+		this font will only be used for characters inside this
+		range (inclusive the border values).
 
 "pathName item sort itemDesc ?option ...?" has new option:
 
 	-nocase
 		Causes comparisons to be handled in a case-insensitive manner.
-		Has no effect if combined with the -dictionary, -integer, or -real options.
+		Has no effect if combined with the -dictionary, -integer, or
+		-real options.
 
 ==================================================================
 Original content of README.txt:

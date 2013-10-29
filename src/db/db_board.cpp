@@ -41,6 +41,10 @@
 #include "m_utility.h"
 #include "m_stdio.h"
 
+#ifdef CHECK_HASH_KEYS
+# include "m_set.h"
+#endif
+
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
@@ -113,18 +117,21 @@ Board Board::m_emptyBoard;
 static material::Count m_initialHolding;
 
 
-inline static int mul8(int x)				{ return x << 3; }
-inline static int mul16(int x)			{ return x << 4; }
+inline static int mul8(int x)					{ return x << 3; }
+inline static int mul16(int x)				{ return x << 4; }
 
-inline static int fyle(int s) 			{ return s & 7; }
-inline static int rank(int s) 			{ return s >> 3; }
+inline static unsigned mul4(unsigned x)	{ return x << 2; }
+inline static unsigned mul64(unsigned x)	{ return x << 6; }
 
-inline static bool isFyle(char c)		{ return c >= 'a' && c <= 'h'; }
-inline static bool isRank(char c)		{ return c >= '1' && c <= '8'; }
+inline static int fyle(int s) 				{ return s & 7; }
+inline static int rank(int s) 				{ return s >> 3; }
 
-inline static char toFyle(char fyle)	{ return fyle - 'a'; }
-inline static char toFYLE(char fyle)	{ return fyle - 'A'; }
-inline static char toRank(char rank)	{ return rank - '1'; }
+inline static bool isFyle(char c)			{ return c >= 'a' && c <= 'h'; }
+inline static bool isRank(char c)			{ return c >= '1' && c <= '8'; }
+
+inline static char toFyle(char fyle)		{ return fyle - 'a'; }
+inline static char toFYLE(char fyle)		{ return fyle - 'A'; }
+inline static char toRank(char rank)		{ return rank - '1'; }
 
 inline static unsigned flipRank(unsigned s)		{ return flipRank(sq::ID(s)); }
 
@@ -387,7 +394,7 @@ Board::hashPawn(Square s, piece::ID piece)
 	M_ASSERT(piece::type(piece) == piece::Pawn);
 	M_ASSERT(s <= sq::h8);
 
-	uint64_t value = rand64::Squares[piece][s];
+	uint64_t value = rand64::Pieces[::mul64(piece) + s];
 
 	m_hash ^= value;
 	m_pawnHash ^= value;
@@ -401,8 +408,8 @@ Board::hashPawn(Square s, Square t, piece::ID piece)
 	M_ASSERT(s <= sq::h8);
 	M_ASSERT(t <= sq::h8);
 
-	uint64_t const*	values	= rand64::Squares[piece];
-	uint64_t				value		= values[s] ^ values[t];
+	unsigned index = ::mul64(piece);
+	uint64_t value = rand64::Pieces[index + s] ^ rand64::Pieces[index + t];
 
 	m_hash ^= value;
 	m_pawnHash ^= value;
@@ -416,7 +423,7 @@ Board::hashPiece(Square s, piece::ID piece)
 	M_ASSERT(piece::type(piece) != piece::Pawn);
 	M_ASSERT(s <= sq::h8);
 
-	m_hash ^= rand64::Squares[piece][s];
+	m_hash ^= rand64::Pieces[::mul64(piece) + s];
 }
 
 
@@ -428,10 +435,10 @@ Board::hashPiece(Square s, Square t, piece::ID piece)
 	M_ASSERT(s <= sq::h8);
 	M_ASSERT(t <= sq::h8);
 
-	uint64_t const* values = rand64::Squares[piece];
+	unsigned index = ::mul64(piece);
 
-	m_hash ^= values[s];
-	m_hash ^= values[t];
+	m_hash ^= rand64::Pieces[index + s];
+	m_hash ^= rand64::Pieces[index + t];
 }
 
 
@@ -444,7 +451,7 @@ Board::hashPromotedPiece(Square s, piece::ID piece, variant::Type variant)
 	M_ASSERT(s <= sq::h8);
 
 	if (variant::isZhouse(variant))
-		m_hash ^= rand64::SquaresPromoted[piece][s];
+		m_hash ^= rand64::Promoted[::mul64(piece) + s];
 	else
 		hashPiece(s, piece);
 }
@@ -465,7 +472,7 @@ Board::hashCastling(Index right)
 
 void Board::hashCastlingKingside(color::ID color)	{ hashCastling(kingSideIndex(color)); }
 void Board::hashCastlingQueenside(color::ID color)	{ hashCastling(queenSideIndex(color)); }
-void Board::hashToMove()									{ m_hash ^= rand64::ToMove; }
+void Board::hashToMove()									{ m_hash ^= *rand64::ToMove; }
 
 
 void
@@ -483,7 +490,7 @@ Board::hashChecksGiven(color::ID color, unsigned n)
 {
 	M_ASSERT(n < 3);
 
-	uint64_t const* arr = rand64::ChecksGiven[color];
+	uint64_t const* arr = rand64::ChecksGiven + ::mul4(color);
 
 	if (n)
 		m_hash ^= arr[n];
@@ -498,8 +505,8 @@ Board::hashChecksGiven(unsigned white, unsigned black)
 	M_ASSERT(white <= 3);
 	M_ASSERT(black <= 3);
 
-	if (white) m_hash |= rand64::ChecksGiven[White][white];
-	if (black) m_hash |= rand64::ChecksGiven[Black][black];
+	if (white) m_hash ^= rand64::ChecksGiven[::mul4(White) + white];
+	if (black) m_hash ^= rand64::ChecksGiven[::mul4(Black) + black];
 }
 
 
@@ -508,37 +515,32 @@ Board::hashHolding(piece::ID piece, Byte count)
 {
 	M_ASSERT(piece != piece::Empty);
 	M_ASSERT(piece::type(piece) != piece::King);
-	M_ASSERT(count < 20); // rough check if negative
+	M_ASSERT(count <= 8);
+
+	if (count)
+		m_hash ^= mstl::bf::rotate_left(rand64::Holding[piece], count - 1);
+}
+
+
+void
+Board::hashHoldingChanged(piece::ID piece, Byte count)
+{
+	M_ASSERT(piece != piece::Empty);
+	M_ASSERT(piece::type(piece) != piece::King);
+	M_ASSERT(count <= 8);
+
+	// NOTE: count is old count if one piece is added to holding
+	// NOTE: count is new count if one piece is removed from holding
 
 	if (count)
 	{
-		m_hash ^= rand64::Holding[piece];
-		m_hash ^= setBit(count - 1);
+		m_hash ^= mstl::bf::rotate_left(rand64::Holding[piece], count - 1);
+		m_hash ^= mstl::bf::rotate_left(rand64::Holding[piece], count);
 	}
-}
-
-
-void
-Board::hashHoldingAdd(piece::ID piece, Byte oldCount)
-{
-	M_ASSERT(piece != piece::Empty);
-	M_ASSERT(piece::type(piece) != piece::King);
-	M_ASSERT(oldCount < 20);
-
-	m_hash ^= oldCount ? setBit(oldCount - 1) : rand64::Holding[piece];
-	m_hash ^= setBit(oldCount);
-}
-
-
-void
-Board::hashHoldingRemove(piece::ID piece, Byte newCount)
-{
-	M_ASSERT(piece != piece::Empty);
-	M_ASSERT(piece::type(piece) != piece::King);
-	M_ASSERT(newCount < 20); // rough check if negative
-
-	m_hash ^= setBit(newCount);
-	m_hash ^= newCount ? setBit(newCount - 1) : rand64::Holding[piece];
+	else
+	{
+		m_hash ^= mstl::bf::rotate_left(rand64::Holding[piece], count - 1);
+	}
 }
 
 
@@ -660,10 +662,10 @@ Board::addToMyHolding<piece::Pawn>(variant::Type variant, unsigned color)
 // catch GCC bug:
 // "internal compiler error: in expand_expr_addr_expr_1, at expr.c:7597"
 #if __GNUC_PREREQ(4,5)
-	hashHoldingAdd(::toPiece(piece::Pawn, color), m_holding[color].pawn);
+	hashHoldingChanged(::toPiece(piece::Pawn, color), m_holding[color].pawn);
 	++m_holding[color].pawn;
 #else
-	hashHoldingAdd(::toPiece(piece::Pawn, color), m_holding[color].pawn++);
+	hashHoldingChanged(::toPiece(piece::Pawn, color), m_holding[color].pawn++);
 #endif
 }
 
@@ -676,10 +678,10 @@ Board::addToMyHolding<piece::Knight>(variant::Type variant, unsigned color)
 // catch GCC bug:
 // "internal compiler error: in expand_expr_addr_expr_1, at expr.c:7597"
 #if __GNUC_PREREQ(4,5)
-	hashHoldingAdd(::toPiece(piece::Knight, color), m_holding[color].knight);
+	hashHoldingChanged(::toPiece(piece::Knight, color), m_holding[color].knight);
 	++m_holding[color].knight;
 #else
-	hashHoldingAdd(::toPiece(piece::Knight, color), m_holding[color].knight++);
+	hashHoldingChanged(::toPiece(piece::Knight, color), m_holding[color].knight++);
 #endif
 }
 
@@ -692,10 +694,10 @@ Board::addToMyHolding<piece::Bishop>(variant::Type variant, unsigned color)
 // catch GCC bug:
 // "internal compiler error: in expand_expr_addr_expr_1, at expr.c:7597"
 #if __GNUC_PREREQ(4,5)
-	hashHoldingAdd(::toPiece(piece::Bishop, color), m_holding[color].bishop);
+	hashHoldingChanged(::toPiece(piece::Bishop, color), m_holding[color].bishop);
 	++m_holding[color].bishop;
 #else
-	hashHoldingAdd(::toPiece(piece::Bishop, color), m_holding[color].bishop++);
+	hashHoldingChanged(::toPiece(piece::Bishop, color), m_holding[color].bishop++);
 #endif
 }
 
@@ -708,10 +710,10 @@ Board::addToMyHolding<piece::Rook>(variant::Type variant, unsigned color)
 // catch GCC bug:
 // "internal compiler error: in expand_expr_addr_expr_1, at expr.c:7597"
 #if __GNUC_PREREQ(4,5)
-	hashHoldingAdd(::toPiece(piece::Rook, color), m_holding[color].rook);
+	hashHoldingChanged(::toPiece(piece::Rook, color), m_holding[color].rook);
 	++m_holding[color].rook;
 #else
-	hashHoldingAdd(::toPiece(piece::Rook, color), m_holding[color].rook++);
+	hashHoldingChanged(::toPiece(piece::Rook, color), m_holding[color].rook++);
 #endif
 }
 
@@ -724,10 +726,10 @@ Board::addToMyHolding<piece::Queen>(variant::Type variant, unsigned color)
 // catch GCC bug:
 // "internal compiler error: in expand_expr_addr_expr_1, at expr.c:7597"
 #if __GNUC_PREREQ(4,5)
-	hashHoldingAdd(::toPiece(piece::Queen, color), m_holding[color].queen);
+	hashHoldingChanged(::toPiece(piece::Queen, color), m_holding[color].queen);
 	++m_holding[color].queen;
 #else
-	hashHoldingAdd(::toPiece(piece::Queen, color), m_holding[color].queen++);
+	hashHoldingChanged(::toPiece(piece::Queen, color), m_holding[color].queen++);
 #endif
 }
 
@@ -793,7 +795,7 @@ void
 Board::removeFromMyHolding<piece::Pawn>(variant::Type variant, unsigned color)
 {
 	M_ASSERT(m_holding[color].pawn > 0);
-	hashHoldingRemove(::toPiece(piece::Pawn, color), --m_holding[color].pawn);
+	hashHoldingChanged(::toPiece(piece::Pawn, color), --m_holding[color].pawn);
 }
 
 
@@ -803,7 +805,7 @@ void
 Board::removeFromMyHolding<piece::Knight>(variant::Type variant, unsigned color)
 {
 	M_ASSERT(m_holding[color].knight > 0);
-	hashHoldingRemove(::toPiece(piece::Knight, color), --m_holding[color].knight);
+	hashHoldingChanged(::toPiece(piece::Knight, color), --m_holding[color].knight);
 }
 
 
@@ -813,7 +815,7 @@ void
 Board::removeFromMyHolding<piece::Bishop>(variant::Type variant, unsigned color)
 {
 	M_ASSERT(m_holding[color].bishop > 0);
-	hashHoldingRemove(::toPiece(piece::Bishop, color), --m_holding[color].bishop);
+	hashHoldingChanged(::toPiece(piece::Bishop, color), --m_holding[color].bishop);
 }
 
 
@@ -823,7 +825,7 @@ void
 Board::removeFromMyHolding<piece::Rook>(variant::Type variant, unsigned color)
 {
 	M_ASSERT(m_holding[color].rook > 0);
-	hashHoldingRemove(::toPiece(piece::Rook, color), --m_holding[color].rook);
+	hashHoldingChanged(::toPiece(piece::Rook, color), --m_holding[color].rook);
 }
 
 
@@ -833,7 +835,7 @@ void
 Board::removeFromMyHolding<piece::Queen>(variant::Type variant, unsigned color)
 {
 	M_ASSERT(m_holding[color].queen > 0);
-	hashHoldingRemove(::toPiece(piece::Queen, color), --m_holding[color].queen);
+	hashHoldingChanged(::toPiece(piece::Queen, color), --m_holding[color].queen);
 }
 
 
@@ -940,7 +942,7 @@ Board::possiblyRemoveFromHolding<piece::Pawn>(variant::Type variant, unsigned co
 		color ^= 1;
 
 	if (m_holding[color].pawn > 0)
-		hashHoldingRemove(::toPiece(piece::Pawn, color), --m_holding[color].pawn);
+		hashHoldingChanged(::toPiece(piece::Pawn, color), --m_holding[color].pawn);
 }
 
 
@@ -953,7 +955,7 @@ Board::possiblyRemoveFromHolding<piece::Knight>(variant::Type variant, unsigned 
 		color ^= 1;
 
 	if (m_holding[color].knight > 0)
-		hashHoldingRemove(::toPiece(piece::Knight, color), --m_holding[color].knight);
+		hashHoldingChanged(::toPiece(piece::Knight, color), --m_holding[color].knight);
 }
 
 
@@ -966,7 +968,7 @@ Board::possiblyRemoveFromHolding<piece::Bishop>(variant::Type variant, unsigned 
 		color ^= 1;
 
 	if (m_holding[color].bishop > 0)
-		hashHoldingRemove(::toPiece(piece::Bishop, color), --m_holding[color].bishop);
+		hashHoldingChanged(::toPiece(piece::Bishop, color), --m_holding[color].bishop);
 }
 
 
@@ -979,7 +981,7 @@ Board::possiblyRemoveFromHolding<piece::Rook>(variant::Type variant, unsigned co
 		color ^= 1;
 
 	if (m_holding[color].rook > 0)
-		hashHoldingRemove(::toPiece(piece::Rook, color), --m_holding[color].rook);
+		hashHoldingChanged(::toPiece(piece::Rook, color), --m_holding[color].rook);
 }
 
 
@@ -992,7 +994,7 @@ Board::possiblyRemoveFromHolding<piece::Queen>(variant::Type variant, unsigned c
 		color ^= 1;
 
 	if (m_holding[color].queen > 0)
-		hashHoldingRemove(::toPiece(piece::Queen, color), --m_holding[color].queen);
+		hashHoldingChanged(::toPiece(piece::Queen, color), --m_holding[color].queen);
 }
 
 } // namespace db
@@ -1009,7 +1011,7 @@ Board::hashEnPassant()
 bool
 Board::kingOnBoard(color::ID color) const
 {
-	return (m_kings & m_occupiedBy[color]) == setBit(m_ksq[color]);
+	return (m_kings & m_occupiedBy[color]) == set1Bit(m_ksq[color]);
 }
 
 
@@ -1258,8 +1260,6 @@ Board::setEnPassantSquare(color::ID color, Square sq)
 	{
 		m_epSquare = Null;
 	}
-
-	m_epSquareFen = sq;
 }
 
 
@@ -1271,7 +1271,7 @@ Board::setEnPassantSquare(Square sq)
 		if (m_epSquare != sq::Null)
 			hashEnPassant();
 
-		m_epSquare = m_epSquareFen = Null;
+		m_epSquare = Null;
 	}
 	else
 	{
@@ -1318,7 +1318,7 @@ Board::removeIllegalFrom(Move move, uint64_t& b, variant::Type variant) const
 		move.setFrom(sq);
 
 		if (isIntoCheck(move, variant))
-			b &= ~setBit(sq);
+			b &= ~set1Bit(sq);
 	}
 }
 
@@ -1335,7 +1335,7 @@ Board::removeIllegalTo(Move move, uint64_t& b, variant::Type variant) const
 		move.setTo(sq);
 
 		if (isIntoCheck(move, variant))
-			b &= ~setBit(sq);
+			b &= ~set1Bit(sq);
 	}
 }
 
@@ -1387,7 +1387,7 @@ Board::prepareForPrint(Move& move, variant::Type variant, Representation represe
 					case piece::King:		others = m_kings & kingAttacks(to); break;
 				}
 
-				others ^= setBit(from);
+				others ^= set1Bit(from);
 				others &= m_occupiedBy[m_stm];
 
 				if (others && representation == InternalRepresentation)
@@ -1475,10 +1475,10 @@ Board::prepareForPrint(Move& move, variant::Type variant, Representation represe
 							break;
 					}
 
-					others[0] ^= setBit(from);
+					others[0] ^= set1Bit(from);
 					others[0] &= m_occupiedBy[m_stm];
 
-					others[1] ^= setBit(to);
+					others[1] ^= set1Bit(to);
 					others[1] &= m_occupiedBy[m_stm ^ 1];
 
 					switch (m_piece[to])
@@ -1514,7 +1514,7 @@ Board::prepareForPrint(Move& move, variant::Type variant, Representation represe
 			else if (m_piece[to] != piece::None || move.isEnPassant())
 			{
 				// we may need disambiguation of pawn captures
-				if (pawnCapturesTo(to) ^ setBit(from))
+				if (pawnCapturesTo(to) ^ set1Bit(from))
 					move.setNeedsFyle();
 			}
 		}
@@ -1557,7 +1557,7 @@ Board::setPromoted(Square sq, variant::Type variant)
 	M_REQUIRE(piece(sq) != piece::Pawn);
 	M_REQUIRE(piece(sq) != piece::King);
 
-	uint64_t		mask	= setBit(sq);
+	uint64_t		mask	= set1Bit(sq);
 	unsigned		color	= m_occupiedBy[White] & mask ? White : Black;
 	piece::ID	piece	= ::toPiece(this->piece(sq), color);
 
@@ -1570,7 +1570,7 @@ Board::setPromoted(Square sq, variant::Type variant)
 bool
 Board::hasPromoted(Square sq) const
 {
-	uint64_t mask = setBit(sq);
+	uint64_t mask = set1Bit(sq);
 	return m_promoted[m_occupiedBy[White] & mask ? White : Black] & mask;
 }
 
@@ -1578,7 +1578,7 @@ Board::hasPromoted(Square sq) const
 piece::ID
 Board::pieceAt(Square s) const
 {
-	uint64_t mask = setBit(s);
+	uint64_t mask = set1Bit(s);
 
 	if (!(m_occupied & mask))
 		return piece::Empty;
@@ -1597,7 +1597,7 @@ Board::setAt(Square s, piece::ID p, variant::Type variant)
 	if (pt == piece::None)
 		return true;
 
-	uint64_t bit = setBit(s);
+	uint64_t bit = set1Bit(s);
 
 	if (m_occupied & bit)
 		removeAt(s, variant);
@@ -1681,7 +1681,7 @@ Board::removeAt(Square s, variant::Type variant)
 	M_REQUIRE(piece(s) != piece::Pawn || (rank(s) != Rank1 && rank(s) != Rank8));
 	M_REQUIRE(variant != variant::Bughouse || hasPartnerBoard());
 
-	uint64_t bit = setBit(s);
+	uint64_t bit = set1Bit(s);
 
 	if (!(m_occupied & bit))
 		return;
@@ -1783,7 +1783,6 @@ Board::transpose(variant::Type variant)
 
 	board.m_stm = m_stm;
 	board.m_epSquare = ::flipFyle(m_epSquare);
-	board.m_epSquareFen = ::flipFyle(m_epSquareFen);
 	board.m_halfMoveClock = m_halfMoveClock;
 	board.m_plyNumber = m_plyNumber;
 	board.m_castle = castling::transpose(m_castle);
@@ -1838,8 +1837,8 @@ Board::shortCastlingWhiteIsLegal() const
 	M_ASSERT(kingOnBoard());
 	M_ASSERT(m_castleRookCurrent[WhiteKS] != Null);
 
-	uint64_t king = setBit(m_ksq[White]);
-	uint64_t rook = setBit(m_castleRookCurrent[WhiteKS]);
+	uint64_t king = set1Bit(m_ksq[White]);
+	uint64_t rook = set1Bit(m_castleRookCurrent[WhiteKS]);
 	uint64_t base = (B1 | C1 | D1 | E1 | F1 | G1) & ~(king - 1); // king...G1
 
 	// king...G1 and F1 must be free
@@ -1857,8 +1856,8 @@ Board::shortCastlingBlackIsLegal() const
 	M_ASSERT(kingOnBoard());
 	M_ASSERT(m_castleRookCurrent[BlackKS] != Null);
 
-	uint64_t king = setBit(m_ksq[Black]);
-	uint64_t rook = setBit(m_castleRookCurrent[BlackKS]);
+	uint64_t king = set1Bit(m_ksq[Black]);
+	uint64_t rook = set1Bit(m_castleRookCurrent[BlackKS]);
 	uint64_t base = (B8 | C8 | D8 | E8 | F8 | G8) & ~(king - 1); // king...G8
 
 	// king...G8 and F8 must be free
@@ -1876,8 +1875,8 @@ Board::longCastlingWhiteIsLegal() const
 	M_ASSERT(kingOnBoard());
 	M_ASSERT(m_castleRookCurrent[WhiteQS] != Null);
 
-	uint64_t king = setBit(m_ksq[White]);
-	uint64_t rook = setBit(m_castleRookCurrent[WhiteQS]);
+	uint64_t king = set1Bit(m_ksq[White]);
+	uint64_t rook = set1Bit(m_castleRookCurrent[WhiteQS]);
 	uint64_t base = 0;
 
 	if (king > C1)
@@ -1909,8 +1908,8 @@ Board::longCastlingBlackIsLegal() const
 	M_ASSERT(kingOnBoard());
 	M_ASSERT(m_castleRookCurrent[BlackQS] != Null);
 
-	uint64_t king = setBit(m_ksq[Black]);
-	uint64_t rook = setBit(m_castleRookCurrent[BlackQS]);
+	uint64_t king = set1Bit(m_ksq[Black]);
+	uint64_t rook = set1Bit(m_castleRookCurrent[BlackQS]);
 	uint64_t base = 0;
 
 	if (king > C8)
@@ -1942,8 +1941,8 @@ Board::shortCastlingWhiteIsPossible() const
 	M_ASSERT(kingOnBoard());
 	M_ASSERT(m_castleRookCurrent[WhiteKS] != Null);
 
-	uint64_t king = setBit(m_ksq[White]);
-	uint64_t rook = setBit(m_castleRookCurrent[WhiteKS]);
+	uint64_t king = set1Bit(m_ksq[White]);
+	uint64_t rook = set1Bit(m_castleRookCurrent[WhiteKS]);
 	uint64_t base = (B1 | C1 | D1 | E1 | G1) & ~(king - 1); // king...G1
 
 	// king...G1 and F1 must be free
@@ -1957,8 +1956,8 @@ Board::shortCastlingBlackIsPossible() const
 	M_ASSERT(kingOnBoard());
 	M_ASSERT(m_castleRookCurrent[BlackKS] != Null);
 
-	uint64_t king = setBit(m_ksq[Black]);
-	uint64_t rook = setBit(m_castleRookCurrent[BlackKS]);
+	uint64_t king = set1Bit(m_ksq[Black]);
+	uint64_t rook = set1Bit(m_castleRookCurrent[BlackKS]);
 	uint64_t base = (B8 | C8 | D8 | E8 | G8) & ~(king - 1);	// king...G8
 
 	// king...G8 and F8 must be free
@@ -1972,8 +1971,8 @@ Board::longCastlingWhiteIsPossible() const
 	M_ASSERT(kingOnBoard());
 	M_ASSERT(m_castleRookCurrent[WhiteQS] != Null);
 
-	uint64_t king = setBit(m_ksq[White]);
-	uint64_t rook = setBit(m_castleRookCurrent[WhiteQS]);
+	uint64_t king = set1Bit(m_ksq[White]);
+	uint64_t rook = set1Bit(m_castleRookCurrent[WhiteQS]);
 	uint64_t base = 0;
 
 	if (king > C1)
@@ -1993,8 +1992,8 @@ Board::longCastlingBlackIsPossible() const
 	M_ASSERT(kingOnBoard());
 	M_ASSERT(m_castleRookCurrent[BlackQS] != Null);
 
-	uint64_t king = setBit(m_ksq[Black]);
-	uint64_t rook = setBit(m_castleRookCurrent[BlackQS]);
+	uint64_t king = set1Bit(m_ksq[Black]);
+	uint64_t rook = set1Bit(m_castleRookCurrent[BlackQS]);
 	uint64_t base = 0;
 
 	if (king > C8)
@@ -2081,13 +2080,13 @@ Board::validate(variant::Type variant, Handicap handicap, move::Constraint flag)
 	if (m_ksq[Black] == Null) return NoBlackKing;
 
 	// Detect unreasonable ep square
-	if (	m_epSquareFen != Null
-		&& (	(m_stm == White && (m_epSquareFen < a6 || m_epSquareFen > h6))
-			|| (m_stm == Black && (m_epSquareFen < a3 || m_epSquareFen > h3))
-			|| m_occupied & setBit(m_epSquareFen)
-			|| m_occupied & PawnF1[m_stm][m_epSquareFen]))
+	if (	m_epSquare != Null
+		&& (	(m_stm == White && (m_epSquare < a6 || m_epSquare > h6))
+			|| (m_stm == Black && (m_epSquare < a3 || m_epSquare > h3))
+			|| m_occupied & set1Bit(m_epSquare)
+			|| m_occupied & PawnF1[m_stm][m_epSquare]))
 //			|| !enPassantMoveExists(m_stm)
-//			|| !(PawnF1[m_stm ^ 1][m_epSquareFen] & m_pawns & m_occupiedBy[m_stm ^ 1]))
+//			|| !(PawnF1[m_stm ^ 1][m_epSquare] & m_pawns & m_occupiedBy[m_stm ^ 1]))
 	{
 		return InvalidEnPassant;
 	}
@@ -2184,10 +2183,10 @@ Board::validate(variant::Type variant, Handicap handicap, move::Constraint flag)
 			return InvalidCastlingRights;
 		}
 
-		uint64_t whiteKS = m_castleRookCurrent[WhiteKS] == Null ? 0 : setBit(m_castleRookCurrent[WhiteKS]);
-		uint64_t whiteQS = m_castleRookCurrent[WhiteQS] == Null ? 0 : setBit(m_castleRookCurrent[WhiteQS]);
-		uint64_t blackKS = m_castleRookCurrent[BlackKS] == Null ? 0 : setBit(m_castleRookCurrent[BlackKS]);
-		uint64_t blackQS = m_castleRookCurrent[BlackQS] == Null ? 0 : setBit(m_castleRookCurrent[BlackQS]);
+		uint64_t whiteKS = m_castleRookCurrent[WhiteKS] == Null ? 0 : set1Bit(m_castleRookCurrent[WhiteKS]);
+		uint64_t whiteQS = m_castleRookCurrent[WhiteQS] == Null ? 0 : set1Bit(m_castleRookCurrent[WhiteQS]);
+		uint64_t blackKS = m_castleRookCurrent[BlackKS] == Null ? 0 : set1Bit(m_castleRookCurrent[BlackKS]);
+		uint64_t blackQS = m_castleRookCurrent[BlackQS] == Null ? 0 : set1Bit(m_castleRookCurrent[BlackQS]);
 
 		uint64_t whiteRooks = rooks(White);
 		uint64_t blackRooks = rooks(Black);
@@ -2231,7 +2230,7 @@ Board::validate(variant::Type variant, Handicap handicap, move::Constraint flag)
 //			return InvalidStartPosition;
 //		}
 
-		uint64_t mask = setBit(m_ksq[White]) - 1;
+		uint64_t mask = set1Bit(m_ksq[White]) - 1;
 
 		if (	rank(m_ksq[White]) == Rank1
 			&& (	(	(m_castle & WhiteKingside)
@@ -2244,7 +2243,7 @@ Board::validate(variant::Type variant, Handicap handicap, move::Constraint flag)
 			return AmbiguousCastlingFyles;
 		}
 
-		mask = setBit(m_ksq[Black]) - 1;
+		mask = set1Bit(m_ksq[Black]) - 1;
 
 		if (	rank(m_ksq[Black]) == Rank8
 			&& (	(	(m_castle & BlackKingside)
@@ -2359,7 +2358,7 @@ Board::tryCastleShort(color::ID color)
 	{
 		Square sq = m_castleRookAtStart[::kingSideIndex(color)];
 
-		if (sq != Null && m_piece[sq] == piece::Rook && (setBit(sq) & m_occupiedBy[m_stm]))
+		if (sq != Null && m_piece[sq] == piece::Rook && (set1Bit(sq) & m_occupiedBy[m_stm]))
 		{
 			m_destroyCastle[sq] = ~rights;
 			m_castleRookCurrent[::kingSideIndex(color)] = sq;
@@ -2383,7 +2382,7 @@ Board::tryCastleLong(color::ID color)
 	{
 		Square sq = m_castleRookAtStart[::queenSideIndex(color)];
 
-		if (sq != Null && m_piece[sq] == piece::Rook && (setBit(sq) & m_occupiedBy[m_stm]))
+		if (sq != Null && m_piece[sq] == piece::Rook && (set1Bit(sq) & m_occupiedBy[m_stm]))
 		{
 			m_destroyCastle[sq] = ~rights;
 			m_castleRookCurrent[::queenSideIndex(color)] = sq;
@@ -2420,7 +2419,7 @@ Board::shortCastlingRook(color::ID color) const
 
 	// NOTE: in handicap games the rook is probably missing (only allowed in standard chess)
 	square = color::isWhite(color) ? h1 : h8;
-	return m_occupied & setBit(square) ? Null : square;
+	return m_occupied & set1Bit(square) ? Null : square;
 }
 
 
@@ -2446,7 +2445,7 @@ Board::longCastlingRook(color::ID color) const
 
 	// NOTE: in handicap games the rook is probably missing (only allowed in standard chess)
 	square = color::isWhite(color) ? a1 : a8;
-	return m_occupied & setBit(square) ? Null : square;
+	return m_occupied & set1Bit(square) ? Null : square;
 }
 
 
@@ -2942,8 +2941,8 @@ Board::setup(char const* fen, variant::Type variant)
 						return 0;
 					hashPawn(s, piece::BlackPawn);
 					m_piece[s] = piece::Pawn;
-					m_pawns |= setBit(s);
-					m_occupiedBy[Black] |= setBit(s);
+					m_pawns |= set1Bit(s);
+					m_occupiedBy[Black] |= set1Bit(s);
 					incrMaterial<piece::Pawn>(Black);
 					m_progress.side[Black].add(::flipRank(s));
 					if (variant::isZhouse(variant) && m_partner->m_holding[White].pawn > 0)
@@ -2953,8 +2952,8 @@ Board::setup(char const* fen, variant::Type variant)
 				case 'n':
 					hashPiece(s, piece::BlackKnight);
 					m_piece[s] = piece::Knight;
-					m_knights |= setBit(s);
-					m_occupiedBy[Black] |= setBit(s);
+					m_knights |= set1Bit(s);
+					m_occupiedBy[Black] |= set1Bit(s);
 					incrMaterial<piece::Knight>(Black);
 					if (variant::isZhouse(variant) && m_partner->m_holding[White].knight)
 						--m_partner->m_holding[White].knight;
@@ -2963,8 +2962,8 @@ Board::setup(char const* fen, variant::Type variant)
 				case 'b':
 					hashPiece(s, piece::BlackBishop);
 					m_piece[s] = piece::Bishop;
-					m_bishops |= setBit(s);
-					m_occupiedBy[Black] |= setBit(s);
+					m_bishops |= set1Bit(s);
+					m_occupiedBy[Black] |= set1Bit(s);
 					incrMaterial<piece::Bishop>(Black);
 					if (variant::isZhouse(variant) && m_partner->m_holding[White].bishop)
 						--m_partner->m_holding[White].bishop;
@@ -2973,8 +2972,8 @@ Board::setup(char const* fen, variant::Type variant)
 				case 'r':
 					hashPiece(s, piece::BlackRook);
 					m_piece[s] = piece::Rook;
-					m_rooks |= setBit(s);
-					m_occupiedBy[Black] |= setBit(s);
+					m_rooks |= set1Bit(s);
+					m_occupiedBy[Black] |= set1Bit(s);
 					incrMaterial<piece::Rook>(Black);
 					if (variant::isZhouse(variant) && m_partner->m_holding[White].rook)
 						--m_partner->m_holding[White].rook;
@@ -2983,8 +2982,8 @@ Board::setup(char const* fen, variant::Type variant)
 				case 'q':
 					hashPiece(s, piece::BlackQueen);
 					m_piece[s] = piece::Queen;
-					m_queens |= setBit(s);
-					m_occupiedBy[Black] |= setBit(s);
+					m_queens |= set1Bit(s);
+					m_occupiedBy[Black] |= set1Bit(s);
 					incrMaterial<piece::Queen>(Black);
 					if (variant::isZhouse(variant) && m_partner->m_holding[White].queen)
 						--m_partner->m_holding[White].queen;
@@ -2993,8 +2992,8 @@ Board::setup(char const* fen, variant::Type variant)
 				case 'k':
 					hashPiece(s, piece::BlackKing);
 					m_piece[s] = piece::King;
-					m_kings |= setBit(s);
-					m_occupiedBy[Black] |= setBit(s);
+					m_kings |= set1Bit(s);
+					m_occupiedBy[Black] |= set1Bit(s);
 					m_ksq[Black] = s;
 					if (variant::isAntichessExceptLosers(variant))
 						incrMaterial<piece::King>(Black);
@@ -3007,8 +3006,8 @@ Board::setup(char const* fen, variant::Type variant)
 						return 0;
 					hashPawn(s, piece::WhitePawn);
 					m_piece[s] = piece::Pawn;
-					m_pawns |= setBit(s);
-					m_occupiedBy[White] |= setBit(s);
+					m_pawns |= set1Bit(s);
+					m_occupiedBy[White] |= set1Bit(s);
 					incrMaterial<piece::Pawn>(White);
 					m_progress.side[White].add(s);
 					if (variant::isZhouse(variant) && m_partner->m_holding[Black].pawn > 0)
@@ -3018,8 +3017,8 @@ Board::setup(char const* fen, variant::Type variant)
 				case 'N':
 					hashPiece(s, piece::WhiteKnight);
 					m_piece[s] = piece::Knight;
-					m_knights |= setBit(s);
-					m_occupiedBy[White] |= setBit(s);
+					m_knights |= set1Bit(s);
+					m_occupiedBy[White] |= set1Bit(s);
 					incrMaterial<piece::Knight>(White);
 					if (variant::isZhouse(variant) && m_partner->m_holding[Black].knight)
 						--m_partner->m_holding[Black].knight;
@@ -3028,8 +3027,8 @@ Board::setup(char const* fen, variant::Type variant)
 				case 'B':
 					hashPiece(s, piece::WhiteBishop);
 					m_piece[s] = piece::Bishop;
-					m_bishops |= setBit(s);
-					m_occupiedBy[White] |= setBit(s);
+					m_bishops |= set1Bit(s);
+					m_occupiedBy[White] |= set1Bit(s);
 					incrMaterial<piece::Bishop>(White);
 					if (variant::isZhouse(variant) && m_partner->m_holding[Black].bishop)
 						--m_partner->m_holding[Black].bishop;
@@ -3038,8 +3037,8 @@ Board::setup(char const* fen, variant::Type variant)
 				case 'R':
 					hashPiece(s, piece::WhiteRook);
 					m_piece[s] = piece::Rook;
-					m_rooks |= setBit(s);
-					m_occupiedBy[White] |= setBit(s);
+					m_rooks |= set1Bit(s);
+					m_occupiedBy[White] |= set1Bit(s);
 					incrMaterial<piece::Rook>(White);
 					if (variant::isZhouse(variant) && m_partner->m_holding[Black].rook)
 						--m_partner->m_holding[Black].rook;
@@ -3048,8 +3047,8 @@ Board::setup(char const* fen, variant::Type variant)
 				case 'Q':
 					hashPiece(s, piece::WhiteQueen);
 					m_piece[s] = piece::Queen;
-					m_queens |= setBit(s);
-					m_occupiedBy[White] |= setBit(s);
+					m_queens |= set1Bit(s);
+					m_occupiedBy[White] |= set1Bit(s);
 					incrMaterial<piece::Queen>(White);
 					if (variant::isZhouse(variant) && m_partner->m_holding[Black].queen)
 						--m_partner->m_holding[Black].queen;
@@ -3058,8 +3057,8 @@ Board::setup(char const* fen, variant::Type variant)
 				case 'K':
 					hashPiece(s, piece::WhiteKing);
 					m_piece[s] = piece::King;
-					m_kings |= setBit(s);
-					m_occupiedBy[White] |= setBit(s);
+					m_kings |= set1Bit(s);
+					m_occupiedBy[White] |= set1Bit(s);
 					m_ksq[White] = s;
 					if (variant::isAntichessExceptLosers(variant))
 						incrMaterial<piece::King>(White);
@@ -3177,7 +3176,7 @@ Board::setup(char const* fen, variant::Type variant)
 		return variant == variant::Bughouse ? 0 : p;
 
 	// En Passant Square
-	m_epSquareFen = m_epSquare = Null;
+	m_epSquare = Null;
 	char c = ::tolower(*p++);
 
 	if (c != '-')
@@ -3271,7 +3270,7 @@ Board::setup(ExactZHPosition const& position)
 	{
 		for (unsigned sq = 0; sq < 64; ++sq)
 		{
-			uint64_t mask = setBit(sq);
+			uint64_t mask = set1Bit(sq);
 
 			if (position.m_occupiedBy[color] & mask)
 			{
@@ -3323,7 +3322,6 @@ Board::setup(ExactZHPosition const& position)
 		hashEnPassant();
 
 	m_castle = position.m_castle;
-	m_epSquareFen = position.m_epSquare;
 
 	m_holding[White] = position.m_holding[White];
 	m_holding[Black] = position.m_holding[Black];
@@ -3385,7 +3383,7 @@ Board::isStandardPosition(variant::Type variant) const
 bool
 Board::isStartPosition() const
 {
-	if (m_epSquareFen != Null || m_stm == Black)
+	if (m_epSquare != Null || m_stm == Black)
 		return false;
 
 	return	// check material: KQRRBBNN
@@ -3496,8 +3494,8 @@ Board::computeIdn(variant::Type variant) const
 		// 3. compute knights position
 		int k1Sq		= lsb(knights);
 		int k2Sq		= msb(knights);
-		int k1Pos	= k1Sq - count((bishops | queen) & (setBit(k1Sq) - 1));
-		int k2Pos	= k2Sq - count((bishops | queen) & (setBit(k2Sq) - 1));
+		int k1Pos	= k1Sq - count((bishops | queen) & (set1Bit(k1Sq) - 1));
+		int k2Pos	= k2Sq - count((bishops | queen) & (set1Bit(k2Sq) - 1));
 
 		M_ASSERT(0 <= k1Pos && k1Pos <= 3);
 		M_ASSERT(0 <= k2Pos && k2Pos <= 4);
@@ -3686,8 +3684,8 @@ Board::setup(unsigned idn, variant::Type variant)
 			Square wSq = a1 + i;
 			Square bSq = a8 + i;
 
-			uint64_t whiteMask = setBit(wSq);
-			uint64_t blackMask = setBit(bSq);
+			uint64_t whiteMask = set1Bit(wSq);
+			uint64_t blackMask = set1Bit(bSq);
 
 			m_occupiedBy[White] ^= whiteMask;
 			m_occupiedBy[Black] ^= blackMask;
@@ -3846,7 +3844,7 @@ Board::filterCheckMoves(Move move, uint64_t& movers, variant::Type variant) cons
 		peek.doMove(move, variant);
 
 		if (!peek.isInCheck())
-			movers &= ~setBit(sq);
+			movers &= ~set1Bit(sq);
 	}
 }
 
@@ -3869,7 +3867,7 @@ Board::filterCheckmateMoves(Move move, uint64_t& movers, variant::Type variant) 
 		peek.doMove(move, variant);
 
 		if (!peek.isMate(variant))
-			movers &= ~setBit(sq);
+			movers &= ~set1Bit(sq);
 	}
 }
 
@@ -4743,7 +4741,7 @@ Board::parseMove(char const* algebraic, Move& move, variant::Type variant, move:
 			{
 				fromSquare = toSquare + base;
 
-				if (!(m_occupiedBy[m_stm] & setBit(fromSquare)))
+				if (!(m_occupiedBy[m_stm] & set1Bit(fromSquare)))
 					fromSquare += base;
 			}
 			else if (fromFyle <= int(::fyle(toSquare)))
@@ -5025,7 +5023,7 @@ Board::parsePieceDrop(	char const* s,
 
 	int to = ::mul8(::toRank(*s++)) + fromFyle;
 
-	if (m_occupied & setBit(to))
+	if (m_occupied & set1Bit(to))
 		return 0;
 
 	move = Move::genPieceDrop(to, pieceType);
@@ -5123,18 +5121,11 @@ void
 Board::restoreStates(Move const& m)
 {
 	m_halfMoveClock = m.prevHalfMoves();
-	m_epSquareFen = m.prevEpSquare();
 	m_capturePromoted = m.prevCapturePromoted();
+	m_epSquare = m.prevEpSquare();
 
-	if (m.prevEpSquareExists())
-	{
-		m_epSquare = m_epSquareFen;
+	if (m_epSquare != Null)
 		hashEnPassant();
-	}
-	else
-	{
-		m_epSquare = Null;
-	}
 }
 
 
@@ -5144,7 +5135,6 @@ Board::doMove(Move const& m, variant::Type variant)
 	M_REQUIRE(!m.isEmpty());
 	M_REQUIRE(variant != variant::Bughouse || hasPartnerBoard());
 
-	m_epSquareFen = Null;
 	m_capturePromoted = false;
 
 	if (m_epSquare != Null)
@@ -5156,8 +5146,8 @@ Board::doMove(Move const& m, variant::Type variant)
 	unsigned from		= m.from();
 	unsigned to			= m.to();
 	unsigned sntm		= m_stm ^ 1; // side not to move
-	uint64_t fromMask	= setBit(from);
-	uint64_t toMask	= setBit(to);
+	uint64_t fromMask	= set1Bit(from);
+	uint64_t toMask	= set1Bit(to);
 	uint64_t bothMask	= fromMask ^ toMask;
 
 	switch (m.action())
@@ -5277,12 +5267,12 @@ Board::doMove(Move const& m, variant::Type variant)
 				to = sq::make(FyleC, rank);
 			}
 
-			uint64_t rookSrc = m_occupiedBy[m_stm] & setBit(rookFrom);
+			uint64_t rookSrc = m_occupiedBy[m_stm] & set1Bit(rookFrom);
 
 			// in Chess 960 the king may stand still
 			if (to != m_ksq[m_stm])
 			{
-				bothMask = fromMask ^ setBit(to);
+				bothMask = fromMask ^ set1Bit(to);
 				m_ksq[m_stm] = to;
 				m_kings ^= bothMask;
 				m_piece[from] = piece::None;
@@ -5298,7 +5288,7 @@ Board::doMove(Move const& m, variant::Type variant)
 			// (but probably occupied by another piece)
 			if (m_piece[rookFrom] == piece::Rook && rookSrc)
 			{
-				uint64_t rookMask = setBit(rookFrom) ^ setBit(rookTo);
+				uint64_t rookMask = set1Bit(rookFrom) ^ set1Bit(rookTo);
 
 				m_piece[rookFrom] = piece::None;
 				m_piece[rookTo] = piece::Rook;
@@ -5538,8 +5528,8 @@ Board::doMove(Move const& m, variant::Type variant)
 			// annoying move, the capture is not on the 'to' square
 			unsigned epsq = PrevRank[m_stm][to];
 			m_piece[epsq] = piece::None;
-			m_pawns ^= setBit(epsq);
-			m_occupiedBy[sntm] ^= setBit(epsq);
+			m_pawns ^= set1Bit(epsq);
+			m_occupiedBy[sntm] ^= set1Bit(epsq);
 			m_occupiedL90 ^= MaskL90[to] ^ MaskL90[epsq];
 			m_occupiedL45 ^= MaskL45[to] ^ MaskL45[epsq];
 			m_occupiedR45 ^= MaskR45[to] ^ MaskR45[epsq];
@@ -5580,8 +5570,8 @@ Board::undoMove(Move const& m, variant::Type variant)
 	unsigned from		= m.from();
 	unsigned to			= m.to();
 	unsigned sntm		= m_stm ^ 1;		// side not to move
-	uint64_t fromMask	= setBit(from);
-	uint64_t toMask	= setBit(to);
+	uint64_t fromMask	= set1Bit(from);
+	uint64_t toMask	= set1Bit(to);
 	uint64_t bothMask	= fromMask ^ toMask;
 
 	if (variant == variant::ThreeCheck && isInCheck())
@@ -5699,12 +5689,12 @@ Board::undoMove(Move const& m, variant::Type variant)
 				m_castleRookCurrent[index] = m_castleRookAtStart[index];
 			}
 
-			uint64_t rookSrc = m_occupiedBy[sntm] & setBit(rookTo);
+			uint64_t rookSrc = m_occupiedBy[sntm] & set1Bit(rookTo);
 
 			// in Chess 960 the king may stand still
 			if (from != m_ksq[sntm])
 			{
-				bothMask = fromMask ^ setBit(to);
+				bothMask = fromMask ^ set1Bit(to);
 				m_kings ^= bothMask;
 				m_piece[to] = piece::None;
 				m_ksq[sntm] = from;
@@ -5720,7 +5710,7 @@ Board::undoMove(Move const& m, variant::Type variant)
 			// (but probably occupied by another piece)
 			if (m_piece[rookTo] == piece::Rook && rookSrc)
 			{
-				uint64_t rookMask = setBit(rookFrom) ^ setBit(rookTo);
+				uint64_t rookMask = set1Bit(rookFrom) ^ set1Bit(rookTo);
 
 				m_piece[rookTo] = piece::None;
 				m_piece[rookFrom] = piece::Rook;
@@ -5935,8 +5925,8 @@ Board::undoMove(Move const& m, variant::Type variant)
 			// annoying move, the capture is not on the 'to' square
 			unsigned epsq = PrevRank[sntm][to];
 			m_piece[epsq] = piece::Pawn;
-			m_pawns ^= setBit(epsq);
-			m_occupiedBy[m_stm] ^= setBit(epsq);
+			m_pawns ^= set1Bit(epsq);
+			m_occupiedBy[m_stm] ^= set1Bit(epsq);
 			m_occupiedL90 ^= MaskL90[to] ^ MaskL90[epsq];
 			m_occupiedL45 ^= MaskL45[to] ^ MaskL45[epsq];
 			m_occupiedR45 ^= MaskR45[to] ^ MaskR45[epsq];
@@ -5974,7 +5964,7 @@ Board::pawnMovesFrom(Square s) const
 	uint64_t t = m_occupiedBy[m_stm ^ 1];
 
 	if (m_epSquare != Null)
-		t |= setBit(m_epSquare);
+		t |= set1Bit(m_epSquare);
 
 	return targets | (t & PawnAttacks[m_stm][s]);
 }
@@ -5984,7 +5974,7 @@ uint64_t
 Board::pawnCapturesTo(Square s) const
 {
 	uint64_t attackers	= 0;
-	uint64_t destination	= setBit(s);
+	uint64_t destination	= set1Bit(s);
 
 	if (m_stm == White)
 	{
@@ -6036,7 +6026,7 @@ Board::checkMove(Move const& move, variant::Type variant, move::Constraint flag)
 	if (piece(from) != move.pieceMoved())
 		return false;
 
-	uint64_t src = setBit(from);
+	uint64_t src = set1Bit(from);
 
 	if (!(m_occupiedBy[m_stm] & src) && !move.isPieceDrop())
 		return false;
@@ -6046,7 +6036,7 @@ Board::checkMove(Move const& move, variant::Type variant, move::Constraint flag)
 	if (to == Null)
 		return false;
 
-	uint64_t dst = setBit(to);
+	uint64_t dst = set1Bit(to);
 
 	if (m_occupiedBy[m_stm] & dst)
 	{
@@ -6201,12 +6191,12 @@ Board::prepareMove(Square from, Square to, variant::Type variant, move::Constrai
 	M_ASSERT(from != Null);
 	M_ASSERT(to != Null);
 
-	uint64_t src = setBit(from);
+	uint64_t src = set1Bit(from);
 
 	if (!(m_occupiedBy[m_stm] & src))
 		return Move::empty();
 
-	uint64_t dst = setBit(to);
+	uint64_t dst = set1Bit(to);
 
 	if (m_occupiedBy[m_stm] & dst)
 	{
@@ -6358,7 +6348,7 @@ Board::preparePieceDrop(Square to, piece::Type piece, move::Constraint flag) con
 {
 	M_REQUIRE(piece::Queen <= piece && piece <= piece::Pawn);
 
-	if (m_occupied & setBit(to) || (piece == piece::Pawn && (setBit(to) & (RankMask1 | RankMask8))))
+	if (m_occupied & set1Bit(to) || (piece == piece::Pawn && (set1Bit(to) & (RankMask1 | RankMask8))))
 		return Move::empty();
 
 	Move move = Move::genPieceDrop(to, piece);
@@ -6582,7 +6572,7 @@ Board::makeMove(Square from, Square to, piece::Type promotedOrDrop) const
 
 		case piece::King:
 			// the following takes illegal castlings into account:
-			if (m_occupiedBy[m_stm] & setBit(to))
+			if (m_occupiedBy[m_stm] & set1Bit(to))
 				return setMoveColor(Move::genCastling(from, to));
 
 			// the following takes into account that the rook is probably missing
@@ -6625,16 +6615,16 @@ Board::needCastlingFyles() const
 
 	return	(	whiteRooks
 				&& (m_castle & WhiteKingside)
-				&& count(whiteRooks & ~(setBit(m_ksq[White]) - 1)) > 1)
+				&& count(whiteRooks & ~(set1Bit(m_ksq[White]) - 1)) > 1)
 			|| (	blackRooks
 				&& (m_castle & BlackKingside)
-				&& count(blackRooks & ~(setBit(m_ksq[Black]) - 1)) > 1)
+				&& count(blackRooks & ~(set1Bit(m_ksq[Black]) - 1)) > 1)
 			|| (	whiteRooks
 				&& (m_castle & WhiteQueenside)
-				&& count(whiteRooks &  (setBit(m_ksq[White]) - 1)) > 1)
+				&& count(whiteRooks &  (set1Bit(m_ksq[White]) - 1)) > 1)
 			|| (	blackRooks
 				&& (m_castle & BlackQueenside)
-				&& count(blackRooks &  (setBit(m_ksq[Black]) - 1)) > 1);
+				&& count(blackRooks &  (set1Bit(m_ksq[Black]) - 1)) > 1);
 }
 
 
@@ -6682,7 +6672,7 @@ Board::toFen(mstl::string& result, variant::Type variant, Format format) const
 
 				result += piece::print(piece);
 
-				if (variant::isZhouse(variant) && (m_promoted[piece::color(piece)] & setBit(square)))
+				if (variant::isZhouse(variant) && (m_promoted[piece::color(piece)] & set1Bit(square)))
 					result += '~';
 			}
 		}
@@ -6837,14 +6827,14 @@ Board::toFen(mstl::string& result, variant::Type variant, Format format) const
 	}
 
 	// en passant square
-	if (m_epSquareFen == Null)
+	if (m_epSquare == Null)
 	{
 		result += '-';
 	}
 	else
 	{
-		result += printFyle(sq::ID(m_epSquareFen));
-		result += printRank(sq::ID(m_epSquareFen));
+		result += printFyle(sq::ID(m_epSquare));
+		result += printRank(sq::ID(m_epSquare));
 	}
 	result += ' ';
 
@@ -7063,7 +7053,7 @@ Board::staticExchangeEvaluator(Move const& move, int const* pieceValues) const
 	int target	= move.to();
 	int n			= 1;
 
-	uint64_t fromMask		= ::setBit(move.from());
+	uint64_t fromMask		= ::set1Bit(move.from());
 	uint64_t occupied		= m_occupiedBy[m_stm ^ 1] & ~fromMask;
 	uint64_t occupied2	= m_occupiedBy[m_stm] & ~fromMask;
 	uint64_t pawns			= PawnAttacks[m_stm][target] & m_pawns;
@@ -7085,21 +7075,21 @@ Board::staticExchangeEvaluator(Move const& move, int const* pieceValues) const
 		if (pawns & occupied)
 		{
 			int square = lsb(pawns & occupied);
-			occupied &= ~::setBit(square);
+			occupied &= ~::set1Bit(square);
 			occupied |= addXrayPiece(square, target);
 			swapList[n] = -swapList[n - 1] + attackedPiece;
 			attackedPiece = pieceValues[piece::Pawn];
 		}
 		else if (knights & occupied)
 		{
-			occupied &= ~::setBit(lsb(knights & occupied));
+			occupied &= ~::set1Bit(lsb(knights & occupied));
 			swapList[n] = -swapList[n - 1] + attackedPiece;
 			attackedPiece = pieceValues[piece::Knight];
 		}
 		else if (bishops & occupied)
 		{
 			int square = lsb(bishops & occupied);
-			occupied &= ~::setBit(square);
+			occupied &= ~::set1Bit(square);
 			occupied |= addXrayPiece(square, target);
 			swapList[n] = -swapList[n - 1] + attackedPiece;
 			attackedPiece = pieceValues[piece::Bishop];
@@ -7107,7 +7097,7 @@ Board::staticExchangeEvaluator(Move const& move, int const* pieceValues) const
 		else if (rooks & occupied)
 		{
 			int square = lsb(rooks & occupied);
-			occupied &= ~::setBit(square);
+			occupied &= ~::set1Bit(square);
 			occupied |= addXrayPiece(square, target);
 			swapList[n] = -swapList[n - 1] + attackedPiece;
 			attackedPiece = pieceValues[piece::Rook];
@@ -7115,14 +7105,14 @@ Board::staticExchangeEvaluator(Move const& move, int const* pieceValues) const
 		else if (queens & occupied)
 		{
 			int square = lsb(queens & occupied);
-			occupied &= ~::setBit(square);
+			occupied &= ~::set1Bit(square);
 			occupied |= addXrayPiece(square, target);
 			swapList[n] = -swapList[n - 1] + attackedPiece;
 			attackedPiece = pieceValues[piece::Queen];
 		}
 		else if (kings & occupied)
 		{
-			occupied &= ~::setBit(lsb(kings & occupied));
+			occupied &= ~::set1Bit(lsb(kings & occupied));
 			swapList[n] = -swapList[n - 1] + attackedPiece;
 			attackedPiece = pieceValues[piece::King];
 		}
@@ -7219,7 +7209,6 @@ Board::initialize()
 	::memset(m_emptyBoard.m_castleRookCurrent, Null, 4);
 	::memset(m_emptyBoard.m_castleRookAtStart, Null, 4);
 	m_emptyBoard.m_epSquare = Null;
-	m_emptyBoard.m_epSquareFen = Null;
 	m_emptyBoard.m_ksq[0] = Null;
 	m_emptyBoard.m_ksq[1] = Null;
 
@@ -7291,6 +7280,71 @@ Board::initialize()
 	assert(m_queenVsRooks.m_hash == QueenVsRooks_Hash);
 	assert(m_upsideDown.m_hash == UpsideDown_Hash);
 #endif
+
+#ifdef CHECK_HASH_KEYS
+
+	mstl::set<uint64_t> used;
+
+# define HASHKEY(type) rand64::Holding[c ? piece::Black##type : piece::White##type]
+
+	for (unsigned color = 0; color < 2; ++color)
+	{
+		color::ID c = color::ID(color);
+
+		for (unsigned p = 0; p <= 8; ++p)
+		{
+			uint64_t pk = p ? mstl::bf::rotate_left(HASHKEY(Pawn), p - 1) : 0;
+
+			for (unsigned n = 0; n <= 4; ++n)
+			{
+				uint64_t nk = n ? mstl::bf::rotate_left(HASHKEY(Knight), n - 1) : 0;
+
+				for (unsigned b = 0; b <= 4; ++b)
+				{
+					uint64_t bk = b ? mstl::bf::rotate_left(HASHKEY(Bishop), b - 1) : 0;
+
+					for (unsigned r = 0; r <= 4; ++r)
+					{
+						uint64_t rk = r ? mstl::bf::rotate_left(HASHKEY(Rook), r - 1) : 0;
+
+						for (unsigned q = 0; q <= 2; ++q)
+						{
+							if (p > 1 || n > 1 || b > 1 || r > 1 || q > 1)
+							{
+								uint64_t qk		= q ? mstl::bf::rotate_left(HASHKEY(Queen), q - 1) : 0;
+								uint64_t key	= 0;
+
+								if (pk) key ^= pk;
+								if (nk) key ^= nk;
+								if (bk) key ^= bk;
+								if (rk) key ^= rk;
+								if (qk) key ^= qk;
+
+								if (!used.insert_unique(key))
+								{
+									fprintf(	stderr,
+												"hash key collision: p=%u, n=%u, b=%u, r=%u, q=%u\n",
+												p, n, b, r, q);
+								}
+
+								for (unsigned ii = 0; ii < U_NUMBER_OF(rand64::RandomTable); ++ii)
+								{
+									if (key == rand64::RandomTable[ii])
+									{
+										fprintf(	stderr,
+													"hash key collision: p=%u, n=%u, b=%u, r=%u, q=%u\n",
+													p, n, b, r, q);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+#endif // CHECK_HASH_KEYS
 }
 
 // vi:set ts=3 sw=3:

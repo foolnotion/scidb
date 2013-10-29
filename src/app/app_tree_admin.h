@@ -61,6 +61,7 @@ public:
 	sys::Thread& thread();
 
 	bool isUpToDate(db::Database const& referenceBase, db::Game const& game, Key const& key) const;
+	bool isRunning() const;
 
 	bool startUpdate(	db::Database& referenceBase,
 							db::Game& game,

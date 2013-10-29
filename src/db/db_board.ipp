@@ -52,7 +52,6 @@ inline bool Board::blackToMove() const				{ return color::isBlack(sideToMove());
 inline bool Board::hasPartnerBoard() const		{ return m_partner != this; }
 
 inline Square Board::enPassantSquare() const		{ return m_epSquare; }
-inline Square Board::enPassantSquareFen() const	{ return m_epSquareFen; }
 
 inline unsigned Board::halfMoveClock() const		{ return m_halfMoveClock; }
 inline unsigned Board::plyNumber() const			{ return m_plyNumber; }
@@ -309,7 +308,7 @@ inline
 void
 Board::prepareUndo(Move& move) const
 {
-	move.setUndo(m_halfMoveClock, m_epSquareFen, m_epSquare != sq::Null, m_castle, m_capturePromoted);
+	move.setUndo(m_halfMoveClock, m_epSquare, m_castle, m_capturePromoted);
 }
 
 

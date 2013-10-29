@@ -232,7 +232,7 @@ public:
 									move::Constraint flag = move::DontAllowIllegalMove) const;
 	/// Return a move object given only a from-to move specification (cannot handle promotions)
 	Move makeMove(uint16_t move) const;
-	/// Return a move object given only a from-to move specification (cannot handle promotions)
+	/// Return a move object given only a from-to move specification
 	Move makeMove(Square from, Square to, piece::Type promotedOrDrop = piece::Queen) const;
 	/// Prepare a move for undo operation.
 	void prepareUndo(Move& move) const;
@@ -354,8 +354,6 @@ public:
 	piece::Type piece(Square s) const;
 	/// Return square where en passant capture may occur, or null square
 	Square enPassantSquare() const;
-	/// Return square where en passant capture may occur according to FEN, or null square
-	Square enPassantSquareFen() const;
 	/// Returns the signature
 	Signature const& signature() const;
 	/// Returns the signature
@@ -641,8 +639,7 @@ private:
 	void hashCastling(color::ID color);
 	void hashChecksGiven(color::ID color, unsigned n);
 	void hashChecksGiven(unsigned white, unsigned black);
-	void hashHoldingAdd(piece::ID piece, Byte count);
-	void hashHoldingRemove(piece::ID piece, Byte count);
+	void hashHoldingChanged(piece::ID piece, Byte count);
 	void hashHolding(piece::ID piece, Byte count);
 	template <piece::Type Piece>
 	void addToHolding(variant::Type variant, unsigned color);
@@ -673,7 +670,6 @@ private:
 	Byte			m_destroyCastle[64];		// inverted castle mask for each square
 	Byte			m_unambiguous[4];			// whether castling rook fyles are unambiguous
 	Square		m_ksq[2];					// square of the kings
-	Square		m_epSquareFen;				// square of a fictive ep capture
 	bool			m_capturePromoted;		// position after a pawn capture with promotion
 	uint64_t		m_hash;						// hash value
 	uint64_t		m_pawnHash;					// pawn hash value

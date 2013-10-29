@@ -73,7 +73,7 @@ struct RayHorizontal
 			uint64_t	e = mstl::bitfield<uint64_t>::mask(t, s); // empty squares
 
 			ray &= ~e;
-			e &= ~(setBit(s) | setBit(t));
+			e &= ~(set1Bit(s) | set1Bit(t));
 
 			if ((empty & e) != e)
 				return 0;
@@ -97,7 +97,7 @@ struct RayHorizontal
 			uint64_t	e = mstl::bitfield<uint64_t>::mask(s, t); // empty squares
 
 			ray &= ~e;
-			e &= ~(setBit(s) | setBit(t));
+			e &= ~(set1Bit(s) | set1Bit(t));
 
 			if ((empty & e) != e)
 				return 0;
@@ -132,7 +132,7 @@ struct RayHorizontal
 
 				if (r && cond(m_board.piece(s)))
 				{
-					uint64_t bit	= setBit(s);
+					uint64_t bit	= set1Bit(s);
 					uint64_t rl		= ray & (bit - 1);	// left from square s
 					uint64_t rr		= ray & ~(rl | bit);	// right from square s
 
@@ -176,7 +176,7 @@ struct RayVertical
 			uint64_t	e = db::board::MaskVertical[s][t]; // empty squares
 
 			ray &= ~e;
-			e &= ~(setBit(s) | setBit(t));
+			e &= ~(set1Bit(s) | set1Bit(t));
 
 			if ((empty & e) != e)
 				return 0;
@@ -200,7 +200,7 @@ struct RayVertical
 			uint64_t	e = db::board::MaskVertical[s][t]; // empty squares
 
 			ray &= ~e;
-			e &= ~(setBit(s) | setBit(t));
+			e &= ~(set1Bit(s) | set1Bit(t));
 
 			if ((empty & e) != e)
 				return 0;
@@ -235,7 +235,7 @@ struct RayVertical
 
 				if (r && cond(m_board.piece(s)))
 				{
-					uint64_t bit	= setBit(s);
+					uint64_t bit	= set1Bit(s);
 					uint64_t rb		= ray & (bit - 1);	// below square s
 					uint64_t ra		= ray & ~(rb | bit);	// above square s
 
@@ -279,7 +279,7 @@ struct RayDiagonal
 			uint64_t	e = mstl::bitfield<uint64_t>::mask(t, s) & diagonal;	// empty squares
 
 			ray &= ~e;
-			e &= ~(setBit(s) | setBit(t));
+			e &= ~(set1Bit(s) | set1Bit(t));
 
 			if ((empty & e) != e)
 				return 0;
@@ -303,7 +303,7 @@ struct RayDiagonal
 			uint64_t	e = mstl::bitfield<uint64_t>::mask(s, t) & diagonal;	// empty squares
 
 			ray &= ~e;
-			e &= ~(setBit(s) | setBit(t));
+			e &= ~(set1Bit(s) | set1Bit(t));
 
 			if ((empty & e) != e)
 				return 0;
@@ -336,7 +336,7 @@ struct RayDiagonal
 			{
 				uint64_t	diagonal = maskDiagonal[s];
 				uint64_t	ray		= pieces & diagonal;
-				uint64_t bit		= setBit(s);
+				uint64_t bit		= set1Bit(s);
 				uint64_t rb			= ray & (bit - 1);	// below square s
 				uint64_t ra			= ray & ~(rb | bit);	// above square s
 
@@ -716,7 +716,7 @@ MaxSwapEvaluation::match(GameInfo const& info, Board const& board, Variant varia
 
 	for (MoveList::const_iterator i = moves.begin(); i != moves.end(); ++i)
 	{
-		if ((m_from.pieces(White) & setBit(i->from())) && (m_to.pieces(White) & setBit(i->to())))
+		if ((m_from.pieces(White) & set1Bit(i->from())) && (m_to.pieces(White) & set1Bit(i->to())))
 		{
 			int score = board.staticExchangeEvaluator(*i, Designator::pieceValues(variant));
 			if (score > maxScore)
