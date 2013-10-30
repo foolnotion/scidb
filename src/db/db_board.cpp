@@ -7441,9 +7441,8 @@ Board::initialize()
 #endif // CHECK_HASH_KEYS
 
 #define CHECK_PTR(p) \
-	static_assert(	rand64::p + rand64::Num_##p##_Entries \
-							<= rand64::RandomTable + U_NUMBER_OF(rand64::RandomTable), \
-						"pointer is exceeding table");
+	assert(rand64::p + rand64::Num_##p##_Entries \
+				<= rand64::RandomTable + U_NUMBER_OF(rand64::RandomTable));
 
 	CHECK_PTR(Pieces);
 	CHECK_PTR(Promoted);

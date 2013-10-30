@@ -345,12 +345,12 @@ static uint64_t const Random64[797] =
 };
 
 
-static uint64_t const* RandomPiece			= Random64;
-static uint64_t const* RandomCastle			= Random64 + 768;
-static uint64_t const* RandomEnPassant		= Random64 + 772;
-static uint64_t const* RandomTurn			= Random64 + 780;
-static uint64_t const* RandomHolding		= Random64 + 781;
-static uint64_t const* RandomThreeCheck	= Random64 + 791;
+static uint64_t const* const RandomPiece			= Random64;
+static uint64_t const* const RandomCastle			= Random64 + 768;
+static uint64_t const* const RandomEnPassant		= Random64 + 772;
+static uint64_t const* const RandomTurn			= Random64 + 780;
+static uint64_t const* const RandomHolding		= Random64 + 781;
+static uint64_t const* const RandomThreeCheck	= Random64 + 791;
 
 
 inline static unsigned mul64(Byte b)     { return unsigned(b) << 6; }
