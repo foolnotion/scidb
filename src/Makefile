@@ -181,6 +181,12 @@ clean:
 		$(MAKE) -C $$dir clean; \
 	done
 
+clean-db:
+	@echo "Clean app, db, db/si3, ..."
+	@for dir in app db; do \
+		$(MAKE) -C $$dir clean; \
+	done
+
 depend:
 	makedepend -fMakefile -Y -- $(INCLUDE) -- -w1 $(SRC) 2>/dev/null
 	@if [ -h Makefile.bak ]; then \

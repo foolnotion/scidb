@@ -192,6 +192,7 @@ handleXErrorMessage(Display* dpy, XErrorEvent* event)
 		return 0;
 	}
 
+#if 0 // crashing!
 	mstl::backtrace bt;
 	mstl::ostringstream strm;
 
@@ -200,6 +201,7 @@ handleXErrorMessage(Display* dpy, XErrorEvent* event)
 	bt.text_write(strm, 3);
 	strm.format("==========================================================\n");
 	fprintf(stderr, "%s", strm.str().c_str());
+#endif
 
 	xErrorHandler(dpy, event);
 

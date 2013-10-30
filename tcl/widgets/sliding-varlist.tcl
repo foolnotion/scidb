@@ -421,7 +421,7 @@ proc Resize {t nentries} {
 			$t column configure c[expr {$c + 1}] -visible yes
 		}
 
-		if {$i < $nentries} {
+		if {$i <= $nentries} {
 			for {} {$i <= $nentries} {incr i} {
 				MakeColumn $t $i
 			}

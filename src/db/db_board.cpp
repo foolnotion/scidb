@@ -3035,7 +3035,7 @@ Board::setup(char const* fen, variant::Type variant)
 			m_occupiedL45 |= MaskL45[s];
 			m_occupiedR45 |= MaskR45[s];
 
-			unsigned pieceMask = set1Bit(s);
+			uint64_t pieceMask = set1Bit(s);
 
 			switch (*p)
 			{
