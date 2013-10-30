@@ -77,16 +77,30 @@ struct ExactZHPosition : public ExactPosition
 	bool operator==(ExactZHPosition const& position) const;
 	bool operator!=(ExactZHPosition const& position) const;
 
-	Material m_holding[2];				// pieces in hand
-	uint64_t	m_promoted[2];				// positions of promoted pieces
-	uint16_t m_checksGiven[2];			// number of checks given
+	union
+	{
+		// Zhouse
+		struct
+		{
+			Material m_holding[2];		// pieces in hand
+			uint32_t m_kingHasMoved;	// boolean flags whether king has moved
+		}
+		__attribute__((packed));
+
+		// Three-check
+		struct
+		{
+			uint32_t m_checksGiven[2];	// number of checks given
+		}
+		__attribute__((packed));
+	};
 }
 __attribute__((packed));
 
 struct UniquePosition : public ExactZHPosition
 {
-	uint16_t	m_halfMoveClock;			// number of moves since last pawn move or capture
-	uint16_t	m_plyNumber;				// ply number in game (incremented after each half move)
+	uint32_t	m_halfMoveClock;	// number of moves since last pawn move or capture
+	uint32_t	m_plyNumber;		// ply number in game (incremented after each half move)
 }
 __attribute__((packed));
 
@@ -182,7 +196,7 @@ public:
 	/// Setup board from given IDN (unique IDentification Number)
 	void setup(unsigned idn, variant::Type variant);
 	/// Setup board from given position
-	void setup(ExactZHPosition const& position);
+	void setup(ExactZHPosition const& position, variant::Type variant);
 	/// Set En Passant fyle
 	void setEnPassantFyle(sq::Fyle fyle);
 	/// Set En Passant fyle
@@ -572,6 +586,8 @@ private:
 	/// Restore half move clock and en passant after undo.
 	void restoreStates(Move const& m);
 
+	/// set the given piece on the board at the given square
+	void setupAt(Square s, piece::Type p, color::ID color, variant::Type variant);
 	/// set move color
 	Move setMoveColor(Move move) const;
 	/// set move legal
@@ -659,23 +675,24 @@ private:
 	template <piece::Type Piece> void decrMaterial(unsigned color);
 
 	// Additional board data
-	uint64_t	m_occupied;						// square is empty or holds a piece
-	uint64_t	m_occupiedL90;					// rotated counter clockwise 90 deg
-	uint64_t	m_occupiedL45;					// an odd transformation, to straighten out diagonals
-	uint64_t	m_occupiedR45;					// the opposite odd transformation, just as messy
+	uint64_t	m_occupied;					// square is empty or holds a piece
+	uint64_t	m_occupiedL90;				// rotated counter clockwise 90 deg
+	uint64_t	m_occupiedL45;				// an odd transformation, to straighten out diagonals
+	uint64_t	m_occupiedR45;				// the opposite odd transformation, just as messy
 
 	// Extra state data
-	Board*		m_partner;					// partner board in Bughouse
-	Byte			m_piece[64];				// type of piece on this square
-	Byte			m_destroyCastle[64];		// inverted castle mask for each square
-	Byte			m_unambiguous[4];			// whether castling rook fyles are unambiguous
-	Square		m_ksq[2];					// square of the kings
-	bool			m_capturePromoted;		// position after a pawn capture with promotion
-	uint64_t		m_hash;						// hash value
-	uint64_t		m_pawnHash;					// pawn hash value
-	Square		m_castleRookAtStart[4];	// initial squares of the castling rooks
-	Material		m_material[2];				// material count
-	unsigned		m_kingHasMoved[2];		// king has moved?
+	Board*	m_partner;					// partner board in Bughouse
+	Byte		m_piece[64];				// type of piece on this square
+	Byte		m_destroyCastle[64];		// inverted castle mask for each square
+	Byte		m_unambiguous[4];			// whether castling rook fyles are unambiguous
+	Square	m_ksq[2];					// square of the kings
+	bool		m_capturePromoted;		// position after a pawn capture with promotion
+	uint64_t	m_hash;						// hash value
+	uint64_t	m_pawnHash;					// pawn hash value
+	uint64_t	m_promoted[2];				// positions of promoted pieces
+	uint32_t	m_countKingMoves[2];		// count king moves
+	Square	m_castleRookAtStart[4];	// initial squares of the castling rooks
+	Material	m_material[2];				// material count
 
 	// ========================================================================
 	// NOTE: for (general) position search the following members are relevant:
@@ -700,7 +717,6 @@ private:
 	// ExactZHPosition:
 	// ------------------------------------------------------------------------
 	// m_holding			(Zhouse)
-	// m_promoted			(Zhouse)
 	// m_checksGiven		(Three-Check)
 	// ------------------------------------------------------------------------
 	// Board:
@@ -708,6 +724,7 @@ private:
 	// m_hash
 	// m_pawnHash
 	// m_material
+	// m_promoted			(Zhouse)
 	// ------------------------------------------------------------------------
 	// Signature:
 	// ------------------------------------------------------------------------

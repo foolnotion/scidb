@@ -139,7 +139,11 @@ inline static Byte kingSideIndex(Byte color)		{ return castling::kingSideIndex(c
 inline static Byte queenSideIndex(Byte color)	{ return castling::queenSideIndex(color::ID(color)); }
 
 
-static void __attribute__((constructor)) initialize() { Board::initialize(); }
+#ifndef BROKEN_LINKER_HACK
+static void
+__attribute__((constructor))
+initialize() { Board::initialize(); }
+#endif
 
 
 template <typename T>
@@ -1676,6 +1680,77 @@ Board::setAt(Square s, piece::ID p, variant::Type variant)
 
 
 void
+Board::setupAt(Square s, piece::Type p, color::ID color, variant::Type variant)
+{
+	M_ASSERT(p != piece::None);
+	M_ASSERT(!(m_occupied & set1Bit(s)));
+	M_ASSERT(variant != variant::Bughouse || hasPartnerBoard());
+
+	uint64_t bit = set1Bit(s);
+
+	switch (p)
+	{
+		case piece::Pawn:
+			M_ASSERT(rank(s) != Rank1 && rank(s) != Rank8);
+			m_pawns |= bit;
+			incrMaterial<piece::Pawn>(color);
+			pawnProgressAdd(color, s);
+			if (variant::isZhouse(variant))
+				m_partner->possiblyRemoveFromHolding<piece::Pawn>(variant, color);
+			break;
+
+		case piece::Knight:
+			m_knights |= bit;
+			incrMaterial<piece::Knight>(color);
+			if (variant::isZhouse(variant))
+				m_partner->possiblyRemoveFromHolding<piece::Knight>(variant, color);
+			break;
+
+		case piece::Bishop:
+			m_bishops |= bit;
+			incrMaterial<piece::Bishop>(color);
+			if (variant::isZhouse(variant))
+				m_partner->possiblyRemoveFromHolding<piece::Bishop>(variant, color);
+			break;
+
+		case piece::Rook:
+			m_rooks |= bit;
+			incrMaterial<piece::Rook>(color);
+			if (variant::isZhouse(variant))
+				m_partner->possiblyRemoveFromHolding<piece::Rook>(variant, color);
+			break;
+
+		case piece::Queen:
+			m_queens |= bit;
+			incrMaterial<piece::Queen>(color);
+			if (variant::isZhouse(variant))
+				m_partner->possiblyRemoveFromHolding<piece::Queen>(variant, color);
+			break;
+
+		case piece::King:
+			M_ASSERT(::count(kings(color)) == 0 || variant::isAntichessExceptLosers(variant));
+			m_kings |= bit;
+			m_ksq[color] = s;
+			if (variant::isAntichessExceptLosers(variant))
+				incrMaterial<piece::King>(color);
+			else
+				++m_material[color].king;
+			break;
+
+		case piece::None:
+			break; // cannot happen
+	}
+
+	m_piece[s] = p;
+	m_occupied ^= bit;
+	m_occupiedBy[color] ^= bit;
+	m_occupiedL90 ^= MaskL90[s];
+	m_occupiedL45 ^= MaskL45[s];
+	m_occupiedR45 ^= MaskR45[s];
+}
+
+
+void
 Board::removeAt(Square s, variant::Type variant)
 {
 	M_REQUIRE(piece(s) != piece::Pawn || (rank(s) != Rank1 && rank(s) != Rank8));
@@ -1768,6 +1843,10 @@ Board::removeAt(Square s, variant::Type variant)
 void
 Board::transpose(variant::Type variant)
 {
+	// IMPORTANT NOTE: only start boards can be transposed correctly.
+
+	static_assert(sq::a1 == 0 && sq::h8 == 63, "loop not working");
+
 	Board board(m_emptyBoard);
 
 	for (unsigned i = 0; i < 64; ++i)
@@ -1802,15 +1881,40 @@ Board::transpose(variant::Type variant)
 	board.m_unambiguous[BlackKS] = m_unambiguous[BlackQS];
 	board.m_unambiguous[BlackQS] = m_unambiguous[BlackKS];
 
-	// TODO: how to hash promoted pieces?
 	board.m_promoted[White] = ::transpose(m_promoted[White]);
 	board.m_promoted[Black] = ::transpose(m_promoted[Black]);
 
-	board.m_holding[White] = m_holding[White];
-	board.m_holding[Black] = m_holding[Black];
+	// We assume a start board:
+	uint64_t promoted = board.m_promoted[White];
+	while (promoted)
+	{
+		Square sq = lsbClear(promoted);
+		hashPromotedPiece(set1Bit(sq), ::toPiece(m_piece[sq], White), variant);
+	}
 
-	board.m_checksGiven[White] = m_checksGiven[White];
-	board.m_checksGiven[Black] = m_checksGiven[Black];
+	promoted = board.m_promoted[Black];
+	while (promoted)
+	{
+		Square sq = lsbClear(promoted);
+		hashPromotedPiece(set1Bit(sq), ::toPiece(m_piece[sq], Black), variant);
+	}
+
+	if (variant::isZhouse(variant))
+	{
+		board.m_holding[White] = m_holding[White];
+		board.m_holding[Black] = m_holding[Black];
+
+		board.m_kingHasMoved = m_kingHasMoved;
+
+		board.hashHolding(board.m_holding[White], board.m_holding[Black]);
+	}
+	else if (variant == variant::ThreeCheck)
+	{
+		board.m_checksGiven[White] = m_checksGiven[White];
+		board.m_checksGiven[Black] = m_checksGiven[Black];
+
+		board.hashChecksGiven(board.m_checksGiven[White], board.m_checksGiven[Black]);
+	}
 
 	static_cast<Signature&>(board) = static_cast<Signature const&>(*this);
 	static_cast<Signature&>(board).transpose();
@@ -1823,11 +1927,6 @@ Board::transpose(variant::Type variant)
 		hashEnPassant();
 	hashCastling(White);
 	hashCastling(Black);
-
-	if (variant::isZhouse(variant))
-		hashHolding(m_holding[White], m_holding[Black]);
-	else if (variant == variant::ThreeCheck)
-		hashChecksGiven(m_checksGiven[White], m_checksGiven[Black]);
 }
 
 
@@ -2660,6 +2759,7 @@ Board::fixBadCastlingRights()
 		}
 	}
 
+	static_assert(sizeof(m_emptyBoard.m_unambiguous[0]) == 1, "setup not working");
 	::memset(m_unambiguous, true, sizeof(m_unambiguous));
 }
 
@@ -2861,11 +2961,12 @@ char const*
 Board::setup(char const* fen, variant::Type variant)
 {
 	// The FEN has some weakness:
-	// ------------------------------------------------------------------------
+	// --------------------------------------------------------------------------
 	// 1) it does not provide information for detection of 3-fold repetition
 	// 2) Three-Check: there is no information of given checks
-	// 3) Crazyhouse: there exists no standard for the content of the holding
-	// ------------------------------------------------------------------------
+	// 3) Zhouse: there exists no standard for the content of the holding
+	// 4) Zhouse: the information is required whether the king has already moved
+	// --------------------------------------------------------------------------
 	// For case (2) we have our own extension: a trailing " +<n>+<n>" denotes the
 	// numbers of checks given (white+black).
 	// For case (3) we are using the BPGN definition: a trailing "/<pieces>"
@@ -2934,6 +3035,8 @@ Board::setup(char const* fen, variant::Type variant)
 			m_occupiedL45 |= MaskL45[s];
 			m_occupiedR45 |= MaskR45[s];
 
+			unsigned pieceMask = set1Bit(s);
+
 			switch (*p)
 			{
 				case 'p':
@@ -2941,8 +3044,8 @@ Board::setup(char const* fen, variant::Type variant)
 						return 0;
 					hashPawn(s, piece::BlackPawn);
 					m_piece[s] = piece::Pawn;
-					m_pawns |= set1Bit(s);
-					m_occupiedBy[Black] |= set1Bit(s);
+					m_pawns |= pieceMask;
+					m_occupiedBy[Black] |= pieceMask;
 					incrMaterial<piece::Pawn>(Black);
 					m_progress.side[Black].add(::flipRank(s));
 					if (variant::isZhouse(variant) && m_partner->m_holding[White].pawn > 0)
@@ -2952,8 +3055,8 @@ Board::setup(char const* fen, variant::Type variant)
 				case 'n':
 					hashPiece(s, piece::BlackKnight);
 					m_piece[s] = piece::Knight;
-					m_knights |= set1Bit(s);
-					m_occupiedBy[Black] |= set1Bit(s);
+					m_knights |= pieceMask;
+					m_occupiedBy[Black] |= pieceMask;
 					incrMaterial<piece::Knight>(Black);
 					if (variant::isZhouse(variant) && m_partner->m_holding[White].knight)
 						--m_partner->m_holding[White].knight;
@@ -2962,8 +3065,8 @@ Board::setup(char const* fen, variant::Type variant)
 				case 'b':
 					hashPiece(s, piece::BlackBishop);
 					m_piece[s] = piece::Bishop;
-					m_bishops |= set1Bit(s);
-					m_occupiedBy[Black] |= set1Bit(s);
+					m_bishops |= pieceMask;
+					m_occupiedBy[Black] |= pieceMask;
 					incrMaterial<piece::Bishop>(Black);
 					if (variant::isZhouse(variant) && m_partner->m_holding[White].bishop)
 						--m_partner->m_holding[White].bishop;
@@ -2972,8 +3075,8 @@ Board::setup(char const* fen, variant::Type variant)
 				case 'r':
 					hashPiece(s, piece::BlackRook);
 					m_piece[s] = piece::Rook;
-					m_rooks |= set1Bit(s);
-					m_occupiedBy[Black] |= set1Bit(s);
+					m_rooks |= pieceMask;
+					m_occupiedBy[Black] |= pieceMask;
 					incrMaterial<piece::Rook>(Black);
 					if (variant::isZhouse(variant) && m_partner->m_holding[White].rook)
 						--m_partner->m_holding[White].rook;
@@ -2982,8 +3085,8 @@ Board::setup(char const* fen, variant::Type variant)
 				case 'q':
 					hashPiece(s, piece::BlackQueen);
 					m_piece[s] = piece::Queen;
-					m_queens |= set1Bit(s);
-					m_occupiedBy[Black] |= set1Bit(s);
+					m_queens |= pieceMask;
+					m_occupiedBy[Black] |= pieceMask;
 					incrMaterial<piece::Queen>(Black);
 					if (variant::isZhouse(variant) && m_partner->m_holding[White].queen)
 						--m_partner->m_holding[White].queen;
@@ -2992,13 +3095,25 @@ Board::setup(char const* fen, variant::Type variant)
 				case 'k':
 					hashPiece(s, piece::BlackKing);
 					m_piece[s] = piece::King;
-					m_kings |= set1Bit(s);
-					m_occupiedBy[Black] |= set1Bit(s);
+					m_kings |= pieceMask;
+					m_occupiedBy[Black] |= pieceMask;
 					m_ksq[Black] = s;
 					if (variant::isAntichessExceptLosers(variant))
 						incrMaterial<piece::King>(Black);
 					else
 						++m_material[Black].king;
+					if (variant::isZhouse(variant))
+					{
+						// This information is missing in FEN, we can do only a rough assessment.
+						// We use this information to decide whether the king has moved during the
+						// game. Only if the king did not move it is allowed to castle with a
+						// dropped rook.
+						if (	::rank(s) != Rank8
+							|| (pieceMask & (FyleMaskB|FyleMaskC|FyleMaskD|FyleMaskE|FyleMaskF|FyleMaskG)) == 0)
+						{
+							m_kingHasMoved |= 1 << Black;
+						}
+					}
 					break;
 
 				case 'P':
@@ -3006,8 +3121,8 @@ Board::setup(char const* fen, variant::Type variant)
 						return 0;
 					hashPawn(s, piece::WhitePawn);
 					m_piece[s] = piece::Pawn;
-					m_pawns |= set1Bit(s);
-					m_occupiedBy[White] |= set1Bit(s);
+					m_pawns |= pieceMask;
+					m_occupiedBy[White] |= pieceMask;
 					incrMaterial<piece::Pawn>(White);
 					m_progress.side[White].add(s);
 					if (variant::isZhouse(variant) && m_partner->m_holding[Black].pawn > 0)
@@ -3017,8 +3132,8 @@ Board::setup(char const* fen, variant::Type variant)
 				case 'N':
 					hashPiece(s, piece::WhiteKnight);
 					m_piece[s] = piece::Knight;
-					m_knights |= set1Bit(s);
-					m_occupiedBy[White] |= set1Bit(s);
+					m_knights |= pieceMask;
+					m_occupiedBy[White] |= pieceMask;
 					incrMaterial<piece::Knight>(White);
 					if (variant::isZhouse(variant) && m_partner->m_holding[Black].knight)
 						--m_partner->m_holding[Black].knight;
@@ -3027,8 +3142,8 @@ Board::setup(char const* fen, variant::Type variant)
 				case 'B':
 					hashPiece(s, piece::WhiteBishop);
 					m_piece[s] = piece::Bishop;
-					m_bishops |= set1Bit(s);
-					m_occupiedBy[White] |= set1Bit(s);
+					m_bishops |= pieceMask;
+					m_occupiedBy[White] |= pieceMask;
 					incrMaterial<piece::Bishop>(White);
 					if (variant::isZhouse(variant) && m_partner->m_holding[Black].bishop)
 						--m_partner->m_holding[Black].bishop;
@@ -3037,8 +3152,8 @@ Board::setup(char const* fen, variant::Type variant)
 				case 'R':
 					hashPiece(s, piece::WhiteRook);
 					m_piece[s] = piece::Rook;
-					m_rooks |= set1Bit(s);
-					m_occupiedBy[White] |= set1Bit(s);
+					m_rooks |= pieceMask;
+					m_occupiedBy[White] |= pieceMask;
 					incrMaterial<piece::Rook>(White);
 					if (variant::isZhouse(variant) && m_partner->m_holding[Black].rook)
 						--m_partner->m_holding[Black].rook;
@@ -3047,24 +3162,38 @@ Board::setup(char const* fen, variant::Type variant)
 				case 'Q':
 					hashPiece(s, piece::WhiteQueen);
 					m_piece[s] = piece::Queen;
-					m_queens |= set1Bit(s);
-					m_occupiedBy[White] |= set1Bit(s);
+					m_queens |= pieceMask;
+					m_occupiedBy[White] |= pieceMask;
 					incrMaterial<piece::Queen>(White);
 					if (variant::isZhouse(variant) && m_partner->m_holding[Black].queen)
 						--m_partner->m_holding[Black].queen;
 					break;
 
 				case 'K':
+				{
 					hashPiece(s, piece::WhiteKing);
 					m_piece[s] = piece::King;
-					m_kings |= set1Bit(s);
-					m_occupiedBy[White] |= set1Bit(s);
+					m_kings |= pieceMask;
+					m_occupiedBy[White] |= pieceMask;
 					m_ksq[White] = s;
 					if (variant::isAntichessExceptLosers(variant))
 						incrMaterial<piece::King>(White);
 					else
 						++m_material[White].king;
+					if (variant::isZhouse(variant))
+					{
+						// This information is missing in FEN, we can do only a rough assessment.
+						// We use this information to decide whether the king has moved during the
+						// game. Only if the king did not move it is allowed to castle with a
+						// dropped rook.
+						if (	::rank(s) != Rank1
+							|| (pieceMask & (FyleMaskB|FyleMaskC|FyleMaskD|FyleMaskE|FyleMaskF|FyleMaskG)) == 0)
+						{
+							m_kingHasMoved |= 1 << White;
+						}
+					}
 					break;
+				}
 
 				default:
 					return 0;
@@ -3087,7 +3216,13 @@ Board::setup(char const* fen, variant::Type variant)
 		++p;
 
 	if (!*p)
-		return variant == variant::Bughouse ? 0 : p;
+	{
+		if (variant == variant::Bughouse)
+			return 0;
+		if (variant == variant::Crazyhouse)
+			m_kingHasMoved = (1 << White) | (1 << Black);
+		return p;
+	}
 
 	// Side to move
 	switch (*p++)
@@ -3101,7 +3236,13 @@ Board::setup(char const* fen, variant::Type variant)
 		++p;
 
 	if (!*p)
-		return variant == variant::Bughouse ? 0 : p;
+	{
+		if (variant == variant::Bughouse)
+			return 0;
+		if (variant == variant::Crazyhouse)
+			m_kingHasMoved = (1 << White) | (1 << Black);
+		return p;
+	}
 
 	// Castling Rights
 	if (*p == '-')
@@ -3166,8 +3307,17 @@ Board::setup(char const* fen, variant::Type variant)
 		}
 	}
 
-	m_kingHasMoved[White] = ((m_castle & (WhiteQS | WhiteKS)) ? 0 : 1);
-	m_kingHasMoved[Black] = ((m_castle & (BlackQS | BlackKS)) ? 0 : 1);
+	if (variant::isZhouse(variant))
+	{
+		// This information is missing in FEN, we can do only a rough assessment.
+		// We use this information to decide whether the king has moved during the
+		// game. Only if the king did not move it is allowed to castle with a
+		// dropped rook.
+		if (!(m_castle & (WhiteQS | WhiteKS)))
+			m_kingHasMoved |= 1 << White;
+		if (!(m_castle & (BlackQS | BlackKS)))
+			m_kingHasMoved |= 1 << Black;
+	}
 
 	while (*p == ' ')
 		++p;
@@ -3257,12 +3407,16 @@ Board::setup(char const* fen, variant::Type variant)
 
 
 void
-Board::setup(ExactZHPosition const& position)
+Board::setup(ExactZHPosition const& position, variant::Type variant)
 {
 	// IMPORTANT NOTE: The information in 'position' is not sufficient
 	// to build a consistent board. The resulting board should not be
-	// used for playing or validation. Especially the hash code is not
-	// valid (missing promotion information).
+	// used for playing or validation. Especially the hash code is
+	// missing. But this board is sufficent to do a move, and to build
+	// a FEN.
+
+	static_assert(White <= 1 && Black <= 1, "loop not working");
+	static_assert(sq::a1 == 0 && sq::h8 == 63, "loop not working");
 
 	clear();
 
@@ -3289,50 +3443,31 @@ Board::setup(ExactZHPosition const& position)
 				else
 					piece = piece::King;
 
-				setAt(sq, ::toPiece(piece, color), variant::Normal);
+				setupAt(sq, piece, color::ID(color), variant::Normal);
 			}
 		}
 	}
 
-	m_castleRookAtStart[castling::WhiteQS] = a1;
-	m_castleRookAtStart[castling::WhiteKS] = h1;
-	m_castleRookAtStart[castling::BlackQS] = a8;
-	m_castleRookAtStart[castling::BlackKS] = h8;
-
 	::memcpy(m_castleRookCurrent, position.m_castleRookCurrent, sizeof(m_castleRookCurrent));
+	::memcpy(m_castleRookAtStart, m_castleRookCurrent, sizeof(m_castleRookCurrent));
 
-	for (unsigned i = 0; i < 4; ++i)
-	{
-		Square sq = m_castleRookCurrent[i];
-
-		M_ASSERT((sq == Null) == ((position.m_castle & (1 << i)) == 0));
-
-		if (sq == sq::Null)
-			hashCastling(Index(i));
-		else
-			m_castleRookAtStart[i] = sq;
-	}
-
+	static_assert(sizeof(m_emptyBoard.m_unambiguous[0]) == 1, "setup not working");
 	::memset(m_unambiguous, true, sizeof(m_unambiguous));
-
-	if ((m_stm = position.m_stm) == Black)
-		hashToMove();
-
-	if ((m_epSquare = position.m_epSquare) != Null)
-		hashEnPassant();
 
 	m_castle = position.m_castle;
 
-	m_holding[White] = position.m_holding[White];
-	m_holding[Black] = position.m_holding[Black];
-	// TODO: how to hash promoted pieces?
-	m_promoted[White] = position.m_promoted[White];
-	m_promoted[Black] = position.m_promoted[Black];
-	m_checksGiven[White] = position.m_checksGiven[White];
-	m_checksGiven[Black] = position.m_checksGiven[Black];
+	if (isZhouse(variant))
+	{
+		m_holding[White] = position.m_holding[White];
+		m_holding[Black] = position.m_holding[Black];
 
-	hashHolding(m_holding[White], m_holding[Black]);
-	hashChecksGiven(m_checksGiven[White], m_checksGiven[Black]);
+		m_kingHasMoved = position.m_kingHasMoved;
+	}
+	else
+	{
+		m_checksGiven[White] = position.m_checksGiven[White];
+		m_checksGiven[Black] = position.m_checksGiven[Black];
+	}
 }
 
 
@@ -5227,7 +5362,8 @@ Board::doMove(Move const& m, variant::Type variant)
 			m_ksq[m_stm] = to;
 			m_piece[to] = piece::King;
 			hashPiece(from, to, ::toPiece(piece::King, m_stm));
-			++m_kingHasMoved[m_stm];
+			if (variant::isZhouse(variant))
+				m_kingHasMoved |= (1 << m_stm);
 			if (canCastle(color::ID(m_stm)))
 			{
 				hashCastling(color::ID(m_stm));
@@ -5403,7 +5539,7 @@ Board::doMove(Move const& m, variant::Type variant)
 						incrMaterial<piece::Rook>(m_stm);
 						hashPiece(to, ::toPiece(piece::Rook, m_stm));
 						removeFromMyHolding<piece::Rook>(variant, m_stm);
-						if (m_kingHasMoved[m_stm] == 0)
+						if ((m_kingHasMoved & (1 << m_stm)) == 0)
 						{
 							unsigned index = ::kingSideIndex(m_stm);
 							if (to == m_castleRookAtStart[index])
@@ -5636,25 +5772,11 @@ Board::undoMove(Move const& m, variant::Type variant)
 			break;
 
 		case piece::King:
-		{
 			m_kings ^= bothMask;
 			m_piece[from] = piece::King;
 			m_ksq[sntm] = from;
 			hashPiece(from, to, ::toPiece(piece::King, sntm));
-			--m_kingHasMoved[m_stm];
-			uint8_t prevCastlingRights = m.prevCastlingRights();
-			if (prevCastlingRights & kingSide(color::ID(sntm)))
-			{
-				unsigned index = ::kingSideIndex(sntm);
-				m_castleRookCurrent[index] = m_castleRookAtStart[index];
-			}
-			if (prevCastlingRights & queenSide(color::ID(sntm)))
-			{
-				unsigned index = ::queenSideIndex(sntm);
-				m_castleRookCurrent[index] = m_castleRookAtStart[index];
-			}
 			break;
-		}
 
 		case Move::Castle:
 		{
@@ -5664,29 +5786,13 @@ Board::undoMove(Move const& m, variant::Type variant)
 
 			if (from < to)
 			{
-				removeCastling(kingSide(color::ID(sntm)));
 				rookTo = sq::make(FyleF, rank);
 				to = sq::make(FyleG, rank);
 			}
 			else
 			{
-				removeCastling(queenSide(color::ID(sntm)));
 				rookTo = sq::make(FyleD, rank);
 				to = sq::make(FyleC, rank);
-			}
-
-			// we have to take into account that the castling was potentially illegal
-			uint8_t prevCastlingRights = m.prevCastlingRights();
-
-			if (prevCastlingRights & kingSide(color::ID(sntm)))
-			{
-				unsigned index = ::kingSideIndex(sntm);
-				m_castleRookCurrent[index] = m_castleRookAtStart[index];
-			}
-			if (prevCastlingRights & queenSide(color::ID(sntm)))
-			{
-				unsigned index = ::queenSideIndex(sntm);
-				m_castleRookCurrent[index] = m_castleRookAtStart[index];
 			}
 
 			uint64_t rookSrc = m_occupiedBy[sntm] & set1Bit(rookTo);
@@ -5812,26 +5918,6 @@ Board::undoMove(Move const& m, variant::Type variant)
 					decrMaterial<piece::Rook>(sntm);
 					hashPiece(to, ::toPiece(piece::Rook, sntm));
 					addToMyHolding<piece::Rook>(variant, sntm);
-					if (m_kingHasMoved[sntm] == 0)
-					{
-						unsigned index = ::kingSideIndex(sntm);
-						if (to == m_castleRookAtStart[index])
-						{
-							m_castleRookCurrent[index] = Null;
-							m_castle &= ~kingSide(color::ID(sntm));
-							hashCastling(Index(index));
-						}
-						else
-						{
-							unsigned index = ::queenSideIndex(sntm);
-							if (to == m_castleRookAtStart[index])
-							{
-								m_castleRookCurrent[index] = Null;
-								m_castle &= ~queenSide(color::ID(sntm));
-								hashCastling(Index(index));
-							}
-						}
-					}
 					break;
 
 				case piece::Queen:
@@ -7153,18 +7239,21 @@ Board::dump() const
 
 		::printf("\n");
 	}
-	::printf("\nHolding: ");
-	::printf("Q%u R%u B%u N%u P%u  q%u r%u b%u n%u p%u",
-				unsigned(m_holding[0].queen),
-				unsigned(m_holding[0].rook),
-				unsigned(m_holding[0].bishop),
-				unsigned(m_holding[0].knight),
-				unsigned(m_holding[0].pawn),
-				unsigned(m_holding[1].queen),
-				unsigned(m_holding[1].rook),
-				unsigned(m_holding[1].bishop),
-				unsigned(m_holding[1].knight),
-				unsigned(m_holding[1].pawn));
+	if (m_holding[0].value || m_holding[1].value)
+	{
+		::printf("\nHolding: ");
+		::printf("Q%u R%u B%u N%u P%u  q%u r%u b%u n%u p%u",
+					unsigned(m_holding[0].queen),
+					unsigned(m_holding[0].rook),
+					unsigned(m_holding[0].bishop),
+					unsigned(m_holding[0].knight),
+					unsigned(m_holding[0].pawn),
+					unsigned(m_holding[1].queen),
+					unsigned(m_holding[1].rook),
+					unsigned(m_holding[1].bishop),
+					unsigned(m_holding[1].knight),
+					unsigned(m_holding[1].pawn));
+	}
 	if (m_promoted[White] || m_promoted[Black])
 	{
 		::printf("\nPromoted:");
@@ -7197,6 +7286,11 @@ Board::initialize()
 	base::initialize();
 #endif
 
+	static_assert(sizeof(m_emptyBoard.m_castleRookCurrent[0]) == 1, "setup not working");
+	static_assert(sizeof(m_emptyBoard.m_castleRookAtStart[0]) == 1, "setup not working");
+	static_assert(sizeof(m_emptyBoard.m_unambiguous[0]) == 1, "setup not working");
+	static_assert(sizeof(m_emptyBoard.m_destroyCastle[0]) == 1, "setup not working");
+
 	m_initialHolding.queen = 1;
 	m_initialHolding.rook = 2;
 	m_initialHolding.bishop = 2;
@@ -7206,8 +7300,8 @@ Board::initialize()
 	// Empty board
 	::memset(&m_emptyBoard, 0, sizeof(m_emptyBoard));
 	::memset(m_emptyBoard.m_destroyCastle, 0xff, sizeof(m_emptyBoard.m_destroyCastle));
-	::memset(m_emptyBoard.m_castleRookCurrent, Null, 4);
-	::memset(m_emptyBoard.m_castleRookAtStart, Null, 4);
+	::memset(m_emptyBoard.m_castleRookCurrent, Null, U_NUMBER_OF(m_emptyBoard.m_castleRookCurrent));
+	::memset(m_emptyBoard.m_castleRookAtStart, Null, U_NUMBER_OF(m_emptyBoard.m_castleRookAtStart));
 	m_emptyBoard.m_epSquare = Null;
 	m_emptyBoard.m_ksq[0] = Null;
 	m_emptyBoard.m_ksq[1] = Null;
@@ -7345,6 +7439,21 @@ Board::initialize()
 	}
 
 #endif // CHECK_HASH_KEYS
+
+#define CHECK_PTR(p) \
+	static_assert(	rand64::p + rand64::Num_##p##_Entries \
+							<= rand64::RandomTable + U_NUMBER_OF(rand64::RandomTable), \
+						"pointer is exceeding table");
+
+	CHECK_PTR(Pieces);
+	CHECK_PTR(Promoted);
+	CHECK_PTR(Holding);
+	CHECK_PTR(Castling);
+	CHECK_PTR(EnPassant);
+	CHECK_PTR(ToMove);
+	CHECK_PTR(ChecksGiven);
+
+#undef CHECK_PTR
 }
 
 // vi:set ts=3 sw=3:

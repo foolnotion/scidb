@@ -558,7 +558,7 @@ cmdPosition(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		variant::Type variant = Scidb->game().variant();
 
 		Board board;
-		board.setup(tree->position());
+		board.setup(tree->position(), variant);
 
 		if (move)
 		{
