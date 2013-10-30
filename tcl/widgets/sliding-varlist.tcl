@@ -320,15 +320,14 @@ proc ConfigureElement {weight} {
 
 	if {[horizontal?]} {
 		set item 1
-		set col [expr {2*($Vars(current) - 1) + 1}]
+		set col [expr {2*$Vars(current)}]
 	} else {
 		set item $Vars(current)
-		set col 1
+		set col 2
 	}
 	set font [list [list $::font::text(editor:$weight)]]
 	set specialfont [list [list $::font::figurine(editor:$weight) 9812 9823]]
-	$Vars(list) item element configure r$item c$col elemNum -font $font
-	$Vars(list) item element configure r$item c[incr col] elemMov -font $font -specialfont $specialfont
+	$Vars(list) item element configure r$item c$col elemMov -font $font -specialfont $specialfont
 }
 
 
@@ -358,9 +357,12 @@ proc VisitItem {mode col item} {
 proc Select {item col} {
 	variable Vars
 
-	set item [string range [lindex [$Vars(list) item tag names $item] 0] 1 end]
-	set col [string range [lindex [$Vars(list) column tag names $col] 0] 1 end]
-	if {[horizontal?]} { set i [expr {($col + 1)/2}] } else { set i $item }
+	if {[horizontal?]} {
+		set col [string range [lindex [$Vars(list) column tag names $col] 0] 1 end]
+		set i [expr {($col + 1)/2}]
+	} else {
+		set i $item [string range [lindex [$Vars(list) item tag names $item] 0] 1 end]
+	}
 	{*}$Vars(selectcmd) [expr {$i - 1}]
 }
 
@@ -456,7 +458,6 @@ proc Layout {t} {
 
 	for {set i 1} {$i <= $items} {incr i} {
 		foreach {c1 c2} $cols {
-			$t item element configure r$i $c1 elemNum -font $font
 			$t item element configure r$i $c2 elemMov -font $font -specialfont $specialfont
 		}
 	}
@@ -479,7 +480,6 @@ proc Layout {t} {
 		set cols  [lrange $cols 2 end]
 	}
 
-	$t item element configure r1 c1 elemNum -font $font
 	$t item element configure r1 c2 elemMov -font $font -specialfont $specialfont
 
 	set font [list [list $::font::text(editor:normal)]]
@@ -487,7 +487,6 @@ proc Layout {t} {
 
 	foreach i $rows {
 		foreach {c1 c2} $cols {
-			$t item element configure r$i $c1 elemNum -font $font
 			$t item element configure r$i $c2 elemMov -font $font -specialfont $specialfont
 		}
 	}

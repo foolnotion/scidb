@@ -75,4 +75,16 @@ mstl::bf::bits::reverse(uint64_t a)
    return	((a >> 32) & 0x00000000FFFFFFFFLL) | ((a << 32) & 0xFFFFFFFF00000000LL);
 }
 
+
+#if defined(VALGRIND) && __WORDSIZE == 32
+
+// Workaround for the __ctzdi2 problem with valgrind.
+unsigned
+mstl::bf::bits::ctz(unsigned long long x)
+{
+	unsigned r(x); return r ? ctz(r) : 32 + ctz(unsigned(x >> 32));
+}
+
+#endif
+
 // vi:set ts=3 sw=3:

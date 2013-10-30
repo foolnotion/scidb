@@ -14,11 +14,6 @@
 // ======================================================================
 
 // ======================================================================
-// This file is loosely based on chessx/src/database/rand64.h
-// Copyright: (C) 2005 Marius Roets <roets.marius@gmail.com>
-// ======================================================================
-
-// ======================================================================
 // Copyright: (C) 2009-2013 Gregor Cramer
 // ======================================================================
 
@@ -39,17 +34,16 @@ namespace rand64 {
 
 enum
 {
-	Max_Pieces					= db::piece::Last + 1,
-	Max_En_Passant_Squares	= 16,
+	Num_Pieces					= db::piece::Last + 1,
+	Num_En_Passant_Squares	= 16,
 };
 
-uint64_t const RandomTable	[	64*Max_Pieces				// Pieces
-									 + 64*Max_Pieces				// Promoted
-									 + Max_Pieces					// Holding
+uint64_t const RandomTable	[	64*Num_Pieces				// Pieces
+									 + 64*Num_Pieces				// Promoted
+									 + Num_Pieces					// Holding
 									 + 4								// Castling
-									 + Max_En_Passant_Squares	// En passant
+									 + Num_En_Passant_Squares	// En passant
 									 + 1								// To move
-									 + 64								// Castling rook
 									 + 8								// Checks given
 									] =
 {
@@ -643,32 +637,6 @@ uint64_t const RandomTable	[	64*Max_Pieces				// Pieces
 	// ================== TO MOVE ===============================================
 	_64(0xb1aac26e1c3caa9d),	// Black
 
-	// ================== CASTLING ROOK =========================================
-	_64(0x85c5df427ee97b66),	// a1
-	_64(0x8b08f0ba914f433b),	// b1
-	_64(0xc550169d3baf1bd0),	// c1
-	_64(0xc9e0d79a7ae18874),	// d1
-	_64(0xb8f5baef849cf8f3),	// e1
-	_64(0x9f543f73fdc3a0c6),	// f1
-	_64(0xf96811b98c36b78f),	// g1
-	_64(0x2eb88c6b12f5f076),	// h1
-
-	0, 0, 0, 0, 0, 0, 0, 0,		// a2-h2
-	0, 0, 0, 0, 0, 0, 0, 0,		// a3-h3
-	0, 0, 0, 0, 0, 0, 0, 0,		// a4-h4
-	0, 0, 0, 0, 0, 0, 0, 0,		// a5-h5
-	0, 0, 0, 0, 0, 0, 0, 0,		// a6-h6
-	0, 0, 0, 0, 0, 0, 0, 0,		// a7-h7
-
-	_64(0x70a20639306414e1),	// a8
-	_64(0x2aab26e0a7eb2dcf),	// b8
-	_64(0x300d23b842a58bf6),	// c8
-	_64(0x84804ddd113e164d),	// d8
-	_64(0xce912ec49285fb5f),	// e8
-	_64(0x73965253e568362e),	// f8
-	_64(0x137f60642df2b0ca),	// g8
-	_64(0xd5eec3fd4c28d85a),	// h8
-
 	// ================== CHECKS GIVEN ==========================================
 
 	// White --------------------------------------------------------------------
@@ -687,13 +655,12 @@ uint64_t const RandomTable	[	64*Max_Pieces				// Pieces
 };
 
 uint64_t const* Pieces			= RandomTable;
-uint64_t const* Promoted		= Pieces + Max_Pieces*64;
-uint64_t const* Holding			= Promoted + Max_Pieces*64;
-uint64_t const* Castling		= Holding + Max_Pieces;
+uint64_t const* Promoted		= Pieces + Num_Pieces*64;
+uint64_t const* Holding			= Promoted + Num_Pieces*64;
+uint64_t const* Castling		= Holding + Num_Pieces;
 uint64_t const* EnPassant		= Castling + 4;
-uint64_t const* ToMove			= EnPassant + Max_En_Passant_Squares;
-uint64_t const* CastlingRook	= ToMove + 1;
-uint64_t const* ChecksGiven	= CastlingRook + 64;
+uint64_t const* ToMove			= EnPassant + Num_En_Passant_Squares;
+uint64_t const* ChecksGiven	= ToMove + 1;
 
 } // namespace rand64
 } // namespace db

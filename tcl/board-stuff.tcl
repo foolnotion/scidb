@@ -430,6 +430,7 @@ proc clearAlternatives {w} {
 
 	set Board(alternative) {}
 	$w.c delete alternative
+	$w.c delete click
 }
 
 
@@ -1206,28 +1207,45 @@ proc DrawArrow {w from to color {index -1}} {
 		set ah [expr {min(33.0/$size, max(0.5, 12.0/$size))}]	;# arrowhead width (= ah*size)
 		set as [expr {int(0.5*$ah*$size + 0.5)}]
 
-		if {($rows > 0) == ($cols > 0)} {
-			set x1 [expr {$x0 + $iw}]
-			set y1 [expr {$y0 + $as}]
-			set x2 [expr {$x0 + $iw - $as}]
-			set y2 $y0
-			set x3 $x0
-			set y3 [expr {$y0 + $ih - $as}]
-			set x4 [expr {$x0 + $as}]
-			set y4 [expr {$y0 + $ih}]
-		} else {
-			set x1 $x0
-			set y1 [expr {$y0 + $as}]
-			set x2 [expr {$x0 + $as}]
-			set y2 $y0
-			set x3 [expr {$x0 + $iw}]
-			set y3 [expr {$y0 + $ih - $as}]
-			set x4 [expr {$x0 + $iw - $as}]
-			set y4 [expr {$y0 + $ih}]
-		}
+		set opts [list -tags [list mark click alt:$index] -width 4 -outline {} -fill {}]
 
-		$w.c create polygon $x1 $y1 $x2 $y2 $x3 $y3 $x4 $y4 \
-			-tags [list mark click alt:$index] -width 4 -outline {} -fill {}
+		if {$cols == 0 || $rows == 0} {
+			if {$cols == 0} {
+				set dw [expr {max(0,($iw - $as)/2 - 2)}]
+				set x1 [expr {$x0 + $dw}]
+				set x2 [expr {$x0 + $iw - $dw}]
+				set y1 $y0
+				set y2 [expr {$y0 + $ih}]
+			} else {
+				set dh [expr {max(0,($ih - $as)/2 - 2)}]
+				set x1 $x0
+				set x2 [expr {$x0 + $iw}]
+				set y1 [expr {$y0 + $dh}]
+				set y2 [expr {$y0 + $ih - $dh}]
+			}
+			$w.c create rectangle $x1 $y1 $x2 $y2 {*}$opts
+		} else {
+			if {($rows > 0) == ($cols > 0)} {
+				set x1 [expr {$x0 + $iw}]
+				set y1 [expr {$y0 + $as}]
+				set x2 [expr {$x0 + $iw - $as}]
+				set y2 $y0
+				set x3 $x0
+				set y3 [expr {$y0 + $ih - $as}]
+				set x4 [expr {$x0 + $as}]
+				set y4 [expr {$y0 + $ih}]
+			} else {
+				set x1 $x0
+				set y1 [expr {$y0 + $as}]
+				set x2 [expr {$x0 + $as}]
+				set y2 $y0
+				set x3 [expr {$x0 + $iw}]
+				set y3 [expr {$y0 + $ih - $as}]
+				set x4 [expr {$x0 + $iw - $as}]
+				set y4 [expr {$y0 + $ih}]
+			}
+			$w.c create polygon $x1 $y1 $x2 $y2 $x3 $y3 $x4 $y4 {*}$opts
+		}
 
 		lappend tags alternative:$index
 	}
@@ -1273,7 +1291,7 @@ proc MakeArrow {size rows cols color type} {
 		}
 		alternative {
 			set ah [expr {min(33.0/$size, max(0.45, 12.0/$size))}]	;# arrowhead width (= ah*size)
-			set op 0.8	;# opacity
+			set op 0.75	;# opacity
 			set as 0.5	;# arrow shaft ratio (shaft width = as*width)
 		}
 		click {
