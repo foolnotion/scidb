@@ -182,7 +182,6 @@ clean:
 	done
 
 clean-db:
-	@echo "Clean app, db, db/si3, ..."
 	@for dir in app db; do \
 		$(MAKE) -C $$dir clean; \
 	done

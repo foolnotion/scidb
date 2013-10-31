@@ -31,10 +31,13 @@ struct signed_arithmetic<1>
 {
 	template <typename T> inline static constexpr T div2(T x) { return x/2; }
 	template <typename T> inline static constexpr T div4(T x) { return x/4; }
+	template <typename T> inline static constexpr T div8(T x) { return x/8; }
 	template <typename T> inline static constexpr T mod2(T x) { return x%2; }
 	template <typename T> inline static constexpr T mod4(T x) { return x%4; }
+	template <typename T> inline static constexpr T mod8(T x) { return x%8; }
 	template <typename T> inline static constexpr T mul2(T x) { return x*2; }
 	template <typename T> inline static constexpr T mul4(T x) { return x*4; }
+	template <typename T> inline static constexpr T mul8(T x) { return x*8; }
 
 	template <typename T>
 	inline
@@ -54,10 +57,13 @@ struct signed_arithmetic<0>
 {
 	template <typename T> inline static T constexpr div2(T x) { return x >> 1; }
 	template <typename T> inline static T constexpr div4(T x) { return x >> 2; }
+	template <typename T> inline static T constexpr div8(T x) { return x >> 3; }
 	template <typename T> inline static T constexpr mod2(T x) { return x & 1; }
 	template <typename T> inline static T constexpr mod4(T x) { return x & 3; }
+	template <typename T> inline static T constexpr mod8(T x) { return x & 7; }
 	template <typename T> inline static T constexpr mul2(T x) { return x << 1; }
 	template <typename T> inline static T constexpr mul4(T x) { return x << 2; }
+	template <typename T> inline static T constexpr mul8(T x) { return x << 3; }
 	template <typename T> inline static T constexpr abs(T x)  { return x; }
 };
 
@@ -275,6 +281,16 @@ div4(T x)
 template <typename T>
 inline
 constexpr T
+div8(T x)
+{
+	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
+	return bits::signed_arithmetic<numeric_limits<T>::is_signed>::div8(x);
+}
+
+
+template <typename T>
+inline
+constexpr T
 mod2(T x)
 {
 	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
@@ -295,6 +311,16 @@ mod4(T x)
 template <typename T>
 inline
 constexpr T
+mod8(T x)
+{
+	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
+	return bits::signed_arithmetic<numeric_limits<T>::is_signed>::mod8(x);
+}
+
+
+template <typename T>
+inline
+constexpr T
 mul2(T x)
 {
 	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
@@ -309,6 +335,16 @@ mul4(T x)
 {
 	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
 	return bits::signed_arithmetic<numeric_limits<T>::is_signed>::mul4(x);
+}
+
+
+template <typename T>
+inline
+constexpr T
+mul8(T x)
+{
+	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
+	return bits::signed_arithmetic<numeric_limits<T>::is_signed>::mul8(x);
 }
 
 

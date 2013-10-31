@@ -44,6 +44,8 @@ public:
 	~Book();
 
 	bool isReadonly() const override;
+	bool isOpen() const override;
+	bool isEmpty() const override;
 	bool isModified() const override;
 	bool isPersistent() const override;
 
@@ -76,7 +78,7 @@ private:
 	bool readEntry(unsigned offset, MyEntry& entry);
 	void writeEntry();
 	unsigned findKey(uint64_t key);
-	void readMaskFile(mstl::ifstream& strm);
+	void readScidMaskFile(mstl::ifstream& strm);
 
 	Format	m_format;
 	Mapping*	m_mapping;

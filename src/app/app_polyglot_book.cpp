@@ -363,7 +363,9 @@ inline static unsigned div2 (unsigned x) { return x >> 1; }
 #ifdef CHECK_HASH_KEYS
 
 #include "m_set.h"
+
 #include <stdio.h>
+#include <assert.h>
 
 static void
 checkHashKeys()
@@ -394,6 +396,13 @@ checkHashKeys()
 							{
 								uint64_t qk		= q ? mstl::bf::rotate_left(RandomHolding[8 + c], q - 1) : 0;
 								uint64_t key	= 0;
+
+								// this code depends on the fact that no null key will be generated
+								assert((p == 0) == (pk == 0));
+								assert((n == 0) == (nk == 0));
+								assert((b == 0) == (bk == 0));
+								assert((r == 0) == (rk == 0));
+								assert((q == 0) == (qk == 0));
 
 								if (pk) key ^= pk;
 								if (nk) key ^= nk;
@@ -468,21 +477,7 @@ hash(Board const& board, variant::Type variant)
 		 0, // (unused)
 	};
 
-	uint64_t key = 0; // makes the compiler shut up
-
-	// compatible to XBoard
-	switch (variant)
-	{
-		case variant::Undetermined:	// fallthru
-		case variant::Normal:			key =  0; break;
-		case variant::Bughouse:			key =  5; break;
-		case variant::Crazyhouse:		key =  6; break;
-		case variant::ThreeCheck:		key = 13; break;
-		case variant::Antichess:		key =  8; break;
-		case variant::Losers:			key =  7; break;
-		case variant::Suicide:			key =  8; break;
-		case variant::Giveaway:			key =  8; break;
-	}
+	uint64_t key = 0;
 
 	for (Square sq = 0; sq < 64; ++sq)
 	{
@@ -543,8 +538,8 @@ hash(Board const& board, variant::Type variant)
 		// Not compatible to XBoard. The XBoard algorithm has forgotten to hash
 		// the number of given checks for each side. Example: a position where
 		// White has given one check in general never matches a position where
-		// White has already given two checks; the strategy is depending on the
-		// number of given checks.
+		// White has already given two checks; the strategy is significantly
+		// depending on the number of given checks.
 
 		if (board.checksGiven(color::White))
 			key ^= RandomThreeCheck[(board.checksGiven(color::White) - 1) & 0x3];
@@ -580,9 +575,11 @@ decodeMove(Board const& board, uint16_t m, variant::Type variant)
 	// to==from must be a dropping move, where the dropped piece is given
 	// by the promotion field (quite easy).
 
-	Move move = board.makeMove(sq::make(sq::Fyle((m << 6) & 0x3), sq::Rank((m << 9) & 0x3)),
-										sq::make(sq::Fyle(m & 0x3), sq::Rank((m << 3) & 0x3)),
-										DecodePromoted[(m << 12) & 0x3]);
+	Move move = board.makeMove(sq::make(sq::Fyle((m << 6) & 0x3),	// from fyle
+										sq::Rank((m << 9) & 0x3)),				// from rank
+										sq::make(sq::Fyle(m & 0x3),			// to fyle
+										sq::Rank((m << 3) & 0x3)),				// to rank
+										DecodePromoted[(m << 12) & 0x3]);	// piece type
 
 	return board.isValidMove(move, variant, move::DontAllowIllegalMove) ? move : Move();
 }
@@ -667,7 +664,7 @@ Book::Book(mstl::string const& filename)
 		if (strm.read(buf, sizeof(buf)) && ::strncmp(buf, "set ::tree::mask::", 18) == 0)
 		{
 			strm.seekg(0);
-			readMaskFile(strm);
+			readScidMaskFile(strm);
 		}
 	}
 
@@ -695,7 +692,15 @@ Book::~Book()
 
 bool Book::isReadonly() const			{ return m_mapping && m_mapping->isReadonly(); }
 bool Book::isPersistent() const		{ return m_mapping; }
+bool Book::isOpen() const				{ return true; }
 Book::Format Book::format() const	{ return m_format; }
+
+
+bool
+Book::isEmpty() const	
+{
+	return m_entryMap->used() == 0 && (!m_mapping || m_mapping->size() == 0);
+}
 
 
 bool
@@ -930,7 +935,7 @@ Book::add(Board const& position, variant::Type variant, Entry const& entry)
 
 
 void
-Book::readMaskFile(mstl::ifstream& strm)
+Book::readScidMaskFile(mstl::ifstream& strm)
 {
 	char c;
 

@@ -29,6 +29,10 @@
 
 #include "app_book.h"
 
+#include "u_byte_stream.h"
+
+namespace sys { namespace file { class Mapping; } }
+
 namespace app {
 namespace chessbase {
 
@@ -36,9 +40,13 @@ class Book : public app::Book
 {
 public:
 
-	Book(mstl::string const& filename);
+	Book(mstl::string const& ctgFilename);
+	~Book();
 
 	bool isReadonly() const override;
+	bool isOpen() const override;
+	bool isEmpty() const override;
+
 	Format format() const override;
 
 	db::Move probeNextMove(db::Board const& position, db::variant::Type variant) override;
@@ -47,6 +55,27 @@ public:
 	bool remove(db::Board const& position, db::variant::Type variant) override;
 	bool modify(db::Board const& position, db::variant::Type variant, Entry const& entry) override;
 	bool add(db::Board const& position, db::variant::Type variant, Entry const& entry) override;
+
+private:
+
+	class CTGEntry;
+
+	typedef ::sys::file::Mapping Mapping;
+	typedef ::util::ByteStream ByteStream;
+
+	struct PageBounds
+	{
+		unsigned lower;
+		unsigned upper;
+	};
+
+	int32_t getPageIndex(unsigned hash);
+
+	Mapping*		m_ctgMapping;
+	Mapping*		m_ctoMapping;
+	ByteStream	m_ctgStrm;
+	ByteStream	m_ctoStrm;
+	PageBounds	m_pageBounds;
 };
 
 } // namespace chessbase

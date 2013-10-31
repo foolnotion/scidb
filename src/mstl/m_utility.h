@@ -65,9 +65,12 @@ template <typename T> constexpr T signum(T x);
 
 template <typename T> constexpr T div2(T x);
 template <typename T> constexpr T div4(T x);
+template <typename T> constexpr T div8(T x);
 template <typename T> constexpr T mod2(T x);
 template <typename T> constexpr T mod4(T x);
+template <typename T> constexpr T mod8(T x);
 template <typename T> constexpr T mul2(T x);
+template <typename T> constexpr T mul4(T x);
 template <typename T> constexpr T mul4(T x);
 
 template <typename T> unsigned log2_floor(T x);

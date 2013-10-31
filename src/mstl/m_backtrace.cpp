@@ -611,6 +611,81 @@ mstl::backtrace::symbols_gdb()
 
 #  endif // defined(USE_GDB)
 
+static void*
+frameAddress(unsigned i)
+{
+	switch (i)
+	{
+		case  0: return __builtin_frame_address( 0);
+		case  1: return __builtin_frame_address( 1);
+		case  2: return __builtin_frame_address( 2);
+		case  3: return __builtin_frame_address( 3);
+		case  4: return __builtin_frame_address( 4);
+		case  5: return __builtin_frame_address( 5);
+		case  6: return __builtin_frame_address( 6);
+		case  7: return __builtin_frame_address( 7);
+		case  8: return __builtin_frame_address( 8);
+		case  9: return __builtin_frame_address( 9);
+		case 10: return __builtin_frame_address(10);
+		case 11: return __builtin_frame_address(11);
+		case 12: return __builtin_frame_address(12);
+		case 13: return __builtin_frame_address(13);
+		case 14: return __builtin_frame_address(14);
+		case 15: return __builtin_frame_address(15);
+		case 16: return __builtin_frame_address(16);
+		case 17: return __builtin_frame_address(17);
+		case 18: return __builtin_frame_address(18);
+		case 19: return __builtin_frame_address(19);
+		case 20: return __builtin_frame_address(20);
+		case 21: return __builtin_frame_address(21);
+		case 22: return __builtin_frame_address(22);
+		case 23: return __builtin_frame_address(23);
+		case 24: return __builtin_frame_address(24);
+		case 25: return __builtin_frame_address(25);
+		case 26: return __builtin_frame_address(26);
+		case 27: return __builtin_frame_address(27);
+		case 28: return __builtin_frame_address(28);
+		case 29: return __builtin_frame_address(29);
+		case 30: return __builtin_frame_address(30);
+		case 31: return __builtin_frame_address(31);
+		case 32: return __builtin_frame_address(32);
+		case 33: return __builtin_frame_address(33);
+		case 34: return __builtin_frame_address(34);
+		case 35: return __builtin_frame_address(35);
+		case 36: return __builtin_frame_address(36);
+		case 37: return __builtin_frame_address(37);
+		case 38: return __builtin_frame_address(38);
+		case 39: return __builtin_frame_address(39);
+		case 40: return __builtin_frame_address(40);
+		case 41: return __builtin_frame_address(41);
+		case 42: return __builtin_frame_address(42);
+		case 43: return __builtin_frame_address(43);
+		case 44: return __builtin_frame_address(44);
+		case 45: return __builtin_frame_address(45);
+		case 46: return __builtin_frame_address(46);
+		case 47: return __builtin_frame_address(47);
+		case 48: return __builtin_frame_address(48);
+		case 49: return __builtin_frame_address(49);
+		case 50: return __builtin_frame_address(50);
+		case 51: return __builtin_frame_address(51);
+		case 52: return __builtin_frame_address(52);
+		case 53: return __builtin_frame_address(53);
+		case 54: return __builtin_frame_address(54);
+		case 55: return __builtin_frame_address(55);
+		case 56: return __builtin_frame_address(56);
+		case 57: return __builtin_frame_address(57);
+		case 58: return __builtin_frame_address(58);
+		case 59: return __builtin_frame_address(59);
+		case 60: return __builtin_frame_address(60);
+		case 61: return __builtin_frame_address(61);
+		case 62: return __builtin_frame_address(62);
+		case 63: return __builtin_frame_address(63);
+	}
+
+	return 0;
+}
+
+
 bool
 mstl::backtrace::symbols_linux()
 {
@@ -623,23 +698,18 @@ mstl::backtrace::symbols_linux()
 
 	if (!stream.is_open())
 		return false;
-
-//	m_skip = 2;	probably too much
-
-	void** ebp = static_cast<void**>(__builtin_frame_address(0));
-
-	string func;
-	string file;
+	
+	string	func;
+	string	file;
+	void*		address;
 
 	m_nframes = 0;
 
-	do
-	{
-		m_addresses[m_nframes] = *(ebp + 1);
-		ebp = static_cast<void**>(*ebp);
+	static_assert(sizeof(m_symbols)/sizeof(m_symbols[0]) == 64, "buffer size mismatch");
 
-		if (ebp == 0)
-			return true;
+	while (func != "main" && (address = ::frameAddress(m_nframes)))
+	{
+		m_addresses[m_nframes] = static_cast<void**>(address)[1];
 
 		stream << m_addresses[m_nframes];
 		stream << '\n';
@@ -669,7 +739,6 @@ mstl::backtrace::symbols_linux()
 
 		++m_nframes;
 	}
-	while (m_nframes < sizeof(m_symbols)/sizeof(m_symbols[0]) && func != "main");
 
 	return true;
 }
@@ -692,6 +761,7 @@ mstl::backtrace::symbols()
 
 # ifdef __unix__
 
+#if 0
 	if (is_debug_mode())
 		return;
 
@@ -699,6 +769,7 @@ mstl::backtrace::symbols()
 	if (symbols_gdb())
 		return;
 # endif
+#endif
 
 	if (symbols_linux())
 		return;

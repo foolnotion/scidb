@@ -28,7 +28,11 @@
 #include "app_polyglot_book.h"
 #include "app_chessbase_book.h"
 
+#include "db_exception.h"
+
 #include "u_misc.h"
+
+#include "sys_file.h"
 
 #include "m_string.h"
 #include "m_assert.h"
@@ -62,6 +66,9 @@ Book::~Book() {}
 Book*
 Book::open(mstl::string const& filename)
 {
+	if (!sys::file::access(filename, sys::file::Readable))
+		IO_RAISE(BookFile, Open_Failed, "cannot open file: %s", filename.c_str());
+
 	Book* book;
 
 	if (misc::file::suffix(filename) == "ctg")

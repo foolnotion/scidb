@@ -57,6 +57,10 @@ inline ByteStream& ByteStream::operator>>(uint48_t& i)	{ i = uint48(); return *t
 inline ByteStream& ByteStream::operator>>(uint32_t& i)	{ i = uint32(); return *this; }
 inline ByteStream& ByteStream::operator>>(uint64_t& i)	{ i = uint64(); return *this; }
 
+inline ByteStream& ByteStream::operator>>(int16_t& i)		{ i = uint16(); return *this; }
+inline ByteStream& ByteStream::operator>>(int32_t& i)		{ i = uint32(); return *this; }
+inline ByteStream& ByteStream::operator>>(int64_t& i)		{ i = uint64(); return *this; }
+
 inline void ByteStream::resetp() { m_putp = m_base; }
 inline void ByteStream::resetg() { m_getp = m_base; }
 
@@ -133,6 +137,14 @@ ByteStream::put(char const* p, unsigned size)
 
 inline
 ByteStream& ByteStream::operator>>(uint8_t& i)
+{
+	i = get();
+	return *this;
+}
+
+
+inline
+ByteStream& ByteStream::operator>>(int8_t& i)
 {
 	i = get();
 	return *this;

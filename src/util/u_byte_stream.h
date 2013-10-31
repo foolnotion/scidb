@@ -87,6 +87,11 @@ public:
 	ByteStream& operator>>(uint48_t& i);
 	ByteStream& operator>>(uint64_t& i);
 
+	ByteStream& operator>>(int8_t& i);
+	ByteStream& operator>>(int16_t& i);
+	ByteStream& operator>>(int32_t& i);
+	ByteStream& operator>>(int64_t& i);
+
 	ByteStream& operator<<(uint8_t i);
 	ByteStream& operator<<(uint16_t i);
 	ByteStream& operator<<(uint24_t i);

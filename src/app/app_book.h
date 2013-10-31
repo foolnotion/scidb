@@ -108,6 +108,8 @@ public:
 
 	virtual bool isReadonly() const = 0;
 	bool isWriteable() const;
+	virtual bool isOpen() const = 0;
+	virtual bool isEmpty() const = 0;
 	virtual bool isModified() const;
 	virtual bool isPersistent() const;
 
