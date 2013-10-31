@@ -1168,7 +1168,7 @@ Board::checkState(variant::Type variant) const
 			default: state |= Check | DoubleCheck; break;
 		}
 
-		if (m_checksGiven[m_stm ^ 1] >= 3)
+		if (variant == variant::ThreeCheck && m_checksGiven[m_stm ^ 1] >= 3)
 			return state |= ThreeChecks;
 
 		if (findAnyLegalMove(variant))
@@ -3463,7 +3463,7 @@ Board::setup(ExactZHPosition const& position, variant::Type variant)
 
 		m_kingHasMoved = position.m_kingHasMoved;
 	}
-	else
+	else if (variant == variant::ThreeCheck)
 	{
 		m_checksGiven[White] = position.m_checksGiven[White];
 		m_checksGiven[Black] = position.m_checksGiven[Black];
@@ -6480,7 +6480,7 @@ Board::prepareMove(Move& move, variant::Type variant, move::Constraint flag) con
 				}
 			}
 		}
-		else if (m_checksGiven[m_stm ^ 1] == 3)
+		else if (variant == variant::ThreeCheck && m_checksGiven[m_stm ^ 1] == 3)
 		{
 			move.clear();
 		}
