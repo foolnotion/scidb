@@ -450,6 +450,8 @@ Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string cons
 	,m_selDepth(0)
 	,m_time(0.0)
 	,m_nodes(0)
+	,m_nps(0)
+	,m_tbhits(0)
 	,m_active(false)
 	,m_probe(false)
 	,m_probeAnalyze(false)
@@ -1712,7 +1714,9 @@ Engine::resetInfo()
 	m_depth = 0;
 	m_selDepth = 0;
 	m_time = 0.0;
+	m_tbhits = 0;
 	m_nodes = 0;
+	m_nps = 0;
 }
 
 

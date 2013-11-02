@@ -25,7 +25,7 @@ inline
 unsigned
 BitStream::bitsLeft() const
 {
-	return (m_size << 3) + m_bitsLeft;
+	return mstl::div8(m_size) + m_bitsLeft;
 }
 
 

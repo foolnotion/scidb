@@ -150,6 +150,15 @@ Board::kingSquare(color::ID color) const
 
 
 inline
+Square
+Board::kingSquare() const
+{
+	M_REQUIRE(kingOnBoard());
+	return m_ksq[m_stm];
+}
+
+
+inline
 bool
 Board::kingOnBoard() const
 {

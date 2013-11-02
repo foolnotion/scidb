@@ -28,6 +28,9 @@
 // This source is based on daydreamer's implementation:
 // <https://raw.github.com/AaronBecker/daydreamer/release/book_ctg.c>
 // ======================================================================
+// Description of CTG format:
+// <http://rybkaforum.net/cgi-bin/rybkaforum/topic_show.pl?pid=26942>
+// ======================================================================
 
 #include "app_chessbase_book.h"
 
@@ -42,7 +45,11 @@
 
 #include "m_ifstream.h"
 #include "m_utility.h"
+#include "m_bit_functions.h"
+#include "m_limits.h"
 #include "m_assert.h"
+
+#include <string.h>
 
 using namespace db;
 using namespace db::sq;
@@ -53,18 +60,125 @@ using namespace app::chessbase;
 using namespace util;
 
 
-// Description of CTG format:
-// <http://rybkaforum.net/cgi-bin/rybkaforum/topic_show.pl?pid=26942>
+struct Book::CTGEntry
+{
+	typedef ByteStream::uint24_t uint24_t;
+
+	unsigned	numMoves;
+	uint8_t	moves[128];
+	uint8_t	annotation[128];
+	uint24_t	total;
+	uint24_t	wins;
+	uint24_t	losses;
+	uint24_t	draws;
+	uint24_t	avgRatingGames;
+	uint32_t	avgRatingScore;
+	uint24_t	perfRatingGames;
+	uint32_t	perfRatingScore;
+	uint8_t	recommendation;
+	uint8_t	commentary;
+};
+
+
+struct Book::CTGSignature
+{
+	uint8_t	buf[512]; // be sure that no overflow occurs
+	unsigned	appended;
+	unsigned	size;
+
+	CTGSignature() :appended(8) { ::memset(buf, 0, sizeof(buf)); }
+
+	bool equal(uint8_t const* data, unsigned dataSize) const
+	{
+		return size == dataSize && ::memcmp(data, buf, size) == 0;
+	}
+
+	void append(uint8_t bits, unsigned numBits)
+	{
+		M_ASSERT(appended + numBits <= 64);
+
+		int lshift = 8 - mstl::mod8(appended);
+		int rshift = numBits - lshift;
+
+		bits = mstl::bf::reverse(bits) >> (8 - numBits);
+
+		unsigned bytePos = mstl::div8(appended);
+
+		if (rshift > 0)
+		{
+			buf[bytePos] |= bits >> rshift;
+			buf[bytePos + 1] |= bits << (8 - rshift);
+		}
+		else
+		{
+			buf[bytePos] |= bits << (lshift - numBits);
+		}
+
+		appended += numBits;
+	}
+
+	void appendFinally(uint8_t bits, unsigned numBits)
+	{
+		unsigned freeBits = 8 - mstl::mod8(appended);
+
+		if (freeBits < numBits)
+			appended += freeBits;
+
+		int padBits = 8 - mstl::mod8(appended) - numBits;
+		appended += padBits < 0 ? padBits + 8 : padBits;
+		append(bits, numBits);
+
+		size = mstl::div8(appended + 7);
+	}
+};
+
+
+typedef Book::CTGEntry		CTGEntry;
+typedef Book::CTGSignature	CTGSignature;
+
+
+template <typename T> inline static T mul4096(T x)	{ return x << 12; }
+template <typename T> inline static T mod32(T x)	{ return x & 0x1f; }
+template <typename T> inline static T mul32(T x)	{ return x << 6; }
+
+
+static bool
+computeSignature(piece::ID piece, CTGSignature& sig)
+{
+	uint8_t	bits;
+	unsigned	numBits;
+
+	switch (piece)
+	{
+		case Empty:	bits = 0x00; numBits = 1; break;
+		case WP:		bits = 0x03; numBits = 3; break;
+		case BP:		bits = 0x07; numBits = 3; break;
+		case WN:		bits = 0x09; numBits = 5; break;
+		case BN:		bits = 0x19; numBits = 5; break;
+		case WB:		bits = 0x05; numBits = 5; break;
+		case BB:		bits = 0x15; numBits = 5; break;
+		case WR:		bits = 0x0d; numBits = 5; break;
+		case BR:		bits = 0x1d; numBits = 5; break;
+		case WQ:		bits = 0x11; numBits = 6; break;
+		case BQ:		bits = 0x31; numBits = 6; break;
+		case WK:		bits = 0x01; numBits = 6; break;
+		case BK:		bits = 0x21; numBits = 6; break;
+		default:		return false;
+	}
+
+	sig.append(bits, numBits);
+	return true;
+}
 
 
 namespace {
 
-template <bool FlipColor, bool FlipBoard> struct LookupSquare {};
+template <bool FlipColor, bool FlipBoard> struct ProcessSquares {};
 
 template <> // FlipColor,FlipBoard
-struct LookupSquare<false,false>
+struct ProcessSquares<false,false>
 {
-	static bool find(Board const& pos, piece::ID piece, unsigned nth, Fyle& fyle, Rank& rank)
+	static bool find(Board const& position, piece::ID piece, unsigned nth, Fyle& fyle, Rank& rank)
 	{
 		unsigned count = 0;
 
@@ -72,7 +186,7 @@ struct LookupSquare<false,false>
 		{
 			for (unsigned r = 0; r < 8; ++r)
 			{
-				if (piece == pos.pieceAt(make(Fyle(f), Rank(r))))
+				if (piece == position.pieceAt(make(Fyle(f), Rank(r))))
 				{
 					if (++count == nth)
 					{
@@ -86,13 +200,26 @@ struct LookupSquare<false,false>
 
 		return false;
 	}
+
+	static bool computeSignature(Board const& position, CTGSignature& sig)
+	{
+		for (unsigned f = 0; f < 8; ++f)
+		{
+			for (unsigned r = 0; r < 8; ++r)
+			{
+				if (!::computeSignature(position.pieceAt(make(Fyle(f), Rank(r))), sig))
+					return false;
+			}
+		}
+		return true;
+	}
 };
 
 
 template <> // FlipColor,FlipBoard
-struct LookupSquare<true,false>
+struct ProcessSquares<true,false>
 {
-	static bool find(Board const& pos, piece::ID piece, unsigned nth, Fyle& fyle, Rank& rank)
+	static bool find(Board const& position, piece::ID piece, unsigned nth, Fyle& fyle, Rank& rank)
 	{
 		unsigned count = 0;
 
@@ -100,7 +227,7 @@ struct LookupSquare<true,false>
 		{
 			for (int r = 7; r >= 0; --r)
 			{
-				if (piece == piece::swap(pos.pieceAt(make(Fyle(f), Rank(r)))))
+				if (piece == piece::swap(position.pieceAt(make(Fyle(f), Rank(r)))))
 				{
 					if (++count == nth)
 					{
@@ -114,13 +241,26 @@ struct LookupSquare<true,false>
 
 		return false;
 	}
+
+	static bool computeSignature(Board const& position, CTGSignature& sig)
+	{
+		for (unsigned f = 0; f < 8; ++f)
+		{
+			for (int r = 7; r >= 0; --r)
+			{
+				if (!::computeSignature(piece::swap(position.pieceAt(make(Fyle(f), Rank(r)))), sig))
+					return false;
+			}
+		}
+		return true;
+	}
 };
 
 
 template <> // FlipColor,FlipBoard
-struct LookupSquare<false,true>
+struct ProcessSquares<false,true>
 {
-	static bool find(Board const& pos, piece::ID piece, unsigned nth, Fyle& fyle, Rank& rank)
+	static bool find(Board const& position, piece::ID piece, unsigned nth, Fyle& fyle, Rank& rank)
 	{
 		unsigned count = 0;
 
@@ -128,7 +268,7 @@ struct LookupSquare<false,true>
 		{
 			for (unsigned r = 0; r < 8; ++r)
 			{
-				if (piece == pos.pieceAt(make(f, r)))
+				if (piece == position.pieceAt(make(f, r)))
 				{
 					if (++count == nth)
 					{
@@ -142,13 +282,26 @@ struct LookupSquare<false,true>
 
 		return false;
 	}
+
+	static bool computeSignature(Board const& position, CTGSignature& sig)
+	{
+		for (int f = 7; f >= 0; --f)
+		{
+			for (unsigned r = 0; r < 8; ++r)
+			{
+				if (!::computeSignature(position.pieceAt(make(Fyle(f), Rank(r))), sig))
+					return false;
+			}
+		}
+		return true;
+	}
 };
 
 
 template <> // FlipColor,FlipBoard
-struct LookupSquare<true,true>
+struct ProcessSquares<true,true>
 {
-	static bool find(Board const& pos, piece::ID piece, unsigned nth, Fyle& fyle, Rank& rank)
+	static bool find(Board const& position, piece::ID piece, unsigned nth, Fyle& fyle, Rank& rank)
 	{
 		unsigned count = 0;
 
@@ -156,7 +309,7 @@ struct LookupSquare<true,true>
 		{
 			for (int r = 7; r >= 0; --r)
 			{
-				if (piece == piece::swap(pos.pieceAt(make(Fyle(f), Rank(r)))))
+				if (piece == piece::swap(position.pieceAt(make(Fyle(f), Rank(r)))))
 				{
 					if (++count == nth)
 					{
@@ -169,23 +322,88 @@ struct LookupSquare<true,true>
 		}
 
 		return false;
+	}
+
+	static bool computeSignature(Board const& position, CTGSignature& sig)
+	{
+		for (int f = 7; f >= 0; --f)
+		{
+			for (int r = 7; r >= 0; --r)
+			{
+				if (!::computeSignature(piece::swap(position.pieceAt(make(Fyle(f), Rank(r)))), sig))
+					return false;
+			}
+		}
+		return true;
 	}
 };
 
 } // namespace
 
 
-struct CTGSignature
+static bool
+computeSignature(Board const& position, CTGSignature& sig)
 {
-	uint8_t	buf[64];
-	unsigned	size;
-};
+	bool flipColor	= position.blackToMove();
+	bool flipBoard	= fyle(position.kingSquare()) <= FyleD && position.castlingRights() == NoRights;
+	bool rc			= false;
+
+	switch (unsigned(flipColor) | mstl::mul2(unsigned(flipBoard)))
+	{
+		case 0: rc = ProcessSquares<false,false>::computeSignature(position, sig); break;
+		case 1: rc = ProcessSquares<true, false>::computeSignature(position, sig); break;
+		case 2: rc = ProcessSquares<false,true >::computeSignature(position, sig); break;
+		case 3: rc = ProcessSquares<true, true >::computeSignature(position, sig); break;
+	}
+
+	if (!rc)
+		return false;
+
+	unsigned	bitLength	= 0;
+	uint8_t	bits			= 0;
+
+	color::ID sideToMove	= position.sideToMove();
+	color::ID notToMove	= position.notToMove();
+
+	if (Rights castlingRights = position.castlingRights(sideToMove))
+	{
+		if (castlingRights & kingSide(sideToMove))
+			bits |= 4;
+		if (castlingRights & queenSide(sideToMove))
+			bits |= 8;
+
+		castlingRights = position.castlingRights(notToMove);
+
+		if (castlingRights & kingSide(notToMove))
+			bits |= 1;
+		if (castlingRights & queenSide(notToMove))
+			bits |= 2;
+
+		bitLength += 4;
+	}
+
+	Square epSquare = position.enPassantSquare();
+
+	if (epSquare != Null)
+	{
+		Fyle epFyle = fyle(epSquare);
+
+		if (flipBoard)
+			epFyle = flipFyle(epFyle);
+
+		bits <<= 3;
+		bits |= (mstl::bf::reverse(uint8_t(epFyle)) >> 5);
+		bitLength += 3;
+	}
+
+	sig.appendFinally(bits, bitLength);
+	return true;
+}
 
 
-// Convert a position's huffman code to a 4 byte hash.
 static
 uint32_t
-signatureToHash(CTGSignature const& sig)
+computeHash(CTGSignature const& sig)
 {
 	static uint32_t const HashBits[64] =
 	{
@@ -222,7 +440,7 @@ signatureToHash(CTGSignature const& sig)
 // from A1 to H8 by ranks), and the delta x and delta y of the move.
 // We just look these values up in big tables.
 static Move
-byteToMove(Board& pos, uint8_t byte)
+byteToMove(Board const& position, uint8_t byte)
 {
 	static char const* PieceCode =
 		"PNxQPQPxQBKxPBRNxxBKPBxxPxQBxBxxxRBQPxBPQQNxxPBQNQBxNxNQQQBQBxxx"
@@ -290,14 +508,14 @@ byteToMove(Board& pos, uint8_t byte)
 		-7, -1,  9,  1,  0, -1,  0,  2, -1,  0, -3, -2,  9,  0,  3,  9,
 	};
 
-	bool flipColor = pos.blackToMove();
+	bool flipColor = position.blackToMove();
 
 	switch (byte)
 	{
 		case 107:
 		{
 			Rank rank = flipColor ? Rank8 : Rank1;
-			Move move = pos.makeMove(make(FyleE, rank), make(FyleG, rank));
+			Move move = position.makeMove(make(FyleE, rank), make(FyleG, rank));
 
 			return move.isCastling() ? move : Move::null();
 		}
@@ -305,7 +523,7 @@ byteToMove(Board& pos, uint8_t byte)
 		case 246:
 		{
 			Rank rank = flipColor ? Rank8 : Rank1;
-			Move move = pos.makeMove(make(FyleE, rank), make(FyleC, rank));
+			Move move = position.makeMove(make(FyleE, rank), make(FyleC, rank));
 
 			return move.isCastling() ? move : Move::null();
 		}
@@ -324,9 +542,10 @@ byteToMove(Board& pos, uint8_t byte)
 		default:		return Move();
 	}
 
-	bool flipBoard = fyle(pos.kingSquare(White)) <= FyleD && pos.currentCastlingRights() == NoRights;
+	bool flipBoard = fyle(position.kingSquare()) <= FyleD && position.castlingRights() == NoRights;
 
-	unsigned	nth = PieceIndex[byte];
+	unsigned	nth	= PieceIndex[byte];
+	bool		rc		= false;
 	Fyle		fyle;
 	Rank		rank;
 
@@ -334,11 +553,14 @@ byteToMove(Board& pos, uint8_t byte)
 
 	switch (unsigned(flipColor) | mstl::mul2(unsigned(flipBoard)))
 	{
-		case 0: if (!LookupSquare<false,false>::find(pos, piece, nth, fyle, rank)) return Move(); break;
-		case 1: if (!LookupSquare<true, false>::find(pos, piece, nth, fyle, rank)) return Move(); break;
-		case 2: if (!LookupSquare<false,true >::find(pos, piece, nth, fyle, rank)) return Move(); break;
-		case 3: if (!LookupSquare<true, true >::find(pos, piece, nth, fyle, rank)) return Move(); break;
+		case 0: rc = ProcessSquares<false,false>::find(position, piece, nth, fyle, rank); break;
+		case 1: rc = ProcessSquares<true, false>::find(position, piece, nth, fyle, rank); break;
+		case 2: rc = ProcessSquares<false,true >::find(position, piece, nth, fyle, rank); break;
+		case 3: rc = ProcessSquares<true, true >::find(position, piece, nth, fyle, rank); break;
 	}
+
+	if (!rc)
+		return Move();
 
 	Fyle toFyle = Fyle(mstl::mod8(unsigned((int(fyle) - Left[byte]) + 16)));
 	Rank toRank = Rank(mstl::mod8(unsigned((int(rank) + Forward[byte]) + 16)));
@@ -355,85 +577,52 @@ byteToMove(Board& pos, uint8_t byte)
 		toFyle = flipFyle(toFyle);
 	}
 
-	return pos.makeMove(make(fyle, rank), make(toFyle, toRank));
+	return position.makeMove(make(fyle, rank), make(toFyle, toRank));
 }
 
 
-// Given source and destination squares for a move, produce the corresponding
-// native format move.
-static Move
-squaresToMove(Board const& pos, sq::ID from, sq::ID to)
+static nag::ID
+annotationToNag(Board const& position, uint8_t code)
 {
-	MoveList moveList;
-	pos.generateMoves(variant::Normal, moveList);
-	pos.filterLegalMoves(moveList, variant::Normal);
-
-	for (unsigned i = 0; i < moveList.size(); ++i)
+	switch (code)
 	{
-		Move move = moveList[i];
-
-		if (	from == move.from()
-			&& to == move.to()
-			&& (	move.promoted() == None
-				|| move.promoted() == Queen))
-		{
-			return move;
-		}
+		case 0x01: return nag::GoodMove;
+		case 0x02: return nag::PoorMove;
+		case 0x03: return nag::VeryGoodMove;
+		case 0x04: return nag::VeryPoorMove;
+		case 0x05: return nag::SpeculativeMove;
+		case 0x06: return nag::QuestionableMove;
+		case 0x08: return nag::SingularMove;
+		case 0x16: return position.whiteToMove() ? nag::WhiteIsInZugzwang : nag::BlackIsInZugzwang;
 	}
 
-	return Move();
+	return nag::Null;
 }
 
 
-#if 0
-// Assign a weight to the given move, which indicates its relative
-// probability of being selected.
-static int64_t
-moveWeight(Board const& pos, Move move, uint8_t annotation, bool& recommended)
+static nag::ID
+commentaryToNag(uint8_t code)
 {
-	undo_info_t undo;
-	do_move(pos, move, &undo);
-	ctg_entry_t entry;
-	bool success = ctg_get_entry(pos, &entry);
+	switch (code)
+	{
+		case 0x0b: return nag::EqualChancesQuietPosition;
+		case 0x0d: return nag::UnclearPosition;
+		case 0x0e: return nag::WhiteHasASlightAdvantage;
+		case 0x0f: return nag::BlackHasASlightAdvantage;
+		case 0x10: return nag::WhiteHasAModerateAdvantage;
+		case 0x11: return nag::BlackHasAModerateAdvantage;
+		case 0x12: return nag::WhiteHasADecisiveAdvantage;
+		case 0x13: return nag::BlackHasADecisiveAdvantage;
+		case 0x20: return nag::Development;
+		case 0x24: return nag::Initiative;
+		case 0x28: return nag::Attack;
+		case 0x2c: return nag::WithCompensationForMaterial;
+		case 0x84: return nag::Counterplay;
+		case 0x8a: return nag::Zeitnot;
+	};
 
-	pos.undoMove(move, variant::Normal);
-
-	if (!success) return 0;
-
-	*recommended = false;
-	int64_t half_points = 2*entry.wins + entry.draws;
-	int64_t games = entry.wins + entry.draws + entry.losses;
-	int64_t weight = (games < 1) ? 0 : (half_points * 10000) / games;
-	if (entry.recommendation == 64) weight = 0;
-	if (entry.recommendation == 128) *recommended = true;
-
-	// Adjust weights based on move annotations. Note that moves can be both
-	// marked as recommended and annotated with a '?'. Since moves like this
-	// are not marked green in GUI tools, the recommendation is turned off in
-	// order to give results consistent with expectations.
-	switch (annotation) {
-	case 0x01: weight *=  8; break;                         //  !
-	case 0x02: weight  =  0; *recommended = false; break;   //  ?
-	case 0x03: weight *= 32; break;                         // !!
-	case 0x04: weight  =  0; *recommended = false; break;   // ??
-	case 0x05: weight /=  2; *recommended = false; break;   // !?
-	case 0x06: weight /=  8; *recommended = false; break;   // ?!
-	case 0x08: weight = INT32_MAX; break;                   // Only move
-	case 0x16: break;                                       // Zugzwang
-	default: break;
-	}
-	printf("info string book move ");
-	print_coord_move(move);
-	printf("weight %6"PRIu64"\n", weight);
-	//printf("weight %6"PRIu64" wins %6d draws %6d losses %6d rec %3d "
-	//        "note %2d avg_games %6d avg_score %9d "
-	//        "perf_games %6d perf_score %9d\n",
-	//        weight, entry.wins, entry.draws, entry.losses, entry.recommendation,
-	//        annotation, entry.avg_rating_games, entry.avg_rating_score,
-	//        entry.perf_rating_games, entry.perf_rating_score);
-	return weight;
+	return nag::Null;
 }
-#endif
 
 
 Book::Book(mstl::string const& ctgFilename)
@@ -487,13 +676,17 @@ Book::Format Book::format() const	{ return ChessBase; }
 
 
 Move
-Book::probeNextMove(::db::Board const& position, variant::Type variant)
+Book::probeNextMove(::db::Board const& position, variant::Type variant, Choice choice)
 {
 	Move move;
 
-//	ctg_entry_t entry;
-//	if (!ctg_get_entry(pos, &entry)) return NO_MOVE;
-//	if (!ctg_pick_move(pos, &entry, &move)) return NO_MOVE;
+	if (variant == variant::Normal)
+	{
+		CTGEntry	entry;
+
+		if (getEntry(position, entry))
+			move = pickMove(position, entry, choice);
+	}
 
 	return move;
 }
@@ -502,28 +695,61 @@ Book::probeNextMove(::db::Board const& position, variant::Type variant)
 bool
 Book::probePosition(::db::Board const& position, variant::Type variant, Entry& result)
 {
-	return false;
-}
+	if (variant != variant::Normal)
+		return false;
 
+	CTGEntry entry;
 
-bool
-Book::remove(::db::Board const& position, variant::Type variant)
-{
-	return false;
-}
+	if (!getEntry(position, entry))
+		return false;
 
+	uint64_t weights[128];
+	uint64_t maxWeight = 0;
+	
+	for (unsigned i = 0, k = 0; i < entry.numMoves; ++i)
+	{
+		if (Move move = ::byteToMove(position, entry.moves[i]))
+		{
+			result.items.push_back();
+			Entry::Item& item = result.items.back();
 
-bool
-Book::modify(::db::Board const& position, variant::Type variant, Entry const& entry)
-{
-	return false;
-}
+			bool		recommended;
+			uint64_t	weight(moveWeight(position, move, entry.annotation[i], recommended));
 
+			weights[k++] = weight;
+			maxWeight = mstl::max(maxWeight, weight);
 
-bool
-Book::add(::db::Board const& position, variant::Type variant, Entry const& entry)
-{
-	return false;
+			item.move					= move;
+			item.weight					= weight;
+			item.info.annotation		= ::annotationToNag(position, entry.annotation[i]);
+			item.info.commentary		= ::commentaryToNag(entry.commentary);
+			item.info.mainline		= entry.recommendation == 0x80;
+			item.info.exclude			= entry.recommendation == 0x40;
+			item.avgRatingGames		= entry.avgRatingGames;
+			item.avgRatingScore		= entry.avgRatingScore;
+			item.perfRatingGames		= entry.perfRatingGames;
+			item.perfRatingScore		= entry.perfRatingScore;
+			item.total					= entry.total;
+			item.wins					= entry.wins;
+			item.losses					= entry.losses;
+			item.draws					= entry.draws;
+		}
+	}
+
+	if (maxWeight)
+	{
+		unsigned msbIndex = mstl::bf::msb_index(maxWeight);
+
+		if (msbIndex > 15)
+		{
+			unsigned rshift = msbIndex - 15;
+
+			for (unsigned i = 0; i < result.items.size(); ++i)
+				result.items[i].weight = weights[i] >> rshift;
+		}
+	}
+
+	return true;
 }
 
 
@@ -540,6 +766,9 @@ Book::getPageIndex(unsigned hash)
 		{
 			int32_t pageIndex;
 
+			if (mstl::mul4(key) + 16 + sizeof(pageIndex) >= m_ctoStrm.capacity())
+				return -1;
+
 			m_ctoStrm.seekg(mstl::mul4(key) + 16);
 			m_ctoStrm >> pageIndex;
 
@@ -549,6 +778,184 @@ Book::getPageIndex(unsigned hash)
 	}
 
 	return -1;
+}
+
+
+bool
+Book::fillEntry(uint8_t const* data, CTGEntry& entry)
+{
+	unsigned entrySize = *data;
+
+	if (entrySize == 0)
+		return false;
+
+	entry.numMoves = mstl::div2(entrySize - 1);
+
+ 	for (unsigned i = 0; i < entry.numMoves; ++i)
+	{
+		entry.moves[i] = data[mstl::mul2(i) + 1];
+		entry.annotation[i] = data[mstl::mul2(i) + 2];
+	}
+
+	ByteStream strm(const_cast<uint8_t*>(data) + entrySize, 33u);
+
+	uint32_t	unknown32;
+	uint8_t	unknown8;
+
+	strm >> entry.total;
+	strm >> entry.losses;
+	strm >> entry.wins;
+	strm >> entry.draws;
+	strm >> unknown32;
+	strm >> entry.avgRatingGames;
+	strm >> entry.avgRatingScore;
+	strm >> entry.perfRatingGames;
+	strm >> entry.perfRatingScore;
+	strm >> entry.recommendation;
+	strm >> unknown8;
+	strm >> entry.commentary;
+
+	return true;
+}
+
+
+bool
+Book::lookupEntry(unsigned pageIndex, CTGSignature const& sig, CTGEntry& entry)
+{
+	uint16_t numPositions;
+
+	if (::mul4096(pageIndex + 1) + sizeof(numPositions) >= m_ctgStrm.capacity())
+		return false;
+
+	m_ctgStrm.seekg(::mul4096(pageIndex + 1));
+	m_ctgStrm >> numPositions;
+
+	uint8_t const* data = m_ctgStrm.data();
+
+	for (unsigned i = 0; i < numPositions; ++i)
+	{
+		unsigned			entrySize = ::mod32(*data);
+		uint8_t const*	nextEntry = data + entrySize + data[entrySize] + 33;
+
+		if (nextEntry >= m_ctgStrm.end())
+			return false;
+
+		if (sig.equal(data, entrySize))
+			return fillEntry(data + entrySize, entry);
+
+		data = nextEntry;
+	}
+
+	return false;
+}
+
+
+bool
+Book::getEntry(Board const& position, CTGEntry& entry)
+{
+	CTGSignature sig;
+	computeSignature(position, sig);
+
+	int pageIndex = getPageIndex(computeHash(sig));
+
+	if (pageIndex < 0)
+		return false;
+
+	return lookupEntry(pageIndex, sig, entry);
+}
+
+
+Move
+Book::pickMove(Board const& position, CTGEntry& entry, Choice choice)
+{
+	if (entry.numMoves == 0)
+		return Move();
+
+	Move		moves[128];
+	uint64_t	weights[128];
+
+	uint64_t	bestWeight	= 0;
+	unsigned	used			= 0;
+
+	for (unsigned i = 0; i < entry.numMoves; ++i)
+	{
+		if (Move move = ::byteToMove(position, entry.moves[i]))
+		{
+			bool		recommended;
+			uint64_t	weight(moveWeight(position, move, entry.annotation[i], recommended));
+
+			if (recommended)
+			{
+				if (weight > bestWeight)
+				{
+					moves[used] = move;
+					weights[used++] = weight;
+					bestWeight = weight;
+				}
+			}
+		}
+	}
+
+	if (used == 0)
+		return Move();
+	
+	unsigned n = 0;
+
+	for (unsigned i = 0; i < used; ++i)
+	{
+		if (bestWeight == weights[i])
+		{
+			if (choice == First)
+				return moves[i];
+
+			moves[n++] = moves[i];
+		}
+	}
+
+	return moves[n == 1 ? 0 : m_rand.rand32(n)];
+}
+
+
+uint64_t
+Book::moveWeight(Board const& position, Move move, uint8_t annotation, bool& recommended)
+{
+	M_ASSERT(move);
+
+	Board		board(position);
+	CTGEntry	entry;
+	uint64_t	weight(0);
+
+	board.doMove(move, variant::Normal);
+
+	if (!getEntry(position, entry))
+	{
+		recommended = false;
+		return 0;
+	}
+
+	recommended = entry.recommendation == 128;
+
+	if (entry.recommendation != 64)
+	{
+		uint64_t halfPoints	= mstl::mul2(uint32_t(entry.wins)) + entry.draws;
+		uint64_t games			= entry.wins + entry.draws + entry.losses;
+
+		weight = (games < 1) ? 0 : (halfPoints*10000)/games;
+	}
+
+	switch (annotation)
+	{
+		case 0x01: mstl::mul8(weight); break;								//  !
+		case 0x02: weight = 0; recommended = false; break;				//  ?
+		case 0x03: ::mul32(weight); break;									// !!
+		case 0x04: weight = 0; recommended = false; break;				// ??
+		case 0x05: mstl::div2(weight); break;								// !?
+		case 0x06: mstl::div8(weight); recommended = false; break;	// ?!
+		case 0x08: weight = mstl::numeric_limits<uint64_t>::max(); break;	// Only move
+		case 0x16: break;															// Zugzwang
+	}
+
+	return weight;
 }
 
 // vi:set ts=3 sw=3:

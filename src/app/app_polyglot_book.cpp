@@ -24,6 +24,11 @@
 // (at your option) any later version.
 // ======================================================================
 
+// ======================================================================
+// Description of polyglot format:
+// <http://hardy.uhasselt.be/Toga/book_format.html>
+// ======================================================================
+
 #include "app_polyglot_book.h"
 
 #include "db_board.h"
@@ -781,7 +786,7 @@ Book::findKey(uint64_t key)
 
 
 Move
-Book::probeNextMove(Board const& position, variant::Type variant)
+Book::probeNextMove(Board const& position, variant::Type variant, Choice choice)
 {
 	uint64_t key = ::hash(position, variant);
 
@@ -1045,7 +1050,7 @@ Book::readScidMaskFile(mstl::ifstream& strm)
 							else if (s == "tb_msearch")
 								i.info.train = 1;
 							else if (s == "tb_help")
-								i.info.dubious = 1;
+								i.info.annotation = nag::SpeculativeMove;
 							else if (s == "tb_cut")
 								i.info.remove = 1;
 						}

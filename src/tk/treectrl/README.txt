@@ -26,6 +26,14 @@ bug fixes, new options:
 		state normal the item/columns state will not be
 		superseeded, but if set to disabled the item/column
 		state will be superseeded. Defaults to "normal".
+
+	treectrl <pathName> -canvaspadx <pixels>
+		Specifies the width of extra whitespace on the left and
+		right edges of the canvas.
+		
+	treectrl <pathName> -canvaspadx <pixels>
+		Specifies the width of extra whitespace on the top and
+		bottom edges of the canvas.
 		
 	<pathName> column create <columnDesc> -steady <boolean>
 		If set, keeps the width of a column after an element

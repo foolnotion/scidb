@@ -99,6 +99,7 @@ array set Options {
 	engine:bestFirst	1
 	engine:nlines		2
 	engine:multiPV		4
+	engine:singlePV	0
 	engine:delay		250
 }
 
@@ -123,7 +124,7 @@ proc build {parent width height} {
 	variable Vars
 
 	set Vars(best:0) black
-	if {$Options(engine:bestFirst) || $Options(engine:multiPV) == 1} {
+	if {$Options(engine:bestFirst) || $Options(engine:singlePV)} {
 		set Vars(best:1) black
 	} else {
 		set Vars(best:1) $Defaults(best:foreground)
@@ -312,7 +313,7 @@ proc build {parent width height} {
 	$tree column create -steady yes -tags Value -width [expr {8*$charwidth}] -itemjustify right
 	$tree column create -steady yes -tags Moves -expand yes -squeeze yes -weight 1 -itemjustify left
 
-	foreach i {0 1 2 3} {
+	foreach i {0 1 2 3 4 5 6 7} {
 		set item [$tree item create]
 		$tree item lastchild root $item
 		$tree item configure $item -tag Line$i
@@ -369,8 +370,8 @@ proc build {parent width height} {
 	::toolbar::addSeparator $tbControl
 	set tbw [::toolbar::add $tbControl checkbutton \
 		-image $::icon::toolbarLines \
-		-variable [namespace current]::Options(engine:multiPV) \
-		-onvalue 4 \
+		-variable [namespace current]::Options(engine:singlePV) \
+		-onvalue 0 \
 		-offvalue 1 \
 		-tooltipvar [namespace current]::mc::MultipleVariations \
 		-command [namespace code [list SetMultiPV $tree]] \
@@ -461,7 +462,8 @@ proc startAnalysis {dialog} {
 	if {$Vars(engine:id) >= 0} {
 		if {$Options(engine:bestFirst)} { set order bestFirst } else { set order unordered }
 		::scidb::engine::ordering $Vars(engine:id) $order
-		::engine::activateEngine $Vars(engine:id) [list multiPV $Options(engine:multiPV)]
+		if {$Options(engine:singlePV)} { set multiPV 1 } else { set multiPV $Options(engine:multiPV) }
+		::engine::activateEngine $Vars(engine:id) [list multiPV $multiPV]
 	}
 }
 
@@ -471,7 +473,8 @@ proc restartAnalysis {} {
 	variable Vars
 	
 	after cancel $Vars(after)
-	::engine::restartAnalysis $Vars(engine:id) [list multiPV $Options(engine:multiPV)]
+	if {$Options(engine:singlePV)} { set multiPV 1 } else { set multiPV $Options(engine:multiPV) }
+	::engine::restartAnalysis $Vars(engine:id) [list multiPV $multiPV]
 }
 
 
@@ -526,7 +529,7 @@ proc SetOrdering {tree} {
 	variable Defaults
 	variable Options
 
-	if {$Options(engine:bestFirst) || $Options(engine:multiPV) == 1} {
+	if {$Options(engine:bestFirst) || $Options(engine:singlePV)} {
 		set Vars(best:1) black
 	} else {
 		set Vars(best:1) [::colors::lookup $Defaults(best:foreground)]
@@ -541,7 +544,7 @@ proc SetOrdering {tree} {
 	::scidb::engine::ordering $Vars(engine:id) $order
 
 	if {$Options(engine:bestFirst)} {
-		foreach i {0 1 2 3} {
+		foreach i {0 1 2 3 4 5 6 7} {
 			$Vars(tree) item element configure Line$i Eval  elemTextSym -fill black
 			$Vars(tree) item element configure Line$i Value elemTextFig -fill black
 		}
@@ -568,13 +571,23 @@ proc ClearLines {w args} {
 }
 
 
-proc SetMultiPV {tree} {
+proc SetMultiPV {tree {number 0}} {
 	variable Vars
 	variable Defaults
 	variable Options
 
-	::scidb::engine::multiPV $Vars(engine:id) $Options(engine:multiPV)
-	if {$Options(engine:bestFirst) || $Options(engine:multiPV) == 1} {
+	if {$number} {
+		if {$number == 1} {
+			set Options(engine:singlePV) 1
+		} else {
+			set Options(engine:singlePV) 0
+			set Options(engine:multiPV) $number
+		}
+	}
+
+	if {$Options(engine:singlePV)} { set multiPV 1 } else { set multiPV $Options(engine:multiPV) }
+	::scidb::engine::multiPV $Vars(engine:id) $multiPV
+	if {$Options(engine:bestFirst) || $Options(engine:singlePV)} {
 		set Vars(best:1) black
 	} else {
 		set Vars(best:1) [::colors::lookup $Defaults(best:foreground)]
@@ -596,23 +609,33 @@ proc Layout {tree} {
 	variable Options
 	variable Vars
 
-	if {$Options(engine:multiPV) == 4} {
-		set pvcount 4
-		set visible 1
-		set nlines $Options(engine:nlines)
-		set state readonly
-	} else {
+	if {$Options(engine:singlePV)} {
 		set pvcount 1
-		set visible 0
 		set nlines 4
 		set state disabled
+	} else {
+		set pvcount $Options(engine:multiPV)
+		set nlines $Options(engine:nlines)
+		set state readonly
 	}
 
-	foreach i {1 2 3} {
-		$tree item configure Line$i -visible $visible
+	if {$nlines == 1} {
+		set lines 0
+		set wrap none
+	} else {
+		set lines $nlines
+		set wrap word
 	}
-	if {$Options(engine:multiPV) == 1} {
-		ClearLines $Vars(tree) 1 2 3
+
+	for {set i 0} {$i < $pvcount} {incr i} {
+		$tree item configure Line$i -visible 1
+		$tree item element configure Line$i Moves elemTextFig -lines $lines -wrap $wrap
+	}
+
+	for {} {$i < 8} {incr i} {
+		$tree item configure Line$i -visible 0
+		$tree item element configure Line$i Moves elemTextFig -lines $lines -wrap $wrap
+		ClearLines $Vars(tree) $i
 	}
 
 	set theight [expr {$nlines*$pvcount*$Vars(linespace) + $pvcount*4}]
@@ -623,18 +646,6 @@ proc Layout {tree} {
 	$tree style layout styleSym elemTextSym -minheight $lheight
 	::toolbar::childconfigure $Vars(widget:linesPerPV) -state $state
 #	::toolbar::childconfigure $Vars(widget:ordering) -state $state
-
-	if {$nlines == 1} {
-		set lines 0
-		set wrap none
-	} else {
-		set lines $nlines
-		set wrap word
-	}
-
-	foreach i {0 1 2 3} {
-		$tree item element configure Line$i Moves elemTextFig -lines $lines -wrap $wrap
-	}
 }
 
 
@@ -758,16 +769,16 @@ proc Display(clear) {} {
 	$Vars(widget:hashfullness) configure -text ""
 	set Vars(maxMoves) 0
 
-	ClearLines $Vars(tree) 0 1 2 3
+	ClearLines $Vars(tree) 0 1 2 3 4 5 6 7
 	$Vars(tree) activate 0
 }
 
 
-proc Display(pv) {score mate depth seldepth time nodes line pv} {
+proc Display(pv) {score mate depth seldepth time nodes nps tbhits line pv} {
 	variable Options
 	variable Vars
 
-	Display(time) $time $depth $seldepth $nodes
+	Display(time) $time $depth $seldepth $nodes $nps $tbhits
 
 	set evalTxt [::font::mapNagToSymbol [EvalText $score $mate]]
 	set scoreTxt [ScoreText $score $mate]
@@ -852,13 +863,10 @@ proc Display(move) {number count move} {
 }
 
 
-proc Display(depth) {depth seldepth nodes} {
-	Display(time) 0 $depth $seldepth $nodes
-}
-
-
-proc Display(time) {time depth seldepth nodes} {
+proc Display(time) {time depth seldepth nodes nps tbhits} {
 	variable Vars
+
+	# TODO: show nps, tbhits
 
 	if {$depth} {
 		set txt $depth
@@ -1055,7 +1063,7 @@ proc PopupMenu {parent args} {
 					-command [namespace code [list InsertMoves $parent line $line $mc::Add(line)]] \
 					-state $state \
 					;
-				if {$Options(engine:multiPV) == 1} { set state disabled }
+				if {$Options(engine:singlePV)} { set state disabled }
 				$menu add command \
 					-label " $mc::Add(all)" \
 					-image $::icon::16x16::plus \
@@ -1096,7 +1104,6 @@ proc PopupMenu {parent args} {
 		-variable [namespace current]::Vars(engine:locked) \
 		;
 	::theme::configureCheckEntry $menu
-	$menu add separator
 	$menu add checkbutton \
 		-label " $mc::BestFirstOrder" \
 		-image $::icon::16x16::sort(descending) \
@@ -1105,17 +1112,24 @@ proc PopupMenu {parent args} {
 		-variable [namespace current]::Options(engine:bestFirst) \
 		;
 	::theme::configureCheckEntry $menu
-	$menu add checkbutton \
+	$menu add separator
+	set sub [menu $menu.multiPV -tearoff 0]
+	$menu add cascade \
+		-menu $sub \
 		-label " $mc::MultipleVariations"  \
 		-image $::icon::16x16::lines \
 		-compound left \
-		-command [namespace code [list SetMultiPV $parent]] \
-		-variable [namespace current]::Options(engine:multiPV) \
-		-onvalue 4 \
-		-offvalue 1 \
 		;
-	::theme::configureCheckEntry $menu
-	if {$Options(engine:multiPV) > 1} {
+	foreach n {1 2 4 8} {
+		$sub add radiobutton \
+			-label $n \
+			-value $n \
+			-variable [namespace current]::Options(engine:multiPV) \
+			-command [namespace code [list SetMultiPV $parent $n]] \
+			;
+		::theme::configureRadioEntry $sub
+	}
+	if {!$Options(engine:singlePV)} {
 		set sub [menu $menu.lines -tearoff 0]
 		$menu add cascade \
 			-menu $sub \
@@ -1126,8 +1140,8 @@ proc PopupMenu {parent args} {
 		foreach i {1 2 3 4} {
 			$sub add radiobutton \
 				-label $i \
-				-variable [namespace current]::Options(engine:nlines) \
 				-value $i \
+				-variable [namespace current]::Options(engine:nlines) \
 				-command [namespace code [list SetLinesPerPV $parent]] \
 				;
 			::theme::configureRadioEntry $sub

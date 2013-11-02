@@ -191,7 +191,6 @@ public:
 			Tcl_IncrRefCount(m_line = Tcl_NewStringObj("line", -1));
 			Tcl_IncrRefCount(m_bestmove = Tcl_NewStringObj("bestmove", -1));
 			Tcl_IncrRefCount(m_bestscore = Tcl_NewStringObj("bestscore", -1));
-			Tcl_IncrRefCount(m_depth = Tcl_NewStringObj("depth", -1));
 			Tcl_IncrRefCount(m_seldepth = Tcl_NewStringObj("seldepth", -1));
 			Tcl_IncrRefCount(m_time = Tcl_NewStringObj("time", -1));
 			Tcl_IncrRefCount(m_hash = Tcl_NewStringObj("hash", -1));
@@ -275,7 +274,7 @@ public:
 
 		int score = mstl::max(-9900, mstl::min(9900, this->score(line)));
 
-		Tcl_Obj* objs[8];
+		Tcl_Obj* objs[10];
 
 		objs[0] = Tcl_NewIntObj(score);
 		objs[1] = Tcl_NewIntObj(mate(line));
@@ -283,8 +282,10 @@ public:
 		objs[3] = Tcl_NewIntObj(selectiveDepth());
 		objs[4] = Tcl_NewDoubleObj(time());
 		objs[5] = Tcl_NewIntObj(nodes());
-		objs[6] = Tcl_NewIntObj(ordering(line));
-		objs[7] = Tcl_NewStringObj(s, s.size());
+		objs[6] = Tcl_NewIntObj(nps());
+		objs[7] = Tcl_NewIntObj(tbhits());
+		objs[8] = Tcl_NewIntObj(ordering(line));
+		objs[9] = Tcl_NewStringObj(s, s.size());
 
 		if (bestInfoHasChanged())
 		{
@@ -357,23 +358,28 @@ public:
 
 	void updateDepthInfo() override
 	{
-		Tcl_Obj* objs[3];
+		Tcl_Obj* objs[6];
 
-		objs[0] = Tcl_NewIntObj(depth());
-		objs[1] = Tcl_NewIntObj(selectiveDepth());
-		objs[2] = Tcl_NewIntObj(nodes());
+		objs[0] = Tcl_NewIntObj(0);
+		objs[1] = Tcl_NewIntObj(depth());
+		objs[2] = Tcl_NewIntObj(selectiveDepth());
+		objs[3] = Tcl_NewIntObj(nodes());
+		objs[4] = Tcl_NewIntObj(nps());
+		objs[5] = Tcl_NewIntObj(tbhits());
 
-		sendInfo(m_depth, Tcl_NewListObj(U_NUMBER_OF(objs), objs));
+		sendInfo(m_time, Tcl_NewListObj(U_NUMBER_OF(objs), objs));
 	}
 
 	void updateTimeInfo() override
 	{
-		Tcl_Obj* objs[4];
+		Tcl_Obj* objs[6];
 
 		objs[0] = Tcl_NewDoubleObj(time());
 		objs[1] = Tcl_NewIntObj(depth());
 		objs[2] = Tcl_NewIntObj(selectiveDepth());
 		objs[3] = Tcl_NewIntObj(nodes());
+		objs[4] = Tcl_NewIntObj(nps());
+		objs[5] = Tcl_NewIntObj(tbhits());
 
 		sendInfo(m_time, Tcl_NewListObj(U_NUMBER_OF(objs), objs));
 	}
@@ -434,7 +440,6 @@ private:
 	static Tcl_Obj* m_line;
 	static Tcl_Obj* m_bestmove;
 	static Tcl_Obj* m_bestscore;
-	static Tcl_Obj* m_depth;
 	static Tcl_Obj* m_seldepth;
 	static Tcl_Obj* m_time;
 	static Tcl_Obj* m_hash;
@@ -457,7 +462,6 @@ Tcl_Obj* Engine::m_move				= 0;
 Tcl_Obj* Engine::m_line				= 0;
 Tcl_Obj* Engine::m_bestmove		= 0;
 Tcl_Obj* Engine::m_bestscore		= 0;
-Tcl_Obj* Engine::m_depth			= 0;
 Tcl_Obj* Engine::m_seldepth		= 0;
 Tcl_Obj* Engine::m_time				= 0;
 Tcl_Obj* Engine::m_hash				= 0;

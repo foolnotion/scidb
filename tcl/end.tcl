@@ -225,6 +225,13 @@ if {[catch {
 		unset history_
 	}
 
+	if {[info exists application::analysis::Options(engine:multiPV)]} {
+		if {[set application::analysis::Options(engine:multiPV)] == 1} {
+			set application::analysis::Options(engine:singlePV) 1
+			set application::analysis::Options(engine:multiPV) 4
+		}
+	}
+
 	if {$::scidb::revision < [::scidb::misc::revision]} {
 		if {$::scidb::revision == 83} {
 			set ::export::RecentlyUsedHistory	{}

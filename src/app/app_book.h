@@ -43,6 +43,7 @@ public:
 	// Format Scidb is an extended Polyglot format (compatible)
 	enum Format { Polyglot, Scidb, ChessBase };
 	enum Colors { None, Green, Yellow, Blue, Red };
+	enum Choice	{ First, Random };
 
 	struct Entry
 	{
@@ -62,7 +63,6 @@ public:
 				uint32_t exclude:1;			/// exclude flag
 				uint32_t mainline:1;			/// mainline flag
 				uint32_t bookmark:1;			/// user flag
-				uint32_t dubious:1;			/// dubios flag
 				uint32_t newline:1;			/// new line flag
 				uint32_t white:1;				/// good for White
 				uint32_t black:1;				/// good for Black
@@ -70,9 +70,9 @@ public:
 				uint32_t train:1;				/// to train
 				uint32_t remove:1;			/// to remove
 				uint32_t color:3;				/// colored square in front of move
-				uint32_t annotation:4;		/// move annotation (NAG 1-9)
-				uint32_t estimation:8;		/// estimation of position after move
-				uint32_t __unused__:10;
+				uint32_t annotation:5;		/// move annotation (NAG 0-23)
+				uint32_t commentary:8;		/// commentary to position after move
+				uint32_t __unused__:6;
 			};
 
 			uint32_t __value__;
@@ -88,7 +88,6 @@ public:
 			uint16_t			avgRatingScore;	/// average rating score
 			uint16_t			perfRatingGames;	/// performance rating #games
 			uint16_t			perfRatingScore;	/// performance rating score
-			bool				recommended;		/// this line is recommended
 			mstl::string	comment;
 			Info				info;					/// additional information
 			unsigned			total;				/// total number of games
@@ -116,7 +115,9 @@ public:
 	virtual Format format() const = 0;
 	mstl::string const& filename() const;
 
-	virtual db::Move probeNextMove(db::Board const& position, db::variant::Type variant) = 0;
+	virtual db::Move probeNextMove(	db::Board const& position,
+												db::variant::Type variant,
+												Choice choice) = 0;
 	virtual bool probePosition(db::Board const& position, db::variant::Type variant, Entry& result) = 0;
 
 	virtual bool remove(db::Board const& position, db::variant::Type variant);

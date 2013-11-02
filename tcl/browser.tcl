@@ -437,8 +437,8 @@ proc updatePosition {parent position flip key {state 0}} {
 	if {[llength $key] == 0} { set key [::scidb::game::query start] }
 	set fen [::scidb::game::board $position $key]
 	# show pawn structure if shift key is held down (or shift key is locked)
-	set mask [expr {$::util::ShiftMask | $::util::LockMask}]
-	if {($state & $mask) == $::util::ShiftMask || ($state & $mask) == $::util::LockMask} {
+	set mask [expr {$::util::shiftMask | $::util::lockMask}]
+	if {($state & $mask) == $::util::shiftMask || ($state & $mask) == $::util::lockMask} {
 		set fen [string map {K . Q . R . B . N . k . q . r . b . n .} $fen]
 	}
 	if {$flip != [::board::diagram::rotated? $w.board]} {

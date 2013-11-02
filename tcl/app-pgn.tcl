@@ -606,8 +606,8 @@ proc replaceMoves {parent base variant position number} {
 
 
 proc showDiagram {w keysym state} {
-	variable ::util::ShiftMask
-	variable ::util::LockMask
+	variable ::util::shiftMask
+	variable ::util::lockMask
 	variable Vars
 
 	if {$Vars(diagram:show)} { return }
@@ -621,9 +621,9 @@ proc showDiagram {w keysym state} {
 
 	set Vars(diagram:show) 1
 	set Vars(diagram:state) $state
-	set Vars(diagram:caps) [expr {$state & $LockMask}]
+	set Vars(diagram:caps) [expr {$state & $lockMask}]
 	set w $Vars(pgn:$position)
-	set mask [expr {$ShiftMask|$LockMask}]
+	set mask [expr {$shiftMask|$lockMask}]
 	if {($state & $mask) == $mask} { set state 0 }
 	::browser::showPosition $w $position [[namespace parent]::board::rotated?] $key $state
 }
@@ -649,9 +649,8 @@ proc ensureScratchGame {} {
 
 
 proc CheckKey {w mode keysym state} {
-	variable ::util::ShiftMask
-	variable ::util::LockMask
-	variable ::util::AltMask
+	variable ::util::shiftMask
+	variable ::util::lockMask
 	variable Vars
 
 	if {!$Vars(diagram:show)} { return }
@@ -666,9 +665,9 @@ proc CheckKey {w mode keysym state} {
 		set key $Vars(active:$position)
 		set w $Vars(pgn:$position)
 		if {$keysym ne "Caps_Lock"} {
-			set mask $ShiftMask
+			set mask $shiftMask
 		} else {
-			set mask $LockMask
+			set mask $lockMask
 			if {$Vars(diagram:caps)} { set mode "release" }
 		}
 		if {$mode eq "press"} {
@@ -676,7 +675,7 @@ proc CheckKey {w mode keysym state} {
 		} else {
 			set state [expr {$state & ~$mask}]
 		}
-		set Vars(diagram:caps) [expr {$state & $LockMask}]
+		set Vars(diagram:caps) [expr {$state & $lockMask}]
 		::browser::updatePosition $w $position [[namespace parent]::board::rotated?] $key $state
 	}
 }
@@ -1937,7 +1936,7 @@ proc Mark {w key} {
 
 proc EnterMove {position key {state 0}} {
 	variable ::pgn::editor::Colors
-	variable ::util::LockMask
+	variable ::util::lockMask
 	variable Vars
 
 	set w $Vars(pgn:$position)
@@ -1952,7 +1951,7 @@ proc EnterMove {position key {state 0}} {
 
 	if {$Vars(diagram:show)} {
 		set Vars(diagram:state) $state
-		set Vars(diagram:caps) [expr {$state & $LockMask}]
+		set Vars(diagram:caps) [expr {$state & $lockMask}]
 		::browser::updatePosition $w $position [[namespace parent]::board::rotated?] $key $state
 	}
 }

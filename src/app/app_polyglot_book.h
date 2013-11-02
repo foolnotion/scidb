@@ -51,7 +51,7 @@ public:
 
 	Format format() const override;
 
-	db::Move probeNextMove(db::Board const& position, db::variant::Type variant) override;
+	db::Move probeNextMove(db::Board const& position, db::variant::Type variant, Choice choice) override;
 	bool probePosition(db::Board const& position, db::variant::Type variant, Entry& result) override;
 
 	bool remove(db::Board const& position, db::variant::Type variant) override;

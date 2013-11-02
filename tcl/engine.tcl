@@ -1757,10 +1757,6 @@ proc Select {list item} {
 		array set engine [lindex $Engines $Priv(selection)]
 		set Var(Logo) $engine(Logo)
 		SetLogo
-		set logo $engine(ShortId)
-		if {[info exists Photo($logo)]} {
-			$list set $Priv(selection) [list [lindex $Photo($logo) 1]]
-		}
 	}
 
 	set Priv(selection) $item
@@ -1769,10 +1765,15 @@ proc Select {list item} {
 	array set engine $EmptyEngine
 	array set engine $entry
 	FillInfo $list $entry
+	array set features {}
 	foreach protocol $engine(Protocol) {
-		set features $engine(Features:$protocol)
+		foreach {key value} $engine(Features:$protocol) {
+			if {[llength $value] > 0 || ![info exists features($key)]} {
+				set features($key) $value
+			}
+		}
 	}
-	ShowFeatures $list $features $engine(Variants)
+	ShowFeatures $list [array get features] $engine(Variants)
 	TabChanged
 	UpdateVars
 }
@@ -3091,7 +3092,7 @@ proc RebuildEngineList {list} {
 				lappend PhotoFiles [list $i $logo $photoFile $engine(Name)]
 				$list insert {}
 			} else {
-				$list insert [list $engine(Name)]
+				$list insert [list $logo]
 			}
 		}
 
@@ -3555,10 +3556,11 @@ proc LoadPhotoFiles {list} {
 
 	if {[info exists Photo($logo)]} {
 		if {$item == $Priv(selection)} { set index 2 } else { set index 1 }
-		$list set $item [lindex $Photo($logo) $index]
+		set content [lindex $Photo($logo) $index]
 	} else {
-		$list set $item [list $name]
+		set content [list $logo]
 	}
+	$list set $item $content
 
 	if {[llength $PhotoFiles]} {
 		set Priv(after) [after 50 [namespace code [list LoadPhotoFiles $list]]]
@@ -3572,11 +3574,18 @@ proc MakePhotos {logo file} {
 	variable Logo
 	variable Photo
 
+	if {[string length $file] == 0} { return }
 	catch { image create photo -file $file } img
 	if {![info exists img]} { return }
 
 	set w [image width $img]
 	set h [image height $img]
+
+	if {$w == 0 || $h == 0} {
+		image delete $img
+		return
+	}
+
 	if {$h > $Logo(height) || $w > $Logo(width)} {
 		if {$w > $Logo(width)} {
 			set h [expr {int(ceil((double($h)*$Logo(width))/double($w)))}]
@@ -3591,6 +3600,7 @@ proc MakePhotos {logo file} {
 		image delete $img
 		set img $tmp
 	}
+
 	set img2 [image create photo -width $w -height $h]
 	::scidb::tk::image disable $img $img2 150
 	set Photo($logo) [list $file $img $img2]
@@ -3640,15 +3650,15 @@ proc SetLogo {} {
 		}
 	}
 
-	if {[info exists Photo($logo)] && $Photo($logo) eq $file} { return }
-
-	array unset Photo $logo
-	MakePhotos $logo $file
+	if {![info exists Photo($logo)] || [lindex $Photo($logo) 0] ne $file} {
+		array unset Photo $logo
+		MakePhotos $logo $file
+	}
 
 	if {[info exists Photo($logo)]} {
 		set content [list [lindex $Photo($logo) 2]]
 	} else {
-		set content $engine(Name)
+		set content [list $logo]
 	}
 
 	set engine(Logo) $Var(Logo)

@@ -180,7 +180,7 @@ isPath(mstl::string const& s)
 {
 	if (isPathOrFile(s, "Path", "path"))
 		return true;
-	
+
 	mstl::string::size_type i = s.find("irectory");
 
 	if (i == 0 || i == mstl::string::npos)
@@ -803,15 +803,33 @@ uci::Engine::parseInfo(char const* s)
 				break;
 
 			case 't':
-				if (::sscanf(s, "time %u", &value) == 1)
-					setTime(value/1000.0);
-				// NOTE: we ignore "tbhits"
+				switch (s[1])
+				{
+					case 'i':
+						if (::sscanf(s, "time %u", &value) == 1)
+							setTime(value/1000.0);
+						break;
+
+					case 'b':
+						if (::sscanf(s, "tbhits %u", &value) == 1)
+							setTBHits(value);
+						break;
+				}
 				break;
 
 			case 'n':
-				// skip "nps"
-				if (::sscanf(s, "nodes %u", &value) == 1)
-					setNodes(value);
+				switch (s[1])
+				{
+					case 'o':
+						if (::sscanf(s, "nodes %u", &value) == 1)
+							setNodes(value);
+						break;
+
+					case 'p':
+						if (::sscanf(s, "nps %u", &value) == 1)
+							setNPS(value);
+						break;
+				}
 				break;
 
 			case 'p':
@@ -998,7 +1016,7 @@ uci::Engine::parseOption(char const* msg)
 
 	if (name.empty())
 		return;
-	
+
 	mstl::string id(::toId(name));
 
 	if (::strncmp(name, "UCI_", 4) == 0)
@@ -1257,7 +1275,7 @@ uci::Engine::sendOptions()
 
 			case 'n':
 				if (id == "npsinfo" && opt.type == "check")
-					val = "false";
+					val = "true";
 				break;
 
 			case 'o':
@@ -1275,7 +1293,7 @@ uci::Engine::sendOptions()
 
 			case 't':
 				if (id == "tbhitinfo" && opt.type == "check")
-					val = "false";
+					val = "true";
 				break;
 
 			case 'u':
@@ -1375,11 +1393,7 @@ uci::Engine::sendHashSize()
 void
 uci::Engine::sendNumberOfVariations()
 {
-#if 0
 	sendOption("MultiPV", ::toStr(numVariations()));
-#else
-	send("setoption name MultiPV value " + ::toStr(numVariations()));
-#endif
 }
 
 

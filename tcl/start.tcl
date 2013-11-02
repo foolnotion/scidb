@@ -394,11 +394,11 @@ set SelectionOwnerDidntRespond   "Timeout during drop action: selection owner di
 set Extensions		{.sci .si4 .si3 .cbh .cbf .CBF .pgn .PGN .zip}
 set clipbaseName	Clipbase
 
-set ShiftMask		[::scidb::tk::misc shiftMask?]
-set LockMask		[::scidb::tk::misc lockMask?]
-set ControlMask	[::scidb::tk::misc controlMask?]
-set AltMask			[::scidb::tk::misc altMask?]
-set KeyStateMask	[expr {$ShiftMask | $LockMask | $ControlMask | $AltMask}]
+set shiftMask		[::scidb::tk::misc shiftMask?]
+set lockMask		[::scidb::tk::misc lockMask?]
+set controlMask	[::scidb::tk::misc controlMask?]
+set altMask			[::scidb::tk::misc altMask?]
+set keyStateMask	[expr {$shiftMask | $lockMask | $controlMask | $altMask}]
 
 
 proc databaseName {base {withExtension 1}} {
@@ -453,22 +453,22 @@ proc intToChar {n} {
 proc doAccelCmd {accel keyState cmd} {
 	switch -glob -- $accel {
 		Alt-* {
-			variable AltMask
-			if {!($keyState & $AltMask)} { return } 
+			variable altMask
+			if {!($keyState & $altMask)} { return } 
 		}
 
 		Ctrl-* {
-			variable ControlMask
-			if {!($keyState & $ControlMask)} { return }
+			variable controlMask
+			if {!($keyState & $controlMask)} { return }
 		}
 
 		default {
-			variable ShiftMask
-			variable LockMask
-			variable KeyStateMask
+			variable shiftMask
+			variable lockMask
+			variable keyStateMask
 
-			set keyState [expr {$keyState & $KeyStateMask}]
-			if {($keyState & ($ShiftMask | $LockMask)) != $keyState} { return }
+			set keyState [expr {$keyState & $keyStateMask}]
+			if {($keyState & ($shiftMask | $lockMask)) != $keyState} { return }
 		}
 	}
 
@@ -477,20 +477,20 @@ proc doAccelCmd {accel keyState cmd} {
 
 
 proc shiftIsHeldDown? {state} {
-	variable ShiftMask
-	return [expr {($state & $ShiftMask) != 0}]
+	variable shiftMask
+	return [expr {($state & $shiftMask) != 0}]
 }
 
 
 proc altIsHeldDown? {state} {
-	variable AltMask
-	return [expr {($state & $AltMask) != 0}]
+	variable altMask
+	return [expr {($state & $altMask) != 0}]
 }
 
 
 proc shiftIsLocked? {state} {
-	variable LockMask
-	return [expr {($state & $LockMask) != 0}]
+	variable lockMask
+	return [expr {($state & $lockMask) != 0}]
 }
 
 

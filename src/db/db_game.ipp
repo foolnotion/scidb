@@ -67,9 +67,9 @@ Game::hasMoveInfo(unsigned moveInfoTypes) const
 
 inline
 void
-Game::getNextMoves(StringList& result, unsigned flags) const
+Game::getNextMoves(StringList& result, move::Notation form, unsigned flags) const
 {
-	const_cast<Game*>(this)->getMoves(result, flags);
+	const_cast<Game*>(this)->getMoves(result, flags, form);
 }
 
 

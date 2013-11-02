@@ -293,6 +293,7 @@ proc verify {parent position number} {
 	set sink [lindex [::scidb::game::link? $position] 0]
 	if {$sink eq $scratchbaseName && ![::scidb::game::verify $position]} {
 		set msg [format $mc::ReallyReplaceGame $number]
+		set detail [format $mc::ReallyReplaceGameDetail $number]
 		return [::dialog::question -parent $parent -message $msg -detail $detail -default no]
 	}
 

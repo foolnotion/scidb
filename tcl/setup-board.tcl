@@ -236,7 +236,6 @@ proc open {parent} {
 	set bottom [ttk::frame $top.bottom]
 	set edge 20
 
-#	set selectbg $::board::square::style(hilite,selected)
 	set selectbg [::colors::lookup theme,selectbackground]
 	set activebg [::colors::lookup theme,activebackground]
 
@@ -682,6 +681,14 @@ proc open {parent} {
 		incr x $squareSize
 	}
 
+	set c [::board::diagram::canvas $board]
+	if {[tk windowingsystem] eq "x11"} {
+		bind $c <Button-4> [namespace code [list NextPiece $::util::shiftMask 1]]
+		bind $c <Button-5> [namespace code [list NextPiece 0 1]]
+	} else {
+		bind $c <MouseWheel> [namespace code [list NextPiece [expr {%D < 0 ? $::util::shiftMask : 0}] 1]]
+	}
+
 	# panel ###################################################
 	set panel [ttk::frame $top.panel]
 	set row 1
@@ -950,7 +957,7 @@ proc AnalyseFen {fen {cmd none}} {
 }
 
 
-proc NextPiece {state} {
+proc NextPiece {state {wrap 0}} {
 	variable NextPiece
 	variable PrevPiece
 	variable Vars
@@ -963,7 +970,10 @@ proc NextPiece {state} {
 		set Vars(piece) $PrevPiece($Vars(piece))
 		set Vars(piece:memo) $Vars(piece)
 		if {[string match *. $Vars(piece)]} {
-			if {$Vars(variant) in {Crazyhouse Bughouse}} {
+			if {$wrap} {
+				set Vars(piece) $PrevPiece($Vars(piece))
+				ChangeColor
+			} elseif {$Vars(variant) in {Crazyhouse Bughouse}} {
 				set Vars(piece) .
 			} else {
 				set Vars(piece) $PrevPiece($Vars(piece))
@@ -973,7 +983,10 @@ proc NextPiece {state} {
 		set Vars(piece) $NextPiece($Vars(piece))
 		set Vars(piece:memo) $Vars(piece)
 		if {[string match *. $Vars(piece)]} {
-			if {$Vars(variant) in {Crazyhouse Bughouse}} {
+			if {$wrap} {
+				set Vars(piece) $NextPiece($Vars(piece))
+				ChangeColor
+			} elseif {$Vars(variant) in {Crazyhouse Bughouse}} {
 				set Vars(piece) .
 			} else {
 				set Vars(piece) $NextPiece($Vars(piece))

@@ -75,7 +75,9 @@ inline void Engine::Concrete::setMate(unsigned no, int numMoves)	{ m_engine->set
 inline void Engine::Concrete::setDepth(unsigned depth)				{ m_engine->setDepth(depth); }
 inline void Engine::Concrete::setSelectiveDepth(unsigned depth)	{ m_engine->setSelectiveDepth(depth); }
 inline void Engine::Concrete::setTime(double time)						{ m_engine->setTime(time); }
+inline void Engine::Concrete::setTBHits(unsigned hits)				{ m_engine->setTBHits(hits); }
 inline void Engine::Concrete::setNodes(unsigned nodes)				{ m_engine->setNodes(nodes); }
+inline void Engine::Concrete::setNPS(unsigned nps)						{ m_engine->setNPS(nps); }
 
 inline void Engine::Concrete::updatePvInfo(unsigned line)			{ m_engine->updatePvInfo(line); }
 inline void Engine::Concrete::updateCurrMove()							{ m_engine->updateCurrMove(); }
@@ -349,7 +351,9 @@ inline int Engine::shortestMate() const							{ return m_shortestMate; }
 inline unsigned Engine::depth() const								{ return m_depth; }
 inline unsigned Engine::selectiveDepth() const					{ return m_selDepth; }
 inline double Engine::time() const									{ return m_time; }
+inline unsigned Engine::tbhits() const								{ return m_tbhits; }
 inline unsigned Engine::nodes() const								{ return m_nodes; }
+inline unsigned Engine::nps() const									{ return m_nps; }
 inline db::Board const& Engine::currentBoard() const			{ return m_engine->currentBoard(); }
 inline db::Move const& Engine::bestMove() const					{ return m_bestMove; }
 inline unsigned Engine::currentMoveNumber() const				{ return m_currMoveNumber; }
@@ -380,7 +384,9 @@ inline Engine::Options const& Engine::options() const			{ return m_options; }
 inline void Engine::setDepth(unsigned depth)						{ m_depth = depth; }
 inline void Engine::setSelectiveDepth(unsigned depth)			{ m_selDepth = depth; }
 inline void Engine::setTime(double time)							{ m_time = time; }
+inline void Engine::setTBHits(unsigned hits)						{ m_tbhits = hits; }
 inline void Engine::setNodes(unsigned nodes)						{ m_nodes = nodes; }
+inline void Engine::setNPS(unsigned nps)							{ m_nodes = nps; }
 inline void Engine::setAuthor(mstl::string const& name)		{ m_author = name; }
 inline void Engine::setElo(unsigned elo)							{ m_elo = elo; }
 inline void Engine::setPonder(db::Move const& move)			{ m_ponder = move; }

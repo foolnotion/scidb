@@ -589,8 +589,8 @@ proc ApplyOptions {context position close} {
 	::font::registerFigurineFonts $context
 	::font::registerSymbolFonts $context
 
-	set Options(show:opening) $show:opening
-	set Options(show:result) $show:result
+	set Options(show:opening) ${show:opening}
+	set Options(show:result) ${show:result}
 	foreach cxt $ContextList { ::pgn::${cxt}::refresh yes }
 
 	if {$close} {

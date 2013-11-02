@@ -316,6 +316,10 @@ proc releaseSquare {x y state} {
 	set dragged [::board::diagram::isDragged? $board]
 	set square [::board::diagram::getSquare $board $x $y]
 
+	if {$dragged} {
+		::board::diagram::finishDrag $board
+	}
+
 	if {$hilite(show-suggested) || $square != $Square(selected)} {
 		set Square(selected) -1
 	}

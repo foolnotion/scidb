@@ -511,10 +511,11 @@ proc finishDrag {w} {
 	if {$Board(drag:active)} {
 		if {$Board(drag:square) != -1} {
 			set sq [getSquare $w $Board(pointer:x) $Board(pointer:y)]
-			$w.c coords piece:$Board(drag:square) {*}[$w.c coords square:$sq]
+			$w.c coords piece:$sq {*}[$w.c coords square:$sq]
 		}
 
-		foreach t $Board(targets) { $t delete drag-piece }
+		foreach t $Board(targets) { $t delete drag-target }
+		$w.c dtag piece:$Board(drag:square) drag-target
 	}
 }
 
@@ -541,7 +542,8 @@ proc setDragSquare {w {sq -1}} {
 	set Board(drag:square) $sq
 	set Board(drag:active) 0
 
-	foreach t $Board(targets) { $t delete drag-piece }
+	foreach t $Board(targets) { $t delete drag-target }
+	$w.c dtag drag-target drag-target
 }
 
 
@@ -578,13 +580,13 @@ proc dragPiece {w x y} {
 		lassign [$w.c coords square:$sq] x0 y0
 		if {abs($x0 - $xc) > 5 || abs($y0 - $yc) > 5} {
 			set Board(drag:active) 1
+			$w.c addtag drag-target withtag piece:$sq
 
 			if {[llength $Board(targets)]} {
 				set piece [piece $w $sq]
 				set img photo_Piece($piece,$Board(size))
 				foreach t $Board(targets) {
-					$t create image 0 0 -image $img -tag drag-piece -anchor center
-					$t raise drag-piece
+					$t create image 0 0 -image $img -tag drag-target -anchor center
 				}
 			}
 		}
@@ -601,12 +603,13 @@ proc dragPiece {w x y} {
 	set y0 [expr {$yc - $dy}]
 
 	$w.c coords piece:$sq $x0 $y0
+	$w.c raise drag-target
 
 	if {[llength $Board(targets)]} {
 		foreach t $Board(targets) {
 			set x1 [expr {$x - [winfo rootx $t] - $dx}]
 			set y1 [expr {$y - [winfo rooty $t] - $dy}]
-			$t coords drag-piece $x1 $y1
+			$t coords drag-target $x1 $y1
 		}
 	}
 }

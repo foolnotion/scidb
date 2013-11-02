@@ -233,7 +233,9 @@ public:
 		void setDepth(unsigned depth);
 		void setSelectiveDepth(unsigned depth);
 		void setTime(double time);
+		void setTBHits(unsigned hits);
 		void setNodes(unsigned nodes);
+		void setNPS(unsigned nps);
 		unsigned setVariation(unsigned no, db::MoveList const& moves);
 		void setCurrentMove(unsigned number, unsigned moveCount, db::Move const& move);
 		void setHashFullness(unsigned fullness);
@@ -331,7 +333,9 @@ public:
 	unsigned depth() const;
 	unsigned selectiveDepth() const;
 	double time() const;
+	unsigned tbhits() const;
 	unsigned nodes() const;
+	unsigned nps() const;
 	db::MoveList const& variation(unsigned no) const;
 	db::Board const& currentBoard() const;
 	db::Move const& bestMove() const;
@@ -462,7 +466,9 @@ protected:
 	void setDepth(unsigned depth);				// search depth
 	void setSelectiveDepth(unsigned depth);	// selective search depth
 	void setTime(double time);						// search time in seconds (.e.g. 10.28 seconds)
+	void setTBHits(unsigned hits);				// table base hits
 	void setNodes(unsigned nodes);				// nodes searched
+	void setNPS(unsigned nps);						// nodes searched per second
 	unsigned setVariation(unsigned no, db::MoveList const& moves);
 	void setCurrentMove(unsigned number, unsigned moveCount, db::Move const& move);
 	void setHashFullness(unsigned fullness);
@@ -576,6 +582,8 @@ private:
 	unsigned				m_selDepth;
 	double				m_time;
 	unsigned				m_nodes;
+	unsigned				m_nps;
+	unsigned				m_tbhits;
 	bool					m_active;
 	bool					m_probe;
 	bool					m_probeAnalyze;

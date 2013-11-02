@@ -56,13 +56,13 @@ static char const* CmdGuessNext		= "::scidb::pos::guessNext";
 static char const* CmdIdn				= "::scidb::pos::idn";
 static char const* CmdInHand			= "::scidb::pos::inHand?";
 static char const* CmdLegal			= "::scidb::pos::legal?";
+static char const* CmdNextMoves		= "::scidb::pos::nextMoves";
 static char const* CmdPromotion		= "::scidb::pos::promotion?";
 static char const* CmdSan				= "::scidb::pos::san";
 static char const* CmdSearchDepth	= "::scidb::pos::searchDepth";
 static char const* CmdSetup			= "::scidb::pos::setup";
 static char const* CmdStm				= "::scidb::pos::stm";
 static char const* CmdValid			= "::scidb::pos::valid?";
-static char const* CmdVariations		= "::scidb::pos::variations";
 
 static Square		m_bestSquareCache[64];
 static Move			m_bestMoveCache[64];
@@ -252,11 +252,12 @@ cmdStm(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 
 static int
-cmdVariations(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+cmdNextMoves(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	Tcl_Obj* result = Tcl_NewListObj(0, 0);
 
-	Game const& game = Scidb->game();
+	Game const&		game	= Scidb->game();
+	move::Notation	style	= game.moveStyle();
 
 	if (game.subVariationCount() > 0)
 	{
@@ -265,7 +266,7 @@ cmdVariations(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			mstl::string	san;
 			Move				move(i == -1 ? game.nextMove() : game.nextMove(i));
 
-			move.printSan(san, protocol::Scidb, encoding::Utf8);
+			move.printForDisplay(san, style);
 
 			Tcl_Obj* objs[3];
 			objs[0] = Tcl_NewStringObj(san, san.size());
@@ -638,13 +639,13 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdIdn,				cmdIdn);
 	createCommand(ti, CmdInHand,			cmdInHand);
 	createCommand(ti, CmdLegal,			cmdLegal);
+	createCommand(ti, CmdNextMoves,		cmdNextMoves);
 	createCommand(ti, CmdPromotion,		cmdPromotion);
 	createCommand(ti, CmdSan,				cmdSan);
 	createCommand(ti, CmdSearchDepth,	cmdSearchDepth);
 	createCommand(ti, CmdSetup,			cmdSetup);
 	createCommand(ti, CmdStm,				cmdStm);
 	createCommand(ti, CmdValid,			cmdValid);
-	createCommand(ti, CmdVariations,		cmdVariations);
 }
 
 } // namespace game

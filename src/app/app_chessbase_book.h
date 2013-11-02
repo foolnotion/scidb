@@ -29,7 +29,10 @@
 
 #include "app_book.h"
 
+#include "db_move.h"
+
 #include "u_byte_stream.h"
+#include "u_rkiss.h"
 
 namespace sys { namespace file { class Mapping; } }
 
@@ -49,16 +52,17 @@ public:
 
 	Format format() const override;
 
-	db::Move probeNextMove(db::Board const& position, db::variant::Type variant) override;
+	db::Move probeNextMove(db::Board const& position, db::variant::Type variant, Choice choice) override;
 	bool probePosition(db::Board const& position, db::variant::Type variant, Entry& result) override;
 
 	bool remove(db::Board const& position, db::variant::Type variant) override;
 	bool modify(db::Board const& position, db::variant::Type variant, Entry const& entry) override;
 	bool add(db::Board const& position, db::variant::Type variant, Entry const& entry) override;
 
-private:
-
 	class CTGEntry;
+	class CTGSignature;
+
+private:
 
 	typedef ::sys::file::Mapping Mapping;
 	typedef ::util::ByteStream ByteStream;
@@ -69,13 +73,21 @@ private:
 		unsigned upper;
 	};
 
+	bool getEntry(db::Board const& pos, CTGEntry& entry);
+	bool lookupEntry(unsigned pageIndex, CTGSignature const& sig, CTGEntry& entry);
+	bool fillEntry(uint8_t const* data, CTGEntry& entry);
+
 	int32_t getPageIndex(unsigned hash);
+
+	db::Move pickMove(db::Board const& pos, CTGEntry& entry, Choice choice);
+	uint64_t moveWeight(db::Board const& pos, db::Move move, uint8_t annotation, bool& recommended);
 
 	Mapping*		m_ctgMapping;
 	Mapping*		m_ctoMapping;
 	ByteStream	m_ctgStrm;
 	ByteStream	m_ctoStrm;
 	PageBounds	m_pageBounds;
+	util::RKiss	m_rand;
 };
 
 } // namespace chessbase

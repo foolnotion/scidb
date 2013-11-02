@@ -398,6 +398,8 @@ public:
 	Square castlingRookSquare(castling::Index index) const;
 	/// Return square of king.
 	Square kingSquare(color::ID color) const;
+	/// Return square of king.
+	Square kingSquare() const;
 	/// Return whether the move is valid
 	bool checkMove(Move const& move,
 						variant::Type variant,

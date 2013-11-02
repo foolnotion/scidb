@@ -1842,19 +1842,25 @@ cmdNext(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	if (objc < 2)
 		return usage(::CmdNext, nullptr, nullptr, subcommands, args);
 
-	unsigned		flags			= 0;	// satisifies the compiler
-	char const*	lastOption	= stringFromObj(objc, objv, objc - 1);
-	int			index			= tcl::uniqueMatchObj(objv[1], subcommands);
+	unsigned		flags				= 0;	// satisifies the compiler
+	char const*	lastOption		= stringFromObj(objc, objv, objc - 1);
+	int			index				= tcl::uniqueMatchObj(objv[1], subcommands);
+	bool			useGameStyle	= false;
 
-	if (equal(lastOption, "-ascii"))
-		flags = Game::ExportFormat;
-	else if (equal(lastOption, "-unicode"))
-		flags = Game::MoveOnly;
-	else if (lastOption[0] == '-')
-		return error(CmdNext, nullptr, nullptr, "unknown option %s", lastOption);
+	while (objc >= 2 && lastOption[0] == '-' && !::isdigit(lastOption[1]))
+	{
+		if (equal(lastOption, "-ascii"))
+			flags = Game::ExportFormat;
+		else if (equal(lastOption, "-unicode"))
+			flags = Game::MoveOnly;
+		else if (equal(lastOption, "-usegamestyle"))
+			useGameStyle = true;
+		else
+			return error(CmdNext, nullptr, nullptr, "unknown option %s", lastOption);
 
-	if (lastOption[0] == '-' && --objc < 2)
-		return usage(::CmdNext, nullptr, nullptr, subcommands, args);
+		--objc;
+		lastOption = stringFromObj(objc, objv, objc - 1);
+	}
 
 	if (index == Cmd_Move)
 	{
@@ -1866,14 +1872,27 @@ cmdNext(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		if (index != Cmd_Keys && index != Cmd_Moves)
 			return usage(::CmdNext, nullptr, nullptr, subcommands, args);
 
-		int position = objc < 3 ? -1 : intFromObj(objc, objv, 2);
+		int position = -1;
+
+		if (objc > 2 && ::isdigit(*Tcl_GetString(objv[2])))
+			position = intFromObj(objc, objv, 2);
 
 		Game::StringList result;
 
 		switch (index)
 		{
-			case Cmd_Keys:		Scidb->game(position).getNextKeys(result); break;
-			case Cmd_Moves:	Scidb->game(position).getNextMoves(result, flags); break;
+			case Cmd_Keys:
+				Scidb->game(position).getNextKeys(result);
+				break;
+
+			case Cmd_Moves:
+			{
+				move::Notation style = move::ShortAlgebraic;
+				if (useGameStyle)
+					style = Scidb->game(position).moveStyle();
+				Scidb->game(position).getNextMoves(result, style, flags);
+				break;
+			}
 		}
 
 		Tcl_Obj* objs[result.size()];

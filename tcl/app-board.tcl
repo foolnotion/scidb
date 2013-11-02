@@ -304,8 +304,8 @@ proc build {w width height} {
 	bind <Right>						[namespace code { Goto +1 }]
 	bind <Prior>						[namespace code { Goto -10 }]
 	bind <Next>							[namespace code { Goto +10 }]
-	bind <Home>							[namespace code { Goto start }]]
-	bind <End>							[namespace code { Goto end }]]
+	bind <Home>							[namespace code { Goto start }]
+	bind <End>							[namespace code { Goto end }]
 	bind <Down>							[namespace code { Goto down }]
 	bind <Up>							[namespace code { Goto up }]
 	bind <Control-Down>				[namespace code [list LoadGame(any) next]]
@@ -324,10 +324,19 @@ proc build {w width height} {
 	bind <BackSpace>					[namespace parent]::pgn::undoLastMove
 	bind <Delete>						[list ::scidb::game::strip truncate]
 	bind <ButtonPress-3>				[namespace code { PopupMenu %W }]
-	bind <Alt-KeyPress-s>			[list ::application::pgn::showDiagram %W %K %s]
-	bind <Alt-KeyPress-S>			[list ::application::pgn::showDiagram %W %K %s]
 	bind <<LanguageChanged>>		[namespace code LanguageChanged]
 	bind <F1>							[list ::help::open .application]
+
+	# the Alt-Key binding isn't working, so do it by hand
+	set cmd [list tk::AltKeyInDialog [winfo toplevel $w] %A]
+	for {set i 0} {$i < 26} {incr i} {
+		set c [::util::intToChar $i]
+		bind <Alt-Key-$c> $cmd
+		bind <Alt-Key-[string tolower $c]> $cmd
+	}
+
+	bind <Alt-Key-s> [list ::application::pgn::showDiagram %W %K %s]
+	bind <Alt-Key-S> [list ::application::pgn::showDiagram %W %K %s]
 
 	# for sliding pane
 	foreach key {Escape Return Shift-Left Shift-Right} { bind <$key> {} }
@@ -536,6 +545,17 @@ proc FilterKey {key state cmd} {
 		1 {
 			set Vars(select-var-is-pending) 0
 		}
+
+		2 {
+			set Vars(select-var-is-pending) 0
+			if {[llength $cmd]} {
+				if {[string match {* Goto +1 *} $cmd]} {
+					goto +1
+				} else {
+					{*}$cmd
+				}
+			}
+		}
 	}
 }
 
@@ -548,7 +568,7 @@ proc Goto {step} {
 	if {	$step == +1
 		&& !$Vars(select-var-is-pending)
 		&& ([::variation::use?] || $Options(variations:arrows))
-		&& [llength [set vars [::scidb::pos::variations]]]} {
+		&& [llength [set vars [::scidb::pos::nextMoves]]] > 1} {
 		set rvars [list {*}[lrange $vars 1 end] [lindex $vars 0]]
 		if {$Options(variations:arrows)} {
 			# draw main line last, a variation should not overlap the main line
@@ -564,7 +584,7 @@ proc Goto {step} {
 		}
 		if {[::variation::use?]} {
 			set moves {}
-			foreach entry $vars { lappend moves [lindex $entry 0] }
+			foreach entry $vars { lappend moves [::font::translate [lindex $entry 0]] }
 			::variation::show $moves
 		}
 	} else {

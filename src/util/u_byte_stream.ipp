@@ -32,6 +32,9 @@ inline ByteStream::uint48_t::uint48_t(uint64_t n) : i(n) {}
 inline ByteStream::uint48_t::operator uint64_t () const { return i; }
 inline ByteStream::uint48_t& ByteStream::uint48_t::operator=(uint64_t n) { i = n; return *this; }
 
+inline uint32_t ByteStream::uint24_t::operator*() const { return i; }
+inline uint64_t ByteStream::uint48_t::operator*() const { return i; }
+
 inline bool ByteStream::isEmpty() const			{ return m_getp == m_endp; }
 inline bool ByteStream::isFull() const				{ return m_putp == m_endp; }
 inline unsigned ByteStream::capacity() const		{ return m_endp - m_base; }

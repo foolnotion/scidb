@@ -1665,7 +1665,7 @@ Game::nextMove(unsigned varno) const
 {
 	if (!isBeforeLineEnd() || varno >= m_currentNode->next()->variationCount())
 		return Move::empty();
-		
+
 	return m_currentNode->next()->variation(varno)->next()->move();
 }
 
@@ -2105,7 +2105,7 @@ Game::moveTo(mstl::string const& key)
 
 
 void
-Game::getMoves(StringList& result, unsigned flags)
+Game::getMoves(StringList& result, unsigned flags, move::Notation form)
 {
 	result.clear();
 
@@ -2114,7 +2114,7 @@ Game::getMoves(StringList& result, unsigned flags)
 
 	forward();
 	result.push_back();
-	printMove(result.back(), flags);
+	printMove(result.back(), flags, form);
 
 	for (unsigned i = 0; i < m_currentNode->variationCount(); ++i)
 	{

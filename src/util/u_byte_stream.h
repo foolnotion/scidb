@@ -39,17 +39,19 @@ public:
 
 	struct uint24_t
 	{
-		uint24_t(uint32_t n);
+		uint24_t(uint32_t n = 0);
 		uint24_t& operator=(uint32_t n);
 		operator uint32_t () const;
+		uint32_t operator*() const;
 		uint32_t i;
 	};
 
 	struct uint48_t
 	{
-		uint48_t(uint64_t n);
+		uint48_t(uint64_t n = 0);
 		uint48_t& operator=(uint64_t n);
 		operator uint64_t () const;
+		uint64_t operator*() const;
 		uint64_t i;
 	};
 
