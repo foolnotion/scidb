@@ -362,8 +362,7 @@ computeSignature(Board const& position, CTGSignature& sig)
 	unsigned	bitLength	= 0;
 	uint8_t	bits			= 0;
 
-	color::ID sideToMove	= position.sideToMove();
-	color::ID notToMove	= position.notToMove();
+	color::ID sideToMove = position.sideToMove();
 
 	if (Rights castlingRights = position.castlingRights(sideToMove))
 	{
@@ -372,6 +371,7 @@ computeSignature(Board const& position, CTGSignature& sig)
 		if (castlingRights & queenSide(sideToMove))
 			bits |= 8;
 
+		color::ID notToMove = position.notToMove();
 		castlingRights = position.castlingRights(notToMove);
 
 		if (castlingRights & kingSide(notToMove))
@@ -676,7 +676,7 @@ Book::Format Book::format() const	{ return ChessBase; }
 
 
 Move
-Book::probeNextMove(::db::Board const& position, variant::Type variant, Choice choice)
+Book::probeMove(::db::Board const& position, variant::Type variant, Choice choice)
 {
 	Move move;
 
@@ -871,11 +871,9 @@ Book::pickMove(Board const& position, CTGEntry& entry, Choice choice)
 	if (entry.numMoves == 0)
 		return Move();
 
-	Move		moves[128];
-	uint64_t	weights[128];
-
+	uint64_t	sum			= 0;
 	uint64_t	bestWeight	= 0;
-	unsigned	used			= 0;
+	Move		bestMove;
 
 	for (unsigned i = 0; i < entry.numMoves; ++i)
 	{
@@ -886,33 +884,40 @@ Book::pickMove(Board const& position, CTGEntry& entry, Choice choice)
 
 			if (recommended)
 			{
-				if (weight > bestWeight)
+				sum += weight;
+
+				switch (choice)
 				{
-					moves[used] = move;
-					weights[used++] = weight;
-					bestWeight = weight;
+					case BestFirst:
+						if (weight > bestWeight)
+						{
+							bestMove = move;
+							bestWeight = weight;
+						}
+						break;
+
+					case Best:
+						if (	weight > bestWeight
+							|| (weight == bestWeight && sum && m_rkiss.rand32(sum) < weight))
+						{
+							bestMove = move;
+							bestWeight = weight;
+						}
+						break;
+
+					case Random:
+						if (sum && m_rkiss.rand32(sum) < weight)
+						{
+							bestMove = move;
+							bestWeight = weight;
+						}
+						break;
 				}
 			}
 		}
 	}
 
-	if (used == 0)
-		return Move();
-	
-	unsigned n = 0;
-
-	for (unsigned i = 0; i < used; ++i)
-	{
-		if (bestWeight == weights[i])
-		{
-			if (choice == First)
-				return moves[i];
-
-			moves[n++] = moves[i];
-		}
-	}
-
-	return moves[n == 1 ? 0 : m_rand.rand32(n)];
+	return bestMove;
 }
 
 

@@ -52,6 +52,8 @@
 using namespace db;
 using namespace db::board;
 using namespace db::piece;
+using namespace db::color;
+using namespace db::sq;
 using namespace app::polyglot;
 
 
@@ -68,7 +70,7 @@ readList(mstl::istream& strm, mstl::string s)
 
 	if (c != '{')
 		return false;
-	
+
 	unsigned level = 1;
 
 	while (level > 0)
@@ -93,12 +95,12 @@ getList(mstl::string& result, char const*& s)
 {
 	while (::isspace(*s))
 		++s;
-	
+
 	if (*s != '{')
 		return false;
-	
+
 	unsigned level = 1;
-	
+
 	while (level > 0)
 	{
 		if (*++s == '\0')
@@ -122,10 +124,10 @@ getToken(mstl::string& result, char const*& s)
 {
 	while (::isspace(*s))
 		++s;
-	
+
 	if (*s == '{')
 		return getList(result, s);
-	
+
 	while (!::isspace(*s) && *s != '{' && *s != '}')
 	{
 		if (*s == '\0')
@@ -358,7 +360,7 @@ static uint64_t const* const RandomHolding		= Random64 + 781;
 static uint64_t const* const RandomThreeCheck	= Random64 + 791;
 
 
-inline static unsigned mul64(Byte b)     { return unsigned(b) << 6; }
+inline static unsigned mul128(Byte b)    { return unsigned(b) << 7; }
 inline static unsigned div16(unsigned x) { return x >> 4; }
 inline static unsigned mul16(unsigned x) { return x << 4; }
 inline static unsigned div2 (unsigned x) { return x >> 1; }
@@ -460,36 +462,21 @@ hash(Board const& board, variant::Type variant)
 					&& BlackPawn	== 14,
 					"piece enumeration has changed");
 
-	static_assert(sq::a1 == 0 && sq::h8 == 63, "square enumeration has changed");
-
-	static Byte const EncodePiece[16] =
-	{
-		 0, // (unused)
-		11, // WhiteKing
-		 9, // WhiteQueen
-		 7, // WhiteRook
-		 5, // WhiteBishop
-		 3, // WhiteKnight
-		 1, // WhitePawn
-		 0, // (unused)
-		 0, // (unused)
-		10, // BlackKing
-		 8, // BlackQueen
-		 6, // BlackRook
-		 4, // BlackBishop
-		 2, // BlackKnight
-		 0, // BlackPawn
-		 0, // (unused)
-	};
+	static_assert(a1 == 0 && h8 == 63, "square enumeration has changed");
 
 	uint64_t key = 0;
+	uint64_t pieces = board.pieces();
 
-	for (Square sq = 0; sq < 64; ++sq)
+	while (pieces)
 	{
-		piece::ID p = board.pieceAt(sq);
+		Square		sq = board::lsbClear(pieces);
+		piece::Type	p	= board.piece(sq);
+		color::ID	c	= board.color(sq);
 
-		if (p != Empty)
-			key ^= RandomPiece[mul64(EncodePiece[p & 0xf]) + sq];
+		static_assert(K == 1 && Q == 2 && R == 3 && B == 4 && N == 5 && P == 6, "piece values changed");
+		static_assert(White == 0 && Black == 1, "color values changed");
+
+		key ^= RandomPiece[mul128(6 - p + (c ^ 1)) + sq];
 	}
 
 	castling::Rights castling = board.castlingRights();
@@ -505,8 +492,8 @@ hash(Board const& board, variant::Type variant)
 
 	Square ep = board.enPassantSquare();
 
-	if (ep != sq::Null)
-		key ^= RandomEnPassant[sq::fyle(ep) & 0x7];
+	if (ep != Null)
+		key ^= RandomEnPassant[fyle(ep) & 0x7];
 
 	if (board.whiteToMove())
 		key ^= *RandomTurn;
@@ -521,7 +508,7 @@ hash(Board const& board, variant::Type variant)
 		// Furthermore the move decoding for dropping moves is a kludge
 		// (hence not a standard).
 
-		material::Count white = board.holding(color::White);
+		material::Count white = board.holding(White);
 
 		if (white.pawn)	key ^= mstl::bf::rotate_left(RandomHolding[1], white.pawn   - 1);
 		if (white.knight)	key ^= mstl::bf::rotate_left(RandomHolding[3], white.knight - 1);
@@ -529,7 +516,7 @@ hash(Board const& board, variant::Type variant)
 		if (white.rook)	key ^= mstl::bf::rotate_left(RandomHolding[7], white.rook   - 1);
 		if (white.queen)	key ^= mstl::bf::rotate_left(RandomHolding[9], white.queen  - 1);
 
-		material::Count black = board.holding(color::Black);
+		material::Count black = board.holding(Black);
 
 		if (black.pawn)	key ^= mstl::bf::rotate_left(RandomHolding[0], black.pawn   - 1);
 		if (black.knight)	key ^= mstl::bf::rotate_left(RandomHolding[2], black.knight - 1);
@@ -546,10 +533,10 @@ hash(Board const& board, variant::Type variant)
 		// White has already given two checks; the strategy is significantly
 		// depending on the number of given checks.
 
-		if (board.checksGiven(color::White))
-			key ^= RandomThreeCheck[(board.checksGiven(color::White) - 1) & 0x3];
-		if (board.checksGiven(color::Black))
-			key ^= RandomThreeCheck[(board.checksGiven(color::Black) - 1) & 0x3];
+		if (board.checksGiven(White))
+			key ^= RandomThreeCheck[(board.checksGiven(White) - 1) & 0x3];
+		if (board.checksGiven(Black))
+			key ^= RandomThreeCheck[(board.checksGiven(Black) - 1) & 0x3];
 	}
 
 	return key;
@@ -580,10 +567,10 @@ decodeMove(Board const& board, uint16_t m, variant::Type variant)
 	// to==from must be a dropping move, where the dropped piece is given
 	// by the promotion field (quite easy).
 
-	Move move = board.makeMove(sq::make(sq::Fyle((m << 6) & 0x3),	// from fyle
-										sq::Rank((m << 9) & 0x3)),				// from rank
-										sq::make(sq::Fyle(m & 0x3),			// to fyle
-										sq::Rank((m << 3) & 0x3)),				// to rank
+	Move move = board.makeMove(make(Fyle((m << 6) & 0x3),				// from fyle
+										Rank((m << 9) & 0x3)),					// from rank
+										make(Fyle(m & 0x3),						// to fyle
+										Rank((m << 3) & 0x3)),					// to rank
 										DecodePromoted[(m << 12) & 0x3]);	// piece type
 
 	return board.isValidMove(move, variant, move::DontAllowIllegalMove) ? move : Move();
@@ -603,10 +590,10 @@ encodeMove(Move m)
 	// to King (in polyglot implementation).
 	static uint16_t EncodePromoted[8] = { 0, 5, 4, 3, 2, 1, 0, 0 };
 
-	return	uint16_t(sq::fyle(m.from()) << 6)
-			 | uint16_t(sq::rank(m.from()) << 9)
-			 | uint16_t(sq::fyle(m.to()))
-			 | uint16_t(sq::rank(m.to()) << 3)
+	return	uint16_t(fyle(m.from()) << 6)
+			 | uint16_t(rank(m.from()) << 9)
+			 | uint16_t(fyle(m.to()))
+			 | uint16_t(rank(m.to()) << 3)
 			 | uint16_t(EncodePromoted[m.capturedOrDropped()]);
 }
 #endif
@@ -652,7 +639,7 @@ Book::Book(mstl::string const& filename)
 	static bool doCheck = true;
 
 	if (doCheck)
-	{ 
+	{
 		::checkHashKeys();
 		doCheck = false;
 	}
@@ -670,6 +657,8 @@ Book::Book(mstl::string const& filename)
 		{
 			strm.seekg(0);
 			readScidMaskFile(strm);
+			m_format = Scidb;
+			return;
 		}
 	}
 
@@ -702,7 +691,7 @@ Book::Format Book::format() const	{ return m_format; }
 
 
 bool
-Book::isEmpty() const	
+Book::isEmpty() const
 {
 	return m_entryMap->used() == 0 && (!m_mapping || m_mapping->size() == 0);
 }
@@ -733,7 +722,6 @@ void
 Book::writeEntry()
 {
 	M_ASSERT(m_mapping);
-
 	m_current.write(m_mapping->address() + ::mul16(m_currentOffs));
 }
 
@@ -743,7 +731,7 @@ Book::findKey(uint64_t key)
 {
 	if (m_bookSize == 0)
 		return 0;
-	
+
 	unsigned left, right;
 
 	if (m_currentOffs >= m_bookSize)
@@ -786,7 +774,7 @@ Book::findKey(uint64_t key)
 
 
 Move
-Book::probeNextMove(Board const& position, variant::Type variant, Choice choice)
+Book::probeMove(Board const& position, variant::Type variant, Choice choice)
 {
 	uint64_t key = ::hash(position, variant);
 
@@ -796,36 +784,80 @@ Book::probeNextMove(Board const& position, variant::Type variant, Choice choice)
 		{
 			M_ASSERT(!e->items.empty());
 
-			unsigned index		= 0;
-			unsigned weight	= e->items.front().weight;
+			unsigned bestIndex	= 0;
+			unsigned bestWeight	= e->items.front().weight;
+			unsigned sum			= 0;
 
 			for (unsigned i = 1; i < e->items.size(); ++i)
 			{
-				if (e->items[i].weight > weight)
-					index = i;
+				unsigned weight = e->items[i].weight;
+
+				sum += weight;
+
+				switch (choice)
+				{
+					case BestFirst:
+						if (weight > bestWeight)
+							bestIndex = i;
+						break;
+
+					case Best:
+						if (	weight > bestWeight
+							|| (weight == bestWeight && sum && m_rkiss.rand32(sum) < weight))
+						{
+							bestIndex = i;
+						}
+						break;
+
+					case Random:
+						if (sum && m_rkiss.rand32(sum) < weight)
+							bestIndex = i;
+						break;
+			}
 			}
 
-			return decodeMove(position, e->items[index].move, variant);
+			return decodeMove(position, e->items[bestIndex].move, variant);
 		}
 	}
 
-	MyEntry  entry, e;
-	unsigned	offs = findKey(key);
+	unsigned offs = findKey(key);
 
 	if (offs == m_bookSize)
 		return Move();
 
-	unsigned weight = m_current.weight;
-
-	entry = m_current;
+	MyEntry	bestEntry(m_current), e;
+	unsigned	sum(0);
 
 	for (++offs; readEntry(offs, e) && e.key == key; ++offs)
 	{
-		if (e.weight > weight && e.move)
-			entry = e;
+		if (e.move)
+		{
+			sum += e.weight;
+
+			switch (choice)
+			{
+				case BestFirst:
+					if (e.weight > bestEntry.weight)
+						bestEntry = e;
+					break;
+
+				case Best:
+					if (	e.weight > bestEntry.weight
+						|| (e.weight == bestEntry.weight && sum && m_rkiss.rand32(sum) < e.weight))
+					{
+						bestEntry = e;
+					}
+					break;
+
+				case Random:
+					if (sum && m_rkiss.rand32(sum) < e.weight)
+						bestEntry = e;
+					break;
+			}
+		}
 	}
 
-	return decodeMove(position, entry.move, variant);
+	return decodeMove(position, bestEntry.move, variant);
 }
 
 
@@ -847,9 +879,9 @@ Book::probePosition(Board const& position, variant::Type variant, Entry& result)
 
 	if (offs == m_bookSize)
 		return false;
-	
+
 	MyEntry entry(m_current);
-	
+
 	do
 	{
 		if (entry.move)
@@ -931,10 +963,10 @@ Book::add(Board const& position, variant::Type variant, Entry const& entry)
 
 	if (offs >= 0)
 		return false;
-	
+
 	if (m_entryMap == 0)
 		m_entryMap = new Map(512);
-	
+
 	return m_entryMap->insert_unique(key, entry);
 }
 

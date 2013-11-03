@@ -43,7 +43,7 @@ public:
 	// Format Scidb is an extended Polyglot format (compatible)
 	enum Format { Polyglot, Scidb, ChessBase };
 	enum Colors { None, Green, Yellow, Blue, Red };
-	enum Choice	{ First, Random };
+	enum Choice	{ Best, BestFirst, Random };
 
 	struct Entry
 	{
@@ -115,9 +115,7 @@ public:
 	virtual Format format() const = 0;
 	mstl::string const& filename() const;
 
-	virtual db::Move probeNextMove(	db::Board const& position,
-												db::variant::Type variant,
-												Choice choice) = 0;
+	virtual db::Move probeMove(db::Board const& position, db::variant::Type variant, Choice choice) = 0;
 	virtual bool probePosition(db::Board const& position, db::variant::Type variant, Entry& result) = 0;
 
 	virtual bool remove(db::Board const& position, db::variant::Type variant);

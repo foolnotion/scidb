@@ -25,7 +25,6 @@ RKiss::rand32()
 	return rand64();
 }
 
-
 } // namespace util
 
 // vi:set ts=3 sw=3:

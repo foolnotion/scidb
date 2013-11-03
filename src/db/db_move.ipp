@@ -61,6 +61,13 @@ Move::prevCastlingRights() const
 	return Square((u >> Shift_CastlingRights) & Mask_CastlingRights);
 }
 
+inline
+Byte
+Move::prevKingHasMoved() const
+{
+	return Byte((u >> Shift_KingHasMoved) & Mask_KingHasMoved);
+}
+
 inline uint32_t Move::action() const					{ return (m >> Shift_Action) & Mask_Action; }
 inline uint32_t Move::removal() const					{ return (m >> Shift_Removal) & Mask_Removal; }
 inline uint32_t Move::data() const						{ return m; }
@@ -482,12 +489,14 @@ void
 Move::setUndo(	uint32_t halfMoves,
 					uint32_t epSquare,
 					uint32_t castlingRights,
+					uint32_t kingHasMoved,
 					uint32_t capturePromoted)
 {
 	u &= Clear_Undo;
 	u |=	(	(halfMoves & Mask_HalfMoveClock)
 			 | epSquare << Shift_EpSquare
 			 | castlingRights << Shift_CastlingRights
+			 | kingHasMoved << Shift_KingHasMoved
 			 | capturePromoted << Shift_CapturePromoted
 			 | uint32_t(Bit_Prepared)
 			) & uint32_t(Mask_Undo);

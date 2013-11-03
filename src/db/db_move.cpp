@@ -66,6 +66,7 @@ Move::transpose()
 		setUndo(	prevHalfMoves(),
 					epSquare,
 					castling::transpose(prevCastlingRights()),
+					prevKingHasMoved(),
 					prevCapturePromoted());
 	}
 }

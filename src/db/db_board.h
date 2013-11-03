@@ -263,6 +263,8 @@ public:
 
 	// Query
 
+	/// Return whether given square is occupied.
+	bool isOccupied(Square s) const;
 	/// Return true if this is an empty board.
 	bool isEmpty() const;
 	/// Return true if position is same, but don't consider side to move, castling rights and e.p. fyle
@@ -366,6 +368,8 @@ public:
 	piece::ID pieceAt(Square s) const;
 	/// Return piece type sitting at given square on the board (None if Null is given)
 	piece::Type piece(Square s) const;
+	/// Return color at given square on the board
+	color::ID color(Square s) const;
 	/// Return square where en passant capture may occur, or null square
 	Square enPassantSquare() const;
 	/// Returns the signature

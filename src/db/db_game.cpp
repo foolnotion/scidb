@@ -3758,9 +3758,9 @@ Game::historyIsLegal(Constraint constraint) const
 {
 	Board board(m_currentBoard);
 
-	MoveNode* succ = m_currentNode->next();
+	MoveNode const* succ = m_currentNode->next();
 
-	for (MoveNode* node = m_currentNode; node; succ = node, node = node->prev())
+	for (MoveNode const* node = m_currentNode; node; succ = node, node = node->prev())
 	{
 		if (!node->atLineStart() && !node->atLineEnd() && node->next() == succ)
 		{

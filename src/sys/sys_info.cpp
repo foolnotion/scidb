@@ -113,18 +113,21 @@ sys::info::memFree()
 int64_t
 sys::info::memAvail()
 {
+	// TODO: probably use better MemFree + Buffers + Inactive
+
 	int64_t free		= ::readProcInfo("MemFree:");
 	int64_t cached		= ::readProcInfo("Cached:");
+	int64_t buffers	= ::readProcInfo("Buffers:");
 
-	if (free <= 0 || cached <= 0)
+	if (free <= 0 || cached <= 0 || buffers <= 0)
 		return -1;
 
 	int64_t limit		= ::readProcInfo("CommitLimit:");
 
 	if (limit <= 0)
-		return free + cached;
+		return free + cached + buffers;
 
-	return mstl::min(limit, free + cached);
+	return mstl::min(limit, free + cached + buffers);
 }
 
 

@@ -5830,6 +5830,7 @@ Board::undoMove(Move const& m, variant::Type variant)
 
 			m_piece[from] = piece::King;
 			m_occupied = m_occupiedBy[White] | m_occupiedBy[Black];
+			m_kingHasMoved = m.prevKingHasMoved();
 			restoreCastlingRights(m.prevCastlingRights());
 			restoreStates(m);
 			swapToMove();
@@ -5934,6 +5935,7 @@ Board::undoMove(Move const& m, variant::Type variant)
 			m_occupiedR45 ^= MaskR45[to];
 			m_occupiedBy[sntm] ^= toMask;
 			m_occupied = m_occupiedBy[White] | m_occupiedBy[Black];
+			m_kingHasMoved = m.prevKingHasMoved();
 			restoreCastlingRights(m.prevCastlingRights());
 			restoreStates(m);
 			swapToMove();
@@ -6031,8 +6033,8 @@ Board::undoMove(Move const& m, variant::Type variant)
 	m_occupiedL45 ^= MaskL45[from];
 	m_occupiedR45 ^= MaskR45[from];
 	m_occupied = m_occupiedBy[White] | m_occupiedBy[Black];
+	m_kingHasMoved = m.prevKingHasMoved();
 	restoreCastlingRights(m.prevCastlingRights());
-
 	restoreStates(m);
 	swapToMove();
 	--m_plyNumber;

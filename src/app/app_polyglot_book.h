@@ -29,6 +29,8 @@
 
 #include "app_book.h"
 
+#include "u_rkiss.h"
+
 namespace sys  { namespace file { class Mapping; } }
 namespace mstl { template <typename Key, typename Value> class hash; }
 namespace mstl { class ifstream; }
@@ -51,7 +53,7 @@ public:
 
 	Format format() const override;
 
-	db::Move probeNextMove(db::Board const& position, db::variant::Type variant, Choice choice) override;
+	db::Move probeMove(db::Board const& position, db::variant::Type variant, Choice choice) override;
 	bool probePosition(db::Board const& position, db::variant::Type variant, Entry& result) override;
 
 	bool remove(db::Board const& position, db::variant::Type variant) override;
@@ -80,15 +82,16 @@ private:
 	unsigned findKey(uint64_t key);
 	void readScidMaskFile(mstl::ifstream& strm);
 
-	Format	m_format;
-	Mapping*	m_mapping;
-	Map*		m_entryMap;
-	unsigned	m_bookSize;
-	unsigned	m_currentOffs;
-	MyEntry	m_current;
-	bool		m_someRemoved;
-	bool		m_someModified;
-	unsigned	m_used;
+	Format			m_format;
+	Mapping*			m_mapping;
+	Map*				m_entryMap;
+	unsigned			m_bookSize;
+	unsigned			m_currentOffs;
+	MyEntry			m_current;
+	bool				m_someRemoved;
+	bool				m_someModified;
+	unsigned			m_used;
+	util::RKiss		m_rkiss;
 };
 
 } // namespace polyglot

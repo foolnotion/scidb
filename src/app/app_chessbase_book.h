@@ -52,7 +52,7 @@ public:
 
 	Format format() const override;
 
-	db::Move probeNextMove(db::Board const& position, db::variant::Type variant, Choice choice) override;
+	db::Move probeMove(db::Board const& position, db::variant::Type variant, Choice choice) override;
 	bool probePosition(db::Board const& position, db::variant::Type variant, Entry& result) override;
 
 	bool remove(db::Board const& position, db::variant::Type variant) override;
@@ -87,7 +87,7 @@ private:
 	ByteStream	m_ctgStrm;
 	ByteStream	m_ctoStrm;
 	PageBounds	m_pageBounds;
-	util::RKiss	m_rand;
+	util::RKiss	m_rkiss;
 };
 
 } // namespace chessbase

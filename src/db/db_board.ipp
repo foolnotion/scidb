@@ -50,6 +50,7 @@ inline bool Board::isEmpty() const					{ return m_hash == 0; }
 inline bool Board::whiteToMove() const				{ return color::isWhite(sideToMove()); }
 inline bool Board::blackToMove() const				{ return color::isBlack(sideToMove()); }
 inline bool Board::hasPartnerBoard() const		{ return m_partner != this; }
+inline bool Board::isOccupied(Square s) const	{ return m_occupied & (uint64_t(1) << s); }
 
 inline Square Board::enPassantSquare() const		{ return m_epSquare; }
 
@@ -119,6 +120,15 @@ Board::piece(Square s) const
 {
 	M_ASSERT(s <= sq::h8);
 	return piece::Type(m_piece[s]);
+}
+
+
+inline
+color::ID
+Board::color(Square s) const
+{
+	M_REQUIRE(isOccupied(s));
+	return color::ID(int(m_occupiedBy[color::Black] >> s) & 1);
 }
 
 
@@ -317,7 +327,7 @@ inline
 void
 Board::prepareUndo(Move& move) const
 {
-	move.setUndo(m_halfMoveClock, m_epSquare, m_castle, m_capturePromoted);
+	move.setUndo(m_halfMoveClock, m_epSquare, m_castle, m_kingHasMoved, m_capturePromoted);
 }
 
 
