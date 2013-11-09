@@ -55,6 +55,10 @@ public:
 	db::Move probeMove(db::Board const& position, db::variant::Type variant, Choice choice) override;
 	bool probePosition(db::Board const& position, db::variant::Type variant, Entry& result) override;
 
+	bool remove(db::Board const& position, db::variant::Type variant) override;
+	bool modify(db::Board const& position, db::variant::Type variant, Entry const& entry) override;
+	bool add(db::Board const& position, db::variant::Type variant, Entry const& entry) override;
+
 	class CTGEntry;
 	class CTGSignature;
 

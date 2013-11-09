@@ -182,14 +182,18 @@ struct ProcessSquares<false,false>
 	{
 		unsigned count = 0;
 
-		for (fyle = FyleA; fyle <= FyleH; ++fyle)
+		for (unsigned f = 0; f < 8; ++f)
 		{
-			for (rank = Rank1; rank <= Rank8; ++rank)
+			for (unsigned r = 0; r < 8; ++r)
 			{
-				if (piece == position.pieceAt(make(fyle, rank)))
+				if (piece == position.pieceAt(make(Fyle(f), Rank(r))))
 				{
 					if (++count == nth)
+					{
+						fyle = Fyle(f);
+						rank = Rank(r);
 						return true;
+					}
 				}
 			}
 		}
@@ -199,11 +203,11 @@ struct ProcessSquares<false,false>
 
 	static bool computeSignature(Board const& position, CTGSignature& sig)
 	{
-		for (Fyle f = FyleA; f <= FyleH; ++f)
+		for (unsigned f = 0; f < 8; ++f)
 		{
-			for (Rank r = Rank1; r <= Rank8; ++r)
+			for (unsigned r = 0; r < 8; ++r)
 			{
-				if (!::computeSignature(position.pieceAt(make(f, r)), sig))
+				if (!::computeSignature(position.pieceAt(make(Fyle(f), Rank(r))), sig))
 					return false;
 			}
 		}
@@ -219,14 +223,18 @@ struct ProcessSquares<true,false>
 	{
 		unsigned count = 0;
 
-		for (Fyle f = FyleA; f <= FyleH; ++f)
+		for (unsigned f = 0; f < 8; ++f)
 		{
-			for (Rank r = Rank8; r >= Rank1; --r)
+			for (int r = 7; r >= 0; --r)
 			{
-				if (piece == piece::swap(position.pieceAt(make(f, r))))
+				if (piece == piece::swap(position.pieceAt(make(Fyle(f), Rank(r)))))
 				{
 					if (++count == nth)
+					{
+						fyle = Fyle(f);
+						rank = Rank(r);
 						return true;
+					}
 				}
 			}
 		}
@@ -236,11 +244,11 @@ struct ProcessSquares<true,false>
 
 	static bool computeSignature(Board const& position, CTGSignature& sig)
 	{
-		for (Fyle f = FyleA; f <= FyleH; ++f)
+		for (unsigned f = 0; f < 8; ++f)
 		{
-			for (Rank r = Rank8; r >= Rank1; --r)
+			for (int r = 7; r >= 0; --r)
 			{
-				if (!::computeSignature(piece::swap(position.pieceAt(make(f, r))), sig))
+				if (!::computeSignature(piece::swap(position.pieceAt(make(Fyle(f), Rank(r)))), sig))
 					return false;
 			}
 		}
@@ -256,14 +264,18 @@ struct ProcessSquares<false,true>
 	{
 		unsigned count = 0;
 
-		for (Fyle f = FyleH; f >= FyleA; --f)
+		for (int f = 7; f >= 0; --f)
 		{
-			for (Rank r = Rank1; r <= Rank8; ++r)
+			for (unsigned r = 0; r < 8; ++r)
 			{
 				if (piece == position.pieceAt(make(f, r)))
 				{
 					if (++count == nth)
+					{
+						fyle = Fyle(f);
+						rank = Rank(r);
 						return true;
+					}
 				}
 			}
 		}
@@ -273,11 +285,11 @@ struct ProcessSquares<false,true>
 
 	static bool computeSignature(Board const& position, CTGSignature& sig)
 	{
-		for (Fyle f = FyleH; f >= FyleA; --f)
+		for (int f = 7; f >= 0; --f)
 		{
-			for (Rank r = Rank1; r <= Rank8; ++r)
+			for (unsigned r = 0; r < 8; ++r)
 			{
-				if (!::computeSignature(position.pieceAt(make(f, r)), sig))
+				if (!::computeSignature(position.pieceAt(make(Fyle(f), Rank(r))), sig))
 					return false;
 			}
 		}
@@ -293,14 +305,18 @@ struct ProcessSquares<true,true>
 	{
 		unsigned count = 0;
 
-		for (Fyle f = FyleH; f >= FyleA; --f)
+		for (int f = 7; f >= 0; --f)
 		{
-			for (Rank r = Rank8; r >= Rank1; --r)
+			for (int r = 7; r >= 0; --r)
 			{
-				if (piece == piece::swap(position.pieceAt(make(f, r))))
+				if (piece == piece::swap(position.pieceAt(make(Fyle(f), Rank(r)))))
 				{
 					if (++count == nth)
+					{
+						fyle = Fyle(f);
+						rank = Rank(r);
 						return true;
+					}
 				}
 			}
 		}
@@ -310,11 +326,11 @@ struct ProcessSquares<true,true>
 
 	static bool computeSignature(Board const& position, CTGSignature& sig)
 	{
-		for (Fyle f = FyleH; f >= FyleA; --f)
+		for (int f = 7; f >= 0; --f)
 		{
-			for (Rank r = Rank8; r >= Rank1; --r)
+			for (int r = 7; r >= 0; --r)
 			{
-				if (!::computeSignature(piece::swap(position.pieceAt(make(f, r))), sig))
+				if (!::computeSignature(piece::swap(position.pieceAt(make(Fyle(f), Rank(r)))), sig))
 					return false;
 			}
 		}
@@ -329,7 +345,7 @@ static bool
 computeSignature(Board const& position, CTGSignature& sig)
 {
 	bool flipColor	= position.blackToMove();
-	bool flipBoard	= fyle(position.kingSquare()) <= FyleD && position.castleRights() == NoRights;
+	bool flipBoard	= fyle(position.kingSquare()) <= FyleD && position.castlingRights() == NoRights;
 	bool rc			= false;
 
 	switch (unsigned(flipColor) | mstl::mul2(unsigned(flipBoard)))
@@ -348,19 +364,19 @@ computeSignature(Board const& position, CTGSignature& sig)
 
 	color::ID sideToMove = position.sideToMove();
 
-	if (Rights castleRights = position.castleRights(sideToMove))
+	if (Rights castlingRights = position.castlingRights(sideToMove))
 	{
-		if (castleRights & kingSide(sideToMove))
+		if (castlingRights & kingSide(sideToMove))
 			bits |= 4;
-		if (castleRights & queenSide(sideToMove))
+		if (castlingRights & queenSide(sideToMove))
 			bits |= 8;
 
 		color::ID notToMove = position.notToMove();
-		castleRights = position.castleRights(notToMove);
+		castlingRights = position.castlingRights(notToMove);
 
-		if (castleRights & kingSide(notToMove))
+		if (castlingRights & kingSide(notToMove))
 			bits |= 1;
-		if (castleRights & queenSide(notToMove))
+		if (castlingRights & queenSide(notToMove))
 			bits |= 2;
 
 		bitLength += 4;
@@ -526,7 +542,7 @@ byteToMove(Board const& position, uint8_t byte)
 		default:		return Move();
 	}
 
-	bool flipBoard = fyle(position.kingSquare()) <= FyleD && position.castleRights() == NoRights;
+	bool flipBoard = fyle(position.kingSquare()) <= FyleD && position.castlingRights() == NoRights;
 
 	unsigned	nth	= PieceIndex[byte];
 	bool		rc		= false;
@@ -625,12 +641,12 @@ Book::Book(mstl::string const& ctgFilename)
 
 	if (!ctbStrm)
 		IO_RAISE(BookFile, Open_Failed, "cannot open file: %s", ctbFilename.c_str());
-
+	
 	Byte buf[12];
 
 	if (!ctbStrm.read(buf, sizeof(buf)))
 		IO_RAISE(BookFile, Read_Error, "unexpected end of file in '%s'", ctbFilename.c_str());
-
+	
 	ctbStrm.close();
 
 	ByteStream bstrm(buf + 4, 8);
@@ -689,7 +705,7 @@ Book::probePosition(::db::Board const& position, variant::Type variant, Entry& r
 
 	uint64_t weights[128];
 	uint64_t maxWeight = 0;
-
+	
 	for (unsigned i = 0, k = 0; i < entry.numMoves; ++i)
 	{
 		if (Move move = ::byteToMove(position, entry.moves[i]))
@@ -821,7 +837,7 @@ Book::lookupEntry(unsigned pageIndex, CTGSignature const& sig, CTGEntry& entry)
 		unsigned			entrySize = ::mod32(*data);
 		uint8_t const*	nextEntry = data + entrySize + data[entrySize] + 33;
 
-		if (nextEntry > m_ctgStrm.end())
+		if (nextEntry >= m_ctgStrm.end())
 			return false;
 
 		if (sig.equal(data, entrySize))

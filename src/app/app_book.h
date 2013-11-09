@@ -131,8 +131,6 @@ private:
 
 } // namespace app
 
-#include "app_book.ipp"
-
 #endif // _app_book_included
 
 // vi:set ts=3 sw=3:

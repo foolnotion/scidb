@@ -53,7 +53,6 @@ using namespace db;
 using namespace db::board;
 using namespace db::piece;
 using namespace db::color;
-using namespace db::castling;
 using namespace db::sq;
 using namespace app::polyglot;
 
@@ -141,7 +140,7 @@ getToken(mstl::string& result, char const*& s)
 }
 
 
-static uint64_t const Random64[809] =
+static uint64_t const Random64[797] =
 {
    U64(0x9D39247E33776D41), U64(0x2AF7398005AAA5C7), U64(0x44DB015024623547), U64(0x9C15F73E62A76AE2),
    U64(0x75834465489C0C89), U64(0x3290AC3A203001BF), U64(0x0FBBAD1F61042279), U64(0xE83A908FF2FB60CA),
@@ -339,10 +338,6 @@ static uint64_t const Random64[809] =
    U64(0x70CC73D90BC26E24), U64(0xE21A6B35DF0C3AD7), U64(0x003A93D8B2806962), U64(0x1C99DED33CB890A1),
    U64(0xCF3145DE0ADD4289), U64(0xD0E4427A5514FB72), U64(0x77C621CC9FB3A483), U64(0x67A34DAC4356550B),
    U64(0xF8D626AAAF278509),
-	// extension for Chess960 castle with inner rook
-	U64(0x24C7AE8ACD3AD30D), U64(0xA3CBDA8EB6CD6D17), U64(0x92D9EE42CBFA4F52), U64(0x438F893E666FFA6B),
-	U64(0x3CCC5D24464F62B1), U64(0xCFA9275812D9E5DB), U64(0xBBF17284897C0F48), U64(0xA077F2F8F190127B),
-	U64(0x5FDEEC8850464C2B), U64(0x9429D7F4C15885F4), U64(0x4DCAC2831E23E842), U64(0x4E109F15C27A18BF),
 	// extension for holding (in the usual way: BP,WP,BN,WN,BB,WB,BR,WR,BQ,WQ)
 	U64(0x1EC62F17201666A9), U64(0xBBFACFA8B9CEDC99), U64(0xD52582CA4006E48D), U64(0xBE5CC29389B0A011),
 	U64(0x70B7B299FA084B79), U64(0x31FC91D4B888AAC6), U64(0x953D8D65F16A27F5), U64(0xA9E1894A083988A6),
@@ -361,18 +356,17 @@ static uint64_t const* const RandomPiece			= Random64;
 static uint64_t const* const RandomCastle			= Random64 + 768;
 static uint64_t const* const RandomEnPassant		= Random64 + 772;
 static uint64_t const* const RandomTurn			= Random64 + 780;
-static uint64_t const* const RandomInnerRook		= Random64 + 781;
-static uint64_t const* const RandomHolding		= Random64 + 793;
-static uint64_t const* const RandomThreeCheck	= Random64 + 803;
+static uint64_t const* const RandomHolding		= Random64 + 781;
+static uint64_t const* const RandomThreeCheck	= Random64 + 791;
 
 
-inline static unsigned mul64(Byte b)     { return unsigned(b) << 6; }
+inline static unsigned mul128(Byte b)    { return unsigned(b) << 7; }
 inline static unsigned div16(unsigned x) { return x >> 4; }
 inline static unsigned mul16(unsigned x) { return x << 4; }
 inline static unsigned div2 (unsigned x) { return x >> 1; }
 
 
-//#define CHECK_HASH_KEYS
+#define CHECK_HASH_KEYS
 #ifdef CHECK_HASH_KEYS
 
 #include "m_set.h"
@@ -435,6 +429,13 @@ checkHashKeys()
 												"hash key collision: p=%u, n=%u, b=%u, r=%u, q=%u\n",
 												p, n, b, r, q);
 								}
+
+								if (!used.insert_unique(key))
+								{
+									fprintf(	stderr,
+												"hash key collision: p=%u, n=%u, b=%u, r=%u, q=%u",
+												p, n, b, r, q);
+								}
 							}
 						}
 					}
@@ -450,53 +451,47 @@ checkHashKeys()
 static uint64_t
 hash(Board const& board, variant::Type variant)
 {
-	uint64_t key		= 0;
-	uint64_t pieces	= board.pieces();
+	static_assert(	WhiteKing	== 1
+					&& WhiteQueen	== 2
+					&& WhiteRook	== 3
+					&& WhiteBishop	== 4
+					&& WhiteKnight	== 5
+					&& WhitePawn	== 6
+					&& BlackKing	== 9
+					&& BlackQueen	== 10
+					&& BlackRook	== 11
+					&& BlackBishop	== 12
+					&& BlackKnight	== 13
+					&& BlackPawn	== 14,
+					"piece enumeration has changed");
+
+	static_assert(a1 == 0 && h8 == 63, "square enumeration has changed");
+
+	uint64_t key = 0;
+	uint64_t pieces = board.pieces();
 
 	while (pieces)
 	{
-		Square		s = board::lsbClear(pieces);
-		piece::Type	p = board.piece(s);
-		color::ID	c = board.color(s);
+		Square		sq = board::lsbClear(pieces);
+		piece::Type	p	= board.piece(sq);
+		color::ID	c	= board.color(sq);
 
-		static_assert(	K == 1 && Q == 2 && R == 3 && B == 4 && N == 5 && P == 6,
-							"piece enumeration has changed");
-		static_assert(White == 0 && Black == 1, "color enumeration has changed");
-		static_assert(a1 == 0 && h8 == 63, "square enumeration has changed");
+		static_assert(K == 1 && Q == 2 && R == 3 && B == 4 && N == 5 && P == 6, "piece values changed");
+		static_assert(White == 0 && Black == 1, "color values changed");
 
-		key ^= RandomPiece[mul64(mstl::mul2(6 - p) + (c ^ 1)) + s];
+		key ^= RandomPiece[mul128(6 - p + (c ^ 1)) + sq];
 	}
 
-	Rights castling = board.castleRights();
+	castling::Rights castling = board.castlingRights();
 
-	if (castling & WhiteKingside)
-	{
-		if (board.isInnerCastleRook(WhiteKS))
-			key ^= RandomInnerRook[fyle(board.shortCastleRook(White)) - 1];
-		else
-			key ^= RandomCastle[0];
-	}
-	if (castling & WhiteQueenside)
-	{
-		if (board.isInnerCastleRook(WhiteQS))
-			key ^= RandomInnerRook[fyle(board.longCastleRook(White)) - 1];
-		else
-			key ^= RandomCastle[1];
-	}
-	if (castling & BlackKingside)
-	{
-		if (board.isInnerCastleRook(BlackKS))
-			key ^= RandomInnerRook[fyle(board.shortCastleRook(Black)) + 5];
-		else
-			key ^= RandomCastle[2];
-	}
-	if (castling & BlackQueenside)
-	{
-		if (board.isInnerCastleRook(BlackQS))
-			key ^= RandomInnerRook[fyle(board.longCastleRook(Black)) + 5];
-		else
-			key ^= RandomCastle[3];
-	}
+	if (castling & castling::WhiteKingside)
+		key ^= RandomCastle[0];
+	if (castling & castling::WhiteQueenside)
+		key ^= RandomCastle[1];
+	if (castling & castling::BlackKingside)
+		key ^= RandomCastle[2];
+	if (castling & castling::BlackQueenside)
+		key ^= RandomCastle[3];
 
 	Square ep = board.enPassantSquare();
 
@@ -596,15 +591,13 @@ encodeMove(Move m)
 	// will be encoded with 5. It seems that this is not compatible
 	// to XBoard, I cannot see that XBoard is supporting a promotion
 	// to King (in polyglot implementation).
-
-	static_assert(	K == 1 && Q == 2 && R == 3 && B == 4 && N == 5 && P == 6,
-						"piece enumeration has changed");
+	static uint16_t EncodePromoted[8] = { 0, 5, 4, 3, 2, 1, 0, 0 };
 
 	return	uint16_t(fyle(m.from()) << 6)
 			 | uint16_t(rank(m.from()) << 9)
 			 | uint16_t(fyle(m.to()))
 			 | uint16_t(rank(m.to()) << 3)
-			 | uint16_t(6 - m.capturedOrDropped());
+			 | uint16_t(EncodePromoted[m.capturedOrDropped()]);
 }
 #endif
 
@@ -798,7 +791,7 @@ Book::probeMove(Board const& position, variant::Type variant, Choice choice)
 			unsigned bestWeight	= e->items.front().weight;
 			unsigned sum			= 0;
 
-			for (unsigned i = 0; i < e->items.size(); ++i)
+			for (unsigned i = 1; i < e->items.size(); ++i)
 			{
 				unsigned weight = e->items[i].weight;
 
@@ -808,10 +801,7 @@ Book::probeMove(Board const& position, variant::Type variant, Choice choice)
 				{
 					case BestFirst:
 						if (weight > bestWeight)
-						{
 							bestIndex = i;
-							bestWeight = weight;
-						}
 						break;
 
 					case Best:
@@ -826,7 +816,7 @@ Book::probeMove(Board const& position, variant::Type variant, Choice choice)
 						if (sum && m_rkiss.rand32(sum) < weight)
 							bestIndex = i;
 						break;
-				}
+			}
 			}
 
 			return decodeMove(position, e->items[bestIndex].move, variant);
@@ -841,7 +831,7 @@ Book::probeMove(Board const& position, variant::Type variant, Choice choice)
 	MyEntry	bestEntry(m_current), e;
 	unsigned	sum(0);
 
-	for ( ; readEntry(offs, e) && e.key == key; ++offs)
+	for (++offs; readEntry(offs, e) && e.key == key; ++offs)
 	{
 		if (e.move)
 		{
