@@ -2494,7 +2494,7 @@ Comment::convertCommentToXml(	mstl::string const& comment,
 		else if (::isalnum(*s) && (!specialExpected || *s != 'o'))
 		{
 			do
-				++s;
+				result.m_content.append(*s++);
 			while (::isalnum(*s));
 		}
 		else if (::isspace(*s))
