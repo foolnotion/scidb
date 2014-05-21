@@ -327,8 +327,8 @@
         "KBD, SAMP       { font-family: courier }\n" \
         "BIG             { font-size: 1.17em }\n" \
         "SMALL           { font-size: .83em }\n" \
-        "SUB             { font-size: 0.83em; vertical-align: sub }\n" \
-        "SUP             { font-size: 0.83em; vertical-align: super }\n" \
+        "SUB             { font-size: 0.67em; vertical-align: sub }\n" \
+        "SUP             { font-size: 0.67em; vertical-align: super }\n" \
         "S, STRIKE, DEL  { text-decoration: line-through }\n" \
         "OL              { list-style-type: decimal }\n" \
         "OL UL, UL OL,\n" \

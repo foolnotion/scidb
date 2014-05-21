@@ -1224,6 +1224,9 @@ uci::Engine::sendOptions()
 		app::Engine::Option const& opt = *i;
 		mstl::string id(::toId(opt.name));
 
+		if (opt.type == "button")
+			continue; // we shouldn't trigger any button
+
 		if (opt.name == m_threads || opt.name == m_minThreads || opt.name == m_maxThreads)
 			continue; // should not be sent here
 

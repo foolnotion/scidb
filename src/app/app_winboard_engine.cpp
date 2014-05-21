@@ -289,6 +289,9 @@ winboard::Engine::sendOptions()
 	{
 		app::Engine::Option const& opt = *i;
 
+		if (opt.type == "button")
+			continue; // we shouldn't trigger any button
+
 		if (	!hasFeature(app::Engine::Feature_SMP)
 			|| (opt.type != "spin" && opt.type != "slider")
 			|| (opt.name != "Cores" && opt.name != "Threads"))

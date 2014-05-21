@@ -451,7 +451,7 @@ Consumer::afterSendMove(Entry& entry)
 	{
 		if (!m_sendTimeTable.isEmpty())
 		{
-			MoveInfoSet const& m_moveInfoSet = m_sendTimeTable[m_line.length];
+			MoveInfoSet const& m_moveInfoSet = m_sendTimeTable[plyCount()];
 			sendMoveInfo(m_moveInfoSet);
 			m_moveInfoCount += m_moveInfoSet.count();
 		}
