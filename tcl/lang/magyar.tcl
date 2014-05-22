@@ -2853,7 +2853,7 @@
 ::encoding::mc::Lang(hr)	"horvát"
 ::encoding::mc::Lang(hu)	"magyar"
 ::encoding::mc::Lang(hy)	"örmény"
-::encoding::mc::Lang(ia)	"Interlingua" ;' NEW
+::encoding::mc::Lang(ia)	"Interlingua" ;# NEW
 ::encoding::mc::Lang(id)	"Indonesian" ;# NEW
 ::encoding::mc::Lang(is)	"izlandi"
 ::encoding::mc::Lang(it)	"olasz"
@@ -2875,10 +2875,10 @@
 ::encoding::mc::Lang(mt)	"máltai"
 ::encoding::mc::Lang(nl)	"holand"
 ::encoding::mc::Lang(no)	"norvég"
-::encoding::mc::Lang(oc)	"Occitan" ;' NEW
+::encoding::mc::Lang(oc)	"Occitan" ;# NEW
 ::encoding::mc::Lang(pl)	"lengyel"
 ::encoding::mc::Lang(pt)	"portugál"
-::encoding::mc::Lang(rm)	"Romansh"  ;' NEW
+::encoding::mc::Lang(rm)	"Romansh"  ;# NEW
 ::encoding::mc::Lang(ro)	"román"
 ::encoding::mc::Lang(ru)	"orosz"
 ::encoding::mc::Lang(se)	"Sami"
@@ -2891,13 +2891,13 @@
 ::encoding::mc::Lang(tg)	"tadzsik"
 ::encoding::mc::Lang(th)	"thai"
 ::encoding::mc::Lang(tk)	"türkmén"
-::encoding::mc::Lang(tl)	"Tagalog" ;' NEW
+::encoding::mc::Lang(tl)	"Tagalog" ;# NEW
 ::encoding::mc::Lang(tr)	"török"
 ::encoding::mc::Lang(uk)	"ukrán"
 ::encoding::mc::Lang(uz)	"üzbég"
 ::encoding::mc::Lang(vi)	"vietnámi"
-::encoding::mc::Lang(wa)	"Walloon" ;' NEW
-::encoding::mc::Lang(wen)	"Sorbian" ;' NEW
+::encoding::mc::Lang(wa)	"Walloon" ;# NEW
+::encoding::mc::Lang(wen)	"Sorbian" ;# NEW
 ::encoding::mc::Lang(hsb)	"Upper Sorbian" ;# NEW
 ::encoding::mc::Lang(dsb)	"Lower Sorbian" ;# NEW
 ::encoding::mc::Lang(zh)	"Kínai"

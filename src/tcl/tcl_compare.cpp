@@ -280,7 +280,7 @@ tcl::compare::setMappingTable(Tcl_Obj* table)
 	::memset(m_sortMappingTable, 0, sizeof(m_sortMappingTable));
 
 	int n = mstl::div2(nentries);
-	
+
 	for (int i = 0; i < n; i += 2)
 	{
 		sys::utf8::uchar index = sys::utf8::getChar(Tcl_GetString(entries[i]));
@@ -313,7 +313,7 @@ tcl::compare::setAlphabeticList(Tcl_Obj* table)
 
 	if (Tcl_ListObjGetElements(interp(), table, &nentries, &entries) != TCL_OK)
 		return TCL_ERROR;
-	
+
 	if (nentries == 0)
 	{
 		delete m_lookup;
@@ -384,20 +384,17 @@ tcl::compare::setAlphabeticList(Tcl_Obj* table)
 					}
 					else
 					{
-						sys::utf8::uchar uc = sys::utf8::getChar(s);
-
-						if (uc != i)
-						{
-							Tcl_AppendResult(interp(), "invalid sequence", nullptr);
-							return TCL_ERROR;
-						}
-
+//						if (sys::utf8::getChar(s) != i)
+//						{
+//							Tcl_AppendResult(interp(), "invalid sequence", nullptr);
+//							return TCL_ERROR;
+//						}
 						lookup->add(s, ++count);
 					}
 				}
 			}
 		}
-		
+
 		delete m_lookup;
 		m_lookup = lookup.release();
 	}
