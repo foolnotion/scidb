@@ -896,6 +896,136 @@ HtmlCallbackDamageNode(HtmlTree *pTree, HtmlNode *pNode)
     }
 }
 
+#ifdef USE_DOUBLE_BUFFERING
+
+static void
+resizeDoubleBuffer(HtmlTree *pTree, int width, int height)
+{
+    Tk_Window win = pTree->docwin;
+
+    if (   pTree->buffer == None
+        || width != pTree->bufferRect.width
+        || height != pTree->bufferRect.height)
+    {
+        HtmlRectangle rect;
+
+        Display  *display = Tk_Display(win);
+        TkRegion  region  = None;
+        Pixmap    buffer;
+        
+        SetRect(&rect, 0, 0, width, height);
+        buffer = Tk_GetPixmap(display, Tk_WindowId(win), width, height, Tk_Depth(win));
+
+        if (buffer != None)
+        {
+            HtmlRectangle saveRect;
+
+            region = TkCreateRegion();
+
+            if (   pTree->buffer != None
+                && pTree->bufferScrollX == pTree->iScrollX
+                && pTree->bufferScrollY == pTree->iScrollY
+                && IntersectRect(&saveRect, &pTree->bufferRect, &rect)
+                && RectInRegion(pTree->bufferRegion,
+                                saveRect.x, saveRect.y,
+                                saveRect.width, saveRect.height) == RectangleIn)
+            {
+                GC gc;
+                XGCValues gc_values;
+                memset(&gc_values, 0, sizeof(XGCValues));
+                gc = Tk_GetGC(win, 0, &gc_values);
+
+                XCopyArea(  display, pTree->buffer, buffer, gc,
+                            0, 0, saveRect.width, saveRect.height, 0, 0);
+
+                UnionRectWithRegion(&saveRect, region, region);
+            }
+        }
+
+        if (pTree->bufferRegion)
+            TkDestroyRegion(pTree->bufferRegion);
+        pTree->bufferRegion = region;
+
+        if (pTree->buffer != None)
+            Tk_FreePixmap(display, pTree->buffer);
+        pTree->buffer = buffer;
+
+        memcpy(&pTree->bufferRect, &rect, sizeof(rect));
+    }
+}
+
+static void
+deleteBuffer(HtmlTree *pTree)
+{
+    if (pTree->buffer && Tk_MainWindow(pTree->interp)) {
+        Tk_FreePixmap(Tk_Display(Tk_MainWindow(pTree->interp)), pTree->buffer);
+        pTree->buffer = None;
+    }
+    if (pTree->bufferRegion) {
+        TkDestroyRegion(pTree->bufferRegion);
+        pTree->bufferRegion = None;
+	 }
+}
+
+static void
+damageBuffer(HtmlTree *pTree, int x, int y, int w, int h)
+{
+    if (pTree->bufferRegion)
+    {
+        TkRegion region = TkCreateRegion();
+        HtmlRectangle rect;
+
+        SetRect(&rect, x, y, w, h);
+        UnionRectWithRegion(&rect, region, region);
+        TkSubtractRegion(pTree->bufferRegion, region, pTree->bufferRegion);
+        TkDestroyRegion(region);
+    }
+}
+
+static int
+copyFromBuffer(HtmlTree* pTree, const XExposeEvent *e)
+{
+    if (   pTree->buffer
+        && pTree->iScrollX == pTree->bufferScrollX
+        && pTree->iScrollY == pTree->bufferScrollY)
+    {
+        Tk_Window win = pTree->docwin;
+        Display *display = Tk_Display(win);
+        int rc = RectInRegion(pTree->bufferRegion, e->x, e->y, e->width, e->height);
+
+        if (rc == RectangleIn)
+        {
+            GC gc;
+            XGCValues gc_values;
+
+            memset(&gc_values, 0, sizeof(XGCValues));
+            gc = Tk_GetGC(win, 0, &gc_values);
+
+            XCopyArea(
+                display,
+                pTree->buffer,
+                Tk_WindowId(win),
+                gc,
+                e->x, e->y,
+                e->width, e->height,
+                e->x, e->y
+            );
+
+            Tk_FreeGC(display, gc);
+
+            return 1;
+        }
+        else if (rc == RectanglePart)
+        {
+            /* TODO but what? */
+        }
+    }
+
+    return 0;
+}
+
+#endif
+
 /*
  *---------------------------------------------------------------------------
  *
@@ -977,25 +1107,7 @@ HtmlCallbackDamage(HtmlTree *pTree, int x, int y, int w, int h)
     pTree->cb.pDamage = pNew;
 
 #ifdef USE_DOUBLE_BUFFERING
-    if (pTree->bufferRegion) {
-        TkRegion region = TkCreateRegion();
-        XRectangle rect;
-
-        rect.x = x;
-        rect.y = y;
-        rect.width = w;
-        rect.height = h;
-
-        if (w != 1000000 || h != 1000000)
-        {
-            rect.x += pTree->iScrollX;
-            rect.y += pTree->iScrollY;
-        }
-
-        TkUnionRectWithRegion(&rect, region, region);
-        TkSubtractRegion(pTree->bufferRegion, region, pTree->bufferRegion);
-        TkDestroyRegion(region);
-    }
+    damageBuffer(pTree, x, y, w, h);
 #endif
 
     if (!pTree->cb.flags) {
@@ -1110,14 +1222,7 @@ deleteWidget(ClientData clientData)
     }
 
 #ifdef USE_DOUBLE_BUFFERING
-    if (pTree->buffer && Tk_MainWindow(pTree->interp)) {
-        Tk_FreePixmap(Tk_Display(Tk_MainWindow(pTree->interp)), pTree->buffer);
-        pTree->buffer = None;
-    }
-    if (pTree->bufferRegion) {
-        TkDestroyRegion(pTree->bufferRegion);
-        pTree->bufferRegion = None;
-	 }
+    deleteBuffer(pTree);
 #endif
 
 #if defined(USE_LATIN_LIGATURES) && defined(HAVE_XFT)
@@ -1188,6 +1293,9 @@ eventHandler(ClientData clientData, XEvent *pEvent)
             int iWidth = Tk_Width(pTree->tkwin);
             int iHeight = Tk_Height(pTree->tkwin);
             HtmlLog(pTree, "EVENT", "ConfigureNotify: width=%dpx", iWidth);
+#ifdef USE_DOUBLE_BUFFERING
+            Tk_ResizeWindow(pTree->docwin, iWidth, iHeight);
+#endif
             if (pTree->options.fixedwidth) {
                 iWidth = pTree->options.fixedwidth;
             }
@@ -1196,9 +1304,8 @@ eventHandler(ClientData clientData, XEvent *pEvent)
                 iHeight != pTree->iCanvasHeight
             ) {
 #ifdef USE_DOUBLE_BUFFERING
-                if (pTree->bufferRegion) {
-                    TkDestroyRegion(pTree->bufferRegion);
-                    pTree->bufferRegion = None;
+                if (pTree->options.doublebuffer) {
+                    resizeDoubleBuffer(pTree, iWidth, iHeight);
                 }
 #endif
                 HtmlCallbackLayout(pTree, pTree->pRoot);
@@ -1237,40 +1344,14 @@ docwinEventHandler(ClientData clientData, XEvent *pEvent)
             );
 
 #ifdef USE_DOUBLE_BUFFERING
-            if (pTree->buffer) {
-                Tk_Window win = pTree->docwin;
-                Display *display = Tk_Display(win);
-                int rc = RectangleOut;
-
-                if (pTree->bufferRegion)
-                    rc = TkRectInRegion(pTree->bufferRegion, p->x, p->y, p->width, p->height);
-
-                if (rc == RectangleIn) {
-                    GC gc;
-                    XGCValues gc_values;
-
-                    memset(&gc_values, 0, sizeof(XGCValues));
-                    gc = Tk_GetGC(win, 0, &gc_values);
-
-                    assert(p->x >= pTree->bufferRect.x);
-                    assert(p->y >= pTree->bufferRect.y);
-
-                    XCopyArea(
-                        display, pTree->buffer, Tk_WindowId(win), gc,
-                        p->x - pTree->bufferRect.x, p->y - pTree->bufferRect.y,
-                        p->width, p->height, p->x, p->y
-                    );
-
-                    Tk_FreeGC(display, gc);
-                    return;
-                }
-            }
+            if (copyFromBuffer(pTree, p))
+                return;
+#else
+            p->x += Tk_X(pTree->docwin);
+            p->y += Tk_Y(pTree->docwin);
 #endif
 
-            HtmlCallbackDamage(pTree,
-                p->x + Tk_X(pTree->docwin), p->y + Tk_Y(pTree->docwin),
-                p->width, p->height
-            );
+            HtmlCallbackDamage(pTree, p->x, p->y, p->width, p->height);
             break;
         }
 
@@ -1288,8 +1369,10 @@ docwinEventHandler(ClientData clientData, XEvent *pEvent)
              * in Tk_BindEvent() ignores it.
              */
             pEvent->xmotion.window = Tk_WindowId(pTree->tkwin);
+#ifndef USE_DOUBLE_BUFFERING
             pEvent->xmotion.x += Tk_X(pTree->docwin);
             pEvent->xmotion.y += Tk_Y(pTree->docwin);
+#endif
             Tk_HandleEvent(pEvent);
             pEvent->type = EnterNotify;
             pEvent->xcrossing.detail = NotifyInferior;
@@ -1362,6 +1445,7 @@ configureCmd(
     #define S_MASK         0x00000008
     #define F_MASK         0x00000010
     #define L_MASK         0x00000020
+    #define D_MASK         0x00000040
 
     /*
      * Macros to generate static Tk_OptionSpec structures for the
@@ -1429,7 +1513,7 @@ configureCmd(
         BOOLEAN(layoutcache, "layoutCache", "LayoutCache", "1", S_MASK),
         BOOLEAN(forcefontmetrics, "forceFontMetrics", "ForceFontMetrics", "1", F_MASK),
         BOOLEAN(forcewidth, "forceWidth", "ForceWidth", "0", L_MASK),
-        BOOLEAN(doublebuffer, "doubleBuffer", "DoubleBuffer", "0", 0),
+        BOOLEAN(doublebuffer, "doubleBuffer", "DoubleBuffer", "0", D_MASK),
         BOOLEAN(latinligatures, "latinLigatures", "LatinLigatures", "0", F_MASK),
         BOOLEAN(exportselection, "exportSelection", "ExportSelection", "0", 0),
         BOOLEAN(xhtml, "xhtml", "xhtml", "0", 0),
@@ -1562,6 +1646,13 @@ configureCmd(
              */
             HtmlCallbackLayout(pTree, pTree->pRoot);
         }
+
+#ifndef USE_DOUBLE_BUFFERING
+        if (mask & D_MASK) {
+            if (!pTree->option.doubleBuffer)
+                deleteBuffer();
+        }
+#endif
 
         if (rc != TCL_OK) {
             assert(!init);
@@ -2843,7 +2934,9 @@ newWidget(
         return TCL_ERROR;
     }
     Tk_MakeWindowExist(pTree->docwin);
+#ifndef USE_DOUBLE_BUFFERING
     Tk_ResizeWindow(pTree->docwin, 12000, 40000);
+#endif
 #ifndef FIX_EVENT_HANDLING
     Tk_MapWindow(pTree->docwin);
 #endif
@@ -2899,8 +2992,9 @@ newWidget(
 #ifdef USE_DOUBLE_BUFFERING
     pTree->buffer = None;
     pTree->bufferRegion = None;
-    memset(&pTree->bufferRect, 0, sizeof(pTree->bufferRect));
-    memset(&pTree->docRect, 0, sizeof(pTree->docRect));
+    pTree->bufferScrollX = 0;
+    pTree->bufferScrollY = 0;
+    SetRect(&pTree->bufferRect, 0, 0, 0, 0);
 #endif
 
 #if defined(USE_LATIN_LIGATURES) && defined(HAVE_XFT)

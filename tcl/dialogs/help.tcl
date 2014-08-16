@@ -525,7 +525,7 @@ proc BuildFrame {w} {
 }
 
 
-proc FillContents {t contents {depth 0}} {
+proc FillContents {t contents {number 0} {depth 0}} {
 	variable [namespace parent]::icon::16x16::library
 	variable [namespace parent]::icon::16x16::document
 	variable [namespace parent]::icon::16x16::bookClosed
@@ -536,7 +536,6 @@ proc FillContents {t contents {depth 0}} {
 		array unset Priv contents:item:*
 	}
 
-	set g 0
 	foreach group $contents {
 		set e 0
 		set d $depth
@@ -546,7 +545,7 @@ proc FillContents {t contents {depth 0}} {
 				set topic [lindex $entry 0]
 				set enabled yes
 				set collapse no
-				set tag "$d-$g-$e"
+				set tag "$d-$number-$e"
 				if {[llength $topic] > 1} {
 					set file [[namespace parent]::FullPath [lindex $topic 1]]
 					if {![file readable $file]} {
@@ -583,12 +582,14 @@ proc FillContents {t contents {depth 0}} {
 				}
 				if {$first} { incr d; set first 0 }
 			} else {
-				FillContents $t [list $entry] [expr {$depth + 1}]
+				set number [FillContents $t [list $entry] $number [expr {$depth + 1}]]
 			}
 			incr e
 		}
-		incr g
+		incr number
 	}
+
+	return $number
 }
 
 

@@ -534,6 +534,36 @@ struct HtmlTreeState {
     int isCdataInHead;      /* True if previous token was <title> */
 };
 
+#ifdef USE_DOUBLE_BUFFERING
+
+typedef struct HtmlRectangle HtmlRectangle;
+
+struct HtmlRectangle {
+    int x, y;
+    int width, height;
+};
+
+extern void
+SetRect(
+    HtmlRectangle* r,
+    int x, int y, int width, int height);
+extern int
+IntersectRect(
+    HtmlRectangle *r3,
+    const HtmlRectangle *r1,
+    const HtmlRectangle *r2) ;
+extern void
+UnionRectWithRegion(
+    const HtmlRectangle *rect,
+    struct TkRegion_ *srcRegion,
+    struct TkRegion_ *destRegion);
+extern int
+RectInRegion(
+    struct TkRegion_ *region,
+    int x, int y, int width, int height);
+
+#endif
+
 struct HtmlTree {
 
     /*
@@ -684,8 +714,9 @@ struct HtmlTree {
 
 #ifdef USE_DOUBLE_BUFFERING
     Pixmap buffer;
-    XRectangle bufferRect;
-    XRectangle docRect;
+    HtmlRectangle bufferRect;
+    int bufferScrollX;
+    int bufferScrollY;
     struct TkRegion_ *bufferRegion;
 #endif
 

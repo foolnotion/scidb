@@ -46,6 +46,10 @@
 # include "tkInt.h"
 #endif
 
+#ifndef ABS
+# define ABS(x) ((x) < 0 ? -(x) : x)
+#endif
+
 /*-------------------------------------------------------------------------
  * OVERVIEW:
  *
@@ -680,10 +684,12 @@ windowsRepair(HtmlTree *pTree, HtmlCanvas *pCanvas)
         if (pTree) {
             iViewX = p->iCanvasX - pTree->iScrollX;
             iViewY = p->iCanvasY - pTree->iScrollY;
+#ifndef USE_DOUBLE_BUFFERING
             if (Tk_Parent(control) == pTree->docwin) {
                 iViewX -= Tk_X(pTree->docwin);
                 iViewY -= Tk_Y(pTree->docwin);
             }
+#endif
             iHeight = p->iHeight;
             iWidth = p->iWidth;
         }
@@ -1677,7 +1683,8 @@ printf("%s\n", Tcl_GetString(HtmlNodeCommand(pQuery->pTree, p->pItem->pNode)));
             assert(p->pmx >= pQuery->x);
             assert(p->pmy >= pQuery->y);
             XCopyArea(Tk_Display(win), pQuery->pmap, p->pixmap, gc,
-                p->pmx - pQuery->x, p->pmy - pQuery->y,
+                p->pmx - pQuery->x,
+                p->pmy - pQuery->y,
                 p->pmw, p->pmh,
                 0, 0
             );
@@ -2500,10 +2507,63 @@ elapsed_time()
 
 #ifdef USE_DOUBLE_BUFFERING
 
+/*
+ * NOTE:
+ * XRectangle is restricted to 16 bit values, so we try to increase
+ * the limit shifting the value by -32768. This works if the y
+ * coordinate is never ever negative (hopefully).
+ *
+ * Nevertheless the double buffering does not work properly in case
+ * of very large windows, when the y coordinate will exceed 65535.
+ * But this should never happen.
+ */
+
 static int
-IntersectRect(XRectangle *r3, const XRectangle *r1, const XRectangle *r2) 
+shiftCoordinate(int y)
+{
+    if (y > 65535)
+        y = 65535;    // double buffering cannot be used behind this coordinate
+    else if (y < 0)
+        y = 0;        // should never happen
+
+    return y - 32768;
+}
+
+void
+UnionRectWithRegion(const HtmlRectangle *rect, TkRegion srcRegion, TkRegion destRegion)
+{
+    XRectangle xrect;
+
+    xrect.x = rect->x;
+    xrect.y = shiftCoordinate(rect->y);
+    xrect.width = rect->width;
+    xrect.height = rect->height;
+
+    TkUnionRectWithRegion(&xrect, srcRegion, destRegion);
+}
+
+int
+RectInRegion(TkRegion region, int x, int y, int width, int height)
+{
+    if (region == None)
+        return RectangleOut;
+
+    return TkRectInRegion(region, x, shiftCoordinate(y), width, height);
+}
+
+void
+SetRect(HtmlRectangle* r, int x, int y, int width, int height)
+{
+    r->x = x;
+    r->y = y;
+    r->width = width;
+    r->height = height;
+}
+
+int
+IntersectRect(HtmlRectangle *r3, const HtmlRectangle *r1, const HtmlRectangle *r2) 
 { 
-    XRectangle result;
+    HtmlRectangle result;
 
     result.x = MAX(r1->x, r2->x);
     result.y = MAX(r1->y, r2->y);
@@ -2515,99 +2575,29 @@ IntersectRect(XRectangle *r3, const XRectangle *r1, const XRectangle *r2)
 }
 
 static void
-resizeDoubleBuffer(HtmlTree *pTree, Pixmap pixmap, GC gc)
+updateBuffer(HtmlTree *pTree, Pixmap pixmap, GC gc, int x, int y, int w, int h)
 {
-    if (pTree->options.doublebuffer) {
-        Tk_Window   win = pTree->docwin;
-        XRectangle  docRect;
+    if (   pTree->buffer != None
+        && pTree->bufferScrollX == pTree->iScrollX
+        && pTree->bufferScrollY == pTree->iScrollY)
+    {
+        Display *display = Tk_Display(pTree->docwin);
 
-        int screenW = WidthOfScreen(Tk_Screen(win));
-        int screenH = HeightOfScreen(Tk_Screen(win));
+        HtmlRectangle rect;
+        HtmlRectangle r;
 
-        docRect.width = MIN(WidthOfScreen(Tk_Screen(win)), Tk_Width(win));
-        docRect.height = MIN(HeightOfScreen(Tk_Screen(win)), Tk_Height(win));
-        docRect.x = MAX(0, docRect.width - Tk_X(win) - screenW);
-        docRect.y = MAX(0, docRect.height - Tk_Y(win) - screenH);
+        SetRect(&rect, x, y, w, h);
 
-        if (pTree->buffer == None || memcmp(&pTree->bufferRect, &docRect, sizeof(docRect)) != 0) {
-            Display    *display = Tk_Display(win);
-            TkRegion    region  = None;
-            Pixmap      buffer;
-            
-            buffer = Tk_GetPixmap(display, Tk_WindowId(win), docRect.width, docRect.height, Tk_Depth(win));
-            
-            if (buffer != None) {
-                XRectangle saveRect;
-
-                region = TkCreateRegion();
-
-                if (pTree->buffer != None &&
-                        pTree->bufferRegion != None &&
-                        IntersectRect(&saveRect, &pTree->docRect, &docRect) &&
-                        IntersectRect(&saveRect, &pTree->bufferRect, &saveRect)) {
-                    if (TkRectInRegion( pTree->bufferRegion,
-                                        saveRect.x, saveRect.y,
-                                        saveRect.width, saveRect.height) == RectangleIn) {
-                        int sx = MAX(docRect.x - pTree->docRect.x, 0);
-                        int sy = MAX(docRect.y - pTree->docRect.y, 0);
-                        int dx = MAX(pTree->docRect.x - docRect.x, 0);
-                        int dy = MAX(pTree->docRect.y - docRect.y, 0);
-
-                        XCopyArea(  display, pTree->buffer, buffer, gc,
-                                    sx, sy, saveRect.width, saveRect.height, dx, dy);
-                        TkUnionRectWithRegion(&saveRect, region, region);
-                    }
-                }
-            }
-
-            if (pTree->bufferRegion)
-                TkDestroyRegion(pTree->bufferRegion);
-            pTree->bufferRegion = region;
-
-            if (pTree->buffer)
-                Tk_FreePixmap(display, pTree->buffer);
-            pTree->buffer = buffer;
-
-            memcpy(&pTree->bufferRect, &docRect, sizeof(docRect));
-        }
-
-        pTree->docRect.x = -Tk_X(win);
-        pTree->docRect.y = -Tk_Y(win);
-        pTree->docRect.width = Tk_Width(pTree->tkwin);
-        pTree->docRect.height = Tk_Height(pTree->tkwin);
-    }
-}
-
-static void
-updateDoubleBuffer(
-    HtmlTree *pTree,
-    Pixmap pixmap,
-    GC gc,
-    int x, int y, int w, int h)
-{
-    if (pTree->buffer) {
-        Display   *display = Tk_Display(pTree->docwin);
-        XRectangle rect;
-        XRectangle updateRect;
-
-        rect.x = x;
-        rect.y = y;
-        rect.width = w;
-        rect.height = h;
-
-        if (IntersectRect(&updateRect, &pTree->bufferRect, &rect)) {
-            int sx = rect.x - updateRect.x;
-            int sy = rect.y - updateRect.y;
-            int dx = updateRect.x - pTree->bufferRect.x;
-            int dy = updateRect.y - pTree->bufferRect.y;
-
+        if (IntersectRect(&r, &pTree->bufferRect, &rect))
+        {
             XCopyArea(
                 display, pixmap, pTree->buffer, gc,
-                sx, sy, updateRect.width, updateRect.height, dx, dy);
+                r.x - x, r.y - y, r.width, r.height, r.x, r.y);
 
             if (pTree->bufferRegion == None)
                 pTree->bufferRegion = TkCreateRegion();
-            TkUnionRectWithRegion(&rect, pTree->bufferRegion, pTree->bufferRegion);
+
+            UnionRectWithRegion(&r, pTree->bufferRegion, pTree->bufferRegion);
         }
     }
 }
@@ -2788,7 +2778,7 @@ restart_time();
 #endif
         XCopyArea(display, pixmap, Tk_WindowId(pTree->docwin), gc, 0, 0, w, h, x, y);
 #ifdef USE_DOUBLE_BUFFERING
-        updateDoubleBuffer(pTree, pixmap, gc, x, y, w, h);
+        updateBuffer(pTree, pixmap, gc, x, y, w, h);
 #endif
 
 #ifdef MEASURE_TIME
@@ -4721,14 +4711,15 @@ widgetRepair(HtmlTree *pTree, int x, int y, int w, int h, int g)
     gc = Tk_GetGC(pTree->tkwin, 0, &gc_values);
     assert(Tk_WindowId(win));
 
+#ifndef USE_DOUBLE_BUFFERING
     x -= Tk_X(pTree->docwin);
     y -= Tk_Y(pTree->docwin);
+#endif
 
     XCopyArea(pDisp, pixmap, Tk_WindowId(pTree->docwin), gc, 0, 0, w, h, x, y);
 
 #ifdef USE_DOUBLE_BUFFERING
-    resizeDoubleBuffer(pTree, pixmap, gc);
-    updateDoubleBuffer(pTree, pixmap, gc, x, y, w, h);
+    updateBuffer(pTree, pixmap, gc, x, y, w, h);
 #endif
 
     Tk_FreePixmap(pDisp, pixmap);
@@ -4779,35 +4770,93 @@ HtmlWidgetSetViewport(
     int scroll_y,               /* New value for pTree->iScrollY */
     int force_redraw)           /* Redraw the entire viewport regardless */
 {
+    Tk_Window win = pTree->docwin;
+    Display *display = Tk_Display(win);
+
+#ifdef USE_DOUBLE_BUFFERING
+    TkRegion newRegion = None;
+
+    // be sure it's the actual old position
+    pTree->bufferScrollX = pTree->iScrollX;
+    pTree->bufferScrollY = pTree->iScrollY;
+#endif
+
     pTree->iScrollY = scroll_y;
     pTree->iScrollX = scroll_x;
 
-    if (pTree->nFixedBackground) {
+    if (force_redraw || pTree->nFixedBackground) {
         /* Variable HtmlTree.nFixedBackground contains the number of
          * fixed background images or boxes contained in this document. If
          * this is not zero, then we need to redraw the entire viewport
          * each time the user scrolls the window. In other words, we need
          * to do something generate an expose event that covers the whole
          * viewport.
-         *
-         * Moving the docwin between coords (0,0) and (-10000,0) each time
-         * the window is scrolled seems to achieve this.
          */
-        int iNewY = Tk_Y(pTree->docwin);
-        if (iNewY <= -5000) {
-            iNewY = 0;
-        }else{
-            iNewY = -10000;
-        }
-        Tk_MoveWindow(pTree->docwin, 0, iNewY);
+        XClearArea(display, Tk_WindowId(win), 0, 0, 0, 0, True);
+        // sometimes the exposure events are out of sync,
+        // so we use HtmlCallbackDamage()
+        HtmlCallbackDamage(pTree, 0, 0, 100000, 100000);
+        XFlush(display); // try to synchronize exposures
     } else {
-        int iShiftY;
-        int iShiftX;
+#ifdef USE_DOUBLE_BUFFERING
+        int dx = pTree->iScrollX - pTree->bufferScrollX;
+        int dy = pTree->iScrollY - pTree->bufferScrollY;
 
-        /* scroll_x = scroll_x % 25000; */
-        /* scroll_y = scroll_y % 25000; */
-        iShiftY = Tk_Y(pTree->docwin) - scroll_y;
-        iShiftX = Tk_X(pTree->docwin) - scroll_x;
+        int x = 0;
+        int y = 0;
+        int width = 0;
+        int height = 0;
+
+        if (ABS(dx) + 40 < Tk_Width(win) && ABS(dy) + 40 < Tk_Height(win))
+        {
+            int xs = dx > 0 ? dx : 0;
+            int ys = dy > 0 ? dy : 0;
+            int xd = dx < 0 ? -dx : 0;
+            int yd = dy < 0 ? -dy : 0;
+            int wd = Tk_Width(win) - ABS(dx);
+            int ht = Tk_Height(win) - ABS(dy);
+
+            if (RectInRegion(pTree->bufferRegion, xs, ys, wd, ht))
+            {
+                HtmlRectangle rect;
+
+                GC gc;
+                XGCValues gc_values;
+                memset(&gc_values, 0, sizeof(XGCValues));
+                gc = Tk_GetGC(win, 0, &gc_values);
+
+                XCopyArea(
+                    display, pTree->buffer, Tk_WindowId(win),
+                    gc, xs, ys, wd, ht, xd, yd);
+
+                XCopyArea(
+                    display, pTree->buffer, pTree->buffer,
+                    gc, xs, ys, wd, ht, xd, yd);
+
+                newRegion = TkCreateRegion();
+                SetRect(&rect, xd, yd, wd, ht);
+                UnionRectWithRegion(&rect, newRegion, newRegion);
+
+                x = dx <= 0 ? 0 : wd;
+                y = dy <= 0 ? 0 : ht;
+                width = dx ? ABS(dx) : 0;
+                height = dy ? ABS(dy) : 0;
+            }
+        }
+
+        XClearArea(display, Tk_WindowId(win), 0, 0, width, height, True);
+        // sometimes the exposure events are out of sync,
+        // so we use HtmlCallbackDamage()
+        HtmlCallbackDamage(pTree, x, y, width ? width : 100000, height ? height : 100000);
+        XFlush(display); // try to synchronize exposures
+#else
+        /*
+         * The original scroll behaviour. This idea fails
+         * due to the 16 bit limit of X, no exposure events
+         * will be received behind coordinate 32768.
+         */
+        int iShiftY = Tk_Y(win) - scroll_y;
+        int iShiftX = Tk_X(win) - scroll_x;
 
         if ( iShiftY > 20000 || iShiftY < -20000 ||
              iShiftX > 20000 || iShiftX < -20000
@@ -4818,8 +4867,19 @@ HtmlWidgetSetViewport(
              */
             HtmlCallbackDamage(pTree, 0, 0, 100000, 100000);
         }
-        Tk_MoveWindow(pTree->docwin, -1*scroll_x, -1*scroll_y);
+
+        Tk_MoveWindow(win, -1*scroll_x, -1*scroll_y);
+#endif
     }
+
+#ifdef USE_DOUBLE_BUFFERING
+    if (pTree->bufferRegion != None)
+        TkDestroyRegion(pTree->bufferRegion);
+    pTree->bufferRegion = newRegion;
+
+    pTree->bufferScrollX = pTree->iScrollX;
+    pTree->bufferScrollY = pTree->iScrollY;
+#endif
 }
 
 HtmlCanvasItem *
