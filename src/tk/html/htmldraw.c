@@ -2561,8 +2561,8 @@ SetRect(HtmlRectangle* r, int x, int y, int width, int height)
 }
 
 int
-IntersectRect(HtmlRectangle *r3, const HtmlRectangle *r1, const HtmlRectangle *r2) 
-{ 
+IntersectRect(HtmlRectangle *r3, const HtmlRectangle *r1, const HtmlRectangle *r2)
+{
     HtmlRectangle result;
 
     result.x = MAX(r1->x, r2->x);
@@ -2571,7 +2571,64 @@ IntersectRect(HtmlRectangle *r3, const HtmlRectangle *r1, const HtmlRectangle *r
     result.height = MIN(r1->y + r1->height, r2->y + r2->height) - result.y;
     memcpy(r3, &result, sizeof(result));
 
-    return result.width > 0 && result.height > 0; 
+    return result.width > 0 && result.height > 0;
+}
+
+int
+SubtractRect(const HtmlRectangle *r1, const HtmlRectangle *r2, HtmlRectangle rest[4])
+{
+    unsigned index = 0;
+
+    if (r1->width == 0 || r2->height == 0)
+        return 0;
+
+    if (r2->width == 0 || r2->height == 0)
+    {
+        memcpy(&rest[0], r2, sizeof(HtmlRectangle));
+        return 1;
+    }
+
+    if (r1->x < r2->x)
+    {
+        rest[0].x = r1->x;
+        rest[0].y = r1->y;
+        rest[0].width = r2->x - r1->x;
+        rest[0].height = r1->height;
+
+        ++index;
+    }
+
+    if (r2->x + r2->width < r1->x + r1->width)
+    {
+        rest[index].x = r2->x + r2->width;
+        rest[index].y = r1->y;
+        rest[index].width = (r1->x + r1->width) - (r2->x + r2->width);
+        rest[index].height = r1->height;
+
+        ++index;
+    }
+
+    if (r1->y < r2->y)
+    {
+        rest[index].x = r2->x;
+        rest[index].y = r1->y;
+        rest[index].width = r2->width;
+        rest[index].height = r2->y - r1->y;
+
+        ++index;
+    }
+
+    if (r2->y + r2->height < r1->y + r1->height)
+    {
+        rest[index].x = r2->x;
+        rest[index].y = r2->y + r2->height;
+        rest[index].width = r2->width;
+        rest[index].height = (r1->y + r1->height) - (r2->y + r2->height);
+
+        ++index;
+    }
+
+    return index;
 }
 
 static void

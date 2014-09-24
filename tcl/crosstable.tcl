@@ -225,6 +225,14 @@ proc open {parent base variant index view source} {
 	set canv $top.canv
 	set html $canv.html
 
+	if {[info exists Vars(tableId)]} {
+		::scidb::crosstable::release $Vars(tableId) $Vars(viewId)
+		if {$Vars(open)} {
+			::scidb::view::close $Vars(base) $Vars(variant) $Vars(viewId)
+			array unset Vars viewId
+		}
+	}
+
 	set Vars(open) 1
 	set Vars(html) $html
 	set Vars(base) $base
@@ -240,9 +248,6 @@ proc open {parent base variant index view source} {
 	set Vars(prevScoring) ""
 	set Vars(tooltip) ""
 
-	if {[info exists Vars(tableId)]} {
-		::scidb::crosstable::release $Vars(tableId) $Vars(viewId)
-	}
 	if {![info exists Vars(viewId)]} {
 		set Vars(viewId) [::scidb::view::new $base $variant slave slave slave slave slave]
 	}

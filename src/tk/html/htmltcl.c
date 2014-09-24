@@ -912,7 +912,7 @@ resizeDoubleBuffer(HtmlTree *pTree, int width, int height)
         Display  *display = Tk_Display(win);
         TkRegion  region  = None;
         Pixmap    buffer;
-        
+
         SetRect(&rect, 0, 0, width, height);
         buffer = Tk_GetPixmap(display, Tk_WindowId(win), width, height, Tk_Depth(win));
 
@@ -989,35 +989,52 @@ copyFromBuffer(HtmlTree* pTree, const XExposeEvent *e)
         && pTree->iScrollX == pTree->bufferScrollX
         && pTree->iScrollY == pTree->bufferScrollY)
     {
+        HtmlRectangle exposed;
+        HtmlRectangle document;
+        HtmlRectangle rect;
+
         Tk_Window win = pTree->docwin;
-        Display *display = Tk_Display(win);
-        int rc = RectInRegion(pTree->bufferRegion, e->x, e->y, e->width, e->height);
 
-        if (rc == RectangleIn)
+        const HtmlRectangle *buf = &pTree->bufferRect;
+
+        SetRect(&exposed, e->x, e->y, e->width, e->height);
+        SetRect(&document, buf->x, buf->y, buf->width, buf->height);
+
+        if (IntersectRect(&rect, &exposed, &document))
         {
-            GC gc;
-            XGCValues gc_values;
+            Display *display = Tk_Display(win);
+            int rc = RectInRegion(pTree->bufferRegion, e->x, e->y, e->width, e->height);
 
-            memset(&gc_values, 0, sizeof(XGCValues));
-            gc = Tk_GetGC(win, 0, &gc_values);
+            if (rc == RectangleIn)
+            {
+                GC gc;
+                XGCValues gc_values;
+                HtmlRectangle rest[4];
+                unsigned i, k = SubtractRect(&exposed, &rect, rest);
 
-            XCopyArea(
-                display,
-                pTree->buffer,
-                Tk_WindowId(win),
-                gc,
-                e->x, e->y,
-                e->width, e->height,
-                e->x, e->y
-            );
+                memset(&gc_values, 0, sizeof(XGCValues));
+                gc = Tk_GetGC(win, 0, &gc_values);
 
-            Tk_FreeGC(display, gc);
+                XCopyArea(
+                    display,
+                    pTree->buffer,
+                    Tk_WindowId(win),
+                    gc,
+                    e->x, e->y,
+                    e->width, e->height,
+                    e->x, e->y
+                );
 
-            return 1;
-        }
-        else if (rc == RectanglePart)
-        {
-            /* TODO but what? */
+                Tk_FreeGC(display, gc);
+
+                for (i = 0; i < k; ++i)
+                {
+                    const HtmlRectangle *r = &rest[i];
+                    HtmlCallbackDamage(pTree, r->x, r->y, r->width, r->height);
+                }
+
+                return 1;
+            }
         }
     }
 
@@ -1369,10 +1386,10 @@ docwinEventHandler(ClientData clientData, XEvent *pEvent)
              * in Tk_BindEvent() ignores it.
              */
             pEvent->xmotion.window = Tk_WindowId(pTree->tkwin);
-#ifndef USE_DOUBLE_BUFFERING
+# ifndef USE_DOUBLE_BUFFERING
             pEvent->xmotion.x += Tk_X(pTree->docwin);
             pEvent->xmotion.y += Tk_Y(pTree->docwin);
-#endif
+# endif
             Tk_HandleEvent(pEvent);
             pEvent->type = EnterNotify;
             pEvent->xcrossing.detail = NotifyInferior;

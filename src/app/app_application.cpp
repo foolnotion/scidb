@@ -178,6 +178,8 @@ Application::Iterator::Iterator(CursorMap::const_iterator begin, CursorMap::cons
 	,m_end(end)
 	,m_variant(0)
 {
+	if (m_current != m_end && (*m_current->second)[m_variant] == 0)
+		++(*this);
 }
 
 

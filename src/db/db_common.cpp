@@ -541,13 +541,13 @@ static CommentToken const Map[] =
 	{ "<=",		WorseMove																},	// 143
 	{ "<=/=>",	Counterplay																},	// 180
 	{ "<=>",		Counterplay																},	// 180
-	{ "=",		EqualChancesQuietPosition											},	//  11
+	{ "=",		DrawishPosition														},	//  10
 	{ "=&",		EqualChancesActivePosition											},	//  12
 	{ "=+",		BlackHasASlightAdvantage											},	//  15
 	{ "=/&",		WithCompensationForMaterial										}, // 181
 	{ "=/+",		BlackHasASlightAdvantage											},	//  15
 	{ "=/~",		WithCompensationForMaterial										}, // 181
-	{ "==",		DrawishPosition														}, //  10
+	{ "==",		EqualChancesQuietPosition											}, //  11
 	{ "=>",		Attack																	},	// 178
 	{ "=>/<=",	Counterplay																},	// 180
 	{ "=~",		EqualChancesActivePosition											},	//  12

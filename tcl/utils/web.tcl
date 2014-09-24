@@ -21,6 +21,7 @@ namespace eval web {
 proc open {parent url} {
 	variable Escape
 
+puts "'$url' --> '[::scidb::misc::url escape $url]'"
 	set url [::scidb::misc::url escape $url]
 	::widget::busyCursor on
 

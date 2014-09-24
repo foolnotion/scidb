@@ -590,7 +590,8 @@ ZStream::open(char const* filename, Type type, Mode mode)
 {
 	M_REQUIRE(filename);
 	M_REQUIRE(!isOpen());
-	M_REQUIRE(mode & mstl::ios_base::out);
+	M_REQUIRE(
+		mode & (mstl::ios_base::out | mstl::ios_base::app | mstl::ios_base::ate | mstl::ios_base::trunc));
 	M_REQUIRE(!(mode & mstl::ios_base::in));
 
 	m_filename = filename;
@@ -599,7 +600,7 @@ ZStream::open(char const* filename, Type type, Mode mode)
 	Handle*	cookie	= &m_handle;
 
 	fmode[0] = (mode & mstl::ios_base::app ? 'a' : 'w');
-	cookie->mode = mode;
+	cookie->mode = mode | mstl::ios_base::out;
 
 	switch (type)
 	{

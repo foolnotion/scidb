@@ -1580,9 +1580,8 @@ TournamentTable::ratingChange(int elo, int oppAvg, int percentage, int numGames)
 {
 	M_REQUIRE(percentage <= 100);
 
-	int diff = mstl::abs(elo - oppAvg);
-	unsigned const* i = mstl::upper_bound(::EloDiff, ::EloDiff + U_NUMBER_OF(::EloDiff), unsigned(diff));
-	int expected = i - ::EloDiff;
+	unsigned diff = mstl::abs(elo - oppAvg);
+	int expected = mstl::lower_bound(::EloDiff, ::EloDiff + U_NUMBER_OF(::EloDiff), diff) - ::EloDiff;
 
 	if (elo > oppAvg)
 		expected += 50;

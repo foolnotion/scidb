@@ -686,7 +686,7 @@ Namebase::findPlayerIndex(	mstl::string const& name,
 
 	List::const_iterator i = mstl::lower_bound(m_list.begin(), m_list.end(), key);
 
-	if (i != m_list.end() && *static_cast<PlayerEntry const*>(*i) == key)
+	if (i != m_list.end() && (*i)->frequency() > 0 && *static_cast<PlayerEntry const*>(*i) == key)
 		return i - m_list.begin();
 
 	return -1;
@@ -708,7 +708,7 @@ Namebase::findEventIndex(	mstl::string const& name,
 
 	List::const_iterator i = mstl::lower_bound(m_list.begin(), m_list.end(), key);
 
-	if (i != m_list.end() && *static_cast<EventEntry const*>(*i) == key)
+	if (i != m_list.end() && (*i)->frequency() > 0 && *static_cast<EventEntry const*>(*i) == key)
 		return i - m_list.begin();
 
 	return -1;
@@ -724,7 +724,7 @@ Namebase::findSiteIndex(mstl::string const& name, country::Code country) const
 
 	List::const_iterator i = mstl::lower_bound(m_list.begin(), m_list.end(), key);
 
-	if (i != m_list.end() && *static_cast<SiteEntry const*>(*i) == key)
+	if (i != m_list.end() && (*i)->frequency() > 0 && *static_cast<SiteEntry const*>(*i) == key)
 		return i - m_list.begin();
 
 	return -1;
@@ -738,7 +738,7 @@ Namebase::findAnnotatorIndex(mstl::string const& name) const
 
 	List::const_iterator i = mstl::lower_bound(m_list.begin(), m_list.end(), name);
 
-	if (i != m_list.end() && *static_cast<Entry const*>(*i) == name)
+	if (i != m_list.end() && (*i)->frequency() > 0 && *static_cast<Entry const*>(*i) == name)
 		return i - m_list.begin();
 
 	return -1;
@@ -754,7 +754,7 @@ Namebase::findSite(mstl::string const& name, country::Code country) const
 
 	List::const_iterator i = mstl::lower_bound(m_list.begin(), m_list.end(), key);
 
-	if (i != m_list.end() && *static_cast<SiteEntry const*>(*i) == key)
+	if (i != m_list.end() && (*i)->frequency() > 0 && *static_cast<SiteEntry const*>(*i) == key)
 		return static_cast<NamebaseSite*>(*i);
 
 	return 0;

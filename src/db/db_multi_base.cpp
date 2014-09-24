@@ -763,7 +763,12 @@ MultiBase::save(mstl::string const& encoding, unsigned flags, util::Progress& pr
 	writer.release();
 	if (ostrm->filename() != internalName)
 		sys::file::rename(ostrm->filename(), m_leader->name());
-	m_leader->resetChangedStatus();
+
+	for (unsigned variant = 0; variant < variant::NumberOfVariants; ++variant)
+	{
+		if (Database* database = m_bases[variant])
+			database->resetChangedStatus();
+	}
 
 	delete m_fileOffsets;
 	m_fileOffsets = newFileOffsets.release();

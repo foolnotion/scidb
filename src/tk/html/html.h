@@ -551,7 +551,12 @@ extern int
 IntersectRect(
     HtmlRectangle *r3,
     const HtmlRectangle *r1,
-    const HtmlRectangle *r2) ;
+    const HtmlRectangle *r2);
+extern int
+SubtractRect(
+    const HtmlRectangle *r1,
+    const HtmlRectangle *r2,
+    HtmlRectangle rest[4]);
 extern void
 UnionRectWithRegion(
     const HtmlRectangle *rect,

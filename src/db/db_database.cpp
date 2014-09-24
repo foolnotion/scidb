@@ -383,9 +383,9 @@ Database::resetChangedStatus()
 {
 	::sys::file::changed(m_name, m_fileTime);
 	m_descriptionHasChanged = false;
-	m_initialSize = m_size;
+	m_initialSize = m_size = m_gameInfoList.size();
 
-	for (unsigned i = 0; i < m_gameInfoList.size(); ++i)
+	for (unsigned i = 0; i < m_size; ++i)
 		m_gameInfoList[i]->setUnchanged();
 
 	m_statistic.added = 0;
