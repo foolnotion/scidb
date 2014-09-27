@@ -1654,6 +1654,7 @@ proc SetDescription {dlg file} {
 
 	if {$length == 0} {
 		CheckSaveState $file
+		RefreshSwitcher
 		destroy $dlg
 	} else {
 		::dialog::error \

@@ -639,6 +639,14 @@ MultiBase::save(mstl::string const& encoding, unsigned flags, util::Progress& pr
 			if (lastIndex == n)
 			{
 				nextState = Added;
+
+				if (n > 0)
+				{
+					FileOffsets::Offset const& offs = m_fileOffsets->get(n - 1);
+
+					if (offs.isGameIndex())
+						nextIndex[offs.variant()] = offs.gameIndex() + 1;
+				}
 			}
 			else
 			{
@@ -740,6 +748,12 @@ MultiBase::save(mstl::string const& encoding, unsigned flags, util::Progress& pr
 		writer.reset(new PgnWriter(format::Scidb, *ostrm, encoding, lineEnding, flags));
 		ostrm->writenl(mstl::string::empty_string);
 		newFileOffsets.reset(new FileOffsets(*m_fileOffsets));
+
+		for (unsigned variant = 0; variant < variant::NumberOfVariants; ++variant)
+		{
+			if (Database* database = m_bases[variant])
+				nextIndex[variant] = database->countInitialGames();
+		}
 	}
 
 	for (unsigned variant = 0; variant < variant::NumberOfVariants; ++variant)

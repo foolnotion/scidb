@@ -96,6 +96,8 @@ proc Build {w args} {
 	grid $w.b -row 0 -column 0 -sticky ns
 	grid $w.m -row 0 -column 1 -sticky ns
 
+	set Priv(command) {}
+	set Priv(button1) {}
 	set Priv(arrow:size) 0
 	set Priv(arrow:state) normal
 	foreach opt {menucmd tooltip tooltipvar arrowttip arrowttipvar arrowrelief arrowoverrelief} {
@@ -123,7 +125,16 @@ proc WidgetProc {w command args} {
 
 	switch -- $command {
 		cget { return [$w.b cget {*}$args] }
-		bind { return [bind $w.b {*}$args] }
+
+		bind {
+			if {[llength $args] >= 2} {
+				set action [lindex $args 0]
+				if {$action in {"<1>" "<Button-1>" "<ButtonPress-1>"}} {
+					set Priv(button1) [lindex $args 1]
+				}
+			}
+			return [bind $w.b {*}$args]
+		}
 
 		configure {
 			if {$Locked} { return $w }
@@ -139,12 +150,26 @@ proc WidgetProc {w command args} {
 				set opts(-arrowbackground) $opts(-background)
 			}
 
+			if {[info exists opts(-command)]} {
+				set Priv(command) $opts(-command)
+				$w.b configure -command $Priv(command)
+				array unset opts -command
+			}
+
 			if {[info exists opts(-arrowstate)]} {
 				set Priv(arrow:state) $opts(-arrowstate)
 				if {[info exists Priv(arrow:icon:$Priv(arrow:state))]} {
 					$w.m configure -image $Priv(arrow:icon:$Priv(arrow:state))
 				}
-				if {$Priv(arrow:state) eq "disabled"} { set pref "" } else { set pref "arrowactive" }
+				if {$Priv(arrow:state) eq "disabled"} {
+					set pref ""
+					$w.b configure -command {}
+					bind $w.b <ButtonPress-1> { break }
+				} else {
+					set pref "arrowactive"
+					$w.b configure -command $Priv(command)
+					bind $w.b <ButtonPress-1> $Priv(button1)
+				}
 				$w.m configure -activebackground $Priv(${pref}background)
 				array unset opts -arrowstate
 			}
