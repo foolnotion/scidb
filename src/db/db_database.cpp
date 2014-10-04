@@ -1946,7 +1946,8 @@ Database::playerStatistic(NamebasePlayer const& player, PlayerStats& stats) cons
 			stats.addDate(info->date());
 			stats.addScore(color, info->result());
 if (m_variant == variant::Normal) { // XXX
-			if (info->idn() == variant::Standard)
+			// NOTE: in .si4 databases the ECO code may be undefined
+			if (info->idn() == variant::Standard && info->eco())
 				stats.addEco(color, info->eco());
 }
 		}

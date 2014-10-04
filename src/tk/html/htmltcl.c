@@ -1010,7 +1010,8 @@ copyFromBuffer(HtmlTree* pTree, const XExposeEvent *e)
                 GC gc;
                 XGCValues gc_values;
                 HtmlRectangle rest[4];
-                unsigned i, k = SubtractRect(&exposed, &rect, rest);
+                unsigned k = SubtractRect(&exposed, &rect, rest);
+                unsigned i;
 
                 memset(&gc_values, 0, sizeof(XGCValues));
                 gc = Tk_GetGC(win, 0, &gc_values);
