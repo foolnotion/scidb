@@ -591,7 +591,7 @@ $(SCRIPT): $(SOURCES)
 		-e 's/# vi:set ts=3 sw=3:/update idletasks/'        \
 		-e 's#%SHAREDIR%#$(SHAREDIR)#g'                     \
 		-e 's#%%ENGINESDIR%%#$(%ENGINESDIR%)#g'             \
-		-e 's/%UPDATE_PHOTO_FILES%/$(UPDATE_PHOTO_FILES)/g' \
+		-e 's#%UPDATE_PHOTO_FILES%#$(UPDATE_PHOTO_FILES)#g' \
 		-e '/^##/d'                                         \
 		-e '/^#$$/d'                                        \
 		-e '/^[ 	]*#[ 	]\+/d'                               \

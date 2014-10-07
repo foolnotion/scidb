@@ -51,11 +51,10 @@ set Error(passwd)					"The password is wrong."
 set Error(nosudo)					"Cannot invoke 'sudo' command because your user is not in the sudoers file."
 set Detail(nosudo)				"As a workaround you may do a private installation, or start this application as a super-user."
 
-set Message(uptodate)			"The photo files are already up-to-date."
+set Message(uptodate)			"The photo files are still up-to-date."
 set Message(finished)			"The installation/update of photo files has finished."
 set Message(broken)				"Broken Tcl library version."
-set Message(noperm)				"You dont have write permissions for directory '%s'."
-set Message(missing)				"Cannot find directory '%s'."
+set Message(noperm)				"You dont have permissions for creating directory '%s'."
 set Message(httperr)				"HTTP error: %s"
 set Message(httpcode)			"Unexpected HTTP code %s."
 set Message(noconnect)			"HTTP connection failed."
@@ -84,14 +83,22 @@ set Log(updated:N)				"%s file(s) updated."
 
 }
 
-set Busy 0
-set Pipe {}
-set Sourceforge http://sourceforge.net/projects/scidb/files
+
+array set Options {
+	url:player-photos	http://sourceforge.net/projects/scidb/Files
+	notify:timeout		7000
+	use-gksu				1
+}
+
+array set Priv {
+	busy 0
+	pipe {}
+}
 
 
 proc openDialog {parent} {
-	variable Sourceforge
-	variable Shared
+	variable Options
+	variable Priv
 
 	set haveShared 0
 	if {$::tcl_platform(platform) eq "unix" && ![string match /home* $::scidb::dir::share]} {
@@ -127,7 +134,8 @@ proc openDialog {parent} {
 	$top.info onmouseout [namespace code [list MouseLeave $top.info]]
 	$top.info onmouseup1 [namespace code [list Mouse1Up $top.info]]
 	grid $top.info -row 0 -column 0
-	set link "<a href='$Sourceforge'>Sourceforge</a> ([::html::formatUrl $Sourceforge])"
+	append link "<a href='$Options(url:player-photos)'>Sourceforge</a> "
+	append link "([::html::formatUrl $Options(url:player-photos)])"
 	set shared [::html::formatPath [file dirname [InstallDir 1]]]
 	set local [::html::formatPath [file dirname [InstallDir 0]]]
 	set alternate $mc::AlternativelyDownload($haveShared)
@@ -144,24 +152,24 @@ proc openDialog {parent} {
 
 		# Determine the last update folder: local or shared
 		if {![file readable $timestamp(local)]} {
-			set Shared 1
+			set Priv(shared) 1
 		} elseif {![file readable $timestamp(shared)]} {
-			set Shared 0
-		} elseif {[file mtime $shared] >= [file mtime $local]} {
-			set Shared 1
+			set Priv(shared) 0
+		} elseif {[file mtime [InstallDir 1]] >= [file mtime [InstallDir 0]]} {
+			set Priv(shared) 1
 		} else {
-			set Shared 0
+			set Priv(shared) 0
 		}
 	
 		ttk::radiobutton $f.local \
 			-text $mc::LocalInstallation \
-			-variable [namespace current]::Shared \
+			-variable [namespace current]::Priv(shared) \
 			-command [namespace code [list UpdateDir $f.dir]] \
 			-value 0 \
 			;
 		ttk::radiobutton $f.shared \
 			-text $mc::SharedInstallation \
-			-variable [namespace current]::Shared \
+			-variable [namespace current]::Priv(shared) \
 			-command [namespace code [list UpdateDir $f.dir]] \
 			-value 1 \
 			;
@@ -180,7 +188,7 @@ proc openDialog {parent} {
 		grid $f -row 3 -column 0
 	}
 
-	if {!$Shared} { catch { file mkdir [InstallDir 0] } }
+	if {!$Priv(shared)} { catch { file mkdir [InstallDir 0] } }
 
 	::widget::dialogButtonAdd $dlg download [namespace current]::mc::Download $icon::16x16::download
 	::widget::dialogButtons $dlg {cancel}
@@ -196,11 +204,10 @@ proc openDialog {parent} {
 
 
 proc downloadFiles {informProc shared parent} {
-	variable Busy
-	variable Terminate
+	variable Priv
 
 	if {[llength [package versions http]] == 0} { return nohhtp }
-	if {$Busy} { return busy }
+	if {$Priv(busy)} { return busy }
 
 	set result ok
 	::widget::busyCursor on
@@ -211,18 +218,18 @@ proc downloadFiles {informProc shared parent} {
 
 
 proc terminateUpdate {} {
-	variable Pipe
-	variable Busy
+	variable Priv
 
-	if {[llength $Pipe]} {
-		puts $Pipe terminate
-		vwait [namespace current]::Pipe
+	if {[llength $Priv(pipe)]} {
+		puts $Priv(pipe) terminate
+		after 2000 [namespace code [list ForceTermination]]
+		vwait [namespace current]::Priv(pipe)
 	}
 }
 
 
 proc busy? {} {
-	return [set [namespace current]::Busy]
+	return [set [namespace current]::Priv(busy)]
 }
 
 
@@ -269,6 +276,8 @@ proc findPhotoFile {name} {
 
 
 proc checkForUpdate {informProc} {
+	global env
+
 	if {[catch {package require http 2.7}]} { return 0 }
 	if {[info exists env(http_proxy)]} { set http_proxy $env(http_proxy) } else { set http_proxy "" }
 	set i [string last : $http_proxy]
@@ -284,6 +293,7 @@ proc checkForUpdate {informProc} {
 		::http::geturl http://scidb-player-photos.googlecode.com/svn/trunk/TIMESTAMP \
 			-binary 1 \
 			-command [namespace code [list CheckForUpdateResponse $informProc]] \
+			-timeout 10000 \
 			;
 	}
 }
@@ -338,60 +348,79 @@ proc NormalizeName {name} {
 
 
 proc OpenPipe {informProc shared parent} {
-	variable Pipe
-	variable Busy
+	variable Priv
+	variable Options
 	global tcl_platform
 	global env
 
 	set script "%UPDATE_PHOTO_FILES%"
-	if {[string match ?UPDATE_PHOTO_FILES? $script]} {
+	if {	[string match ?UPDATE_PHOTO_FILES? $script]
+		|| ![file executable [set script [file join $::scidb::dir::exec $script]]]} {
 		set script /usr/local/bin/update-scidb-photo-files
+		if {![file executable $script]} { set script /usr/bin/update-scidb-photo-files }
 	}
-	set cmd [file join $::scidb::dir::exec $script]
+	if {![file executable $script]} { return script }
+
+	set Priv(empty) 1
+	set Priv(vwait) 0
+	set passwd ""
 
 	if {$shared && $tcl_platform(platform) eq "unix" && [exec id -u] != 0} {
-		variable Result_
-		set sudo [auto_execok sudo]
-		if {[string length $sudo] == 0} { return failed }
-		lassign [AskPassword $parent.installPlayerPhotos] passwd result
-		update idletasks
-		if {$result ne "ok"} { return cancelled }
-		if {[catch { open "| echo $passwd | $sudo -S echo \"\" 2>@1" r } sudoPipe ]} { return failed }
-		fconfigure $sudoPipe -buffering none -blocking 1
-		fileevent $sudoPipe readable [namespace code [list ReadPipe $sudoPipe]]
-		set Result_ ""
-		while {![eof $sudoPipe]} { vwait [namespace current]::Result_ }
-		catch { close $sudoPipe }
-		if {[string match *:*:* $Result_]} { return passwd }
-		if {[string match {* sudoers *} $Result_]} { return nosudo }
-		lassign {"" ""} arg1 arg2
-		if {[info exists env(LD_LIBRARY_PATH)] && [string length $env(LD_LIBRARY_PATH)]} {
-			set arg1 $env(LD_LIBRARY_PATH)
+		if {$Options(use-gksu) && [string length [set gksu [auto_execok gksu]]]} {
+			set msg [lindex [split $mc::RequiresSuperuserRights \n] 0]
+			set cmd "$gksu -g -k -m \"$msg\" $script"
+			set Priv(vwait) 1
+		} else {
+			variable Result_
+			global env
+
+			set sudo [auto_execok sudo]
+			if {[string length $sudo] == 0} { return failed }
+			lassign [AskPassword $parent.installPlayerPhotos] passwd result
+			update idletasks
+			if {$result ne "ok"} { return cancelled }
+			catch { exec sudo -k }
+			if {[catch { open "| echo $passwd | $sudo -S echo \"\" 2>@1" r } sudoPipe ]} {
+				return failed
+			}
+			fconfigure $sudoPipe -buffering none -blocking 1
+			fileevent $sudoPipe readable [namespace code [list ReadPipe $sudoPipe]]
+			set Result_ ""
+			update idletasks
+			while {![eof $sudoPipe]} { vwait [namespace current]::Result_ }
+			catch { close $sudoPipe }
+			if {[string match *:*:* $Result_]} { return passwd }
+			if {[string match {* incorrect *} $Result_]} { return passwd }
+			if {[string match {* sudoers *} $Result_]} { return nosudo }
+#			lassign {"" ""} arg1 arg2
+#			if {[info exists env(LD_LIBRARY_PATH)] && [string length $env(LD_LIBRARY_PATH)]} {
+#				set arg1 $env(LD_LIBRARY_PATH)
+#			}
+#			if {[info exists env(http_proxy)] && [string length $env(http_proxy)]} {
+#				if {[string length $arg1] == 0} { set arg1 {""} }
+#				set arg2 $env(http_proxy)
+#			}
+#			set cmd [string trim "$sudo -S -n $script $arg1 $arg2"]
+			set cmd "$sudo -E -S -n -- $script"
 		}
-		if {[info exists env(http_proxy)] && [string length $env(http_proxy)]} {
-			if {[string length $arg1] == 0} { set arg1 {""} }
-			set arg2 $env(http_proxy)
-		}
-		set cmd [string trim "$sudo -S $cmd $arg1 $arg2"]
 	}
 
-	set Pipe [open "| $cmd" r+]
-	fconfigure $Pipe -buffering line -blocking 0
-	fileevent $Pipe readable $informProc
-	set Busy 1
+	set Priv(pipe) [open "| $cmd" r+]
+	fconfigure $Priv(pipe) -buffering line -blocking 0
+	fileevent $Priv(pipe) readable $informProc
+	if {[string length $passwd]} { puts $Priv(pipe) $passwd }
+	set Priv(busy) 1
+	if {$Priv(vwait) && ![eof $Priv(pipe)]} { tkwait variable [namespace current]::Priv(vwait) }
 }
 
 
 proc Download {parent dlg} {
-	variable Shared
-	variable Count
-	variable Finished
-	variable Started
+	variable Priv
 
-	set Finished 0
-	set Started 0
-	array set Count { deleted 0 created 0 skipped 0 updated 0 }
-	set result [downloadFiles [namespace code [list ProcessUpdate $parent]] $Shared $parent]
+	set Priv(finished) 0
+	set Priv(started) 0
+	array set Priv { count:deleted 0 count:created 0 count:skipped 0 count:updated 0 }
+	set result [downloadFiles [namespace code [list ProcessUpdate $parent]] $Priv(shared) $parent]
 
 	switch $result {
 		nohhtp	{ pleaseInstallHttp $dlg }
@@ -405,17 +434,16 @@ proc Download {parent dlg} {
 
 
 proc LogProgress {type msg} {
-	variable Count
-	variable Started
+	variable Priv
 
-	if {!$Started} { return }
+	if {!$Priv(started)} { return }
 	::log::open $mc::PhotoFiles
 	::log::$type $msg
 	foreach attr {created deleted skipped updated} {
-		switch $Count($attr) {
+		switch $Priv(count:$attr) {
 			0			{}
-			1			{ ::log::info [format $mc::Log($attr:1) $Count($attr)] }
-			default	{ ::log::info [format $mc::Log($attr:N) $Count($attr)] }
+			1			{ ::log::info [format $mc::Log($attr:1) $Priv(count:$attr)] }
+			default	{ ::log::info [format $mc::Log($attr:N) $Priv(count:$attr)] }
 		}
 	}
 	if {$type eq "error"} { ::log::info $mc::DownloadAborted }
@@ -424,16 +452,15 @@ proc LogProgress {type msg} {
 
 
 proc ProcessUpdate {parent} {
-	variable Pipe
-	variable Count
-	variable Finished
-	variable Started
+	variable Priv
+	variable Options
 
 	set data ""
-	catch { set data [gets $Pipe] }
+	catch { set data [gets $Priv(pipe)] }
 
-	set arg ""
+	lassign {"" "" ""} reason arg url
 	lassign $data reason arg url
+	set Priv(vwait) 0
 
 	switch $reason {
 		maintenance {
@@ -449,7 +476,15 @@ proc ProcessUpdate {parent} {
 
 		finished {
 			catch { destroy $parent.downloadPlayerPhotos }
-			::dialog::info -parent $parent -message $mc::Message($reason)
+			if {[string length [set notify [auto_execok notify-send]]]} {
+				exec $notify \
+					--icon=scidb \
+					--expire-time=$Options(notify:timeout) \
+					--urgency=low \
+					$mc::Message($reason)
+			} else {
+#				::dialog::info -parent $parent -message $mc::Message($reason)
+			}
 			LogProgress info [format $mc::Log(finished) [::locale::currentTime]]
 		}
 
@@ -484,7 +519,7 @@ proc ProcessUpdate {parent} {
 		}
 
 		deleted - created - skipped - updated {
-			incr Count($reason)
+			incr Priv(count:$reason)
 			::dialog::progressbar::setInformation $parent.downloadPlayerPhotos [file tail $arg]
 		}
 
@@ -504,27 +539,32 @@ proc ProcessUpdate {parent} {
 			bind $parent.downloadPlayerPhotos <<LanguageChanged>> \
 				[namespace code [list LanguageChanged $parent.downloadPlayerPhotos]]
 			update idletasks
-			set Started 1
+			set Priv(started) 1
 		}
 
 		progress { ::dialog::progressbar::tick $parent.downloadPlayerPhotos }
 
-		terminated { set Finished 1 }
+		terminated { set Priv(finished) 1 }
 	}
 
 	set eof 0
-	if {[catch { eof $Pipe } eof]} { set eof 1 }
+	if {[catch { eof $Priv(pipe) } eof]} { set eof 1 }
 
 	if {$eof} {
-		variable Busy
-		set Busy 0
-		catch { destroy $parent.installPlayerPhotos }
-		catch { destroy $parent.downloadPlayerPhotos }
-		catch { close $Pipe }
-		set Pipe {}
-		if {!$Finished} { LogProgress error $mc::Message(killed) }
-		return
+		ForceTermination
+		if {!$Priv(finished) && $Priv(started)} { LogProgress error $mc::Message(killed) }
 	}
+}
+
+
+proc ForceTermination {} {
+	variable Priv
+
+	set Priv(busy) 0
+	catch { destroy $parent.installPlayerPhotos }
+	catch { destroy $parent.downloadPlayerPhotos }
+	catch { close $Priv(pipe) }
+	set Priv(pipe) {}
 }
 
 
@@ -535,11 +575,11 @@ proc LanguageChanged {pb} {
 
 
 proc AskPassword {parent} {
-	variable _result
-	variable _passwd
+	variable result_
+	variable passwd_
 
-	set _passwd ""
-	set _result ""
+	set passwd_ ""
+	set result_ ""
 
 	if {$parent eq "."} { set dlg .ask } else { set dlg $parent.ask }
 	toplevel $dlg -class Scidb
@@ -548,7 +588,7 @@ proc AskPassword {parent} {
 	pack $top -fill both
 	wm title $dlg $mc::EnterPassword
 	wm resizable $dlg no no
-	wm protocol $dlg WM_DELETE_WINDOW [list set [namespace current]::_result cancel]
+	wm protocol $dlg WM_DELETE_WINDOW [list set [namespace current]::result_ cancel]
 
 	tk::label $top.m \
 		-text "$mc::RequiresSuperuserRights $mc::Detail(nosudo)" \
@@ -560,7 +600,7 @@ proc AskPassword {parent} {
 		;
 	ttk::separator $top.s -orient horizontal
 	ttk::label $top.l -text "$mc::EnterPassword:"
-	ttk::entry $top.e -show * -textvar [namespace current]::_passwd
+	ttk::entry $top.e -show * -textvar [namespace current]::passwd_
 	grid $top.m -row 1 -column 0 -columnspan 5
 	grid $top.s -row 2 -column 0 -columnspan 5 -sticky ew
 	grid $top.l -row 4 -column 1 -sticky ew
@@ -570,8 +610,8 @@ proc AskPassword {parent} {
 	grid rowconfigure $top {3 5}  -minsize $::theme::padY
 
 	::widget::dialogButtons $dlg {ok cancel}
-	$dlg.ok configure -command [list set [namespace current]::_result ok]
-	$dlg.cancel configure -command [list set [namespace current]::_result cancel]
+	$dlg.ok configure -command [list set [namespace current]::result_ ok]
+	$dlg.cancel configure -command [list set [namespace current]::result_ cancel]
 
 	bind $dlg <Return> [list $dlg.ok invoke]
 	bind $dlg <Escape> [list $dlg.cancel invoke]
@@ -581,11 +621,11 @@ proc AskPassword {parent} {
 	wm deiconify $dlg
 	::ttk::grabWindow $dlg
 	focus $top.e
-	vwait [namespace current]::_result
+	vwait [namespace current]::result_
 	::ttk::releaseGrab $dlg
 	destroy $dlg
 
-	return [list $_passwd $_result]
+	return [list $passwd_ $result_]
 }
 
 
@@ -603,7 +643,7 @@ proc UpdateDir {w} {
 
 
 proc InstallDir {{shared {}}} {
-	if {[llength $shared] == 0} { set shared [set [namespace current]::Shared] }
+	if {[llength $shared] == 0} { set shared [set [namespace current]::Priv(shared)] }
 	if {$shared} { return $::scidb::dir::photos }
 	return [file join $::scidb::dir::user photos]
 }
