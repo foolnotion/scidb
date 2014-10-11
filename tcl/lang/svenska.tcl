@@ -1815,10 +1815,6 @@
 ::dialog::save::mc::ReplaceGame					"Ersätt partiet"
 ::dialog::save::mc::EditCharacteristics		"Redigera egenskaper"
 	
-::dialog::save::mc::GameData						"Partidata"
-::dialog::save::mc::Event							"Tävling"
-
-::dialog::save::mc::MatchesExtraTags			"Matcher / Extra Taggar"
 ::dialog::save::mc::PressToSelect				"Tryck Ctrl-0 till Ctrl-9 (eller vänster musknapp) för att välja"
 ::dialog::save::mc::PressForWhole				"Tryck Alt-0 till Alt-9 (eller mellersta musknappen) för helt dataset"
 ::dialog::save::mc::EditTags						"Bearbeta taggar"
@@ -1838,6 +1834,9 @@
 ::dialog::save::mc::CurrentGameHasTrialMode	"Aktuellt parti befinner sig i teststadiet och kan inte sparas."
 ::dialog::save::mc::LeaveTrialModeHint			"You have to leave trial mode beforehand, use shortcut %s." ;# NEW
 ::dialog::save::mc::OpenPlayerDictionary		"Open Player Dictionary" ;# NEW
+::dialog::save::mc::TagName						"Tag '%s'"
+::dialog::save::mc::InSection						"in section %s" ;# NEW
+::dialog::save::mc::StringTooLong				"Sträng <small><fixed>%value%</fixed></small> är för lång och kommer att förkortas till <small><fixed>%trunc%</fixed></small>"
 
 ::dialog::save::mc::LocalName						"&Lokalt namn"
 ::dialog::save::mc::EnglishName					"E&ngelskt namn"
@@ -1845,6 +1844,12 @@
 ::dialog::save::mc::EcoCode						"&ECO-code"
 ::dialog::save::mc::Matches						"&Matcher"
 ::dialog::save::mc::Tags							"&Taggar"
+
+::dialog::save::mc::Section(game)				"Partidata"
+::dialog::save::mc::Section(event)				"Tävling"
+::dialog::save::mc::Section(white)				"Vit"
+::dialog::save::mc::Section(black)				"Svart"
+::dialog::save::mc::Section(tags)				"Matcher / Extra Taggar"
 
 ::dialog::save::mc::Label(name)					"Namn"
 ::dialog::save::mc::Label(fideID)				"Fide-ID"
@@ -1879,7 +1884,7 @@
 ::dialog::save::mc::InvalidRoundEntryDetail	"Giltiga ronduppgifter är '4' eller '6.1'. Noll som rondnummer är inte tillåten."
 ::dialog::save::mc::RoundIsTooHigh				"Rondnumret ska vara lägre än 256."
 ::dialog::save::mc::SubroundIsTooHigh			"Underrondnumret ska vara lägre än 256."
-::dialog::save::mc::ImplausibleDate				"Datum för parti '%s' är tidigare än datum för tävling '%s'."
+::dialog::save::mc::ImplausibleDate				"Datum för parti '%date' är tidigare än datum för tävling '%eventdate'."
 ::dialog::save::mc::InvalidTagName				"Ogiltigt tagnamn '%s' (syntaxfel)."
 ::dialog::save::mc::Field							"Fält '%s': "
 ::dialog::save::mc::ExtraTag						"Extra tag '%s': "
@@ -1895,9 +1900,8 @@
 ::dialog::save::mc::InvalidDay					"Ogiltig dag '%s'."
 ::dialog::save::mc::MissingYear					"Uppgift om år saknas."
 ::dialog::save::mc::MissingMonth					"Uppgift om månad saknas."
-::dialog::save::mc::StringTooLong				"Tag %tag%: sträng '%value%' är för lång och kommer att förkortas till '%trunc%'."
 ::dialog::save::mc::InvalidEventDate			"Kan inte acceptera angivet tävlingsdatum: Skillnaden mellan året för partiet och året för tävlingen ska vara mindre än 4 (begränsning av Scid-databasformatet)."
-::dialog::save::mc::TagIsEmpty					"Tag '%s' är tom (kommer att utsorteras)."
+::dialog::save::mc::TagIsEmpty					"Tag är tom (kommer att utsorteras)."
 
 ### gamehistory ########################################################
 ::game::history::mc::GameHistory		"Partihistoria"

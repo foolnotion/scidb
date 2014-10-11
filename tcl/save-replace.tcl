@@ -37,7 +37,6 @@ set EditCharacteristics			"Edit Characteristics"
 set GameData						"Game Data"
 set Event							"Event"
 
-set MatchesExtraTags				"Matches / Extra Tags"
 set PressToSelect					"Press Ctrl+0 to Ctrl+9 (or left mouse button) to select"
 set PressForWhole					"Press Alt-0 to Alt-9 (or middle mouse button) for whole data set"
 set EditTags						"Edit Tags"
@@ -57,6 +56,9 @@ set CurrentBaseIsReadonly		"Current database '%s' is read-only."
 set CurrentGameHasTrialMode	"Current game is in trial mode and cannot be saved."
 set LeaveTrialModeHint			"You have to leave trial mode beforehand, use shortcut %s."
 set OpenPlayerDictionary		"Open Player Dictionary"
+set TagName							"Tag '%s'"
+set InSection						"in section '%s'"
+set StringTooLong					"Content <small><fixed>%value%</fixed></small> is too long and will be truncated to <small><fixed>%trunc%</fixed></small>"
 
 set LocalName						"&Local Name"
 set EnglishName					"E&nglish Name"
@@ -64,6 +66,12 @@ set ShowRatingType				"Show &rating"
 set EcoCode							"&ECO Code"
 set Matches							"&Matches"
 set Tags								"&Tags"
+
+set Section(game)					"Game Data"
+set Section(event)				"Event"
+set Section(white)				"White"
+set Section(black)				"Black"
+set Section(tags)					"Matches / Extra Tags"
 
 set Label(name)					"Name"
 set Label(fideID)					"Fide ID"
@@ -99,7 +107,7 @@ set InvalidRoundEntry			"'%s' is not a valid round entry."
 set InvalidRoundEntryDetail	"Valid round entries are '4' or '6.1'. Zero numbers are not allowed."
 set RoundIsTooHigh				"Round should be less than 256."
 set SubroundIsTooHigh			"Sub-round should be less than 256."
-set ImplausibleDate				"Date of game '%s' is earlier than event date '%s'."
+set ImplausibleDate				"Date of game '%date' is earlier than event date '%eventdate'."
 set ImplausibleRound				"Round '%s' seems to be implausible."
 set InvalidTagName				"Invalid tag name '%s' (syntax error)."
 set Field							"Field '%s': "
@@ -116,9 +124,8 @@ set InvalidMonth					"Invalid month '%s'."
 set InvalidDay						"Invalid day '%s'."
 set MissingYear					"Year is missing."
 set MissingMonth					"Month is missing."
-set StringTooLong					"Tag %tag%: string '%value%' is too long and will be truncated to '%trunc%'."
 set InvalidEventDate				"Cannot accept given event date: The difference between the year of the game and the year of the event should be less than 4 (restriction of Scid's database format)."
-set TagIsEmpty						"Tag '%s' is empty (will be discarded)."
+set TagIsEmpty						"Tag is empty (will be discarded)."
 
 } ;# namespace mc
 
@@ -457,7 +464,7 @@ proc Build {dlg base variant position number} {
 	# White + Black Player ####################################
 	foreach {side row col} {white ltrow 1 black rtrow 5} {
 		set color [string toupper $side 0 0]
-		ttk::labelbar $top.$side ::mc::[string toupper $side 0 0]
+		ttk::labelbar $top.$side [namespace current]::mc::Section($side)
 
 		ttk::label $top.$side-player-l
 		bind $top.$side-player-l <<LanguageChanged>> \
@@ -618,7 +625,7 @@ proc Build {dlg base variant position number} {
 #	bind $top.white-player-l <Destroy> [list wm withdraw $dlg]
 
 	# Game Data ###############################################
-	ttk::labelbar $top.game [namespace current]::mc::GameData
+	ttk::labelbar $top.game [namespace current]::mc::Section(game)
 
 	foreach attr {date result round termination annotator} {
 		ttk::label $top.game-$attr-l -textvar [namespace current]::mc::Label($attr)
@@ -698,7 +705,7 @@ proc Build {dlg base variant position number} {
 	BindMatchKeys $top annotator
 
 	# Event Data ##############################################
-	ttk::labelbar $top.event [namespace current]::mc::Event
+	ttk::labelbar $top.event [namespace current]::mc::Section(event)
 
 	foreach attr {title site country eventDate eventMode eventType timeMode} {
 		ttk::label $top.event-$attr-l -textvar [namespace current]::mc::Label($attr)
@@ -782,7 +789,7 @@ proc Build {dlg base variant position number} {
 	BindMatchKeys $top site
 
 	# Matches/Tags ############################################
-	ttk::labelbar $top.matches [namespace current]::mc::MatchesExtraTags
+	ttk::labelbar $top.matches [namespace current]::mc::Section(tags)
 	grid $top.matches -row $rtrow -column 5 -columnspan 3 -sticky ewn
 	incr rtrow 2
 
@@ -2748,11 +2755,31 @@ proc Log {_ arguments} {
 }
 
 
-proc Truncate {str} {
+proc TruncateValue {top tag value {field ""}} {
+	set str $value
+
 	while {[string bytelength $str] > 255} {
-		set str [string range 0 end-1]
+		set str [string range $str 0 end-1]
 	}
 
+	if {[string bytelength $value] > 255} {
+		set msg [string map [list %value% $value %trunc% $str] $mc::StringTooLong]
+		uplevel [list lappend warnings [MakeMessage $top $tag $msg $field]]
+	}
+
+	return $str
+}
+
+
+proc MakeMessage {top tag msg {field ""}} {
+	if {[string length $field] > 0} {
+		set tag [$top.$field-l cget -text]
+		set sec $mc::Section([lindex [split $field -] 0])
+	} else {
+		set tag $tag
+		set sec [string trim [lindex [split $mc::Section(tags) /] 1]]
+	}
+	append str [format $mc::TagName $tag] " (" [format $mc::InSection $sec] "):\n\n" $msg
 	return $str
 }
 
@@ -2770,40 +2797,30 @@ proc CheckFields {top title fields} {
 	set BlackRating {}
 
 	foreach entry $fields {
-		set tag [lindex $entry 0]
+		lassign $entry tagName field scoreField
 
-		switch $tag {
+		switch $tagName {
 			White - Black - Event - Site {
-				lassign $entry tagName field
 				set value ""
 				if {[info exists Priv($field)]} { set value $Priv($field) }
 				if {[string length $value] == 0} {
 					set value "?"
 				}
-				set str [Truncate $value]
-				if {[string bytelength $value] > 255} {
-					lappend warnings \
-						[string map [list %tag% $tag %value% $value %trunc% $str] $mc::StringTooLong]
-				}
-				set Tags($tagName) $str
+				set Tags($tagName) [TruncateValue $top $tagName $value $field]
 			}
 
 			Round {
-				lassign $entry tagName field
 				set value [$top.$field value]
 				if {[string length $value] == 0} {
 					set value "?"
 				} elseif {$value eq "?" || $value eq "-"} {
 					# nothing to do
 				} elseif {![$top.$field valid?]} {
-					::dialog::error \
-						-parent $top \
-						-message [format $mc::InvalidRoundEntry $value] \
-						-detail $mc::InvalidRoundEntryDetail \
-						-title $title \
-						;
-						$top.$field focus
-						return 0
+					set msg [MakeMessage $top $tag [format $mc::InvalidRoundEntry $value] $field]
+					set detail $mc::InvalidRoundEntryDetail
+					::dialog::error -parent $top -message $msg -detail $detail -title $title
+					$top.$field focus
+					return 0
 				} else {
 					set rc [$top.$field check]
 					if {$rc > 0} {
@@ -2812,41 +2829,25 @@ proc CheckFields {top title fields} {
 						} else {
 							set detail $mc::SubroundIsTooHigh
 						}
-						::dialog::error \
-							-parent $top \
-							-message [format $mc::InvalidRoundEntry $value] \
-							-detail $detail \
-							-title $title \
-							;
-							$top.$field focus
-							return 0
+						set msg [MakeMessage $top $tagName [format $mc::InvalidRoundEntry $value] $field]
+						::dialog::error -parent $top -message $msg -detail $detail -title $title
+						$top.$field focus
+						return 0
 					}
 				}
-				set str [Truncate $value]
-				if {[string length $value] > 255} {
-					lappend warnings \
-						[string map [list %tag% $tag %value% $value %trunc% $str] $mc::StringTooLong]
-				}
-				set Tags($tagName) $str
+				set Tags($tagName) [TruncateValue $top $tagName $value $field]
 			}
 
 			Annotator {
-				lassign $entry tagName field
 				if {[info exists Priv($field)]} {
 					set value $Priv($field)
 					if {[string length $value] && $value ne "?" && $value ne "-"} {
-						set str [Truncate $value]
-						if {[string length $value] > 255} {
-							lappend warnings \
-								[string map [list %tag% $tag %value% $value %trunc% $str] $mc::StringTooLong]
-						}
-						set Tags($tagName) $str
+						set Tags($tagName) [TruncateValue $top $tagName $value $field]
 					}
 				}
 			}
 
 			Date - EventDate {
-				lassign $entry tagName field
 				lassign [$top.$field date] value error
 				if {[llength $error] == 0} {
 					if {$tagName eq "Date"} {
@@ -2854,8 +2855,9 @@ proc CheckFields {top title fields} {
 						if {[llength $error] == 0} {
 							set cmp [::calendar::compare $value $date]
 							if {$cmp == -1} {
-								lappend warnings \
-									[format $mc::ImplausibleDate [$top.$field value] [$top.event-eventDate value]]
+								set map [list %date [$top.$field value] %eventdate [$top.event-eventDate value]]
+								set msg [string map $map $mc::ImplausibleDate]
+								lappend warnings [MakeMessage $top $tagName $msg $field]
 							}
 						}
 					} elseif {$Priv(characteristics-only) && !$Priv(twoRatings)} {
@@ -2865,7 +2867,8 @@ proc CheckFields {top title fields} {
 							set dy [string range $Tags(Date) 0 3]
 
 							if {$dy eq "????" || abs($dy - $ey) > 3} {
-								::dialog::error -parent $top -message $mc::InvalidEventDate -title $title
+								set msg [MakeMessage $top $tagName $mc::InvalidEventDate $field]
+								::dialog::error -parent $top -message $msg -title $title
 								$top.$field focus
 								return 0
 							}
@@ -2875,6 +2878,7 @@ proc CheckFields {top title fields} {
 				} else {
 					set msg [format $mc::Field [set [${top}.${field}-l cget -textvar]]]
 					append msg [format [set mc::$error] $value]
+					set msg [MakeMessage $top $tagName $msg $field]
 					::dialog::error -parent $top -message $msg -title $title
 					$top.$field focus
 					return 0
@@ -2882,10 +2886,10 @@ proc CheckFields {top title fields} {
 			}
 
 			Result - WhiteSex - BlackSex {
-				lassign $entry tagName field
 				if {![$top.$field valid?]} {
 					set msg [format $mc::Field [set [${top}.${field}-l cget -textvar]]]
 					append msg [format $mc::InvalidEntry $Priv($field)]
+					set msg [MakeMessage $top $tagName $mc::InvalidEventDate $field]
 					::dialog::error -parent $top -message $msg -title $title
 					$top.$field selection clear
 					$top.$field selection range 0 end
@@ -2897,7 +2901,7 @@ proc CheckFields {top title fields} {
 				if {[string length [$top.$field value]]} {
 					set Tags($tagName) [$top.$field value]
 
-					switch [lindex $entry 0] {
+					switch $tagName {
 						WhiteSex { set Tags(WhiteType) [$top.$field type] }
 						BlackSex { set Tags(BlackType) [$top.$field type] }
 					}
@@ -2905,7 +2909,6 @@ proc CheckFields {top title fields} {
 			}
 
 			WhiteElo - BlackElo {
-				lassign $entry tagName field
 				set value [$top.$field value]
 				if {[string length $value]} {
 					set Tags($tagName) $value
@@ -2913,17 +2916,15 @@ proc CheckFields {top title fields} {
 			}
 
 			WhiteRating - BlackRating {
-				lassign $entry tagName typeField scoreField
 				set value [$top.$scoreField value]
 				if {[string length $value]} {
-					set type [string range [lindex $entry 0] 0 4][$top.$typeField value]
+					set type [string range $tagName 0 4][$top.$field value]
 					set Tags($type) $value
-					set [lindex $entry 0] $type
+					set $tagName $type
 				}
 			}
 
 			WhiteFideId - BlackFideId {
-				lassign $entry tagName field
 				set value [$top.$field value]
 				if {[string length $value]} {
 					set Tags($tagName) $value
@@ -2935,13 +2936,13 @@ proc CheckFields {top title fields} {
 			EventCountry - EventType -
 			Termination - Mode -
 			TimeMode - ECO {
-				if {$tag ne "ECO" || $Priv(game-eco-flag)} {
-					lassign $entry tagName field
+				if {$tagName ne "ECO" || $Priv(game-eco-flag)} {
 					set value ""
 					if {[info exists Priv($field)]} { set value $Priv($field) }
 					if {![$top.$field valid?]} {
 						set msg [format $mc::Field [set [${top}.${field}-l cget -textvar]]]
 						append msg [format $mc::InvalidEntry $value]
+						set msg [MakeMessage $top $tagName $mc::InvalidEventDate $field]
 						::dialog::error -parent $top -message $msg -title $title
 						$top.$field selection clear
 						$top.$field selection range 0 end
@@ -2960,7 +2961,7 @@ proc CheckFields {top title fields} {
 		if {![info exists Tags($tag)]} {
 			set value $Lookup($tag)
 			if {[string length $value] == 0} {
-				lappend warnings [format $mc::TagIsEmpty $tag]
+				lappend warnings [MakeMessage $top $tag $mc::TagIsEmpty $field]
 			} elseif {$value ne "?"} {
 				set error ""
 
@@ -3030,9 +3031,8 @@ proc CheckFields {top title fields} {
 								if {$valid} {
 									set Tags($tag) $value
 								} else {
-									set msg [format $mc::ExtraTag $tag]
-									append msg [format InvalidTimeControl $value]
-									lappend warnings $msg
+									set msg [format InvalidTimeControl $value]
+									lappend warnings [MakeMessage $top $tag $msg $field]
 								}
 							}
 						}
@@ -3052,12 +3052,7 @@ proc CheckFields {top title fields} {
 					}
 
 					if {[llength $error] == 0} {
-						set str [Truncate $value]
-						if {[string length $value] > 255} {
-							lappend warnings \
-								[string map [list %tag% $tag %value% $value %trunc% $str] $mc::StringTooLong]
-						}
-						set Tags($tag) $str
+						set Tags($tagName) [TruncateValue $top $tag $value]
 					}
 				}
 
@@ -3065,7 +3060,8 @@ proc CheckFields {top title fields} {
 					$top.nb select $top.nb.tags
 					focus $top.nb.tags.list
 					SetCurrentElement $top.nb.tags.list [FindElement $top.nb.tags.list $tag] $column
-					::dialog::error -parent $top -message $error -title $title
+					set msg [MakeMessage $top $tag $error]
+					::dialog::error -parent $top -message $msg -title $title
 					return 0
 				}
 			}

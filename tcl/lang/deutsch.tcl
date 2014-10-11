@@ -1804,10 +1804,6 @@
 ::dialog::save::mc::ReplaceGame					"Partie ersetzen"
 ::dialog::save::mc::EditCharacteristics		"Kenndaten bearbeiten"
 	
-::dialog::save::mc::GameData						"Partiedaten"
-::dialog::save::mc::Event							"Turnier"
-
-::dialog::save::mc::MatchesExtraTags			"Entsprechungen / Zusätzliche Tags"
 ::dialog::save::mc::PressToSelect				"Drücke Strg-0 bis Strg-9 zur Auswahl (oder linker Mausklick)"
 ::dialog::save::mc::PressForWhole				"Drücke Alt-0 bis Alt-9 für ganzen Datensatz (oder mittlerer Mausklick)"
 ::dialog::save::mc::EditTags						"Tags bearbeiten"
@@ -1827,6 +1823,9 @@
 ::dialog::save::mc::CurrentGameHasTrialMode	"Die aktuelle Partie befindet sich im Variantentest und kann nicht gespeichert werden."
 ::dialog::save::mc::LeaveTrialModeHint			"Der Variantentest sollte zuvor verlassen werden, dazu kann das Tastaturkürzel %s verwendet werden."
 ::dialog::save::mc::OpenPlayerDictionary		"Spielerlexikon öffnen"
+::dialog::save::mc::TagName						"Tag '%s'"
+::dialog::save::mc::InSection						"in Sektion '%s'"
+::dialog::save::mc::StringTooLong				"Der Eintrag <small><fixed>%value%</fixed></small> ist zu lang und wird auf <small><fixed>%trunc%</fixed></small> abgeschnitten."
 
 ::dialog::save::mc::LocalName						"&Heimatl. Name"
 ::dialog::save::mc::EnglishName					"E&nglischer Name"
@@ -1834,6 +1833,12 @@
 ::dialog::save::mc::EcoCode						"&ECO-Code"
 ::dialog::save::mc::Matches						"&Entsprechungen"
 ::dialog::save::mc::Tags							"&Tags"
+
+::dialog::save::mc::Section(game)				"Partiedaten"
+::dialog::save::mc::Section(event)				"Turnier"
+::dialog::save::mc::Section(white)				"Weiß"
+::dialog::save::mc::Section(black)				"Schwarz"
+::dialog::save::mc::Section(tags)				"Entsprechungen / Zusätzliche Tags"
 
 ::dialog::save::mc::Label(name)					"Name"
 ::dialog::save::mc::Label(fideID)				"Fide-ID"
@@ -1868,7 +1873,7 @@
 ::dialog::save::mc::InvalidRoundEntryDetail	"Zulässig sind Einträge der Form '4' or '6.1'. Null ist nicht möglich als Rundenangabe."
 ::dialog::save::mc::RoundIsTooHigh				"Die Rundenzahl muss kleiner als 256 sein."
 ::dialog::save::mc::SubroundIsTooHigh			"Die Unterrundenanzahl muss kleiner als 256 sein."
-::dialog::save::mc::ImplausibleDate				"Partiedatum '%s' ist früher als das Turnierdatum '%s'."
+::dialog::save::mc::ImplausibleDate				"Partiedatum '%date' ist früher als das Turnierdatum '%eventdate'."
 ::dialog::save::mc::InvalidTagName				"Unerlaubter Tag-Name '%s' (Syntaxfehler)."
 ::dialog::save::mc::Field							"Feld '%s': "
 ::dialog::save::mc::ExtraTag						"Extra-Tag '%s': "
@@ -1884,9 +1889,8 @@
 ::dialog::save::mc::InvalidDay					"Ungültiger Tag '%s'."
 ::dialog::save::mc::MissingYear					"Die Jahresangabe wird vermisst."
 ::dialog::save::mc::MissingMonth					"Die Monatsangabe wird vermisst."
-::dialog::save::mc::StringTooLong				"Tag %tag%: der Eintrag '%value%' ist zu lang und wird auf '%trunc%' abgeschnitten."
 ::dialog::save::mc::InvalidEventDate			"Das eingegebene Turnierdatum kann nicht akzeptiert werden: Die Differenz zwischen dem Partiejahr und dem Turnierjahr muss kleiner als 4 sein (eine Beschränkung in Scid's Datenbankformat)."
-::dialog::save::mc::TagIsEmpty					"Das Tag '%s' ist leer (und wird ausgesondert)"
+::dialog::save::mc::TagIsEmpty					"Das Tag ist leer (und wird ausgesondert)"
 
 ### gamehistory ########################################################
 ::game::history::mc::GameHistory	"Partienhistorie"

@@ -1809,10 +1809,6 @@
 ::dialog::save::mc::ReplaceGame					"Reemplazar partida"
 ::dialog::save::mc::EditCharacteristics		"Editar características"
 	
-::dialog::save::mc::GameData						"Datos de la partida"
-::dialog::save::mc::Event							"Evento"
-
-::dialog::save::mc::MatchesExtraTags			"Etiquetas iguales / Extra Etiquetas"
 ::dialog::save::mc::PressToSelect				"Presione Ctrl-0 a Ctrl-9 (o el botón izquierdo del ratón) para seleccionar"
 ::dialog::save::mc::PressForWhole				"Presione Alt-0 a Alt-9 (o el botón medio del ratón) para grupo de datos completo"
 ::dialog::save::mc::EditTags						"Editar etiquetas"
@@ -1839,6 +1835,15 @@
 ::dialog::save::mc::EcoCode						"Código &ECO"
 ::dialog::save::mc::Matches						"&Matches"
 ::dialog::save::mc::Tags							"E&tiquetas"
+::dialog::save::mc::TagName						"Etiqueta '%s'"
+::dialog::save::mc::InSection						"in section '%s'" ;# NEW
+::dialog::save::mc::StringTooLong				"La cadena <small><fixed>%value%</fixed></small> es demasiado larga y se cortará a <small><fixed>%trunc%</fixed></small>"
+
+::dialog::save::mc::Section(game)				"Datos de la partida"
+::dialog::save::mc::Section(event)				"Evento"
+::dialog::save::mc::Section(white)				"White"
+::dialog::save::mc::Section(black)				"Black"
+::dialog::save::mc::Section(tags)				"Etiquetas iguales / Extra Etiquetas"
 
 ::dialog::save::mc::Label(name)					"Nombre"
 ::dialog::save::mc::Label(fideID)				"Fide-ID"
@@ -1873,7 +1878,7 @@
 ::dialog::save::mc::InvalidRoundEntryDetail	"Entradas de ronda válidas son '4' ó '6.1'. No se permiten ceros."
 ::dialog::save::mc::RoundIsTooHigh				"La ronda debería ser menor a 256."
 ::dialog::save::mc::SubroundIsTooHigh			"La sub-ronda debería ser menor a 256."
-::dialog::save::mc::ImplausibleDate				"La fecha de la partida '%s' es anterior a la fecha del evento '%s'."
+::dialog::save::mc::ImplausibleDate				"La fecha de la partida '%date' es anterior a la fecha del evento '%eventdate'."
 ::dialog::save::mc::InvalidTagName				"Nombre de etiqueta no válido '%s' (error de sintaxis)."
 ::dialog::save::mc::Field							"Campo '%s': "
 ::dialog::save::mc::ExtraTag						"Etiqueta extra '%s': "
@@ -1889,9 +1894,8 @@
 ::dialog::save::mc::InvalidDay					"Día '%s' no válido."
 ::dialog::save::mc::MissingYear					"Se desconoce el año."
 ::dialog::save::mc::MissingMonth					"Se desconoce el mes."
-::dialog::save::mc::StringTooLong				"Etiqueta %tag%: la cadena '%value%' es demasiado larga y se cortará a '%trunc%'."
 ::dialog::save::mc::InvalidEventDate			"No se puede aceptar la fecha de evento suministrada: La diferencia entre el año de la partida y el año del evento debería ser menor a 4 (restricción del formato de base de datos de Scid)."
-::dialog::save::mc::TagIsEmpty					"La etiqueta '%s' está vacía (se descartará)."
+::dialog::save::mc::TagIsEmpty					"La etiqueta está vacía (se descartará)."
 
 ### gamehistory ########################################################
 ::game::history::mc::GameHistory	"Historial de Juegos"

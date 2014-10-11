@@ -60,6 +60,7 @@
 
 #include <tcl.h>
 #include <tk.h>
+#include <expat.h>
 #include <string.h>
 #include <ctype.h>
 
@@ -108,6 +109,75 @@ static char const* CmdXml						= "::scidb::misc::xml";
 static char const* CmdZipContent				= "::scidb::misc::zipContent";
 
 static unsigned cacheCount = 0;
+
+
+struct XmlData
+{
+	XmlData(Tcl_Obj* obj) :resultList(obj), size(0) {}
+
+	Tcl_Obj*			resultList;
+	mstl::string	attribute;
+	mstl::string	prevAttr;
+	unsigned			size;
+};
+
+
+static void
+startXmlElement(void* clData, XML_Char const* elem, char const** attr)
+{
+	XmlData* data = static_cast<XmlData*>(clData);
+
+	if (strcmp(elem, "xml") != 0)
+	{
+		if (!data->attribute.empty())
+			data->attribute.append('-');
+		data->attribute.append(elem);
+	}
+}
+
+
+static void
+endXmlElement(void* clData, XML_Char const* elem)
+{
+	XmlData* data = static_cast<XmlData*>(clData);
+
+	if (strcmp(elem, "xml") != 0)
+	{
+		M_ASSERT(!data->attribute.empty());
+
+		mstl::string::size_type n = data->attribute.rfind('-');
+
+		if (n == mstl::string::npos)
+			n = 0;
+
+		data->attribute.erase(n, mstl::string::npos);
+	}
+}
+
+
+static void
+xmlContent(void* clData, XML_Char const* s, int len)
+{
+	XmlData* data = static_cast<XmlData*>(clData);
+
+	if (data->prevAttr == data->attribute && data->size > 0)
+	{
+		Tcl_Obj* str;
+		Tcl_ListObjIndex(nullptr, data->resultList, data->size - 1, &str);
+		Tcl_AppendToObj(str, s, len);
+	}
+	else
+	{
+		Tcl_ListObjAppendElement(	nullptr,
+											data->resultList,
+											Tcl_NewStringObj(data->attribute, data->attribute.size()));
+		Tcl_ListObjAppendElement(	nullptr,
+											data->resultList,
+											Tcl_NewStringObj(s, len));
+		data->prevAttr = data->attribute;
+		data->size += 2;
+	}
+}
 
 
 inline bool
@@ -914,6 +984,39 @@ cmdXmlFromList(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 
 static int
+cmdXmlTokenize(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	char const* str = stringFromObj(objc, objv, 1);
+
+	XML_Parser parser = ::XML_ParserCreate("UTF-8");
+
+	if (parser == 0)
+		return error(CmdXml, "tokenize", 0, "couldn't allocate memory for parser");
+	
+	XmlData data(Tcl_NewListObj(0, nullptr));
+	XML_SetUserData(parser, &data);
+	XML_SetElementHandler(parser, ::startXmlElement, ::endXmlElement);
+	XML_SetCharacterDataHandler(parser, ::xmlContent);
+
+	try
+	{
+		if (!XML_Parse(parser, str, strlen(str), true))
+			throw 0;
+	}
+	catch (...)
+	{
+		XML_ParserFree(parser);
+		return error(CmdXml, "tokenize", 0, "syntax error in XML string");
+	}
+
+	XML_ParserFree(parser);
+	setResult(data.resultList);
+
+	return TCL_OK;
+}
+
+
+static int
 cmdXml(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	char const* command = stringFromObj(objc, objv, 1);
@@ -923,6 +1026,9 @@ cmdXml(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	if (strcmp(command, "fromList") == 0)
 		return cmdXmlFromList(clientData, ti, objc - 1, objv + 1);
+
+	if (strcmp(command, "tokenize") == 0)
+		return cmdXmlTokenize(clientData, ti, objc - 1, objv + 1);
 
 	return error(CmdXml, 0, 0, "unknown command '%s'", command);
 }

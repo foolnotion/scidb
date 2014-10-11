@@ -1816,10 +1816,6 @@
 ::dialog::save::mc::ReplaceGame					"Sostituisci Partita"
 ::dialog::save::mc::EditCharacteristics		"Modifica caratteristiche"
 	
-::dialog::save::mc::GameData						"Dati Partita"
-::dialog::save::mc::Event							"Evento"
-
-::dialog::save::mc::MatchesExtraTags			"Concordanze Tag / Estranee"
 ::dialog::save::mc::PressToSelect				"Premi da Ctrl-0 a Ctrl-9 (o tasto sinistro del mouse) per selezionare"
 ::dialog::save::mc::PressForWhole				"Premi da Alt-0 a Alt-9 (o tasto centrale del mouse) per l'intera selezione dati"
 ::dialog::save::mc::EditTags						"Modifica Tag"
@@ -1839,6 +1835,9 @@
 ::dialog::save::mc::CurrentGameHasTrialMode	"L'attuale partita è in modalità di prova e non può essere salvata."
 ::dialog::save::mc::LeaveTrialModeHint			"Prima devi uscire dalla modalità di prova, usa la scorciatoia %s."
 ::dialog::save::mc::OpenPlayerDictionary		"Apri Dizionario Giocatore"
+::dialog::save::mc::TagName						"Tag '%s'"
+::dialog::save::mc::InSection						"in section '%s'" ;# NEW
+::dialog::save::mc::StringTooLong				"La stringa <small><fixed>%value%</fixed></small> è troppo lunga e sarà troncata a <small><fixed>%trunc%</fixed></small>"
 
 ::dialog::save::mc::LocalName						"&Nome locale"
 ::dialog::save::mc::EnglishName					"Nome &Inglese"
@@ -1868,6 +1867,12 @@
 ::dialog::save::mc::Label(frequency)			"Frequenza"
 ::dialog::save::mc::Label(score)					"Rating" ;#"Second rating"
 
+::dialog::save::mc::Section(game)				"Dati Partita"
+::dialog::save::mc::Section(event)				"Evento"
+::dialog::save::mc::Section(white)				"Bianco"
+::dialog::save::mc::Section(black)				"Nero"
+::dialog::save::mc::Section(tags)				"Concordanze Tag / Estranee"
+
 ::dialog::save::mc::GameBase						"Base Partite"
 ::dialog::save::mc::PlayerBase					"Base Giocatori"
 ::dialog::save::mc::EventBase						"Base Eventi"
@@ -1880,7 +1885,7 @@
 ::dialog::save::mc::InvalidRoundEntryDetail	"Valori di turno validi sono '4' o '6.1'. Lo zero non è permesso."
 ::dialog::save::mc::RoundIsTooHigh				"I turni devono essere meno di 256."
 ::dialog::save::mc::SubroundIsTooHigh			"I sotto-turni devono essere meno di 256."
-::dialog::save::mc::ImplausibleDate				"La data della partita '%s' è precedente a quella dell'evento '%s'."
+::dialog::save::mc::ImplausibleDate				"La data della partita '%date' è precedente a quella dell'evento '%eventdate'."
 ::dialog::save::mc::InvalidTagName				"Nome tag non valido '%s' (errore di sintassi)."
 ::dialog::save::mc::Field							"Campo '%s': "
 ::dialog::save::mc::ExtraTag						"Tag Extra '%s': "
@@ -1896,9 +1901,8 @@
 ::dialog::save::mc::InvalidDay					"Giorno non valido '%s'."
 ::dialog::save::mc::MissingYear					"Manca l'anno."
 ::dialog::save::mc::MissingMonth					"Manca il mese."
-::dialog::save::mc::StringTooLong				"Tag %tag%: la stringa '%value%' è troppo lunga e sarà troncata a '%trunc%'."
 ::dialog::save::mc::InvalidEventDate			"Non posso accettare la data inserita: La differenza tra l'anno della partita e l'anno dell'evento dovrebbe essere meno di 4 (restrizione del formato database di Scid)."
-::dialog::save::mc::TagIsEmpty					"Tag '%s' is empty (will be discarded)."
+::dialog::save::mc::TagIsEmpty					"Tag is empty (will be discarded)."
 
 ### gamehistory ########################################################
 ::game::history::mc::GameHistory	"Storia della Partita"

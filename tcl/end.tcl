@@ -112,6 +112,11 @@ if {[tk windowingsystem] eq "x11"} {
 	proc dialog::messagebox::changeDesktop {w type} { ::x11::changeDesktop $w }
 }
 
+
+proc dialog::messagebox::tokenize {msg} {
+	return [scidb::misc::xml tokenize [append expr <xml> $msg </xml>]]
+}
+
 proc fsbox::dirIsEmpty {dir} { return [::scidb::misc::dirEmpty? $dir] }
 proc fsbox::lookupColor {color} { return [::colors::lookup $color] }
 

@@ -1803,10 +1803,6 @@
 ::dialog::save::mc::ReplaceGame					"Replace Game"
 ::dialog::save::mc::EditCharacteristics		"Edit Characteristics"
 	
-::dialog::save::mc::GameData						"Game Data"
-::dialog::save::mc::Event							"Event"
-
-::dialog::save::mc::MatchesExtraTags			"Matches / Extra Tags"
 ::dialog::save::mc::PressToSelect				"Press Ctrl-0 to Ctrl-9 (or left mouse button) to select"
 ::dialog::save::mc::PressForWhole				"Press Alt-0 to Alt-9 (or middle mouse button) for whole data set"
 ::dialog::save::mc::EditTags						"Edit Tags"
@@ -1826,6 +1822,9 @@
 ::dialog::save::mc::CurrentGameHasTrialMode	"Current game is in trial mode and cannot be saved."
 ::dialog::save::mc::LeaveTrialModeHint			"You have to leave trial mode beforehand, use shortcut %s."
 ::dialog::save::mc::OpenPlayerDictionary		"Open Player Dictionary"
+::dialog::save::mc::TagName						"Tag '%s'"
+::dialog::save::mc::InSection						"in section %s"
+::dialog::save::mc::StringTooLong				"Content <small><fixed>%value%' is too long and will be truncated to <small><fixed>%trunc%</fixed></small>"
 
 ::dialog::save::mc::LocalName						"&Local Name"
 ::dialog::save::mc::EnglishName					"E&nglish Name"
@@ -1833,6 +1832,12 @@
 ::dialog::save::mc::EcoCode						"&ECO Code"
 ::dialog::save::mc::Matches						"&Matches"
 ::dialog::save::mc::Tags							"&Tags"
+
+::dialog::save::mc::Section(game)				"Game Data"
+::dialog::save::mc::Section(event)				"Event"
+::dialog::save::mc::Section(white)				"White"
+::dialog::save::mc::Section(black)				"Black"
+::dialog::save::mc::Section(tags)				"Matches / Extra Tags"
 
 ::dialog::save::mc::Label(name)					"Name"
 ::dialog::save::mc::Label(fideID)				"Fide-ID"
@@ -1867,7 +1872,7 @@
 ::dialog::save::mc::InvalidRoundEntryDetail	"Valid round entries are '4' or '6.1'. Zero numbers are not allowed."
 ::dialog::save::mc::RoundIsTooHigh				"Round should be less than 256."
 ::dialog::save::mc::SubroundIsTooHigh			"Sub-round should be less than 256."
-::dialog::save::mc::ImplausibleDate				"Date of game '%s' is earlier than event date '%s'."
+::dialog::save::mc::ImplausibleDate				"Date of game '%date' is earlier than event date '%eventdate'."
 ::dialog::save::mc::InvalidTagName				"Invalid tag name '%s' (syntax error)."
 ::dialog::save::mc::Field							"Field '%s': "
 ::dialog::save::mc::ExtraTag						"Extra tag '%s': "
@@ -1883,9 +1888,8 @@
 ::dialog::save::mc::InvalidDay					"Invalid day '%s'."
 ::dialog::save::mc::MissingYear					"Year is missing."
 ::dialog::save::mc::MissingMonth					"Month is missing."
-::dialog::save::mc::StringTooLong				"Tag %tag%: string '%value%' is too long and will be truncated to '%trunc%'."
 ::dialog::save::mc::InvalidEventDate			"Cannot accept given event date: The difference between the year of the game and the year of the event should be less than 4 (restriction of Scid's database format)."
-::dialog::save::mc::TagIsEmpty					"Tag '%s' is empty (will be discarded)."
+::dialog::save::mc::TagIsEmpty					"Tag is empty (will be discarded)."
 
 ### gamehistory ########################################################
 ::game::history::mc::GameHistory	"Game History"

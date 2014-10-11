@@ -1815,10 +1815,6 @@
 ::dialog::save::mc::ReplaceGame			"Játszma kicserélése"
 ::dialog::save::mc::EditCharacteristics		"Tulajdonságok beállítása"
 	
-::dialog::save::mc::GameData			"Játszma adatai"
-::dialog::save::mc::Event			"Esemény"
-
-::dialog::save::mc::MatchesExtraTags		"Játszmák / Extraneous Tags"
 ::dialog::save::mc::PressToSelect		"Kiválasztáshoz nyomja meg a Ctrl-0-tól Ctrl-9-ig (vagy bal egérgomb)"
 ::dialog::save::mc::PressForWhole		"Nyomj Alt-0-9 -et (vagy jobb egérgomb) az egész adathalmazhoz"
 ::dialog::save::mc::EditTags			"Cimkék szerkesztése"
@@ -1838,6 +1834,9 @@
 ::dialog::save::mc::CurrentGameHasTrialMode	"Current game is in trial mode and cannot be saved." ;' NEW
 ::dialog::save::mc::LeaveTrialModeHint		"You have to leave trial mode beforehand, use shortcut %s." ;# NEW
 ::dialog::save::mc::OpenPlayerDictionary	"Open Player Dictionary" ;# NEW
+::dialog::save::mc::TagName			"Tag '%s'"
+::dialog::save::mc::InSection			"in section %section" ;# NEW
+::dialog::save::mc::StringTooLong		"String <small><fixed>%value%</fixed></small> is too long and will be truncated to <small><fixed>%trunc%</fixed></small>"
 
 ::dialog::save::mc::LocalName			"He&lyi Név"
 ::dialog::save::mc::EnglishName			"A&ngol Név"
@@ -1845,6 +1844,12 @@
 ::dialog::save::mc::EcoCode			"&ECO"
 ::dialog::save::mc::Matches			"&Játszmák"
 ::dialog::save::mc::Tags			"&Cimkék"
+
+::dialog::save::mc::Section(game)		"Játszma adatai"
+::dialog::save::mc::Section(event)		"Esemény"
+::dialog::save::mc::Section(white)		"Világos"
+::dialog::save::mc::Section(black)		"Sötét"
+::dialog::save::mc::Section(tags)		"Játszmák / Extraneous Tags"
 
 ::dialog::save::mc::Label(name)			"Név"
 ::dialog::save::mc::Label(fideID)		"Név/Fide-Azonosító"
@@ -1879,7 +1884,7 @@
 ::dialog::save::mc::InvalidRoundEntryDetail	"Érvényes bejegyzések pl. '4' vagy '6.1'.  nem megengedett"
 ::dialog::save::mc::RoundIsTooHigh		"A fordulók száma nem haladhatja meg a 256-t"
 ::dialog::save::mc::SubroundIsTooHigh		"Sub-round should be less than 256."
-::dialog::save::mc::ImplausibleDate		"A játszma dátuma ('%s') korábbi mint az esemény dátuma ('%s')."
+::dialog::save::mc::ImplausibleDate		"A játszma dátuma ('%date') korábbi mint az esemény dátuma ('%eventdate')."
 ::dialog::save::mc::InvalidTagName		"Érénytelen cimke név: '%s' (syntax error)."
 ::dialog::save::mc::Field			"'%s' mező: "
 ::dialog::save::mc::ExtraTag			"'%s'Extra cimke : "
@@ -1895,9 +1900,8 @@
 ::dialog::save::mc::InvalidDay					"Érvénytelen nap '%s'."
 ::dialog::save::mc::MissingYear					"Az évszám hiányzik."
 ::dialog::save::mc::MissingMonth					"A hónap hiányzik."
-::dialog::save::mc::StringTooLong				"Tag %tag%: string '%value%' is too long and will be truncated to '%trunc%'."
 ::dialog::save::mc::InvalidEventDate			"Cannot accept given event date: The difference between the year of the game and the year of the event should be less than 4 (restriction of Scid's database format)."
-::dialog::save::mc::TagIsEmpty					"'%s' címke üres (kihagyva)."
+::dialog::save::mc::TagIsEmpty					"Címke üres (kihagyva)."
 
 ### gamehistory ########################################################
 ::game::history::mc::GameHistory	"Játszma történet"

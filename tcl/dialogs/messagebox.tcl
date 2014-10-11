@@ -44,9 +44,6 @@ set DontAskAgain	"Don't ask again"
 } ;# namespace mc
 
 ### Client Relevant Data ########################################
-variable infoFont		[list [font configure TkDefaultFont -family] [font configure TkDefaultFont -size]]
-variable alertFont	[list {*}$infoFont bold]
-
 variable iconOk {}
 variable iconCancel {}
 variable iconGoNext {}
@@ -79,6 +76,11 @@ variable Specs {
 proc mc {msg} {
 	package require msgcat
 	return [::msgcat::mc [set $msg]]
+}
+
+
+proc tokenize {msg} {
+	return [list "" msg]
 }
 
 
@@ -240,8 +242,6 @@ proc alert {args} {
 	variable iconGoNext
 	variable iconCancel
 	variable iconYes
-	variable infoFont
-	variable alertFont
 	variable messagebox::ButtonOrder
 	variable messagebox::Current
 
@@ -294,6 +294,8 @@ proc alert {args} {
 	catch { wm attributes $w -type dialog }
 
 	set alertBox [tk::frame $w.alert]
+	set infoFont [list [font configure TkDefaultFont -family] [font configure TkDefaultFont -size]]
+	set alertFont [list {*}$infoFont bold]
 
 	if {[llength $opts(-embed)]} {
 		set k [string first <embed> $opts(-message)]
@@ -317,7 +319,39 @@ proc alert {args} {
 			grid rowconfigure $alertBox 3 -minsize 10
 		}
 	} else {
-		grid [tk::message $alertBox.text -font $alertFont -text $opts(-message) -width 384]
+		set normalSize [font configure TkDefaultFont -size]
+		set smallSize [font configure TkTooltipFont -size]
+		set defaultFamily [font configure TkDefaultFont -family]
+		set fixedFamily [font configure TkFixedFont -family]
+		set parts [messagebox::tokenize $opts(-message)]
+		set row 0
+
+		foreach {attrs str} $parts {
+			if {[string length $attrs]} {
+				set weight normal
+				set padx 10
+			} else {
+				set weight bold
+				set padx 0
+			}
+			set family $defaultFamily
+			set size $normalSize
+
+			foreach attr [split $attrs -] {
+				switch -- $attr {
+					small		{ set size $smallSize }
+					normal	{ set weight normal }
+					bold		{ set weight bold }
+					fixed		{ set family $fixedFamily }
+				}
+			}
+
+			set font [list $family $size $weight]
+			if {$row > 0} { grid rowconfigure $alertBox [expr {$row - 1}] -minsize 5 }
+			grid [tk::message $alertBox.m$row -font $font -text $str -width 384 -justify left -padx $padx] \
+				-row $row -column 0 -sticky w
+			incr row 2
+		}
 	}
 
 	if {[string length $opts(-detail)]} {
