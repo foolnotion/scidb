@@ -69,6 +69,7 @@ public:
 	void setup(char letter, uint16_t number);
 	mstl::string asString() const;
 	mstl::string asShortString() const;
+	void clear();
 
 	static Eco root();
 	static Eco fromShort(uint16_t code);

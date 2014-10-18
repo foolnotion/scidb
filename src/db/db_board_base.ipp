@@ -90,4 +90,15 @@ db::board::msbClear(uint64_t& n)
 	return r;
 }
 
+
+inline
+uint64_t
+db::board::allSquaresBetween(Square from, Square to)
+{
+	M_REQUIRE(from <= sq::h8);
+	M_REQUIRE(to <= sq::h8);
+
+	return Obstructed[from][to];
+}
+
 // vi:set ts=3 sw=3:

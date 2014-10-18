@@ -34,6 +34,8 @@
 #include "db_eco.h"
 #include "db_game_info.h"
 #include "db_pgn_aquarium.h"
+#include "db_eco_table.h"
+#include "db_line.h"
 #include "db_exception.h"
 
 #include "nsUniversalDetector.h"
@@ -834,6 +836,7 @@ PgnReader::process(Progress& progress)
 				m_sourceIsPossiblyChessBase = false;
 				m_sourceIsChessOK = false;
 				m_modification = m_generalModification;
+				m_eco.clear();
 
 				if ((m_variant = m_givenVariant) == variant::Antichess)
 					m_variant = variant::Suicide;
@@ -844,8 +847,12 @@ PgnReader::process(Progress& progress)
 					readTags();
 					m_parsingTags = false;
 
-					if (m_modification == Raw && m_tags.contains(PlyCount) && m_tags.contains(EventCountry))
+					if (	m_modification == Normalize
+						&& m_tags.contains(PlyCount)
+						&& m_tags.contains(EventCountry))
+					{
 						m_sourceIsPossiblyChessBase = true;
+					}
 				}
 
 				if (m_variant != variant::Undetermined && !m_tags.contains(tag::Variant))
@@ -854,16 +861,22 @@ PgnReader::process(Progress& progress)
 				if (m_variant != variant::Undetermined && !consumer().supportsVariant(m_variant))
 					sendError(UnsupportedVariant, m_currPos, m_tags.value(tag::Variant));
 
+				consumer().setupVariant(m_variant == variant::Undetermined ? variant::Normal : m_variant);
+
+				if (variant::isAntichessExceptLosers(m_variant) && m_idn <= 960)
+					m_idn += 3*960;
+
 				if (!consumer().startGame(m_tags, m_idn))
 					sendError(UnsupportedVariant, m_currPos, m_tags.value(tag::Variant));
 
-				token = nextToken(kTag);
-				consumer().setVariant(m_variant);
-
-				if (m_variant == variant::Undetermined || m_variant == variant::Normal)
+				if (!m_eco && (m_variant == variant::Undetermined || m_variant == variant::Normal))
 					consumer().useVariant(variant::Crazyhouse);
 
 				consumer().startMoveSection();
+				if (m_eco)
+					setupEcoPosition();
+
+				token = nextToken(kTag);
 
 				unsigned nestedVar = 0;
 
@@ -1917,7 +1930,7 @@ PgnReader::skipLine(mstl::string* str)
 	if (str)
 	{
 		while (m_putback)
-			str += m_putbackBuf[--m_putback];
+			str->append(m_putbackBuf[--m_putback]);
 
 		str->append(m_linePos, m_lineEnd);
 	}
@@ -2119,7 +2132,7 @@ PgnReader::checkFen()
 
 		if (board.validate(m_variant) != Board::Valid)
 		{
-			if (!m_variantValue.empty())
+			if (!m_eco && !m_variantValue.empty())
 				sendError(UnsupportedVariant, m_prevPos, m_variantValue);
 
 			sendError(InvalidFen, m_fenPos, fen);
@@ -2131,7 +2144,7 @@ PgnReader::checkFen()
 			m_tags.remove(SetUp);
 			m_idn = variant::Standard;
 		}
-		else
+		else if (m_idn == 0)
 		{
 			m_idn = board.computeIdn(m_variant);
 			m_tags.remove(tag::Eco);
@@ -2141,7 +2154,39 @@ PgnReader::checkFen()
 			else
 				m_tags.remove(Fen);
 		}
+		else if (m_eco)
+		{
+			if (EcoTable::specimen(variant::Normal).getEco(board) == m_eco)
+			{
+				m_idn = variant::Standard;
+				m_tags.remove(SetUp);
+				m_tags.remove(Fen);
+			}
+			else
+			{
+				m_eco.clear();
+			}
+		}
 	}
+}
+
+
+void
+PgnReader::setupEcoPosition()
+{
+	M_ASSERT(m_eco);
+	M_ASSERT(m_variant = variant::Normal);
+
+	Board const&	board	= consumer().board();
+	Line const&		line	= EcoTable::specimen(variant::Normal).getLine(m_eco);
+
+	for (unsigned i = 0; i < line.length; ++i)
+	{
+		m_move = board.makeMove(line[i]);
+		putMove();
+	}
+
+	m_atStart = true;
 }
 
 
@@ -2365,6 +2410,32 @@ PgnReader::parseVariant()
 		else
 			return false;
 
+		setupVariant(variant::Normal);
+	}
+	else if (::equal(m_variantValue, "eco/", 4))
+	{
+		mstl::string eco(m_variantValue.c_str() + 4);
+		eco.toupper();
+		m_eco.setup(eco);
+
+		m_idn = 518;
+		setupVariant(variant::Normal);
+	}
+	else if (::equal(m_variantValue, "openings/", 9))
+	{
+		mstl::string opening(m_variantValue.c_str() + 9, m_variantValue.size() - 9);
+
+		if (::equal(opening, "falkbeer_cg", 11))
+			m_eco.setup("C31");
+		else if (::equal(opening, "albin_cg", 8))
+			m_eco.setup("D08");
+
+		m_idn = 518;
+		setupVariant(variant::Normal);
+	}
+	else if (::equal(m_variantValue, "nic/", 4))
+	{
+		m_idn = 518;
 		setupVariant(variant::Normal);
 	}
 	else
@@ -5102,10 +5173,9 @@ PgnReader::unexpectedSymbol(Token prevToken, int c)
 		return prevToken;
 	}
 
-	if (!(prevToken & kSan))
-		sendError(UnexpectedSymbol, m_currPos, mstl::string(::isprint(c) ? 1 : 0, c));
-
+	sendError(UnexpectedSymbol, m_currPos, mstl::string(::isprint(c) ? 1 : 0, c));
 	putback(c);
+
 	return kError;
 }
 
@@ -5254,7 +5324,23 @@ PgnReader::nextToken(Token prevToken)
 		unsigned char c = get(true);
 
 		if (__builtin_expect(c & 0x80, 0))
-			unexpectedSymbol(prevToken, c);
+		{
+			if (	c == 194
+				&& static_cast<unsigned char>(m_linePos[0]) == 189
+				&& m_linePos[1] == '-'
+				&& static_cast<unsigned char>(m_linePos[2]) == 194
+				&& static_cast<unsigned char>(m_linePos[3]) == 189)
+			{
+				// catch "½-½"
+				advanceLinePos(4);
+				return resultToken(result::Draw);
+			}
+
+			if ((prevToken = unexpectedSymbol(prevToken, c)) <= kError)
+				return prevToken;
+
+			continue;
+		}
 
 		m_prevPos = m_currPos;
 

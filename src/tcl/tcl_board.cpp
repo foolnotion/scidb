@@ -52,9 +52,10 @@ static char const* CmdFenToBoard			= "::scidb::board::fenToBoard";
 static char const* CmdIdnToFen			= "::scidb::board::idnToFen";
 static char const* CmdIsValidFen			= "::scidb::board::isValidFen";
 static char const* CmdMakeFen				= "::scidb::board::makeFen";
-static char const* CmdTransposeFen		= "::scidb::board::transposeFen";
-static char const* CmdPositionNumber	= "::scidb::board::positionNumber";
+static char const* CmdNearest				= "::scidb::board::nearest";
 static char const* CmdNormalizeFen		= "::scidb::board::normalizeFen";
+static char const* CmdPositionNumber	= "::scidb::board::positionNumber";
+static char const* CmdTransposeFen		= "::scidb::board::transposeFen";
 
 
 namespace
@@ -251,8 +252,8 @@ cmdAnalyseFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	Tcl_Obj* checksGiven[2] =
 	{
-		Tcl_NewIntObj(board.checksGiven(color::White)),
-		Tcl_NewIntObj(board.checksGiven(color::Black)),
+		Tcl_NewIntObj(variant::isZhouse(variant) ? board.checksGiven(color::White) : 0),
+		Tcl_NewIntObj(variant::isZhouse(variant) ? board.checksGiven(color::Black) : 0),
 	};
 
 	Tcl_Obj* promoted[64];
@@ -312,7 +313,8 @@ cmdMakeFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	for (unsigned i = 0; i < 64; ++i)
 		pos.setAt(i, piece::pieceFromLetter(board[i]), variant);
 
-	pos.setHolding(holding);
+	if (variant::isZhouse(variant))
+		pos.setHolding(holding);
 
 	Tcl_Obj** squares;
 	int nsquares;
@@ -335,7 +337,9 @@ cmdMakeFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	pos.setToMove(toMove);
 	pos.setMoveNumber(::strtoul(moveNo, nullptr, 10));
 	pos.setHalfMoveClock(::strtoul(halfMoves, nullptr, 10));
-	pos.setChecksGiven(checksW, checksB);
+
+	if (variant == variant::ThreeCheck)
+		pos.setChecksGiven(checksW, checksB);
 
 	char epFyle = ::tolower(*ep);
 
@@ -429,6 +433,48 @@ cmdNormalizeFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 }
 
 
+static int
+cmdNearest(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	char const* board = stringFromObj(objc, objv, 1);
+	char const* piece = stringFromObj(objc, objv, 2);
+
+	if (::strlen(board) != 64)
+		return error(CmdNearest, nullptr, nullptr, "invalid board: %s", board);
+
+	Board pos(Board::emptyBoard());
+	variant::Type variant(Scidb->game().variant());
+
+	for (unsigned i = 0; i < 64; ++i)
+		pos.setAt(i, piece::pieceFromLetter(board[i]), variant);
+	
+	Square sq = sq::Null;
+
+	switch (*piece)
+	{
+		case 'K': sq = pos.shortCastlingRook(color::White); break;
+		case 'k': sq = pos.shortCastlingRook(color::Black); break;
+		case 'Q': sq = pos.longCastlingRook(color::White); break;
+		case 'q': sq = pos.longCastlingRook(color::Black); break;
+
+		default: return error(CmdNearest, nullptr, nullptr, "invalid piece: %c", *piece);
+	}
+
+	char result = *piece;
+
+	if (sq != sq::Null)
+	{
+		if (::isupper(*piece))
+			result = sq::printFYLE(sq::fyle(sq));
+		else
+			result = sq::printFyle(sq::fyle(sq));
+	}
+
+	setResult(mstl::string(1, result));
+	return TCL_OK;
+}
+
+
 namespace tcl {
 namespace board {
 
@@ -440,6 +486,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdIdnToFen,			cmdIdnToFen);
 	createCommand(ti, CmdIsValidFen,			cmdIsValidFen);
 	createCommand(ti, CmdMakeFen,				cmdMakeFen);
+	createCommand(ti, CmdNearest,				cmdNearest);
 	createCommand(ti, CmdNormalizeFen,		cmdNormalizeFen);
 	createCommand(ti, CmdPositionNumber,	cmdPositionNumber);
 	createCommand(ti, CmdTransposeFen,		cmdTransposeFen);

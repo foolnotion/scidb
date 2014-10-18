@@ -35,6 +35,7 @@
 #include "db_move_list.h"
 #include "db_comment.h"
 #include "db_file_offsets.h"
+#include "db_eco.h"
 
 #include "m_string.h"
 #include "m_vector.h"
@@ -175,6 +176,7 @@ private:
 	bool parseFinalComment(mstl::string const& comment);
 	void filterFinalComments();
 	bool parseVariant();
+	void setupEcoPosition();
 
 	void putNag(nag::ID nag);
 	void putNag(nag::ID whiteNag, nag::ID blackNag);
@@ -303,6 +305,7 @@ private:
 	sys::utf8::Codec*	m_codec;
 	mstl::string		m_buffer;
 	mstl::string		m_content;
+	Eco					m_eco;
 };
 
 } // namespace db

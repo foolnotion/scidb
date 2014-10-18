@@ -519,7 +519,7 @@ Board::hashHolding(piece::ID piece, Byte count)
 {
 	M_ASSERT(piece != piece::Empty);
 	M_ASSERT(piece::type(piece) != piece::King);
-	M_ASSERT(count <= 8);
+	M_ASSERT(count <= 16);
 
 	if (count)
 		m_hash ^= mstl::bf::rotate_left(rand64::Holding[piece], count - 1);
@@ -531,7 +531,7 @@ Board::hashHoldingChanged(piece::ID piece, Byte count)
 {
 	M_ASSERT(piece != piece::Empty);
 	M_ASSERT(piece::type(piece) != piece::King);
-	M_ASSERT(count <= 8);
+	M_ASSERT(count <= 16);
 
 	// NOTE: count is old count if one piece is added to holding
 	// NOTE: count is new count if one piece is removed from holding
@@ -1933,176 +1933,176 @@ Board::transpose(variant::Type variant)
 bool
 Board::shortCastlingWhiteIsLegal() const
 {
-	M_ASSERT(kingOnBoard());
+	M_ASSERT(kingOnBoard(White));
 	M_ASSERT(m_castleRookCurrent[WhiteKS] != Null);
+	M_ASSERT(m_castleRookCurrent[WhiteKS] > m_ksq[White]);
 
-	uint64_t king = set1Bit(m_ksq[White]);
-	uint64_t rook = set1Bit(m_castleRookCurrent[WhiteKS]);
-	uint64_t base = (B1 | C1 | D1 | E1 | F1 | G1) & ~(king - 1); // king...G1
+	Square ksq = m_ksq[White];
+	Square rsq = m_castleRookCurrent[WhiteKS];
 
-	// king...G1 and F1 must be free
-	if (m_occupied & (base | F1) & ~king & ~rook)
+	if (allSquaresBetween(mstl::min(sq::ID(ksq), e1), h1) & ~set1Bit(ksq) & ~set1Bit(rsq) & m_occupied)
 		return false;
 
-	// king...G1 not attacked
-	return !isAttackedBy(Black, base | king);
+	for (Square s = ksq; s <= g1; ++s)
+	{
+		if (isAttackedBy(Black, s))
+			return false;
+	}
+
+	if (rsq == h1)
+		return true;
+
+	// check for hidden attackers
+	return (rookAttacks(g1) & H1 & (m_rooks | m_queens) & m_occupiedBy[Black]) == 0;
 }
 
 
 bool
 Board::shortCastlingBlackIsLegal() const
 {
-	M_ASSERT(kingOnBoard());
+	M_ASSERT(kingOnBoard(Black));
 	M_ASSERT(m_castleRookCurrent[BlackKS] != Null);
+	M_ASSERT(m_castleRookCurrent[BlackKS] > m_ksq[Black]);
 
-	uint64_t king = set1Bit(m_ksq[Black]);
-	uint64_t rook = set1Bit(m_castleRookCurrent[BlackKS]);
-	uint64_t base = (B8 | C8 | D8 | E8 | F8 | G8) & ~(king - 1); // king...G8
+	Square ksq = m_ksq[Black];
+	Square rsq = m_castleRookCurrent[BlackKS];
 
-	// king...G8 and F8 must be free
-	if (m_occupied & (base | F8) & ~king & ~rook)
+	if (allSquaresBetween(mstl::min(sq::ID(ksq), e8), h8) & ~set1Bit(ksq) & ~set1Bit(rsq) & m_occupied)
 		return false;
 
-	// king...G8 not attacked
-	return !isAttackedBy(White, base | king);
+	for (Square s = ksq; s <= g8; ++s)
+	{
+		if (isAttackedBy(White, s))
+			return false;
+	}
+
+	if (rsq == h8)
+		return true;
+
+	// check for hidden attackers
+	return (rookAttacks(g8) & H8 & (m_rooks | m_queens) & m_occupiedBy[White]) == 0;
 }
 
 
 bool
 Board::longCastlingWhiteIsLegal() const
 {
-	M_ASSERT(kingOnBoard());
+	M_ASSERT(kingOnBoard(White));
 	M_ASSERT(m_castleRookCurrent[WhiteQS] != Null);
+	M_ASSERT(m_castleRookCurrent[WhiteQS] < m_ksq[White]);
 
-	uint64_t king = set1Bit(m_ksq[White]);
-	uint64_t rook = set1Bit(m_castleRookCurrent[WhiteQS]);
-	uint64_t base = 0;
+	Square ksq = m_ksq[White];
+	Square rsq = m_castleRookCurrent[WhiteQS];
+	Square esq = mstl::max(sq::ID(ksq), e1);
+	Square bsq = mstl::min(sq::ID(rsq), b1);
 
-	if (king > C1)
+	if (allSquaresBetween(bsq, esq) & ~set1Bit(ksq) & ~set1Bit(rsq) & m_occupied)
+		return false;
+
+	for (Square s = ksq; s >= c1; --s)
 	{
-		base |= (C1 | D1 | E1 | F1 | G1) & (king - 1); // C1...king
-
-		// C1...king not attacked
-		if (isAttackedBy(Black, base | king))
-			return false;
-	}
-	else
-	{
-		// king...C1 not attacked
-		if (isAttackedBy(Black, king == B1 ? B1 | C1 : C1))
+		if (isAttackedBy(Black, s))
 			return false;
 	}
 
-	if (rook < D1)
-		base |= (A1 | B1 | C1 | D1) & ~(rook - 1); // rook...D1
+	if (rsq == a1)
+		return true;
 
-	// rook...D1 and C1...king must be free
-	return (m_occupied & base & ~king & ~rook) == 0;
+	// check for hidden attackers
+	if (rsq >= c1)
+		return (rookAttacks(c1) & (A1 | B1) & (m_rooks | m_queens) & m_occupiedBy[Black]) == 0;
+
+	return (rookAttacks(b1) & A1 & (m_rooks | m_queens) & m_occupiedBy[Black]) == 0;
 }
 
 
 bool
 Board::longCastlingBlackIsLegal() const
 {
-	M_ASSERT(kingOnBoard());
+	M_ASSERT(kingOnBoard(Black));
 	M_ASSERT(m_castleRookCurrent[BlackQS] != Null);
+	M_ASSERT(m_castleRookCurrent[BlackQS] < m_ksq[Black]);
 
-	uint64_t king = set1Bit(m_ksq[Black]);
-	uint64_t rook = set1Bit(m_castleRookCurrent[BlackQS]);
-	uint64_t base = 0;
+	Square ksq = m_ksq[Black];
+	Square rsq = m_castleRookCurrent[BlackQS];
+	Square esq = mstl::max(sq::ID(ksq), e8);
+	Square bsq = mstl::min(sq::ID(rsq), b8);
 
-	if (king > C8)
+	if (allSquaresBetween(bsq, esq) & ~set1Bit(ksq) & ~set1Bit(rsq) & m_occupied)
+		return false;
+
+	for (Square s = ksq; s >= c8; --s)
 	{
-		base |= (C8 | D8 | E8 | F8 | G8) & (king - 1); // C8...king
-
-		// C8...king not attacked
-		if (isAttackedBy(White, base | king))
-			return false;
-	}
-	else
-	{
-		// king...C8 not attacked
-		if (isAttackedBy(White, king == B8 ? B8 | C8 : C8))
+		if (isAttackedBy(White, s))
 			return false;
 	}
 
-	if (rook < D8)
-		base |= (A8 | B8 | C8 | D8) & ~(rook - 1); // rook...D8
+	if (rsq == a8)
+		return true;
 
-	// king...C8...king and rook..C8 must be free
-	return (m_occupied & base & ~king & ~rook) == 0;
+	// check for hidden attackers
+	if (m_castleRookCurrent[BlackQS] >= c8)
+		return (rookAttacks(c8) & (A8 | B8) & (m_rooks | m_queens) & m_occupiedBy[White]) == 0;
+
+	return (rookAttacks(b8) & A8 & (m_rooks | m_queens) & m_occupiedBy[White]) == 0;
 }
 
 
 bool
 Board::shortCastlingWhiteIsPossible() const
 {
-	M_ASSERT(kingOnBoard());
+	M_ASSERT(kingOnBoard(White));
 	M_ASSERT(m_castleRookCurrent[WhiteKS] != Null);
 
-	uint64_t king = set1Bit(m_ksq[White]);
-	uint64_t rook = set1Bit(m_castleRookCurrent[WhiteKS]);
-	uint64_t base = (B1 | C1 | D1 | E1 | G1) & ~(king - 1); // king...G1
+	Square ksq = m_ksq[White];
+	Square rsq = m_castleRookCurrent[WhiteKS];
+	Square esq = mstl::min(sq::ID(ksq), e1);
 
-	// king...G1 and F1 must be free
-	return (m_occupied & (base | F1) & ~king & ~rook) == 0;
+	return (allSquaresBetween(esq, h1) & ~set1Bit(ksq) & ~set1Bit(rsq) & m_occupied) == 0;
 }
 
 
 bool
 Board::shortCastlingBlackIsPossible() const
 {
-	M_ASSERT(kingOnBoard());
+	M_ASSERT(kingOnBoard(Black));
 	M_ASSERT(m_castleRookCurrent[BlackKS] != Null);
 
-	uint64_t king = set1Bit(m_ksq[Black]);
-	uint64_t rook = set1Bit(m_castleRookCurrent[BlackKS]);
-	uint64_t base = (B8 | C8 | D8 | E8 | G8) & ~(king - 1);	// king...G8
+	Square ksq = m_ksq[Black];
+	Square rsq = m_castleRookCurrent[BlackKS];
+	Square esq = mstl::min(sq::ID(ksq), e8);
 
-	// king...G8 and F8 must be free
-	return (m_occupied & (base | F8) & ~king & ~rook) == 0;
+	return (allSquaresBetween(esq, h8) & ~set1Bit(ksq) & ~set1Bit(rsq) & m_occupied) == 0;
 }
 
 
 bool
 Board::longCastlingWhiteIsPossible() const
 {
-	M_ASSERT(kingOnBoard());
+	M_ASSERT(kingOnBoard(White));
 	M_ASSERT(m_castleRookCurrent[WhiteQS] != Null);
 
-	uint64_t king = set1Bit(m_ksq[White]);
-	uint64_t rook = set1Bit(m_castleRookCurrent[WhiteQS]);
-	uint64_t base = 0;
+	Square ksq = m_ksq[White];
+	Square rsq = m_castleRookCurrent[WhiteQS];
+	Square esq = mstl::max(sq::ID(ksq), e1);
+	Square bsq = mstl::min(sq::ID(rsq), b1);
 
-	if (king > C1)
-		base |= (C1 | D1 | E1 | F1 | G1) & (king - 1); // C1...king
-
-	if (rook < D1)
-		base |= (A1 | B1 | C1 | D1) & ~(rook - 1); // rook...D1
-
-	// rook...D1 and C1...king must be free
-	return (m_occupied & base & ~king & ~rook) == 0;
+	return (allSquaresBetween(bsq, esq) & ~set1Bit(ksq) & ~set1Bit(rsq) &m_occupied) == 0;
 }
 
 
 bool
 Board::longCastlingBlackIsPossible() const
 {
-	M_ASSERT(kingOnBoard());
+	M_ASSERT(kingOnBoard(Black));
 	M_ASSERT(m_castleRookCurrent[BlackQS] != Null);
 
-	uint64_t king = set1Bit(m_ksq[Black]);
-	uint64_t rook = set1Bit(m_castleRookCurrent[BlackQS]);
-	uint64_t base = 0;
+	Square ksq = m_ksq[Black];
+	Square rsq = m_castleRookCurrent[BlackQS];
+	Square esq = mstl::max(sq::ID(ksq), e8);
+	Square bsq = mstl::min(sq::ID(rsq), b8);
 
-	if (king > C8)
-		base |= (C8 | D8 | E8 | F8 | G8) & (king - 1); // C8...king
-
-	if (rook < D8)
-		base |= (A8 | B8 | C8 | D8) & ~(rook - 1); // rook...D8
-
-	// rook...D8 and D8...king must be free
-	return (m_occupied & base & ~king & ~rook) == 0;
+	return (allSquaresBetween(bsq, esq) & ~set1Bit(ksq) & ~set1Bit(rsq) &m_occupied) == 0;
 }
 
 
@@ -2256,6 +2256,13 @@ Board::validate(variant::Type variant, Handicap handicap, move::Constraint flag)
 
 	if (notDerivableFromChess960())
 		return BadCastlingRights;
+
+	if (	::fyle(m_ksq[White]) != ::fyle(m_ksq[Black])
+		&& (m_castle & (WhiteQueenside | WhiteKingside))
+		&& (m_castle & (BlackQueenside | BlackKingside)))
+	{
+		return BadCastlingRights;
+	}
 
 	// Detect unreasonable rook squares (for castling)
 	// (in standard chess we allow castling with missing rook for historical reasons (handicap games))
@@ -2628,7 +2635,7 @@ Board::setCastlingRights(castling::Rights rights)
 void
 Board::setCastlingFyle(color::ID color, Fyle fyle)
 {
-	M_REQUIRE(kingOnBoard());
+	M_REQUIRE(kingOnBoard(color));
 
 	// IMPORTANT NOTE: This function is not updating the hash code.
 
@@ -3606,7 +3613,7 @@ Board::computeIdn(variant::Type variant) const
 
 	// firstly handle the most common case
 	if (isStandardPosition(variant))
-		return variant::Standard;
+		return variant::isAntichessExceptLosers(variant) ? variant::NoCastling : variant::Standard;
 
 	unsigned idn = 0;
 
@@ -3792,9 +3799,6 @@ Board::setup(unsigned idn, variant::Type variant)
 		}
 
 		*this = m_shuffleChessBoard;	// setup pawns, signature, and other stuff
-
-		if (variant::isZhouse(variant))
-			m_holding[White] = m_holding[Black] = m_initialHolding;
 
 		char placement[8];
 		::memcpy(placement, chess960::position(((idn - 1) % 960) + 1), 8);
@@ -4010,7 +4014,7 @@ Board::filterCheckmateMoves(Move move, uint64_t& movers, variant::Type variant) 
 void
 Board::genCastleShort(MoveList& result, color::ID side) const
 {
-	M_ASSERT(kingOnBoard());
+	M_ASSERT(kingOnBoard(side));
 	M_ASSERT(m_castleRookCurrent[::kingSideIndex(side)] != Null);
 
 	Move m(Move::genCastling(m_ksq[side], m_castleRookCurrent[::kingSideIndex(side)]));
@@ -4022,7 +4026,7 @@ Board::genCastleShort(MoveList& result, color::ID side) const
 void
 Board::genCastleLong(MoveList& result, color::ID side) const
 {
-	M_ASSERT(kingOnBoard());
+	M_ASSERT(kingOnBoard(side));
 	M_ASSERT(m_castleRookCurrent[::queenSideIndex(side)] != Null);
 
 	Move m(Move::genCastling(m_ksq[side], m_castleRookCurrent[::queenSideIndex(side)]));
@@ -6811,7 +6815,7 @@ Board::toFen(mstl::string& result, variant::Type variant, Format format) const
 	{
 		if (castlingRights() & WhiteBothSides)
 		{
-			M_ASSERT(kingOnBoard());
+			M_ASSERT(kingOnBoard(White));
 
 			uint64_t rooks = this->rooks(White) & RankMask1;
 
@@ -6838,7 +6842,7 @@ Board::toFen(mstl::string& result, variant::Type variant, Format format) const
 
 			if (castlingRights() & WhiteQueenside)
 			{
-				M_ASSERT(kingOnBoard());
+				M_ASSERT(kingOnBoard(White));
 
 				int sq = m_castleRookAtStart[WhiteQS];
 
@@ -6862,7 +6866,7 @@ Board::toFen(mstl::string& result, variant::Type variant, Format format) const
 
 		if (castlingRights() & BlackBothSides)
 		{
-			M_ASSERT(kingOnBoard());
+			M_ASSERT(kingOnBoard(Black));
 
 			uint64_t rooks = this->rooks(Black) & RankMask8;
 
@@ -6889,7 +6893,7 @@ Board::toFen(mstl::string& result, variant::Type variant, Format format) const
 
 			if (castlingRights() & BlackQueenside)
 			{
-				M_ASSERT(kingOnBoard());
+				M_ASSERT(kingOnBoard(Black));
 
 				int sq = m_castleRookAtStart[BlackQS];
 
@@ -7387,7 +7391,7 @@ Board::initialize()
 	{
 		color::ID c = color::ID(color);
 
-		for (unsigned p = 0; p <= 8; ++p)
+		for (unsigned p = 0; p <= 16; ++p)
 		{
 			uint64_t pk = p ? mstl::bf::rotate_left(HASHKEY(Pawn), p - 1) : 0;
 

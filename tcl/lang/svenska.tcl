@@ -1513,7 +1513,6 @@
 ::setup::board::mc::FICSPosition					"FICS startposition..."
 ::setup::board::mc::StandardPosition			"Standardposition" ;# NEW
 ::setup::board::mc::Chess960Castling			"Schack960 rockad"
-::setup::board::mc::InvalidFen					"Ogiltigt FEN"
 
 ::setup::board::mc::ChangeToFormat(xfen)				"Ändra till X-Fen format"
 ::setup::board::mc::ChangeToFormat(shredder)			"Ändra till Shredder format"

@@ -184,6 +184,8 @@ int msbClear(uint8_t& n);
 int lsbClear(uint64_t& n);
 int msbClear(uint64_t& n);
 
+uint64_t allSquaresBetween(Square from, Square to);
+
 namespace base { void initialize(); }
 
 } // namespace board

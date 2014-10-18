@@ -1514,7 +1514,6 @@
 ::setup::board::mc::FICSPosition					"FICS Posizione Iniziale..."
 ::setup::board::mc::StandardPosition			"Posizione Standard"
 ::setup::board::mc::Chess960Castling			"Arrocco da Scacchi 960"
-::setup::board::mc::InvalidFen					"FEN non valido"
 
 ::setup::board::mc::ChangeToFormat(xfen)				"Converti a formato X-Fen"
 ::setup::board::mc::ChangeToFormat(shredder)			"Converti a formato Shredder"
@@ -1846,6 +1845,12 @@
 ::dialog::save::mc::Matches						"&Match"
 ::dialog::save::mc::Tags							"&Tags"
 
+::dialog::save::mc::Section(game)				"Dati Partita"
+::dialog::save::mc::Section(event)				"Evento"
+::dialog::save::mc::Section(white)				"Bianco"
+::dialog::save::mc::Section(black)				"Nero"
+::dialog::save::mc::Section(tags)				"Concordanze Tag / Estranee"
+
 ::dialog::save::mc::Label(name)					"Nome"
 ::dialog::save::mc::Label(fideID)				"Fide-ID"
 ::dialog::save::mc::Label(value)					"Valore"
@@ -1866,12 +1871,6 @@
 ::dialog::save::mc::Label(timeMode)				"Cadenza"
 ::dialog::save::mc::Label(frequency)			"Frequenza"
 ::dialog::save::mc::Label(score)					"Rating" ;#"Second rating"
-
-::dialog::save::mc::Section(game)				"Dati Partita"
-::dialog::save::mc::Section(event)				"Evento"
-::dialog::save::mc::Section(white)				"Bianco"
-::dialog::save::mc::Section(black)				"Nero"
-::dialog::save::mc::Section(tags)				"Concordanze Tag / Estranee"
 
 ::dialog::save::mc::GameBase						"Base Partite"
 ::dialog::save::mc::PlayerBase					"Base Giocatori"

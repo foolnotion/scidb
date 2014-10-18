@@ -1502,7 +1502,6 @@
 ::setup::board::mc::FICSPosition					"FICS-Startposition..."
 ::setup::board::mc::StandardPosition			"Standardposition"
 ::setup::board::mc::Chess960Castling			"Schach-960-Rochade"
-::setup::board::mc::InvalidFen					"Ungültige FEN"
 
 ::setup::board::mc::ChangeToFormat(xfen)				"Zum X-Fen-Format wechseln"
 ::setup::board::mc::ChangeToFormat(shredder)			"Zum Shredder-Format wechseln"

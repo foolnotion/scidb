@@ -1513,7 +1513,6 @@
 ::setup::board::mc::FICSPosition			"FICS Start Position..." ;# NEW
 ::setup::board::mc::StandardPosition			"Standard Position" ;# NEW
 ::setup::board::mc::Chess960Castling			"Chess 960 castling" ;# NEW
-::setup::board::mc::InvalidFen				"Érvénytelen FEN"
 
 ::setup::board::mc::ChangeToFormat(xfen)		"Change to X-Fen format" ;# NEW
 ::setup::board::mc::ChangeToFormat(shredder)		"Change to Shredder format" ;# NEW

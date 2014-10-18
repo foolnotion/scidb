@@ -49,6 +49,8 @@ inline bool Eco::operator< (Eco const& eco) const { return m_code <  eco.m_code;
 inline bool Eco::operator==(Eco const& eco) const { return m_code == eco.m_code; }
 inline bool Eco::operator!=(Eco const& eco) const { return m_code != eco.m_code; }
 
+inline void Eco::clear() { m_code = 0; }
+
 
 inline
 Eco&

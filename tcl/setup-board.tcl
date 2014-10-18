@@ -128,8 +128,6 @@ set FICSPosition							"FICS Start Position..."
 set StandardPosition						"Standard Position"
 set Chess960Castling						"Chess 960 castling"
 
-set InvalidFen								"Invalid FEN"
-
 set ChangeToFormat(xfen)				"Change to X-Fen format"
 set ChangeToFormat(shredder)			"Change to Shredder format"
 
@@ -545,10 +543,6 @@ proc open {parent} {
 	bind $fen.text <FocusOut> [namespace code ResetFen]
 	bind $fen.text <FocusIn> [list set [namespace current]::Vars(field) fen]
 	bind $fen.text <<ComboboxSelected>> [namespace code ResetFen]
-	::ttk::button $fen.format \
-		-style icon.TButton \
-		-command [namespace code [list SwitchFormat $fen.format]] \
-		;
 	::ttk::button $fen.clear \
 		-style icon.TButton \
 		-image $::icon::16x16::clear \
@@ -559,15 +553,19 @@ proc open {parent} {
 		-image $::icon::16x16::clipboardIn \
 		-command [namespace code CopyFen] \
 		;
+	::ttk::button $fen.format \
+		-style icon.TButton \
+		-command [namespace code [list SwitchFormat $fen.format]] \
+		;
 	::tooltip::tooltip $fen.clear [namespace current]::mc::Clear
 	::tooltip::tooltip $fen.copy [namespace current]::mc::CopyFen
 	set Vars(combo) $fen.text
 	SetupFormat $fen.format
 	
 	grid $fen.text		-row 1 -column 1 -sticky ew
-	grid $fen.format	-row 1 -column 3 -sticky ew
-	grid $fen.clear	-row 1 -column 5 -sticky ew
-	grid $fen.copy		-row 1 -column 7 -sticky ew
+	grid $fen.clear	-row 1 -column 3 -sticky ew
+	grid $fen.copy		-row 1 -column 5 -sticky ew
+	grid $fen.format	-row 1 -column 7 -sticky ew
 	grid columnconfigure $fen {0 2 4 6 8} -minsize $::theme::padding
 	grid columnconfigure $fen 1 -weight 1
 	grid rowconfigure $fen {0 2} -minsize $::theme::padding
@@ -907,7 +905,7 @@ proc AnalyseFen {fen {cmd none}} {
 		if {[string length $error]} {
 			::dialog::error \
 				-parent [winfo toplevel $Vars(board)]  \
-				-title "$::scidb::app: $mc::InvalidFen" \
+				-title "$::scidb::app: $mc::Error(InvalidFen)" \
 				-message $mc::Error($error) \
 				;
 			return 0
@@ -915,7 +913,7 @@ proc AnalyseFen {fen {cmd none}} {
 		foreach warning $warnings {
 			set answer [::dialog::question \
 				-parent [winfo toplevel $Vars(board)]  \
-				-title "$::scidb::app: $mc::InvalidFen" \
+				-title "$::scidb::app: $mc::Error(InvalidFen)" \
 				-message [set mc::Warning($warning)] \
 			]
 			if {$answer eq "no"} { return 0 }
@@ -1239,16 +1237,20 @@ proc Update {} {
 
 	set Vars(skip) 0
 
-	set castling ""
+	set pieces {}
 	foreach {right piece} {w:short K w:long Q b:short k b:long q} {
 		if {$Vars($right)} {
 			if {$Vars($right:fyle) ne "-"} {
-				append castling $Vars($right:fyle)
+				lappend pieces $Vars($right:fyle)
+			} elseif {$Options(fen:format) eq "xfen"} {
+				lappend pieces $piece
 			} else {
-				append castling $piece
+				lappend pieces [scidb::board::nearest $Vars(pos) $piece]
 			}
 		}
 	}
+	if {$Options(fen:format) eq "shredder"} { set pieces [lsort $pieces] }
+	set castling [join $pieces ""]
 
 	if {$Vars(checks:w) > 0 || $Vars(checks:b) > 0} { set Vars(idn) "" }
 
@@ -1358,9 +1360,25 @@ proc ResetFen {} {
 
 		if {$error eq "TooManyPiecesInHolding"} {
 			set Vars(fen) [::scidb::board::normalizeFen $Vars(fen) $Options(fen:format) -clearholding]
+			set error ""
 		}
 
-		if {[AnalyseFen $Vars(fen) init]} {
+		if {[string length $error]} {
+			if {$Vars(fen) ne $Vars(fen:memo)} {
+				set msg ""
+				if {$error ne "InvalidFen"} {
+					set msg $mc::Error(InvalidFen)
+					if {[string index $msg end] == "."} { set msg [string range $msg 0 end-1] }
+					append msg ": "
+				}
+				append msg $mc::Error($error)
+				::dialog::error \
+					-parent [winfo toplevel $Vars(board)]  \
+					-title "$::scidb::app: $mc::Error(InvalidFen)" \
+					-message $msg \
+					;
+			}
+		} elseif {[AnalyseFen $Vars(fen) init]} {
 			set Vars(pos) [::scidb::board::fenToBoard $Vars(fen)]
 			::board::diagram::update $Vars(board) $Vars(pos)
 			set Vars(field) ""

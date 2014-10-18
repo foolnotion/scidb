@@ -1467,46 +1467,48 @@ Application::changeVariant(unsigned position, variant::Type variant)
 {
 	M_REQUIRE(containsGameAt(position));
 	M_REQUIRE(database(position).name() == scratchbaseName());
-	M_REQUIRE(variant::isMainVariant(variant));
 
 	EditGame& 		game					= *m_gameMap[position];
 	variant::Type	originalVariant	= game.sink.cursor->variant();
 
-	if (originalVariant != variant)
+	if (originalVariant != variant::toMainVariant(variant))
 	{
-		Cursor*				scratch		= scratchbase(variant::toMainVariant(variant));
-		Database&			base			= scratch->base();
-		GameInfo const&	info			= game.sink.cursor->base().gameInfo(game.sink.index);
-		unsigned				index			= base.countGames();
+		Cursor*		scratch	= scratchbase(variant::toMainVariant(variant));
+		Database&	srcBase	= game.sink.cursor->base();
+		Database&	dstBase	= scratch->base();
+		unsigned		srcIndex	= game.sink.index;
+		unsigned		dstIndex	= dstBase.countGames();
 
-		info.reallocate(base.namebases());
-		base.namebases().update();
+		GameInfo const& info = srcBase.gameInfo(srcIndex);
+
+		info.reallocate(dstBase.namebases());
+		dstBase.namebases().update();
 		game.data.game->finishLoad(variant);
 
-		if (!save::isOk(base.newGame(*game.data.game, info)))
+		if (!save::isOk(dstBase.newGame(*game.data.game, info)))
 		{
 			game.data.game->finishLoad(originalVariant);
 			M_RAISE("unexpected error: couldn't add new game to Scratchbase");
 		}
 
 		TagSet tags;
-		base.getGameTags(index, tags);
+		dstBase.getGameTags(dstIndex, tags);
 
-		m_indexMap[position] = index;
+		m_indexMap[position] = dstIndex;
 
 		game.sink.cursor = scratch;
-		game.sink.index = index;
-		game.sink.crcIndex = base.computeChecksum(index);
+		game.sink.index = dstIndex;
+		game.sink.crcIndex = dstBase.computeChecksum(dstIndex);
 		game.sink.crcMoves = tags.computeChecksum(game.data.game->computeChecksum());
 		game.sink.crcMainline = game.data.game->computeChecksumOfMainline();
 		game.data.refresh = 0;
-		game.link.databaseName = base.name();
-		game.link.index = index;
+		game.link.databaseName = dstBase.name();
+		game.link.index = dstIndex;
 		game.link.crcIndex = game.sink.crcIndex;
 		game.link.crcMoves = game.sink.crcMoves;
 
-		game.sink.cursor->base().deleteGame(game.sink.index, true);
-		compact(*scratch);
+		srcBase.deleteGame(srcIndex, true);
+		compact(*scratchbase(originalVariant));
 	}
 }
 
@@ -2434,6 +2436,10 @@ Application::importGame(Producer& producer, unsigned position, bool trialMode)
 		mstl::swap(myGame->data.game, game->data.game);
 		mstl::swap(myGame->data.backup, game->data.backup);
 	}
+	else
+	{
+		changeVariant(position, producer.variant());
+	}
 
 	Cursor* scratch = scratchbase(variant::toMainVariant(producer.variant()));
 	unsigned count = scratch->base().importGame(producer, myGame->sink.index);
@@ -2835,13 +2841,13 @@ Application::compact(Cursor& cursor, util::Progress& progress)
 	for (unsigned i = 0; i < map.size(); ++i)
 		map.put(i, !database.isDeleted(i));
 
-	for (GameMap::iterator i = m_gameMap.begin(); i != m_gameMap.end(); ++i)
+	if (!cursor.isScratchbase())
 	{
-		EditGame& g = *i->second;
-
-		if (g.sink.cursor == &cursor)
+		for (GameMap::iterator i = m_gameMap.begin(); i != m_gameMap.end(); ++i)
 		{
-			if (cursor.base().isDeleted(g.sink.index))
+			EditGame& g = *i->second;
+
+			if (g.sink.cursor == &cursor && cursor.base().isDeleted(g.sink.index))
 			{
 				moveGameToScratchbase(*i, true);
 				deleted.push_back(i->first);
@@ -2887,7 +2893,7 @@ Application::compact(Cursor& cursor, util::Progress& progress)
 			}
 		}
 
-		if (m_subscriber)
+		if (m_subscriber && !cursor.isScratchbase())
 		{
 			for (unsigned i = 0; i < deleted.size(); ++i)
 				m_subscriber->updateGameInfo(deleted[i]);
