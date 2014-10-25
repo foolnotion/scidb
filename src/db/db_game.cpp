@@ -2071,6 +2071,7 @@ Game::goToPosition(mstl::string const& fen)
 
 	moveToMainlineStart();
 
+	// TODO: also search in variations
 	while (!atMainlineEnd() && !position.isEqualZHPosition(m_currentBoard))
 		forward();
 

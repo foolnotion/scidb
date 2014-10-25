@@ -850,7 +850,9 @@ Database::loadGame(unsigned index, Game& game, mstl::string* encoding, mstl::str
 
 	setEncodingFailed(m_codec->encodingFailed());
 	game.moveToMainlineStart();
-	load::State state = game.finishLoad(variant, fen) ? load::Ok : load::Corrupted;
+	load::State state = game.finishLoad(variant) ? load::Ok : load::Corrupted;
+	if (state == load::Ok && fen)
+		game.goToPosition(*fen);
 	setupTags(index, game.m_tags);
 
 	return state;
