@@ -3706,6 +3706,7 @@ Game::setStartPosition(mstl::string const& fen)
 		DB_RAISE("invalid FEN");
 
 	setup(board);
+	moveToMainlineStart();
 
 	M_DEBUG(m_startBoard.validate(m_variant, castling::AllowHandicap) == Board::Valid);
 }
@@ -3720,6 +3721,7 @@ Game::setStartPosition(unsigned idn)
 	Board board;
 	board.setup(idn, m_variant);
 	setup(board);
+	moveToMainlineStart();
 
 	M_DEBUG(m_startBoard.validate(m_variant) == Board::Valid);
 }
@@ -3836,6 +3838,9 @@ Game::finishLoad(variant::Type variant, mstl::string const* fen)
 	m_variant = variant;
 	m_idn = 0;
 
+	if (fen)
+		m_startBoard.setup(*fen, variant);
+
 	if (variant::isAntichessExceptLosers(variant))
 		m_startBoard.removeCastlingRights();
 
@@ -3847,11 +3852,7 @@ Game::finishLoad(variant::Type variant, mstl::string const* fen)
 	m_startNode->finish(m_startBoard, m_variant);
 	m_currentBoard = m_startBoard;
 
-	if (fen)
-		goToPosition(*fen);
-	else
-		moveToMainlineStart();
-
+	moveToMainlineStart();
 	::checkThreefoldRepetitions(m_startBoard, m_variant, m_startNode);
 	updateLine();
 	updateLanguageSet();

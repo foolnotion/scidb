@@ -415,10 +415,14 @@ Application::insertScratchGame(unsigned position, variant::Type variant)
 	M_REQUIRE(variant != variant::Undetermined);
 	M_REQUIRE(contains(scratchbaseName()));
 
-	Cursor*		scratch	= scratchbase(variant::toMainVariant(variant));
-	Database&	base		= scratch->base();
-	GameP			gameP		= insertGame(position);
-	EditGame&	game		= *gameP;
+	Cursor*			scratch	= scratchbase(variant::toMainVariant(variant));
+	Database&		base		= scratch->base();
+	GameP				gameP		= insertGame(position);
+	EditGame&		game		= *gameP;
+	mstl::string	fen;
+
+	if (m_fallbackPosition != InvalidPosition)
+		m_gameMap.find(m_fallbackPosition)->second->data.game->printFen(fen);
 
 	unsigned index;
 
@@ -435,7 +439,7 @@ Application::insertScratchGame(unsigned position, variant::Type variant)
 
 		info.setup(0, 0, player, player, event, annotator, base.namebases());
 		base.namebases().update();
-		game.data.game->finishLoad(variant);
+		game.data.game->finishLoad(variant, fen.empty() ? 0 : &fen);
 		m_indexMap[position] = index = base.countGames();
 
 		if (!save::isOk(base.newGame(*game.data.game, info)))
@@ -443,7 +447,7 @@ Application::insertScratchGame(unsigned position, variant::Type variant)
 	}
 	else
 	{
-		game.data.game->finishLoad(variant);
+		game.data.game->finishLoad(variant, fen.empty() ? 0 : &fen);
 		index = i->second;
 	}
 

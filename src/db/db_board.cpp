@@ -5509,79 +5509,79 @@ Board::doMove(Move const& m, variant::Type variant)
 			}
 			break;
 
-			case Move::PieceDrop:
-				M_ASSERT(variant::isZhouse(variant));
-				switch (Byte(m.dropped()))
-				{
-					case piece::Pawn:
-						m_pawns ^= toMask;
-						m_piece[to] = piece::Pawn;
-						incrMaterial<piece::Pawn>(m_stm);
-						hashPawn(to, ::toPiece(piece::Pawn, m_stm));
-						removeFromMyHolding<piece::Pawn>(variant, m_stm);
-						break;
+		case Move::PieceDrop:
+			M_ASSERT(variant::isZhouse(variant));
+			switch (Byte(m.dropped()))
+			{
+				case piece::Pawn:
+					m_pawns ^= toMask;
+					m_piece[to] = piece::Pawn;
+					incrMaterial<piece::Pawn>(m_stm);
+					hashPawn(to, ::toPiece(piece::Pawn, m_stm));
+					removeFromMyHolding<piece::Pawn>(variant, m_stm);
+					break;
 
-					case piece::Knight:
-						m_knights ^= toMask;
-						m_piece[to] = piece::Knight;
-						incrMaterial<piece::Knight>(m_stm);
-						hashPiece(to, ::toPiece(piece::Knight, m_stm));
-						removeFromMyHolding<piece::Knight>(variant, m_stm);
-						break;
+				case piece::Knight:
+					m_knights ^= toMask;
+					m_piece[to] = piece::Knight;
+					incrMaterial<piece::Knight>(m_stm);
+					hashPiece(to, ::toPiece(piece::Knight, m_stm));
+					removeFromMyHolding<piece::Knight>(variant, m_stm);
+					break;
 
-					case piece::Bishop:
-						m_bishops ^= toMask;
-						m_piece[to] = piece::Bishop;
-						incrMaterial<piece::Bishop>(m_stm);
-						hashPiece(to, ::toPiece(piece::Bishop, m_stm));
-						removeFromMyHolding<piece::Bishop>(variant, m_stm);
-						break;
+				case piece::Bishop:
+					m_bishops ^= toMask;
+					m_piece[to] = piece::Bishop;
+					incrMaterial<piece::Bishop>(m_stm);
+					hashPiece(to, ::toPiece(piece::Bishop, m_stm));
+					removeFromMyHolding<piece::Bishop>(variant, m_stm);
+					break;
 
-					case piece::Rook:
-						m_rooks ^= toMask;
-						m_piece[to] = piece::Rook;
-						incrMaterial<piece::Rook>(m_stm);
-						hashPiece(to, ::toPiece(piece::Rook, m_stm));
-						removeFromMyHolding<piece::Rook>(variant, m_stm);
-						if ((m_kingHasMoved & (1 << m_stm)) == 0)
+				case piece::Rook:
+					m_rooks ^= toMask;
+					m_piece[to] = piece::Rook;
+					incrMaterial<piece::Rook>(m_stm);
+					hashPiece(to, ::toPiece(piece::Rook, m_stm));
+					removeFromMyHolding<piece::Rook>(variant, m_stm);
+					if ((m_kingHasMoved & (1 << m_stm)) == 0)
+					{
+						unsigned index = ::kingSideIndex(m_stm);
+						if (to == m_castleRookAtStart[index])
 						{
-							unsigned index = ::kingSideIndex(m_stm);
+							m_castleRookCurrent[index] = to;
+							m_castle |= kingSide(color::ID(m_stm));
+							hashCastling(Index(index));
+						}
+						else
+						{
+							unsigned index = ::queenSideIndex(m_stm);
 							if (to == m_castleRookAtStart[index])
 							{
 								m_castleRookCurrent[index] = to;
-								m_castle |= kingSide(color::ID(m_stm));
+								m_castle |= queenSide(color::ID(m_stm));
 								hashCastling(Index(index));
 							}
-							else
-							{
-								unsigned index = ::queenSideIndex(m_stm);
-								if (to == m_castleRookAtStart[index])
-								{
-									m_castleRookCurrent[index] = to;
-									m_castle |= queenSide(color::ID(m_stm));
-									hashCastling(Index(index));
-								}
-							}
 						}
-						break;
+					}
+					break;
 
-					case piece::Queen:
-						m_queens ^= toMask;
-						m_piece[to] = piece::Queen;
-						incrMaterial<piece::Queen>(m_stm);
-						hashPiece(to, ::toPiece(piece::Queen, m_stm));
-						removeFromMyHolding<piece::Queen>(variant, m_stm);
-						break;
-				}
+				case piece::Queen:
+					m_queens ^= toMask;
+					m_piece[to] = piece::Queen;
+					incrMaterial<piece::Queen>(m_stm);
+					hashPiece(to, ::toPiece(piece::Queen, m_stm));
+					removeFromMyHolding<piece::Queen>(variant, m_stm);
+					break;
+			}
 
-				m_occupiedL90 ^= MaskL90[to];
-				m_occupiedL45 ^= MaskL45[to];
-				m_occupiedR45 ^= MaskR45[to];
-				m_occupiedBy[m_stm] ^= toMask;
-				m_occupied = m_occupiedBy[White] | m_occupiedBy[Black];
-				swapToMove();
-				++m_plyNumber;
-				return;
+			m_occupiedL90 ^= MaskL90[to];
+			m_occupiedL45 ^= MaskL45[to];
+			m_occupiedR45 ^= MaskR45[to];
+			m_occupiedBy[m_stm] ^= toMask;
+			m_occupied = m_occupiedBy[White] | m_occupiedBy[Black];
+			swapToMove();
+			++m_plyNumber;
+			return;
 	}
 
 	switch (m.removal())
