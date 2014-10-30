@@ -196,9 +196,21 @@ void Search::think() {
   if (RootMoves.empty())
   {
       RootMoves.push_back(MOVE_NONE);
+
+#ifdef THREECHECK
+      bool checkers;
+
+      if (RootPos.got_third_check() || RootPos.checkers())
+          checkers = true;
+
+      sync_cout << "info depth 0 score "
+                << score_to_uci(checkers ? -VALUE_MATE : VALUE_DRAW)
+                << sync_endl;
+#else
       sync_cout << "info depth 0 score "
                 << score_to_uci(RootPos.checkers() ? -VALUE_MATE : VALUE_DRAW)
                 << sync_endl;
+#endif
 
       goto finalize;
   }
@@ -575,6 +587,16 @@ namespace {
 
     if (!RootNode)
     {
+#ifdef THREECHECK
+        // Check for an instant win (Three-check)
+        if (pos.is_three_check())
+        {
+            if (pos.checks_given() == 3)
+                return mate_in(ss->ply+1);
+            if (pos.checks_taken() == 3)
+                return mated_in(ss->ply);
+        }
+#endif
         // Step 2. Check for aborted search and immediate draw
         if (Signals.stop || pos.is_draw() || ss->ply > MAX_PLY)
             return DrawValue[pos.side_to_move()];

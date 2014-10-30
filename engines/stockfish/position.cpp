@@ -54,7 +54,7 @@ namespace Zobrist {
   Key side;
   Key exclusion;
 #ifdef THREECHECK
-  Key checks[2][3];
+  Key checks[2][4];
 #endif
 }
 
@@ -159,9 +159,13 @@ void Position::init() {
   }
 
 #ifdef THREECHECK
-  for (Color c = WHITE; c <= BLACK; c++)
-      for (unsigned n = 0; n < 3; n++)
-          Zobrist::checks[c][n] = rk.rand<Key>();
+  Zobrist::checks[WHITE][0] = 0;
+  Zobrist::checks[BLACK][0] = 0;
+
+  for (unsigned n = 1; n <= 3; ++n) {
+    Zobrist::checks[WHITE][n] = rk.rand<Key>();
+    Zobrist::checks[BLACK][n] = rk.rand<Key>();
+  }
 #endif
 }
 
@@ -731,11 +735,10 @@ bool Position::move_gives_check(Move m, const CheckInfo& ci) const {
 
 #ifdef THREECHECK
 void Position::hash_three_check(Key& key, unsigned checksGiven) {
-  assert(checksGiven <= 2);
+  assert(checksGiven >= 1);
+  assert(checksGiven <= 3);
 
-  if (checksGiven)
-    key ^= Zobrist::checks[sideToMove][checksGiven - 1];
-
+  key ^= Zobrist::checks[sideToMove][checksGiven - 1];
   key ^= Zobrist::checks[sideToMove][checksGiven];
 }
 #endif
@@ -804,7 +807,7 @@ void Position::do_move(Move m, StateInfo& newSt, const CheckInfo& ci, bool moveI
 
 #ifdef THREECHECK
       if (threeCheck && moveIsCheck)
-          hash_three_check(st->key, st->checksGiven[sideToMove]++);
+          hash_three_check(st->key, ++st->checksGiven[sideToMove]);
 #endif
 
       do_castle(from, to, rfrom, rto);
@@ -937,7 +940,7 @@ void Position::do_move(Move m, StateInfo& newSt, const CheckInfo& ci, bool moveI
   {
 #ifdef THREECHECK
       if (threeCheck)
-          hash_three_check(st->key, st->checksGiven[sideToMove]++);
+          hash_three_check(st->key, ++st->checksGiven[sideToMove]);
 #endif
 
       if (type_of(m) != NORMAL)
@@ -1228,16 +1231,6 @@ Key Position::compute_key() const {
   if (sideToMove == BLACK)
       k ^= Zobrist::side;
 
-#ifdef THREECHECK
-  if (threeCheck)
-  {
-      if (st->checksGiven[WHITE])
-          k ^= Zobrist::checks[WHITE][st->checksGiven[WHITE] - 1];
-      if (st->checksGiven[BLACK])
-          k ^= Zobrist::checks[BLACK][st->checksGiven[BLACK] - 1];
-  }
-#endif
-
   return k;
 }
 
@@ -1386,10 +1379,10 @@ void Position::flip() {
 
 #ifdef THREECHECK
   if (is_three_check()) {
-	  f += " +";
-	  f += st->checksGiven[BLACK];
-	  f += "+";
-	  f += st->checksGiven[WHITE];
+     f += " +";
+     f += st->checksGiven[BLACK];
+     f += "+";
+     f += st->checksGiven[WHITE];
   }
 
   set(f, is_chess960(), is_three_check(), this_thread());
