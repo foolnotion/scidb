@@ -149,8 +149,9 @@ proc open {parent base variant info view index {fen {}}} {
 	grid $board -column 3 -row 1 -sticky nsew
 
 	if {$variant eq "Crazyhouse"} {
-		set Vars(holding:w) [::board::holding::new $lt.holding-w w $squareSize]
-		set Vars(holding:b) [::board::holding::new $lt.holding-b b $squareSize]
+		set pieces {q r b n p}
+		set Vars(holding:w) [::board::holding::new $lt.holding-w w $squareSize $pieces]
+		set Vars(holding:b) [::board::holding::new $lt.holding-b b $squareSize $pieces]
 		grid $Vars(holding:b) -column 1 -row 1 -sticky n
 		grid $Vars(holding:w) -column 5 -row 1 -sticky s
 		grid columnconfigure $lt {2 4} -minsize $Options(holding:distance)

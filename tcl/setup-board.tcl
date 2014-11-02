@@ -171,7 +171,7 @@ foreach key [array names NextPiece] { set PrevPiece($NextPiece($key)) $key }
 unset key
 
 variable Padding5x5			[image create photo -width 5 -height 5]
-variable BorderThickness	2
+variable BorderThickness	0
 variable Vars
 
 array set History {
@@ -229,6 +229,10 @@ proc open {parent} {
 	set Vars(field) ""
 	set Vars(popup) 0
 	set Vars(variant) $variant
+	set Vars(after) {}
+#	set Vars(history) {}
+#	set Vars(histindex) -1
+#	SetUndoPoint
 
 	set right [ttk::frame $top.right]
 	set bottom [ttk::frame $top.bottom]
@@ -446,15 +450,11 @@ proc open {parent} {
 			set [namespace current]::_MirrorSide "$::mc::Piece(K) \u2194 $::mc::Piece(Q)"
 			set [namespace current]::_FlipSide "$::mc::White \u2194 $::mc::Black"
 		}
-
-		set cmd [namespace code SetupVars]
-		foreach piece {White Black King Queen} {
-			trace add variable ::mc::$piece write $cmd
-		}
-
+		trace add variable ::mc::White write [list after idle [namespace code SetupVars]]
 		SetupVars
 	}
 
+	# TODO: use style instead of an empty image
 	ttk::button $right.empty \
 		-style aligned.TButton \
 		-compound left \
@@ -647,25 +647,30 @@ proc open {parent} {
 	# board ###################################################
 	update idletasks
 	set squareSize [expr {[winfo reqheight $right]/8}]
+	set boardHeight [expr {$squareSize*8}]
+	set panelWidth [expr {2*[::board::holding::computeWidth $squareSize] + 15}]
+	set size [expr {$boardHeight + 2*$BorderThickness + $edge}]
+	set canv [tk::canvas $top.frame -width [expr {$size + $panelWidth}] -height $size -takefocus 0]
+	::theme::configureCanvas $canv
 	if {![info exists Vars(SquareSize)] || $Vars(SquareSize) != $squareSize} {
 		if {[info exists Vars(SquareSize)]} { ::board::unregisterSize $Vars(SquareSize) }
 		::board::registerSize $squareSize
 		set Vars(SquareSize) $squareSize
 	}
-	set size [expr {$squareSize*8 + 2*$BorderThickness + $edge}]
-	set canv [tk::canvas $top.board -width $size -height $size -takefocus 0]
-	::theme::configureCanvas $canv
 	set board [::board::diagram::new $canv.board $squareSize -bordersize $BorderThickness]
 	::board::diagram::update $board $Vars(pos)
-	$board configure -cursor crosshair
+#	$board configure -cursor crosshair
 	set Vars(board) $board
-	$canv create window $edge 0 -window $board -anchor nw -tag board
-	::board::diagram::bind $board all <ButtonPress-1> [namespace code [list SetPiece %q]]
-	::board::diagram::bind $board all <ButtonPress-3> [namespace code ChangeColor]
-	::board::diagram::bind $board all <ButtonPress-2> [namespace code [list NextPiece %s]]
+	set Vars(canv) $canv
+	$canv create window [expr {$panelWidth + $edge}] 0 -window $board -anchor nw -tag board
+	::board::diagram::bind $board all <ButtonPress-1>		[namespace code { PressSquare %q }]
+	::board::diagram::bind $board all <ButtonRelease-1>	[namespace code { ReleaseSquare %X %Y %q }]
+	::board::diagram::bind $board all <Button1-Motion>		[namespace code { DragPiece %X %Y }]
+	::board::diagram::bind $board all <ButtonPress-3>		[namespace code ChangeColor]
+	::board::diagram::bind $board all <ButtonPress-2>		[namespace code { NextPiece %s }]
 	set Vars(board) $board
 
-	set x [expr {$edge/2}]
+	set x [expr {$panelWidth + $edge/2}]
 	set y [expr {$BorderThickness + $squareSize/2}]
 	foreach c {8 7 6 5 4 3 2 1} {
 		$canv create text $x $y -font TkTextFont -text $c
@@ -673,7 +678,7 @@ proc open {parent} {
 	}
 
 	set y [expr {8*$squareSize + 2*$BorderThickness + $edge/2}]
-	set x [expr {$BorderThickness + $edge + $squareSize/2}]
+	set x [expr {$BorderThickness + $panelWidth + $edge + $squareSize/2}]
 	foreach c {A B C D E F G H} {
 		$canv create text $x $y -font TkTextFont -text $c
 		incr x $squareSize
@@ -688,49 +693,46 @@ proc open {parent} {
 	}
 
 	# panel ###################################################
-	set panel [ttk::frame $top.panel]
-	set row 1
-	foreach piece {k q r b n p} {
-		set col 1
-		foreach side {w b} {
-			set fig $side$piece
-			tk::radiobutton $panel.$fig \
-				-image photo_Piece($fig,$squareSize) \
-				-indicatoron no \
-				-value $fig \
-				-variable [namespace current]::Vars(piece) \
-				-activebackground $activebg \
-				-selectcolor $selectbg \
-				-takefocus 0 \
-				-command [namespace code [list SetCursor $side$piece]] \
-				;
-			::theme::configureBackground $panel.$fig
-			grid $panel.$fig -row $row -column $col
-			incr col 2
-		}
-		incr row 2
-	}
-	grid columnconfigure $panel 2 -minsize 5
-	grid rowconfigure $panel 0 -minsize $BorderThickness
-	grid rowconfigure $panel {2 4 6 8 10} -weight 1
-	grid rowconfigure $panel 12 -minsize [expr {$edge + $BorderThickness}]
-
+	set pieces {k q r b n p}
+	set bcanv [::board::diagram::canvas $board]
+	set wp [::board::holding::new $canv.w w $squareSize $pieces $canv $bcanv $canv.b]
+	set bp [::board::holding::new $canv.b b $squareSize $pieces $canv $bcanv $canv.w]
+	::theme::configureCanvas $wp
+	::theme::configureCanvas $bp
+	::board::holding::setHeight $canv.w $boardHeight
+	::board::holding::setHeight $canv.b $boardHeight
+	::board::holding::update $canv.w {1 1 1 1 1 1}
+	::board::holding::update $canv.b {1 1 1 1 1 1}
+	set x [expr {[::board::holding::computeWidth $squareSize] + 5}]
+	$canv create window  0 $BorderThickness -window $wp -anchor nw -tag w
+	$canv create window $x $BorderThickness -window $bp -anchor nw -tag b
+	bind $canv.w <<InHandSelection>> [namespace code { SelectPiece %W %d }]
+	bind $canv.b <<InHandSelection>> [namespace code { SelectPiece %W %d }]
+	bind $canv.w <<InHandPieceDrop>> [namespace code { DropPiece %W %x %y %s %d }]
+	bind $canv.b <<InHandPieceDrop>> [namespace code { DropPiece %W %x %y %s %d }]
+	bind $canv.w <<InHandDropPosition>> [list $bcanv raise drag-piece]
+	bind $canv.b <<InHandDropPosition>> [list $bcanv raise drag-piece]
+	bind $canv.w <<InHandButtonPress>> [namespace code DropPress]
+	bind $canv.b <<InHandButtonPress>> [namespace code DropPress]
+	bind $canv.w <<InHandButtonRelease>> [namespace code DropRelease]
+	bind $canv.b <<InHandButtonRelease>> [namespace code DropRelease]
+	::board::diagram::setTargets $Vars(board) $canv.w $canv.b $canv
 	bind $Vars(board) <Map> [namespace code [list SetupCursor %W $Vars(piece)]]
+	set Vars(panel) $canv
 
 	###########################################################
 
 	switch $variant {
-		Crazyhouse { bind $panel <Configure> +[namespace code [list FitBottom $bottom $panel 1]] }
+		Crazyhouse { grid columnconfigure $bottom 1 -minsize [expr {$panelWidth - 10}] }
 		ThreeCheck { bind $right <Configure> +[namespace code [list FitBottom $bottom $right 3]] }
 	}
 
-	grid $panel		-row 1 -column 1 -sticky ns
-	grid $canv		-row 1 -column 3
-	grid $right		-row 1 -column 5 -sticky ns
-	grid $bottom	-row 3 -column 1 -sticky ew -columnspan 5
+	grid $canv		-row 1 -column 1
+	grid $right		-row 1 -column 3 -sticky ns
+	grid $bottom	-row 3 -column 1 -sticky ew -columnspan 3
 
-	grid columnconfigure $top {0 4 6} -minsize $::theme::padding
-	grid columnconfigure $top {2 4} -minsize 10
+	grid columnconfigure $top {0 4} -minsize $::theme::padding
+	grid columnconfigure $top {2} -minsize 10
 	grid rowconfigure $top 0 -minsize $::theme::padding
 
 	::widget::dialogButtons $dlg {ok cancel revert help}
@@ -760,9 +762,148 @@ proc open {parent} {
 }
 
 
+proc SelectPiece {panel piece} {
+	variable Vars
+
+	if {$piece ne " "} {
+		set Vars(piece) [string index $panel end][string tolower $piece]
+		SetCursor $Vars(piece)
+	}
+}
+
+
+proc PressSquare {square} {
+	variable Vars
+
+	set Vars(drag:piece) [::board::diagram::piece $Vars(board) $square]
+
+	if {$Vars(drag:piece) != "e"} {
+		::board::diagram::setDragSquare $Vars(board) $square
+		set Vars(after) [after 100 [list $Vars(board) configure -cursor hand2]]
+	}
+}
+
+
+proc ReleaseSquare {x y square} {
+	variable Vars
+
+	after cancel $Vars(after)
+
+	if {[::board::diagram::isDragged? $Vars(board)]} {
+		set dest [::board::diagram::getSquare $Vars(board) $x $y]
+		::board::diagram::finishDrag $Vars(board)
+		if {$dest == -1} {
+			SetPiece $square $Vars(drag:piece)
+#			SetUndoPoint
+		} elseif {$square != $dest} {
+			SetPiece $square $Vars(drag:piece)
+			SetPiece $dest $Vars(drag:piece)
+#			SetUndoPoint
+		}
+		::board::diagram::setDragSquare $Vars(board)
+	} else {
+		::board::diagram::cancelDrag $Vars(board)
+		SetPiece $square $Vars(piece)
+#		SetUndoPoint
+	}
+
+	SetCursor $Vars(piece)
+}
+
+
+proc DragPiece {x y} {
+	variable Vars
+
+	if {[::board::diagram::dragSquare $Vars(board)] != -1} {
+		::board::diagram::dragPiece $Vars(board) $x $y
+		if {[$Vars(board) configure -cursor] != "hand2"} {
+			$Vars(board) configure -cursor hand2
+		}
+	}
+}
+
+
+proc DropPress {} {
+	variable Vars
+	set Vars(after) [after 100 [namespace code DropStartSetCursors]]
+}
+
+
+proc DropStartSetCursors {} {
+	variable Vars
+
+	$Vars(board) configure -cursor hand2
+	$Vars(canv) configure -cursor hand2
+	$Vars(canv).w configure -cursor hand2
+	$Vars(canv).b configure -cursor hand2
+}
+
+
+proc DropRelease {} {
+	variable Vars
+
+	after cancel $Vars(after)
+	SetCursor $Vars(piece)
+	$Vars(canv) configure -cursor ""
+	$Vars(canv).w configure -cursor ""
+	$Vars(canv).b configure -cursor ""
+}
+
+
+proc DropPiece {w x y state piece} {
+	variable Vars
+
+	set square [::board::diagram::getSquare $Vars(board) $x $y]
+	::board::holding::finishDrop $w
+
+	if {$square != -1} {
+		set color [string index $w end]
+		set piece [string tolower $piece]
+		[::board::diagram::canvas $Vars(board)] raise drag-piece
+		SetPiece $square $color$piece
+#		SetUndoPoint
+	}
+}
+
+
 proc FitBottom {dst src cols} {
 	grid columnconfigure $dst $cols -minsize [winfo width $src]
 }
+
+
+# proc # oPoint {} {
+# 	variable Vars
+# 
+# 	if {$Vars(histindex) >= 0} {
+# 		set Vars(history) [lrange $Vars(history) 0 $Vars(histindex)]
+# 	}
+# 	lappend Vars(history) $Vars(fen)
+# 	incr Vars(histindex)
+# }
+# 
+# 
+# proc Undo {} {
+# 	variable Vars
+# 
+# 	if {$Vars(histindex) >= 0} {
+# 		set Vars(fen) [lindex $Vars(history) $Vars(histindex)]
+# 		set Vars(pos) [::scidb::board::fenToBoard $Vars(fen)]
+# 		::board::diagram::update $Vars(board) $Vars(pos)
+# 		incr Vars(histindex) -1
+# 	}
+# }
+# 
+# 
+# proc Redo {} {
+# 	variable Vars
+# 
+# 	if {$Vars(histindex) < [llength $Vars(history)] - 1} {
+# 		incr Vars(histindex) +1
+# 		set Vars(fen) [lindex $Vars(history) $Vars(histindex)]
+# 		set Vars(pos) [::scidb::board::fenToBoard $Vars(fen)]
+# 		::board::diagram::update $Vars(board) $Vars(pos)
+# 	}
+# }
 
 
 proc Variant? {} {
@@ -791,6 +932,11 @@ proc SetCursor {piece} {
 	} else {
 		$Vars(board) configure -cursor $Cursor($piece)
 	}
+
+	lassign [split $piece {}] color p
+	::board::holding::deselect $Vars(panel).w
+	::board::holding::deselect $Vars(panel).b
+	if {$color ne "."} { ::board::holding::select $Vars(panel).$color $p }
 }
 
 
@@ -1006,11 +1152,11 @@ proc ChangeColor {} {
 }
 
 
-proc SetPiece {square} {
+proc SetPiece {square pieceType} {
 	variable Vars
 	variable Marker
 
-	if {$Vars(piece) eq "."} {
+	if {$pieceType eq "."} {
 		set Marker($square) [expr {!$Marker($square)}]
 		if {$Marker($square)} {
 			::board::diagram::drawMarker $Vars(board) $square $icon::16x16::marker
@@ -1018,16 +1164,16 @@ proc SetPiece {square} {
 			::board::diagram::removeMarker $Vars(board) $square
 		}
 	} else {
-		if {$Vars(piece) eq [::board::diagram::piece $Vars(board) $square]} {
+		if {$pieceType eq [::board::diagram::piece $Vars(board) $square]} {
 			set piece "."
 		} else {
-			set piece $::board::diagram::pieceToLetter($Vars(piece))
+			set piece $::board::diagram::pieceToLetter($pieceType)
 		}
 
-		switch $Vars(piece) {
+		switch $pieceType {
 			wk - bk {
 				if {[Variant?] ne "Antichess"} {
-					set i [string first [expr {$Vars(piece) eq "wk" ? "K" : "k"}] $Vars(pos)]
+					set i [string first [expr {$pieceType eq "wk" ? "K" : "k"}] $Vars(pos)]
 					if {$i >= 0} {
 						::board::diagram::setPiece $Vars(board) $i "."
 					}

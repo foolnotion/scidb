@@ -88,17 +88,17 @@ proc new {w size args} {
 	set Board(pointer:x) -1
 	set Board(pointer:y) -1
 	set Board(afterid) [after 50 [namespace code [list [namespace parent]::setupPieces $size]]]
-	set Board(border) 0
 	set Board(animate) 1
 	set Board(animate,piece) ""
 	set Board(targets) {}
+	set Board(bordersize) $opts(-bordersize)
 
    set boardSize [expr {8*$size}]
    tk::frame $w -class Board
    tk::canvas $w.c \
 		-width $boardSize \
 		-height $boardSize \
-		-borderwidth $opts(-bordersize) \
+		-borderwidth $Board(bordersize) \
 		-relief $opts(-relief) \
 		-takefocus 0 \
 		;
@@ -135,8 +135,9 @@ proc resize {w size args} {
 
 		set oldSize $Board(size)
 		set boardSize [expr {8*$size}]
+		set Board(bordersize) $opts(-bordersize)
 
-		$w.c configure -width $boardSize -height $boardSize -borderwidth $opts(-bordersize)
+		$w.c configure -width $boardSize -height $boardSize -borderwidth $Board(bordersize)
 		$w.c xview moveto 0
 		$w.c yview moveto 0
 
@@ -148,10 +149,10 @@ proc resize {w size args} {
 
 		rebuild $w
 		::board::unregisterSize $oldSize
-	} elseif {$opts(-bordersize) != $Board(border)} {
-		set Board(border) $opts(-bordersize)
+	} elseif {$Board(bordersize) != $opts(-bordersize)} {
+		set Board(bordersize) $opts(-bordersize)
 		set boardSize [expr {8*$size}]
-		$w.c configure -width $boardSize -height $boardSize -borderwidth $opts(-bordersize)
+		$w.c configure -width $boardSize -height $boardSize -borderwidth $Board(bordersize)
 		$w.c xview moveto 0
 		$w.c yview moveto 0
 	}
@@ -383,6 +384,12 @@ proc flipped? {w} {
 }
 
 
+proc bordersize {w} {
+	variable ${w}::Board
+	return $Board(bordersize)
+}
+
+
 proc canvas {w} {
 	return $w.c
 }
@@ -517,6 +524,12 @@ proc finishDrag {w} {
 		foreach t $Board(targets) { $t delete drag-target }
 		$w.c dtag piece:$Board(drag:square) drag-target
 	}
+}
+
+
+proc cancelDrag {w} {
+	variable ${w}::Board
+	set Board(drag:square) -1
 }
 
 

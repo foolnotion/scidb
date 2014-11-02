@@ -106,8 +106,11 @@ proc build {w width height} {
 	set boardc [::board::diagram::canvas $board]
 	::variation::build $canv [namespace code SelectAlternative]
 
-	set Vars(holding:w) [::board::holding::new $canv.holding-w w $Dim(squaresize) $boardc $border $canv]
-	set Vars(holding:b) [::board::holding::new $canv.holding-b b $Dim(squaresize) $boardc $border $canv]
+	set pieces {q r b n p}
+	set Vars(holding:w) \
+		[::board::holding::new $canv.holding-w w $Dim(squaresize) $pieces $boardc $border $canv]
+	set Vars(holding:b) \
+		[::board::holding::new $canv.holding-b b $Dim(squaresize) $pieces $boardc $border $canv]
 	::bind $Vars(holding:w) <<InHandSelection>> { ::move::inHandSelected %W %d }
 	::bind $Vars(holding:b) <<InHandSelection>> { ::move::inHandSelected %W %d }
 	::bind $Vars(holding:w) <<InHandPieceDrop>> { ::move::inHandPieceDrop %W %x %y %s %d }
