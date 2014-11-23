@@ -393,14 +393,20 @@ convPlayerName(mstl::string& str)
 }
 
 
-inline static unsigned
+inline
+static unsigned
 convertEco(unsigned code)
 {
-	return code ? (code >> 7) & 0x1ff : 0;
+	code = (code >> 7) & 0x1ff;
+
+	// Sometimes the ECO code is invalid. Either this is
+	// an CB error, or an unknown "feature".
+	return code <= 500 ? code : 0;
 }
 
 
-inline static void
+inline
+static void
 setDate(Date& result, uint32_t value)
 {
 	result.setYMD((value >> 9) & 4095, (value >> 5) & 15, value & 31);
