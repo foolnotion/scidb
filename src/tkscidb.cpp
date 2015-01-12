@@ -88,11 +88,6 @@ init(Tcl_Interp* ti)
 
 #endif
 
-db::Board board;
-db::MoveList moves;
-board.setStandardPosition(db::variant::Normal);
-board.doMoves("a3 f6 Ra2");
-board.generateMoves(db::variant::Normal, moves);
 		tcl::app::setup(new app::Application);
 
 #ifdef __WIN32__
