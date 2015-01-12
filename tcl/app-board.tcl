@@ -276,17 +276,17 @@ proc build {w width height} {
 		-menucmd ::gamebar::addDestinationsForSaveToMenu \
 	]
 
-	foreach {action key} {	GotoStart Home
-									FastBack  Prior
-									Back      Left
-									Fwd       Right
-									FastFwd   Next
-									GotoEnd   End} {
+	foreach {action key} {	GotoStart start
+									FastBack  -10
+									Back      -1
+									Fwd       +1
+									FastFwd   +10
+									GotoEnd   end} {
 		set Vars(control:[string tolower $action 0]) \
 			[::toolbar::add $tbControl button \
 				-state disabled \
 				-image [set ::icon::toolbarCtrl${action}] \
-				-command [namespace code Go$key]]
+				-command [namespace code [list Goto $key]]]
 	}
 
 	::toolbar::addSeparator $tbControl

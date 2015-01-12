@@ -636,17 +636,20 @@ Decoder::decodeComment(MoveNode* node, unsigned length, move::Position position)
 				case 0x85: nag = nag::WithTheIdea; break;							// "/\"
 				case 0x86: nag = nag::Space; break; 								// "()"
 				case 0x87: nag = nag::Zugzwang; break;								// "(.)"
+				case 0x90: nag = nag::Development; break;							// "@"
 				case 0x91: nag = nag::Line; break; 									// "<->"
 				case 0x92: nag = nag::Diagonal; break; 							// "/^"
 				case 0x93: nag = nag::Zeitnot; break;								// "(+)"
 				case 0x94: nag = nag::Center; break;								// "[+]"
 				case 0x99: nag = nag::SingularMove; break;						// "[]"
+				case 0xa9: nag = nag::WithCompensationForMaterial; break;	// "~/="
 				case 0xaa: nag = nag::With; break; 									// "|_"
 				case 0xab: nag = nag::Queenside; break; 							// "<<"
 				case 0xac: nag = nag::Endgame; break; 								// "_|_"
 				case 0xad: nag = nag::PairOfBishops; break; 						// "^^"
 				case 0xae: nag = nag::BishopsOfOppositeColor; break; 			// "^_"
 				case 0xaf: nag = nag::BishopsOfSameColor; break;				// "^="
+				case 0xb0: nag = nag::WithCompensationForMaterial; break;	// "~/="
 				case 0xb1: nag = nag::WhiteHasAModerateAdvantage; break; 	// "+/-"
 				case 0xb2: nag = nag::WhiteHasASlightAdvantage; break; 		// "+/="
 				case 0xb3: nag = nag::BlackHasASlightAdvantage; break; 		// "=/+"
@@ -657,10 +660,6 @@ Decoder::decodeComment(MoveNode* node, unsigned length, move::Position position)
 				case 0xd7: nag = nag::WeakPoint; break; 							// "><"
 				case 0xf7: nag = nag::UnclearPosition; break; 					// "~~"
 				case 0xfe: nag = nag::PassedPawn; break; 							// "o^"
-
-//				It seems to be impossible to use these symbols in ChessBase.
-//				case 0x??: nag = nag::WithCompensationForMaterial; break;	// "~/="
-//				case 0x??: nag = nag::Development; break;							// "@" ???
 
 				case 0x9e:
 					node->addAnnotation(nag::Diagram);								// "#"

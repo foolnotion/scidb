@@ -278,7 +278,7 @@ static country::Code NationMap[] =
 	Cambodia,									// 203 CMB
 	Cayman_Islands,							// 204 CAY
 	Central_African_Republic,				// 205 CAR
-	Jersey,										// 206 CIB Channel Islands
+	Great_Britain,								// 206 CIB Channel Islands
 	Christmas_Island,							// 207 CIA
 	Cocos_Islands,								// 208 COA
 	Cook_Islands,								// 209 CIN
