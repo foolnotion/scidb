@@ -1,0 +1,7 @@
+::board::addStyle theme {
+  identifier   {Marmorate|1422460283732|purple|gregor}
+  piece-set    {Free Staunton}
+  piece-style  {Golden Creme|1422459733282|purple|gregor}
+  square-style {Blue Marble|1422460111132|purple|gregor}
+  version      {1.0}
+}

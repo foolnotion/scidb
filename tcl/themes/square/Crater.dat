@@ -1,5 +1,6 @@
 ::board::addStyle square {
   version                  {1.0}
+  borderline,color         {#000000}
   borderline,gap           {0}
   borderline,opacity       {175}
   borderline,width         {0.006666666666666667}
@@ -14,10 +15,10 @@
   hilite,suggested         {#eeed2a}
   hint,background-color    {}
   hint,background-tile     {misc PeachMelonTowelTexture.jpg}
-  hint,background-rotation	0
+  hint,background-rotation {0}
   hint,border-color        {}
   hint,border-tile         {marble marble13.jpg}
-  hint,border-rotation   	0
+  hint,border-rotation     {0}
   hint,coordinates         {#ffffff}
   identifier               {Crater|1296048990606|yellow.color|gregor}
   lite,rotation            {0}

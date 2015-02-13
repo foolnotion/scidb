@@ -1,0 +1,31 @@
+::board::addStyle square {
+  borderline,color         {#514b09}
+  borderline,gap           {0}
+  borderline,opacity       {0x80}
+  borderline,width         {0.006666666666666667}
+  dark,rotation            {0}
+  dark,solid               {#998e11}
+  dark,texture             {}
+  dark,x1                  {0}
+  dark,x2                  {0}
+  dark,y1                  {0}
+  dark,y2                  {0}
+  hilite,selected          {#57b234}
+  hilite,suggested         {#ff1e0e}
+  hint,background-color    {}
+  hint,background-rotation {0}
+  hint,background-tile     {wood WoodFine0006_Green.png}
+  hint,border-color        {#695d07}
+  hint,border-rotation     {0}
+  hint,border-tile         {}
+  hint,coordinates         {#ffffff}
+  identifier               {Burnt|1422299233126|purple|gregor}
+  lite,rotation            {0}
+  lite,solid               {#cbbd16}
+  lite,texture             {}
+  lite,x1                  {0}
+  lite,x2                  {0}
+  lite,y1                  {0}
+  lite,y2                  {0}
+  version                  {1.0}
+}

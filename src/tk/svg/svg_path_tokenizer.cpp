@@ -29,7 +29,7 @@
 using namespace svg;
 
 char const path_tokenizer::s_commands[]	= "+-MmZzLlHhVvCcSsQqTtAaFfPp";
-char const path_tokenizer::s_numeric[]		= ".Ee0123456789";
+char const path_tokenizer::s_numeric[]		= "+-.Ee0123456789";
 char const path_tokenizer::s_separators[]	= " ,\t\n\r";
 
 

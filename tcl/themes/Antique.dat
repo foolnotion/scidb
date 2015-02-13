@@ -1,7 +1,7 @@
 ::board::addStyle theme {
   version		{1.0}
-  piece-style  Condal|1263914065014|yellow.color|gregor
-  identifier   Antique|1263914483272|yellow.color|gregor
-  piece-set    Condal
-  square-style Wooden|1263914443955|yellow.color|gregor
+  piece-style  {Condal|1263914065014|yellow.color|gregor}
+  identifier   {Antique|1263914483272|yellow.color|gregor}
+  piece-set    {Condal}
+  square-style {Wooden|1263914443955|yellow.color|gregor}
 }

@@ -53,6 +53,9 @@ array set Browser {
 }
 
 set Browser(incr) [expr {$Browser(size) + 2*$Browser(space)}]
+set Rows 5
+set Cols 5
+array set Cache {}
 
 namespace import ::tcl::mathfunc::min
 namespace import ::tcl::mathfunc::max
@@ -62,7 +65,7 @@ namespace export openBrowser buildBrowser forgetTextures getTexture makePopup po
 
 
 proc SetScrollRegion {canv} {
-	variable Browser
+	variable ${canv}::Browser
 
 	set height [expr {($Browser(row) + 1)*$Browser(incr)}]
 	$canv configure -scrollregion [list 0 0 [$canv cget -width] $height]
@@ -70,7 +73,7 @@ proc SetScrollRegion {canv} {
 
 
 proc MakeVisible {canv} {
-	variable Browser
+	variable ${canv}::Browser
 
 	set topFraction [lindex [$canv yview] 0]
 	set first [expr int(($topFraction + 0.00001)*($Browser(row) + 1))]
@@ -85,7 +88,7 @@ proc MakeVisible {canv} {
 
 
 proc Reload {canv which} {
-	variable Browser
+	variable ${canv}::Browser
 
 	$canv delete all
 	after cancel $Browser(afterId,texture)
@@ -96,7 +99,7 @@ proc Reload {canv which} {
 
 
 proc Configure {canv which w h} {
-	variable Browser
+	variable ${canv}::Browser
 
 	set nrows [expr {$h/$Browser(incr)}]
 	set ncols [expr {$w/$Browser(incr)}]
@@ -122,7 +125,7 @@ proc Configure {canv which w h} {
 
 
 proc Move {canv ydir xdir} {
-	variable Browser
+	variable ${canv}::Browser
 
 	set row [expr {$Browser(cury) + $ydir}]
 	set col [expr {$Browser(curx) + $xdir}]
@@ -199,8 +202,8 @@ proc makePopup {} {
 }
 
 
-proc ShowTexture {canv {file {}} {row 0} {col 0} {xc 0} {yc 0}} {
-	variable Browser
+proc ShowTexture {canv which {file {}} {row 0} {col 0} {xc 0} {yc 0}} {
+	variable ${canv}::Browser
 
 	set w [makePopup]
 
@@ -227,37 +230,37 @@ proc ShowTexture {canv {file {}} {row 0} {col 0} {xc 0} {yc 0}} {
 }
 
 
-proc SelectCurrent {} {
-	variable Browser
-	SendResult [lindex $Browser(files) [expr {$Browser(cury)*$Browser(ncols) + $Browser(curx)}]]
+proc SelectCurrent {canv} {
+	variable ${canv}::Browser
+	SendResult $canv [lindex $Browser(files) [expr {$Browser(cury)*$Browser(ncols) + $Browser(curx)}]]
 }
 
 
 proc SelectTexture {canv row col file} {
-	variable Browser
+	variable ${canv}::Browser
 
 	$canv itemconfigure "hi:$Browser(cury):$Browser(curx)" -state hidden
 	$canv itemconfigure "hi:$row:$col" -state normal
 	set Browser(cury) $row
 	set Browser(curx) $col
 	set Browser(result) $file
-	SendResult $file
+	SendResult $canv $file
 }
 
 
-proc SendSelected {} {
-	variable Browser
+proc SendSelected {canv} {
+	variable ${canv}::Browser
 
 	if {[llength $Browser(result)]} {
-		SendResult $Browser(result)
+		SendResult $canv $Browser(result)
 	} elseif {[llength $Browser(hilite)]} {
-		SendResult $Browser(hilite)
+		SendResult $canv $Browser(hilite)
 	}
 }
 
 
-proc SendResult {file} {
-	variable Browser
+proc SendResult {canv file} {
+	variable ${canv}::Browser
 
 	set result [lrange [file split $file] end-1 end]
 
@@ -270,7 +273,8 @@ proc SendResult {file} {
 
 
 proc LoadTextures {canv which files} {
-	variable Browser
+	variable ${canv}::Browser
+	variable Cache
 
 	set border $Browser(border)
 	set size $Browser(size)
@@ -288,16 +292,15 @@ proc LoadTextures {canv which files} {
 			continue
 		}
 
-		if {![info exists Browser(texture,$file)]} {
-			set Browser(texture,$file) [image create photo -width $size -height $size]
-			if {[catch { [namespace parent]::loadImage $file $Browser(texture,$file) }]} {
+		if {![info exists Cache(texture,$file)]} {
+			set Cache(texture,$file) [image create photo -width $size -height $size]
+			if {[catch { [namespace parent]::loadImage $file $Cache(texture,$file) }]} {
 				set index [lsearch -exact $Browser(files) "$file"]
 				set Browser(files) [lreplace $Browser(files) $index $index]
-				image delete $Browser(texture,$file)
-				unset Browser(texture,$file)
+				image delete $Cache(texture,$file)
+				unset Cache(texture,$file)
 				continue
 			}
-			lappend Browser(list) $Browser(texture,$file)
 			set loop false
 		}
 	
@@ -342,16 +345,16 @@ proc LoadTextures {canv which files} {
 			-state hidden \
 			-tag "hi:$row:$col"
 		$canv create image $x $y \
-			-image $Browser(texture,$file) \
+			-image $Cache(texture,$file) \
 			-anchor nw \
 			-tag "tex:$row:$col"
 		$canv bind "tex:$row:$col" <ButtonPress-1> \
 			[namespace code [list SelectTexture $canv $row $col $file]]
 		$canv bind "tex:$row:$col" <Double-1> [list destroy [winfo toplevel $canv]]
 		$canv bind "tex:$row:$col" <ButtonPress-2> \
-			[namespace code [list ShowTexture $canv "$file" $row $col %X %Y]]
+			[namespace code [list ShowTexture $canv $which "$file" $row $col %X %Y]]
 		$canv bind "tex:$row:$col" <ButtonPress-3> \
-			[namespace code [list ShowTexture $canv "$file" $row $col %X %Y]]
+			[namespace code [list ShowTexture $canv $which "$file" $row $col %X %Y]]
 		bind $canv <ButtonPress-1>   [namespace code { popdown }]
 		bind $canv <ButtonRelease-2> [namespace code { popdown }]
 		bind $canv <ButtonRelease-3> [namespace code { popdown }]
@@ -378,7 +381,7 @@ proc LoadTextures {canv which files} {
 proc FindTextures {canv which} {
 	variable [namespace parent]::square::preferences
 	variable preferredOnly
-	variable Browser
+	variable ${canv}::Browser
 
 	if {$preferredOnly && [info exists preferences($Browser(other))]} {
 		set Browser(files) {}
@@ -408,21 +411,26 @@ proc FindTextures {canv which} {
 
 
 proc Focus {canv state} {
-	variable Browser
+	variable ${canv}::Browser
 	$canv itemconfigure "hi:$Browser(cury):$Browser(curx)" -state $state
 }
 
 
 proc openBrowser {parent which currentTexture {otherTexture {}} {rotation {}} {place center}} {
-	variable Browser
+	variable Rows
+	variable Cols
 
 	set dlg [tk::toplevel $parent.select_texture -class Scidb]
 	bind $dlg <Escape> [list destroy $dlg]
 	set top [ttk::frame $dlg.top]
 	pack $top -fill both -expand yes
 
-	set browser \
-		[buildBrowser $top $dlg $which $Browser(rows) $Browser(cols) $currentTexture $otherTexture]
+	set canv $top.container
+	namespace eval [namespace current]::${canv} {}
+	variable ${canv}::Browser
+	array unset Browser rotation
+
+	set browser [buildBrowser $top $dlg $which $Rows $Cols $currentTexture $otherTexture]
 	set Browser(recv) $parent
 
 	if {[string is integer -strict $rotation]} {
@@ -433,9 +441,9 @@ proc openBrowser {parent which currentTexture {otherTexture {}} {rotation {}} {p
 		foreach deg {0 90 180 270} {
 			set Browser($deg,$which) [ttk::checkbutton $rot.b$deg \
 				-text "$deg°" \
-				-variable [namespace current]::Browser(rotation) \
+				-variable [namespace current]::${canv}::Browser(rotation) \
 				-onvalue $deg \
-				-command [namespace code SendSelected] \
+				-command [namespace code [list SendSelected $top.container]] \
 			]
 			grid $rot.b$deg -row 1 -column $col
 			incr col 2
@@ -457,7 +465,7 @@ proc openBrowser {parent which currentTexture {otherTexture {}} {rotation {}} {p
 	wm title $dlg "$::scidb::app: $::mc::Texture"
 	wm protocol $dlg WM_DELETE_WINDOW "destroy $dlg"
 	wm withdraw $dlg
-	wm grid $dlg $Browser(ncols) $Browser(nrows) $Browser(incr) $Browser(incr)
+	wm grid $dlg $Cols $Rows $Browser(incr) $Browser(incr)
 	wm minsize $dlg 4 1
 	::util::place $dlg -parent $parent -position $place
 	wm deiconify $dlg
@@ -466,8 +474,8 @@ proc openBrowser {parent which currentTexture {otherTexture {}} {rotation {}} {p
 	tkwait window $dlg
 	ttk::releaseGrab $dlg
 
-	set Browser(rows) $Browser(nrows)
-	set Browser(cols) $Browser(ncols)
+	set Rows $Browser(nrows)
+	set Cols $Browser(ncols)
 
 	if {[info exists Browser(rotation)] && $Browser(rotation) ne $rotation} {
 		set Browser(result) $currentTexture
@@ -479,7 +487,11 @@ proc openBrowser {parent which currentTexture {otherTexture {}} {rotation {}} {p
 
 proc buildBrowser {w recv which nrows ncols currentTexture {otherTexture {}}} {
 	variable [namespace parent]::square::preferences
-	variable Browser
+
+	set canv $w.container
+	namespace eval [namespace current]::${canv} {}
+	variable ${canv}::Browser
+	array set Browser [array get [namespace current]::Browser]
 
 	if {[llength $otherTexture] && ($which eq "lite" || $which eq "dark")} {
 		set otherTexture [list [expr {$which eq "lite" ? "dark" : "lite"}] {*}$otherTexture]
@@ -494,7 +506,7 @@ proc buildBrowser {w recv which nrows ncols currentTexture {otherTexture {}}} {
 	set height [expr {$Browser(nrows)*$Browser(incr) + 1}]
 	set provideSwitch [expr {[llength $Browser(other)] && [info exists preferences($Browser(other))]}]
 
-	tk::canvas $w.container \
+	tk::canvas $canv \
 		-borderwidth 2 \
 		-relief groove \
 		-takefocus 1 \
@@ -504,47 +516,52 @@ proc buildBrowser {w recv which nrows ncols currentTexture {otherTexture {}}} {
 		-scrollregion [list 0 0 $width $height] \
 		-width $width \
 		-height $height
-	ttk::scrollbar $w.vsb -orient vertical -command "$w.container yview"
+	ttk::scrollbar $w.vsb -orient vertical -command "$canv yview"
 	if {$provideSwitch} {
 		ttk::checkbutton $w.preferredOnly \
 			-textvar [namespace current]::mc::PreselectedOnly \
 			-variable [namespace current]::preferredOnly \
-			-command "[namespace current]::FindTextures $w.container $which"
+			-command "[namespace current]::FindTextures $canv $which"
 	}
 	
-	bind $w.container <FocusIn>	[namespace code { Focus %W normal }]
-	bind $w.container <FocusOut>	[namespace code { Focus %W hidden }]
-	# NOTE: we have to use 'break', otherwise <space> will be sent afterwards (seems to be a Tk bug?!)
-#	bind $w.container <Return>		[namespace code { SelectCurrent; break }]
-	bind $w.container <space>		[namespace code { SelectCurrent }]
-	bind $w.container <Up>			[namespace code { Move %W -1  0 }]
-	bind $w.container <Down>		[namespace code { Move %W +1  0 }]
-	bind $w.container <Left>		[namespace code { Move %W  0 -1 }]
-	bind $w.container <Right>		[namespace code { Move %W  0 +1 }]
-	bind $w.container <Next>		[namespace code { Move %W +[expr {$Browser(nrows) - 1}] 0 }]
-	bind $w.container <Prior>		[namespace code { Move %W -[expr {$Browser(nrows) - 1}] 0 }]
-	bind $w.container <Home>		[namespace code { Move %W -$Browser(cury) -$Browser(curx) }]
-	bind $w.container <End>			[namespace code {
+	bind $canv <FocusIn>		[namespace code { Focus %W normal }]
+	bind $canv <FocusOut>	[namespace code { Focus %W hidden }]
+	bind $canv <space>		[namespace code { SelectCurrent %W }]
+	bind $canv <Up>			[namespace code { Move %W -1  0 }]
+	bind $canv <Down>			[namespace code { Move %W +1  0 }]
+	bind $canv <Left>			[namespace code { Move %W  0 -1 }]
+	bind $canv <Right>		[namespace code { Move %W  0 +1 }]
+	bind $canv <Next>			[namespace code { Move %W +[expr {[set %W::Browser(nrows)] - 1}] 0 }]
+	bind $canv <Prior>		[namespace code { Move %W -[expr {[set %W::Browser(nrows)] - 1}] 0 }]
+	bind $canv <Home>			[namespace code {
+		variable %W::Browser;
+		Move %W -$Browser(cury) -$Browser(curx)
+	}]
+	bind $canv <End>			[namespace code {
+		variable %W::Browser
 		Move %W [expr {$Browser(row) - $Browser(cury)}] [expr {$Browser(col) - $Browser(curx) - 1}]
 	}]
 
-#	bind $w.container <Tab>		[namespace code {
+#	bind $canv <Tab> [namespace code {
+#		variable %W::Browser
 #		if {$Browser(curx) == $Browser(ncols) - 1} { Move %W +1 -$Browser(curx) } else { Move %W 0 +1 }
 #	}]
-#	bind $w.container <KeyPress-space> "
-#		if {\$[namespace current]::Browser(time) != %t} {
-#			[namespace current]::ShowTexture $w.container
+#	bind $canv <KeyPress-space> [namespace code {
+#		variable %W::Browser
+#		if {$::Browser(time) != %t} {
+#			ShowTexture $canv $which
 #		} else {
-#			after cancel \$[namespace current]::Browser(afterId,key)
+#			after cancel $Browser(afterId,key)
 #		}
-#	"
-#	bind $w.container <KeyRelease-space> "
-#		set [namespace current]::Browser(time) %t
-#		set [namespace current]::Browser(afterId,key) \[after idle { [namespace current]::popdown }\]
-#	"
+#	}]
+#	bind $canv <KeyRelease-space> [namespace code {
+#		variable %W::Browser
+#		set Browser(time) %t
+#		set Browser(afterId,key) [after idle { [namespace current]::popdown }]
+#	}]
 
 	grid $w.vsb -row 0 -column 1 -sticky nswe
-	grid $w.container -row 0 -column 0 -sticky nsew -padx 0 -pady 0
+	grid $canv -row 0 -column 0 -sticky nsew -padx 0 -pady 0
 	if {$provideSwitch} {
 		grid $w.preferredOnly \
 			-row 1 -column 0 -columnspan 2 \
@@ -566,29 +583,30 @@ proc buildBrowser {w recv which nrows ncols currentTexture {otherTexture {}}} {
 	set Browser(hilite) $currentTexture
 	set Browser(result) {}
 
-	bind $w.container <Destroy>  [namespace code { after cancel $Browser(afterId,texture) }]
-	bind $w.container <Destroy> +[namespace code { after cancel $Browser(afterId,key) }]
-	bind $w.container <Destroy> +[namespace code { catch { image delete $Browser(image) } }]
-	bind $w.container <Configure> [namespace code [list Configure %W $which %w %h]]
+	bind $canv <Destroy>  [namespace code { after cancel [set %W::Browser(afterId,texture)] }]
+	bind $canv <Destroy> +[namespace code { after cancel [set %W::Browser(afterId,key)] }]
+	bind $canv <Destroy> +[namespace code { catch { image delete [set %W::Browser(image)] } }]
+	bind $canv <Configure> [namespace code [list Configure %W $which %w %h]]
 
-	after idle [FindTextures $w.container $which]
+	after idle [FindTextures $canv $which]
 	return $w.container
 }
 
 
 proc forgetTextures {} {
-	variable Browser
+	variable Cache
 
-	image delete {*}$Browser(list)
-	set Browser(list) {}
-	array unset Browser texture,*
+	foreach entry [array names Cache] {
+		image delete [lindex [split $entry ,] 1]
+	}
+	array unset Cache
 }
 
 
 proc getTexture {file} {
-	variable Browser
+	variable Cache
 
-	if {[info exists Browser(texture,$file)]} { return $Browser(texture,$file) }
+	if {[info exists Cache(texture,$file)]} { return $Cache(texture,$file) }
 	return {}
 }
 

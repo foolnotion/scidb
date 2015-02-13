@@ -27,7 +27,7 @@
 # Font by Armando H. Marroquin
 # <http://www.enpassant.dk/chess/fonteng.htm>
 
-lappend board_PieceSet { Lucena-Thin truetype {stroke 2} {contour 40} {sampling 100} {overstroke 5} }
+lappend board_PieceSet { Lucena-Thin truetype {stroke {2 0}} {contour 40} {sampling 100} {overstroke 5} }
 
 set truetype_Lucena_Thin(wk) {
 <g

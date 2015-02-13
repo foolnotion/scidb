@@ -1097,8 +1097,21 @@ parser::parse_color(char const* str)
 	}
 	else
 	{
+		char buf[200];
+		unsigned k = 0;
+		char const* s = str;
+
+		for (	unsigned i = 0;
+				k < sizeof(buf) - 1 && (::isalnum(*s) || (*s == ' ' && ::isalpha(s[1])));
+				++i, ++s)
+		{
+			if (::isalnum(*s))
+				buf[k++] = ::tolower(*s);
+		}
+		buf[k] = '\0';
+
 		named_color c;
-		c.name = str;
+		c.name = buf;
 
 		void const* p = ::bsearch(	&c,
 											::Colors,

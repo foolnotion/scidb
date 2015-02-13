@@ -1,6 +1,6 @@
 ::board::addStyle theme {
-  version		1.0
-  piece-style  Glass|1243791877212|yellow.color|gregor
+  version		{1.0}
+  piece-style  {Glass|1243791877212|yellow.color|gregor}
   identifier   {Kunterbunt|1250851039023|yellow.color|gregor}
   piece-set    {Good Companion}
   square-style {Sycomore Gray|1244122565844|yellow.color|gregor}

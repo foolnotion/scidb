@@ -27,7 +27,7 @@
 # Font by Armando H. Marroquin
 # <http://www.enpassant.dk/chess/fonteng.htm>
 
-lappend board_PieceSet { Adventurer truetype {stroke 5} {contour 80} {sampling 200} {overstroke 1} }
+lappend board_PieceSet { Adventurer truetype {contour 80} {sampling 200} {overstroke 1} }
 
 set truetype_Adventurer(wk) {
 <g

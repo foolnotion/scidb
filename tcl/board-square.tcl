@@ -38,7 +38,8 @@ set Rotate					"Rotate"
 set Borderline				"Borderline"
 set Width					"Width"
 set Opacity					"Opacity"
-set GapBetweenSquares	"Gap between squares"
+set GapBetweenSquares	"Show always gap between squares"
+set GapColor				"Gap color"
 set Highlighting			"Highlighting"
 set Selected				"Selected"
 set SuggestedMove			"Suggested move"
@@ -66,9 +67,10 @@ variable Widget
 variable Vars
 
 array set RecentColors {
-	lite		{ {} {} {} {} {} {} {} {} {} {} {} {} }
-	dark		{ {} {} {} {} {} {} {} {} {} {} {} {} }
-	hilite	{ {} {} {} {} {} {} {} {} {} {} {} {} }
+	lite			{ {} {} {} {} {} {} {} {} {} {} {} {} }
+	dark			{ {} {} {} {} {} {} {} {} {} {} {} {} }
+	hilite		{ {} {} {} {} {} {} {} {} {} {} {} {} }
+	borderline	{ {} {} {} {} {} {} {} {} {} {} {} {} }
 }
 
 
@@ -648,6 +650,7 @@ proc Reset {size} {
 	setupSquares [list $size $designSize]
 	RecolorButton hilite selected
 	RecolorButton hilite suggested
+	RecolorButton borderline color
 }
 
 
@@ -902,10 +905,26 @@ proc openConfigDialog {parent size closeCmd updateCmd resetCmd} {
 			-variable [namespace current]::Vars(borderline,opacity) \
 			-command [namespace code [list UpdateBorderline opacity]]]
 	
-	ttk::checkbutton $brl.gap \
+	set fgap [ttk::frame $brl.gap -borderwidth 0]
+	if {[catch { image height photo_Circle(color) }]} {
+		image create photo photo_Circle(color) -width 15 -height 15
+		photo_Circle(color) copy $::icon::15x15::circle
+	}
+	::scidb::tk::image recolor $style(borderline,color) photo_Circle(color)
+	ttk::button $fgap.gapColor \
+		-style aligned.TButton \
+		-textvar [namespace current]::mc::GapColor \
+		-image photo_Circle(color) \
+		-compound left \
+		-command [namespace code [list SelectColor borderline color]]
+	set Widget(borderline,color) $fgap.gapColor
+	ttk::checkbutton $fgap.gap \
 		-textvar [namespace current]::mc::GapBetweenSquares \
 		-variable [namespace current]::Vars(borderline,gap) \
 		-command [namespace code [list UpdateBorderline gap]]
+	grid $fgap.gapColor -row 0 -column 0
+	grid $fgap.gap -row 0 -column 2
+	grid columnconfigure $fgap {1} -minsize $::theme::padx
 	
 	grid $brl.lwidth -column 1 -row 1 -sticky sew
 	grid $brl.swidth -column 3 -row 1 -sticky nsew
@@ -923,7 +942,9 @@ proc openConfigDialog {parent size closeCmd updateCmd resetCmd} {
 
 	foreach {which textvar} [list	selected [namespace current]::mc::Selected \
 											suggested [namespace current]::mc::SuggestedMove] {
-		image create photo photo_Circle($which) -width 15 -height 15
+		if {[catch { image height photo_Circle($which) }]} {
+			image create photo photo_Circle($which) -width 15 -height 15
+		}
 		photo_Circle($which) copy $::icon::15x15::circle
 		::scidb::tk::image recolor $style(hilite,$which) photo_Circle($which)
 		ttk::button $hil.$which \

@@ -27,7 +27,7 @@
 # Font by Eric Bentzen
 # <http://www.enpassant.dk/chess/fonteng.htm>
 
-lappend board_PieceSet { Berlin truetype {stroke 10} {contour 80} {sampling 200} }
+lappend board_PieceSet { Berlin truetype {stroke 0} {contour 80} {sampling 200} }
 
 set truetype_Berlin(wk) {
 <g

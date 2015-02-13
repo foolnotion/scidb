@@ -27,7 +27,7 @@
 # Font by Armando H. Marroquin
 # <http://www.enpassant.dk/chess/fonteng.htm>
 
-lappend board_PieceSet { Maya truetype {stroke 1} {contour 80} {sampling 100} {overstroke 10} }
+lappend board_PieceSet { Maya truetype {stroke {1 0}} {contour 80} {sampling 100} }
 
 set truetype_Maya(wk) {
 <g

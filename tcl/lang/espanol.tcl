@@ -880,7 +880,7 @@
 ::board::square::mc::Borderline			"Borde"
 ::board::square::mc::Width					"Ancho"
 ::board::square::mc::Opacity				"Opacidad"
-::board::square::mc::GapBetweenSquares	"Espacio entre casillas"
+::board::square::mc::GapBetweenSquares	"Espacio entre casillas" ;# NEW text: "Show always gap between squares"
 ::board::square::mc::Highlighting		"Resaltar"
 ::board::square::mc::Selected				"Elegido"
 ::board::square::mc::SuggestedMove		"Jugada sugerida"
@@ -2145,6 +2145,8 @@
 ::info::mc::Development			"Desarrollo"
 ::info::mc::Programming			"Programación"
 ::info::mc::Head					"Líder"
+::info::mc::AllOthers			"all others" ;# NEW
+::info::mc::TheMissingOnes		"the missing ones" ;# NEW
 
 ::info::mc::Version				"Versión"
 ::info::mc::Distributed			"Este programa se distribuye bajo los términos de la Licencia Pública General GNU."

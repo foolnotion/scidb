@@ -1,0 +1,31 @@
+::board::addStyle square {
+  borderline,color         {#331c0c}
+  borderline,gap           {0}
+  borderline,opacity       {0x80}
+  borderline,width         {0.006666666666666667}
+  dark,rotation            {0}
+  dark,solid               {#54b446}
+  dark,texture             {wood EdWood4.jpg}
+  dark,x1                  {0}
+  dark,x2                  {150}
+  dark,y1                  {0}
+  dark,y2                  {150}
+  hilite,selected          {#9e3518}
+  hilite,suggested         {#f5ff04}
+  hint,background-color    {}
+  hint,background-rotation {0}
+  hint,background-tile     {wood WoodFine0006_S.jpg}
+  hint,border-color        {}
+  hint,border-rotation     {0}
+  hint,border-tile         {wood wood03.jpg}
+  hint,coordinates         {#ffffff}
+  identifier               {Melamine|1422438051463|purple|gregor}
+  lite,rotation            {0}
+  lite,solid               {#b0deb4}
+  lite,texture             {wood Melamine-wood-003.png}
+  lite,x1                  {0}
+  lite,x2                  {150}
+  lite,y1                  {0}
+  lite,y2                  {150}
+  version                  {1.0}
+}

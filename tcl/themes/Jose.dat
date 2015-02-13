@@ -1,7 +1,7 @@
 ::board::addStyle theme {
-  version		1.0
-  piece-style  Default
-  piece-set    Merida
+  version		{1.0}
+  piece-style  {Default}
+  piece-set    {Merida}
   square-style {Marble - Black&White|1243715852129|yellow.color|gregor}
-  identifier   José|1243683856813|yellow.color|gregor
+  identifier   {José|1243683856813|yellow.color|gregor}
 }

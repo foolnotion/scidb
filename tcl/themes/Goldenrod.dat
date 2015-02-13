@@ -1,7 +1,7 @@
 ::board::addStyle theme {
-  version		1.0
-  piece-style  Goldenrod|1243765822627|yellow.color|gregor
-  piece-set    Adventurer
+  version		{1.0}
+  piece-style  {Goldenrod|1243765822627|yellow.color|gregor}
+  piece-set    {Adventurer}
   square-style {Marble - Black&Gray|1243712213706|yellow.color|gregor}
-  identifier   Goldenrod|1243765848112|yellow.color|gregor
+  identifier   {Goldenrod|1243765848112|yellow.color|gregor}
 }

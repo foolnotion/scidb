@@ -27,7 +27,7 @@
 # Font by Matthieu Leschemelle
 # <http://www.enpassant.dk/chess/fonteng.htm>
 
-lappend board_PieceSet { Cases truetype {stroke 0} {contour 40} {sampling 100} {overstroke 6} }
+lappend board_PieceSet { Cases truetype {contour 45} {sampling 100} {overstroke 6} }
 
 set truetype_Cases(wk) {
 <g

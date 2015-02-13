@@ -27,7 +27,7 @@
 # Font by Armando H. Marroquin
 # <http://www.enpassant.dk/chess/fonteng.htm>
 
-lappend board_PieceSet { Merida truetype {stroke 5} {contour 100} {sampling 150} {overstroke 5} }
+lappend board_PieceSet { Merida truetype {stroke {5 3}} {contour 100} {sampling 150} {overstroke 1} }
 
 set truetype_Merida(wk) {
 <g

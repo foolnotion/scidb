@@ -27,7 +27,7 @@
 # Font by Eric Bentzen
 # <http://www.enpassant.dk/chess/fonteng.htm>
 
-lappend board_PieceSet { Alpha truetype {stroke 10} {contour 80} {sampling 150} {overstroke 1} }
+lappend board_PieceSet { Alpha truetype {contour 80} {sampling 150} {overstroke 1} }
 
 set truetype_Alpha(wk) {
 <g

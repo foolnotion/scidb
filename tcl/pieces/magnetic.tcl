@@ -27,7 +27,7 @@
 # Font by Armando H. Marroquin
 # <http://www.enpassant.dk/chess/fonteng.htm>
 
-lappend board_PieceSet { Magnetic truetype {stroke 3} {contour 80} {sampling 200} {overstroke 2} }
+lappend board_PieceSet { Magnetic truetype {stroke {3 0}} {contour 80} {sampling 200} {overstroke 2} }
 
 set truetype_Magnetic(wk) {
 <g

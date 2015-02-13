@@ -761,14 +761,12 @@ mstl::backtrace::symbols()
 
 # ifdef __unix__
 
-#if 0
 	if (is_debug_mode())
 		return;
 
-# ifdef USE_GDB
+#ifdef USE_GDB
 	if (symbols_gdb())
 		return;
-# endif
 #endif
 
 	if (symbols_linux())

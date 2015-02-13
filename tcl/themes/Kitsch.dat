@@ -1,0 +1,7 @@
+::board::addStyle theme {
+  identifier   {Kitsch|1422390619103|purple|gregor}
+  piece-set    {Cheq}
+  piece-style  {Kitsch|1422390611586|purple|gregor}
+  square-style {Vinyl|1422390355093|purple|gregor}
+  version      {1.0}
+}

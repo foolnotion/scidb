@@ -1,0 +1,7 @@
+::board::addStyle theme {
+  identifier   {Military|1423693429142|purple|gregor}
+  piece-set    {Military}
+  piece-style  {Military|1423693087335|purple|gregor}
+  square-style {Vinyl 2|1423677444276|purple|gregor}
+  version      {1.0}
+}

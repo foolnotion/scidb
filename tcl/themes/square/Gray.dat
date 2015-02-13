@@ -1,30 +1,31 @@
 ::board::addStyle square {
-  borderline,gap           0
-  borderline,opacity       175
-  borderline,width         0.006666666666666667
-  dark,rotation            0
-  dark,solid               #a0a0a0
+  borderline,color         {#444444}
+  borderline,gap           {0}
+  borderline,opacity       {175}
+  borderline,width         {0.006666666666666667}
+  dark,rotation            {0}
+  dark,solid               {#a0a0a0}
   dark,texture             {}
-  dark,x1                  0
-  dark,x2                  0
-  dark,y1                  0
-  dark,y2                  0
-  hilite,selected          #b0d0e0
-  hilite,suggested         #eeed2a
+  dark,x1                  {0}
+  dark,x2                  {0}
+  dark,y1                  {0}
+  dark,y2                  {0}
+  hilite,selected          {#b0d0e0}
+  hilite,suggested         {#eeed2a}
   hint,background-color    {}
   hint,background-tile     {misc patterncooler-02.png}
-  hint,background-rotation	0
-  hint,border-color        #666666
+  hint,background-rotation {0}
+  hint,border-color        {#666666}
   hint,border-tile         {}
-  hint,border-rotation   	0
-  hint,coordinates         #ffffff
-  identifier               Gray|1243532989423|yellow.color|gregor
-  lite,rotation            0
-  lite,solid               #d0d0d0
+  hint,border-rotation     {0}
+  hint,coordinates         {#ffffff}
+  identifier               {Gray|1243532989423|yellow.color|gregor}
+  lite,rotation            {0}
+  lite,solid               {#d0d0d0}
   lite,texture             {}
-  lite,x1                  0
-  lite,x2                  0
-  lite,y1                  0
-  lite,y2                  0
-  version                  1.0
+  lite,x1                  {0}
+  lite,x2                  {0}
+  lite,y1                  {0}
+  lite,y2                  {0}
+  version                  {1.0}
 }

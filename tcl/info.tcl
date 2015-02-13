@@ -48,6 +48,8 @@ set IconDesign				"Icon design"
 set Development			"Development"
 set Programming			"Programming"
 set Head						"Head"
+set AllOthers				"all others"
+set TheMissingOnes		"the missing ones"
 
 set Version					"Version"
 set Distributed			"This program is distributed under the terms of the GNU General Public License."
@@ -154,7 +156,7 @@ proc DisplayAbout {w} {
 		<br/><br/>
 		<font style='font-family: $fam; font-size: 12pt;'>
 			$mc::Version $::scidb::version<br/>
-			Copyright &#x00A9; 2008-2013 Gregor Cramer<br/><br/>
+			Copyright &#x00A9; 2008-2015 Gregor Cramer<br/><br/>
 			[Url http://scidb.sourceforge.net]<br/><br/>
 			$mc::Distributed<br/><br/>
 			<font style='font-size: 10pt;'>$mc::Inspired</font>
@@ -362,6 +364,15 @@ proc DisplayContributions {w} {
 				<tr><td>\u2001</td><td>[Url http://www.enpassant.dk/chess/fonteng.htm]</td></tr>
 				<tr height='7'></tr>
 
+				<tr><td colspan='2'>[Name {Gorgonian}]</td></tr>
+				<tr><td>\u2001</td><td>Aquarium (GAquarium), Bookup (GBookup), Celtic (GCeltic),
+											Chess7 (GChess7), ChessCube (GChessCube), Fritz (GFritz),
+											Habsburg (GHabsburg), Military (GMilitary), Old Style
+											(GOldStyle), Segoe (GSegoe), Standard (GCMF),
+											Zurich (GZurich)</td></tr>
+				<tr><td>\u2001</td><td>[Url http://gorgonian.weebly.com/babaschess.html]</td></tr>
+				<tr height='7'></tr>
+
 				<tr><td colspan='2'>[Name {Eric Bentzen}]</td></tr>
 				<tr><td>\u2001</td><td>Alpha, Berlin</td></tr>
 				<tr><td>\u2001</td><td>[Url http://www.enpassant.dk/chess/fonteng.htm]</td></tr>
@@ -440,11 +451,15 @@ proc DisplayContributions {w} {
 			<h1>$mc::BoardThemeDesign</h1>
 			<hr/>
 			<table border='0'>
-				<tr><td>[Name {Gregor Cramer}]</td></tr>
 				<tr>
 					<td>[Name {José Carlos Martins}]</td>
 					<td>\u2000\u2212\u2000</td>
 					<td>Country Style</td>
+				</tr>
+				<tr>
+					<td>[Name {Gregor Cramer}]</td>
+					<td>\u2000\u2212\u2000</td>
+					<td>$mc::AllOthers</td>
 				</tr>
 			</table>
 		</div>
@@ -452,11 +467,15 @@ proc DisplayContributions {w} {
 			<h1>$mc::FlagsDesign</h1>
 			<hr/>
 			<table border='0'>
-				<tr><td>
-					[Name {Mark James}]\u2000\u2212\u2000[Url http://www.famfamfam.com/lab/icons/flags]
+				<tr>
+					<td>[Name {Mark James}]</td>
+					<td>\u2000\u2212\u2000</td>
+					<td>[Url http://www.famfamfam.com/lab/icons/flags]</td>
 				</td></tr>
-				<tr><td>
-					[Name {Gregor Cramer}]
+				<tr>
+					<td>[Name {Gregor Cramer}]</td>
+					<td>\u2000\u2212\u2000</td>
+					<td>$mc::TheMissingOnes</td>
 				</td></tr>
 			</table>
 		</div>

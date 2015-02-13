@@ -1,0 +1,7 @@
+::board::addStyle theme {
+  identifier   {Fritz|1422386606480|purple|gregor}
+  piece-set    {Fritz}
+  piece-style  {Fritz|1422386484520|purple|gregor}
+  square-style {Fritz|1422383955583|purple|gregor}
+  version      {1.0}
+}

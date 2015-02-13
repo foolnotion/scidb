@@ -1,0 +1,31 @@
+::board::addStyle square {
+  borderline,color         {#0e212a}
+  borderline,gap           {0}
+  borderline,opacity       {0x80}
+  borderline,width         {0.006666666666666667}
+  dark,rotation            {0}
+  dark,solid               {#54b446}
+  dark,texture             {misc lapis-blue.png}
+  dark,x1                  {0}
+  dark,x2                  {150}
+  dark,y1                  {0}
+  dark,y2                  {150}
+  hilite,selected          {#4f949e}
+  hilite,suggested         {#f5ff04}
+  hint,background-color    {}
+  hint,background-rotation {0}
+  hint,background-tile     {misc patterncooler-02.png}
+  hint,border-color        {}
+  hint,border-rotation     {0}
+  hint,border-tile         {misc titian.gif}
+  hint,coordinates         {#ffffff}
+  identifier               {Blue Marble|1422460111132|purple|gregor}
+  lite,rotation            {0}
+  lite,solid               {#b0deb4}
+  lite,texture             {misc apollo-lite.png}
+  lite,x1                  {0}
+  lite,x2                  {150}
+  lite,y1                  {0}
+  lite,y2                  {150}
+  version                  {1.0}
+}

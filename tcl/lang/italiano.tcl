@@ -884,7 +884,7 @@
 ::board::square::mc::Borderline			"Bordo"
 ::board::square::mc::Width					"Larghezza"
 ::board::square::mc::Opacity				"Opacità"
-::board::square::mc::GapBetweenSquares	"Spazio tra le case"
+::board::square::mc::GapBetweenSquares	"Spazio tra le case" ;# NEW text: "Show always gap between squares"
 ::board::square::mc::Highlighting		"Evidenzia"
 ::board::square::mc::Selected				"Selezionato"
 ::board::square::mc::SuggestedMove		"Mossa suggerita"
@@ -2157,6 +2157,8 @@
 ::info::mc::Development			"Sviluppo"
 ::info::mc::Programming			"Programmazione"
 ::info::mc::Head					"Intestazione"
+::info::mc::AllOthers			"all others" ;# NEW
+::info::mc::TheMissingOnes		"the missing ones" ;# NEW
 
 ::info::mc::Version				"Versione"
 ::info::mc::Distributed			"Questo programma è distribuito secondo i termini della GNU General Public License."

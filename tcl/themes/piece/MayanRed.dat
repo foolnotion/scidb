@@ -1,47 +1,47 @@
 ::board::addStyle piece {
-  version            1.0
-  gradient,w,y2      0.46621621621621623
-  texture,w,rotation 0
-  texture,w,x1       0
-  opacity            0.5019607843137255
-  gradient,b,y1      0.5
-  texture,w,x2       0
+  version            {1.0}
+  gradient,w,y2      {0.46621621621621623}
+  texture,w,rotation {0}
+  texture,w,x1       {0}
+  opacity            {0.5019607843137255}
+  gradient,b,y1      {0.5}
+  texture,w,x2       {0}
   color,b,texture    {}
-  texture,b,rotation 0
-  color,b,contour    #ffffff
-  gradient,b,y2      0.46621621621621623
-  gradient,w,stop    #918f61
-  gradient,w,start   #eed8ae
-  texture,b,x1       0
-  useWhitePiece      0
-  gradient,w,fill    #fffacd
-  gradient,b,use     1
-  texture,b,x2       0
-  color,w,fill       #fffacd
-  gradient,b,stop    #73341f
-  gradient,w,x1      0.8648648648648649
+  texture,b,rotation {0}
+  color,b,contour    {#ffffff}
+  gradient,b,y2      {0.46621621621621623}
+  gradient,w,stop    {#918f61}
+  gradient,w,start   {#eed8ae}
+  texture,b,x1       {0}
+  useWhitePiece      {0}
+  gradient,w,fill    {#fffacd}
+  gradient,b,use     {1}
+  texture,b,x2       {0}
+  color,w,fill       {#fffacd}
+  gradient,b,stop    {#73341f}
+  gradient,w,x1      {0.8648648648648649}
   color,w,stroke     {}
-  gradient,w,x2      0.01351351351351351
+  gradient,w,x2      {0.01351351351351351}
   color,w,texture    {}
   color,b,fill       {}
-  color,w,contour    #ffffff
-  gradient,b,x1      1.0
-  gradient,w,tx      0
+  color,w,contour    {#ffffff}
+  gradient,b,x1      {1.0}
+  gradient,w,tx      {0}
   color,b,stroke     {}
-  gradient,b,x2      0.24324324324324326
-  gradient,w,ty      0
-  gradient,w,use     false
-  texture,w,y1       0
-  contour            1.0
-  texture,w,y2       0
+  gradient,b,x2      {0.24324324324324326}
+  gradient,w,ty      {0}
+  gradient,w,use     {false}
+  texture,w,y1       {0}
+  contour            {1.0}
+  texture,w,y2       {0}
   identifier         {Mayan - Red|1243775183896|yellow.color|gregor}
-  gradient,b,tx      0
-  gradient,b,ty      0
-  texture,b,y1       0
-  zoom               1.0
-  gradient,b,start   #a2522c
-  texture,b,y2       0
-  shadow             0.03333333333333333
-  gradient,w,y1      0.47297297297297297
-  diffusion          none
+  gradient,b,tx      {0}
+  gradient,b,ty      {0}
+  texture,b,y1       {0}
+  zoom               {1.0}
+  gradient,b,start   {#a2522c}
+  texture,b,y2       {0}
+  shadow             {0.03333333333333333}
+  gradient,w,y1      {0.47297297297297297}
+  diffusion          {none}
 }

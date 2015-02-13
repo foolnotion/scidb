@@ -27,7 +27,7 @@
 # Font by Armando H. Marroquin
 # <http://www.enpassant.dk/chess/fonteng.htm>
 
-lappend board_PieceSet { Leipzig truetype {stroke 5} {contour 80} {sampling 150} {overstroke 3} }
+lappend board_PieceSet { Leipzig truetype {stroke {5 3}} {contour 80} {sampling 150} {overstroke 3} }
 
 set truetype_Leipzig(wk) {
 <g

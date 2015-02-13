@@ -1,5 +1,6 @@
 ::board::addStyle square {
   version                  {1.0}
+  borderline,color         {#5c4e2c}
   borderline,gap           {0}
   borderline,opacity       {0x80}
   borderline,width         {0.006666666666666667}
@@ -14,10 +15,10 @@
   hilite,suggested         {#ffff00}
   hint,background-color    {}
   hint,background-tile     {wood wood_112.jpg}
-  hint,background-rotation	0
+  hint,background-rotation {0}
   hint,border-color        {}
   hint,border-tile         {wood WoodFine0009_S.jpg}
-  hint,border-rotation   	0
+  hint,border-rotation     {0}
   hint,coordinates         {#000000}
   identifier               {Woodgrain|1296150231295|yellow.color|gregor}
   lite,rotation            {0}

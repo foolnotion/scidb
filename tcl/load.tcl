@@ -271,15 +271,24 @@ if {	[file exists [file join $::scidb::dir::user themes StonyGlass.dat]]
 	file delete [file join $::scidb::dir::user themes piece Yellow.dat]
 	set update 1
 }
+if {[file exists [file join $::scidb::dir::user themes square Brown-Wood.dat]]} {
+	file delete [file join $::scidb::dir::user themes square Brown-Wood.dat]
+	set update 1
+}
 if {[file exists [file join $::scidb::dir::user themes BlueTheme.dat]]} {
 	file delete [file join $::scidb::dir::user themes BlueTheme.dat]
 	file delete [file join $::scidb::dir::user themes square BlueTheme.dat]
 	set update 1
 }
+if {[file exists [file join $::scidb::dir::user themes Virtual.dat]]} {
+	file delete [file join $::scidb::dir::user themes Virtual.dat]
+	file delete [file join $::scidb::dir::user themes VirtualColored.dat]
+}
 if {	![file exists [file join $::scidb::dir::user themes Primus.dat]]
 	|| ![file exists [file join $::scidb::dir::user themes Country-Style.dat]]
 	|| ![file exists [file join $::scidb::dir::user themes Blackjack.dat]]
-	|| ![file exists [file join $::scidb::dir::user themes VirtualColored.dat]]
+	|| ![file exists [file join $::scidb::dir::user themes VirtualBlue.dat]]
+	|| ![file exists [file join $::scidb::dir::user themes Burnt.dat]]
 	|| ![file exists [file join $::scidb::dir::user themes Creepy.dat]]} {
 	set update 1
 }
@@ -289,6 +298,9 @@ if {[::process::testOption first-time]} {
 if {$update} { ::scidb::themes::update }
 if {[file exists [file join $::scidb::dir::user themes square Wood-Green.dat]]} {
 	file delete [file join $::scidb::dir::user themes square Wood-Green.dat]
+}
+if {[file exists [file join $::scidb::dir::user themes square Brown-Wood.dat]]} {
+	file delete [file join $::scidb::dir::user themes square Brown-Wood.dat]
 }
 unset update
 ###################################################

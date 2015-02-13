@@ -1,30 +1,31 @@
 ::board::addStyle square {
-  borderline,gap           0
-  borderline,opacity       175
-  borderline,width         0.006666666666666667
-  dark,rotation            0
+  borderline,color         {#000000}
+  borderline,gap           {0}
+  borderline,opacity       {175}
+  borderline,width         {0.006666666666666667}
+  dark,rotation            {0}
   dark,solid               {}
   dark,texture             {marble Diamond_Ebony_Marble.15194542_std.jpg}
-  dark,x1                  0
-  dark,x2                  99
-  dark,y1                  0
-  dark,y2                  99
-  hilite,selected          #b0d0e0
-  hilite,suggested         #eeed2a
+  dark,x1                  {0}
+  dark,x2                  {99}
+  dark,y1                  {0}
+  dark,y2                  {99}
+  hilite,selected          {#b0d0e0}
+  hilite,suggested         {#eeed2a}
   hint,background-color    {}
   hint,background-tile     {marble marble_234.jpg}
-  hint,background-rotation	0
+  hint,background-rotation {0}
   hint,border-color        {}
   hint,border-tile         {marble marble13.jpg}
-  hint,border-rotation   	0
-  hint,coordinates         #000000
+  hint,border-rotation     {0}
+  hint,coordinates         {#000000}
   identifier               {Marble - Black&Beige|1243775151068|yellow.color|gregor}
-  lite,rotation            0
+  lite,rotation            {0}
   lite,solid               {}
   lite,texture             {marble MarbleBeige0017_1_S.jpg}
-  lite,x1                  0
-  lite,x2                  99
-  lite,y1                  0
-  lite,y2                  99
-  version                  1.0
+  lite,x1                  {0}
+  lite,x2                  {99}
+  lite,y1                  {0}
+  lite,y2                  {99}
+  version                  {1.0}
 }

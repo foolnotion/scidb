@@ -1,4 +1,5 @@
 ::board::addStyle square {
+  borderline,color         {#2e1600}
   borderline,gap           {0}
   borderline,opacity       {0x50}
   borderline,width         {0.0}

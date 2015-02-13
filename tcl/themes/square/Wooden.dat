@@ -1,30 +1,31 @@
 ::board::addStyle square {
-  borderline,gap           0
-  borderline,opacity       115
-  borderline,width         0.006666666666666667
-  dark,rotation            0
+  borderline,color         {#53301b}
+  borderline,gap           {0}
+  borderline,opacity       {115}
+  borderline,width         {0.006666666666666667}
+  dark,rotation            {0}
   dark,solid               {}
   dark,texture             {wood beech_.jpg}
-  dark,x1                  0
-  dark,x2                  90
-  dark,y1                  0
-  dark,y2                  90
-  hilite,selected          #9c0000
-  hilite,suggested         #eeed2a
+  dark,x1                  {0}
+  dark,x2                  {90}
+  dark,y1                  {0}
+  dark,y2                  {90}
+  hilite,selected          {#9c0000}
+  hilite,suggested         {#eeed2a}
   hint,background-color    {}
   hint,background-tile     {wood Melamine-wood-003.png}
-  hint,background-rotation	90
+  hint,background-rotation {90}
   hint,border-color        {}
   hint,border-tile         {wood WoodFine0006_S.jpg}
-  hint,border-rotation   	0
-  hint,coordinates         #000000
-  identifier               Wooden|1263914443955|yellow.color|gregor
-  lite,rotation            0
+  hint,border-rotation     {0}
+  hint,coordinates         {#000000}
+  identifier               {Wooden|1263914443955|yellow.color|gregor}
+  lite,rotation            {0}
   lite,solid               {}
   lite,texture             {wood GRA810.png}
-  lite,x1                  0
-  lite,x2                  90
-  lite,y1                  0
-  lite,y2                  90
-  version                  1.0
+  lite,x1                  {0}
+  lite,x2                  {90}
+  lite,y1                  {0}
+  lite,y2                  {90}
+  version                  {1.0}
 }

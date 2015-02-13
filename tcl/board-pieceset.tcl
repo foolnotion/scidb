@@ -38,8 +38,18 @@ variable Figurines Cases
 
 variable RegExpBBox				{scidb:bbox=\"([+-]?[0-9]*[.]?[0-9]+),([+-]?[0-9]*[.]?[0-9]+),([+-]?[0-9]*[.]?[0-9]+),([+-]?[0-9]*[.]?[0-9]+)\"}
 variable RegExpPieceScale		{scidb:scale=\"([0-9]*[.]?[0-9]+)\"}
-variable RegExpContourWidth	{scidb:contour=\"([0-9]*[.]?[0-9]+)\"}
 variable RegExpTranslation		{scidb:translate=\"([+-]?[0-9]*[.]?[0-9]+),([+-]?[0-9]*[.]?[0-9]+)\"}
+
+array set PieceScale { k 1 q 1 r 1 b 1 n 1 p 1 }
+array set PieceMoveX { k 0 q 0 r 0 b 0 n 0 p 0 }
+array set PieceMoveY { k 0 q 0 r 0 b 0 n 0 p 0 }
+array set Stroke     { w -1 b -1 }
+array set Contour    { w 0 b 0 }
+
+variable Scale 1.0
+variable Sampling	0
+variable Overstroke	0
+variable Dimensions {}
 
 event add <<PieceSetChanged>> PieceSetChanged
 
@@ -234,8 +244,16 @@ proc MakePieces {	prefix pieceSet pieceList size scale contour boostContour shad
 						useWhitePiece } {
 	variable RegExpBBox
 	variable RegExpPieceScale
-	variable RegExpContourWidth
 	variable RegExpTranslation
+	variable PieceScale
+	variable PieceMoveX
+	variable PieceMoveY
+	variable Stroke
+	variable Contour
+	variable Scale
+	variable Sampling
+	variable Overstroke
+	variable Dimensions
 
 	if {$size == 0} { return }
 
@@ -246,25 +264,42 @@ proc MakePieces {	prefix pieceSet pieceList size scale contour boostContour shad
 
 	set fontName [string map {"-" "_" " " ""} [lindex $pieceSet 0]]
 	set source [lindex $pieceSet 1]
-	set strokeWidth(w) -1
-	set strokeWidth(b) -1
-	set contourWidth 0
-	set sampleSize 0
+	set strokeWidth(w) $Stroke(w)
+	set strokeWidth(b) $Stroke(b)
+	set contourWidth(w) $Contour(w)
+	set contourWidth(b) $Contour(b)
+	set scaleFactor $Scale
+	set translateX 0
+	set translateY 0
+	set sampleSize $Sampling
 	set gradient(w) {}
 	set gradient(b) {}
-	set overstroke 0
+	set overstroke $Overstroke
+	set Dimensions {}
 
 	for {set i 2} {$i < [llength $pieceSet]} {incr i} {
 		set attr [lindex $pieceSet $i]
 		set value [lindex $attr 1]
 
 		switch -exact -- [lindex $attr 0] {
-			stroke			{ set strokeWidth(w) $value; set strokeWidth(b) $value }
-			stroke-white	{ set strokeWidth(w) $value }
-			stroke-black	{ set strokeWidth(b) $value }
-			contour			{ set contourWidth $value }
-			sampling			{ set sampleSize $value }
-			overstroke		{ set overstroke $value }
+			sampling		{ if {$Sampling == 0} { set sampleSize $value } }
+			overstroke	{ if {$Overstroke == 0} { set overstroke $value } }
+			scale			{ if {$Scale == 1.0} { set scaleFactor $value } }
+			translate	{ lassign $value translateX translateY }
+
+			stroke		{
+				if {$strokeWidth(w) == -1 && $strokeWidth(b) == -1} {
+					lassign $value strokeWidth(w) strokeWidth(b)
+					if {[llength $value] == 1} { set strokeWidth(b) $strokeWidth(w) }
+				}
+			}
+
+			contour		{
+				if {$contourWidth(w) == 0 && $contourWidth(b) == 0} {
+					lassign $value contourWidth(w) contourWidth(b)
+					if {[llength $value] == 1} { set contourWidth(b) $contourWidth(w) }
+				}
+			}
 		}
 	}
 
@@ -302,8 +337,8 @@ proc MakePieces {	prefix pieceSet pieceList size scale contour boostContour shad
 			set gradient($c) [list $start $stop $offs1 $offs2 $x1 $y1 $x2 $y2]
 
 			if {$c eq "w" || $useWhitePiece} {
-				set gradient($c,tx) [expr {($tx*$sampleSize)/$scale}]
-				set gradient($c,ty) [expr {($ty*$sampleSize)/$scale}]
+				set gradient($c,tx) [expr {($tx*$contourWidth(w)*2.5 + $overstroke)/$scale}]
+				set gradient($c,ty) [expr {($ty*$contourWidth(w)*2.5 + $overstroke)/$scale}]
 			} else {
 				set gradient($c,tx) 0
 				set gradient($c,ty) 0
@@ -334,18 +369,21 @@ proc MakePieces {	prefix pieceSet pieceList size scale contour boostContour shad
 		lassign [split $cp {}] c p
 
 		set pieceScale 1.0
-		set contourWd 0
 		set pieceMoveX 0
 		set pieceMoveY 0
 		set pieceColor [expr {$useWhitePiece ? "w" : $c}]
+		set pieceStroke $strokeWidth($c)
 		set grad $gradient($c)
 		set useShadow [expr {$shadow > 0}]
 		set useTexture [expr {[llength $texture($c)] > 0}]
-		set contourWd $contourWidth
 
-		regexp $RegExpBBox $font($pieceColor$p) dummy minX minY maxX maxY
-		regexp $RegExpPieceScale $font($pieceColor$p) dummy pieceScale
-		regexp $RegExpTranslation $font($pieceColor$p) dummy pieceMoveX pieceMoveY
+		regexp $RegExpBBox $font($pieceColor$p) - minX minY maxX maxY
+		regexp $RegExpPieceScale $font($pieceColor$p) - pieceScale
+		regexp $RegExpTranslation $font($pieceColor$p) - pieceMoveX pieceMoveY
+
+		set pieceScale [expr {$pieceScale*$scaleFactor*$PieceScale($p)}]
+		set pieceMoveX [expr {$pieceMoveX + $translateX + $PieceMoveX($p)}]
+		set pieceMoveY [expr {$pieceMoveY + $translateY + $PieceMoveY($p)}]
 
 		photo_Piece($prefix$c$p,$size) blank
 
@@ -368,12 +406,7 @@ proc MakePieces {	prefix pieceSet pieceList size scale contour boostContour shad
 		}
 
 		if {$useBackground} {
-			regexp $RegExpContourWidth $font($pieceColor$p) dummy contourWd
-			if {$contourWd != 0} {
-				set contourStrokeWidth $contourWd
-			} else {
-				set contourStrokeWidth [expr $contour*$contourWidth]
-			}
+			set contourStrokeWidth [expr $contour*$contourWidth($c)]
 			if {$size >= 50} {
 				set stroke $contourColor($c)
 			} elseif {$boostContour} {
@@ -387,8 +420,8 @@ proc MakePieces {	prefix pieceSet pieceList size scale contour boostContour shad
 				set contourStrokeWidth [expr {int(round($contourStrokeWidth*(40.0/$size)))}]
 			}
 			set maskStrokeWidth [expr $contourStrokeWidth/($scale*$pieceScale)]
-			if {$fontIsOutline && [llength $grad] && $pieceColor eq "b"} {
-				set maskStrokeWidth [expr {max(0, $maskStrokeWidth - 2*($strokeWidth($c)*$strokeScale))}]
+			if {$fontIsOutline && [llength $grad] && $pieceColor eq "b" && $pieceStroke > 0} {
+				set maskStrokeWidth [expr {max(0, $maskStrokeWidth - 2*($pieceStroke*$strokeScale))}]
 			}
 			image create photo piece(bg) -width $sampleSize -height $sampleSize
 			::scidb::tk::image create font($pieceColor$p,mask) piece(bg) \
@@ -432,7 +465,7 @@ proc MakePieces {	prefix pieceSet pieceList size scale contour boostContour shad
 				-sharpen $fontIsOutline \
 				-scale [expr {$scale*$pieceScale}] \
 				-translate $pieceMoveX $pieceMoveY \
-				-stroke-width [expr {$strokeWidth($c)*$strokeScale}] \
+				-stroke-width [expr {$pieceStroke*$strokeScale}] \
 				-stroke $fillColor($c) \
 				-fill $fillColor($c)
 			piece(bg) copy piece(tp)
@@ -475,15 +508,17 @@ proc MakePieces {	prefix pieceSet pieceList size scale contour boostContour shad
 						-fill $overstrokeColor($c)
 					piece(fg) copy piece(tp)
 				}
-				::scidb::tk::image create font(w$p) piece(tp) \
+				set bounds [::scidb::tk::image create font(w$p) piece(tp) \
 					-flip $fontIsOutline \
 					-sharpen [expr {[llength $strokeColor($c)] == 0}] \
 					-scale [expr $scale*$pieceScale] \
 					-translate $pieceMoveX $pieceMoveY \
 					-outline true \
-					-stroke-width [expr {$strokeWidth($c)*$strokeScale}] \
+					-stroke-width [expr {$pieceStroke*$strokeScale}] \
 					-stroke $strokeColor($c) \
-					-fill $strokeColor($c)
+					-fill $strokeColor($c) \
+				]
+				lappend Dimensions "w$p: [join $bounds ,]"
 				piece(fg) copy piece(tp)
 				image delete piece(tp)
 			} else {
@@ -516,16 +551,18 @@ proc MakePieces {	prefix pieceSet pieceList size scale contour boostContour shad
 			} else {
 				set color $fillColor($c)
 			}
-			::scidb::tk::image create font($pieceColor$p) piece(fg) \
+			set bounds [::scidb::tk::image create font($pieceColor$p) piece(fg) \
 				-flip $fontIsOutline \
 				-sharpen [expr {$fontIsOutline && [llength $strokeColor($c)] == 0}] \
 				-scale [expr $scale*$pieceScale] \
 				-translate $pieceMoveX $pieceMoveY \
 				-outline $fontIsOutline \
 				-gradient $grad \
-				-stroke-width [expr $strokeWidth($c)*$strokeScale] \
+				-stroke-width [expr {$pieceStroke*$strokeScale}] \
 				-stroke $strokeColor($c) \
-				-fill $color
+				-fill $color \
+			]
+			lappend Dimensions "$pieceColor$p: [join $bounds ,]"
 		}
 
 		if {$size < $sampleSize} {

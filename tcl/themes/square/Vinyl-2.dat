@@ -1,0 +1,31 @@
+::board::addStyle square {
+  borderline,color         {#1f422b}
+  borderline,gap           {0}
+  borderline,opacity       {175}
+  borderline,width         {0.006666666666666667}
+  dark,rotation            {0}
+  dark,solid               {#a0a0a0}
+  dark,texture             {misc GreenVinyl.jpg}
+  dark,x1                  {0}
+  dark,x2                  {150}
+  dark,y1                  {0}
+  dark,y2                  {150}
+  hilite,selected          {#5de05b}
+  hilite,suggested         {#ee0500}
+  hint,background-color    {}
+  hint,background-rotation {0}
+  hint,background-tile     {misc Antique_White.jpg}
+  hint,border-color        {}
+  hint,border-rotation     {0}
+  hint,border-tile         {misc denim.jpg}
+  hint,coordinates         {#ffffff}
+  identifier               {Vinyl 2|1423677444276|purple|gregor}
+  lite,rotation            {0}
+  lite,solid               {#d0d0d0}
+  lite,texture             {misc WhiteVinyl.jpg}
+  lite,x1                  {0}
+  lite,x2                  {150}
+  lite,y1                  {0}
+  lite,y2                  {150}
+  version                  {1.0}
+}

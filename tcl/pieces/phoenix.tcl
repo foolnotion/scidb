@@ -27,7 +27,7 @@
 # Font by Christian Poisson
 # <http://christian.poisson.free.fr/problemesis/police.html>
 
-lappend board_PieceSet { Phoenix truetype {stroke 5} {contour 50} {sampling 150} }
+lappend board_PieceSet { Phoenix truetype {stroke {5 2}} {contour 50} {overstroke 5} {sampling 150} }
 
 set truetype_Phoenix(wk) {
 <g>

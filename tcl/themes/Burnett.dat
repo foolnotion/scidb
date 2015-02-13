@@ -1,7 +1,7 @@
 ::board::addStyle theme {
   version		{1.0}
-  identifier   Burnett|1228820485389|yellow.color|gregor
+  identifier   {Burnett|1228820485389|yellow.color|gregor}
   square-style {Wood - Brown|1228820485412|yellow.color|gregor}
-  piece-style  Default
-  piece-set    Burnett
+  piece-style  {Default}
+  piece-set    {Burnett}
 }

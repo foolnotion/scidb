@@ -7,29 +7,29 @@
   color,w,fill       {}
   color,w,stroke     {}
   color,w,texture    {}
-  contour            {1.1500000000000001}
+  contour            {1.15}
   diffusion          {quadratic}
   gradient,b,start   {#2c2c2c}
   gradient,b,stop    {#000000}
-  gradient,b,tx      {0.08666666666666667}
-  gradient,b,ty      {0.08666666666666667}
+  gradient,b,tx      {0.087}
+  gradient,b,ty      {0.087}
   gradient,b,use     {true}
-  gradient,b,x1      {0.1891891891891892}
+  gradient,b,x1      {0.19}
   gradient,b,x2      {1.0}
-  gradient,b,y1      {0.5675675675675675}
-  gradient,b,y2      {0.5608108108108109}
+  gradient,b,y1      {0.57}
+  gradient,b,y2      {0.56}
   gradient,w,start   {#ffffff}
   gradient,w,stop    {#dedede}
   gradient,w,tx      {0.1}
   gradient,w,ty      {0.1}
   gradient,w,use     {true}
-  gradient,w,x1      {0.49324324324324326}
-  gradient,w,x2      {0.9459459459459459}
-  gradient,w,y1      {0.4797297297297297}
-  gradient,w,y2      {0.4797297297297297}
+  gradient,w,x1      {0.5}
+  gradient,w,x2      {0.95}
+  gradient,w,y1      {0.48}
+  gradient,w,y2      {0.48}
   identifier         {Arena|1348599563208|yellow.color|gregor}
-  opacity            {0.5019607843137255}
-  shadow             {0.09333333333333334}
+  opacity            {0.6}
+  shadow             {0.09}
   texture,b,rotation {0}
   texture,b,x1       {0}
   texture,b,x2       {96}

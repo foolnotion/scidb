@@ -1,4 +1,5 @@
 ::board::addStyle square {
+  borderline,color         {#361209}
   borderline,gap           {0}
   borderline,opacity       {0x80}
   borderline,width         {0.006666666666666667}
@@ -10,7 +11,7 @@
   dark,y1                  {0}
   dark,y2                  {0}
   hilite,selected          {#2d76ac}
-  hilite,suggested         {GhostWhite}
+  hilite,suggested         {Ghost White}
   hint,background-color    {}
   hint,background-tile     {wood DarkMaple.jpg}
   hint,background-rotation	0

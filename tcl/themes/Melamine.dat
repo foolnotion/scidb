@@ -1,0 +1,7 @@
+::board::addStyle theme {
+  identifier   {Melamine|1422439776799|purple|gregor}
+  piece-set    {Cheq}
+  piece-style  {Inlaid|1422439769690|purple|gregor}
+  square-style {Melamine|1422438051463|purple|gregor}
+  version      {1.0}
+}

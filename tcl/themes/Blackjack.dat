@@ -1,6 +1,6 @@
 ::board::addStyle theme {
   identifier   {Blackjack|1371197629186|purple|gregor}
-  piece-set    {Usual}
+  piece-set    {Segoe}
   piece-style  {Not Black nor White|1371197617696|purple|gregor}
   square-style {Contrast|1371196032342|purple|gregor}
   version      {1.0}

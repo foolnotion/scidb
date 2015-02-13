@@ -126,7 +126,7 @@ proc setTargets {w args} {
 proc resize {w size args} {
    variable ${w}::Board
 
-	array set opts { -bordersize 0 }
+	array set opts [list -bordersize $Board(bordersize)]
 	array set opts $args
 
    if {$size != $Board(size)} {
@@ -381,6 +381,12 @@ proc rebuild {w} {
 
 proc flipped? {w} {
 	return [set [namespace current]::${w}::Board(flip)]
+}
+
+
+proc size {w} {
+	variable ${w}::Board
+	return $Board(size)
 }
 
 

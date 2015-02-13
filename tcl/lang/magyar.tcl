@@ -884,7 +884,7 @@
 ::board::square::mc::Borderline			"Borderline"
 ::board::square::mc::Width					"Szélesség"
 ::board::square::mc::Opacity				"Opacity"
-::board::square::mc::GapBetweenSquares	"Mezők közötti rés"
+::board::square::mc::GapBetweenSquares	"Mezők közötti rés" ;# NEW text: "Show always gap between squares"
 ::board::square::mc::Highlighting		"Kijelölés"
 ::board::square::mc::Selected				"Kiválasztott"
 ::board::square::mc::SuggestedMove		"Ajánlott lépés"
@@ -2150,6 +2150,8 @@
 ::info::mc::Development		"Fejlesztés"
 ::info::mc::Programming		"Kódolás"
 ::info::mc::Head		"Head" ;# NEW
+::info::mc::AllOther		"all others" ;# NEW
+::info::mc::TheMissingOnes	"the missing ones" ;# NEW
 
 ::info::mc::Version		"Verzió"
 ::info::mc::Distributed		"This program is distributed under the terms of the GNU General Public License."

@@ -1,5 +1,6 @@
 ::board::addStyle square {
   version                  {1.0}
+  borderline,color         {#643e19}
   borderline,gap           {0}
   borderline,opacity       {0x80}
   borderline,width         {0.006666666666666667}
@@ -14,10 +15,10 @@
   hilite,suggested         {#f7ff88}
   hint,background-color    {}
   hint,background-tile     {misc patterncooler-08.png}
-  hint,background-rotation	0
+  hint,background-rotation {0}
   hint,border-color        {#995f26}
   hint,border-tile         {}
-  hint,border-rotation     0
+  hint,border-rotation     {0}
   hint,coordinates         {#ffffff}
   identifier               {Burly|1295711105525|yellow.color|gregor}
   lite,rotation            {0}

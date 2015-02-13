@@ -861,8 +861,6 @@ proc validateCharacters {path} {
 
 
 proc validatePath {path} {
-	variable reservedChars
-
 	if {[string length $path] == 0} { return 1 }
 	# hyphen must not be the first character
 	if {[string index $path 0] eq "-"} { return 0 }

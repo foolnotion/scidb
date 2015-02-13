@@ -28,7 +28,7 @@
 # Maurizio Monge <maurizio.monge@gmail.com>
 # http://poisson.phc.unipi.it/~monge/chess_art.php
 
-lappend board_PieceSet { Spatial svg {contour 50} {sampling 50} }
+lappend board_PieceSet { Spatial svg {contour {50 40}} {sampling 50} }
 
 set svg_Spatial(wk) {
 <svg

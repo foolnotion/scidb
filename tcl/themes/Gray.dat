@@ -1,7 +1,7 @@
 ::board::addStyle theme {
-  version		1.0
-  piece-style  Gray|1248527841922|yellow.color|gregor
-  identifier   Gray|1248527850611|yellow.color|gregor
-  piece-set    Berlin
-  square-style Gray|1243532989423|yellow.color|gregor
+  version		{1.0}
+  piece-style  {Gray|1248527841922|yellow.color|gregor}
+  identifier   {Gray|1248527850611|yellow.color|gregor}
+  piece-set    {Berlin}
+  square-style {Gray|1243532989423|yellow.color|gregor}
 }

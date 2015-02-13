@@ -1,0 +1,31 @@
+::board::addStyle square {
+  borderline,color         {#5b2503}
+  borderline,gap           {0}
+  borderline,opacity       {0x80}
+  borderline,width         {0.006666666666666667}
+  dark,rotation            {0}
+  dark,solid               {#4682b4}
+  dark,texture             {wood Fritz.png}
+  dark,x1                  {0}
+  dark,x2                  {150}
+  dark,y1                  {0}
+  dark,y2                  {150}
+  hilite,selected          {#9e4f00}
+  hilite,suggested         {#feff08}
+  hint,background-color    {}
+  hint,background-rotation {0}
+  hint,background-tile     {wood peruvianwalnut-tile.png}
+  hint,border-color        {}
+  hint,border-rotation     {0}
+  hint,border-tile         {wood DarkMaple.jpg}
+  hint,coordinates         {#ffffff}
+  identifier               {Fritz|1422383955583|purple|gregor}
+  lite,rotation            {0}
+  lite,solid               {#b0c4de}
+  lite,texture             {wood Fritz.png}
+  lite,x1                  {0}
+  lite,x2                  {150}
+  lite,y1                  {0}
+  lite,y2                  {150}
+  version                  {1.0}
+}

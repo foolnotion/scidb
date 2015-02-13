@@ -28,12 +28,11 @@
 # Maurizio Monge <maurizio.monge@gmail.com>
 # http://poisson.phc.unipi.it/~monge/chess_art.php
 
-lappend board_PieceSet { Skulls svg {contour 50} {sampling 150} }
+lappend board_PieceSet { Skulls svg {contour 50} {sampling 150} {scale 1.1} }
 
 set svg_Skulls(wk) {
 <svg
   scidb:bbox="115.75189,70.814425,731.99997,847.82062"
-  scidb:scale="1.1"
   width="700pt"
   height="700pt">
   <defs>
@@ -210,7 +209,6 @@ set svg_Skulls(wk) {
 set svg_Skulls(wq) {
 <svg
   scidb:bbox="89.563299,116.78596,765.14009,847.82062"
-  scidb:scale="1.1"
   width="700pt"
   height="700pt">
   <defs>
@@ -554,7 +552,6 @@ set svg_Skulls(wq) {
 set svg_Skulls(wr) {
 <svg
   scidb:bbox="108.15593,81.998543,736.06282,854.80999"
-  scidb:scale="1.1"
   width="700pt"
   height="700pt">
   <defs>
@@ -726,7 +723,6 @@ set svg_Skulls(wr) {
 set svg_Skulls(wb) {
 <svg
   scidb:bbox="92.868156,118.00611,771.45075,858.32475"
-  scidb:scale="1.1"
   width="700pt"
   height="700pt">
   <defs>
@@ -1234,7 +1230,6 @@ set svg_Skulls(wb) {
 set svg_Skulls(wn) {
 <svg
   scidb:bbox="83.158609,144.23546,911.22103,853.71275"
-  scidb:scale="1.1"
   scidb:translate="30,0"
   width="700pt"
   height="700pt">
@@ -1442,7 +1437,7 @@ set svg_Skulls(wn) {
 set svg_Skulls(wp) {
 <svg
   scidb:bbox="278.55544,348.8097,614.36562,825.93429"
-  scidb:scale="1.5"
+  scidb:scale="1.36"
   width="700pt"
   height="700pt">
   <defs>
@@ -1562,7 +1557,6 @@ set svg_Skulls(wp) {
 set svg_Skulls(bk) {
 <svg
   scidb:bbox="115.75189,70.814425,731.99997,847.82062"
-  scidb:scale="1.1"
   width="700pt"
   height="700pt">
   <defs>
@@ -1739,7 +1733,6 @@ set svg_Skulls(bk) {
 set svg_Skulls(bq) {
 <svg
   scidb:bbox="89.563299,116.78596,765.14009,847.82062"
-  scidb:scale="1.1"
   width="700pt"
   height="700pt">
   <defs>
@@ -2083,7 +2076,6 @@ set svg_Skulls(bq) {
 set svg_Skulls(br) {
 <svg
   scidb:bbox="108.15593,81.998543,736.06282,854.80999"
-  scidb:scale="1.1"
   width="700pt"
   height="700pt">
   <defs>
@@ -2255,7 +2247,6 @@ set svg_Skulls(br) {
 set svg_Skulls(bb) {
 <svg
   scidb:bbox="92.868156,118.00611,771.45075,858.32475"
-  scidb:scale="1.1"
   width="700pt"
   height="700pt">
   <defs>
@@ -2763,7 +2754,6 @@ set svg_Skulls(bb) {
 set svg_Skulls(bn) {
 <svg
   scidb:bbox="83.158609,144.23546,911.22103,853.71275"
-  scidb:scale="1.1"
   scidb:translate="30,0"
   width="700pt"
   height="700pt">
@@ -2971,7 +2961,7 @@ set svg_Skulls(bn) {
 set svg_Skulls(bp) {
 <svg
   scidb:bbox="278.55544,348.8097,614.36562,825.93429"
-  scidb:scale="1.5"
+  scidb:scale="1.36"
   width="700pt"
   height="700pt">
   <defs>

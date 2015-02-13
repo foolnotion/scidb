@@ -877,7 +877,7 @@
 ::board::square::mc::Borderline			"Borderline"
 ::board::square::mc::Width					"Width"
 ::board::square::mc::Opacity				"Opacity"
-::board::square::mc::GapBetweenSquares	"Gap between squares"
+::board::square::mc::GapBetweenSquares	"Show always gap between squares"
 ::board::square::mc::Highlighting		"Highlighting"
 ::board::square::mc::Selected				"Selected"
 ::board::square::mc::SuggestedMove		"Suggested move"
@@ -2139,6 +2139,8 @@
 ::info::mc::Development			"Development"
 ::info::mc::Programming			"Programming"
 ::info::mc::Head					"Head"
+::info::mc::AllOthers			"all others"
+::info::mc::TheMissingOnes		"the missing ones"
 
 ::info::mc::Version				"Version"
 ::info::mc::Distributed			"This program is distributed under the terms of the GNU General Public License."

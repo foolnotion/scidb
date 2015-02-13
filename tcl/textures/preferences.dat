@@ -24,6 +24,17 @@
 # (at your option) any later version.
 # ======================================================================
 
+# TODO
+# dark/marble/Arena-Blue.png
+# dark/misc/GreenVinyl.jpg
+# dark/wood/EdWood4.jpg
+# dark/wood/Fritz.png
+# dark/wood/Mahagony.jpg
+# lite/marble/Arena-Blue.png
+# lite/misc/WhiteVinyl.jpg
+# lite/wood/Fritz.png
+# lite/wood/Sycamore.jpg
+
 ::board::addPreferences {marble 11932818.jpg} {
 	marble Diamond_Ebony_Marble.15194542_std.jpg
 	marble E-Stone-203.jpg

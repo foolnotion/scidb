@@ -883,7 +883,7 @@
 ::board::square::mc::Borderline			"Kantlinje"
 ::board::square::mc::Width					"Bredd"
 ::board::square::mc::Opacity				"Genomskinlighet"
-::board::square::mc::GapBetweenSquares	"Mellanrum mellan rutor"
+::board::square::mc::GapBetweenSquares	"Mellanrum mellan rutor" ;# NEW text: "Show always gap between squares"
 ::board::square::mc::Highlighting		"Upplyst"
 ::board::square::mc::Selected				"Markerad"
 ::board::square::mc::SuggestedMove		"Föreslagit drag"
@@ -2151,6 +2151,8 @@
 ::info::mc::Development			"Utveckling"
 ::info::mc::Programming			"Programmering"
 ::info::mc::Head					"Huvud"
+::info::mc::AllOthers			"all others" ;# NEW
+::info::mc::TheMissingOnes		"the missing ones" ;# NEW
 
 ::info::mc::Version				"Version"
 ::info::mc::Distributed			"Det här programmet distribueras enligt bestämmelserna i GNU General Public License."

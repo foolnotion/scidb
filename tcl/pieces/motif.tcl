@@ -27,7 +27,7 @@
 # Font by Armando H. Marroquin
 # <http://www.enpassant.dk/chess/fonteng.htm>
 
-lappend board_PieceSet { Motif truetype {stroke 5} {contour 80} {sampling 100} {overstroke 10} }
+lappend board_PieceSet { Motif truetype {stroke {5 0}} {contour 80} {sampling 100} {overstroke 10} }
 
 set truetype_Motif(wk) {
 <g

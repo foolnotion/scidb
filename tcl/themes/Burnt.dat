@@ -1,0 +1,7 @@
+::board::addStyle theme {
+  identifier   {Burnt|1422299251473|purple|gregor}
+  piece-set    {Celtic}
+  piece-style  {Arena|1348599563208|yellow.color|gregor}
+  square-style {Burnt|1422299233126|purple|gregor}
+  version      {1.0}
+}

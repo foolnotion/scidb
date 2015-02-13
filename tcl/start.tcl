@@ -124,21 +124,28 @@ proc update {} {
 			{Blackjack|1371197629186|purple|gregor}
 			{Burly|1262881982561|yellow.color|gregor}
 			{Burnett|1228820485389|yellow.color|gregor}
+			{Burnt|1422299251473|purple|gregor}
 			{Country Style|1370798029772|INE543149|cmartins}
 			{Creepy|1381672489858|purple|gregor}
 			{Fantasy|1228820514842|yellow.color|gregor}
+			{Fritz|1422386606480|purple|gregor}
 			{Glass|1243787890671|yellow.color|gregor}
 			{Goldenrod|1243765848112|yellow.color|gregor}
 			{Gray|1248527850611|yellow.color|gregor}
 			{José|1243683856813|yellow.color|gregor}
+			{Kitsch|1422390619103|purple|gregor}
 			{Kunterbunt|1250851039023|yellow.color|gregor}
 			{Magnetic|1243762798722|yellow.color|gregor}
 			{Marble - Brown|1243532376507|yellow.color|gregor}
 			{Marble - Red|1296049745744|yellow.color|gregor}
+			{Marmorate|1422460283732|purple|gregor}
 			{Mayan - Marble|1243775222632|yellow.color|gregor}
 			{Mayan - Wood|1244309428838|yellow.color|gregor}
+			{Melamine|1422439776799|purple|gregor}
+			{Military|1423693429142|purple|gregor}
 			{Modern Cheq|1244122899886|yellow.color|gregor}
 			{Motif|1262882557387|yellow.color|gregor}
+			{Navajo|1422301347006|purple|gregor}
 			{Ocean|1262882648418|yellow.color|gregor}
 			{Phoenix|1354101318690|purple|gregor}
 			{Primus|1368794511290|yellow.color|gregor}
@@ -147,8 +154,8 @@ proc update {} {
 			{Staidly|1326986145826|yellow.color|gregor}
 			{Staunton|1355510748081|yellow.color|gregor}
 			{Stone Floor|1244113337107|yellow.color|gregor}
-			{Virtual|1355495975711|yellow.color|gregor}
-			{Virtual - Colored|1381593501788|purple|gregor}
+			{Virtual - Blue|1381593501788|purple|gregor}
+			{Virtual - Brown|1423390755270|purple|gregor}
 			{Winboard|1228820514841|yellow.color|gregor}
 			{Woodgrain|1296150310528|yellow.color|gregor}
 		}
@@ -158,14 +165,20 @@ proc update {} {
 			{Condal|1263914065014|yellow.color|gregor}
 			{Contrast|1322146529013|yellow.color|gregor}
 			{Emerald|1244127333315|yellow.color|gregor}
+			{Fritz|1422386484520|purple|gregor}
 			{Glass|1243791877212|yellow.color|gregor}
+			{Golden Creme|1422459733282|purple|gregor}
 			{Goldenrod|1243765822627|yellow.color|gregor}
 			{Gray|1248527841922|yellow.color|gregor}
 			{Green|1243460196909|yellow.color|gregor}
+			{Indian|1422300501078|purple|gregor}
+			{Inlaid|1422439769690|purple|gregor}
 			{Khaki|1381672245561|purple|gregor}
+			{Kitsch|1422390611586|purple|gregor}
 			{Lemon|1251901475461|yellow.color|gregor}
 			{Lemon|1227320554192|yellow.color|gregor}
 			{Mayan - Red|1243775183896|yellow.color|gregor}
+			{Military|1423693087335|purple|gregor}
 			{Not Black nor White|1371197617696|purple|gregor}
 			{Orange - Lemon|1243778153963|yellow.color|gregor}
 			{Sand|1326983597299|yellow.color|gregor}
@@ -178,11 +191,15 @@ proc update {} {
 			{Apollo|1243715687066|yellow.color|gregor}
 			{Arena|1348599714170|yellow.color|gregor}
 			{Black & White|1322146381433|yellow.color|gregor}
+			{Blue Marble|1422460111132|purple|gregor}
+			{Blue Sky|1381592499969|purple|gregor}
 			{Brown & Goldenrod|1355495679308|yellow.color|gregor}
 			{Burly|1295711105525|yellow.color|gregor}
+			{Burnt|1422299233126|purple|gregor}
 			{Contrast|1371196032342|purple|gregor}
 			{Country Style|1370798009651|INE543149|cmartins}
 			{Crater|1296048990606|yellow.color|gregor}
+			{Fritz|1422383955583|purple|gregor}
 			{Glass|1228820514871|yellow.color|gregor}
 			{Gray|1243532989423|yellow.color|gregor}
 			{Marble - Black&Beige|1243775151068|yellow.color|gregor}
@@ -191,6 +208,8 @@ proc update {} {
 			{Marble - Blue|1243715888985|yellow.color|gregor}
 			{Marble - Brown|1243715874135|yellow.color|gregor}
 			{Marble - Red|1296049694406|yellow.color|gregor}
+			{Melamine|1422438051463|purple|gregor}
+			{Navajo|1422301339767|purple|gregor}
 			{Ocean|1262882896027|yellow.color|gregor}
 			{Primus|1368794504056|yellow.color|gregor}
 			{Sand|1228820287277|yellow.color|gregor}
@@ -201,7 +220,8 @@ proc update {} {
 			{Stone Floor|1244113188050|yellow.color|gregor}
 			{Sycomore|1243762745547|yellow.color|gregor}
 			{Sycomore Gray|1244122565844|yellow.color|gregor}
-			{Blue Sky|1381592499969|purple|gregor}
+			{Vinyl|1422390355093|purple|gregor}
+			{Vinyl 2|1423677444276|purple|gregor}
 			{Winboard|1228820514851|yellow.color|gregor}
 			{Wood - Brown|1228820485412|yellow.color|gregor}
 			{Wood - Green|1244309414202|yellow.color|gregor}
@@ -578,272 +598,6 @@ proc source {what} {
 }
 
 } ;# namespace util
-
-
-namespace eval colors {
-
-array set Colors {
-	lite:pgn,background						#ffffff
-	lite:pgn,foreground:variation			#0000ee
-	lite:pgn,foreground:bracket			#0000ee
-	lite:pgn,foreground:numbering			#aa0acd
-	lite:pgn,foreground:nag					#ee0000
-	lite:pgn,foreground:nagtext			#912a2a
-	lite:pgn,foreground:comment			#006300
-	lite:pgn,foreground:info				#8b4513
-	lite:pgn,foreground:result				#000000
-	lite:pgn,foreground:illegal			#ee0000
-	lite:pgn,foreground:marks				#6300c6
-	lite:pgn,foreground:empty				#666666
-	lite:pgn,foreground:opening			#000000
-	lite:pgn,foreground:result				#000000
-	lite:pgn,background:current			#ffdd76
-	lite:pgn,background:nextmove			#eeff00
-	lite:pgn,background:merge				#f0f0f0
-	lite:pgn,hilite:comment					#7a5807
-	lite:pgn,hilite:info						#b22222
-	lite:pgn,hilite:move						#dce4e5
-
-	lite:analysis,background				#ffffee
-	lite:analysis,info:background			#f5f5e4
-	lite:analysis,info:foreground			darkgreen
-	lite:analysis,best:foreground			darkgreen
-	lite:analysis,error:foreground		darkred
-	lite:analysis,active:background		#f5f5e4
-
-	lite:database,selected					#ffdd76
-
-	lite:tree,background						white
-	lite:tree,emphasize						linen
-	lite:tree,stripes							#ebf4f5
-	lite:tree,ratio:color					darkgreen
-	lite:tree,score:color					darkred
-	lite:tree,draws:color					darkgreen
-	lite:tree,progress:color				darkred
-	lite:tree,progress:finished			forestgreen
-
-	lite:variation,background				white
-	lite:variation,emphasize				linen
-	lite:variation,stripes					#ebf4f5
-
-	lite:board,modifiedForeground			white
-	lite:board,modifiedBackground			brown
-	lite:board,fixedBackground				#fff5d6
-
-	lite:browser,background:header		#ebf4f5
-	lite:browser,background:hilite		cornflowerblue
-	lite:browser,background:modified		linen
-	lite:browser,foreground:hilite		white
-
-	lite:overview,background:normal		#ebf4f5
-	lite:overview,background:modified	linen
-
-	lite:crosstable,background				#ffffff
-	lite:crosstable,highlighted			#ebf4f5
-	lite:crosstable,mark						#ffdd76
-
-	lite:export,shadow						#999999
-	lite:export,text							#c0c0c0
-
-	lite:import,background					#ebf4f5
-	lite:import,background:select			#ffdd76
-	lite:import,background:hilite			linen
-
-	lite:switcher,selected:background	#ffdd76
-	lite:switcher,normal:background		#efefef
-	lite:switcher,normal:foreground		black
-	lite:switcher,hidden:background		white
-	lite:switcher,hidden:foreground		#696969
-	lite:switcher,emph:foreground			darkgreen
-	lite:switcher,drop:background			LemonChiffon
-	lite:switcher,prop:background			#aee239
-
-	lite:fsbox,menu:headerbackground		#ffdd76
-	lite:fsbox,menu:headerforeground		black
-	lite:fsbox,drop:background				LemonChiffon
-	lite:fsbox,selectionbackground		#ebf4f5
-	lite:fsbox,selectionforeground		black
-	lite:fsbox,inactivebackground			#f2f2f2
-	lite:fsbox,inactiveforeground			black
-	lite:fsbox,activebackground			#ebf4f5
-	lite:fsbox,activeforeground			black
-
-	lite:gamebar,background:normal		#d9d9d9
-	lite:gamebar,foreground:normal		black
-	lite:gamebar,background:selected		white
-	lite:gamebar,background:emphasize	linen
-	lite:gamebar,background:active		#efefef
-	lite:gamebar,background:darker		#828282
-	lite:gamebar,background:shadow		#e6e6e6
-	lite:gamebar,background:lighter		white
-	lite:gamebar,background:hilite		#ebf4f5
-	lite:gamebar,foreground:hilite		black
-	lite:gamebar,background:hilite2		cornflowerblue
-	lite:gamebar,foreground:hilite2		white
-	lite:gamebar,foreground:elo			darkblue
-
-	lite:scrolledtable,background			white
-	lite:scrolledtable,stripes				#ebf4f5
-	lite:scrolledtable,highlight			#f4f4f4
-	lite:scrolledtable,separatorcolor	darkgrey
-
-	lite:tlistbox,background				white
-	lite:tlistbox,foreground				black
-	lite:tlistbox,selectbackground		#ffdd76
-	lite:tlistbox,selectforeground		black
-	lite:tlistbox,disabledbackground		#ebf4f5
-	lite:tlistbox,disabledforeground		black
-	lite:tlistbox,highlightbackground	darkblue
-	lite:tlistbox,highlightforeground	white
-	lite:tlistbox,dropbackground			#dce4e5
-	lite:tlistbox,dropforeground			black
-
-	lite:treetable,background				white
-	lite:treetable,disabledforeground	#999999
-
-	lite:help,foreground:gray				#999999
-	lite:help,foreground:litegray			#696969
-	lite:help,background:gray				#f5f5f5
-	lite:help,background:emphasize		LightGoldenrod
-
-	lite:table,background					white
-	lite:table,foreground					black
-	lite:table,selectionbackground		#ffdd76
-	lite:table,selectionforeground		black
-	lite:table,disabledforeground			#555555
-	lite:table,labelforeground				black
-	lite:table,labelbackground				#d9d9d9
-
-	lite:fsbox,emphasizebackground		BlanchedAlmond
-
-	lite:save,number							darkred
-	lite:save,frequency						darkgreen
-	lite:save,title							darkgreen
-	lite:save,federation						darkblue
-	lite:save,score							darkgreen
-	lite:save,ratingType						darkblue
-	lite:save,date								darkblue
-	lite:save,eventDate						darkblue
-	lite:save,eventCountry					darkblue
-	lite:save,taglistOutline				gray
-	lite:save,taglistBackground			LightYellow
-	lite:save,taglistHighlighting			#ebf4f5
-	lite:save,taglistCurrent				blue
-	lite:save,matchlistBackground			#ebf4f5
-	lite:save,matchlistHeaderForeground	#727272
-	lite:save,matchlistHeaderBackground	#dfe7e8
-
-	lite:encoding,selection					#ffdd76
-	lite:encoding,active						#ebf4f5
-	lite:encoding,normal						linen
-	lite:encoding,description				#efefef
-
-	lite:engine,selectbackground:dict	#ebf4f5
-	lite:engine,selectbackground:setup	lightgray
-	lite:engine,selectforeground:setup	black
-	lite:engine,stripes						linen
-
-	lite:default,disabledbackground		#ebf4f5
-	lite:default,disabledforeground		black
-	lite:default,foreground:gray			#999999
-
-	lite:treetable,selected:focus			#ffdd76
-	lite:treetable,selected!focus			#ffdd76
-	lite:treetable,active:focus			#ebf4f5
-	lite:treetable,hilite!selected		#ebf4f5
-
-	lite:gamehistory,selected:focus		#ebf4f5
-	lite:gamehistory,selected:hilite		#ebf4f5
-	lite:gamehistory,selected!focus		#f2f2f2
-	lite:gamehistory,hilite					#ebf4f5
-
-	lite:playerdict,stripes					linen
-
-	lite:varslider,background				#ffdd76
-	lite:varslider,hilite					#ffc618
-}
-# mapped from #ebf4f5
-array set Colors {
-	dark:tree,stripes							#dce4e5
-	dark:variation,stripes					#dce4e5
-	dark:import,background					#dce4e5
-	dark:browser,background:header		#dce4e5
-	dark:overview,background:normal		#dce4e5
-	dark:crosstable,highlighted			#dce4e5
-	dark:fsbox,selectionbackground		#dce4e5
-	dark:gamebar,background:hilite		#dce4e5
-	dark:scrolledtable,stripes				#dce4e5
-	dark:tlistbox,disabledbackground		#dce4e5
-	dark:tlistbox,dropbackground			#dce4e5
-	dark:save,taglistHighlighting			#dce4e5
-	dark:save,matchlistBackground			#dce4e5
-	dark:encoding,active						#dce4e5
-	dark:engine,selectbackground:dict	#dce4e5
-	dark:default,disabledbackground		#dce4e5
-	dark:treetable,active:focus			#dce4e5
-	dark:treetable,hilite!selected		#dce4e5
-	dark:gamehistory,selected:focus		#dce4e5
-	dark:gamehistory,selected:hilite		#dce4e5
-	dark:gamehistory,hilite					#dce4e5
-	dark:fsbox,activebackground			#dce4e5
-}
-# mapped from #dce4e5
-array set Colors {
-	dark:pgn,hilite:move						#cddddf
-}
-# mapped from #f0f0f0
-array set Colors {
-	dark:pgn,background:merge				#e9e9e9
-}
-# mapped from #efefef
-array set Colors {
-	dark:switcher,normal:background		#e4e4e4
-	dark:gamebar,background:active		#e4e4e4
-	dark:encoding,description				#e4e4e4
-}
-# mapped from linen
-array set Colors {
-	dark:tree,emphasize						#ecded0
-	dark:variation,emphasize				#ecded0
-	dark:browser,background:modified		#ecded0
-	dark:overview,background:modified	#ecded0
-	dark:import,background:hilite			#ecded0
-	dark:gamebar,background:emphasize	#ecded0
-	dark:encoding,normal						#ecded0
-	dark:playerdict,stripes					#ecded0
-	lite:engine,stripes						#ecded0
-}
-# mapped from #ffffee
-array set Colors {
-	dark:analysis,info:background			#e7e7d8
-	dark:analysis,active:background		#e7e7d8
-}
-# mapped from #dfe7e8
-array set Colors {
-	dark:save,matchlistHeaderBackground	#d1d8d9
-}
-# mapped from #999999
-array set Colors {
-	dark:default,foreground:gray			#777777
-}
-
-set Scheme dark
-
-proc lookup {color} {
-	variable Colors
-	variable Scheme
-
-	if {[string match theme,* $color]} {
-		return [::theme::getColor [string range $color 6 end]]
-	}
-
-	if {[info exists Colors($Scheme:$color)]} { return $Colors($Scheme:$color) }
-	if {[info exists Colors(lite:$color)]} { return $Colors(lite:$color) }
-
-	return $color
-}
-
-} ;# namespace colors
 
 
 namespace eval remote {

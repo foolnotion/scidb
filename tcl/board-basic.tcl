@@ -77,6 +77,7 @@ array set Default {
 	borderline,width				0.007
 	borderline,opacity			0x80
 	borderline,gap					0
+	borderline,color				#002958
 
 	hilite,selected				#11ac1f
 	hilite,suggested				#fff056
@@ -939,8 +940,6 @@ proc copyToWorkingSet {{which theme}} {
 
 
 proc prepareNameLists {} {
-	variable theme::styleNames
-
 	BuildNameList theme
 	BuildNameList piece
 	BuildNameList square
@@ -1206,9 +1205,10 @@ proc RefreshBorder {size} {
 	variable square::style
 
 	::scidb::tk::image border photo_Borderline($size) \
-		-gap		[computeGap $size] \
-		-width	[expr {int(round($style(borderline,width)*$size + 0.2))}] \
-		-opacity	[expr {$style(borderline,opacity)/255.0}]
+		-gap				[computeGap $size] \
+		-bordercolor	$style(borderline,color) \
+		-width			[expr {int(round($style(borderline,width)*$size + 0.2))}] \
+		-opacity			[expr {$style(borderline,opacity)/255.0}]
 }
 
 

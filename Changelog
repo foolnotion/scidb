@@ -1,3 +1,30 @@
+[Feburary 2015] ==============================================================
+
+------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #1020)
+------------------------------------------------------------------------------
+* Fixes and improvements in piece renderer.
+
+* Enhancement in square rendering.
+
+* New piece sets: Aquarium, Bookup, Chess7, ChessCube, Celtic, Fritz, Habsburg,
+Military, Old Style, Segoe, and Zurich.
+
+* Piece set "Standard" replaced with another version, the previous one has
+deficiencies.
+
+* New themes: Burnt, Fritz, Kitsch, Navajo, Melamine, and Marmorate.
+
+* Theme "Virtual - Colored" re-designed and renamed to "Virtual - Blue".
+- Theme "Virtual" renamed to "Virtual - Brown".
+
+* Themes "Marble - Brown" and "Marble - Red": piece set Merida replaced by
+Habsburg.
+
+* Theme Blackjack: piece set Usual replaced by Segoe.
+
+* Some piece sets fine adjusted.
+
 [November 2014] ==============================================================
 
 ------------------------------------------------------------------------------

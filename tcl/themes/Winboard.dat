@@ -1,7 +1,7 @@
 ::board::addStyle theme {
-  version		1.0
-  identifier   Winboard|1228820514841|yellow.color|gregor
-  square-style Winboard|1228820514851|yellow.color|gregor
-  piece-style  Winboard|1228820514952|yellow.color|gregor
-  piece-set    Winboard
+  version		{1.0}
+  identifier   {Winboard|1228820514841|yellow.color|gregor}
+  square-style {Winboard|1228820514851|yellow.color|gregor}
+  piece-style  {Winboard|1228820514952|yellow.color|gregor}
+  piece-set    {Winboard}
 }

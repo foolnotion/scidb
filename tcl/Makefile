@@ -21,6 +21,7 @@ SOURCES = \
 	exec.tcl \
 	utils/place.tcl \
 	start.tcl \
+	colors.tcl \
 	utils/tcl_bugs.tcl \
 	splash.tcl \
 	log.tcl \

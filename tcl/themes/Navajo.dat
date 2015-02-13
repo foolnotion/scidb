@@ -1,0 +1,7 @@
+::board::addStyle theme {
+  identifier   {Navajo|1422301347006|purple|gregor}
+  piece-set    {Motif}
+  piece-style  {Indian|1422300501078|purple|gregor}
+  square-style {Navajo|1422301339767|purple|gregor}
+  version      {1.0}
+}

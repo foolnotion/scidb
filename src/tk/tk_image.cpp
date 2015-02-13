@@ -802,6 +802,15 @@ struct pixbuf
 	}
 
 	static void set_alpha(unsigned char* p, int alpha) { p[A] = alpha; }
+	
+	static void set_color(unsigned char* p, agg::rgba8 const& color)
+	{
+		p[R] = color.r;
+		p[G] = color.g;
+		p[B] = color.b;
+		if (Alpha)
+			p[A] = 255;
+	}
 
 	static void set_pixel(unsigned char* p, int r, int g, int b, int a)
 	{
@@ -1480,7 +1489,7 @@ rot270_image(PixBuf const& src, PixBuf& dst)
 
 
 static void
-make_border(pixbuf<RGBA>& buf, int gap, int width, double opacity, bool lite)
+make_border(pixbuf<RGBA>& buf, int gap, agg::rgba8 const& color, int width, double opacity, bool lite)
 {
 	M_ASSERT(width >= 0);
 	M_ASSERT(gap >= 0);
@@ -1496,7 +1505,7 @@ make_border(pixbuf<RGBA>& buf, int gap, int width, double opacity, bool lite)
 		uint32_t* e = p + buf.cols();
 
 		for ( ; p < e; ++p)
-			buf.set_alpha(reinterpret_cast<unsigned char*>(p), 255);
+			buf.set_color(reinterpret_cast<unsigned char*>(p), color);
 
 		for (int r = gap; r < buf.rows(); ++r)
 		{
@@ -1504,7 +1513,7 @@ make_border(pixbuf<RGBA>& buf, int gap, int width, double opacity, bool lite)
 			uint32_t* e = reinterpret_cast<uint32_t*>(buf.scanline(buf.rows() - 1)) + i;
 
 			for ( ; p <= e; p += buf.pitch())
-				buf.set_alpha(reinterpret_cast<unsigned char*>(p), 255);
+				buf.set_color(reinterpret_cast<unsigned char*>(p), color);
 		}
 	}
 
@@ -1672,14 +1681,15 @@ tk_make_border(char const* subcmd,
 					char const* dstName,
 					int objc, Tcl_Obj* const objv[])
 {
-	enum { Opt_Gap, Opt_Width, Opt_Opacity, Opt_Type };
-	static char const* options[] = { "-gap", "-width", "-opacity", "-type", 0 };
+	enum { Opt_Gap, Opt_BorderColor, Opt_Width, Opt_Opacity, Opt_Type };
+	static char const* options[] = { "-gap", "-bordercolor", "-width", "-opacity", "-type", 0 };
 	static char const* args[] = { "<integer>", "<integer>", "<double>", "lite|dark" };
 
 	double		opacity			= 1.0;
 	int			borderWidth		= 2;
 	int			gap				= 0;
 	char const*	type				= "lite";
+	agg::rgba8	borderColor(0, 0, 0);
 
 	for (int i = 0; i < objc; i++)
 	{
@@ -1690,6 +1700,13 @@ tk_make_border(char const* subcmd,
 					return tcl_usage(subcmd, options, args);
 				if (gap < 0)
 					return tcl_error(subcmd, "invalid argument: negative gap");
+				break;
+
+			case Opt_BorderColor:
+				if (++i == objc)
+					return tcl_usage(subcmd, options, args);
+				if (!parse_color(Tcl_GetString(objv[i]), borderColor))
+					return tcl_error(subcmd, "invalid color name '%s'", Tcl_GetString(objv[i]));
 				break;
 
 			case Opt_Width:
@@ -1748,7 +1765,7 @@ tk_make_border(char const* subcmd,
 	block.offset[3] = Offets[3];
 
 	pixbuf<RGBA> pixbuf(block);
-	make_border(pixbuf, gap, borderWidth, opacity, strcmp(type, "lite") == 0);
+	make_border(pixbuf, gap, borderColor, borderWidth, opacity, strcmp(type, "lite") == 0);
 	Tk_PhotoPutBlock(ti, handle, &block, 0, 0, width, height, TK_PHOTO_COMPOSITE_SET);
 	delete [] block.pixelPtr;
 
