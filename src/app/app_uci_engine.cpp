@@ -145,6 +145,9 @@ isNumeric(char const* s)
 {
 	char const* p = s;
 
+	if (*p == '-' || *p == '+')
+		++p;
+
 	while (isdigit(*p))
 		++p;
 
@@ -1068,7 +1071,7 @@ uci::Engine::parseOption(char const* msg)
 			case 'V':
 				if (name == "UCI_VariantThreeCheck")
 					addVariant(app::Engine::Variant_Three_Check);
-				break;
+				break; 
 		}
 	}
 	else if (type == "check")

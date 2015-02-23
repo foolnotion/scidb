@@ -1835,8 +1835,8 @@ proc defaultFonts {} {
 			lappend DefaultFonts $fam
 		}
 		if {	"DejaVu Sans" ni $DefaultFonts
-			&& "DejaVu Sans" in $families
-			&& "DejaVu Sans Mono" in $families} {
+			&& "dejavu sans" in $families
+			&& "dejavu sans mono" in $families} {
 			lappend DefaultFonts "DejaVu Sans"
 		}
 		if {	"DejaVu Sans" ni $DefaultFonts
@@ -1844,6 +1844,11 @@ proc defaultFonts {} {
 			&& "bitstream vera sans" in $families
 			&& "bitstream vera sans mono" in $families} {
 			lappend DefaultFonts "Bitstream Vera Sans"
+		}
+		foreach familyname {"AG Book Rounded" "Microsoft Sans Serif" "Palatino Linotype" "Memo"} {
+			if {$familyname ni $DefaultFonts && [string tolower $familyname] in $families} {
+				lappend DefaultFonts $familyname
+			}
 		}
 	}
 
@@ -1904,6 +1909,11 @@ proc lookupFixedFonts {textfont} {
 		"Abel"						{ lappend fonts Fonotone {Ubuntu Mono} {Arial Monospaced} {Nimbus Mono L} }
 		"DejaVu Sans"				{ lappend fonts {DejaVu Sans Mono} }
 		"Bitstream Vera Sans"	{ lappend fonts {Bitstream Vera Sans Mono} }
+
+		"AG Book Rounded" - "Microsoft Sans Serif" - "Palatino Linotype" - "Memo" {
+			lappend fonts Inconsolata Mono Fonotone {Ubuntu Mono} [getFontFamilyName TkFixedFont]
+		}
+
 		default						{ lappend fonts [getFontFamilyName TkFixedFont] }
 	}
 
@@ -1997,6 +2007,7 @@ proc addChangeFontToMenu {context m applycmd {textFontOnly no}} {
 			::theme::configureRadioEntry $menu
 		}
 		if {[string length $userFont] > 0} {
+			$menu add separator
 			$menu add radiobutton \
 				-compound left \
 				-label $userFont \

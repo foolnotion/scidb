@@ -641,12 +641,23 @@ proc WidgetProc {w command args} {
 			if {[llength $args] % 2 == 1} {
 				return error -code "value for \"[lindex $args end]\" missing"
 			}
+			set reparse 0
+			set showhyphens [$w.sub.html cget -showhyphens]
 			array set opts $args
 			if {[info exists opts(-textalign)]} {
 				set Priv(textalign) $opts(-textalign)
-				SetupCSS $w
-				$w parse $Priv(script)
+				set reparse 1
 				array unset opts -textalign
+			}
+			if {[info exists opts(-showhyphens)]} {
+				set reparse 1
+				set showhyphens $opts(-showhyphens)
+				array unset opts -showhyphens
+			}
+			if {$reparse} {
+				SetupCSS $w
+				$w.sub.html configure -showhyphens $showhyphens
+				$w parse $Priv(script)
 			}
 			if {[array size opts] == 0} { return }
 			set args [array get opts]

@@ -615,7 +615,7 @@ proc OpenDialog {font options} {
 		grid $buttons.apply	-row 4 -sticky ew
 		grid $buttons.reset	-row 6 -sticky ew
 
-		grid rowconfigure $buttons 3 -minsize 10
+		grid rowconfigure $buttons 3 -minsize 15
 		grid rowconfigure $buttons 5 -minsize 5
 	}
 

@@ -1319,7 +1319,7 @@ proc PopupMenu {dlg tab} {
 				-compound left \
 				-variable [namespace current]::Options(textalign) \
 				-value justify \
-				-command [list $Priv(html) configure -textalign justify] \
+				-command [list $Priv(html) configure -textalign justify -showhyphens 1] \
 				;
 			::theme::configureRadioEntry $m.textalign
 			$m.textalign add radiobutton \
@@ -1328,7 +1328,7 @@ proc PopupMenu {dlg tab} {
 				-compound left \
 				-variable [namespace current]::Options(textalign) \
 				-value left \
-				-command [list $Priv(html) configure -textalign left] \
+				-command [list $Priv(html) configure -textalign left -showhyphens 0] \
 				;
 			::theme::configureRadioEntry $m.textalign
 			$m add separator
@@ -1452,7 +1452,7 @@ proc BuildHtmlFrame {dlg w} {
 		-doublebuffer yes \
 		-exportselection yes \
 		-css $css \
-		-showhyphens 1 \
+		-showhyphens [expr {$Options(textalign) == "justify"}] \
 		-latinligatures $Priv(latinligatures) \
 		-fontsize [::font::html::fontSize help] \
 		-textalign $Options(textalign) \

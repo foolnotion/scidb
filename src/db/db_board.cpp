@@ -1351,7 +1351,7 @@ Board::prepareForPrint(Move& move, variant::Type variant, Representation represe
 
 	if (!move.isPrintable())
 	{
-		if (!move.isNull() && !move.isCastling())
+		if (!move.isNull())
 		{
 			unsigned state = NoCheck;
 
@@ -1374,152 +1374,155 @@ Board::prepareForPrint(Move& move, variant::Type variant, Representation represe
 				}
 			}
 
-			int from	= move.from();
-			int to	= move.to();
-
-			if (m_piece[from] != piece::Pawn)
+			if (!move.isCastling())
 			{
-				// we may need disambiguation
-				uint64_t others = 0;
+				int from	= move.from();
+				int to	= move.to();
 
-				switch (m_piece[from])
+				if (m_piece[from] != piece::Pawn)
 				{
-					case piece::Knight:	others = m_knights & knightAttacks(to); break;
-					case piece::Bishop:	others = m_bishops & bishopAttacks(to); break;
-					case piece::Rook:		others = m_rooks & rookAttacks(to); break;
-					case piece::Queen:	others = m_queens & queenAttacks(to); break;
-					case piece::King:		others = m_kings & kingAttacks(to); break;
-				}
-
-				others ^= set1Bit(from);
-				others &= m_occupiedBy[m_stm];
-
-				if (others && representation == InternalRepresentation)
-				{
-					if (!variant::isAntichessExceptLosers(variant))
-					{
-						if (move.isLegal())
-							removeIllegalFrom(move, others, variant);
-
-						if (state & (Check | Checkmate))
-						{
-							uint64_t movers = 0;
-
-							switch (m_piece[from])
-							{
-								case piece::Knight:	movers = m_knights; break;
-								case piece::Rook:		movers = m_rooks; break;
-								case piece::Queen:	movers = m_queens; break;
-								case piece::King:		movers = m_kings; break;
-
-								case piece::Bishop:
-									movers = m_bishops;
-									if (color::isWhite(sq::color(sq::ID(from))))
-										movers &= ::LiteSquares;
-									else
-										movers &= ::DarkSquares;
-									break;
-							}
-
-							if (others && count(movers & m_occupiedBy[m_stm]) == 1)
-							{
-								// this is confusing if more than one moving piece exists
-								if (state & Checkmate)
-									filterCheckmateMoves(move, others, variant);
-								else
-									filterCheckMoves(move, others, variant);
-							}
-						}
-					}
-				}
-
-				if (others)
-				{
-					if (others & RankMask[::rank(from)])
-						move.setNeedsFyle();
-
-					if (others & FyleMask[::fyle(from)])
-						move.setNeedsRank();
-					else
-						move.setNeedsFyle();
-				}
-
-				// we may need disambiguation of destination square
-				if (move.isCapture())
-				{
-					// case 1: more than one piece of same type which can capture
-					// case 2: this piece can capture more pieces of this type
-					uint64_t others[2] = { 0, 0 }; // otherwise gcc will complain
+					// we may need disambiguation
+					uint64_t others = 0;
 
 					switch (m_piece[from])
 					{
-						case piece::Knight:
-							others[0] = m_knights & knightAttacks(to);
-							others[1] = knightAttacks(from);
-							break;
-
-						case piece::Bishop:
-							others[0] = m_bishops & bishopAttacks(to);
-							others[1] = bishopAttacks(from);
-							break;
-
-						case piece::Rook:
-							others[0] = m_rooks & rookAttacks(to);
-							others[1] = rookAttacks(from);
-							break;
-
-						case piece::Queen:
-							others[0] = m_queens & queenAttacks(to);
-							others[1] = queenAttacks(from);
-							break;
-
-						case piece::King:
-							others[0] = m_kings & kingAttacks(to);
-							others[1] = kingAttacks(from);
-							break;
+						case piece::Knight:	others = m_knights & knightAttacks(to); break;
+						case piece::Bishop:	others = m_bishops & bishopAttacks(to); break;
+						case piece::Rook:		others = m_rooks & rookAttacks(to); break;
+						case piece::Queen:	others = m_queens & queenAttacks(to); break;
+						case piece::King:		others = m_kings & kingAttacks(to); break;
 					}
 
-					others[0] ^= set1Bit(from);
-					others[0] &= m_occupiedBy[m_stm];
+					others ^= set1Bit(from);
+					others &= m_occupiedBy[m_stm];
 
-					others[1] ^= set1Bit(to);
-					others[1] &= m_occupiedBy[m_stm ^ 1];
-
-					switch (m_piece[to])
+					if (others && representation == InternalRepresentation)
 					{
-						case piece::Pawn:		others[1] &= m_pawns; break;
-						case piece::Knight:	others[1] &= m_knights; break;
-						case piece::Bishop:	others[1] &= m_bishops; break;
-						case piece::Rook:		others[1] &= m_rooks; break;
-						case piece::Queen:	others[1] &= m_queens; break;
-					}
-
-					if (	representation == InternalRepresentation
-						&& !variant::isAntichessExceptLosers(variant))
-					{
-						if (move.isLegal())
+						if (!variant::isAntichessExceptLosers(variant))
 						{
-							if (others[0])
-								removeIllegalFrom(move, others[0], variant);
+							if (move.isLegal())
+								removeIllegalFrom(move, others, variant);
 
-							if (others[1])
-								removeIllegalTo(move, others[1], variant);
+							if (state & (Check | Checkmate))
+							{
+								uint64_t movers = 0;
+
+								switch (m_piece[from])
+								{
+									case piece::Knight:	movers = m_knights; break;
+									case piece::Rook:		movers = m_rooks; break;
+									case piece::Queen:	movers = m_queens; break;
+									case piece::King:		movers = m_kings; break;
+
+									case piece::Bishop:
+										movers = m_bishops;
+										if (color::isWhite(sq::color(sq::ID(from))))
+											movers &= ::LiteSquares;
+										else
+											movers &= ::DarkSquares;
+										break;
+								}
+
+								if (others && count(movers & m_occupiedBy[m_stm]) == 1)
+								{
+									// this is confusing if more than one moving piece exists
+									if (state & Checkmate)
+										filterCheckmateMoves(move, others, variant);
+									else
+										filterCheckMoves(move, others, variant);
+								}
+							}
+						}
+					}
+
+					if (others)
+					{
+						if (others & RankMask[::rank(from)])
+							move.setNeedsFyle();
+
+						if (others & FyleMask[::fyle(from)])
+							move.setNeedsRank();
+						else
+							move.setNeedsFyle();
+					}
+
+					// we may need disambiguation of destination square
+					if (move.isCapture())
+					{
+						// case 1: more than one piece of same type which can capture
+						// case 2: this piece can capture more pieces of this type
+						uint64_t others[2] = { 0, 0 }; // otherwise gcc will complain
+
+						switch (m_piece[from])
+						{
+							case piece::Knight:
+								others[0] = m_knights & knightAttacks(to);
+								others[1] = knightAttacks(from);
+								break;
+
+							case piece::Bishop:
+								others[0] = m_bishops & bishopAttacks(to);
+								others[1] = bishopAttacks(from);
+								break;
+
+							case piece::Rook:
+								others[0] = m_rooks & rookAttacks(to);
+								others[1] = rookAttacks(from);
+								break;
+
+							case piece::Queen:
+								others[0] = m_queens & queenAttacks(to);
+								others[1] = queenAttacks(from);
+								break;
+
+							case piece::King:
+								others[0] = m_kings & kingAttacks(to);
+								others[1] = kingAttacks(from);
+								break;
 						}
 
-						// this may be confusing if more than one of captured piece exists
-						if (others[0] && (state & (Check | Checkmate)))
-							filterCheckmateMoves(move, others[0], variant);
-					}
+						others[0] ^= set1Bit(from);
+						others[0] &= m_occupiedBy[m_stm];
 
-					if (others[0] | others[1])
-						move.setNeedsDestinationSquare();
+						others[1] ^= set1Bit(to);
+						others[1] &= m_occupiedBy[m_stm ^ 1];
+
+						switch (m_piece[to])
+						{
+							case piece::Pawn:		others[1] &= m_pawns; break;
+							case piece::Knight:	others[1] &= m_knights; break;
+							case piece::Bishop:	others[1] &= m_bishops; break;
+							case piece::Rook:		others[1] &= m_rooks; break;
+							case piece::Queen:	others[1] &= m_queens; break;
+						}
+
+						if (	representation == InternalRepresentation
+							&& !variant::isAntichessExceptLosers(variant))
+						{
+							if (move.isLegal())
+							{
+								if (others[0])
+									removeIllegalFrom(move, others[0], variant);
+
+								if (others[1])
+									removeIllegalTo(move, others[1], variant);
+							}
+
+							// this may be confusing if more than one of captured piece exists
+							if (others[0] && (state & (Check | Checkmate)))
+								filterCheckmateMoves(move, others[0], variant);
+						}
+
+						if (others[0] | others[1])
+							move.setNeedsDestinationSquare();
+					}
 				}
-			}
-			else if (m_piece[to] != piece::None || move.isEnPassant())
-			{
-				// we may need disambiguation of pawn captures
-				if (pawnCapturesTo(to) ^ set1Bit(from))
-					move.setNeedsFyle();
+				else if (m_piece[to] != piece::None || move.isEnPassant())
+				{
+					// we may need disambiguation of pawn captures
+					if (pawnCapturesTo(to) ^ set1Bit(from))
+						move.setNeedsFyle();
+				}
 			}
 		}
 
