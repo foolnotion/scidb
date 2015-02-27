@@ -5,4 +5,12 @@ span.chess {
 	font-size: 80%;
 }
 
+hr {
+  border:         0; /* For Firefox and Opera */
+  border-top:     solid 1px #000000;
+  border-bottom:  transparent; /* For IE */
+  margin-left:		0;
+  margin-right:	0;
+}
+
 /* vi: set ts=3 sw=3: */

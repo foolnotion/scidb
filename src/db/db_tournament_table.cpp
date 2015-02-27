@@ -110,7 +110,7 @@ struct TournamentTable::Player
 	unsigned oppAvgRating() const;
 	unsigned percentage() const;
 
-	int resultScore(TournamentTable::Clash const* clash) const;
+	unsigned resultScore(TournamentTable::Clash const* clash) const;
 
 	NamebasePlayer const* entry;
 
@@ -240,7 +240,7 @@ TournamentTable::Player::Player(NamebasePlayer const* entry, unsigned ranking)
 }
 
 
-int
+unsigned
 TournamentTable::Player::resultScore(TournamentTable::Clash const* clash) const
 {
 	M_ASSERT(clash);
@@ -261,7 +261,7 @@ TournamentTable::Player::resultScore(TournamentTable::Clash const* clash) const
 			break;
 	}
 
-	return -1; // never reached
+	return 0; // never reached
 }
 
 
@@ -595,6 +595,7 @@ TournamentTable::computeScores()
 				{
 					case result::White:
 						++player->winDrawLoss[Player::Win];
+						++opponent->winDrawLoss[Player::Loss];
 						player->score[Traditional] += 2;
 						player->score[Bilbao] += 6;
 						whiteMedianScore = 2;
@@ -604,6 +605,7 @@ TournamentTable::computeScores()
 
 					case result::Black:
 						++player->winDrawLoss[Player::Loss];
+						++opponent->winDrawLoss[Player::Win];
 						opponent->score[Traditional] += 2;
 						opponent->score[Bilbao] += 6;
 						blackMedianScore = 2;
@@ -613,6 +615,7 @@ TournamentTable::computeScores()
 
 					case result::Draw:
 						++player->winDrawLoss[Player::Draw];
+						++opponent->winDrawLoss[Player::Draw];
 						player->score[Traditional] += 1;
 						player->score[Bilbao] += 2;
 						opponent->score[Traditional] += 1;
@@ -636,7 +639,6 @@ TournamentTable::computeScores()
 
 				player->medianScore += whiteMedianScore;
 				opponent->medianScore += blackMedianScore;
-
 				++m_resultCount[clash->result];
 			}
 		}
@@ -804,6 +806,8 @@ TournamentTable::guessBestMode()
 				m_bestMode = Match;
 			else if (nplayers < 2)
 				m_bestMode = RankingList;
+			else if (nplayers >= 3 && maxOppCount == nplayers - 1)
+				m_bestMode = Simultan;
 			else if (isDisjoint && group1.count() == group2.count())
 				m_bestMode = Scheveningen;
 			else if (minOppCount == 1 && maxOppCount == mstl::log2_ceil(nplayers))
@@ -826,7 +830,7 @@ TournamentTable::guessBestMode()
 		case event::Match:		m_bestMode = Match; break;
 		case event::Tournament:	m_bestMode = Crosstable; break;
 		case event::Knockout:	m_bestMode = Knockout; break;
-		case event::Simultan:	m_bestMode = RankingList; break;
+		case event::Simultan:	m_bestMode = Simultan; break;
 		case event::Schev:		m_bestMode = Scheveningen; break;
 	}
 
@@ -1063,6 +1067,25 @@ TournamentTable::sort(	ScoringSystem scoringSystem,
 
 			::qsort(playerList, size, sizeof(Player*), ::cmpGroup);
 			break;
+
+		case Simultan:
+			for (unsigned i = 0; i < size; ++i)
+			{
+				if (playerList[i]->clashList.size() > 1)
+				{
+					Player* newPlayerList[size];
+					newPlayerList[0] = playerList[i];
+
+					for (unsigned k = 0; k < size; ++k)
+					{
+						if (k != i)
+							newPlayerList[k < i ? k + 1 : k] = playerList[k];
+					}
+
+					::memcpy(playerList, newPlayerList, size*sizeof(newPlayerList[0]));
+				}
+			}
+			break;
 	}
 
 	m_orderMap.resize(size);
@@ -1088,7 +1111,22 @@ TournamentTable::emit(	TeXt::Receptacle& receptacle,
 {
 	typedef mstl::ref_counted_ptr<TeXt::ListToken> List;
 
-	sort(scoringSystem, tiebreakRules, order, m_mode = (mode == Auto) ? m_bestMode : mode);
+	m_mode = mode == Auto ? m_bestMode : mode;
+
+	switch (m_mode)
+	{
+		case Crosstable:		// fallthru
+		case Scheveningen:	// fallthru
+		case Swiss:				// fallthru
+		case Match:				// fallthru
+		case RankingList:		break;
+
+		case Knockout:			// fallthru
+		case Simultan:			// fallthru
+		case Auto:				scoringSystem = Traditional; break;
+	}
+
+	sort(scoringSystem, tiebreakRules, order, m_mode);
 
 	char const* descr = 0;
 
@@ -1100,6 +1138,7 @@ TournamentTable::emit(	TeXt::Receptacle& receptacle,
 		case Match:				descr = "\\Match"; break;
 		case Knockout:			descr = "\\Knockout"; break;
 		case RankingList:		descr = "\\RankingList"; break;
+		case Simultan:			descr = "\\Simultan"; break;
 		case Auto:				break; // cannot happen
 	}
 
@@ -1253,6 +1292,7 @@ TournamentTable::emit(	TeXt::Receptacle& receptacle,
 		case Swiss:				emitSwissTable(receptacle); break;
 		case Match:				emitMatchTable(receptacle); break;
 		case Knockout:			emitKnockoutTable(receptacle, koOrder); break;
+		case Simultan:			emitSimultanTable(receptacle); break;
 		case RankingList:		/* nothing to do */ break;
 		case Auto:				break; // cannot happen
 	}
@@ -1378,6 +1418,36 @@ TournamentTable::emitSwissTable(TeXt::Receptacle& receptacle)
 			{
 				row->append(-1, -1, -1, 0);
 			}
+		}
+	}
+
+	receptacle.add("Results", results);
+}
+
+
+void
+TournamentTable::emitSimultanTable(TeXt::Receptacle& receptacle)
+{
+	typedef mstl::ref_counted_ptr<TeXt::ListToken> List;
+
+	// \let\Results${
+	//		{{} \1 \1 \2 \0 \0 \1}
+	// }
+
+	List results(new ListToken);
+
+	for (unsigned i = 0; i < m_playerMap.size(); ++i)
+	{
+		Player const* player = m_playerMap.container()[m_orderMap[i]].second;
+
+		if (player->clashList.size() == 1)
+		{
+			Clash const* clash = player->clashList.front();
+			results->append(player->resultScore(clash), clash->color, clash->gameIndex + 1);
+		}
+		else
+		{
+			results->append(player->score[Traditional], 0, 0);
 		}
 	}
 

@@ -92,11 +92,14 @@
 	\unless\ifempty\col-title \space title="\col-title"\let\col-title\empty\fi
 	\unless\ifempty\col-valign \space valign="\col-valign"\let\col-valign\empty\fi
 	\unless\ifempty\col-width \space width="\col-width"\let\col-width\empty\fi
+	\unless\ifempty\col-padding \space style="padding:\col-padding"\let\col-padding\empty\fi
+	\unless\ifempty\col-style \space style="\col-style"\let\col-style\empty\fi
 }
 
 \expandafter\def\csname row!attrs\endcsname{%
 	\unless\ifempty\row-class \space class="\row-class"\let\row-class\empty\fi
 	\unless\ifempty\row-eco \space eco="\row-eco"\let\row-eco\empty\fi
+	\unless\ifempty\row-style \space style="\row-style"\let\row-style\empty\fi
 }
 
 \let\col-align\empty
@@ -111,9 +114,12 @@
 \let\col-title\empty
 \let\col-valign\empty
 \let\col-width\empty
+\let\col-padding\empty
+\let\col-style\empty
 
 \let\row-class\empty
 \let\row-eco\empty
+\let\row-style\empty
 
 \def\begin-div#class#id{%
 	<div%
@@ -145,4 +151,4 @@
 
 \def\img#src#alt#border{<img src="#src" alt="#alt" style="border: #border;" />}
 
-% vi:set ts=3 sw=3:
+% vi:set ts=3 sw=3 filetype=tex:

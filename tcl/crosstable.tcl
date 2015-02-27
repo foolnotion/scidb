@@ -64,6 +64,7 @@ set Swiss						"Swiss System"
 set Match						"Match"
 set Knockout					"Knockout"
 set RankingList				"Ranking List"
+set Simultan					"Simultaneous"
 
 set Order						"Order"
 set Type							"Table Type"
@@ -112,10 +113,11 @@ array set Scripts {
 	match				"match.eXt"
 	knockout			"knockout.eXt"
 	rankingList		"rankingList.eXt"
+	simultan			"simultan.eXt"
 }
 
 array set ListEntries {
-	type		{ crosstable scheveningen swiss match knockout rankingList }
+	type		{ crosstable scheveningen swiss match knockout rankingList simultan }
 	scoring	{ traditional bilbao }
 	tiebreak	{ none sonnebornBerger buchholz medianBuchholz modifiedMedianBuchholz refinedBuchholz
 					progressive koyaSystem gamesWon gamesWonWithBlack particularResult traditionalScoring }
@@ -132,6 +134,7 @@ array set RecentlyUsedTiebreaks {
 	match				{}
 	knockout			{}
 	rankingList		{}
+	simultan			{}
 }
 
 array set RecentlyUsedScoring {
@@ -141,6 +144,7 @@ array set RecentlyUsedScoring {
 	match				traditional
 	knockout			traditional
 	rankingList		traditional
+	simultan			traditional
 }
 
 array set Defaults {
@@ -290,22 +294,21 @@ proc open {parent base variant index view source} {
 	variable List
 
 	set tb [::toolbar::toolbar $dlg \
-				-id crosstable-settings \
-				-allow {top bottom} \
-				-titlevar [namespace current]::mc::Settings \
-				-padx 4 \
-				-pady 2 \
-			]
-	set Vars(value:order) [lindex $List(order) 0]
-	set Vars(value:type) [lindex $List(type) 0]
-	set Vars(value:scoring) [lindex $List(scoring) 0]
+		-id crosstable-settings \
+		-allow {top bottom} \
+		-titlevar [namespace current]::mc::Settings \
+		-padx 4 \
+		-pady 2 \
+	]
+	set Vars(widget:toolbar) $tb
+	bind $tb <<ToolbarShow>> [namespace code [list SetupToolbar $dlg]]
 
 	set f1 [::toolbar::add $tb frame]
 	set f2 [::toolbar::add $tb frame]
 	set f3 [::toolbar::add $tb frame]
 
 	tk::label $f1.label_type -textvar [namespace current]::mc::Type
-	::ttk::combobox  $f1.choose_type \
+	::ttk::combobox $f1.choose_type \
 		-takefocus 0 \
 		-exportselection 0 \
 		-state readonly  \
@@ -313,6 +316,7 @@ proc open {parent base variant index view source} {
 		-width 16 \
 		;
 	set Vars(widget:type) $f1.choose_type
+	set Vars(value:type) [lindex $List(type) 0]
 
 	tk::label $f1.label_order -textvar [namespace current]::mc::Order
 	::ttk::combobox $f1.choose_order \
@@ -323,6 +327,7 @@ proc open {parent base variant index view source} {
 		-width 12 \
 		;
 	set Vars(widget:order) $f1.choose_order
+	set Vars(value:order) [lindex $List(order) 0]
 
 	tk::label $f1.scoring_label -textvar [namespace current]::mc::ScoringSystem
 	set Vars(widget:scoring) $f1.choose_scoring
@@ -333,6 +338,7 @@ proc open {parent base variant index view source} {
 		-textvar [namespace current]::${dlg}::Vars(value:scoring) \
 		-width 12 \
 		;
+	set Vars(value:scoring) [lindex $List(scoring) 0]
 	
 	::toolbar::add $tb separator
 	::toolbar::add $tb button \
@@ -383,6 +389,12 @@ proc open {parent base variant index view source} {
 	grid columnconfigure $f2 0 -minsize $::theme::padX
 	grid columnconfigure $f3 0 -minsize $::theme::padX
 	grid columnconfigure $f3 4 -minsize $::theme::padding
+
+	set traceCmd [list \
+		variable [namespace current]::${dlg}::Vars(value:type) \
+		write [namespace code [list SetupToolbar $dlg]]]
+	trace add {*}$traceCmd
+	bind $top <Destroy> [list trace remove {*}$traceCmd]
 
 	InsertEntries $dlg
 
@@ -493,30 +505,31 @@ proc InsertEntries {dlg} {
 	variable ${dlg}::Vars
 
 	set parent $Vars(widget:tiebreak1)
+	set toolbar $Vars(widget:toolbar)
 	foreach i {1 2 3 4 5 6} {
 		set n [lsearch -exact $List(tiebreak) $Vars(value:tiebreak$i)]
 		set Vars(label:tiebreak$i) "$i. $mc::Tiebreak"
 		$Vars(widget:tiebreak$i) configure -values $List(tiebreak)
-		set clone [::toolbar::lookupClone $parent $Vars(widget:tiebreak$i)]
+		set clone [::toolbar::lookupClone $toolbar $Vars(widget:tiebreak$i)]
 		if {[llength $clone]} { $clone configure -values $List(tiebreak) }
 		if {$n >= 0} { set Vars(value:tiebreak$i) [lindex $List(tiebreak) $n] }
 	}
 
 	set n [lsearch -exact $List(scoring) $Vars(value:scoring)]
 	$Vars(widget:scoring) configure -values $List(scoring)
-	set clone [::toolbar::lookupClone [winfo parent $Vars(widget:scoring)] $Vars(widget:scoring)]
+	set clone [::toolbar::lookupClone $toolbar $Vars(widget:scoring)]
 	if {[llength $clone]} { $clone configure -values $List(scoring) }
 	if {$n >= 0} { set Vars(value:scoring) [lindex $List(scoring) $n] }
 
 	set n [lsearch -exact $List(order) $Vars(value:order)]
 	$Vars(widget:order) configure -values $List(order)
-	set clone [::toolbar::lookupClone [winfo parent $Vars(widget:order)] $Vars(widget:order)]
+	set clone [::toolbar::lookupClone $toolbar $Vars(widget:order)]
 	if {[llength $clone]} { $clone configure -values $List(order) }
 	if {$n >= 0} { set Vars(value:order) [lindex $List(order) $n] }
 
 	set n [lsearch -exact $List(type) $Vars(value:type)]
 	$Vars(widget:type) configure -values $List(type)
-	set clone [::toolbar::lookupClone [winfo parent $Vars(widget:type)] $Vars(widget:type)]
+	set clone [::toolbar::lookupClone $toolbar $Vars(widget:type)]
 	if {[llength $clone]} { $clone configure -values $List(type) }
 	if {$n >= 0} { set Vars(value:type) [lindex $List(type) $n] }
 }
@@ -818,6 +831,34 @@ proc ConfigureButtons {dlg} {
 }
 
 
+proc LookupToolbarWidget {dlg w} {
+	variable ${dlg}::Vars
+
+	set clone [::toolbar::lookupClone $Vars(widget:toolbar) $w]
+	if {[llength $clone] > 0} { return $clone }
+	return $w
+}
+
+
+proc SetupToolbar {dlg args} {
+	variable ${dlg}::Vars
+	variable ListEntries
+	variable List
+
+	set n [lsearch -exact $List(type) $Vars(value:type)]
+	set mode [lindex $ListEntries(type) $n]
+
+	switch $mode {
+		knockout - simultan	{ set state disabled }
+		default					{ set state normal }
+	}
+	foreach i {1 2 3 4 5 6} {
+		[LookupToolbarWidget $dlg $Vars(widget:tiebreak$i)] configure -state $state
+	}
+	[LookupToolbarWidget $dlg $Vars(widget:scoring)] configure -state $state
+}
+
+
 proc CloseTrace {dlg which} {
 	variable Options
 	variable ${dlg}::Vars
@@ -966,7 +1007,6 @@ proc MouseLeave {dlg node {stimulate 0}} {
 proc HandleEnterLeave {node action} {
 	set id [$node attribute -default {} recv]
 	if {[string length $id]} { $action $id }
-
 	set attr [$node attribute -default {} send]
 	foreach id [split $attr :] { $action $id }
 }
@@ -1174,7 +1214,7 @@ proc BuildMenu {dlg m} {
 
 	set sub [menu $m.display]
 
-	if {$Vars(bestMode) eq "knockout"} { set state disabled } else { set state normal }
+	if {$Vars(bestMode) in {knockout simultan}} { set state disabled } else { set state normal }
 	foreach opt {rating performance tiebreak winDrawLoss} {
 		$sub add checkbutton \
 			-label [set mc::Show[string toupper $opt 0 0]] \

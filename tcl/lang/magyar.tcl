@@ -2103,6 +2103,7 @@
 ::crosstable::mc::Match				"Match"
 ::crosstable::mc::Knockout			"Kieséses"
 ::crosstable::mc::RankingList			"Rangsor"
+::crosstable::mc::Simultan			"Simultaneous" ;# NEW
 
 ::crosstable::mc::Order				"Sorrend"
 ::crosstable::mc::Type				"Tábla típus"

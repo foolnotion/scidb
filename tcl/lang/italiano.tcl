@@ -2110,6 +2110,7 @@
 ::crosstable::mc::Match							"Match"
 ::crosstable::mc::Knockout						"Knockout"
 ::crosstable::mc::RankingList					"Lista ELO"
+::crosstable::mc::Simultan						"Simultaneous" ;# NEW
 
 ::crosstable::mc::Order							"Ordine"
 ::crosstable::mc::Type							"Tipo Tabella"

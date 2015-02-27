@@ -733,12 +733,12 @@ proc lookupChild {child} {
 }
 
 
-proc lookupClone {child w} {
+proc lookupClone {toolbar w} {
 	variable Specs
 
-	set toolbar [winfo parent $child]
-	if {![info exists Specs(clone:$w:$toolbar.floating.frame)]} { return {} }
-	return $Specs(clone:$w:$toolbar.floating.frame)
+	if {![winfo exists $toolbar.floating]} { return "" }
+	if {![info exists Specs(clone:$toolbar:$w)]} { return "" }
+	return $Specs(clone:$toolbar:$w)
 }
 
 
@@ -2949,7 +2949,7 @@ proc CloneWidget {toolbar child} {
 
 	set floatingToolbar $toolbar.floating.frame
 	set clone $floatingToolbar.__tbw__[incr Counter]
-	MakeClone $floatingToolbar $clone $child
+	MakeClone $toolbar $floatingToolbar $clone $child
 
 	set Specs(child:$child:$floatingToolbar) $clone
 
@@ -2993,8 +2993,11 @@ proc CloneWidget {toolbar child} {
 }
 
 
-proc MakeClone {parent clone w} {
+proc MakeClone {toolbar parent clone w} {
+	variable Specs
+
 	set class [winfo class $w]
+	set Specs(clone:$toolbar:$w) $clone
 
 	switch $class {
 		ToolbarSeparator	{ frame $clone -class ToolbarSeparator -relief sunken -borderwidth 1 }
@@ -3003,7 +3006,7 @@ proc MakeClone {parent clone w} {
 		TEntry				{ ttk::entry $clone }
 		TSpinbox				{ ttk::spinbox $clone; $clone set [$w get] }
 		DropdownButton		{ $w clone $clone }
-		Frame					{ CloneFrame $parent $clone $w }
+		Frame					{ CloneFrame $toolbar $parent $clone $w }
 		default				{ catch {[string tolower $class] $clone} }
 	}
 
@@ -3024,7 +3027,7 @@ proc MakeClone {parent clone w} {
 }
 
 
-proc CloneFrame {parent f w} {
+proc CloneFrame {toolbar parent f w} {
 	variable Counter
 	variable Specs
 
@@ -3032,8 +3035,7 @@ proc CloneFrame {parent f w} {
 
 	foreach child [winfo children $w] {
 		set clone $f.__tbw__[incr Counter]
-		set Specs(clone:$child:$parent) $clone
-		MakeClone $parent $clone $child
+		MakeClone $toolbar $parent $clone $child
 	}
 
 	if {[llength [grid slaves $w]]} {
@@ -3045,7 +3047,7 @@ proc CloneFrame {parent f w} {
 			unset opts(-in)
 			set maxcol [max $maxcol $opts(-column)]
 			set maxrow [max $maxrow $opts(-row)]
-			grid $Specs(clone:$child:$parent) {*}[array get opts]
+			grid $Specs(clone:$toolbar:$child) {*}[array get opts]
 		}
 
 		incr maxcol
@@ -3064,7 +3066,7 @@ proc CloneFrame {parent f w} {
 		}
 	} else {
 		foreach child [pack slaves $w] {
-			pack $Specs(clone:$child:$parent) {*}[pack info $child]
+			pack $Specs(clone:$toolbar:$child) {*}[pack info $child]
 		}
 	}
 }

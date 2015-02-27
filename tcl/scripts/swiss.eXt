@@ -420,9 +420,9 @@
 
 \cr
 <p>\cr
-\lassign\results{\win\loss\draw}%
+\lassign\results{\white\black\draw\lost}%
 \numGames\ \if\numGames\1\Game\else\Games\fi
-\ (+\win\thick-space\ =\draw\thick-space\ \minus\loss)\cr
+\ (+\white\thick-space\ =\draw\thick-space\ \minus\black)\cr
 </p>\cr
 </body>
 \xhtml-foot
@@ -430,4 +430,4 @@
 %%% end of file %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \bye
 
-% vi:set ts=3 sw=3:
+% vi:set ts=3 sw=3 filetype=tex:

@@ -2092,6 +2092,7 @@
 ::crosstable::mc::Match							"Match"
 ::crosstable::mc::Knockout						"Knockout"
 ::crosstable::mc::RankingList					"Ranking List"
+::crosstable::mc::Simultan						"Simultaneous"
 
 ::crosstable::mc::Order							"Order"
 ::crosstable::mc::Type							"Table Type"

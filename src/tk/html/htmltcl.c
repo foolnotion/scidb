@@ -1665,10 +1665,10 @@ configureCmd(
             HtmlCallbackLayout(pTree, pTree->pRoot);
         }
 
-#ifndef USE_DOUBLE_BUFFERING
+#ifdef USE_DOUBLE_BUFFERING
         if (mask & D_MASK) {
-            if (!pTree->option.doubleBuffer)
-                deleteBuffer();
+            if (!pTree->options.doublebuffer)
+                deleteBuffer(pTree);
         }
 #endif
 

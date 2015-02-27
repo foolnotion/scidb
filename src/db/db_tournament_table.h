@@ -58,6 +58,7 @@ public:
 		Match,
 		Knockout,
 		RankingList,
+		Simultan,
 	};
 
 	enum Order
@@ -163,6 +164,7 @@ private:
 	void emitCrossTable(TeXt::Receptacle& receptacle, bool isScheveningen);
 	void emitSwissTable(TeXt::Receptacle& receptacle);
 	void emitMatchTable(TeXt::Receptacle& receptacle);
+	void emitSimultanTable(TeXt::Receptacle& receptacle);
 	void emitKnockoutTable(TeXt::Receptacle& receptacle, KnockoutOrder order);
 
 	NamebaseEvent const& m_event;

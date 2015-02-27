@@ -163,6 +163,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				case TournamentTable::Match:			setResult("Match"); break;
 				case TournamentTable::Knockout:		setResult("Knockout"); break;
 				case TournamentTable::RankingList:	setResult("RankingList"); break;
+				case TournamentTable::Simultan:		setResult("Simultan"); break;
 				case TournamentTable::Auto:			M_ASSERT("unexpected result"); break;
 			}
 			break;

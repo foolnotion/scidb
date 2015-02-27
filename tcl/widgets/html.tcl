@@ -730,14 +730,14 @@ proc Place {w} {
 	if {![winfo exists $w]} { return }
 
 	set width [winfo width $w]
-	set height [winfo height $w]
 	if {$width == 1} { return }
+	set height [winfo height $w]
 	lassign [$w.html visbbox] _ _ htmlWidth htmlHeight
 	set xdelta [expr {max(0, ($width - $htmlWidth)/2)}]
 	set ydelta [expr {max(0, ($height - $htmlHeight)/2)}]
 	if {$ydelta > 0} { set height $htmlHeight }
 	if {$xdelta > 0} { set width $htmlWidth }
-	if {$width < $htmlWidth || $height < $htmlHeight} {
+	if {$width < $htmlWidth || $height < $htmlHeight || $width != [$w.html cget -width]} {
 		$w.html configure -forcewidth 0 -width $width -height $height
 	}
 	place $w.html -x $xdelta -y $ydelta

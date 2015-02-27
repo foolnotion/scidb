@@ -2458,52 +2458,6 @@ drawText(
  *
  *---------------------------------------------------------------------------
  */
-//#define MEASURE_TIME
-
-#ifdef MEASURE_TIME
-
-#include <sys/time.h>
-#include <time.h>
-
-static struct timeval TimerStart;
-static struct timeval TimerEnd;
-
-int
-timeval_subtract(struct timeval *result, struct timeval *x, struct timeval *y)
-{
-    if (x->tv_usec < y->tv_usec) {
-        int nsec = (y->tv_usec - x->tv_usec) / 1000000 + 1;
-        y->tv_usec -= 1000000 * nsec;
-        y->tv_sec += nsec;
-    }
-    if (x->tv_usec - y->tv_usec > 1000000) {
-        int nsec = (x->tv_usec - y->tv_usec) / 1000000;
-        y->tv_usec += 1000000 * nsec;
-        y->tv_sec -= nsec;
-    }
-
-    result->tv_sec = x->tv_sec - y->tv_sec;
-    result->tv_usec = x->tv_usec - y->tv_usec;
-
-    return x->tv_sec < y->tv_sec;
-}
-
-static void
-restart_time()
-{
-    gettimeofday(&TimerStart, NULL);
-}
-
-static unsigned long
-elapsed_time()
-{
-    struct timeval result;
-    gettimeofday(&TimerEnd, NULL);
-    timeval_subtract(&result, &TimerEnd, &TimerStart);
-    return result.tv_sec*1000000ul + result.tv_usec;
-}
-
-#endif
 
 #ifdef USE_DOUBLE_BUFFERING
 
@@ -2632,7 +2586,7 @@ SubtractRect(const HtmlRectangle *r1, const HtmlRectangle *r2, HtmlRectangle res
 }
 
 static void
-updateBuffer(HtmlTree *pTree, Pixmap pixmap, GC gc, int x, int y, int w, int h)
+updateBuffer(HtmlTree *pTree, Pixmap pixmap, GC gc, int x, int y, int w, int h, int offsx, int offsy)
 {
     if (   pTree->buffer != None
         && pTree->bufferScrollX == pTree->iScrollX
@@ -2649,7 +2603,7 @@ updateBuffer(HtmlTree *pTree, Pixmap pixmap, GC gc, int x, int y, int w, int h)
         {
             XCopyArea(
                 display, pixmap, pTree->buffer, gc,
-                r.x - x, r.y - y, r.width, r.height, r.x, r.y);
+                r.x - x, r.y - y, r.width, r.height, r.x - offsx, r.y - offsy);
 
             if (pTree->bufferRegion == None)
                 pTree->bufferRegion = TkCreateRegion();
@@ -2753,14 +2707,7 @@ updateRegions(HtmlTree *pTree, HtmlElementNode *pElem, Drawable drawable, int dx
                     gc_values.foreground = pColor->xcolor->pixel;
                     gc_values.font = Tk_FontId(font->tkfont);
                     gc = Tk_GetGC(pTree->tkwin, mask, &gc_values);
-#ifdef MEASURE_TIME
-restart_time();
-#endif
                     HtmlDrawChars(pTree, drawable, gc, font, buf, len, x, y, 0);
-#ifdef MEASURE_TIME
-buf[len] = '\0';
-printf("drawChars(%d): %lu\n", size, elapsed_time());
-#endif
                     Tk_FreeGC(display, gc);
                 }
             }
@@ -2806,41 +2753,32 @@ HtmlUpdateHiliteRegion(HtmlTree *pTree, HtmlNode *pNode, XColor* color)
         Pixmap pixmap;
         Tk_Window win = pTree->tkwin;
         Display *display = Tk_Display(win);
+        int xv = x;
+        int yv = y;
+
+#ifdef USE_DOUBLE_BUFFERING
+        xv -= pTree->iScrollX;
+        yv -= pTree->iScrollY;
+#endif
 
         Tk_MakeWindowExist(win);
         pixmap = Tk_GetPixmap(display, Tk_WindowId(win), w, h, Tk_Depth(win));
         gc_values.foreground = color->pixel;
-#ifdef MEASURE_TIME
-restart_time();
-#endif
         gc = Tk_GetGC(win, GCForeground, &gc_values);
-#ifdef MEASURE_TIME
-printf("getGC: %lu\n", elapsed_time());
-#endif
-#ifdef MEASURE_TIME
-restart_time();
-#endif
         XFillRectangle(display, pixmap, gc, 0, 0, w, h);
-#ifdef MEASURE_TIME
-printf("fillRectangle: %lu\n", elapsed_time());
-#endif
         Tk_FreeGC(display, gc);
 
         updateRegions(pTree, pElem, pixmap, x, y);
 
         memset(&gc_values, 0, sizeof(XGCValues));
         gc = Tk_GetGC(win, 0, &gc_values);
-#ifdef MEASURE_TIME
-restart_time();
-#endif
-        XCopyArea(display, pixmap, Tk_WindowId(pTree->docwin), gc, 0, 0, w, h, x, y);
+
+        XCopyArea(display, pixmap, Tk_WindowId(pTree->docwin), gc, 0, 0, w, h, xv, yv);
+
 #ifdef USE_DOUBLE_BUFFERING
-        updateBuffer(pTree, pixmap, gc, x, y, w, h);
+        updateBuffer(pTree, pixmap, gc, x, y, w, h, pTree->iScrollX, pTree->iScrollY);
 #endif
 
-#ifdef MEASURE_TIME
-printf("copyArea: %lu\n", elapsed_time());
-#endif
         Tk_FreeGC(display, gc);
         Tk_FreePixmap(display, pixmap);
     }
@@ -4776,7 +4714,7 @@ widgetRepair(HtmlTree *pTree, int x, int y, int w, int h, int g)
     XCopyArea(pDisp, pixmap, Tk_WindowId(pTree->docwin), gc, 0, 0, w, h, x, y);
 
 #ifdef USE_DOUBLE_BUFFERING
-    updateBuffer(pTree, pixmap, gc, x, y, w, h);
+    updateBuffer(pTree, pixmap, gc, x, y, w, h, 0, 0);
 #endif
 
     Tk_FreePixmap(pDisp, pixmap);

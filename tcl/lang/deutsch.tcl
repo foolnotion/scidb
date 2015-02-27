@@ -2093,6 +2093,7 @@
 ::crosstable::mc::Match							"Wettkampf"
 ::crosstable::mc::Knockout						"K.O.-System"
 ::crosstable::mc::RankingList					"Rangliste"
+::crosstable::mc::Simultan						"Simultan"
 
 ::crosstable::mc::Order							"Sortierung"
 ::crosstable::mc::Type							"Tabellentyp"
