@@ -611,7 +611,6 @@
 ### application::database::players #####################################
 ::application::database::players::mc::EditPlayer				"Spieler bearbeiten"
 ::application::database::players::mc::Score						"Wertungszahl"
-::application::database::players::mc::TooltipRating			"Wertungszahl: %s"
 
 ### application::database::annotators ##################################
 ::application::database::annotators::mc::F_Annotator		"Kommentator"	;# ???
@@ -1293,6 +1292,8 @@
 ::playertable::mc::ClearEntries				"Einträge löschen"
 ::playertable::mc::NotFound					"Nicht gefunden."
 ::playertable::mc::UsePlayerBase				"Spielerdatenbank benutzen"
+::playertable::mc::DisablePlayerBase		"Spielerdatenbank nicht benutzen"
+::playertable::mc::TooltipRating				"Wertungszahl: %s"
 
 ::playertable::mc::Name							"Name"
 ::playertable::mc::HighestRating				"Höchste Wertungszahl"

@@ -612,7 +612,6 @@
 ### application::database::players #####################################
 ::application::database::players::mc::EditPlayer				"Redigera spelare"
 ::application::database::players::mc::Score						"Poäng"
-::application::database::players::mc::TooltipRating			"Rating: %s"
 
 ### application::database::annotators ##################################
 ::application::database::annotators::mc::F_Annotator		"Kommentator"
@@ -1303,6 +1302,8 @@
 ::playertable::mc::ClearEntries				"Rensa"
 ::playertable::mc::NotFound					"Saknas."
 ::playertable::mc::UsePlayerBase				"Use Player Base" ;# NEW
+::playertable::mc::DisablePlayerBase      "Disable use of player base" ;# NEW
+::playertable::mc::TooltipRating          "Rating: %s" ;# NEW
 
 ::playertable::mc::Name							"Namn"
 ::playertable::mc::HighestRating				"Högsta rating"

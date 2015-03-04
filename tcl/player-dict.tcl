@@ -261,9 +261,13 @@ proc open {parent args} {
 				set ivar ::playertable::mc::I_Federation
 				set fvar ::playertable::mc::F_Federation
 			}
-			rating1 - rating2 {
-				set tvar [namespace current]::mc::T_[string toupper $id 0 0]
-				set fvar [namespace current]::mc::F_[string toupper $id 0 0]
+			rating1 {
+				set tvar [namespace current]::mc::T_Rating1
+				set fvar [namespace current]::mc::F_Rating1
+			}
+			rating2 {
+				set tvar [namespace current]::mc::T_Rating1
+				set fvar [namespace current]::mc::F_Rating2
 			}
 			federationId {
 				set fvar [namespace current]::mc::F_FederationId
@@ -963,7 +967,7 @@ proc RefreshFederation {table} {
 proc RefreshHeader {number} {
 	variable Options
 
-	set tip $::application::database::players::mc::TooltipRating
+	set tip $::playertable::mc::TooltipRating
 	set mc::F_Rating$number $Options(rating$number:type)
 	set mc::T_Rating$number [format $tip $Options(rating$number:type)]
 }

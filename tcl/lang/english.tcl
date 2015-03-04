@@ -609,7 +609,6 @@
 ### application::database::players #####################################
 ::application::database::players::mc::EditPlayer				"Edit Player"
 ::application::database::players::mc::Score						"Score"
-::application::database::players::mc::TooltipRating			"Rating: %s"
 
 ### application::database::annotators ##################################
 ::application::database::annotators::mc::F_Annotator		"Annotator"
@@ -1292,6 +1291,8 @@
 ::playertable::mc::ClearEntries				"Clear entries"
 ::playertable::mc::NotFound					"Not found."
 ::playertable::mc::UsePlayerBase				"Use Player Base"
+::playertable::mc::DisablePlayerBase		"Disable use of player base"
+::playertable::mc::TooltipRating				"Rating: %s"
 
 ::playertable::mc::Name							"Name"
 ::playertable::mc::HighestRating				"Highest rating"

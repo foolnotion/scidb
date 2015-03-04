@@ -613,7 +613,6 @@
 ### application::database::players #####################################
 ::application::database::players::mc::EditPlayer				"Játékos adatok szerkesztése"
 ::application::database::players::mc::Score						"Pont"
-::application::database::players::mc::TooltipRating			"Értékszám: %s"
 
 ### application::database::annotators ##################################
 ::application::database::annotators::mc::F_Annotator		"Elemző"
@@ -1304,6 +1303,8 @@
 ::playertable::mc::ClearEntries			"Bejegyzések törlése"
 ::playertable::mc::NotFound			"Nem található."
 ::playertable::mc::UsePlayerBase		"Use Player Base" ;# NEW
+::playertable::mc::DisablePlayerBase    	"Disable use of player base" ;# NEW
+::playertable::mc::TooltipRating         	"Értékszám: %s"
 
 ::playertable::mc::Name				"Név"
 ::playertable::mc::HighestRating		"Legmagasabb ELO pontszám"

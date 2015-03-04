@@ -613,7 +613,6 @@
 ### application::database::players #####################################
 ::application::database::players::mc::EditPlayer				"Modifica Giocatore"
 ::application::database::players::mc::Score						"Punteggio"
-::application::database::players::mc::TooltipRating			"Elo: %s"
 
 ### application::database::annotators ##################################
 ::application::database::annotators::mc::F_Annotator		"Commentatore"
@@ -1305,6 +1304,8 @@
 ::playertable::mc::ClearEntries				"Pulisci form"
 ::playertable::mc::NotFound					"Nessun risultato."
 ::playertable::mc::UsePlayerBase				"Usa Database Giocatore"
+::playertable::mc::DisablePlayerBase		"Disable use of player base" ;# NEW
+::playertable::mc::TooltipRating				"Rating: %s" ;# NEW
 
 ::playertable::mc::Name							"Nome"
 ::playertable::mc::HighestRating				"Punteggio più alto"

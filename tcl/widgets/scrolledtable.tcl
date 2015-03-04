@@ -130,17 +130,19 @@ proc build {path columns args} {
 	grid rowconfigure $top 0 -weight 1
 
 	array set Vars {
-		start			0
-		height		0
-		size			0
-		minheight	0
-		selection	-1
-		active		-1
-		minsize		{}
-		columns		{}
-		base			{}
-		variant		{}
-		after			{}
+		start					0
+		height				0
+		size					0
+		minheight			0
+		selection			-1
+		active				-1
+		minsize				{}
+		columns				{}
+		base					{}
+		variant				{}
+		after					{}
+		mousewheel:after	{}
+		mousewheel:list	{}
 	}
 
 	set Vars(scale)		$sc
@@ -191,16 +193,21 @@ proc build {path columns args} {
 	::table::bind $tb <ButtonRelease-1>		+[namespace code [list MoveRow $tb %x %y]]
 
 	if {[tk windowingsystem] eq "x11"} {
-		::table::bind $tb <Button-4> [namespace code [list scroll $path up 10]]
-		::table::bind $tb <Button-5> [namespace code [list scroll $path down 10]]
-		::table::bind $tb <Shift-Button-4> [namespace code [list scroll $path back]]
-		::table::bind $tb <Shift-Button-5> [namespace code [list scroll $path forward]]
+		::table::bind $tb <Button-4> [namespace code [list MouseWheel $path up 10]]
+		::table::bind $tb <Button-5> [namespace code [list MouseWheel $path down 10]]
+		::table::bind $tb <Shift-Button-4> [namespace code [list MouseWheel $path back]]
+		::table::bind $tb <Shift-Button-5> [namespace code [list MouseWheel $path forward]]
 	} else {
 		::table::bind $tb <MouseWheel> [namespace code [list \
-			if {%D < 0} [list scroll $path up 10] else [list scroll $path down 10]]]
+			if {%D < 0} [list MouseWheel $path up 10] else [list MouseWheel $path down 10]]]
 		::table::bind $tb <Shift-MouseWheel> [namespace code [list \
-			if {%D < 0} [list scroll $path back] else [list scroll $path forward]]]
+			if {%D < 0} [list MouseWheel $path back] else [list MouseWheel $path forward]]]
 	}
+
+	set stopcmd [namespace code [list MouseWheel $path stop]]
+	::table::bind $tb <ButtonPress-1> +$stopcmd
+	::table::bind $tb <ButtonPress-2> +$stopcmd
+	::table::bind $tb <ButtonPress-3> +$stopcmd
 
 	foreach seq {<Shift-Up> <Shift-Down> <ButtonPress-1> <ButtonRelease-1>} {
 		::table::bind $tb $seq {+ break }
@@ -816,6 +823,50 @@ proc ShiftScroll {table action} {
 	Scroll $table $action
 	ConfigureScrollbar $table
 	ConfigureScale $table
+}
+
+
+proc MouseWheel {path position {units 1}} {
+	set table $path.top.table
+	variable ${table}::Vars
+
+	# scrolling is a slow operation, so we have to collect the operations
+
+	after cancel $Vars(mousewheel:after)
+	set Vars(mousewheel:after) {}
+	set Vars(mousewheel:list) {}
+
+	if {$position != "stop"} {
+		lappend Vars(mousewheel:list) [list $position $units]
+		set Vars(mousewheel:after) [after 5 [namespace code [list DoMouseWheel $path]]]
+	}
+}
+
+
+proc DoMouseWheel {path} {
+	set table $path.top.table
+	variable ${table}::Vars
+
+	if {![winfo exists $table]} { return }
+	if {[llength $Vars(mousewheel:list)] == 0} { return }
+
+	lassign [lindex $Vars(mousewheel:list) 0] position units
+	set Vars(mousewheel:list) [lreplace $Vars(mousewheel:list) end end]
+
+	switch $position {
+		up - back {
+			if {$Vars(start) == 0} { return [MouseWheel $path stop] }
+		}
+		down - forward {
+			if {$Vars(start) + $Vars(height) == $Vars(size)} { return [MouseWheel $path stop] }
+		}
+	}
+
+	if {[llength $Vars(mousewheel:list)] > 0} {
+		set Vars(mousewheel:after) [after 5 [namespace code [list DoMouseWheel $path]]]
+	}
+
+	scroll $path $position $units
 }
 
 
