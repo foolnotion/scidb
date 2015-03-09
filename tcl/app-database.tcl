@@ -45,6 +45,7 @@ set FileStripMoveInfo				"Strip Move Information"
 set FileStripPGNTags					"Strip PGN Tags"
 set HelpSwitcher						"Help for Database Switcher"
 
+set Information						"&Information"
 set Games								"&Games"
 set Players								"&Players"
 set Events								"&Events"
@@ -203,7 +204,7 @@ array set Vars {
 	pressed			0
 	dragging			0
 	mintabs			3
-	taborder			{games players events sites annotators}
+	taborder			{information games players events sites annotators}
 }
 
 
@@ -267,7 +268,10 @@ proc build {tab width height} {
 
 	bind $contents.games <<TableMinSize>> \
 		[namespace code [list TableMinSize $main $contents $switcher %d]]
-	bind $contents.games <Configure> [namespace code [list ConfigureList $main $contents $switcher %h]]
+	bind $contents.information <Configure> \
+		[namespace code [list ConfigureList $main $contents $switcher %h]]
+	bind $contents.games <Configure> \
+		[namespace code [list ConfigureList $main $contents $switcher %h]]
 
 	bind $main <Double-Button-1>	{ break }
 	bind $main <Double-Button-2>	{ break }
@@ -443,10 +447,7 @@ proc openBase {parent file byUser args} {
 
 	if {![file readable $file]} {
 		set i [FindRecentFile $file]
-		if {$i >= 0} {
-			set RecentFiles [lreplace $RecentFiles $i $i]
-			#::menu::configureOpenRecent [GetRecentState]
-		}
+		if {$i >= 0} { removeRecentFile $i }
 		::dialog::error -parent $parent -message [format $mc::CannotOpenFile $file]
 		return 0
 	}
@@ -649,6 +650,36 @@ proc refreshBase {base} {
 }
 
 
+proc recentFiles {} {
+	variable RecentFiles
+	variable Vars
+
+	set recentFiles {}
+	foreach entry $RecentFiles {
+		set file [lindex $entry 1]
+		if {![$Vars(switcher) contains? $file]} {
+			lassign $entry type file encoding readonly
+			if {[string match $::scidb::dir::home* $file]} {
+				set file [string replace $file 0 [expr {[string length $::scidb::dir::home] - 1}] "~"]
+			}
+			set name [::util::databaseName $file]
+			lappend recentFiles [list $type $file $name $encoding $readonly]
+		}
+	}
+
+	return $recentFiles
+}
+
+
+proc removeRecentFile {index} {
+	variable RecentFiles
+
+	set RecentFiles [lreplace $RecentFiles $index $index]
+	information::update
+#	::menu::configureOpenRecent [GetRecentState]
+}
+
+
 proc selectEvent {base variant index} {
 	variable Vars
 
@@ -688,26 +719,14 @@ proc setFocus {} {
 
 
 proc addRecentlyUsedToMenu {parent m} {
-	variable RecentFiles
 	variable Vars
 
-	set recentFiles {}
-	foreach entry $RecentFiles {
-		set file [lindex $entry 1]
-		if {![$Vars(switcher) contains? $file]} {
-			lappend recentFiles $entry
-		}
-	}
-
+	set recentFiles [recentFiles]
 	set parent [winfo toplevel $parent]
 
 	if {[llength $recentFiles]} {
 		foreach entry $recentFiles {
-			lassign $entry type file encoding readonly
-			if {[string match $::scidb::dir::home* $file]} {
-				set file [string replace $file 0 [expr {[string length $::scidb::dir::home] - 1}] "~"]
-			}
-			set name [::util::databaseName $file]
+			lassign $entry type file name encoding readonly
 			set dir [file dirname $file]
 			$m add command \
 				-label " $name  \u25b8  $dir" \
@@ -836,6 +855,7 @@ proc ClearHistory {} {
 	variable RecentFiles
 
 	set RecentFiles {}
+	information::update
 	#::menu::configureOpenRecent [GetRecentState]
 }
 
@@ -859,6 +879,7 @@ proc CloseBase {parent file} {
 		::widget::busyCursor on
 		::scidb::db::close $file
 		$Vars(switcher) remove $file
+		information::update
 		::widget::busyCursor off
 	}
 }
@@ -953,22 +974,24 @@ proc TableMinSize {main pane switcher sizeInfo} {
 	incr minheight [expr {-[winfo height $Vars(games)]}]
 	incr minheight [expr {2*[games::borderwidth $Vars(games)]}]
 
-	if {!$Vars(lock:minsize)} {
-		$main paneconfigure $pane -minsize $minheight
-	}
-
-	set h [expr {(($height - $minheight)/$Vars(incr))*$Vars(incr)} + $minheight]
-	if {$h > $height} { incr h [expr {-$Vars(incr)}] }
-	if {$h < $height} {
-		incr Vars(pixels) $height
-		incr Vars(pixels) [expr {-$h}]
-		if {$Vars(pixels) >= $Vars(incr)} {
-			incr h $Vars(incr)
-			incr Vars(pixels) [expr {-$Vars(incr)}]
+	if {$Vars(current:tab) == "games"} {
+		if {!$Vars(lock:minsize)} {
+			$main paneconfigure $pane -minsize $minheight
 		}
-		lassign [$main sash coord 0] x y
-		set y [expr {$y + $height - $h}]
-		$main sash place 0 $x $y
+
+		set h [expr {(($height - $minheight)/$Vars(incr))*$Vars(incr)} + $minheight]
+		if {$h > $height} { incr h [expr {-$Vars(incr)}] }
+		if {$h < $height} {
+			incr Vars(pixels) $height
+			incr Vars(pixels) [expr {-$h}]
+			if {$Vars(pixels) >= $Vars(incr)} {
+				incr h $Vars(incr)
+				incr Vars(pixels) [expr {-$Vars(incr)}]
+			}
+			lassign [$main sash coord 0] x y
+			set y [expr {$y + $height - $h}]
+			$main sash place 0 $x $y
+		}
 	}
 
 	after idle [list $Vars(switcher) update]
@@ -2131,6 +2154,7 @@ proc SetIcon {w typeList file} {
 	::scidb::db::set type $file $selection
 	destroy [winfo toplevel $w]
 	lset RecentFiles [FindRecentFile $file] 0 $type
+	::information::update
 }
 
 
@@ -2148,6 +2172,7 @@ proc AddRecentFile {type file encoding readonly} {
 	if {$i >= 0} { set RecentFiles [lreplace $RecentFiles $i $i] }
 	set RecentFiles [linsert $RecentFiles 0 [list $type $file $encoding $readonly]]
 	if {[llength $RecentFiles] > $MaxHistory} { set RecentFiles [lrange $RecentFiles 0 9] }
+	information::update
 	#::menu::configureOpenRecent [GetRecentState]
 }
 

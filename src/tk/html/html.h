@@ -421,6 +421,7 @@ struct HtmlOptions {
     int       yscrollincrement;
     Tcl_Obj  *yscrollcommand;
     Tcl_Obj  *xscrollcommand;
+    Tcl_Obj  *class;
     Tk_Cursor cursor;
 
     Tcl_Obj  *defaultstyle;

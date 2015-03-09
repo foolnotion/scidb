@@ -93,11 +93,12 @@ array set Colors {
 	lite:import,background:select			#ffdd76
 	lite:import,background:hilite			linen
 
+	lite:switcher,background				#ebf4f5
 	lite:switcher,selected:background	#ffdd76
-	lite:switcher,normal:background		#efefef
+	lite:switcher,normal:background		LemonChiffon
 	lite:switcher,normal:foreground		black
-	lite:switcher,hidden:background		white
-	lite:switcher,hidden:foreground		#696969
+	lite:switcher,hidden:background		#ebf4f5
+	lite:switcher,hidden:foreground		black
 	lite:switcher,emph:foreground			darkgreen
 	lite:switcher,drop:background			LemonChiffon
 	lite:switcher,prop:background			#aee239
@@ -230,6 +231,8 @@ array set Colors {
 	dark:gamehistory,selected:hilite		#dce4e5
 	dark:gamehistory,hilite					#dce4e5
 	dark:fsbox,activebackground			#dce4e5
+	dark:switcher,background				#dce4e5
+	lite:switcher,hidden:background		#dce4e5
 }
 # mapped from #dce4e5
 array set Colors {
@@ -241,7 +244,6 @@ array set Colors {
 }
 # mapped from #efefef
 array set Colors {
-	dark:switcher,normal:background		#e4e4e4
 	dark:gamebar,background:active		#e4e4e4
 	dark:encoding,description				#e4e4e4
 }

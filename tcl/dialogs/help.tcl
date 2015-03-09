@@ -1568,74 +1568,78 @@ proc ImportHandler {parentid uri} {
 }
 
 
-proc MouseEnter {node} {
+proc MouseEnter {nodes} {
 	variable Nodes
 	variable Priv
 
-	if {[llength $node] == 0} { return }
-
-	if {[info exists Nodes($node)]} {
-		$node dynamic set hover
-		[$Priv(html) drawable] configure -cursor hand2
-
-		if {[$node dynamic get user3]} {
-			::tooltip::show $Priv(html) $mc::PageNotAvailable
-		} elseif {[$node dynamic get user]} {
-			::tooltip::show $Priv(html) [::scidb::misc::url unescape [$node attribute href]]
+	foreach node $nodes {
+		if {[info exists Nodes($node)]} {
+			$node dynamic set hover
+			[$Priv(html) drawable] configure -cursor hand2
+			if {[$node dynamic get user3]} {
+				::tooltip::show $Priv(html) $mc::PageNotAvailable
+			} elseif {[$node dynamic get user]} {
+				::tooltip::show $Priv(html) [::scidb::misc::url unescape [$node attribute href]]
+			}
+			return
 		}
 	}
 }
 
 
-proc MouseLeave {node} {
+proc MouseLeave {nodes} {
 	variable Nodes
 	variable Priv
 
 	::tooltip::hide
-	if {[llength $node] == 0} { return }
 
-	if {[info exists Nodes($node)]} {
-		$node dynamic clear hover
-		[$Priv(html) drawable] configure -cursor {}
+	foreach node $nodes {
+		if {[info exists Nodes($node)]} {
+			$node dynamic clear hover
+			[$Priv(html) drawable] configure -cursor {}
+			return
+		}
 	}
 }
 
 
-proc Mouse1Up {node} {
+proc Mouse1Up {nodes} {
 	variable Nodes
 	variable Links
 	variable ExternalLinks
 	variable Priv
 
-	if {[llength $node] == 0} { return }
+	foreach node $nodes {
+		if {[info exists Nodes($node)]} {
+			set Nodes($node) 1
+			$node dynamic clear link
+			if {[$node dynamic get user]} {
+				$node dynamic set user2
+			} else {
+				$node dynamic set visited
+			}
 
-	if {[info exists Nodes($node)]} {
-		set Nodes($node) 1
-		$node dynamic clear link
-		if {[$node dynamic get user]} {
-			$node dynamic set user2
-		} else {
-			$node dynamic set visited
-		}
+			set href [$node attribute -default {} href]
+			if {[string length $href] == 0} { return }
 
-		set href [$node attribute -default {} href]
-		if {[string length $href] == 0} { return }
+			if {[string match script(*) $href]} {
+				set script [string range $href 7 end-1]
+				eval [namespace code [list {*}$script]]
+			} elseif {[string match http* $href] || [string match ftp* $href]} {
+				::web::open $Priv(html) $href
+				set ExternalLinks($href) 1
+			} elseif {[llength $href]} {
+				set fragment ""
+				lassign [split $href \#] href fragment
+				set file [FullPath $href]
+				set wref [$node attribute -default {} wref]
+				set pref [$node attribute -default {} pref]
+				if {[llength $wref] == 0} { set wref $file }
+				if {[llength $pref] >  0} { set fragment $pref }
+				set Links($wref) [Load $file $wref {} $fragment]
+			}
 
-		if {[string match script(*) $href]} {
-			set script [string range $href 7 end-1]
-			eval [namespace code [list {*}$script]]
-		} elseif {[string match http* $href] || [string match ftp* $href]} {
-			::web::open $Priv(html) $href
-			set ExternalLinks($href) 1
-		} elseif {[llength $href]} {
-			set fragment ""
-			lassign [split $href \#] href fragment
-			set file [FullPath $href]
-			set wref [$node attribute -default {} wref]
-			set pref [$node attribute -default {} pref]
-			if {[llength $wref] == 0} { set wref $file }
-			if {[llength $pref] >  0} { set fragment $pref }
-			set Links($wref) [Load $file $wref {} $fragment]
+			return
 		}
 	}
 }

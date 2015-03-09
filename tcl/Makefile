@@ -118,6 +118,7 @@ SOURCES = \
 	app-board.tcl \
 	app-database.tcl \
 	app-db-icons.tcl \
+	app-db-information.tcl \
 	app-db-annotators.tcl \
 	app-db-games.tcl \
 	app-db-players.tcl \
@@ -355,7 +356,7 @@ uninstall-text-scripts:
 install-images:
 	@echo "Install images"
 	@install -m 755 -d $(SHAREDIR)/images
-	@install -m 644 -p images/*.png $(SHAREDIR)/images
+	@install -m 644 -p images/*.png images/*.jpg $(SHAREDIR)/images
 	@install -m 755 -d $(SHAREDIR)/pdf
 	@install -m 755 -d $(SHAREDIR)/pdf/sets
 	@for i in `ls pdf/sets/`; do                                       \

@@ -284,9 +284,7 @@ proc checkForUpdate {informProc} {
 	if {$i >= 0} {
 		set host [string range $http_proxy 0 [expr {$i - 1}]]
 		set port [string range $http_proxy [expr {$i + 1}] end]
-		if {[string is integer -strict $port]} {
-			::http::config -proxyhost $host -proxyport $port
-		}
+		if {[string is integer -strict $port]} { ::http::config -proxyhost $host -proxyport $port }
 	}
 	::http::config -urlencoding utf-8
 	catch {

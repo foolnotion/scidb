@@ -120,7 +120,6 @@ proc defaultCSS {monoFamilies textFamilies} {
 	append css \n
 	append css ":link    { color: blue2; text-decoration: none; }" \n
 	append css ":visited { color: purple; text-decoration: none; }" \n
-	append css ":visited { color: purple; text-decoration: none; }" \n
 	append css ":user    { color: blue2; text-decoration: none; }   /* http link */" \n
 	append css ":user2   { color: purple; text-decoration: none; }  /* http visited */" \n
 	append css ":user3   { color: black; text-decoration: none; }   /* invalid link */" \n
@@ -183,7 +182,10 @@ proc Build {w args} {
 	array set opts {
 		-width				800
 		-height				600
+		-fixedwidth			0
+		-class				Html
 		-background			{}
+		-backgroundimage	""
 		-borderwidth		{}
 		-relief				{}
 		-exportselection	no
@@ -207,23 +209,34 @@ proc Build {w args} {
 	}
 
 	array set opts $args
+	set preamble ""
 
-	if {[llength $opts(-background)] == 0} {
-		set opts(-background) white
-	} else { 
-		set script "html { background: $opts(-background); }\n"
+	if {[string length $opts(-background)] || [string length $opts(-background)]} {
+		append preamble "html {"
+		if {[string length $opts(-background)]} {
+			append preamble "background: $opts(-background);\n"
+		}
+		if {[string length $opts(-backgroundimage)]} {
+			append preamble "background-image: '$opts(-backgroundimage)';\n"
+		}
+		append preamble "}\n"
+		append script $preamble
 		append script $opts(-css)
 		set opts(-css) $script
 	}
+
+	if {[string length $opts(-background)] == 0} { set opts(-background) white }
+	if {[string length $opts(-imagecmd)] == 0} { set opts(-imagecmd) [namespace code GetImage] }
 
 	set options {}
 	set htmlOptions {}
 	foreach name [array names opts] {
 		switch -- $name {
 			-delay - -css - -center - -fittowidth - -fittoheight - -importdir - -textalign -
-			-usehorzscroll - -usevertscroll - -keephorzscroll - -keepvertscroll - -fontsize {}
+			-usehorzscroll - -usevertscroll - -keephorzscroll - -keepvertscroll - -fontsize -
+			-backgroundimage - -fixedwidth {}
 
-			-imagecmd - -doublebuffer - -latinligatures - -exportselection -
+			-class - -imagecmd - -doublebuffer - -latinligatures - -exportselection -
 			-selectbackground - -selectforeground - -inactiveselectbackground -
 			-inactiveselectforeground - -width - -height - -fonttable {
 				set value $opts($name)
@@ -250,7 +263,7 @@ proc Build {w args} {
 	}
 
 	tk::frame $w {*}$options
-	tk::frame $w.sub -background $opts(-background) -borderwidth 0 
+	tk::frame $w.sub -background $opts(-background) -borderwidth 0  -class _HTML_Frame_
 	set html $w.sub.html
 	if {$opts(-usevertscroll)} {
 		::scrolledframe::scrollbar $w.v -orient "vertical" -command [list $html yview]
@@ -292,6 +305,8 @@ proc Build {w args} {
 		sel:state		0
 		styleCount		0
 	}
+	set Priv(preamble) $preamble
+	set Priv(fixedwidth) $opts(-fixedwidth)
 
 	foreach attr {delay center fittowidth fittoheight borderwidth css importdir textalign} {
 		set Priv($attr) $opts(-$attr)
@@ -409,6 +424,15 @@ proc UrlHandler {w args} {
 }
 
 
+proc GetImage {file} {
+	if {[catch { set img [image create photo -file $file] }]} { return {} }
+	return [list $img [namespace code DeleteImage]]
+}
+
+
+proc DeleteImage {args} { catch { image delete $args } }
+
+
 proc WidgetProc {w command args} {
 	variable ${w}::Priv
 
@@ -434,7 +458,9 @@ proc WidgetProc {w command args} {
 			$w.sub.html reset
 			$w.sub.html xview moveto 0
 			$w.sub.html yview moveto 0
-			if {!$Priv(fittowidth)} {
+			if {$Priv(fixedwidth) > 0} {
+				$w.sub.html configure -fixedwidth $Priv(fixedwidth)
+			} elseif {!$Priv(fittowidth)} {
 				$w.sub.html configure -fixedwidth $MaxWidth
 			}
 			set Priv(script) [lindex $args 0]
@@ -442,7 +468,7 @@ proc WidgetProc {w command args} {
 			SetupCSS $w
 			EvalWidgetCommands $w
 			set Priv(minbbox) {}
-			if {$Priv(center) || !$Priv(fittowidth)} {
+			if {$Priv(fixedwidth) <= 0 && ($Priv(center) || !$Priv(fittowidth))} {
 				set bbox [$w minbbox]
 				if {[llength $bbox] == 0} { set bbox [$w bbox] }
 				set width [expr {min([lindex $bbox 2], 4000) + $Margin}]
@@ -499,7 +525,7 @@ proc WidgetProc {w command args} {
 			set Priv(nodeList) {}
 			set x [expr {[winfo pointerx .] - [winfo rootx $w.sub.html]}]
 			set y [expr {[winfo pointery .] - [winfo rooty $w.sub.html]}]
-			event generate $w.sub.html <Motion> -x $x -y $y
+			Motion $w.sub.html $x $y 0
 			return
 		}
 
@@ -646,21 +672,36 @@ proc WidgetProc {w command args} {
 			array set opts $args
 			if {[info exists opts(-textalign)]} {
 				set Priv(textalign) $opts(-textalign)
-				set reparse 1
 				array unset opts -textalign
+				set reparse 1
 			}
 			if {[info exists opts(-showhyphens)]} {
-				set reparse 1
 				set showhyphens $opts(-showhyphens)
 				array unset opts -showhyphens
+				set reparse 1
+			}
+			if {[info exists opts(-fixedwidth)]} {
+				set Priv(fixedwidth) $opts(-fixedwidth)
+				array unset opts -fixedwidth
+			}
+			set args {}
+			foreach {attr value} [array get opts] {
+				switch -- $attr {
+					-imagecmd - -doublebuffer - -latinligatures - -exportselection -
+					-selectbackground - -selectforeground - -inactiveselectbackground -
+					-inactiveselectforeground - -width - -height - -fonttable {
+						$w.sub.html configure $attr $value
+					}
+					default {
+						lappend args $attr $value
+					}
+				}
 			}
 			if {$reparse} {
 				SetupCSS $w
 				$w.sub.html configure -showhyphens $showhyphens
 				$w parse $Priv(script)
 			}
-			if {[array size opts] == 0} { return }
-			set args [array get opts]
 		}
 	}
 
@@ -671,7 +712,8 @@ proc WidgetProc {w command args} {
 proc SetupCSS {w} {
 	variable ${w}::Priv
 
-	set css $Priv(css)
+	append css $Priv(preamble)
+	append css $Priv(css)
 	append css "\nbody { font-size: ${Priv(fontsize)}pt; }"
 	if {$Priv(textalign) ne "left"} {
 		append css "\np { text-align: $Priv(textalign); }"
@@ -743,6 +785,7 @@ proc Place {w} {
 	place $w.html -x $xdelta -y $ydelta
 	$w.html xview scroll 0 units
 	$w.html yview scroll 0 units
+	after idle [list [winfo parent $w] stimulate]
 }
 
 
@@ -756,7 +799,8 @@ proc Configure {parent width req} {
 	if {$req == $Priv(request)} { return }
 	set Priv(request) $req
 
-	$parent.sub.html configure -width [expr {max(1, $width - 2*$Priv(borderwidth) - [VsbWidth $parent])}]
+	set wantedWidth [expr {max(1, $width - 2*$Priv(borderwidth) - [VsbWidth $parent])}]
+	$parent.sub.html configure -width $wantedWidth
 }
 
 
@@ -929,15 +973,8 @@ proc HandleMotion {w nodelist} {
 	array unset HoverNodes
 	array set HoverNodes [array get hoverNodes]
 
-	set eventlist {}
-
-	foreach key {onmouseout onmouseover} {
-		foreach node $events($key) {
-			lappend eventlist $key $node
-		}
-	}
-
-	GenerateEvents $w $eventlist
+	GenerateEvent $w onmouseout $events(onmouseout)
+	GenerateEvent $w onmouseover $events(onmouseover)
 }
 
 
@@ -950,14 +987,8 @@ proc Leave {w} {
 		set Priv(afterId) {}
 	}
 
-	set eventlist {}
-
-	foreach node [array names HoverNodes] {
-		lappend eventlist onmouseout $node
-	}
-
+	GenerateEvent $w onmouseout [array names HoverNodes]
 	array unset HoverNodes
-	GenerateEvents $w $eventlist
 }
 
 
@@ -969,15 +1000,22 @@ proc Mapped {w} {
 }
 
 
-proc GenerateEvents {w eventlist} {
+proc GenerateEvent {w event nodes} {
 	variable [winfo parent [winfo parent $w]]::Priv
 
-	foreach {event node} $eventlist {
-		if {[llength $node] == 0 || [llength [info commands $node]] > 0} {
-			foreach script $Priv($event) {
-				{*}$script $node
-			}
+	set nodeList {}
+	set emptyNode 0
+
+	foreach node $nodes {
+		if {[llength $node] == 0} {
+			set emptyNode 1
+		} elseif {[llength [info commands $node]] > 0} {
+			lappend nodeList $node
 		}
+	}
+
+	if {[llength $nodeList] || $emptyNode} {
+		foreach script $Priv($event) { {*}$script $nodeList }
 	}
 }
 
@@ -989,6 +1027,7 @@ proc ButtonPress {w x y k {state 0}} {
 	if {$k == 1} { SelectionAnchor $w $x $y $state }
 
 	array unset ActiveNodes$k
+	array set ActiveNodes$k {}
 	set node [lindex [$w node $x $y] end]
 	if {[string length $node]  > 0 && [string length [$node tag]] == 0} { set node [$node parent] }
 	if {[string length $node] == 0 || [string length [$node tag]] == 0} { set node [$w node] }
@@ -997,13 +1036,7 @@ proc ButtonPress {w x y k {state 0}} {
 		set ActiveNodes${k}($n) 1
 	}
 
-	set eventlist {}
-	foreach node [array names ActiveNodes$k] {
-		lappend eventlist onmousedown${k} $node
-	}
-	lappend eventlist onmousedown${k} {}
-
-	GenerateEvents $w $eventlist
+	GenerateEvent $w onmousedown${k} [array names ActiveNodes$k]
 }
 
 
@@ -1017,13 +1050,9 @@ proc ButtonRelease {w x y k} {
 	if {[string length $node]  > 0 && [string length [$node tag]] == 0} { set node [$node parent] }
 	if {[string length $node] == 0 || [string length [$node tag]] == 0} { set node [$w node] }
 
-	set eventlist {}
-	foreach node [array names ActiveNodes$k] {
-		lappend eventlist onmouseup${k} $node
-	}
-	lappend eventlist onmouseup${k} {}
-
-	GenerateEvents $w $eventlist
+	set nodeList [array names ActiveNodes$k]
+	if {[llength $nodeList] == 0} { set nodeList {{}} }
+	GenerateEvent $w onmouseup${k} $nodeList
 	array unset ActiveNodes$k
 }
 
@@ -1392,6 +1421,16 @@ proc WrapLeave {w}	{ Leave [winfo parent $w] }
 proc WrapMapped {w}	{ Mapped [winfo parent $w] }
 
 
+proc FrameWrapButtonPress {w k} {
+	GenerateEvent $w.html onmousedown${k} {{}}
+}
+
+
+proc FrameWrapButtonRelease {w k} {
+	GenerateEvent $w.html onmouseup${k} {{}}
+}
+
+
 # IMPORTANT NOTE: we have to wrap all events to the parent window.
 
 bind Html <Motion>				[namespace code { WrapMotion %W %x %y %s }]
@@ -1422,6 +1461,9 @@ switch [tk windowingsystem] {
 		bind Html <ButtonPress-5> { [winfo parent %W] yview scroll +4 units; break }
 	}
 }
+
+bind _HTML_Frame_ <ButtonPress-3>   [namespace code { FrameWrapButtonPress %W 3 }]
+bind _HTML_Frame_ <ButtonRelease-3>	[namespace code { FrameWrapButtonRelease %W 3 }]
 
 } ;# namespace html
 

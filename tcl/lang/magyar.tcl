@@ -466,6 +466,7 @@
 ::application::database::mc::FileStripPGNTags		"Strip PGN Tags" ;# NEW
 ::application::database::mc::HelpSwitcher		"Adatbázis váltó(?) Súgó"
 
+::application::database::mc::Overview                   "&Overview" ;# NEW
 ::application::database::mc::Games			"&Játszmák"
 ::application::database::mc::Players			"Já&tékosok"
 ::application::database::mc::Events			"&Versenyek"
@@ -596,6 +597,11 @@
 ::application::database::mc::MoveInfo(clockTime)	"Clock Time" ;# NEW
 ::application::database::mc::MoveInfo(corrChessSent)	"Correspondence Chess Sent" ;# NEW
 ::application::database::mc::MoveInfo(videoTime)	"Video Time" ;# NEW
+
+### application::database::information #################################
+::application::database::information::mc::RecentlyUsed "Recently used" ;# NEW
+::application::database::information::mc::RemoveSelectedDatabase "Remove selected database from history" ;# NEW
+::application::database::information::mc::NewsAvailable          "There are news available" ;# NEW
 
 ### application::database::games #######################################
 ::application::database::games::mc::Control						"Control"

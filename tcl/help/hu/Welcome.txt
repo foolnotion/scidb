@@ -1,4 +1,4 @@
- <!-- **********************************************************************
+<!-- **********************************************************************
 * Author : $Author$
 * Version: $Revision$
 * Date   : $Date$
@@ -51,9 +51,10 @@ Ez egy előzetes verzió tesztelés és ismerkedés céljaira. Az első teljes v
 </ol>
 
 <p><!-- NEW: replace 'three years' with 'four years' -->
-Jó szórakozást kívánunk a Scidb használatához, melynek fejlesztése immáron öt éve tart!
+Jó szórakozást kívánunk a Scidb használatához, melynek fejlesztése immáron hét éve tart!
 </p>
 
+<!-- END -->
 <h2>Links</h2>
 
 <ul>

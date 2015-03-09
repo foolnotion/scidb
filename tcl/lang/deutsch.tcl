@@ -465,8 +465,9 @@
 ::application::database::mc::FileStripPGNTags				"PGN-Tags entfernen"
 ::application::database::mc::HelpSwitcher						"Hilfe zum Datenbankumschalter"
 
+::application::database::mc::Information						"&Information"
 ::application::database::mc::Games								"&Partien"
-::application::database::mc::Players							"Sp&ieler"
+::application::database::mc::Players							"Spie&ler"
 ::application::database::mc::Events								"&Turniere"
 ::application::database::mc::Sites								"&Orte"
 ::application::database::mc::Annotators						"&Kommentatoren"
@@ -574,7 +575,7 @@
 ::application::database::mc::T_Crazyhouse						"Einsetzschach"
 
 ::application::database::mc::OpenDatabase						"Datenbank öffnen"
-::application::database::mc::OpenRecentDatabase				"Zuvorige Datanbank öffnen"
+::application::database::mc::OpenRecentDatabase				"Zuvorige Datenbank öffnen"
 ::application::database::mc::NewDatabase						"Neue Datenbank anlegen"
 ::application::database::mc::CloseDatabase					"Datenbank '%s' schliessen"
 ::application::database::mc::SetReadonly						"Datenbank '%s' schreibgeschützt setzen"
@@ -594,6 +595,11 @@
 ::application::database::mc::MoveInfo(clockTime)			"Uhrzeit"
 ::application::database::mc::MoveInfo(corrChessSent)		"Korrespondenzschach versendet"
 ::application::database::mc::MoveInfo(videoTime)			"Video-Time"
+
+### application::database::information #################################
+::application::database::information::mc::RecentlyUsed				"Zuletzt geöffnet"
+::application::database::information::mc::RemoveSelectedDatabase	"Die selektierte Datenbank aus der Historie entfernen"
+::application::database::information::mc::NewsAvailable				"Es sind Neuigkeiten verfügbar"
 
 ### application::database::games #######################################
 ::application::database::games::mc::Control						"Steuerung"
@@ -1385,7 +1391,7 @@
 ::gamebar::mc::PasteGameFrom					"Partie einfügen"
 ::gamebar::mc::LoadGameNumber					"Lade Partie Nummer"
 ::gamebar::mc::ReloadCurrentGame				"Partie neu laden"
-::gamebar::mc::OriginalVersion				"Die Originalversion aus der Datanbank"
+::gamebar::mc::OriginalVersion				"Die Originalversion aus der Datenbank"
 ::gamebar::mc::ModifiedVersion				"Die veränderte Version im Partieeditor"
 ::gamebar::mc::WillCopyModifiedGame			"Diese Operation wird die veränderte Partie aus dem Partieeditor kopieren. Die Originalversion kann nicht kopiert werden, denn die beeinhaltende Datenbank ist nicht geöffnet."
 

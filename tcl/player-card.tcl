@@ -138,6 +138,7 @@ proc show {base variant args} {
 	$dlg.content onmouseout [namespace code [list MouseLeave $dlg.content]]
 	$dlg.content onmousedown3 [namespace code [list Mouse3Down $dlg.content $key $info]]
 	set Vars($dlg.content:tooltip) ""
+	set Vars(lock) 0
 
 	set geometry [UpdateContent $dlg.content $key $base $variant $name $args]
 	::widget::busyCursor off
@@ -624,51 +625,61 @@ proc UpdateContent {w key base variant name playerCardArgs} {
 }
 
 
-proc MouseEnter {w variant node} {
+proc MouseEnter {w variant nodes} {
 	variable Vars
 
-	set titles [split [$node attribute -default {} title] ',']
-	if {[string length $titles]} {
-		set Vars($w:tooltip) $node
-		set tip ""
-		set delim ""
-		foreach title $titles {
-			append tip $delim
-			append tip $::titlebox::mc::Title([string trim $title])
-			set delim \n
-		}
-		Tooltip $w $tip
-	}
-
-	set eco [$node attribute -default {} eco]
-	if {[string length $eco]} {
-		set Vars($w:tooltip) $node
-		lassign [::scidb::misc::lookup opening $eco $variant] opening shortOpening variation subVariation
-		if {[string length $variation]} {
-			set opening [::mc::translateEco $shortOpening]
-			append opening ", "
-			append opening [::mc::translateEco $variation]
-			if {[string length $subVariation]} {
-				append opening ", "
-				append opening [::mc::translateEco $subVariation]
+	foreach node $nodes {
+		set titles [split [$node attribute -default {} title] ',']
+		if {[string length $titles]} {
+			set Vars($w:tooltip) $node
+			set tip ""
+			set delim ""
+			foreach title $titles {
+				append tip $delim
+				append tip $::titlebox::mc::Title([string trim $title])
+				set delim \n
 			}
-		} else {
-			set opening [::mc::translateEco $opening]
+			Tooltip $w $tip
 		}
-		Tooltip $w $opening
+
+		set eco [$node attribute -default {} eco]
+		if {[string length $eco]} {
+			set Vars($w:tooltip) $node
+			lassign [::scidb::misc::lookup opening $eco $variant] \
+				opening shortOpening variation subVariation
+			if {[string length $variation]} {
+				set opening [::mc::translateEco $shortOpening]
+				append opening ", "
+				append opening [::mc::translateEco $variation]
+				if {[string length $subVariation]} {
+					append opening ", "
+					append opening [::mc::translateEco $subVariation]
+				}
+			} else {
+				set opening [::mc::translateEco $opening]
+			}
+			Tooltip $w $opening
+		}
 	}
 }
 
 
-proc MouseLeave {w node {stimulate 0}} {
+proc MouseLeave {w nodes {stimulate 0}} {
 	variable Vars
 
-	if {$Vars($w:tooltip) eq $node} {
-		set Vars($w:tooltip) ""
-		foreach attr {title eco} {
-			set content [$node attribute -default {} $attr]
-			if {[llength $content]} { Tooltip $w hide }
+	set hide 0
+
+	foreach node $nodes {
+		if {$Vars($w:tooltip) eq $node} {
+			set Vars($w:tooltip) ""
+			foreach attr {title eco} {
+				if {[llength [$node attribute -default {} $attr]]} { set hide 1 }
+			}
 		}
+	}
+
+	if {$hide} {
+		Tooltip $w hide
 	}
 
 	if {$stimulate} {
@@ -678,10 +689,12 @@ proc MouseLeave {w node {stimulate 0}} {
 }
 
 
-proc Mouse3Down {w key info node} {
+proc Mouse3Down {w key info nodes} {
 	variable ::table::options
+	variable Vars
 
-	if {[llength $node] > 0} { return }
+	if {$Vars(lock)} { return }
+
 	set m $w.popup_web_links
 	if {[winfo exists $m]} { destroy $m }
 	menu $m -tearoff false
@@ -711,6 +724,8 @@ proc Mouse3Down {w key info node} {
 	}
 	$m add cascade -label $::crosstable::mc::Debugging -menu $sub
 
+	set Vars(lock) 1
+	bind $menu <<MenuUnpost>> [list set [namespace current]::Vars(lock) 0]
 	tk_popup $m {*}[winfo pointerxy $w]
 }
 

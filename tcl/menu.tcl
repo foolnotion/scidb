@@ -439,7 +439,7 @@ if {0} {
 		-underline $ul \
 		-command [namespace code [list featureRequest .application]] \
 		;
-
+	
 	### fullscreen ###########################################################
 	$menu add separator
 	if {$Fullscreen} { set var LeaveFullscreen } else { set var Fullscreen }

@@ -196,6 +196,15 @@ proc currentDialog {} {
 }
 
 
+proc extensions {} {
+	variable FileIcons
+
+	set extensions {}
+	foreach {ext icon} $FileIcons { lappend extensions $ext }
+	return $extensions
+}
+
+
 proc fileIcon {ext} {
 	variable FileIcons
 

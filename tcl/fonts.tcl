@@ -1655,7 +1655,7 @@ proc addChangeFontSizeBindings {context w {cmd {}}} {
 }
 
 
-proc addChangeFontSizeToMenu {context m {cmd {}} {stateIncr normal} {stateDecr normal}} {
+proc addChangeFontSizeToMenu {context m {cmd {}} {stateIncr normal} {stateDecr normal} {useAccels yes}} {
 	if {$context eq "__HTML__"} {
 		set incrCmd [namespace code [list {*}$cmd +1]]
 		set decrCmd [namespace code [list {*}$cmd -1]]
@@ -1663,21 +1663,24 @@ proc addChangeFontSizeToMenu {context m {cmd {}} {stateIncr normal} {stateDecr n
 		set incrCmd [namespace code [list ChangeFontSize $context $cmd +1]]
 		set decrCmd [namespace code [list ChangeFontSize $context $cmd -1]]
 	}
+	set accel {}
+	if {$useAccels} { set accel [list -accel "$::mc::Key(Ctrl) +"] }
 	$m add command \
 		-command $incrCmd \
 		-label " $mc::IncreaseFontSize" \
 		-image $::icon::16x16::font(incr) \
 		-compound left \
-		-accel "$::mc::Key(Ctrl) +" \
 		-state $stateIncr \
+		{*}$accel \
 		;
+	if {$useAccels} { set accel [list -accel "$::mc::Key(Ctrl) \u2212"] }
 	$m add command \
 		-command $decrCmd \
 		-label " $mc::DecreaseFontSize" \
 		-image $::icon::16x16::font(decr) \
 		-compound left \
-		-accel "$::mc::Key(Ctrl) \u2212" \
 		-state $stateDecr \
+		{*}$accel \
 		;
 }
 
@@ -1706,7 +1709,7 @@ namespace import [namespace parent]::getFontFamilyName
 proc setupFonts {context {font ""}} {
 	variable [namespace parent]::Options
 
-	if {![info exists Options($context:html:family)]} {
+	if {![info exists Options($context:html:size)]} {
 		set Options($context:html:family) ""
 		set Options($context:html:user) {"" ""}
 		set Options($context:html:size) 11
@@ -1973,12 +1976,12 @@ proc addChangeFontSizeBindings {context w {cmd {}}} {
 }
 
 
-proc addChangeFontSizeToMenu {context m cmd {min 1} {max 64}} {
+proc addChangeFontSizeToMenu {context m cmd {min 1} {max 64} {useAccels yes}} {
 	set cmd [list [namespace current]::ChangeFontSize $context $cmd]
 	set size [fontSize $context]
 	set stateIncr [expr {$size < $max ? "normal" : "disabled"}]
 	set stateDecr [expr {$size > $min ? "normal" : "disabled"}]
-	[namespace parent]::addChangeFontSizeToMenu __HTML__ $m $cmd $stateIncr $stateDecr
+	[namespace parent]::addChangeFontSizeToMenu __HTML__ $m $cmd $stateIncr $stateDecr $useAccels
 }
 
 
@@ -2052,7 +2055,7 @@ proc addChangeFontToMenu {context m applycmd {textFontOnly no}} {
 
 
 proc ChangeFontSize {context cmd incr} {
-	set size [expr {[::font::html::fontSize $context] + $incr}]
+	set size [expr {[fontSize $context] + $incr}]
 	if {[llength $cmd]} { set size [{*}$cmd $size] }
 	setupFontSize $context $size
 }
@@ -2114,7 +2117,7 @@ proc ApplyFont {context monospaced applycmd font} {
 if {$tcl_platform(platform) ne "windows"} {
 
 	proc installChessBaseFonts {parent {windowsFontDirs {/c/Windows/Fonts /c/WINDOWS/Fonts}}} {
-		variable _Count
+		variable Count_
 
 		set fonts [::dialog::choosefont::fontFamilies]
 		set windowsFontDir [lindex $windowsFontDirs 0]
@@ -2169,26 +2172,26 @@ if {$tcl_platform(platform) ne "windows"} {
 						SpArFgBI SpArFgBd SpArFgIt SpArFgRg SpLtFgBI SpLtFgBd
 						SpLtFgIt SpLtFgRg SpTmFgBI SpTmFgBd SpTmFgIt SpTmFgRg}
 
-		set _Count 0
+		set Count_ 0
 		::dialog::progressBar $parent.progress \
 			-title $::dialog::choosefont::mc::Wait \
 			-message "$mc::CopyingChessBaseFonts..." \
 			-maximum [llength $fonts] \
-			-variable [namespace current]::_Count \
+			-variable [namespace current]::Count_ \
 			-command [namespace code [list CopyChessBaseFonts $parent $windowsFontDir $fontDir $fonts]] \
 			-close no \
 			;
 
-		return $_Count
+		return $Count_
 	}
 
 	proc CopyChessBaseFonts {parent srcDir dstDir fonts} {
-		variable _Count
+		variable Count_
 
 		foreach font $fonts {
 			set file [file join $srcDir $font.ttf]
 			if {[file readable $file]} {
-				incr _Count
+				incr Count_
 				update idletasks
 				set msg [format $mc::CopyFile [file tail $file]]
 				::dialog::progressbar::setInformation $parent.progress ${msg}...
@@ -2197,7 +2200,7 @@ if {$tcl_platform(platform) ne "windows"} {
 			}
 		}
 
-		if {$_Count == 0} {
+		if {$Count_ == 0} {
 			destroy $parent.progress
 			::dialog::info -parent $parent -message [format $mc::NoChessBaseFontFound $srcDir]
 		} else {

@@ -1520,6 +1520,7 @@ configureCmd(
         GEOMETRY(height, "height", "Height", "600"),
         GEOMETRY(width, "width", "Width", "800"),
 
+        STRING(class, "class", "Class", "Html"),
         CURSOR(cursor, "cursor", "Cursor"),
 
         XCOLOR(inactiveselectbackground, "inactiveSelectBackground", "Foreground", INACTIVE_SELECT_BG),
@@ -2919,12 +2920,18 @@ newWidget(
 {
     HtmlTree *pTree;
     CONST char *zCmd;
-    int rc;
+    int i, rc;
     Tk_Window mainwin;           /* Main window of application */
+    CONST char* class = "Html";
 
     if (objc<2) {
         Tcl_WrongNumArgs(interp, 1, objv, "WINDOW-PATH ?OPTIONS?");
         return TCL_ERROR;
+    }
+
+    for (i = 2; i < objc; i += 2) {
+        if (strcmp(Tcl_GetString(objv[i]), "-class") == 0)
+            class = Tcl_GetString(objv[i + 1]);
     }
 
     zCmd = Tcl_GetString(objv[1]);
@@ -2939,12 +2946,12 @@ newWidget(
         return TCL_ERROR;
     }
 #ifndef FIX_EVENT_HANDLING
-    Tk_SetClass(pTree->tkwin, "Html");
+    Tk_SetClass(pTree->tkwin, class);
 #endif
 
     pTree->docwin = Tk_CreateWindow(interp, pTree->tkwin, "document", NULL);
 #ifdef FIX_EVENT_HANDLING
-    Tk_SetClass(pTree->docwin, "Html");
+    Tk_SetClass(pTree->docwin, class);
 #endif
     if (!pTree->docwin) {
         Tk_DestroyWindow(pTree->tkwin);

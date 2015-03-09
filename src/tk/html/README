@@ -30,6 +30,10 @@ new commands:
 
 new options:
 
+	-class <classname>
+
+		Specifies the class name of this widget.
+
 	-doublebuffer <flag>
 		Specifies whether double buffering should be used.
 		Default is 0.

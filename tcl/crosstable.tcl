@@ -964,37 +964,47 @@ proc NodeHandler {node} {
 }
 
 
-proc MouseEnter {dlg node} {
+proc MouseEnter {dlg nodes} {
 	variable ${dlg}::Vars
 	variable Options
 
-	HandleEnterLeave $node EnterNode
+	HandleEnterLeave $nodes EnterNode
 
-	set country [$node attribute -default {} src]
-	if {[llength $country]} {
-		set Vars(tooltip) $node
-		Tooltip $dlg [::country::name $country]
-	} elseif {$Options(show:opponent)} {
-		set rank [$node attribute -default {} player]
-		if {[llength $rank]} {
+	foreach node $nodes {
+		set country [$node attribute -default {} src]
+		if {[llength $country]} {
 			set Vars(tooltip) $node
-			Tooltip $dlg [::scidb::crosstable::get playerName $Vars(tableId) $Vars(viewId) $rank]
+			Tooltip $dlg [::country::name $country]
+			return
+		} elseif {$Options(show:opponent)} {
+			set rank [$node attribute -default {} player]
+			if {[llength $rank]} {
+				set Vars(tooltip) $node
+				Tooltip $dlg [::scidb::crosstable::get playerName $Vars(tableId) $Vars(viewId) $rank]
+				return
+			}
 		}
 	}
 }
 
 
-proc MouseLeave {dlg node {stimulate 0}} {
+proc MouseLeave {dlg nodes {stimulate 0}} {
 	variable ${dlg}::Vars
 
-	HandleEnterLeave $node LeaveNode
+	HandleEnterLeave $nodes LeaveNode
+	set hide 0
 
-	if {$Vars(tooltip) eq $node} {
-		set Vars(tooltip) ""
-		foreach attr {src player id} {
-			set content [$node attribute -default {} $attr]
-			if {[llength $content]} { Tooltip $dlg hide }
+	foreach node $nodes {
+		if {$Vars(tooltip) eq $node} {
+			set Vars(tooltip) ""
+			foreach attr {src player id} {
+				if {[llength [$node attribute -default {} $attr]]} { set hide 1 }
+			}
 		}
+	}
+
+	if {$hide} {
+		Tooltip $dlg hide
 	}
 
 	if {$stimulate} {
@@ -1004,11 +1014,13 @@ proc MouseLeave {dlg node {stimulate 0}} {
 }
 
 
-proc HandleEnterLeave {node action} {
-	set id [$node attribute -default {} recv]
-	if {[string length $id]} { $action $id }
-	set attr [$node attribute -default {} send]
-	foreach id [split $attr :] { $action $id }
+proc HandleEnterLeave {nodes action} {
+	foreach node $nodes {
+		set id [$node attribute -default {} recv]
+		if {[string length $id]} { $action $id }
+		set attr [$node attribute -default {} send]
+		foreach id [split $attr :] { $action $id }
+	}
 }
 
 
@@ -1078,78 +1090,89 @@ proc Hilite {idList} {
 }
 
 
-proc Mouse1Down {dlg node} {
+proc Mouse1Down {dlg nodes} {
 	variable ${dlg}::Vars
 
-	if {[llength $node] == 0} { return }
-	set gameIndex [$node attribute -default {} game]
-	if {[string length $gameIndex]} {
-		Open $dlg browser $gameIndex
-		$Vars(html) stimulate
-		::tooltip::hide
-	}
+	foreach node $nodes {
+		set gameIndex [$node attribute -default {} game]
+		if {[string length $gameIndex]} {
+			Open $dlg browser $gameIndex
+			$Vars(html) stimulate
+			::tooltip::hide
+		}
 
-	# don't use because Button-1 is used for highlighting
-#	set rank [$node attribute -default {} rank]
-#	if {[string length $rank]} { ShowPlayerCard $dlg $rank }
+		# don't use because Button-1 is used for highlighting
+#		set rank [$node attribute -default {} rank]
+#		if {[string length $rank]} { ShowPlayerCard $dlg $rank }
 
-	set mark [$node attribute -default {} mark]
-	if {[string length $mark]} {
-		set idList [$node attribute -default {} send]
-		if {[string length $idList]} { append idList : }
-		append idList $mark
-		Hilite $idList
+		set mark [$node attribute -default {} mark]
+		if {[string length $mark]} {
+			set idList [$node attribute -default {} send]
+			if {[string length $idList]} { append idList : }
+			append idList $mark
+			Hilite $idList
+		}
 	}
 }
 
 
-proc Mouse2Down {dlg node} {
+proc Mouse2Down {dlg nodes} {
 	variable ${dlg}::Vars
 
-	if {[llength $node] == 0} { return }
-	set gameIndex [$node attribute -default {} game]
-	if {[string length $gameIndex]} {
-		MouseEnter $dlg $node
-		::gametable::showGame $dlg $Vars(base) $Vars(variant) -1 $gameIndex 
-	} else {
-		set rank [$node attribute -default {} rank]
-		if {[string length $rank]} {
+	foreach node $nodes {
+		set gameIndex [$node attribute -default {} game]
+		if {[string length $gameIndex]} {
 			MouseEnter $dlg $node
-			set info [::scidb::crosstable::get playerInfo $Vars(tableId) $Vars(viewId) $rank]
-			::playercard::popupInfo $dlg $info
+			::gametable::showGame $dlg $Vars(base) $Vars(variant) -1 $gameIndex 
 		} else {
-			set id [$node attribute -default {} recv]
-			if {$id eq "event"} {
+			set rank [$node attribute -default {} rank]
+			if {[string length $rank]} {
 				MouseEnter $dlg $node
-				::eventtable::popupInfo $dlg $Vars(info)
+				set info [::scidb::crosstable::get playerInfo $Vars(tableId) $Vars(viewId) $rank]
+				::playercard::popupInfo $dlg $info
+			} else {
+				set id [$node attribute -default {} recv]
+				if {$id eq "event"} {
+					MouseEnter $dlg $node
+					::eventtable::popupInfo $dlg $Vars(info)
+				}
 			}
 		}
 	}
 }
 
 
-proc Mouse2Up {dlg node} {
-	if {[llength $node] == 0} { return }
-	set attr [$node attribute -default {} recv]
-	if {[string length $attr] == 0} { return }
+proc Mouse2Up {dlg nodes} {
+	foreach node $nodes {
+		set attr [$node attribute -default {} recv]
+		if {[string length $attr] == 0} { return }
 
-	::gametable::hideGame $dlg
-	::playercard::popdownInfo $dlg
-	::eventtable::popdownInfo $dlg
-	MouseLeave $dlg $node 1
+		::gametable::hideGame $dlg
+		::playercard::popdownInfo $dlg
+		::eventtable::popdownInfo $dlg
+	}
+
+	MouseLeave $dlg $nodes 1
 }
 
 
-proc Mouse3Down {dlg node} {
+proc Mouse3Down {dlg nodes} {
 	variable _Popup
 
-	if {[llength $node] == 0} {
+	if {[llength $nodes] == 0} {
 		if {[info exists _Popup]} { return }
 		return [PopupMenu $dlg]
 	}
 
-	set rank [$node attribute -default {} rank]
-	set gameIndex [$node attribute -default {} game]
+	set rank {}
+	set gameIndex {}
+
+	foreach node $nodes {
+		set r [$node attribute -default {} rank]
+		set g [$node attribute -default {} game]
+		if {[llength $r]} { set rank $r }
+		if {[llength $g]} { set gameIndex $g }
+	}
 
 	if {[llength $rank] == 0 && [llength $gameIndex] == 0} { return }
 
@@ -1199,10 +1222,10 @@ proc Mouse3Down {dlg node} {
 	if {[info exists m]} {
 		BuildMenu $dlg $m
 
-		MouseEnter $dlg $node
+		MouseEnter $dlg $nodes
 		set _Popup 1
 		bind $m <<MenuUnpost>> [list unset [namespace current]::_Popup]
-		bind $m <<MenuUnpost>> +[namespace code [list MouseLeave $dlg $node 1]]
+		bind $m <<MenuUnpost>> +[namespace code [list MouseLeave $dlg $nodes 1]]
 		tk_popup $m {*}[winfo pointerxy $dlg]
 	}
 }

@@ -692,7 +692,6 @@ proc InstallUpdate {item} {
 
 proc EmbedUnsavedFiles {unsaved w infoFont alertFont} {
 	::html $w.t \
-		-imagecmd [namespace code GetImage] \
 		-center no \
 		-fittowidth no \
 		-borderwidth 0 \
@@ -748,28 +747,28 @@ proc DoNothing {args} {
 }
 
 
-proc MouseEnter {w node} {
-	if {[llength $node] == 0} { return }
-	set id [$node attribute -default {} id]
-	if {[llength $id]} {
-		if {[info exists mc::$id]} {
-			set count [$node attribute -default 0 count]
-			if {$count} {
-				set id [format [set mc::$id] $count]
-			} else {
-				set id [set mc::$id]
+proc MouseEnter {w nodes} {
+	foreach node $nodes {
+		set id [$node attribute -default {} id]
+		if {[llength $id]} {
+			if {[info exists mc::$id]} {
+				set count [$node attribute -default 0 count]
+				if {$count} {
+					set id [format [set mc::$id] $count]
+				} else {
+					set id [set mc::$id]
+				}
 			}
+			::tooltip::show $w $id
 		}
-		::tooltip::show $w $id
 	}
 }
 
 
 proc MouseLeave {w node} {
-	if {[llength $node] == 0} { return }
-	set id [$node attribute -default {} id]
-	if {[llength $id]} {
-		::tooltip::hide
+	foreach node $nodes {
+		set id [$node attribute -default {} id]
+		if {[llength $id]} { return [::tooltip::hide] }
 	}
 }
 
