@@ -466,7 +466,7 @@
 ::application::database::mc::FileStripPGNTags				"Rimuovi Tag PGN"
 ::application::database::mc::HelpSwitcher						"Aiuto per il Selezionatore di Database"
 
-::application::database::mc::Overview                    "&Overview" ;# NEW
+::application::database::mc::Information						"&Information" ;# NEW
 ::application::database::mc::Games								"&Partite"
 ::application::database::mc::Players							"&Giocatori"
 ::application::database::mc::Events								"&Eventi"

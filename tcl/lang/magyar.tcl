@@ -466,7 +466,7 @@
 ::application::database::mc::FileStripPGNTags		"Strip PGN Tags" ;# NEW
 ::application::database::mc::HelpSwitcher		"Adatbázis váltó(?) Súgó"
 
-::application::database::mc::Overview                   "&Overview" ;# NEW
+::application::database::mc::Information		"&Information" ;# NEW
 ::application::database::mc::Games			"&Játszmák"
 ::application::database::mc::Players			"Já&tékosok"
 ::application::database::mc::Events			"&Versenyek"

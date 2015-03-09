@@ -464,7 +464,7 @@
 ::application::database::mc::FileStripPGNTags				"Strip PGN Tags"
 ::application::database::mc::HelpSwitcher						"Help for Database Switcher"
 
-::application::database::mc::Overview							"&Overview"
+::application::database::mc::Information						"&Information"
 ::application::database::mc::Games								"&Games"
 ::application::database::mc::Players							"&Players"
 ::application::database::mc::Events								"&Events"
