@@ -599,7 +599,7 @@
 ### application::database::information #################################
 ::application::database::information::mc::RecentlyUsed				"Zuletzt geöffnet"
 ::application::database::information::mc::RemoveSelectedDatabase	"Die selektierte Datenbank aus der Historie entfernen"
-::application::database::information::mc::NewsAvailable				"Es sind Neuigkeiten verfügbar"
+::application::database::information::mc::NewsAvailable				"Es sind aktuelle Informationen verfügbar"
 
 ### application::database::games #######################################
 ::application::database::games::mc::Control						"Steuerung"

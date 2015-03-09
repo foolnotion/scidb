@@ -597,7 +597,7 @@
 ### application::database::information #################################
 ::application::database::information::mc::RecentlyUsed				"Recently used"
 ::application::database::information::mc::RemoveSelectedDatabase	"Remove selected database from history"
-::application::database::information::mc::NewsAvailable				"There are news available"
+::application::database::information::mc::NewsAvailable				"There are updated news available"
 
 ### application::database::games #######################################
 ::application::database::games::mc::Control						"Control"
