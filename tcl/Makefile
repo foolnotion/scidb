@@ -356,7 +356,7 @@ uninstall-text-scripts:
 install-images:
 	@echo "Install images"
 	@install -m 755 -d $(SHAREDIR)/images
-	@install -m 644 -p images/*.png images/*.jpg $(SHAREDIR)/images
+	@install -m 644 -p images/*.png $(SHAREDIR)/images
 	@install -m 755 -d $(SHAREDIR)/pdf
 	@install -m 755 -d $(SHAREDIR)/pdf/sets
 	@for i in `ls pdf/sets/`; do                                       \
