@@ -119,6 +119,11 @@ proc linespace {parent} {
 }
 
 
+proc setActive {} {
+	# no action
+}
+
+
 proc select {parent base variant index} {
 	set path $parent.top
 	variable ${path}::Vars

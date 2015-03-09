@@ -195,6 +195,11 @@ proc linespace {parent} {
 }
 
 
+proc setActive {} {
+	# no action
+}
+
+
 proc Close {path base variant} {
 	variable ${path}::Vars
 

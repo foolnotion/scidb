@@ -69,13 +69,13 @@ proc build {tab} {
 
 	tk::label $btn.new \
 		-textvar [namespace current]::mc::NewsAvailable \
-		-background orange \
+		-background [::colors::lookup information,background:news] \
 		-justify center \
 		;
 	pack $btn.new -fill both -expand yes
 
 	set Priv(html) [::html $inf.html \
-		-background #014b72 \
+		-background [::colors::lookup information,background:html] \
 		-doublebuffer yes \
 		-imagecmd [namespace code GetImage] \
 		-borderwidth 1 \
@@ -114,13 +114,20 @@ proc activate {w flag} {
 	::update idletasks ;# give the HTTP request a chance
 	set Priv(active) 1
 
+	set color-header	[::colors::lookup information,html:header]
+	set color-hover	[::colors::lookup information,html:hover]
+	set color-link		[::colors::lookup information,html:link]
+	set color-visited	[::colors::lookup information,html:visited]
+	set color-color	[::colors::lookup information,html:color]
+	set color-menu		[::colors::lookup information,html:menu]
+
 	set html $Priv(html)
 	set width [winfo width $w]
 	if {$width <= 1} { set width [winfo reqwidth $w] }
 	set maxWidth [expr {int((920.0*[::font::html::fontSize info])/11.0)}]
 	$html configure -fixedwidth [expr {min($maxWidth, $width - 40)}]
 	set recentFiles [[namespace parent]::recentFiles]
-	append content "<html><body style='color:#ffffff;'>"
+	append content "<html><body style='color:${color-color};'>"
 	append css [::font::html::defaultTextFonts info] \n
 	append css [::font::html::defaultFixedFonts info] \n
 
@@ -194,16 +201,16 @@ proc activate {w flag} {
 		append content $Priv(news)
 	}
 
-	append css "h1       { font-size:160%; color:yellow; }\n"
-	append css "td.bases { font-size:18px; color:black; background-color:#ffdd76; }\n"
+	append css "h1       { font-size:160%; color:${color-header}; }\n"
+	append css "td.bases { font-size:18px; color:black; background-color:${color-menu}; }\n"
 	append css "td.bases { padding-left:7px; padding-right:7px; }\n"
-	append css "td.hover { background-color:yellow; }\n"
-	append css ":link    { color: yellow; text-decoration: none; }\n"
-	append css ":visited { color: #ffa200; text-decoration: none; }\n"
+	append css "td.hover { background-color:${color-hover}; }\n"
+	append css ":link    { color:${color-link};text-decoration: none; }\n"
+	append css ":visited { color:${color-visited}; text-decoration: none; }\n"
 	append css ":hover   { text-decoration: underline; }\n"
 	append css "ul       { padding: 0; }\n"
 	append css "li       { margin-top:0.5em; margin-bottom:0.5em; }\n"
-	append css "hr       { border-top: solid 2px white; }\n"
+	append css "hr       { border-top: solid 2px ${color-color}; }\n"
 
 	append content "</body></html>"
 	$html css $css
@@ -216,6 +223,8 @@ proc activate {w flag} {
 	} else {
 		grid $Priv(buttons)
 	}
+
+	$Priv(html) stimulate
 }
 
 
@@ -227,6 +236,11 @@ proc update {} {
 	variable Priv
 	set Priv(needUpdate) 1
 	activate $Priv(html) $Priv(active)
+}
+
+
+proc setActive {} {
+	variable Priv
 	$Priv(html) stimulate
 }
 

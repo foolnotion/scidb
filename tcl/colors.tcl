@@ -57,6 +57,15 @@ array set Colors {
 
 	lite:database,selected					#ffdd76
 
+	lite:information,html:hover			#ebf4f5
+	lite:information,html:color			white
+	lite:information,html:header			yellow
+	lite:information,html:link				yellow
+	lite:information,html:visited			#ffb432
+	lite:information,html:menu				#ffdd76
+	lite:information,background:news		orange
+	lite:information,background:html		#014b72
+
 	lite:tree,background						white
 	lite:tree,emphasize						linen
 	lite:tree,stripes							#ebf4f5
@@ -213,6 +222,7 @@ array set Colors {
 	dark:variation,stripes					#dce4e5
 	dark:import,background					#dce4e5
 	dark:browser,background:header		#dce4e5
+	dark:information,hover					#dce4e5
 	dark:overview,background:normal		#dce4e5
 	dark:crosstable,highlighted			#dce4e5
 	dark:fsbox,selectionbackground		#dce4e5

@@ -225,6 +225,11 @@ proc linespace {parent} {
 }
 
 
+proc setActive {} {
+	# no action
+}
+
+
 proc borderwidth {parent} {
 	return [::gametable::borderwidth $parent.table]
 }

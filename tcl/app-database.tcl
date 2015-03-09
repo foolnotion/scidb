@@ -425,6 +425,12 @@ proc activate {w flag} {
 }
 
 
+proc setActive {} {
+	variable Vars
+	${Vars(current:tab)}::setActive
+}
+
+
 proc currentVariant {} {
 	return [set [namespace current]::Vars(variant)]
 }
