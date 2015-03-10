@@ -280,7 +280,7 @@ Cursor::index(db::table::Type type, unsigned index, unsigned view) const
 
 
 Database&
-Cursor::database()
+Cursor::getDatabase()
 {
 	if (m_isRefBase)
 		m_cursor.app().stopUpdateTree();
@@ -417,7 +417,7 @@ Cursor::clearBase()
 {
 	M_REQUIRE(!isReadonly());
 
-	database().clear();
+	getDatabase().clear();
 	updateViews();
 }
 

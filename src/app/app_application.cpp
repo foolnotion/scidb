@@ -872,7 +872,7 @@ Application::closeAllGames(Cursor& cursor)
 GameInfo const&
 Application::gameInfo(unsigned index, unsigned view) const
 {
-	return m_current->base().gameInfo(m_current->index(table::Games, index, view));
+	return m_current->database().gameInfo(m_current->index(table::Games, index, view));
 }
 
 
@@ -885,7 +885,7 @@ Application::gameInfoAt(unsigned position) const
 		position = m_currentPosition;
 
 	EditGame const& game = *m_gameMap.find(position)->second;
-	return game.sink.cursor->base().gameInfo(game.sink.index);
+	return game.sink.cursor->database().gameInfo(game.sink.index);
 }
 
 
@@ -965,7 +965,7 @@ Application::database(unsigned position) const
 
 	if (position == InvalidPosition)
 		position = m_currentPosition;
-
+	
 	return m_gameMap.find(position)->second->sink.cursor->database();
 }
 
@@ -1062,7 +1062,7 @@ Application::checksumMoves(unsigned position) const
 NamebasePlayer const&
 Application::player(unsigned index, unsigned view) const
 {
-	return m_current->base().player(m_current->index(table::Players, index, view));
+	return m_current->database().player(m_current->index(table::Players, index, view));
 }
 
 
@@ -1445,7 +1445,7 @@ Application::deleteGame(Cursor& cursor, unsigned index, unsigned view, bool flag
 {
 	M_REQUIRE(!cursor.isReadonly());
 
-	cursor.base().deleteGame(cursor.index(table::Games, index, view), flag);
+	cursor.getDatabase().deleteGame(cursor.index(table::Games, index, view), flag);
 
 	if (m_subscriber && m_current == &cursor)
 	{
@@ -1478,7 +1478,7 @@ Application::changeVariant(unsigned position, variant::Type variant)
 	if (originalVariant != variant::toMainVariant(variant))
 	{
 		Cursor*		scratch	= scratchbase(variant::toMainVariant(variant));
-		Database&	srcBase	= game.sink.cursor->base();
+		Database&	srcBase	= game.sink.cursor->getDatabase();
 		Database&	dstBase	= scratch->base();
 		unsigned		srcIndex	= game.sink.index;
 		unsigned		dstIndex	= dstBase.countGames();
@@ -1633,9 +1633,9 @@ Application::createIntermediateGame(GameP original)
 	scratchGame->data.game->setIndex(scratchGame->sink.index);
 
 	Database& database = scratchGame->sink.cursor->base();
-	GameInfo info(scratchGame->sink.cursor->base().gameInfo(scratchGame->sink.index));
+	GameInfo info(scratchGame->sink.cursor->database().gameInfo(scratchGame->sink.index));
 
-	info = original->sink.cursor->base().gameInfo(original->sink.index);
+	info = original->sink.cursor->database().gameInfo(original->sink.index);
 	info.reallocate(database.namebases());
 	database.namebases().update();
 
@@ -1680,7 +1680,7 @@ Application::writeGame(	unsigned position,
 	try
 	{
 		if (isScratchGame(position))
-			state = g->sink.cursor->base().updateGame(*g->data.game);
+			state = g->sink.cursor->getDatabase().updateGame(*g->data.game);
 
 		if (save::isOk(state))
 		{
@@ -1931,7 +1931,7 @@ Application::moveGamesBackToDatabase(Cursor& cursor)
 	if (cursor.isScratchbase())
 		return;
 
-	mstl::string const& databaseName = cursor.base().name();
+	mstl::string const& databaseName = cursor.database().name();
 
 	for (GameMap::iterator i = m_gameMap.begin(); i != m_gameMap.end(); ++i)
 	{
@@ -1939,7 +1939,7 @@ Application::moveGamesBackToDatabase(Cursor& cursor)
 
 		if (game.sink.cursor->isScratchbase() && game.link.databaseName == databaseName)
 		{
-			Database& base = cursor.base();
+			Database const& base = cursor.database();
 
 			if (game.link.index < base.countGames())
 			{
@@ -2025,7 +2025,7 @@ Application::treeIsUpToDate(Tree::Key const& key) const
 		return true;
 
 	M_ASSERT(m_referenceBase->hasTreeView());
-	return m_treeAdmin.isUpToDate(m_referenceBase->base(), game(), key);
+	return m_treeAdmin.isUpToDate(m_referenceBase->database(), game(), key);
 }
 
 
@@ -2046,7 +2046,7 @@ Application::updateTree(tree::Mode mode, rating::Type ratingType, PipedProgress&
 Tree const*
 Application::finishUpdateTree(tree::Mode mode, rating::Type ratingType, attribute::tree::ID sortAttr)
 {
-	Database const* base = m_referenceBase ? &m_referenceBase->base() : 0;
+	Database const* base = m_referenceBase ? &m_referenceBase->database() : 0;
 
 	if (m_treeAdmin.finishUpdate(base, game(), mode, ratingType, sortAttr))
 	{
@@ -2460,7 +2460,7 @@ Application::importGame(Producer& producer, unsigned position, bool trialMode)
 		mstl::swap(myGame->data.game, game->data.game);
 		mstl::swap(myGame->data.backup, game->data.backup);
 
-		scratch->database().deleteGame(myGame->sink.index, true);
+		scratch->getDatabase().deleteGame(myGame->sink.index, true);
 		releaseGame(position);
 		compact(*scratch);
 	}
@@ -2754,7 +2754,7 @@ Application::save(mstl::string const& name, util::Progress& progress)
 	{
 		if (Cursor* cursor = multiCursor[v])
 		{
-			Database& dst(cursor->database());	// is calling stopUpdateTree()
+			Database& dst(cursor->getDatabase());	// is calling stopUpdateTree()
 
 			if (dst.save(progress) > 0)
 			{
@@ -2838,7 +2838,7 @@ Application::save(mstl::string const& name,
 bool
 Application::compact(Cursor& cursor, util::Progress& progress)
 {
-	Database const& database = cursor.base();
+	Database const& database = cursor.database();
 	mstl::bitset map(database.countGames());
 	mstl::vector<unsigned> deleted;
 
@@ -2851,7 +2851,7 @@ Application::compact(Cursor& cursor, util::Progress& progress)
 		{
 			EditGame& g = *i->second;
 
-			if (g.sink.cursor == &cursor && cursor.base().isDeleted(g.sink.index))
+			if (g.sink.cursor == &cursor && cursor.database().isDeleted(g.sink.index))
 			{
 				moveGameToScratchbase(*i, true);
 				deleted.push_back(i->first);
@@ -3223,7 +3223,7 @@ Application::copyGame(MultiCursor& sink, unsigned position, copy::Source source)
 			state = g->sink.cursor->base().updateGame(*g->data.game);
 
 		if (state == save::Ok)
-			state = g->sink.cursor->database().exportGame(g->data.game->index(), database);
+			state = g->sink.cursor->base().exportGame(g->data.game->index(), database);
 	}
 	catch (...)
 	{
@@ -3281,7 +3281,7 @@ Application::exportGame(unsigned position, mstl::ostream& strm, unsigned flags, 
 	try
 	{
 		if (isScratchGame(position))
-			state = g->sink.cursor->base().updateGame(*g->data.game);
+			state = g->sink.cursor->getDatabase().updateGame(*g->data.game);
 
 		if (state == save::Ok)
 		{

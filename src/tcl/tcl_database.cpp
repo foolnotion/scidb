@@ -892,12 +892,12 @@ cmdAttach(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	if (objc >= 5)
 	{
 		Progress progress(objv[3], objv[4]);
-		scidb->cursor(database).database().attach(filename, progress);
+		scidb->cursor(database).getDatabase().attach(filename, progress);
 	}
 	else
 	{
 		util::Progress progress;
-		scidb->cursor(database).database().attach(filename, progress);
+		scidb->cursor(database).getDatabase().attach(filename, progress);
 	}
 
 	return TCL_OK;
@@ -1320,13 +1320,13 @@ cmdSet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			int type;
 			if (convToType(::CmdSet, objv[3], &type) != TCL_OK)
 				return TCL_ERROR;
-			scidb->cursor(stringFromObj(objc, objv, 2)).database().setType(type::ID(type));
+			scidb->cursor(stringFromObj(objc, objv, 2)).databaseObject().setType(type::ID(type));
 			break;
 		}
 
 		case Cmd_Description:
 		{
-			Database& db = scidb->cursor(stringFromObj(objc, objv, 2)).database();
+			Database& db = scidb->cursor(stringFromObj(objc, objv, 2)).databaseObject();
 			char const* descr = stringFromObj(objc, objv, 3);
 
 			if (strlen(descr) <= db.maxDescriptionLength())
@@ -4224,13 +4224,13 @@ cmdUpgrade(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	filename += ".partial-293t83873xx878.sci";
 
-	Progress			progress(objv[2], objv[3]);
-	Cursor&			cursor(scidb->cursor(database));
-	Database&		db(cursor.database());
-	View&				v(cursor.view());
-	Log				log;
-	type::ID			type(db.type());
-	View::FileMode	fmode(DatabaseCodec::upgradeIndexOnly() ? View::Create : View::Upgrade);
+	Progress				progress(objv[2], objv[3]);
+	Cursor&				cursor(scidb->cursor(database));
+	Database const&	db(cursor.database());
+	View&					v(cursor.view());
+	Log					log;
+	type::ID				type(db.type());
+	View::FileMode		fmode(DatabaseCodec::upgradeIndexOnly() ? View::Create : View::Upgrade);
 
 	try
 	{
@@ -4347,11 +4347,11 @@ cmdWrite(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	util::ZlibOStream	os(file.handle());
 
 	if (strcmp(extension, "sci") == 0)
-		scidb->cursor(baseName).database().writeIndex(os, progress);
+		scidb->cursor(baseName).databaseObject().writeIndex(os, progress);
 	else if (strcmp(extension, "scn") == 0)
-		scidb->cursor(baseName).database().writeNamebases(os, progress);
+		scidb->cursor(baseName).databaseObject().writeNamebases(os, progress);
 	else if (strcmp(extension, "scg") == 0)
-		scidb->cursor(baseName).database().writeGames(os, progress);
+		scidb->cursor(baseName).databaseObject().writeGames(os, progress);
 	else
 		return error(CmdWrite, 0, 0, "unexpected extension '%s'", extension);
 

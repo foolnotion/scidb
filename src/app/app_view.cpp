@@ -621,7 +621,7 @@ View::copyGames(	Cursor& destination,
 
 	WriteGuard guard(m_app, destination.database());
 
-	unsigned count = m_cursor.m_db->copyGames(destination.database(),
+	unsigned count = m_cursor.m_db->copyGames(destination.base(),
 															m_filter[table::Games],
 															m_selector[table::Games],
 															allowedTags,

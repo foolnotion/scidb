@@ -125,8 +125,10 @@ public:
 
 	/// Return database object.
 	db::Database const& database() const;
-	/// Return database object.
-	db::Database& database();
+	/// Return database object, call signal(stop).
+	db::Database& getDatabase();
+	/// Return database object, do not call signal(stop).
+	db::Database& databaseObject();
 	/// Return default view,
 	View const& view() const;
 	/// Return default view,

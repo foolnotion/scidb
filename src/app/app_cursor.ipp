@@ -55,6 +55,15 @@ Cursor::database() const
 
 inline
 db::Database&
+Cursor::databaseObject()
+{
+	M_REQUIRE(isOpen());
+	return *m_db;
+}
+
+
+inline
+db::Database&
 Cursor::base()
 {
 	M_REQUIRE(isOpen());
