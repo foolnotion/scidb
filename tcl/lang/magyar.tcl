@@ -391,6 +391,7 @@
 ::util::photos::mc::Log(updated:N)		"%s fájlok frissítve."
 
 ### application ########################################################
+::application::mc::Information			"&Information" ;# NEW
 ::application::mc::Database			"&Adatbázis"
 ::application::mc::Board			"&Tábla"
 ::application::mc::MainMenu			"Fő&menü"
@@ -450,6 +451,11 @@
 ::application::board::mc::Accel(trial-mode)		"T"
 ::application::board::mc::Accel(export-game)		"E"
 
+### application::information ###########################################
+::application::information::mc::RecentlyUsed           "Recently used" ;# NEW
+::application::information::mc::RemoveSelectedDatabase "Remove selected database from history" ;# NEW
+::application::information::mc::NewsAvailable          "There are updatednews available" ;# NEW
+
 ### application::database ##############################################
 ::application::database::mc::FileOpen			"Fájl megnyitása"
 ::application::database::mc::FileOpenRecent		"Legutóbbi fájlok Megnyitása"
@@ -466,7 +472,6 @@
 ::application::database::mc::FileStripPGNTags		"Strip PGN Tags" ;# NEW
 ::application::database::mc::HelpSwitcher		"Adatbázis váltó(?) Súgó"
 
-::application::database::mc::Information		"&Information" ;# NEW
 ::application::database::mc::Games			"&Játszmák"
 ::application::database::mc::Players			"Já&tékosok"
 ::application::database::mc::Events			"&Versenyek"
@@ -597,11 +602,6 @@
 ::application::database::mc::MoveInfo(clockTime)	"Clock Time" ;# NEW
 ::application::database::mc::MoveInfo(corrChessSent)	"Correspondence Chess Sent" ;# NEW
 ::application::database::mc::MoveInfo(videoTime)	"Video Time" ;# NEW
-
-### application::database::information #################################
-::application::database::information::mc::RecentlyUsed "Recently used" ;# NEW
-::application::database::information::mc::RemoveSelectedDatabase "Remove selected database from history" ;# NEW
-::application::database::information::mc::NewsAvailable          "There are updatednews available" ;# NEW
 
 ### application::database::games #######################################
 ::application::database::games::mc::Control						"Control"
@@ -1620,6 +1620,7 @@
 ::import::mc::Warning(InvalidNag)			"Érvénytelen NAG"
 ::import::mc::Warning(BraceSeenOutsideComment)		"\"\}\" seen outside a comment in game (ignored)"
 ::import::mc::Warning(MissingFen)			"No start position for this Shuffle/Chess-960 game; will be interpreted as standard chess" ;# NEW
+::import::mc::Warning(FixedInvalidFen)			"Castle rights in FEN have been fixed" ;# NEW
 ::import::mc::Warning(UnknownEventType)			"Ismeretlen verseny típus"
 ::import::mc::Warning(UnknownTitle)			"Ismeretlen cím (kihagyva)"
 ::import::mc::Warning(UnknownPlayerType)		"Ismeretlen játkos típus (kihagyva)"

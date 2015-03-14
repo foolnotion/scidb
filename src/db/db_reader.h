@@ -111,6 +111,7 @@ public:
 		InvalidNag,
 		BraceSeenOutsideComment,
 		MissingFen,
+		FixedInvalidFen,
 		UnknownEventType,
 		UnknownTitle,
 		UnknownPlayerType,

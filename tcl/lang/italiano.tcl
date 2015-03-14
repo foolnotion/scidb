@@ -391,6 +391,7 @@
 ::util::photos::mc::Log(updated:N)				"%s file(s) aggiornati."
 
 ### application ########################################################
+::application::mc::Information				"&Information" ;# NEW
 ::application::mc::Database					"&Database"
 ::application::mc::Board						"&Scacchiera"
 ::application::mc::MainMenu					"&Menù principale"
@@ -450,6 +451,11 @@
 ::application::board::mc::Accel(trial-mode)			"T"
 ::application::board::mc::Accel(export-game)			"E"
 
+### application::information ###########################################
+::application::information::mc::RecentlyUsed           "Recently used" ;# NEW
+::application::information::mc::RemoveSelectedDatabase "Remove selected database from history" ;# NEW
+::application::information::mc::NewsAvailable          "There are updatednews available" ;# NEW
+
 ### application::database ##############################################
 ::application::database::mc::FileOpen							"Apri Database"
 ::application::database::mc::FileOpenRecent					"Apri Recente"
@@ -466,7 +472,6 @@
 ::application::database::mc::FileStripPGNTags				"Rimuovi Tag PGN"
 ::application::database::mc::HelpSwitcher						"Aiuto per il Selezionatore di Database"
 
-::application::database::mc::Information						"&Information" ;# NEW
 ::application::database::mc::Games								"&Partite"
 ::application::database::mc::Players							"&Giocatori"
 ::application::database::mc::Events								"&Eventi"
@@ -597,11 +602,6 @@
 ::application::database::mc::MoveInfo(clockTime)			"Tempo dell'orologio"
 ::application::database::mc::MoveInfo(corrChessSent)		"Mossa per corrispondenzza inviata"
 ::application::database::mc::MoveInfo(videoTime)			"Tempo Video"
-
-### application::database::information #################################
-::application::database::information::mc::RecentlyUsed "Recently used" ;# NEW
-::application::database::information::mc::RemoveSelectedDatabase "Remove selected database from history" ;# NEW
-::application::database::information::mc::NewsAvailable          "There are updatednews available" ;# NEW
 
 ### application::database::games #######################################
 ::application::database::games::mc::Control						"Controllo"
@@ -1617,6 +1617,7 @@
 ::import::mc::Warning(InvalidNag)							"NAG non valido"
 ::import::mc::Warning(BraceSeenOutsideComment)			"\"\}\" visto fuori da un commento nella partita (ignorato)"
 ::import::mc::Warning(MissingFen)							"Manca FEN (tag variante sarà ignorata)"
+::import::mc::Warning(FixedInvalidFen)						"Castle rights in FEN have been fixed" ;# NEW
 ::import::mc::Warning(UnknownEventType)					"Tipo di evento sconosciuto"
 ::import::mc::Warning(UnknownTitle)							"Titolo sconosciuto (ignorato)"
 ::import::mc::Warning(UnknownPlayerType)					"Tipo di giocatore sconosciuto (ignorato)"

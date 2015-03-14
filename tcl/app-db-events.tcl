@@ -135,7 +135,7 @@ proc linespace {parent} {
 }
 
 
-proc setActive {} {
+proc setActive {flag} {
 	# no action
 }
 

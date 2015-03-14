@@ -2656,6 +2656,7 @@ Board::fixBadCastlingRights()
 {
 	// NOTE: usable only for standard chess positions.
 	// NOTE: mainly used to fix bad FEN's from Scid.
+	// NOTE: mainly used to fix bad FEN's from FICS.
 
 	if (m_ksq[White] != e1)
 	{

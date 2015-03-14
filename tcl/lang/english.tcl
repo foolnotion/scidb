@@ -389,6 +389,7 @@
 ::util::photos::mc::Log(updated:N)				"%s files updated."
 
 ### application ########################################################
+::application::mc::Information				"&Information"
 ::application::mc::Database					"&Database"
 ::application::mc::Board						"&Board"
 ::application::mc::MainMenu					"&Main Menu"
@@ -448,6 +449,11 @@
 ::application::board::mc::Accel(trial-mode)			"T"
 ::application::board::mc::Accel(export-game)			"E"
 
+### application::information ###########################################
+::application::information::mc::RecentlyUsed					"Recently used"
+::application::information::mc::RemoveSelectedDatabase	"Remove selected database from history"
+::application::information::mc::NewsAvailable				"There are updated news available"
+
 ### application::database ##############################################
 ::application::database::mc::FileOpen							"Open Database"
 ::application::database::mc::FileOpenRecent					"Open Recent"
@@ -464,7 +470,6 @@
 ::application::database::mc::FileStripPGNTags				"Strip PGN Tags"
 ::application::database::mc::HelpSwitcher						"Help for Database Switcher"
 
-::application::database::mc::Information						"&Information"
 ::application::database::mc::Games								"&Games"
 ::application::database::mc::Players							"&Players"
 ::application::database::mc::Events								"&Events"
@@ -593,11 +598,6 @@
 ::application::database::mc::MoveInfo(clockTime)			"Clock Time"
 ::application::database::mc::MoveInfo(corrChessSent)		"Correspondence Chess Sent"
 ::application::database::mc::MoveInfo(videoTime)			"Video Time"
-
-### application::database::information #################################
-::application::database::information::mc::RecentlyUsed				"Recently used"
-::application::database::information::mc::RemoveSelectedDatabase	"Remove selected database from history"
-::application::database::information::mc::NewsAvailable				"There are updated news available"
 
 ### application::database::games #######################################
 ::application::database::games::mc::Control						"Control"
@@ -1608,6 +1608,7 @@
 ::import::mc::Warning(InvalidNag)							"Invalid NAG"
 ::import::mc::Warning(BraceSeenOutsideComment)			"\"\}\" seen outside a comment in game (ignored)"
 ::import::mc::Warning(MissingFen)							"No start position for this Shuffle/Chess-960 game; will be interpreted as standard chess"
+::import::mc::Warning(FixedInvalidFen)						"Castle rights in FEN have been fixed"
 ::import::mc::Warning(UnknownEventType)					"Unknown event type"
 ::import::mc::Warning(UnknownTitle)							"Unknown title (ignored)"
 ::import::mc::Warning(UnknownPlayerType)					"Unknown player type (ignored)"

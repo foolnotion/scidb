@@ -404,6 +404,11 @@ proc activate {w flag} {
 }
 
 
+proc setActive {flag} {
+	# no action
+}
+
+
 proc setFocus {} {
 	focus [set [namespace current]::Vars(widget:frame)]
 }

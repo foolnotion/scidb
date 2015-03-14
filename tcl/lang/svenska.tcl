@@ -390,6 +390,7 @@
 ::util::photos::mc::Log(updated:N)				"%s fil(er) updaterad."
 
 ### application ########################################################
+::application::mc::Information				"&Information" ;# NEW
 ::application::mc::Database					"&Databas"
 ::application::mc::Board						"&Bräde"
 ::application::mc::MainMenu					"&Huvudmeny"
@@ -449,6 +450,11 @@
 ::application::board::mc::Accel(trial-mode)			"T"
 ::application::board::mc::Accel(export-game)			"E"
 
+### application::information ###########################################
+::application::information::mc::RecentlyUsed           "Recently used" ;# NEW
+::application::information::mc::RemoveSelectedDatabase "Remove selected database from history" ;# NEW
+::application::information::mc::NewsAvailable          "There are updatednews available" ;# NEW
+
 ### application::database ##############################################
 ::application::database::mc::FileOpen							"Öppna databas"
 ::application::database::mc::FileOpenRecent					"Öppna senaste"
@@ -465,7 +471,6 @@
 ::application::database::mc::FileStripPGNTags				"Rensa PGN-taggar"
 ::application::database::mc::HelpSwitcher						"Hjälp om databasväljare"
 
-::application::database::mc::Information						"&Information" ;# NEW
 ::application::database::mc::Games								"&Partier"
 ::application::database::mc::Players							"&Spelare"
 ::application::database::mc::Events								"&Tävlingar"
@@ -596,11 +601,6 @@
 ::application::database::mc::MoveInfo(clockTime)			"Clock Time" ;# NEW
 ::application::database::mc::MoveInfo(corrChessSent)		"Correspondence Chess Sent" ;# NEW
 ::application::database::mc::MoveInfo(videoTime)			"Video Time" ;# NEW
-
-### application::database::information #################################
-::application::database::information::mc::RecentlyUsed "Recently used" ;# NEW
-::application::database::information::mc::RemoveSelectedDatabase "Remove selected database from history" ;# NEW
-::application::database::information::mc::NewsAvailable          "There are updatednews available" ;# NEW
 
 ### application::database::games #######################################
 ::application::database::games::mc::Control						"Kontroll"
@@ -1620,6 +1620,7 @@
 ::import::mc::Warning(InvalidNag)							"Ogiltig 'NAG'"
 ::import::mc::Warning(BraceSeenOutsideComment)			"\"\}\" seen outside a comment in game (ignored)"
 ::import::mc::Warning(MissingFen)							"Ingen startposition funnen för det schack960 partiet; det är kommer behandlas som vanligt schack"
+::import::mc::Warning(FixedInvalidFen)						"Castle rights in FEN have been fixed" ;# NEW
 ::import::mc::Warning(UnknownEventType)					"Okänd tävlingstyp"
 ::import::mc::Warning(UnknownTitle)							"Okänd titel(ignorerad)"
 ::import::mc::Warning(UnknownPlayerType)					"Okänd spelartyp (ignorerad)"

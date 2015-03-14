@@ -391,6 +391,7 @@
 ::util::photos::mc::Log(updated:N)				"%s archivos actualizados."
 
 ### application ########################################################
+::application::mc::Information				"&Information" ;# NEW
 ::application::mc::Database					"&Base"
 ::application::mc::Board						"&Tablero"
 ::application::mc::MainMenu					"&Menu principal"
@@ -450,6 +451,11 @@
 ::application::board::mc::Accel(trial-mode)			"T" 
 ::application::board::mc::Accel(export-game)			"E"
 
+### application::information ###########################################
+::application::information::mc::RecentlyUsed           "Recently used" ;# NEW
+::application::information::mc::RemoveSelectedDatabase "Remove selected database from history" ;# NEW
+::application::information::mc::NewsAvailable          "There are updated news available" ;# NEW
+
 ### application::database ##############################################
 ::application::database::mc::FileOpen							"Abrir Base"
 ::application::database::mc::FileOpenRecent					"Abrir Recientes"
@@ -466,7 +472,6 @@
 ::application::database::mc::FileStripPGNTags				"Strip PGN Tags" ;# NEW
 ::application::database::mc::HelpSwitcher						"Ayuda con el Cambiador de Bases de Datos"
 
-::application::database::mc::Information						"&Information" ;# NEW
 ::application::database::mc::Games								"&Partidas"
 ::application::database::mc::Players							"&Jugadores"
 ::application::database::mc::Events								"Even&tos"
@@ -595,11 +600,6 @@
 ::application::database::mc::MoveInfo(clockTime)			"Clock Time" ;# NEW
 ::application::database::mc::MoveInfo(corrChessSent)		"Correspondence Chess Sent" ;# NEW
 ::application::database::mc::MoveInfo(videoTime)			"Video Time" ;# NEW
-
-### application::database::information #################################
-::application::database::information::mc::RecentlyUsed           "Recently used" ;# NEW
-::application::database::information::mc::RemoveSelectedDatabase "Remove selected database from history" ;# NEW
-::application::database::information::mc::NewsAvailable          "There are updated news available" ;# NEW
 
 ### application::database::games #######################################
 ::application::database::games::mc::Control						"Control"
@@ -1614,6 +1614,7 @@
 ::import::mc::Warning(InvalidNag)							"NAG no válido"
 ::import::mc::Warning(BraceSeenOutsideComment)			"\"\}\" fuera de un comentario en la partida (se ignorarán)" 
 ::import::mc::Warning(MissingFen)							"Partida de Ajedrez Shuffle/960 sin posición de inicio especificada; se interpretará como Ajedrez estándar"
+::import::mc::Warning(FixedInvalidFen)						"Castle rights in FEN have been fixed" ;# NEW
 ::import::mc::Warning(UnknownEventType)					"Tipo de evento desconocido"
 ::import::mc::Warning(UnknownTitle)							"Título desconocido (ignored)"
 ::import::mc::Warning(UnknownPlayerType)					"Tipo de jugador desconocido (ignorado)"

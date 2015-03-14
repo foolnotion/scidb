@@ -30,9 +30,9 @@ namespace eval application {
 namespace eval database {
 namespace eval mc {
 
-set FileOpen							"Open"
+set FileOpen							"Open Database"
 set FileOpenRecent					"Open Recent"
-set FileNew								"New"
+set FileNew								"New Database"
 set FileExport							"Export"
 set FileImport(pgn)					"Import PGN files"
 set FileImport(db)					"Import Databases"
@@ -204,8 +204,9 @@ array set Vars {
 	pressed			0
 	dragging			0
 	mintabs			3
-	taborder			{information games players events sites annotators}
+	taborder			{games players events sites annotators}
 }
+#	taborder			{information games players events sites annotators}
 
 
 array set Options {
@@ -268,8 +269,8 @@ proc build {tab width height} {
 
 	bind $contents.games <<TableMinSize>> \
 		[namespace code [list TableMinSize $main $contents $switcher %d]]
-	bind $contents.information <Configure> \
-		[namespace code [list ConfigureList $main $contents $switcher %h]]
+#	bind $contents.information <Configure> \
+#		[namespace code [list ConfigureList $main $contents $switcher %h]]
 	bind $contents.games <Configure> \
 		[namespace code [list ConfigureList $main $contents $switcher %h]]
 
@@ -425,9 +426,9 @@ proc activate {w flag} {
 }
 
 
-proc setActive {} {
+proc setActive {flag} {
 	variable Vars
-	${Vars(current:tab)}::setActive
+	${Vars(current:tab)}::setActive $flag
 }
 
 
@@ -627,18 +628,20 @@ proc newBase {parent variant file {encoding ""}} {
 	if {[$Vars(switcher) contains? $file]} {
 		set msg [format $mc::DatabaseAlreadyOpen [::util::databaseName $file]]
 		::dialog::error -parent $parent -message $msg
-	} else {
-		set type Unspecific
-		::widget::busyCursor on
-		::scidb::db::new $file $variant [lookupType $type] {*}$encoding
-		::scidb::db::attach $file $file
-		set encoding [::scidb::db::get encoding $file]
-		$Vars(switcher) add $file $type no $encoding
-		AddRecentFile $type $file $encoding no
-		::widget::busyCursor off
+		return 0
 	}
-
+	
+	set type Unspecific
+	::widget::busyCursor on
+	::scidb::db::new $file $variant [lookupType $type] {*}$encoding
+	::scidb::db::attach $file $file
+	set encoding [::scidb::db::get encoding $file]
+	$Vars(switcher) add $file $type no $encoding
+	AddRecentFile $type $file $encoding no
+	::widget::busyCursor off
 	Switch $file $variant
+
+	return 1
 }
 
 
@@ -681,7 +684,7 @@ proc removeRecentFile {index} {
 	variable RecentFiles
 
 	set RecentFiles [lreplace $RecentFiles $index $index]
-	information::update
+	[namespace parent]::information::update
 #	::menu::configureOpenRecent [GetRecentState]
 }
 
@@ -861,7 +864,7 @@ proc ClearHistory {} {
 	variable RecentFiles
 
 	set RecentFiles {}
-	information::update
+	[namespace parent]::information::update
 	#::menu::configureOpenRecent [GetRecentState]
 }
 
@@ -885,7 +888,7 @@ proc CloseBase {parent file} {
 		::widget::busyCursor on
 		::scidb::db::close $file
 		$Vars(switcher) remove $file
-		information::update
+		[namespace parent]::information::update
 		::widget::busyCursor off
 	}
 }
@@ -2160,7 +2163,7 @@ proc SetIcon {w typeList file} {
 	::scidb::db::set type $file $selection
 	destroy [winfo toplevel $w]
 	lset RecentFiles [FindRecentFile $file] 0 $type
-	::information::update
+	[namespace parent]::information::update
 }
 
 
@@ -2178,7 +2181,7 @@ proc AddRecentFile {type file encoding readonly} {
 	if {$i >= 0} { set RecentFiles [lreplace $RecentFiles $i $i] }
 	set RecentFiles [linsert $RecentFiles 0 [list $type $file $encoding $readonly]]
 	if {[llength $RecentFiles] > $MaxHistory} { set RecentFiles [lrange $RecentFiles 0 9] }
-	information::update
+	[namespace parent]::information::update
 	#::menu::configureOpenRecent [GetRecentState]
 }
 

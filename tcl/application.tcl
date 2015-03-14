@@ -200,11 +200,14 @@ proc open {} {
 	set Vars(menu:updates) $nb.menu_updates
 
 	::ttk::notebook::enableTraversal $nb
+	set info [::ttk::frame $nb.information]
 	set db [::ttk::frame $nb.database]
-	set main [tk::panedwindow $nb.main -orient vertical -opaqueresize true]
-	$nb add $db -sticky nsew
+	set main [tk::panedwindow $nb.board -orient vertical -opaqueresize true]
+	$nb add $info -sticky nsew
+	$nb add $db   -sticky nsew
 	$nb add $main -sticky nsew
-	::widget::notebookTextvarHook $nb $db [namespace current]::mc::Database
+	::widget::notebookTextvarHook $nb $info [namespace current]::mc::Information
+	::widget::notebookTextvarHook $nb $db   [namespace current]::mc::Database
 	::widget::notebookTextvarHook $nb $main [namespace current]::mc::Board
 
 	bind $main <Configure> [namespace code [list ConfigureEvent main $main %W %w %h]]
@@ -212,6 +215,15 @@ proc open {} {
 #	bind $app <Shift-Tab> [namespace code [list SwitchTab $nb -1]]
 #	bind $app <ISO_Left_Tab> [namespace code [list SwitchTab $nb -1]]
 	pack $nb -fill both -expand yes
+
+	if {[::process::testOption show-board]} {
+		set tab board
+	} elseif {[::process::testOption re-open] || [llength [::process::arguments]]} {
+		set tab database
+	} else {
+		set tab information
+	}
+	$nb select .application.nb.$tab
 
 	foreach {sub} {top bottom} {
 		set $sub [tk::panedwindow $main.$sub -orient horizontal -opaqueresize true]
@@ -297,6 +309,7 @@ if {[::process::testOption use-clock]} {
 #		}
 	}
 
+	information::build $info $Attr(board,width) $Attr(board,height)
 	database::build $db $Attr(board,width) $Attr(board,height)
 	board::build $top.board $Attr(board,width) $Attr(board,height)
 	pgn::build $right.pgn $Attr(pgn,width) $Attr(pgn,height)
@@ -309,8 +322,8 @@ if {[::process::testOption use-clock]} {
 
 	bind $nb <<NotebookTabChanged>> [namespace code [list TabChanged $nb $app]]
 	bind $app <Destroy> [namespace code { Exit %W }]
-	bind $app <FocusIn> [namespace code Activate]
-	bind $app <FocusOut> [namespace code Deactivate]
+	bind $app <FocusIn> [namespace code [list Activate $nb]]
+	bind $app <FocusOut> [namespace code [list Deactivate $nb]]
 	ComputeMinSize $main
 
 	if {[tk windowingsystem] eq "x11"} {
@@ -346,7 +359,6 @@ if {[::process::testOption use-clock]} {
 	::game::recover $app
 	::game::reopenLockedGames $app
 
-	if {[::process::testOption show-board]} { set tab board } else { set tab database }
 	after idle [namespace code [list switchTab $tab]]
 	after idle [list ::beta::welcomeToScidb $app]
 	::util::photos::checkForUpdate [namespace current]::InformAboutUpdates
@@ -440,11 +452,7 @@ proc prepareExit {{backup 1}} {
 
 
 proc switchTab {which} {
-	switch $which {
-		database	{ set tab .application.nb.database }
-		board		{ set tab .application.nb.main }
-	}
-	.application.nb select $tab
+	.application.nb select .application.nb.$which
 	update idletasks
 	${which}::setFocus
 }
@@ -536,19 +544,25 @@ proc InformAboutUpdates {item} {
 }
 
 
-proc Activate {} {
+proc Activate {nb} {
 	variable Vars
 
 	if {!$Vars(active)} {
 		set Vars(active) 1
-		database::setActive
+		set current [lindex [split [$nb select] .] end]
+		${current}::setActive yes
 	}
 }	
 
 
-proc Deactivate {} {
+proc Deactivate {nb} {
 	variable Vars
-	set Vars(active) 0
+
+	if {$Vars(active)} {
+		set Vars(active) 0
+		set current [lindex [split [$nb select] .] end]
+		${current}::setActive no
+	}
 }	
 
 
@@ -909,18 +923,28 @@ proc TabChanged {nb app} {
 	set current [lindex [split [$nb select] .] end]
 
 	switch $current {
-		database	{
-			database::activate $nb.database 1
-			board::activate $nb.main.top.board 0
-			tree::activate $nb.main.bottom.tree 0
-#			clock::activate $nb.main.top.right.clock 0
+		information	{
+			information::activate $nb.information 1
+			database::activate $nb.database 0
+			board::activate $nb.board.top.board 0
+			tree::activate $nb.board.bottom.tree 0
+#			clock::activate $nb.board.top.right.clock 0
 		}
 
-		main {
+		database	{
+			database::activate $nb.database 1
+			information::activate $nb.information 0
+			board::activate $nb.board.top.board 0
+			tree::activate $nb.board.bottom.tree 0
+#			clock::activate $nb.board.top.right.clock 0
+		}
+
+		board {
 			database::activate $nb.database 0
-			board::activate $nb.main.top.board 1
-			tree::activate $nb.main.bottom.tree 1
-#			clock::activate $nb.main.top.right.clock 1
+			information::activate $nb.information 0
+			board::activate $nb.board.top.board 1
+			tree::activate $nb.board.bottom.tree 1
+#			clock::activate $nb.board.top.right.clock 1
 		}
 	}
 

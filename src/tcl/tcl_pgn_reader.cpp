@@ -126,6 +126,7 @@ PgnReader::warning(	Warning code,
 		case InvalidNag:							msg = "InvalidNag"; break;
 		case BraceSeenOutsideComment:			msg = "BraceSeenOutsideComment"; break;
 		case MissingFen:							msg = "MissingFen"; break;
+		case FixedInvalidFen:					msg = "FixedInvalidFen"; break;
 		case UnknownEventType:					msg = "UnknownEventType"; break;
 		case UnknownTitle:						msg = "UnknownTitle"; break;
 		case UnknownPlayerType:					msg = "UnknownPlayerType"; break;

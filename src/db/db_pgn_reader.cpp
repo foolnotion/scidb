@@ -2130,12 +2130,28 @@ PgnReader::checkFen()
 		if (!board.setup(fen, m_variant))
 			sendError(InvalidFen, m_fenPos, fen);
 
+		Board::SetupStatus status = board.validate(m_variant);
+
 		if (board.validate(m_variant) != Board::Valid)
 		{
-			if (!m_eco && !m_variantValue.empty())
-				sendError(UnsupportedVariant, m_prevPos, m_variantValue);
+			if (status == Board::BadCastlingRights || status == Board::InvalidCastlingRights)
+			{
+				board.fixBadCastlingRights();
 
-			sendError(InvalidFen, m_fenPos, fen);
+				if ((status = board.validate(m_variant)) == Board::Valid)
+				{
+					sendWarning(FixedInvalidFen, m_fenPos, fen);
+					m_tags.set(Fen, board.toFen(m_variant));
+				}
+			}
+
+			if (status != Board::Valid)
+			{
+				if (!m_eco && !m_variantValue.empty())
+					sendError(UnsupportedVariant, m_prevPos, m_variantValue);
+
+				sendError(InvalidFen, m_fenPos, fen);
+			}
 		}
 
 		if (board.isStandardPosition(m_variant))

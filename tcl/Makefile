@@ -115,10 +115,10 @@ SOURCES = \
 	engine.tcl \
 	player-dict.tcl \
 	application.tcl \
+	app-information.tcl \
 	app-board.tcl \
 	app-database.tcl \
 	app-db-icons.tcl \
-	app-db-information.tcl \
 	app-db-annotators.tcl \
 	app-db-games.tcl \
 	app-db-players.tcl \
