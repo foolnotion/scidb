@@ -240,7 +240,8 @@ proc activate {w flag} {
 		grid $Priv(buttons)
 	}
 
-	$Priv(html) stimulate
+	MouseLeave $Priv(stimulated)
+	after idle [list $Priv(html) stimulate]
 }
 
 
@@ -259,7 +260,7 @@ proc setActive {flag} {
 	variable Priv
 
 	if {$flag} {
-		$Priv(html) stimulate
+		after idle [list $Priv(html) stimulate]
 	} elseif {[llength $Priv(stimulated)]} {
 		MouseLeave $Priv(stimulated)
 	}
@@ -466,7 +467,7 @@ proc Mouse3Up {nodes} {
 
 	set Priv(lock) 0
 	MouseLeave $nodes
-	$Priv(html) stimulate
+	after idle [list $Priv(html) stimulate]
 }
 
 
