@@ -60,6 +60,7 @@ set URL "http://scidb.sourceforge.net/%s/news.html"
 
 
 proc build {tab width height} {
+	variable Options
 	variable Priv
 
 	set btn [tk::frame $tab.btn]
@@ -102,7 +103,10 @@ proc build {tab width height} {
 	$Priv(html) handler node a [namespace current]::A_NodeHandler
 	pack $Priv(html) -fill both -expand yes
 	set Priv(buttons) $btn
-	after idle [namespace code [list FetchNews $::mc::langID 0]]
+
+	if {!$Options(welcome)} {
+		after idle [namespace code [list FetchNews $::mc::langID 0]]
+	}
 }
 
 
@@ -134,16 +138,13 @@ proc activate {w flag} {
 	append css [::font::html::defaultTextFonts info] \n
 	append css [::font::html::defaultFixedFonts info] \n
 
+	set size 32
+
+	append content "<table cellspacing='0' cellpadding='0' border='0' width='100%'>"
+	append content "<tr>"
+	append content "<td valign='top' class='left'>"
+
 	if {[llength $recentFiles]} {
-		set Options(welcome) 0
-		set size 32
-
-		if {[string length $Priv(news)]} {
-			append content "<table cellspacing='0' cellpadding='0' border='0' width='100%'>"
-			append content "<tr>"
-			append content "<td valign='top'>"
-		}
-
 		append content "<h1>$mc::RecentlyUsed</h1>"
 		append content "<table border='1' cellspacing='1'><tr>"
 
@@ -164,69 +165,71 @@ proc activate {w flag} {
 			}
 			append content "<td class='bases' id='$id'><img src='$icon'/></td>"
 			append content "<td class='bases' id='$id' $title>$name</td>"
-			append content "<td class='bases' id='$id'><img src='[::dialog::fsbox::fileIcon $ext]'/></td>"
+			set icon [::dialog::fsbox::fileIcon $ext]
+			append content "<td class='bases' id='$id'><img src='$icon'/></td>"
 			append content "</tr>"
 			incr id
 		}
 
 		append content "</table>"
-		append content "<table style='white-space:nowrap;'>"
-		append content "<tr>"
-		set lbl [set [namespace parent]::database::mc::FileOpen]
-		append content "<td class='h1'><img src='$::icon::32x32::databaseOpen'/></td>"
-		append content "<td class='h1'>&nbsp;<a href='OPEN'>$lbl</td>"
-		append content "<tr></tr>"
-		set lbl [set [namespace parent]::database::mc::FileNew]
-		append content "<td class='h2'><img src='$::icon::32x32::databaseNew'/></td>"
-		append content "<td class='h2'>&nbsp;<a href='OPEN'>$lbl</td>"
-		append content "</tr>"
-		append content "</table>"
+	}
 
-		if {[string length $Priv(news)]} {
-			append content "</td>"
-			append content "<td valign='top' style='padding-left:25px'>"
-			append content $Priv(news)
-			append content "</td>"
-			append content "</tr>"
-			append content "</table>"
-		}
-	} else {
-		if {$Options(welcome)} {
-			set lang $::mc::langID
-			set file [file join $::scidb::dir::help $lang Welcome.html]
-			if {![file exists $file]} { set file [file join $::scidb::dir::help en Welcome.html] }
-			if {[file readable $file]} {
-				set fileContent ""
-				catch {
-					set fd [::open $file r]
-					chan configure $fd -encoding utf-8
-					set fileContent [read $fd]
-					close $fd
-				}
-				foreach line [split $fileContent \n] {
-					if {[string match {*-- END --*} $line]} { break }
-					append content $line " "
-				}
-				append css "li.space { margin-top:0.5em; margin-bottom:0.5em; }\n"
-				set Options(welcome) 0
+	append content "<table style='white-space:nowrap;'>"
+	append content "<tr>"
+	set lbl [set [namespace parent]::database::mc::FileOpen]
+	append content "<td class='h1'><img src='$::icon::32x32::databaseOpen'/></td>"
+	append content "<td class='h1'>&nbsp;<a href='OPEN'>$lbl</td>"
+	append content "<tr></tr>"
+	set lbl [set [namespace parent]::database::mc::FileNew]
+	append content "<td class='h2'><img src='$::icon::32x32::databaseNew'/></td>"
+	append content "<td class='h2'>&nbsp;<a href='OPEN'>$lbl</td>"
+	append content "</tr>"
+	append content "</table>"
+
+	append content "</td>"
+	append content "<td valign='top' class='right'>"
+
+	if {$Options(welcome)} {
+		set lang $::mc::langID
+		set file [file join $::scidb::dir::help $lang Welcome.html]
+		if {![file exists $file]} { set file [file join $::scidb::dir::help en Welcome.html] }
+		if {[file readable $file]} {
+			set fileContent ""
+			catch {
+				set fd [::open $file r]
+				chan configure $fd -encoding utf-8
+				set fileContent [read $fd]
+				close $fd
 			}
+			foreach line [split $fileContent \n] {
+				if {[string match {*-- END --*} $line]} { break }
+				append content $line " "
+			}
+			set Options(welcome) 0
 		}
-
+	} elseif {[string length $Priv(news)]} {
 		append content $Priv(news)
 	}
 
-	append css "h1        { font-size:160%; color:${color-header}; }\n"
-	append css "td.h1     { font-size:160%; color:${color-header}; padding-top:20px; }\n"
-	append css "td.h2     { font-size:160%; color:${color-header}; padding-top:10px; }\n"
-	append css "td.bases  { font-size:18px; color:black; background-color:${color-menu}; }\n"
-	append css "td.bases  { padding-left:7px; padding-right:7px; }\n"
-	append css "td.hover  { background-color:${color-hover}; }\n"
-	append css ":link     { color:${color-link};text-decoration: none; }\n"
-	append css ":visited  { color:${color-visited}; text-decoration: none; }\n"
-	append css ":hover    { text-decoration: underline; }\n"
-	append css "ul        { padding: 0; }\n"
-	append css "li        { margin-top:0.5em; margin-bottom:0.5em; }\n"
-	append css "hr        { border-top: solid 2px ${color-color}; }\n"
+	append content "</td>"
+	append content "</tr>"
+	append content "</table>"
+
+	append css "h1       { font-size:160%; color:${color-header}; }\n"
+	append css "td.h1    { font-size:160%; color:${color-header}; padding-top:20px; }\n"
+	append css "td.h2    { font-size:160%; color:${color-header}; padding-top:10px; }\n"
+	append css "td.bases { font-size:18px; color:black; background-color:${color-menu}; }\n"
+	append css "td.bases { padding-left:7px; padding-right:7px; }\n"
+	append css "td.left  { padding-right:15px; }\n"
+	append css "td.right { border-left: solid 1px white; padding-left:15px; }\n"
+	append css "td.hover { background-color:${color-hover}; }\n"
+	append css ":link    { color:${color-link};text-decoration: none; }\n"
+	append css ":visited { color:${color-visited}; text-decoration: none; }\n"
+	append css ":hover   { text-decoration: underline; }\n"
+	append css "ul       { padding: 0; }\n"
+	append css "li       { margin-top:0.5em; margin-bottom:0.5em; }\n"
+	append css "hr       { border-top: solid 2px ${color-color}; }\n"
+	append css "li.space { margin-top:0.5em; margin-bottom:0.5em; }\n"
 
 	append content "</body></html>"
 	$html css $css
@@ -332,21 +335,23 @@ proc MouseEnter {nodes} {
 	::tooltip::hide
 
 	foreach node $nodes {
-		if {[string length [$node attribute -default {} id]]} {
-			set title ""
-			foreach n [[$node parent] children] {
-				$n attribute class {bases hover}
-				set title [$n attribute -default $title title]
+		if {![catch { $node parent }]} {
+			if {[string length [$node attribute -default {} id]]} {
+				set title ""
+				foreach n [[$node parent] children] {
+					$n attribute class {bases hover}
+					set title [$n attribute -default $title title]
+				}
+				if {[string length $title]} { ::tooltip::show $Priv(html) $title }
+				[$Priv(html) drawable] configure -cursor hand2
+				set Priv(stimulated) $node
+				return
+			} elseif {[string length [$node attribute -default {} href]]} {
+				$node dynamic set hover
+				[$Priv(html) drawable] configure -cursor hand2
+				set Priv(stimulated) $node
+				return
 			}
-			if {[string length $title]} { ::tooltip::show $Priv(html) $title }
-			[$Priv(html) drawable] configure -cursor hand2
-			set Priv(stimulated) $node
-			return
-		} elseif {[string length [$node attribute -default {} href]]} {
-			$node dynamic set hover
-			[$Priv(html) drawable] configure -cursor hand2
-			set Priv(stimulated) $node
-			return
 		}
 	}
 }
@@ -446,7 +451,7 @@ proc Mouse3Down {{nodes {}}} {
 				-compound left \
 				-image $::icon::16x16::remove \
 				-label " $mc::RemoveSelectedDatabase" \
-				-command [list [namespace parent]::database::removeRecentFile $id] \
+				-command [namespace code [list RemoveRecentFile $id]] \
 				;
 			$menu add separator
 			break
@@ -467,6 +472,14 @@ proc Mouse3Up {nodes} {
 
 	set Priv(lock) 0
 	MouseLeave $nodes
+	after idle [list $Priv(html) stimulate]
+}
+
+
+proc RemoveRecentFile {id} {
+	variable Priv
+
+	[namespace parent]::database::removeRecentFile $id
 	after idle [list $Priv(html) stimulate]
 }
 

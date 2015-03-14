@@ -449,10 +449,10 @@ proc WidgetProc {w command args} {
 			variable Margin
 			variable MaxWidth
 
-			array unset [namespace current]::HoverNodes
-			array unset [namespace current]::ActiveNodes1
-			array unset [namespace current]::ActiveNodes2
-			array unset [namespace current]::ActiveNodes3
+			array unset [namespace current]::${w}::HoverNodes
+			array unset [namespace current]::${w}::ActiveNodes1
+			array unset [namespace current]::${w}::ActiveNodes2
+			array unset [namespace current]::${w}::ActiveNodes3
 			set Priv(nodeList) {}
 
 			$w.sub.html reset
@@ -523,11 +523,12 @@ proc WidgetProc {w command args} {
 		}
 
 		stimulate {
-			array unset HoverNodes
+			array unset [namespace current]::${w}::HoverNodes
 			set Priv(nodeList) {}
 			set x [expr {[winfo pointerx .] - [winfo rootx $w.sub.html]}]
 			set y [expr {[winfo pointery .] - [winfo rooty $w.sub.html]}]
-			Motion $w.sub.html $x $y 0
+			Motion $w.sub.html $x $y 0 1
+			set Priv(nodeList) {}
 			return
 		}
 
@@ -926,7 +927,7 @@ proc SbSet {sb first last} {
 }
 
 
-proc Motion {w x y state} {
+proc Motion {w x y state {withChildren 0}} {
 	variable [winfo parent [winfo parent $w]]::Priv
 
 	SelectionExtend $w $x $y
@@ -940,6 +941,14 @@ proc Motion {w x y state} {
 	if {[llength $Priv(afterId)]} {
 		after cancel $Priv(afterId)
 		set Priv(afterId) {}
+	}
+
+	if {$withChildren} {
+		set nodes {}
+		foreach n $nodelist {
+			lappend nodes $n {*}[$n parent]
+		}
+		set nodelist $nodes
 	}
 
 	if {$Priv(delay)} {
@@ -1020,7 +1029,8 @@ proc GenerateEvent {w event nodes} {
 	}
 
 	if {[llength $nodeList] || $emptyNode} {
-		foreach script $Priv($event) { {*}$script $nodeList }
+		foreach script $Priv($event) {
+		{*}$script $nodeList }
 	}
 }
 
