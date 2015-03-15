@@ -1548,9 +1548,9 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 		$m add separator
 		set idList [lsort -integer [getIdList $gamebar]]
 		foreach id $idList {
-			append players($id) [lindex [GetPlayerInfo $gamebar $id white] 0]
+			append players($id) [lindex [GetPlayerInfo $id white] 0]
 			append players($id) " \u2013 "
-			append players($id) [lindex [GetPlayerInfo $gamebar $id black] 0]
+			append players($id) [lindex [GetPlayerInfo $id black] 0]
 		}
 		$m add command \
 			-label " $mc::CopyThisGameToClipbase" \
@@ -1887,7 +1887,7 @@ proc PopupEventMenu {gamebar id} {
 
 	if {[::scidb::db::get open? $base $variant]} {
 		set Specs(event:locked) 1
-		set name [GetEventName $gamebar $id]
+		set name [GetEventName $id]
 		if {[string length $name]} {
 			lassign [GetSource $id] base variant index
 			::eventtable::popupMenu $gamebar $menu $base $variant 0 $index game
@@ -1911,7 +1911,7 @@ proc PopupPlayerMenu {gamebar id side} {
 
 	if {[::scidb::db::get open? $base $variant]} {
 		set Specs(player:locked) 1
-		set info [GetPlayerInfo $gamebar $id $side]
+		set info [GetPlayerInfo $id $side]
 		set name [lindex $info 0]
 		if {$name eq "?" || $name eq "-"} { set name "" }
 		if {[string length $name]} {
@@ -2523,7 +2523,7 @@ proc EnterEvent {gamebar id} {
 	set sid $Specs(selected:$gamebar)
 
 	if {$id eq $sid || $id eq "-1"} {
-		set name [GetEventName $gamebar $sid]
+		set name [GetEventName $sid]
 
 		if {[string length $name] && $name ne $scratchbaseName} {
 			if {$Specs(emphasize:$id:$gamebar)} { set color hilite2 } else { set color hilite }
@@ -2567,7 +2567,7 @@ proc EnterPlayer {gamebar id side} {
 	set sid $Specs(selected:$gamebar)
 
 	if {$id eq $sid || $id eq "-1"} {
-		set name [GetPlayerName $gamebar $sid $side]
+		set name [GetPlayerName $sid $side]
 
 		if {[string length $name]} {
 			if {$Specs(emphasize:$id:$gamebar)} { set color hilite2 } else { set color hilite }
@@ -2630,7 +2630,7 @@ proc LeaveFlag {gamebar id} {
 }
 
 
-proc GetEventInfo {gamebar id} {
+proc GetEventInfo {id} {
 	variable ::scidb::scratchbaseName
 
 	lassign [GetSource $id] base variant index
@@ -2639,8 +2639,12 @@ proc GetEventInfo {gamebar id} {
 }
 
 
-proc GetEventName {gamebar id} {
-	set name [lindex [GetEventInfo $gamebar $id] 0]
+proc GetEventName {id} {
+	variable ::scidb::scratchbaseName
+
+	lassign [GetSource $id] base variant index
+	if {$base eq $scratchbaseName} { return {""} }
+	set name [scidb::db::fetch eventName $index $base $variant]
 	if {$name eq "?" || $name eq "-"} { set name "" }
 	return $name
 }
@@ -2650,7 +2654,7 @@ proc ShowEvent {gamebar id} {
 	variable Specs
 
 	set sid $Specs(selected:$gamebar)
-	set info [GetEventInfo $gamebar $sid]
+	set info [GetEventInfo $sid]
 	set name [lindex $info 0]
 	if {$name eq "?" || $name eq "-"} { set name "" }
 
@@ -2666,7 +2670,7 @@ proc HideEvent {gamebar id} {
 	variable Specs
 
 	set sid $Specs(selected:$gamebar)
-	set name [GetEventName $gamebar $sid]
+	set name [GetEventName $sid]
 
 	if {[string length $name]} {
 		::eventtable::popdownInfo $gamebar
@@ -2676,16 +2680,15 @@ proc HideEvent {gamebar id} {
 }
 
 
-proc GetPlayerInfo {gamebar id side} {
+proc GetPlayerInfo {id side} {
 	lassign [GetSource $id] base variant index
 	return [scidb::db::fetch ${side}PlayerInfo $index $base $variant -card -ratings {Any Any}]
 }
 
 
-proc GetPlayerName {gamebar id side} {
-	set name [lindex [GetPlayerInfo $gamebar $id $side] 0]
-	if {$name eq "?" || $name eq "-"} { set name "" }
-	return $name
+proc GetPlayerName {id side} {
+	lassign [GetSource $id] base variant index
+	return [scidb::db::fetch ${side}PlayerName $index $base $variant]
 }
 
 
@@ -2693,7 +2696,7 @@ proc ShowPlayerCard {gamebar id side} {
 	variable Specs
 
 	set sid $Specs(selected:$gamebar)
-	set name [GetPlayerName $gamebar $sid $side]
+	set name [GetPlayerName $sid $side]
 
 	if {[string length $name]} {
 		lassign [GetSource $id] base variant index
@@ -2706,7 +2709,7 @@ proc ShowPlayerInfo {gamebar id side} {
 	variable Specs
 
 	set sid $Specs(selected:$gamebar)
-	set info [GetPlayerInfo $gamebar $sid $side]
+	set info [GetPlayerInfo $sid $side]
 	set name [lindex $info 0]
 	if {$name eq "?" || $name eq "-"} { set name "" }
 
@@ -2722,7 +2725,7 @@ proc HidePlayerInfo {gamebar id side} {
 	variable Specs
 
 	set sid $Specs(selected:$gamebar)
-	set name [GetPlayerName $gamebar $sid $side]
+	set name [GetPlayerName $sid $side]
 
 	if {[string length $name]} {
 		::playercard::popdownInfo $gamebar

@@ -1021,8 +1021,7 @@ proc GenerateEvent {w event nodes} {
 	}
 
 	if {[llength $nodeList] || $emptyNode} {
-		foreach script $Priv($event) {
-		{*}$script $nodeList }
+		foreach script $Priv($event) { {*}$script $nodeList }
 	}
 }
 

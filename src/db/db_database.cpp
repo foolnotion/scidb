@@ -63,7 +63,7 @@
 #include "m_ifstream.h"
 #include "m_auto_ptr.h"
 #include "m_stdio.h"
-#include "m_map.h"
+#include "m_hash.h"
 
 using namespace db;
 using namespace sys;
@@ -1823,7 +1823,7 @@ Database::makeTournamentTable(Filter const& gameFilter) const
 unsigned
 Database::countPlayers(NamebaseEvent const& event, unsigned& averageElo, unsigned& category) const
 {
-	typedef mstl::map<unsigned,uint16_t> EloSet;
+	typedef mstl::hash<unsigned,uint16_t> EloSet;
 
 	unsigned	eloCount	= 0;
 	EloSet	eloSet;
@@ -1841,8 +1841,8 @@ Database::countPlayers(NamebaseEvent const& event, unsigned& averageElo, unsigne
 			for (unsigned side = 0; side < 2; ++side)
 			{
 				NamebasePlayer const* player = info->playerEntry(color::ID(side));
-				EloSet::result_t res = eloSet.insert(EloSet::value_type(player->id(), 0));
-				res.first->second = mstl::max(res.first->second, info->findElo(color::ID(side)));
+				EloSet::reference res = eloSet.find_or_insert(player->id(), 0);
+				res = mstl::max(res, info->findElo(color::ID(side)));
 			}
 		}
 	}

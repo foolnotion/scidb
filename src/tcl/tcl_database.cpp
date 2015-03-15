@@ -2352,7 +2352,7 @@ getEventInfo(NamebaseEvent const& event, Database const* database = nullptr)
 
 	if (siteName.empty())
 #endif
-		siteName = event.site()->name();
+	siteName = event.site()->name();
 
 	objv[attribute::event::Country  ] = Tcl_NewStringObj(country, country.size());
 	objv[attribute::event::Site     ] = Tcl_NewStringObj(siteName, siteName.size());
@@ -2674,10 +2674,15 @@ cmdFetch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	static char const* subcommands[] =
 	{
-		"eventInfo", "whitePlayerInfo", "blackPlayerInfo", "whitePlayerStats", "blackPlayerStats", 0
+		"eventName", "whitePlayerName", "blackPlayerName",
+		"eventInfo", "whitePlayerInfo", "blackPlayerInfo",
+		"whitePlayerStats", "blackPlayerStats", 0
 	};
 	static char const* args[] =
 	{
+		"<game-index> <database> ?<variant>?",
+		"<game-index> <database> ?<variant>?",
+		"<game-index> <database> ?<variant>?",
 		"<game-index> <database> ?<variant>?",
 		"<game-index> <database> ?<variant>?",
 		"<game-index> <database> ?<variant>?",
@@ -2687,9 +2692,8 @@ cmdFetch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	};
 	enum
 	{
-		Cmd_EventInfo,
-		Cmd_WhitePlayerInfo, Cmd_BlackPlayerInfo,
-		Cmd_WhitePlayerStats, Cmd_BlackPlayerStats
+		Cmd_EventName, Cmd_WhitePlayerName, Cmd_BlackPlayerName, Cmd_EventInfo,
+		Cmd_WhitePlayerInfo, Cmd_BlackPlayerInfo, Cmd_WhitePlayerStats, Cmd_BlackPlayerStats,
 	};
 
 	int index = intFromObj(objc, objv, 2);
@@ -2700,6 +2704,18 @@ cmdFetch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	switch (int idx = tcl::uniqueMatchObj(objv[1], subcommands))
 	{
+		case Cmd_EventName:
+			setResult(info.eventEntry()->name());
+			return TCL_OK;
+
+		case Cmd_WhitePlayerName:
+			setResult(info.playerEntry(color::White)->name());
+			return TCL_OK;
+
+		case Cmd_BlackPlayerName:
+			setResult(info.playerEntry(color::Black)->name());
+			return TCL_OK;
+
 		case Cmd_EventInfo:
 			{
 				bool idCard = false;
