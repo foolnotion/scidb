@@ -489,8 +489,8 @@ proc activeParents {} {
 	foreach entry [array names Specs activated:*] {
 		set parent [string range $entry 10 end]
 		if {$Specs(activated:$parent)} {
+			set use 0
 			if {[winfo ismapped $parent]} {
-				set use 0
 				foreach dir {top left right bottom} {
 					set tbf [Join $parent __tbf__$dir]
 					if {[info exists Specs(childs:$tbf)]} {
