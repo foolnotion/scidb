@@ -365,6 +365,13 @@ proc stripAmpersand {str} {
 }
 
 
+proc extractAccelerator {str} {
+	set i [string first "&" $str]
+	if {$i == -1} { return "" }
+	return [string index $str [expr {$i + 1}]]
+}
+
+
 proc translate {str} {
 	return [set $str]
 }

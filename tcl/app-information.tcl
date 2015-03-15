@@ -177,11 +177,11 @@ proc activate {w flag} {
 	append content "<table style='white-space:nowrap;'>"
 	append content "<tr>"
 	set lbl [set [namespace parent]::database::mc::FileOpen]
-	append content "<td class='h1'><img src='$::icon::32x32::databaseOpen'/></td>"
+	append content "<td class='h1'><img src='[set ::icon::${size}x${size}::databaseOpen]'/></td>"
 	append content "<td class='h1'>&nbsp;<a href='OPEN'>$lbl</td>"
 	append content "<tr></tr>"
 	set lbl [set [namespace parent]::database::mc::FileNew]
-	append content "<td class='h2'><img src='$::icon::32x32::databaseNew'/></td>"
+	append content "<td class='h2'><img src='[set ::icon::${size}x${size}::databaseNew]'/></td>"
 	append content "<td class='h2'>&nbsp;<a href='OPEN'>$lbl</td>"
 	append content "</tr>"
 	append content "</table>"

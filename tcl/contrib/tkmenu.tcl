@@ -1133,6 +1133,9 @@ proc ::tk::MenuFind {w char} {
 #				happens.
 
 proc ::tk::TraverseToMenu {w char} {
+    ### FIX begin ################################################################
+    if {![winfo exists $w]} { return }
+    ### FIX end ##################################################################
     variable ::tk::Priv
     if {$char eq ""} {
 	return

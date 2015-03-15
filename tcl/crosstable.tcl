@@ -426,7 +426,9 @@ proc open {parent base variant index view source} {
 	} else {
 		::widget::dialogButtons $dlg close
 	}
-	$dlg.close configure -command [list destroy $dlg]
+	if {[winfo exists $dlg.close]} {
+		$dlg.close configure -command [list destroy $dlg]
+	}
 
 	::update
 	set Vars(tableId) [::scidb::crosstable::make $base $variant $Vars(viewId)]
@@ -1159,11 +1161,6 @@ proc Mouse2Up {dlg nodes} {
 proc Mouse3Down {dlg nodes} {
 	variable _Popup
 
-	if {[llength $nodes] == 0} {
-		if {[info exists _Popup]} { return }
-		return [PopupMenu $dlg]
-	}
-
 	set rank {}
 	set gameIndex {}
 
@@ -1174,7 +1171,10 @@ proc Mouse3Down {dlg nodes} {
 		if {[llength $g]} { set gameIndex $g }
 	}
 
-	if {[llength $rank] == 0 && [llength $gameIndex] == 0} { return }
+	if {[llength $rank] == 0 && [llength $gameIndex] == 0} {
+		if {[info exists _Popup]} { return }
+		return [PopupMenu $dlg]
+	}
 
 	set m $dlg.popup
 	if {[winfo exists $m]} { destroy $m }
@@ -1333,6 +1333,31 @@ proc BuildMenu {dlg m} {
 
 	$m add separator
 	$m add cascade -label $mc::Debugging -menu $sub
+
+	$m add separator
+	if {[winfo exists $dlg.next]} {
+		$m add command \
+			-label " [::mc::stripAmpersand $::widget::mc::Previous]" \
+			-command [$dlg.previous cget -command] \
+			-image $::icon::16x16::previous \
+			-compound left \
+			-accelerator "$::mc::Key(Alt)-[::mc::extractAccelerator $::widget::mc::Previous]" \
+			;
+		$m add command \
+			-label " [::mc::stripAmpersand $::widget::mc::Next]" \
+			-command [$dlg.next cget -command] \
+			-image $::icon::16x16::next \
+			-compound left \
+			-accelerator "$::mc::Key(Alt)-[::mc::extractAccelerator $::widget::mc::Next]" \
+			;
+	}
+	$m add command \
+		-label " [::mc::stripAmpersand $::widget::mc::Close]" \
+		-command [$dlg.close cget -command] \
+		-image $::icon::16x16::close \
+		-compound left \
+		-accelerator "$::mc::Key(Alt)-[::mc::extractAccelerator $::widget::mc::Close]" \
+		;
 }
 
 
