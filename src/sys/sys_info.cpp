@@ -83,7 +83,9 @@ readProcInfo(char const* attr)
 
 	char buf[1024];
 	buf[0] = '\0';
-	::fread(buf, 1, sizeof(buf), proc);
+
+	// suppress compiler warningm we do not expect errors
+	size_t n __attribute__((unused)) = ::fread(buf, 1, sizeof(buf), proc);
 
 	char const* s = ::strstr(buf, attr);
 

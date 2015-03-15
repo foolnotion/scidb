@@ -110,11 +110,11 @@ Pipe::createPipe()
 
 #endif
 
-void
+bool
 Pipe::send(unsigned char c)
 {
 	M_REQUIRE(!isClosed());
-	::write(m_fd[1], &c, 1);
+	return ::write(m_fd[1], &c, 1) == 1;
 }
 
 

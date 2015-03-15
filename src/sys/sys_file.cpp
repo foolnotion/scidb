@@ -357,7 +357,10 @@ Mapping::~Mapping()
 	if (m_fd != -1)
 	{
 		if (m_size != m_capacity)
-			::ftruncate(m_fd, m_size);
+		{
+			// suppress compiler warning, we do not expect errors
+			int rc __attribute__((unused)) = ::ftruncate(m_fd, m_size);
+		}
 
 		::close(m_fd);
 	}
@@ -385,7 +388,8 @@ Mapping::resize(unsigned newSize)
 	else if (m_size < newSize)
 	{
 		::munmap(m_address, m_size);
-		::ftruncate(m_fd, newSize);
+		// suppress compiler warning, we do not expect errors
+		int rc __attribute__((unused)) = ::ftruncate(m_fd, newSize);
 		m_address = static_cast<char*>(::mmap(0, newSize, PROT_READ | PROT_WRITE, MAP_SHARED, m_fd, 0));
 
 		if (m_address == MAP_FAILED)
@@ -497,7 +501,8 @@ sys::file::rename(char const* oldFilename, char const* newFilename, bool preserv
 		chmod(newFilename, st.st_mode);
 
 #if defined(__unix__) || defined(__MacOSX__)
-		chown(newFilename, st.st_uid, st.st_gid);
+		// suppress compiler warning, we do not expect errors
+		int rc __attribute__((unused)) = chown(newFilename, st.st_uid, st.st_gid);
 #endif
 	}
 }

@@ -280,7 +280,7 @@ cmdUpdate(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	}
 
 	rating::Type ratingType;
-	::db::tree::Mode mode;
+	::db::tree::Mode mode = db::tree::Exact; // satisifies the compiler
 
 	int rc = parseArguments(objc, objv, ratingType, mode);
 
@@ -334,7 +334,7 @@ cmdFinish(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	}
 
 	rating::Type ratingType;
-	::db::tree::Mode mode;
+	::db::tree::Mode mode = db::tree::Exact; // satisifies the compiler
 
 	int rc = parseArguments(objc, objv, ratingType, mode);
 

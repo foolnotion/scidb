@@ -561,7 +561,8 @@ namespace agg
             if(len > 0)
             {
                 m_loaded_font.resize(len);
-                fread(&m_loaded_font[0], 1, len, fd);
+					 // suppress compiler warning, errors will not be handled here
+                size_t n __attribute__((unused)) = fread(&m_loaded_font[0], 1, len, fd);
                 m_font = &m_loaded_font[0];
             }
             fclose(fd);

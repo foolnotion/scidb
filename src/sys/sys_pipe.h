@@ -34,7 +34,7 @@ public:
 	bool isClosed() const;
 
 	virtual void available(unsigned char c) = 0;
-	void send(unsigned char c);
+	bool send(unsigned char c);
 
 	struct Tcl_Channel_* channel();
 

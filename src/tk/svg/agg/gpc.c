@@ -1030,26 +1030,26 @@ void gpc_free_polygon(gpc_polygon *p)
 void gpc_read_polygon(FILE *fp, int read_hole_flags, gpc_polygon *p)
 {
   int c, v;
+  int n __attribute__((unused)); // suppress compiler warning
 
-  fscanf(fp, "%d", &(p->num_contours));
+  n = fscanf(fp, "%d", &(p->num_contours));
   MALLOC(p->hole, p->num_contours * sizeof(int),
          "hole flag array creation", int);
   MALLOC(p->contour, p->num_contours
          * sizeof(gpc_vertex_list), "contour creation", gpc_vertex_list);
   for (c= 0; c < p->num_contours; c++)
   {
-    fscanf(fp, "%d", &(p->contour[c].num_vertices));
+    n = fscanf(fp, "%d", &(p->contour[c].num_vertices));
 
     if (read_hole_flags)
-      fscanf(fp, "%d", &(p->hole[c]));
+      n = fscanf(fp, "%d", &(p->hole[c]));
     else
       p->hole[c]= FALSE; /* Assume all contours to be external */
 
     MALLOC(p->contour[c].vertex, p->contour[c].num_vertices
            * sizeof(gpc_vertex), "vertex creation", gpc_vertex);
     for (v= 0; v < p->contour[c].num_vertices; v++)
-      fscanf(fp, "%lf %lf", &(p->contour[c].vertex[v].x),
-                            &(p->contour[c].vertex[v].y));
+      n = fscanf(fp, "%lf %lf", &(p->contour[c].vertex[v].x), &(p->contour[c].vertex[v].y));
   }
 }
 

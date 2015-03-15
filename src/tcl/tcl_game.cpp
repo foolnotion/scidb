@@ -542,10 +542,10 @@ public:
 
 		Tcl_Obj* objv_7[4];
 
-		objv_7[0] = Tcl_NewListObj(U_NUMBER_OF(objv_2), objv_3);
-		objv_7[1] = Tcl_NewListObj(U_NUMBER_OF(objv_3), objv_4);
-		objv_7[2] = Tcl_NewListObj(U_NUMBER_OF(objv_4), objv_5);
-		objv_7[3] = Tcl_NewListObj(U_NUMBER_OF(objv_5), objv_6);
+		objv_7[0] = Tcl_NewListObj(U_NUMBER_OF(objv_3), objv_3);
+		objv_7[1] = Tcl_NewListObj(U_NUMBER_OF(objv_4), objv_4);
+		objv_7[2] = Tcl_NewListObj(U_NUMBER_OF(objv_5), objv_5);
+		objv_7[3] = Tcl_NewListObj(U_NUMBER_OF(objv_6), objv_6);
 
 		Tcl_Obj* objv_8[2];
 

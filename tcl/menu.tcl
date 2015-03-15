@@ -817,7 +817,7 @@ if {[tk windowingsystem] eq "x11" && [string length [auto_execok xdg-mime]]} {
 		}
 
 		grid rowconfigure $top 0 -minsize $::theme::pady
-		grid columnconfigure $top {0 2 4 6} -minsize $::theme::padx
+		grid columnconfigure $top {0 2 4 6 8} -minsize $::theme::padx
 
 		if {$count == 0} {
 			::widget::dialogButtons $dlg {close}

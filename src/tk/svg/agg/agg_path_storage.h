@@ -871,8 +871,8 @@ namespace agg
     {
         if(m_vertices.total_vertices())
         {
-            double x2;
-            double y2;
+            double x2 = 0.0; // satisfies the compiler
+            double y2 = 0.0; // satisfies the compiler
             if(is_vertex(m_vertices.last_vertex(&x2, &y2)))
             {
                 *x += x2;

@@ -801,11 +801,6 @@ proc ConfirmReplaceMove {confirmWindowType extraActions} {
 	if {$Leave < 0} { leaveSquare [expr {-($Leave - 1)}] }
 	set Leave 1
 	after idle [namespace code [list Unlock $action_]]
-
-	if {$action_ eq "trial"} {
-		::game::flipTrialMode
-	}
-
 	return $action_
 }
 
