@@ -243,6 +243,7 @@ proc build {menu} {
 	::theme::configureRadioEntry $m
 
 	### toolbars #############################################################
+	set activeParents [::toolbar::activeParents]
 	set m [menu $menu.mToolbars]
 	lassign [::tk::UnderlineAmpersand $mc::Toolbars] text ul
 	$menu add cascade \
@@ -251,8 +252,9 @@ proc build {menu} {
 		-underline [incr ul] \
 		-image $::icon::16x16::none \
 		-compound left \
+		-state [expr {[llength $activeParents] ? "normal" : "disabled"}] \
 		;
-	foreach parent [::toolbar::activeParents] {
+	foreach parent $activeParents {
 		::toolbar::addToolbarMenu $m $parent none
 	}
 

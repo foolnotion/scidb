@@ -527,7 +527,7 @@ proc WidgetProc {w command args} {
 			set Priv(nodeList) {}
 			set x [expr {[winfo pointerx .] - [winfo rootx $w.sub.html]}]
 			set y [expr {[winfo pointery .] - [winfo rooty $w.sub.html]}]
-			Motion $w.sub.html $x $y 0 1
+			Motion $w.sub.html $x $y 0
 			set Priv(nodeList) {}
 			return
 		}
@@ -927,7 +927,7 @@ proc SbSet {sb first last} {
 }
 
 
-proc Motion {w x y state {withChildren 0}} {
+proc Motion {w x y state} {
 	variable [winfo parent [winfo parent $w]]::Priv
 
 	SelectionExtend $w $x $y
@@ -941,14 +941,6 @@ proc Motion {w x y state {withChildren 0}} {
 	if {[llength $Priv(afterId)]} {
 		after cancel $Priv(afterId)
 		set Priv(afterId) {}
-	}
-
-	if {$withChildren} {
-		set nodes {}
-		foreach n $nodelist {
-			lappend nodes $n {*}[$n parent]
-		}
-		set nodelist $nodes
 	}
 
 	if {$Priv(delay)} {
