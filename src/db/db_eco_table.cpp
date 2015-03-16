@@ -200,7 +200,7 @@ struct EcoTable::Node
 	void decreasePawnMoves();
 	void reset();
 
-	void printName(Codec& codec, Eco code, unsigned startLevel = 0) const;
+	void printOpening(Codec& codec, Eco code, unsigned startLevel = 0) const;
 
 	void dump(Codec& codec, Board& board, variant::Type variant, unsigned ply) const;
 	void dump(variant::Type variant);
@@ -311,14 +311,14 @@ EcoTable::Node::reset()
 
 
 void
-EcoTable::Node::printName(Codec& codec, Eco code, unsigned startLevel) const
+EcoTable::Node::printOpening(Codec& codec, Eco code, unsigned startLevel) const
 {
-	Name const&		name = EcoTable::m_specimen[variant::Index_Normal].getName(code);
+	Opening const&	opening = EcoTable::m_specimen[variant::Index_Normal].getOpening(code);
 	mstl::string	s;
 
-	for (unsigned i = startLevel; i < EcoTable::Num_Name_Parts && !name.part[i].empty(); ++i)
+	for (unsigned i = startLevel; i < EcoTable::Num_Name_Parts && !opening.part[i].empty(); ++i)
 	{
-		codec.convertFromUtf8(name.part[i], s);
+		codec.convertFromUtf8(opening.part[i], s);
 		::printf(" \"%s\"", s.c_str());
 	}
 }
@@ -351,7 +351,7 @@ EcoTable::Node::dump(Codec& codec, Board& board, variant::Type variant, unsigned
 					b.transposition ? '[' : '(',
 					b.node->eco.asString().c_str(),
 					b.transposition ? ']' : ')');
-		printName(codec, b.node->eco, 1);
+		printOpening(codec, b.node->eco, 1);
 		::printf("\n");
 
 		if (!b.transposition)
@@ -368,7 +368,7 @@ EcoTable::Node::dump(variant::Type variant)
 	Codec codec(Codec::latin1());
 	Board board(Board::standardBoard(variant));
 	::printf("(%s)", eco.asString().c_str());
-	printName(codec, eco, 1);
+	printOpening(codec, eco, 1);
 	::printf("\n");
 	dump(codec, board, variant, 0);
 	reset();
@@ -452,7 +452,7 @@ EcoTable::Node::print(variant::Type variant)
 			}
 
 			::printf("%s", eco.asString().c_str());
-			printName(codec, eco);
+			printOpening(codec, eco);
 
 			for (unsigned k = 0; k < v->moves.size(); ++k)
 			{
@@ -577,7 +577,8 @@ EcoTable::Loader::readNode(unsigned ply, Node* node, Eco storedLineKey, Entry co
 			if (__builtin_expect(ref >= m_nameRef.size(), 0))
 				throwCorruptedData();
 
-			m_codec.convertToUtf8(m_nameRef[ref], entry->name.part[i]);
+			entry->opening.part[i].hook(m_nameRef[ref]);
+//			m_codec.convertToUtf8(m_nameRef[ref], entry->opening.part[i]);
 		}
 	}
 
@@ -913,53 +914,21 @@ EcoTable::isUsed(Eco code) const
 }
 
 
-EcoTable::Name const&
-EcoTable::getName(Eco code) const
+EcoTable::Opening const&
+EcoTable::getOpening(Eco code) const
 {
-	if (!isLoaded()) { return specimen(variant::Index_Normal).getName(Eco(1)); }
+	static Opening const Empty;
+
+	if (code == 0)
+		return Empty;
+
+	if (!isLoaded()) { return specimen(variant::Index_Normal).getOpening(Eco(1)); }
 
 	M_REQUIRE(code <= Eco::Max_Code);
 	M_REQUIRE(isLoaded());
 	M_REQUIRE(isUsed(code));
 
-	return (*m_lookup.find(code))->name;
-}
-
-
-void
-EcoTable::getOpening(Eco code,
-							mstl::string& openingLong,
-							mstl::string& openingShort,
-							mstl::string& variation,
-							mstl::string& subVar) const
-{
-	if (code)
-	{
-		Name const& name = getName(code);
-
-		openingShort = name.part[0];
-		openingLong = name.part[1];
-		variation = name.part[2];
-		subVar = name.part[3];
-	}
-	else
-	{
-		openingLong.clear();
-		openingShort.clear();
-		variation.clear();
-		subVar.clear();
-	}
-}
-
-
-void
-EcoTable::getOpening(Eco code,
-							mstl::string& opening,
-							mstl::string& variation,
-							mstl::string& subVar) const
-{
-	mstl::string dummy;
-	return getOpening(code, opening, dummy, variation, subVar);
+	return (*m_lookup.find(code))->opening;
 }
 
 

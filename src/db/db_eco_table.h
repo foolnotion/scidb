@@ -102,7 +102,7 @@ public:
 		unsigned		length;
 	};
 
-	struct Name { mstl::string part[Num_Name_Parts]; };
+	struct Opening { mstl::string part[Num_Name_Parts]; };
 
 	EcoTable();
 	~EcoTable();
@@ -118,19 +118,13 @@ public:
 					unsigned* length = 0,
 					Successors* successors = 0,
 					EcoSet* reachable = 0) const;
-	Name const& getName(Eco code) const;
+	Opening const& getOpening(Eco code) const;
 	Line const& getLine(Eco code) const;
 	uint8_t getStoredLine(Eco key, Eco opening) const;
 	Eco getEco(Board const& startBoard, Line const& line, EcoSet* reachable = 0) const;
 	Eco getEco(Board const& board) const;
 	Eco getEco(Line const& line) const;
 	void getSuccessors(uint64_t hash, Successors& successors) const;
-	void getOpening(Eco code, mstl::string& opening, mstl::string& variation, mstl::string& subVar) const;
-	void getOpening(	Eco code,
-							mstl::string& openingLong,
-							mstl::string& openingShort,
-							mstl::string& variation,
-							mstl::string& subVar) const;
 	void getMoveOrders(	Line const& line,
 								Eco code,
 								Lines& result,
@@ -150,8 +144,8 @@ private:
 
 	struct Entry
 	{
-		Name name;
-		Line line;
+		Opening	opening;
+		Line		line;
 	};
 
 	typedef mstl::map<uint64_t,Node*>		Map;

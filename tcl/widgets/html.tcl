@@ -687,6 +687,10 @@ proc WidgetProc {w command args} {
 				set Priv(fixedwidth) $opts(-fixedwidth)
 				array unset opts -fixedwidth
 			}
+			if {[info exists opts(-fittowidth)]} {
+				set Priv(fittowidth) $opts(-fittowidth)
+				array unset opts -fittowidth
+			}
 			set args {}
 			foreach {attr value} [array get opts] {
 				switch -- $attr {

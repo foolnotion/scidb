@@ -294,15 +294,12 @@ proc VisitItem {table data} {
 		set value [lindex $Vars(data) $row [columnIndex $id]]
 		set item {}
 
-		lassign [::scidb::app::lookup ecoCode $value] long short var subvar
-		if {[string length $var] || [string length $subvar]} {
+		set opening [::scidb::app::lookup ecoCode $value]
+		lassign $opening long short
+		set vars [lrange $opening 2 end]
+		if {[llength $vars} {
 			set item [::mc::translateEco $short]
-			append item ", "
-			append item [::mc::translateEco $var]
-			if {[string length $subvar]} {
-				append item ", "
-				append item [::mc::translateEco $subvar]
-			}
+			foreach var $vars { append item ", " [::mc::translateEco $var] }
 		} else {
 			set item [::mc::translateEco $long]
 		}

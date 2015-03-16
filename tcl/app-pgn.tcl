@@ -1304,11 +1304,12 @@ proc UpdateHeader {context position w data} {
 	if {$Options(show:opening) || $position < 9} {
 		set idn 0
 		set opening {}
-		set pos ""
+		set pos {}
+		set eco ""
 
-		foreach pair $data {
-			lassign $pair name value
-			switch $name {
+		foreach entry $data {
+			set value [lrange $entry 1 end]
+			switch [lindex $entry 0] {
 				idn		{ set idn $value }
 				eco		{ set eco $value }
 				position { set pos $value }
@@ -1320,7 +1321,7 @@ proc UpdateHeader {context position w data} {
 
 		switch $variant {
 			Normal {
-				foreach line [::browser::makeOpeningLines [list $idn $pos $eco {*}$opg]] {
+				foreach line [::browser::makeOpeningLines [list $idn $pos $eco $opg]] {
 					set tags {}
 					lassign $line content tags
 					if {$tags eq "figurine"} {

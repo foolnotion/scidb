@@ -498,9 +498,13 @@ public:
 
 	void opening(Board const& startBoard, variant::Type variant, uint16_t idn, Eco const& eco) override
 	{
-		mstl::string openingLong, openingShort, variation, subvariation, position;
-		EcoTable::specimen(variant::toMainVariant(variant)).getOpening(
-			eco, openingLong, openingShort, variation, subvariation);
+		EcoTable const& ecoTable = EcoTable::specimen(variant::toMainVariant(variant));
+		EcoTable::Opening const& opening = ecoTable.getOpening(eco);
+		Square handicap = idn == 0 ? startBoard.handicap() : sq::Null;
+		mstl::string position;
+
+		if (handicap != sq::Null)
+			idn = variant::Standard;
 
 		if (idn == 0)
 			startBoard.toFen(position, variant);
@@ -511,48 +515,50 @@ public:
 
 		Tcl_Obj* objv_1[2];
 
-		objv_1[0] = Tcl_NewStringObj(openingLong, openingLong.size());
-		objv_1[1] = Tcl_NewStringObj(openingShort, openingShort.size());
+		objv_1[0] = m_idn;
+		objv_1[1] = Tcl_NewIntObj(idn);
 
-		Tcl_Obj* objv_2[3];
+		Tcl_Obj* objv_2[2];
 
-		objv_2[0] = Tcl_NewListObj(U_NUMBER_OF(objv_1), objv_1);
-		objv_2[1] = Tcl_NewStringObj(variation, variation.size());
-		objv_2[2] = Tcl_NewStringObj(subvariation, subvariation.size());
+		objv_2[0] = m_eco;
+		objv_2[1] = Tcl_NewStringObj(eco.asShortString(), -1);
 
-		Tcl_Obj* objv_3[2];
+		Tcl_Obj* objv_3[4];
+		unsigned objc_3 = handicap == sq::Null ? 2 : 4;
 
-		objv_3[0] = m_idn;
-		objv_3[1] = Tcl_NewIntObj(idn);
+		objv_3[0] = m_position;
+		objv_3[1] = Tcl_NewStringObj(position, position.size());
 
-		Tcl_Obj* objv_4[2];
+		if (objc_3 == 4)
+		{
+			piece::Type piece = piece::type(Board::standardBoard(variant::Normal).pieceAt(handicap));
+			objv_3[2] = Tcl_NewStringObj(sq::printAlgebraic(handicap), -1);
+			objv_3[3] = Tcl_NewStringObj(piece::utf8::asString(piece), -1);
+		}
 
-		objv_4[0] = m_eco;
-		objv_4[1] = Tcl_NewStringObj(eco.asShortString(), -1);
+		Tcl_Obj* objv_4[EcoTable::Num_Name_Parts + 1];
+		unsigned objc_4 = 3;
 
-		Tcl_Obj* objv_5[2];
+		objv_4[0] = m_opening;
+		objv_4[1] = Tcl_NewStringObj(opening.part[0], opening.part[0].size());
+		objv_4[2] = Tcl_NewStringObj(opening.part[1], opening.part[1].size());
 
-		objv_5[0] = m_position;
-		objv_5[1] = Tcl_NewStringObj(position, position.size());
+		for ( ; objc_4 <= EcoTable::Num_Name_Parts && opening.part[objc_4 - 1].size(); ++objc_4)
+			objv_4[objc_4] = Tcl_NewStringObj(opening.part[objc_4 - 1], opening.part[objc_4 - 1].size());
+
+		Tcl_Obj* objv_5[4];
+
+		objv_5[0] = Tcl_NewListObj(U_NUMBER_OF(objv_1), objv_1);
+		objv_5[1] = Tcl_NewListObj(U_NUMBER_OF(objv_2), objv_2);
+		objv_5[2] = Tcl_NewListObj(objc_3, objv_3);
+		objv_5[3] = Tcl_NewListObj(objc_4, objv_4);
 
 		Tcl_Obj* objv_6[2];
 
-		objv_6[0] = m_opening;
-		objv_6[1] = Tcl_NewListObj(U_NUMBER_OF(objv_2), objv_2);
+		objv_6[0] = m_header;
+		objv_6[1] = Tcl_NewListObj(U_NUMBER_OF(objv_5), objv_5);
 
-		Tcl_Obj* objv_7[4];
-
-		objv_7[0] = Tcl_NewListObj(U_NUMBER_OF(objv_3), objv_3);
-		objv_7[1] = Tcl_NewListObj(U_NUMBER_OF(objv_4), objv_4);
-		objv_7[2] = Tcl_NewListObj(U_NUMBER_OF(objv_5), objv_5);
-		objv_7[3] = Tcl_NewListObj(U_NUMBER_OF(objv_6), objv_6);
-
-		Tcl_Obj* objv_8[2];
-
-		objv_8[0] = m_header;
-		objv_8[1] = Tcl_NewListObj(U_NUMBER_OF(objv_7), objv_7);
-
-		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv_8), objv_8));
+		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv_6), objv_6));
 	}
 
 	void languages(LanguageSet const& languages) override

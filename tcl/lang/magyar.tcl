@@ -1462,6 +1462,7 @@
 ::browser::mc::MinimizeBoardSize	"Minimize board size" ;# NEW
 ::browser::mc::LoadPrevGame		"Load previous game" ;# NEW
 ::browser::mc::LoadNextGame		"Load next game" ;# NEW
+::browser::mc::HandicapGame             "Handicap game" ;# NEW
 
 ::browser::mc::GotoGame(first)		"Első játszmához"
 ::browser::mc::GotoGame(last)		"Utolsó játszmához"

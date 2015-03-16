@@ -1912,21 +1912,15 @@ getGameInfo(int index, int view, char const* database, variant::Type variant, un
 				else if (info.idn() == variant::Standard)
 					eco = info.ecoKey();
 
+				EcoTable const& ecoTable = EcoTable::specimen(variant);
+				EcoTable::Opening const* opening = &ecoTable.getOpening(Eco());
+
 				if (eco)
 				{
-					EcoTable const& ecoTable = EcoTable::specimen(variant);
-					ecoTable.getOpening(eco, openingLong, openingShort, variation, subvar);
-
-					if (eco.basic() == info.ecoKey().basic())
-					{
-						mstl::string unused;
-						ecoTable.getOpening(info.ecoKey(), unused, unused, variation, subvar);
-					}
+					if (info.eco().basic() == info.ecoKey().basic())
+						opening = &ecoTable.getOpening(info.ecoKey());
 					else
-					{
-						variation.clear();
-						subvar.clear();
-					}
+						opening = &ecoTable.getOpening(eco);
 				}
 
 				if (variant::isShuffleChess(info.idn()))
@@ -1934,20 +1928,14 @@ getGameInfo(int index, int view, char const* database, variant::Type variant, un
 				else if (info.idn())
 					position = variant::ficsIdentifier(info.idn());
 
-				Tcl_Obj* objv[6];
-
-				Tcl_Obj* openingVar[2] =
-				{
-					Tcl_NewStringObj(openingLong, openingLong.size()),
-					Tcl_NewStringObj(openingShort, openingShort.size())
-				};
+				Tcl_Obj* objv[3 + EcoTable::Num_Name_Parts];
 
 				objv[0] = Tcl_NewIntObj(info.idn());
 				objv[1] = Tcl_NewStringObj(position, position.size());
 				objv[2] = Tcl_NewStringObj(eco.asShortString(), -1);
-				objv[3] = Tcl_NewListObj(2, openingVar);
-				objv[4] = Tcl_NewStringObj(variation, variation.size());
-				objv[5] = Tcl_NewStringObj(subvar, subvar.size());
+
+				for (unsigned i = 0; i < EcoTable::Num_Name_Parts; ++i)
+					objv[i + 3] = Tcl_NewStringObj(opening->part[i], opening->part[i].size());
 
 				obj = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
 			}
@@ -2034,14 +2022,14 @@ tcl::db::getGameInfo(Database const& db, unsigned index, Ratings const& ratings)
 									info.countComments(),
 									info.countVariations());
 
-	mstl::string startPosition;
+	mstl::string startPosition, round;
 
 	if (variant::isShuffleChess(info.idn()))
 		shuffle::utf8::position(info.idn(), startPosition);
 	else if (info.idn())
 		startPosition = variant::ficsIdentifier(info.idn());
 
-	mstl::string openingLong, openingShort, variation, subvariation, round;
+	EcoTable const& ecoTable = EcoTable::specimen(db.variant());
 
 	Eco eco = info.eco();
 	Eco eop = info.idn() == variant::Standard ? info.ecoKey() : Eco();
@@ -2060,22 +2048,14 @@ tcl::db::getGameInfo(Database const& db, unsigned index, Ratings const& ratings)
 		round.assign(tags.value(tag::Round));
 	}
 
-	EcoTable const& ecoTable = EcoTable::specimen(db.variant());
+	EcoTable::Opening const* opening = &ecoTable.getOpening(Eco());
 
 	if (info.idn() == variant::Standard && eco)
 	{
-		ecoTable.getOpening(eco, openingLong, openingShort, variation, subvariation);
-
 		if (info.eco().basic() == info.ecoKey().basic())
-		{
-			mstl::string unused;
-			ecoTable.getOpening(info.ecoKey(), unused, unused, variation, subvariation);
-		}
+			opening = &ecoTable.getOpening(info.ecoKey());
 		else
-		{
-			variation.clear();
-			subvariation.clear();
-		}
+			opening = &ecoTable.getOpening(eco);
 	}
 
 	mstl::string flags;
@@ -2098,8 +2078,8 @@ tcl::db::getGameInfo(Database const& db, unsigned index, Ratings const& ratings)
 
 	Tcl_Obj* openingVar[2] =
 	{
-		Tcl_NewStringObj(openingLong, openingLong.size()),
-		Tcl_NewStringObj(openingShort, openingShort.size())
+		Tcl_NewStringObj(opening->part[0], opening->part[0].size()),
+		Tcl_NewStringObj(opening->part[1], opening->part[1].size())
 	};
 
 	mstl::string material;
@@ -2167,8 +2147,8 @@ tcl::db::getGameInfo(Database const& db, unsigned index, Ratings const& ratings)
 	SET(TimeMode,             Tcl_NewStringObj(::db::time::toString(info.timeMode()), -1));
 	SET(Overview,             Tcl_NewStringObj(overview, overview.size()));
 	SET(Opening,              Tcl_NewListObj(2, openingVar));
-	SET(Variation,            Tcl_NewStringObj(variation, variation.size()));
-	SET(SubVariation,         Tcl_NewStringObj(subvariation, subvariation.size()));
+	SET(Variation,            Tcl_NewStringObj(opening->part[2], opening->part[2].size()));
+	SET(SubVariation,         Tcl_NewStringObj(opening->part[3], opening->part[3].size()));
 	SET(InternalEco,          Tcl_NewStringObj(eop.asString(), -1));
 
 #undef SET

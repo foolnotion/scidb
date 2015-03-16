@@ -368,6 +368,8 @@ public:
 	piece::ID pieceAt(Square s) const;
 	/// Return piece type sitting at given square on the board (None if Null is given)
 	piece::Type piece(Square s) const;
+	/// Return target of handicap, or Null if this is not a handicap start position
+	Square handicap() const;
 	/// Return color at given square on the board
 	color::ID color(Square s) const;
 	/// Return square where en passant capture may occur, or null square

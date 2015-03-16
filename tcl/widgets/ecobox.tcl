@@ -159,18 +159,15 @@ proc Completion2 {w var selection} {
 		set $var ""
 	} elseif {[string length $content] >= 3} {
 		set content [string range $content 0 2]
-		lassign [::scidb::app::lookup ecoCode $content] opening shortOpening variation subvar
+		set opening [::scidb::app::lookup ecoCode $content]
+		lassign $opening long short
+		set vars [lrange $opening 2 end]
 		append content " \u2013 "
-		if {[string length $variation]} {
-			append content [::mc::translateEco $shortOpening]
-			append content ", "
-			append content [::mc::translateEco $variation]
-			if {[string length $subvar]} {
-				append content ", "
-				append content [::mc::translateEco $subvar]
-			}
+		if {[llength $vars]} {
+			append content [::mc::translateEco $short]
+			foreach var $vars { append content ", " [::mc::translateEco $var] }
 		} else {
-			append content [::mc::translateEco $opening]
+			append content [::mc::translateEco $long]
 		}
 		set $var $content
 

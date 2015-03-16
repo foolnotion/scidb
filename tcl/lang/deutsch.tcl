@@ -1451,6 +1451,7 @@
 ::browser::mc::MinimizeBoardSize	"Brett minimieren"
 ::browser::mc::LoadPrevGame		"Vorherige Partie laden"
 ::browser::mc::LoadNextGame		"Nächste Partie laden"
+::browser::mc::HandicapGame		"Vorgabepartie"
 
 ::browser::mc::GotoGame(first)	"Zur ersten Partie"
 ::browser::mc::GotoGame(last)		"Zur letzten Partie"

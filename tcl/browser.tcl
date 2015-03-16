@@ -44,6 +44,7 @@ set MaximizeBoardSize	"Maximize board size"
 set MinimizeBoardSize	"Minimize board size"
 set LoadPrevGame			"Load previous game"
 set LoadNextGame			"Load next game"
+set HandicapGame			"Handicap game"
 
 set IllegalMove			"Illegal move"
 set NoCastlingRights		"no castling rights"
@@ -516,10 +517,12 @@ proc makeResult {result toMove termination reason variant} {
 
 
 proc makeOpeningLines {data} {
-	lassign $data idn position eco opening variation subvar
-	set opening1 ""
-	set opening2 {}
-	set opening3 ""
+	lassign $data idn position eco opening
+	lassign {"" {} ""} line1 line2 line3
+	lassign $opening long short
+	set vars [lrange $opening 2 end]
+	set eco [lindex $eco 0]
+	set idn [lindex $idn 0]
 
 if {0} {
 	# TODO: should be language independent!
@@ -536,50 +539,53 @@ if {0} {
 }
 
 	if {[llength $eco]} {
-		append opening1 $eco
-		if {[string length [lindex $opening 0]]} {
-			if {[llength $variation]} {
-				append opening1 " - " [::mc::translateEco [lindex $opening 1]]
-				append opening1 ", "  [::mc::translateEco $variation]
-				if {[llength $subvar]} {
-					append opening1 ", " [::mc::translateEco $subvar]
-				}
+		append line1 $eco
+		if {[string length $long]} {
+			if {[llength $vars]} {
+				append line1 " - " [::mc::translateEco $short]
+				foreach var $vars { append line1 ", "  [::mc::translateEco $var] }
 			} else {
-				append opening1 " - " [::mc::translateEco [lindex $opening 0]]
+				append line1 " - " [::mc::translateEco [lindex $opening 0]]
 			}
 		}
 	} elseif {$idn > 0} {
-		append opening1 $::gamebar::mc::StartPosition " "
-		if {$idn > 4*960} {
-			append opening1 "\""
-			append opening1 $position
-			if {[info exists ::setup::PositionAlt($position)]} {
-				append opening1 " ($::setup::PositionAlt($position))"
-			}
-			append opening1 "\""
+		if {[llength $position] == 3} {
+			append line1 $mc::HandicapGame ": "
+			lappend line2 [lindex $position 2] figurine
+			append line3 [lindex $position 1]
 		} else {
-			if {$idn > 3*960} {
-				append opening1 [expr {$idn - 3*960}]
+			append line1 $::gamebar::mc::StartPosition " "
+			if {$idn > 4*960} {
+				append line1 "\""
+				append line1 $position
+				if {[info exists ::setup::PositionAlt($position)]} {
+					append line1 " ($::setup::PositionAlt($position))"
+				}
+				append line1 "\""
 			} else {
-				append opening1 $idn
-			}
-			append opening1 " ("
-			lappend opening2 [::font::translate $position] figurine
-			append opening3 ")"
-			if {$idn > 960} {
-				append opening3 " \[$mc::NoCastlingRights\]"
+				if {$idn > 3*960} {
+					append line1 [expr {$idn - 3*960}]
+				} else {
+					append line1 $idn
+				}
+				append line1 " ("
+				lappend line2 [::font::translate $position] figurine
+				append line3 ")"
+				if {$idn > 960} {
+					append line3 " \[$mc::NoCastlingRights\]"
+				}
 			}
 		}
 	} elseif {$idn == 0 && [llength $position]} {
-		append opening1 "FEN: "
-		append opening1 $position
+		append line1 "FEN: "
+		append line1 $position
 	}
 
-	if {[llength $opening2] == 0} {
-		set opening2 {"" {}}
+	if {[llength $line2] == 0} {
+		set line2 {"" {}}
 	}
 
-	return [list [list $opening1 eco] $opening2 [list $opening3 eco]]
+	return [list [list $line1 eco] $line2 [list $line3 eco]]
 }
 
 
@@ -1076,16 +1082,16 @@ proc UpdatePGN {position data {w {}}} {
 
 			header {
 				if {[info exists Vars(header)]} {
-					foreach pair [lindex $node 1] {
-						lassign $pair name value
-						switch $name {
+					foreach entry [lindex $node 1] {
+						set value [lrange $entry 1 end]
+						switch [lindex $entry 0] {
 							idn		{ set idn $value }
 							eco		{ set eco $value }
 							position { set pos $value }
 							opening	{ set opg $value }
 						}
 					}
-					set Vars(data) [list $idn $pos $eco {*}$opg]
+					set Vars(data) [list $idn $pos $eco $opg]
 					UpdateHeader $position
 				}
 			}

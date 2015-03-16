@@ -1463,6 +1463,7 @@
 ::browser::mc::MinimizeBoardSize	"Minimizza dimensione scacchiera"
 ::browser::mc::LoadPrevGame		"Carica partita precedente"
 ::browser::mc::LoadNextGame		"Carica partita successiva"
+::browser::mc::HandicapGame      "Handicap game" ;# NEW
 
 ::browser::mc::GotoGame(first)  	"Vai alla prima partita"
 ::browser::mc::GotoGame(last)   	"Vai all'ultima partita"

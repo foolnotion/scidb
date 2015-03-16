@@ -645,18 +645,18 @@ proc MouseEnter {w variant nodes} {
 		set eco [$node attribute -default {} eco]
 		if {[string length $eco]} {
 			set Vars($w:tooltip) $node
-			lassign [::scidb::misc::lookup opening $eco $variant] \
-				opening shortOpening variation subVariation
-			if {[string length $variation]} {
-				set opening [::mc::translateEco $shortOpening]
-				append opening ", "
-				append opening [::mc::translateEco $variation]
-				if {[string length $subVariation]} {
-					append opening ", "
-					append opening [::mc::translateEco $subVariation]
+			set opening [::scidb::misc::lookup opening $eco $variant]
+			lassign $opening long short
+			set vars [lrange $opening 2 end]
+			if {[llength $vars]} {
+				set opening [::mc::translateEco $short]
+				foreach var $vars {
+					if {[string length $var]} {
+						append opening ", " [::mc::translateEco $var]
+					}
 				}
 			} else {
-				set opening [::mc::translateEco $opening]
+				set opening [::mc::translateEco $long]
 			}
 			Tooltip $w $opening
 		}

@@ -1456,6 +1456,7 @@
 ::browser::mc::MinimizeBoardSize	"Minimizar el tamaño del tablero"
 ::browser::mc::LoadPrevGame		"Load previous game" ;# NEW
 ::browser::mc::LoadNextGame		"Load next game" ;# NEW
+::browser::mc::HandicapGame      "Handicap game" ;# NEW
 
 ::browser::mc::GotoGame(first)	"Ir a la primera partida"
 ::browser::mc::GotoGame(last)		"Ir a la última partida"

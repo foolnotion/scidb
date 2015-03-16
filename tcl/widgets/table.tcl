@@ -623,7 +623,7 @@ proc setHeight {table height {cmd {}}} {
 		event generate $table <<TableResized>> -data $height
 	}
 
-	select $table $selection
+	catch { select $table $selection }
 }
 
 

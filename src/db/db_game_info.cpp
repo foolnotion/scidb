@@ -963,16 +963,15 @@ GameInfo::setupTags(TagSet& tags, variant::Type variant) const
 				&& !tags.isUserSupplied(tag::Variation)
 				&& !tags.isUserSupplied(tag::SubVariation))
 			{
-				mstl::string opening, variation, subvariation;
-				EcoTable::specimen(variant).
-					getOpening(eco, opening, variation, subvariation);
-				tags.add(tag::Opening, opening);
+				EcoTable::Opening const& opening = EcoTable::specimen(variant).getOpening(eco);
+				tags.add(tag::Opening, opening.part[0]);
 
 #ifdef GAME_INFO_VAR
 				if (eco == Eco(m_ecoKey))
 				{
-					tags.add(tag::Variation, variation);
-					tags.add(tag::SubVariation, subvariation);
+					static_assert(EcoTable::Num_Name_Parts >= 4, "index failure");
+					tags.add(tag::Variation, opening.part[2]);
+					tags.add(tag::SubVariation, opening.part[3]);
 				}
 #endif
 			}
@@ -991,7 +990,6 @@ GameInfo::setupTags(TagSet& tags, variant::Type variant) const
 void
 GameInfo::setupTags(TagSet& tags, Provider const& provider)
 {
-	mstl::string opening, variation, subvariation;
 	variant::Type variant = provider.variant();
 	unsigned idn = provider.getStartBoard().computeIdn(variant);
 
@@ -1005,19 +1003,21 @@ GameInfo::setupTags(TagSet& tags, Provider const& provider)
 		{
 			EcoTable const& ecoTable = EcoTable::specimen(variant);
 			Eco eco = ecoTable.getEco(provider.openingLine());
-			ecoTable.getOpening(eco, opening, variation, subvariation);
+			EcoTable::Opening const& opening = ecoTable.getOpening(eco);
 			tags.add(tag::Eco, eco.asShortString());
-		}
 
-		if (	!tags.isUserSupplied(tag::Opening)
-			&& !tags.isUserSupplied(tag::Variation)
-			&& !tags.isUserSupplied(tag::SubVariation))
-		{
-			tags.add(tag::Opening,			opening);
+			if (	!tags.isUserSupplied(tag::Opening)
+				&& !tags.isUserSupplied(tag::Variation)
+				&& !tags.isUserSupplied(tag::SubVariation))
+			{
+				tags.add(tag::Opening, opening.part[0]);
+
 #ifdef GAME_INFO_VAR
-			tags.add(tag::Variation,		variation);
-			tags.add(tag::SubVariation,	subvariation);
+				static_assert(EcoTable::Num_Name_Parts >= 4, "index failure");
+				tags.add(tag::Variation, opening.part[2]);
+				tags.add(tag::SubVariation, opening.part[3]);
 #endif
+			}
 		}
 	}
 

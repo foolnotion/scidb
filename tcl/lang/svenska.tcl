@@ -1462,6 +1462,7 @@
 ::browser::mc::MinimizeBoardSize	"Minimera brädet"
 ::browser::mc::LoadPrevGame		"Ladda föregående parti"
 ::browser::mc::LoadNextGame		"Ladda nästa parti"
+::browser::mc::HandicapGame      "Handicap game" ;# NEW
 
 ::browser::mc::GotoGame(first)	"Gå till första partiet"
 ::browser::mc::GotoGame(last)		"Gå till sista partiet"

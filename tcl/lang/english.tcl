@@ -1450,6 +1450,7 @@
 ::browser::mc::MinimizeBoardSize	"Minimize board size"
 ::browser::mc::LoadPrevGame		"Load previous game"
 ::browser::mc::LoadNextGame		"Load next game"
+::browser::mc::HandicapGame		"Handicap game"
 
 ::browser::mc::GotoGame(first)	"Goto first game"
 ::browser::mc::GotoGame(last)		"Goto last game"

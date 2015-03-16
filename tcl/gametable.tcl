@@ -262,7 +262,7 @@ array set Defaults {
 	showIDN			0
 	relief			0
 	transparent		0
-	opening-index	1
+	opening-index	0
 	exclude-elo		1
 	include-type	0
 	country-code	flags
@@ -439,7 +439,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 			variation - subvariation - key {}
 
 			opening {
-				foreach {labelvar value} {Long 0 Short 1} {
+				foreach {labelvar value} {Long 1 Short 0} {
 					lappend menu [list radiobutton \
 						-command [namespace code [list Refresh $path]] \
 						-labelvar [namespace current]::mc::$labelvar \
@@ -1543,8 +1543,8 @@ proc TableVisit {table data} {
 		}
 
 		opening {
-			if {$Options(opening-index) == 0} { return }
-			set tip [::mc::translateEco [lindex $item 3 0]]
+			if {$Options(opening-index) == 1} { return }
+			set tip [::mc::translateEco [lindex $item 4]]
 		}
 
 		whiteCountry - blackCountry - eventCountry {
