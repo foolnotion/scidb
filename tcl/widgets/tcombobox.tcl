@@ -166,6 +166,8 @@ proc Build {w args} {
 
 
 proc WidgetProc {w command args} {
+	if {![winfo exists $w]} { return }
+
 	switch -- $command {
 		listinsert {
 			return [$w.popdown.l insert {*}$args]
@@ -468,6 +470,8 @@ proc Unposted {w focus} {
 
 
 proc PlaceIcon {w icon} {
+	if {![winfo exists $w]} { return }
+
 	update idletasks
 	$w placeicon $icon
 	bind $w <Map> {#}

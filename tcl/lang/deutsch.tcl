@@ -649,6 +649,7 @@
 ::application::pgn::mc::Command(strip:info)				"Zuginformationen"
 ::application::pgn::mc::Command(strip:marks)				"Markierungen"
 ::application::pgn::mc::Command(strip:comments)			"Kommentare"
+::application::pgn::mc::Command(strip:language)			"Sprache"
 ::application::pgn::mc::Command(strip:variations)		"Varianten"
 ::application::pgn::mc::Command(copy:comments)			"Kommentare kopieren"
 ::application::pgn::mc::Command(move:comments)			"Kommentare verschieben"
@@ -1477,6 +1478,7 @@
 ::encoding::mc::Description			"Beschreibung"
 ::encoding::mc::Languages				"Sprachen (Schrift)"
 ::encoding::mc::UseAutoDetection		"Automatische Erkennung benutzen"
+::encoding::mc::AllLanguages			"Alle Sprachen"
 
 ::encoding::mc::ChooseEncodingTitle	"Zeichenkodierung wählen"
 
@@ -1687,7 +1689,6 @@
 ::export::mc::IncludeAllTags				"Alle Tags einschliessen"
 ::export::mc::ExtraTags						"Alle anderen Zusatz-Tags"
 ::export::mc::NoComments					"Keine Kommentare"
-::export::mc::AllLanguages					"Alle Sprachen"
 ::export::mc::Significant					"Signifikant"
 ::export::mc::LanguageSelection			"Sprachauswahl"
 ::export::mc::MapTo							"Abbilden zu"

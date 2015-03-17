@@ -404,6 +404,36 @@ list<T>::init()
 
 template <typename T>
 inline
+void
+list<T>::push_back(const_reference v)
+{
+	create_node(v)->hook(&m_node);
+}
+
+
+template <typename T>
+inline
+typename list<T>::reference
+list<T>::push_back()
+{
+	node* p = create_node(T());
+	p->hook(&m_node);
+	return p->m_data;
+}
+
+
+template <typename T>
+inline
+void
+list<T>::pop_back()
+{
+	M_REQUIRE(!empty());
+	erase(m_node.m_prev);
+}
+
+
+template <typename T>
+inline
 list<T>::list(size_type n, const_reference v)
 {
 	init();
@@ -668,34 +698,6 @@ list<T>::erase(iterator first, iterator last)
 		first = erase(first);
 
 	return last;
-}
-
-
-template <typename T>
-inline
-void
-list<T>::push_back(const_reference v)
-{
-	create_node(v)->hook(&m_node);
-}
-
-
-template <typename T>
-inline
-void
-list<T>::push_back()
-{
-	create_node(T())->hook(&m_node);
-}
-
-
-template <typename T>
-inline
-void
-list<T>::pop_back()
-{
-	M_REQUIRE(!empty());
-	erase(m_node.m_prev);
 }
 
 

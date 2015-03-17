@@ -647,6 +647,7 @@
 ::application::pgn::mc::Command(strip:info)				"Move Information"
 ::application::pgn::mc::Command(strip:marks)				"Marks"
 ::application::pgn::mc::Command(strip:comments)			"Comments"
+::application::pgn::mc::Command(strip:language)			"Language"
 ::application::pgn::mc::Command(strip:variations)		"Variations"
 ::application::pgn::mc::Command(copy:comments)			"Copy Comments"
 ::application::pgn::mc::Command(move:comments)			"Move Comments"
@@ -1476,6 +1477,7 @@
 ::encoding::mc::Description			"Description"
 ::encoding::mc::Languages				"Languages (Fonts)"
 ::encoding::mc::UseAutoDetection		"Use Auto-Detection"
+::encoding::mc::AllLanguages			"All languages"
 
 ::encoding::mc::ChooseEncodingTitle	"Choose Encoding"
 
@@ -1686,7 +1688,6 @@
 ::export::mc::IncludeAllTags				"Include all tags"
 ::export::mc::ExtraTags						"All other extra tags"
 ::export::mc::NoComments					"No comments"
-::export::mc::AllLanguages					"All languages"
 ::export::mc::Significant					"Significant"
 ::export::mc::LanguageSelection			"Language selection"
 ::export::mc::MapTo							"Map to"

@@ -650,6 +650,7 @@
 ::application::pgn::mc::Command(strip:info)				"Drag information"
 ::application::pgn::mc::Command(strip:marks)				"Markering"
 ::application::pgn::mc::Command(strip:comments)			"Kommentarer"
+::application::pgn::mc::Command(strip:language)       "Language" ;# NEW
 ::application::pgn::mc::Command(strip:variations)		"Varianter"
 ::application::pgn::mc::Command(copy:comments)			"Kopiera kommentarer"
 ::application::pgn::mc::Command(move:comments)			"Flytta kommentarer"
@@ -1488,6 +1489,7 @@
 ::encoding::mc::Description			"Beskriving"
 ::encoding::mc::Languages				"Språk (fonter)"
 ::encoding::mc::UseAutoDetection		"Use Auto-Detection"
+::encoding::mc::AllLanguages			"Alla språk"
 
 ::encoding::mc::ChooseEncodingTitle	"Välj kodning"
 
@@ -1698,7 +1700,6 @@
 ::export::mc::IncludeAllTags				"Markera allt"
 ::export::mc::ExtraTags						"Alla andra extra taggar"
 ::export::mc::NoComments					"Ingen kommentar"
-::export::mc::AllLanguages					"Alla språk"
 ::export::mc::Significant					"Signifikant"
 ::export::mc::LanguageSelection			"Val av språk"
 ::export::mc::MapTo							"Avbilda till"

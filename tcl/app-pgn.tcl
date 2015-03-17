@@ -50,6 +50,7 @@ set Command(strip:annotations)	"Annotations"
 set Command(strip:moveinfo)		"Move Information"
 set Command(strip:marks)			"Marks"
 set Command(strip:comments)		"Comments"
+set Command(strip:language)		"Language"
 set Command(strip:variations)		"Variations"
 set Command(copy:comments)			"Copy Comments"
 set Command(move:comments)			"Move Comments"
@@ -907,6 +908,7 @@ proc SetLanguages {position} {
 proc AddLanguageButton {lang} {
 	variable Vars
 
+	if {$lang eq "xx"} { return }
 	if {![info exists Vars(lang:active:$lang)]} {
 		set Vars(lang:active:$lang) 0
 	}
@@ -922,10 +924,16 @@ proc AddLanguageButton {lang} {
 }
 
 
-proc UpdateLanguages {position languages} {
+proc UpdateLanguages {position languageSet} {
 	variable Vars
 
 	if {$position >= 9} { return }
+
+	set languages {}
+	foreach lang $languageSet {
+		if {[string length $lang] == 0} { set lang "xx" }
+		lappend languages $lang
+	}
 
 	if {$Vars(lang:set) eq $languages} {
 		set Vars(lang:set:$position) $Vars(lang:set)
@@ -1052,6 +1060,7 @@ proc DoLayout {position data {context editor} {w {}}} {
 			}
 
 			languages {
+puts "languages: '[lindex $node 1]'"
 				UpdateLanguages $position [lindex $node 1]
 			}
 
@@ -2370,27 +2379,28 @@ proc PopupMenu {parent position} {
 		if {[::scidb::game::count comments] == 0} { set state disabled }
 		lassign [::scidb::game::link? $position] base variant index
 
-		menu $menu.strip.comments
-		$menu.strip add cascade \
-			-menu $menu.strip.comments \
+		$menu.strip add command \
 			-label " $mc::Command(strip:comments)" \
+			-command [list ::widget::busyOperation { ::scidb::game::strip comments }] \
 			-state $state \
 			;
 
-		if {$state eq "normal"} {
-			$menu.strip.comments add command \
-				-compound left \
-				-image $::country::icon::flag([::mc::countryForLang xx]) \
-				-label " $::languagebox::mc::AllLanguages" \
-				-command [list ::widget::busyOperation { ::scidb::game::strip comments }] \
-				;
+		menu $menu.strip.comments
+		$menu.strip add cascade \
+			-menu $menu.strip.comments \
+			-label " $mc::Command(strip:language)" \
+			-state $state \
+			-command [list ::widget::busyOperation [list ::scidb::game::strip comments]] \
+			;
 
+		if {$state eq "normal"} {
 			foreach lang $Vars(lang:set) {
+				if {$lang == "xx"} { set l "" } else { set l $lang }
 				$menu.strip.comments add command \
 					-compound left \
 					-image $::country::icon::flag([::mc::countryForLang $lang]) \
 					-label " [::encoding::languageName $lang]" \
-					-command [list ::widget::busyOperation [list ::scidb::game::strip comments $lang]] \
+					-command [list ::widget::busyOperation [list ::scidb::game::strip comments $l]] \
 					;
 			}
 		}
@@ -2708,7 +2718,7 @@ proc PopupMenu {parent position} {
 		-command [namespace code [list SetLanguages $Vars(position)]] \
 		;
 	::theme::configureCheckEntry $menu.display.languages
-	if {[llength $Vars(lang:set)]} { ;# not the complete set?
+	if {[llength $Vars(lang:set)]} {
 		foreach entry [::country::makeCountryList $Vars(lang:set)] {
 			lassign $entry flag name code
 			$menu.display.languages add checkbutton \
@@ -2841,7 +2851,9 @@ proc CopyComments {parent} {
 	ttk::labelframe $top.dst -text $::mc::To
 
 	foreach what {src dst} {
-		set langSet($what) [linsert $langSet($what) 0 $allLang]
+		if {$what eq "dst" || "xx" in $Vars(lang:set)} {
+			set langSet($what) [linsert $langSet($what) 0 $allLang]
+		}
 		set w $top.$what.cb
 		::ttk::tcombobox $w \
 			-state readonly \

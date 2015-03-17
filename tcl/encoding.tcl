@@ -121,6 +121,7 @@ set Encoding				"Encoding"
 set Description			"Description"
 set Languages				"Languages (Fonts)"
 set UseAutoDetection		"Use Auto-Detection"
+set AllLanguages			"All Languages"
 
 set ChooseEncodingTitle	"Choose Encoding"
 
@@ -390,6 +391,7 @@ proc select {path encoding} {
 proc languageName {lang} {
 	variable Lang
 
+	if {$lang eq "xx"} { return $mc::AllLanguages }
 	if {[info exists mc::Lang($lang)]} { return $mc::Lang($lang) }
 	return $lang
 }

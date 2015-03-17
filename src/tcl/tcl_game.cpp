@@ -567,10 +567,7 @@ public:
 		Tcl_Obj** p(&objv_1[0]);
 
 		for (LanguageSet::const_iterator i = languages.begin(), e = languages.end(); i != e; ++i)
-		{
-			if (!i->first.empty())
-				*p++ = Tcl_NewStringObj(i->first, i->first.size());
-		}
+			*p++ = Tcl_NewStringObj(i->first, i->first.size());
 
 		Tcl_Obj* objv_2[2];
 

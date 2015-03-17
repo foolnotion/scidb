@@ -159,7 +159,7 @@ public:
 	const_reverse_iterator rend() const;
 
 	void push_back(const_reference v);
-	void push_back();
+	reference push_back();
 	void pop_back();
 
 	iterator insert(iterator i, const_reference value);

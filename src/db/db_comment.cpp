@@ -47,9 +47,8 @@
 using namespace db;
 
 
-static mstl::string const prefix("<xml>");
-static mstl::string const suffix("</xml>");
-
+static mstl::string const Prefix("<xml>");
+static mstl::string const Suffix("</xml>");
 
 static char const AttrMap[3] = { 'b', 'i', 'u' };
 
@@ -230,10 +229,15 @@ struct HtmlData
 
 struct Collector : public Comment::Callback
 {
-	Collector(Comment::LanguageSet& set) :m_set(set), m_length(&m_set[mstl::string::empty_string]) {}
+	Collector(Comment::LanguageSet& set) :m_set(set), m_length(&m_unused) {}
 
 	void start()  override {}
-	void finish() override {}
+
+	void finish() override
+	{
+		if (m_set.empty())
+			m_set[mstl::string::empty_string];
+	}
 
 	void startLanguage(mstl::string const& lang) override
 	{
@@ -242,7 +246,7 @@ struct Collector : public Comment::Callback
 
 	void endLanguage(mstl::string const& lang) override
 	{
-		m_length = &m_set[mstl::string::empty_string];
+		m_length = &m_unused;
 	}
 
 	void startAttribute(Attribute attr) override	{}
@@ -260,7 +264,9 @@ struct Collector : public Comment::Callback
 	}
 
 	Comment::LanguageSet& m_set;
-	unsigned* m_length;
+
+	unsigned*	m_length;
+	unsigned		m_unused;
 };
 
 
@@ -338,7 +344,7 @@ struct Split : public Comment::Callback
 	{
 		LangMap::const_iterator	e = lhs.find(mstl::string::empty_string);
 
-		result.assign(::prefix);
+		result.assign(::Prefix);
 
 		if (lhs.size() == 1 && e != lhs.end())
 		{
@@ -461,7 +467,7 @@ struct Split : public Comment::Callback
 			}
 		}
 
-		result.append(::suffix);
+		result.append(::Suffix);
 	}
 
 	static void merge(mstl::string& result,
@@ -469,7 +475,7 @@ struct Split : public Comment::Callback
 							LangMap const& rhs,
 							LanguageSet const& leadingLanguageSet)
 	{
-		result.assign(::prefix);
+		result.assign(::Prefix);
 
 		LanguageSet langSet;
 
@@ -505,7 +511,7 @@ struct Split : public Comment::Callback
 			result.append('>');
 		}
 
-		result.append(::suffix);
+		result.append(::Suffix);
 	}
 
 	LangMap m_result;
@@ -562,10 +568,16 @@ struct Normalize : public Comment::Callback
 		,m_engFlag(engFlag)
 		,m_othFlag(othFlag)
 		,m_isXml(false)
+		,m_containsAll(	m_wanted == 0
+							|| m_wanted->find(mstl::string::empty_string) != m_wanted->end()
+							|| (m_toLang && m_toLang->empty()))
 	{
 		static_assert(	((1 << Delim) & ((1 << Bold) | (1 << Italic) | (1 << Underline))) == 0,
 							"invalid constant");
 		static_assert(sizeof(m_attr) >= (Bold | Italic | Underline), "array too small");
+
+		M_ASSERT(fromLang == 0 || toLang != 0);
+		M_ASSERT(fromLang == 0 || *fromLang != *toLang);
 
 		m_engFlag = m_othFlag = false;
 	}
@@ -649,132 +661,144 @@ struct Normalize : public Comment::Callback
 	{
 		m_result.clear();
 
-		if (!m_map.empty())
+		if (m_map.empty())
+			return;
+
+		bool empty = true;
+
+		for (LangMap::const_iterator i = m_map.begin(); i != m_map.end(); ++i)
 		{
+			if (i->second.count > 0)
+			{
+				empty = false;
+
+				if (!i->first.empty())
+				{
+					if (i->first == "en")
+						m_engFlag = true;
+					else
+						m_othFlag = true;
+
+					m_isXml = true;
+				}
+			}
+		}
+
+		if (empty)
+			return;
+
+		if (m_fromLang)
+		{
+			M_ASSERT(m_toLang);
+
+			LangMap::const_iterator i = m_map.find(*m_fromLang);
+
+			if (i != m_map.end())
+			{
+				Content& content = m_map[*m_toLang];
+
+				if (content.count > 0)
+					content.items.push_back().flags.set(Delim);
+
+				content.items += i->second.items;
+				content.count += i->second.count;
+
+				if (!m_toLang->empty())
+				{
+					if (*m_toLang == "en")
+						m_engFlag = true;
+					else
+						m_othFlag = true;
+
+					m_isXml = true;
+				}
+			}
+		}
+
+		if (!m_isXml)
+		{
+			Content::Items const& items = m_map[mstl::string::empty_string].items;
+
+			if (!items.empty())
+			{
+				M_ASSERT(items.size() == 1);
+				::flatten(items.front().text, m_result);
+			}
+		}
+		else
+		{
+			m_result += ::Prefix;
+
 			for (LangMap::const_iterator i = m_map.begin(); i != m_map.end(); ++i)
 			{
-				if (!i->first.empty() && i->second.count > 0)
-					m_isXml = true;
-			}
-
-			if (m_fromLang)
-			{
-				M_ASSERT(m_toLang);
-
-				LangMap::const_iterator i = m_map.find(*m_fromLang);
-
-				if (i != m_map.end())
+				if (i->second.count > 0)
 				{
-					Content& content = m_map[*m_toLang];
+					M_ASSERT(	m_wanted == 0
+								|| m_wanted->find(i->first) != m_wanted->end()
+								|| (m_toLang && *m_toLang == i->first));
 
-					if (content.count > 0)
+					m_result.append("<:", 2);
+					m_result.append(i->first);
+					m_result.append('>');
+
+					Content::Items::const_iterator k = i->second.items.begin();
+					Content::Items::const_iterator e = i->second.items.end();
+
+					bool pendingDelim = false;
+
+					m_flags.reset();
+					m_stack.clear();
+
+					for ( ; k != e; ++k)
 					{
-						content.items.push_back();
-						content.items.back().flags.set(Delim);
-					}
-
-					content.items += i->second.items;
-					content.count += i->second.count;
-
-					if (!m_toLang->empty())
-					{
-						m_isXml = true;
-
-						if (*m_toLang == "en")
-							m_engFlag = true;
-						else
-							m_othFlag = true;
-					}
-				}
-			}
-
-			if (!m_isXml)
-			{
-				m_map[mstl::string::empty_string]; // ensure existence
-
-				Content::Items const& items = m_map.find(mstl::string::empty_string)->second.items;
-
-				if (!items.empty())
-				{
-					M_ASSERT(items.size() == 1);
-					::flatten(m_map.find(mstl::string::empty_string)->second.items.front().text, m_result);
-				}
-			}
-			else
-			{
-				m_result += ::prefix;
-
-				for (LangMap::const_iterator i = m_map.begin(); i != m_map.end(); ++i)
-				{
-					if (i->second.count > 0)
-					{
-						M_ASSERT(	m_wanted == 0
-									|| m_wanted->find(i->first) != m_wanted->end()
-									|| (m_toLang && *m_toLang == i->first));
-
-						m_result.append("<:", 2);
-						m_result.append(i->first);
-						m_result.append('>');
-
-						Content::Items::const_iterator k = i->second.items.begin();
-						Content::Items::const_iterator e = i->second.items.end();
-
-						bool pendingDelim = false;
-
-						m_flags.reset();
-						m_stack.clear();
-
-						for ( ; k != e; ++k)
+						if (k->flags.test(Delim))
 						{
-							if (k->flags.test(Delim))
-							{
-								pendingDelim = true;
-							}
-							else
-							{
-								M_ASSERT(!k->text.empty());
-
-								if (pendingDelim)
-								{
-									m_result.append(m_delim);
-									pendingDelim = false;
-								}
-
-								Flags flags = k->flags - m_flags;
-
-								if (m_flags.any())
-									flags |= unsetFlags(m_flags - k->flags);
-
-								if (flags.any())
-								{
-									Content::Items::const_iterator j(k + 1);
-
-									while (j != e && (j->flags & flags).any())
-										++j;
-
-									while (--j != k && flags.any())
-									{
-										setFlags(flags & j->flags);
-										flags -= j->flags;
-									}
-
-									setFlags(flags);
-								}
-
-								m_result += k->text;
-							}
+							pendingDelim = true;
 						}
+						else
+						{
+							M_ASSERT(!k->text.empty());
 
-						unsetFlags(m_flags);
+							if (pendingDelim)
+							{
+								m_result.append(m_delim);
+								pendingDelim = false;
+							}
 
-						m_result.append("</:", 3);
-						m_result.append(i->first);
-						m_result.append('>');
+							Flags flags = k->flags - m_flags;
+
+							if (m_flags.any())
+								flags |= unsetFlags(m_flags - k->flags);
+
+							if (flags.any())
+							{
+								Content::Items::const_iterator j(k + 1);
+
+								while (j != e && (j->flags & flags).any())
+									++j;
+
+								while (--j != k && flags.any())
+								{
+									setFlags(flags & j->flags);
+									flags -= j->flags;
+								}
+
+								setFlags(flags);
+							}
+
+							m_result += k->text;
+						}
 					}
-				}
 
-				m_result += suffix;
+					unsetFlags(m_flags);
+
+					m_result.append("</:", 3);
+					m_result.append(i->first);
+					m_result.append('>');
+				}
 			}
+
+			m_result += Suffix;
 		}
 	}
 
@@ -784,6 +808,7 @@ struct Normalize : public Comment::Callback
 
 		if (m_lang->items.empty() || m_flags != m_lang->items.back().flags)
 			m_lang->items.push_back(Item(m_flags));
+
 		return m_lang->items.back().text;
 	}
 
@@ -793,51 +818,19 @@ struct Normalize : public Comment::Callback
 		m_flags.reset();
 
 		if (m_wanted == 0 || m_wanted->find(lang) != m_wanted->end())
-		{
 			m_lang = &m_map[lang];
-
-			if (m_lang->count > 0)
-			{
-				m_lang->items.push_back();
-				m_lang->items.back().flags.set(Delim);
-			}
-
-			if (!lang.empty())
-			{
-				if (lang == "en")
-					m_engFlag = true;
-				else
-					m_othFlag = true;
-			}
-		}
 		else if (m_fromLang && lang == *m_fromLang)
-		{
-			M_ASSERT(m_toLang);
-
-			m_lang = &m_map[lang];
-
-			if (m_lang->count)
-				text().append(m_delim);
-
-			if (!m_toLang->empty())
-			{
-				if (*m_toLang == "en")
-					m_engFlag = true;
-				else
-					m_othFlag = true;
-			}
-		}
+			m_lang = &m_map[*m_toLang];
 		else
-		{
 			m_lang = 0;
-		}
+
+		if (m_lang && m_lang->count > 0)
+			m_lang->items.push_back().flags.set(Delim);
 	}
 
-	void endLanguage(mstl::string const& lang) override
+	void endLanguage(mstl::string const&) override
 	{
-		if (m_wanted == 0 || m_wanted->find(mstl::string::empty_string) != m_wanted->end())
-			m_lang = &m_map[mstl::string::empty_string];
-		else if (m_fromLang && lang == *m_fromLang)
+		if (m_containsAll)
 			m_lang = &m_map[mstl::string::empty_string];
 		else
 			m_lang = 0;
@@ -946,6 +939,7 @@ struct Normalize : public Comment::Callback
 	bool&						m_engFlag;
 	bool&						m_othFlag;
 	bool						m_isXml;
+	bool						m_containsAll;
 	Byte						m_attr[3];
 	Flags						m_flags;
 	AttrStack				m_stack;
@@ -2282,8 +2276,6 @@ Comment::strip(LanguageSet const& set)
 void
 Comment::copy(mstl::string const& fromLang, mstl::string const& toLang, bool stripOriginal)
 {
-	M_REQUIRE(isXml());
-
 	if (fromLang == toLang)
 		return;
 
@@ -2303,6 +2295,7 @@ Comment::copy(mstl::string const& fromLang, mstl::string const& toLang, bool str
 									&toLang);
 
 		parse(normalize);
+		m_languageSet.clear();
 	}
 	else
 	{
@@ -2371,8 +2364,8 @@ Comment::fromHtml(mstl::string const& s)
 
 			if (data.isXml)
 			{
-				m_content.insert(m_content.begin(), ::prefix);
-				m_content.append(::suffix);
+				m_content.insert(m_content.begin(), ::Prefix);
+				m_content.append(::Suffix);
 			}
 			else if (!m_content.empty())
 			{
@@ -2638,13 +2631,13 @@ Comment::convertCommentToXml(	mstl::string const& comment,
 		str.swap(result.m_content);
 		str.rtrim();
 
-		result.m_content.append(::prefix);
+		result.m_content.append(::Prefix);
 		result.m_content.append("<:>", 3);
 		result.m_content.append(str);
 		result.m_content.append("</:", 3);
 		result.m_content.append(lang);
 		result.m_content.append(">", 1);
-		result.m_content += ::suffix;
+		result.m_content += ::Suffix;
 		result.normalize(ExpandEmoticons, '\0');
 	}
 
