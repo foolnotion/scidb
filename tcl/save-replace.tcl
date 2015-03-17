@@ -3052,7 +3052,7 @@ proc CheckFields {top title fields} {
 					}
 
 					if {[llength $error] == 0} {
-						set Tags($tagName) [TruncateValue $top $tag $value]
+						set Tags($tag) [TruncateValue $top $tag $value]
 					}
 				}
 

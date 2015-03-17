@@ -697,7 +697,7 @@ proc selectEvent {base variant index} {
 	if {[winfo toplevel $Vars(events)] eq $Vars(events)} {
 		events::activate $Vars(events) 1
 	} elseif {$Vars(contents) ne "events"} {
-		$Vars(contents) select $Vars(contents).events
+		after 1 [list $Vars(contents) select $Vars(contents).events]
 	}
 }
 
@@ -710,7 +710,7 @@ proc selectSite {base variant index} {
 	if {[winfo toplevel $Vars(sites)] eq $Vars(sites)} {
 		sites::activate $Vars(sites) 1
 	} elseif {$Vars(contents) ne "sites"} {
-		$Vars(contents) select $Vars(contents).sites
+		after 1 [list $Vars(contents) select $Vars(contents).sites]
 	}
 }
 
@@ -723,7 +723,7 @@ proc selectPlayer {base variant index} {
 	if {[winfo toplevel $Vars(players)] eq $Vars(players)} {
 		players::activate $Vars(players) 1
 	} elseif {$Vars(contents) ne "players"} {
-		$Vars(contents) select $Vars(contents).players
+		after 1 [list $Vars(contents) select $Vars(contents).players]
 	}
 }
 
