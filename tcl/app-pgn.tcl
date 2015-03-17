@@ -1060,7 +1060,6 @@ proc DoLayout {position data {context editor} {w {}}} {
 			}
 
 			languages {
-puts "languages: '[lindex $node 1]'"
 				UpdateLanguages $position [lindex $node 1]
 			}
 
