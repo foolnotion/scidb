@@ -1038,7 +1038,6 @@ proc EnterNode {id} {
 			$node hilite [::colors::lookup $Colors(highlighted)]
 		}
 		incr Highlighted($node)
-if {$Highlighted($node) > 1} { puts "---------> $node: $Highlighted($node)" }
 	}
 }
 
@@ -1374,7 +1373,7 @@ proc ApplyFont {dlg} {
 	variable ${dlg}::Vars
 
 	$Vars(html) css [DefaultCSS]
-	$Vars(html) fontsize $size
+	$Vars(html) fontsize [::font::html::fontSize crosstable]
 	$Vars(html) parse $Vars(output:html)
 }
 
