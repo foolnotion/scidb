@@ -2301,6 +2301,7 @@
 ::table::mc::FitColumnWidth			"Fit column width"
 ::table::mc::FitColumns					"Fit all columns"
 ::table::mc::ExpandColumn				"Expand column width"
+::table::mc::ShrinkColumn				"Shrink column width"
 ::table::mc::SqueezeColumns			"Squeeze all columns"
 ::table::mc::AccelFitColumns			"Ctrl+,"
 ::table::mc::AccelOptimizeColumns	"Ctrl+."

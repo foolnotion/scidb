@@ -656,13 +656,6 @@ proc findTclTkPathsAndMore {} {
         $configure(prefix)/lib/tk${tclv}             \
         $configure(prefix)/lib/tk${tclv_nodot}       \
         ;
-    foreach dir $sysDirs { lappend path(tcl,libraries) /usr/lib/$dir }
-    lappend path(tcl,libraries)         \
-        /usr/local/lib/tcl${tclv}       \
-        /usr/local/lib/tcl${tclv_nodot} \
-        /usr/local/lib/tk${tclv}        \
-        /usr/local/lib/tk${tclv_nodot}  \
-        ;
     foreach dir $sysDirs { lappend path(tcl,libraries) /usr/local/lib/$dir }
     lappend path(tcl,libraries)   \
         /usr/local/tcl/lib        \
@@ -678,6 +671,13 @@ proc findTclTkPathsAndMore {} {
         /opt/tcltk/lib            \
         /opt/mytcltk/lib          \
         /opt/lib                  \
+        ;
+    foreach dir $sysDirs { lappend path(tcl,libraries) /usr/lib/$dir }
+    lappend path(tcl,libraries)         \
+        /usr/local/lib/tcl${tclv}       \
+        /usr/local/lib/tcl${tclv_nodot} \
+        /usr/local/lib/tk${tclv}        \
+        /usr/local/lib/tk${tclv_nodot}  \
         ;
 
     # Try to add tcl_library and auto_path values to path(tcl,libraries),
@@ -733,7 +733,8 @@ proc findTclTkPathsAndMore {} {
     foreach module {tcl tk} {
         if {[info exists configure($module-libraries)]} {
             set package($module-lib) [MakeOption -L $configure($module-libraries)]
-            append package($module-lib) " -l${module}${tclv}"
+            Append package($module-lib) [MakeOption -Wl,-rpath= $configure($module-libraries)]
+            Append package($module-lib) " -l${module}${tclv}"
         } else {
             set libPaths $path($module,libraries)
             set configure($module-libraries) [FindDir "lib${module}${tclv}.*" $libPaths]
@@ -744,6 +745,7 @@ proc findTclTkPathsAndMore {} {
                 }
             } else {
                 set package($module-lib) [MakeOption -L $configure($module-libraries)]
+                Append package($module-lib) [MakeOption -Wl,-rpath= $configure($module-libraries)]
             }
             puts -nonewline "    Location of [string toupper $module 0 0] $tclv library: "
             if {[info exists package($module-lib)]} {

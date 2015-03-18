@@ -2313,6 +2313,7 @@
 ::table::mc::FitColumnWidth			"Anpassa spaltbredden"
 ::table::mc::FitColumns					"Anpassa alla spalter"
 ::table::mc::ExpandColumn				"Expandera kolumnbredd"
+::table::mc::ShrinkColumn				"Shrink column width" ;# NEW
 ::table::mc::SqueezeColumns			"Tryck ihop alla spalter"
 ::table::mc::AccelFitColumns			"Ctrl+,"
 ::table::mc::AccelOptimizeColumns	"Ctrl+."

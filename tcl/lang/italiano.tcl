@@ -2317,6 +2317,7 @@
 ::table::mc::FitColumnWidth			"Regola larghezza colonna"
 ::table::mc::FitColumns					"Regola tutte le colonne"
 ::table::mc::ExpandColumn				"Espandi larghezza colonna"
+::table::mc::ShrinkColumn				"Shrink column width" ;# NEW
 ::table::mc::SqueezeColumns			"Stringi tutte le colonne"
 ::table::mc::AccelFitColumns			"Ctrl+,"
 ::table::mc::AccelOptimizeColumns	"Ctrl+."

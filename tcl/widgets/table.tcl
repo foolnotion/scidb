@@ -48,6 +48,7 @@ set OptimizeColumn			"Optimize column width"
 set OptimizeColumns			"Optimize all columns"
 set FitColumnWidth			"Fit column width"
 set FitColumns					"Fit all columns"
+set ShrinkColumn				"Shrink column width"
 set ExpandColumn				"Expand column width"
 set SqueezeColumns			"Squeeze all columns"
 
@@ -1581,6 +1582,10 @@ proc PopupMenu {table x y X Y} {
 			$menu add command \
 				-label $mc::FitColumnWidth \
 				-command [list $table.t column fit $id] \
+				;
+			$menu add command \
+				-label $mc::ShrinkColumn \
+				-command [list $table.t column shrink $id] \
 				;
 			$menu add command \
 				-label $mc::ExpandColumn \

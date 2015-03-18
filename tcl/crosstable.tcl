@@ -915,7 +915,7 @@ proc Destroy {dlg w unsubscribe} {
 }
 
 
-proc Open {dlg which gameIndex} {
+proc Open {dlg which gameIndex {stimulate 0}} {
 	variable ${dlg}::Vars
 
 	Tooltip $dlg hide
@@ -933,6 +933,10 @@ proc Open {dlg which gameIndex} {
 		set info [::scidb::db::get gameInfo $index $viewId $base $variant]
 		set Vars(${which}Id) [::widget::busyOperation \
 			[list ::${which}::load $path $base $variant $info $viewId $index $Vars(${which}Id)]]
+	}
+
+	if {$stimulate} {
+		after idle [list $Vars(html) stimulate]
 	}
 }
 
@@ -1010,7 +1014,7 @@ proc MouseLeave {dlg nodes {stimulate 0}} {
 	}
 
 	if {$stimulate} {
-		$Vars(html) stimulate
+		after idle [list $Vars(html) stimulate]
 		::tooltip::hide
 	}
 }
@@ -1038,6 +1042,7 @@ proc EnterNode {id} {
 			$node hilite [::colors::lookup $Colors(highlighted)]
 		}
 		incr Highlighted($node)
+if {$Highlighted($node) > 1} { puts "---------> $node: $Highlighted($node)" }
 	}
 }
 
@@ -1047,9 +1052,8 @@ proc LeaveNode {id} {
 	variable Nodes
 	variable Marks
 
-	if {[catch { set node $Nodes($id) }]} { return }
-
-	if {[info exists Highlighted($node)]} {
+	catch {
+		set node $Nodes($id)
 		if {$Highlighted($node) > 0} {
 			if {[incr Highlighted($node) -1] == 0} {
 				if {![info exists Marks($node)]} {
@@ -1058,6 +1062,7 @@ proc LeaveNode {id} {
 			}
 		}
 	}
+
 }
 
 
@@ -1098,8 +1103,7 @@ proc Mouse1Down {dlg nodes} {
 	foreach node $nodes {
 		set gameIndex [$node attribute -default {} game]
 		if {[string length $gameIndex]} {
-			Open $dlg browser $gameIndex
-			$Vars(html) stimulate
+			after idle [namespace code [list Open $dlg browser $gameIndex 1]]
 			::tooltip::hide
 		}
 
@@ -1145,21 +1149,15 @@ proc Mouse2Down {dlg nodes} {
 
 
 proc Mouse2Up {dlg nodes} {
-	foreach node $nodes {
-		set attr [$node attribute -default {} recv]
-		if {[string length $attr] == 0} { return }
-
-		::gametable::hideGame $dlg
-		::playercard::popdownInfo $dlg
-		::eventtable::popdownInfo $dlg
-	}
-
+	::gametable::hideGame $dlg
+	::playercard::popdownInfo $dlg
+	::eventtable::popdownInfo $dlg
 	MouseLeave $dlg $nodes 1
 }
 
 
 proc Mouse3Down {dlg nodes} {
-	variable _Popup
+	variable Popup_
 
 	set rank {}
 	set gameIndex {}
@@ -1172,7 +1170,7 @@ proc Mouse3Down {dlg nodes} {
 	}
 
 	if {[llength $rank] == 0 && [llength $gameIndex] == 0} {
-		if {[info exists _Popup]} { return }
+		if {[info exists Popup_]} { return }
 		return [PopupMenu $dlg]
 	}
 
@@ -1223,8 +1221,8 @@ proc Mouse3Down {dlg nodes} {
 		BuildMenu $dlg $m
 
 		MouseEnter $dlg $nodes
-		set _Popup 1
-		bind $m <<MenuUnpost>> [list unset [namespace current]::_Popup]
+		set Popup_ 1
+		bind $m <<MenuUnpost>> [list unset [namespace current]::Popup_]
 		bind $m <<MenuUnpost>> +[namespace code [list MouseLeave $dlg $nodes 1]]
 		tk_popup $m {*}[winfo pointerxy $dlg]
 	}
@@ -1262,6 +1260,32 @@ proc BuildMenu {dlg m} {
 		-image $::icon::16x16::save \
 		-compound left \
 		;
+
+	$m add separator
+	if {[winfo exists $dlg.next]} {
+		$m add command \
+			-label " [::mc::stripAmpersand $::widget::mc::Previous]" \
+			-command [$dlg.previous cget -command] \
+			-image $::icon::16x16::previous \
+			-compound left \
+			-accelerator "$::mc::Key(Alt)-[::mc::extractAccelerator $::widget::mc::Previous]" \
+			;
+		$m add command \
+			-label " [::mc::stripAmpersand $::widget::mc::Next]" \
+			-command [$dlg.next cget -command] \
+			-image $::icon::16x16::next \
+			-compound left \
+			-accelerator "$::mc::Key(Alt)-[::mc::extractAccelerator $::widget::mc::Next]" \
+			;
+	}
+	$m add command \
+		-label " [::mc::stripAmpersand $::widget::mc::Close]" \
+		-command [$dlg.close cget -command] \
+		-image $::icon::16x16::close \
+		-compound left \
+		-accelerator "$::mc::Key(Alt)-[::mc::extractAccelerator $::widget::mc::Close]" \
+		;
+
 	$m add separator
 
 	::font::html::addChangeFontSizeToMenu crosstable $m \
@@ -1333,31 +1357,6 @@ proc BuildMenu {dlg m} {
 
 	$m add separator
 	$m add cascade -label $mc::Debugging -menu $sub
-
-	$m add separator
-	if {[winfo exists $dlg.next]} {
-		$m add command \
-			-label " [::mc::stripAmpersand $::widget::mc::Previous]" \
-			-command [$dlg.previous cget -command] \
-			-image $::icon::16x16::previous \
-			-compound left \
-			-accelerator "$::mc::Key(Alt)-[::mc::extractAccelerator $::widget::mc::Previous]" \
-			;
-		$m add command \
-			-label " [::mc::stripAmpersand $::widget::mc::Next]" \
-			-command [$dlg.next cget -command] \
-			-image $::icon::16x16::next \
-			-compound left \
-			-accelerator "$::mc::Key(Alt)-[::mc::extractAccelerator $::widget::mc::Next]" \
-			;
-	}
-	$m add command \
-		-label " [::mc::stripAmpersand $::widget::mc::Close]" \
-		-command [$dlg.close cget -command] \
-		-image $::icon::16x16::close \
-		-compound left \
-		-accelerator "$::mc::Key(Alt)-[::mc::extractAccelerator $::widget::mc::Close]" \
-		;
 }
 
 

@@ -3841,11 +3841,37 @@ OptimizeColumn(TreeColumn column, int expandOnly, int shrinkOnly)
 
 
 static void
+ShrinkColumn(TreeColumn column)
+{
+	TreeCtrl* tree = column->tree;
+
+	int treeWidth = Tk_Width(tree->tkwin) - 2*tree->borderWidth;
+	int totalWidth = Tree_WidthOfLeftColumns(tree) +
+							Tree_WidthOfRightColumns(tree) +
+							Tree_WidthOfColumns(tree);
+	int overplus = MIN(totalWidth - treeWidth, column->width - TreeColumn_MinWidth(column));
+
+	if (overplus > 0) {
+		column->width -= overplus;
+		RefreshWidthObj(column);
+
+		/* Update layout */
+		tree->widthOfColumns = -1;
+		tree->widthOfColumnsLeft = tree->widthOfColumnsRight = -1;
+		Tree_DInfoChanged(tree, DINFO_REDO_COLUMN_WIDTH);
+		(void) Tree_WidthOfColumns(tree);
+
+		ResetColumn(column);
+	}
+}
+
+
+static void
 ExpandColumn(TreeColumn column, int fullWidth)
 {
 	TreeCtrl* tree = column->tree;
 
-	int treeWidth = tree->width;
+	int treeWidth = Tk_Width(tree->tkwin) - 2*tree->borderWidth;
 	int totalWidth = Tree_WidthOfLeftColumns(tree) +
 							Tree_WidthOfRightColumns(tree) +
 							Tree_WidthOfColumns(tree);
@@ -3900,7 +3926,8 @@ TreeColumnCmd(
 	TreeCtrl *tree = clientData;
 	static CONST char *commandNames[] = {
 		"bbox", "cget", "compare", "configure", "count", "create", "delete",
-		"dragcget", "dragconfigure", "ellipsis", "expand", "fit", "id",
+		"dragcget", "dragconfigure", "ellipsis", "expand", "fit", "shrink",
+		"id",
 #ifdef DEPRECATED
 		"index",
 #endif
@@ -3911,7 +3938,7 @@ TreeColumnCmd(
 		COMMAND_BBOX, COMMAND_CGET, COMMAND_COMPARE, COMMAND_CONFIGURE,
 		COMMAND_COUNT, COMMAND_CREATE, COMMAND_DELETE, COMMAND_DRAGCGET,
 		COMMAND_DRAGCONF, COMMAND_ELLIPSIS, COMMAND_EXPAND, COMMAND_FIT,
-		COMMAND_ID,
+		COMMAND_SHRINK, COMMAND_ID,
 #ifdef DEPRECATED
 		COMMAND_INDEX,
 #endif
@@ -4484,6 +4511,22 @@ doneDELETE:
 			/* Update layout if needed */
 			(void) Tree_TotalWidth(tree);
 			ExpandColumn(column, fullWidth);
+			break;
+		}
+
+		case COMMAND_SHRINK: {
+			TreeColumn column;
+
+			if (objc != 4) {
+				Tcl_WrongNumArgs(interp, 3, objv, "column");
+				return TCL_ERROR;
+			}
+			if (TreeColumn_FromObj(tree, objv[3], &column, CFO_NOT_NULL) != TCL_OK)
+				return TCL_ERROR;
+
+			/* Update layout if needed */
+			(void) Tree_TotalWidth(tree);
+			ShrinkColumn(column);
 			break;
 		}
 
@@ -5721,6 +5764,7 @@ LayoutColumns(
 	UniformGroup *uniform;
 	int uniformCount = 0;
 	int columnCount = 0;
+	int treeWidth;
 
 	if (visPtr != NULL)
 		(*visPtr) = NULL;
@@ -5730,6 +5774,7 @@ LayoutColumns(
 		return 0;
 
 	tree = first->tree;
+	treeWidth = Tk_Width(tree->tkwin) - 2*tree->borderWidth;
 
 	/* Initialize the .minSize field of every uniform group. */
 	hPtr = Tcl_FirstHashEntry(&tree->uniformGroupHash, &search);
@@ -5899,7 +5944,7 @@ LayoutColumns(
 	/* Expand columns */
 	if (visWidth > totalWidth &&
 			numExpand > 0 &&
-			(tree->prevTreeWidth < Tk_Width(tree->tkwin) ||
+			(tree->prevTreeWidth < treeWidth ||
 				tree->prevVisWidth < visWidth ||
 				tree->prevColumnWidth < totalWidth ||
 				tree->prevColumnCount > columnCount)) {
@@ -5955,7 +6000,7 @@ doOffsets:
 	if (first->lock == COLUMN_LOCK_NONE) {
 		tree->prevColumnWidth = totalWidth;
 		tree->prevVisWidth = visWidth;
-		tree->prevTreeWidth = Tk_Width(tree->tkwin);
+		tree->prevTreeWidth = treeWidth;
 		tree->prevColumnCount = columnCount;
 	}
 

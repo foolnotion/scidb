@@ -2307,6 +2307,7 @@
 ::table::mc::FitColumnWidth			"Ajustar el ancho de columna"
 ::table::mc::FitColumns					"Ajustar todas las columnas"
 ::table::mc::ExpandColumn				"Expandir el ancho de columna"
+::table::mc::ShrinkColumn				"Shrink column width" ;# NEW
 ::table::mc::SqueezeColumns			"Comprimir todas las columnas"
 ::table::mc::AccelFitColumns			"Ctrl+,"
 ::table::mc::AccelOptimizeColumns	"Ctrl+."

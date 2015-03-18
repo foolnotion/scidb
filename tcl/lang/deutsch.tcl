@@ -2300,6 +2300,7 @@
 ::table::mc::FitColumnWidth			"Spaltenbreite anpassen"
 ::table::mc::FitColumns					"Alle Spalten anpassen"
 ::table::mc::ExpandColumn				"Spaltenbreite expandieren"
+::table::mc::ShrinkColumn				"Spaltenbreite verdichten"
 ::table::mc::SqueezeColumns			"Alle Spalten verdichten"
 ::table::mc::AccelFitColumns			"Strg-,"
 ::table::mc::AccelOptimizeColumns	"Strg-."

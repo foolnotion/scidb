@@ -1,4 +1,4 @@
-# ======================================================================
+# ====================================================================== \ \
 # Author : $Author$
 # Version: $Revision$
 # Date   : $Date$
@@ -278,11 +278,11 @@ proc Build {w args} {
 	grid rowconfigure $w {0} -weight 1
 
 	namespace eval [namespace current]::$w {}
-	variable [namespace current]::${w}::Priv
-	variable [namespace current]::${w}::HoverNodes
-	variable [namespace current]::${w}::ActiveNodes1
-	variable [namespace current]::${w}::ActiveNodes2
-	variable [namespace current]::${w}::ActiveNodes3
+	variable ${w}::Priv
+	variable ${w}::HoverNodes
+	variable ${w}::ActiveNodes1
+	variable ${w}::ActiveNodes2
+	variable ${w}::ActiveNodes3
 
 	array set Priv {
 		onmouseover		{}
@@ -434,6 +434,7 @@ proc DeleteImage {args} { catch { image delete $args } }
 
 
 proc WidgetProc {w command args} {
+	if {![winfo exists $w]} { return }
 	variable ${w}::Priv
 
 	switch -glob -- $command {
@@ -523,12 +524,9 @@ proc WidgetProc {w command args} {
 		}
 
 		stimulate {
-			array unset [namespace current]::${w}::HoverNodes
-			set Priv(nodeList) {}
 			set x [expr {[winfo pointerx .] - [winfo rootx $w.sub.html]}]
 			set y [expr {[winfo pointery .] - [winfo rooty $w.sub.html]}]
 			Motion $w.sub.html $x $y 0
-			set Priv(nodeList) {}
 			return
 		}
 
@@ -933,7 +931,7 @@ proc SbSet {sb first last} {
 proc Motion {w x y state} {
 	variable [winfo parent [winfo parent $w]]::Priv
 
-	SelectionExtend $w $x $y
+	if {$state & 1} { SelectionExtend $w $x $y }
 
 	set Priv(pointer) [list $x $y]
 	if {$state >= 256} { return }
@@ -970,7 +968,7 @@ proc HandleMotion {w nodelist} {
 			if {[info exists hoverNodes($n)]} { break }
 
 			if {[info exists HoverNodes($n)]} {
-				unset HoverNodes($n)
+				array unset HoverNodes $n
 			} else {
 				lappend events(onmouseover) $n
 			}
@@ -1191,7 +1189,7 @@ proc SelectionExtend {w x y {node {}}} {
 	}
 
 	if {$motioncmd ne ""} {
-		set Priv(sel:ignore) 1
+		incr Priv(sel:ignore) 1
 		{*}$motioncmd
 		update idletasks
 		after cancel $Priv(sel:afterid)
@@ -1209,7 +1207,7 @@ proc SelectionExtend {w x y {node {}}} {
 	}
 
 	if {$motioncmd ne ""} {
-		set Priv(sel:ignore) 1
+		incr Priv(sel:ignore) -1
 		{*}$motioncmd
 		update idletasks
 		after cancel $Priv(sel:afterid)

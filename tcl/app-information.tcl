@@ -391,19 +391,6 @@ proc Mouse1Down {nodes} {
 
 	foreach node $nodes {
 		if {![catch { $node parent }]} {
-			set id [$node attribute -default {} id]
-
-			if {[string length $id]} {
-				lassign [lindex [[namespace parent]::database::recentFiles] $id] \
-					type file name encoding readonly
-				[namespace parent]::database::openBase $Priv(html) $file no \
-					-encoding $encoding \
-					-readonly $readonly \
-					-switchToBase yes \
-					;
-				return
-			}
-
 			set cmd {}
 
 			switch [$node attribute -default {} href] {
@@ -423,6 +410,20 @@ proc Mouse1Up {nodes} {
 	variable Priv
 
 	foreach node $nodes {
+		set id [$node attribute -default {} id]
+
+		# NOTE: we must use mouse up because the progress window is grabbing the mouse
+		if {[string length $id]} {
+			lassign [lindex [[namespace parent]::database::recentFiles] $id] \
+				type file name encoding readonly
+			[namespace parent]::database::openBase $Priv(html) $file no \
+				-encoding $encoding \
+				-readonly $readonly \
+				-switchToBase yes \
+				;
+			return
+		}
+
 		set href [$node attribute -default {} href]
 
 		if {[string match http* $href]} {
