@@ -1010,7 +1010,7 @@ PgnReader::process(Progress& progress)
 						break;
 
 					default:
-						sendError(UnexpectedEndOfGame, m_currPos);
+						sendError(UnexpectedSymbol, m_currPos);
 						break;
 				}
 
