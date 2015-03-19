@@ -29,6 +29,7 @@
 namespace eval application {
 namespace eval mc {
 
+set Information				"&Information"
 set Database					"&Database"
 set Board						"&Board"
 set MainMenu					"&Main Menu"

@@ -966,49 +966,52 @@ PgnReader::process(Progress& progress)
 				if (consumer().variationLevel() > 0)
 					sendError(UnterminatedVariation);
 
-				if (token == kEoi)
+				switch (token)
 				{
-					if (m_readMode != File)
-					{
-						finishGame();
-						return 1;
-					}
-
-					sendError(UnexpectedEndOfInput);
-				}
-				else if (token == kTag)
-				{
-					if (m_readMode != File)
-						sendError(UnexpectedTag, m_currPos);
-
-					if (m_currPos.column == 1)
-					{
-						putback('[');
-						sendError(UnexpectedEndOfGame, m_currPos);
-					}
-
-					m_prevPos = m_currPos;
-					sendError(UnexpectedTag, m_prevPos);
-				}
-				else
-				{
-					M_ASSERT(token == kResult);
-
-					if (m_noResult || m_resultMode == InMoveSection)
-					{
-						m_tags.set(Result, result::toString(m_result));
-						checkResult();
-					}
-					else if (checkResult())
-					{
-						result::ID r = result::fromString(m_tags.value(Result));
-
-						if (m_result != r)
+					case kEoi:
+						if (m_readMode != File)
 						{
-							sendWarning(ResultDidNotMatchHeaderResult, m_prevPos, result::toString(m_result));
-							m_result = r;
+							finishGame();
+							return 1;
 						}
-					}
+						sendError(UnexpectedEndOfInput);
+						break;
+
+					case kTag:
+						if (m_readMode != File)
+							sendError(UnexpectedTag, m_currPos);
+
+						if (m_currPos.column == 1)
+						{
+							putback('[');
+							sendError(UnexpectedEndOfGame, m_currPos);
+						}
+
+						m_prevPos = m_currPos;
+						sendError(UnexpectedTag, m_prevPos);
+						break;
+
+					case kResult:
+						if (m_noResult || m_resultMode == InMoveSection)
+						{
+							m_tags.set(Result, result::toString(m_result));
+							checkResult();
+						}
+						else if (checkResult())
+						{
+							result::ID r = result::fromString(m_tags.value(Result));
+
+							if (m_result != r)
+							{
+								sendWarning(ResultDidNotMatchHeaderResult, m_prevPos, result::toString(m_result));
+								m_result = r;
+							}
+						}
+						break;
+
+					default:
+						sendError(UnexpectedEndOfGame, m_currPos);
+						break;
 				}
 
 				finishGame();
