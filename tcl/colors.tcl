@@ -242,7 +242,7 @@ array set Colors {
 	dark:gamehistory,hilite					#dce4e5
 	dark:fsbox,activebackground			#dce4e5
 	dark:switcher,background				#dce4e5
-	lite:switcher,hidden:background		#dce4e5
+	dark:switcher,hidden:background		#dce4e5
 }
 # mapped from #dce4e5
 array set Colors {

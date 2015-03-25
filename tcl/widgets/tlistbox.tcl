@@ -636,6 +636,7 @@ proc WidgetProc {w command args} {
 				# nothing to do
 			} elseif {"-width" in $args && "-height" ni $args} {
 				ComputeWidth $w $dontshrink
+				set Priv(resized) 1
 			} elseif {!$Priv(resized) || "-force" in $args} {
 				ComputeWidth $w $dontshrink
 				set Priv(resized) 1
@@ -949,19 +950,16 @@ proc WidgetProc {w command args} {
 				return error -code "value for \"[lindex $args end]\" missing"
 			}
 			array set opts $args
+			set resize 0
 			if {[info exists opts(-maxwidth)]} {
 				set Priv(maxwidth) [expr {max(0, $opts(-maxwidth) - 2*[$t cget -borderwidth] - 2)}]
-				if {$Priv(width) == 0} {
-					ComputeWidth $w
-				}
 				array unset opts -maxwidth
+				set resize 1
 			}
 			if {[info exists opts(-minwidth)]} {
 				set Priv(minwidth) [expr {max(0, $opts(-minwidth) - 2*[$t cget -borderwidth] - 2)}]
-				if {$Priv(width) == 0} {
-					ComputeWidth $w
-				}
 				array unset opts -minwidth
+				set resize 1
 			}
 			if {[info exists opts(-width)]} {
 				set Priv(width) $opts(-width)
@@ -983,6 +981,9 @@ proc WidgetProc {w command args} {
 			if {[info exists opts(-background)]} {
 				$t configure -background [lookupColor $opts(-background)]
 				array unset opts -background
+			}
+			if {$resize && $Priv(width) == 0 && $Priv(resized)} {
+				ComputeWidth $w
 			}
 			set args [array get opts]
 			if {[llength $args]} {
@@ -1153,7 +1154,7 @@ proc ComputeWidth {cb {dontshrink 0}} {
 		if {$maxwidth && $maxwidth < $width} { set width $maxwidth }
 		set width [max $width $minwidth]
 		set width [expr {$Priv(numcolumns)*$width}]
-		$t configure -width $width
+		$t configure -width [expr {$width + 2*[$t cget -borderwidth]}]
 		if {$Priv(expand) eq [lindex $Priv(columns) end] && $Priv(numcolumns) == 1} {
 			$t column expand $Priv(expand)
 		}

@@ -3814,6 +3814,25 @@ ResetColumns(TreeCtrl* tree)
 }
 
 
+static int
+TreeWidth(TreeCtrl* tree)
+{
+	int treeWidth = Tk_Width(tree->tkwin) - 2*tree->borderWidth;
+
+	if (treeWidth <= 1) {
+		if (tree->width > 0) {
+			treeWidth = tree->width;
+		} else if (tree->width == -1 && tree->widthObj) {
+			Tcl_GetIntFromObj(0, tree->widthObj, &treeWidth);
+		} else {
+			treeWidth = Tk_ReqWidth(tree->tkwin) - 2*tree->borderWidth;
+		}
+	}
+
+	return treeWidth;
+}
+
+
 static void
 OptimizeColumn(TreeColumn column, int expandOnly, int shrinkOnly)
 {
@@ -3845,7 +3864,7 @@ ShrinkColumn(TreeColumn column)
 {
 	TreeCtrl* tree = column->tree;
 
-	int treeWidth = Tk_Width(tree->tkwin) - 2*tree->borderWidth;
+	int treeWidth = TreeWidth(tree);
 	int totalWidth = Tree_WidthOfLeftColumns(tree) +
 							Tree_WidthOfRightColumns(tree) +
 							Tree_WidthOfColumns(tree);
@@ -3871,7 +3890,7 @@ ExpandColumn(TreeColumn column, int fullWidth)
 {
 	TreeCtrl* tree = column->tree;
 
-	int treeWidth = Tk_Width(tree->tkwin) - 2*tree->borderWidth;
+	int treeWidth = TreeWidth(tree);
 	int totalWidth = Tree_WidthOfLeftColumns(tree) +
 							Tree_WidthOfRightColumns(tree) +
 							Tree_WidthOfColumns(tree);
@@ -5774,7 +5793,7 @@ LayoutColumns(
 		return 0;
 
 	tree = first->tree;
-	treeWidth = Tk_Width(tree->tkwin) - 2*tree->borderWidth;
+	treeWidth = TreeWidth(tree);
 
 	/* Initialize the .minSize field of every uniform group. */
 	hPtr = Tcl_FirstHashEntry(&tree->uniformGroupHash, &search);
