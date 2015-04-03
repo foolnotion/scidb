@@ -186,13 +186,13 @@ proc build {w width height} {
 							-hide 1 \
 							-id board-control \
 							-tooltipvar [namespace current]::mc::Control \
-							-orientation bottom \
+							-side bottom \
 							-alignment center]
 	set tbGame		[::toolbar::toolbar $w \
 							-hide 1 \
 							-id board-game \
 							-tooltipvar [namespace current]::mc::Game \
-							-orientation top \
+							-side top \
 						]
 
 	set main [winfo parent $w]

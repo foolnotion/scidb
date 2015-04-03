@@ -141,6 +141,7 @@ set StyleLayout {
 
 array set DefaultColors {
 	background				pgn,background
+	foreground:main		pgn,foreground:main
 	foreground:variation	pgn,foreground:variation
 	foreground:bracket	pgn,foreground:bracket
 	foreground:numbering	pgn,foreground:numbering
@@ -248,6 +249,7 @@ proc buildText {path context {forceSbSet 0}} {
 	}
 
 	set pgn [tk::text $f.pgn \
+		-foreground black \
 		-yscrollcommand $yscrollcmd \
 		-takefocus 0 \
 		-exportselection 0 \
@@ -301,7 +303,8 @@ proc configureText {path {fontContext ""}} {
 	$w configure -font $::font::text($fontContext:normal)
 
 	if {$context ne "browser"} {
-		$w tag configure main -font $::font::text($fontContext:$bold)
+		$w tag configure main	-font $::font::text($fontContext:$bold) \
+										-foreground [::colors::lookup $Colors(foreground:main)]
 		$w tag configure italic -font $::font::text($fontContext:italic)
 		$w tag configure bold -font $::font::text($fontContext:bold)
 		$w tag configure bold-italic -font $::font::text($fontContext:bold-italic)
