@@ -240,8 +240,8 @@ class NamebasePlayer : public NamebaseEntry
 {
 public:
 
-	static uint32_t const KeyMask		= 0x01ffffff;
-	static uint32_t const SortMask	= 0x001fffff;
+	static uint32_t const KeyMask		= 0x00ffffff;
+	static uint32_t const SortMask	= 0x000fffff;
 
 	union Value
 	{
