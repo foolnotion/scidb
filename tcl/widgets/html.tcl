@@ -118,13 +118,14 @@ proc formatUrl {url} {
 
 proc defaultCSS {monoFamilies textFamilies} {
 	append css \n
-	append css ":link    { color: blue2; text-decoration: none; }" \n
-	append css ":visited { color: purple; text-decoration: none; }" \n
-	append css ":user    { color: blue2; text-decoration: none; }   /* http link */" \n
-	append css ":user2   { color: purple; text-decoration: none; }  /* http visited */" \n
-	append css ":user3   { color: black; text-decoration: none; }   /* invalid link */" \n
-	append css ":hover   { text-decoration: underline; background: yellow; }" \n
-	append css ".match   { background: yellow; color: black; }" \n
+	append css ":link    { color: blue2; text-decoration: none; }\n"
+	append css ":visited { color: purple; text-decoration: none; }\n"
+	append css ":user    { color: blue2; text-decoration: none; }   /* http link */\n"
+	append css ":user2   { color: purple; text-decoration: none; }  /* http visited */\n"
+	append css ":user3   { color: black; text-decoration: none; }   /* invalid link */\n"
+	append css ":hover   { text-decoration: underline; background: yellow; }\n"
+	append css ".match   { background: yellow; color: black; }\n"
+	append css "body     { color: black; }\n"
 	append css [monoStyle $monoFamilies] \n
 	append css [textStyle $textFamilies] \n
 	return $css

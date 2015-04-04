@@ -594,14 +594,17 @@ option add *inactiveSelectBackground darkgrey
 option add *inactiveSelectForeground white
 
 option add *Spinbox.background white
+option add *Spinbox.foreground white
 option add *Spinbox.selectForeground white
 option add *Spinbox.readonlyBackground white
 
+option add *Entry.foreground black
 option add *Entry.selectForeground black
 option add *Entry.readonlyBackground white
 #option add *Entry.selectBackground #678db2
 
 option add *Listbox.background white
+option add *Listbox.foreground black
 option add *Listbox.selectBorderWidth 0
 option add *Listbox.activeStyle dotbox
 option add *Listbox.selectBackground #ffdd76
@@ -611,14 +614,17 @@ option add *Panedwindow.sashWidth 4
 option add *Panedwindow.sashRelief raised
 
 option add *Menu.tearOff 0
+option add *Menu.foreground black
 option add *Menu.activeBackground #678db2
 #option add *Menu.activeBackground #437597
 option add *Menu.activeForeground white
 option add *Menu.activeBorderWidth 0
 
 option add *Text.background white
+option add *Text.foreground black
 #option add *Text.selectBackground #678db2
 
+option add *Button.foreground black
 option add *Button.highlightThickness 0
 
 option add *Canvas.highlightThickness 0
@@ -631,6 +637,7 @@ option add *TSpinbox.wrap 0
 
 option add *TEntry.exportSelection 0
 option add *TEntry.background white
+option add *TEntry.foreground black
 #option add *TEntry.selectBackground #678db2
 #option add *TEntry.cursor xterm
 
