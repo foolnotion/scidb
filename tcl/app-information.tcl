@@ -34,9 +34,6 @@ set RecentlyUsed				"Recently used"
 set RemoveSelectedDatabase	"Remove selected database from history"
 set NewsAvailable				"There are updated news available"
 
-set OpenBase					"Open database"
-set NewBase						"New database"
-
 }
 
 array set Priv {
@@ -183,7 +180,7 @@ proc activate {w flag} {
 	append content "<tr></tr>"
 	set lbl [set [namespace parent]::database::mc::FileNew]
 	append content "<td class='h2'><img src='[set ::icon::${size}x${size}::databaseNew]'/></td>"
-	append content "<td class='h2'>&nbsp;<a href='OPEN'>$lbl</td>"
+	append content "<td class='h2'>&nbsp;<a href='NEW'>$lbl</td>"
 	append content "</tr>"
 	append content "</table>"
 
