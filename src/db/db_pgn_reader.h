@@ -39,6 +39,7 @@
 
 #include "m_string.h"
 #include "m_vector.h"
+#include "m_list.h"
 #include "m_map.h"
 
 namespace mstl { class istream; }
@@ -78,6 +79,7 @@ public:
 
 	void setup(FileOffsets* fileOffsets);
 	void setFigurine(mstl::string const& figurine);
+	void setupGameNumbers(GameCount const& gameNumbers);
 
 	unsigned estimateNumberOfGames() override;
 	static unsigned estimateNumberOfGames(unsigned fileSize);
@@ -113,11 +115,12 @@ private:
 		unsigned column;
 	};
 
-	struct IllegalMoveWarning
+	struct WarningItem
 	{
-		variant::Type	m_variant;
-		Pos				m_pos;
-		mstl::string	m_move;
+		Warning			code;
+		Pos				pos;
+		variant::Type	variant;
+		mstl::string	item;
 	};
 
 	struct Interruption
@@ -131,20 +134,19 @@ private:
 
 	typedef unsigned Count[variant::NumberOfVariants];
 
-	typedef mstl::vector<Comment> Comments;
-	typedef mstl::vector<IllegalMoveWarning> Warnings;
+	typedef mstl::vector<Comment>		Comments;
+	typedef mstl::list<WarningItem>	Warnings;
 
 	void sendError(Error code, Pos pos, mstl::string const& item = mstl::string::empty_string);
 	void sendError(Error code, mstl::string const& item = mstl::string::empty_string);
 
-	void fatalError(Error code, Pos const& pos, mstl::string const& item = mstl::string::empty_string)
-		__attribute__((noreturn));
-	void fatalError(Error code, mstl::string const& item = mstl::string::empty_string)
-		__attribute__((noreturn));
-	void fatalError(save::State state) __attribute__((noreturn));
+	void fatalError(save::State state, variant::Type variant) __attribute__((noreturn));
 
 	void sendWarning(Warning code, Pos pos, mstl::string const& item = mstl::string::empty_string);
 	void sendWarning(Warning code, mstl::string const& item = mstl::string::empty_string);
+	void sendWarnings();
+
+	unsigned gameNumber(variant::Type variant) const;
 
 	int get(bool allowEndOfInput = false);
 	void putback(int c);
@@ -240,72 +242,73 @@ private:
 	Token skipWhiteSpace(Token prevToken, int c);
 	Token unexpectedSymbol(Token prevToken, int c);
 
-	mstl::istream&		m_stream;
-	FileOffsets*		m_fileOffsets;
-	unsigned				m_gameNumber;
-	unsigned				m_currentOffset;
-	unsigned				m_lineOffset;
-	unsigned				m_putback;
-	char					m_putbackBuf[10];
-	mstl::string		m_line;
-	mstl::string		m_variantValue;
-	Move					m_move;
-	char*					m_linePos;
-	char*					m_lineEnd;
-	Pos					m_currPos;
-	Pos					m_prevPos;
-	Pos					m_fenPos;
-	Pos					m_variantPos;
-	unsigned				m_countWarnings[LastWarning + 1];
-	unsigned				m_countErrors[LastError + 1];
-	ReadMode				m_readMode;
-	GameCount			m_gameCount;
-	ResultMode			m_resultMode;
-	Comments				m_comments;
-	Warnings				m_warnings;
-	MarkSet				m_marks;
-	country::Code		m_eventCountry;
-	Annotation			m_annotation;
-	nag::ID				m_prefixAnnotation;
-	TagSet				m_tags;
-	bool					m_ignoreNags;
-	bool					m_noResult;
-	result::ID			m_result;
-	time::Mode			m_timeMode;
-	unsigned				m_significance[2];
-	Modification		m_modification;
-	Modification		m_generalModification;
-	bool					m_parsingFirstHdr;
-	bool					m_parsingTags;
-	bool					m_eof;
-	bool					m_hasNote;
-	bool					m_atStart;
-	bool					m_parsingComment;
-	bool					m_sourceIsPossiblyChessBase;
-	bool					m_sourceIsChessOK;
-	bool					m_encodingFailed;
-	bool					m_ficsGamesDBGameNo;
-	bool					m_checkShufflePosition;
-	bool					m_isICS;
-	bool					m_hasCastled;
-	bool					m_resultCorrection;
-	bool					m_isAscii;
-	unsigned				m_countRejected;
-	unsigned				m_postIndex;
-	uint16_t				m_idn;
-	variant::Type		m_variant;
-	variant::Type		m_givenVariant;
-	variant::Type		m_thisVariant;
-	mstl::string		m_figurine;
-	mstl::string		m_description;
-	mstl::string		m_encoding;
-	Count					m_accepted;
-	Count					m_rejected;
-	Variants				m_variants;
-	sys::utf8::Codec*	m_codec;
-	mstl::string		m_buffer;
-	mstl::string		m_content;
-	Eco					m_eco;
+	mstl::istream&			m_stream;
+	FileOffsets*			m_fileOffsets;
+	unsigned					m_gameNumberInFile;
+	unsigned					m_currentOffset;
+	unsigned					m_lineOffset;
+	unsigned					m_putback;
+	char						m_putbackBuf[10];
+	mstl::string			m_line;
+	mstl::string			m_variantValue;
+	Move						m_move;
+	char*						m_linePos;
+	char*						m_lineEnd;
+	Pos						m_currPos;
+	Pos						m_prevPos;
+	Pos						m_fenPos;
+	Pos						m_variantPos;
+	unsigned					m_countWarnings[LastWarning + 1];
+	unsigned					m_countErrors[LastError + 1];
+	ReadMode					m_readMode;
+	GameCount				m_gameCount;
+	GameCount				m_gameNumbers;
+	ResultMode				m_resultMode;
+	Comments					m_comments;
+	Warnings					m_warnings;
+	MarkSet					m_marks;
+	country::Code			m_eventCountry;
+	Annotation				m_annotation;
+	nag::ID					m_prefixAnnotation;
+	TagSet					m_tags;
+	bool						m_ignoreNags;
+	bool						m_noResult;
+	result::ID				m_result;
+	time::Mode				m_timeMode;
+	unsigned					m_significance[2];
+	Modification			m_modification;
+	Modification			m_generalModification;
+	bool						m_parsingFirstHdr;
+	bool						m_parsingTags;
+	bool						m_eof;
+	bool						m_hasNote;
+	bool						m_atStart;
+	bool						m_parsingComment;
+	bool						m_sourceIsPossiblyChessBase;
+	bool						m_sourceIsChessOK;
+	bool						m_encodingFailed;
+	bool						m_ficsGamesDBGameNo;
+	bool						m_checkShufflePosition;
+	bool						m_isICS;
+	bool						m_hasCastled;
+	bool						m_resultCorrection;
+	bool						m_isAscii;
+	unsigned					m_countRejected;
+	unsigned					m_postIndex;
+	uint16_t					m_idn;
+	variant::Type			m_variant;
+	variant::Type			m_givenVariant;
+	variant::Type			m_thisVariant;
+	mstl::string			m_figurine;
+	mstl::string			m_description;
+	mstl::string			m_encoding;
+	Count						m_accepted;
+	Count						m_rejected;
+	Variants					m_variants;
+	sys::utf8::Codec*		m_codec;
+	mstl::string			m_buffer;
+	mstl::string			m_content;
+	Eco						m_eco;
 };
 
 } // namespace db

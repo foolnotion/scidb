@@ -1096,6 +1096,10 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 										tcl::PgnReader::Normalize,
 										tcl::PgnReader::File);
 
+		::db::MultiBase::GameCount gameNumbers;
+		destination.countGames(gameNumbers);
+		reader.setupGameNumbers(gameNumbers);
+
 		count = destination.importGames(reader, progress);
 		stream.close();
 

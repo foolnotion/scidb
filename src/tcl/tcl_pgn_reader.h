@@ -57,6 +57,8 @@ public:
 					bool trialMode = false);
 	~PgnReader() throw();
 
+	using ::db::PgnReader::setupGameNumbers;
+
 	unsigned countErrors() const;
 	unsigned countWarnings() const;
 

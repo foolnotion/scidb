@@ -184,7 +184,9 @@ Date::setYMD(unsigned y, unsigned m, unsigned d)
 	else
 	{
 		m_minor = 0;
-		return false;
+
+		if (m > 12)
+			return false;
 	}
 
 	return true;
@@ -296,21 +298,31 @@ Date::parseFromString(char const* s, unsigned size)
 
 		case 8:
 			m_value = 0;
-			if ((s[4] != '.' && s[4] != '/') || (s[6] != '.' && s[6] != '/'))
+			if (s[4] != '.' && s[4] != '/')
 				return false;
 			if (!parseYear(s))
 				return false;
-			if (s[5] != '?')
+			if (s[6] == '.' || s[6] == '/')
 			{
-				if (!::isdigit(s[5]))
-					return false;
-				m_month = s[5] - '0';
-				if (s[7] != '?')
+				if (s[5] != '?')
 				{
-					if (!::isdigit(s[7]))
+					if (!::isdigit(s[5]))
 						return false;
-					m_day = s[7] - '0';
+					m_month = s[5] - '0';
+					if (s[7] != '?')
+					{
+						if (!::isdigit(s[7]))
+							return false;
+						m_day = s[7] - '0';
+					}
 				}
+			}
+			else
+			{
+				if (s[7] != '.' && s[7] != '/')
+					return false;
+				if (s[5] != '?' && !parseMonth(s + 5))
+					return false;
 			}
 			break;
 
@@ -440,18 +452,23 @@ Date::fromString(mstl::string const& s)
 	{
 		m_value = 0;
 	}
-	else
+	else if (s.size() >= 4)
 	{
 		m_year = (s[0] - '0')*1000 + (s[1] - '0')*100 + (s[2] - '0')*10 + (s[3] - '0');
 
-		if (s[5] == '?')
+		if (s.size() >= 7)
 		{
-			m_minor = 0;
-		}
-		else
-		{
-			m_month = (s[5] - '0')*10 + (s[6] - '0');
-			m_day = s[8] == '?' ? 0 : (s[8] - '0')*10 + (s[9] - '0');
+			if (s[5] == '?')
+			{
+				m_minor = 0;
+			}
+			else
+			{
+				m_month = (s[5] - '0')*10 + (s[6] - '0');
+
+				if (s.size() >= 10)
+					m_day = s[8] == '?' ? 0 : (s[8] - '0')*10 + (s[9] - '0');
+			}
 		}
 	}
 }

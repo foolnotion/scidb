@@ -1560,8 +1560,8 @@
 ::setup::board::mc::Warning(UnsupportedVariant)		"La posizione è una posizione iniziale ma non di Scacchi Mischiati - Shuffle Chess. Sei sicuro?"
 
 ### import #############################################################
-::import::mc::ImportingPgnFile					"Importando file PGN" ;# NEW: change to 'Importing PGN files'
-::import::mc::ImportingDatabase					"Importando database" ;# NEW: change to 'Importing databases'
+::import::mc::ImportingFile(pgn)					"Importando file PGN"
+::import::mc::ImportingFile(db)					"Importando database"
 ::import::mc::Line									"Linea"
 ::import::mc::Column									"Colonna"
 ::import::mc::GameNumber							"Partita"

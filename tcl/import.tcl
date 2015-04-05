@@ -29,8 +29,8 @@
 namespace eval import {
 namespace eval mc {
 
-set ImportingPgnFile						"Importing PGN files"
-set ImportingDatabase					"Importing databases"
+set ImportingFile(pgn)					"Importing PGN file"
+set ImportingFile(db)					"Importing database"
 set Line										"Line"
 set Column									"Column"
 set GameNumber								"Game"
@@ -436,7 +436,7 @@ proc Open {parent file msg encoding type} {
 	set Priv(ok) 1
 	set Priv(gameNo) 1
 
-	set msg [format $mc::ImportingPgnFile [file tail $file]]
+	set msg "$mc::ImportingFile(pgn): [file tail $file]"
 	::log::open $mc::DatabaseImport
 	::log::info $msg
 	set info "$::mc::File: [file tail $file]"
@@ -516,11 +516,17 @@ proc Import {parent base files msg encoding} {
 	}
 
 	set logCount 0
+	set numFiles [llength $files]
 
 	foreach file $files {
 		if {[incr logCount] > 1} { ::log::newline }
-		::log::info [format $mc::ImportingDatabase [file tail $file]]
+		switch [file extension $file] {
+			.pgn - .pgn.gz - .zip { set type pgn }
+			default { set type db }
+		}
+		::log::info "$mc::ImportingFile($type): [file tail $file]"
 		set info "$::mc::File: [file tail $file]"
+		if {$numFiles > 1} { append info " ($logCount/$numFiles)" }
 		set options [list -message $msg -log yes -interrupt yes -information $info]
 		set cmd [list ::scidb::db::import $base $file [namespace current]::Log log]
 		switch [file extension $file] {
