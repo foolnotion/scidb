@@ -826,8 +826,6 @@ db_board.o: db_board.ipp
 db_board.o: db_board_base.h
 db_board.o: db_board_base.ipp
 db_board.o: db_rand64.h
-db_board.o: db_line.h
-db_board.o: db_line.ipp
 db_board.o: ../mstl/m_stdio.h
 db_board_base.o: db_board_base.h
 db_board_base.o: db_common.h
@@ -3829,11 +3827,11 @@ db_pgn_reader.o: db_file_offsets.h
 db_pgn_reader.o: db_file_offsets.ipp
 db_pgn_reader.o: db_eco.h
 db_pgn_reader.o: db_eco.ipp
-db_pgn_reader.o: db_player.h
 db_pgn_reader.o: ../mstl/m_list.h
 db_pgn_reader.o: ../mstl/m_list_node.h
 db_pgn_reader.o: ../mstl/m_list_node.ipp
 db_pgn_reader.o: ../mstl/m_list.ipp
+db_pgn_reader.o: db_player.h
 db_pgn_reader.o: db_player.ipp
 db_pgn_reader.o: db_game_info.h
 db_pgn_reader.o: db_game_info.ipp
@@ -4431,6 +4429,10 @@ db_reader.o: db_file_offsets.h
 db_reader.o: db_file_offsets.ipp
 db_reader.o: db_eco.h
 db_reader.o: db_eco.ipp
+db_reader.o: ../mstl/m_list.h
+db_reader.o: ../mstl/m_list_node.h
+db_reader.o: ../mstl/m_list_node.ipp
+db_reader.o: ../mstl/m_list.ipp
 db_reader.o: db_bpgn_reader.h
 db_reader.o: db_site.h
 db_reader.o: db_site.ipp
@@ -4449,10 +4451,6 @@ db_reader.o: ../sys/sys_file.h
 db_reader.o: ../sys/sys_time.h
 db_reader.o: ../sys/sys_file.ipp
 db_reader.o: ../sys/sys_utf8_codec.h
-db_reader.o: ../mstl/m_list.h
-db_reader.o: ../mstl/m_list_node.h
-db_reader.o: ../mstl/m_list_node.ipp
-db_reader.o: ../mstl/m_list.ipp
 db_reader.o: ../sys/sys_utf8_codec.ipp
 db_search.o: db_search.h
 db_search.o: db_date.h

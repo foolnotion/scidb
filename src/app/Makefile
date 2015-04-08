@@ -308,16 +308,12 @@ app_book.o: ../mstl/m_construct.h
 app_book.o: ../mstl/m_construct.ipp
 app_book.o: ../mstl/m_pvector.ipp
 app_book.o: app_polyglot_book.h
+app_book.o: ../util/u_rkiss.h
 app_book.o: app_chessbase_book.h
 app_book.o: ../util/u_byte_stream.h
 app_book.o: ../util/u_exception.h
 app_book.o: ../util/u_byte_stream.ipp
-app_book.o: ../util/u_rkiss.h
-app_book.o: ../db/db_exception.h
 app_book.o: ../util/u_misc.h
-app_book.o: ../sys/sys_file.h
-app_book.o: ../sys/sys_time.h
-app_book.o: ../sys/sys_file.ipp
 app_chessbase_book.o: app_chessbase_book.h
 app_chessbase_book.o: app_book.h
 app_chessbase_book.o: ../db/db_move.h
@@ -1067,6 +1063,7 @@ app_polyglot_book.o: ../mstl/m_algobase.ipp
 app_polyglot_book.o: ../mstl/m_construct.h
 app_polyglot_book.o: ../mstl/m_construct.ipp
 app_polyglot_book.o: ../mstl/m_pvector.ipp
+app_polyglot_book.o: ../util/u_rkiss.h
 app_polyglot_book.o: ../db/db_board.h
 app_polyglot_book.o: ../db/db_move_list.h
 app_polyglot_book.o: ../db/db_move_list.ipp

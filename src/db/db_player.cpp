@@ -1081,16 +1081,13 @@ Player::newPlayer(mstl::string const& name,
 						unsigned region,
 						mstl::string const& ascii,
 						country::Code federation,
-						sex::ID sex)
+						sex::ID sex,
+						bool forceNewPlayer)
 {
 	M_ASSERT(!name.empty());
 	M_ASSERT(sys::utf8::validate(name));
 	M_ASSERT(sys::utf8::Codec::is7BitAscii(ascii));
 
-if (name == "Skripchenko, Almira")
-{
-	mstl::string s(name);
-}
 	mstl::string key, key2;
 	normalize(ascii, key);
 	::alloc(key2, key);
@@ -1106,59 +1103,62 @@ if (name == "Skripchenko, Almira")
 	{
 		::charAllocator.shrink(key.size() + 1, 0);
 
-		if (federation == country::Unknown)
+		if (!forceNewPlayer)
 		{
-			if (sex == sex::Unspecified)
+			if (federation == country::Unknown)
 			{
-				if (players.size() >= 2)
+				if (sex == sex::Unspecified)
 				{
-					TRACE(::printf("cannot distinguish between federation: %s ignored\n", name.c_str()));
-					return 0;
-				}
-
-				player = players.front();
-			}
-			else
-			{
-				for (unsigned i = 0; i < players.size(); ++i)
-				{
-					Player* p = players[i];
-
-					if (p->sex() == sex || p->sex() == sex::Unspecified)
+					if (players.size() >= 2)
 					{
-						player = p;
-						break;
+						TRACE(::printf("cannot distinguish between federation: %s ignored\n", name.c_str()));
+						return 0;
 					}
-				}
-			}
-		}
-		else
-		{
-			if (sex == sex::Unspecified)
-			{
-				for (unsigned i = 0; i < players.size(); ++i)
-				{
-					Player* p = players[i];
 
-					if (federation == p->federation())
+					player = players.front();
+				}
+				else
+				{
+					for (unsigned i = 0; i < players.size(); ++i)
 					{
-						player = p;
-						break;
+						Player* p = players[i];
+
+						if (p->sex() == sex || p->sex() == sex::Unspecified)
+						{
+							player = p;
+							break;
+						}
 					}
 				}
 			}
 			else
 			{
-				for (unsigned i = 0; i < players.size(); ++i)
+				if (sex == sex::Unspecified)
 				{
-					Player* p = players[i];
-
-					if (p->sex() == sex::Unspecified || p->sex() == sex)
+					for (unsigned i = 0; i < players.size(); ++i)
 					{
+						Player* p = players[i];
+
 						if (federation == p->federation())
 						{
 							player = p;
 							break;
+						}
+					}
+				}
+				else
+				{
+					for (unsigned i = 0; i < players.size(); ++i)
+					{
+						Player* p = players[i];
+
+						if (p->sex() == sex::Unspecified || p->sex() == sex)
+						{
+							if (federation == p->federation())
+							{
+								player = p;
+								break;
+							}
 						}
 					}
 				}
@@ -1480,7 +1480,11 @@ Player::insertPlayer(mstl::string& name, country::Code federation, sex::ID sex)
 
 
 Player*
-Player::insertPlayer(mstl::string& name, unsigned region, country::Code federation, sex::ID sex)
+Player::insertPlayer(mstl::string& name,
+							unsigned region,
+							country::Code federation,
+							sex::ID sex,
+							bool forceNewPlayer)
 {
 	if (name.empty())
 		return 0;
@@ -1527,7 +1531,7 @@ Player::insertPlayer(mstl::string& name, unsigned region, country::Code federati
 	mstl::string ascii;
 	sys::utf8::Codec::convertToNonDiacritics(region, name, ascii);
 
-	return newPlayer(name, region, ascii, federation, sex);
+	return newPlayer(name, region, ascii, federation, sex, forceNewPlayer);
 }
 
 
@@ -1899,8 +1903,21 @@ Player::parseSpellcheckFile(mstl::istream& stream)
 									case 'F':
 										if (::strncmp(t, "FIDEID ", 7) == 0)
 										{
-											player->setFideID(::strtoul(t + 7, nullptr, 10));
-											::fidePlayerDict.insert_unique(player->fideID(), player);
+											unsigned fideID = ::strtoul(t + 7, nullptr, 10);
+
+											if (player->fideID() && player->fideID() != fideID)
+											{
+												mstl::string myname(player->name());
+
+												player = insertPlayer(	myname,
+																				player->region(),
+																				player->federation(),
+																				player->sex(),
+																				true);
+											}
+
+											player->setFideID(fideID);
+											::fidePlayerDict.insert_unique(fideID, player);
 										}
 										break;
 
@@ -2006,7 +2023,7 @@ Player::parseSpellcheckFile(mstl::istream& stream)
 					if (!line.empty())
 					{
 						country::Code federation = ::getFederation(federations);
-						country::Code nativeCountry	= ::getNativeCountry(federations);
+						country::Code nativeCountry = ::getNativeCountry(federations);
 						unsigned titleMask = ::getTitles(titles, sex);
 						unsigned region = 0;
 
