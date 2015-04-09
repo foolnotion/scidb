@@ -1406,9 +1406,21 @@ proc GetStripes {table id} {
 }
 
 
+proc ShowColumn {table id} {
+	variable Visible_
+
+	if {$Visible_($id)} {
+		showColumn $table $id
+	} else {
+		hideColumn $table $id
+	}
+}
+
+
 proc PopupMenu {table x y X Y} {
 	variable ${table}::Vars
 	variable ${table}::Options
+	variable Visible_
 	variable options
 
 	set action [::TreeCtrl::CursorAction $table.t $x $y]
@@ -1439,6 +1451,7 @@ proc PopupMenu {table x y X Y} {
 	menu $menu -tearoff 0 -disabledforeground black
 	::tooltip::hide
 
+	array unset Visible_
 	array set hidden {}
 	set groups {}
 	set tail 0
@@ -1448,21 +1461,18 @@ proc PopupMenu {table x y X Y} {
 		if {$Options(-optimizable:$cid)} {
 			set optimize 1
 		}
-		if {!$Options(-visible:$cid)} {
-			if {$cid eq "tail"} {
-				set tail 1
-			} else {
-				set g $Vars(groupvar:$cid)
-				set t 1
-				if {[llength $g] == 0} {
-					set g $Vars(group:$cid)
-					set t 0
-				}
-				set entry [list $t $g]
-				set k [lsearch -exact $groups $entry]
-				if {$k == -1} { lappend groups $entry }
-				lappend hidden($g) $cid
+		if {$cid eq "tail"} {
+			set tail 1
+		} elseif {$Options(-removable:$cid)} {
+			set g $Vars(groupvar:$cid)
+			set t 1
+			if {[llength $g] == 0} {
+				set g $Vars(group:$cid)
+				set t 0
 			}
+			set entry [list $t $g]
+			if {$entry ni $groups} { lappend groups $entry }
+			lappend groupmember($g) $cid
 		}
 	}
 	set k [lsearch -exact $groups ""]
@@ -1529,7 +1539,7 @@ proc PopupMenu {table x y X Y} {
 		set index 0
 		foreach group $groups {
 			set name [lindex $group 1]
-			foreach cid $hidden($name) {
+			foreach cid $groupmember($name) {
 				if {[llength $Vars(tooltipvar:$cid)]} {
 					set text [set $Vars(tooltipvar:$cid)]
 				} elseif {[llength $Vars(tooltip:$cid)]} {
@@ -1542,12 +1552,24 @@ proc PopupMenu {table x y X Y} {
 				} else {
 					set m $subm
 				}
-				$m add command -label $text -command [namespace code [list showColumn $table $cid]]
+				set Visible_($cid) $Options(-visible:$cid)
+				$m add checkbutton \
+					-label $text \
+					-variable [namespace current]::Visible_($cid) \
+					-command [namespace code [list ShowColumn $table $cid]] \
+					;
+				::theme::configureCheckEntry $m
 			}
 			if {[string length $name]} { incr index }
 		}
 		if {$tail} {
-			$subm add command -label $mc::FillColumn -command [namespace code [list showColumn $table $id]]
+			set Visible_($id) $Options(-visible:$id)
+			$subm add checkbutton \
+				-label $mc::FillColumn \
+				-variable [namespace current]::Visible_($id) \
+				-command [namespace code [list ShowColumn $table $id]] \
+				;
+			::theme::configureCheckEntry $m
 		}
 	}
 

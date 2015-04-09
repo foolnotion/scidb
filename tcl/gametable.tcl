@@ -1817,12 +1817,17 @@ proc PopupMenu {path menu base variant index} {
 		-command [namespace code [list SortColumn $path number ascending]] \
 		;
 
+	set visibleColumns [::scrolledtable::visibleColumns $path]
 	set groups {}
 	foreach entry $Columns {
-		set name [lindex $entry 1]
-		if {[string length $name]} {
-			set k [lsearch -exact $groups $name]
-			if {$k == -1} { lappend groups $name }
+		if {[set id [lindex $entry 0]] in $visibleColumns} {
+			set group [lindex $entry 1]
+			if {![info exists use($group)]} {
+				lappend groups $group
+				set use($group) 0
+			} else {
+				incr use($group)
+			}
 		}
 	}
 
@@ -1832,16 +1837,9 @@ proc PopupMenu {path menu base variant index} {
 			-label [set [namespace current]::mc::Sort[string toupper $dir 0 0]] \
 			-menu $menu.$dir \
 			;
-		foreach group $groups {
-			menu $menu.$dir.$group
-			$menu.$dir add cascade \
-				-label [set [namespace current]::mc::G_[string toupper $group 0 0]] \
-				-menu $menu.$dir.$group \
-				;
-		}
 	}
 
-	foreach id $columns {
+	foreach id $visibleColumns {
 		switch $id {
 			whiteRating2 - blackRating2 {}
 
@@ -1864,7 +1862,16 @@ proc PopupMenu {path menu base variant index} {
 					set m $menu.$dir
 					set k [columnIndex $id]
 					set group [lindex $Columns $k 1]
-					if {[llength $group]} { append m .$group }
+					if {[llength $group] && $use($group)} {
+						if {![winfo exists $m.$group]} {
+							menu $m.$group
+							$m add cascade \
+								-label [set [namespace current]::mc::G_[string toupper $group 0 0]] \
+								-menu $m.$group \
+								;
+						}
+						append m .$group
+					}
 					set idl [string toupper $id 0 0]
 					set fvar [namespace current]::mc::F_$idl
 					set fvar [namespace current]::mc::F_$idl
