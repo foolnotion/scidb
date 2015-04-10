@@ -2827,7 +2827,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 				// often seen in TWIC files
 				if (value == "--")
 					return true;
-				if (value[0] == 0xC2) // 0xC2 0xA0 'NO-BREAK SPACE'
+				if (uint8_t(value[0]) == 0xC2) // 0xC2 0xA0 'NO-BREAK SPACE'
 					return true;
 				if (value == "MF")
 					value = "FM"; // in Portuguese it's "MF"
