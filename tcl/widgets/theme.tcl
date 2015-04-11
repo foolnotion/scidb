@@ -650,6 +650,7 @@ option add *TScale.foreground black
 option add *TNotebook.foreground black
 
 option add *TCombobox.exportSelection 0
+option add *TCombobox.foreground black
 
 option add *TSpinbox.wrap 0
 option add *TSpinbox.foreground black
