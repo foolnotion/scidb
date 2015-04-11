@@ -405,7 +405,8 @@ proc activate {w flag} {
 
 
 proc setActive {flag} {
-	# no action
+	::move::enable ;# required here because <<ControlOff>> might fail
+	::marks::releaseSquare
 }
 
 
