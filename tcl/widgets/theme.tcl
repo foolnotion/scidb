@@ -594,7 +594,7 @@ option add *inactiveSelectBackground darkgrey
 option add *inactiveSelectForeground white
 
 option add *Spinbox.background white
-option add *Spinbox.foreground white
+option add *Spinbox.foreground black
 option add *Spinbox.selectForeground white
 option add *Spinbox.readonlyBackground white
 
