@@ -35,8 +35,6 @@
 
 #include "m_string.h"
 
-namespace sys  { namespace utf8 { class Codec; } }
-
 namespace db {
 
 namespace sci  { namespace v91 { class Codec; } }
@@ -315,6 +313,7 @@ private:
 	void setupRating(TagSet const& tags, color::ID color, rating::Type rtType, tag::ID tag);
 
 	static void setupVariant(TagSet& tags, variant::Type variant, uint16_t idn);
+	static void addOpening(TagSet& tags, variant::Type variant, Eco const& eco, bool inclusiveVar);
 
 	NamebaseEvent*		m_event;
 	NamebasePlayer*	m_player[2];

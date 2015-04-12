@@ -1043,6 +1043,8 @@ PgnReader::sendWarnings()
 			}
 		}
 	}
+
+	m_warnings.clear();
 }
 
 

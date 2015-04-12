@@ -56,6 +56,8 @@ static NamebaseEntry		g_empty;
 static NamebaseEvent		g_event;
 static NamebasePlayer	g_player;
 
+static sys::utf8::Codec* g_latin1Codec = 0;
+
 static char const GameFlagMap[24] =
 {
 	'-', // Flag_Deleted
@@ -955,26 +957,8 @@ GameInfo::setupTags(TagSet& tags, variant::Type variant) const
 		if (m_positionId == variant::Standard)
 		{
 			tags.set(tag::Eco, Eco::fromShort(m_eco).asShortString());
-
 			Eco eco = m_eco ? Eco::fromShort(m_eco) : Eco(m_ecoKey);
-
-			if (	eco
-				&& !tags.isUserSupplied(tag::Opening)
-				&& !tags.isUserSupplied(tag::Variation)
-				&& !tags.isUserSupplied(tag::SubVariation))
-			{
-				EcoTable::Opening const& opening = EcoTable::specimen(variant).getOpening(eco);
-				tags.add(tag::Opening, opening.part[0]);
-
-#ifdef GAME_INFO_VAR
-				if (eco == Eco(m_ecoKey))
-				{
-					static_assert(EcoTable::Num_Name_Parts >= 4, "index failure");
-					tags.add(tag::Variation, opening.part[2]);
-					tags.add(tag::SubVariation, opening.part[3]);
-				}
-#endif
-			}
+			addOpening(tags, variant, eco, eco == Eco(m_ecoKey));
 		}
 	}
 
@@ -1003,27 +987,46 @@ GameInfo::setupTags(TagSet& tags, Provider const& provider)
 		{
 			EcoTable const& ecoTable = EcoTable::specimen(variant);
 			Eco eco = ecoTable.getEco(provider.openingLine());
-			EcoTable::Opening const& opening = ecoTable.getOpening(eco);
 			tags.add(tag::Eco, eco.asShortString());
-
-			if (	!tags.isUserSupplied(tag::Opening)
-				&& !tags.isUserSupplied(tag::Variation)
-				&& !tags.isUserSupplied(tag::SubVariation))
-			{
-				tags.add(tag::Opening, opening.part[0]);
-
-#ifdef GAME_INFO_VAR
-				static_assert(EcoTable::Num_Name_Parts >= 4, "index failure");
-				tags.add(tag::Variation, opening.part[2]);
-				tags.add(tag::SubVariation, opening.part[3]);
-#endif
-			}
+			addOpening(tags, variant, eco, true);
 		}
 	}
 
 #ifdef GAME_INFO_PLYCOUNT
 	tags.set(tag::PlyCount, provider.plyCount());
 #endif
+}
+
+
+void
+GameInfo::addOpening(TagSet& tags, variant::Type variant, Eco const& eco, bool inclusiveVar)
+{
+	if (	eco
+		&& !tags.isUserSupplied(tag::Opening)
+		&& !tags.isUserSupplied(tag::Variation)
+		&& !tags.isUserSupplied(tag::SubVariation))
+	{
+		if (g_latin1Codec == 0)
+			g_latin1Codec = new sys::utf8::Codec(sys::utf8::Codec::latin1());
+
+		EcoTable::Opening const& opening = EcoTable::specimen(variant).getOpening(eco);
+		mstl::string mainvar(opening.part[0]);
+		g_latin1Codec->toUtf8(mainvar);
+		tags.add(tag::Opening, mainvar);
+
+#ifdef GAME_INFO_VAR
+		if (inclusiveVar)
+		{
+			static_assert(EcoTable::Num_Name_Parts >= 4, "index failure");
+			mstl::string var(opening.part[2]);
+			mstl::string subvar(opening.part[3]);
+			g_latin1Codec->toUtf8(var);
+			g_latin1Codec->toUtf8(subvar);
+			tags.add(tag::Variation, var);
+			tags.add(tag::SubVariation, subvar);
+		}
+#endif
+	}
 }
 
 
