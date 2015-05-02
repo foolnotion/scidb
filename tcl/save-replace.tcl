@@ -860,7 +860,6 @@ proc Build {dlg base variant position number} {
 					-highlightforeground $Colors(matchlistHeaderForeground) \
 					-highlightfont $bold \
 					-height 12 \
-					-takefocus 0 \
 					-focusmodel hover \
 					-borderwidth 0 \
 					-showfocus 0 \
