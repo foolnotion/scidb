@@ -59,6 +59,8 @@
 
 #include <string.h>
 
+#define FIX_INCORRECT_ID 0
+
 using namespace db;
 using namespace db::sci;
 using namespace util;
@@ -1289,7 +1291,14 @@ Codec::decodeIndex(ByteStream& strm, GameInfo& item)
 	whitePlayer->ref(); blackPlayer->ref();
 
 	{
+#if 0
+		unsigned id = GET_EVENT(bits);
+		unsigned index = m_lookup[Namebase::Event][id];
+
+		NamebaseEvent* event			= ::getEvent(namebase(Namebase::Event), index);
+#else
 		NamebaseEvent* event			= GET(Event, GET_EVENT);
+#endif
 		NamebaseEntry* annotator	= GET(Annotator, GET_ANNOTATOR);
 
 		event->ref(); annotator->ref();
@@ -1632,6 +1641,9 @@ Codec::readNamebases(mstl::fstream& stream, util::Progress& progress)
 		unsigned maxUsage = bstrm.uint24();
 		unsigned nextId = bstrm.uint24();
 
+#if FIX_INCORRECT_ID
+if (i == 2) nextId += 1;
+#endif
 		m_lookup[i].resize(nextId);
 
 		switch (i)
@@ -1758,7 +1770,7 @@ Codec::readEventbase(ByteStream& bstrm, Namebase& base, unsigned count, util::Pr
 	base.reserve(count, 1 << 24);
 
 	char*		prev		= 0;
-	unsigned	index		= bstrm.uint24();
+	unsigned	id			= bstrm.uint24();
 	unsigned	length	= bstrm.get();
 	Lookup&	lookup	= m_lookup[Namebase::Event];
 
@@ -1815,10 +1827,10 @@ Codec::readEventbase(ByteStream& bstrm, Namebase& base, unsigned count, util::Pr
 	}
 	else
 	{
-		base.appendEvent(name, index, site);
+		base.appendEvent(name, id, site);
 	}
 
-	lookup[index] = 0;
+	lookup[id] = 0;
 
 	for (unsigned i = 1; i < count; ++i)
 	{
@@ -1828,7 +1840,7 @@ Codec::readEventbase(ByteStream& bstrm, Namebase& base, unsigned count, util::Pr
 			m_progressReportAfter += m_progressFrequency;
 		}
 
-		unsigned	index		= bstrm.uint24();
+		unsigned	id			= bstrm.uint24();
 		unsigned prefix	= bstrm.get();
 		unsigned length	= bstrm.get();
 
@@ -1869,7 +1881,7 @@ Codec::readEventbase(ByteStream& bstrm, Namebase& base, unsigned count, util::Pr
 			}
 
 			base.appendEvent(	name,
-									index,
+									id,
 									dateYear,
 									dateMonth,
 									dateDay,
@@ -1880,10 +1892,14 @@ Codec::readEventbase(ByteStream& bstrm, Namebase& base, unsigned count, util::Pr
 		}
 		else
 		{
-			base.appendEvent(name, index, site);
+			base.appendEvent(name, id, site);
 		}
 
-		lookup[index] = i;
+#if FIX_INCORRECT_ID
+if (id == 0)
+id = 5;
+#endif
+		lookup[id] = i;
 	}
 }
 
@@ -2126,7 +2142,12 @@ Codec::writeNamebase(ByteStream& bstrm, Namebase& base, util::Progress* progress
 {
 	M_ASSERT(base.used() > 0);
 
-	NamebaseEntry* prev = base.entry(0);
+	unsigned i = 0;
+
+	while (i < base.used() && base.entry(i)->frequency() == 0)
+		++i;
+
+	NamebaseEntry* prev = base.entry(i++);
 
 	M_ASSERT(prev->name().size() <= 255);
 
@@ -2134,7 +2155,7 @@ Codec::writeNamebase(ByteStream& bstrm, Namebase& base, util::Progress* progress
 	bstrm.put(prev->name().size());
 	bstrm.put(prev->name(), prev->name().size());
 
-	for (unsigned i = 1; i < base.used(); ++i)
+	for ( ; i < base.used(); ++i)
 	{
 		if (m_progressReportAfter <= i)
 		{
@@ -2144,6 +2165,9 @@ Codec::writeNamebase(ByteStream& bstrm, Namebase& base, util::Progress* progress
 		}
 
 		NamebaseEntry* entry = base.entry(i);
+
+		if (entry->frequency() == 0)
+			continue;
 
 		unsigned prefix = ::prefix(entry->name(), prev->name());
 		unsigned length = entry->name().size();
@@ -2166,7 +2190,12 @@ Codec::writeSitebase(ByteStream& bstrm, Namebase& base, util::Progress* progress
 {
 	M_ASSERT(base.used() > 0);
 
-	NamebaseSite* prev = base.site(0);
+	unsigned i = 0;
+
+	while (i < base.used() && base.entry(i)->frequency() == 0)
+		++i;
+
+	NamebaseSite* prev = base.site(i++);
 
 	M_ASSERT(prev->name().size() <= 255);
 
@@ -2175,7 +2204,7 @@ Codec::writeSitebase(ByteStream& bstrm, Namebase& base, util::Progress* progress
 	bstrm.put(prev->name(), prev->name().size());
 	bstrm << uint16_t(prev->country());
 
-	for (unsigned i = 1; i < base.used(); ++i)
+	for ( ; i < base.used(); ++i)
 	{
 		if (m_progressReportAfter <= i)
 		{
@@ -2185,6 +2214,9 @@ Codec::writeSitebase(ByteStream& bstrm, Namebase& base, util::Progress* progress
 		}
 
 		NamebaseSite* entry = base.site(i);
+
+		if (entry->frequency() == 0)
+			continue;
 
 		unsigned prefix = ::prefix(entry->name(), prev->name());
 		unsigned length = entry->name().size();
@@ -2208,7 +2240,12 @@ Codec::writeEventbase(util::ByteStream& bstrm, Namebase& base, util::Progress* p
 {
 	M_ASSERT(base.used() > 0);
 
-	NamebaseEvent* prev = base.event(0);
+	unsigned i = 0;
+
+	while (i < base.used() && base.entry(i)->frequency() == 0)
+		++i;
+
+	NamebaseEvent* prev = base.event(i++);
 
 	M_ASSERT(prev->name().size() <= 255);
 
@@ -2236,7 +2273,7 @@ Codec::writeEventbase(util::ByteStream& bstrm, Namebase& base, util::Progress* p
 		bstrm << flags;
 	}
 
-	for (unsigned i = 1; i < base.used(); ++i)
+	for ( ; i < base.used(); ++i)
 	{
 		if (m_progressReportAfter <= i)
 		{
@@ -2246,6 +2283,9 @@ Codec::writeEventbase(util::ByteStream& bstrm, Namebase& base, util::Progress* p
 		}
 
 		NamebaseEvent* entry = base.event(i);
+
+		if (entry->frequency() == 0)
+			continue;
 
 		unsigned prefix = ::prefix(entry->name(), prev->name());
 		unsigned length = entry->name().size();
@@ -2326,6 +2366,9 @@ Codec::writePlayerbase(util::ByteStream& bstrm, Namebase& base, util::Progress* 
 		}
 
 		NamebasePlayer* entry = base.player(i);
+
+		if (entry->frequency() == 0)
+			continue;
 
 		unsigned prefix = ::prefix(entry->name(), prev->name());
 		unsigned length = entry->name().size();

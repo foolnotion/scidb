@@ -71,6 +71,11 @@ void backtrace::text_write(ostringstream&, size_t) const {}
 #   define USE_GDB
 #  endif
 
+#  ifndef DONT_USE_FRAME_ADDR
+// with newer compilers this is crashing
+#   define USE_ADDR2LINE
+#  endif
+
 
 # define M_HAVE_THREADS
 
@@ -302,6 +307,7 @@ proc_stream::~proc_stream() throw()
 
 } // namespace
 
+#   ifdef USE_ADDR2LINE
 
 static string
 addr2line_cmd()
@@ -327,6 +333,7 @@ addr2line_cmd()
 	return string();
 }
 
+#   endif // USE_ADDR2LINE
 
 bool
 mstl::backtrace::is_debug_mode()
@@ -610,6 +617,7 @@ mstl::backtrace::symbols_gdb()
 }
 
 #  endif // defined(USE_GDB)
+#  ifdef USE_ADDR2LINE
 
 static void*
 frameAddress(unsigned i)
@@ -743,6 +751,7 @@ mstl::backtrace::symbols_linux()
 	return true;
 }
 
+#  endif // USE_ADDR2LINE
 # endif	// defined(__unix__)
 
 
@@ -764,13 +773,15 @@ mstl::backtrace::symbols()
 	if (is_debug_mode())
 		return;
 
-#ifdef USE_GDB
+#  ifdef USE_GDB
 	if (symbols_gdb())
 		return;
-#endif
+#  endif
 
+#  ifdef USE_ADDR2LINE
 	if (symbols_linux())
 		return;
+#  endif
 
 	m_allocator->clear();
 	m_skip = 0;

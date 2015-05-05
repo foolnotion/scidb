@@ -1776,6 +1776,16 @@ fi
 }
 
 
+proc dontUsePtrace {} {
+    catch {
+        set result [exec cat /proc/sys/kernel/yama/ptrace_scope]
+        if {$result eq "0"} { return yes }
+    }
+
+    return no
+}
+
+
 proc checkFontConfig {} {
     global TestFontConfig environment configure
 
@@ -2280,22 +2290,38 @@ if {[string length $gxxVer]} {
     # of static objects).
     Append option(EXTRA_CXXFLAGS) "-DBROKEN_LINKER_HACK=1"
 
-    if {[isInsaneUnixRelease]} {
+    if {[dontUsePtrace]} {
+        # What a shame, some systems do not allow the debugging of own processes.
         Append option(EXTRA_CXXFLAGS) "-DDONT_USE_GDB"
     }
 
+    # For any reason the method with the frame addresses is crashing with newer compilers
+    Append option(EXTRA_CXXFLAGS) "-DDONT_USE_FRAME_ADDR"
+
     if {[lsearch $argv -n] == -1 && [lsearch $argv --no-create] == -1} {
         writeMakefile $success
+    }
+
+    if {[dontUsePtrace]} {
+        puts ""
+        puts "IMPORTANT NOTE:"
+        puts "-------------------------------------------------------------------------------"
+        puts "On this insane system debugging of own processes is not allowed due to the"
+        puts "kernel hardening paranoia. You might change this behaviour, see"
+        puts "<http://sourceforge.net/p/scidb/mailman/message/28418675/>, and then configure"
+        puts "again, otherwise you will not see useful error messages in case of internal"
+        puts "errors."
     }
 
     if {[llength $instableTkLibrary]} {
         # it seems that we build on an insane Unix system (like Ubuntu Oneiric)
         puts ""
         puts "IMPORTANT NOTE:"
+        puts "-------------------------------------------------------------------------------"
         puts "You're about to run Scidb on an insane distribution. Scidb may crash with the"
-        puts "pre-installed Tk library $instableTkLibrary. It is highly recommended to install a stable"
-        puts "Tk version (8.6.0, 8.5.11, or 8.5.6) before building Scidb. Read INSTALL for"
-        puts "instructions how to use alternative library versions."
+        puts "pre-installed Tk library $instableTkLibrary. It is highly recommended to install"
+        puts "a stable Tk version (8.6.0, 8.5.11, or 8.5.6) before building Scidb. Read INSTALL"
+        puts "for instructions how to use alternative library versions."
     }
 
     if {[info exists configure(destdir)]} {
@@ -2308,11 +2334,9 @@ if {[string length $gxxVer]} {
         puts ""
         puts "IMPORTANT NOTE:"
         puts "-------------------------------------------------------------------------------"
-        puts "The call of sub-processes is not working properly on this system, you may not"
-        puts "get a proper error message in case of an exception, the application is crashing"
-        puts "instead. Furthermore the distributed Tk library may be broken, it is possible"
-        puts "that some windows of the application will freeze. In this case you have to use"
-        puts "a self-compiled Tk library if you want to avoid this problem (read INSTALL)."
+        puts "The distributed Tk library may be broken, it is possible that some windows of"
+        puts "the application will freeze. In this case you have to use a self-compiled Tk"
+        puts "library if you want to avoid this problem (read INSTALL)."
         puts ""
         puts "It is highly recommended to build Scidb on a working Unix system. This system"
         puts "is broken and distorted due to the \"kernel hardening\" paranoia, which assumes"

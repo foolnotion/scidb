@@ -111,7 +111,7 @@ Namebase::Namebase(Type type)
 	,m_used(0)
 	,m_isConsistent(true)
 	,m_isPrepared(false)
-	,m_freeSetIsEmpty(true)
+//	,m_freeSetIsEmpty(true)
 	,m_isModified(false)
 	,m_isOriginal(true)
 	,m_isReadonly(false)
@@ -767,8 +767,8 @@ Namebase::clear()
 	M_REQUIRE(!isReadonly());
 
 	m_list.clear();
-	m_freeSet.clear();
-	m_reuseSet.clear();
+//	m_freeSet.clear();
+//	m_reuseSet.clear();
 	m_map.clear();
 
 	m_maxFreq = 0;
@@ -779,7 +779,7 @@ Namebase::clear()
 	m_isConsistent = true;
 	m_isPrepared = true;
 	m_isModified = true;
-	m_freeSetIsEmpty = true;
+//	m_freeSetIsEmpty = true;
 
 	m_stringAllocator.clear();
 
@@ -844,17 +844,17 @@ void
 Namebase::deref(Entry* entry)
 {
 	M_REQUIRE(entry->frequency() > 0);
-	M_REQUIRE(entry->id() < previousSize());
+//	M_REQUIRE(entry->id() < previousSize());
 
 	m_isConsistent = false;
 	entry->deref();
 
-	if (entry->frequency() == 0)
-	{
-		m_freeSet.set(entry->m_id);
-		m_reuseSet.set(entry->m_id);
-		m_freeSetIsEmpty = false;
-	}
+//	if (entry->frequency() == 0)
+//	{
+//		m_freeSet.set(entry->m_id);
+//		m_reuseSet.set(entry->m_id);
+//		m_freeSetIsEmpty = false;
+//	}
 }
 
 
@@ -864,7 +864,7 @@ Namebase::update()
 	M_REQUIRE(!isReadonly());
 
 	IdSet	usedSet(mstl::max(List::size_type(m_nextId), m_list.size()));
-	List	prepareSet;
+//	List	prepareSet;
 
 	if (m_isModified)
 		m_isOriginal = false;
@@ -879,10 +879,10 @@ Namebase::update()
 	m_nextId = 0;
 	m_used = 0;
 
-	m_freeSet.resize(m_list.size());
-	m_freeSet.reset();
-	m_reuseSet.resize(m_list.size());
-	m_freeSetIsEmpty = true;
+//	m_freeSet.resize(m_list.size());
+//	m_freeSet.reset();
+//	m_reuseSet.resize(m_list.size());
+//	m_freeSetIsEmpty = true;
 	m_map.resize(m_list.size());
 
 	for (List::iterator i = m_list.begin(); i != m_list.end(); ++i, ++index)
@@ -899,13 +899,13 @@ Namebase::update()
 			m_nextId = mstl::max(m_nextId, id + 1);
 			m_map[m_used++] = index;
 
-			if (usedSet.test_and_set(id) && m_reuseSet.test(id))
-				prepareSet.push_back(*i);
+//			if (usedSet.test_and_set(id) && m_reuseSet.test(id))
+//				prepareSet.push_back(*i);
 		}
 		else
 		{
-			m_freeSet.set(id);
-			m_freeSetIsEmpty = false;
+//			m_freeSet.set(id);
+//			m_freeSetIsEmpty = false;
 		}
 
 #ifdef DEBUG_SI4
@@ -947,24 +947,24 @@ Namebase::update()
 #endif
 	}
 
-	if (!prepareSet.empty())
-	{
-		unsigned id = usedSet.find_first_not();
+//	if (!prepareSet.empty())
+//	{
+//		unsigned id = usedSet.find_first_not();
+//
+//		for (unsigned i = 0; i < prepareSet.size(); ++i)
+//		{
+//			M_ASSERT(id != IdSet::npos);
+//			prepareSet[i]->m_id = id;
+//			usedSet.set(id);
+//			m_freeSet.reset(id);
+//			m_nextId = mstl::max(m_nextId, id + 1);
+//			id = usedSet.find_next_not(id);
+//		}
+//
+//		m_freeSetIsEmpty = m_freeSet.count() == 0;
+//	}
 
-		for (unsigned i = 0; i < prepareSet.size(); ++i)
-		{
-			M_ASSERT(id != IdSet::npos);
-			prepareSet[i]->m_id = id;
-			usedSet.set(id);
-			m_freeSet.reset(id);
-			m_nextId = mstl::max(m_nextId, id + 1);
-			id = usedSet.find_next_not(id);
-		}
-
-		m_freeSetIsEmpty = m_freeSet.count() == 0;
-	}
-
-	m_reuseSet.reset();
+//	m_reuseSet.reset();
 	m_map.resize(m_used);
 	m_isConsistent = true;
 	m_isPrepared = true;
@@ -983,10 +983,10 @@ Namebase::setPrepared(unsigned maxFrequency, unsigned maxId, unsigned maxUsage)
 	m_isModified = false;
 	m_maxFreq = maxFrequency;
 	m_maxUsage = maxUsage;
-	m_freeSet.resize(m_used);
-	m_freeSet.reset();
-	m_reuseSet.resize(m_used);
-	m_freeSetIsEmpty = true;
+//	m_freeSet.resize(m_used);
+//	m_freeSet.reset();
+//	m_reuseSet.resize(m_used);
+//	m_freeSetIsEmpty = true;
 	m_map.resize(m_used);
 	m_nextId = maxId + 1;
 
@@ -1000,26 +1000,28 @@ Namebase::nextFreeId()
 {
 	M_ASSERT(!m_list.empty());
 
-	if (m_freeSetIsEmpty)
-	{
-		M_ASSERT(m_nextId + 1 == m_list.size());
-		return m_nextId++;
-	}
+	return m_nextId++;
 
-	unsigned id = m_freeSet.find_first();
-
-	if (id == IdSet::npos)
-	{
-		m_freeSetIsEmpty = true;
-		return m_nextId++;
-	}
-	else
-	{
-		m_freeSet.reset(id);
-		m_reuseSet.set(id);
-	}
-
-	return id;
+//	if (m_freeSetIsEmpty)
+//	{
+//		M_ASSERT(m_nextId + 1 == m_list.size());
+//		return m_nextId++;
+//	}
+//
+//	unsigned id = m_freeSet.find_first();
+//
+//	if (id == IdSet::npos)
+//	{
+//		m_freeSetIsEmpty = true;
+//		return m_nextId++;
+//	}
+//	else
+//	{
+//		m_freeSet.reset(id);
+//		m_reuseSet.set(id);
+//	}
+//
+//	return id;
 }
 
 
