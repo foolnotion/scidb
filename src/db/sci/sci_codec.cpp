@@ -58,6 +58,7 @@
 #include "sys_file.h"
 
 #include <string.h>
+#include <stdio.h>
 
 #define FIX_INCORRECT_ID 0
 
@@ -1291,8 +1292,12 @@ Codec::decodeIndex(ByteStream& strm, GameInfo& item)
 	whitePlayer->ref(); blackPlayer->ref();
 
 	{
-#if 0
+#if FIX_INCORRECT_ID
 		unsigned id = GET_EVENT(bits);
+
+if (id == 4) id = 1;
+printf("id; %u\n", id);
+
 		unsigned index = m_lookup[Namebase::Event][id];
 
 		NamebaseEvent* event			= ::getEvent(namebase(Namebase::Event), index);
@@ -1642,7 +1647,7 @@ Codec::readNamebases(mstl::fstream& stream, util::Progress& progress)
 		unsigned nextId = bstrm.uint24();
 
 #if FIX_INCORRECT_ID
-if (i == 2) nextId += 1;
+//if (i == 0) nextId = 1;
 #endif
 		m_lookup[i].resize(nextId);
 
@@ -1777,6 +1782,9 @@ Codec::readEventbase(ByteStream& bstrm, Namebase& base, unsigned count, util::Pr
 	prev = base.alloc(length);
 	bstrm.get(prev, length);
 	name.hook(prev, length);
+#if FIX_INCORRECT_ID
+printf("0 -> %u (%s)\n", id, name.c_str());
+#endif
 
 	NamebaseSite* site = ::getSite(namebase(Namebase::Site), m_lookup[Namebase::Site][bstrm.uint24()]);
 
@@ -1856,6 +1864,9 @@ Codec::readEventbase(ByteStream& bstrm, Namebase& base, unsigned count, util::Pr
 			name.hook(curr, length);
 			prev = curr;
 		}
+#if FIX_INCORRECT_ID
+printf("%u -> %u (%s)\n", i, id, name.c_str());
+#endif
 
 		NamebaseSite* site = ::getSite(namebase(Namebase::Site), m_lookup[Namebase::Site][bstrm.uint24()]);
 
@@ -1896,8 +1907,7 @@ Codec::readEventbase(ByteStream& bstrm, Namebase& base, unsigned count, util::Pr
 		}
 
 #if FIX_INCORRECT_ID
-if (id == 0)
-id = 5;
+if (id == 0) id = 1;
 #endif
 		lookup[id] = i;
 	}
