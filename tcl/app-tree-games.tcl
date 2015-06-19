@@ -44,7 +44,7 @@ proc build {parent width height} {
 	::bind $tb <<TableVisit>>		+[namespace code [list TableVisit $table %d]]
 	::bind $tb <<TablePopdown>>	+[namespace code [list ReleaseButton $table]]
 
-	::gametable::bind $table <ButtonPress-1>		+[list set [namespace current]::Vars(button) 1]
+	::gametable::bind $table <ButtonPress-1>		+[namespace code [list Press1 $table %x %y]]
 	::gametable::bind $table <Button1-Motion>		 [namespace code [list Motion1 $table %x %y]]
 	::gametable::bind $table <ButtonRelease-1>	+[namespace code [list Release1 $table]]
 	::gametable::bind $table <ButtonPress-2>		+[list set [namespace current]::Vars(button) 2]
@@ -53,6 +53,7 @@ proc build {parent width height} {
 
 	set Vars(after) {}
 	set Vars(button) 0
+	set Vars(start) -1
 
 	::scidb::db::subscribe gameList \
 		[namespace current]::TableUpdate \
@@ -77,8 +78,18 @@ proc ReleaseButton {table} {
 }
 
 
+proc Press1 {table x y} {
+	variable Vars
+	lassign [::gametable::identify $table $x $y] row column
+	set Vars(start) $row
+	set Vars(button) 1
+}
+
+
 proc Motion1 {table x y} {
 	variable Vars
+
+	if {$Vars(start) < 0} { return }
 
 	lassign [::gametable::identify $table $x $y] row column
 
@@ -127,6 +138,7 @@ proc Release1 {table} {
 	variable Vars
 
 	set Vars(button) 0
+	set Vars(start) -1
 
 	if {[info exists Vars(dir)]} {
 		catch { after kill $Vars(timer) }
