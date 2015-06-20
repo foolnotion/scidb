@@ -848,7 +848,7 @@
 ::board::options::mc::IsWriteProtected		"'%s' fájl írásvédettd."
 ::board::options::mc::ConfirmDelete		"Biztosan törölni akarod '%s'-t?"
 ::board::options::mc::NoPermission		"'%s' nem törölhető.\nJogosultság megtagadva."
-::board::options::mc::BoardSetup		"Tábla beállítás"
+::board::options::mc::BoardSetup		"Tábla beállítás" ;# NEW changed to "Board Options / Select Theme"
 ::board::options::mc::OpenTextureDialog		"Open Texture Dialog"
 
 ::board::options::mc::YouCannotReverse		"Ez a művelet nem viszafordítható. '%s'fájl fizikailag törlésre kerül."

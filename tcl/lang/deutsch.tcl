@@ -843,7 +843,7 @@
 ::board::options::mc::IsWriteProtected		"Die Datei '%s' ist schreibgeschützt."
 ::board::options::mc::ConfirmDelete			"Soll '%s' tatsächlich gelöscht werden?"
 ::board::options::mc::NoPermission			"'%s' kann nicht gelöscht werden.\n.Keine Rechte dafür vorhanden."
-::board::options::mc::BoardSetup				"Brettkonfiguration"
+::board::options::mc::BoardSetup				"Brettkonfiguration / Thema wählen"
 ::board::options::mc::OpenTextureDialog	"Textur-Dialog öffnen"
 
 ::board::options::mc::YouCannotReverse		"Diese Aktion kann nicht zurückgenommen werden. Die Datei '%s' wird physikalisch gelöscht."

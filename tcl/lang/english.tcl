@@ -841,7 +841,7 @@
 ::board::options::mc::IsWriteProtected		"File '%s' is write protected."
 ::board::options::mc::ConfirmDelete			"Are you sure to delete '%s'?"
 ::board::options::mc::NoPermission			"Cannot delete '%s'.\nPermission denied."
-::board::options::mc::BoardSetup				"Board Setup"
+::board::options::mc::BoardSetup				"Board Options / Select Theme"
 ::board::options::mc::OpenTextureDialog	"Open Texture Dialog"
 
 ::board::options::mc::YouCannotReverse		"You cannot reverse this action. File '%s' will be physically removed."

@@ -653,8 +653,8 @@ proc A_NodeHandler {node} {
 }
 
 
-proc MouseEnter {w node} {
-	if {[llength $node]} {
+proc MouseEnter {w nodes} {
+	foreach node $nodes {
 		set href [$node attribute -default {} href]
 		if {[string length $href]} {
 			$node dynamic set user
@@ -664,8 +664,8 @@ proc MouseEnter {w node} {
 }
 
 
-proc MouseLeave {w node} {
-	if {[llength $node]} {
+proc MouseLeave {w nodes} {
+	foreach node $nodes {
 		set href [$node attribute -default {} href]
 		if {[string length $href]} {
 			$node dynamic clear user
@@ -675,8 +675,8 @@ proc MouseLeave {w node} {
 }
 
 
-proc Mouse1Up {w node} {
-	if {[llength $node]} {
+proc Mouse1Up {w nodes} {
+	foreach node $nodes {
 		set href [$node attribute -default {} href]
 		if {[string length $href]} {
 			::web::open $w $href

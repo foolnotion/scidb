@@ -844,7 +844,7 @@
 ::board::options::mc::IsWriteProtected		"El archivo '%s' está protegido contra escritura."
 ::board::options::mc::ConfirmDelete			"¿Está seguro que desea eliminar '%s'?"
 ::board::options::mc::NoPermission			"No se puede eliminar '%s'.\nPermiso denegado."
-::board::options::mc::BoardSetup				"Disposición del tablero"
+::board::options::mc::BoardSetup				"Disposición del tablero" ;# NEW changed to "Board Options / Select Theme"
 ::board::options::mc::OpenTextureDialog	"Abrir diálogo de texturas"
 
 ::board::options::mc::YouCannotReverse		"No puede revertir esta acción. El archivo '%s' será removido físicamente."

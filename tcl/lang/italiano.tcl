@@ -848,7 +848,7 @@
 ::board::options::mc::IsWriteProtected		"Il file '%s' è protetto per la scrittura"
 ::board::options::mc::ConfirmDelete			"Sei sicuro di voler eliminare '%s'?"
 ::board::options::mc::NoPermission			"Non posso eliminare '%s'.\nPermesso negato."
-::board::options::mc::BoardSetup				"Configurazione scacchiera"
+::board::options::mc::BoardSetup				"Configurazione scacchiera" ;# NEW changed to "Board Options / Select Theme"
 ::board::options::mc::OpenTextureDialog	"Apri finestra Texture"
 
 ::board::options::mc::YouCannotReverse		"Non puoi ritornare su questa azione. Il file '%s' sarà rimosso fisicamente."
