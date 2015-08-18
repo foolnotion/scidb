@@ -33,6 +33,7 @@ namespace eval mc {
 set RecentlyUsed				"Recently used"
 set RemoveSelectedDatabase	"Remove selected database from history"
 set NewsAvailable				"There are updated news available"
+set NoInternetConnection	"Information: Scidb cannot connect to Internet."
 
 }
 
@@ -46,6 +47,8 @@ array set Priv {
 	news			""
 	checksum		0
 	stimulated	{}
+	connection	1
+	welcome		0
 }
 
 array set Options {
@@ -100,6 +103,7 @@ proc build {tab width height} {
 	$Priv(html) handler node a [namespace current]::A_NodeHandler
 	pack $Priv(html) -fill both -expand yes
 	set Priv(buttons) $btn
+	set Priv(welcome) $Options(welcome)
 
 	if {!$Options(welcome)} {
 		after idle [namespace code [list FetchNews $::mc::langID 0]]
@@ -136,7 +140,7 @@ proc activate {w flag} {
 	append css [::font::html::defaultFixedFonts info] \n
 	set size 32
 
-	if {[string length $Priv(news)] || $Options(welcome)} {
+	if {[string length $Priv(news)] || $Priv(welcome)} {
 		append content "<table cellspacing='0' cellpadding='0' border='0' width='100%'>"
 		append content "<tr>"
 		append content "<td valign='top' class='left'>"
@@ -187,7 +191,7 @@ proc activate {w flag} {
 	append content "</td>"
 	append content "<td valign='top' class='right'>"
 
-	if {$Options(welcome)} {
+	if {$Priv(welcome)} {
 		set lang $::mc::langID
 		set file [file join $::scidb::dir::help $lang Welcome.html]
 		if {![file exists $file]} { set file [file join $::scidb::dir::help en Welcome.html] }
@@ -209,7 +213,11 @@ proc activate {w flag} {
 		append content $Priv(news)
 	}
 
-	if {[string length $Priv(news)] || $Options(welcome)} {
+	if {!$Priv(connection)} {
+		append content "<p style='color:#ffb900;font-size:120%;'>" $mc::NoInternetConnection "</p>"
+	}
+
+	if {[string length $Priv(news)] || $Priv(welcome)} {
 		append content "</td>"
 		append content "</tr>"
 		append content "</table>"
@@ -507,10 +515,16 @@ proc FetchNews {lang update} {
 proc GetUrl {lang update} {
 	variable URL
 
-	::http::geturl [format $URL $lang] \
+	if {[catch { ::http::geturl [format $URL $lang] \
 		-command [namespace code [list FetchNewsResponse $lang $update]] \
-		-timeout 5000 \
-		;
+		-timeout 5000 }]} {
+		# No internet available
+		variable Priv
+		variable Options
+		set Priv(connection) 0
+		set Priv(welcome) 1
+		update
+	}
 }
 
 
@@ -553,7 +567,11 @@ proc FetchNewsResponse {lang update token} {
 
 
 proc LanguageChanged {} {
-	FetchNews $::mc::langID 1
+	variable Priv
+
+	if {$Priv(connection)} {
+		FetchNews $::mc::langID 1
+	}
 }
 
 

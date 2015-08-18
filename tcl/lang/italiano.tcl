@@ -455,6 +455,7 @@
 ::application::information::mc::RecentlyUsed           "Recently used" ;# NEW
 ::application::information::mc::RemoveSelectedDatabase "Remove selected database from history" ;# NEW
 ::application::information::mc::NewsAvailable          "There are updatednews available" ;# NEW
+::application::information::mc::NoInternetConnection   "Information: Scidb cannot connect to Internet." ;# NEW
 
 ### application::database ##############################################
 ::application::database::mc::FileOpen							"Apri Database"

@@ -4331,7 +4331,7 @@ Board::generateNonCapturingPieceMoves(variant::Type variant, MoveList& result) c
 	}
 	else
 	{
-		uint64_t moves = kingAttacks(m_ksq[m_stm]) & ~m_occupiedBy[m_stm];
+		uint64_t moves = kingAttacks(m_ksq[m_stm]) & ~m_occupiedBy[m_stm] & ~m_kings;
 
 		while (moves)
 		{

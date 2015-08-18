@@ -823,13 +823,20 @@ PgnReader::process(Progress& progress)
 					}
 				}
 
-				if (m_variant != variant::Undetermined && !m_tags.contains(tag::Variant))
-					m_tags.set(tag::Variant, variant::identifier(m_givenVariant = m_variant));
+				if (m_variant == variant::Undetermined)
+				{
+					m_variant = variant::Normal;
+				}
+				else
+				{
+					if (!m_tags.contains(tag::Variant))
+						m_tags.set(tag::Variant, variant::identifier(m_givenVariant = m_variant));
 
-				if (m_variant != variant::Undetermined && !consumer().supportsVariant(m_variant))
-					sendError(UnsupportedVariant, m_currPos, m_tags.value(tag::Variant));
+					if (!consumer().supportsVariant(m_variant))
+						sendError(UnsupportedVariant, m_currPos, m_tags.value(tag::Variant));
+				}
 
-				consumer().setupVariant(m_variant == variant::Undetermined ? variant::Normal : m_variant);
+				consumer().setupVariant(m_variant);
 
 				if (variant::isAntichessExceptLosers(m_variant) && m_idn <= 960)
 					m_idn += 3*960;
@@ -1309,14 +1316,14 @@ PgnReader::finishGame(bool skip)
 {
 	consumer().finishMoveSection(m_result);
 
+	if (m_variant == variant::Undetermined)
+		consumer().setVariant(m_variant = variant::Normal);
+
 	if (m_modification == Normalize)
 	{
 		checkSite(m_tags, m_eventCountry, m_sourceIsPossiblyChessBase);
 		checkMode();
 	}
-
-	if (m_variant == variant::Undetermined)
-		consumer().setVariant(variant::Normal);
 
 	save::State state;
 	unsigned variantIndex = variant::toIndex(variant::toMainVariant(consumer().variant()));
@@ -2195,7 +2202,7 @@ void
 PgnReader::setupEcoPosition()
 {
 	M_ASSERT(m_eco);
-	M_ASSERT(m_variant = variant::Normal);
+	M_ASSERT(m_variant == variant::Normal);
 
 	Board const&	board	= consumer().board();
 	Line const&		line	= EcoTable::specimen(variant::Index_Normal).getLine(m_eco);
@@ -3216,6 +3223,22 @@ PgnReader::readTags()
 											case 'I': ignore = (name == "Input"); break;
 											case 'O': ignore = (name == "Owner"); break;
 											case 'U': ignore = (name == "UniqID"); break;
+
+#if 0 // wrong, this is the running clock
+											case 'C':
+												if (name == "Clock")
+												{
+													if (	(value.front() == 'W' || value.front() == 'B')
+														&& value.c_str()[1] == '/')
+													{
+														tag::ID tag = value.front() == 'W'
+																		? tag::WhiteClock
+																		: tag::BlackClock;
+														m_tags.set(tag, value.substr(2u));
+													}
+												}
+												break;
+#endif
 
 											case 'L':
 												if ((ignore = (name == "LastMoves")))

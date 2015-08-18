@@ -9,6 +9,7 @@
 #define nstypes_h___
 
 #include <stdint.h>
+#include <stddef.h>
 
 extern "C" {
 

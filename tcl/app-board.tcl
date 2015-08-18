@@ -809,7 +809,7 @@ proc PopupMenu {w} {
 	$m add command \
 		-compound left \
 		-image $::icon::16x16::rotateBoard \
-		-label $::overview::mc::RotateBoard \
+		-label " $::overview::mc::RotateBoard" \
 		-command [namespace code [list Rotate $Vars(widget:frame)]] \
 		;
 	set pos [menu $m.pos -tearoff false]
