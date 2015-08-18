@@ -50,6 +50,7 @@ using namespace tcl::pos;
 using namespace tcl::app;
 
 static char const* CmdBoard			= "::scidb::pos::board";
+static char const* CmdDestination	= "::scidb::pos::destination";
 static char const* CmdFen				= "::scidb::pos::fen";
 static char const* CmdGuess			= "::scidb::pos::guess";
 static char const* CmdGuessNext		= "::scidb::pos::guessNext";
@@ -278,6 +279,20 @@ cmdNextMoves(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	}
 
 	setResult(result);
+	return TCL_OK;
+}
+
+
+static int
+cmdDestination(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	Game const& game = Scidb->game();
+	int dest = -1;
+
+	if (!game.atLineStart())
+		dest =  game.currentMove().to();
+
+	setResult(dest);
 	return TCL_OK;
 }
 
@@ -633,6 +648,7 @@ void
 init(Tcl_Interp* ti)
 {
 	createCommand(ti, CmdBoard,			cmdBoard);
+	createCommand(ti, CmdDestination,	cmdDestination);
 	createCommand(ti, CmdFen,				cmdFen);
 	createCommand(ti, CmdGuess,			cmdGuess);
 	createCommand(ti, CmdGuessNext,		cmdGuessNext);

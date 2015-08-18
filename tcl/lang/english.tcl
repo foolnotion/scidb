@@ -425,6 +425,9 @@
 ::application::board::mc::AddNewGame					"Add New Game..."
 ::application::board::mc::SlidingVarPanePosition	"Sliding variation pane position"
 ::application::board::mc::ShowVariationArrows		"Show variation arrows"
+::application::board::mc::ShowAnnotation				"Show annotation glyph"
+::application::board::mc::ShowAnnotationTimeout		"Timeout for annoation glyph"
+::application::board::mc::None							"None"
 
 ::application::board::mc::Tools							"Tools"
 ::application::board::mc::Control						"Control"

@@ -39,6 +39,9 @@ set LoadRandomGame			"Load random game"
 set AddNewGame					"Add New Game..."
 set SlidingVarPanePosition	"Sliding variation pane position"
 set ShowVariationArrows		"Show variation arrows"
+set ShowAnnotation			"Show annotation glyph"
+set ShowAnnotationTimeout	"Timeout for annoation glyph"
+set None							"None"
 
 set Tools						"Tools"
 set Control						"Control"
@@ -78,13 +81,16 @@ variable Layouts {Normal Crazyhouse}
 set Defaults(coords-font-family) [font configure TkDefaultFont -family]
 
 array set Options {
-	variations:arrows	0
+	variations:arrows		0
+	show:annotation		0
+	annotation:timeout	1500
 }
 
 
 proc build {w width height} {
 	variable Dim
 	variable Vars
+	variable Options
 	variable Layouts
 	variable board
 	variable mc::Accel
@@ -105,6 +111,21 @@ proc build {w width height} {
 	::board::diagram::setTargets $board $border $canv
 	set boardc [::board::diagram::canvas $board]
 	::variation::build $canv [namespace code SelectAlternative]
+
+	set family [font configure TkTextFont -family]
+	set size [font configure TkTextFont -size]
+	if {$size < 0} { incr size -6 } else { incr size 6 }
+	set Vars(annotation) ""
+	tk::label $canv.annotation \
+		-textvar [namespace current]::Vars(annotation) \
+		-takefocus 0 \
+		-borderwidth 1 \
+		-relief solid \
+		-background yellow \
+		-foreground darkred \
+		-font [list $family $size normal] \
+		;
+	$canv create window 0 0 -anchor ne -window $canv.annotation -state hidden -tags annotation
 
 	set pieces {q r b n p}
 	set Vars(holding:w) \
@@ -298,7 +319,7 @@ proc build {w width height} {
 		-state disabled \
 		-image [set ::icon::toolbarCtrlLeaveVar] \
 		-command [namespace code { Goto up }]]
-
+	
 	set Vars(need-binding) \
 		[list $Vars(widget:border) $Vars(widget:frame) [::board::diagram::canvas $board]]
 	
@@ -574,6 +595,7 @@ proc Goto {step} {
 	variable Vars
 	variable board
 
+puts "Goto: $step"
 	if {	$step == +1
 		&& !$Vars(select-var-is-pending)
 		&& ([::variation::use?] || $Options(variations:arrows))
@@ -592,21 +614,60 @@ proc Goto {step} {
 			}
 		}
 		if {[::variation::use?]} {
+			$Vars(widget:frame) itemconfigure annotation -state hidden
 			set moves {}
 			foreach entry $vars { lappend moves [::font::translate [lindex $entry 0]] }
 			::variation::show $moves
+			return
 		}
 	} else {
 		set Vars(select-var-is-pending) 0
 		goto $step
 	}
+
+	if {$step == +1 && $Options(show:annotation)} {
+		ShowAnnotation
+	}
+}
+
+
+proc ShowAnnotation {} {
+	variable Vars
+	variable Options
+
+	set text ""
+	lassign [::scidb::game::query annotation] prf inf suf
+
+	foreach list {prf inf suf} {
+		foreach nag [set $list] {
+			set nag [string range $nag 1 end]
+			set t [::font::mapNagToUtfSymbol $nag]
+			if {$nag != $t && [string length $text] == 0} {
+				set text $t
+			}
+		}
+	}
+
+	if {[string length $text]} {
+		set Vars(annotation) $text
+		$Vars(widget:frame) itemconfigure annotation -state normal
+		if {$Options(annotation:timeout) > 0} {
+			after $Options(annotation:timeout) \
+				[list $Vars(widget:frame) itemconfigure annotation -state hidden]
+		}
+	} else {
+		$Vars(widget:frame) itemconfigure annotation -state hidden
+	}
 }
 
 
 proc SelectAlternative {index} {
+	variable Options
+
 	if {$index >= 0 && $index <= [::scidb::game::count variations]} {
 		if {$index > 0} { ::scidb::game::go variation [expr {$index - 1}] }
 		::scidb::game::go +1
+		if {$Options(show:annotation)} { ShowAnnotation }
 	}
 }
 
@@ -904,6 +965,11 @@ proc PopupMenu {w} {
 		-variable [namespace current]::Options(variations:arrows) \
 		;
 	::theme::configureCheckEntry $m
+	$m add checkbutton \
+		-label $mc::ShowAnnotation \
+		-variable [namespace current]::Options(show:annotation) \
+		;
+	::theme::configureCheckEntry $m
 
 	$m add separator
 	if {[::board::options::isOpen]} { set state disabled } else { set state normal }
@@ -922,6 +988,23 @@ proc PopupMenu {w} {
 		-label " $mc::SlidingVarPanePosition" \
 		;
 	::variation::addToMenu $slider
+	set timeout [menu $m.timeout -tearoff false]
+	$m add cascade \
+		-menu $timeout \
+		-compound left \
+		-image $::icon::16x16::none \
+		-label " $mc::ShowAnnotationTimeout" \
+		;
+	foreach s {1500 2000 2500 3000 3500 4000 4500 5000 0} {
+		if {$s == 0} { set txt $mc::None } else { set txt $s }
+		$timeout add radiobutton \
+			-label $txt \
+			-variable [namespace current]::Options(annotation:timeout) \
+			-value $s \
+			-command [list $Vars(widget:frame) itemconfigure annotation -state hidden] \
+			;
+		::theme::configureRadioEntry $timeout
+	}
 
 	tk_popup $m {*}[winfo pointerxy $w]
 }
@@ -955,6 +1038,7 @@ proc RebuildBoard {canv width height} {
 	ComputeLayout $width $height $Dim(bordersize)
 	SetBackground $canv window $width $height
 	$canv coords board $Dim(border:x1) $Dim(border:y1)
+	$canv coords annotation [expr {$Dim(border:x1) - 10}] [expr {$Dim(border:y1) + $Dim(borderthickness)}]
 	$Vars(widget:border) coords board $Dim(borderthickness) $Dim(borderthickness)
 	set bordersize [expr {$Dim(bordersize) + $Dim(border:gap)}]
 	$Vars(widget:border) configure -width $bordersize -height $bordersize

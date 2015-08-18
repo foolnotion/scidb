@@ -2545,14 +2545,14 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		case 'a':	// annotation
 			{
-				mstl::string s;
+				mstl::string s, t, u;
 
 				Game const&	game = Scidb->game(pos);
 				Tcl_Obj*		objs[3];
 
 				objs[0] = Tcl_NewStringObj(game.prefix(s), -1);
-				objs[1] = Tcl_NewStringObj(game.infix(s),  -1);
-				objs[2] = Tcl_NewStringObj(game.suffix(s), -1);
+				objs[1] = Tcl_NewStringObj(game.infix(t),  -1);
+				objs[2] = Tcl_NewStringObj(game.suffix(u), -1);
 
 				setResult(3, objs);
 			}

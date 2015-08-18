@@ -761,7 +761,7 @@ proc drawText {canv squareSize color x y text} {
 	set font [list [font configure TkFixedFont -family] $size bold]
 	set x1 [expr {$x0 + 1}]
 	set y1 [expr {$y0 + 1}]
-	set tags {mark text}
+	set tags [list mark text]
 	if {$luma < 50} {
 		$canv create text $x0 $y0 -fill white  -font $font -text $text -anchor center -tags $tags
 		$canv create text $x1 $y1 -fill $color -font $font -text $text -anchor center -tags $tags
