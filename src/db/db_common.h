@@ -441,6 +441,13 @@ namespace tag
 		BlackECF,		///< English Chess Federation
 		BlackIPS,		///< Individual Player Strength (Chess 960 Rating)
 
+		WhiteRatingFirst	= WhiteElo,
+		WhiteRatingLast	= WhiteIPS,
+		BlackRatingFirst	= BlackElo,
+		BlackRatingLast	= BlackIPS,
+		RatingFirst			= WhiteRatingFirst,
+		RatingLast			= BlackRatingLast,
+
 		// team related information
 		WhiteTeam,				BlackTeam,			///< ChessBase team information
 		WhiteTeamCountry,		BlackTeamCountry,	///< ChessBase team information

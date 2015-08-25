@@ -1253,10 +1253,6 @@ namespace tag
 {
 	static mstl::string const* NameLookup[ExtraTag];
 
-	TagSet IsWhiteRating;
-	TagSet IsBlackRating;
-	TagSet IsRating;
-
 	void
 	initialize()
 	{
@@ -1295,27 +1291,6 @@ namespace tag
 		for (int i = 0; i < ExtraTag; ++i)
 			assert(NameLookup[i]);
 #endif
-
-		IsWhiteRating.set(WhiteDWZ);
-		IsWhiteRating.set(WhiteECF);
-		IsWhiteRating.set(WhiteElo);
-		IsWhiteRating.set(WhiteICCF);
-		IsWhiteRating.set(WhiteIPS);
-		IsWhiteRating.set(WhiteRapid);
-		IsWhiteRating.set(WhiteRating);
-		IsWhiteRating.set(WhiteUSCF);
-
-		IsBlackRating.set(BlackDWZ);
-		IsBlackRating.set(BlackECF);
-		IsBlackRating.set(BlackElo);
-		IsBlackRating.set(BlackICCF);
-		IsBlackRating.set(BlackIPS);
-		IsBlackRating.set(BlackRapid);
-		IsBlackRating.set(BlackRating);
-		IsBlackRating.set(BlackUSCF);
-
-		IsRating |= IsWhiteRating;
-		IsRating |= IsBlackRating;
 	}
 
 	bool initializeIsOk() { return NameLookup[0] != 0; }
@@ -1632,12 +1607,6 @@ species::fromString(char const* s)
 
 	return species::Unspecified;
 }
-
-
-bool tag::isWhiteRatingTag(ID tag)	{ return IsWhiteRating.test(tag); }
-bool tag::isBlackRatingTag(ID tag)	{ return IsBlackRating.test(tag); }
-bool tag::isRatingTag(ID tag)			{ return IsRating.test(tag); }
-//bool tag::isBughouseTag(ID tag)	{ return IsBughouse.test(tag); }
 
 
 mstl::string const&

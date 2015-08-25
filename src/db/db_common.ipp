@@ -450,6 +450,29 @@ namespace tag {
 inline bool isValid(ID tag)		{ return tag <= LastTag || (BughouseTag <= tag && tag < ExtraTag); }
 inline bool isMandatory(ID tag)	{ return Event <= tag && tag <= Result; }
 
+inline
+bool
+isWhiteRatingTag(ID tag)
+{
+	return WhiteRatingFirst <= int(tag) && int(tag) <= WhiteRatingLast;
+}
+
+inline
+bool
+isBlackRatingTag(ID tag)
+{
+	return BlackRatingFirst <= int(tag) && int(tag) <= BlackRatingLast;
+}
+
+inline
+bool
+isRatingTag(ID tag)
+{
+	return RatingFirst <= int(tag) && int(tag) <= RatingLast;
+}
+
+//bool tag::isBughouseTag(ID tag)	{ TODO }
+
 } // namespace tag
 
 namespace nag {
