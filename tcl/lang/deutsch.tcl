@@ -1947,6 +1947,8 @@
 ::game::mc::ReallyReplaceGameDetail		"Es wird empfohlen einen Blick auf Partie #%s zu werfen, bevor diese Aktion ausgeführt wird."
 ::game::mc::ReopenLockedGames				"Die gesperrten Partien der letzten Sitzung wieder öffnen?"
 ::game::mc::OpenAssociatedDatabases		"Alle zugehörigen Datenbanken öffnen?"
+::game::mc::OverwriteCurrentGame			"Aktuelle Partie überschreiben?"
+::game::mc::OverwriteCurrentGameDetail	"Im Falle von '%s' wird eine neue Partie geöffnet."
 
 ### languagebox ########################################################
 ::languagebox::mc::AllLanguages	"Alle Sprachen"

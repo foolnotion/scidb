@@ -29,44 +29,46 @@
 namespace eval game {
 namespace eval mc {
 
-set CloseDatabase					"Close Database"
-set CloseAllGames					"Close all open games of database '%s'?"
-set SomeGamesAreModified		"Some games of database '%s' are modified. Close anyway?"
-set AllSlotsOccupied				"All game slots are occupied."
-set ReleaseOneGame				"Please release one of the games before loading a new one."
-set GameAlreadyOpen				"Game is already open but modified. Discard modified game?"
-set GameAlreadyOpenDetail		"'%s' will open a new game."
-set GameHasChanged				"Game %s has changed."
-set GameHasChangedDetail		"Probably this is not the expected game due to database changes."
-set CorruptedHeader				"Corrupted header in recovery file '%s'."
-set RenamedFile					"Renamed this file to '%s.bak'."
-set CannotOpen						"Cannot open recovery file '%s'."
-set OldGameRestored				"One game restored."
-set OldGamesRestored				"%s games restored."
-set GameRestored					"One game from last session restored."
-set GamesRestored					"%s games from last session restored."
-set ErrorInRecoveryFile			"Error in recovery file '%s'"
-set Recovery						"Recovery"
-set UnsavedGames					"You have unsaved game changes."
-set DiscardChanges				"'%s' will throw away all changes."
-set ShouldRestoreGame			"Should this game be restored in next session?"
-set ShouldRestoreGames			"Should these games be restored in next session?"
-set NewGame							"New Game"
-set NewGames						"New Games"
-set Created							"created"
-set ClearHistory					"Clear history"
-set RemoveSelectedGame			"Remove selected game from history"
-set GameDataCorrupted			"Game data is corrupted."
-set GameDecodingFailed			"Decoding of this game was not possible."
-set GameDecodingChanged			"The database is opened with character set '%base%', but this game seems to be encoded with character set '%game%', therefore this game is loaded with the detected character set."
-set GameDecodingChangedDetail	"Probably you have opened the database with the wrong character set. Note that the automatic detection of the character set is limited."
-set VariantHasChanged			"Game cannot be opened because the variant of the database has changed and is now different from the game variant."
-set RemoveGameFromHistory		"Remove game from history?"
-set GameNumberDoesNotExist		"Game %number does not exist in '%base'."
-set ReallyReplaceGame			"It seems that the actual game #%s in game editor is not the originally loaded game due to intermediate database changes, it is likely that you lose a different game. Really replace game data?"
-set ReallyReplaceGameDetail	"It is recommended to have a look on game #%s before doing this action."
-set ReopenLockedGames			"Re-open locked games from previous session?"
-set OpenAssociatedDatabases	"Open all associated databases?"
+set CloseDatabase						"Close Database"
+set CloseAllGames						"Close all open games of database '%s'?"
+set SomeGamesAreModified			"Some games of database '%s' are modified. Close anyway?"
+set AllSlotsOccupied					"All game slots are occupied."
+set ReleaseOneGame					"Please release one of the games before loading a new one."
+set GameAlreadyOpen					"Game is already open but modified. Discard modified game?"
+set GameAlreadyOpenDetail			"'%s' will open a new game."
+set GameHasChanged					"Game %s has changed."
+set GameHasChangedDetail			"Probably this is not the expected game due to database changes."
+set CorruptedHeader					"Corrupted header in recovery file '%s'."
+set RenamedFile						"Renamed this file to '%s.bak'."
+set CannotOpen							"Cannot open recovery file '%s'."
+set OldGameRestored					"One game restored."
+set OldGamesRestored					"%s games restored."
+set GameRestored						"One game from last session restored."
+set GamesRestored						"%s games from last session restored."
+set ErrorInRecoveryFile				"Error in recovery file '%s'"
+set Recovery							"Recovery"
+set UnsavedGames						"You have unsaved game changes."
+set DiscardChanges					"'%s' will throw away all changes."
+set ShouldRestoreGame				"Should this game be restored in next session?"
+set ShouldRestoreGames				"Should these games be restored in next session?"
+set NewGame								"New Game"
+set NewGames							"New Games"
+set Created								"created"
+set ClearHistory						"Clear history"
+set RemoveSelectedGame				"Remove selected game from history"
+set GameDataCorrupted				"Game data is corrupted."
+set GameDecodingFailed				"Decoding of this game was not possible."
+set GameDecodingChanged				"The database is opened with character set '%base%', but this game seems to be encoded with character set '%game%', therefore this game is loaded with the detected character set."
+set GameDecodingChangedDetail		"Probably you have opened the database with the wrong character set. Note that the automatic detection of the character set is limited."
+set VariantHasChanged				"Game cannot be opened because the variant of the database has changed and is now different from the game variant."
+set RemoveGameFromHistory			"Remove game from history?"
+set GameNumberDoesNotExist			"Game %number does not exist in '%base'."
+set ReallyReplaceGame				"It seems that the actual game #%s in game editor is not the originally loaded game due to intermediate database changes, it is likely that you lose a different game. Really replace game data?"
+set ReallyReplaceGameDetail		"It is recommended to have a look on game #%s before doing this action."
+set ReopenLockedGames				"Re-open locked games from previous session?"
+set OpenAssociatedDatabases		"Open all associated databases?"
+set OverwriteCurrentGame			"Overwrite current game?"
+set OverwriteCurrentGameDetail	"A new game will be opened if answered with '%s'."
 
 } ;# namespace mc
 
@@ -82,7 +84,8 @@ variable Header [list "Backup file for Scidb (UTF-8 encoded; HTML format)" "Vers
 #	{<base> <codec> <number> <variant>}
 #	{<crc-index> <crc-moves>}
 #	<tags>
-#	<encoding>}
+#	<encoding>
+#	<mode>}
 variable List		{}
 
 # {<tags> {<base> <codec> <number> <variant>} {<crc-index> <crc-moves>} <encoding>}
@@ -90,8 +93,7 @@ variable History	{}
 
 variable HistorySize		10
 variable MaxPosition		9
-variable EditorCount		0
-variable BroserCount		100
+variable BrowserCount	100
 variable LockedGames		{}
 variable Selection		-1
 
@@ -116,16 +118,18 @@ proc new {parent args} {
 	variable MaxPosition
 	variable List
 	variable Options
-	variable EditorCount
 	variable Vars
 
 	array set opts {
-		-base		""
-		-view		-1
-		-number	-1
-		-fen		""
-		-variant	Normal
-		-lock		0
+		-base			""
+		-view			-1
+		-number		-1
+		-fen			""
+		-variant		Normal
+		-lock			0
+		-replace		0
+		-encoding	utf-8
+		-mode			edit
 	}
 	array set opts $args
 	set base $opts(-base)
@@ -137,12 +141,7 @@ proc new {parent args} {
 
 	# TODO: check whether base is open or existing!
 
-	if {$number == -1} {
-		set number [incr EditorCount]
-		set lock 1
-	} else {
-		set lock $opts(-lock)
-	}
+	set lock [expr {$number == -1 ? 1 : $opts(-lock)}]
 	if {[llength $base] == 0} { set base $scratchbaseName }
 	set variant $opts(-variant)
 	set codec [::scidb::db::get codec $base $variant]
@@ -202,14 +201,20 @@ proc new {parent args} {
 	} else {
 		if {[string length $cmd] == 0} {
 			set pos -1
-			for {set i 0} {$i < [llength $List]} {incr i} {
-				set elem [lindex $List $i]
-				if {![lindex $elem 1] && ![lindex $elem 2] && ![lindex $elem 3]} {
-					if {$pos < 0 || [llength [lindex $elem 0]]} {
-						set pos $i
+
+			if {$opts(-replace)} {
+				set pos [::scidb::game::current]
+			} else {
+				for {set i 0} {$i < [llength $List]} {incr i} {
+					set elem [lindex $List $i]
+					if {![lindex $elem 1] && ![lindex $elem 2] && ![lindex $elem 3]} {
+						if {$pos < 0 || [llength [lindex $elem 0]]} {
+							set pos $i
+						}
 					}
 				}
 			}
+
 			if {$pos < 0} {
 				set pos [llength $List]
 				if {$pos == $Options(game:max)} {
@@ -260,7 +265,7 @@ proc new {parent args} {
 		}
 
 		set tags [::scidb::game::tags $pos]
-		lappend entry $crc $tags
+		lappend entry $crc $tags $opts(-encoding) $opts(-mode)
 		if {$pos == [llength $List]} {
 			lappend List $entry
 		}  else {
@@ -284,6 +289,32 @@ proc new {parent args} {
 	UpdateHistoryEntry $pos $base $variant $tags
 
 	return $pos
+}
+
+
+proc replace {parent} {
+	variable MaxPosition
+
+	set replace 0
+
+	if {[::scidb::game::current] < $MaxPosition && (![locked?] || [import?])} {
+		set detail [format $mc::OverwriteCurrentGameDetail [::mc::stripAmpersand $::dialog::mc::No]]
+
+		if {[modified?]} {
+			append detail \n
+			append detail [format $mc::DiscardChanges [::mc::stripAmpersand $::dialog::mc::Yes]]
+		}
+
+		set rc [::dialog::question \
+			-parent $parent \
+			-message $mc::OverwriteCurrentGame \
+			-detail $detail \
+			-default no
+		]
+		if {$rc eq "yes"} { set replace 1 }
+	}
+
+	return [new $parent -replace $replace -mode import]
 }
 
 
@@ -363,6 +394,26 @@ proc setModified {position} {
 }
 
 
+proc modified? {{position -1}} {
+	variable List
+	variable MaxPosition
+
+	if {$position == -1} { set position [::scidb::game::current] }
+	if {$position >= $MaxPosition} { return 0 }
+	return [lindex $List $position 1]
+}
+
+
+proc import? {{position -1}} {
+	variable List
+	variable MaxPosition
+
+	if {$position == -1} { set position [::scidb::game::current] }
+	if {$position >= $MaxPosition} { return 0 }
+	return [expr {[lindex $List $position 8] eq "import"}]
+}
+
+
 proc lock {position} {
 	variable List
 	variable MaxPosition
@@ -383,10 +434,11 @@ proc unlock {position} {
 }
 
 
-proc locked? {position} {
+proc locked? {{position -1}} {
 	variable List
 	variable MaxPosition
 
+	if {$position == -1} { set position [::scidb::game::current] }
 	if {$position >= $MaxPosition} { return 0 }
 	return [lindex $List $position 2]
 }
@@ -499,7 +551,7 @@ proc setFirst {base variant tags encoding} {
 	if {[llength $List] == 0} { lappend List {} }
 	set id [list $base sci 0 $variant]
 	set time [clock format [clock seconds] -format {%Y.%m.%d %H:%M:%S}]
-	lset List 0 [list $time 0 0 0 $id {0 0} $tags $encoding]
+	lset List 0 [list $time 0 0 0 $id {0 0} $tags $encoding utf-8]
 }
 
 
@@ -509,14 +561,14 @@ proc release {position} {
 
 	update idletasks ;# fire dangling events
 	::scidb::game::release $position
-	lset List $position {{} 0 0 0 {{} {} {} {} {}} {0 0} {} {}}
+	lset List $position {{} 0 0 0 {{} {} {} {} {}} {0 0} {} {} {}}
 	set Vars(lookup:$position) {}
 }
 
 
 proc nextGamePosition {} {
-	variable BroserCount
-	return [incr BroserCount]
+	variable BrowserCount
+	return [incr BrowserCount]
 }
 
 

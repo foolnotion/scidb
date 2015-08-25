@@ -323,6 +323,15 @@ proc openEdit {parent position args} {
 	$main paneconfigure $log -minsize [winfo reqheight $log.text]
 	$main paneconfigure $edit -minsize [winfo reqheight $log.text]
 
+	set sel [GetSelection $position PRIMARY]
+	set success 0
+	if {[string length $sel] == 0 || ![set success [TryImport $position $sel]]} {
+		set sel [GetSelection $position CLIPBOARD]
+	}
+	if {$success || ([string length $sel] > 0 && [TryImport $position $sel])} {
+		$edit.text insert insert [string trim $sel]
+	}
+
 	if {$used} {
 		ttk::grabWindow $dlg
 		wm transient $dlg $parent
@@ -716,6 +725,7 @@ proc ConvertPieces {position str} {
 proc ConvertPastedText {position w str} {
 	variable Priv
 
+	set str [string trim $str]
 	set str [ConvertPieces $position $str]
 	if {[string length $str] == 0} { return $str }
 	set encoding $Priv($position:encoding)
@@ -756,6 +766,15 @@ proc TextPasteSelection {position w x y buffer} {
 			if {[$w cget -state] eq "normal"} { focus $w }
 		}
 #	}
+}
+
+
+proc GetSelection {position buffer} {
+	variable Priv
+
+	set w $Priv($position:txt)
+	if {[catch {::tk::GetSelection $w $buffer} sel]} { return "" }
+	return [ConvertPastedText $position $w $sel]
 }
 
 
@@ -999,11 +1018,11 @@ proc DoImport {position dlg} {
 	}
 
 	array set figset {}
+	set content [ConvertPieces $position $content]
 
 	if {$figurine eq $::encoding::mc::AutoDetect} {
-		set content [ConvertPieces $position $content]
 		set found {}
-		set successfull 0
+		set successful 0
 
 		foreach entry $Priv($position:sets) {
 			lassign $entry code _ figurine
@@ -1020,7 +1039,7 @@ proc DoImport {position dlg} {
 			]
 
 			if {$state == 1} {
-				set successfull 1
+				set successful 1
 				if {$code eq "en"} { break }
 				set f [string range $figurine 0 end-1]
 				if {![::info exists figset($f)]} {
@@ -1030,7 +1049,7 @@ proc DoImport {position dlg} {
 			}
 		}
 
-		if {$successfull} {
+		if {$successful} {
 			if {[llength $found] >= 1} {
 				set currentCode [lindex $found 0]
 				set f $::figurines::langSet($currentCode)
@@ -1108,6 +1127,8 @@ proc DoImport {position dlg} {
 				Show info $mc::ImportOK
 				$log configure -state disabled -takefocus 0
 				set Priv($position:used) 1
+				::scidb::game::go $position end
+				Close $position $dlg
 			} elseif {$Priv(first) >= 0} {
 				$log selection set $Priv(first)
 				ListboxSelect $position
@@ -1119,6 +1140,42 @@ proc DoImport {position dlg} {
 		Show info [format $mc::UnsupportedVariantRejected $state]
 		$log configure -state disabled -takefocus 0
 	}
+}
+
+
+proc TryImport {position content} {
+	variable Priv
+	variable Variants
+
+	set variant [lindex $Variants [$Priv($position:variants) current]]
+	set figurine [$Priv($position:figurines) get fig]
+	set text [ConvertPieces $position $content]
+	set successful 0
+
+	if {$figurine eq $::encoding::mc::AutoDetect} {
+		set sets $Priv($position:sets)
+	} else {
+		set sets [list [$Priv($position:figurines) get lang] - $figurine]
+	}
+
+	foreach entry $sets {
+		lassign $entry code _ figurine
+
+		set successful [::scidb::game::import \
+			$position \
+			$text \
+			-variant $variant \
+			-encoding utf-8 \
+			-figurine $figurine \
+			-variation no \
+			-varno $Priv($position:varno) \
+			-trial 1 \
+		]
+
+		if {$successful == 1 && $code eq "en"} { break }
+	}
+
+	return $successful
 }
 
 

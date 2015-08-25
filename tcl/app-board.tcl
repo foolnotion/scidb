@@ -65,6 +65,7 @@ set Accel(replace-game)		"R"
 set Accel(replace-moves)	"V"
 set Accel(trial-mode)		"T"
 set Accel(export-game)		"E"
+set Accel(import-game)		"I"
 
 } ;# namespace mc
 
@@ -319,9 +320,14 @@ proc build {w width height} {
 		-state disabled \
 		-image [set ::icon::toolbarCtrlLeaveVar] \
 		-command [namespace code { Goto up }]]
-	
-	set Vars(need-binding) \
-		[list $Vars(widget:border) $Vars(widget:frame) [::board::diagram::canvas $board]]
+
+	needBinding $Vars(widget:border)
+	needBinding $Vars(widget:frame)
+	needBinding [::board::diagram::canvas $board]
+
+	foreach w $Vars(need-binding) {
+		::font::addChangeFontSizeBindings editor $w ::application::pgn::fontSizeChanged
+	}
 	
 	bind <Key-space>					::move::nextGuess
 	bind <Left>							[namespace code { Goto -1 }]
@@ -351,8 +357,10 @@ proc build {w width height} {
 	bind <<LanguageChanged>>		[namespace code LanguageChanged]
 	bind <F1>							[list ::help::open .application]
 
+	set tl [winfo toplevel $w]
+
 	# the Alt-Key binding isn't working, so do it by hand
-	set cmd [list tk::AltKeyInDialog [winfo toplevel $w] %A]
+	set cmd [list tk::AltKeyInDialog $tl %A]
 	for {set i 0} {$i < 26} {incr i} {
 		set c [::util::intToChar $i]
 		bind <Alt-Key-$c> $cmd
@@ -377,10 +385,6 @@ proc build {w width height} {
 		}
 	}
 
-	foreach w $Vars(need-binding) {
-		::font::addChangeFontSizeBindings editor $w ::application::pgn::fontSizeChanged
-	}
-
 	for {set i 1} {$i <= 9} {incr i} {
 		bind <Control-Key-$i>    [namespace code [list [namespace parent]::pgn::selectAt [expr {$i - 1}]]]
 		# NOTE: the working of the following depends on actual keyboard bindings!
@@ -398,9 +402,9 @@ proc build {w width height} {
 	set Vars(cmd:replace-game)			[namespace code [list SaveGame replace]]
 	set Vars(cmd:replace-moves)		[namespace code [list SaveGame moves]]
 	set Vars(cmd:trial-mode)			[namespace parent]::pgn::flipTrialMode
+	set Vars(cmd:import-game)			[list [namespace parent]::pgn::importGame $tl]
 	set Vars(cmd:export-game)			[list ::gamebar::exportGame .application]
 
-	LanguageChanged
 	BuildBoard $canv
 	ConfigureBoard $canv
 
@@ -563,6 +567,57 @@ proc unbindGameControls {position base variant} {
 }
 
 
+proc needBinding {w} {
+	variable Vars
+	lappend Vars(need-binding) $w
+}
+
+
+proc bindKeys {} {
+	variable Vars
+	variable mc::Accel
+
+	foreach key [array names Accel] {
+		bind <Control-[string tolower $Vars(key:$key)]> {}
+		bind <Control-[string toupper $Vars(key:$key)]> {}
+	}
+
+	bind <Control-Shift-[string tolower $Vars(key:edit-comment)]> {}
+	bind <Control-Shift-[string toupper $Vars(key:edit-comment)]> {}
+
+	foreach key [array names Accel] {
+		bind <Control-[string tolower $Accel($key)]> $Vars(cmd:$key)
+		bind <Control-[string toupper $Accel($key)]> $Vars(cmd:$key)
+		set Vars(key:$key) $Accel($key)
+	}
+
+	bind <Control-Shift-[string tolower $Accel(edit-comment)]> $Vars(cmd:shift:edit-comment)
+	bind <Control-Shift-[string toupper $Accel(edit-comment)]> $Vars(cmd:shift:edit-comment)
+
+	foreach {action key tipvar} {	GotoStart	Home	GotoStartOfGame
+											FastBack		Prior	GoBackFast
+											Back			Left	GoBackward
+											Fwd			Right	GoForward
+											FastFwd		Next	GoForwardFast
+											GotoEnd		End	GotoEndOfGame} {
+		set tip "[set ::browser::mc::$tipvar] ($::mc::Key($key))"
+		::toolbar::childconfigure $Vars(control:[string tolower $action 0]) -tooltip $tip
+	}
+
+	foreach {action key tipvar} {	EnterVar		Down	GoIntoNextVar
+											LeaveVar		Up		GoIntPrevVar} {
+		set tip "[set mc::$tipvar] ($::mc::Key($key))"
+		::toolbar::childconfigure $Vars(control:[string tolower $action 0]) -tooltip $tip
+	}
+
+	foreach {action key} {next Down prev Up first Home last End} {
+		set tip $mc::LoadGame($action)
+		append tip " (" $::mc::Key(Ctrl) "-" $::mc::Key($key) ")"
+		::toolbar::childconfigure $Vars(game:$action) -tooltip $tip
+	}
+}
+
+
 proc FilterKey {key state cmd} {
 	variable Vars
 
@@ -595,7 +650,6 @@ proc Goto {step} {
 	variable Vars
 	variable board
 
-puts "Goto: $step"
 	if {	$step == +1
 		&& !$Vars(select-var-is-pending)
 		&& ([::variation::use?] || $Options(variations:arrows))
@@ -1854,48 +1908,7 @@ proc SaveGame {{mode ""}} {
 
 
 proc LanguageChanged {} {
-	variable Vars
-	variable mc::Accel
-
-	foreach key [array names Accel] {
-		bind <Control-[string tolower $Vars(key:$key)]> {}
-		bind <Control-[string toupper $Vars(key:$key)]> {}
-	}
-
-	bind <Control-Shift-[string tolower $Vars(key:edit-comment)]> {}
-	bind <Control-Shift-[string toupper $Vars(key:edit-comment)]> {}
-
-	foreach key [array names Accel] {
-		bind <Control-[string tolower $Accel($key)]> $Vars(cmd:$key)
-		bind <Control-[string toupper $Accel($key)]> $Vars(cmd:$key)
-		set Vars(key:$key) $Accel($key)
-	}
-
-	bind <Control-Shift-[string tolower $Accel(edit-comment)]> $Vars(cmd:shift:edit-comment)
-	bind <Control-Shift-[string toupper $Accel(edit-comment)]> $Vars(cmd:shift:edit-comment)
-
-	foreach {action key tipvar} {	GotoStart	Home	GotoStartOfGame
-											FastBack		Prior	GoBackFast
-											Back			Left	GoBackward
-											Fwd			Right	GoForward
-											FastFwd		Next	GoForwardFast
-											GotoEnd		End	GotoEndOfGame} {
-		set tip "[set ::browser::mc::$tipvar] ($::mc::Key($key))"
-		::toolbar::childconfigure $Vars(control:[string tolower $action 0]) -tooltip $tip
-	}
-
-	foreach {action key tipvar} {	EnterVar		Down	GoIntoNextVar
-											LeaveVar		Up		GoIntPrevVar} {
-		set tip "[set mc::$tipvar] ($::mc::Key($key))"
-		::toolbar::childconfigure $Vars(control:[string tolower $action 0]) -tooltip $tip
-	}
-
-	foreach {action key} {next Down prev Up first Home last End} {
-		set tip $mc::LoadGame($action)
-		append tip " (" $::mc::Key(Ctrl) "-" $::mc::Key($key) ")"
-		::toolbar::childconfigure $Vars(game:$action) -tooltip $tip
-	}
-
+	bindKeys
 	UpdateSaveButton
 }
 

@@ -1462,6 +1462,7 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 		-image $::icon::16x16::filetypePGN \
 		-compound left \
 		-command [list ::application::pgn::importGame $parent] \
+		-accel "$::mc::Key(Ctrl)-$::application::board::mc::Accel(import-game)" \
 		;
 	
 	if {$addSaveMenu && ![::game::trialMode?]} {

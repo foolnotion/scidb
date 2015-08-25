@@ -1959,6 +1959,8 @@
 ::game::mc::ReallyReplaceGameDetail		"Si raccomanda di guardare la partita #%s prima di continuare con questa operazione."
 ::game::mc::ReopenLockedGames				"Ri-apri partite bloccate dalla sessione precedente?"
 ::game::mc::OpenAssociatedDatabases		"Apri tutti i database associati?"
+::game::mc::OverwriteCurrentGame			"Overwrite current game?" ;# NEW
+::game::mc::OverwriteCurrentGameDetail	"A new game will be opened if answered with '%s'." ;# NEW
 
 ### languagebox ########################################################
 ::languagebox::mc::AllLanguages	"Tutte le lingue"

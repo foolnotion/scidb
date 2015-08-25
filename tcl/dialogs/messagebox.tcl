@@ -284,6 +284,8 @@ proc alert {args} {
 	wm iconname $w Dialog
 	wm protocol $w WM_DELETE_WINDOW {#}
 	bind $w <Alt-Key> [list tk::AltKeyInDialog $w %A]
+	bind $w <Right> [list event generate $w <Tab>]
+	bind $w <Left> [list event generate $w <Shift-Tab>]
 
 	if {[winfo viewable [winfo toplevel $parent]] } {
 		wm transient $w [winfo toplevel $parent]

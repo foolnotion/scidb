@@ -1946,6 +1946,8 @@
 ::game::mc::ReallyReplaceGameDetail		"It is recommended to have a look on game #%s before doing this action."
 ::game::mc::ReopenLockedGames				"Re-open locked games from previous session?"
 ::game::mc::OpenAssociatedDatabases		"Open all associated databases?"
+::game::mc::OverwriteCurrentGame			"Overwrite current game?"
+::game::mc::OverwriteCurrentGameDetail	"A new game will be opened if answered with '%s'."
 
 ### languagebox ########################################################
 ::languagebox::mc::AllLanguages	"All languages"
