@@ -325,10 +325,10 @@ proc openEdit {parent position args} {
 
 	set sel [GetSelection $position PRIMARY]
 	set success 0
-	if {[string length $sel] == 0 || ![set success [TryImport $position $sel]]} {
+	if {[string length $sel] == 0 || ![set success [CheckSelection $position $sel]]} {
 		set sel [GetSelection $position CLIPBOARD]
 	}
-	if {$success || ([string length $sel] > 0 && [TryImport $position $sel])} {
+	if {$success || ([string length $sel] > 0 && [CheckSelection $position $sel])} {
 		$edit.text insert insert [string trim $sel]
 	}
 
@@ -1143,39 +1143,11 @@ proc DoImport {position dlg} {
 }
 
 
-proc TryImport {position content} {
-	variable Priv
-	variable Variants
-
-	set variant [lindex $Variants [$Priv($position:variants) current]]
-	set figurine [$Priv($position:figurines) get fig]
-	set text [ConvertPieces $position $content]
-	set successful 0
-
-	if {$figurine eq $::encoding::mc::AutoDetect} {
-		set sets $Priv($position:sets)
-	} else {
-		set sets [list [$Priv($position:figurines) get lang] - $figurine]
-	}
-
-	foreach entry $sets {
-		lassign $entry code _ figurine
-
-		set successful [::scidb::game::import \
-			$position \
-			$text \
-			-variant $variant \
-			-encoding utf-8 \
-			-figurine $figurine \
-			-variation no \
-			-varno $Priv($position:varno) \
-			-trial 1 \
-		]
-
-		if {$successful == 1 && $code eq "en"} { break }
-	}
-
-	return $successful
+proc CheckSelection {position content} {
+	# check for sevent tag roaster, take preceding comment into account
+	if {[regexp {[\[][A-Za-z]+\s+[\"][^\"]+[\"][\]]} $content]} { return 1 }
+	# check if first line contains SAN
+	return [regexp {[A-Z]?[a-h][1-8]} [lindex [split $content \n] 0]]
 }
 
 
