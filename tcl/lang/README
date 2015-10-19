@@ -8,7 +8,7 @@ Scidb from the repository. Please install package Subversion:
 
 Fetch the repository version:
 
-    svn co https://scidb.svn.sourceforge.net/svnroot/scidb scidb
+    svn checkout svn://svn.code.sf.net/p/scidb/code/trunk scidb-code
 
 The latter argument is the destination directory. Change into the destination
 directory and build the project as usual:
@@ -40,17 +40,37 @@ If you like to see the changes, go into sub-directory "tcl/" and do
 
    sudo make install-lang
 
-I'm assuming that you will change "tcl/espanol.tcl" in your installation
-directory, but another possibility is to change the file
-"/usr/local/share/scidb-beta/lang/espanol.tcl", in this way you don't need
-to distribute the modification. Please note that editing the file
+You have two choices:
+
+1. Edit the file "tcl/espanol.tcl" ("expanol" is only an example), and later
+install this file with "sudo make install-lang".
+
+2. Edit thle file "/usr/local/share/scidb-beta/lang/espanol.tcl", in this way
+you don't need to distribute the modification. Please note that editing the file
 "/usr/local/share/scidb-beta/lang/espanol.tcl" requires super-user rights.
 
-Currently the translation file is encoded with character set UTF-8. An
-appropriate editor might be "gedit". If you prefer another character set, for
-example ISO8859-1, send me a message, I will change the encoding.
+If your language does not yet exists in
+"/usr/local/share/scidb-beta/lang/localization.tcl" (utf-8 encoded), just enter
+a new language entry:
 
-If you're ready, please send the translation file, I will do a merge into the
+- "Language" is the name of the language in this language.
+
+- "Code" is nothing else than the ISO 639-1 code (see
+  https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes).
+
+- "Encoding" is the character set, "utf-8" is preferred, but "iso8859-1" is also
+  ok. If you need a different character set, please choose one from:
+  tis-620 ksc5601 macCentEuro macUkraine jis0201 euc-cn euc-jp iso8859-10 macThai
+  iso2022-jp jis0208 macIceland iso2022 iso8859-13 iso8859-14 jis0212 iso8859-15
+  iso8859-16 euc-kr macRomania iso2022-kr macTurkish macGreek macRoman iso8859-1
+  iso8859-2 iso8859-3 macCroatian koi8-r iso8859-4 cp1250 iso8859-5 cp1251 iso8859-6
+  macCyrillic cp1252 koi8-u iso8859-7 iso8859-8 cp1253 iso8859-9 cp1254 cp1255 cp1256
+  cp1257 cp1258 macJapan shiftjis utf-8
+
+- "Filename" is the name of the file in sub-directory "tcl", it should be the
+  asciified local language name (only ASCII characters).
+
+If you've finished, please send the translation file, I will do a merge into the
 old translation file (a merge is required because I'm constantly changing the
 translation files).
 
