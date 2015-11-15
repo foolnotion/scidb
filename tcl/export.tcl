@@ -2287,7 +2287,7 @@ proc ConfigureWidgets {} {
 		set state readonly
 	}
 
-	if {[winfo exists Info(lang,descr)]} {
+	if {[winfo exists $Info(lang,descr)]} {
 		$Info(lang,descr) configure -foreground $color
 
 		set n [llength $Values($type,comments,languages)]

@@ -1706,7 +1706,7 @@
 ::export::mc::HideVariations				"Varianten ausblenden"
 ::export::mc::GameDoesNotHaveComments	"Diese Partie hat keine Kommentare."
 
-::export::mc::LanguageSelectionDescr	"Die Kontrollbox (rechts von der Combobox) hat die Bedeutung 'signifikant'.\n\nAls 'signifikant' markiere Sprachen werden immer exportiert.\n\nWenn die Partie keine der als 'signifikant' markierten Sprachen enthält, dann wird die erste verfügbare Sprache exportiert."
+::export::mc::LanguageSelectionDescr	"Die Kontrollbox (rechts von der Combobox) hat die Bedeutung 'signifikant'.\n\nAls 'signifikant' markierte Sprachen werden immer exportiert.\n\nWenn die Partie keine der als 'signifikant' markierten Sprachen enthält, dann wird die erste verfügbare Sprache exportiert."
 
 ::export::mc::PdfFiles						"PDF-Dateien"
 ::export::mc::HtmlFiles						"HTML-Dateien"
