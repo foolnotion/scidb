@@ -173,10 +173,14 @@ public:
 	unsigned importGames(Producer& producer, util::Progress& progress, int startIndex = -1);
 
 	void decodeGame(GameData& data, GameInfo& info, unsigned gameIndex, mstl::string* encoding = 0);
-	void encodeGame(util::ByteStream& strm, GameData const& data, Signature const& signature);
 	void encodeGame(	util::ByteStream& strm,
 							GameData const& data,
 							Signature const& signature,
+							unsigned langFlags);
+	void encodeGame(	util::ByteStream& strm,
+							GameData const& data,
+							Signature const& signature,
+							unsigned langFlags,
 							TagBits const& allowedTags,
 							bool allowExtraTags);
 
@@ -256,6 +260,7 @@ protected:
 	virtual void doEncoding(util::ByteStream& strm,
 									GameData const& data,
 									Signature const& signature,
+									unsigned langFlags,
 									TagBits const& allowedTags,
 									bool allowExtraTags);
 	virtual unsigned putGame(util::ByteStream const& data);

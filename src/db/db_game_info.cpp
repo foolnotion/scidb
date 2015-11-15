@@ -528,12 +528,14 @@ GameInfo::setup(	uint32_t gameOffset,
 
 	setup(gameOffset, gameRecordLength, whitePlayer, blackPlayer, event, annotator, namebases);
 
+	unsigned langFlags = provider.langFlags();
+
 	m_gameOffset		= gameOffset;
 	m_signature			= provider.getFinalBoard().signature();
 	m_result				= result::fromString(tags.value(tag::Result));
 	m_plyCount			= mstl::min(MaxPlyCount, provider.plyCount());
-	m_pd[0].langFlag	= provider.commentEngFlag();
-	m_pd[1].langFlag	= provider.commentOthFlag();
+	m_pd[0].langFlag	= !!(langFlags & i18n::English);
+	m_pd[1].langFlag	= !!(langFlags & i18n::Other_Lang);
 
 	m_gameFlags = (provider.gameFlags() & ~Flag_Special) | (m_gameFlags & Flag_Special);
 

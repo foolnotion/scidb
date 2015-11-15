@@ -425,7 +425,7 @@ makeVariation(	MoveNode* const* first,
 		}
 
 		Comment c1(n->comment(move::Post));
-		Comment c2(s, false, false);
+		Comment c2(s, i18n::None);
 
 		c1.append(c2, '\n');
 		c1.normalize();
@@ -1837,7 +1837,7 @@ Game::setComment(mstl::string const& comment, move::Position position)
 {
 	M_REQUIRE(position == move::Post || !atLineStart());
 
-	Comment comm(comment, false, false);
+	Comment comm(comment, i18n::None);
 	comm.normalize();
 
 	if (comm != m_currentNode->comment(position))
@@ -1858,7 +1858,7 @@ Game::setComment(mstl::string const& comment, move::Position position)
 void
 Game::setTrailingComment(mstl::string const& comment)
 {
-	Comment comm(comment, false, false);
+	Comment comm(comment, i18n::None);
 	comm.normalize();
 
 	MoveNode* node = m_currentNode->getLineEnd();
@@ -2040,9 +2040,9 @@ Game::goToCurrentMove() const
 {
 	if (m_subscriber && m_previousKey != m_currentKey)
 	{
+		m_previousKey = m_currentKey;
 		m_subscriber->boardSetup(m_currentBoard);
 		m_subscriber->gotoMove(m_currentKey.id(), successorKey());
-		m_previousKey = m_currentKey;
 	}
 }
 
@@ -2280,6 +2280,32 @@ unsigned
 Game::moveNumber() const
 {
 	return m_currentBoard.moveNumber();
+}
+
+
+void
+Game::enterSubVariation(unsigned variationNumber)
+{
+	M_REQUIRE(variationNumber < subVariationCount());
+
+	M_ASSERT(m_currentNode->next());
+	m_currentNode = m_currentNode->next();
+
+	unsigned plyNumber = m_currentBoard.plyNumber();
+
+	if (!m_currentNode->move().isEmpty())
+	{
+		undoMove();
+	}
+	else
+	{
+		++plyNumber;
+		m_currentKey.incrementPly();
+	}
+
+	m_currentKey.addVariation(variationNumber);
+	m_currentKey.addPly(plyNumber);
+	m_currentNode = m_currentNode->variation(variationNumber);
 }
 
 
@@ -2600,8 +2626,7 @@ Game::insertVariation(MoveNode* variation, unsigned number)
 	insertUndo(Remove_Variation, RemoveVariation, number);
 
 	node->fold(false);
-	m_currentNode->addVariation(node.release());
-	m_currentNode->swapVariations(number, m_currentNode->variationCount() - 1);
+	m_currentNode->insertVariation(node.release(), number);
 
 	END_BACKUP;
 
@@ -4263,17 +4288,10 @@ Game::containsLanguage(edit::Key const& key, move::Position position, mstl::stri
 }
 
 
-bool
-Game::commentEngFlag() const
+unsigned
+Game::langFlags() const
 {
-	return m_startNode->containsEnglishLang();
-}
-
-
-bool
-Game::commentOthFlag() const
-{
-	return m_startNode->containsOtherLang();
+	return m_startNode->langFlags();
 }
 
 

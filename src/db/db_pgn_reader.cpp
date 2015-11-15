@@ -411,6 +411,7 @@ PgnReader::PgnReader(mstl::istream& stream,
 	::memset(m_rejected, 0, sizeof(m_rejected));
 
 	::memset(m_gameCount, 0, sizeof(m_gameCount));
+	::memset(m_gameNumbers, 0, sizeof(m_gameNumbers));
 
 	if (m_readMode == File)
 		parseDescription(m_stream, m_description, &m_encoding);
@@ -1003,6 +1004,8 @@ PgnReader::process(Progress& progress)
 				m_parsingTags = true;
 				token = searchTag();
 			}
+
+			consumer().finalizeGame();
 		}
 	}
 	catch (Termination const&)
@@ -1261,7 +1264,7 @@ PgnReader::handleError(Error code, mstl::string const& message)
 
 	if (!msg.empty())
 	{
-		Comment comment(msg, false, false);
+		Comment comment(msg, i18n::None);
 		consumer().putTrailingComment(comment);
 	}
 
@@ -3764,7 +3767,7 @@ PgnReader::parseComment(Token prevToken, int c)
 						m_buffer.append('.');
 						m_buffer.append("</:></xml>", 10);
 
-						Comment comment(m_buffer, false, false);
+						Comment comment(m_buffer, i18n::None);
 
 						if (!m_comments.empty() && m_postIndex < m_comments.size())
 						{
@@ -3812,7 +3815,7 @@ PgnReader::parseComment(Token prevToken, int c)
 
 				if (phrase)
 				{
-					Comment comment(phrase, true, true);
+					Comment comment(phrase, i18n::English | i18n::Other_Lang || i18n::Multilingual);
 					m_comments.push_back();
 					m_comments.back().swap(comment);
 					m_hasNote = true;

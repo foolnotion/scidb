@@ -1130,7 +1130,8 @@ proc openGame {parent index} {
 			::dialog::warning -buttons {ok} -parent $parent -message $mc::VariantHasChanged
 			set rc 0
 		} elseif {$number >= [::scidb::db::count games $base $variant]} {
-			set msg [string map [list %number [expr {$number + 1}] %base $base] $mc::GameNumberDoesNotExist]
+			set map [list %number [expr {$number + 1}] %base $base]
+			set msg [string map $map $mc::GameNumberDoesNotExist]
 			::dialog::error -parent $parent -message $msg
 			set rc 0
 		} else {
@@ -1399,7 +1400,7 @@ proc UpdateHistory {_ base variant index} {
 
 			lset History $i 0 $info
 			lset History $i 2 [list [::scidb::db::get checksum $index $base $variant] [lindex $crcHist 1]]
-			lset History $i 3 [::scidb::db::get encoding $base]
+			lset History $i 3 [::scidb::db::get usedencoding $base]
 		}
 	}
 }
@@ -1420,7 +1421,7 @@ proc UpdateHistoryEntry {pos base variant tags} {
 		set lookup($name) $value
 	}
 	set info {}
-	set encoding [::scidb::db::get encoding $base]
+	set encoding [::scidb::db::get usedencoding $base]
 	foreach name {Event Site Date Round White Black Result} { lappend info $lookup($name) }
 	set entry [list $info [lindex $List $pos 4] [lindex $List $pos 5] $encoding]
 

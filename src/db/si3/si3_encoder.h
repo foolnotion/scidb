@@ -57,6 +57,7 @@ public:
 	Encoder(util::ByteStream& strm, sys::utf8::Codec& codec);
 
 	void doEncoding(	Signature const& signature,
+							unsigned langFlags,
 							GameData const& data,
 							db::Consumer::TagBits const& allowedTags,
 							bool allowExtraTags);
@@ -74,7 +75,7 @@ protected:
 	void doEncoding(Move const& move);
 
 	void encodeVariation(MoveNode const* node, unsigned level = 0);
-	void encodeComments(MoveNode* node, encoding::CharSet encoding);
+	void encodeComments(MoveNode* node, unsigned langFlags, encoding::CharSet encoding);
 	void encodeTag(TagSet const& tags, tag::ID tagID);
 	void encodeTags(TagSet const& tags, db::Consumer::TagBits allowedTags, bool allowExtraTags);
 	void encodeNullMove(Move const& move);

@@ -78,7 +78,11 @@ public:
 	static unsigned const Flag_Write_Any_Rating_As_ELO					= 1 << 30;
 	static unsigned const Flag_LAST											= Flag_Write_Any_Rating_As_ELO;
 
-	Writer(format::Type srcFormat, unsigned flags, mstl::string const& encoding);
+	Writer(	format::Type srcFormat,
+				unsigned flags,
+				mstl::string const& encoding,
+				LanguageList const* languages = nullptr,
+				unsigned significantLanguages = 0);
 
 	bool needSpace() const;
 	bool insideComment() const;
@@ -114,6 +118,7 @@ protected:
 
 	void addFlag(unsigned flag);
 	void removeFlag(unsigned flag);
+	void setLangFlags(unsigned flags);
 
 	virtual void writeBeginGame(unsigned number) = 0;
 	virtual void writeEndGame() = 0;
@@ -155,6 +160,7 @@ private:
 	bool				m_needMoveNumber;
 	bool				m_needSpace;
 	result::ID		m_result;
+	mstl::string	m_fallbackLang;
 	mstl::string	m_stringBuf1;
 	mstl::string	m_stringBuf2;
 };

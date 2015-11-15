@@ -256,6 +256,8 @@ BpgnReader::process(util::Progress& progress)
 				m_parsingTags = true;
 				token = searchTag();
 			}
+
+			consumer.finalizeGame();
 		}
 	}
 	catch (Termination const&)

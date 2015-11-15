@@ -386,7 +386,7 @@ Cursor::importGames(Producer& producer, util::Progress& progress)
 
 unsigned
 Cursor::importGames(	db::Database const& src,
-							unsigned& illegalRejected,
+							unsigned* illegalRejected,
 							Log& log,
 							util::Progress& progress)
 {

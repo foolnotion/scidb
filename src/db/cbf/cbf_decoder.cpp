@@ -204,7 +204,7 @@ Decoder::decodeAnnotation(ByteStream& strm)
 		if (!sys::utf8::validate(str))
 			m_codec.forceValidUtf8(str);
 
-		m_currentNode->setComment(Comment(str, false, false), move::Post);
+		m_currentNode->setComment(Comment(str, i18n::None), move::Post);
 	}
 }
 
@@ -379,7 +379,6 @@ Decoder::doDecoding(Consumer& consumer, TagSet& tags)
 	consumer.startMoveSection();
 	decodeVariation(consumer, moves, text);
 	consumer.finishMoveSection(result::fromString(tags.value(tag::Result)));
-
 	return consumer.finishGame(tags);
 }
 

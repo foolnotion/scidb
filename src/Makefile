@@ -75,7 +75,7 @@ ALL_LIBS = $(LIBS) $(TCL_LIBRARY) $(ZZIPLIB_LIB) $(MINIZIP_LIB) $(ZLIB_LIB) $(EX
 ALL_TK_LIBS = $(TCL_LIBS) $(TK_LIBS) $(TK_LIBRARY) $(X_LIBRARY)
 #ALL_TK_LIBS = $(TCL_LIBS) $(TK_LIBS) -L/usr/local/lib -ltk $(X_LIBRARY)
 
-SUBDIRS = db app mstl sys tcl tk/jpeg tk/svg/agg tk/svg tk/treectrl tk/html tk/tkdnd tk util util/minizip util/libTeXt util/libharu util/universalchardet util/libhyphenate $(LIB_SUBDIRS)
+SUBDIRS = db app mstl sys tcl tk/jpeg tk/svg/agg tk/svg tk/treectrl tk/html tk/tkdnd tk util util/minizip util/libTeXt util/libharu util/universalchardet util/libhyphenate util/gdbm $(LIB_SUBDIRS)
 
 TARGETS = extend_eco dump_eco code2eco eco2code best_move guess_move pawn_progress cbh2si4 cdb2sci $(TK_PROGRAM) $(TCL_PROGRAM)
 
@@ -198,7 +198,7 @@ depend:
 
 recursive:
 	@for dir in $(SUBDIRS); do           \
-		$(MAKE) -C $$dir;              \
+		$(MAKE) -C $$dir;                 \
 		if [ $$? != 0 ]; then exit 1; fi; \
 	done
 
@@ -1230,6 +1230,8 @@ tkscidb.o: mstl/m_function_base.h
 tkscidb.o: mstl/m_function_base.ipp
 tkscidb.o: mstl/m_function.ipp
 tkscidb.o: app/app_tree_admin.ipp
+tkscidb.o: db/db_comment.h
+tkscidb.o: db/db_comment.ipp
 tkscidb.o: util/u_rkiss.h
 tkscidb.o: app/app_application.ipp
 tkscidb.o: tk/tk_init.h

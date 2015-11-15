@@ -2003,6 +2003,7 @@ void
 Codec::doEncoding(util::ByteStream& strm,
 						GameData const& data,
 						Signature const& signature,
+						unsigned langFlags,
 						TagBits const& allowedTags,
 						bool allowExtraTags)
 {
@@ -2013,7 +2014,7 @@ Codec::doEncoding(util::ByteStream& strm,
 	M_ASSERT(namebase(Namebase::Round).size() <= ::MaxRoundCount);
 
 	Encoder encoder(strm, *m_codec);
-	encoder.doEncoding(signature, data, allowedTags, allowExtraTags);
+	encoder.doEncoding(signature, langFlags, data, allowedTags, allowExtraTags);
 }
 
 

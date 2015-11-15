@@ -373,6 +373,7 @@ proc open {parent base variant info view index {fen {}}} {
 	}
 
 	update idletasks
+	::scidb::game::layout $position
 	::scidb::game::go $position position $Vars(fen)
 
 	set Priv(minWidth) [expr {[winfo width $dlg] - [winfo width $lt]}]
@@ -519,7 +520,7 @@ proc makeResult {result toMove termination reason variant} {
 proc makeOpeningLines {data} {
 	lassign $data idn position eco opening
 	lassign {"" {} ""} line1 line2 line3
-	lassign $opening long short
+	lassign $opening short long
 	set vars [lrange $opening 2 end]
 	set eco [lindex $eco 0]
 	set idn [lindex $idn 0]
@@ -545,9 +546,10 @@ if {0} {
 				append line1 " - " [::mc::translateEco $short]
 				foreach var $vars { append line1 ", "  [::mc::translateEco $var] }
 			} else {
-				append line1 " - " [::mc::translateEco [lindex $opening 0]]
+				append line1 " - " [::mc::translateEco $long]
 			}
 		}
+		set line1 [encoding convertfrom iso8859-1 $line1]
 	} elseif {$idn > 0} {
 		if {[llength $position] == 3} {
 			append line1 $mc::HandicapGame ": "

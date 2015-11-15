@@ -297,6 +297,17 @@ namespace tb
 	bool isScore(int score);
 }
 
+namespace i18n
+{
+	enum
+	{
+		Undetermined	= 0,			None = Undetermined,
+		Multilingual	= 1 << 0,
+		English			= 1 << 1,
+		Other_Lang		= 1 << 2,
+	};
+}
+
 namespace result
 {
 	// coincides with Scid 3.x (only first four entries)
@@ -1638,12 +1649,6 @@ namespace order
 
 namespace copy
 {
-	enum Mode
-	{
-		AllGames,
-		ExcludeIllegal,
-	};
-
 	enum Source
 	{
 		OriginalSource,

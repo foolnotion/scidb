@@ -732,8 +732,8 @@ proc findTclTkPathsAndMore {} {
 
     foreach module {tcl tk} {
         if {[info exists configure($module-libraries)]} {
-            set package($module-lib) [MakeOption -L $configure($module-libraries)]
-            Append package($module-lib) [MakeOption -Wl,-rpath= $configure($module-libraries)]
+#           set package($module-lib) [MakeOption -L $configure($module-libraries)]
+            set package($module-lib) [MakeOption -Wl,-rpath= $configure($module-libraries)]
             Append package($module-lib) " -l${module}${tclv}"
         } else {
             set libPaths $path($module,libraries)
@@ -744,8 +744,8 @@ proc findTclTkPathsAndMore {} {
                     set package($module-lib) $configure($module-libraries)
                 }
             } else {
-                set package($module-lib) [MakeOption -L $configure($module-libraries)]
-                Append package($module-lib) [MakeOption -Wl,-rpath= $configure($module-libraries)]
+#               set package($module-lib) [MakeOption -L $configure($module-libraries)]
+                set package($module-lib) [MakeOption -Wl,-rpath= $configure($module-libraries)]
             }
             puts -nonewline "    Location of [string toupper $module 0 0] $tclv library: "
             if {[info exists package($module-lib)]} {

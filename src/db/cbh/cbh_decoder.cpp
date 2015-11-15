@@ -732,11 +732,13 @@ Decoder::decodeComment(MoveNode* node, unsigned length, move::Position position)
 		if (!sys::utf8::validate(str))
 			m_codec.forceValidUtf8(str);
 
-		bool isEnglish	= lang && ::strcmp(lang, "en") == 0;
-		bool isOther	= lang && !isEnglish;
+		unsigned langFlags = 0;
+
+		if (lang)
+			langFlags |= (::strcmp(lang, "en") == 0) ? i18n::English : i18n::Other_Lang;
 
 		Comment comment;
-		comment.swap(str, isEnglish, isOther);
+		comment.swap(str, langFlags);
 
 		if (node->hasComment(position))
 		{

@@ -705,6 +705,16 @@ vector<T>::fill(value_type const& value)
 }
 
 
+template <typename T>
+inline
+vector<T>&
+vector<T>::operator+=(vector const& v)
+{
+	insert(end(), v.begin(), v.end());
+	return *this;
+}
+
+
 #if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 
 template <typename T>

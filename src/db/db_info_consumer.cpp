@@ -34,8 +34,10 @@ using namespace db;
 InfoConsumer::InfoConsumer(format::Type srcFormat,
 									mstl::string const& encoding,
 									TagBits const& allowedTags,
-									bool allowExtraTags)
-	:Consumer(srcFormat, encoding, allowedTags, allowExtraTags)
+									bool allowExtraTags,
+									LanguageList const* languages,
+									unsigned significantLanguages)
+	:Consumer(srcFormat, encoding, allowedTags, allowExtraTags, languages, significantLanguages)
 {
 }
 

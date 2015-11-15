@@ -30,13 +30,14 @@ namespace db {
 
 inline unsigned Writer::level() const		{ return m_level; }
 inline unsigned Writer::flags() const		{ return m_flags; }
+
 inline bool Writer::needSpace() const		{ return m_needSpace; }
 inline bool Writer::insideComment() const	{ return m_nullLevel; }
 
 inline bool Writer::test(unsigned flags) const { return m_flags & flags; }
 
-inline void Writer::addFlag(unsigned flag)		{ m_flags |= flag; }
-inline void Writer::removeFlag(unsigned flag)	{ m_flags &= ~flag; }
+inline void Writer::addFlag(unsigned flag)			{ m_flags |= flag; }
+inline void Writer::removeFlag(unsigned flag)		{ m_flags &= ~flag; }
 
 } // namespace db
 

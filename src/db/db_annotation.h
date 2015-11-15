@@ -54,6 +54,7 @@ public:
 	bool operator!=(Annotation const& annotation) const;
 
 	nag::ID operator[](unsigned n) const;
+	nag::ID mostImportantNag() const;
 
 	bool isEmpty() const;
 	bool hasTrailingAnnotation() const;

@@ -30,6 +30,7 @@
 #include "tcl_application.h"
 #include "tcl_position.h"
 #include "tcl_pgn_reader.h"
+#include "tcl_view.h"
 #include "tcl_tree.h"
 #include "tcl_log.h"
 #include "tcl_base.h"
@@ -89,6 +90,7 @@ static char const* CmdImport			= "::scidb::game::import";
 static char const* CmdIndex			= "::scidb::game::index";
 static char const* CmdInfo				= "::scidb::game::info";
 static char const* CmdLangSet			= "::scidb::game::langSet";
+static char const* CmdLayout			= "::scidb::game::layout";
 static char const* CmdLevel			= "::scidb::game::level";
 static char const* CmdLines			= "::scidb::game::lines";
 static char const* CmdLink				= "::scidb::game::link?";
@@ -587,7 +589,7 @@ public:
 		objv_1[0] = Tcl_NewIntObj(moveNo);
 		objv_1[1] = color::isWhite(move.color()) ? m_white : m_black;
 		objv_1[2] = Tcl_NewStringObj(san, san.size());
-		objv_1[3] = Tcl_NewBooleanObj(move.isLegal());
+		objv_1[3] = Tcl_NewBooleanObj(move.isLegal() || move.isEmpty()); // hack
 
 		Tcl_Obj* objv_2[2];
 
@@ -723,9 +725,9 @@ public:
 		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
 	}
 
-	void space(Bracket bracket, bool isFirstOrLastVar) override
+	void space(Bracket bracket, unsigned number, unsigned count) override
 	{
-		Tcl_Obj* objv[3];
+		Tcl_Obj* objv[4];
 
 		objv[0] = m_space;
 
@@ -740,7 +742,8 @@ public:
 			case edit::Node::End:	objv[1] = m_leave; break;
 		}
 
-		objv[2] = Tcl_NewBooleanObj(isFirstOrLastVar);
+		objv[2] = Tcl_NewIntObj(count);
+		objv[3] = Tcl_NewIntObj(number);
 		M_ASSERT(m_objc < U_NUMBER_OF(m_objv));
 		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
 	}
@@ -1512,17 +1515,13 @@ cmdSwitch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	unsigned position = intFromObj(objc, objv, 1);
 
+	if (position == Application::InvalidPosition)
+		position = Scidb->currentPosition();
+
 	Application::ReferenceGames updateReferenceGames = Application::DontUpdateReferenceGames;
 
-	if (position == Application::InvalidPosition)
-	{
-		if (Scidb->currentPosition() <= 9)
-			updateReferenceGames = Application::UpdateReferenceGames;
-	}
-	else if (position <= 9)
-	{
+	if (position <= 9)
 		updateReferenceGames = Application::UpdateReferenceGames;
-	}
 
 	scidb->switchGame(position, updateReferenceGames);
 	return TCL_OK;
@@ -1566,6 +1565,21 @@ cmdInfo(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 
 static int
+cmdLayout(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	unsigned	position	= unsignedFromObj(objc, objv, 1);
+	Game&		game		= scidb->game(position);
+
+	game.updateSubscriber(	Game::UpdatePgn
+								 | Game::UpdateOpening
+								 | Game::UpdateLanguageSet
+								 | Game::UpdateIllegalMoves);
+
+	return TCL_OK;
+}
+
+
+static int
 cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	char const* what				= stringFromObj(objc, objv, 1);
@@ -1601,14 +1615,12 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		subscriber->setStateCmd(objv[3]);
 	}
-	else
+	else if (strcmp(what, "pgn") == 0)
 	{
 		if (objc >= 5)
 			mainlineOnly = boolFromObj(objc, objv, 4);
 
 		subscriber->setPgnCmd(objv[3], mainlineOnly);
-		game.updateSubscriber(
-			Game::UpdatePgn | Game::UpdateOpening | Game::UpdateLanguageSet | Game::UpdateIllegalMoves);
 	}
 
 	return TCL_OK;
@@ -1927,8 +1939,6 @@ cmdLangSet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	int position = objc < 2 ? -1 : intFromObj(objc, objv, 1);
 	Tcl_Obj* languages = objectFromObj(objc, objv, objc < 2 ? 1 : 2);
-	Game::LanguageSet set;
-	int n;
 
 	char const* s = Tcl_GetString(languages);
 
@@ -1936,8 +1946,11 @@ cmdLangSet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		scidb->game(position).setAllLanguages();
 	}
-	else
+	else if (*s)
 	{
+		Game::LanguageSet set;
+		int n;
+
 		if (Tcl_ListObjLength(ti, languages, &n) != TCL_OK)
 			return error(CmdLangSet, nullptr, nullptr, "list of languages expected");
 
@@ -1948,7 +1961,11 @@ cmdLangSet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			set[mstl::string(Tcl_GetString(lang))] = 1;
 		}
 
-		scidb->game(position).setLanguages(set);
+		scidb->setupLanguageSet(set, position);
+	}
+	else
+	{
+		scidb->setupLanguageSet(Game::LanguageSet(), position);
 	}
 
 	return TCL_OK;
@@ -2297,9 +2314,12 @@ cmdSink(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	unsigned		position		= unsignedFromObj(objc, objv, 1);
 	char const*	sourceName	= stringFromObj(objc, objv, 2);
-	unsigned		sourceIndex	= unsignedFromObj(objc, objv, 3);
+	int			sourceIndex	= intFromObj(objc, objv, 3);
 	checksum_t	crcIndex		= wideIntFromObj(objc, objv, 4);
 	checksum_t	crcMoves		= wideIntFromObj(objc, objv, 5);
+
+	if (sourceIndex == -1)
+		sourceIndex = Scidb->database(position).countGames() - 1;
 
 	scidb->setSource(position, sourceName, sourceIndex, crcIndex, crcMoves);
 	return TCL_OK;
@@ -2576,16 +2596,13 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 					else
 					{
 						Game::LanguageSet const& langSet = Scidb->game(pos).languageSet();
-						mstl::string languages;
+						Tcl_Obj* objv[langSet.size()];
+						unsigned k = 0;
 
 						for (Game::LanguageSet::const_iterator i = langSet.begin(); i != langSet.end(); ++i)
-						{
-							if (!languages.empty())
-								languages += ' ';
-							languages += i->first;
-						}
+							objv[k++] = Tcl_NewStringObj(i->first, i->first.size());
 
-						setResult(languages);
+						setResult(k, objv);
 					}
 					break;
 
@@ -3144,7 +3161,7 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		}
 		else if (::strcmp(option, "-index") == 0)
 		{
-			index = unsignedFromObj(objc, objv, objc - 1);
+			index = intFromObj(objc, objv, objc - 1);
 		}
 		else if (::strcmp(option, "-variant") == 0)
 		{
@@ -3372,6 +3389,7 @@ cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	Application::FileMode	mode(Application::Create);
 	mstl::string				encoding(sys::utf8::Codec::utf8());
 	unsigned						position(Application::InvalidPosition);
+	View::Languages			languages;
 
 	while (objc > 2 && *(option = stringFromObj(objc, objv, objc - 2)) == '-')
 	{
@@ -3386,6 +3404,17 @@ cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		else if (::strcmp(option, "-encoding") == 0)
 		{
 			encoding = stringFromObj(objc, objv, objc - 1);
+		}
+		else if (::strcmp(option, "-languages") == 0)
+		{
+			Tcl_Obj**	objs;
+			int			n;
+
+			if (Tcl_ListObjGetElements(ti, objv[objc - 1], &n, &objs) != TCL_OK)
+				return error(CmdExchange, 0, 0, "invalid language list");
+
+			for (int i = 0; i < n; ++i)
+				languages.push_back(Tcl_GetString(objs[i]));
 		}
 		else if (::strcmp(option, "-position") == 0)
 		{
@@ -3420,7 +3449,7 @@ cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	}
 
 	char const* filename = stringFromObj(objc, objv, 1);
-	setResult(save::isOk(scidb->writeGame(position, filename, encoding, comment, flags, mode)));
+	setResult(save::isOk(scidb->writeGame(position, filename, encoding, comment, languages, flags, mode)));
 	return TCL_OK;
 }
 
@@ -3472,12 +3501,12 @@ cmdPrint(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		mstl::string str;
 	};
 
-	if (objc != 11)
+	if (objc != 10)
 	{
 		Tcl_WrongNumArgs(
 			ti, 1, objv,
 			"<file> <search-path> <script-path> <preamble> <flags> "
-			"<options> <nag-map> <languages> <significant> <trace>");
+			"<options> <nag-map> <languages> <trace>");
 		return TCL_ERROR;
 	}
 
@@ -3489,8 +3518,7 @@ cmdPrint(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	unsigned			options			= unsignedFromObj(objc, objv, 6);
 	Tcl_Obj*			mapObj			= objectFromObj(objc, objv, 7);
 	Tcl_Obj*			languageList	= objectFromObj(objc, objv, 8);
-	unsigned			significant		= unsignedFromObj(objc, objv, 9);
-	char const*		trace				= stringFromObj(objc, objv, 10);
+	char const*		trace				= stringFromObj(objc, objv, 9);
 
 	Tcl_Obj**			objs;
 	View::NagMap		nagMap;
@@ -3518,15 +3546,6 @@ cmdPrint(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		nagMap[lhs] = rhs;
 	}
 
-	if (	Tcl_ListObjGetElements(ti, languageList, &objc, &objs) != TCL_OK
-		|| objc >= int(U_NUMBER_OF(languages)))
-	{
-		error(CmdExport, 0, 0, "invalid language list");
-	}
-
-	for (int i = 0; i < objc; ++i)
-		languages[i] = stringFromObj(objc, objs, i);
-
 	TeXt::Controller::LogP myLog(new Log);
 	TeXt::Controller controller(searchPath, TeXt::Controller::AbortMode, myLog);
 	mstl::istringstream src(preamble);
@@ -3548,7 +3567,7 @@ cmdPrint(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 							options,
 							nagMap,
 							languages,
-							significant);
+							::tcl::view::makeLangList(ti, CmdPrint, languageList, languages));
 
 	{
 		mstl::string log(out.str());
@@ -3790,6 +3809,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdIndex,			cmdIndex);
 	createCommand(ti, CmdInfo,				cmdInfo);
 	createCommand(ti, CmdLangSet,			cmdLangSet);
+	createCommand(ti, CmdLayout,			cmdLayout);
 	createCommand(ti, CmdLevel,			cmdLevel);
 	createCommand(ti, CmdLines,			cmdLines);
 	createCommand(ti, CmdLink,				cmdLink);

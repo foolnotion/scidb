@@ -38,6 +38,8 @@
 
 #include "m_stack.h"
 #include "m_string.h"
+#include "m_vector.h"
+#include "m_map.h"
 
 namespace sys { namespace utf8 { class Codec; } }
 
@@ -58,19 +60,25 @@ public:
 
 	typedef tag::TagSet TagBits;
 
+	typedef mstl::map<mstl::string,unsigned> LanguageSet;
+	typedef mstl::vector<mstl::string> LanguageList;
+
+	static unsigned const AllLanguages = unsigned(-1);
+
 	Consumer(format::Type srcFormat,
 				mstl::string const& encoding,
 				TagBits const& allowedTags,
-				bool allowExtraTags);
+				bool allowExtraTags,
+				LanguageList const* languages = nullptr,
+				unsigned significantLanguages = 0);
 	~Consumer() throw();
 
 	bool isMainline() const;
 	bool variationIsEmpty() const;
 	bool terminated() const;
-	bool commentEngFlag() const override;
-	bool commentOthFlag() const override;
 	bool allowExtraTags() const;
 	virtual bool supportsVariant(variant::Type variant) const;
+	bool finalized() const;
 
 	virtual format::Type format() const = 0;
 
@@ -81,6 +89,7 @@ public:
 	unsigned countMoveInfo() const override;
 	unsigned countMarks() const override;
 	unsigned plyCount() const override;
+	unsigned langFlags() const;
 	variant::Type variant() const override;
 	uint16_t idn() const override;
 	uint32_t gameFlags() const override;
@@ -95,6 +104,7 @@ public:
 	EngineList& engines();
 	TagBits const& allowedTags() const;
 	TimeTable& timeTable();
+	void setUsedLanguages(LanguageSet languages);
 
 	Board const& getFinalBoard() const override;
 	Board const& getStartBoard() const override;
@@ -107,6 +117,7 @@ public:
 	bool startGame(TagSet const& tags, uint16_t idn);
 	save::State finishGame(TagSet const& tags);
 	virtual save::State skipGame(TagSet const& tags);
+	void finalizeGame();
 
 	void putPrecedingComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks);
 	void putTrailingComment(Comment const& comment);
@@ -118,6 +129,7 @@ public:
 						Comment const& comment,
 						MarkSet const& marks);
 	void setGameFlags(uint32_t flags);
+	void setLangFlags(unsigned flags);
 	void setVariant(variant::Type variant);
 	void useVariant(variant::Type variant);
 	void setupVariant(variant::Type variant);
@@ -175,11 +187,14 @@ protected:
 	variant::Type getVariant() const;
 	void setStartBoard(Board const& board);
 	void addMoveInfo(MoveInfo const& info);
+	Comment const& prepareComment(Comment& dst, Comment const& src);
+	Comment const& preparePhrase(Comment& dst, Comment const& src);
 
-	MoveInfoSet	m_moveInfoSet;
-	EngineList	m_engines;
-	TimeTable	m_timeTable;
-	TimeTable	m_sendTimeTable;
+	MoveInfoSet		m_moveInfoSet;
+	EngineList		m_engines;
+	TimeTable		m_timeTable;
+	TimeTable		m_sendTimeTable;
+	LanguageSet		m_usedLanguages;
 
 private:
 
@@ -208,6 +223,7 @@ private:
 	unsigned				m_annotationCount;
 	unsigned				m_moveInfoCount;
 	unsigned				m_markCount;
+	unsigned				m_langFlags;
 	bool					m_terminated;
 	variant::Type		m_mainVariant;
 	variant::Type		m_variant;
@@ -223,8 +239,11 @@ private:
 	Consumer*			m_consumer;
 	Producer*			m_producer;
 	bool					m_setupBoard;
-	bool					m_commentEngFlag;
-	bool					m_commentOthFlag;
+	bool					m_haveUsedLangs;
+	bool					m_noComments;
+	LanguageSet			m_relevantLangs;
+	LanguageList		m_wantedLanguages;
+	unsigned				m_significantLangs;
 };
 
 } // namespace db

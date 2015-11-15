@@ -38,6 +38,8 @@
 using namespace db::edit;
 
 
+Key Key::m_emptyKey(false);
+
 static mstl::string const StartKey("m-0");
 
 
@@ -48,6 +50,7 @@ Key::Key() :m_id(StartKey) {}
 Key::Key(unsigned firstPly) :m_id(StartKey) { addPly(firstPly); }
 Key::Key(mstl::string const& key) :m_id(key) { M_REQUIRE(isValid(key)); }
 Key::Key(char const* key) :m_id(key) { M_REQUIRE(isValid(key)); }
+Key::Key(bool) {}
 
 
 Key::Key(mstl::string const& key, char prefix)
@@ -66,9 +69,43 @@ Key::Key(Key const& key, char prefix)
 }
 
 
+Key
+Key::operator+(int n) const
+{
+	M_REQUIRE(isValid());
+
+	Key key(*this);
+
+	if (n > 0)
+		key.incrementPly(n);
+	else
+		key.decrementPly(-n);
+
+	return key;
+}
+
+
+Key
+Key::operator-(int n) const
+{
+	M_REQUIRE(isValid());
+
+	Key key(*this);
+
+	if (n > 0)
+		key.incrementPly(-n);
+	else
+		key.decrementPly(n);
+
+	return key;
+}
+
+
 bool
 Key::isVariationId() const
 {
+	M_REQUIRE(isValid());
+
 	unsigned level = 0;
 
 	for (char const *s = ::skipPrefix(m_id); *s; ++s)
@@ -84,6 +121,8 @@ Key::isVariationId() const
 bool
 Key::isMainlineId() const
 {
+	M_REQUIRE(isValid());
+
 	unsigned level = 0;
 
 	for (char const *s = ::skipPrefix(m_id); *s; ++s)
@@ -99,6 +138,8 @@ Key::isMainlineId() const
 unsigned
 Key::level() const
 {
+	M_REQUIRE(isValid());
+
 	unsigned level = 0;
 
 	for (char const *s = ::skipPrefix(m_id); *s; ++s)
@@ -114,6 +155,7 @@ Key::level() const
 void
 Key::addPly(unsigned ply)
 {
+	M_REQUIRE(isValid());
 	M_REQUIRE(isVariationId());
 
 	char buf[32];
@@ -124,6 +166,7 @@ Key::addPly(unsigned ply)
 void
 Key::exchangePly(unsigned ply)
 {
+	M_REQUIRE(isValid());
 	M_REQUIRE(!isVariationId());
 
 	char buf[32];
@@ -136,7 +179,9 @@ Key::exchangePly(unsigned ply)
 void
 Key::removePly()
 {
+	M_REQUIRE(isValid());
 	M_REQUIRE(!isVariationId());
+
 	m_id.erase(m_id.rfind('.'), mstl::string::npos);
 }
 
@@ -144,6 +189,7 @@ Key::removePly()
 void
 Key::incrementPly(unsigned n)
 {
+	M_REQUIRE(isValid());
 	M_REQUIRE(!isVariationId());
 
 	char const* s = m_id.end();
@@ -160,8 +206,28 @@ Key::incrementPly(unsigned n)
 
 
 void
+Key::decrementPly(unsigned n)
+{
+	M_REQUIRE(isValid());
+	M_REQUIRE(!isVariationId());
+
+	char const* s = m_id.end();
+	char const* t = ::skipPrefix(m_id);
+
+	while (s > t && s[-1] != '.')
+		--s;
+
+	unsigned number = ::strtoul(s, nullptr, 10);
+
+	m_id.resize(s - m_id.begin());
+	m_id.format("%u", number - n);
+}
+
+
+void
 Key::addVariation(unsigned varno)
 {
+	M_REQUIRE(isValid());
 	M_REQUIRE(!isVariationId());
 
 	char buf[32];
@@ -172,6 +238,7 @@ Key::addVariation(unsigned varno)
 void
 Key::exchangeVariation(unsigned varno)
 {
+	M_REQUIRE(isValid());
 	M_REQUIRE(isVariationId());
 	M_REQUIRE(level() > 0);
 
@@ -185,6 +252,7 @@ Key::exchangeVariation(unsigned varno)
 void
 Key::removeVariation()
 {
+	M_REQUIRE(isValid());
 	M_REQUIRE(isVariationId());
 	M_REQUIRE(level() > 0);
 
@@ -195,7 +263,9 @@ Key::removeVariation()
 void
 Key::exchangePrefix(char prefix)
 {
+	M_REQUIRE(isValid());
 	M_REQUIRE(::isalpha(prefix));
+
 	m_id[0] = prefix;
 }
 
@@ -213,6 +283,34 @@ Key::reset(unsigned firstPly)
 	m_id.assign(StartKey);
 	m_id += '.';
 	m_id.format("%u", firstPly);
+}
+
+
+bool
+Key::hasSameMainline(edit::Key const& otherKey) const
+{
+	M_REQUIRE(isValid());
+	M_REQUIRE(otherKey.isValid());
+
+	if (level() != otherKey.level())
+		return false;
+
+	edit::Key k1(*this);
+	edit::Key k2(*this);
+
+	if (k1.isVariationId())
+	{
+		k1.removeVariation();
+		k2.removeVariation();
+	}
+
+	if (!k1.isVariationId())
+	{
+		k1.removePly();
+		k2.removePly();
+	}
+
+	return k1.m_id == k2.m_id;
 }
 
 
@@ -255,6 +353,8 @@ Key::isValid(mstl::string const& key)
 bool
 Key::setPosition(Game& game) const
 {
+	M_REQUIRE(isValid());
+
 	game.moveToMainlineStart();
 
 	char const* s = ::skipPrefix(m_id);
@@ -271,28 +371,39 @@ Key::setPosition(Game& game) const
 	while (*s)
 	{
 		unsigned num = ::strtoul(s, &e, 10) - plyNumber;
-		unsigned n   = game.forward(num);
+		unsigned n   = game.forward(num); // XXX correct
 
-		if (n == num -1)
-			return *e == '\0'; // trailing comment position
-
-		if (n != num)
-			return false;
-
-		s = *e == '.' ? e + 1 : e;
-
-		if (*e)
+		if (n == num - 1)
 		{
-			unsigned varNo = ::strtoul(s, &e, 10);
+			if (*e++ == '\0')
+				return true; // trailing comment position
 
-			if (varNo >= game.variationCount())
-				return false;
-
-			game.enterVariation(varNo);
+			unsigned varNo = ::strtoul(e, &e, 10);
+			game.enterSubVariation(varNo);
+			plyNumber = game.currentBoard().plyNumber();
 			s = *e == '.' ? e + 1 : e;
 		}
+		else if (n != num)
+		{
+			return false;
+		}
+		else
+		{
+			s = *e == '.' ? e + 1 : e;
 
-		plyNumber = game.currentBoard().plyNumber();
+			if (*e)
+			{
+				unsigned varNo = ::strtoul(s, &e, 10);
+
+				if (varNo >= game.variationCount())
+					return false;
+
+				game.enterVariation(varNo);
+				s = *e == '.' ? e + 1 : e;
+			}
+
+			plyNumber = game.currentBoard().plyNumber();
+		}
 	}
 
 	return true;
@@ -302,6 +413,7 @@ Key::setPosition(Game& game) const
 db::MoveNode*
 Key::findPosition(MoveNode* node, unsigned plyNumber) const
 {
+	M_REQUIRE(isValid());
 	M_REQUIRE(node->atLineStart());
 	M_REQUIRE(node->prev() == 0);
 
@@ -320,10 +432,8 @@ Key::findPosition(MoveNode* node, unsigned plyNumber) const
 
 		for ( ; plyNumber < nextPly; ++plyNumber)
 		{
-			if (!node->next())
-				return node;	// should not happen
-
-			node = node->next();
+			if ((node = node->next()) == 0)
+				return 0; // should not happen
 		}
 
 		s = *e == '.' ? e + 1 : e;
@@ -332,10 +442,11 @@ Key::findPosition(MoveNode* node, unsigned plyNumber) const
 		{
 			unsigned varNo = ::strtoul(s, &e, 10);
 
-			if (varNo >= node->variationCount())
-				return 0;
+			if (varNo < node->variationCount())
+				node = node->variation(varNo)->next();
+			else
+				return 0; // should not happen
 
-			node = node->variation(varNo)->next();
 			M_ASSERT(node);
 			s = *e == '.' ? e + 1 : e;
 		}
@@ -348,6 +459,7 @@ Key::findPosition(MoveNode* node, unsigned plyNumber) const
 bool
 Key::setBoard(MoveNode const* root, Board& board, variant::Type variant) const
 {
+	M_REQUIRE(isValid());
 	M_REQUIRE(root);
 
 	MoveNode const*	node	= root;
@@ -370,7 +482,7 @@ Key::setBoard(MoveNode const* root, Board& board, variant::Type variant) const
 					board.doMove(node->move(), variant);
 
 				if ((node = node->next()) == 0)
-					return false;
+					return false; // should not happen
 			}
 
 			s = *e == '.' ? e + 1 : e;
@@ -390,7 +502,7 @@ Key::setBoard(MoveNode const* root, Board& board, variant::Type variant) const
 		}
 	}
 
-	if (!node->atLineStart())
+	if (!node->move().isEmpty())
 		board.doMove(node->move(), variant);
 
 	return true;
@@ -398,43 +510,45 @@ Key::setBoard(MoveNode const* root, Board& board, variant::Type variant) const
 
 
 Key
-Key::successorKey(MoveNode const* node) const
+Key::nextMoveKey(MoveNode const* node) const
 {
+	M_REQUIRE(isValid());
 	M_REQUIRE(node);
 	M_REQUIRE(node->isBeforeLineEnd());
+
+	Key key(m_id);
 
 	if (node->next()->atLineEnd())
 	{
 		unsigned ply = plyNumber();
 
-		while (!node->atLineStart())
+		if (node->next()->atLineEnd())
 		{
+			node = node->getLineStart();
+
+			MoveNode const* var = node;
+
 			node = node->prev();
-			--ply;
-		}
 
-		if (!node->prev())
-			return Key();
+			if (!node)
+				return Key();
 
-		unsigned i = node->prev()->variationNumber(node) + 1;
-		Key key(m_id);
+			unsigned i = node->variationNumber(var) + 1;
 
-		node = node->prev();
-		key.removePly();
-		key.removeVariation();
+			node = node->prev();
 
-		if (i == node->variationCount())
-		{
-			key.incrementPly();
-		}
-		else
-		{
+			key.removePly();
+			key.removeVariation();
 			key.addVariation(i);
 			key.addPly(ply);
 		}
+		else
+		{
+			key.addVariation(0);
+			key.addPly(ply + 1);
+		}
 	}
 
-	Key key(m_id);
 	key.incrementPly();
 	return key;
 }
@@ -443,6 +557,7 @@ Key::successorKey(MoveNode const* node) const
 Key
 Key::nextKey(MoveNode const* node) const
 {
+	M_REQUIRE(isValid());
 	M_REQUIRE(node);
 	M_REQUIRE(node->isBeforeLineEnd());
 
@@ -454,6 +569,12 @@ Key::nextKey(MoveNode const* node) const
 		key.addVariation(0);
 		key.addPly(plyNumber - 1);
 	}
+	else if (node->next()->atLineEnd() && node->next())
+	{
+		unsigned plyNumber = key.plyNumber();
+		key.addVariation(0);
+		key.addPly(plyNumber);
+	}
 	else
 	{
 		key.incrementPly();
@@ -463,9 +584,93 @@ Key::nextKey(MoveNode const* node) const
 }
 
 
+Key
+Key::endOfLineKey(MoveNode const* current) const
+{
+	Key key(*this);
+
+	while (!current->atLineEnd())
+	{
+		current = current->next();
+		key.incrementPly();
+	}
+
+	return key;
+}
+
+
+Key
+Key::successorKey(MoveNode const* current) const
+{
+	Key key(*this);
+
+	if (!current->isFolded())
+	{
+		while (!current->atLineEnd())
+		{
+			current = current->next();
+			key.incrementPly();
+		}
+	}
+
+	Key start(key);
+
+	while (current->atLineEnd() || (current->isFolded() && current->atLineStart()))
+	{
+		while (!current->atLineStart())
+		{
+			current = current->prev();
+			key.decrementPly();
+		}
+
+		if (!current->prev())
+		{
+			start.removePly();
+
+			if (level() > 0)
+			{
+				start.removeVariation();
+				start.incrementPly();
+			}
+
+			return start;
+		}
+
+		key.removePly();
+		key.removeVariation();
+
+		unsigned plyNumber = key.plyNumber();
+		unsigned n = current->prev()->variationNumber(current);
+
+		current = current->prev();
+
+		if (n + 1 < current->variationCount())
+		{
+			key.addVariation(n + 1);
+
+			if (n <= current->variationCount())
+				--plyNumber;
+
+			key.addPly(plyNumber);
+			return key;
+		}
+
+		if (current->next())
+		{
+			current = current->next();
+			key.incrementPly();
+		}
+	}
+
+	return key;
+}
+
+
 unsigned
 Key::plyNumber() const
 {
+	M_REQUIRE(isValid());
+
 	char const* s = m_id.end();
 	char const* t = ::skipPrefix(m_id);
 
@@ -478,6 +683,7 @@ Key::plyNumber() const
 int
 Key::computeDistance(Key const& key) const
 {
+	M_REQUIRE(isValid());
 	M_REQUIRE(level() == key.level());
 	M_REQUIRE(isVariationId() == key.isVariationId());
 
@@ -488,6 +694,9 @@ Key::computeDistance(Key const& key) const
 bool
 Key::operator<(Key const& key) const
 {
+	M_REQUIRE(isValid());
+	M_REQUIRE(key.isValid());
+
 	unsigned lhsLevel = level();
 	unsigned rhsLevel = key.level();
 

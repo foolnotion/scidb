@@ -145,9 +145,12 @@ DatabaseCodec::CustomFlags::get(unsigned n) const
 
 inline
 void
-DatabaseCodec::encodeGame(util::ByteStream& strm, GameData const& data, Signature const& signature)
+DatabaseCodec::encodeGame(	util::ByteStream& strm,
+									GameData const& data,
+									Signature const& signature,
+									unsigned langFlags)
 {
-	encodeGame(strm, data, signature, TagBits(true), true);
+	encodeGame(strm, data, signature, langFlags, TagBits(true), true);
 }
 
 } // namespace db

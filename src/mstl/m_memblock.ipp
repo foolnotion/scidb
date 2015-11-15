@@ -118,7 +118,9 @@ memblock<T>::memblock(memblock&& mb)
 	,m_finish(mb.m_finish)
 	,m_end_of_storage(mb.m_end_of_storage)
 {
-	mb.m_start = 0;
+	mb.m_start = nullptr;
+	mb.m_finish = nullptr;
+	mb.m_end_of_storage = nullptr;
 }
 
 

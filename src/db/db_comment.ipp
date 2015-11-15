@@ -32,9 +32,8 @@ namespace db {
 
 inline bool Comment::isXml() const							{ return ::strncmp(m_content, "<xml>", 5) == 0; }
 inline bool Comment::isEmpty() const						{ return m_content.empty(); }
-inline bool Comment::engFlag() const						{ return m_engFlag; }
-inline bool Comment::othFlag() const						{ return m_othFlag; }
 inline unsigned Comment::size() const						{ return m_content.size(); }
+inline unsigned Comment::langFlags() const				{ return m_langFlags; }
 inline mstl::string const& Comment::content() const	{ return m_content; }
 inline Comment::operator mstl::string const& () const	{ return m_content; }
 
@@ -46,8 +45,7 @@ inline bool Comment::operator!=(Comment const& comment) const { return m_content
 inline
 Comment::Comment(Comment&& comment)
 	:m_content(mstl::move(comment.m_content))
-	,m_engFlag(comment.m_engFlag)
-	,m_othFlag(comment.m_othFlag)
+	,m_langFlags(comment.m_langFlags)
 {
 }
 
@@ -57,8 +55,7 @@ Comment&
 Comment::operator=(Comment&& comment)
 {
 	m_content = mstl::move(comment.m_content);
-	m_engFlag = comment.m_engFlag;
-	m_othFlag = comment.m_othFlag;
+	m_langFlags = comment.m_langFlags;
 
 	return *this;
 }

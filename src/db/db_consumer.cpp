@@ -47,7 +47,9 @@ using namespace db;
 Consumer::Consumer(	format::Type srcFormat,
 							mstl::string const& encoding,
 							TagBits const& allowedTags,
-							bool allowExtraTags)
+							bool allowExtraTags,
+							LanguageList const* languages,
+							unsigned significantLanguages)
 	:Provider(srcFormat)
 	,m_allowedTags(allowedTags)
 	,m_allowExtraTags(allowExtraTags)
@@ -57,6 +59,7 @@ Consumer::Consumer(	format::Type srcFormat,
 	,m_annotationCount(0)
 	,m_moveInfoCount(0)
 	,m_markCount(0)
+	,m_langFlags(0)
 	,m_terminated(false)
 	,m_mainVariant(variant::Normal)
 	,m_variant(variant::Normal)
@@ -70,9 +73,17 @@ Consumer::Consumer(	format::Type srcFormat,
 	,m_consumer(0)
 	,m_producer(0)
 	,m_setupBoard(true)
-	,m_commentEngFlag(false)
-	,m_commentOthFlag(false)
+	,m_haveUsedLangs(false)
+	,m_noComments(false)
+	,m_significantLangs(significantLanguages)
 {
+	M_REQUIRE(!languages || significantLanguages <= languages->size());
+
+	if (languages)
+	{
+		m_wantedLanguages = *languages;
+		m_noComments = m_wantedLanguages.empty();
+	}
 }
 
 
@@ -110,6 +121,49 @@ Consumer::setVariant(variant::Type variant)
 	}
 
 	variantHasChanged(variant);
+}
+
+
+void
+Consumer::setUsedLanguages(LanguageSet languages)
+{
+	m_usedLanguages.swap(languages);
+	m_haveUsedLangs = true;
+
+	if (m_wantedLanguages.empty())
+		return; // we want it all
+
+	m_langFlags = 0;
+
+	LanguageSet::const_iterator e = m_usedLanguages.end();
+	unsigned i;
+
+	for (i = 0; i < m_significantLangs; ++i)
+	{
+		mstl::string const& lang = m_wantedLanguages[i];
+
+		if (m_usedLanguages.find(lang) != e)
+		{
+			m_relevantLangs[lang] = 0;
+			m_langFlags |= (lang[0] == 'e' && lang[1] == 'n') ? i18n::English : i18n::Other_Lang;
+		}
+	}
+
+	if (m_relevantLangs.empty())
+	{
+		while (i < m_wantedLanguages.empty() && m_usedLanguages.find(m_wantedLanguages[i]) == e)
+			++i;
+
+		if (i < m_wantedLanguages.empty())
+		{
+			mstl::string const& lang = m_wantedLanguages[i];
+			m_relevantLangs[lang] = 0;
+			m_langFlags |= (lang[0] == 'e' && lang[1] == 'n') ? i18n::English : i18n::Other_Lang;
+		}
+	}
+
+	if (m_relevantLangs.size() > 1)
+		m_langFlags |= i18n::Multilingual;
 }
 
 
@@ -191,8 +245,7 @@ Consumer::swapMoveInfo(MoveInfoSet& moveInfo)
 bool
 Consumer::startGame(TagSet const& tags, Board const* board, uint16_t* idn)
 {
-	while (m_stack.size() > 1)
-		m_stack.pop();
+	M_ASSERT(finalized());
 
 	m_variationCount = 0;
 	m_commentCount = 0;
@@ -201,8 +254,6 @@ Consumer::startGame(TagSet const& tags, Board const* board, uint16_t* idn)
 	m_markCount = 0;
 	m_terminated = false;
 	m_line.length = 0;
-	m_commentEngFlag = false;
-	m_commentOthFlag = false;
 	m_gameFlags = m_updateFlags;
 	m_variant = m_mainVariant;
 	m_useVariant = m_mainVariant;
@@ -252,6 +303,19 @@ Consumer::startGame(TagSet const& tags, Board const* board, uint16_t* idn)
 }
 
 
+void
+Consumer::finalizeGame()
+{
+	while (m_stack.size() > 1)
+		m_stack.pop();
+	m_setupBoard = true;
+	m_haveUsedLangs = false;
+	m_langFlags = i18n::None;
+	m_usedLanguages.clear();
+	m_relevantLangs.clear();
+}
+
+
 save::State
 Consumer::finishGame(TagSet const& tags)
 {
@@ -262,11 +326,7 @@ Consumer::finishGame(TagSet const& tags)
 	else
 		m_stack.top().board.signature().setHomePawns(0, hp::Pawns());
 
-	save::State state = endGame(tags);
-	m_stack.pop();
-	m_setupBoard = true;
-
-	return state;
+	return endGame(tags);
 }
 
 
@@ -299,34 +359,79 @@ Consumer::finishMoveSection(result::ID result)
 }
 
 
+Comment const&
+Consumer::prepareComment(Comment& dst, Comment const& src)
+{
+	M_ASSERT(!src.isEmpty());
+	M_ASSERT(dst.isEmpty());
+
+	if (!m_noComments)
+	{
+		if (m_wantedLanguages.empty() || !m_haveUsedLangs)
+			dst = src;
+		else if (!m_relevantLangs.empty())
+			(dst = src).strip(m_relevantLangs);
+	}
+
+	return dst;
+}
+
+
+Comment const&
+Consumer::preparePhrase(Comment& dst, Comment const& src)
+{
+	M_ASSERT(!src.isEmpty());
+	M_ASSERT(dst.isEmpty());
+	M_ASSERT(src.langFlags() & i18n::English);
+
+	if (!m_noComments)
+	{
+		if (m_wantedLanguages.empty() || src.containsAnyLanguageOf(m_relevantLangs))
+			prepareComment(dst, src);
+		else
+			(dst = src).strip("en", m_langFlags);
+	}
+
+	return dst;
+}
+
+
 void
 Consumer::putPrecedingComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks)
 {
-	if (!m_terminated)
+	M_REQUIRE(!comment.isEmpty() || !annotation.isEmpty() || !marks.isEmpty());
+
+	if (m_terminated)
+		return;
+
+	Entry&	entry = m_stack.top();
+	Comment	myComment;
+
+	if (!comment.isEmpty())
 	{
-		Entry& entry = m_stack.top();
+		prepareComment(myComment, comment);
 
-		if (entry.empty)
+		if (myComment.isEmpty() && annotation.isEmpty() && marks.isEmpty())
+			return;
+	}
+
+	if (entry.empty)
+	{
+		if (!isMainline())
 		{
-			if (!isMainline())
-			{
-				++m_variationCount;
-				beginVariation();
-			}
-
-			entry.empty = false;
+			++m_variationCount;
+			beginVariation();
 		}
 
-		++m_commentCount;
-		if (comment.engFlag())
-			m_commentEngFlag = true;
-		if (comment.othFlag())
-			m_commentOthFlag = true;
-		m_annotationCount += annotation.count();
-		m_markCount += marks.count();
-
-		sendPrecedingComment(comment, annotation, marks);
+		entry.empty = false;
 	}
+
+	++m_commentCount;
+	m_langFlags |= comment.langFlags();
+	m_annotationCount += annotation.count();
+	m_markCount += marks.count();
+
+	sendPrecedingComment(comment, annotation, marks);
 }
 
 
@@ -335,16 +440,18 @@ Consumer::putTrailingComment(Comment const& comment)
 {
 	M_REQUIRE(!comment.isEmpty());
 
-	if (!m_terminated)
-	{
-		++m_commentCount;
-		if (comment.engFlag())
-			m_commentEngFlag = true;
-		if (comment.othFlag())
-			m_commentOthFlag = true;
+	if (m_terminated)
+		return;
 
-		sendTrailingComment(comment, m_stack.top().empty);
-	}
+	Comment myComment;
+
+	if (prepareComment(myComment, comment).isEmpty())
+		return;
+
+	++m_commentCount;
+	m_langFlags |= comment.langFlags();
+
+	sendTrailingComment(comment, m_stack.top().empty);
 }
 
 
@@ -362,6 +469,8 @@ Consumer::putMove(Move const& move,
 
 	Entry& entry = m_stack.top();
 
+	Comment myPreComment, myComment;
+
 	if (entry.empty)
 	{
 		if (!isMainline())
@@ -373,21 +482,15 @@ Consumer::putMove(Move const& move,
 		entry.empty = false;
 	}
 
-	if (!preComment.isEmpty())
+	if (!preComment.isEmpty() && !prepareComment(myPreComment, preComment).isEmpty())
 	{
-		if (preComment.engFlag())
-			m_commentEngFlag = true;
-		if (preComment.othFlag())
-			m_commentOthFlag = true;
+		m_langFlags |= myPreComment.langFlags();
 		++m_commentCount;
 	}
 
-	if (!comment.isEmpty())
+	if (!comment.isEmpty() && !prepareComment(myComment, comment).isEmpty())
 	{
-		if (comment.engFlag())
-			m_commentEngFlag = true;
-		if (comment.othFlag())
-			m_commentOthFlag = true;
+		m_langFlags |= myComment.langFlags();
 		++m_commentCount;
 	}
 
@@ -397,7 +500,7 @@ Consumer::putMove(Move const& move,
 	entry.move = move;
 	entry.board.prepareUndo(entry.move);
 
-	if (sendMove(entry.move, annotation, marks, preComment, comment))
+	if (sendMove(entry.move, annotation, marks, myPreComment, myComment))
 		afterSendMove(entry);
 	else
 		m_terminated = true;
@@ -539,7 +642,7 @@ Consumer::sendMoveInfo(MoveInfoSet const& moveInfoSet)
 {
 	mstl::string info;
 	moveInfoSet.print(m_engines, info);
-	sendComment(Comment(info, false, false));
+	sendComment(Comment(info, i18n::None));
 	++m_commentCount;
 }
 

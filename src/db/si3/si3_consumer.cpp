@@ -34,6 +34,7 @@
 #include "db_annotation.h"
 #include "db_move.h"
 #include "db_comment.h"
+#include "db_pgn_aquarium.h"
 
 #include "sys_utf8_codec.h"
 
@@ -46,9 +47,11 @@ Consumer::Consumer(	format::Type srcFormat,
 							Codec& codec,
 							mstl::string const& encoding,
 							TagBits const& allowedTags,
-							bool allowExtraTags)
+							bool allowExtraTags,
+							LanguageList const* languages,
+							unsigned significantLanguages)
 	:Encoder(m_stream, codec.codec())
-	,db::Consumer(srcFormat, encoding, allowedTags, allowExtraTags)
+	,db::Consumer(srcFormat, encoding, allowedTags, allowExtraTags, languages, significantLanguages)
 	,m_stream(m_buffer, codec.blockSize())
 	,m_codec(codec)
 	,m_flagPos(0)
@@ -106,7 +109,7 @@ Consumer::endGame(TagSet const& tags)
 
 	for ( ; i != e; ++i)
 	{
-		i->flatten(str, m_encoding);
+		i->flatten(str, m_encoding, langFlags());
 		m_codec.codec().fromUtf8(str, buf);
 		m_strm.put(buf.c_str(), buf.size() + 1);
 		str.clear();
@@ -185,7 +188,7 @@ Consumer::sendComment(Comment const& comment,
 			if (annotation.contains(nag::Diagram) || annotation.contains(nag::DiagramFromBlack))
 			{
 				m_strm.put(token::Comment);
-				m_comments.push_back(Comment("D", false, false));
+				m_comments.push_back(Comment("D", i18n::None));
 			}
 		}
 		else
@@ -208,7 +211,7 @@ Consumer::sendComment(Comment const& comment,
 		mstl::string text;
 		marks.toString(text);
 
-		Comment buf(text, false, false);
+		Comment buf(text, i18n::None);
 		buf.append(comment, ' ');
 		m_comments.push_back(buf);
 
@@ -280,7 +283,7 @@ Consumer::sendMoveInfo(MoveInfoSet const& moveInfo)
 	mstl::string info;
 
 	moveInfo.print(m_engines, info, MoveInfo::Pgn);
-	sendComment(Comment(info, false, false));
+	sendComment(Comment(info, i18n::None));
 
 	if (!m_appendComment)
 		incrementCommentCount();
@@ -334,13 +337,18 @@ Consumer::checkMove(Move const& move)
 		return true;
 	}
 
-	mstl::string msg("Invalid move: ");	// TODo: i18n
+	static Comment Phrase(Phrases[1], i18n::English | i18n::Other_Lang | i18n::Multilingual);
+
+	Comment comment;
+	mstl::string san;
 	Move m(move);
 
 	board.prepareForPrint(m, variant::Normal, Board::ExternalRepresentation);
-	m.printSan(msg, protocol::Standard, encoding::Latin1);
+	m.printSan(san, protocol::Standard, m_encoding); // XXX use language dependent pieces if not UTF-8
 	m_strm.put(token::Comment);
-	m_comments.push_back(Comment(msg, false, false)); // set english flag?
+	preparePhrase(comment, Phrase);
+	comment.appendCommonSuffix(": " + san);
+	m_comments.push_back(comment);
 
 	return false;
 }

@@ -138,6 +138,7 @@ Encoder::setup(Board const& board)
 
 void
 Encoder::doEncoding(	Signature const& signature,
+							unsigned langFlags,
 							GameData const& data,
 							db::Consumer::TagBits const& allowedTags,
 							bool allowExtraTags)
@@ -155,7 +156,7 @@ Encoder::doEncoding(	Signature const& signature,
 	m_strm.put(flags);
 	setup(data.m_startBoard);
 	encodeVariation(data.m_startNode);
-	encodeComments(data.m_startNode, m_codec.isUtf8() ? encoding::Utf8 : encoding::Latin1);
+	encodeComments(data.m_startNode, langFlags, m_codec.isUtf8() ? encoding::Utf8 : encoding::Latin1);
 	m_strm.provide();
 }
 
@@ -523,7 +524,7 @@ Encoder::putComment(mstl::string& buf)
 
 
 void
-Encoder::encodeComments(MoveNode* node, encoding::CharSet encoding)
+Encoder::encodeComments(MoveNode* node, unsigned langFlags, encoding::CharSet encoding)
 {
 	M_ASSERT(node);
 
@@ -539,14 +540,14 @@ Encoder::encodeComments(MoveNode* node, encoding::CharSet encoding)
 			if (node->hasComment(move::Post))
 			{
 				buf2 += ' ';
-				node->comment(move::Post).flatten(buf2, encoding);
+				node->comment(move::Post).flatten(buf2, encoding, langFlags);
 			}
 
 			putComment(buf2);
 		}
 		else if (node->hasComment(move::Post))
 		{
-			node->comment(move::Post).flatten(buf, encoding);
+			node->comment(move::Post).flatten(buf, encoding, langFlags);
 		}
 	}
 
@@ -561,7 +562,7 @@ Encoder::encodeComments(MoveNode* node, encoding::CharSet encoding)
 					if (!buf.empty())
 						buf += '\n';
 
-					node->comment(move::Post).flatten(buf, encoding);
+					node->comment(move::Post).flatten(buf, encoding, langFlags);
 				}
 			}
 
@@ -574,7 +575,7 @@ Encoder::encodeComments(MoveNode* node, encoding::CharSet encoding)
 			{
 				if (!buf.empty())
 					buf += ' ';
-				node->comment(move::Ante).flatten(buf, encoding);
+				node->comment(move::Ante).flatten(buf, encoding, langFlags);
 			}
 
 			if (!buf.empty())
@@ -589,7 +590,7 @@ Encoder::encodeComments(MoveNode* node, encoding::CharSet encoding)
 				{
 					if (!buf.empty())
 						buf += ' ';
-					node->comment(move::Post).flatten(buf, encoding);
+					node->comment(move::Post).flatten(buf, encoding, langFlags);
 				}
 
 				if (node->hasVariation())
@@ -598,7 +599,7 @@ Encoder::encodeComments(MoveNode* node, encoding::CharSet encoding)
 						putComment(buf);
 
 					for (unsigned i = 0; i < node->variationCount(); ++i)
-						encodeComments(node->variation(i), encoding);
+						encodeComments(node->variation(i), langFlags, encoding);
 				}
 			}
 		}

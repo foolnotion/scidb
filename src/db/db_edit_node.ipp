@@ -39,9 +39,10 @@ inline Move::Move(Key const& key) :KeyNode(key), m_ply(0) {}
 inline
 Space::Space()
 	:m_level(-1)
-	,m_number(0)
+	,m_varNo(0)
+	,m_varCount(0)
 	,m_bracket(Blank)
-	,m_isFirstOrLast(false)
+	,m_asNumber(false)
 {
 }
 
@@ -49,40 +50,48 @@ Space::Space()
 inline
 Space::Space(Bracket bracket)
 	:m_level(-1)
-	,m_number(0)
+	,m_varNo(0)
+	,m_varCount(0)
 	,m_bracket(bracket)
-	,m_isFirstOrLast(false)
+	,m_asNumber(false)
 {
 }
 
 
 inline
-Space::Space(Bracket bracket, bool isFirstOrLast)
+Space::Space(Bracket bracket, unsigned varNo, unsigned varCount)
 	:m_level(-1)
-	,m_number(0)
+	,m_varNo(varNo)
+	,m_varCount(varCount)
 	,m_bracket(bracket)
-	,m_isFirstOrLast(isFirstOrLast)
+	,m_asNumber(true)
 {
+	M_ASSERT(varNo > 0);
+	M_ASSERT(varCount > 0);
 }
 
 
 inline
-Space::Space(unsigned level, bool isFirstOrLast)
+Space::Space(unsigned level)
 	:m_level(level)
-	,m_number(0)
-	,m_bracket(Blank)
-	,m_isFirstOrLast(isFirstOrLast)
-{
-}
-
-
-inline
-Space::Space(unsigned level, unsigned number, bool isFirstOrLast)
-	:m_level(level)
-	,m_number(number)
+	,m_varNo(0)
+	,m_varCount(0)
 	,m_bracket(Open)
-	,m_isFirstOrLast(isFirstOrLast)
+	,m_asNumber(false)
 {
+}
+
+
+inline
+Space::Space(unsigned level, unsigned varNo, unsigned varCount)
+	:m_level(level)
+	,m_varNo(varNo)
+	,m_varCount(varCount)
+	,m_bracket(Open)
+	,m_asNumber(false)
+{
+	M_ASSERT(varNo > 0);
+	M_ASSERT(varCount > 0);
 }
 
 
@@ -105,6 +114,8 @@ Opening::Opening(Board const& startBoard, variant::Type variant, uint16_t idn, E
 }
 
 
+inline Ply::Ply() :m_moveNo(0) {}
+
 inline bool Annotation::isEmpty() const							{ return m_annotation.isEmpty(); }
 inline Key const& KeyNode::key() const								{ return m_key; }
 inline bool Variation::empty() const								{ return m_list.empty(); }
@@ -114,6 +125,10 @@ inline db::Move const& Ply::move() const							{ return m_move; }
 inline Ply const* Move::ply() const									{ return m_ply; }
 inline Node::LanguageSet const& Languages::langSet() const	{ return m_langSet; }
 inline bool Node::operator!=(Node const* node) const			{ return !operator==(node); }
+inline Action::Command Action::command() const					{ return m_command; }
+inline Key Action::start() const										{ return m_key1; }
+inline Key Action::end() const										{ return m_key2; }
+inline unsigned Action::level() const								{ return m_level; }
 
 inline bool Node::isRoot() const	{ return dynamic_cast<Root const*>(this) != 0; }
 

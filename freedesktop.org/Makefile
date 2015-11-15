@@ -60,23 +60,26 @@ install-mime-icons:
 	done
 
 install-mime-types:
-	@echo "Install mime types"
-	@if [ "`xdg-mime --version`" = "xdg-mime 1.0" ]; then    \
-		mkdir .tmp;                                           \
-		for f in `ls *.xml`; do                               \
-			cat $$f | grep -v "generic-icon name=" > .tmp/$$f; \
-			xdg-mime install --mode system .tmp/$$f;           \
-		done;                                                 \
-		rm -rf .tmp;                                          \
-	else                                                     \
-		for f in `ls *.xml`; do                               \
-			xdg-mime install $$f;                              \
-		done;                                                 \
+	@echo "Install mime types (may take a long time)"
+	@if case `xdg-mime --version` in "xdg-mime 1.0"*) true;; *) false;; esac; then \
+		if [ "`id -u`" -eq 0 ]; then mode="system"; else mode="user"; fi;           \
+	   dir="/tmp/scidb.037738378737";                                              \
+		mkdir -p $$dir;                                                             \
+		for f in `ls *.xml`; do                                                     \
+			cat $$f | grep -v "generic-icon name=" > $$dir/$$f;                      \
+			xdg-mime install --mode $$mode $$dir/$$f;                                \
+		done;                                                                       \
+		rm -rf $$dir;                                                               \
+	else                                                                           \
+		for f in `ls *.xml`; do                                                     \
+			xdg-mime install $$f;                                                    \
+		done;                                                                       \
 	fi
 
 update-mime-database:
+	@# We do not use "xdg-mime default", this tool is destructive.
 	@if [ -z "$(XDGDIR)" ]; then                                         \
-		echo "Update mime database";                                      \
+		echo "Update mime database (may take a longer time)";             \
 		xdg-icon-resource forceupdate;                                    \
 		if [ "`id -u`" -eq 0 ]; then                                      \
 			xdgdir=/usr/share;                                             \

@@ -192,6 +192,19 @@ Annotation::countUnusualNags() const
 }
 
 
+nag::ID
+Annotation::mostImportantNag() const
+{
+	for (unsigned i = 0; i < m_count; ++i)
+	{
+		if (m_annotation[i] <= 6)
+			return nag::ID(m_annotation[i]);
+	}
+
+	return nag::Null;
+}
+
+
 bool
 Annotation::add(nag::ID nag)
 {

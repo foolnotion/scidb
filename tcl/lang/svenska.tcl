@@ -370,6 +370,7 @@
 ::util::photos::mc::Message(crcerror)			"Checksummefel inträffade. Troligt pågående underhåll av filservern."
 ::util::photos::mc::Message(maintenance)		"På servern med fotofiler pågår det underhåll för närvarande."
 ::util::photos::mc::Message(notfound)			"Nerladdningen avbruten pga pågående underhåll av servern med fotofiler."
+::util::photos::mc::Message(noreply)			"Server is not replying." ;# NEW
 ::util::photos::mc::Message(aborted)			"Användaren har avbrutit nerladdningen."
 ::util::photos::mc::Message(killed)				"Nerladdningen oväntad avbruten. Sub-processen har dött."
 
@@ -1704,8 +1705,9 @@
 ::export::mc::IncludeAllTags				"Markera allt"
 ::export::mc::ExtraTags						"Alla andra extra taggar"
 ::export::mc::NoComments					"Ingen kommentar"
+::export::mc::AllLanguages					"All languages" ;# NEW
 ::export::mc::Significant					"Signifikant"
-::export::mc::LanguageSelection			"Val av språk"
+::export::mc::SelectLanguages				"Selected languages" ;# NEW
 ::export::mc::MapTo							"Avbilda till"
 ::export::mc::MapNagsToComment			"Map annotations to comments"
 ::export::mc::UnusualAnnotation			"Unusual annotations"
@@ -1713,6 +1715,9 @@
 ::export::mc::UseColumnStyle				"Use column style"
 ::export::mc::MainlineStyle				"Main Line Style"
 ::export::mc::HideVariations				"Dölj varianter"
+::export::mc::GameDoesNotHaveComments	"This game does not contain comments." ;# NEW
+
+::export::mc::LanguageSelectionDescr	"The checkbox (right side from combo box) has the meaning 'significant'.\n\nLanguages marked as 'significant' will always be exported.\n\nIf the game includes none of the languages marked as 'significant' then the first available language will be exported." ;# NEW
 
 ::export::mc::PdfFiles						"PDF-filer"
 ::export::mc::HtmlFiles						"HTML-filer"

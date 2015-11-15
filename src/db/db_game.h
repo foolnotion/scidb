@@ -216,10 +216,6 @@ public:
 	variant::Type variant() const override;
 	/// Return the start position id.
 	uint16_t idn() const override;
-	/// Return whether any comment contains English language.
-	bool commentEngFlag() const override;
-	/// Return whether any comment contains any other language than English.
-	bool commentOthFlag() const override;
 	/// Return whether the game is currently at the start position of the mainline
 	bool atMainlineStart() const;
 	/// Return whether the game is at the end of the mainline
@@ -289,6 +285,8 @@ public:
 	unsigned variationNumber() const;
 	/// Return game flags
 	uint32_t gameFlags() const override;
+	/// Return the language flags of this game.
+	unsigned langFlags() const;
 	/// Return subscriber.
 	SubscriberP subscriber() const;
 	/// Print current move in given notation
@@ -384,6 +382,8 @@ public:
 	unsigned backward(unsigned count);
 	/// Enters the variation given by variation number
 	void enterVariation(unsigned variationNumber);
+	/// Enters the variation given by variation number of next move
+	void enterSubVariation(unsigned variationNumber);
 	/// Exit current variation, to the parent
 	void exitVariation();
 	/// Exit variations until mainline is reached

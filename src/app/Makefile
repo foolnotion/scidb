@@ -197,6 +197,8 @@ app_application.o: ../mstl/m_function_base.h
 app_application.o: ../mstl/m_function_base.ipp
 app_application.o: ../mstl/m_function.ipp
 app_application.o: app_tree_admin.ipp
+app_application.o: ../db/db_comment.h
+app_application.o: ../db/db_comment.ipp
 app_application.o: ../util/u_rkiss.h
 app_application.o: app_application.ipp
 app_application.o: app_multi_cursor.h
@@ -219,8 +221,6 @@ app_application.o: ../db/db_game.h
 app_application.o: ../db/db_game_data.h
 app_application.o: ../db/db_tag_set.h
 app_application.o: ../db/db_tag_set.ipp
-app_application.o: ../db/db_comment.h
-app_application.o: ../db/db_comment.ipp
 app_application.o: ../db/db_edit_key.h
 app_application.o: ../db/db_edit_key.ipp
 app_application.o: ../mstl/m_auto_ptr.h
@@ -629,6 +629,8 @@ app_cursor.o: ../mstl/m_function_base.h
 app_cursor.o: ../mstl/m_function_base.ipp
 app_cursor.o: ../mstl/m_function.ipp
 app_cursor.o: app_tree_admin.ipp
+app_cursor.o: ../db/db_comment.h
+app_cursor.o: ../db/db_comment.ipp
 app_cursor.o: ../util/u_rkiss.h
 app_cursor.o: app_application.ipp
 app_cursor.o: ../db/db_exception.h
@@ -934,6 +936,8 @@ app_multi_cursor.o: ../mstl/m_function_base.h
 app_multi_cursor.o: ../mstl/m_function_base.ipp
 app_multi_cursor.o: ../mstl/m_function.ipp
 app_multi_cursor.o: app_tree_admin.ipp
+app_multi_cursor.o: ../db/db_comment.h
+app_multi_cursor.o: ../db/db_comment.ipp
 app_multi_cursor.o: ../util/u_rkiss.h
 app_multi_cursor.o: app_application.ipp
 app_multi_cursor.o: ../db/db_multi_base.h
@@ -1483,14 +1487,14 @@ app_view.o: ../mstl/m_function_base.h
 app_view.o: ../mstl/m_function_base.ipp
 app_view.o: ../mstl/m_function.ipp
 app_view.o: app_tree_admin.ipp
+app_view.o: ../db/db_comment.h
+app_view.o: ../db/db_comment.ipp
 app_view.o: ../util/u_rkiss.h
 app_view.o: app_application.ipp
 app_view.o: ../db/db_game.h
 app_view.o: ../db/db_game_data.h
 app_view.o: ../db/db_tag_set.h
 app_view.o: ../db/db_tag_set.ipp
-app_view.o: ../db/db_comment.h
-app_view.o: ../db/db_comment.ipp
 app_view.o: ../db/db_edit_key.h
 app_view.o: ../db/db_edit_key.ipp
 app_view.o: ../mstl/m_auto_ptr.h

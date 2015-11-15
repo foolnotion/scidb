@@ -162,9 +162,10 @@ public:
 	unsigned subround() const;
 	mstl::string roundAsString() const;
 	mstl::string const& site() const;
-	mstl::string const& annotator() const;				// Scid: n/a
+	unsigned langFlags() const;
 	bool containsEnglishLanguage() const;
 	bool containsOtherLanguage() const;
+	mstl::string const& annotator() const;				// Scid: n/a
 	uint8_t countComments() const;						// ChessBase: very roughly
 	uint8_t countAnnotations() const;					// ChessBase: very roughly
 	uint8_t countVariations() const;						// ChessBase: very roughly

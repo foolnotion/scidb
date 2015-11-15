@@ -57,6 +57,8 @@ public:
 					mstl::string const& encoding,
 					LineEnding lineEnding,
 					unsigned flags = Default_Flags,
+					LanguageList const* languages = nullptr,
+					unsigned significantLanguages = 0,
 					unsigned lineLength = 80);
 
 	format::Type format() const override;

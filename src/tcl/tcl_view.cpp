@@ -295,6 +295,46 @@ tcl::view::buildTagSet(Tcl_Interp* ti, char const* cmd, Tcl_Obj* allowedTags, ::
 }
 
 
+unsigned
+tcl::view::makeLangList(Tcl_Interp* ti,
+								char const* cmd,
+								Tcl_Obj* languageList,
+								mstl::vector<mstl::string>& langs)
+{
+	mstl::vector<mstl::string> languages;
+
+	unsigned		significant;
+	Tcl_Obj**	objv;
+	int			objc;
+
+	if (Tcl_ListObjGetElements(ti, languageList, &objc, &objv) != TCL_OK)
+		error(cmd, 0, 0, "invalid language list");
+
+	for (int i = 0; i < objc; ++i)
+	{
+		Tcl_Obj** objs;
+		int n;
+
+		if (Tcl_ListObjGetElements(ti, objv[i], &n, &objs) != TCL_OK || n != 2)
+			error(cmd, 0, 0, "invalid language list");
+
+		char const* lang = Tcl_GetString(objs[0]);
+
+		if (*lang == '*')
+			return View::AllLanguages;
+
+		if (boolFromObj(n, objs, 1))
+			langs.push_back(lang);
+		else
+			languages.push_back(lang);
+	}
+
+	significant = langs.size();
+	langs += languages;
+	return significant;
+}
+
+
 static int
 cmdNew(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
@@ -575,12 +615,13 @@ cmdCopy(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	::memset(accepted, 0, sizeof(accepted));
 	::memset(rejected, 0, sizeof(rejected));
 
-	Cursor& dst = scidb->cursor(destination, variant);
-	unsigned variantIndex = variant::toIndex(variant);
-	unsigned illegalRejected = 0;
-	unsigned numGames = dst.count(table::Games);
+	Cursor&		dst(scidb->cursor(destination, variant));
+	unsigned		variantIndex(variant::toIndex(variant));
+	unsigned		illegalRejected(0);
+	unsigned		numGames(dst.count(table::Games));
+	unsigned*	illegalPtr(::db::format::isScidFormat(dst.format()) ? &illegalRejected : nullptr);
 
-	n = view.copyGames(dst, tagBits, extraTags, illegalRejected, log, progress);
+	n = view.copyGames(dst, tagBits, extraTags, illegalPtr, log, progress);
 	accepted[variantIndex] = n;
 	rejected[variantIndex] = dst.count(table::Games) - numGames - n;
 
@@ -595,12 +636,12 @@ cmdCopy(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	if (objc != 14)
+	if (objc != 15)
 	{
 		Tcl_WrongNumArgs(
 			ti, 1, objv,
 			"<database> <variant> <view> <file> <flags> <mode> <encoding> <exclude-illegal-games-flag> "
-			"<exported-tags> <progress-cmd> <progress-arg> <log-cmd> <log-arg>");
+			"<exported-tags> <languages> <progress-cmd> <progress-arg> <log-cmd> <log-arg>");
 		return TCL_ERROR;
 	}
 
@@ -614,14 +655,16 @@ cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	mstl::string	encoding			= stringFromObj(objc, objv, 7);
 	bool				excludeIllegal	= boolFromObj(objc, objv, 8);
 	bool				extraTags		= tcl::view::buildTagSet(ti, CmdExport, objv[9], tagBits);
+	Tcl_Obj*			languageList	= objectFromObj(objc, objv, 10);
 
-	Progress				progress(objv[10], objv[11]);
-	tcl::Log				log(objv[12], objv[13]);
+	Progress				progress(objv[11], objv[12]);
+	tcl::Log				log(objv[13], objv[14]);
 	Cursor&				cursor(scidb->cursor(database, variant));
 	Database const&	db(cursor.database());
 	View&					v(cursor.view(view));
 	type::ID				type(db.type());
 	unsigned				illegalRejected(0);
+	View::Languages	languages;
 
 	if (type == type::PGNFile)
 		type = type::Unspecific;
@@ -632,10 +675,11 @@ cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 									0,
 									type,
 									flags,
-									excludeIllegal ? ::db::copy::ExcludeIllegal : ::db::copy::AllGames,
 									tagBits,
 									extraTags,
-									illegalRejected,
+									languages,
+									view::makeLangList(ti, CmdExport, languageList, languages),
+									excludeIllegal ? &illegalRejected : nullptr,
 									log,
 									progress,
 									mode);
@@ -661,12 +705,12 @@ cmdPrint(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		mstl::string str;
 	};
 
-	if (objc != 18)
+	if (objc != 17)
 	{
 		Tcl_WrongNumArgs(
 			ti, 1, objv,
 			"<database> <variant> <view> <file> <search-path> <script-path> <preamble> <flags> "
-			" <options> <nag-map> <languages> <significant> <trace> <progress-cmd> <progress-arg> "
+			" <options> <nag-map> <languages> <trace> <progress-cmd> <progress-arg> "
 			"<log-cmd> <log-arg>");
 		return TCL_ERROR;
 	}
@@ -682,11 +726,10 @@ cmdPrint(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	unsigned			options			= unsignedFromObj(objc, objv, 9);
 	Tcl_Obj*			mapObj			= objectFromObj(objc, objv, 10);
 	Tcl_Obj*			languageList	= objectFromObj(objc, objv, 11);
-	unsigned			significant		= unsignedFromObj(objc, objv, 12);
-	char const*		trace				= stringFromObj(objc, objv, 13);
+	char const*		trace				= stringFromObj(objc, objv, 12);
 
-	Progress				progress(objv[14], objv[15]);
-	tcl::Log				log(objv[16], objv[17]);
+	Progress				progress(objv[13], objv[14]);
+	tcl::Log				log(objv[15], objv[16]);
 	Cursor&				cursor(scidb->cursor(database, variant));
 	View&					v(cursor.view(view));
 	Tcl_Obj**			objs;
@@ -715,15 +758,6 @@ cmdPrint(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		nagMap[lhs] = rhs;
 	}
 
-	if (	Tcl_ListObjGetElements(ti, languageList, &objc, &objs) != TCL_OK
-		|| objc >= int(U_NUMBER_OF(languages)))
-	{
-		error(CmdExport, 0, 0, "invalid language list");
-	}
-
-	for (int i = 0; i < objc; ++i)
-		languages[i] = stringFromObj(objc, objs, i);
-
 	TeXt::Controller::LogP myLog(new Log);
 	TeXt::Controller controller(searchPath, TeXt::Controller::AbortMode, myLog);
 	mstl::istringstream src(preamble);
@@ -744,7 +778,8 @@ cmdPrint(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 									options,
 									nagMap,
 									languages,
-									significant,
+									view::makeLangList(ti, CmdPrint, languageList, languages),
+									nullptr, // illegal game count not used here
 									log,
 									progress));
 
@@ -979,7 +1014,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdOpen,				cmdOpen);
 	createCommand(ti, CmdPrint,			cmdPrint);
 	createCommand(ti, CmdSearch,			cmdSearch);
-	createCommand(ti, CmdStrip,				cmdStrip);
+	createCommand(ti, CmdStrip,			cmdStrip);
 	createCommand(ti, CmdSubscribe,		cmdSubscribe);
 	createCommand(ti, CmdUnsubscribe,	cmdUnsubscribe);
 }

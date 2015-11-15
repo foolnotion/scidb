@@ -29,10 +29,17 @@
 extern "C" { struct Tcl_Interp; }
 extern "C" { struct Tcl_Obj; }
 
+namespace mstl { template <typename T> class vector; }
+
 namespace tcl {
 namespace view {
 
 bool buildTagSet(Tcl_Interp* ti, char const* cmd, Tcl_Obj* allowedTags, ::db::tag::TagSet& tagBits);
+
+unsigned makeLangList(	Tcl_Interp* ti,
+								char const* cmd,
+								Tcl_Obj* languageList,
+								mstl::vector<mstl::string>& langs);
 
 } // namespace view
 } // namespace tcl

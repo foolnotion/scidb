@@ -55,7 +55,7 @@ public:
 	Key& operator=(Key const&) = default;
 #endif
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+#if HAVE_C11_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 	Key(Key&& key);
 	Key& operator=(Key&& key);
 #endif
@@ -65,8 +65,13 @@ public:
 	bool operator< (Key const& key) const;
 	bool operator> (Key const& key) const;
 
+	Key operator+(int n) const;
+	Key operator-(int n) const;
+
 	bool isVariationId() const;
 	bool isMainlineId() const;
+	bool isValid() const;
+	bool hasSameMainline(edit::Key const& otherKey) const;
 
 	mstl::string const& id() const;
 	char prefix() const;
@@ -79,6 +84,7 @@ public:
 	void exchangePly(unsigned ply);
 	void removePly();
 	void incrementPly(unsigned n = 1);
+	void decrementPly(unsigned n = 1);
 
 	void addVariation(unsigned varno);
 	void exchangeVariation(unsigned varno);
@@ -90,15 +96,22 @@ public:
 
 	bool setPosition(Game& game) const;
 	bool setBoard(MoveNode const* root, Board& board, variant::Type variant) const;
-	Key successorKey(MoveNode const* current) const;
 	Key nextKey(MoveNode const* current) const;
+	Key nextMoveKey(MoveNode const* current) const;
+	Key endOfLineKey(MoveNode const* current) const;
+	Key successorKey(MoveNode const* current) const;
 	MoveNode* findPosition(MoveNode* root, unsigned startPly) const;
 
 	static bool isValid(mstl::string const& key);
+	static edit::Key const& emptyKey();
 
 private:
 
+	explicit Key(bool);
+
 	mstl::string m_id;
+
+	static Key m_emptyKey;
 };
 
 

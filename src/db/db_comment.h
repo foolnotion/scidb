@@ -73,7 +73,7 @@ public:
 	typedef mstl::map<mstl::string,unsigned> LanguageSet;
 
 	Comment();
-	Comment(mstl::string const& content, bool engFlag, bool othFlag);
+	Comment(mstl::string const& content, unsigned langFlags);
 
 #if HAVE_OX_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
 	Comment(Comment const&) = default;
@@ -92,31 +92,34 @@ public:
 
 	bool isEmpty() const;
 	bool isXml() const;
-	bool engFlag() const;
-	bool othFlag() const;
 	bool containsLanguage(mstl::string const& lang) const;
+	bool containsAnyLanguageOf(LanguageSet const& langSet) const;
 
 	unsigned size() const;
 	unsigned length() const;
+	unsigned langFlags() const;
 	mstl::string const& content() const;
 	util::crc::checksum_t computeChecksum(util::crc::checksum_t crc) const;
+	LanguageSet const& languageSet() const;
 
 	void append(Comment const& comment, char delim = '\0');
+	void appendCommonSuffix(mstl::string const& suffix);
 	void merge(Comment const& comment, LanguageSet const& leadingLanguageSet);
 	void remove(mstl::string const& lang);
 	void remove(LanguageSet const& languageSet);
 	void strip(LanguageSet const& set);
+	void strip(mstl::string const& lang, unsigned langFlags);
 	void detectEmoticons();
 	bool fromHtml(mstl::string const& s);
 	void swap(Comment& comment);
-	void swap(mstl::string& content, bool engFlag, bool othFlag);
+	void swap(mstl::string& content, unsigned langFlags);
 	void copy(mstl::string const& fromLang, mstl::string const& toLang, bool stripOriginal = false);
 	void normalize(Mode mode = ExpandEmoticons, char delim = '\n');
 	void clear();
 
 	void parse(Callback& cb) const;
 	void collectLanguages(LanguageSet& result) const;
-	void flatten(mstl::string& result, encoding::CharSet encoding) const;
+	void flatten(mstl::string& result, encoding::CharSet encoding, unsigned langFlags) const;
 	void toHtml(mstl::string& result) const;
 
 	unsigned countLength(mstl::string const& lang) const;
@@ -136,9 +139,8 @@ private:
 
 	mstl::string m_content;
 
-	mutable bool m_engFlag;
-	mutable bool m_othFlag; // other language than en (but not ALL)
-	mutable LanguageSet m_languageSet;
+	mutable unsigned		m_langFlags;
+	mutable LanguageSet	m_languageSet;
 };
 
 } // namespace db

@@ -834,7 +834,12 @@ DatabaseCodec::getGameRecord(GameInfo const& info, util::BlockFileReader& reader
 
 
 void
-DatabaseCodec::doEncoding(util::ByteStream&, GameData const&, Signature const&, TagBits const&, bool)
+DatabaseCodec::doEncoding(	util::ByteStream&,
+									GameData const&,
+									Signature const&,
+									unsigned,
+									TagBits const&,
+									bool)
 {
 	M_RAISE("should not be used");
 }
@@ -859,13 +864,14 @@ void
 DatabaseCodec::encodeGame(	util::ByteStream& strm,
 									GameData const& data,
 									Signature const& signature,
+									unsigned langFlags,
 									TagBits const& allowedTags,
 									bool allowExtraTags)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!format::isChessBaseFormat(format()));
 
-	doEncoding(strm, data, signature, allowedTags, allowExtraTags);
+	doEncoding(strm, data, signature, langFlags, allowedTags, allowExtraTags);
 }
 
 

@@ -198,12 +198,11 @@ struct XmlData
 
 struct HtmlData
 {
-	HtmlData(mstl::string& s, bool &engFlag, bool& othFlag)
+	HtmlData(mstl::string& s, unsigned& langFlags)
 		:result(s)
 		,skipLang(0)
 		,putLang(1)
-		,engFlag(engFlag)
-		,othFlag(othFlag)
+		,langFlags(langFlags)
 		,isXml(false)
 		,isHtml(false)
 		,insideNag(false)
@@ -214,12 +213,11 @@ struct HtmlData
 
 	mstl::string& result;
 	mstl::string  lang;
+	mstl::string  othLang;
 
-	unsigned skipLang;
-	unsigned putLang;
-
-	bool& engFlag;
-	bool& othFlag;
+	unsigned  skipLang;
+	unsigned  putLang;
+	unsigned& langFlags;
 
 	bool isXml;
 	bool isHtml;
@@ -229,14 +227,14 @@ struct HtmlData
 
 struct Collector : public Comment::Callback
 {
-	Collector(Comment::LanguageSet& set) :m_set(set), m_length(&m_unused) {}
+	Collector(Comment::LanguageSet& set) :m_set(set), m_length(&m_langAll), m_langAll(0) {}
 
-	void start()  override {}
+	void start() {}
 
 	void finish() override
 	{
-		if (m_set.empty())
-			m_set[mstl::string::empty_string];
+		if (m_set.empty() || m_langAll > 0)
+			m_set[mstl::string::empty_string] = m_langAll;
 	}
 
 	void startLanguage(mstl::string const& lang) override
@@ -246,7 +244,7 @@ struct Collector : public Comment::Callback
 
 	void endLanguage(mstl::string const& lang) override
 	{
-		m_length = &m_unused;
+		m_length = &m_langAll;
 	}
 
 	void startAttribute(Attribute attr) override	{}
@@ -266,7 +264,7 @@ struct Collector : public Comment::Callback
 	Comment::LanguageSet& m_set;
 
 	unsigned*	m_length;
-	unsigned		m_unused;
+	unsigned		m_langAll;
 };
 
 
@@ -470,13 +468,12 @@ struct Split : public Comment::Callback
 		result.append(::Suffix);
 	}
 
-	static void merge(mstl::string& result,
-							LangMap const& lhs,
-							LangMap const& rhs,
-							LanguageSet const& leadingLanguageSet)
+	static void
+	merge(mstl::string& result,
+			LangMap const& lhs,
+			LangMap const& rhs,
+			LanguageSet const& leadingLanguageSet)
 	{
-		result.assign(::Prefix);
-
 		LanguageSet langSet;
 
 		for (LangMap::const_iterator i = lhs.begin(); i != lhs.end(); ++i)
@@ -508,6 +505,28 @@ struct Split : public Comment::Callback
 
 			result.append("</:", 3);
 			result.append(lang);
+			result.append('>');
+		}
+
+		result.append(::Suffix);
+	}
+
+	static void append(mstl::string& result, LangMap const& map, mstl::string const& suffix)
+	{
+		result.assign(::Prefix);
+
+		for (unsigned i = 0; i < map.container().size(); ++i)
+		{
+			LangMap::value_type const& entry = map.container()[i];
+
+			result.append("<:", 2);
+			result.append(entry.first);
+			result.append('>');
+			result.append(entry.second);
+			if (!entry.first.empty())
+				result.append(suffix);
+			result.append("</:", 3);
+			result.append(entry.first);
 			result.append('>');
 		}
 
@@ -551,8 +570,7 @@ struct Normalize : public Comment::Callback
 	typedef Comment::Mode Mode;
 
 	Normalize(	mstl::string& result,
-					bool& engFlag,
-					bool& othFlag,
+					unsigned& langFlags,
 					Mode mode,
 					char delim,
 					LanguageSet const* wanted = 0,
@@ -565,8 +583,7 @@ struct Normalize : public Comment::Callback
 		,m_fromLang(fromLang)
 		,m_toLang(toLang)
 		,m_lang(0)
-		,m_engFlag(engFlag)
-		,m_othFlag(othFlag)
+		,m_langFlags(langFlags)
 		,m_isXml(false)
 		,m_containsAll(	m_wanted == 0
 							|| m_wanted->find(mstl::string::empty_string) != m_wanted->end()
@@ -579,7 +596,7 @@ struct Normalize : public Comment::Callback
 		M_ASSERT(fromLang == 0 || toLang != 0);
 		M_ASSERT(fromLang == 0 || *fromLang != *toLang);
 
-		m_engFlag = m_othFlag = false;
+		m_langFlags = 0;
 	}
 
 	void start() override { endLanguage(mstl::string::empty_string); }
@@ -665,6 +682,7 @@ struct Normalize : public Comment::Callback
 			return;
 
 		bool empty = true;
+		unsigned countLangs = 0;
 
 		for (LangMap::const_iterator i = m_map.begin(); i != m_map.end(); ++i)
 		{
@@ -674,12 +692,9 @@ struct Normalize : public Comment::Callback
 
 				if (!i->first.empty())
 				{
-					if (i->first == "en")
-						m_engFlag = true;
-					else
-						m_othFlag = true;
-
+					m_langFlags |= (i->first == "en") ? i18n::English : i18n::Other_Lang;
 					m_isXml = true;
+					countLangs += 1;
 				}
 			}
 		}
@@ -705,15 +720,15 @@ struct Normalize : public Comment::Callback
 
 				if (!m_toLang->empty())
 				{
-					if (*m_toLang == "en")
-						m_engFlag = true;
-					else
-						m_othFlag = true;
-
+					m_langFlags |= (*m_toLang == "en") ? i18n::English : i18n::Other_Lang;
 					m_isXml = true;
+					countLangs += 1;
 				}
 			}
 		}
+
+		if (countLangs > 1)
+			m_langFlags |= i18n::Multilingual;
 
 		if (!m_isXml)
 		{
@@ -936,8 +951,7 @@ struct Normalize : public Comment::Callback
 	mstl::string const*	m_toLang;
 	Content*					m_lang;
 	LangMap					m_map;
-	bool&						m_engFlag;
-	bool&						m_othFlag;
+	unsigned&				m_langFlags;
 	bool						m_isXml;
 	bool						m_containsAll;
 	Byte						m_attr[3];
@@ -1059,10 +1073,12 @@ struct CountLanguages : public Comment::Callback
 
 struct Flatten : public Comment::Callback
 {
-	Flatten(mstl::string& result, encoding::CharSet encoding, bool printLanguageCode)
+	static unsigned const Multilingual = i18n::English | i18n::Other_Lang;
+
+	Flatten(mstl::string& result, encoding::CharSet encoding, unsigned langFlags)
 		:m_result(result)
 		,m_encoding(encoding)
-		,m_printLanguageCode(printLanguageCode)
+		,m_langFlags(langFlags)
 	{
 	}
 
@@ -1071,7 +1087,7 @@ struct Flatten : public Comment::Callback
 
 	void startLanguage(mstl::string const& lang) override
 	{
-		if (m_printLanguageCode)
+		if ((m_langFlags & Multilingual) == Multilingual)
 		{
 			if (!m_result.empty())
 				m_result += ' ';
@@ -1218,7 +1234,7 @@ struct Flatten : public Comment::Callback
 
 	mstl::string&		m_result;
 	encoding::CharSet	m_encoding;
-	bool					m_printLanguageCode;
+	unsigned				m_langFlags;
 };
 
 
@@ -1690,14 +1706,28 @@ startHtmlElement(void* cbData, XML_Char const* elem, char const** attr)
 					data->result.append("<:", 2);
 					data->result.append(attr[1]);
 					data->result.append(">", 1);
-					data->lang.assign(attr[1], 2);
+					data->lang.assign(attr[1]);
 					data->putLang = 0;
 					data->isXml = true;
 
 					if (attr[1][0] == 'e' && attr[1][1] == 'n')
-						data->engFlag = true;
+					{
+						data->langFlags |= i18n::English;
+
+						if (data->langFlags & i18n::Other_Lang)
+							data->langFlags |= i18n::Multilingual;
+					}
 					else
-						data->othFlag = true;
+					{
+						data->langFlags |= i18n::Other_Lang;
+
+						if (data->langFlags & i18n::English)
+							data->langFlags |= i18n::Multilingual;
+						else if (data->othLang.empty())
+							data->othLang.assign(elem);
+						else if (data->othLang != elem)
+							data->langFlags |= i18n::Multilingual;
+					}
 				}
 				else
 				{
@@ -1767,7 +1797,6 @@ endHtmlElement(void* cbData, XML_Char const* elem)
 					data->result.append(data->lang);
 					data->result.append(">", 1);
 					data->putLang = 1;
-					data->lang.clear();
 				}
 			}
 			break;
@@ -1793,14 +1822,23 @@ endHtmlElement(void* cbData, XML_Char const* elem)
 
 Comment::Callback::~Callback() throw() {}
 
-Comment::Comment() :m_engFlag(false), m_othFlag(false) {}
+Comment::Comment() :m_langFlags(0) {}
 
 
-Comment::Comment(mstl::string const& content, bool engFlag, bool othFlag)
+Comment::Comment(mstl::string const& content, unsigned langFlags)
 	:m_content(content)
-	,m_engFlag(engFlag)
-	,m_othFlag(othFlag)
+	,m_langFlags(0)
 {
+}
+
+
+Comment::LanguageSet const&
+Comment::languageSet() const
+{
+	if (m_languageSet.empty() && !m_content.empty())
+		collect();
+	
+	return m_languageSet;
 }
 
 
@@ -1864,6 +1902,24 @@ Comment::append(Comment const& comment, char delim)
 			::appendDelim(m_content, delim);
 			m_content.append(comment);
 		}
+	}
+
+	m_langFlags |= comment.m_langFlags;
+}
+
+
+void
+Comment::appendCommonSuffix(mstl::string const& suffix)
+{
+	if (isXml())
+	{
+		Split split;
+		parse(split);
+		Split::append(m_content, split.m_result, suffix);
+	}
+	else
+	{
+		m_content.append(suffix);
 	}
 }
 
@@ -2001,6 +2057,41 @@ Comment::containsLanguage(mstl::string const& lang) const
 }
 
 
+bool
+Comment::containsAnyLanguageOf(LanguageSet const& langSet) const
+{
+	M_REQUIRE(!langSet.empty());
+
+	if (m_content.empty())
+		return false;
+
+	if (m_languageSet.empty())
+	{
+		collect();
+
+		if (m_languageSet.empty())
+			return false;
+	}
+
+	LanguageSet::const_iterator i = langSet.begin();
+	LanguageSet::const_iterator k = m_languageSet.begin();
+
+	while (i->first < k->first)
+	{
+		if (++i == langSet.end())
+			return false;
+	}
+
+	while (k->first < i->first)
+	{
+		if (++k == m_languageSet.end())
+			return false;
+	}
+
+	return true;
+}
+
+
 unsigned
 Comment::countLength(LanguageSet const& set) const
 {
@@ -2067,19 +2158,17 @@ void
 Comment::swap(Comment& comment)
 {
 	m_content.swap(comment.m_content);
-	mstl::swap(m_engFlag, comment.m_engFlag);
-	mstl::swap(m_othFlag, comment.m_othFlag);
+	mstl::swap(m_langFlags, comment.m_langFlags);
 	m_languageSet.swap(comment.m_languageSet);
 }
 
 
 void
-Comment::swap(mstl::string& content, bool engFlag, bool othFlag)
+Comment::swap(mstl::string& content, unsigned langFlags)
 {
 	m_content.swap(content);
 	m_languageSet.clear();
-	m_engFlag = engFlag;
-	m_othFlag = othFlag;
+	m_langFlags = langFlags;
 }
 
 
@@ -2088,12 +2177,12 @@ Comment::clear()
 {
 	m_content.clear();
 	m_languageSet.clear();
-	m_engFlag = m_othFlag = false;
+	m_langFlags = 0;
 }
 
 
 void
-Comment::flatten(mstl::string& result, encoding::CharSet encoding) const
+Comment::flatten(mstl::string& result, encoding::CharSet encoding, unsigned langFlags) const
 {
 	if (m_content.empty())
 		return;
@@ -2102,7 +2191,7 @@ Comment::flatten(mstl::string& result, encoding::CharSet encoding) const
 	{
 		CountLanguages count;
 		parse(count);
-		Flatten flatten(result, encoding, count.result() > 1);
+		Flatten flatten(result, encoding, langFlags);
 		result.reserve(result.size() + m_content.size() + 100);
 		parse(flatten);
 	}
@@ -2199,7 +2288,7 @@ Comment::normalize(Mode mode, char delim)
 	if (!isXml())
 		return;
 
-	Normalize normalize(m_content, m_engFlag, m_othFlag, mode, delim);
+	Normalize normalize(m_content, m_langFlags, mode, delim);
 	parse(normalize);
 }
 
@@ -2242,6 +2331,7 @@ Comment::remove(LanguageSet const& languageSet)
 	else if (languageSet.find(mstl::string::empty_string) != languageSet.end())
 	{
 		m_content.clear();
+		m_langFlags = 0;
 		m_languageSet.clear();
 	}
 }
@@ -2256,17 +2346,49 @@ Comment::strip(LanguageSet const& set)
 	if (set.empty())
 	{
 		m_content.clear();
-		m_engFlag = m_othFlag = false;
+		m_langFlags = 0;
 	}
 	else if (isXml())
 	{
-		Normalize normalize(m_content, m_engFlag, m_othFlag, PreserveEmoticons, '\0', &set);
+		Normalize normalize(m_content, m_langFlags, PreserveEmoticons, '\0', &set);
 		parse(normalize);
 	}
 	else if (set.find(mstl::string::empty_string) == set.end())
 	{
 		m_content.clear();
-		m_engFlag = m_othFlag = false;
+		m_langFlags = 0;
+	}
+
+	m_languageSet.clear();
+}
+
+
+void
+Comment::strip(mstl::string const& lang, unsigned langFlags)
+{
+	if (m_content.empty())
+		return;
+
+	if (isXml())
+	{
+		LanguageSet set;
+		Normalize normalize(m_content, m_langFlags, PreserveEmoticons, '\0', &set);
+
+		set[lang] = 0;
+		parse(normalize);
+
+		if (!m_content.empty() && langFlags == i18n::None)
+		{
+			mstl::string result;
+			flatten(result, encoding::Utf8, i18n::None);
+			m_content.swap(result);
+			m_langFlags = i18n::None;
+		}
+	}
+	else if (!lang.empty())
+	{
+		m_content.clear();
+		m_langFlags = 0;
 	}
 
 	m_languageSet.clear();
@@ -2286,8 +2408,7 @@ Comment::copy(mstl::string const& fromLang, mstl::string const& toLang, bool str
 		m_languageSet.erase(fromLang);
 
 		Normalize normalize(	m_content,
-									m_engFlag,
-									m_othFlag,
+									m_langFlags,
 									PreserveEmoticons,
 									'\n',
 									&m_languageSet,
@@ -2300,8 +2421,7 @@ Comment::copy(mstl::string const& fromLang, mstl::string const& toLang, bool str
 	else
 	{
 		Normalize normalize(	m_content,
-									m_engFlag,
-									m_othFlag,
+									m_langFlags,
 									PreserveEmoticons,
 									'\n',
 									nullptr,
@@ -2333,7 +2453,7 @@ Comment::fromHtml(mstl::string const& s)
 
 	bool sucesss = false;
 
-	HtmlData data(m_content, m_engFlag, m_othFlag);
+	HtmlData data(m_content, m_langFlags);
 	m_content.reserve(s.size() + 20);
 
 	XML_SetUserData(parser, &data);
@@ -2443,6 +2563,7 @@ Comment::convertCommentToXml(	mstl::string const& comment,
 	}
 
 	mstl::string lang;
+	mstl::string othLang;
 
 	bool specialExpected = true;
 	bool isXml = false;
@@ -2511,13 +2632,28 @@ Comment::convertCommentToXml(	mstl::string const& comment,
 				result.m_content.append("<:", 2);
 				result.m_content.append(lang);
 				result.m_content.append(">", 1);
-				isXml = true;
-				s += 5;
 
 				if (s[1] == 'e' && s[2] == 'n')
-					result.m_engFlag = true;
+				{
+					result.m_langFlags |= i18n::English;
+					
+					if (result.m_langFlags & i18n::Other_Lang)
+						result.m_langFlags |= i18n::Multilingual;
+				}
 				else
-					result.m_othFlag = true;
+				{
+					result.m_langFlags |= i18n::Other_Lang;
+
+					if (result.m_langFlags & i18n::English)
+						result.m_langFlags |= i18n::Multilingual;
+					else if (othLang.empty())
+						othLang = lang;
+					else if (othLang != lang)
+						result.m_langFlags |= i18n::Multilingual;
+				}
+
+				isXml = true;
+				s += 5;
 			}
 			else
 			{

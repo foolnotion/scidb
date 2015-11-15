@@ -29,14 +29,15 @@
 
 #include "db_board.h"
 #include "db_move.h"
-#include "db_eco.h"
 #include "db_edit_key.h"
 #include "db_comment.h"
 #include "db_annotation.h"
+#include "db_eco.h"
 
 #include "m_vector.h"
 #include "m_map.h"
 #include "m_string.h"
+#include "m_utility.h"
 
 namespace db {
 
@@ -46,6 +47,7 @@ class MarkSet;
 class MoveNode;
 class TagSet;
 class EngineList;
+class GameLinkSet;
 
 namespace edit {
 
@@ -64,7 +66,7 @@ public:
 		TRoot, TOpening, TLanguages,	// root level (unused)
 		TAction,								// root level (used)
 		TMove, TDiagram, TVariation,	// variation level
-		TPly, TAnnotation, TStates, TMarks, TComment, TSpace,	// move level
+		TPly, TAnnotation, TStates, TMarks, TGameLink, TLink, TComment, TSpace,	// move level
 	};
 
 	enum Bracket { Blank, Open, Close, End, Fold, Empty, Start };
@@ -72,7 +74,7 @@ public:
 	typedef mstl::vector<Node const*> List;
 	typedef mstl::map<mstl::string,unsigned> LanguageSet;
 
-	virtual ~Node() throw() = 0;
+	virtual ~Node() = 0;
 
 	virtual bool operator==(Node const* node) const;
 	bool operator!=(Node const* node) const;
@@ -108,6 +110,7 @@ public:
 	KeyNode(Key const& key);
 	KeyNode(Key const& key, char prefix);
 
+	using Node::operator==;
 	bool operator==(KeyNode const* node) const;
 	bool operator!=(KeyNode const* node) const;
 
@@ -136,6 +139,12 @@ public:
 	Action(Command command, unsigned level, Key const& startKey, Key const& endKey);
 
 	Type type() const override;
+	Command command() const;
+	Key start() const;
+	Key end() const;
+	unsigned level() const;
+
+	void replace(unsigned level, Key const& start, Key const& end);
 
 	void visit(Visitor& visitor) const override;
 
@@ -148,12 +157,12 @@ private:
 };
 
 
-class Root : public Node
+class Root : public Node, private mstl::noncopyable
 {
 public:
 
 	Root();
-	~Root() throw();
+	~Root();
 
 	Type type() const override;
 
@@ -204,6 +213,10 @@ private:
 								variant::Type variant,
 								unsigned varNo,
 								unsigned varCount);
+	static MoveNode const* traverseLine(Work& work,
+													KeyNode::List& result,
+													MoveNode const* node,
+													variant::Type variant);
 
 	Node*				m_opening;
 	Node* 			m_languages;
@@ -246,7 +259,6 @@ public:
 
 	Type type() const override;
 	LanguageSet const& langSet() const;
-
 	void visit(Visitor& visitor) const override;
 
 private:
@@ -255,13 +267,13 @@ private:
 };
 
 
-class Variation : public KeyNode
+class Variation : public KeyNode, private mstl::noncopyable
 {
 public:
 
 	Variation(Key const& key);
 	Variation(Key const& key, Key const& succ);
-	~Variation() throw();
+	~Variation();
 
 	bool operator==(Node const* node) const override;
 
@@ -269,6 +281,7 @@ public:
 
 	Type type() const override;
 
+	using KeyNode::key;
 	Key const& startKey() const override;
 	Key const& endKey() const override;
 	Key const& successor() const;
@@ -283,6 +296,11 @@ private:
 							Variation const* var,
 							unsigned level,
 							Node::List& nodes) const;
+	static void pushRemove(	Root const* root,
+									Node::List& nodes,
+									unsigned level,
+									Key const& start,
+									Key const& end);
 
 	List	m_list;
 	Key	m_succ;
@@ -293,6 +311,7 @@ class Ply : public Node
 {
 public:
 
+	Ply();
 	Ply(db::MoveNode const* move, unsigned moveno = 0);
 
 	bool operator==(Node const* node) const;
@@ -310,7 +329,7 @@ private:
 };
 
 
-class Move : public KeyNode
+class Move : public KeyNode, private mstl::noncopyable
 {
 public:
 
@@ -323,7 +342,7 @@ public:
 	Move(Key const& key);
 	Move(Spacing& spacing, Key const& key, unsigned moveNumber, MoveNode const* move);
 
-	~Move() throw();
+	~Move();
 
 	bool operator==(Node const* node) const override;
 
@@ -422,8 +441,8 @@ public:
 
 private:
 
-	bool m_threefoldRepetition;
-	bool m_fiftyMoveRule;
+	unsigned m_threefoldRepetition;
+	unsigned m_fiftyMoveRule;
 };
 
 
@@ -451,9 +470,9 @@ public:
 
 	Space();
 	explicit Space(Bracket bracket);
-	explicit Space(Bracket bracket, bool isFirstOrLast);
-	explicit Space(unsigned level, unsigned number, bool isFirstOrLast);
-	explicit Space(unsigned level, bool isFirstOrLast = false);
+	explicit Space(Bracket bracket, unsigned varNo, unsigned varCount);
+	explicit Space(unsigned level);
+	explicit Space(unsigned level, unsigned varNo, unsigned varCount);
 
 	bool operator==(Node const* node) const override;
 
@@ -464,9 +483,10 @@ public:
 private:
 
 	int		m_level;
-	unsigned	m_number;
+	unsigned	m_varNo;
+	unsigned	m_varCount;
 	Bracket	m_bracket;
-	bool		m_isFirstOrLast;
+	bool		m_asNumber;
 };
 
 
@@ -478,7 +498,7 @@ public:
 	typedef Node::Bracket Bracket;
 	typedef Comment::VarPos VarPos;
 
-	virtual ~Visitor() throw();
+	virtual ~Visitor();
 
 	virtual void clear() = 0;
 	virtual void insert(unsigned level, Key const& beforeKey) = 0;
@@ -498,7 +518,7 @@ public:
 	virtual void states(bool threefoldRepetition, bool fiftyMoveRule) = 0;
 	virtual void marks(bool hasMarks) = 0;
 	virtual void number(mstl::string const& number, bool isFirstVar) = 0;
-	virtual void space(Bracket bracket, bool isFirstOrLastVar) = 0;
+	virtual void space(Bracket bracket, unsigned number, unsigned count) = 0;
 	virtual void linebreak(unsigned level) = 0;
 
 	virtual void start(result::ID result) = 0;

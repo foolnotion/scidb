@@ -882,19 +882,23 @@ proc TableSelected {path index} {
 	if {[llength $Vars(selectcmd)]} {
 		{*}$Vars(selectcmd) $base $variant $number $fen
 	} else {
-		::widget::busyOperation { ::game::new $path \
-			-base $base \
-			-variant $variant \
-			-view $view \
-			-number $number \
-			-fen $fen \
+		::widget::busyOperation { \
+			::game::new $path \
+				-base $base \
+				-variant $variant \
+				-view $view \
+				-number $number \
+				-fen $fen \
+				;
 		}
 	}
 }
 
 
-proc TableInvoked {path index} {
-	::application::switchTab board
+proc TableInvoked {path shiftIsHeldDown} {
+	if {!$shiftIsHeldDown} {
+		::application::switchTab board
+	}
 }
 
 

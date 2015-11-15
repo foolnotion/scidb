@@ -124,7 +124,7 @@ if {[file extension $file] eq ".cache"} {
 } elseif {[file tail $file] eq "defaults.list"} {
     set header "\[Default Applications\]"
 } else {
-    set header "\[Added Associations\]"
+    set header "\[Additional Associations\]"
 }
 array set content {0 {} 1 {} 2 {}}
 if {$method eq "add"} { set handleProc sortApplications} else { set handleProc stripApplications }
@@ -167,7 +167,7 @@ if {[file readable $file]} {
 if {$method eq "remove" && $countEntries == 0} {
     file delete -force $file
 } elseif {$countEntries > 0} {
-    set tmpfile "[file dirname $file]/.[file tail $file].037369839329"
+    set tmpfile "/tmp/scidb.[file tail $file].037369839329"
     set chan [open $tmpfile "w" 0644]
 
     foreach entry $content(0) { puts $chan $entry }

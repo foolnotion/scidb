@@ -71,7 +71,7 @@ set IncludeAllTags			"Include all tags"
 set ExtraTags					"All other extra tags"
 set NoComments					"No comments"
 set AllLanguages				"All languages"
-set Significant				"Significant"
+set SelectLanguages			"Selected languages"
 set LanguageSelection		"Language selection"
 set MapTo						"Map to"
 set MapNagsToComment			"Map annotations to comments"
@@ -80,6 +80,9 @@ set AllAnnotation				"All annotations"
 set UseColumnStyle			"Use column style"
 set MainlineStyle				"Main Line Style"
 set HideVariations			"Hide variations"
+set GameDoesNotHaveComments "This game does not contain comments."
+
+set LanguageSelectionDescr	"The checkbox (right side from combo box) has the meaning 'significant'.\n\nLanguages marked as 'significant' will always be exported.\n\nIf the game includes none of the languages marked as 'significant' then the first available language will be exported."
 
 set PdfFiles					"PDF Files"
 set HtmlFiles					"HTML Files"
@@ -458,8 +461,6 @@ array set Options {
 
 	annotation_map_unusual				10
 	annotation_map_all					11
-
-	comment_all								12
 }
 
 # NOTE: order must coincide with flags in db::Writer/db::PgnWriter.
@@ -497,6 +498,9 @@ array set Flags {
 }
 
 array set Defaults {
+	scid,comments,languages							{{*} {} {} {} {} {} {}}
+	scidb,comments,languages						{{*} {} {} {} {} {} {}}
+
 	pgn,flag,include_varations						1
 	pgn,flag,include_comments						1
 	pgn,flag,include_annotation					1
@@ -529,6 +533,8 @@ array set Defaults {
 	pgn,flag,write_any_rating_as_elo				0
 	pgn,flag,exclude_games_with_illegal_moves	0
 
+	pgn,comments,languages							{{*} {} {} {} {} {} {}}
+
 	pdf,fonts,embed									1
 	pdf,fonts,builtin									0
 
@@ -547,7 +553,7 @@ array set Defaults {
 	pdf,diagram,image-style							{Default Merida}
 	pdf,diagram,image-size							200
 
-	pdf,comments,languages							{{* 1} {} {} {} {}}
+	pdf,comments,languages							{{*} {} {} {} {} {} {}}
 	pdf,comments,hyphenation						en
 
 	pdf,paper,format									A4
@@ -587,7 +593,7 @@ array set Defaults {
 	tex,nag,lang										{}
 	tex,nag,all											0
 
-	tex,comments,languages							{{* 1} {} {} {} {}}
+	tex,comments,languages							{{*} {} {} {} {} {} {}}
 	tex,comments,hyphenation						en
 
 	tex,paper,document								Article
@@ -611,7 +617,7 @@ array set Defaults {
 	html,moves,figurines								graphic
 	html,moves,hide-variations						0
 
-	html,comments,languages							{{* 1} {} {} {} {}}
+	html,comments,languages							{{*} {} {} {} {} {} {}}
 	html,comments,hyphenation						en
 }
 
@@ -655,11 +661,16 @@ proc open {parent args} {
 	array unset Info
 	set Info(base) $opts(-base)
 	set Info(variant) $opts(-variant)
+	set Info(extension) $opts(-extension)
 	if {[info exists opts(-view)]} { set Info(view) $opts(-view) }
 	if {[info exists opts(-name)]} { set Info(name) $opts(-name) }
-	if {[info exists opts(-type)]} { set Info(type) $opts(-type) }
 	if {[info exists opts(-index)]} { set Info(index) $opts(-index) }
 	if {[info exists opts(-title)]} { set Info(title) $opts(-title) }
+	if {[info exists opts(-languages)]} { set Info(languages) $opts(-languages) }
+	if {[info exists opts(-preferred)]} { set Info(preferred) $opts(-preferred) }
+	if {[info exists Info(languages)] && ![info exists Info(preferred)]} {
+		set Info(preferred) {}
+	}
 	unset opts
 
 	if {	![info exists Info(index)]
@@ -673,11 +684,9 @@ proc open {parent args} {
 	set Info(pdf-encoding) 0
 	set Info(fonts) {}
 
-	if {![info exists Info(index)]} {
-		switch $Info(type) {
-			scidb - tex {}
-			default { if {$Info(encoding) ni $PdfEncodingList} { set Info(pdf-encoding) 1 } }
-		}
+	switch $Info(extension) {
+		sci - pgn - tex {}
+		default { if {$Info(encoding) ni $PdfEncodingList} { set Info(pdf-encoding) 1 } }
 	}
 
 	set dlg [tk::toplevel $parent.export -class Dialog]
@@ -2067,82 +2076,141 @@ proc BuildFrame {pane} {
 	set type $Values(Type)
 
 	set lt [ttk::labelframe $pane.lt -text [set [namespace parent]::mc::LanguageSelection]]
+
+	if {[info exists Info(languages)] && [llength $Info(languages)] == 0} {
+		ttk::label $lt.msg -text [set [namespace parent]::mc::GameDoesNotHaveComments]
+		grid $lt -row 1 -column 1 -sticky ns
+		grid rowconfigure $pane {1} -weight 1
+		grid columnconfigure $pane {0 2} -minsize $::theme::padding
+		pack $lt.msg -padx $::theme::padding -pady $::theme::padding
+		return
+	}
+
 	set rt [ttk::labelframe $pane.rt -text [set [namespace parent]::mc::Hyphenation]]
 
 	### Choose Languages ####################################################################
 	set sel [ttk::frame $lt.selection -borderwidth 0]
-	set row 1
-	for {set i 1} {$i < [llength $Values($type,comments,languages)]} {incr i} {
-		set Info(lang:box$i) $sel.list$i
-		ttk::label $sel.no$i -text "$i."
-		::languagebox $sel.list$i -none [expr {$i > 1}] -width 0
-		bind $sel.list$i <<ComboboxCurrent>> +[namespace code [list UpdateLanguages $i]]
-		grid $sel.no$i   -row $row -column 1 -sticky w
-		grid $sel.list$i -row $row -column 3 -sticky ew
-		incr row 2
+	if {[info exists Info(languages)]} {
+		set Info(languages) [lremove $Info(languages) ""]
+		set Info(preferred) [lremove $Info(preferred) ""]
+		set elem $Values(Type),comments,languages
+		set Values($elem) {}
+		set row 1
+		grid rowconfigure $sel 0 -minsize $::theme::padding
+		foreach lang $Info(languages) {
+			set country [set ::mc::langToCountry($lang)]
+			set flag $::country::icon::flag($country)
+			set Info(lang:check:$lang) $sel.lang$lang
+			set Info(lang:check:$lang:value) [expr {$lang in $Info(preferred)}]
+			if {$Info(lang:check:$lang:value)} { lappend Values($elem) $lang }
+			ttk::checkbutton $sel.lang$lang \
+				-compound left \
+				-text [::encoding::languageName $lang] \
+				-image $flag \
+				-variable [namespace parent]::Info(lang:check:$lang:value) \
+				-command [namespace code [list AddRemoveLang $lang]] \
+				;
+			grid $sel.lang$lang -row $row -column 1 -sticky ew
+			grid rowconfigure $sel [expr {$row + 1}] -minsize $::theme::padding
+			incr row 2
+		}
+		grid columnconfigure $sel {0 2} -minsize $::theme::padding
+		if {[llength $Info(preferred)] == 0} {
+			set mode none
+		} elseif {[llength $Info(languages)] == [llength $Info(preferred)]} {
+			set mode all
+		} else {
+			set mode ""
+		}
+		set Info(lang,comments,languages) $mode
+	} else {
+		set row 1
+		set n [llength $Values($type,comments,languages)]
+		for {set i 1} {$i < $n} {incr i} {
+			set Info(lang:box$i) $sel.list$i
+			set Info(lang:check$i) $sel.check$i
+			set Info(lang:check$i:value) 0
+			ttk::label $sel.no$i -text "$i."
+			::languagebox $sel.list$i -none [expr {$i > 1}] -width 0
+			ttk::checkbutton $sel.check$i -variable [namespace parent]::Info(lang:check$i:value)
+			bind $sel.list$i <<ComboboxCurrent>> +[namespace code [list UpdateLanguages $i]]
+			grid $sel.no$i    -row $row -column 1 -sticky w
+			grid $sel.list$i  -row $row -column 3 -sticky ew
+			grid $sel.check$i -row $row -column 5 -sticky ew
+			incr row 2
+		}
+		grid rowconfigure $sel {2 4 6 8 10} -minsize $::theme::padding
+		grid columnconfigure $sel {2 4} -minsize $::theme::padding
+		grid columnconfigure $sel {3} -weight 1
+		set Info(lang,comments,languages) $Values($type,comments,languages)
 	}
-	grid rowconfigure $sel {2 4 6} -minsize $::theme::padding
-	grid columnconfigure $sel {2} -minsize $::theme::padding
-	grid columnconfigure $sel {3} -weight 1
-
-	set sig [ttk::frame $lt.significant -borderwidth 0]
-	ttk::label $sig.lbl -text "[set [namespace parent]::mc::Significant]:"
-	ttk::spinbox $sig.num \
-		-command [namespace code SetSignificant] \
-		-state readonly \
-		-width 2 \
-		-from 1 \
-		-to 4 \
-		;
-	set Info(lang:num) $sig.num
-	grid $sig.lbl -row 1 -column 1 -sticky w
-	grid $sig.num -row 1 -column 3 -sticky w
-	grid columnconfigure $sig {2} -minsize $::theme::padding
-	grid columnconfigure $sig {3} -weight 1
 
 	ttk::separator $lt.sep
-	ttk::checkbutton $lt.none \
+	ttk::radiobutton $lt.none \
 		-text [set [namespace parent]::mc::NoComments] \
-		-variable [namespace parent]::Info(lang,none) \
-		-command [namespace code { ConfigureWidgets none }] \
+		-variable [namespace parent]::Info(lang,comments,languages) \
+		-command [namespace code ConfigureWidgets] \
+		-value none \
 		;
-	ttk::checkbutton $lt.all \
+	ttk::radiobutton $lt.all \
 		-text [set [namespace parent]::mc::AllLanguages] \
-		-variable [namespace parent]::Info(lang,all) \
-		-command [namespace code { ConfigureWidgets all }] \
+		-variable [namespace parent]::Info(lang,comments,languages) \
+		-command [namespace code ConfigureWidgets] \
+		-value all \
+		;
+	ttk::radiobutton $lt.select \
+		-text [set [namespace parent]::mc::SelectLanguages] \
+		-variable [namespace parent]::Info(lang,comments,languages) \
+		-command [namespace code ConfigureWidgets] \
+		-value {} \
 		;
 
-	grid $sel     -row 1 -column 1 -sticky we
-	grid $sig     -row 3 -column 1 -sticky we
-	grid $lt.sep  -row 5 -column 1 -sticky we
-	grid $lt.none -row 7 -column 1 -sticky w
-	grid $lt.all  -row 9 -column 1 -sticky w
+	grid $lt.none   -row 1 -column 1 -sticky we
+	grid $lt.all    -row 3 -column 1 -sticky we
+	grid $lt.select -row 5 -column 1 -sticky we
+	grid $lt.sep    -row 7 -column 1 -sticky we
+	grid $sel       -row 9 -column 1 -sticky we
 
 	grid rowconfigure $lt {0 2 4 6 8 10} -minsize $::theme::padding
-#	grid rowconfigure $lt {8} -minsize [expr {2*$::theme::padding}]
-	grid columnconfigure $lt {0 2} -minsize $::theme::padding
+
+	if {![info exists Info(languages)]} {
+		set Info(lang,descr) [message $lt.descr \
+			-relief sunken \
+			-borderwidth 1 \
+			-justify left \
+			-anchor nw \
+			-text [set [namespace parent]::mc::LanguageSelectionDescr] \
+			-width 240 \
+		]
+		grid $lt.descr -row 1 -column 3 -sticky nswe -rowspan 9
+		grid columnconfigure $lt {0 2 4} -minsize $::theme::padding
+	} else {
+		grid columnconfigure $lt {0 2} -minsize $::theme::padding
+	}
 
 	### Default Language ####################################################################
-	set Info(languages) [list [list none [set [namespace parent]::mc::None]]]
-	foreach lang $Languages {
-		lappend Info(languages) [list $lang [::encoding::languageName $lang]]
+	if {![info exists Info(languages)]} {
+		set Info(languages,hyph) [list [list none [set [namespace parent]::mc::None]]]
+		foreach lang $Languages {
+			lappend Info(languages,hyph) [list $lang [::encoding::languageName $lang]]
+		}
+		set Info(languages,hyph) [lsort -dictionary -index 1 $Info(languages,hyph)]
+		ttk::frame $rt.list
+		set selbox [::tlistbox $rt.list.selection -borderwidth 1 -pady 1 -minwidth 180]
+		$selbox addcol image -id icon
+		$selbox addcol text -id name -expand yes
+		foreach entry $Info(languages,hyph) {
+			lassign $entry lang name
+			set img $::country::icon::flag([::mc::countryForLang $lang])
+			$selbox insert [list $img $name]
+		}
+		$selbox resize
+		pack $selbox -anchor s
+		pack $rt.list -padx $::theme::padding -pady $::theme::padding -fill y -expand yes
+		bind $rt.list <Configure> [list [namespace parent]::ConfigureTListbox %W %h]
+		bind $selbox <<ListboxSelect>> [namespace code [list SetLanguage %d]]
+		set Info(lang:primary) $selbox
 	}
-	set Info(languages) [lsort -dictionary -index 1 $Info(languages)]
-	ttk::frame $rt.list
-	set selbox [::tlistbox $rt.list.selection -borderwidth 1 -pady 1 -minwidth 180]
-	$selbox addcol image -id icon
-	$selbox addcol text -id name -expand yes
-	foreach entry $Info(languages) {
-		lassign $entry lang name
-		set img $::country::icon::flag([::mc::countryForLang $lang])
-		$selbox insert [list $img $name]
-	}
-	$selbox resize
-	pack $selbox -anchor s
-	pack $rt.list -padx $::theme::padding -pady $::theme::padding -fill y -expand yes
-	bind $rt.list <Configure> [list [namespace parent]::ConfigureTListbox %W %h]
-	bind $selbox <<ListboxSelect>> [namespace code [list SetLanguage %d]]
-	set Info(lang:primary) $selbox
 
 	### Gridding ############################################################################
 	grid $lt -row 1 -column 1 -sticky ns
@@ -2154,83 +2222,138 @@ proc BuildFrame {pane} {
 }
 
 
+proc ShowHyphenation {w enable} {
+	if {$enable} {
+		grid $w.rt
+		Setup
+	} else {
+		grid remove $w.rt
+	}
+}
+
+
 proc SetLanguage {index} {
 	variable [namespace parent]::Info
 	variable [namespace parent]::Values
 
 	set type $Values(Type)
-	set Values($type,comments,hyphenation) [lindex $Info(languages) $index 0]
+	set Values($type,comments,hyphenation) [lindex $Info(languages,hyph) $index 0]
 }
 
 
-proc SetSignificant {} {
+proc AddRemoveLang {lang} {
+	variable [namespace parent]::Info
+	variable [namespace parent]::Values
+
+	set elem $Values(Type),comments,languages
+	if {$Info(lang:check:$lang:value)} {
+		if {$lang ni $Values($elem)} {
+			lappend Values($elem) $lang
+		}
+	} else {
+		set i [lsearch -exact $Values($elem) $lang]
+		if {$i >= 0} { set Values($elem) [lreplace $Values($elem) $i $i] }
+	}
+}
+
+
+proc ConfigureWidgets {} {
 	variable [namespace parent]::Info
 	variable [namespace parent]::Values
 
 	set type $Values(Type)
-	lset Values($type,comments,languages) 0 1 [$Info(lang:num) get]
-}
+	set selection $Info(lang,comments,languages)
 
+	if {[info exists Info(languages)]} {
+		switch $selection {
+			all	{ set Values($Values(Type),comments,languages) $Info(languages) }
+			none	{ set Values($Values(Type),comments,languages) {} }
+			default {
+				set Values($Values(Type),comments,languages) {}
+				foreach lang $Info(languages) {
+					if {$Info(lang:check:$lang:value)} {
+						lappend Values($Values(Type),comments,languages) $lang
+					}
+				}
+			}
+		}
+	}
 
-proc ConfigureWidgets {which} {
-	variable [namespace parent]::Info
-	variable [namespace parent]::Values
-
-	set type $Values(Type)
-
-	if {$Info(lang,$which)} {
-		lset Values($type,comments,languages) 0 0 $which
-		if {$which eq "all"} { set which none } else { set which all }
-		set Info(lang,$which) 0
+	if {$selection in {all none}} {
+		set color gray
 		set state disabled
 	} else {
-		lset Values($type,comments,languages) 0 0 {}
+		set color black
 		set state readonly
 	}
 
-	for {set i 1} {$i <= 4} {incr i} { $Info(lang:box$i) configure -state $state }
+	if {[winfo exists Info(lang,descr)]} {
+		$Info(lang,descr) configure -foreground $color
 
-	if {$Info(lang,all) || $Info(lang,none)} { set state disabled } else { set state readonly }
-	$Info(lang:num) configure -state $state
+		set n [llength $Values($type,comments,languages)]
+		for {set i 1} {$i < $n} {incr i} {
+			$Info(lang:box$i) configure -state $state
+			$Info(lang:check$i) configure -state $state
+		}
+	} else {
+		foreach lang $Info(languages) {
+			$Info(lang:check:$lang) configure -state $state
+		}
+	}
 }
 
 
-proc Setup {pane} {
+proc Setup {{pane ""}} {
 	variable [namespace parent]::Info
 	variable [namespace parent]::Values
 
-	set type $Values(Type)
-	set Info(lang,all) 0
-	set Info(lang,none) 0
-	$Info(lang:num) configure -state readonly
+	if {[info exists Info(languages)]} {
+		return
+	}
 
-	switch [lindex $Values($type,comments,languages) 0 0] {
+	set type $Values(Type)
+	set selection [lindex $Values($type,comments,languages) 0]
+
+	switch $selection {
 		* {
-			lset Values($type,comments,languages) 0 0 {}
-			lset Values($type,comments,languages) 0 1 1
-			lset Values($type,comments,languages) 1 $::mc::langID
-			if {$::mc::langID ne "en"} { lset Values($type,comments,languages) 2 en }
-			set state readonly
+			lset Values($type,comments,languages) 1 [list $::mc::langID 1]
+			if {$::mc::langID ne "en"} { lset Values($type,comments,languages) 2 {en 0} }
+			if {$type eq "scidb"} {
+				lset Values($type,comments,languages) 0 all
+				set Info(lang,comments,languages) all
+			} else {
+				set Info(lang,select) {}
+				lset Values($type,comments,languages) 0 {}
+				set Info(lang,comments,languages) {}
+			}
 		}
 
 		all - none {
-			set Info(lang,[lindex $Values($type,comments,languages) 0 0]) 1
-			$Info(lang:num) configure -state disabled
+			$Info(lang,descr) configure -foreground gray
+			set Info(lang,comments,languages) $selection
 			set state disabled
 		}
 
-		default { set state readonly }
+		default {
+			set Info(lang,comments,languages) {}
+			set state readonly
+		}
 	}
 
-	for {set i 1} {$i < [llength $Values($type,comments,languages)]} {incr i} {
-		$Info(lang:box$i) configure -state $state
-		$Info(lang:box$i) set [lindex $Values($type,comments,languages) $i]
+	set n [llength $Values($type,comments,languages)]
+	for {set i 1} {$i < $n} {incr i} {
+		lassign {"" 0} lang significant
+		lassign [lindex $Values($type,comments,languages) $i] lang significant
+		$Info(lang:box$i) set $lang
+		set Info(lang:check$i:value) $significant
 	}
 
-	set lang [lsearch -exact -index 0 $Info(languages) $Values($type,comments,hyphenation)]
-	$Info(lang:primary) select $lang
+	if {[info exists Values($type,comments,hyphenation)]} {
+		set lang [lsearch -exact -index 0 $Info(languages,hyph) $Values($type,comments,hyphenation)]
+		$Info(lang:primary) select $lang
+	}
 
-	$Info(lang:num) set [lindex $Values($type,comments,languages) 0 1]
+	ConfigureWidgets
 }
 
 
@@ -2240,7 +2363,8 @@ proc UpdateLanguages {index} {
 
 	set type $Values(Type)
 	set lang [$Info(lang:box$index) value]
-	lset Values($type,comments,languages) $index $lang
+	set significant $Info(lang:check$index:value)
+	lset Values($type,comments,languages) $index [list $lang $significant]
 }
 
 } ;# namespace comment
@@ -2897,6 +3021,13 @@ proc Select {nb index} {
 	::widget::busyCursor $nb on
 	set Values(Type) [lindex $Values(Types) $index]
 	set savemode 0
+	set showHyphenSelection 0
+
+	if {$Info(extension) in {sci pgn}} {
+		ShowTab $nb $nb.comment
+	} else {
+		HideTab $nb $nb.comment
+	}
 
 	switch $Values(Type) {
 		scidb {
@@ -2908,7 +3039,6 @@ proc Select {nb index} {
 			HideTab $nb $nb.style
 			HideTab $nb $nb.notation
 			HideTab $nb $nb.diagram
-			HideTab $nb $nb.comment
 			HideTab $nb $nb.annotation
 			HideTab $nb $nb.encoding
 			set var $::menu::mc::ScidbBases
@@ -2924,7 +3054,6 @@ proc Select {nb index} {
 			HideTab $nb $nb.style
 			HideTab $nb $nb.notation
 			HideTab $nb $nb.diagram
-			HideTab $nb $nb.comment
 			HideTab $nb $nb.annotation
 			if {$Values(Type) eq "scidb"} {
 				ShowTab $nb $nb.encoding
@@ -2944,7 +3073,6 @@ proc Select {nb index} {
 			HideTab $nb $nb.style
 			HideTab $nb $nb.notation
 			HideTab $nb $nb.diagram
-			HideTab $nb $nb.comment
 			HideTab $nb $nb.annotation
 			if {$Values(Type) eq "scidb"} {
 				ShowTab $nb $nb.encoding
@@ -2960,7 +3088,6 @@ proc Select {nb index} {
 			ShowTab $nb $nb.style
 			ShowTab $nb $nb.page_pdf
 			ShowTab $nb $nb.notation
-			ShowTab $nb $nb.comment
 			HideTab $nb $nb.options
 			HideTab $nb $nb.tags_si3
 			HideTab $nb $nb.tags_sci
@@ -2972,6 +3099,7 @@ proc Select {nb index} {
 			} else {
 				HideTab $nb $nb.encoding
 			}
+			set showHyphenSelection 1
 			set Info(useCustom) 1
 			set Info(build-style) 1
 			set var $mc::PdfFiles
@@ -2982,7 +3110,6 @@ if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} { ::beta::notYetImplement
 		html {
 			ShowTab $nb $nb.style
 			ShowTab $nb $nb.notation
-			ShowTab $nb $nb.comment
 			HideTab $nb $nb.options
 			HideTab $nb $nb.tags_si3
 			HideTab $nb $nb.tags_sci
@@ -2991,6 +3118,7 @@ if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} { ::beta::notYetImplement
 			HideTab $nb $nb.diagram
 			HideTab $nb $nb.annotation
 			HideTab $nb $nb.encoding
+			set showHyphenSelection 1
 			set Info(build-style) 1
 			set var $mc::HtmlFiles
 			if {$::tcl_platform(platform) eq "windows"} { set ext .htm } else { set ext .html }
@@ -3002,13 +3130,13 @@ if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} { ::beta::notYetImplement
 			ShowTab $nb $nb.style
 			ShowTab $nb $nb.notation
 			ShowTab $nb $nb.diagram
-			ShowTab $nb $nb.comment
 			ShowTab $nb $nb.annotation
 			HideTab $nb $nb.options
 			HideTab $nb $nb.tags_si3
 			HideTab $nb $nb.tags_sci
 			HideTab $nb $nb.page_pdf
 			HideTab $nb $nb.encoding
+			set showHyphenSelection 1
 			set Info(build-style) 1
 			set Info(useCustom) 0
 			set var $mc::TeXFiles
@@ -3053,6 +3181,8 @@ if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} { ::beta::notYetImplement
 		}
 	}
 
+	catch { comment::ShowHyphenation $nb.comment $showHyphenSelection }
+
 	::dialog::fsbox::setFileTypes $Info(fsbox) [list [list $var $ext]] $ext
 	if {$Values(Type) eq "pdf" && $Values(pdf,fonts,builtin)} { style::UseBuiltinFonts }
 	::widget::busyCursor $nb off
@@ -3074,6 +3204,20 @@ proc DoExport {parent dlg file} {
 	if {[string length $file] == 0} { return }
 	set file [file normalize $file]
 	set useCopyOperation 0
+	set options 0
+
+	if {[info exists Info(languages)]} {
+		set languages $Values($Values(Type),comments,languages)
+	} else {
+		if {[lindex $Values($Values(Type),comments,languages) 0] eq "all"} {
+			set languages {* 1}
+		} else {
+			switch [lindex $Values($Values(Type),comments,languages) 0] {
+				all - none	{ set languages {} }
+				default		{ set languages [lrange $Values(tex,comments,languages) 1 end] }
+			}
+		}
+	}
 
 	switch $Values(Type) {
 		scid - scidb {
@@ -3202,7 +3346,6 @@ if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} {
 				append preamble "}\n"
 			}
 
-			set options 0
 			set flags 0
 
 			switch $Values(tex,diagram,perspective) {
@@ -3227,16 +3370,7 @@ if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} {
 			if {$Values(tex,nag,all)} {
 				set options [expr {$options | [Pow2 $Options(annotation_map_all)]}]
 			}
-			if {[lindex $Values(tex,comments,languages) 0 0] eq "all"} {
-				set options [expr {$options | [Pow2 $Options(comment_all)]}]
-			}
 			set options [expr {$options | [Pow2 $Options(moves_notation_$Values(tex,moves,notation))]}]
-
-			switch [lindex $Values(tex,comments,languages) 0 0] {
-				all - none	{ set languages {} }
-				default		{ set languages [lrange $Values(tex,comments,languages) 1 end] }
-			}
-			set significant [lindex $Values(tex,comments,languages) 0 1]
 
 			foreach pair $Values(tex,nag,mapping) {
 				lassign $pair from to
@@ -3269,6 +3403,7 @@ if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} {
 					-flags $Info($Values(Type),flags) \
 					-mode $mode \
 					-encoding $encoding \
+					-languages $languages \
 					;
 			}
 
@@ -3283,7 +3418,6 @@ if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} {
 					$options \
 					$nags \
 					$languages \
-					$significant \
 					[namespace current]::Trace_ \
 					;
 			}
@@ -3318,6 +3452,7 @@ if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} {
 						$encoding \
 						$excludeGamesWithIllegalMoves \
 						$tagList \
+						$languages \
 					]
 				}
 			}
@@ -3335,7 +3470,6 @@ if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} {
 					$options \
 					$nags \
 					$languages \
-					$significant \
 					[namespace current]::Trace_ \
 				]
 			}

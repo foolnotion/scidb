@@ -628,10 +628,16 @@ Decoder::decodeVariation(Consumer& consumer, ByteStream& data, ByteStream& text)
 						case token::Comment:
 							{
 								uint8_t flag = data.get();
+								unsigned langFlags = 0;
+
+								if (flag & comm::Ante_Eng)
+									langFlags |= i18n::English;
+								if (flag & comm::Ante_Oth)
+									langFlags |= i18n::Other_Lang;
 
 								buf.clear();
 								text.get(buf);
-								comment.swap(buf, bool(flag & comm::Ante_Eng), bool(flag & comm::Ante_Oth));
+								comment.swap(buf, langFlags);
 								consumer.putTrailingComment(comment);
 								break;
 							}
@@ -707,19 +713,29 @@ Decoder::decodeVariation(Consumer& consumer, ByteStream& data, ByteStream& text)
 				case token::Comment:
 				{
 					uint8_t flag = data.get();
+					unsigned langFlags = 0;
+
+					M_ASSERT(flag & (comm::Ante | comm::Post));
+
+					if (flag & comm::Ante_Eng)
+						langFlags |= i18n::English;
+					if (flag & comm::Ante_Oth)
+						langFlags |= i18n::Other_Lang;
+
+					// XXX design problem: we need language flags for every comment
 
 					if (flag & comm::Ante)
 					{
 						buf.clear();
 						text.get(buf);
-						preComment.swap(buf, bool(flag & comm::Ante_Eng), bool(flag & comm::Ante_Oth));
+						preComment.swap(buf, langFlags);
 					}
 
 					if (flag & comm::Post)
 					{
 						buf.clear();
 						text.get(buf);
-						comment.swap(buf, bool(flag & comm::Post_Eng), bool(flag & comm::Post_Oth));
+						comment.swap(buf, langFlags);
 					}
 
 					hasNote = true;
@@ -765,6 +781,7 @@ Decoder::skipEndOfVariation(Consumer& consumer, ByteStream& data, ByteStream& te
 				break;
 
 			case token::Comment:
+				buf.clear();
 				text.get(buf);
 				data.skip(1);
 				m_strm.skip(1);
@@ -815,6 +832,21 @@ Decoder::decodeRun(unsigned count, Consumer& consumer)
 
 
 void
+Decoder::collectLanguages(LanguageSet& langs, ByteStream text)
+{
+	mstl::string buf;
+
+	while (text.remaining())
+	{
+		buf.clear();
+		text.get(buf);
+		Comment comment(buf, i18n::None);
+		comment.collectLanguages(langs);
+	}
+}
+
+
+void
 Decoder::decodeTextSection(MoveNode* node, ByteStream& text)
 {
 	for ( ; node; node = node->next())
@@ -825,18 +857,26 @@ Decoder::decodeTextSection(MoveNode* node, ByteStream& text)
 			{
 				mstl::string	buf;
 				Comment			comment;
+				unsigned			langFlags(0);
+
+				// XXX design problem: we need language flags for every comment
+
+				if (flag & comm::Ante_Eng)
+					langFlags |= i18n::English;
+				if (flag & comm::Ante_Oth)
+					langFlags |= i18n::Other_Lang;
 
 				if (flag & comm::Ante)
 				{
 					text.get(buf);
-					comment.swap(buf, bool(flag & comm::Ante_Eng), bool(flag & comm::Ante_Oth));
+					comment.swap(buf, langFlags);
 					node->setComment(comment, move::Ante);
 				}
 
 				if (flag & comm::Post)
 				{
 					text.get(buf);
-					comment.swap(buf,  bool(flag & comm::Post_Eng), bool(flag & comm::Post_Oth));
+					comment.swap(buf, langFlags);
 					node->setComment(comment, move::Post);
 				}
 			}
@@ -973,10 +1013,13 @@ Decoder::doDecoding(db::Consumer& consumer, TagSet& tags)
 
 	if (flags & flags::TextSection)
 	{
-		unsigned size = ByteStream::uint24(dataSection);
+		Consumer::LanguageSet langs;
+		unsigned size(ByteStream::uint24(dataSection));
 
 		text.setup(dataSection + 3, size);
 		data.setup(text.end(), m_strm.end());
+		collectLanguages(langs, text);
+		consumer.setUsedLanguages(mstl::move(langs));
 	}
 	else
 	{

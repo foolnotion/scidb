@@ -110,7 +110,7 @@ array set Colors {
 	lite:switcher,hidden:background		#ebf4f5
 	lite:switcher,hidden:foreground		black
 	lite:switcher,emph:foreground			darkgreen
-	lite:switcher,drop:background			LemonChiffon
+	lite:switcher,drop:background			#98c187
 	lite:switcher,prop:background			#aee239
 
 	lite:fsbox,menu:headerbackground		#ffdd76

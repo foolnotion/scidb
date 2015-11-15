@@ -2356,6 +2356,9 @@ TreeSeeCmd(
 
 	/* Scroll vertically a minimal amount. */
 	} else if ((C2Wy(y) > maxY) || (C2Wy(y + h) <= minY) || (h <= visHeight)) {
+//////////////////////////////////////////////////////////////////////
+// Problem: Tk_Height(tree->tkwin) is 1
+//////////////////////////////////////////////////////////////////////
 		if ((C2Wy(y) < minY) || (h > visHeight)) {
 			index = Increment_FindY(tree, y);
 			offset = Increment_ToOffsetY(tree, index);

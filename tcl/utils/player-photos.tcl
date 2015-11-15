@@ -62,6 +62,7 @@ set Message(timeout)				"HTTP timeout occurred. Possibly the file server is curr
 set Message(crcerror)			"Checksum error occurred. Possibly the file server is currently in maintenance mode."
 set Message(maintenance)		"Photo file server maintenance is currently in progress."
 set Message(notfound)			"Download aborted because photo file server maintenance is currently in progress."
+set Message(noreply)				"Server is not replying."
 set Message(aborted)				"User has aborted download."
 set Message(killed)				"Unexpected termination of download. The sub-process has died."
 
@@ -497,7 +498,7 @@ puts "ProcessUpdate: $data"
 			::dialog::error -parent $parent -message $msg
 		}
 
-		httperr - httpcode - timeout - crcerror - noconnect - notfound {
+		httperr - httpcode - timeout - crcerror - noconnect - notfound - noreply {
 			set msg $mc::Message($reason)
 			if {[string match *%s* $msg]} { set msg [format $msg $arg] }
 			LogProgress error "$msg ([::locale::currentTime])"

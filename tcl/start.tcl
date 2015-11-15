@@ -387,6 +387,26 @@ proc require {myNamespace requiredNamespaces} {
 	}
 }
 
+
+proc lremove {list elem} {
+	set result {}
+	foreach k $list {
+		if {$k ne $elem} { lappend result $k }
+	}
+	return $result
+}
+
+
+proc lsubst {list elem arg} {
+	upvar $list l
+	set result {}
+	foreach k $l {
+		if {$k eq $elem} { lappend result $arg } else { lappend result $k }
+	}
+	set l $result
+	return $result
+}
+
 namespace eval util {
 namespace eval mc {
 

@@ -28,11 +28,11 @@
 
 namespace db {
 
-inline bool MoveNode::atLineStart() const					{ return m_prev == 0 || m_prev->m_next != this; }
-inline bool MoveNode::atLineEnd() const					{ return m_next == 0; }
-inline bool MoveNode::isBeforeLineEnd() const			{ return m_next != 0; }
-inline bool MoveNode::isOneBeforeLineEnd() const		{ return m_next != 0 && m_next->m_next == 0; }
-inline bool MoveNode::isAfterLineStart() const			{ return m_prev != 0 && m_prev->m_next == this; }
+inline bool MoveNode::atLineStart() const					{ return !m_prev || m_prev->m_next != this; }
+inline bool MoveNode::atLineEnd() const					{ return !m_next; }
+inline bool MoveNode::isBeforeLineEnd() const			{ return m_next; }
+inline bool MoveNode::isOneBeforeLineEnd() const		{ return m_next && m_next->m_next == 0; }
+inline bool MoveNode::isAfterLineStart() const			{ return m_prev && m_prev->m_next == this; }
 inline bool MoveNode::hasAnyComment() const				{ return m_flags & (HasComment | HasPreComment); }
 inline bool MoveNode::hasMark() const						{ return m_flags & HasMark; }
 inline bool MoveNode::hasAnnotation() const				{ return m_flags & HasAnnotation; }
@@ -63,7 +63,7 @@ inline Comment const& MoveNode::comment(move::Position position) const { return 
 
 inline void MoveNode::setMove(Move const& move)					{ m_move = move; }
 inline void MoveNode::setMoveNumber(unsigned no)				{ m_moveNumber = no; }
-inline void MoveNode::setComment(move::Position position)		{ m_flags |= (1 << position); }
+inline void MoveNode::setComment(move::Position position)	{ m_flags |= (1 << position); }
 inline void MoveNode::unsetComment(move::Position position)	{ m_flags &= ~(1 << position); }
 inline void MoveNode::setFlag(Flag flag)							{ m_flags |= flag; }
 

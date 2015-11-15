@@ -122,9 +122,16 @@ Consumer::Codecs::add(Codec* codec)
 Consumer::Consumer(	format::Type srcFormat,
 							Codecs const& codecs,
 							TagBits const& allowedTags,
-							bool allowExtraTags)
+							bool allowExtraTags,
+							LanguageList const* languages,
+							unsigned significantLanguages)
 	:Encoder(m_stream, variant::Normal)
-	,db::InfoConsumer(srcFormat, sys::utf8::Codec::utf8(), allowedTags, allowExtraTags)
+	,db::InfoConsumer(srcFormat,
+							sys::utf8::Codec::utf8(),
+							allowedTags,
+							allowExtraTags,
+							languages,
+							significantLanguages)
 	,m_stream(m_buffer, sizeof(m_buffer))
 	,m_codecs(codecs)
 	,m_plyCount(0)
@@ -223,9 +230,9 @@ Consumer::writeComment(Byte position, Comment const& comment)
 
 	if (!comment.isEmpty())
 	{
-		if (comment.engFlag())
+		if (comment.langFlags() & i18n::English)
 			flag |= comm::Ante_Eng;
-		if (comment.othFlag())
+		if (comment.langFlags() & i18n::Other_Lang)
 			flag |= comm::Ante_Oth;
 		flag |= position;
 

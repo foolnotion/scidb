@@ -129,12 +129,15 @@ public:
 									TagSet& tags,
 									GameInfo const& info,
 									unsigned gameIndex) override;
-	save::State doDecoding(db::Consumer& consumer, util::ByteStream& strm, TagSet& tags) override;
+	save::State doDecoding(	db::Consumer& consumer,
+									util::ByteStream& strm,
+									TagSet& tags) override;
 	void doDecoding(GameData& data, GameInfo& info, unsigned gameIndex, mstl::string* encoding) override;
 
 	void doEncoding(	util::ByteStream& strm,
 							GameData const& data,
 							Signature const& signature,
+							unsigned langFlags,
 							TagBits const& allowedTags,
 							bool allowExtraTags) override;
 	db::Consumer* getConsumer(format::Type srcFormat) override;

@@ -58,7 +58,9 @@ public:
 				Codec& codec,
 				mstl::string const& encoding,
 				TagBits const& allowedTags,
-				bool allowExtraTags);
+				bool allowExtraTags,
+				LanguageList const* languages = nullptr,
+				unsigned significantLanguages = 0);
 
 	format::Type format() const override;
 

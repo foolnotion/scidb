@@ -146,7 +146,7 @@ public:
 	unsigned importGames(db::Producer& producer, util::Progress& progress);
 	/// Import whole database.
 	unsigned importGames(db::Database const& src,
-								unsigned& illegalRejected,
+								unsigned* illegalRejected,
 								db::Log& log,
 								util::Progress& progress);
 	/// Close underlying database

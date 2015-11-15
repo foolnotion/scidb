@@ -371,6 +371,7 @@
 ::util::photos::mc::Message(crcerror)			"Error de suma de chequeo. Probablemente el servidor de archivos se encuentra actualmente en modo mantenimiento."
 ::util::photos::mc::Message(maintenance)		"Actualmente se encuentra en curso un mantenimiento del servidor de archivos de fotos."
 ::util::photos::mc::Message(notfound)			"Descarga abortada debido a que se encuentra en curso actualmente un mantenimiento del servidor de archivos de fotos."
+::util::photos::mc::Message(noreply)			"Server is not replying." ;# NEW
 ::util::photos::mc::Message(aborted)			"El usuario abortó la descarga."
 ::util::photos::mc::Message(killed)				"Cese inesperado de la descarga. Terminó el sub-proceso."
 
@@ -1698,7 +1699,8 @@
 ::export::mc::IncludeAllTags				"Incluir todas las etiquetas"
 ::export::mc::ExtraTags						"Todas las etiquetas extra"
 ::export::mc::NoComments					"Sin comentarios"
-::export::mc::Significant					"Significante"
+::export::mc::AllLanguages					"All languages" ;# NEW
+::export::mc::SelectLanguages				"Selected languages" ;# NEW
 ::export::mc::LanguageSelection			"Selección de idioma"
 ::export::mc::MapTo							"Mapear a"
 ::export::mc::MapNagsToComment			"Mapear anotaciones a los comentarios"
@@ -1707,6 +1709,9 @@
 ::export::mc::UseColumnStyle				"Usar estilo de columas"
 ::export::mc::MainlineStyle				"Estilo de Lúnea principal"
 ::export::mc::HideVariations				"Ocultar variaciones"
+::export::mc::GameDoesNotHaveComments	"This game does not contain comments." ;# NEW
+
+::export::mc::LanguageSelectionDescr	"The checkbox (right side from combo box) has the meaning 'significant'.\n\nLanguages marked as 'significant' will always be exported.\n\nIf the game includes none of the languages marked as 'significant' then the first available language will be exported." ;# NEW
 
 ::export::mc::PdfFiles						"Archivos PDF"
 ::export::mc::HtmlFiles						"Archivos HTML"

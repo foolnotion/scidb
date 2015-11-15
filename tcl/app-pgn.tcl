@@ -173,6 +173,7 @@ proc build {parent width height} {
 
 	for {set i 0} {$i < 9} {incr i} {
 		set pgn [::pgn::setup::buildText $edit.f$i editor]
+		$pgn mark gravity insert left
 		bind $pgn <Button-3> [namespace code [list PopupMenu $edit $i]]
 		bind $pgn <Leave> [namespace code [list HidePosition $i $pgn]]
 		$panes add $edit.f$i
@@ -190,6 +191,17 @@ proc build {parent width height} {
 	set Vars(diagram:show) 0
 	set Vars(diagram:state) 0
 	set Vars(diagram:caps) 0
+	set Vars(old-editor) 0
+	set Vars(indentbackground) {}
+
+	set steadyMarks 0
+	catch { set steadyMarks [$Vars(pgn:0) cget -steadymarks] }
+	if {$steadyMarks} {
+		# The revised version of tk::text has more useful features and bugfixes.
+		set Vars(indentbackground) {-indentbackground 1}
+	} else {
+		set Vars(old-editor) 1
+	}
 
 	::pgn::setup::setupStyle editor {0 1 2 3 4 5 6 7 8}
 #	::scidb::game::undoSetup 20 9999
@@ -310,6 +322,22 @@ proc build {parent width height} {
 }
 
 
+proc languages {} {
+	variable Vars
+
+	set langSet {}
+	foreach key [array names Vars lang:active:*] {
+		if {$Vars($key)} {
+			set lang [lindex [split $key :] 2]
+			if {$lang eq "xx"} { set lang "" }
+			lappend langSet $lang
+		}
+	}
+
+	return $langSet
+}
+
+
 proc refresh {{regardFontSize no}} {
 	variable Vars
 
@@ -365,6 +393,7 @@ proc add {position base variant tags {at -1}} {
 		::gamebar::add $Vars(gamebar) $position $tags
 	}
 	ResetGame $Vars(pgn:$position) $position $tags
+	::scidb::game::switch $position
 }
 
 
@@ -391,17 +420,28 @@ proc resetGoto {w position} {
 	variable Vars
 	variable ::pgn::editor::Colors
 
+	if {![info exists Vars(current:$position)]} {
+		return
+	}
+
 	if {[llength $Vars(current:$position)]} {
-		$w tag configure $Vars(current:$position) -background [::colors::lookup $Colors(background)]
+		$w tag configure $Vars(current:$position) \
+			-background [::colors::lookup $Colors(background)] \
+			{*}[MoveForeground $Vars(current:$position)] \
+			;
 		set Vars(current:$position) {}
 	}
 
 	foreach k $Vars(next:$position) {
-		$w tag configure $k -background [::colors::lookup $Colors(background)] }
+		$w tag configure $k -background [::colors::lookup $Colors(background)] {*}[MoveForeground $k] 
+	}
 	set Vars(next:$position) {}
 
 	if {[llength $Vars(previous:$position)]} {
-		$w tag configure $Vars(previous:$position) -background [::colors::lookup $Colors(background)]
+		$w tag configure $Vars(previous:$position) \
+			-background [::colors::lookup $Colors(background)] \
+			{*}[MoveForeground $Vars(previous:$position)] \
+			;
 		set Vars(previous:$position) {}
 	}
 }
@@ -577,7 +617,8 @@ proc openMarksPalette {{position -1} {key {}}} {
 
 
 proc scroll {args} {
-	::widget::textLineScroll [set [namespace current]::Vars(pgn:[::scidb::game::current])] scroll {*}$args
+	::widget::textLineScroll \
+		[set [namespace current]::Vars(pgn:[::scidb::game::current])] scroll {*}$args
 }
 
 
@@ -728,6 +769,7 @@ proc InitScratchGame {} {
 	variable Vars
 
 	::scidb::game::new 9
+	::scidb::game::langSet 9 [languages]
 	::scidb::game::switch 9
 
 	set Vars(current:9) {}
@@ -754,11 +796,30 @@ proc StateChanged {position modified} {
 }
 
 
-proc See {position w key succKey} { ;# NOTE: we do not use succKey
+proc MoveForeground {key} {
+	variable ::pgn::editor::Colors
+
+	if {![string match {*.*.*} $key]} {
+		return {}
+	}
+	return [list -foreground [::colors::lookup $Colors(foreground:variation)]]
+}
+
+
+proc See {position {key ""} {succKey ""}} {
 	variable Vars
 	variable CharLimit
 
 	if {!$Vars(see:$position)} { return }
+
+	if {[string length $key] == 0} {
+		set key $Vars(current:$position)
+
+ 		if {[string length $succKey] == 0} {
+ 			set succKey $Vars(successor:$position)
+ 		}
+	}
+
 	if {[string length $key] == 0} { return }
 
 	if {$Vars(start:$position)} {
@@ -766,9 +827,16 @@ proc See {position w key succKey} { ;# NOTE: we do not use succKey
 		set Vars(start:$position) 0
 	}
 
+	set w $Vars(pgn:$position)
+
 	if {$key eq [::scidb::game::position startKey]} {
 		$w see 1.0
 		return
+	}
+
+	# TODO experimental
+	if {[string length $succKey]} {
+		$w see $succKey
 	}
 
 	set firstLine [$w index m-start]
@@ -839,7 +907,7 @@ proc UpdateScrollbar {} {
 	::widget::textLineScroll $Vars(pgn:0) moveto 0
 	set position $Vars(index)
 	if {$position >= 0} {
-		See $position $Vars(pgn:$position) $Vars(current:$position) $Vars(successor:$position)
+		See $position
 	}
 }
 
@@ -851,12 +919,6 @@ proc GameBarEvent {action position} {
 	switch $action {
 		removed {
 			::game::release $position
-
-			set w $Vars(pgn:$position)
-			$w tag configure $Vars(current:$position) -background [::colors::lookup $Colors(background)]
-			foreach k $Vars(next:$position) {
-				$w tag configure $k -background [::colors::lookup $Colors(background)]
-			}
 			unset -nocomplain Vars(lang:set:$position)
 
 			if {[::gamebar::empty? $Vars(gamebar)]} {
@@ -894,18 +956,8 @@ proc ToggleLanguage {lang} {
 
 
 proc SetLanguages {position} {
-	variable Vars
-
 	if {$position <= 10} {
-		set langSet {}
-		foreach key [array names Vars lang:active:*] {
-			if {$Vars($key)} {
-				set lang [lindex [split $key :] 2]
-				if {$lang eq "xx"} { set lang "" }
-				lappend langSet $lang
-			}
-		}
-		after idle [list ::scidb::game::langSet $position $langSet]
+		after idle [list ::scidb::game::langSet $position [languages]]
 	}
 }
 
@@ -913,7 +965,7 @@ proc SetLanguages {position} {
 proc AddLanguageButton {lang} {
 	variable Vars
 
-	if {$lang eq "xx"} { return }
+	if {$lang eq "xx" || [string length $lang] == 0} { return }
 	if {![info exists Vars(lang:active:$lang)]} {
 		set Vars(lang:active:$lang) 0
 	}
@@ -934,19 +986,15 @@ proc UpdateLanguages {position languageSet} {
 
 	if {$position >= 9} { return }
 
-	set languages {}
-	foreach lang $languageSet {
-		if {[string length $lang] == 0} { set lang "xx" }
-		lappend languages $lang
-	}
+	set languageSet [lremove $languageSet ""]
 
-	if {$Vars(lang:set) eq $languages} {
+	if {$Vars(lang:set) eq $languageSet} {
 		set Vars(lang:set:$position) $Vars(lang:set)
 		return
 	}
 
 	if {[llength $Vars(lang:set:$position)]} {
-		foreach lang $languages {
+		foreach lang $languageSet {
 			if {$lang ni $Vars(lang:set:$position)} {
 				set Vars(lang:active:$lang) 1
 			}
@@ -954,8 +1002,8 @@ proc UpdateLanguages {position languageSet} {
 		SetLanguages $position
 	}
 
-	set Vars(lang:set) $languages
-	set Vars(lang:set:$position) $languages
+	set Vars(lang:set) $languageSet
+	set Vars(lang:set:$position) $languageSet
 	set langButtons [array names Vars lang:button:*]
 	
 	foreach button $langButtons {
@@ -963,7 +1011,7 @@ proc UpdateLanguages {position languageSet} {
 		unset Vars($button)
 	}
 
-	foreach lang $languages {
+	foreach lang $languageSet {
 		AddLanguageButton $lang
 	}
 }
@@ -998,21 +1046,6 @@ proc Edit {position ns {key {}} {pos {}} {lang {}}} {
 }
 
 
-proc Dump {w} {
-	set dump [$w dump -all 1.0 end]
-	foreach {type attr pos} $dump {
-		if {$attr ne "current" && $attr ne "insert"} {
-			if {$attr eq "\n"} { set attr "\\n" }
-			switch $type {
-				tagon - tagoff {}
-				default { puts "$pos: $type $attr" }
-			}
-		}
-	}
-	puts "==============================================="
-}
-
-
 proc ConfigureEditor {} {
 	variable Vars
 
@@ -1032,7 +1065,6 @@ proc ConfigureEditor {} {
 	set Vars(virgin:10) 1
 	set Vars(result:10) ""
 	set Vars(header:10) ""
-	set Vars(last:10) ""
 	set Vars(start:10) 1
 	set Vars(tags:10) {}
 	set Vars(after:10) {}
@@ -1050,18 +1082,44 @@ proc ConfigureEditor {} {
 }
 
 
-proc DoLayout {position data {context editor} {w {}}} {
+proc Dump {w type attr pos} {
+	switch $type {
+		text {
+			if {[string index $attr end] eq "\n"} {
+				set attr [string replace $attr end-1 end "\\n"]
+			}
+		}
+		mark {
+			set attr "${attr} ([$w mark gravity $attr])"
+		}
+	}
+	puts "$pos: $type $attr"
+}
+
+
+proc DoLayout {position content {context editor} {w {}}} {
 	variable ::pgn::${context}::Options
 	variable Vars
+	global env
 
 	if {[llength $w] == 0} { set w $Vars(pgn:$position) }
 
-#set clock0 [clock milliseconds]
-	foreach node $data {
+	if {[llength $content] > 1} {
+		if {[info exists env(SCIDB_PGN_CLOCK)]} {
+			set clock0 [clock milliseconds]
+		}
+	}
+
+	set trace [info exists env(SCIDB_PGN_TRACE)]
+
+	foreach node $content {
+		if {$trace} {
+			puts $node
+		}
+
 		switch [lindex $node 0] {
 			start {
 				$w configure -state normal
-				set Vars(marks) {}
 			}
 
 			languages {
@@ -1091,23 +1149,28 @@ proc DoLayout {position data {context editor} {w {}}} {
 					replace {
 						lassign $args unused level removePos insertMark
 						$w delete $removePos $insertMark
-						$w mark gravity $removePos left
+						$w mark set indent:start $insertMark
+						$w mark gravity indent:start left
 						$w mark gravity $insertMark right
 						$w mark set current $insertMark
-						set insertPos [$w index $insertMark]
 					}
 
 					insert {
 						lassign $args unused level insertMark
-						$w mark gravity $insertMark right
+						$w mark set indent:start $insertMark
+						$w mark gravity indent:start left
+						$w mark gravity $insertMark left
 						$w mark set current $insertMark
-						set insertPos [$w index $insertMark]
+						$w mark gravity $insertMark right
 					}
 
 					finish {
 						set level [lindex $args 1]
-						Indent $context $w $level $insertPos
+						Indent $context $w $level indent:start
+#						$w mark unset indent:start
+						$w mark gravity current left
 						Mark $w $insertMark
+						$w mark gravity current right
 					}
 
 					remove {
@@ -1115,16 +1178,9 @@ proc DoLayout {position data {context editor} {w {}}} {
 					}
 
 					clear {
-						$w delete m-start m-0
-						# delete superfluous tags, this will speed up the text widget
-						set tags {}
-						foreach tag [$w tag names] {
-							if {[string match {m-[0-9]*} $tag]} { lappend tags $tag }
-						}
-						if {[llength $tags]} {
-							$w tag delete {*}$tags
-						}
-						$w insert m-0 "\u200b"
+ 						$w delete m-start m-0
+						$w insert m-0 \n
+						set Vars(result:$position) ""
 					}
 
 					marks	{ [namespace parent]::board::updateMarks [::scidb::game::query marks] }
@@ -1153,6 +1209,7 @@ proc DoLayout {position data {context editor} {w {}}} {
 				if {$Options(show:result)} {
 					set reason [::scidb::game::query $position termination]
 					set resultList [list {*}[lrange $node 1 end] $reason $Options(spacing:paragraph)]
+					set stm [lindex $node 2]
 
 					if {$Vars(result:$position) != $resultList} {
 						if {[string length $Vars(last:$position)]} {
@@ -1160,13 +1217,32 @@ proc DoLayout {position data {context editor} {w {}}} {
 						}
 						$w mark gravity m-0 left
 						$w mark set current m-0
-						set prevChar [$w get current-1c]
-						$w delete current end
+						set newline ""
+						if {$Vars(old-editor)} {
+							set line [lindex [split [$w index current] .] 0]
+							$w delete current end
+							if {[lindex [split [$w index current] .] 0] < $line} {
+								# NOTE: the old text editor has a severe bug:
+								# If the char after <pos1> is a newline, the command
+								# '<text> delete <pos1> <pos2>' will also delete one
+								# newline before <pos1>. We have to catch this case.
+								set newline \n
+							}
+						} else {
+							$w delete current end
+						}
 						set variant [::scidb::game::query $position variant]
 						set result [::browser::makeResult {*}[lrange $resultList 0 end-1] $variant]
 						if {[llength $result]} {
 							lassign $result result reason
-							if {$Options(spacing:paragraph)} { $w insert current \n }
+							if {$Options(spacing:paragraph)} {
+								$w insert current \n\n
+							} elseif {$Options(style:column)
+									&& ([string length $reason] > 0 || $stm ne "black")} {
+								$w insert current \n
+							} elseif {[string length $reason] > 0} {
+								$w insert current \n
+							}
 							if {[string length $result]} {
 								$w insert current $result result
 							}
@@ -1174,31 +1250,22 @@ proc DoLayout {position data {context editor} {w {}}} {
 								if {[string length $result]} { $w insert current " " }
 								$w insert current "($reason)"
 							}
-						} else {
-							# NOTE: We need a blind character between the marks because
-							# the editor is permuting consecutive marks.
-							$w insert current "\u200b"
+						} elseif {$Vars(old-editor)} {
+							# NOTE: We need a blind character between each mark because
+							# the editor is shuffling consecutive marks.
+ 							$w insert current "\u200b"
 						}
 						$w mark gravity m-0 right
-						# NOTE: the text editor has a severe bug:
-						# If the char after <pos1> is a newline, the command
-						# '<text> delete <pos1> <pos2>' will also delete one
-						# newline before <pos1>. We have to catch this case:
-						if {$prevChar eq "\n"} { $w insert m-0 \n }
+						$w insert m-0 $newline ;# bugfix for old editor
 						if {[string length $Vars(last:$position)]} {
 							$w mark gravity $Vars(last:$position) right
 						}
 						set Vars(result:$position) $resultList
 					}
-					# NOTE: very slow!!
-#					foreach mark $Vars(marks) { $w mark gravity $mark right }
 					$w mark gravity m-0 right
 					set Vars(lastrow:$position) [lindex [split [$w index end] .] 0]
-				} else {
-					set prevChar [$w get current-1c]
-					if {$prevChar eq "\n"} {
-						$w delete current-1c end
-					}
+				} elseif {[$w get current-1c] eq "\n"} {
+					$w delete current-1c end
 				}
 
 				$w configure -state disabled
@@ -1240,9 +1307,22 @@ proc DoLayout {position data {context editor} {w {}}} {
 		}
 	}
 
+	catch { $w tag raise symbol }
+	catch { $w tag raise symbolb }
+
 	after idle [namespace code UpdateButtons]
-#set clock1 [clock milliseconds]
-#puts "clock: [expr {$clock1 - $clock0}]"
+
+	if {[llength $content] > 1} {
+		if {[info exists env(SCIDB_PGN_DUMP)]} {
+			puts "==============================================="
+			puts [$w dump -all -command [list Dump $w] 1.0 end]
+			puts "==============================================="
+		}
+		if {[info exists env(SCIDB_PGN_CLOCK)]} {
+			set clock1 [clock milliseconds]
+			puts "clock: [expr {$clock1 - $clock0}]"
+		}
+	}
 }
 
 
@@ -1273,33 +1353,42 @@ proc ProcessGoto {position key succKey} {
 	if {$Vars(current:$position) ne $key} {
 		::scidb::game::variation unfold
 		foreach k $Vars(next:$position) {
-			$w tag configure $k -background [::colors::lookup $Colors(background)]
+			$w tag configure $k -background [::colors::lookup $Colors(background)] {*}[MoveForeground $k]
 		}
 		set Vars(next:$position) [::scidb::game::next keys $position]
 		if {$Vars(active:$position) eq $key} { $w configure -cursor {} }
 		if {[llength $Vars(previous:$position)]} {
 			$w tag configure $Vars(previous:$position) \
 				-background [::colors::lookup $Colors(background)] \
+				{*}[MoveForeground $Vars(previous:$position)] \
 				;
 		}
-		$w tag configure $key -background [::colors::lookup $Colors(background:current)]
+		$w tag configure $key \
+			-background [::colors::lookup $Colors(background:current)] \
+			-foreground black \
+			{*}$Vars(indentbackground) \
+			;
 		set Vars(current:$position) $key
 		set Vars(successor:$position) $succKey
 		if {[llength $Vars(previous:$position)]} {
-			See $position $w $key $succKey
+			See $position $key $succKey
 			if {$Vars(active:$position) eq $Vars(previous:$position)} {
 				EnterMove $position $Vars(previous:$position)
 			}
 		}
 		foreach k $Vars(next:$position) {
-			$w tag configure $k -background [::colors::lookup $Colors(background:nextmove)]
+			$w tag configure $k \
+				-background [::colors::lookup $Colors(background:nextmove)] \
+				-foreground black \
+				{*}$Vars(indentbackground) \
+				;
 		}
 		set Vars(previous:$position) $Vars(current:$position)
 		[namespace parent]::board::updateMarks [::scidb::game::query marks]
 		if {$position < 9} { ::annotation::update $key }
 	} elseif {$Vars(dirty:$position)} {
 		set Vars(dirty:$position) 0
-		See $position $w $key $succKey
+		See $position $key $succKey
 	}
 }
 
@@ -1352,15 +1441,13 @@ proc UpdateHeader {context position w data} {
 				$w insert current $::mc::VariantName($variant) opening
 			}
 		}
-
-		$w insert current "\n"
 	}
 
-	$w mark set m-start [$w index current]
+	$w mark set m-start current
 	$w mark gravity m-start left
 
 	if {$Vars(virgin:$position)} {
-		$w mark set m-0 [$w index current]
+		$w mark set m-0 current
 		$w mark gravity m-0 right
 	}
 
@@ -1374,11 +1461,12 @@ proc InsertMove {context position w level key data} {
 	variable Vars
 
 	if {[llength $data] == 0} {
-		# NOTE: We need a blind character between the marks because
-		# the editor is permuting consecutive marks.
-		# NOTE: Actually this case (empty data) should not happen.
-		if {$level == 0} { set main main } else { set main variation }
-		$w insert current "\u200b" $main
+		if {$Vars(old-editor)} {
+			# NOTE: We need a blind character between each mark because
+			# the editor is shuffling consecutive marks.
+			if {$level == 0} { set main main } else { set main variation }
+			$w insert current "\u200b" $main
+		}
 	}
 
 	set havePly 0
@@ -1406,23 +1494,31 @@ proc InsertMove {context position w level key data} {
 			}
 
 			space {
-				lassign $node _ space flag number
+				lassign $node _ space count number
 				set tag {}
 				switch $space {
-					")" { $w insert current " )" {variation bracket} }
-					"e" { $w insert current "\n"; $w insert current "<$mc::EmptyGame>" empty }
-					"s" { if {[$w index current] ne "1.1"} { $w insert current "\n" } }
+					")" {
+						if {$level != 1 || !$Options(spacing:paragraph)} {
+							$w insert current " )" {variation bracket}
+						} elseif {$Vars(old-editor)} {
+							# NOTE: We need a blind character between each mark because
+							# the editor is shuffling consecutive marks.
+							$w insert current "\u200b" $main
+						}
+					}
+
+					"e" { $w insert current "\n<$mc::EmptyGame>" empty }
+					"s" { $w insert current "\n" }
 					" " { $w insert current " " $main }
 
 					"]" {
-						if {$flag && $level > $Options(indent:max)} {
-							set txt "]"
-						} else {
-							# NOTE: We need a blind character between the marks because
-							# the editor is permuting consecutive marks.
-							set txt "\u200b"
+						if {$count == $number && $level > $Options(indent:max)} {
+							$w insert current "]" {variation bracket}
+						} elseif {$Vars(old-editor)} {
+							# NOTE: We need a blind character between each marks because
+							# the editor is shuffling consecutive marks.
+ 							$w insert current "\u200b" {variation bracket}
 						}
-						$w insert current $txt {variation bracket}
 					}
 
 					default {
@@ -1451,16 +1547,27 @@ proc InsertMove {context position w level key data} {
 								$w window create current -align center -window $img
 								bind $img <ButtonPress-1> [namespace code [list ToggleFold $w $key 0]]
 							}
-							$w insert current " )" {variation bracket}
+							if {$level != 1 || !$Options(spacing:paragraph)} {
+								$w insert current " )" {variation bracket}
+							} elseif {$Vars(old-editor)} {
+								# NOTE: We need a blind character between each mark because
+								# the editor is shuffling consecutive marks.
+								$w insert current "\u200b" $main
+							}
 						} elseif {[info exists collapse]} {
 							set tag fold:$key
 							if {$space eq "\["} {
-								if {$flag && $level > $Options(indent:max)} {
+								if {$count == $number && $level > $Options(indent:max)} {
 									$w insert current "\[" [list variation bracket $tag]
 								}
-								$w insert current "($number) " [list variation $tag numbering]
+								# TODO "-"
+								if {$number ne "-"} { set txt "($number)" } else { set txt "\u2022" }
+								$w insert current "$txt " [list variation $tag numbering]
+							} elseif {$level != 1 || !$Options(spacing:paragraph)} {
+								$w insert current "( " [list variation $tag bracket]
 							} else {
-								$w insert current "( " [list variation bracket $tag]
+								set txt [format "(%c) " [expr {96 + $number}]]
+								$w insert current $txt [list variation $tag numbering]
 							}
 							if {$position < 9} {
 								$w tag bind $tag <Any-Enter> +[namespace code [list EnterBracket $w $key]]
@@ -1469,10 +1576,12 @@ proc InsertMove {context position w level key data} {
 							}
 						} else {
 							if {$space eq "\["} {
-								if {$flag && $level > $Options(indent:max)} {
+								if {$count == $number && $level > $Options(indent:max)} {
 									$w insert current "\[" {variation bracket}
 								}
-								$w insert current "($number) " {variation numbering}
+								# TODO "-"
+								if {$number ne "-"} { set number "($number)" } else { set number "\u2022" }
+								$w insert current "$number " {variation numbering}
 							} else {
 								$w insert current "( " {variation bracket}
 							}
@@ -1562,7 +1671,7 @@ proc InsertDiagram {context position w level key data} {
 	foreach entry $data {
 		switch [lindex $entry 0] {
 			color { set color [lindex $entry 1] }
-			break { $w insert current "\n" $main }
+			break { $w insert current \n $main }
 
 			board {
 				set linespace [font metrics [$w cget -font] -linespace]
@@ -1736,6 +1845,7 @@ proc PrintComment {position w level key pos data} {
 						# bound to Enter/Leave events.
 						tk::label $img \
 							-background [::colors::lookup $Colors(background)] \
+							-height [font metrics [$w cget -font] -linespace] \
 							-borderwidth 0 \
 							-padx 0 \
 							-pady 0 \
@@ -1876,7 +1986,7 @@ proc PrintNumericalAnnotation {context position w level key nags isPrefix afterP
 			$w insert current "\u2005"
 		}
 		if {[string length $nag]} {
-			$w insert current $nag [list nag$value $nagTag $tag]
+			$w insert current $nag [list nag$value $nagTag {*}$tag]
 			if {$position < 9} {
 				$w tag bind $nagTag <Enter> [namespace code [list EnterAnnotation $w $nagTag]]
 				$w tag bind $nagTag <Leave> [namespace code [list LeaveAnnotation $w $nagTag]]
@@ -1891,8 +2001,6 @@ proc PrintNumericalAnnotation {context position w level key nags isPrefix afterP
 	if {$level == 0} { set main main } else { set main variation }
 	$w tag add $main $pos current
 	$w tag add nag $pos current
-	$w tag raise symbol
-	$w tag raise symbolb
 }
 
 
@@ -1941,10 +2049,9 @@ proc EditComment {position key pos lang} {
 proc Mark {w key} {
 	variable Vars
 
-	$w mark unset $key
-	$w mark set $key [$w index current]
+#	$w mark unset $key
+	$w mark set $key current
 	$w mark gravity $key left
-	lappend Vars(marks) $key
 }
 
 
@@ -1956,9 +2063,13 @@ proc EnterMove {position key {state 0}} {
 	set w $Vars(pgn:$position)
 
 	if {$Vars(current:$position) ne $key} {
-		$w tag configure $key -background [::colors::lookup $Colors(hilite:move)]
-		after cancel $Vars(after:$position)
-		set Vars(after:$position) [after 75 [namespace code [list ChangeCursor $position hand2]]]
+		$w tag configure $key \
+			-background [::colors::lookup $Colors(hilite:move)] \
+			-foreground black \
+			{*}$Vars(indentbackground) \
+			;
+		# after cancel $Vars(after:$position)
+		# set Vars(after:$position) [after 75 [namespace code [list ChangeCursor $position hand2]]]
 	}
 
 	set Vars(active:$position) $key
@@ -1979,14 +2090,14 @@ proc LeaveMove {position key} {
 
 	if {$Vars(current:$position) ne $key} {
 		if {$key in $Vars(next:$position)} {
-			set color $Colors(background:nextmove)
+			set background $Colors(background:nextmove)
 		} else {
-			set color $Colors(background)
+			set background $Colors(background)
 		}
-		set color [::colors::lookup $color]
-		$Vars(pgn:$position) tag configure $key -background $color
-		after cancel $Vars(after:$position)
-		set Vars(after:$position) [after 75 [namespace code [list ChangeCursor $position {}]]]
+		set background [::colors::lookup $background]
+		$Vars(pgn:$position) tag configure $key -background $background {*}[MoveForeground $key]
+		# after cancel $Vars(after:$position)
+		# set Vars(after:$position) [after 75 [namespace code [list ChangeCursor $position {}]]]
 	}
 }
 
@@ -2003,8 +2114,9 @@ proc ChangeCursor {position cursor} {
 
 proc EnterMark {w tag key} {
 	variable ::pgn::editor::Colors
+	variable Vars
 
-	$w tag configure $tag -background [::colors::lookup $Colors(hilite:move)]
+	$w tag configure $tag -background [::colors::lookup $Colors(hilite:move)] {*}$Vars(indentbackground)
 	::tooltip::show $w [string map {",," "," " " "\n"} [::scidb::game::query marks $key]]
 }
 
@@ -2136,7 +2248,9 @@ proc LeaveInfo {w position key} {
 
 proc EnterAnnotation {w tag} {
 	variable ::pgn::editor::Colors
-	$w tag configure $tag -background [::colors::lookup $Colors(hilite:move)]
+	variable Vars
+
+	$w tag configure $tag -background [::colors::lookup $Colors(hilite:move)] {*}$Vars(indentbackground)
 }
 
 
@@ -2178,23 +2292,20 @@ proc ResetGame {w position {tags {}}} {
 	variable ::pgn::editor::Colors
 
 	$w configure -state normal
-	$w delete 1.0 end
-#	foreach tag [$Vars(pgn:$position) tag names] {
-#		if {[string match m-* $tag]} { $w tag delete $tag }
-#	}
-	$w edit reset
+
+	if {[catch { $w clear }]} {
+		$w delete 1.0 end
+		# delete superfluous tags, this will speed up the text widget
+		$w tag delete {*}[$w tag names]
+		$w edit reset
+	}
+
 	$w configure -state disabled
+	::pgn::setup::configureText [::pgn::setup::getPath $w]
 
 	if {$position <= 9} {
 		::gamebar::activate $Vars(gamebar) $position
 		Raise $position
-	}
-
-	if {[info exists Vars(next:$position)]} {
-		foreach k $Vars(next:$position) {
-			$w tag configure $k -background [::colors::lookup $Colors(background)]
-		}
-		$w tag configure $Vars(current:$position) -background [::colors::lookup $Colors(background)]
 	}
 
 	set Vars(current:$position) {}
@@ -2931,7 +3042,7 @@ proc FoldVariations {flag} {
 	set position $Vars(position)
 	if {$position == -1} { return }
 	::scidb::game::variation fold $flag
-	See $position $Vars(pgn:$position) $Vars(current:$position) $Vars(successor:$position)
+	See $position
 }
 
 

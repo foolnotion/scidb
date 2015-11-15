@@ -31,6 +31,7 @@
 #include "db_move.h"
 #include "db_comment.h"
 #include "db_game_info.h"
+#include "db_pgn_aquarium.h"
 
 #include "sys_utf8.h"
 #include "sys_utf8_codec.h"
@@ -46,9 +47,6 @@
 using namespace db;
 
 
-static Comment const lostResult("The game was declared lost for both players", false, false);
-
-
 static void
 appendNag(mstl::string& str, nag::ID nag)
 {
@@ -57,8 +55,12 @@ appendNag(mstl::string& str, nag::ID nag)
 }
 
 
-Writer::Writer(format::Type srcFormat, unsigned flags, mstl::string const& encoding)
-	:Consumer(srcFormat, encoding, TagBits(true), true)
+Writer::Writer(format::Type srcFormat,
+					unsigned flags,
+					mstl::string const& encoding,
+					LanguageList const* languages,
+					unsigned significantLanguages)
+	:Consumer(srcFormat, encoding, TagBits(true), true, languages, significantLanguages)
 	,m_flags(flags)
 	,m_count(0)
 	,m_level(0)
@@ -134,7 +136,7 @@ Writer::sendPrecedingComment(Comment const& comment, Annotation const& annotatio
 	{
 		if (hasDiagram && test(Flag_Use_ChessBase_Format))
 		{
-			writePrecedingComment(Annotation(), Comment("#", false, false), MarkSet());
+			writePrecedingComment(Annotation(), Comment("#", i18n::None), MarkSet());
 			m_needSpace = true;
 
 			if (!comment.isEmpty() || !marks.isEmpty())
@@ -152,7 +154,7 @@ Writer::sendPrecedingComment(Comment const& comment, Annotation const& annotatio
 	else if (hasDiagram)
 	{
 		if (test(Flag_Use_ChessBase_Format))
-			writePrecedingComment(Annotation(), Comment("#", false, false), MarkSet());
+			writePrecedingComment(Annotation(), Comment("#", i18n::None), MarkSet());
 		else
 			writePrecedingComment(annotation, Comment(), MarkSet());
 
@@ -476,7 +478,11 @@ Writer::endMoveSection(result::ID result)
 
 	if (result == result::Lost && test(Flag_Convert_Lost_Result_To_Comment))
 	{
-		sendPrecedingComment(::lostResult, Annotation(), MarkSet());
+		static Comment Phrase(Phrases[0], i18n::English | i18n::Other_Lang | i18n::Multilingual);
+
+		Comment comment;
+		preparePhrase(comment, Phrase);
+		sendTrailingComment(comment, false);
 		result = result::Unknown;
 	}
 
@@ -494,8 +500,19 @@ Writer::writeMove(Move const& move,
 {
 	if (m_level && !test(Flag_Include_Variations))
 		return;
+	
+	Comment myPreComment;
+	Comment myComment;
 
-	if (!preComment.isEmpty() && test(Flag_Include_Comments))
+	if (test(Flag_Include_Comments))
+	{
+		if (!preComment.isEmpty())
+			prepareComment(myPreComment, preComment);
+		if (!comment.isEmpty())
+			prepareComment(myComment, comment);
+	}
+
+	if (!myPreComment.isEmpty())
 		m_needMoveNumber = true;
 
 	if (m_needMoveNumber)
@@ -521,16 +538,15 @@ Writer::writeMove(Move const& move,
 	{
 		Move m(move);
 		board().prepareForPrint(m, variant(), Board::ExternalRepresentation);
-		writeMove(m, m_moveNumber, annotation, marks, preComment, comment);
+		writeMove(m, m_moveNumber, annotation, marks, myPreComment, myComment);
 	}
 	else
 	{
-		writeMove(move, m_moveNumber, annotation, marks, preComment, comment);
+		writeMove(move, m_moveNumber, annotation, marks, myPreComment, myComment);
 	}
 
 	m_needSpace = true;
-	m_needMoveNumber =	color::isBlack(move.color())
-							|| (!comment.isEmpty() && test(Flag_Include_Comments));
+	m_needMoveNumber = color::isBlack(move.color()) || !comment.isEmpty();
 }
 
 

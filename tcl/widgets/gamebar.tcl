@@ -791,7 +791,15 @@ proc exportGame {parent {position -1}} {
 		set title [lindex [::scidb::game::sink? $position] 2]
 	}
 
-	::export::open $parent -base $base -variant $variant -index $index -title $title
+	::export::open $parent \
+		-base $base \
+		-variant $variant \
+		-index $index \
+		-title $title \
+		-extension [string range [file extension $base] 1 end] \
+		-languages [::scidb::game::query langSet $position] \
+		-preferred [::application::pgn::languages] \
+		;
 }
 
 

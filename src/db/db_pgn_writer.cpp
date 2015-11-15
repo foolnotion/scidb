@@ -66,8 +66,10 @@ PgnWriter::PgnWriter(format::Type srcFormat,
 							mstl::string const& encoding,
 							LineEnding lineEnding,
 							unsigned flags,
+							LanguageList const* languages,
+							unsigned significantLanguages,
 							unsigned lineLength)
-	:Writer(srcFormat, flags, encoding)
+	:Writer(srcFormat, flags, encoding, languages, significantLanguages)
 	,m_strm(strm)
 	,m_eol(lineEnding == Windows ? "\r\n" : "\n")
 	,m_length(0)
@@ -508,38 +510,38 @@ PgnWriter::putComment(Comment const& comment)
 {
 	mstl::string text;
 
-	if (!comment.isEmpty())
+	if (comment.isEmpty())
+		return;
+
+	if (test(Flag_Comment_To_Html))
 	{
-		if (test(Flag_Comment_To_Html))
+		comment.toHtml(text);
+
+		mstl::string::size_type n = text.find_first_of("{}");
+
+		if (n != mstl::string::npos)
 		{
-			comment.toHtml(text);
-
-			mstl::string::size_type n = text.find_first_of("{}");
-
-			if (n != mstl::string::npos)
+			do
 			{
-				do
-				{
-					text.replace(n, 1, text[n] == '{' ? "&#x7b;" : "&#x7d;", 6);
-					n = text.find_first_of("{}", n + 5);
-				}
-				while (n != mstl::string::npos);
-
-				text.insert(mstl::string::size_type(0), "<html>", 6);
-				text.append("</html>", 7);
+				text.replace(n, 1, text[n] == '{' ? "&#x7b;" : "&#x7d;", 6);
+				n = text.find_first_of("{}", n + 5);
 			}
+			while (n != mstl::string::npos);
+
+			text.insert(mstl::string::size_type(0), "<html>", 6);
+			text.append("</html>", 7);
 		}
-		else if (codec().isUtf8())
-		{
-			comment.flatten(text, encoding::Utf8);
-			replaceCurlyBraces(text);
-		}
-		else
-		{
-			comment.flatten(text, encoding::Latin1);
-			codec().fromUtf8(text);
-			replaceCurlyBraces(text);
-		}
+	}
+	else if (codec().isUtf8())
+	{
+		comment.flatten(text, encoding::Utf8, langFlags());
+		replaceCurlyBraces(text);
+	}
+	else
+	{
+		comment.flatten(text, encoding::Latin1, langFlags());
+		codec().fromUtf8(text);
+		replaceCurlyBraces(text);
 	}
 
 	putComment(text);
@@ -560,7 +562,7 @@ PgnWriter::putComment(Comment const& comment, MarkSet const& marks)
 	else if (!marks.isEmpty())
 	{
 		putMarks(marks);
-		Comment buf(m_marks, false, false);
+		Comment buf(m_marks, i18n::None);
 		buf.append(comment, ' ');
 		putComment(buf);
 	}

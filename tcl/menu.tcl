@@ -146,7 +146,7 @@ proc build {menu} {
 	$menu add cascade \
 		-menu $m \
 		-label " $text" \
-		-underline [incr ul] \
+		-underline [IncrUL $ul] \
 		-image $::icon::16x16::languages \
 		-compound left \
 		;
@@ -249,7 +249,7 @@ proc build {menu} {
 	$menu add cascade \
 		-menu $m \
 		-label " $text" \
-		-underline [incr ul] \
+		-underline [IncrUL $ul] \
 		-image $::icon::16x16::none \
 		-compound left \
 		-state [expr {[llength $activeParents] ? "normal" : "disabled"}] \
@@ -267,14 +267,15 @@ proc build {menu} {
 		-compound left \
 		-menu $m \
 		-label " $text" \
-		-underline [incr ul] \
+		-underline [IncrUL $ul] \
 		-image $::icon::16x16::setup \
 		;
 	lassign [::tk::UnderlineAmpersand $mc::Engines] text ul
 	set cmd [list ::engine::openAdmininstration .application]
 	$m add command \
 		-label " $text" \
-		-underline [incr ul] -command $cmd \
+		-underline [IncrUL $ul] \
+		-command $cmd \
 		-image $::icon::16x16::engine \
 		-compound left \
 		;
@@ -282,7 +283,8 @@ proc build {menu} {
 	set cmd [namespace code [list setupPgnOptions .application]]
 	$m add command \
 		-label " $text" \
-		-underline [incr ul] -command $cmd \
+		-underline [IncrUL $ul] \
+		-command $cmd \
 		-image $::icon::16x16::filetypePGN \
 		-compound left \
 		;
@@ -291,7 +293,7 @@ if {0} {
 	set cmd [list ::playercard::setupPrivateCard .application]
 	$m add command \
 		-label " $text" \
-		-underline [incr ul] \
+		-underline [IncrUL $ul] \
 		-command $cmd \
 		-image $::icon::16x16::playercard \
 		-compound left \
@@ -305,21 +307,21 @@ if {0} {
 		-compound left \
 		-menu $m \
 		-label " $text" \
-		-underline [incr ul] \
+		-underline [IncrUL $ul] \
 		-image $::icon::16x16::none \
 		;
 	lassign [::tk::UnderlineAmpersand $mc::OpenPlayerDictionary] text ul
 	set cmd [namespace code [list ::playerdict::open .application]]
 	$m add command \
 		-label " $text..." \
-		-underline [incr ul] \
+		-underline [IncrUL $ul] \
 		-command $cmd \
 		;
 	lassign [::tk::UnderlineAmpersand $mc::OpenEngineDictionary] text ul
 	set cmd [namespace code [list ::engine::showEngineDictionary .application]]
 	$m add command \
 		-label " $text..." \
-		-underline [incr ul] \
+		-underline [IncrUL $ul] \
 		-command $cmd \
 		;
 
@@ -330,7 +332,7 @@ if {0} {
 		-compound left \
 		-menu $m \
 		-label " $text" \
-		-underline [incr ul] \
+		-underline [IncrUL $ul] \
 		-image $::icon::16x16::none \
 		;
 
@@ -340,7 +342,7 @@ if {0} {
 		$m add command \
 			-compound left \
 			-label " $text" \
-			-underline [incr ul] \
+			-underline [IncrUL $ul] \
 			-image $::icon::16x16::none \
 			-command $cmd \
 			;
@@ -352,7 +354,7 @@ if {0} {
 	$m add command \
 		-compound left \
 		-label " $text" \
-		-underline $ul \
+		-underline [IncrUL $ul] \
 		-image $::icon::16x16::none \
 		-command $cmd \
 		-state $state \
@@ -364,7 +366,7 @@ if {0} {
 		$m add command \
 			-compound left \
 			-label " $text" \
-			-underline $ul \
+			-underline [IncrUL $ul] \
 			-image $::icon::16x16::fonts \
 			-command $cmd \
 			;
@@ -376,7 +378,7 @@ if {0} {
 	$m add command \
 		-compound left \
 		-label " $text..." \
-		-underline [incr ul] \
+		-underline [IncrUL $ul] \
 		-image $::icon::16x16::none \
 		-command $cmd \
 		-state $state \
@@ -389,7 +391,7 @@ if {0} {
 	$menu add command \
 		-compound left \
 		-label " $text..." \
-		-underline [incr ul] \
+		-underline [IncrUL $ul] \
 		-image $::icon::16x16::help \
 		-accelerator "F1" \
 		-command [list ::help::open .application] \
@@ -401,7 +403,7 @@ if {0} {
 	$menu add command \
 		-compound left \
 		-label " $text..." \
-		-underline [incr ul] \
+		-underline [IncrUL $ul] \
 		-image $::icon::16x16::info \
 		-command $cmd \
 		;
@@ -411,7 +413,7 @@ if {0} {
 	$menu add command \
 		-compound left \
 		-label " $text..." \
-		-underline [incr ul] \
+		-underline [IncrUL $ul] \
 		-image $::icon::16x16::log \
 		-accelerator "${::mc::Key(Ctrl)}+L" \
 		-command [list ::log::show -force] \
@@ -449,7 +451,7 @@ if {0} {
 	$menu add command \
 		-compound left \
 		-label " $text" \
-		-underline [incr ul] \
+		-underline [IncrUL $ul] \
 		-image $::icon::16x16::fullscreen \
 		-command [namespace code [list viewFullscreen toggle]] \
 		-accelerator "F11" \
@@ -461,7 +463,7 @@ if {0} {
 	$menu add command \
 		-compound left \
 		-label " $text" \
-		-underline [incr ul] \
+		-underline [IncrUL $ul] \
 		-image $::icon::16x16::exit \
 		-command ::application::shutdown \
 		-accelerator "${::mc::Key(Ctrl)}+Q" \
@@ -562,15 +564,15 @@ proc dbOpen {parent} {
 #		[list $mc::AllScidbFiles	{.sci .si4 .si3 .cbh .cbf .scv .pgn .pgn.gz .bpgn .bpgn.gz .zip} \
 #											{.CBF .PGN .ZIP}]
 #		[list $mc::BPGNFilesArchives	{.bpgn .bpgn.gz .zip} {.ZIP}]
-	set filetypes [list                                                                                  \
-		[list $mc::AllScidbFiles		{.sci .si4 .si3 .cbh .cbf .scv .pgn .pgn.gz .zip} {.CBF .PGN .ZIP}] \
-		[list $mc::AllScidbBases		{.sci .si4 .si3 .cbh .cbf .scv} {.CBF}]                             \
-		[list $mc::ScidbBases			{.sci}]                                                             \
-		[list $mc::ScidBases				{.si4 .si3}]                                                        \
-		[list $mc::ChessBaseBases		{.cbh .cbf} {.CBF}]                                                 \
-		[list $mc::ScidbArchives		{.scv}]                                                             \
-		[list $mc::PGNFilesArchives	{.pgn .pgn.gz .zip} {.ZIP}]                                         \
-		[list $mc::PGNArchives			{.zip} {.ZIP}]                                                      \
+	set filetypes [list                                                                               \
+		[list $mc::AllScidbFiles	{.sci .si4 .si3 .cbh .cbf .scv .pgn .pgn.gz .zip} {.CBF .PGN .ZIP}] \
+		[list $mc::AllScidbBases	{.sci .si4 .si3 .cbh .cbf .scv} {.CBF}]                             \
+		[list $mc::ScidbBases		{.sci}]                                                             \
+		[list $mc::ScidBases			{.si4 .si3}]                                                        \
+		[list $mc::ChessBaseBases	{.cbh .cbf} {.CBF}]                                                 \
+		[list $mc::ScidbArchives	{.scv}]                                                             \
+		[list $mc::PGNFilesArchives {.pgn .pgn.gz .zip} {.ZIP}]                                        \
+		[list $mc::PGNArchives		{.zip} {.ZIP}]                                                      \
 	]
 	set result [::dialog::openFile \
 		-parent $parent \
@@ -743,6 +745,12 @@ proc viewFullscreen {{toggle {}}} {
 
 proc fullscreen? {} {
 	return [set [namespace current]::Fullscreen]
+}
+
+
+proc IncrUL {pos} {
+	if {$pos >= 0} { incr pos }
+	return $pos
 }
 
 

@@ -91,35 +91,11 @@ set MaxRetry 5
 set Wait 2000
 
 set Escape {
-	" "	%20
-	"!"	%21
-	"\""	%22
-	"#"	%23
-	"$"	%24
-	"%"	%25
-	"&"	%26
-	"'"	%27
-	"("	%28
-	")"	%29
-	"*"	%2A
-	"+"	%2B
-	","	%2C
-	"-"	%2D
-	":"	%3A
-	";"	%3B
-	"<"	%3C
-	"="	%3D
-	">"	%3E
-	"?"	%3F
-	"@"	%40
-	"["	%5B
-	"\\"	%5C
-	"]"	%5D
-	"^"	%5E
-	"`"	%60
-	"{"	%7B
-	"|"	%7C
-	"}"	%7D
+	" "	%20	"!"	%21	"\""	%22	"#"	%23	"$"	%24	"%"	%25
+	"&"	%26	"'"	%27	"("	%28	")"	%29	"*"	%2A	"+"	%2B
+	","	%2C	"-"	%2D	":"	%3A	";"	%3B	"<"	%3C	"="	%3D
+	">"	%3E	"?"	%3F	"@"	%40	"["	%5B	"\\"	%5C	"]"	%5D
+	"^"	%5E	"`"	%60	"{"	%7B	"|"	%7C	"}"	%7D
 }
 
 foreach {ch tok} $Escape { lappend Unescape $tok $ch }
@@ -177,6 +153,7 @@ proc FetchFile {file srvCrc} {
 		switch [::http::status $token] {
 			ok {
 				set code [::http::ncode $token]
+				if {[string length $code] == 0} { set code 100 }
 				if {$code == 404} { Return notfound }
 				if {$code != 200} { Return httpcode $code [MakeFile $url] }
 				set data [::http::data $token]
@@ -199,6 +176,9 @@ proc FetchFile {file srvCrc} {
 				if {[incr retry] > $::MaxRetry} { Return timeout [MakeFile $url] }
 				ResetConnection $url.
 				after [expr {($retry - 1)*$::Wait}] ;# wait a bit
+			}
+			eof {
+				Return noreply
 			}
 			error {
 				Return httperr [::http::error $token] [MakeFile $url]
@@ -254,6 +234,7 @@ if {[string length locTimestamp] > 0} {
 		}
 	}
 	set code [::http::ncode $token]
+	if {[string length $code] == 0} { set code 100 }
 	set srvTimestamp [string trim [::http::data $token]]
 	::http::cleanup $token
 	if {$code == 404} { Return maintenance }
@@ -278,6 +259,7 @@ while {$retry > 0} {
 	}
 }
 set code [::http::ncode $token]
+if {[string length $code] == 0} { set code 100 }
 set content [::http::data $token]
 ::http::cleanup $token
 if {$code == 404} { Return maintenance }

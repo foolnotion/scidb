@@ -371,6 +371,7 @@
 ::util::photos::mc::Message(crcerror)		"Checksum error occurred. Possibly the file server is currently in maintenance mode." ;# NEW
 ::util::photos::mc::Message(maintenance)	"Photo file server maintenance is currently in progress." ;# NEW
 ::util::photos::mc::Message(notfound)		"Download aborted because photo file server maintenance is currently in progress." ;# NEW
+::util::photos::mc::Message(noreply)		"Server is not replying." ;# NEW
 ::util::photos::mc::Message(aborted)		"User has aborted download." ;# NEW
 ::util::photos::mc::Message(killed)		"Unexpected termination of download. The sub-process has died." ;# NEW
 
@@ -1704,7 +1705,8 @@
 ::export::mc::IncludeAllTags				"Minden cimke kiválasztása"
 ::export::mc::ExtraTags						"Minden más további cimkék"
 ::export::mc::NoComments					"No comments" ;# NEW
-::export::mc::Significant					"Jelentős"
+::export::mc::AllLanguages					"All languages" ;# NEW
+::export::mc::SelectLanguages				"Selected languages" ;# NEW
 ::export::mc::LanguageSelection			"Nyelv választás"
 ::export::mc::MapTo							"Map to" ;# NEW
 ::export::mc::MapNagsToComment			"Map annotations to comments" ;# NEW
@@ -1713,6 +1715,9 @@
 ::export::mc::UseColumnStyle				"Oszlop stílus használata"
 ::export::mc::MainlineStyle				"Főváltozat stílusa"
 ::export::mc::HideVariations				"Változatok elrejtése"
+::export::mc::GameDoesNotHaveComments	"This game does not contain comments." ;# NEW
+
+::export::mc::LanguageSelectionDescr	"The checkbox (right side from combo box) has the meaning 'significant'.\n\nLanguages marked as 'significant' will always be exported.\n\nIf the game includes none of the languages marked as 'significant' then the first available language will be exported." ;# NEW
 
 ::export::mc::PdfFiles				"PDF fájlok"
 ::export::mc::HtmlFiles				"HTML fájlok"

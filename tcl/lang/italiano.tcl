@@ -371,6 +371,7 @@
 ::util::photos::mc::Message(crcerror)			"Errore nel Checksum. Probabilmente il server è al momento sottoposto a manutenzione."
 ::util::photos::mc::Message(maintenance)		"Il server che ospita le foto è al momento in manutenzione."
 ::util::photos::mc::Message(notfound)			"Download interrotto perché il server che ospita le foto è al momento in manutenzione."
+::util::photos::mc::Message(noreply)			"Server is not replying." ;# NEW
 ::util::photos::mc::Message(aborted)			"L'utente ha interrotto il download."
 ::util::photos::mc::Message(killed)				"Interruzione inaspettata del download. La sub-routine è cessata."
 
@@ -1705,7 +1706,8 @@
 ::export::mc::IncludeAllTags				"Includi tutti i tag"
 ::export::mc::ExtraTags						"Tutti gli altri tag"
 ::export::mc::NoComments					"Nessun commento"
-::export::mc::Significant					"Significativo"
+::export::mc::AllLanguages					"All languages" ;# NEW
+::export::mc::SelectLanguages				"Selected languages" ;# NEW
 ::export::mc::LanguageSelection			"Selezione Lingua"
 ::export::mc::MapTo							"Mappa NAG a" ;# (map to)
 ::export::mc::MapNagsToComment			"Mappa annotazioni (NAG) a commenti" ;# (map annotations to comments)
@@ -1714,6 +1716,9 @@
 ::export::mc::UseColumnStyle				"Usa stile colonna"
 ::export::mc::MainlineStyle				"Stile Linea Principale"
 ::export::mc::HideVariations				"Nascondi Varianti"
+::export::mc::GameDoesNotHaveComments	"This game does not contain comments." ;# NEW
+
+::export::mc::LanguageSelectionDescr	"The checkbox (right side from combo box) has the meaning 'significant'.\n\nLanguages marked as 'significant' will always be exported.\n\nIf the game includes none of the languages marked as 'significant' then the first available language will be exported." ;# NEW
 
 ::export::mc::PdfFiles						"File PDF"
 ::export::mc::HtmlFiles						"File HTML"

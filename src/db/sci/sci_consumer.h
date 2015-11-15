@@ -79,7 +79,9 @@ public:
 	Consumer(format::Type srcFormat,
 				Codecs const& codecs,
 				TagBits const& allowedTags,
-				bool allowExtraTags);
+				bool allowExtraTags,
+				LanguageList const* languages = nullptr,
+				unsigned significantLanguages = 0);
 
 	format::Type format() const override;
 

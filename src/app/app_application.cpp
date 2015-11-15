@@ -246,6 +246,7 @@ Application::Application()
 	,m_engineLog(0)
 	,m_isClosed(false)
 	,m_treeIsFrozen(false)
+	,m_allLanguages(false)
 	,m_subscriber(0)
 {
 	M_REQUIRE(!hasInstance());
@@ -1009,6 +1010,7 @@ Application::setSource(	unsigned position,
 								checksum_t crcMoves)
 {
 	M_REQUIRE(containsGameAt(position));
+	M_REQUIRE(index < database(position).countGames());
 
 	EditGame& game = *m_gameMap.find(position)->second;
 	game.link.databaseName = name;
@@ -1362,6 +1364,11 @@ Application::loadGame(	unsigned position,
 		game.link.crcMoves = game.sink.crcMoves;
 		game.data.refresh = 0;
 
+		if (m_allLanguages)
+			game.data.game->setAllLanguages();
+		else
+			game.data.game->setLanguages(m_langSet);
+
 		if (position != ReservedPosition && !cursor.isScratchbase())
 		{
 			refreshGame(position);
@@ -1379,6 +1386,22 @@ Application::loadGame(	unsigned position,
 	}
 
 	return state;
+}
+
+
+void
+Application::setupLanguageSet(LanguageSet const& langSet, unsigned position)
+{
+	m_allLanguages = false;
+	game(position).setLanguages(m_langSet = langSet);
+}
+
+
+void
+Application::setupAllLanguages(unsigned position)
+{
+	m_allLanguages = true;
+	game(position).setAllLanguages();
 }
 
 
@@ -1433,7 +1456,12 @@ Application::releaseGame(unsigned position)
 	m_indexMap.erase(position);
 
 	if (m_currentPosition == position)
-		m_currentPosition = m_fallbackPosition;
+	{
+		cancelUpdateTree();
+
+		if (m_fallbackPosition != InvalidPosition)
+			switchGame(m_fallbackPosition, UpdateReferenceGames);
+	}
 
 	if (m_subscriber)
 		m_subscriber->gameClosed(position);
@@ -1648,6 +1676,7 @@ Application::writeGame(	unsigned position,
 								mstl::string const& filename,
 								mstl::string const& encoding,
 								mstl::string const& comment,
+								Languages const& languages,
 								unsigned flags,
 								FileMode fmode)
 {
@@ -1731,7 +1760,14 @@ Application::writeGame(	unsigned position,
 			if (ZStream::isWindowsLineEnding(internalName))
 				lineEnding = PgnWriter::Windows;
 
-			PgnWriter writer(format::Scidb, strm, useEncoding, lineEnding, flags);
+			PgnWriter writer(	format::Scidb,
+									strm,
+									useEncoding,
+									lineEnding,
+									flags,
+									&languages,
+									languages.size());
+			writer.setUsedLanguages(g->data.game->languageSet());
 			writer.setupVariant(g->sink.cursor->variant());
 
 			if (!comment.empty())
@@ -1761,11 +1797,17 @@ Application::switchGame(unsigned position, ReferenceGames updateReferenceGames)
 
 	if (position == InvalidPosition)
 		position = currentPosition();
+	
+	if (m_currentPosition == position)
+		return;
+
+	EditGame& game = *m_gameMap[position];
+
+	if (!game.data.game->subscriber())
+		return; // not yet ready for update
 
 	if (updateReferenceGames == UpdateReferenceGames)
 		stopUpdateTree();
-
-	EditGame& game = *m_gameMap[position];
 
 	m_currentPosition = position;
 

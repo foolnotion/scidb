@@ -47,7 +47,6 @@ namespace db {
 class TournamentTable;
 class Database;
 class Query;
-class Consumer;
 class Log;
 
 } // namespace db
@@ -68,12 +67,13 @@ public:
 	typedef mstl::vector<unsigned> LengthList;
 	typedef ::db::tag::TagSet TagBits;
 	typedef db::Byte NagMap[db::nag::Scidb_Last];
-	typedef mstl::string Languages[4];
 	typedef mstl::map<mstl::string,unsigned> TagMap;
+	typedef mstl::vector<mstl::string> Languages;
 
 	typedef mstl::pair<db::load::State,unsigned> Result;
 
-	static unsigned const DefaultView = 0;
+	static unsigned const DefaultView	= 0;
+	static unsigned const AllLanguages	= ::db::Consumer::AllLanguages;
 
 	View(Application& app, Cursor& cursor);
 	View(View& view);
@@ -200,7 +200,7 @@ public:
 	unsigned copyGames(	Cursor& destination,
 								TagBits const& allowedTags,
 								bool allowExtraTags,
-								unsigned& illegalRejected,
+								unsigned* illegalRejected,
 								db::Log& log,
 								util::Progress& progress);
 
@@ -211,10 +211,11 @@ public:
 									uint32_t creationTime,
 									db::type::ID type,
 									unsigned flags,
-									db::copy::Mode copyMode,
 									TagBits const& allowedTags,
 									bool allowExtraTags,
-									unsigned& illegalRejected,
+									Languages const& languages,
+									unsigned significantLanguages,
+									unsigned* illegalRejected,
 									db::Log& log,
 									util::Progress& progress,
 									FileMode fmode = Create) const;
@@ -227,19 +228,18 @@ public:
 								NagMap const& nagMap,
 								Languages const& languages,
 								unsigned significantLanguages,
+								unsigned* illegalRejected,
 								db::Log& log,
 								util::Progress& progress) const;
 
 private:
 
 	unsigned exportGames(db::Consumer& destination,
-								db::copy::Mode copyMode,
-								unsigned& illegalRejected,
+								unsigned* illegalRejected,
 								db::Log& log,
 								util::Progress& progress) const;
 	unsigned exportGames(db::Database& destination,
-								db::copy::Mode copyMode,
-								unsigned& illegalRejected,
+								unsigned* illegalRejected,
 								db::Log& log,
 								util::Progress& progress) const;
 

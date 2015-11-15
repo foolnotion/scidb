@@ -5642,6 +5642,7 @@ db_writer.o: ../mstl/m_list_node.h
 db_writer.o: ../mstl/m_list_node.ipp
 db_writer.o: ../mstl/m_list.ipp
 db_writer.o: db_player.ipp
+db_writer.o: db_pgn_aquarium.h
 db_writer.o: ../sys/sys_utf8.h
 db_writer.o: ../sys/sys_utf8.ipp
 db_writer.o: ../sys/sys_utf8_codec.h
@@ -5746,6 +5747,8 @@ sci/sci_codec.o: db_move_list.h
 sci/sci_codec.o: db_move_list.ipp
 sci/sci_codec.o: db_board.ipp
 sci/sci_codec.o: sci/sci_decoder_position.ipp
+sci/sci_codec.o: ../mstl/m_map.h
+sci/sci_codec.o: ../mstl/m_map.ipp
 sci/sci_codec.o: sci/sci_encoder.h
 sci/sci_codec.o: sci/sci_encoder_position.h
 sci/sci_codec.o: sci/sci_encoder_position.ipp
@@ -5763,8 +5766,6 @@ sci/sci_codec.o: db_clock.ipp
 sci/sci_codec.o: db_move_info.ipp
 sci/sci_codec.o: db_move_info_set.ipp
 sci/sci_codec.o: db_engine_list.h
-sci/sci_codec.o: ../mstl/m_map.h
-sci/sci_codec.o: ../mstl/m_map.ipp
 sci/sci_codec.o: db_engine_list.ipp
 sci/sci_codec.o: db_time_table.h
 sci/sci_codec.o: db_time_table.ipp
@@ -5992,17 +5993,17 @@ sci/sci_decoder.o: ../mstl/m_construct.ipp
 sci/sci_decoder.o: sci/sci_decoder_position.ipp
 sci/sci_decoder.o: db_eco.h
 sci/sci_decoder.o: db_eco.ipp
-sci/sci_decoder.o: sci/sci_common.h
-sci/sci_decoder.o: db_game_data.h
-sci/sci_decoder.o: db_tag_set.h
+sci/sci_decoder.o: ../mstl/m_map.h
 sci/sci_decoder.o: ../mstl/m_vector.h
 sci/sci_decoder.o: ../mstl/m_vector.ipp
-sci/sci_decoder.o: db_tag_set.ipp
-sci/sci_decoder.o: db_engine_list.h
-sci/sci_decoder.o: ../mstl/m_map.h
 sci/sci_decoder.o: ../mstl/m_pair.h
 sci/sci_decoder.o: ../mstl/m_pair.ipp
 sci/sci_decoder.o: ../mstl/m_map.ipp
+sci/sci_decoder.o: sci/sci_common.h
+sci/sci_decoder.o: db_game_data.h
+sci/sci_decoder.o: db_tag_set.h
+sci/sci_decoder.o: db_tag_set.ipp
+sci/sci_decoder.o: db_engine_list.h
 sci/sci_decoder.o: db_engine_list.ipp
 sci/sci_decoder.o: db_time_table.h
 sci/sci_decoder.o: db_move_info_set.h
@@ -7546,6 +7547,7 @@ si3/si3_consumer.o: db_mark.ipp
 si3/si3_consumer.o: db_mark_set.ipp
 si3/si3_consumer.o: db_annotation.h
 si3/si3_consumer.o: db_annotation.ipp
+si3/si3_consumer.o: db_pgn_aquarium.h
 si3/si3_consumer.o: ../sys/sys_utf8_codec.h
 si3/si3_consumer.o: ../sys/sys_utf8_codec.ipp
 si3/si3_decoder.o: si3/si3_decoder.h

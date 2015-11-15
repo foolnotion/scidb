@@ -89,8 +89,7 @@ unsigned
 Database::exportGames<Database>(	Database& destination,
 											Filter const& gameFilter,
 											Selector const& gameSelector,
-											copy::Mode copyMode,
-											unsigned& illegalRejected,
+											unsigned* illegalRejected,
 											Log& log,
 											util::Progress& progress) const;
 template
@@ -98,8 +97,7 @@ unsigned
 Database::exportGames<Consumer>(	Consumer& destination,
 											Filter const& gameFilter,
 											Selector const& gameSelector,
-											copy::Mode copyMode,
-											unsigned& illegalRejected,
+											unsigned* illegalRejected,
 											Log& log,
 											util::Progress& progress) const;
 
@@ -872,7 +870,7 @@ Database::newGame(Game& game, GameInfo const& info)
 
 	unsigned char buffer[8192];
 	ByteStream strm(buffer, sizeof(buffer));
-	m_codec->encodeGame(strm, game, game.getFinalBoard().signature());
+	m_codec->encodeGame(strm, game, game.getFinalBoard().signature(), game.langFlags());
 	save::State state = m_codec->addGame(strm, info, DatabaseCodec::Hook);
 	m_namebases.update();
 
@@ -903,7 +901,7 @@ Database::addGame(Game& game)
 	unsigned char buffer[8192];
 	ByteStream strm(buffer, sizeof(buffer));
 
-	m_codec->encodeGame(strm, game, game.getFinalBoard().signature());
+	m_codec->encodeGame(strm, game, game.getFinalBoard().signature(), game.langFlags());
 
 	if (format() != format::Scidb)
 		game.removeFlags(GameInfo::Flag_Illegal_Castling | GameInfo::Flag_Illegal_Move);
@@ -959,7 +957,7 @@ Database::updateGame(Game& game)
 		info.setIllegalMove(game.containsIllegalMoves());
 	}
 
-	m_codec->encodeGame(strm, game, game.getFinalBoard().signature());
+	m_codec->encodeGame(strm, game, game.getFinalBoard().signature(), game.langFlags());
 	game.setGameFlags(info.flags());
 
 	save::State state = m_codec->saveGame(strm, game.tags(), game);
@@ -1015,7 +1013,7 @@ Database::updateMoves(Game& game)
 	unsigned char buffer[8192];
 	ByteStream strm(buffer, sizeof(buffer));
 
-	m_codec->encodeGame(strm, game, game.getFinalBoard().signature());
+	m_codec->encodeGame(strm, game, game.getFinalBoard().signature(), game.langFlags());
 
 	GameInfo&	info		= *m_gameInfoList[game.index()];
 	unsigned		offset	= info.gameOffset();
@@ -1209,6 +1207,7 @@ Database::exportGame(unsigned index, Consumer& consumer) const
 
 	m_codec->reset();
 	consumer.setGameFlags(info->flags());
+	consumer.setLangFlags(info->langFlags());
 
 #ifdef DEBUG_SI4
 	consumer.m_index = index;
@@ -1250,6 +1249,7 @@ Database::exportGame(unsigned index, Consumer& consumer) const
 #endif
 
 	setEncodingFailed(m_codec->encodingFailed());
+	consumer.finalizeGame();
 
 	return rc;
 }
@@ -1287,7 +1287,7 @@ Database::copyGames(	Database& destination,
 							Selector const& gameSelector,
 							TagBits const& allowedTags,
 							bool allowExtraTags,
-							unsigned& illegalRejected,
+							unsigned* illegalRejected,
 							Log& log,
 							util::Progress& progress) const
 {
@@ -1299,6 +1299,7 @@ Database::copyGames(	Database& destination,
 				|| destination.format() == format::Scid3
 				|| destination.format() == format::Scid4);
 	M_REQUIRE(destination.variant() == variant());
+	M_REQUIRE(illegalRejected || !format::isScidFormat(destination.format()));
 
 	if (size() == 0)
 		return 0;
@@ -1306,19 +1307,16 @@ Database::copyGames(	Database& destination,
 	format::Type	dstFormat	= destination.format();
 	format::Type	srcFormat	= format();
 	bool				useConsumer	= true;
-	copy::Mode		copyMode		= copy::AllGames;
 
 	switch (int(dstFormat))
 	{
 		case format::Scid3:
 		case format::Scid4:
 			useConsumer = !format::isScidFormat(srcFormat);
-			copyMode = copy::ExcludeIllegal;
 			break;
 
 		case format::Scidb:
 			useConsumer = srcFormat != format::Scidb;
-			copyMode = copy::AllGames;
 			break;
 	}
 
@@ -1331,7 +1329,6 @@ Database::copyGames(	Database& destination,
 		count = exportGames(	destination,
 									gameFilter,
 									gameSelector,
-									copyMode,
 									illegalRejected,
 									log,
 									progress);
@@ -1347,7 +1344,6 @@ Database::copyGames(	Database& destination,
 			count = exportGames(	consumer,
 										gameFilter,
 										gameSelector,
-										copyMode,
 										illegalRejected,
 										log,
 										progress);
@@ -1363,7 +1359,6 @@ Database::copyGames(	Database& destination,
 			count = exportGames(	consumer,
 										gameFilter,
 										gameSelector,
-										copyMode,
 										illegalRejected,
 										log,
 										progress);
@@ -1379,13 +1374,16 @@ unsigned
 Database::exportGames(	Destination& destination,
 								Filter const& gameFilter,
 								Selector const& gameSelector,
-								copy::Mode copyMode,
-								unsigned& illegalRejected,
+								unsigned* illegalRejected,
 								Log& log,
 								util::Progress& progress) const
 {
 	M_REQUIRE(gameFilter.size() == size());
 	M_REQUIRE(destination.variant() == variant());
+	M_REQUIRE(	destination.format() == format::Scidb
+				|| destination.format() == format::Scid3
+				|| destination.format() == format::Scid4);
+	M_REQUIRE(illegalRejected || !format::isScidFormat(destination.format()));
 
 	enum { MaxWarnings = 40 };
 
@@ -1394,9 +1392,6 @@ Database::exportGames(	Destination& destination,
 
 	format::Type dstFormat = destination.format();
 	format::Type srcFormat = format();
-
-	if (format::isScidFormat(dstFormat))
-		copyMode = copy::ExcludeIllegal;
 
 	unsigned minFrequency;
 
@@ -1441,7 +1436,7 @@ Database::exportGames(	Destination& destination,
 			infoIndex = index;
 		}
 
-		if (copyMode == copy::AllGames || !m_gameInfoList[infoIndex]->containsIllegalMoves())
+		if (!illegalRejected || !m_gameInfoList[infoIndex]->containsIllegalMoves())
 		{
 			save::State state = exportGame(infoIndex, destination);
 
@@ -1529,13 +1524,17 @@ Database::importGames(Producer& producer, util::Progress& progress)
 
 
 unsigned
-Database::importGames(Database const& db, unsigned& illegalRejected, Log& log, util::Progress& progress)
+Database::importGames(	Database const& db,
+								unsigned* illegalRejected,
+								Log& log,
+								util::Progress& progress)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadonly());
 	M_REQUIRE(isWritable());
 	M_REQUIRE(!usingAsyncReader());
 	M_REQUIRE(db.variant() == variant());
+	M_REQUIRE(illegalRejected || !isScidFormat(format()));
 
 	m_codec->reset();
 

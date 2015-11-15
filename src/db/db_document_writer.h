@@ -29,6 +29,8 @@
 
 #include "db_writer.h"
 
+#include "m_vector.h"
+
 namespace db {
 
 class DocumentWriter : public Writer
@@ -42,7 +44,7 @@ public:
 	};
 
 	typedef Byte NagMap[nag::Scidb_Last];
-	typedef mstl::string Languages[4];
+	typedef mstl::vector<mstl::string> Languages;
 
 	static unsigned const Option_Diagram_From_Whites_Perspective	= 1 << 0;
 	static unsigned const Option_Diagram_From_Blacks_Perspective	= 1 << 1;
@@ -58,8 +60,6 @@ public:
 
 	static unsigned const Option_Annotation_Map_Unusual				= 1 << 10;
 	static unsigned const Option_Annotation_Map_All						= 1 << 11;
-
-	static unsigned const Option_Comment_All								= 1 << 12;
 
 	DocumentWriter(format::Type srcFormat,
 						unsigned flags,

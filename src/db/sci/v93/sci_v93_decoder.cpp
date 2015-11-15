@@ -553,7 +553,10 @@ Decoder::decodeVariation(Consumer& consumer, util::ByteStream& data, ByteStream&
 
 								buf.clear();
 								text.get(buf);
-								comment.swap(buf, bool(flag & comm::Ante_Eng), bool(flag & comm::Ante_Oth));
+								comment.swap(
+									buf,
+										(flag & comm::Ante_Eng ? i18n::English : 0)
+									 | (flag & comm::Ante_Oth ? i18n::Other_Lang : 0));
 								consumer.putTrailingComment(comment);
 								break;
 							}
@@ -631,14 +634,20 @@ Decoder::decodeVariation(Consumer& consumer, util::ByteStream& data, ByteStream&
 						{
 							buf.clear();
 							text.get(buf);
-							preComment.swap(buf, bool(flag & comm::Ante_Eng), bool(flag & comm::Ante_Oth));
+							preComment.swap(
+								buf,
+									(flag & comm::Ante_Eng ? i18n::English : 0)
+								 | (flag & comm::Ante_Oth ? i18n::Other_Lang : 0));
 						}
 
 						if (flag & comm::Post)
 						{
 							buf.clear();
 							text.get(buf);
-							comment.swap(buf, bool(flag & comm::Post_Eng), bool(flag & comm::Post_Oth));
+							comment.swap(
+								buf,
+									(flag & comm::Ante_Eng ? i18n::English : 0)
+								 | (flag & comm::Ante_Oth ? i18n::Other_Lang : 0));
 						}
 
 						hasNote = true;
@@ -700,14 +709,20 @@ Decoder::decodeTextSection(MoveNode* node, ByteStream& text)
 				if (flag & comm::Ante)
 				{
 					text.get(buf);
-					comment.swap(buf, bool(flag & comm::Ante_Eng), bool(flag & comm::Ante_Oth));
+					comment.swap(
+						buf,
+							(flag & comm::Ante_Eng ? i18n::English : 0)
+						 | (flag & comm::Ante_Oth ? i18n::Other_Lang : 0));
 					node->setComment(comment, move::Ante);
 				}
 
 				if (flag & comm::Post)
 				{
 					text.get(buf);
-					comment.swap(buf,  bool(flag & comm::Post_Eng), bool(flag & comm::Post_Oth));
+					comment.swap(
+						buf,
+							(flag & comm::Ante_Eng ? i18n::English : 0)
+						 | (flag & comm::Ante_Oth ? i18n::Other_Lang : 0));
 					node->setComment(comment, move::Post);
 				}
 			}

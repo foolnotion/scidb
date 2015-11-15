@@ -965,7 +965,8 @@ static int
 cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	static char const* Usage =
-		"<database> <file> <log> <log-arg> <progress-cmd> <progress-arg> ?-encoding <string>?";
+		"<database> <file> <log> <log-arg> <progress-cmd> <progress-arg> "
+		"?-encoding <string>? ?-illegal <boolean>?";
 
 	if (objc < 7)
 	{
@@ -975,12 +976,17 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	mstl::string	encoding		= sys::utf8::Codec::utf8();
 	char const*		option		= stringFromObj(objc, objv, objc - 2);
+	bool				includeIllegalGames = false;
 
 	if (*option == '-')
 	{
 		if (::strcmp(option, "-encoding") == 0)
 		{
 			encoding = stringFromObj(objc, objv, objc - 1);
+		}
+		if (::strcmp(option, "-illegal") == 0)
+		{
+			includeIllegalGames = boolFromObj(objc, objv, objc - 1);
 		}
 		else
 		{
@@ -1013,6 +1019,7 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		tcl::Log log(objv[3], objv[4]);
 		unsigned illegalRejected = 0;
+		unsigned* illegalPtr = includeIllegalGames ? nullptr : &illegalRejected;
 
 		if (scidb->contains(src))
 		{
@@ -1027,7 +1034,7 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 					Cursor const& source(scidb->cursor(src, variant));
 					Cursor& destination(const_cast<Cursor&>(Scidb->cursor(dst, variant)));
 					unsigned k = destination.database().countGames();
-					unsigned n = destination.importGames(source.database(), illegalRejected, log, progress);
+					unsigned n = destination.importGames(source.database(), illegalPtr, log, progress);
 
 					count += n;
 					accepted[v] = n;
@@ -1059,7 +1066,7 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			{
 				Cursor& destination(scidb->cursor(dst, db->variant()));
 				unsigned k = destination.database().countGames();
-				unsigned n = destination.importGames(*db, illegalRejected, log, progress);
+				unsigned n = destination.importGames(*db, illegalPtr, log, progress);
 
 				count += n;
 				accepted[variantIndex] = n;
@@ -4235,7 +4242,6 @@ cmdUpgrade(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	try
 	{
 		::db::sci::Codec::remove(filename); // to be sure
-		unsigned illegalRejected = 0;
 
 		setResult(v.exportGames(filename,
 										sys::utf8::Codec::utf8(),
@@ -4243,10 +4249,11 @@ cmdUpgrade(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 										db.creationTime(),
 										type,
 										0,
-										::db::copy::AllGames,
 										View::TagBits(true),
 										true,
-										illegalRejected,
+										View::Languages(),
+										View::AllLanguages,
+										nullptr, // illegal game counter not needed
 										log,
 										progress,
 										fmode));
@@ -4304,10 +4311,16 @@ cmdCopy(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	unsigned				accepted[variant::NumberOfVariants];
 	unsigned				rejected[variant::NumberOfVariants];
 	unsigned				illegalRejected(0);
+	unsigned*			illegalPtr(nullptr);
 	int					n;
 
 	::memset(accepted, 0, sizeof(accepted));
 	::memset(rejected, 0, sizeof(rejected));
+
+	::app::MultiCursor& dst = scidb->multiCursor(destination);
+
+	if (::db::format::isScidFormat(dst.multiBase().format()))
+		illegalPtr = &illegalRejected;
 
 	n = scidb->multiCursor(source).copyGames(
 			scidb->multiCursor(destination),
@@ -4315,7 +4328,7 @@ cmdCopy(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			rejected,
 			tagBits,
 			extraTags,
-			illegalRejected,
+			illegalPtr,
 			log,
 			progress);
 

@@ -50,9 +50,9 @@ inline bool GameInfo::containsIllegalMoves() const			{ return m_gameFlags & Flag
 inline bool GameInfo::hasGameRecordLength() const			{ return m_recordLength & 1; }
 inline bool GameInfo::hasShuffleChessPosition() const		{ return m_positionId > 0; }
 inline bool GameInfo::hasChess960Position() const			{ return m_positionId <= 960; }
+inline bool GameInfo::setupBoard() const						{ return m_setup; }
 inline bool GameInfo::containsEnglishLanguage() const		{ return m_pd[0].langFlag; }
 inline bool GameInfo::containsOtherLanguage() const		{ return m_pd[1].langFlag; }
-inline bool GameInfo::setupBoard() const						{ return m_setup; }
 
 inline uint16_t GameInfo::idn() const							{ return m_positionId; }
 inline result::ID GameInfo::result() const					{ return result::ID(m_result); }
@@ -83,6 +83,15 @@ inline uint32_t GameInfo::fideID(color::ID color) const			{ return m_player[colo
 
 inline NamebasePlayer const* GameInfo::playerEntry(color::ID color) const { return m_player[color]; }
 inline NamebaseEvent const* GameInfo::eventEntry() const { return m_event; }
+
+
+inline
+unsigned
+GameInfo::langFlags() const
+{
+	return  (containsEnglishLanguage() ? i18n::English : 0)
+			| (containsOtherLanguage() ? i18n::Other_Lang : 0);
+}
 
 
 inline

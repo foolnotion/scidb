@@ -1314,7 +1314,7 @@ proc PopupMenu {parent x y {base ""}} {
 			-command [list ::export::open $parent \
 							-base $base \
 							-variant $Vars(variant) \
-							-type $type \
+							-extension [$Vars(switcher) extension $base] \
 							-name $name \
 							-view 0] \
 			;

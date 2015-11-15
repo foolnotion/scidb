@@ -613,7 +613,7 @@ unsigned
 View::copyGames(	Cursor& destination,
 						TagBits const& allowedTags,
 						bool allowExtraTags,
-						unsigned& illegalRejected,
+						unsigned* illegalRejected,
 						Log& log,
 						util::Progress& progress)
 {
@@ -638,15 +638,13 @@ View::copyGames(	Cursor& destination,
 
 unsigned
 View::exportGames(Database& destination,
-						copy::Mode copyMode,
-						unsigned& illegalRejected,
+						unsigned* illegalRejected,
 						Log& log,
 						util::Progress& progress) const
 {
 	return m_cursor.m_db->exportGames(	destination,
 													m_filter[table::Games],
 													m_selector[table::Games],
-													copyMode,
 													illegalRejected,
 													log,
 													progress);
@@ -655,8 +653,7 @@ View::exportGames(Database& destination,
 
 unsigned
 View::exportGames(Consumer& destination,
-						copy::Mode copyMode,
-						unsigned& illegalRejected,
+						unsigned* illegalRejected,
 						Log& log,
 						util::Progress& progress) const
 {
@@ -665,7 +662,6 @@ View::exportGames(Consumer& destination,
 	return m_cursor.m_db->exportGames(	destination,
 													m_filter[table::Games],
 													m_selector[table::Games],
-													copyMode,
 													illegalRejected,
 													log,
 													progress);
@@ -679,10 +675,11 @@ View::exportGames(mstl::string const& filename,
 						uint32_t creationTime,
 						type::ID type,
 						unsigned flags,
-						copy::Mode copyMode,
 						TagBits const& allowedTags,
 						bool allowExtraTags,
-						unsigned& illegalRejected,
+						Languages const& languages,
+						unsigned significantLanguages,
+						unsigned* illegalRejected,
 						Log& log,
 						util::Progress& progress,
 						FileMode fmode) const
@@ -712,17 +709,23 @@ View::exportGames(mstl::string const& filename,
 		if (	m_cursor.m_db->format() == format::Scidb
 			&& fmode != Upgrade
 			&& allowExtraTags
-			&& (allowedTags | sci::Encoder::infoTags()).any())
+			&& (allowedTags | sci::Encoder::infoTags()).any()
+			&& significantLanguages == AllLanguages)
 		{
-			count = exportGames(destination, copyMode, illegalRejected, log, progress);
+			count = m_cursor.m_db->copyGames(destination,
+														m_filter[table::Games],
+														m_selector[table::Games],
+														allowedTags,
+														allowExtraTags,
+														illegalRejected,
+														log,
+														progress);
 		}
 		else
 		{
-			// TODO: in this case we should allow to copy the move data section
-			// This means: use exportGames(..., allowedTags, allowExtraTags, ...)
 			sci::Consumer::Codecs codecs(&dynamic_cast<sci::Codec&>(destination.codec()));
 			sci::Consumer consumer(m_cursor.m_db->format(), codecs, allowedTags, allowExtraTags);
-			count = exportGames(consumer, copyMode, illegalRejected, log, progress);
+			count = exportGames(consumer, illegalRejected, log, progress);
 		}
 
 		progress.message("write-index");
@@ -747,7 +750,7 @@ View::exportGames(mstl::string const& filename,
 //			if (	m_cursor.m_db->format() == format::Scid
 //				&& (ext == "si4" || dynamic_cast<si3::Codec&>(m_cursor.m_db->codec()).isFormat3()))
 //			{
-//				count = exportGames(destination, copyMode, illegalRejected, log, progress, "write-game");
+//				count = exportGames(destination, illegalRejected, log, progress, "write-game");
 //			}
 //			else
 			{
@@ -758,7 +761,7 @@ View::exportGames(mstl::string const& filename,
 												allowedTags,
 												allowExtraTags);
 				progress.message("write-game");
-				count = exportGames(consumer, copyMode, illegalRejected, log, progress);
+				count = exportGames(consumer, illegalRejected, log, progress);
 			}
 		}
 
@@ -818,7 +821,7 @@ View::exportGames(mstl::string const& filename,
 			PgnWriter writer(format::Pgn, strm, useEncoding, lineEnding, flags);
 			progress.message("write-game");
 			WriteGuard guard(m_app, filename);
-			count = exportGames(writer, copyMode, illegalRejected, log, progress);
+			count = exportGames(writer, illegalRejected, log, progress);
 		}
 		catch (mstl::ios_base::failure const& exc)
 		{
@@ -846,6 +849,7 @@ View::printGames(	TeXt::Environment& environment,
 						NagMap const& nagMap,
 						Languages const& languages,
 						unsigned significantLanguages,
+						unsigned* illegalRejected,
 						Log& log,
 						util::Progress& progress) const
 {
@@ -862,10 +866,9 @@ View::printGames(	TeXt::Environment& environment,
 											languages,
 											significantLanguages,
 											environment);
-				unsigned illegalRejected = 0;
 
 				progress.message("print-game");
-				count = exportGames(writer, copy::AllGames, illegalRejected, log, progress);
+				count = exportGames(writer, illegalRejected, log, progress);
 			}
 			break;
 

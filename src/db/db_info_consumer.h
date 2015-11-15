@@ -41,7 +41,9 @@ public:
 	InfoConsumer(	format::Type srcFormat,
 						mstl::string const& encoding,
 						TagBits const& allowedTags,
-						bool allowExtraTags);
+						bool allowExtraTags,
+						LanguageList const* languages = nullptr,
+						unsigned significantLanguages = 0);
 
 	void sendComment(Comment const& comment);
 	bool preparseComment(mstl::string& comment) override;

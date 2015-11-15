@@ -1250,7 +1250,8 @@ proc Release {table x y} {
 proc SetSelection {table args} {
 	variable ${table}::Vars
 
-	set invoke 0
+	set shiftIsHeldDown 0
+	set active $Vars(active)
 
 	if {[llength $args] == 3} {
 		lassign $args x y state
@@ -1259,15 +1260,15 @@ proc SetSelection {table args} {
 		if {[lindex $id 0] eq "header"} { return }
 		set row [$table.t item order [lindex $id 1] -visible]
 		if {$row >= $Vars(rows)} { return }
-		if {$state & 1} { set invoke 1 }
+		if {$state & 1} { set shiftIsHeldDown 1 }
 	} elseif {[lindex $args 0] & 1} {
-		if {$Vars(active) < 0} { return }
-		set invoke 1
+		if {$active < 0} { return }
+		set shiftIsHeldDown 1
 	}
 
-	select $table $Vars(active)
-	event generate $table <<TableSelected>> -data $Vars(active)
-	if {$invoke} { event generate $table <<TableInvoked>> -data $Vars(active) }
+	select $table $active
+	event generate $table <<TableSelected>> -data $active
+	event generate $table <<TableInvoked>> -data $shiftIsHeldDown
 }
 
 

@@ -391,7 +391,7 @@ proc select {path encoding} {
 proc languageName {lang} {
 	variable Lang
 
-	if {$lang eq "xx"} { return $mc::AllLanguages }
+	if {$lang eq "xx" || [string length $lang] == 0} { return $mc::AllLanguages }
 	if {[info exists mc::Lang($lang)]} { return $mc::Lang($lang) }
 	return $lang
 }

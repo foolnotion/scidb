@@ -40,7 +40,8 @@ class VarConsumer : public InfoConsumer
 {
 public:
 
-	VarConsumer(Board const& startBoard, mstl::string const& encoding = mstl::string::empty_string);
+	VarConsumer(Board const& startBoard,
+					mstl::string const& encoding = mstl::string::empty_string);
 	~VarConsumer() throw();
 
 	bool notReleased() const;

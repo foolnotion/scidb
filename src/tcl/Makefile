@@ -211,6 +211,8 @@ tcl_application.o: ../mstl/m_function_base.h
 tcl_application.o: ../mstl/m_function_base.ipp
 tcl_application.o: ../mstl/m_function.ipp
 tcl_application.o: ../app/app_tree_admin.ipp
+tcl_application.o: ../db/db_comment.h
+tcl_application.o: ../db/db_comment.ipp
 tcl_application.o: ../util/u_rkiss.h
 tcl_application.o: ../app/app_application.ipp
 tcl_application.o: ../app/app_multi_cursor.h
@@ -408,6 +410,8 @@ tcl_board.o: ../mstl/m_function_base.h
 tcl_board.o: ../mstl/m_function_base.ipp
 tcl_board.o: ../mstl/m_function.ipp
 tcl_board.o: ../app/app_tree_admin.ipp
+tcl_board.o: ../db/db_comment.h
+tcl_board.o: ../db/db_comment.ipp
 tcl_board.o: ../util/u_rkiss.h
 tcl_board.o: ../app/app_application.ipp
 tcl_board.o: ../db/db_board_base.h
@@ -416,8 +420,6 @@ tcl_board.o: ../db/db_game.h
 tcl_board.o: ../db/db_game_data.h
 tcl_board.o: ../db/db_tag_set.h
 tcl_board.o: ../db/db_tag_set.ipp
-tcl_board.o: ../db/db_comment.h
-tcl_board.o: ../db/db_comment.ipp
 tcl_board.o: ../db/db_edit_key.h
 tcl_board.o: ../db/db_edit_key.ipp
 tcl_board.o: ../mstl/m_auto_ptr.h
@@ -585,6 +587,8 @@ tcl_crosstable.o: ../mstl/m_function_base.h
 tcl_crosstable.o: ../mstl/m_function_base.ipp
 tcl_crosstable.o: ../mstl/m_function.ipp
 tcl_crosstable.o: ../app/app_tree_admin.ipp
+tcl_crosstable.o: ../db/db_comment.h
+tcl_crosstable.o: ../db/db_comment.ipp
 tcl_crosstable.o: ../util/u_rkiss.h
 tcl_crosstable.o: ../app/app_application.ipp
 tcl_crosstable.o: ../app/app_cursor.h
@@ -1005,14 +1009,14 @@ tcl_engine.o: ../mstl/m_function_base.h
 tcl_engine.o: ../mstl/m_function_base.ipp
 tcl_engine.o: ../mstl/m_function.ipp
 tcl_engine.o: ../app/app_tree_admin.ipp
+tcl_engine.o: ../db/db_comment.h
+tcl_engine.o: ../db/db_comment.ipp
 tcl_engine.o: ../util/u_rkiss.h
 tcl_engine.o: ../app/app_application.ipp
 tcl_engine.o: ../db/db_game.h
 tcl_engine.o: ../db/db_game_data.h
 tcl_engine.o: ../db/db_tag_set.h
 tcl_engine.o: ../db/db_tag_set.ipp
-tcl_engine.o: ../db/db_comment.h
-tcl_engine.o: ../db/db_comment.ipp
 tcl_engine.o: ../db/db_edit_key.h
 tcl_engine.o: ../db/db_edit_key.ipp
 tcl_engine.o: ../mstl/m_auto_ptr.h
@@ -1779,6 +1783,8 @@ tcl_position.o: ../mstl/m_function_base.h
 tcl_position.o: ../mstl/m_function_base.ipp
 tcl_position.o: ../mstl/m_function.ipp
 tcl_position.o: ../app/app_tree_admin.ipp
+tcl_position.o: ../db/db_comment.h
+tcl_position.o: ../db/db_comment.ipp
 tcl_position.o: ../util/u_rkiss.h
 tcl_position.o: ../app/app_application.ipp
 tcl_position.o: ../app/app_cursor.h
@@ -1792,8 +1798,6 @@ tcl_position.o: ../db/db_game.h
 tcl_position.o: ../db/db_game_data.h
 tcl_position.o: ../db/db_tag_set.h
 tcl_position.o: ../db/db_tag_set.ipp
-tcl_position.o: ../db/db_comment.h
-tcl_position.o: ../db/db_comment.ipp
 tcl_position.o: ../db/db_edit_key.h
 tcl_position.o: ../db/db_edit_key.ipp
 tcl_position.o: ../mstl/m_auto_ptr.h
@@ -1983,6 +1987,8 @@ tcl_tree.o: ../mstl/m_function_base.h
 tcl_tree.o: ../mstl/m_function_base.ipp
 tcl_tree.o: ../mstl/m_function.ipp
 tcl_tree.o: ../app/app_tree_admin.ipp
+tcl_tree.o: ../db/db_comment.h
+tcl_tree.o: ../db/db_comment.ipp
 tcl_tree.o: ../util/u_rkiss.h
 tcl_tree.o: ../app/app_application.ipp
 tcl_tree.o: ../app/app_cursor.h
@@ -1996,8 +2002,6 @@ tcl_tree.o: ../db/db_game.h
 tcl_tree.o: ../db/db_game_data.h
 tcl_tree.o: ../db/db_tag_set.h
 tcl_tree.o: ../db/db_tag_set.ipp
-tcl_tree.o: ../db/db_comment.h
-tcl_tree.o: ../db/db_comment.ipp
 tcl_tree.o: ../db/db_edit_key.h
 tcl_tree.o: ../db/db_edit_key.ipp
 tcl_tree.o: ../mstl/m_auto_ptr.h

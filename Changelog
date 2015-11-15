@@ -1,3 +1,17 @@
+[November 2015] ==============================================================
+
+------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #1080)
+------------------------------------------------------------------------------
+* Many, many bug-fixes, the most important:
+- Language support in game editor.
+- Fixes in game editor layout algorithm.
+- Fix in game bar when selecting games with a lost game view.
+
+* New feature: language support when exporting a single game.
+
+* Some adaptions in game editor for revised tk text widget.
+
 [August 2015] ================================================================
 
 ------------------------------------------------------------------------------
@@ -12,13 +26,6 @@ Scidb 1.0 BETA (rev. #1075)
 Scidb 1.0 BETA (rev. #1035)
 ------------------------------------------------------------------------------
 * Info tab moved into top notebook (a suggestion from Steve).
-
-* Bad castling rights in FEN from PGN games will be fixed automatically.
-
-------------------------------------------------------------------------------
-Scidb 1.0 BETA (rev. #1035)
-------------------------------------------------------------------------------
-* Info tab moved into top notebook ( a suggestion from Steve).
 
 * Bad castling rights in FEN from PGN games will be fixed automatically.
 

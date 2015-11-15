@@ -38,6 +38,7 @@
 #include "m_stack.h"
 #include "m_limits.h"
 #include "m_utility.h"
+#include "m_cast.h"
 #include "m_assert.h"
 
 using namespace db::edit;
@@ -60,11 +61,12 @@ struct Node::Spacing
 	enum Type
 	{
 		Zero, Space, Open, Close, Break, Para
-	}
-;
+	};
+
 	enum Context
 	{
-		None, Comment, MoveInfo, Annotation, PreComment, Diagram, Result, StartVariation, EndVariation
+		None, Comment, MoveInfo, Annotation,
+		PreComment, Diagram, Result, StartVariation, EndVariation
 	};
 
 	struct Token
@@ -72,36 +74,27 @@ struct Node::Spacing
 		Token(unsigned lvl, Type t)
 			:level(mstl::min(lvl, 255u))
 			,number(0)
+			,count(0)
 			,space(t)
 			,context(None)
-			,isFirstOrLast(0)
-		{
-		}
-
-		Token(unsigned lvl, Type t, bool flag)
-			:level(mstl::min(lvl, 255u))
-			,number(0)
-			,space(t)
-			,context(None)
-			,isFirstOrLast(flag)
 		{
 		}
 
 		Token(unsigned lvl, Type t, Context c)
 			:level(mstl::min(lvl, 255u))
 			,number(0)
+			,count(0)
 			,space(t)
 			,context(c)
-			,isFirstOrLast(0)
 		{
 		}
 
-		Token(unsigned lvl, Type t, unsigned no, bool flag)
+		Token(unsigned lvl, Type t, unsigned no, unsigned last)
 			:level(mstl::min(lvl, 255u))
 			,number(mstl::min(no, 255u))
+			,count(last)
 			,space(t)
 			,context(None)
-			,isFirstOrLast(flag)
 		{
 		}
 
@@ -110,9 +103,9 @@ struct Node::Spacing
 
 		uint8_t level;
 		uint8_t number;
+		uint8_t count;
 		uint8_t space:4;
-		uint8_t context:3;
-		uint8_t isFirstOrLast:1;
+		uint8_t context:4;
 	};
 
 	typedef mstl::stack<Token> TokenList;
@@ -122,12 +115,13 @@ struct Node::Spacing
 	void incrPlyCount();
 
 	void pushSpace();
-	void pushOpen(bool istFirstVar, unsigned number = 0);
-	void pushClose(bool isLastVar);
+	void pushOpen(unsigned number, unsigned count);
+	void pushClose(unsigned number, unsigned count);
 	void pushBreak();
 	void pushBreak(unsigned level);
 	void pushParagraph(Context context);
 	void pushSpaceOrParagraph(Context context);
+	void pushBreakOrParagraph(Context context);
 
 	void pop(List& list);
 
@@ -170,7 +164,7 @@ Node::Spacing::incrPlyCount()
 
 
 void
-Node::Spacing::pushOpen(bool istFirstVar, unsigned number)
+Node::Spacing::pushOpen(unsigned number, unsigned count)
 {
 	while (m_tokenList.top() == Space || m_tokenList.top() == Break || m_tokenList.top() == Para)
 		m_tokenList.pop();
@@ -184,17 +178,17 @@ Node::Spacing::pushOpen(bool istFirstVar, unsigned number)
 #endif
 
 	m_tokenList.push(Token(m_level, type));
-	m_tokenList.push(Token(m_level, Open, number, istFirstVar));
+	m_tokenList.push(Token(m_level, Open, number, count));
 	m_plyCount = 0;
 }
 
 
 void
-Node::Spacing::pushClose(bool isLastVar)
+Node::Spacing::pushClose(unsigned number, unsigned count)
 {
    m_tokenList.clear();
    m_tokenList.push(Token(0, Zero));
-   m_tokenList.push(Token(m_level, Close, isLastVar));
+   m_tokenList.push(Token(m_level, Close, number, count));
 }
 
 
@@ -210,11 +204,11 @@ void
 Node::Spacing::pushBreak(unsigned level)
 {
    if (	!m_isVirgin
-   	&& m_tokenList.top() != Break
+   	&& (m_tokenList.top() != Break || level == 0)
    	&& m_tokenList.top() != Para
    	&& m_tokenList.top() != Open)
    {
-   	if (m_tokenList.top() == Space)
+   	if (m_tokenList.top() == Space || m_tokenList.top() == Break)
    		m_tokenList.pop();
 
 		m_tokenList.push(Token(level, Break));
@@ -277,6 +271,16 @@ Node::Spacing::pushSpaceOrParagraph(Context context)
 
 
 void
+Node::Spacing::pushBreakOrParagraph(Context context)
+{
+	if (m_level == 0)
+		pushParagraph(context);
+	else
+		pushBreak(0);
+}
+
+
+void
 Node::Spacing::pop(List& list)
 {
 	for (unsigned i = 1; i < m_tokenList.size(); ++i)
@@ -293,9 +297,9 @@ Node::Spacing::pop(List& list)
 
 			case Open:
 				if (token.number)
-					list.push_back(new edit::Space(token.level, token.number, token.isFirstOrLast));
+					list.push_back(new edit::Space(token.level, token.number, token.count));
 				else
-					list.push_back(new edit::Space(Node::Open, token.isFirstOrLast));
+					list.push_back(new edit::Space(Node::Open));
 				break;
 		}
 	}
@@ -308,6 +312,7 @@ Node::Spacing::pop(List& list)
 struct Node::Work : public Node::Spacing
 {
 	Work();
+	~Work();
 
 	LanguageSet const*	m_wantedLanguages;
 	EngineList const*		m_engineList;
@@ -317,6 +322,7 @@ struct Node::Work : public Node::Spacing
 	result::ID				m_result;
 	termination::State	m_termination;
 	Key						m_key;
+	MoveNode*				m_emptyLine;
 	bool						m_needMoveNo;
 	bool						m_isFolded;
 	bool						m_isEmpty;
@@ -331,19 +337,22 @@ Node::Work::Work()
 	,m_languages(0)
 	,m_result(result::Unknown)
 	,m_termination(termination::None)
+	,m_emptyLine(0)
 	,m_needMoveNo(true)
 	,m_isFolded(false)
-	,m_isEmpty(true)
 	,m_linebreakMaxLineLengthVar(0)
 	,m_linebreakMinCommentLength(0)
 {
 }
 
 
-Node::~Node() throw()				{}
-Visitor::~Visitor() throw()		{}
-Variation::~Variation() throw()	{ ::deleteList(m_list); }
-Move::~Move() throw()				{ ::deleteList(m_list); }
+Node::Work::~Work() { delete m_emptyLine; }
+
+
+Node::~Node()				{}
+Visitor::~Visitor()		{}
+Variation::~Variation()	{ ::deleteList(m_list); }
+Move::~Move()				{ ::deleteList(m_list); }
 
 
 Node::Type Action::type() const		{ return TAction; }
@@ -371,6 +380,7 @@ void Marks::visit(Visitor& visitor) const			{ visitor.marks(m_hasMarks); }
 inline bool KeyNode::operator<(KeyNode const* node) const { return m_key < node->m_key; }
 inline bool KeyNode::operator>(KeyNode const* node) const { return node->m_key < m_key; }
 
+
 Key const& KeyNode::startKey() const	{ return m_key; }
 Key const& KeyNode::endKey() const		{ return m_key; }
 
@@ -393,11 +403,9 @@ bool
 Diagram::operator==(Node const* node) const
 {
 	M_ASSERT(node);
-	M_ASSERT(dynamic_cast<Diagram const*>(node));
-	M_ASSERT(m_key == static_cast<Diagram const*>(node)->m_key);
 
-	return	m_fromColor == static_cast<Diagram const*>(node)->m_fromColor
-			&& m_board.isEqualZHPosition(static_cast<Diagram const*>(node)->m_board);
+	Diagram const* diagram = mstl::safe_cast_ptr<Diagram const>(node);
+	return m_fromColor == diagram->m_fromColor && m_board.isEqualZHPosition(diagram->m_board);
 }
 
 
@@ -423,6 +431,7 @@ Ply::Ply(MoveNode const* move, unsigned moveno)
 	:m_moveNo(moveno)
 	,m_move(move->move())
 {
+	M_ASSERT(!move->move().isEmpty());
 }
 
 
@@ -430,10 +439,9 @@ bool
 Ply::operator==(Node const* node) const
 {
 	M_ASSERT(node);
-	M_ASSERT(dynamic_cast<Ply const*>(node));
 
-	return	m_moveNo == static_cast<Ply const*>(node)->m_moveNo
-			&& m_move == static_cast<Ply const*>(node)->m_move;
+	Ply const* ply = mstl::safe_cast_ptr<Ply const>(node);
+	return m_moveNo == ply->m_moveNo && m_move == ply->m_move;
 }
 
 
@@ -441,10 +449,9 @@ bool
 Comment::operator==(Node const* node) const
 {
 	M_ASSERT(node);
-	M_ASSERT(dynamic_cast<Comment const*>(node));
 
-	return	m_position == static_cast<Comment const*>(node)->m_position
-			&& m_comment == static_cast<Comment const*>(node)->m_comment;
+	Comment const* comment = mstl::safe_cast_ptr<Comment const>(node);
+	return m_position == comment->m_position && m_comment == comment->m_comment;
 }
 
 
@@ -467,10 +474,9 @@ bool
 Annotation::operator==(Node const* node) const
 {
 	M_ASSERT(node);
-	M_ASSERT(dynamic_cast<Annotation const*>(node));
 
-	return	m_type == static_cast<Annotation const*>(node)->m_type
-			&& m_annotation == static_cast<Annotation const*>(node)->m_annotation;
+	Annotation const* annotation = mstl::safe_cast_ptr<Annotation const>(node);
+	return m_type == annotation->m_type && m_annotation == annotation->m_annotation;
 }
 
 
@@ -492,9 +498,10 @@ bool
 States::operator==(Node const* node) const
 {
 	M_ASSERT(node);
-	M_ASSERT(dynamic_cast<States const*>(node));
 
-	return	m_threefoldRepetition == static_cast<States const*>(node)->m_threefoldRepetition
+	States const* states = mstl::safe_cast_ptr<States const>(node);
+
+	return	m_threefoldRepetition == states->m_threefoldRepetition
 			&& m_fiftyMoveRule == static_cast<States const*>(node)->m_fiftyMoveRule;
 }
 
@@ -516,35 +523,40 @@ bool
 Marks::operator==(Node const* node) const
 {
 	M_ASSERT(node);
-	M_ASSERT(dynamic_cast<Marks const*>(node));
-
-	return m_hasMarks == static_cast<Marks const*>(node)->m_hasMarks;
+	return m_hasMarks == mstl::safe_cast_ptr<Marks const>(node)->m_hasMarks;
 }
 
 
 void
 Space::visit(Visitor& visitor) const
 {
-	if (m_level >= 0 && m_number == 0)
+	if (m_level >= 0 && m_varNo == 0)
 	{
 		visitor.linebreak(m_level);
 	}
-	else if (m_number == 0 || m_level > 3)
+	else if (!m_asNumber || m_level <= 0 || 3 < m_level)
 	{
-		visitor.space(m_bracket, m_isFirstOrLast);
+		visitor.space(m_bracket, m_varNo, m_varCount);
 	}
 	else
 	{
 		mstl::string s;
 
-		switch (m_level)
+//		if (m_varCount == 1)
+//		{
+//			s.append('-');
+//		}
+//		else
 		{
-			case 1: s.format("%u", m_number); break;
-			case 2: s.append(char(((m_number - 1) % 26) + 'a')); break;
-			case 3: s.appendSmallRomanNumber(m_number); break;
+			switch (m_level)
+			{
+				case 1: s.format("%u", m_varNo); break;
+				case 2: s.append(char(((m_varNo - 1) % 26) + 'a')); break;
+				case 3: s.appendSmallRomanNumber(m_varNo); break;
+			}
 		}
 
-		visitor.number(s, m_isFirstOrLast);
+		visitor.number(s, m_varNo == 1);
 	}
 }
 
@@ -553,11 +565,13 @@ bool
 Space::operator==(Node const* node) const
 {
 	M_ASSERT(node);
-	M_ASSERT(dynamic_cast<Space const*>(node));
 
-	return	m_level == static_cast<Space const*>(node)->m_level
-			&& m_bracket == static_cast<Space const*>(node)->m_bracket
-			&& m_number == static_cast<Space const*>(node)->m_number;
+	Space const* space = mstl::safe_cast_ptr<Space const>(node);
+
+	return	m_level == space->m_level
+			&& m_bracket == space->m_bracket
+			&& m_varNo == space->m_varNo
+			&& (m_varNo == m_varCount) == (space->m_varNo == space->m_varCount);
 }
 
 
@@ -634,6 +648,15 @@ Action::Action(Command command, unsigned level, Key const& startKey, Key const& 
 
 
 void
+Action::replace(unsigned level, Key const& start, Key const& end)
+{
+	m_level = level;
+	m_key1 = start;
+	m_key2 = end;
+}
+
+
+void
 Action::visit(Visitor& visitor) const
 {
 	switch (m_command)
@@ -658,9 +681,7 @@ bool
 Languages::operator==(Node const* node) const
 {
 	M_ASSERT(node);
-	M_ASSERT(dynamic_cast<Languages const*>(node));
-
-	return m_langSet == dynamic_cast<Languages const*>(node)->m_langSet;
+	return m_langSet == mstl::safe_cast_ptr<Languages const>(node)->m_langSet;
 }
 
 
@@ -682,17 +703,18 @@ bool
 Variation::operator==(Node const* node) const
 {
 	M_ASSERT(node);
-	M_ASSERT(dynamic_cast<Variation const*>(node));
 
-	if (m_key != static_cast<Variation const*>(node)->m_key)
+	Variation const* variation = mstl::safe_cast_ptr<Variation const>(node);
+
+	if (m_key != variation->m_key)
 		return false;
 
-	if (m_list.size() != static_cast<Variation const*>(node)->m_list.size())
+	if (m_list.size() != variation->m_list.size())
 		return false;
 
 	for (unsigned i = 0; i < m_list.size(); ++i)
 	{
-		if (*m_list[i] != static_cast<Variation const*>(node)->m_list[i])
+		if (*m_list[i] != variation->m_list[i])
 			return false;
 	}
 
@@ -716,35 +738,35 @@ Variation::visit(Visitor& visitor) const
 
 
 void
-Variation::difference(	Root const* root,
-								Variation const* var,
-								unsigned level,
-								Node::List& nodes) const
+Variation::difference(Root const* root, Variation const* var, unsigned level, Node::List& nodes) const
 {
 	M_ASSERT(root);
 	M_ASSERT(var);
 
-	Key const& endKey = var->successor();
+	Key const* endKey = &var->successor();
 
 	unsigned	i = 0;
 	unsigned k = 0;
 	unsigned m = m_list.size();
 	unsigned n = var->m_list.size();
 
-	if (m > 0 && n > 0)
+	while (i < m && k < n)
 	{
-		KeyNode const* lhs = m_list[0];			// node from current game
-		KeyNode const* rhs = var->m_list[0];	// node from previous game
+		KeyNode const* lhs = m_list[i];			// node from current game
+		KeyNode const* rhs = var->m_list[k];	// node from previous game
 
 		if (lhs->key() < rhs->key())
 		{
+			unsigned ii = i;
+
 			do
-				++i;
-			while (i < m && m_list[i]->key() < rhs->key());
+				++ii;
+			while (ii < m && m_list[ii]->key() < rhs->key());
 
 			nodes.push_back(root->newAction(Action::Insert, level, rhs->startKey()));
-			nodes.insert(nodes.end(), m_list.begin(), m_list.begin() + i);
+			nodes.insert(nodes.end(), m_list.begin() + i, m_list.begin() + ii);
 			nodes.push_back(root->newAction(Action::Finish, level));
+			i = ii;
 		}
 		else if (rhs->key() < lhs->key())
 		{
@@ -752,107 +774,113 @@ Variation::difference(	Root const* root,
 				++k;
 			while (k < n && var->m_list[k]->key() < lhs->key());
 
-			Key const& after = k == n ? endKey : var->m_list[k]->startKey();
-			nodes.push_back(root->newAction(Action::Remove, level, rhs->startKey(), after));
+			Key const& after = k == n ? *endKey : var->m_list[k]->startKey();
+			pushRemove(root, nodes, level, rhs->startKey(), after);
 		}
-	}
-
-	while (i < m && k < n)
-	{
-		KeyNode const* lhs = m_list[i];			// node from current game
-		KeyNode const* rhs = var->m_list[k];	// node from previous game
-
-		Type lhsType = lhs->type();
-		Type rhsType = rhs->type();
-
-		if (lhsType == rhsType)
+		else
 		{
-			if (lhsType == TVariation)
-			{
-				Variation const* lhsVar = static_cast<Variation const*>(lhs);
-				Variation const* rhsVar = static_cast<Variation const*>(rhs);
+			Type lhsType = lhs->type();
+			Type rhsType = rhs->type();
 
-				lhsVar->difference(root, rhsVar, level + 1, nodes);
-			}
-			else if (*lhs != rhs)
+			if (lhsType == rhsType)
 			{
-				if (	lhsType == TMove
-					&& (	static_cast<Move const*>(lhs)->ply() == 0
-						|| static_cast<Move const*>(rhs)->ply() == 0
-						|| *static_cast<Move const*>(lhs)->ply() != static_cast<Move const*>(rhs)->ply()))
+				if (lhsType == TVariation)
 				{
-					List::const_iterator lhsLast	= m_list.begin() + i + 1;
-					List::const_iterator lhsEnd	= m_list.end();
-					List::const_iterator lhsIter	= var->m_list.begin() + k + 1;
-					List::const_iterator rhsIter	= var->m_list.end();
-					List::const_iterator rhsLast	= lhsIter;
-					List::const_iterator rhsEnd	= rhsIter;
+					Variation const* lhsVar = static_cast<Variation const*>(lhs);
+					Variation const* rhsVar = static_cast<Variation const*>(rhs);
 
-					while	(	lhsIter < lhsEnd
-							&& rhsIter < rhsEnd
-							&& (*lhsIter)->key() == (*rhsIter)->key())
+					lhsVar->difference(root, rhsVar, level + 1, nodes);
+				}
+				else if (*lhs != rhs)
+				{
+					if (	lhsType == TMove
+						&& (	static_cast<Move const*>(lhs)->ply() == 0
+							|| static_cast<Move const*>(rhs)->ply() == 0
+							|| *static_cast<Move const*>(lhs)->ply() != static_cast<Move const*>(rhs)->ply()))
 					{
-						if (	(*lhsIter)->key() != (*rhsIter)->key()
-							|| *static_cast<Node const*>(*lhsIter) != static_cast<Node const*>(*lhsIter))
+						List::const_iterator lhsIter	= m_list.begin() + i + 1;
+						List::const_iterator rhsIter	= var->m_list.begin() + k + 1;
+						List::const_iterator lhsEnd	= m_list.end();
+						List::const_iterator rhsEnd	= var->m_list.end();
+
+						while	(	lhsIter < lhsEnd
+								&& rhsIter < rhsEnd
+								&& (*lhsIter)->key() == (*rhsIter)->key()
+								&& *static_cast<Node const*>(*lhsIter) != static_cast<Node const*>(*lhsIter))
 						{
-							lhsLast = lhsIter;
-							rhsLast = rhsIter;
+							++lhsIter;
+							++rhsIter;
 						}
 
-						++lhsIter;
-						++rhsIter;
+						Key const& before	= rhs->endKey();
+						Key const& after	= rhsIter == var->m_list.end() ? *endKey : (*rhsIter)->startKey();
+
+						nodes.push_back(root->newAction(Action::Replace, level, before, after));
+						nodes.insert(nodes.end(), m_list.begin() + i, lhsIter);
+						nodes.push_back(root->newAction(Action::Finish, level));
+
+						i = lhsIter - m_list.begin() - 1;
+						k = rhsIter - var->m_list.begin() - 1;
+					}
+					else
+					{
+						Key const& before	= rhs->endKey();
+						Key const& after	= (k == n - 1) ? *endKey : var->m_list[k + 1]->startKey();
+
+						nodes.push_back(root->newAction(Action::Replace, level, before, after));
+						nodes.push_back(lhs);
+						nodes.push_back(root->newAction(Action::Finish, level));
+					}
+				}
+
+				++i;
+				++k;
+			}
+			else
+			{
+				enum { Insert, Remove } action;
+
+				switch (rhsType)
+				{
+					case TDiagram:		action = Remove; break;
+					case TMove:			action = Insert; break;
+					case TVariation:	action = (lhsType == TMove) ? Remove : Insert; break;
+					default:				M_ASSERT(!"should not happen"); return;
+				}
+
+				switch (action)
+				{
+					case Insert:
+					{
+						nodes.push_back(root->newAction(Action::Insert, level, rhs->startKey()));
+						nodes.push_back(lhs);
+						nodes.push_back(root->newAction(Action::Finish, level));
+						++i;
+						break;
 					}
 
-					Key const& before	= rhs->endKey();
-					Key const& after	= rhsLast == var->m_list.end() ? endKey : (*rhsLast)->startKey();
+					case Remove:
+						if (rhsType == TDiagram)
+						{
+							Key const& after = (k == n - 1) ? *endKey : var->m_list[k + 1]->startKey();
+							pushRemove(root, nodes, level, rhs->startKey(), after);
+						}
+						else
+						{
+							Variation const* variation = mstl::safe_cast_ptr<Variation const>(rhs);
 
-					nodes.push_back(root->newAction(Action::Replace, level, before, after));
-					nodes.insert(nodes.end(), m_list.begin() + i, lhsLast);
-					nodes.push_back(root->newAction(Action::Finish, level));
+							Key const& key		= variation->key();
+							Key const& succ	= variation->successor();
 
-					i = lhsLast - m_list.begin() - 1;
-					k = rhsLast - var->m_list.begin() - 1;
+							pushRemove(root, nodes, level, key, succ);
+
+							if (*endKey == key)
+								endKey = &succ;
+						}
+
+						++k;
+						break;
 				}
-				else
-				{
-					Key const& before	= rhs->endKey();
-					Key const& after	= (k == n - 1) ? endKey : var->m_list[k + 1]->startKey();
-
-					nodes.push_back(root->newAction(Action::Replace, level, before, after));
-					nodes.push_back(lhs);
-					nodes.push_back(root->newAction(Action::Finish, level));
-				}
-			}
-
-			++i;
-			++k;
-		}
-		else // if (lhsType != rhsType)
-		{
-			enum { Insert, Remove } action;
-
-			switch (rhsType)
-			{
-				case TDiagram:		action = Remove; break;
-				case TMove:			action = Insert; break;
-				case TVariation:	action = (lhsType == TMove) ? Remove : Insert; break;
-				default:				M_ASSERT(!"should not happen"); return;
-			}
-
-			switch (action)
-			{
-				case Insert:
-					nodes.push_back(root->newAction(Action::Insert, level, rhs->startKey()));
-					nodes.push_back(lhs);
-					nodes.push_back(root->newAction(Action::Finish, level));
-					++i;
-					break;
-
-				case Remove:
-					Key const& after = (k == n - 1) ? endKey : var->m_list[k + 1]->startKey();
-					nodes.push_back(root->newAction(Action::Remove, level, rhs->startKey(), after));
-					++k;
-					break;
 			}
 		}
 	}
@@ -862,13 +890,41 @@ Variation::difference(	Root const* root,
 		List::const_iterator firstNode	= m_list.begin() + i;
 		List::const_iterator lastNode		= m_list.end();
 
-		nodes.push_back(root->newAction(Action::Insert, level, successor()));
+		nodes.push_back(root->newAction(Action::Insert, level, *endKey));
 		nodes.insert(nodes.end(), firstNode, lastNode);
 		nodes.push_back(root->newAction(Action::Finish, level));
 	}
 
 	if (k < n)
-		nodes.push_back(root->newAction(Action::Remove, level, var->m_list[k]->startKey(), endKey));
+	{
+		Key before	= var->m_list[k]->type() == TVariation
+						? var->m_list[k]->key()
+						: var->m_list[k]->startKey();
+		Key after	= var->m_list[n - 1]->type() == TVariation
+						? mstl::safe_cast_ptr<Variation const>(var->m_list[n - 1])->successor()
+						: *endKey;
+
+		pushRemove(root, nodes, level, before, after);
+	}
+}
+
+
+void
+Variation::pushRemove(	Root const* root,
+								Node::List& nodes,
+								unsigned level,
+								Key const& start,
+								Key const& end)
+{
+	if (!nodes.empty() && nodes.back()->type() == TAction)
+	{
+		Action* action = static_cast<Action*>(const_cast<Node*>(nodes.back()));
+
+		if (action->command() == Action::Remove && action->end() == start)
+			return action->replace(level, action->start(), end);
+	}
+
+	nodes.push_back(root->newAction(Action::Remove, level, start, end));
 }
 
 
@@ -876,17 +932,17 @@ bool
 Move::operator==(Node const* node) const
 {
 	M_ASSERT(node);
-	M_ASSERT(dynamic_cast<Move const*>(node));
-	M_ASSERT(m_key == static_cast<Move const*>(node)->m_key);
 
-	if (m_list.size() != static_cast<Move const*>(node)->m_list.size())
+	Move const* move = mstl::safe_cast_ptr<Move const>(node);
+
+	if (m_list.size() != move->m_list.size())
 		return false;
 
 	for (unsigned i = 0; i < m_list.size(); ++i)
 	{
-		if (m_list[i]->type() != static_cast<Move const*>(node)->m_list[i]->type())
+		if (m_list[i]->type() != move->m_list[i]->type())
 			return false;
-		if (*m_list[i] != static_cast<Move const*>(node)->m_list[i])
+		if (*m_list[i] != move->m_list[i])
 			return false;
 	}
 
@@ -900,17 +956,14 @@ Move::Move(Work& work, MoveNode const* move, bool isEmptyGame, unsigned varNo, u
 {
 	if (work.m_level == 0)
 	{
-		if (work.m_isEmpty && isEmptyGame)
-			m_list.push_back(new Space(Empty));
-		else
-			m_list.push_back(new Space(Start));
+		m_list.push_back(new Space(work.m_isEmpty && isEmptyGame ? Empty : Start));
 	}
 	else
 	{
 		if (/*varCount > 1 && */(work.m_displayStyle & display::ShowVariationNumbers))
-			work.pushOpen(varNo == 1, varNo);
+			work.pushOpen(varNo, varCount);
 		else
-			work.pushOpen(varNo == 1);
+			work.pushOpen(varNo, varCount);
 
 		work.pushSpace();
 		work.m_needMoveNo = true;
@@ -956,7 +1009,7 @@ Move::Move(Work& work, MoveNode const* move, bool isEmptyGame, unsigned varNo, u
 			work.pushSpace();
 		work.pop(m_list);
 		work.m_isVirgin = false;
-		m_list.push_back(new Comment(db::Comment(info, false, false), move::Post, Comment::Finally));
+		m_list.push_back(new Comment(db::Comment(info, i18n::None), move::Post, Comment::Finally));
 		needSpace = true;
 	}
 
@@ -987,8 +1040,6 @@ Move::Move(Work& work, MoveNode const* move, bool isEmptyGame, unsigned varNo, u
 Move::Move(Work& work, MoveNode const* move)
 	:KeyNode(work.m_key)
 {
-	M_ASSERT(!move->atLineStart());
-
 	if (work.m_board.whiteToMove())
 	{
 		if (work.m_level == 0 && (work.m_displayStyle & display::ColumnStyle))
@@ -1018,30 +1069,39 @@ Move::Move(Work& work, MoveNode const* move)
 
 	work.pop(m_list);
 
-	bool showTextualSeparately =	!work.m_isFolded
-										&& work.m_level == 0
-										&& (work.m_displayStyle & display::ColumnStyle)
-										&& move->annotation().containsUnusualNags();
-
-	if (	!work.m_isFolded
-		&& (	work.m_level > 0
-			|| (work.m_displayStyle & display::ColumnStyle) == 0
-			|| !move->annotation().containsUnusualNags()))
+	if (!move->annotation().isEmpty())
 	{
-		Annotation::DisplayType type = showTextualSeparately ? Annotation::Numerical : Annotation::All;
+		if (work.m_isFolded)
+		{
+			nag::ID mostImportant = move->annotation().mostImportantNag();
 
-		Annotation* annotation = new Annotation(
-											move->annotation(),
-											type,
+			if (mostImportant != nag::Null)
+			{
+				m_list.push_back(new Annotation(	::db::Annotation(mostImportant),
+															Annotation::Numerical,
+															true));
+			}
+		}
+		else if (	!work.m_isFolded
+					&& (	work.m_level > 0
+						|| !(work.m_displayStyle & display::ColumnStyle)
+						|| !move->annotation().containsUnusualNags()))
+		{
+			Annotation annotation(	move->annotation(),
+											!work.m_isFolded
+												&& work.m_level == 0
+												&& (work.m_displayStyle & display::ColumnStyle)
+												&& move->annotation().containsUnusualNags()
+												? Annotation::Numerical : Annotation::All,
 											bool(work.m_displayStyle & display::ShowDiagrams));
 
-		if (annotation->isEmpty())
-			delete annotation;
-		else
-			m_list.push_back(annotation);
+			if (!annotation.isEmpty())
+				m_list.push_back(new Annotation(annotation));
+		}
 	}
 
 	m_ply = work.m_needMoveNo ? new Ply(move, work.m_board.moveNumber()) : new Ply(move);
+
 	m_list.push_back(m_ply);
 	work.incrPlyCount();
 	work.m_needMoveNo = false;
@@ -1126,7 +1186,7 @@ Move::Move(Work& work, MoveNode const* move)
 			work.pushSpace();
 		}
 		work.pop(m_list);
-		m_list.push_back(new Comment(db::Comment(info, false, false), move::Post, Comment::Finally));
+		m_list.push_back(new Comment(db::Comment(info, i18n::None), move::Post, Comment::Finally));
 	}
 
 	if (context != Node::Spacing::None)
@@ -1141,6 +1201,8 @@ Move::Move(Work& work, db::Comment const& comment, unsigned varNo, unsigned varC
 	:KeyNode(work.m_key)
 	,m_ply(0)
 {
+	m_list.push_back(new Ply);
+
 	if (!work.m_isFolded && !comment.isEmpty())
 	{
 		db::Comment comm(comment);
@@ -1168,14 +1230,16 @@ Move::Move(Work& work, db::Comment const& comment, unsigned varNo, unsigned varC
 		else
 			bracket = Node::Close;
 
-		work.pushClose(varNo == varCount);
-	   m_list.push_back(new Space(bracket, varNo == varCount));
+		work.pushClose(varNo, varCount);
+		m_list.push_back(new Space(bracket, varNo, varCount));
 	}
-	else if (	work.m_result != result::Unknown
-				|| work.m_termination != termination::None
-				|| (work.m_displayStyle & display::DiscardUnknownResult) == 0)
+	else if (	(	work.m_result != result::Unknown
+					|| work.m_termination != termination::None
+					|| (work.m_displayStyle & display::DiscardUnknownResult) == 0)
+				&& !(work.m_displayStyle & display::ColumnStyle)
+				&& !(work.m_displayStyle & display::ParagraphSpacing))
 	{
-		m_list.push_back(new Space(0));
+		m_list.push_back(new Space());
 	}
 }
 
@@ -1183,8 +1247,6 @@ Move::Move(Work& work, db::Comment const& comment, unsigned varNo, unsigned varC
 Move::Move(Spacing& spacing, Key const& key, unsigned moveNumber, MoveNode const* move)
 	:KeyNode(key)
 {
-	M_ASSERT(!move->atLineStart());
-
 	if (color::isWhite(move->move().color()) && (spacing.m_displayStyle & display::ColumnStyle))
 		spacing.pushBreak();
 	else
@@ -1196,6 +1258,7 @@ Move::Move(Spacing& spacing, Key const& key, unsigned moveNumber, MoveNode const
 		m_list.push_back(new Annotation(move->annotation()));
 
 	m_ply = color::isWhite(move->move().color()) ? new Ply(move, moveNumber) : new Ply(move);
+
 	m_list.push_back(m_ply);
 	spacing.incrPlyCount();
 
@@ -1245,7 +1308,7 @@ Root::Root()
 }
 
 
-Root::~Root() throw()
+Root::~Root()
 {
 	delete m_opening;
 	delete m_languages;
@@ -1375,6 +1438,8 @@ Root::makeList(TagSet const& tags,
 	spacing.m_linebreakMaxLineLength = linebreakMaxLineLength;
 	spacing.m_displayStyle = displayStyle;
 
+	Board board(startBoard);
+
 	for (node = node->next(); node->isBeforeLineEnd(); node = node->next())
 	{
 		key.exchangePly(++plyNumber);
@@ -1420,7 +1485,7 @@ Root::makeList(TagSet const& tags,
 	work.m_termination = termination;
 	work.m_linebreakMaxLineLengthVar = linebreakMaxLineLengthVar;
 	work.m_linebreakMinCommentLength = linebreakMinCommentLength;
-	work.m_isEmpty = node->isEmptyLine(); // && !finalBoard.gameIsOver(variant)
+	work.m_isEmpty = node->isEmptyLine(); // && !finalBoard.cannotMove()
 	work.m_displayStyle = displayStyle;
 	work.m_moveInfoTypes = moveInfoTypes;
 
@@ -1437,7 +1502,7 @@ Root::makeList(TagSet const& tags,
 	root->m_termination = termination;
 	root->m_toMove = finalBoard.sideToMove();
 
-	makeList(work, var->m_list, node, variant, 1, 1);
+	makeList(work, var->m_list, node, variant, 0, 0);
 
 	if (	root->m_result != result::Unknown
 		|| work.m_termination != termination::None
@@ -1498,13 +1563,42 @@ Root::makeList(Work& work,
 		work.m_key.addPly(work.m_board.plyNumber() + 1);
 		result.push_back(new Move(work, node));
 		work.m_board.doMove(node->move(), variant);
+		work.m_key.incrementPly();
+		result.push_back(new Move(work, db::Comment(), varNo, varCount));
 		work.m_key.removePly();
 	}
 	else
 	{
-		for ( ; !node->atLineEnd(); node = node->next())
+		node = traverseLine(work, result, node, variant);
+
+		db::Comment comment;
+
+		if (node->atLineEnd())
+			comment = node->comment(move::Post);
+
+		work.m_key.addPly(work.m_board.plyNumber() + 1);
+		result.push_back(new Move(work, comment, varNo, varCount));
+		work.m_key.removePly();
+	}
+}
+
+
+db::MoveNode const*
+Root::traverseLine(Work& work, KeyNode::List& result, MoveNode const* node, variant::Type variant)
+{
+	M_ASSERT(!node->atLineStart());
+
+	MoveNode const* last = node;
+
+	bool isFolded = node->prev()->isFolded();
+
+	for ( ; node && !node->isFolded(); node = node->next())
+	{
+		work.m_key.addPly(work.m_board.plyNumber() + 1);
+		last = node;
+
+		if (!node->atLineEnd())
 		{
-			work.m_key.addPly(work.m_board.plyNumber() + 1);
 			result.push_back(new Move(work, node));
 
 			if (	(work.m_displayStyle & display::ShowDiagrams)
@@ -1513,6 +1607,7 @@ Root::makeList(Work& work,
 			{
 				work.pushParagraph(Spacing::Diagram);
 				work.pop(const_cast<Move*>(static_cast<Move const*>(result.back()))->m_list);
+				M_ASSERT(work.m_board.isValidMove(node->move(), variant));
 				work.m_board.doMove(node->move(), variant);
 				result.push_back(new Diagram(
 					work,
@@ -1521,65 +1616,69 @@ Root::makeList(Work& work,
 				work.pushParagraph(Spacing::Diagram);
 				work.m_needMoveNo = true;
 			}
+		}
 
-			if (node->hasVariation())
+		if (node->hasVariation())
+		{
+			Key moveKey(work.m_key);
+
+			unsigned n = node->variationCount();
+			
+			for (unsigned i = 0; i < n; ++i)
 			{
-				for (unsigned i = 0; i < node->variationCount(); ++i)
+				Board board(work.m_board);
+
+				work.m_key.addVariation(i);
+				work.m_needMoveNo = true;
+
+				Key startKey(work.m_key);
+				startKey.addPly(work.m_board.plyNumber());
+				Key endKey(startKey.successorKey(node->variation(i)));
+
+				Variation* var = new Variation(startKey, endKey);
+				result.push_back(var);
+
+				work.pushParagraph(Spacing::StartVariation);
+
+				unsigned linebreakMaxLineLength = work.m_linebreakMaxLineLength;
+
+				if (	work.m_linebreakMaxLineLength != ::DontSetBreaks
+					&& work.m_linebreakMaxLineLengthVar > 0
+					&& node->variation(i)->countHalfMoves() > work.m_linebreakMaxLineLengthVar)
 				{
-					Board	board(work.m_board);
-					Key	succKey(work.m_key);
-
-					if (i + 1 < node->variationCount())
-					{
-						succKey.addVariation(i + 1);
-						succKey.addPly(work.m_board.plyNumber());
-					}
-					else
-					{
-						succKey.exchangePly(work.m_board.plyNumber() + 2);
-					}
-
-					work.m_key.addVariation(i);
-					work.pushParagraph(Spacing::StartVariation);
-					work.m_needMoveNo = true;
-
-					Variation* var = new Variation(work.m_key, succKey);
-					result.push_back(var);
-
-					unsigned linebreakMaxLineLength = work.m_linebreakMaxLineLength;
-
-					if (	work.m_linebreakMaxLineLength != ::DontSetBreaks
-						&& work.m_linebreakMaxLineLengthVar > 0
-						&& node->variation(i)->countNodes() > work.m_linebreakMaxLineLengthVar)
-					{
-						work.m_linebreakMaxLineLength = work.m_linebreakMaxLineLengthVar;
-					}
-					else
-					{
-						work.m_linebreakMaxLineLength = ::DontSetBreaks;
-					}
-
-					makeList(work, var->m_list, node->variation(i), variant, i + 1, node->variationCount());
-					work.m_linebreakMaxLineLength = linebreakMaxLineLength;
-					M_ASSERT(work.m_level > 0);
-					--work.m_level;
-					work.m_key.removeVariation();
-					work.m_board = board;
+					work.m_linebreakMaxLineLength = work.m_linebreakMaxLineLengthVar;
+				}
+				else
+				{
+					work.m_linebreakMaxLineLength = ::DontSetBreaks;
 				}
 
-				work.pushParagraph(Spacing::EndVariation);
-				work.m_needMoveNo = true;
+				makeList(work, var->m_list, node->variation(i), variant, i + 1, n);
+				work.m_linebreakMaxLineLength = linebreakMaxLineLength;
+
+				M_ASSERT(work.m_level > 0);
+				--work.m_level;
+
+				work.m_key.removeVariation();
+				work.m_board = board;
 			}
 
-			work.m_isFolded = isFolded;
-			work.m_board.doMove(node->move(), variant);
-			work.m_key.removePly();
+			work.pushParagraph(Spacing::EndVariation);
+			work.m_needMoveNo = true;
 		}
+
+		work.m_isFolded = isFolded;
+
+		if (node && !node->atLineEnd())
+		{
+			M_ASSERT(work.m_board.isValidMove(node->move(), variant));
+			work.m_board.doMove(node->move(), variant);
+		}
+
+		work.m_key.removePly();
 	}
 
-	work.m_key.addPly(work.m_board.plyNumber() + 1);
-	result.push_back(new Move(work, node->comment(move::Post), varNo, varCount));
-	work.m_key.removePly();
+	return last;
 }
 
 // vi:set ts=3 sw=3:

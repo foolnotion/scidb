@@ -232,8 +232,7 @@ public:
 	unsigned exportGames(Destination& destination,
 								Filter const& gameFilter,
 								Selector const& gameSelector,
-								copy::Mode copyMode,
-								unsigned& illegalRejected,
+								unsigned* illegalRejected,
 								Log& log,
 								util::Progress& progress) const;
 	// Copy games from this database to the destination database.
@@ -242,7 +241,7 @@ public:
 								Selector const& gameSelector,
 								TagBits const& allowedTags,
 								bool allowExtraTags,
-								unsigned& illegalRejected,
+								unsigned* illegalRejected,
 								Log& log,
 								util::Progress& progress) const;
 	/// Add new game to database.
@@ -336,7 +335,7 @@ public:
 	unsigned importGames(Producer& producer, util::Progress& progress);
 	/// Import whole database.
 	unsigned importGames(Database const& src,
-								unsigned& illegalRejected,
+								unsigned* illegalRejected,
 								Log& log,
 								util::Progress& progress);
 

@@ -66,6 +66,8 @@ public:
 	bool operator==(vector const& v) const;
 	bool operator!=(vector const& v) const;
 
+	vector& operator+=(vector const& v);
+
 	reference operator[](size_type n);
 	const_reference operator[](size_type n) const;
 	reference at(size_type n);

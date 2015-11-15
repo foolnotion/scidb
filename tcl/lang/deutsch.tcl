@@ -370,6 +370,7 @@
 ::util::photos::mc::Message(crcerror)			"Ein Prüfsummenfehler trat auf. Möglicherweise ist der Photodateienserver gerade in einer Wartung."
 ::util::photos::mc::Message(maintenance)		"Der Photodateienserver unterliegt gerade einer Wartung."
 ::util::photos::mc::Message(notfound)			"Der Downloadvorgang wurde abgebrochen weil der Photodateienserver gerade einer Wartung unterliegt."
+::util::photos::mc::Message(noreply)			"Der Server antwortet nicht."
 ::util::photos::mc::Message(aborted)			"Der Benutzer hat den Download abgebrochen."
 ::util::photos::mc::Message(killed)				"Unerwarteter Abbruch des Downloads. Der Subprozess ist verendet."
 
@@ -1693,7 +1694,8 @@
 ::export::mc::IncludeAllTags				"Alle Tags einschliessen"
 ::export::mc::ExtraTags						"Alle anderen Zusatz-Tags"
 ::export::mc::NoComments					"Keine Kommentare"
-::export::mc::Significant					"Signifikant"
+::export::mc::AllLanguages					"Alle Sprachen"
+::export::mc::SelectLanguages				"Ausgewählte Sprachen"
 ::export::mc::LanguageSelection			"Sprachauswahl"
 ::export::mc::MapTo							"Abbilden zu"
 ::export::mc::MapNagsToComment			"Anmerkungen in Kommentare umwandeln"
@@ -1702,6 +1704,9 @@
 ::export::mc::UseColumnStyle				"Benutze Spaltenformatierung"
 ::export::mc::MainlineStyle				"Hauptvariantenstil"
 ::export::mc::HideVariations				"Varianten ausblenden"
+::export::mc::GameDoesNotHaveComments	"Diese Partie hat keine Kommentare."
+
+::export::mc::LanguageSelectionDescr	"Die Kontrollbox (rechts von der Combobox) hat die Bedeutung 'signifikant'.\n\nAls 'signifikant' markiere Sprachen werden immer exportiert.\n\nWenn die Partie keine der als 'signifikant' markierten Sprachen enthält, dann wird die erste verfügbare Sprache exportiert."
 
 ::export::mc::PdfFiles						"PDF-Dateien"
 ::export::mc::HtmlFiles						"HTML-Dateien"

@@ -150,7 +150,6 @@ proc build {w width height} {
 	set Vars(registered) {}
 	set Vars(subscribe:list) {}
 	set Vars(subscribe:info) {}
-	set Vars(subscribe:close) {}
 	set Vars(current:game) {}
 	set Vars(load:method) base
 	set Vars(select-var-is-pending) 0
@@ -1755,22 +1754,23 @@ proc UpdateGameButtonState(list) {position} {
 
 	if {[llength $Vars(current:game)] > 1 && $position < 9} {
 		lassign $Vars(current:game) position base variant view number
-		if {[::scidb::db::get open? $base]} {
-			set numGames [scidb::view::count games $base $variant $view]
-			if {$numGames > 1} {
-				if {[::scidb::game::view $position next] >= 0} {
-					array set state { next normal last normal }
-					set state(random) normal
-				}
-				if {[::scidb::game::view $position prev] >= 0} {
-					array set state { prev normal first normal }
-					set state(random) normal
+		if {[::scidb::db::get open? $base $variant]} {
+			if {[::scidb::view::open? games $base $variant $view]} {
+				if {[scidb::view::count games $base $variant $view] > 1} {
+					if {[::scidb::game::view $position next] >= 0} {
+						array set state { next normal last normal }
+						set state(random) normal
+					}
+					if {[::scidb::game::view $position prev] >= 0} {
+						array set state { prev normal first normal }
+						set state(random) normal
+					}
 				}
 			}
 		}
 	}
 
-	foreach action {next prev first last random} {
+	foreach action [array names state] {
 		::toolbar::childconfigure $Vars(game:$action) -state $state($action)
 	}
 }
@@ -1820,23 +1820,6 @@ proc UpdateGameList {position id base variant {view -1} {index -1}} {
 }
 
 
-proc CloseView {position base variant view} {
-	variable Vars
-
-	if {[llength $Vars(current:game)]} {
-		lassign $Vars(current:game) currPos currBase currVariant currView currNumber
-		if {	$currPos == $position
-			&& $currBase == $base
-			&& $currVariant == $variant
-			&& $currView == $view} {
-			Unsubscribe $position
-			set Vars(current:game) {}
-			SwitchView base
-		}
-	}
-}
-
-
 proc UpdateGameInfo {position id} {
 	variable Vars
 
@@ -1868,11 +1851,8 @@ proc Unsubscribe {position} {
 
 	if {[llength $Vars(subscribe:list)]} {
 		after idle [list ::scidb::db::unsubscribe gameList {*}$Vars(subscribe:list)]
-		set Vars(subscribe:list) {}
-	}
-
-	if {[llength $Vars(subscribe:info)]} {
 		after idle [list ::scidb::db::unsubscribe gameInfo {*}$Vars(subscribe:info)]
+		set Vars(subscribe:list) {}
 		set Vars(subscribe:info) {}
 	}
 }

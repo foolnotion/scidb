@@ -31,9 +31,8 @@ namespace db {
 inline bool Consumer::isMainline() const								{ return m_stack.size() == 2; }
 inline bool Consumer::variationIsEmpty() const						{ return m_stack.top().empty; }
 inline bool Consumer::terminated() const								{ return m_terminated; }
-inline bool Consumer::commentEngFlag() const							{ return m_commentEngFlag; }
-inline bool Consumer::commentOthFlag() const							{ return m_commentOthFlag; }
 inline bool Consumer::allowExtraTags() const							{ return m_allowExtraTags; }
+inline bool Consumer::finalized() const								{ return m_stack.size() == 1; }
 
 inline Board& Consumer::getBoard()										{ return m_stack.top().board; }
 inline variant::Type Consumer::getVariant() const					{ return m_variant; }
@@ -45,6 +44,7 @@ inline unsigned Consumer::countComments() const						{ return m_commentCount; }
 inline unsigned Consumer::countAnnotations() const					{ return m_annotationCount; }
 inline unsigned Consumer::countMoveInfo() const						{ return m_moveInfoCount; }
 inline unsigned Consumer::countMarks() const							{ return m_markCount; }
+inline unsigned Consumer::langFlags() const							{ return m_langFlags; }
 inline Line const& Consumer::openingLine() const					{ return m_line; }
 inline mstl::string const& Consumer::encoding() const				{ return m_encoding; }
 inline sys::utf8::Codec& Consumer::codec() const					{ return *m_codec; }
@@ -58,6 +58,7 @@ inline TimeTable& Consumer::timeTable()								{ return m_sendTimeTable; }
 inline void Consumer::setProducer(Producer* producer)				{ m_producer = producer; }
 inline void Consumer::startMoveSection()								{ beginMoveSection(); }
 inline void Consumer::useVariant(variant::Type variant)			{ m_useVariant = variant; }
+inline void Consumer::setLangFlags(unsigned flags)					{ m_langFlags = flags; }
 
 inline void Consumer::incrementCommentCount()						{ ++m_commentCount; }
 inline void Consumer::incrementMoveInfoCount()						{ ++m_moveInfoCount; }

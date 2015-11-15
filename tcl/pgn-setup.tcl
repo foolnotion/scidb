@@ -214,6 +214,7 @@ namespace import ::dialog::choosecolor::getActualColor
 proc buildText {path context {forceSbSet 0}} {
 	variable ContextList
 	variable Context
+	variable Lookup
 
 	variable [namespace parent]::${context}::Options
 	variable [namespace parent]::${context}::Colors
@@ -252,8 +253,8 @@ proc buildText {path context {forceSbSet 0}} {
 		-foreground black \
 		-yscrollcommand $yscrollcmd \
 		-takefocus 0 \
-		-exportselection 0 \
-		-undo 0 \
+		-exportselection no \
+		-undo no \
 		-width 0 \
 		-height 0 \
 		-relief sunken \
@@ -263,10 +264,13 @@ proc buildText {path context {forceSbSet 0}} {
 		-font $::font::text($context:normal) \
 		-cursor {} \
 	]
+	catch { $f.pgn configure -steadymarks off }
+	$f.pgn debug off
 
 	::widget::textPreventSelection $pgn
 #	bind $pgn <Button-3> [namespace code [list PopupMenu $edit $i]]
 	::widget::bindMouseWheel $pgn
+	set Lookup($pgn) $path
 
 	grid $pgn -row 1 -column 1 -sticky nsew
 	grid $sb -row 1 -column 2 -sticky ns
@@ -304,7 +308,8 @@ proc configureText {path {fontContext ""}} {
 
 	if {$context ne "browser"} {
 		$w tag configure main	-font $::font::text($fontContext:$bold) \
-										-foreground [::colors::lookup $Colors(foreground:main)]
+										-foreground [::colors::lookup $Colors(foreground:main)] \
+										;
 		$w tag configure italic -font $::font::text($fontContext:italic)
 		$w tag configure bold -font $::font::text($fontContext:bold)
 		$w tag configure bold-italic -font $::font::text($fontContext:bold-italic)
@@ -408,6 +413,12 @@ proc setupNags {context} {
 	variable [namespace parent]::${context}::Options
 	if {$Options(show:nagtext)} { set nags [::annotation::unusualNags] } else { set nags {} }
 	::scidb::game::setupNags $nags
+}
+
+
+proc getPath {w} {
+	variable Lookup
+	return $Lookup($w)
 }
 
 

@@ -497,8 +497,11 @@ MODULE_SCOPE int Tree_StateFromListObj(TreeCtrl *tree, Tcl_Obj *obj, int states[
 	tree->inset.top
 #define Tree_BorderRight(tree) \
 	(Tk_Width(tree->tkwin) - tree->inset.right)
+/* Changed by GC
 #define Tree_BorderBottom(tree) \
-	(Tk_Height(tree->tkwin) - tree->inset.bottom)
+	(Tk_Height(tree->tkwin) - tree->inset.bottom) */
+#define Tree_BorderBottom(tree) \
+	((Tk_Height(tree->tkwin) == 1 ? Tk_ReqHeight(tree->tkwin) : Tk_Height(tree->tkwin)) - tree->inset.bottom)
 
 #define Tree_HeaderLeft(tree) \
 	Tree_BorderLeft(tree)

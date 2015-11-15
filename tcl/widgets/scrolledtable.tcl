@@ -784,9 +784,9 @@ proc TableSelected {table number} {
 }
 
 
-proc TableInvoked {table number} {
+proc TableInvoked {table shiftIsHeldDown} {
 	variable ${table}::Vars
-	event generate [winfo parent [winfo parent $table]] <<TableInvoked>> -data $Vars(selection)
+	event generate [winfo parent [winfo parent $table]] <<TableInvoked>> -data $shiftIsHeldDown
 }
 
 
