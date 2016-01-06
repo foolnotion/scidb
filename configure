@@ -1902,36 +1902,28 @@ proc writeMakefile {success} {
     set option(TCL_SHELL) $configure(tcl-shell)
     set option(SUFFIX) $configure(program-suffix)
 
-    foreach {d p} {bin bin lib lib engines games} {
+    foreach {d p} {bin bin lib lib engines games man man data data} {
         if {[info exists configure(${d}dir)]} {
             set dir $configure(${d}dir)
+        } elseif {[info exists configure(destdir)]} {
+            set dir $configure(destdir)/$p
+        } elseif {$d in {man data}} {
+            set dir $configure(prefix)/$p
         } else {
             set dir $configure(exec-prefix)/$p
         }
         set option([string toupper $d]DIR) $dir
     }
 
-    if {[info exists configure(mandir)]} {
-        set dir $configure(mandir)
-    } else {
-        set dir $configure(prefix)/man
-    }
-    set option(MANDIR) $dir
-
     if {[info exists configure(datadir)]} {
         set dir $configure(datadir)
+    } elseif {[info exists configure(destdir)]} {
+        set dir $configure(destdir)/share
     } else {
         set dir $configure(prefix)/share
     }
     set tail scidb$configure(program-suffix)
     set option(DATADIR) $dir/$tail
-
-    if {[info exists configure(destdir)]} {
-        set dir $configure(destdir)
-    } else {
-        set dir ""
-    }
-    set option(DESTDIR) $dir
 
     if {[info exists configure(destdir)]} {
         set option(XDGDIR) $configure(prefix)

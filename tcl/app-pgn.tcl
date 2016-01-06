@@ -1527,15 +1527,17 @@ proc InsertMove {context position w level key data} {
 						variable ::pgn::editor::Colors
 
 						if {$space eq "+"} {
+							set enterCmd [namespace code [list EnterPlus $w]]
+							set leaveCmd [namespace code [list LeavePlus $w]]
+							set foldCmd [namespace code [list ToggleFold $w $key 0]]
 							$w insert current " " variation
 							if {[::font::truetypeSupport?]} {
 								set myKey unfold:$key
 								$w insert current "+" [list variation circled $myKey]
-								set cmd [namespace code [list ToggleFold $w $key 0]]
-								$w tag bind $myKey <ButtonPress-1> $cmd
+								$w tag bind $myKey <ButtonPress-1> $foldCmd
 								$w tag bind $myKey <Any-Enter> [namespace code [list EnterPlus $w]]
 								$w tag bind $myKey <Any-Leave> [namespace code [list LeavePlus $w]]
-							} else {
+							} elseif ($Vars(old-editor)) {
 								set img $w.[string map {. :} $key]
 								tk::label $img \
 									-background [::colors::lookup $Colors(background)] \
@@ -1545,7 +1547,14 @@ proc InsertMove {context position w level key data} {
 									-image $icon::12x12::expand \
 									;
 								$w window create current -align center -window $img
-								bind $img <ButtonPress-1> [namespace code [list ToggleFold $w $key 0]]
+								bind $img <Any-Enter> $enterCmd
+								bind $img <Any-Leave> $leaveCmd
+								bind $img <ButtonPress-1> $foldCmd
+							} else {
+								set img [$w image create current -align center -image $icon::12x12::expand]
+								$w image bind $img <Any-Enter> $enterCmd
+								$w image bind $img <Any-Leave> $leaveCmd
+								$w image bind $img <ButtonPress-1> $foldCmd
 							}
 							if {$level != 1 || !$Options(spacing:paragraph)} {
 								$w insert current " )" {variation bracket}
@@ -1839,23 +1848,31 @@ proc PrintComment {position w level key pos data} {
 					set emotion [::emoticons::lookupEmotion $text]
 					if {[string length $emotion]} {
 						variable ::pgn::editor::Colors
-						variable EmoticonCounter
-						set img $w.emoticon_[incr EmoticonCounter]
-						# An alternative is to embed an image, but images cannot be
-						# bound to Enter/Leave events.
-						tk::label $img \
-							-background [::colors::lookup $Colors(background)] \
-							-height [font metrics [$w cget -font] -linespace] \
-							-borderwidth 0 \
-							-padx 0 \
-							-pady 0 \
-							-image $::emoticons::icon($emotion) \
-							;
-						$w window create current -align center -window $img
+						set editCmd [namespace code [list EditComment $position $key $pos $lang]]
+						set enterCmd [list ::tooltip::show $w $::emoticons::mc::Tooltip($emotion)]
+						set leaveCmd [list ::tooltip::hide]
+						if {$Vars(old-editor)} {
+							variable EmoticonCounter
+							set img $w.emoticon_[incr EmoticonCounter]
+							tk::label $img \
+								-background [::colors::lookup $Colors(background)] \
+								-height [font metrics [$w cget -font] -linespace] \
+								-borderwidth 0 \
+								-padx 0 \
+								-pady 0 \
+								-image $::emoticons::icon($emotion) \
+								;
+							$w window create current -align center -window $img
+							bind $img <ButtonPress-1> $editCmd
+							bind $img <Enter> $enterCmd
+							bind $img <Leave> $leaveCmd
+						} else {
+							set img [$w image create current -align center -image $::emoticons::icon($emotion)]
+							$w image bind $img <ButtonPress-1> $editCmd
+							$w image bind $img <Enter> $enterCmd
+							$w image bind $img <Leave> $leaveCmd
+						}
 						$w insert current "\ufeff" $langTag
-						bind $img <ButtonPress-1> [namespace code [list EditComment $position $key $pos $lang]]
-						bind $img <Enter> [list ::tooltip::show $w $::emoticons::mc::Tooltip($emotion)]
-						bind $img <Leave> [list ::tooltip::hide]
 					} else {
 						switch $flags {
 							0 { set tag {} }
