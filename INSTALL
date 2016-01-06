@@ -129,6 +129,12 @@ paths, but the configure script may give you a hint. If you invoke this script
 The latter part of the path (in this example "i386-linux-gnu") is your system
 specific part.
 
+Ubuntu 14.04 has changed the directory structure of freetype, and this is
+definitely a bug, because the new path structure violates the standard. So
+you have to create a symlink as a workaround:
+
+    sudo ln -s /usr/include/freetype2/config /usr/include/freetype2/freetype/config
+
 -------------------------------------------------------------------------------
 Important note for built of packages
 -------------------------------------------------------------------------------

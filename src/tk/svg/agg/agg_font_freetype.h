@@ -22,7 +22,7 @@
 
 #ifdef HAVE_FREETYPE
 
-#include <freetype/config/ftheader.h>
+#include <config/ftheader.h>
 #include FT_FREETYPE_H
 
 

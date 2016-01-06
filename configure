@@ -870,14 +870,17 @@ proc findFreetype {} {
     set path {
         /usr/local/include/freetype2/freetype/config
         /usr/include/freetype2/freetype/config
+        /usr/local/include/freetype2/config
+        /usr/include/freetype2/config
     }
 
     puts -nonewline "    Checking if your system has freetype2: "
     set dir [FindDir "ftheader.h" $path]
 
     if {[string length $dir]} {
+        set ftdir [file join {*}[lrange [split $dir /] 0 end-1]]
         set option(HAVE_FREETYPE) "-DHAVE_FREETYPE"
-        set package(freetype-inc) "-I/[file join {*}[lrange [split $dir /] 0 end-2]]"
+        set package(freetype-inc) "-I/$ftdir"
         puts "yes."
         set rc 1
     } else {

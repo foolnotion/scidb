@@ -1848,8 +1848,6 @@ db_edit_node.o: db_move_list.ipp
 db_edit_node.o: db_signature.h
 db_edit_node.o: db_signature.ipp
 db_edit_node.o: db_board.ipp
-db_edit_node.o: db_eco.h
-db_edit_node.o: db_eco.ipp
 db_edit_node.o: db_edit_key.h
 db_edit_node.o: db_edit_key.ipp
 db_edit_node.o: db_comment.h
@@ -1874,6 +1872,8 @@ db_edit_node.o: ../mstl/m_bitset_iterator.h
 db_edit_node.o: ../mstl/m_bitset_iterator.ipp
 db_edit_node.o: ../mstl/m_bitset.ipp
 db_edit_node.o: db_annotation.ipp
+db_edit_node.o: db_eco.h
+db_edit_node.o: db_eco.ipp
 db_edit_node.o: db_edit_node.ipp
 db_edit_node.o: db_move_node.h
 db_edit_node.o: ../mstl/m_set.h
@@ -1905,6 +1905,8 @@ db_edit_node.o: ../mstl/m_list.ipp
 db_edit_node.o: ../sys/sys_utf8_codec.ipp
 db_edit_node.o: ../mstl/m_stack.h
 db_edit_node.o: ../mstl/m_stack.ipp
+db_edit_node.o: ../mstl/m_cast.h
+db_edit_node.o: ../mstl/m_cast.ipp
 db_engine_list.o: db_engine_list.h
 db_engine_list.o: ../mstl/m_string.h
 db_engine_list.o: ../mstl/m_types.h

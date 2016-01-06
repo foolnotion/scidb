@@ -1189,6 +1189,7 @@ tcl_game.o: ../mstl/m_list.h
 tcl_game.o: ../mstl/m_list_node.h
 tcl_game.o: ../mstl/m_list_node.ipp
 tcl_game.o: ../mstl/m_list.ipp
+tcl_game.o: tcl_view.h
 tcl_game.o: tcl_tree.h
 tcl_game.o: tcl_log.h
 tcl_game.o: ../db/db_log.h
