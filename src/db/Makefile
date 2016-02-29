@@ -1020,10 +1020,6 @@ db_comment.o: ../mstl/m_set.h
 db_comment.o: ../mstl/m_set.ipp
 db_comment.o: ../mstl/m_algorithm.h
 db_comment.o: ../mstl/m_algorithm.ipp
-db_comment.o: ../mstl/m_pmap.h
-db_comment.o: ../mstl/m_pvector.h
-db_comment.o: ../mstl/m_pvector.ipp
-db_comment.o: ../mstl/m_pmap.ipp
 db_comment.o: ../util/expat/expat.h
 db_comment.o: ../util/expat/xmlparse.h
 db_common.o: db_common.h
