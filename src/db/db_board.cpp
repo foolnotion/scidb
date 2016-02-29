@@ -3466,6 +3466,7 @@ Board::setup(ExactZHPosition const& position, variant::Type variant)
 	::memset(m_unambiguous, true, sizeof(m_unambiguous));
 
 	m_castle = position.m_castle;
+	m_stm = position.m_stm;
 
 	if (isZhouse(variant))
 	{

@@ -295,7 +295,7 @@ tcl::view::buildTagSet(Tcl_Interp* ti, char const* cmd, Tcl_Obj* allowedTags, ::
 }
 
 
-unsigned
+int
 tcl::view::makeLangList(Tcl_Interp* ti,
 								char const* cmd,
 								Tcl_Obj* languageList,
@@ -303,7 +303,7 @@ tcl::view::makeLangList(Tcl_Interp* ti,
 {
 	mstl::vector<mstl::string> languages;
 
-	unsigned		significant;
+	int			significant;
 	Tcl_Obj**	objv;
 	int			objc;
 
@@ -316,12 +316,15 @@ tcl::view::makeLangList(Tcl_Interp* ti,
 		int n;
 
 		if (Tcl_ListObjGetElements(ti, objv[i], &n, &objs) != TCL_OK || n != 2)
+		{
 			error(cmd, 0, 0, "invalid language list");
+			return -1;
+		}
 
 		char const* lang = Tcl_GetString(objs[0]);
 
 		if (*lang == '*')
-			return View::AllLanguages;
+			return -1;
 
 		if (boolFromObj(n, objs, 1))
 			langs.push_back(lang);
@@ -331,6 +334,7 @@ tcl::view::makeLangList(Tcl_Interp* ti,
 
 	significant = langs.size();
 	langs += languages;
+
 	return significant;
 }
 
@@ -665,9 +669,15 @@ cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	type::ID				type(db.type());
 	unsigned				illegalRejected(0);
 	View::Languages	languages;
+	int					significant;
 
 	if (type == type::PGNFile)
 		type = type::Unspecific;
+
+	significant = view::makeLangList(ti, CmdExport, languageList, languages);
+
+	if (significant == -1)
+		return TCL_ERROR;
 
 	int n = v.exportGames(	filename,
 									encoding,
@@ -677,8 +687,8 @@ cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 									flags,
 									tagBits,
 									extraTags,
-									languages,
-									view::makeLangList(ti, CmdExport, languageList, languages),
+									significant == -1 ? nullptr : &languages,
+									significant,
 									excludeIllegal ? &illegalRejected : nullptr,
 									log,
 									progress,
@@ -735,6 +745,7 @@ cmdPrint(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	Tcl_Obj**			objs;
 	View::NagMap		nagMap;
 	View::Languages	languages;
+	int					significant;
 
 	::memset(nagMap, 0, sizeof(nagMap));
 
@@ -772,13 +783,18 @@ cmdPrint(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			out.write(static_cast<Log*>(myLog.get())->str);
 	}
 
+	significant = view::makeLangList(ti, CmdPrint, languageList, languages);
+
+	if (significant == -1)
+		return TCL_ERROR;
+
 	setResult(v.printGames(	controller.environment(),
 									format::LaTeX,
 									flags,
 									options,
 									nagMap,
-									languages,
-									view::makeLangList(ti, CmdPrint, languageList, languages),
+									significant == -1 ? nullptr : &languages,
+									significant,
 									nullptr, // illegal game count not used here
 									log,
 									progress));

@@ -3390,6 +3390,8 @@ cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	mstl::string				encoding(sys::utf8::Codec::utf8());
 	unsigned						position(Application::InvalidPosition);
 	View::Languages			languages;
+	View::Languages*			languagePtr(&languages);
+	int							significant(-1);
 
 	while (objc > 2 && *(option = stringFromObj(objc, objv, objc - 2)) == '-')
 	{
@@ -3407,14 +3409,8 @@ cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		}
 		else if (::strcmp(option, "-languages") == 0)
 		{
-			Tcl_Obj**	objs;
-			int			n;
-
-			if (Tcl_ListObjGetElements(ti, objv[objc - 1], &n, &objs) != TCL_OK)
-				return error(CmdExchange, 0, 0, "invalid language list");
-
-			for (int i = 0; i < n; ++i)
-				languages.push_back(Tcl_GetString(objs[i]));
+			if ((significant = ::tcl::view::makeLangList(ti, CmdExport, objv[objc - 1], languages)) == -1)
+				return TCL_ERROR;
 		}
 		else if (::strcmp(option, "-position") == 0)
 		{
@@ -3448,8 +3444,13 @@ cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		return TCL_ERROR;
 	}
 
+	if (significant == -1) {
+		languagePtr = nullptr;
+	}
+
 	char const* filename = stringFromObj(objc, objv, 1);
-	setResult(save::isOk(scidb->writeGame(position, filename, encoding, comment, languages, flags, mode)));
+	setResult(save::isOk(scidb->writeGame(
+		position, filename, encoding, comment, languagePtr, significant, flags, mode)));
 	return TCL_OK;
 }
 
@@ -3501,12 +3502,12 @@ cmdPrint(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		mstl::string str;
 	};
 
-	if (objc != 10)
+	if (objc < 5 || ((objc - 5) % 2) == 1)
 	{
 		Tcl_WrongNumArgs(
 			ti, 1, objv,
-			"<file> <search-path> <script-path> <preamble> <flags> "
-			"<options> <nag-map> <languages> <trace>");
+			"<file> <search-path> <script-path> <preamble> ?-flags <flags> "
+			"-options <options> -nags <nag-map> -languages <languages> -trace <trace>?");
 		return TCL_ERROR;
 	}
 
@@ -3514,37 +3515,66 @@ cmdPrint(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	char const* 	searchPath		= stringFromObj(objc, objv, 2);
 	mstl::string 	scriptPath		= stringFromObj(objc, objv, 3);
 	mstl::string 	preamble			= stringFromObj(objc, objv, 4);
-	unsigned			flags				= unsignedFromObj(objc, objv, 5);
-	unsigned			options			= unsignedFromObj(objc, objv, 6);
-	Tcl_Obj*			mapObj			= objectFromObj(objc, objv, 7);
-	Tcl_Obj*			languageList	= objectFromObj(objc, objv, 8);
-	char const*		trace				= stringFromObj(objc, objv, 9);
+	unsigned			flags				= 0;
+	unsigned			options			= 0;
+	char const*		trace				= "";
 
 	Tcl_Obj**			objs;
 	View::NagMap		nagMap;
 	View::Languages	languages;
+	int					significant(-1);
+	char const*			option;
 
-	::memset(nagMap, 0, sizeof(nagMap));
-
-	if (Tcl_ListObjGetElements(ti, mapObj, &objc, &objs) != TCL_OK)
-		error(CmdExport, 0, 0, "invalid nag map");
-
-	for (int i = 0; i < objc; ++i)
+	while (objc > 6 && *(option = stringFromObj(objc, objv, objc - 2)) == '-')
 	{
-		Tcl_Obj** pair;
-		int nelems;
+		if (::strcmp(option, "-flags") == 0)
+		{
+			flags = unsignedFromObj(objc, objv, objc - 1);
+		}
+		else if (::strcmp(option, "-options") == 0)
+		{
+			options = unsignedFromObj(objc, objv, objc - 1);
+		}
+		else if (::strcmp(option, "-nags") == 0)
+		{
+			Tcl_Obj* mapObj = objv[objc - 1];
 
-		if (Tcl_ListObjGetElements(ti, objs[i], &nelems, &pair) != TCL_OK || nelems != 2)
-			error(CmdExport, 0, 0, "invalid nag map");
+			if (Tcl_ListObjGetElements(ti, mapObj, &objc, &objs) != TCL_OK)
+				error(CmdExport, 0, 0, "invalid nag map");
 
-		int lhs = intFromObj(2, pair, 0);
-		int rhs = intFromObj(2, pair, 1);
+			for (int i = 0; i < objc; ++i)
+			{
+				Tcl_Obj** pair;
+				int nelems;
 
-		if (lhs >= nag::Scidb_Last || rhs >= nag::Scidb_Last)
-			error(CmdExport, 0, 0, "invalid nag map values");
+				if (Tcl_ListObjGetElements(ti, objs[i], &nelems, &pair) != TCL_OK || nelems != 2)
+					error(CmdPrint, 0, 0, "invalid nag map");
 
-		nagMap[lhs] = rhs;
+				int lhs = intFromObj(2, pair, 0);
+				int rhs = intFromObj(2, pair, 1);
+
+				if (lhs >= nag::Scidb_Last || rhs >= nag::Scidb_Last)
+					error(CmdPrint, 0, 0, "invalid nag map values");
+
+				nagMap[lhs] = rhs;
+			}
+		}
+		else if (::strcmp(option, "-languages") == 0)
+		{
+			significant = ::tcl::view::makeLangList(ti, CmdPrint, objv[objc - 1], languages);
+		}
+		else if (::strcmp(option, "-trace") == 0)
+		{
+			trace = stringFromObj(objc, objv, objc - 1);
+		}
+		else
+		{
+			return error (CmdPrint, nullptr, nullptr, "unexpected option '%s'", option);
+		}
+
+		objc -= 2;
 	}
+	::memset(nagMap, 0, sizeof(nagMap));
 
 	TeXt::Controller::LogP myLog(new Log);
 	TeXt::Controller controller(searchPath, TeXt::Controller::AbortMode, myLog);
@@ -3566,8 +3596,8 @@ cmdPrint(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 							flags,
 							options,
 							nagMap,
-							languages,
-							::tcl::view::makeLangList(ti, CmdPrint, languageList, languages));
+							significant == -1 ? nullptr : &languages,
+							significant);
 
 	{
 		mstl::string log(out.str());

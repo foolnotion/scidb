@@ -986,7 +986,10 @@ proc UpdateLanguages {position languageSet} {
 
 	if {$position >= 9} { return }
 
-	set languageSet [lremove $languageSet ""]
+	if {"" in $languageSet} {
+		set languageSet [lremove $languageSet ""]
+		set languageSet [linsert $languageSet 0 "xx"]
+	}
 
 	if {$Vars(lang:set) eq $languageSet} {
 		set Vars(lang:set:$position) $Vars(lang:set)
@@ -1110,7 +1113,12 @@ proc DoLayout {position content {context editor} {w {}}} {
 		}
 	}
 
-	set trace [info exists env(SCIDB_PGN_TRACE)]
+	if {[info exists env(SCIDB_PGN_TRACE)]} {
+		puts "============================================================="
+		set trace 1
+	} else {
+		set trace 0
+	}
 
 	foreach node $content {
 		if {$trace} {
@@ -1149,10 +1157,16 @@ proc DoLayout {position content {context editor} {w {}}} {
 					replace {
 						lassign $args unused level removePos insertMark
 						$w delete $removePos $insertMark
+#puts "1a: [$w dump -text -mark 3.0 4.0]"
+#puts "1b: [$w dump -text -mark 4.0 5.0] --> [$w index indent:start]"
 						$w mark set indent:start $insertMark
 						$w mark gravity indent:start left
-						$w mark gravity $insertMark right
+						$w mark gravity $insertMark left
 						$w mark set current $insertMark
+						$w mark gravity $insertMark right
+#puts "2a: [$w dump -text -mark 3.0 4.0]"
+#puts "2b: [$w dump -text -mark 4.0 5.0] --> [$w index indent:start]"
+# XXX text will be inserted before indent:start although its a left mark
 					}
 
 					insert {
@@ -1162,10 +1176,13 @@ proc DoLayout {position content {context editor} {w {}}} {
 						$w mark gravity $insertMark left
 						$w mark set current $insertMark
 						$w mark gravity $insertMark right
+#puts "3a: [$w dump -text -mark 3.0 4.0]"
+#puts "3b: [$w dump -text -mark 4.0 5.0] --> [$w index indent:start]"
 					}
 
 					finish {
 						set level [lindex $args 1]
+#puts "indent: [$w index indent:start] -- [$w index current]"
 						Indent $context $w $level indent:start
 #						$w mark unset indent:start
 						$w mark gravity current left
@@ -1237,10 +1254,7 @@ proc DoLayout {position content {context editor} {w {}}} {
 							lassign $result result reason
 							if {$Options(spacing:paragraph)} {
 								$w insert current \n\n
-							} elseif {$Options(style:column)
-									&& ([string length $reason] > 0 || $stm ne "black")} {
-								$w insert current \n
-							} elseif {[string length $reason] > 0} {
+							} else {
 								$w insert current \n
 							}
 							if {[string length $result]} {
@@ -1521,49 +1535,50 @@ proc InsertMove {context position w level key data} {
 						}
 					}
 
+					"+" {
+						variable ::pgn::editor::Colors
+						set enterCmd [namespace code [list EnterPlus $w]]
+						set leaveCmd [namespace code [list LeavePlus $w]]
+						set foldCmd [namespace code [list ToggleFold $w $key 0]]
+						$w insert current " " variation
+						if {[::font::truetypeSupport?]} {
+							set myKey unfold:$key
+							$w insert current "+" [list variation circled $myKey]
+							$w tag bind $myKey <ButtonPress-1> $foldCmd
+							$w tag bind $myKey <Any-Enter> [namespace code [list EnterPlus $w]]
+							$w tag bind $myKey <Any-Leave> [namespace code [list LeavePlus $w]]
+						} elseif ($Vars(old-editor)) {
+							set img $w.[string map {. :} $key]
+							tk::label $img \
+								-background [::colors::lookup $Colors(background)] \
+								-borderwidth 0 \
+								-padx 0 \
+								-pady 0 \
+								-image $icon::12x12::expand \
+								;
+							$w window create current -align center -window $img
+							bind $img <Any-Enter> $enterCmd
+							bind $img <Any-Leave> $leaveCmd
+							bind $img <ButtonPress-1> $foldCmd
+						} else {
+							set img [$w image create current -align center -image $icon::12x12::expand]
+							$w image bind $img <Any-Enter> $enterCmd
+							$w image bind $img <Any-Leave> $leaveCmd
+							$w image bind $img <ButtonPress-1> $foldCmd
+						}
+						if {$level != 1 || !$Options(spacing:paragraph)} {
+							$w insert current " )" {variation bracket}
+						} elseif {$Vars(old-editor)} {
+							# NOTE: We need a blind character between each mark because
+							# the editor is shuffling consecutive marks.
+							$w insert current "\u200b" $main
+						}
+					}
+
 					default {
 						variable cursor::collapse
-						variable cursor::expand
-						variable ::pgn::editor::Colors
 
-						if {$space eq "+"} {
-							set enterCmd [namespace code [list EnterPlus $w]]
-							set leaveCmd [namespace code [list LeavePlus $w]]
-							set foldCmd [namespace code [list ToggleFold $w $key 0]]
-							$w insert current " " variation
-							if {[::font::truetypeSupport?]} {
-								set myKey unfold:$key
-								$w insert current "+" [list variation circled $myKey]
-								$w tag bind $myKey <ButtonPress-1> $foldCmd
-								$w tag bind $myKey <Any-Enter> [namespace code [list EnterPlus $w]]
-								$w tag bind $myKey <Any-Leave> [namespace code [list LeavePlus $w]]
-							} elseif ($Vars(old-editor)) {
-								set img $w.[string map {. :} $key]
-								tk::label $img \
-									-background [::colors::lookup $Colors(background)] \
-									-borderwidth 0 \
-									-padx 0 \
-									-pady 0 \
-									-image $icon::12x12::expand \
-									;
-								$w window create current -align center -window $img
-								bind $img <Any-Enter> $enterCmd
-								bind $img <Any-Leave> $leaveCmd
-								bind $img <ButtonPress-1> $foldCmd
-							} else {
-								set img [$w image create current -align center -image $icon::12x12::expand]
-								$w image bind $img <Any-Enter> $enterCmd
-								$w image bind $img <Any-Leave> $leaveCmd
-								$w image bind $img <ButtonPress-1> $foldCmd
-							}
-							if {$level != 1 || !$Options(spacing:paragraph)} {
-								$w insert current " )" {variation bracket}
-							} elseif {$Vars(old-editor)} {
-								# NOTE: We need a blind character between each mark because
-								# the editor is shuffling consecutive marks.
-								$w insert current "\u200b" $main
-							}
-						} elseif {[info exists collapse]} {
+						if {[info exists collapse]} {
 							set tag fold:$key
 							if {$space eq "\["} {
 								if {$count == $number && $level > $Options(indent:max)} {
@@ -1583,17 +1598,15 @@ proc InsertMove {context position w level key data} {
 								$w tag bind $tag <Any-Leave> +[namespace code [list LeaveBracket $w]]
 								$w tag bind $tag <ButtonPress-1> [namespace code [list ToggleFold $w $key 1]]
 							}
-						} else {
-							if {$space eq "\["} {
-								if {$count == $number && $level > $Options(indent:max)} {
-									$w insert current "\[" {variation bracket}
-								}
-								# TODO "-"
-								if {$number ne "-"} { set number "($number)" } else { set number "\u2022" }
-								$w insert current "$number " {variation numbering}
-							} else {
-								$w insert current "( " {variation bracket}
+						} elseif {$space eq "\["} {
+							if {$count == $number && $level > $Options(indent:max)} {
+								$w insert current "\[" {variation bracket}
 							}
+							# TODO "-"
+							if {$number ne "-"} { set number "($number)" } else { set number "\u2022" }
+							$w insert current "$number " {variation numbering}
+						} else {
+							$w insert current "( " {variation bracket}
 						}
 					}
 				}
@@ -1848,6 +1861,7 @@ proc PrintComment {position w level key pos data} {
 					set emotion [::emoticons::lookupEmotion $text]
 					if {[string length $emotion]} {
 						variable ::pgn::editor::Colors
+						variable Vars
 						set editCmd [namespace code [list EditComment $position $key $pos $lang]]
 						set enterCmd [list ::tooltip::show $w $::emoticons::mc::Tooltip($emotion)]
 						set leaveCmd [list ::tooltip::hide]
@@ -2489,7 +2503,6 @@ proc PopupMenu {parent position} {
 		set state "normal"
 		if {	[::scidb::game::position atEnd?]
 			|| (![::scidb::game::position isMainline?] && [::scidb::game::position atStart?])} {
-			
 			set state "disabled"
 		}
 		$menu.strip add command \
@@ -2935,7 +2948,7 @@ proc PasteClipboardVariation {} {
 }
 
 
-proc ShowCountry {cb okbtn} {
+proc ShowCountry {cb okBtn} {
 	variable Vars
 
 	if {![winfo exists $cb]} { return }
@@ -2949,7 +2962,7 @@ proc ShowCountry {cb okbtn} {
 	} else {
 		set state normal
 	}
-	$okbtn configure -state $state
+	$okBtn configure -state $state
 }
 
 
@@ -2973,31 +2986,31 @@ proc CopyComments {parent} {
 		xx \
 	]
 	if {[llength $Vars(lang:set)]} {
-		set langSet(src) [::country::makeCountryList $Vars(lang:set)]
+		set  Vars(lang:src) [::country::makeCountryList $Vars(lang:set)]
 	} else {
-		set langSet(src) {}
+		set Vars(lang:src) {}
 	}
-	set langSet(dst) [::country::makeCountryList]
+	set Vars(lang:dst) [::country::makeCountryList]
 
 	ttk::labelframe $top.src -text $::mc::From
 	ttk::labelframe $top.dst -text $::mc::To
 
 	foreach what {src dst} {
 		if {$what eq "dst" || "xx" in $Vars(lang:set)} {
-			set langSet($what) [linsert $langSet($what) 0 $allLang]
+			set Vars(lang:$what) [linsert $Vars(lang:$what) 0 $allLang]
 		}
 		set w $top.$what.cb
 		::ttk::tcombobox $w \
 			-state readonly \
 			-showcolumns {flag code} \
-			-height [expr {min(15, [llength $langSet($what)])}] \
+			-height [expr {min(15, [llength $Vars(lang:$what)])}] \
 			-textvariable [namespace current]::Vars(lang:$what) \
 			-exportselection no \
 			-format "%2" \
 			;
 		$w addcol image -id flag -width 20 -justify center
 		$w addcol text -id code
-		foreach entry $langSet($what) {
+		foreach entry $Vars(lang:$what) {
 			lassign $entry flag name _
 			$w listinsert [list $flag $name]
 		}

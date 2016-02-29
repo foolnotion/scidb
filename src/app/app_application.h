@@ -301,7 +301,8 @@ public:
 										mstl::string const& filename,
 										mstl::string const& encoding,
 										mstl::string const& comment,
-										Languages const& languages,
+										Languages const* languages,
+										unsigned significantLanguages,
 										unsigned flags,
 										FileMode fmode);
 	::db::save::State exportGame(	unsigned position,
@@ -352,7 +353,7 @@ public:
 						unsigned flags,
 						unsigned options,
 						NagMap const& nagMap,
-						Languages const& languages,
+						Languages const* languages,
 						unsigned significantLanguages) const;
 
 	unsigned addEngine(Engine* engine);

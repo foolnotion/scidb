@@ -527,9 +527,6 @@ PgnWriter::putComment(Comment const& comment)
 				n = text.find_first_of("{}", n + 5);
 			}
 			while (n != mstl::string::npos);
-
-			text.insert(mstl::string::size_type(0), "<html>", 6);
-			text.append("</html>", 7);
 		}
 	}
 	else if (codec().isUtf8())

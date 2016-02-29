@@ -83,6 +83,8 @@ public:
 	pointer_const_iterator(T const* elems = 0);
 	pointer_const_iterator(iterator const& it);
 
+	pointer_const_iterator& operator=(iterator const& it);
+
 	bool operator==(pointer_const_iterator const& it) const;
 	bool operator!=(pointer_const_iterator const& it) const;
 
@@ -110,6 +112,12 @@ private:
 
 	T const* m_elems;
 };
+
+template <typename T>
+bool operator==(pointer_const_iterator<T> const& lhs, pointer_iterator<T> const& rhs);
+
+template <typename T>
+bool operator!=(pointer_iterator<T> const& lhs, pointer_const_iterator<T> const& rhs);
 
 } // namespace mstl
 

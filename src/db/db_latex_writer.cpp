@@ -38,7 +38,7 @@ LaTeXWriter::LaTeXWriter(	format::Type srcFormat,
 									unsigned flags,
 									unsigned options,
 									NagMap const& nagMap,
-									Languages const& languages,
+									Languages const* languages,
 									unsigned significantLanguages,
 									Environment& env)
 	:DocumentWriter(srcFormat, flags, options, nagMap, languages, significantLanguages)

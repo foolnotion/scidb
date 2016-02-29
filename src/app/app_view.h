@@ -31,7 +31,6 @@
 #include "db_selector.h"
 #include "db_log.h"
 #include "db_common.h"
-#include "db_consumer.h"
 
 #include "m_pvector.h"
 #include "m_vector.h"
@@ -46,6 +45,7 @@ namespace db {
 
 class TournamentTable;
 class Database;
+class Consumer;
 class Query;
 class Log;
 
@@ -72,8 +72,7 @@ public:
 
 	typedef mstl::pair<db::load::State,unsigned> Result;
 
-	static unsigned const DefaultView	= 0;
-	static unsigned const AllLanguages	= ::db::Consumer::AllLanguages;
+	static unsigned const DefaultView = 0;
 
 	View(Application& app, Cursor& cursor);
 	View(View& view);
@@ -213,7 +212,7 @@ public:
 									unsigned flags,
 									TagBits const& allowedTags,
 									bool allowExtraTags,
-									Languages const& languages,
+									Languages const* languages,
 									unsigned significantLanguages,
 									unsigned* illegalRejected,
 									db::Log& log,
@@ -226,7 +225,7 @@ public:
 								unsigned flags,
 								unsigned options,
 								NagMap const& nagMap,
-								Languages const& languages,
+								Languages const* languages,
 								unsigned significantLanguages,
 								unsigned* illegalRejected,
 								db::Log& log,

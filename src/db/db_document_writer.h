@@ -65,7 +65,7 @@ public:
 						unsigned flags,
 						unsigned options,
 						NagMap const& nagMap,
-						Languages const& languages,
+						Languages const* languages,
 						unsigned significantLanguages);
 
 protected:

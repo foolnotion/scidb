@@ -80,6 +80,42 @@ pvector<T>::operator=(pvector const& v)
 
 template <typename T>
 inline
+typename pvector<T>::reverse_iterator
+pvector<T>::rbegin()
+{
+	return reverse_iterator(end());
+}
+
+
+template <typename T>
+inline
+typename pvector<T>::reverse_iterator
+pvector<T>::rend()
+{
+	return reverse_iterator(begin());
+}
+
+
+template <typename T>
+inline
+typename pvector<T>::const_reverse_iterator
+pvector<T>::rbegin() const
+{
+	return const_reverse_iterator(end());
+}
+
+
+template <typename T>
+inline
+typename pvector<T>::const_reverse_iterator
+pvector<T>::rend() const
+{
+	return const_reverse_iterator(begin());
+}
+
+
+template <typename T>
+inline
 typename pvector<T>::size_type
 pvector<T>::capacity() const
 {
@@ -146,7 +182,7 @@ inline
 typename pvector<T>::iterator
 pvector<T>::begin()
 {
-	return m_vec.begin();
+	return iterator(m_vec.begin());
 }
 
 
@@ -155,7 +191,7 @@ inline
 typename pvector<T>::const_iterator
 pvector<T>::begin() const
 {
-	return m_vec.begin();
+	return const_iterator(m_vec.begin());
 }
 
 
@@ -164,7 +200,7 @@ inline
 typename pvector<T>::iterator
 pvector<T>::end()
 {
-	return m_vec.end();
+	return iterator(m_vec.end());
 }
 
 
@@ -173,7 +209,7 @@ inline
 typename pvector<T>::const_iterator
 pvector<T>::end() const
 {
-	return m_vec.end();
+	return const_iterator(m_vec.end());
 }
 
 
@@ -221,6 +257,16 @@ pvector<T>::erase(iterator i)
 {
 	delete *i.ref();
 	m_vec.erase(i);
+}
+
+
+template <typename T>
+inline
+typename pvector<T>::iterator
+pvector<T>::erase(reverse_iterator position)
+{
+	M_REQUIRE(position < rend());
+	return erase(position.base());
 }
 
 

@@ -4251,8 +4251,8 @@ cmdUpgrade(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 										0,
 										View::TagBits(true),
 										true,
-										View::Languages(),
-										View::AllLanguages,
+										nullptr, // all languages
+										0,			// significance of languages has no meaning here
 										nullptr, // illegal game counter not needed
 										log,
 										progress,

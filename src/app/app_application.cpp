@@ -1676,7 +1676,8 @@ Application::writeGame(	unsigned position,
 								mstl::string const& filename,
 								mstl::string const& encoding,
 								mstl::string const& comment,
-								Languages const& languages,
+								Languages const* languages,
+								unsigned significantLanguages,
 								unsigned flags,
 								FileMode fmode)
 {
@@ -1746,15 +1747,7 @@ Application::writeGame(	unsigned position,
 			if (!strm)
 				IO_RAISE(Unspecified, Write_Failed, "cannot open file '%s'", filename.c_str());
 
-			mstl::string useEncoding;
-
-			if (flags & PgnWriter::Flag_Use_UTF8)
-				useEncoding = sys::utf8::Codec::utf8();
-			else if (encoding == sys::utf8::Codec::utf8())
-				useEncoding = sys::utf8::Codec::latin1();
-			else
-				useEncoding = encoding;
-
+			mstl::string useEncoding(flags & PgnWriter::Flag_Use_UTF8 ? sys::utf8::Codec::utf8() : encoding);
 			PgnWriter::LineEnding lineEnding = PgnWriter::Unix;
 
 			if (ZStream::isWindowsLineEnding(internalName))
@@ -1765,8 +1758,8 @@ Application::writeGame(	unsigned position,
 									useEncoding,
 									lineEnding,
 									flags,
-									&languages,
-									languages.size());
+									languages,
+									significantLanguages);
 			writer.setUsedLanguages(g->data.game->languageSet());
 			writer.setupVariant(g->sink.cursor->variant());
 
@@ -3451,7 +3444,7 @@ Application::printGame(	unsigned position,
 								unsigned flags,
 								unsigned options,
 								NagMap const& nagMap,
-								Languages const& languages,
+								Languages const* languages,
 								unsigned significantLanguages) const
 {
 	M_REQUIRE(containsGameAt(position));

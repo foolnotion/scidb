@@ -36,10 +36,10 @@ namespace view {
 
 bool buildTagSet(Tcl_Interp* ti, char const* cmd, Tcl_Obj* allowedTags, ::db::tag::TagSet& tagBits);
 
-unsigned makeLangList(	Tcl_Interp* ti,
-								char const* cmd,
-								Tcl_Obj* languageList,
-								mstl::vector<mstl::string>& langs);
+int makeLangList(	Tcl_Interp* ti,
+						char const* cmd,
+						Tcl_Obj* languageList,
+						mstl::vector<mstl::string>& langs);
 
 } // namespace view
 } // namespace tcl

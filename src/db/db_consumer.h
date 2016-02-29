@@ -63,8 +63,6 @@ public:
 	typedef mstl::map<mstl::string,unsigned> LanguageSet;
 	typedef mstl::vector<mstl::string> LanguageList;
 
-	static unsigned const AllLanguages = unsigned(-1);
-
 	Consumer(format::Type srcFormat,
 				mstl::string const& encoding,
 				TagBits const& allowedTags,

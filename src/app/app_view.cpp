@@ -677,7 +677,7 @@ View::exportGames(mstl::string const& filename,
 						unsigned flags,
 						TagBits const& allowedTags,
 						bool allowExtraTags,
-						Languages const& languages,
+						Languages const* languages,
 						unsigned significantLanguages,
 						unsigned* illegalRejected,
 						Log& log,
@@ -707,10 +707,10 @@ View::exportGames(mstl::string const& filename,
 		WriteGuard guard(m_app, destination);
 
 		if (	m_cursor.m_db->format() == format::Scidb
+			&& !languages
 			&& fmode != Upgrade
 			&& allowExtraTags
-			&& (allowedTags | sci::Encoder::infoTags()).any()
-			&& significantLanguages == AllLanguages)
+			&& (allowedTags | sci::Encoder::infoTags()).any())
 		{
 			count = m_cursor.m_db->copyGames(destination,
 														m_filter[table::Games],
@@ -724,7 +724,12 @@ View::exportGames(mstl::string const& filename,
 		else
 		{
 			sci::Consumer::Codecs codecs(&dynamic_cast<sci::Codec&>(destination.codec()));
-			sci::Consumer consumer(m_cursor.m_db->format(), codecs, allowedTags, allowExtraTags);
+			sci::Consumer consumer(	m_cursor.m_db->format(),
+											codecs,
+											allowedTags,
+											allowExtraTags,
+											languages,
+											significantLanguages);
 			count = exportGames(consumer, illegalRejected, log, progress);
 		}
 
@@ -748,6 +753,7 @@ View::exportGames(mstl::string const& filename,
 //			We do not use speed up because the scid bases created with the Scid application
 //			may contain some broken data. The exporting will fix the data.
 //			if (	m_cursor.m_db->format() == format::Scid
+//				&& !languages
 //				&& (ext == "si4" || dynamic_cast<si3::Codec&>(m_cursor.m_db->codec()).isFormat3()))
 //			{
 //				count = exportGames(destination, illegalRejected, log, progress, "write-game");
@@ -759,7 +765,9 @@ View::exportGames(mstl::string const& filename,
 												dynamic_cast<si3::Codec&>(destination.codec()),
 												encoding,
 												allowedTags,
-												allowExtraTags);
+												allowExtraTags,
+												languages,
+												significantLanguages);
 				progress.message("write-game");
 				count = exportGames(consumer, illegalRejected, log, progress);
 			}
@@ -847,7 +855,7 @@ View::printGames(	TeXt::Environment& environment,
 						unsigned flags,
 						unsigned options,
 						NagMap const& nagMap,
-						Languages const& languages,
+						Languages const* languages,
 						unsigned significantLanguages,
 						unsigned* illegalRejected,
 						Log& log,

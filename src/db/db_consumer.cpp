@@ -74,16 +74,13 @@ Consumer::Consumer(	format::Type srcFormat,
 	,m_producer(0)
 	,m_setupBoard(true)
 	,m_haveUsedLangs(false)
-	,m_noComments(false)
+	,m_noComments(languages && languages->empty())
 	,m_significantLangs(significantLanguages)
 {
 	M_REQUIRE(!languages || significantLanguages <= languages->size());
 
 	if (languages)
-	{
 		m_wantedLanguages = *languages;
-		m_noComments = m_wantedLanguages.empty();
-	}
 }
 
 
@@ -127,6 +124,9 @@ Consumer::setVariant(variant::Type variant)
 void
 Consumer::setUsedLanguages(LanguageSet languages)
 {
+	if (m_noComments)
+		return;
+
 	m_usedLanguages.swap(languages);
 	m_haveUsedLangs = true;
 

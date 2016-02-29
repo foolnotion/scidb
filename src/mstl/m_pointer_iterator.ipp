@@ -202,6 +202,16 @@ pointer_const_iterator<T>::pointer_const_iterator(iterator const& it)
 
 template <typename T>
 inline
+pointer_const_iterator<T>&
+pointer_const_iterator<T>::operator=(iterator const& it)
+{
+	m_elems = it.m_elems;
+	return *this;
+}
+
+
+template <typename T>
+inline
 bool
 pointer_const_iterator<T>::operator==(pointer_const_iterator const& it) const
 {
@@ -344,6 +354,24 @@ typename pointer_const_iterator<T>::pointer
 pointer_const_iterator<T>::ref() const
 {
 	return m_elems;
+}
+
+
+template <typename T>
+inline
+bool
+operator==(pointer_const_iterator<T> const& lhs, pointer_iterator<T> const& rhs)
+{
+	return lhs.ref() == const_cast<pointer_iterator<T>&>(rhs).ref();
+}
+
+
+template <typename T>
+inline
+bool
+operator!=(pointer_iterator<T> const& lhs, pointer_const_iterator<T> const& rhs)
+{
+	return const_cast<pointer_iterator<T>&>(lhs).ref() != rhs.ref();
 }
 
 } // namespace mstl

@@ -209,7 +209,7 @@ struct HtmlData
 	{
 	}
 
-	bool success() const { return isHtml && putLang != 2 && !insideNag && lang.empty(); }
+	bool success() const { return isHtml && putLang != 2 && !insideNag; }
 
 	mstl::string& result;
 	mstl::string  lang;
@@ -564,7 +564,7 @@ struct Normalize : public Comment::Callback
 		unsigned	prevCount;
 	};
 
-	typedef mstl::map<mstl::string,Content> LangMap;
+	typedef mstl::map<mstl::string,Content*> LangMap;
 	typedef mstl::stack<Attribute> AttrStack;
 	typedef Comment::LanguageSet LanguageSet;
 	typedef Comment::Mode Mode;
@@ -597,6 +597,11 @@ struct Normalize : public Comment::Callback
 		M_ASSERT(fromLang == 0 || *fromLang != *toLang);
 
 		m_langFlags = 0;
+	}
+
+	~Normalize() {
+		for (LangMap::iterator i = m_map.begin(); i != m_map.end(); ++i)
+			delete i->second;
 	}
 
 	void start() override { endLanguage(mstl::string::empty_string); }
@@ -674,6 +679,16 @@ struct Normalize : public Comment::Callback
 		return reset;
 	}
 
+	Content *makeLangEntry(mstl::string const& lang)
+	{
+		Content*& content = m_map[lang];
+
+		if (!content)
+			content = new Content;
+
+		return content;
+	}
+
 	void finish() override
 	{
 		m_result.clear();
@@ -686,7 +701,7 @@ struct Normalize : public Comment::Callback
 
 		for (LangMap::const_iterator i = m_map.begin(); i != m_map.end(); ++i)
 		{
-			if (i->second.count > 0)
+			if (i->second->count > 0)
 			{
 				empty = false;
 
@@ -710,13 +725,16 @@ struct Normalize : public Comment::Callback
 
 			if (i != m_map.end())
 			{
-				Content& content = m_map[*m_toLang];
+				const Content* otherContent = i->second;
+				Content*& content = m_map[*m_toLang];
 
-				if (content.count > 0)
-					content.items.push_back().flags.set(Delim);
+				if (!content)
+					content = new Content;
+				else if (content->count > 0)
+					content->items.push_back().flags.set(Delim);
 
-				content.items += i->second.items;
-				content.count += i->second.count;
+				content->items += otherContent->items;
+				content->count += otherContent->count;
 
 				if (!m_toLang->empty())
 				{
@@ -732,7 +750,7 @@ struct Normalize : public Comment::Callback
 
 		if (!m_isXml)
 		{
-			Content::Items const& items = m_map[mstl::string::empty_string].items;
+			Content::Items const& items = m_map[mstl::string::empty_string]->items;
 
 			if (!items.empty())
 			{
@@ -746,7 +764,7 @@ struct Normalize : public Comment::Callback
 
 			for (LangMap::const_iterator i = m_map.begin(); i != m_map.end(); ++i)
 			{
-				if (i->second.count > 0)
+				if (i->second->count > 0)
 				{
 					M_ASSERT(	m_wanted == 0
 								|| m_wanted->find(i->first) != m_wanted->end()
@@ -756,8 +774,8 @@ struct Normalize : public Comment::Callback
 					m_result.append(i->first);
 					m_result.append('>');
 
-					Content::Items::const_iterator k = i->second.items.begin();
-					Content::Items::const_iterator e = i->second.items.end();
+					Content::Items::const_iterator k = i->second->items.begin();
+					Content::Items::const_iterator e = i->second->items.end();
 
 					bool pendingDelim = false;
 
@@ -833,11 +851,11 @@ struct Normalize : public Comment::Callback
 		m_flags.reset();
 
 		if (m_wanted == 0 || m_wanted->find(lang) != m_wanted->end())
-			m_lang = &m_map[lang];
+			m_lang = makeLangEntry(lang);
 		else if (m_fromLang && lang == *m_fromLang)
-			m_lang = &m_map[*m_toLang];
+			m_lang = makeLangEntry(*m_toLang);
 		else
-			m_lang = 0;
+			m_lang = nullptr;
 
 		if (m_lang && m_lang->count > 0)
 			m_lang->items.push_back().flags.set(Delim);
@@ -846,9 +864,9 @@ struct Normalize : public Comment::Callback
 	void endLanguage(mstl::string const&) override
 	{
 		if (m_containsAll)
-			m_lang = &m_map[mstl::string::empty_string];
+			m_lang = makeLangEntry(mstl::string::empty_string);
 		else
-			m_lang = 0;
+			m_lang = nullptr;
 	}
 
 	void startAttribute(Attribute attr) override
@@ -1292,10 +1310,12 @@ struct HtmlConv : public Comment::Callback
 
 			s = sys::utf8::nextChar(s, code);
 
-			if (code < 128)
-				::appendChar(code, m_result);
-			else
+			if (code >= 128)
 				m_result.format("&#x%04x;", code);
+			else if (code == '\n')
+				m_result.append("<br/>", 5);
+			else
+				::appendChar(code, m_result);
 		}
 	}
 
@@ -1548,24 +1568,38 @@ htmlContent(void* cbData, XML_Char const* s, int len)
 
 					data->isXml = true;
 					data->isHtml = true;
+#ifdef FOREIGN_SOURCE
+					specialExpected = true;
+#endif
 					s += 3;
 				}
 				else if ((p = sys::utf8::nextChar(s)) - s > 1)
 				{
 					data->result.append(s, p - s);
 					data->isHtml = true;
+#ifdef FOREIGN_SOURCE
+					specialExpected = false;
+#endif
 					s = p;
 				}
 				else
 				{
 					data->result += '?';
+#ifdef FOREIGN_SOURCE
+					specialExpected = false;
+#endif
 					++s;
 				}
 			}
 			else if (isprint(*s))
 			{
+				if (*s == '\n')
+				{
+					data->result.append("<br/>", 5);
+					s += 1;
+				}
 #ifdef FOREIGN_SOURCE
-				if (isDelimChar(*s))
+				else if (isDelimChar(*s))
 				{
 					data->result += *s++;
 					specialExpected = true;
@@ -1602,6 +1636,7 @@ htmlContent(void* cbData, XML_Char const* s, int len)
 							{
 								data->result += *s++;
 							}
+							specialExpected = false;
 							break;
 
 							case 'K': case 'Q': case 'R': case 'B': case 'N': case 'P':
@@ -1616,6 +1651,7 @@ htmlContent(void* cbData, XML_Char const* s, int len)
 								{
 									data->result += *s++;
 								}
+								specialExpected = false;
 								break;
 
 							default:
@@ -1650,6 +1686,9 @@ htmlContent(void* cbData, XML_Char const* s, int len)
 			else if (isspace(*s++))
 			{
 				data->result += '\n';
+#ifdef FOREIGN_SOURCE
+				specialExpected = true;
+#endif
 			}
 			else
 			{
@@ -2239,6 +2278,7 @@ Comment::toHtml(mstl::string& result) const
 		return;
 
 	result.reserve(result.size() + m_content.size() + 100);
+	result.append("<html>");
 
 	if (isXml())
 	{
@@ -2276,6 +2316,8 @@ Comment::toHtml(mstl::string& result) const
 			}
 		}
 	}
+
+	result.append("</html>");
 }
 
 
@@ -2499,6 +2541,8 @@ Comment::fromHtml(mstl::string const& s)
 				::flatten(m_content, str);
 				m_content.swap(str);
 			}
+
+			detectEmoticons();
 		}
 	}
 	catch (...)
@@ -2518,7 +2562,7 @@ Comment::escapeString(mstl::string const& src, mstl::string& dst)
 	dst.reserve(dst.size() + 2*src.size());
 
 	for (mstl::string::const_iterator i = src.begin(); i != src.end(); ++i)
-		appendChar(*i, dst);
+		::appendChar(*i, dst);
 }
 
 
@@ -2604,12 +2648,16 @@ Comment::convertCommentToXml(	mstl::string const& comment,
 				result.m_content += '?';
 				++s;
 			}
+
+			specialExpected = true;
 		}
-		else if (::isalnum(*s) && (!specialExpected || *s != 'o'))
+		else if (::isalnum(*s) && !specialExpected)
 		{
 			do
 				result.m_content.append(*s++);
 			while (::isalnum(*s));
+
+			specialExpected = isDelimChar(*s);
 		}
 		else if (::isspace(*s))
 		{
@@ -2667,7 +2715,7 @@ Comment::convertCommentToXml(	mstl::string const& comment,
 			unsigned	len;
 			nag::ID	nag = specialExpected ? nag::parseSymbol(s, len) : nag::Null;
 
-			if (nag != nag::Null)
+			if (nag != nag::Null && isDelimChar(s[len]))
 			{
 				result.m_content.format("<nag>%u</nag>", unsigned(nag));
 				s += len;
@@ -2675,6 +2723,8 @@ Comment::convertCommentToXml(	mstl::string const& comment,
 			}
 			else
 			{
+				specialExpected = true;
+
 				switch (*s)
 				{
 					case '&':	result.m_content.append("&amp;",  5); ++s; break;
@@ -2740,6 +2790,7 @@ Comment::convertCommentToXml(	mstl::string const& comment,
 
 								s = e;
 							}
+							specialExpected = false;
 						}
 						else if (::isDelimChar(*s))
 						{
@@ -2749,6 +2800,7 @@ Comment::convertCommentToXml(	mstl::string const& comment,
 						else
 						{
 							result.m_content += *s++;
+							specialExpected = isDelimChar(*s);
 						}
 						break;
 				}
@@ -2757,6 +2809,7 @@ Comment::convertCommentToXml(	mstl::string const& comment,
 		else
 		{
 			result.m_content += '?';
+			specialExpected = false;
 			++s;
 		}
 	}

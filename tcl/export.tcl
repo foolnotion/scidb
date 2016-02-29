@@ -3207,14 +3207,18 @@ proc DoExport {parent dlg file} {
 	set options 0
 
 	if {[info exists Info(languages)]} {
-		set languages $Values($Values(Type),comments,languages)
+		foreach lang $Info(languages) { lappend languages [list $lang yes] }
+	} elseif {[lindex $Values($Values(Type),comments,languages) 0] eq "all"} {
+		set languages {* yes}
 	} else {
-		if {[lindex $Values($Values(Type),comments,languages) 0] eq "all"} {
-			set languages {* 1}
-		} else {
-			switch [lindex $Values($Values(Type),comments,languages) 0] {
-				all - none	{ set languages {} }
-				default		{ set languages [lrange $Values(tex,comments,languages) 1 end] }
+		switch [lindex $Values($Values(Type),comments,languages) 0] {
+			all		{ set languages {* yes} }
+			none		{ set languages {} }
+			default	{
+				set languages {}
+				foreach lang [lrange $Values(tex,comments,languages) 1 end] {
+					if {[string length $lang]} { lappend languages [list $lang yes] }
+				}
 			}
 		}
 	}
@@ -3409,16 +3413,12 @@ if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} {
 
 			html - pdf - tex {
 				return [::beta::notYetImplemented .application print-game]
-				::scidb::game::print
-					$file \
-					$searchPath \
-					$script \
-					$preamble \
-					$flags \
-					$options \
-					$nags \
-					$languages \
-					[namespace current]::Trace_ \
+				::scidb::game::print $file $searchPath $script $preamble \
+					-flags $flags \
+					-options $options \
+					-nags $nags \
+					-languages $languages \
+					-trace [namespace current]::Trace_ \
 					;
 			}
 		}

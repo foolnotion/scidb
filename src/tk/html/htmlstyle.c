@@ -97,7 +97,7 @@ void
 HtmlDelStackingInfo(HtmlTree *pTree, HtmlElementNode *pElem)
 {
     HtmlNodeStack *pStack = pElem->pStack;
-    if (pStack && pStack->pElem == pElem){
+    if (pStack && pStack->pElem == pElem) { // XXX valgrind is reporting Invalid read of size 4
         if (pStack->pPrev) {
             pStack->pPrev->pNext = pStack->pNext;
         }
