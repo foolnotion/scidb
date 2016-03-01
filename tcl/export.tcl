@@ -3209,10 +3209,10 @@ proc DoExport {parent dlg file} {
 	if {[info exists Info(languages)]} {
 		foreach lang $Info(languages) { lappend languages [list $lang yes] }
 	} elseif {[lindex $Values($Values(Type),comments,languages) 0] eq "all"} {
-		set languages {* yes}
+		set languages {{* yes}}
 	} else {
 		switch [lindex $Values($Values(Type),comments,languages) 0] {
-			all		{ set languages {* yes} }
+			all		{ set languages {{* yes}} }
 			none		{ set languages {} }
 			default	{
 				set languages {}

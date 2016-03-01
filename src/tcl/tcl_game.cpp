@@ -3444,7 +3444,7 @@ cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		return TCL_ERROR;
 	}
 
-	if (significant == -1) {
+	if (significant == 0) {
 		languagePtr = nullptr;
 	}
 
@@ -3561,7 +3561,8 @@ cmdPrint(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		}
 		else if (::strcmp(option, "-languages") == 0)
 		{
-			significant = ::tcl::view::makeLangList(ti, CmdPrint, objv[objc - 1], languages);
+			if ((significant = ::tcl::view::makeLangList(ti, CmdPrint, objv[objc - 1], languages)) == -1)
+				return TCL_ERROR;
 		}
 		else if (::strcmp(option, "-trace") == 0)
 		{
@@ -3596,7 +3597,7 @@ cmdPrint(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 							flags,
 							options,
 							nagMap,
-							significant == -1 ? nullptr : &languages,
+							significant == 0 ? nullptr : &languages,
 							significant);
 
 	{

@@ -1314,7 +1314,7 @@
 ::playertable::mc::StartSearch			"Keresés indítása"
 ::playertable::mc::ClearEntries			"Bejegyzések törlése"
 ::playertable::mc::NotFound			"Nem található."
-::playertable::mc::UsePlayerBase		"Use Player Base" ;# NEW
+::playertable::mc::EnablePlayerBase		"Enable use of player base" ;# NEW
 ::playertable::mc::DisablePlayerBase    	"Disable use of player base" ;# NEW
 ::playertable::mc::TooltipRating         	"Értékszám: %s"
 

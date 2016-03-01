@@ -1650,6 +1650,10 @@ Codec::readNamebases(mstl::fstream& stream, util::Progress& progress)
 #if FIX_INCORRECT_ID
 //if (i == 0) nextId = 1;
 #endif
+
+		if (nextId == 0) {
+			IO_RAISE(Namebase, Corrupted, "zero size");
+		}
 		m_lookup[i].resize(nextId);
 
 		switch (i)
@@ -1700,7 +1704,7 @@ Codec::readNamebase(ByteStream& bstrm, Namebase& base, unsigned count, util::Pro
 		unsigned prefix	= bstrm.get();
 		unsigned length	= bstrm.get();
 
-		if (prefix >= length)
+		if (index >= lookup.size() || prefix >= length)
 			IO_RAISE(Namebase, Corrupted, "namebase file is broken");
 
 		char* curr = base.alloc(length);
@@ -1747,7 +1751,7 @@ Codec::readSitebase(ByteStream& bstrm, Namebase& base, unsigned count, util::Pro
 		unsigned prefix	= bstrm.get();
 		unsigned length	= bstrm.get();
 
-		if (prefix > length)
+		if (index >= lookup.size() || prefix > length)
 			IO_RAISE(Namebase, Corrupted, "namebase file is broken");
 
 		if (prefix < length)
@@ -1849,11 +1853,11 @@ printf("0 -> %u (%s)\n", id, name.c_str());
 			m_progressReportAfter += m_progressFrequency;
 		}
 
-		unsigned	id			= bstrm.uint24();
+		unsigned	index		= bstrm.uint24();
 		unsigned prefix	= bstrm.get();
 		unsigned length	= bstrm.get();
 
-		if (prefix > length)
+		if (index >= lookup.size() || prefix > length)
 			IO_RAISE(Namebase, Corrupted, "namebase file is broken");
 
 		if (prefix < length)
@@ -1866,7 +1870,7 @@ printf("0 -> %u (%s)\n", id, name.c_str());
 			prev = curr;
 		}
 #if FIX_INCORRECT_ID
-printf("%u -> %u (%s)\n", i, id, name.c_str());
+printf("%u -> %u (%s)\n", i, index, name.c_str());
 #endif
 
 		NamebaseSite* site = ::getSite(namebase(Namebase::Site), m_lookup[Namebase::Site][bstrm.uint24()]);
@@ -1893,7 +1897,7 @@ printf("%u -> %u (%s)\n", i, id, name.c_str());
 			}
 
 			base.appendEvent(	name,
-									id,
+									index,
 									dateYear,
 									dateMonth,
 									dateDay,
@@ -1904,13 +1908,13 @@ printf("%u -> %u (%s)\n", i, id, name.c_str());
 		}
 		else
 		{
-			base.appendEvent(name, id, site);
+			base.appendEvent(name, index, site);
 		}
 
 #if FIX_INCORRECT_ID
-if (id == 0) id = 1;
+if (index == 0) index = 1;
 #endif
-		lookup[id] = i;
+		lookup[index] = i;
 	}
 }
 
@@ -1995,7 +1999,7 @@ Codec::readPlayerbase(ByteStream& bstrm, Namebase& base, unsigned count, util::P
 		unsigned prefix	= bstrm.get();
 		unsigned length	= bstrm.get();
 
-		if (prefix > length)
+		if (index >= lookup.size() || prefix > length)
 			IO_RAISE(Namebase, Corrupted, "namebase file is broken");
 
 		if (prefix < length)
@@ -2155,8 +2159,10 @@ Codec::writeNamebase(ByteStream& bstrm, Namebase& base, util::Progress* progress
 
 	unsigned i = 0;
 
+#if 0
 	while (i < base.used() && base.entry(i)->frequency() == 0)
 		++i;
+#endif
 
 	NamebaseEntry* prev = base.entry(i++);
 
@@ -2177,8 +2183,10 @@ Codec::writeNamebase(ByteStream& bstrm, Namebase& base, util::Progress* progress
 
 		NamebaseEntry* entry = base.entry(i);
 
+#if 0
 		if (entry->frequency() == 0)
 			continue;
+#endif
 
 		unsigned prefix = ::prefix(entry->name(), prev->name());
 		unsigned length = entry->name().size();
@@ -2203,8 +2211,10 @@ Codec::writeSitebase(ByteStream& bstrm, Namebase& base, util::Progress* progress
 
 	unsigned i = 0;
 
+#if 0
 	while (i < base.used() && base.entry(i)->frequency() == 0)
 		++i;
+#endif
 
 	NamebaseSite* prev = base.site(i++);
 
@@ -2226,8 +2236,10 @@ Codec::writeSitebase(ByteStream& bstrm, Namebase& base, util::Progress* progress
 
 		NamebaseSite* entry = base.site(i);
 
+#if 0
 		if (entry->frequency() == 0)
 			continue;
+#endif
 
 		unsigned prefix = ::prefix(entry->name(), prev->name());
 		unsigned length = entry->name().size();
@@ -2253,8 +2265,10 @@ Codec::writeEventbase(util::ByteStream& bstrm, Namebase& base, util::Progress* p
 
 	unsigned i = 0;
 
+#if 0
 	while (i < base.used() && base.entry(i)->frequency() == 0)
 		++i;
+#endif
 
 	NamebaseEvent* prev = base.event(i++);
 
@@ -2295,8 +2309,10 @@ Codec::writeEventbase(util::ByteStream& bstrm, Namebase& base, util::Progress* p
 
 		NamebaseEvent* entry = base.event(i);
 
+#if 0
 		if (entry->frequency() == 0)
 			continue;
+#endif
 
 		unsigned prefix = ::prefix(entry->name(), prev->name());
 		unsigned length = entry->name().size();
@@ -2378,8 +2394,10 @@ Codec::writePlayerbase(util::ByteStream& bstrm, Namebase& base, util::Progress* 
 
 		NamebasePlayer* entry = base.player(i);
 
+#if 0
 		if (entry->frequency() == 0)
 			continue;
+#endif
 
 		unsigned prefix = ::prefix(entry->name(), prev->name());
 		unsigned length = entry->name().size();

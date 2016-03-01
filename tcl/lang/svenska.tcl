@@ -1313,7 +1313,7 @@
 ::playertable::mc::StartSearch				"Starta sökning"
 ::playertable::mc::ClearEntries				"Rensa"
 ::playertable::mc::NotFound					"Saknas."
-::playertable::mc::UsePlayerBase				"Use Player Base" ;# NEW
+::playertable::mc::EnablePlayerBase			"Enable use of player base" ;# NEW
 ::playertable::mc::DisablePlayerBase      "Disable use of player base" ;# NEW
 ::playertable::mc::TooltipRating          "Rating: %s" ;# NEW
 

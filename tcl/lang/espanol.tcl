@@ -1306,7 +1306,7 @@
 ::playertable::mc::StartSearch				"Iniciar búsqueda"
 ::playertable::mc::ClearEntries				"Vaciar entradas"
 ::playertable::mc::NotFound					"No se encontró."
-::playertable::mc::UsePlayerBase				"Use Player Base" ;# NEW
+::playertable::mc::EnablePlayerBase			"Enable use of player base" ;# NEW
 ::playertable::mc::DisablePlayerBase		"Disable use of player base" ;# NEW
 ::playertable::mc::TooltipRating				"Rating: %s" ;# NEW
 

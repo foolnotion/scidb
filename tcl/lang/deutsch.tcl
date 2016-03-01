@@ -1303,7 +1303,7 @@
 ::playertable::mc::StartSearch				"Suche starten"
 ::playertable::mc::ClearEntries				"Einträge löschen"
 ::playertable::mc::NotFound					"Nicht gefunden."
-::playertable::mc::UsePlayerBase				"Spielerdatenbank benutzen"
+::playertable::mc::EnablePlayerBase			"Spielerdatenbank benutzen"
 ::playertable::mc::DisablePlayerBase		"Spielerdatenbank nicht benutzen"
 ::playertable::mc::TooltipRating				"Wertungszahl: %s"
 

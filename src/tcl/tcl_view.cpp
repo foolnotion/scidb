@@ -324,7 +324,7 @@ tcl::view::makeLangList(Tcl_Interp* ti,
 		char const* lang = Tcl_GetString(objs[0]);
 
 		if (*lang == '*')
-			return -1;
+			return 0;
 
 		if (boolFromObj(n, objs, 1))
 			langs.push_back(lang);
@@ -687,7 +687,7 @@ cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 									flags,
 									tagBits,
 									extraTags,
-									significant == -1 ? nullptr : &languages,
+									significant == 0 ? nullptr : &languages,
 									significant,
 									excludeIllegal ? &illegalRejected : nullptr,
 									log,
@@ -793,7 +793,7 @@ cmdPrint(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 									flags,
 									options,
 									nagMap,
-									significant == -1 ? nullptr : &languages,
+									significant == 0 ? nullptr : &languages,
 									significant,
 									nullptr, // illegal game count not used here
 									log,

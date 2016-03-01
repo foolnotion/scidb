@@ -1315,7 +1315,7 @@
 ::playertable::mc::StartSearch				"Comincia ricerca"
 ::playertable::mc::ClearEntries				"Pulisci form"
 ::playertable::mc::NotFound					"Nessun risultato."
-::playertable::mc::UsePlayerBase				"Usa Database Giocatore"
+::playertable::mc::EnablePlayerBase			"Usa Database Giocatore"
 ::playertable::mc::DisablePlayerBase		"Disable use of player base" ;# NEW
 ::playertable::mc::TooltipRating				"Rating: %s" ;# NEW
 
