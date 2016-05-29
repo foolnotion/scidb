@@ -559,7 +559,7 @@ MoveInfoSet::print(	EngineList const& engines,
 
 			if (print)
 			{
-				if (!result.empty() && !result.back() != delim)
+				if (!result.empty() && result.back() != delim)
 					result.append(delim);
 
 				m_row[i].print(engines, result, format);

@@ -171,9 +171,12 @@ Node::Spacing::pushOpen(unsigned number, unsigned count)
 
 	Type type = m_level > 1 || !(m_displayStyle & display::ParagraphSpacing) ? Break : Para;
 
+	if (!(m_displayStyle & display::ShowVariationNumbers))
+		number = 0;
+
 #if 0
 	// don't use paragraph spacing between variations
-	if (m_tokenList.pop() == Close)
+	if (m_tokenList.pop() == Close || m_tokenList.pop() == CloseFold)
 		type = Break;
 #endif
 
@@ -297,7 +300,7 @@ Node::Spacing::pop(List& list)
 
 			case Open:
 				if (token.number)
-					list.push_back(new edit::Space(token.level, token.number, token.count));
+					list.push_back(new edit::Space(token.level, token.number, token.count, true));
 				else
 					list.push_back(new edit::Space(Node::Open));
 				break;
@@ -960,11 +963,7 @@ Move::Move(Work& work, MoveNode const* move, bool isEmptyGame, unsigned varNo, u
 	}
 	else
 	{
-		if (/*varCount > 1 && */(work.m_displayStyle & display::ShowVariationNumbers))
-			work.pushOpen(varNo, varCount);
-		else
-			work.pushOpen(varNo, varCount);
-
+		work.pushOpen(varNo, varCount);
 		work.pushSpace();
 		work.m_needMoveNo = true;
 	}
@@ -1223,12 +1222,10 @@ Move::Move(Work& work, db::Comment const& comment, unsigned varNo, unsigned varC
 	{
 		Node::Bracket bracket;
 
-		if (work.m_isFolded)
-			bracket = Node::Fold;
-		else if (/*varCount > 1 && */(work.m_displayStyle & display::ShowVariationNumbers))
-			bracket = Node::End;
+		if (/*varCount > 1 && */(work.m_displayStyle & display::ShowVariationNumbers))
+			bracket = work.m_isFolded ? Node::Fold : Node::End;
 		else
-			bracket = Node::Close;
+			bracket = work.m_isFolded ? Node::CloseFold : Node::Close;
 
 		work.pushClose(varNo, varCount);
 		m_list.push_back(new Space(bracket, varNo, varCount));

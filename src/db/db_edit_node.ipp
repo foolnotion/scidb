@@ -59,19 +59,6 @@ Space::Space(Bracket bracket)
 
 
 inline
-Space::Space(Bracket bracket, unsigned varNo, unsigned varCount)
-	:m_level(-1)
-	,m_varNo(varNo)
-	,m_varCount(varCount)
-	,m_bracket(bracket)
-	,m_asNumber(true)
-{
-	M_ASSERT(varNo > 0);
-	M_ASSERT(varCount > 0);
-}
-
-
-inline
 Space::Space(unsigned level)
 	:m_level(level)
 	,m_varNo(0)
@@ -83,12 +70,25 @@ Space::Space(unsigned level)
 
 
 inline
-Space::Space(unsigned level, unsigned varNo, unsigned varCount)
+Space::Space(Bracket bracket, unsigned varNo, unsigned varCount)
+	:m_level(-1)
+	,m_varNo(varNo)
+	,m_varCount(varCount)
+	,m_bracket(bracket)
+	,m_asNumber(false)
+{
+	M_ASSERT(varNo > 0);
+	M_ASSERT(varCount > 0);
+}
+
+
+inline
+Space::Space(unsigned level, unsigned varNo, unsigned varCount, bool asNumber)
 	:m_level(level)
 	,m_varNo(varNo)
 	,m_varCount(varCount)
 	,m_bracket(Open)
-	,m_asNumber(false)
+	,m_asNumber(asNumber)
 {
 	M_ASSERT(varNo > 0);
 	M_ASSERT(varCount > 0);

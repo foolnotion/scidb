@@ -153,7 +153,7 @@ PgnWriter::PgnWriter(format::Type srcFormat,
 	if (test(Flag_Use_UTF8) && !test(Flag_Append_Games) && encoding == sys::utf8::Codec::utf8())
 	{
 		m_strm.write("\xef\xbb\xbf"); // UTF-8 BOM
-		m_strm.write(m_eol);
+		m_strm.write(m_eol); // TODO really needed?
 	}
 }
 

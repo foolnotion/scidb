@@ -599,7 +599,7 @@ struct Normalize : public Comment::Callback
 		m_langFlags = 0;
 	}
 
-	~Normalize() {
+	~Normalize() throw() {
 		for (LangMap::iterator i = m_map.begin(); i != m_map.end(); ++i)
 			delete i->second;
 	}

@@ -1380,9 +1380,6 @@ Database::exportGames(	Destination& destination,
 {
 	M_REQUIRE(gameFilter.size() == size());
 	M_REQUIRE(destination.variant() == variant());
-	M_REQUIRE(	destination.format() == format::Scidb
-				|| destination.format() == format::Scid3
-				|| destination.format() == format::Scid4);
 	M_REQUIRE(illegalRejected || !format::isScidFormat(destination.format()));
 
 	enum { MaxWarnings = 40 };
