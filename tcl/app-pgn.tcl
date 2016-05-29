@@ -822,11 +822,6 @@ proc See {position {key ""} {succKey ""}} {
 
 	if {[string length $key] == 0} { return }
 
-	if {$Vars(start:$position)} {
-		if {$key eq [::scidb::game::position startKey]} { return }
-		set Vars(start:$position) 0
-	}
-
 	set w $Vars(pgn:$position)
 
 	if {$key eq [::scidb::game::position startKey]} {
@@ -835,9 +830,10 @@ proc See {position {key ""} {succKey ""}} {
 	}
 
 	# TODO experimental
-	if {[string length $succKey]} {
-		$w see $succKey
-	}
+#	if {[string length $succKey]} {
+#		$w see $succKey
+#	}
+# TODO: rework the whole logic, it is jumping too much
 
 	set firstLine [$w index m-start]
 	set range [$w index $key]
@@ -1068,7 +1064,6 @@ proc ConfigureEditor {} {
 	set Vars(virgin:10) 1
 	set Vars(result:10) ""
 	set Vars(header:10) ""
-	set Vars(start:10) 1
 	set Vars(tags:10) {}
 	set Vars(after:10) {}
 	set Vars(position) 10
@@ -1093,6 +1088,7 @@ proc Dump {w type attr pos} {
 			}
 		}
 		mark {
+			if {$attr in {insert current}} { return }
 			set attr "${attr} ([$w mark gravity $attr])"
 		}
 	}
@@ -1196,7 +1192,10 @@ proc DoLayout {position content {context editor} {w {}}} {
 
 					clear {
  						$w delete m-start m-0
-						$w insert m-0 \n
+						# XXX should be "> 1", but currently we have invisible chars
+						if {[$w count -chars 1.0 2.0] > 2} {
+							$w insert m-0 "\n"
+						}
 						set Vars(result:$position) ""
 					}
 
@@ -1455,6 +1454,10 @@ proc UpdateHeader {context position w data} {
 				$w insert current $::mc::VariantName($variant) opening
 			}
 		}
+	} else {
+		while {[$w get 1.0] == "\n"} {
+			$w delete 1.0
+		}
 	}
 
 	$w mark set m-start current
@@ -1513,7 +1516,7 @@ proc InsertMove {context position w level key data} {
 				switch $space {
 					")" {
 						if {$level != 1 || !$Options(spacing:paragraph)} {
-							$w insert current " )" {variation bracket}
+							$w insert current "\u000a)" {variation bracket}
 						} elseif {$Vars(old-editor)} {
 							# NOTE: We need a blind character between each mark because
 							# the editor is shuffling consecutive marks.
@@ -1521,8 +1524,19 @@ proc InsertMove {context position w level key data} {
 						}
 					}
 
-					"e" { $w insert current "\n<$mc::EmptyGame>" empty }
-					"s" { $w insert current "\n" }
+					"e" {
+						if {$Options(show:opening) || $position < 9} {
+							$w insert current "\n"
+							$w insert current "<$mc::EmptyGame>" empty
+						}
+					}
+
+					"s" {
+						if {[$w compare current != 1.0]} {
+							$w insert current "\n"
+						}
+					}
+
 					" " { $w insert current " " $main }
 
 					"]" {
@@ -1535,7 +1549,7 @@ proc InsertMove {context position w level key data} {
 						}
 					}
 
-					"+" {
+					"+" - "*" {
 						variable ::pgn::editor::Colors
 						set enterCmd [namespace code [list EnterPlus $w]]
 						set leaveCmd [namespace code [list LeavePlus $w]]
@@ -1566,8 +1580,8 @@ proc InsertMove {context position w level key data} {
 							$w image bind $img <Any-Leave> $leaveCmd
 							$w image bind $img <ButtonPress-1> $foldCmd
 						}
-						if {$level != 1 || !$Options(spacing:paragraph)} {
-							$w insert current " )" {variation bracket}
+						if {$space eq "*" && ($level != 1 || !$Options(spacing:paragraph))} {
+							$w insert current "\u000a)" {variation bracket}
 						} elseif {$Vars(old-editor)} {
 							# NOTE: We need a blind character between each mark because
 							# the editor is shuffling consecutive marks.
@@ -1606,7 +1620,7 @@ proc InsertMove {context position w level key data} {
 							if {$number ne "-"} { set number "($number)" } else { set number "\u2022" }
 							$w insert current "$number " {variation numbering}
 						} else {
-							$w insert current "( " {variation bracket}
+							$w insert current "(\u000a" {variation bracket}
 						}
 					}
 				}
@@ -2352,7 +2366,6 @@ proc ResetGame {w position {tags {}}} {
 	set Vars(virgin:$position) 1
 	set Vars(header:$position) ""
 	set Vars(last:$position) ""
-	set Vars(start:$position) 1
 	set Vars(tags:$position) $tags
 	set Vars(after:$position) {}
 
