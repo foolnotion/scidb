@@ -296,7 +296,6 @@ NameList::nextId()
 	}
 
 	m_usedIdSet.set(id);
-
 	return id;
 }
 

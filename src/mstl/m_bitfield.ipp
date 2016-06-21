@@ -467,7 +467,7 @@ inline
 void
 bitfield<Bits>::reset()
 {
-	m_bits = 0u;
+	m_bits = 0;
 }
 
 
@@ -588,7 +588,7 @@ inline
 bool
 bitfield<Bits>::any() const
 {
-	return m_bits != 0u;
+	return m_bits != 0;
 }
 
 
@@ -597,7 +597,7 @@ inline
 bool
 bitfield<Bits>::complete() const
 {
-	return m_bits == value_type(~0u);
+	return m_bits == value_type(~value_type(0));
 }
 
 
