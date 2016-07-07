@@ -3395,7 +3395,7 @@ cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	unsigned						position(Application::InvalidPosition);
 	View::Languages			languages;
 	View::Languages*			languagePtr(&languages);
-	int							significant(-1);
+	int							significant(0);
 
 	while (objc > 2 && *(option = stringFromObj(objc, objv, objc - 2)) == '-')
 	{

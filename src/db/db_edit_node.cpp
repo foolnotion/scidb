@@ -171,8 +171,11 @@ Node::Spacing::pushOpen(unsigned number, unsigned count)
 
 	Type type = m_level > 1 || !(m_displayStyle & display::ParagraphSpacing) ? Break : Para;
 
-	if (!(m_displayStyle & display::ShowVariationNumbers))
+	if (	(m_level > 1 || !(m_displayStyle & display::ParagraphSpacing))
+		&& !(m_displayStyle & display::ShowVariationNumbers))
+	{
 		number = 0;
+	}
 
 #if 0
 	// don't use paragraph spacing between variations
