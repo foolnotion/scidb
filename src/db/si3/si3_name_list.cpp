@@ -250,6 +250,8 @@ NameList::adjustListSize()
 NameList::Node*
 NameList::newNode(NamebaseEntry* entry, mstl::string const* str, unsigned id)
 {
+	M_ASSERT((str ? str->size() : entry->name().size()) > 0);
+
 	Node* node = m_nodeAlloc.alloc();
 
 	node->entry = entry;
@@ -310,6 +312,7 @@ NameList::finish()
 NameList::Node*
 NameList::makeNode(NamebaseEntry* entry, mstl::string const* str)
 {
+	M_ASSERT(str->size() > 0);
 	return newNode(entry, str, nextId());
 }
 
@@ -355,6 +358,7 @@ NameList::append(	mstl::string const& originalName,
 			// An empty string is violating the standard, so we have to use the
 			// replacement "?" instead.
 			m_buf.assign("?", 1);
+			str = &m_buf;
 		}
 		else if (entry->name() == originalName)
 		{
@@ -384,8 +388,6 @@ NameList::buildList(Namebase& base, Codec& codec)
 
 		if (entry->used())
 		{
-			static const mstl::string emptyString("?");
-
 			M_ASSERT(entry->id() < base.nextId());
 
 			mstl::string const* str;
@@ -394,7 +396,8 @@ NameList::buildList(Namebase& base, Codec& codec)
 			{
 				// An empty string is violating the standard, so we have to use the
 				// replacement "?" instead.
-				str = &emptyString;
+				m_buf.assign("?", 1);
+				str = &m_buf;
 			}
 			else if (Codec::is7BitAscii(entry->name()))
 			{
