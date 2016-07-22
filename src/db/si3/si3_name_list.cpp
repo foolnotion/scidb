@@ -350,7 +350,13 @@ NameList::append(	mstl::string const& originalName,
 	{
 		mstl::string const* str;
 
-		if (entry->name() == originalName)
+		if (entry->name().size() == 0)
+		{
+			// An empty string is violating the standard, so we have to use the
+			// replacement "?" instead.
+			m_buf.assign("?", 1);
+		}
+		else if (entry->name() == originalName)
 		{
 			str = 0;
 		}
@@ -378,11 +384,19 @@ NameList::buildList(Namebase& base, Codec& codec)
 
 		if (entry->used())
 		{
+			static const mstl::string emptyString("?");
+
 			M_ASSERT(entry->id() < base.nextId());
 
 			mstl::string const* str;
 
-			if (Codec::is7BitAscii(entry->name()))
+			if (entry->name().size() == 0)
+			{
+				// An empty string is violating the standard, so we have to use the
+				// replacement "?" instead.
+				str = &emptyString;
+			}
+			else if (Codec::is7BitAscii(entry->name()))
 			{
 				str = &entry->name();
 			}
