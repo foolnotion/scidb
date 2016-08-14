@@ -403,7 +403,7 @@ proc Mouse1Down {nodes} {
 				NEW	{ set cmd [list ::menu::dbNew $Priv(html) Normal] }
 			}
 
-			if {[llength $cmd] && [{*}$cmd]} {
+			if {[llength $cmd] && ![catch { [{*}$cmd] }]} {
 				[namespace parent]::switchTab database
 			}
 		}

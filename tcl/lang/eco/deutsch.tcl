@@ -159,6 +159,7 @@
 "Exchange Variation"											"Abtauschvariante"
 "Exchange Winawer Variation"								"Winawer Abtauschvariante"
 "Extended Bishop Swap Variation"							"Verlängerte Läufertauschvariante"
+"Fantasy Gambit"												"Phantasiegambit"
 "Fegatello (Fried Liver) Attack"							"Fegatello Angriff"
 "Fianchetto Defence Deferred"								"Verzögerte Fianchetto Verteidigung"
 "Fishing Pole Variation"									"Angelrutenverteidigung"

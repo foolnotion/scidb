@@ -151,10 +151,6 @@ public:
 	// data for receiver
 	void setProducer(Producer* producer);
 
-#ifdef DEBUG_SI4
-	uint32_t m_index;
-#endif
-
 protected:
 
 	virtual bool beginGame(TagSet const& tags) = 0;

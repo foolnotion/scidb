@@ -157,7 +157,6 @@ array set feature {
     assertions      no
     gprof-profiling no
     gcov-coverage   no
-    si4-debugging   no
     splash-screen   yes
 }
 
@@ -868,17 +867,22 @@ proc findFreetype {} {
     variable package
 
     set path {
-        /usr/local/include/freetype2/freetype/config
-        /usr/include/freetype2/freetype/config
-        /usr/local/include/freetype2/config
-        /usr/include/freetype2/config
+        /usr/local/include/freetype2/freetype
+        /usr/local/include/freetype2
+        /usr/include/freetype2/freetype
+        /usr/include/freetype2
     }
 
     puts -nonewline "    Checking if your system has freetype2: "
-    set dir [FindDir "ftheader.h" $path]
+    set dir [FindDir "config/ftheader.h" $path]
 
     if {[string length $dir]} {
-        set ftdir [file join {*}[lrange [split $dir /] 0 end-1]]
+        set components [split $dir /]
+        if {[lindex $components end] eq "freetype"} {
+            set ftdir [file join {*}[lrange $components 0 end-1]]
+        } else {
+            set ftdir [file join {*}[lrange $components 0 end]]
+        }
         set option(HAVE_FREETYPE) "-DHAVE_FREETYPE"
         set package(freetype-inc) "-I/$ftdir"
         puts "yes."
@@ -1896,7 +1900,6 @@ proc writeMakefile {success} {
     if {!$feature(assertions)}      { Append option(CXX_DEBUG) "-DNREQ" }
     if { $feature(gprof-profiling)} { Append option(PROFILING) "-pg" }
     if { $feature(gcov-coverage)}   { Append option(PROFILING) "-coverage" }
-    if { $feature(si4-debugging)}   { Append option(EXTRA_DEBUG_FLAGS) "-DDEBUG_SI4" }
 #   if {$feature(splash-screen)}    { set option(SPLASH) "yes" }
 #   if {!$feature(splash-screen)}   { set option(SPLASH) "no" }
 
@@ -2111,8 +2114,6 @@ proc usage {rc} {
     puts "                             \[default=$feature(gprof-profiling)\]"
     puts "  --enable-gcov-coverage     enable coverage (slows down the program)"
     puts "                             \[default=$feature(gcov-coverage)\]"
-#   puts "  --enable-si4-debugging     enable debugging information for .si3/.si4 format"
-#   puts "                             \[default=$feature(debug-si4)]"
 #   puts "  --enable-splash-screen    enable (or disable) the splash screen \[default=$feature(splash-screen)\]"
     puts ""
     puts "Additional Options:"
@@ -2146,7 +2147,6 @@ proc usage {rc} {
 set environment(OPTIMIZE) ""
 set feature(symbols) yes
 set feature(assertions) yes
-set feature(si4-debugging) yes
 set configure(program-suffix) "-beta"
 
 if {[lsearch $argv -h] >= 0 || [lsearch $argv --help] >= 0} { usage 0 }

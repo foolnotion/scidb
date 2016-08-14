@@ -211,6 +211,36 @@ namespace import ::dialog::choosecolor::addToList
 namespace import ::dialog::choosecolor::getActualColor
 
 
+# proc mytext {w args} {
+# 	tk::text $w {*}$args
+# 	catch { rename ::$w $w.__w__ }
+# 	proc ::$w {command args} "[namespace current]::WidgetProc $w \$command {*}\$args"
+# 	return $w
+# }
+# 
+# 
+# proc WidgetProc {w command args} {
+# 	switch $command {
+# 		insert - delete {
+# 			puts "-- $command $args"
+# 		}
+# 		mark {
+# 			if {[lindex $args 0] != "gravity" || [llength $args] != 2} {
+# 				puts "-- $command $args"
+# 			}
+# 		}
+# 		tag {
+# 			switch [lindex $args 0] {
+# 				add - delete {
+# 					puts "-- $command $args"
+# 				}
+# 			}
+# 		}
+# 	}
+# 	return [$w.__w__ $command {*}$args]
+# }
+
+
 proc buildText {path context {forceSbSet 0}} {
 	variable ContextList
 	variable Context
@@ -264,7 +294,8 @@ proc buildText {path context {forceSbSet 0}} {
 		-font $::font::text($context:normal) \
 		-cursor {} \
 	]
-	catch { $f.pgn configure -steadymarks off }
+	catch { $f.pgn configure -steadymarks on }
+	catch { $f.pgn configure -state readonly }
 	$f.pgn debug off
 
 	::widget::textPreventSelection $pgn

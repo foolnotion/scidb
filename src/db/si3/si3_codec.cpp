@@ -1457,10 +1457,6 @@ Codec::decodeIndex(ByteStream& strm, unsigned index)
 		// IMPORTANT NOTE: stored line index is probably broken (Scid bug)
 		if (index < StoredLine::count())
 			item.m_ecoKey = StoredLine::getLine(index).ecoKey();
-#ifdef DEBUG_SI4
-		else
-			::fprintf(stderr, "WARNING(%u): invalid stored line value 255\n", index);
-#endif
 	}
 	else
 	{
@@ -1886,6 +1882,7 @@ Codec::readNamebase(	ByteIStream& bstrm,
 		unsigned freq = getFreq();
 
 		unsigned length = bstrm.get();
+		unsigned prefix;
 
 		if (i == 0)
 		{
@@ -1893,7 +1890,7 @@ Codec::readNamebase(	ByteIStream& bstrm,
 		}
 		else
 		{
-			unsigned prefix = bstrm.get();
+			prefix = bstrm.get();
 
 			if (prefix > length)
 				IO_RAISE(Namebase, Corrupted, "namebase file is broken");
@@ -1987,10 +1984,6 @@ Codec::readNamebase(	ByteIStream& bstrm,
 		}
 
 		str.data()[stripped] = remember; // because needed for next entry
-
-#ifdef DEBUG_SI4
-		shadowBase.back()->entry->m_orig_freq = freq;
-#endif
 	}
 
 	progress.update(m_progressCount + count);

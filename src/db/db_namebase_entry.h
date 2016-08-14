@@ -83,10 +83,6 @@ private:
 	uint32_t			m_id;
 
 	static NamebaseEntry* m_emptyEntry;
-
-#ifdef DEBUG_SI4
-public: int m_orig_freq;
-#endif
 };
 
 

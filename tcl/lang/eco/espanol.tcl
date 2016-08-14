@@ -400,6 +400,8 @@
 "English Queen Variation"					"Variante de la reina inglesa"
 "English Variation (Anti-Caro-Kann Defence, Accelerated Panov)"	"Variante inglesa (defensa anti-Caro-Kann, Panov acelerado)"
 "Exchange Variation Doubly Deferred"				"Variante del cambio dos veces diferida"
+# NEW 1.e4 c6 2.d4 d5 3.f3 dxe4 4.fxe4 e5 5.Nf3 exd4 6.Bc4
+"Fantasy Gambit"						"Fantasy Gambit"
 "Fegatello (Fried Liver) Attack"				"Ataque Fegatello (hígado frito)"
 "Fianchetto (Alburt) Variation"					"Variante del fianchetto (Alburt)"
 "Fianchetto Defence Deferred"					"Defensa del fianchetto diferida"

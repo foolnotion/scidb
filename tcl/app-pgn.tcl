@@ -193,12 +193,14 @@ proc build {parent width height} {
 	set Vars(diagram:caps) 0
 	set Vars(old-editor) 0
 	set Vars(indentbackground) {}
+	set Vars(deletemarks) {}
 
 	set steadyMarks 0
 	catch { set steadyMarks [$Vars(pgn:0) cget -steadymarks] }
 	if {$steadyMarks} {
 		# The revised version of tk::text has more useful features and bugfixes.
 		set Vars(indentbackground) {-indentbackground 1}
+		set Vars(deletemarks) -marks
 	} else {
 		set Vars(old-editor) 1
 	}
@@ -1088,7 +1090,7 @@ proc Dump {w type attr pos} {
 			}
 		}
 		mark {
-			if {$attr in {insert current}} { return }
+			if {$attr eq "insert" || [string match {#ID#*} $attr]} { return }
 			set attr "${attr} ([$w mark gravity $attr])"
 		}
 	}
@@ -1123,7 +1125,9 @@ proc DoLayout {position content {context editor} {w {}}} {
 
 		switch [lindex $node 0] {
 			start {
-				$w configure -state normal
+				if {$Vars(old-editor)} {
+					$w configure -state normal
+				}
 			}
 
 			languages {
@@ -1152,46 +1156,35 @@ proc DoLayout {position content {context editor} {w {}}} {
 				switch [lindex $args 0] {
 					replace {
 						lassign $args unused level removePos insertMark
-						$w delete $removePos $insertMark
-#puts "1a: [$w dump -text -mark 3.0 4.0]"
-#puts "1b: [$w dump -text -mark 4.0 5.0] --> [$w index indent:start]"
+						$w delete {*}$Vars(deletemarks) $removePos $insertMark
+						$w mark gravity $insertMark right
 						$w mark set indent:start $insertMark
 						$w mark gravity indent:start left
-						$w mark gravity $insertMark left
-						$w mark set current $insertMark
-						$w mark gravity $insertMark right
-#puts "2a: [$w dump -text -mark 3.0 4.0]"
-#puts "2b: [$w dump -text -mark 4.0 5.0] --> [$w index indent:start]"
-# XXX text will be inserted before indent:start although its a left mark
+						$w mark set cur $insertMark
 					}
 
 					insert {
 						lassign $args unused level insertMark
+						$w mark gravity $insertMark right
 						$w mark set indent:start $insertMark
 						$w mark gravity indent:start left
-						$w mark gravity $insertMark left
-						$w mark set current $insertMark
-						$w mark gravity $insertMark right
-#puts "3a: [$w dump -text -mark 3.0 4.0]"
-#puts "3b: [$w dump -text -mark 4.0 5.0] --> [$w index indent:start]"
+						$w mark set cur $insertMark
 					}
 
 					finish {
 						set level [lindex $args 1]
-#puts "indent: [$w index indent:start] -- [$w index current]"
 						Indent $context $w $level indent:start
-#						$w mark unset indent:start
-						$w mark gravity current left
+						$w mark gravity cur left
 						Mark $w $insertMark
-						$w mark gravity current right
+						$w mark gravity cur right
 					}
 
 					remove {
-						$w delete {*}[lrange $args 2 end]
+						$w delete {*}$Vars(deletemarks) {*}[lrange $args 2 end]
 					}
 
 					clear {
- 						$w delete m-start m-0
+ 						$w delete {*}$Vars(deletemarks) m-start m-0
 						# XXX should be "> 1", but currently we have invisible chars
 						if {[$w count -chars 1.0 2.0] > 2} {
 							$w insert m-0 "\n"
@@ -1232,12 +1225,12 @@ proc DoLayout {position content {context editor} {w {}}} {
 							$w mark gravity $Vars(last:$position) left
 						}
 						$w mark gravity m-0 left
-						$w mark set current m-0
+						$w mark set cur m-0
 						set newline ""
 						if {$Vars(old-editor)} {
-							set line [lindex [split [$w index current] .] 0]
-							$w delete current end
-							if {[lindex [split [$w index current] .] 0] < $line} {
+							set line [lindex [split [$w index cur] .] 0]
+							$w delete cur end
+							if {[lindex [split [$w index cur] .] 0] < $line} {
 								# NOTE: the old text editor has a severe bug:
 								# If the char after <pos1> is a newline, the command
 								# '<text> delete <pos1> <pos2>' will also delete one
@@ -1245,28 +1238,28 @@ proc DoLayout {position content {context editor} {w {}}} {
 								set newline \n
 							}
 						} else {
-							$w delete current end
+							$w delete cur end
 						}
 						set variant [::scidb::game::query $position variant]
 						set result [::browser::makeResult {*}[lrange $resultList 0 end-1] $variant]
 						if {[llength $result]} {
 							lassign $result result reason
 							if {$Options(spacing:paragraph)} {
-								$w insert current \n\n
+								$w insert cur \n\n
 							} else {
-								$w insert current \n
+								$w insert cur \n
 							}
 							if {[string length $result]} {
-								$w insert current $result result
+								$w insert cur $result result
 							}
 							if {[string length $reason]} {
-								if {[string length $result]} { $w insert current " " }
-								$w insert current "($reason)"
+								if {[string length $result]} { $w insert cur " " }
+								$w insert cur "($reason)"
 							}
 						} elseif {$Vars(old-editor)} {
 							# NOTE: We need a blind character between each mark because
 							# the editor is shuffling consecutive marks.
- 							$w insert current "\u200b"
+ 							$w insert cur "\u200b"
 						}
 						$w mark gravity m-0 right
 						$w insert m-0 $newline ;# bugfix for old editor
@@ -1276,12 +1269,15 @@ proc DoLayout {position content {context editor} {w {}}} {
 						set Vars(result:$position) $resultList
 					}
 					$w mark gravity m-0 right
+					$w mark set cur m-0
 					set Vars(lastrow:$position) [lindex [split [$w index end] .] 0]
-				} elseif {[$w get current-1c] eq "\n"} {
-					$w delete current-1c end
+				} elseif {[$w get cur-1c] eq "\n"} {
+					$w delete cur-1c end
 				}
 
-				$w configure -state disabled
+				if {$Vars(old-editor)} {
+					$w configure -state disabled
+				}
 			}
 
 			merge {
@@ -1328,7 +1324,13 @@ proc DoLayout {position content {context editor} {w {}}} {
 	if {[llength $content] > 1} {
 		if {[info exists env(SCIDB_PGN_DUMP)]} {
 			puts "==============================================="
-			puts [$w dump -all -command [list Dump $w] 1.0 end]
+			puts [$w dump -all -command [namespace code [list Dump $w]] 1.0 end]
+			puts "==============================================="
+		}
+		if {[info exists env(SCIDB_PGN_INSPECT)]} {
+			puts "==============================================="
+			#foreach item [$w inspect -mark -tag -text] { puts "{$item}" }
+			foreach item [$w inspect -all -bindings] { puts "{$item}" }
 			puts "==============================================="
 		}
 		if {[info exists env(SCIDB_PGN_CLOCK)]} {
@@ -1347,7 +1349,7 @@ proc Indent {context w level key} {
 			if {[incr level -1] == 0} { return }
 		}
 		set level [expr {min($level, $Options(indent:max))}]
-		$w tag add indent$level $key current
+		$w tag add indent$level $key cur
 	}
 }
 
@@ -1414,7 +1416,7 @@ proc UpdateHeader {context position w data} {
 		$w delete 1.0 m-start
 	}
 
-	$w mark set current 1.0
+	$w mark set cur 1.0
 
 	if {$Options(show:opening) || $position < 9} {
 		set idn 0
@@ -1444,14 +1446,14 @@ proc UpdateHeader {context position w data} {
 					} else {
 						lappend tags opening
 					}
-					$w insert current $content $tags
+					$w insert cur $content $tags
 				}
 			}
 			Suicide - Giveaway - Losers {
-				$w insert current "$::mc::VariantName(Antichess) - $::mc::VariantName($variant)" opening
+				$w insert cur "$::mc::VariantName(Antichess) - $::mc::VariantName($variant)" opening
 			}
 			default {
-				$w insert current $::mc::VariantName($variant) opening
+				$w insert cur $::mc::VariantName($variant) opening
 			}
 		}
 	} else {
@@ -1460,12 +1462,13 @@ proc UpdateHeader {context position w data} {
 		}
 	}
 
-	$w mark set m-start current
+	$w mark set m-start cur
 	$w mark gravity m-start left
 
 	if {$Vars(virgin:$position)} {
-		$w mark set m-0 current
+		$w mark set m-0 cur
 		$w mark gravity m-0 right
+		$w mark set cur m-0
 	}
 
 	set Vars(virgin:$position) 0
@@ -1482,7 +1485,7 @@ proc InsertMove {context position w level key data} {
 			# NOTE: We need a blind character between each mark because
 			# the editor is shuffling consecutive marks.
 			if {$level == 0} { set main main } else { set main variation }
-			$w insert current "\u200b" $main
+			$w insert cur "\u200b" $main
 		}
 	}
 
@@ -1507,7 +1510,7 @@ proc InsertMove {context position w level key data} {
 				} else {
 					set space " "
 				}
-				$w insert current $space $main
+				$w insert cur $space $main
 			}
 
 			space {
@@ -1516,36 +1519,36 @@ proc InsertMove {context position w level key data} {
 				switch $space {
 					")" {
 						if {$level != 1 || !$Options(spacing:paragraph)} {
-							$w insert current "\u000a)" {variation bracket}
+							$w insert cur "\u00a0)" {variation bracket}
 						} elseif {$Vars(old-editor)} {
 							# NOTE: We need a blind character between each mark because
 							# the editor is shuffling consecutive marks.
-							$w insert current "\u200b" $main
+							$w insert cur "\u200b" $main
 						}
 					}
 
 					"e" {
 						if {$Options(show:opening) || $position < 9} {
-							$w insert current "\n"
-							$w insert current "<$mc::EmptyGame>" empty
+							$w insert cur "\n"
+							$w insert cur "<$mc::EmptyGame>" empty
 						}
 					}
 
 					"s" {
-						if {[$w compare current != 1.0]} {
-							$w insert current "\n"
+						if {[$w compare cur != 1.0]} {
+							$w insert cur "\n"
 						}
 					}
 
-					" " { $w insert current " " $main }
+					" " { $w insert cur " " $main }
 
 					"]" {
 						if {$count == $number && $level > $Options(indent:max)} {
-							$w insert current "]" {variation bracket}
+							$w insert cur "]" {variation bracket}
 						} elseif {$Vars(old-editor)} {
 							# NOTE: We need a blind character between each marks because
 							# the editor is shuffling consecutive marks.
- 							$w insert current "\u200b" {variation bracket}
+ 							$w insert cur "\u200b" {variation bracket}
 						}
 					}
 
@@ -1554,10 +1557,10 @@ proc InsertMove {context position w level key data} {
 						set enterCmd [namespace code [list EnterPlus $w]]
 						set leaveCmd [namespace code [list LeavePlus $w]]
 						set foldCmd [namespace code [list ToggleFold $w $key 0]]
-						$w insert current " " variation
+						$w insert cur " " variation
 						if {[::font::truetypeSupport?]} {
 							set myKey unfold:$key
-							$w insert current "+" [list variation circled $myKey]
+							$w insert cur "+" [list variation circled $myKey]
 							$w tag bind $myKey <ButtonPress-1> $foldCmd
 							$w tag bind $myKey <Any-Enter> [namespace code [list EnterPlus $w]]
 							$w tag bind $myKey <Any-Leave> [namespace code [list LeavePlus $w]]
@@ -1570,22 +1573,22 @@ proc InsertMove {context position w level key data} {
 								-pady 0 \
 								-image $icon::12x12::expand \
 								;
-							$w window create current -align center -window $img
+							$w window create cur -align center -window $img
 							bind $img <Any-Enter> $enterCmd
 							bind $img <Any-Leave> $leaveCmd
 							bind $img <ButtonPress-1> $foldCmd
 						} else {
-							set img [$w image create current -align center -image $icon::12x12::expand]
+							set img [$w image create cur -align center -image $icon::12x12::expand]
 							$w image bind $img <Any-Enter> $enterCmd
 							$w image bind $img <Any-Leave> $leaveCmd
 							$w image bind $img <ButtonPress-1> $foldCmd
 						}
 						if {$space eq "*" && ($level != 1 || !$Options(spacing:paragraph))} {
-							$w insert current "\u000a)" {variation bracket}
+							$w insert cur "\u00a0)" {variation bracket}
 						} elseif {$Vars(old-editor)} {
 							# NOTE: We need a blind character between each mark because
 							# the editor is shuffling consecutive marks.
-							$w insert current "\u200b" $main
+							$w insert cur "\u200b" $main
 						}
 					}
 
@@ -1596,16 +1599,16 @@ proc InsertMove {context position w level key data} {
 							set tag fold:$key
 							if {$space eq "\["} {
 								if {$count == $number && $level > $Options(indent:max)} {
-									$w insert current "\[" [list variation bracket $tag]
+									$w insert cur "\[" [list variation bracket $tag]
 								}
 								# TODO "-"
 								if {$number ne "-"} { set txt "($number)" } else { set txt "\u2022" }
-								$w insert current "$txt " [list variation $tag numbering]
+								$w insert cur "$txt " [list variation $tag numbering]
 							} elseif {$level != 1 || !$Options(spacing:paragraph)} {
-								$w insert current "( " [list variation $tag bracket]
+								$w insert cur "( " [list variation $tag bracket]
 							} else {
 								set txt [format "(%c) " [expr {96 + $number}]]
-								$w insert current $txt [list variation $tag numbering]
+								$w insert cur $txt [list variation $tag numbering]
 							}
 							if {$position < 9} {
 								$w tag bind $tag <Any-Enter> +[namespace code [list EnterBracket $w $key]]
@@ -1614,13 +1617,13 @@ proc InsertMove {context position w level key data} {
 							}
 						} elseif {$space eq "\["} {
 							if {$count == $number && $level > $Options(indent:max)} {
-								$w insert current "\[" {variation bracket}
+								$w insert cur "\[" {variation bracket}
 							}
 							# TODO "-"
 							if {$number ne "-"} { set number "($number)" } else { set number "\u2022" }
-							$w insert current "$number " {variation numbering}
+							$w insert cur "$number " {variation numbering}
 						} else {
-							$w insert current "(\u000a" {variation bracket}
+							$w insert cur "(\u00a0" {variation bracket}
 						}
 					}
 				}
@@ -1651,21 +1654,21 @@ proc InsertMove {context position w level key data} {
 			states {
 				set states [lindex $node 1]
 				if {[string match *3* $states]} {
-					$w insert current " " $main
-					$w insert current "3\u00d7" [list $main state threefold]
+					$w insert cur " " $main
+					$w insert cur "3\u00d7" [list $main state threefold]
 				}
 				if {[string match *f* $states]} {
-					$w insert current " " $main
-					$w insert current "50" [list $main state fifty]
+					$w insert cur " " $main
+					$w insert cur "50" [list $main state fifty]
 				}
 			}
 
 			marks {
 				set hasMarks [lindex $node 1]
 				if {$hasMarks} {
-					if {$havePly} { $w insert current " " $main }
+					if {$havePly} { $w insert cur " " $main }
 					set tag marks:$key
-					$w insert current "\u27f8" [list $main marks $tag]
+					$w insert cur "\u27f8" [list $main marks $tag]
 					if {$position < 9} {
 						$w tag bind $tag <Any-Enter> +[namespace code [list EnterMark $w $tag $key]]
 						$w tag bind $tag <Any-Leave> +[namespace code [list LeaveMark $w $tag]]
@@ -1676,7 +1679,7 @@ proc InsertMove {context position w level key data} {
 			}
 
 			comment {
-				set startPos [$w index current]
+				set startPos [$w index cur]
 				set type [lindex $node 1]
 				if {$type eq "finally"} {
 					PrintMoveInfo $position $w $level $key [lindex $node 2]
@@ -1684,7 +1687,7 @@ proc InsertMove {context position w level key data} {
 					PrintComment $position $w $level $key $type [lindex $node 2]
 				}
 				if {$level == 0 && !($Options(style:column))} {
-					$w tag add indent1 $startPos current
+					$w tag add indent1 $startPos cur
 				}
 			}
 		}
@@ -1707,7 +1710,7 @@ proc InsertDiagram {context position w level key data} {
 	foreach entry $data {
 		switch [lindex $entry 0] {
 			color { set color [lindex $entry 1] }
-			break { $w insert current \n $main }
+			break { $w insert cur \n $main }
 
 			board {
 				set linespace [font metrics [$w cget -font] -linespace]
@@ -1732,7 +1735,7 @@ proc InsertDiagram {context position w level key data} {
 				::board::diagram::update $img $board
 				::board::diagram::bind $img <Button-1> [namespace code [list editAnnotation $position $key]]
 				::board::diagram::bind $img <Button-3> [namespace code [list PopupMenu $w $position]]
-				$w window create current \
+				$w window create cur \
 					-align center \
 					-window $img \
 					-padx $Options(diagram:padx) \
@@ -1759,24 +1762,24 @@ proc PrintMove {context position w level key data annotation} {
 			if {$stm eq "black"} { append text "...\t" }
 		} 
 
-		$w insert current $text main
+		$w insert cur $text main
 
 		if {[llength $annotation]} {
 			PrintNumericalAnnotation $context $position $w $level $key $annotation 1 1
-			$w insert current "\u2006" main
+			$w insert cur "\u2006" main
 		}
 	} else {
 		if {[llength $annotation]} {
 			PrintNumericalAnnotation $context $position $w $level $key $annotation 1 1
-			$w insert current "\u2006" $main
+			$w insert cur "\u2006" $main
 		}
 
 		if {$moveNo} {
 			set myTags [list $key $main]
-			$w insert current $moveNo $myTags
+			$w insert cur $moveNo $myTags
 			set text "."
 			if {$stm eq "black"} { append text ".." }
-			$w insert current $text $myTags
+			$w insert cur $text $myTags
 		}
 	}
 
@@ -1784,7 +1787,7 @@ proc PrintMove {context position w level key data annotation} {
 	if {$level == 0 && $Options(weight:mainline) eq "bold"} { set t figurineb } else { set t figurine }
 
 	foreach {text tag} [::font::splitMoves $san $t] {
-		$w insert current $text [list $key $main {*}$tag {*}$illegal]
+		$w insert cur $text [list $key $main {*}$tag {*}$illegal]
 	}
 
 	if {$position < 9} {
@@ -1797,7 +1800,7 @@ proc PrintMove {context position w level key data annotation} {
 	}
 
 	if {!$legal} {
-		$w insert current "\u26A1" [list $key illegal] ;# alternatives: u26A0, u2716
+		$w insert cur "\u26A1" [list $key illegal] ;# alternatives: u26A0, u2716
 		if {$position < 9} {
 			$w tag bind illegal <ButtonPress-1> [namespace code [list GotoMove $position $key]]
 		}
@@ -1835,7 +1838,7 @@ proc PrintComment {position w level key pos data} {
 		if {[string length $lang] == 0} {
 			set lang xx
 		} elseif {[incr paragraph] >= 2} {
-			$w insert current " \u2726 "
+			$w insert cur " \u2726 "
 			set needSpace 0
 		}
 		set langTag $keyTag:$lang
@@ -1844,19 +1847,19 @@ proc PrintComment {position w level key pos data} {
 			set text [string map {"<brace/>" "\{"} $text]
 			if {$needSpace} {
 				if {![string is space -strict [string index $text 0]]} {
-					$w insert current " " $langTag
+					$w insert cur " " $langTag
 				}
 				set needSpace 0
 			}
 			set lastChar [string index $text end]
 			switch -- $code {
 				sym {
-					if {[llength $startPos] == 0} { set startPos [$w index current] }
+					if {[llength $startPos] == 0} { set startPos [$w index cur] }
 					if {$flags & 1} { set fig figurineb } else { set fig figurine }
-					$w insert current [string map $::figurines::pieceMap $text] [list $fig $langTag]
+					$w insert cur [string map $::figurines::pieceMap $text] [list $fig $langTag]
 				}
 				nag {
-					if {[llength $startPos] == 0} { set startPos [$w index current] }
+					if {[llength $startPos] == 0} { set startPos [$w index cur] }
 					lassign [::font::splitAnnotation $text] value sym tag
 					set nagTag nag$text
 					if {$tag eq "symbol"} {
@@ -1867,11 +1870,11 @@ proc PrintComment {position w level key pos data} {
 					lappend tag $langTag $nagTag
 					set sym [::font::mapNagToUtfSymbol $sym]
 					if {[string is integer $sym]} { set sym "{\$$sym}" }
-					$w insert current [::font::mapNagToUtfSymbol $sym] $tag
+					$w insert cur [::font::mapNagToUtfSymbol $sym] $tag
 					incr count
 				}
 				emo {
-					if {[llength $startPos] == 0} { set startPos [$w index current] }
+					if {[llength $startPos] == 0} { set startPos [$w index cur] }
 					set emotion [::emoticons::lookupEmotion $text]
 					if {[string length $emotion]} {
 						variable ::pgn::editor::Colors
@@ -1890,17 +1893,17 @@ proc PrintComment {position w level key pos data} {
 								-pady 0 \
 								-image $::emoticons::icon($emotion) \
 								;
-							$w window create current -align center -window $img
+							$w window create cur -align center -window $img
 							bind $img <ButtonPress-1> $editCmd
 							bind $img <Enter> $enterCmd
 							bind $img <Leave> $leaveCmd
 						} else {
-							set img [$w image create current -align center -image $::emoticons::icon($emotion)]
+							set img [$w image create cur -align center -image $::emoticons::icon($emotion)]
 							$w image bind $img <ButtonPress-1> $editCmd
 							$w image bind $img <Enter> $enterCmd
 							$w image bind $img <Leave> $leaveCmd
 						}
-						$w insert current "\ufeff" $langTag
+						$w insert cur "\ufeff" $langTag
 					} else {
 						switch $flags {
 							0 { set tag {} }
@@ -1908,11 +1911,11 @@ proc PrintComment {position w level key pos data} {
 							2 { set tag italic }
 							3 { set tag bold-italic }
 						}
-						$w insert current $text [list $langTag $tag]
+						$w insert cur $text [list $langTag $tag]
 					}
 				}
 				str {
-					if {[llength $startPos] == 0} { set startPos [$w index current] }
+					if {[llength $startPos] == 0} { set startPos [$w index cur] }
 					set tags $langTag
 					switch $flags {
 						1 { lappend tags bold }
@@ -1920,7 +1923,7 @@ proc PrintComment {position w level key pos data} {
 						3 { lappend tags bold-italic }
 					}
 					if {$underline} { lappend tags underline }
-					$w insert current $text $tags
+					$w insert cur $text $tags
 				}
 				+bold			{ incr flags +1 }
 				-bold			{ incr flags -1 }
@@ -1932,7 +1935,7 @@ proc PrintComment {position w level key pos data} {
 		}
 
 		if {[llength $startPos]} {
-			$w tag add comment $startPos current
+			$w tag add comment $startPos cur
 			if {$position < 9} {
 				$w tag bind $langTag <Enter> [namespace code [list EnterComment $w $key:$pos:$lang]]
 				$w tag bind $langTag <Leave> \
@@ -1966,14 +1969,14 @@ proc PrintMoveInfo {position w level key data} {
 				while {$k < [string length $text]} {
 					set n [string first ";" $text $k]
 					if {$n == -1} { set n [string length $text] }
-					if {$k > 0} { $w insert current " \u2726 " $main }
+					if {$k > 0} { $w insert cur " \u2726 " $main }
 					switch $flags {
 						0 { set tag {} }
 						1 { set tag bold }
 						2 { set tag italic }
 						3 { set tag bold-italic }
 					}
-					$w insert current [string range $text $k [expr {$n - 1}]] [list $main info $keyTag $tag]
+					$w insert cur [string range $text $k [expr {$n - 1}]] [list $main info $keyTag $tag]
 					if {$position < 9} {
 						$w tag bind $keyTag <Enter> [namespace code [list EnterInfo $w $key]]
 						$w tag bind $keyTag <Leave> [namespace code [list LeaveInfo $w $position $key]]
@@ -1997,7 +2000,7 @@ proc PrintNumericalAnnotation {context position w level key nags isPrefix afterP
 	variable ::pgn::${context}::Options
 
 	set annotation [::font::splitAnnotation $nags]
-	set pos [$w index current]
+	set pos [$w index cur]
 	set keyTag nag:$key
 	set prevSym -1
 	set count 0
@@ -2013,25 +2016,25 @@ proc PrintNumericalAnnotation {context position w level key nags isPrefix afterP
 		set c [string index $nag 0]
 		if {[string is alpha $c] && [string is ascii $c]} {
 			if {$isPrefix || $afterPly || $prevSym >= 0} {
-				$w insert current " "
+				$w insert cur " "
 			}
 			set prevSym 2
 		} elseif {$value <= 6} {
-			if {$count > 1} { $w insert current "\u2005" }
+			if {$count > 1} { $w insert cur "\u2005" }
 			set prevSym 1
 			set needSpace 1
 		} elseif {$value == 155 || $value == 156} {
-			if {$count > 1 || $value > 6} { $w insert current "\u2005" }
-			if {$isPrefix || $afterPly} { $w insert current "\u2005" }
+			if {$count > 1 || $value > 6} { $w insert cur "\u2005" }
+			if {$isPrefix || $afterPly} { $w insert cur "\u2005" }
 			set prevSym $sym
 		} elseif {!$sym && !$isPrefix} {
-			$w insert current "\u2005"
+			$w insert cur "\u2005"
 			set prevSym $sym
 		} elseif {$count > 1 || $value > 6} {
-			$w insert current "\u2005"
+			$w insert cur "\u2005"
 		}
 		if {[string length $nag]} {
-			$w insert current $nag [list nag$value $nagTag {*}$tag]
+			$w insert cur $nag [list nag$value $nagTag {*}$tag]
 			if {$position < 9} {
 				$w tag bind $nagTag <Enter> [namespace code [list EnterAnnotation $w $nagTag]]
 				$w tag bind $nagTag <Leave> [namespace code [list LeaveAnnotation $w $nagTag]]
@@ -2042,26 +2045,26 @@ proc PrintNumericalAnnotation {context position w level key nags isPrefix afterP
 		set afterPly 0
 	}
 
-	if {$isPrefix && $prevSym == 2} { $w insert current " " }
+	if {$isPrefix && $prevSym == 2} { $w insert cur " " }
 	if {$level == 0} { set main main } else { set main variation }
-	$w tag add $main $pos current
-	$w tag add nag $pos current
+	$w tag add $main $pos cur
+	$w tag add nag $pos cur
 }
 
 
 proc PrintTextualAnnotation {position w level key nags {needSpace 0}} {
-	set pos [$w index current]
+	set pos [$w index cur]
 	set keyTag nagtext:$key
 	set count 0
 
-	if {$needSpace} { $w insert current " " }
-#	if {![string match *.0 $pos]} { $w insert current " " }
+	if {$needSpace} { $w insert cur " " }
+#	if {![string match *.0 $pos]} { $w insert cur " " }
 
 	foreach nag $nags {
-		if {$count > 0} { $w insert current " \u2726 " }
+		if {$count > 0} { $w insert cur " \u2726 " }
 		set nagTag $keyTag:[incr count]
 		set txt $::annotation::mc::Nag([string range $nag 1 end])
-		$w insert current $txt $nagTag
+		$w insert cur $txt $nagTag
 		if {$position < 9} {
 			$w tag bind $nagTag <Enter> [namespace code [list EnterAnnotation $w $nagTag]]
 			$w tag bind $nagTag <Leave> [namespace code [list LeaveAnnotation $w $nagTag]]
@@ -2070,9 +2073,9 @@ proc PrintTextualAnnotation {position w level key nags {needSpace 0}} {
 	}
 
 	if {$level == 0} { set main main } else { set main variation }
-	$w tag add $main $pos current
-	$w tag add nag $pos current
-	$w tag add nagtext $pos current
+	$w tag add $main $pos cur
+	$w tag add nag $pos cur
+	$w tag add nagtext $pos cur
 }
 
 
@@ -2095,7 +2098,7 @@ proc Mark {w key} {
 	variable Vars
 
 #	$w mark unset $key
-	$w mark set $key current
+	$w mark set $key cur
 	$w mark gravity $key left
 }
 
@@ -2336,7 +2339,9 @@ proc ResetGame {w position {tags {}}} {
 	variable Vars
 	variable ::pgn::editor::Colors
 
-	$w configure -state normal
+	if {$Vars(old-editor)} {
+		$w configure -state normal
+	}
 
 	if {[catch { $w clear }]} {
 		$w delete 1.0 end
@@ -2345,7 +2350,10 @@ proc ResetGame {w position {tags {}}} {
 		$w edit reset
 	}
 
-	$w configure -state disabled
+	if {$Vars(old-editor)} {
+		$w configure -state disabled
+	}
+
 	::pgn::setup::configureText [::pgn::setup::getPath $w]
 
 	if {$position <= 9} {
@@ -3314,9 +3322,13 @@ proc LanguageChanged {} {
 			::scidb::game::refresh $position
 		} else {
 			set w $Vars(pgn:$position)
-			$w configure -state normal
+			if {$Vars(old-editor)} {
+				$w configure -state normal
+			}
 			UpdateHeader editor $position $w $Vars(header:$position)
-			$w configure -state disabled
+			if {$Vars(old-editor)} {
+				$w configure -state disabled
+			}
 		}
 	}
 

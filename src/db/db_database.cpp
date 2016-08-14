@@ -1209,10 +1209,6 @@ Database::exportGame(unsigned index, Consumer& consumer) const
 	consumer.setGameFlags(info->flags());
 	consumer.setLangFlags(info->langFlags());
 
-#ifdef DEBUG_SI4
-	consumer.m_index = index;
-#endif
-
 	try
 	{
 		rc = m_codec->exportGame(consumer, tags, *info, index);
@@ -1221,32 +1217,6 @@ Database::exportGame(unsigned index, Consumer& consumer) const
 	{
 		rc = save::DecodingFailed;
 	}
-
-#ifdef DEBUG_SI4
-//	if (	info->idn() == 518
-//		&& !format::isChessBase(m_codec->format())
-//		&& (format::isScidFormat/consumer.sourceFormat()))
-//	{
-//		Eco opening;
-//		Eco eco = EcoTable::specimen().lookup(consumer.openingLine(), opening);
-//
-//		uint8_t myStoredLine = EcoTable::specimen().getStoredLine(info->ecoKey(), info->ecoOpening());
-//		uint8_t storedLine = EcoTable::specimen().getStoredLine(eco, opening);
-//
-//		if (myStoredLine != storedLine)
-//		{
-//			mstl::string line;
-//			consumer.openingLine().dump(line);
-//
-//			::fprintf(	stderr,
-//							"WARNING(%u): unexpected stored line %u (%u is expected for line '%s')\n",
-//							index,
-//							unsigned(storedLine),
-//							unsigned(myStoredLine),
-//							line.c_str());
-//		}
-//	}
-#endif
 
 	setEncodingFailed(m_codec->encodingFailed());
 	consumer.finalizeGame();

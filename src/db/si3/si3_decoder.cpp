@@ -44,10 +44,6 @@
 
 #include "m_string.h"
 
-#ifdef DEBUG_SI4
-# include "m_stdio.h"
-#endif
-
 #include "sys_utf8.h"
 #include "sys_utf8_codec.h"
 
@@ -253,10 +249,6 @@ Decoder::decodePawn(sq::ID from, Byte nybble)
 		else
 			m_move = Move::genPawnCapture(from, to, m_position.piece(to));
 	}
-
-#ifdef DEBUG_SI4
-	m_homePawns.move(m_move);
-#endif
 }
 
 
@@ -933,18 +925,6 @@ Decoder::doDecoding(db::Consumer& consumer, TagSet& tags)
 
 	if (m_codec->failed())
 		m_givenCodec->setFailed();
-
-#ifdef DEBUG_SI4
-	if (	m_position.startBoard().isStandardPosition(variant::Normal)
-		&& m_homePawns.used() != m_position.board().signature().hpCount())
-	{
-		::fprintf(	stderr,
-						"WARNING(%u): invalid home pawn count %u (%u is expected)\n",
-						consumer.m_index,
-						unsigned(m_position.board().signature().hpCount()),
-						unsigned(m_homePawns.used()));
-	}
-#endif
 
 	return consumer.finishGame(tags);
 }
