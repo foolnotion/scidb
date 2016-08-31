@@ -299,7 +299,6 @@ proc buildText {path context {forceSbSet 0}} {
 	$f.pgn debug off
 
 	::widget::textPreventSelection $pgn
-	::widget::bindMouseWheel $pgn
 	set Lookup($pgn) $path
 
 	grid $pgn -row 1 -column 1 -sticky nsew
@@ -391,6 +390,10 @@ proc configureText {path {fontContext ""}} {
 	} else {
 		$w configure -tabs {} -tabstyle tabular
 	}
+
+	set linespace [font metrics [$w cget -font] -linespace]
+	set linespace [expr {2*$linespace}]
+	::widget::bindMouseWheel $w $linespace pixels
 }
 
 
@@ -450,6 +453,13 @@ proc setupNags {context} {
 proc getPath {w} {
 	variable Lookup
 	return $Lookup($w)
+}
+
+
+proc adjustLinePosition {w} {
+	update idletasks
+	set sb [winfo parent $w].sb
+	::widget::textLineScroll $w moveto [lindex [$sb get] 0]
 }
 
 

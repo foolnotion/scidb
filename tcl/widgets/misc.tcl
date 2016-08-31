@@ -59,17 +59,17 @@ proc focusNext {w next} { set [namespace current]::Priv(next:$w) $next }
 proc focusPrev {w prev} { set [namespace current]::Priv(prev:$w) $prev }
 
 
-proc bindMouseWheel {w {units 5}} {
+proc bindMouseWheel {w {number 5} {units "units"}} {
 	switch [tk windowingsystem] {
 		x11 {
-			bind $w <Button-4> [list %W yview scroll -$units units ]
-			bind $w <Button-5> [list %W yview scroll +$units units ]
+			bind $w <Button-4> [list %W yview scroll -$number $units]
+			bind $w <Button-5> [list %W yview scroll +$number $units]
 		}
 		aqua {
-			bind $w <MouseWheel> { %W yview scroll [expr {-(%D)}] units }
+			bind $w <MouseWheel> { %W yview scroll [expr {-(%D)}] $units }
 		}
 		win32 {
-			bind $w <MouseWheel> { %W yview scroll [expr {-(%D/120)*max(1,$units - 1)}] units }
+			bind $w <MouseWheel> { %W yview scroll [expr {-(%D/120)*max(1,$number - 1)}] $units }
 		}
 	}
 	if {[string first . $w] >= 0} {
@@ -152,7 +152,7 @@ proc textLineScroll {w cmd args} {
 			set visible  [expr {$height/$incr}]
 			set total    [expr {int($visible/($last - $first) + 0.5)}]
 			set topline  [expr {int($fraction*double($total) + 0.5)}]
-			
+
 			$w yview moveto [expr {double($topline)/double($total)}]
 		}
 

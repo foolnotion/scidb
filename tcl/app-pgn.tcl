@@ -863,6 +863,7 @@ proc See {position {key ""} {succKey ""}} {
 	} else {
 		$w see $key
 	}
+	::pgn::setup::adjustLinePosition $w
 }
 
 
@@ -1185,8 +1186,8 @@ proc DoLayout {position content {context editor} {w {}}} {
 
 					clear {
  						$w delete {*}$Vars(deletemarks) m-start m-0
-						# XXX should be "> 1", but currently we have invisible chars
-						if {[$w count -chars 1.0 2.0] > 2} {
+						# because old editor has invisible chars
+						if {[$w count -chars 1.0 2.0] > 1 + $Vars(old-editor)} {
 							$w insert m-0 "\n"
 						}
 						set Vars(result:$position) ""
@@ -1257,7 +1258,7 @@ proc DoLayout {position content {context editor} {w {}}} {
 								$w insert cur "($reason)"
 							}
 						} elseif {$Vars(old-editor)} {
-							# NOTE: We need a blind character between each mark because
+							# NOTE: We need a blind character between two mark because
 							# the editor is shuffling consecutive marks.
  							$w insert cur "\u200b"
 						}
@@ -1735,6 +1736,10 @@ proc InsertDiagram {context position w level key data} {
 				::board::diagram::update $img $board
 				::board::diagram::bind $img <Button-1> [namespace code [list editAnnotation $position $key]]
 				::board::diagram::bind $img <Button-3> [namespace code [list PopupMenu $w $position]]
+				::board::diagram::bind $img <Button-4> [string map [list %W $w] [bind $w <Button-4>]]
+				::board::diagram::bind $img <Button-4> {+ break }
+				::board::diagram::bind $img <Button-5> [string map [list %W $w] [bind $w <Button-5>]]
+				::board::diagram::bind $img <Button-5> {+ break }
 				$w window create cur \
 					-align center \
 					-window $img \

@@ -1010,7 +1010,7 @@ Application::setSource(	unsigned position,
 								checksum_t crcMoves)
 {
 	M_REQUIRE(containsGameAt(position));
-	M_REQUIRE(index < database(position).countGames());
+	M_REQUIRE(isScratchGame(position) || index < database(position).countGames());
 
 	EditGame& game = *m_gameMap.find(position)->second;
 	game.link.databaseName = name;
