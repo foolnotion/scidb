@@ -43,6 +43,7 @@ SOURCES = \
 	dialogs/fileselectionbox.tcl \
 	dialogs/help.tcl \
 	contrib/tkmenu.tcl \
+	contrib/tktext.tcl \
 	contrib/treectrl.tcl \
 	contrib/filelist-bindings.tcl \
 	utils/locale.tcl \

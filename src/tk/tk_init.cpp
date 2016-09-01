@@ -20,12 +20,28 @@
 #include "tk_session_manager.h"
 
 #include <tcl.h>
+#include <tkInt.h>
 
 extern "C"
 {
 	extern int Tkhtml_Init(Tcl_Interp*);
 	extern int Tkhtml_SafeInit(Tcl_Interp*);
 	extern int Tkdnd_Init(Tcl_Interp*);
+}
+
+
+static int
+tkText_Init(Tcl_Interp *interp)
+{
+    /* Require stubs libraries version 8.5 or greater. */
+    if (0 == Tcl_PkgRequire(interp, "Tk", "8.5", 0)) {
+        return TCL_ERROR;
+    }
+    Tcl_PkgProvide(interp, "TkText", "2.0");
+    Tcl_CreateObjCommand(interp, "text", Tk_TextObjCmd, 0, 0);
+    Tcl_CreateObjCommand(interp, "::tk::text", Tk_TextObjCmd, 0, 0);
+
+    return TCL_OK;
 }
 
 
@@ -52,6 +68,7 @@ tk::init(Tcl_Interp* ti)
 
 	Tkhtml_Init(ti);
 	Tkdnd_Init(ti);
+	tkText_Init(ti);
 //	Tcl_SetVar(ti, "tcl_rcFileName", "~/.scidb", TCL_GLOBAL_ONLY)
 }
 

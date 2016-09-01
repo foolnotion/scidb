@@ -432,8 +432,13 @@ EXTERN int		TkpTestembedCmd(ClientData clientData,
 				Tcl_Interp *interp, int argc,
 				const char **argv);
 /* 157 */
+#if TK_MINOR_VERSION >= 6
+EXTERN int		TkpTesttextCmd(ClientData dummy, Tcl_Interp *interp,
+				int objc, Tcl_Obj *const objv[]);
+#else
 EXTERN int		TkpTesttextCmd(ClientData dummy, Tcl_Interp *interp,
 				int argc, const char **argv);
+#endif
 /* 158 */
 EXTERN int		TkSelGetSelection(Tcl_Interp *interp,
 				Tk_Window tkwin, Atom selection, Atom target,
