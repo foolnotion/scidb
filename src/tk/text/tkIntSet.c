@@ -15,6 +15,11 @@
 #include "tkIntSet.h"
 #include "tkBitField.h"
 
+#if __STDC_VERSION__ < 199901L
+# define _TK_NEED_IMPLEMENTATION
+# include "tkIntSetPriv.h"
+#endif
+
 #include <string.h>
 #include <limits.h>
 #include <assert.h>
@@ -31,6 +36,7 @@
 #else
 # define DEBUG_ALLOC(expr)
 #endif
+
 
 /* the main reason for this definition is portability to 8.5 */
 # define malloc(size)		(void *) ckalloc(size)
@@ -2067,7 +2073,29 @@ TkIntSetInnerJoinDifferenceIsEqual(
 
 #endif /* TK_TEXT_LINE_TAGGING */
 
-/* We need external linkage for our inline functions. */
-#include "tkIntSetPriv.h"
+
+#if __STDC_VERSION__ >= 199901L
+/* Additionally we need stand-alone object code. */
+#define inline extern
+inline unsigned TkIntSetByteSize(const TkIntSet *set);
+inline const unsigned char *TkIntSetData(const TkIntSet *set);
+inline bool TkIntSetIsEmpty(const TkIntSet *set);
+inline unsigned TkIntSetSize(const TkIntSet *set);
+inline unsigned TkIntSetMax(const TkIntSet *set);
+inline unsigned TkIntSetRefCount(const TkIntSet *set);
+inline void TkIntSetIncrRefCount(TkIntSet *set);
+inline unsigned TkIntSetDecrRefCount(TkIntSet *set);
+inline TkIntSetType TkIntSetAccess(const TkIntSet *set, unsigned index);
+inline bool TkIntSetTest(const TkIntSet *set, unsigned n);
+inline bool TkIntSetNone(const TkIntSet *set);
+inline bool TkIntSetAny(const TkIntSet *set);
+inline bool TkIntSetIsEqual(const TkIntSet *set1, const TkIntSet *set2);
+inline bool TkIntSetContains(const TkIntSet *set1, const TkIntSet *set2);
+inline bool TkIntSetDisjunctive(const TkIntSet *set1, const TkIntSet *set2);
+inline bool TkIntSetIntersects(const TkIntSet *set1, const TkIntSet *set2);
+inline unsigned TkIntSetFindFirst(const TkIntSet *set);
+inline unsigned TkIntSetFindNext(const TkIntSet *set);
+inline TkIntSet *TkIntSetAddOrErase(TkIntSet *set, unsigned n, bool add);
+#endif
 
 /* vi:set ts=8 sw=4: */

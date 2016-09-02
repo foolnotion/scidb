@@ -22,11 +22,13 @@ enum { true = (int) 1, false = (int) 0 };
 #endif
 
 #if defined(__GNUC__) || defined(__clang__)
-# define __inline__ extern inline
 # define __warn_unused__ __attribute__((warn_unused_result))
 #else
-# define __inline__
 # define __warn_unused__
+#endif
+
+#if __STDC_VERSION__ < 199901L
+# define inline /* we are not C99 conform */
 #endif
 
 
@@ -38,12 +40,12 @@ typedef struct TkRange {
 /*
  * Return the span of given range.
  */
-__inline__ int TkRangeSpan(const TkRange *range);
+inline int TkRangeSpan(const TkRange *range);
 
 /*
  * Test whether given range contains the specified value.
  */
-__inline__ bool TkRangeTest(const TkRange *range, int value);
+inline bool TkRangeTest(const TkRange *range, int value);
 
 
 typedef struct TkRangeList {
@@ -90,33 +92,33 @@ void TkRangeListTruncateAtEnd(TkRangeList *ranges, int maxValue);
  * Return the lower value of the entry with lowest order (ths lowest value inside
  * the whole list).
  */
-__inline__ int TkRangeListLow(const TkRangeList *ranges);
+inline int TkRangeListLow(const TkRangeList *ranges);
 
 /*
  * Return the upper value of the entry with highest order (ths highest value inside
  * the whole list).
  */
-__inline__ int TkRangeListHigh(const TkRangeList *ranges);
+inline int TkRangeListHigh(const TkRangeList *ranges);
 
 /*
  * Return the span of the whole list (= TkRangeListHigh(ranges) - TkRangeListLow(ranges) + 1).
  */
-__inline__ unsigned TkRangeListSpan(const TkRangeList *ranges);
+inline unsigned TkRangeListSpan(const TkRangeList *ranges);
 
 /*
  * Return the number of integers contained in this list.
  */
-__inline__ unsigned TkRangeListCount(const TkRangeList *ranges);
+inline unsigned TkRangeListCount(const TkRangeList *ranges);
 
 /*
  * Return the number of entries (pairs) in this list.
  */
-__inline__ unsigned TkRangeListSize(const TkRangeList *ranges);
+inline unsigned TkRangeListSize(const TkRangeList *ranges);
 
 /*
  * Return a specific entry (pair), the index must not exceed the size of this list.
  */
-__inline__ const TkRange *TkRangeListAccess(const TkRangeList *ranges, unsigned index);
+inline const TkRange *TkRangeListAccess(const TkRangeList *ranges, unsigned index);
 
 /*
  * Find entry (pair) which contains the given value. NULL will be returned if
@@ -135,27 +137,27 @@ const TkRange *TkRangeListFindNearest(const TkRangeList *ranges, int value);
 /*
  * Return the first item in given list, can be NULL if list is empty.
  */
-__inline__ const TkRange *TkRangeListFirst(const TkRangeList *ranges);
+inline const TkRange *TkRangeListFirst(const TkRangeList *ranges);
 
 /*
  * Return the next item in given list, can be NULL if at end of list.
  */
-__inline__ const TkRange *TkRangeListNext(const TkRangeList *ranges, const TkRange *item);
+inline const TkRange *TkRangeListNext(const TkRangeList *ranges, const TkRange *item);
 
 /*
  * Return whether this list is empty.
  */
-__inline__ bool TkRangeListIsEmpty(const TkRangeList *ranges);
+inline bool TkRangeListIsEmpty(const TkRangeList *ranges);
 
 /*
  * Return whether the given value is contained in this list.
  */
-__inline__ bool TkRangeListContains(const TkRangeList *ranges, int value);
+inline bool TkRangeListContains(const TkRangeList *ranges, int value);
 
 /*
  * Return whether the given range is contained in this list.
  */
-__inline__ bool TkRangeListContainsRange(const TkRangeList *ranges, int low, int high);
+inline bool TkRangeListContainsRange(const TkRangeList *ranges, int low, int high);
 
 /*
  * Return whether any value of the given range is contained in this list.
@@ -199,11 +201,13 @@ void TkRangeListPrint(const TkRangeList *ranges);
 #endif
 
 
-# if defined(__GNUC__) || defined(__clang__)
-#  include "tkRangeListPriv.h"
-# endif
+#if __STDC_VERSION__ >= 199901L
+# define _TK_NEED_IMPLEMENTATION
+# include "tkRangeListPriv.h"
+# undef _TK_NEED_IMPLEMENTATION
+#else
+# undef inline
+#endif
 
-#undef __warn_unused__
-#undef __inline__
 #endif /* _TKRANGELIST */
 /* vi:set ts=8 sw=4: */

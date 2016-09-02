@@ -14,6 +14,12 @@
 #include <tk.h>
 #include <limits.h>
 #include <string.h>
+#include <assert.h>
+
+#if __STDC_VERSION__ < 199901L
+# define _TK_NEED_IMPLEMENTATION
+# include "tkRangeListPriv.h"
+#endif
 
 #ifndef MIN
 # define MIN(a,b) ((a) < (b) ? a : b)
@@ -27,6 +33,7 @@
 #else
 # define DEBUG_ALLOC(expr)
 #endif
+
 
 #define MEM_SIZE(size) ((unsigned) (Tk_Offset(TkRangeList, items) + (size)*sizeof(TkRange)))
 
@@ -662,7 +669,22 @@ TkRangeListPrint(
 #endif /* !NDEBUG */
 
 
-/* We need external linkage for our inline functions. */
-#include "tkRangeListPriv.h"
+#if __STDC_VERSION__ >= 199901L
+/* Additionally we need stand-alone object code. */
+#define inline extern
+inline int TkRangeSpan(const TkRange *range);
+inline bool TkRangeTest(const TkRange *range, int value);
+inline int TkRangeListLow(const TkRangeList *ranges);
+inline int TkRangeListHigh(const TkRangeList *ranges);
+inline unsigned TkRangeListSpan(const TkRangeList *ranges);
+inline unsigned TkRangeListCount(const TkRangeList *ranges);
+inline unsigned TkRangeListSize(const TkRangeList *ranges);
+inline const TkRange *TkRangeListAccess(const TkRangeList *ranges, unsigned index);
+inline const TkRange *TkRangeListFirst(const TkRangeList *ranges);
+inline const TkRange *TkRangeListNext(const TkRangeList *ranges, const TkRange *item);
+inline bool TkRangeListIsEmpty(const TkRangeList *ranges);
+inline bool TkRangeListContains(const TkRangeList *ranges, int value);
+inline bool TkRangeListContainsRange(const TkRangeList *ranges, int low, int high);
+#endif
 
 /* vi:set ts=8 sw=4: */

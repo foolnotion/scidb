@@ -13,15 +13,18 @@
 # error "do not include this private header file"
 #endif
 
+
+#ifdef _TK_NEED_IMPLEMENTATION
+
 #include <stddef.h>
 #include <assert.h>
 
-#ifndef __inline__
-# define __inline__
+#if __STDC_VERSION__ < 199901L
+# define inline
 #endif
 
 
-__inline__
+inline
 int
 TkRangeSpan(
     const TkRange *range)
@@ -31,7 +34,7 @@ TkRangeSpan(
 }
 
 
-__inline__
+inline
 bool
 TkRangeTest(
     const TkRange *range,
@@ -42,7 +45,7 @@ TkRangeTest(
 }
 
 
-__inline__
+inline
 bool
 TkRangeListIsEmpty(
     const TkRangeList *ranges)
@@ -52,7 +55,7 @@ TkRangeListIsEmpty(
 }
 
 
-__inline__
+inline
 int
 TkRangeListLow(
     const TkRangeList *ranges)
@@ -63,7 +66,7 @@ TkRangeListLow(
 }
 
 
-__inline__
+inline
 int
 TkRangeListHigh(
     const TkRangeList *ranges)
@@ -74,7 +77,7 @@ TkRangeListHigh(
 }
 
 
-__inline__
+inline
 unsigned
 TkRangeListSpan(
     const TkRangeList *ranges)
@@ -84,7 +87,7 @@ TkRangeListSpan(
 }
 
 
-__inline__
+inline
 unsigned
 TkRangeListSize(
     const TkRangeList *ranges)
@@ -94,7 +97,7 @@ TkRangeListSize(
 }
 
 
-__inline__
+inline
 unsigned
 TkRangeListCount(
     const TkRangeList *ranges)
@@ -104,7 +107,7 @@ TkRangeListCount(
 }
 
 
-__inline__
+inline
 const TkRange *
 TkRangeListAccess(
     const TkRangeList *ranges,
@@ -116,7 +119,7 @@ TkRangeListAccess(
 }
 
 
-__inline__
+inline
 bool
 TkRangeListContains(
     const TkRangeList *ranges,
@@ -126,7 +129,7 @@ TkRangeListContains(
 }
 
 
-__inline__
+inline
 bool
 TkRangeListContainsRange(
     const TkRangeList *ranges,
@@ -138,7 +141,7 @@ TkRangeListContainsRange(
 }
 
 
-__inline__
+inline
 const TkRange *
 TkRangeListFirst(
     const TkRangeList *ranges)
@@ -148,7 +151,7 @@ TkRangeListFirst(
 }
 
 
-__inline__
+inline
 const TkRange *
 TkRangeListNext(
     const TkRangeList *ranges,
@@ -160,5 +163,6 @@ TkRangeListNext(
     return ++item == ranges->items + ranges->size ? NULL : item;
 }
 
-#undef __inline__
+#undef _TK_NEED_IMPLEMENTATION
+#endif /* _TK_NEED_IMPLEMENTATION */
 /* vi:set ts=8 sw=4: */

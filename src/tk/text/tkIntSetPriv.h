@@ -13,12 +13,9 @@
 # error "do not include this private header file"
 #endif
 
-#include <assert.h>
 
-#ifndef __inline__
-# define __inline__
-#endif
-
+#ifndef _TKINTSETPRIV
+#define _TKINTSETPRIV
 
 MODULE_SCOPE bool TkIntSetContains__(
     const TkIntSetType *set1, const TkIntSetType *end1,
@@ -30,15 +27,26 @@ MODULE_SCOPE bool TkIntSetIsEqual__(
     const TkIntSetType *set1, const TkIntSetType *end1,
     const TkIntSetType *set2, const TkIntSetType *end2);
 
+#endif /* _TKINTSETPRIV */
 
-TkIntSetType *
+
+#ifdef _TK_NEED_IMPLEMENTATION
+
+#include <assert.h>
+
+#if __STDC_VERSION__ < 199901L
+# define inline
+#endif
+
+
+extern TkIntSetType *
 TkIntSetLowerBound(
     TkIntSetType *first,
     TkIntSetType *last,
     TkIntSetType value);
 
 
-__inline__
+inline
 const unsigned char *
 TkIntSetData(
     const TkIntSet *set)
@@ -48,7 +56,7 @@ TkIntSetData(
 }
 
 
-__inline__
+inline
 unsigned
 TkIntSetByteSize(
     const TkIntSet *set)
@@ -58,7 +66,7 @@ TkIntSetByteSize(
 }
 
 
-__inline__
+inline
 bool
 TkIntSetIsEmpty(
     const TkIntSet *set)
@@ -68,7 +76,7 @@ TkIntSetIsEmpty(
 }
 
 
-__inline__
+inline
 bool
 TkIntSetIsEqual(
     const TkIntSet *set1,
@@ -81,7 +89,7 @@ TkIntSetIsEqual(
 }
 
 
-__inline__
+inline
 bool
 TkIntSetContains(
     const TkIntSet *set1,
@@ -94,7 +102,7 @@ TkIntSetContains(
 }
 
 
-__inline__
+inline
 bool
 TkIntSetDisjunctive(
     const TkIntSet *set1,
@@ -110,7 +118,7 @@ TkIntSetDisjunctive(
 }
 
 
-__inline__
+inline
 unsigned
 TkIntSetSize(
     const TkIntSet *set)
@@ -120,7 +128,7 @@ TkIntSetSize(
 }
 
 
-__inline__
+inline
 unsigned
 TkIntSetMax(
     const TkIntSet *set)
@@ -130,7 +138,7 @@ TkIntSetMax(
 }
 
 
-__inline__
+inline
 unsigned
 TkIntSetRefCount(
     const TkIntSet *set)
@@ -140,7 +148,7 @@ TkIntSetRefCount(
 }
 
 
-__inline__
+inline
 void
 TkIntSetIncrRefCount(TkIntSet *set)
 {
@@ -149,7 +157,7 @@ TkIntSetIncrRefCount(TkIntSet *set)
 }
 
 
-__inline__
+inline
 unsigned
 TkIntSetDecrRefCount(TkIntSet *set)
 {
@@ -165,7 +173,7 @@ TkIntSetDecrRefCount(TkIntSet *set)
 }
 
 
-__inline__
+inline
 TkIntSetType
 TkIntSetAccess(
     const TkIntSet *set,
@@ -177,7 +185,7 @@ TkIntSetAccess(
 }
 
 
-__inline__
+inline
 void
 TkIntSetChange(
     TkIntSet *set,
@@ -190,7 +198,7 @@ TkIntSetChange(
 }
 
 
-__inline__
+inline
 bool
 TkIntSetTest(
     const TkIntSet *set,
@@ -205,7 +213,7 @@ TkIntSetTest(
 }
 
 
-__inline__
+inline
 bool
 TkIntSetNone(
     const TkIntSet *set)
@@ -215,7 +223,7 @@ TkIntSetNone(
 }
 
 
-__inline__
+inline
 bool
 TkIntSetAny(
     const TkIntSet *set)
@@ -225,7 +233,7 @@ TkIntSetAny(
 }
 
 
-__inline__
+inline
 bool
 TkIntSetIntersects(
     const TkIntSet *set1,
@@ -235,7 +243,7 @@ TkIntSetIntersects(
 }
 
 
-__inline__
+inline
 unsigned
 TkIntSetFindNext(
     const TkIntSet *set)
@@ -245,7 +253,7 @@ TkIntSetFindNext(
 }
 
 
-__inline__
+inline
 unsigned
 TkIntSetFindFirst(
     const TkIntSet *set)
@@ -256,7 +264,7 @@ TkIntSetFindFirst(
 }
 
 
-__inline__
+inline
 TkIntSet *
 TkIntSetAddOrErase(
     TkIntSet *set,
@@ -267,5 +275,6 @@ TkIntSetAddOrErase(
     return add ? TkIntSetAdd(set, n) : TkIntSetErase(set, n);
 }
 
-#undef __inline__
+#undef _TK_NEED_IMPLEMENTATION
+#endif /* _TK_NEED_IMPLEMENTATION */
 /* vi:set ts=8 sw=4: */

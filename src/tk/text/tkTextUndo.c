@@ -9,9 +9,14 @@
  * this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
-#include "tkInt.h"
 #include "tkTextUndo.h"
+#include "tkInt.h"
 #include <assert.h>
+
+#if __STDC_VERSION__ < 199901L
+# define _TK_NEED_IMPLEMENTATION
+# include "tkTextUndoPriv.h"
+#endif
 
 #ifndef MAX
 # define MAX(a,b) ((a) < (b) ? b : a)
@@ -988,8 +993,29 @@ TkTextUndoNextRedoAtom(
 }
 
 
-/* We need external linkage for our inline functions. */
-#define IMPLEMENTATION
-#include "tkTextUndoPriv.h"
+#if __STDC_VERSION__ >= 199901L
+/* Additionally we need stand-alone object code. */
+#define inline extern
+inline void TkTextUndoSetContext(TkTextUndoStack stack, TkTextUndoContext context);
+inline TkTextUndoContext TkTextUndoGetContext(const TkTextUndoStack stack);
+inline unsigned TkTextUndoGetMaxUndoDepth(const TkTextUndoStack stack);
+inline unsigned TkTextUndoGetMaxRedoDepth(const TkTextUndoStack stack);
+inline unsigned TkTextUndoGetMaxSize(const TkTextUndoStack stack);
+inline unsigned TkTextUndoGetCurrentDepth(const TkTextUndoStack stack);
+inline unsigned TkTextUndoGetCurrentSize(const TkTextUndoStack stack);
+inline unsigned TkTextUndoGetCurrentUndoStackDepth(const TkTextUndoStack stack);
+inline unsigned TkTextUndoGetCurrentRedoStackDepth(const TkTextUndoStack stack);
+inline unsigned TkTextUndoGetCurrentUndoSize(const TkTextUndoStack stack);
+inline unsigned TkTextUndoGetCurrentRedoSize(const TkTextUndoStack stack);
+inline unsigned TkTextUndoCountCurrentUndoItems(const TkTextUndoStack stack);
+inline unsigned TkTextUndoCountCurrentRedoItems(const TkTextUndoStack stack);
+inline bool TkTextUndoContentIsIrreversible(const TkTextUndoStack stack);
+inline bool TkTextUndoContentIsModified(const TkTextUndoStack stack);
+inline bool TkTextUndoIsPerformingUndo(const TkTextUndoStack stack);
+inline bool TkTextUndoIsPerformingRedo(const TkTextUndoStack stack);
+inline bool TkTextUndoIsPerformingUndoRedo(const TkTextUndoStack stack);
+inline bool TkTextUndoUndoStackIsFull(const TkTextUndoStack stack);
+inline bool TkTextUndoRedoStackIsFull(const TkTextUndoStack stack);
+#endif
 
 /* vi:set ts=8 sw=4: */

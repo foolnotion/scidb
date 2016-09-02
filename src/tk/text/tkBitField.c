@@ -14,6 +14,11 @@
 #include <string.h>
 #include <assert.h>
 
+#if __STDC_VERSION__ < 199901L
+# define _TK_NEED_IMPLEMENTATION
+# include "tkBitFieldPriv.h"
+#endif
+
 #ifndef MAX
 # define MAX(a,b) (((int) a) < ((int) b) ? b : a)
 #endif
@@ -26,6 +31,7 @@
 #else
 # define DEBUG_ALLOC(expr)
 #endif
+
 
 /* the main reason for this definition is portability to 8.5 */
 # define malloc(size)	(void *) ckalloc(size)
@@ -1504,7 +1510,25 @@ TkBitInnerJoinDifferenceIsEqual(
 
 #endif /* TK_TEXT_LINE_TAGGING */
 
-/* We need external linkage for our inline functions. */
-#include "tkBitFieldPriv.h"
+
+#if __STDC_VERSION__ >= 199901L
+/* Additionally we need stand-alone object code. */
+#define inline extern
+inline TkBitField *TkBitNew(unsigned size);
+inline const unsigned char *TkBitData(const TkBitField *bf);
+inline unsigned TkBitByteSize(const TkBitField *bf);
+inline unsigned TkBitRefCount(const TkBitField *bf);
+inline void TkBitIncrRefCount(TkBitField *bf);
+inline unsigned TkBitDecrRefCount(TkBitField *bf);
+inline bool TkBitIsEmpty(const TkBitField *bf);
+inline unsigned TkBitSize(const TkBitField *bf);
+inline bool TkBitTest(const TkBitField *bf, unsigned n);
+inline bool TkBitNone(const TkBitField *bf);
+inline bool TkBitIntersects(const TkBitField *bf1, const TkBitField *bf2);
+inline void TkBitSet(TkBitField *bf, unsigned n);
+inline void TkBitUnset(TkBitField *bf, unsigned n);
+inline void TkBitPut(TkBitField *bf, unsigned n, bool value);
+inline unsigned TkBitAdjustSize(unsigned size);
+#endif
 
 /* vi:set ts=8 sw=4: */

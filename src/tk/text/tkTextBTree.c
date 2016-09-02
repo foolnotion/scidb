@@ -15,6 +15,7 @@
 
 #include "tkInt.h"
 #include "tkText.h"
+#include "tkTextPriv.h"
 #include "tkTextTagSet.h"
 #include <assert.h>
 
@@ -6509,10 +6510,6 @@ DeleteRange(
 	 */
 
 	if (!TkTextIsSpecialOrPrivateMark(firstSegPtr)) {
-	    if (!(prevPtr = firstSegPtr->prevPtr)) {
-		assert(firstSegPtr->sectionPtr->linePtr->prevPtr);
-		prevPtr = firstSegPtr->sectionPtr->linePtr->prevPtr->lastPtr;
-	    }
 	    UnlinkSegment(firstSegPtr);
 	    assert(firstSegPtr->typePtr->deleteProc);
 	    if (!firstSegPtr->typePtr->deleteProc((TkTextBTree) treePtr, firstSegPtr, flags)) {
@@ -6522,14 +6519,9 @@ DeleteRange(
 		assert(!segments[0]); /* this slot must be reserved */
 		segments[0] = firstSegPtr;
 	    }
-	    firstSegPtr = prevPtr;
 	    countChanges += 1;
 	}
 	if (!TkTextIsSpecialOrPrivateMark(lastSegPtr)) {
-	    if (!(nextPtr = lastSegPtr->nextPtr)) {
-		assert(lastSegPtr->sectionPtr->linePtr->nextPtr);
-		nextPtr = lastSegPtr->sectionPtr->linePtr->nextPtr->segPtr;
-	    }
 	    UnlinkSegment(lastSegPtr);
 	    assert(lastSegPtr->typePtr->deleteProc);
 	    if (!lastSegPtr->typePtr->deleteProc((TkTextBTree) treePtr, lastSegPtr, flags)) {
@@ -6542,7 +6534,6 @@ DeleteRange(
 		segments[numSegments++] = lastSegPtr;
 		lastSegPtr->refCount += 1;
 	    }
-	    lastSegPtr = nextPtr;
 	    countChanges += 1;
 	}
 	if (countChanges == 0) {

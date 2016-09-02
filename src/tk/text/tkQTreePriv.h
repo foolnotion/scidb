@@ -13,14 +13,17 @@
 # error "do not include this private header file"
 #endif
 
+
+#ifdef _TK_NEED_IMPLEMENTATION
+
 #include <assert.h>
 
-#ifndef __inline__
-# define __inline__
+#if __STDC_VERSION__ < 199901L
+# define inline
 #endif
 
 
-__inline__
+inline
 bool
 TkQTreeRectIsEmpty(
     const TkQTreeRect *rect)
@@ -55,7 +58,7 @@ TkQTreeRectIsEmpty(
 }
 
 
-__inline__
+inline
 bool
 TkQTreeRectIsEqual(
     const TkQTreeRect *rect1,
@@ -71,7 +74,7 @@ TkQTreeRectIsEqual(
 }
 
 
-__inline__
+inline
 bool
 TkQTreeRectContainsPoint(
     const TkQTreeRect *rect,
@@ -84,7 +87,7 @@ TkQTreeRectContainsPoint(
 }
 
 
-__inline__
+inline
 bool
 TkQTreeRectContainsRect(
     const TkQTreeRect *rect1,
@@ -100,7 +103,7 @@ TkQTreeRectContainsRect(
 }
 
 
-__inline__
+inline
 bool
 TkQTreeRectIntersects(
     const TkQTreeRect *rect1,
@@ -116,7 +119,7 @@ TkQTreeRectIntersects(
 }
 
 
-__inline__
+inline
 TkQTreeRect *
 TkQTreeRectSet(
     TkQTreeRect *rect,
@@ -138,7 +141,7 @@ TkQTreeRectSet(
 }
 
 
-__inline__
+inline
 TkQTreeRect *
 TkQTreeRectTranslate(
     TkQTreeRect *rect,
@@ -155,5 +158,6 @@ TkQTreeRectTranslate(
     return rect;
 }
 
-#undef __inline__
+#undef _TK_NEED_IMPLEMENTATION
+#endif /* _TK_NEED_IMPLEMENTATION */
 /* vi:set ts=8 sw=4: */

@@ -25,12 +25,15 @@ enum { true = (int) 1, false = (int) 0 };
 #endif
 
 #if defined(__GNUC__) || defined(__clang__)
-# define __inline__ extern inline
 # define __warn_unused__ __attribute__((warn_unused_result))
 #else
-# define __inline__
 # define __warn_unused__
 #endif
+
+#if __STDC_VERSION__ < 199901L
+# define inline /* we are not C99 conform */
+#endif
+
 
 struct TkBitField;
 
@@ -70,8 +73,8 @@ TkIntSet *TkIntSetNew();
 TkIntSet *TkIntSetFromBits(const struct TkBitField *bf);
 void TkIntSetDestroy(TkIntSet **setPtr);
 
-__inline__ unsigned TkIntSetByteSize(const TkIntSet *set);
-__inline__ const unsigned char *TkIntSetData(const TkIntSet *set);
+inline unsigned TkIntSetByteSize(const TkIntSet *set);
+inline const unsigned char *TkIntSetData(const TkIntSet *set);
 
 TkIntSet *TkIntSetCopy(const TkIntSet *set) __warn_unused__;
 
@@ -103,24 +106,24 @@ TkIntSet *TkIntSetJoinOfDifferences(TkIntSet *dst, const TkIntSet *set1, const T
 /* dst := src - dst */
 TkIntSet *TkIntSetComplementToBits(TkIntSet *dst, const struct TkBitField *src) __warn_unused__;
 
-__inline__ bool TkIntSetIsEmpty(const TkIntSet *set);
-__inline__ unsigned TkIntSetSize(const TkIntSet *set);
-__inline__ unsigned TkIntSetMax(const TkIntSet *set);
+inline bool TkIntSetIsEmpty(const TkIntSet *set);
+inline unsigned TkIntSetSize(const TkIntSet *set);
+inline unsigned TkIntSetMax(const TkIntSet *set);
 
-__inline__ unsigned TkIntSetRefCount(const TkIntSet *set);
-__inline__ void TkIntSetIncrRefCount(TkIntSet *set);
-__inline__ unsigned TkIntSetDecrRefCount(TkIntSet *set);
+inline unsigned TkIntSetRefCount(const TkIntSet *set);
+inline void TkIntSetIncrRefCount(TkIntSet *set);
+inline unsigned TkIntSetDecrRefCount(TkIntSet *set);
 
-__inline__ TkIntSetType TkIntSetAccess(const TkIntSet *set, unsigned index);
+inline TkIntSetType TkIntSetAccess(const TkIntSet *set, unsigned index);
 
-__inline__ bool TkIntSetTest(const TkIntSet *set, unsigned n);
-__inline__ bool TkIntSetNone(const TkIntSet *set);
-__inline__ bool TkIntSetAny(const TkIntSet *set);
+inline bool TkIntSetTest(const TkIntSet *set, unsigned n);
+inline bool TkIntSetNone(const TkIntSet *set);
+inline bool TkIntSetAny(const TkIntSet *set);
 
-__inline__ bool TkIntSetIsEqual(const TkIntSet *set1, const TkIntSet *set2);
-__inline__ bool TkIntSetContains(const TkIntSet *set1, const TkIntSet *set2);
-__inline__ bool TkIntSetDisjunctive(const TkIntSet *set1, const TkIntSet *set2);
-__inline__ bool TkIntSetIntersects(const TkIntSet *set1, const TkIntSet *set2);
+inline bool TkIntSetIsEqual(const TkIntSet *set1, const TkIntSet *set2);
+inline bool TkIntSetContains(const TkIntSet *set1, const TkIntSet *set2);
+inline bool TkIntSetDisjunctive(const TkIntSet *set1, const TkIntSet *set2);
+inline bool TkIntSetIntersects(const TkIntSet *set1, const TkIntSet *set2);
 bool TkIntSetIntersectionIsEqual(const TkIntSet *set1, const TkIntSet *set2,
     const struct TkBitField *del);
 
@@ -130,8 +133,8 @@ bool TkIntSetDisjunctiveBits(const TkIntSet *set, const struct TkBitField *bf);
 bool TkIntSetIntersectionIsEqualBits(const TkIntSet *set, const struct TkBitField *bf,
     const struct TkBitField *del);
 
-__inline__ unsigned TkIntSetFindFirst(const TkIntSet *set);
-__inline__ unsigned TkIntSetFindNext(const TkIntSet *set);
+inline unsigned TkIntSetFindFirst(const TkIntSet *set);
+inline unsigned TkIntSetFindNext(const TkIntSet *set);
 
 unsigned TkIntSetFindFirstInIntersection(const TkIntSet *set, const struct TkBitField *bf);
 
@@ -139,7 +142,7 @@ TkIntSet *TkIntSetAdd(TkIntSet *set, unsigned n) __warn_unused__;
 TkIntSet *TkIntSetErase(TkIntSet *set, unsigned n) __warn_unused__;
 TkIntSet *TkIntSetTestAndSet(TkIntSet *set, unsigned n) __warn_unused__;
 TkIntSet *TkIntSetTestAndUnset(TkIntSet *set, unsigned n) __warn_unused__;
-__inline__ TkIntSet *TkIntSetAddOrErase(TkIntSet *set, unsigned n, bool add) __warn_unused__;
+inline TkIntSet *TkIntSetAddOrErase(TkIntSet *set, unsigned n, bool add) __warn_unused__;
 TkIntSet* TkIntSetClear(TkIntSet *set) __warn_unused__;
 
 #if !NDEBUG
@@ -174,11 +177,15 @@ bool TkIntSetInnerJoinDifferenceIsEqual(const TkIntSet *set1, const TkIntSet *se
 #endif /* TK_TEXT_LINE_TAGGING */
 
 
-#if defined(__GNUC__) || defined(__clang__)
-# include "tkIntSetPriv.h"
+#undef __warn_unused__
+
+#if __STDC_VERSION__ >= 199901L
+# define _TK_NEED_IMPLEMENTATION
+#include "tkIntSetPriv.h"
+# undef _TK_NEED_IMPLEMENTATION
+#else
+# undef inline
 #endif
 
-#undef __warn_unused__
-#undef __inline__
 #endif /* _TKINTSET */
 /* vi:set ts=8 sw=4: */

@@ -37,6 +37,10 @@ enum { true = (int) 1, false = (int) 0 };
 # define TK_BOOL_IS_DEFINED
 #endif
 
+#if __STDC_VERSION__ < 199901L
+# define inline /* we are not C99 conform */
+#endif
+
 #ifdef BUILD_tk
 # undef TCL_STORAGE_CLASS
 # define TCL_STORAGE_CLASS DLLEXPORT
@@ -62,11 +66,6 @@ enum { true = (int) 1, false = (int) 0 };
 # define SUPPORT_DEPRECATED_STARTLINE_ENDLINE 1
 #endif
 
-#if defined(__GNUC__) || defined(__clang__)
-# define __inline__ extern inline
-#else
-# define __inline__
-#endif
 
 #if TK_TEXT_DONT_USE_BITFIELDS
 # define TkTextTagSet TkIntSet
@@ -1615,15 +1614,15 @@ typedef bool TkTextTagChangedProc(
  * shouldn't be used anywhere else in Tk (or by Tk clients):
  */
 
-__inline__ TkSharedText	*TkBTreeGetShared(TkTextBTree tree);
-__inline__ int		TkBTreeGetNumberOfDisplayLines(const TkTextPixelInfo *pixelInfo);
+inline TkSharedText	*TkBTreeGetShared(TkTextBTree tree);
+inline int		TkBTreeGetNumberOfDisplayLines(const TkTextPixelInfo *pixelInfo);
 MODULE_SCOPE void	TkBTreeAdjustPixelHeight(const TkText *textPtr,
 			    TkTextLine *linePtr, int newPixelHeight, unsigned mergedLogicalLines,
 			    unsigned oldNumDispLines);
 MODULE_SCOPE void	TkBTreeResetDisplayLineCounts(TkText* textPtr, TkTextLine *linePtr,
 			    unsigned numLines);
 MODULE_SCOPE bool	TkBTreeHaveElidedSegments(const TkSharedText* sharedTextPtr);
-__inline__ TkTextPixelInfo *TkBTreeLinePixelInfo(const TkText *textPtr, TkTextLine *linePtr);
+inline TkTextPixelInfo *TkBTreeLinePixelInfo(const TkText *textPtr, TkTextLine *linePtr);
 MODULE_SCOPE bool	TkBTreeCharTagged(const TkTextIndex *indexPtr, const TkTextTag *tagPtr);
 MODULE_SCOPE void	TkBTreeCheck(TkTextBTree tree);
 MODULE_SCOPE TkTextBTree TkBTreeCreate(TkSharedText *sharedTextPtr, unsigned epoch);
@@ -1635,9 +1634,9 @@ MODULE_SCOPE int	TkBTreeLoad(TkText *textPtr, Tcl_Obj *content);
 MODULE_SCOPE void	TkBTreeDeleteIndexRange(TkSharedText* sharedTextPtr,
 			    TkTextIndex *index1Ptr, TkTextIndex *index2Ptr,
 			    int flags, TkTextUndoInfo *undoInfo);
-__inline__ unsigned	TkBTreeEpoch(TkTextBTree tree);
-__inline__ unsigned	TkBTreeIncrEpoch(TkTextBTree tree);
-__inline__ struct Node	*TkBTreeGetRoot(TkTextBTree tree);
+inline unsigned		TkBTreeEpoch(TkTextBTree tree);
+inline unsigned		TkBTreeIncrEpoch(TkTextBTree tree);
+inline struct Node	*TkBTreeGetRoot(TkTextBTree tree);
 MODULE_SCOPE TkTextLine *TkBTreeFindLine(TkTextBTree tree, const TkText *textPtr, int line);
 MODULE_SCOPE TkTextLine *TkBTreeFindPixelLine(TkTextBTree tree,
 			    const TkText *textPtr, int pixels, int *pixelOffset);
@@ -1645,7 +1644,7 @@ MODULE_SCOPE TkTextLine *TkBTreeGetLogicalLine(const TkSharedText* sharedTextPtr
 			    const TkText *textPtr, TkTextLine *linePtr);
 MODULE_SCOPE TkTextLine *TkBTreeNextLogicalLine(const TkSharedText* sharedTextPtr,
 			    const TkText *textPtr, TkTextLine *linePtr);
-__inline__ TkTextLine *	TkBTreePrevLogicalLine(const TkSharedText* sharedTextPtr,
+inline TkTextLine *	TkBTreePrevLogicalLine(const TkSharedText* sharedTextPtr,
 			    const TkText *textPtr, TkTextLine *linePtr);
 MODULE_SCOPE TkTextLine *TkBTreeNextDisplayLine(TkText *textPtr, TkTextLine *linePtr,
 			    int *displayLineNo, unsigned offset);
@@ -1655,7 +1654,7 @@ MODULE_SCOPE TkTextSegment *TkBTreeFindStartOfElidedRange(const TkSharedText* sh
 			    const TkText *textPtr, const TkTextSegment *segPtr);
 MODULE_SCOPE TkTextSegment *TkBTreeFindEndOfElidedRange(const TkSharedText* sharedTextPtr,
 			    const TkText *textPtr, const TkTextSegment *segPtr);
-__inline__ TkTextTag *	TkBTreeGetTags(const TkTextIndex *indexPtr);
+inline TkTextTag *	TkBTreeGetTags(const TkTextIndex *indexPtr);
 MODULE_SCOPE TkTextTag *TkBTreeGetSegmentTags(const TkSharedText* sharedTextPtr,
 			    const TkTextSegment *segPtr, const TkText *textPtr);
 MODULE_SCOPE const char *TkBTreeGetLang(const TkText *textPtr, const TkTextSegment *segPtr);
@@ -1674,10 +1673,10 @@ MODULE_SCOPE unsigned	TkBTreeLinesTo(TkTextBTree tree, const TkText *textPtr,
 MODULE_SCOPE unsigned	TkBTreePixelsTo(const TkText *textPtr, const TkTextLine *linePtr);
 MODULE_SCOPE void	TkBTreeLinkSegment(const TkSharedText* sharedTextPtr,
 			    TkTextSegment *segPtr, TkTextIndex *indexPtr);
-__inline__ TkTextLine *	TkBTreeGetStartLine(const TkText *textPtr);
-__inline__ TkTextLine *	TkBTreeGetLastLine(const TkText *textPtr);
-__inline__ TkTextLine *	TkBTreeNextLine(const TkText *textPtr, TkTextLine *linePtr);
-__inline__ TkTextLine *	TkBTreePrevLine(const TkText *textPtr, TkTextLine *linePtr);
+inline TkTextLine *	TkBTreeGetStartLine(const TkText *textPtr);
+inline TkTextLine *	TkBTreeGetLastLine(const TkText *textPtr);
+inline TkTextLine *	TkBTreeNextLine(const TkText *textPtr, TkTextLine *linePtr);
+inline TkTextLine *	TkBTreePrevLine(const TkText *textPtr, TkTextLine *linePtr);
 MODULE_SCOPE bool	TkBTreeMoveForward(TkTextIndex *indexPtr, unsigned byteCount);
 MODULE_SCOPE bool	TkBTreeMoveBackward(TkTextIndex *indexPtr, unsigned byteCount);
 MODULE_SCOPE bool	TkBTreeNextTag(TkTextSearch *searchPtr);
@@ -1686,7 +1685,7 @@ MODULE_SCOPE unsigned	TkBTreeNumPixels(const TkText *textPtr);
 MODULE_SCOPE unsigned	TkBTreeSize(const TkTextBTree tree, const TkText *textPtr);
 MODULE_SCOPE unsigned	TkBTreeCountSize(const TkTextBTree tree, const TkText* textPtr,
 			    const TkTextLine *linePtr1, const TkTextLine *linePtr2);
-__inline__ unsigned	TkBTreeCountLines(const TkTextBTree tree, const TkTextLine *linePtr1,
+inline unsigned		TkBTreeCountLines(const TkTextBTree tree, const TkTextLine *linePtr1,
 			    const TkTextLine *linePtr2);
 MODULE_SCOPE void	TkBTreeStartSearch(const TkTextIndex *index1Ptr,
 			    const TkTextIndex *index2Ptr, const TkTextTag *tagPtr,
@@ -1828,13 +1827,13 @@ MODULE_SCOPE TkTextSegment *TkTextMakeStartEndMark(TkText *textPtr, Tk_SegType c
 MODULE_SCOPE TkTextSegment *TkTextMakeMark(TkText *textPtr, const char *name);
 MODULE_SCOPE TkTextSegment *TkTextMakeNewMark(TkText *textPtr, const char *name);
 MODULE_SCOPE void	TkTextUnsetMark(TkText *textPtr, TkTextSegment *markPtr);
-__inline__ bool		TkTextIsStartEndMarker(const TkTextSegment *segPtr);
-__inline__ bool		TkTextIsSpecialMark(const TkTextSegment *segPtr);
-__inline__ bool		TkTextIsPrivateMark(const TkTextSegment *segPtr);
-__inline__ bool		TkTextIsSpecialOrPrivateMark(const TkTextSegment *segPtr);
-__inline__ bool		TkTextIsNormalOrSpecialMark(const TkTextSegment *segPtr);
-__inline__ bool		TkTextIsNormalMark(const TkTextSegment *segPtr);
-__inline__ bool		TkTextIsStableMark(const TkTextSegment *segPtr);
+inline bool		TkTextIsStartEndMarker(const TkTextSegment *segPtr);
+inline bool		TkTextIsSpecialMark(const TkTextSegment *segPtr);
+inline bool		TkTextIsPrivateMark(const TkTextSegment *segPtr);
+inline bool		TkTextIsSpecialOrPrivateMark(const TkTextSegment *segPtr);
+inline bool		TkTextIsNormalOrSpecialMark(const TkTextSegment *segPtr);
+inline bool		TkTextIsNormalMark(const TkTextSegment *segPtr);
+inline bool		TkTextIsStableMark(const TkTextSegment *segPtr);
 MODULE_SCOPE void	TkTextPushMarkGravityUndo(TkSharedText *sharedTextPtr, TkTextSegment *markPtr);
 MODULE_SCOPE void	TkTextPushMarkGravityRedo(TkSharedText *sharedTextPtr, TkTextSegment *markPtr);
 MODULE_SCOPE void	TkTextPushMarkSetUndo(TkSharedText *sharedTextPtr, TkTextSegment *markPtr);
@@ -1898,8 +1897,8 @@ MODULE_SCOPE int	TkTextIndexPrint(const TkSharedText *sharedTextPtr, const TkTex
 MODULE_SCOPE void	TkTextIndexSetByteIndex(TkTextIndex *indexPtr, int byteIndex);
 MODULE_SCOPE void	TkTextIndexSetByteIndex2(TkTextIndex *indexPtr,
 			    TkTextLine* linePtr, int byteIndex);
-__inline__ void		TkTextIndexSetEpoch(TkTextIndex *indexPtr, unsigned epoch);
-__inline__ void		TkTextIndexUpdateEpoch(TkTextIndex *indexPtr, unsigned epoch);
+inline void		TkTextIndexSetEpoch(TkTextIndex *indexPtr, unsigned epoch);
+inline void		TkTextIndexUpdateEpoch(TkTextIndex *indexPtr, unsigned epoch);
 MODULE_SCOPE void	TkTextIndexSetSegment(TkTextIndex *indexPtr, TkTextSegment* segPtr);
 MODULE_SCOPE void	TkTextIndexSetPeer(TkTextIndex *indexPtr, TkText *textPtr);
 MODULE_SCOPE bool	TkTextIndexIsEmpty(const TkTextIndex *indexPtr);
@@ -1914,13 +1913,13 @@ MODULE_SCOPE void	TkTextIndexSetupToStartOfText(TkTextIndex *indexPtr, TkText *t
 MODULE_SCOPE void	TkTextIndexSetupToEndOfText(TkTextIndex *indexPtr, TkText *textPtr,
 			    TkTextBTree tree);
 MODULE_SCOPE void	TkTextIndexAddToByteIndex(TkTextIndex *indexPtr, int numBytes);
-__inline__ TkTextLine*	TkTextIndexGetLine(const TkTextIndex *indexPtr);
+inline TkTextLine*	TkTextIndexGetLine(const TkTextIndex *indexPtr);
 MODULE_SCOPE int	TkTextIndexGetByteIndex(const TkTextIndex *indexPtr);
 MODULE_SCOPE unsigned	TkTextIndexGetLineNumber(const TkTextIndex *indexPtr, const TkText *textPtr);
-__inline__ TkTextSegment *TkTextIndexGetSegment(const TkTextIndex *indexPtr);
+inline TkTextSegment *TkTextIndexGetSegment(const TkTextIndex *indexPtr);
 MODULE_SCOPE TkTextSegment *TkTextIndexGetContentSegment(const TkTextIndex *indexPtr, int *offset);
 MODULE_SCOPE TkTextSegment *TkTextIndexGetFirstSegment(const TkTextIndex *indexPtr, int *offset);
-__inline__ TkSharedText *TkTextIndexGetShared(const TkTextIndex *indexPtr);
+inline TkSharedText *TkTextIndexGetShared(const TkTextIndex *indexPtr);
 MODULE_SCOPE void	TkTextIndexClear(TkTextIndex *indexPtr, TkText *textPtr);
 MODULE_SCOPE void	TkTextIndexClear2(TkTextIndex *indexPtr, TkText *textPtr, TkTextBTree tree);
 MODULE_SCOPE void	TkTextIndexInvalidate(TkTextIndex *indexPtr);
@@ -1931,7 +1930,7 @@ MODULE_SCOPE bool	TkTextIndexIsStartOfLine(const TkTextIndex *indexPtr);
 MODULE_SCOPE bool	TkTextIndexIsEndOfLine(const TkTextIndex *indexPtr);
 MODULE_SCOPE bool	TkTextIndexIsStartOfText(const TkTextIndex *indexPtr);
 MODULE_SCOPE bool	TkTextIndexIsEndOfText(const TkTextIndex *indexPtr);
-__inline__ bool		TkTextIndexSameLines(const TkTextIndex *indexPtr1, const TkTextIndex *indexPtr2);
+inline bool		TkTextIndexSameLines(const TkTextIndex *indexPtr1, const TkTextIndex *indexPtr2);
 MODULE_SCOPE bool	TkTextIndexIsEqual(const TkTextIndex *indexPtr1, const TkTextIndex *indexPtr2);
 MODULE_SCOPE int	TkTextIndexCompare(const TkTextIndex *indexPtr1, const TkTextIndex *indexPtr2);
 MODULE_SCOPE void	TkTextIndexSave(TkTextIndex *indexPtr);
@@ -2002,12 +2001,14 @@ MODULE_SCOPE void	TkTextInsertDisplayProc(struct TkText *textPtr, struct TkTextD
 
 #endif /* TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION == 5 */
 
-#if defined(__GNUC__) || defined(__clang__)
-# include "tkTextPriv.h"
-#endif
-
 #undef STRUCT
-#undef __inline__
+
+#if __STDC_VERSION__ >= 199901L
+# define _TK_NEED_IMPLEMENTATION
+# include "tkTextPriv.h"
+#else
+# undef inline
+#endif
 
 #endif /* _TKTEXT */
 /*

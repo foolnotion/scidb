@@ -24,11 +24,10 @@ enum { true = (int) 1, false = (int) 0 };
 # define TK_BOOL_IS_DEFINED
 #endif
 
-#if defined(__GNUC__) || defined(__clang__)
-# define __inline__ extern inline
-#else
-# define __inline__
+#if __STDC_VERSION__ < 199901L
+# define inline /* we are not C99 conform */
 #endif
+
 
 /* =========================================================================
  * Definitions for rectangle support.
@@ -42,26 +41,26 @@ typedef struct TkQTreeRect {
 } TkQTreeRect;
 
 /* Return whether rectangle is empty? */
-__inline__ bool TkQTreeRectIsEmpty(const TkQTreeRect *rect);
+inline bool TkQTreeRectIsEmpty(const TkQTreeRect *rect);
 
 /* Return whether both rectangles are equal. */
-__inline__ bool TkQTreeRectIsEqual(const TkQTreeRect *rect1, const TkQTreeRect *rect2);
+inline bool TkQTreeRectIsEqual(const TkQTreeRect *rect1, const TkQTreeRect *rect2);
 
 /* Return whether this rectangle contains the specified point. */
-__inline__ bool TkQTreeRectContainsPoint(const TkQTreeRect *rect, TkQTreeCoord x, TkQTreeCoord y);
+inline bool TkQTreeRectContainsPoint(const TkQTreeRect *rect, TkQTreeCoord x, TkQTreeCoord y);
 
 /* Return whether the first rectangle contains the second one. */
-__inline__ bool TkQTreeRectContainsRect(const TkQTreeRect *rect1, const TkQTreeRect *rect2);
+inline bool TkQTreeRectContainsRect(const TkQTreeRect *rect1, const TkQTreeRect *rect2);
 
 /* Return whether both rectangles are overlapping. */
-__inline__ bool TkQTreeRectIntersects(const TkQTreeRect *rect1, const TkQTreeRect *rect2);
+inline bool TkQTreeRectIntersects(const TkQTreeRect *rect1, const TkQTreeRect *rect2);
 
 /* Setup a rectangle. */
-__inline__ TkQTreeRect *TkQTreeRectSet(TkQTreeRect *rect,
+inline TkQTreeRect *TkQTreeRectSet(TkQTreeRect *rect,
     TkQTreeCoord xmin, TkQTreeCoord ymin, TkQTreeCoord xmax, TkQTreeCoord ymax);
 
 /* Translate a rectangle. */
-__inline__ TkQTreeRect *TkQTreeRectTranslate(TkQTreeRect *rect, TkQTreeCoord dx, TkQTreeCoord dy);
+inline TkQTreeRect *TkQTreeRectTranslate(TkQTreeRect *rect, TkQTreeCoord dx, TkQTreeCoord dy);
 
 /* =========================================================================
  * Definitions for the Q-Tree (Quartering Tree).
@@ -174,10 +173,13 @@ unsigned TkQTreeSearchRectsContaining(const TkQTree tree, const TkQTreeRect *rec
 #endif /* QTREE_SEARCH_RECTS_CONTAINING */
 
 
-#if defined(__GNUC__) || defined(__clang__)
-# include "tkQTreePriv.h"
+#if __STDC_VERSION__ >= 199901L
+# define _TK_NEED_IMPLEMENTATION
+#include "tkQTreePriv.h"
+# undef _TK_NEED_IMPLEMENTATION
+#else
+# undef inline
 #endif
 
-#undef __inline__
 #endif /* _TKQTREE */
 /* vi:set ts=8 sw=4: */

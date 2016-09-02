@@ -13,16 +13,9 @@
 # error "do not include this private header file"
 #endif
 
-#ifndef _TK
-#include "tk.h"
-#endif
 
-#include <assert.h>
-
-#ifndef __inline__
-# define __inline__
-#endif
-
+#ifndef _TKTEXTTAGSETPRIV
+#define _TKTEXTTAGSETPRIV
 
 #if !TK_TEXT_DONT_USE_BITFIELDS /* shared implementation ****************************/
 
@@ -61,8 +54,26 @@ MODULE_SCOPE bool TkTextTagSetDisjunctive_(const TkTextTagSet *ts1, const TkText
 MODULE_SCOPE bool TkTextTagSetIntersectionIsEqual_(const TkTextTagSet *ts1, const TkTextTagSet *ts2,
 		    const TkBitField *bf);
 
+#endif /* !TK_TEXT_DONT_USE_BITFIELDS */
+#endif /* _TKTEXTTAGSETPRIV */
 
-__inline__
+
+#ifdef _TK_NEED_IMPLEMENTATION
+
+#ifndef _TK
+#include "tk.h"
+#endif
+
+#include <assert.h>
+
+#if __STDC_VERSION__ < 199901L
+# define inline
+#endif
+
+
+#if !TK_TEXT_DONT_USE_BITFIELDS /* shared implementation ****************************/
+
+inline
 TkTextTagSet *
 TkTextTagSetNew(
     unsigned size)
@@ -74,7 +85,7 @@ TkTextTagSetNew(
 }
 
 
-__inline__
+inline
 unsigned
 TkTextTagSetRefCount(
     const TkTextTagSet *ts)
@@ -84,7 +95,7 @@ TkTextTagSetRefCount(
 }
 
 
-__inline__
+inline
 void
 TkTextTagSetIncrRefCount(
     TkTextTagSet *ts)
@@ -94,7 +105,7 @@ TkTextTagSetIncrRefCount(
 }
 
 
-__inline__
+inline
 unsigned
 TkTextTagSetDecrRefCount(
     TkTextTagSet *ts)
@@ -111,7 +122,7 @@ TkTextTagSetDecrRefCount(
 }
 
 
-__inline__
+inline
 bool
 TkTextTagSetIsEmpty(
     const TkTextTagSet *ts)
@@ -121,7 +132,7 @@ TkTextTagSetIsEmpty(
 }
 
 
-__inline__
+inline
 bool
 TkTextTagSetIsBitField(
     const TkTextTagSet *ts)
@@ -131,7 +142,7 @@ TkTextTagSetIsBitField(
 }
 
 
-__inline__
+inline
 unsigned
 TkTextTagSetSize(
     const TkTextTagSet *ts)
@@ -141,7 +152,7 @@ TkTextTagSetSize(
 }
 
 
-__inline__
+inline
 unsigned
 TkTextTagSetRangeSize(
     const TkTextTagSet *ts)
@@ -155,7 +166,7 @@ TkTextTagSetRangeSize(
 }
 
 
-__inline__
+inline
 unsigned
 TkTextTagSetCount(
     const TkTextTagSet *ts)
@@ -165,7 +176,7 @@ TkTextTagSetCount(
 }
 
 
-__inline__
+inline
 bool
 TkTextTagSetIsEqual(
     const TkTextTagSet *ts1,
@@ -181,7 +192,7 @@ TkTextTagSetIsEqual(
 }
 
 
-__inline__
+inline
 bool
 TkTextTagSetContains(
     const TkTextTagSet *ts1,
@@ -197,7 +208,7 @@ TkTextTagSetContains(
 }
 
 
-__inline__
+inline
 bool
 TkTextTagSetDisjunctive(
     const TkTextTagSet *ts1,
@@ -213,7 +224,7 @@ TkTextTagSetDisjunctive(
 }
 
 
-__inline__
+inline
 bool
 TkTextTagSetIntersects(
     const TkTextTagSet *ts1,
@@ -223,7 +234,7 @@ TkTextTagSetIntersects(
 }
 
 
-__inline__
+inline
 bool
 TkTextTagSetIntersectionIsEqual(
     const TkTextTagSet *ts1,
@@ -240,7 +251,7 @@ TkTextTagSetIntersectionIsEqual(
 }
 
 
-__inline__
+inline
 bool
 TkTextTagBitContainsSet(
     const TkBitField *bf,
@@ -250,7 +261,7 @@ TkTextTagBitContainsSet(
 }
 
 
-__inline__
+inline
 bool
 TkTextTagSetIsEqualBits(
     const TkTextTagSet *ts,
@@ -262,7 +273,7 @@ TkTextTagSetIsEqualBits(
 }
 
 
-__inline__
+inline
 bool
 TkTextTagSetContainsBits(
     const TkTextTagSet *ts,
@@ -274,7 +285,7 @@ TkTextTagSetContainsBits(
 }
 
 
-__inline__
+inline
 bool
 TkTextTagSetDisjunctiveBits(
     const TkTextTagSet *ts,
@@ -286,7 +297,7 @@ TkTextTagSetDisjunctiveBits(
 }
 
 
-__inline__
+inline
 bool
 TkTextTagSetIntersectsBits(
     const TkTextTagSet *ts,
@@ -296,7 +307,7 @@ TkTextTagSetIntersectsBits(
 }
 
 
-__inline__
+inline
 bool
 TkTextTagSetTest(
     const TkTextTagSet *ts,
@@ -311,7 +322,7 @@ TkTextTagSetTest(
 }
 
 
-__inline__
+inline
 bool
 TkTextTagSetNone(
     const TkTextTagSet *ts)
@@ -321,7 +332,7 @@ TkTextTagSetNone(
 }
 
 
-__inline__
+inline
 bool
 TkTextTagSetAny(
     const TkTextTagSet *ts)
@@ -331,7 +342,7 @@ TkTextTagSetAny(
 }
 
 
-__inline__
+inline
 TkTextTagSet *
 TkTextTagSetCopy(
     const TkTextTagSet *src)
@@ -345,7 +356,7 @@ TkTextTagSetCopy(
 }
 
 
-__inline__
+inline
 unsigned
 TkTextTagSetFindFirst(
     const TkTextTagSet *ts)
@@ -355,7 +366,7 @@ TkTextTagSetFindFirst(
 }
 
 
-__inline__
+inline
 unsigned
 TkTextTagSetFindNext(
     const TkTextTagSet *ts,
@@ -366,7 +377,7 @@ TkTextTagSetFindNext(
 }
 
 
-__inline__
+inline
 TkTextTagSet *
 TkTextTagSetAddOrErase(
     TkTextTagSet *ts,
@@ -378,7 +389,7 @@ TkTextTagSetAddOrErase(
 }
 
 
-__inline__
+inline
 const unsigned char *
 TkTextTagSetData(
     const TkTextTagSet *ts)
@@ -388,7 +399,7 @@ TkTextTagSetData(
 }
 
 
-__inline__
+inline
 unsigned
 TkTextTagSetByteSize(
     const TkTextTagSet *ts)
@@ -399,123 +410,90 @@ TkTextTagSetByteSize(
 
 #else /* integer set only implementation **************************************/
 
-__inline__
-TkIntSet *TkTextTagSetNew(unsigned size) { return TkIntSetNew(); }
+inline TkIntSet *TkTextTagSetNew(unsigned size) { return TkIntSetNew(); }
 
-__inline__
-TkIntSet *TkTextTagSetResize(TkIntSet *ts, unsigned newSize)
+inline TkIntSet *TkTextTagSetResize(TkIntSet *ts, unsigned newSize)
 { if (!ts) { (ts = TkIntSetNew())->refCount = 1; }; return ts; }
 
-__inline__
-void TkTextTagSetDestroy(TkIntSet **tsPtr) { TkIntSetDestroy(tsPtr); }
+inline void TkTextTagSetDestroy(TkIntSet **tsPtr) { TkIntSetDestroy(tsPtr); }
 
-__inline__
-unsigned TkTextTagSetRefCount(const TkIntSet *ts) { return TkIntSetRefCount(ts); }
+inline unsigned TkTextTagSetRefCount(const TkIntSet *ts) { return TkIntSetRefCount(ts); }
 
-__inline__
-void TkTextTagSetIncrRefCount(TkIntSet *ts) { TkIntSetIncrRefCount(ts); }
+inline void TkTextTagSetIncrRefCount(TkIntSet *ts) { TkIntSetIncrRefCount(ts); }
 
-__inline__
-unsigned TkTextTagSetDecrRefCount(TkIntSet *ts) { return TkIntSetDecrRefCount(ts); }
+inline unsigned TkTextTagSetDecrRefCount(TkIntSet *ts) { return TkIntSetDecrRefCount(ts); }
 
-__inline__
-TkIntSet *TkTextTagSetCopy(const TkIntSet *src) { return TkIntSetCopy(src); }
+inline TkIntSet *TkTextTagSetCopy(const TkIntSet *src) { return TkIntSetCopy(src); }
 
-__inline__
-bool TkTextTagSetIsEmpty(const TkIntSet *ts) { return TkIntSetIsEmpty(ts); }
+inline bool TkTextTagSetIsEmpty(const TkIntSet *ts) { return TkIntSetIsEmpty(ts); }
 
-__inline__
-bool TkTextTagSetIsBitField(const TkIntSet *ts) { assert(ts); return true; }
+inline bool TkTextTagSetIsBitField(const TkIntSet *ts) { assert(ts); return true; }
 
-__inline__
-unsigned TkTextTagSetSize(const TkIntSet *ts) { return TK_TEXT_TAG_SET_NPOS - 1; }
+inline unsigned TkTextTagSetSize(const TkIntSet *ts) { return TK_TEXT_TAG_SET_NPOS - 1; }
 
-__inline__
-unsigned TkTextTagSetCount(const TkIntSet *ts) { return TkIntSetSize(ts); }
+inline unsigned TkTextTagSetCount(const TkIntSet *ts) { return TkIntSetSize(ts); }
 
-__inline__
-bool TkTextTagSetTest(const TkIntSet *ts, unsigned n) { return TkIntSetTest(ts, n); }
+inline bool TkTextTagSetTest(const TkIntSet *ts, unsigned n) { return TkIntSetTest(ts, n); }
 
-__inline__
-bool TkTextTagSetNone(const TkIntSet *ts) { return TkIntSetNone(ts); }
+inline bool TkTextTagSetNone(const TkIntSet *ts) { return TkIntSetNone(ts); }
 
-__inline__
-bool TkTextTagSetAny(const TkIntSet *ts) { return TkIntSetAny(ts); }
+inline bool TkTextTagSetAny(const TkIntSet *ts) { return TkIntSetAny(ts); }
 
-__inline__
-bool TkTextTagSetIsEqual(const TkIntSet *ts1, const TkIntSet *ts2)
+inline bool TkTextTagSetIsEqual(const TkIntSet *ts1, const TkIntSet *ts2)
 { return TkIntSetIsEqual(ts1, ts2); }
 
-__inline__
-bool TkTextTagSetContains(const TkIntSet *ts1, const TkIntSet *ts2)
+inline bool TkTextTagSetContains(const TkIntSet *ts1, const TkIntSet *ts2)
 { return TkIntSetContains(ts1, ts2); }
 
-__inline__
-bool TkTextTagSetDisjunctive(const TkIntSet *ts1, const TkIntSet *ts2)
+inline bool TkTextTagSetDisjunctive(const TkIntSet *ts1, const TkIntSet *ts2)
 { return TkIntSetDisjunctive(ts1, ts2); }
 
-__inline__
-bool TkTextTagSetIntersects(const TkIntSet *ts1, const TkIntSet *ts2)
+inline bool TkTextTagSetIntersects(const TkIntSet *ts1, const TkIntSet *ts2)
 { return TkIntSetIntersects(ts1, ts2); }
 
-__inline__
-bool TkTextTagSetIntersectionIsEqual(const TkIntSet *ts1, const TkIntSet *ts2,
+inline bool TkTextTagSetIntersectionIsEqual(const TkIntSet *ts1, const TkIntSet *ts2,
     const TkBitField *src)
 { return TkIntSetIntersectionIsEqual(ts1, ts2, src); }
 
-__inline__
-bool TkTextTagBitContainsSet(const TkBitField *bf, const TkIntSet *ts)
+inline bool TkTextTagBitContainsSet(const TkBitField *bf, const TkIntSet *ts)
 { return TkBitContainsSet(bf, ts); }
 
-__inline__
-bool TkTextTagSetIsEqualBits(const TkIntSet *ts, const TkBitField *bf)
+inline bool TkTextTagSetIsEqualBits(const TkIntSet *ts, const TkBitField *bf)
 { return TkIntSetIsEqualBits(ts, bf); }
 
-__inline__
-bool TkTextTagSetContainsBits(const TkIntSet *ts, const TkBitField *bf)
+inline bool TkTextTagSetContainsBits(const TkIntSet *ts, const TkBitField *bf)
 { return TkIntSetContainsBits(ts, bf); }
 
-__inline__
-bool TkTextTagSetDisjunctiveBits(const TkIntSet *ts, const TkBitField *bf)
+inline bool TkTextTagSetDisjunctiveBits(const TkIntSet *ts, const TkBitField *bf)
 { return TkIntSetDisjunctiveBits(ts, bf); }
 
-__inline__
-bool TkTextTagSetIntersectsBits(const TkIntSet *ts, const TkBitField *bf)
+inline bool TkTextTagSetIntersectsBits(const TkIntSet *ts, const TkBitField *bf)
 { return !TkTextTagSetDisjunctiveBits(ts, bf); }
 
-__inline__
-unsigned TkTextTagSetFindFirst(const TkIntSet *ts) { return TkIntSetFindFirst(ts); }
+inline unsigned TkTextTagSetFindFirst(const TkIntSet *ts) { return TkIntSetFindFirst(ts); }
 
-__inline__
-unsigned TkTextTagSetFindNext(const TkIntSet *ts, unsigned prev)
+inline unsigned TkTextTagSetFindNext(const TkIntSet *ts, unsigned prev)
 { return TkIntSetFindNext(ts); }
 
-__inline__
-unsigned TkTextTagSetFindFirstInIntersection(const TkIntSet *ts, const TkBitField *bf)
+inline unsigned TkTextTagSetFindFirstInIntersection(const TkIntSet *ts, const TkBitField *bf)
 { return TkIntSetFindFirstInIntersection(ts, bf); }
 
-__inline__
-TkIntSet *TkTextTagSetAddOrErase(TkIntSet *ts, unsigned n, bool value)
+inline TkIntSet *TkTextTagSetAddOrErase(TkIntSet *ts, unsigned n, bool value)
 { return value ? TkTextTagSetAdd(ts, n) : TkTextTagSetErase(ts, n); }
 
-__inline__
-TkIntSet *TkTextTagSetClear(TkIntSet *ts) { return TkIntSetClear(ts); }
+inline TkIntSet *TkTextTagSetClear(TkIntSet *ts) { return TkIntSetClear(ts); }
 
-__inline__
-unsigned TkTextTagSetRangeSize(const TkIntSet *ts)
+inline unsigned TkTextTagSetRangeSize(const TkIntSet *ts)
 { return TkIntSetIsEmpty(ts) ? 0 : TkIntSetMax(ts) + 1; }
 
-__inline__
-unsigned char *TkTextTagSetData(const TkTextTagSet *ts)
+inline unsigned char *TkTextTagSetData(const TkTextTagSet *ts)
 { assert(ts); return TkIntSetData(&ts->set); }
 
-__inline__
-unsigned
+inline unsigned
 TkTextTagSetByteSize(const TkTextTagSet *ts)
 { assert(ts); return TkIntSetByteSize(&ts->set); }
 
-
-#endif /* !TK_TEXT_USE_BITFIELDS */
-
-#undef __inline__
+#endif /* !TK_TEXT_DONT_USE_BITFIELDS */
+#undef _TK_NEED_IMPLEMENTATION
+#endif /* _TK_NEED_IMPLEMENTATION */
 /* vi:set ts=8 sw=4: */

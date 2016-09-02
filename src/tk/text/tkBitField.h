@@ -24,10 +24,8 @@ enum { true = (int) 1, false = (int) 0 };
 # define TK_BOOL_IS_DEFINED
 #endif
 
-#if defined(__GNUC__) || defined(__clang__)
-# define __inline__ extern inline
-#else
-# define __inline__
+#if __STDC_VERSION__ < 199901L
+# define inline /* we are not C99 conform */
 #endif
 
 
@@ -75,17 +73,17 @@ typedef struct TkBitField {
 #define TK_BIT_NPOS ((unsigned) -1)
 
 
-__inline__ TkBitField *TkBitNew(unsigned size);
+inline TkBitField *TkBitNew(unsigned size);
 TkBitField *TkBitResize(TkBitField *bf, unsigned newSize);
 TkBitField *TkBitFromSet(const struct TkIntSet *set, unsigned size);
 void TkBitDestroy(TkBitField **bfPtr);
 
-__inline__ const unsigned char *TkBitData(const TkBitField *bf);
-__inline__ unsigned TkBitByteSize(const TkBitField *bf);
+inline const unsigned char *TkBitData(const TkBitField *bf);
+inline unsigned TkBitByteSize(const TkBitField *bf);
 
-__inline__ unsigned TkBitRefCount(const TkBitField *bf);
-__inline__ void TkBitIncrRefCount(TkBitField *bf);
-__inline__ unsigned TkBitDecrRefCount(TkBitField *bf);
+inline unsigned TkBitRefCount(const TkBitField *bf);
+inline void TkBitIncrRefCount(TkBitField *bf);
+inline unsigned TkBitDecrRefCount(TkBitField *bf);
 
 TkBitField *TkBitCopy(const TkBitField *bf, int size);
 
@@ -107,19 +105,19 @@ void TkBitJoin2ComplementToIntersection(TkBitField *dst,
 /* dst := (dst - bf1) + (bf1 - bf2) */
 void TkBitJoinOfDifferences(TkBitField *dst, const TkBitField *bf1, const TkBitField *bf2);
 
-__inline__ bool TkBitIsEmpty(const TkBitField *bf);
-__inline__ unsigned TkBitSize(const TkBitField *bf);
+inline bool TkBitIsEmpty(const TkBitField *bf);
+inline unsigned TkBitSize(const TkBitField *bf);
 unsigned TkBitCount(const TkBitField *bf);
 
-__inline__ bool TkBitTest(const TkBitField *bf, unsigned n);
-__inline__ bool TkBitNone(const TkBitField *bf);
+inline bool TkBitTest(const TkBitField *bf, unsigned n);
+inline bool TkBitNone(const TkBitField *bf);
 bool TkBitAny(const TkBitField *bf);
 bool TkBitComplete(const TkBitField *bf);
 
 bool TkBitIsEqual(const TkBitField *bf1, const TkBitField *bf2);
 bool TkBitContains(const TkBitField *bf1, const TkBitField *bf2);
 bool TkBitDisjunctive(const TkBitField *bf1, const TkBitField *bf2);
-__inline__ bool TkBitIntersects(const TkBitField *bf1, const TkBitField *bf2);
+inline bool TkBitIntersects(const TkBitField *bf1, const TkBitField *bf2);
 bool TkBitIntersectionIsEqual(const TkBitField *bf1, const TkBitField *bf2, const TkBitField *del);
 
 // TODO: should be rewritten to TkIntSetIsContainedBits
@@ -133,16 +131,16 @@ unsigned TkBitFindNext(const TkBitField *bf, unsigned prev);
 unsigned TkBitFindPrev(const TkBitField *bf, unsigned prev);
 unsigned TkBitFindFirstInIntersection(const TkBitField* bf1, const TkBitField *bf2);
 
-__inline__ void TkBitSet(TkBitField *bf, unsigned n);
-__inline__ void TkBitUnset(TkBitField *bf, unsigned n);
-__inline__ void TkBitPut(TkBitField *bf, unsigned n, bool value);
+inline void TkBitSet(TkBitField *bf, unsigned n);
+inline void TkBitUnset(TkBitField *bf, unsigned n);
+inline void TkBitPut(TkBitField *bf, unsigned n, bool value);
 bool TkBitTestAndSet(TkBitField *bf, unsigned n);
 bool TkBitTestAndUnset(TkBitField *bf, unsigned n);
 void TkBitFill(TkBitField *bf);
 void TkBitClear(TkBitField *bf);
 
 /* Return nearest multiple of TK_BIT_NBITS which is greater or equal to given argument. */
-__inline__ unsigned TkBitAdjustSize(unsigned size);
+inline unsigned TkBitAdjustSize(unsigned size);
 
 #if !NDEBUG
 void TkBitPrint(const TkBitField *bf);
@@ -178,11 +176,13 @@ bool TkBitInnerJoinDifferenceIsEqual(const TkBitField *bf1, const TkBitField *bf
 
 #endif /* TK_TEXT_LINE_TAGGING */
 
-
-#if defined(__GNUC__) || defined(__clang__)
+#if __STDC_VERSION__ >= 199901L
+# define _TK_NEED_IMPLEMENTATION
 # include "tkBitFieldPriv.h"
+# undef _TK_NEED_IMPLEMENTATION
+#else
+# undef inline
 #endif
 
-#undef __inline__
 #endif /* _TKBITFIELD */
 /* vi:set ts=8 sw=4: */

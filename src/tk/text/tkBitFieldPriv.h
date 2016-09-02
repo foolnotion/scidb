@@ -13,11 +13,23 @@
 # error "do not include this private header file"
 #endif
 
+
+#ifndef _TKBITFIELDPRIV
+#define _TKBITFIELDPRIV
+
+MODULE_SCOPE bool TkBitNone_(const TkBitWord *buf, unsigned words);
+
+#endif /* _TKBITFIELDPRIV */
+
+
+#ifdef _TK_NEED_IMPLEMENTATION
+
 #include <assert.h>
 
-#ifndef __inline__
-# define __inline__
+#if __STDC_VERSION__ < 199901L
+# define inline
 #endif
+
 
 #define TK_BIT_WORD_INDEX(n)	((n) >> ((TK_BIT_NBITS + 128) >> 5))
 #define TK_BIT_INDEX(n)		((n) & (TK_BIT_NBITS - 1))
@@ -25,10 +37,7 @@
 #define TK_BIT_COUNT_WORDS(n)	((n + TK_BIT_NBITS - 1)/TK_BIT_NBITS)
 
 
-MODULE_SCOPE bool TkBitNone_(const TkBitWord *buf, unsigned words);
-
-
-__inline__
+inline
 const unsigned char *
 TkBitData(
     const TkBitField *bf)
@@ -38,7 +47,7 @@ TkBitData(
 }
 
 
-__inline__
+inline
 unsigned
 TkBitByteSize(
     const TkBitField *bf)
@@ -48,7 +57,7 @@ TkBitByteSize(
 }
 
 
-__inline__
+inline
 unsigned
 TkBitAdjustSize(
     unsigned size)
@@ -57,7 +66,7 @@ TkBitAdjustSize(
 }
 
 
-__inline__
+inline
 TkBitField *
 TkBitNew(
     unsigned size)
@@ -68,7 +77,7 @@ TkBitNew(
 }
 
 
-__inline__
+inline
 unsigned
 TkBitRefCount(
     const TkBitField *bf)
@@ -78,7 +87,7 @@ TkBitRefCount(
 }
 
 
-__inline__
+inline
 void
 TkBitIncrRefCount(
     TkBitField *bf)
@@ -88,7 +97,7 @@ TkBitIncrRefCount(
 }
 
 
-__inline__
+inline
 unsigned
 TkBitDecrRefCount(
     TkBitField *bf)
@@ -105,7 +114,7 @@ TkBitDecrRefCount(
 }
 
 
-__inline__
+inline
 unsigned
 TkBitSize(
     const TkBitField *bf)
@@ -115,7 +124,7 @@ TkBitSize(
 }
 
 
-__inline__
+inline
 bool
 TkBitIsEmpty(
     const TkBitField *bf)
@@ -125,7 +134,7 @@ TkBitIsEmpty(
 }
 
 
-__inline__
+inline
 bool
 TkBitNone(
     const TkBitField *bf)
@@ -135,7 +144,7 @@ TkBitNone(
 }
 
 
-__inline__
+inline
 bool
 TkBitIntersects(
     const TkBitField *bf1,
@@ -145,7 +154,7 @@ TkBitIntersects(
 }
 
 
-__inline__
+inline
 bool
 TkBitTest(
     const TkBitField *bf,
@@ -157,7 +166,7 @@ TkBitTest(
 }
 
 
-__inline__
+inline
 void
 TkBitSet(
     TkBitField *bf,
@@ -169,7 +178,7 @@ TkBitSet(
 }
 
 
-__inline__
+inline
 void
 TkBitUnset(
     TkBitField *bf,
@@ -181,7 +190,7 @@ TkBitUnset(
 }
 
 
-__inline__
+inline
 void
 TkBitPut(
     TkBitField *bf,
@@ -195,5 +204,6 @@ TkBitPut(
     }
 }
 
-#undef __inline__
+#undef _TK_NEED_IMPLEMENTATION
+#endif /* _TK_NEED_IMPLEMENTATION */
 /* vi:set ts=8 sw=4: */

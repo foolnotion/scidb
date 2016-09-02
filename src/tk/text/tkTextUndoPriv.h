@@ -13,14 +13,9 @@
 # error "do not include this private header file"
 #endif
 
-#include <assert.h>
 
-#ifndef __inline__
-# define __inline__
-#endif
-
-
-#ifndef IMPLEMENTATION
+#ifndef _TKTEXTUNDOPRIV
+#define _TKTEXTUNDOPRIV
 
 typedef struct TkTextUndoMyAtom {
     unsigned capacity;
@@ -55,75 +50,83 @@ struct TkTextUndoStack {
     bool doingRedo;		/* Currently an redo action is performed? */
 };
 
-#endif /* IMPLEMENTATION */
+#endif /* _TKTEXTUNDOPRIV */
 
 
-__inline__ unsigned
+#ifdef _TK_NEED_IMPLEMENTATION
+
+#include <assert.h>
+
+#if __STDC_VERSION__ < 199901L
+# define inline
+#endif
+
+
+inline unsigned
 TkTextUndoGetMaxUndoDepth(const TkTextUndoStack stack)
 { assert(stack); return stack->maxUndoDepth; }
 
-__inline__ unsigned
+inline unsigned
 TkTextUndoGetMaxRedoDepth(const TkTextUndoStack stack)
 { assert(stack); return stack->maxRedoDepth; }
 
-__inline__ unsigned
+inline unsigned
 TkTextUndoGetMaxSize(const TkTextUndoStack stack)
 { assert(stack); return stack->maxSize; }
 
-__inline__ bool
+inline bool
 TkTextUndoContentIsModified(const TkTextUndoStack stack)
 { assert(stack); return stack->undoDepth > 0 || stack->irreversible; }
 
-__inline__ bool
+inline bool
 TkTextUndoContentIsIrreversible(const TkTextUndoStack stack)
 { assert(stack); return stack->irreversible; }
 
-__inline__ bool
+inline bool
 TkTextUndoIsPerformingUndo(const TkTextUndoStack stack)
 { assert(stack); return stack->doingUndo; }
 
-__inline__ bool
+inline bool
 TkTextUndoIsPerformingRedo(const TkTextUndoStack stack)
 { assert(stack); return stack->doingRedo; }
 
-__inline__ bool
+inline bool
 TkTextUndoIsPerformingUndoRedo(const TkTextUndoStack stack)
 { assert(stack); return stack->doingUndo || stack->doingRedo; }
 
-__inline__ bool
+inline bool
 TkTextUndoUndoStackIsFull(const TkTextUndoStack stack)
 { return !stack || (stack->maxUndoDepth > 0 && stack->undoDepth >= stack->maxUndoDepth); }
 
-__inline__ bool
+inline bool
 TkTextUndoRedoStackIsFull(const TkTextUndoStack stack)
 { return !stack || (stack->maxRedoDepth >= 0 && stack->redoDepth >= stack->maxRedoDepth); }
 
-__inline__ unsigned
+inline unsigned
 TkTextUndoCountCurrentUndoItems(const TkTextUndoStack stack)
 { assert(stack); return stack->current && !stack->doingUndo ? stack->current->data.arraySize : 0; }
 
-__inline__ unsigned
+inline unsigned
 TkTextUndoCountCurrentRedoItems(const TkTextUndoStack stack)
 { assert(stack); return stack->current && stack->doingUndo ? stack->current->data.arraySize : 0; }
 
-__inline__ unsigned
+inline unsigned
 TkTextUndoGetCurrentUndoStackDepth(const TkTextUndoStack stack)
 { assert(stack); return stack->undoDepth + (TkTextUndoCountCurrentUndoItems(stack) ? 1 : 0); }
 
-__inline__ unsigned
+inline unsigned
 TkTextUndoGetCurrentRedoStackDepth(const TkTextUndoStack stack)
 { assert(stack); return stack->redoDepth + (TkTextUndoCountCurrentRedoItems(stack) ? 1 : 0); }
 
-__inline__ void
+inline void
 TkTextUndoSetContext(TkTextUndoStack stack, TkTextUndoContext context)
 { assert(stack); stack->context = context; }
 
-__inline__ TkTextUndoContext
+inline TkTextUndoContext
 TkTextUndoGetContext(const TkTextUndoStack stack)
 { assert(stack); return stack->context; }
 
-__inline__
-unsigned
+inline unsigned
 TkTextUndoGetCurrentDepth(
     const TkTextUndoStack stack)
 {
@@ -132,8 +135,7 @@ TkTextUndoGetCurrentDepth(
 	    (stack->current && stack->current->data.arraySize > 0 ? 1 : 0);
 }
 
-__inline__
-unsigned
+inline unsigned
 TkTextUndoGetCurrentUndoSize(
     const TkTextUndoStack stack)
 {
@@ -141,8 +143,7 @@ TkTextUndoGetCurrentUndoSize(
     return stack->undoSize + (!stack->doingUndo && stack->current ? stack->current->undoSize : 0);
 }
 
-__inline__
-unsigned
+inline unsigned
 TkTextUndoGetCurrentRedoSize(
     const TkTextUndoStack stack)
 {
@@ -150,8 +151,7 @@ TkTextUndoGetCurrentRedoSize(
     return stack->redoSize + (!stack->doingRedo && stack->current ? stack->current->undoSize : 0);
 }
 
-__inline__
-unsigned
+inline unsigned
 TkTextUndoGetCurrentSize(
     const TkTextUndoStack stack)
 {
@@ -159,5 +159,6 @@ TkTextUndoGetCurrentSize(
     return stack->undoSize + stack->redoSize + (stack->current ? stack->current->undoSize : 0);
 }
 
-#undef __inline__
+#undef _TK_NEED_IMPLEMENTATION
+#endif /* _TK_NEED_IMPLEMENTATION */
 /* vi:set ts=8 sw=4: */

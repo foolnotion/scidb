@@ -17,13 +17,18 @@
 
 #include "default.h"
 #include "tkInt.h"
-#include "tkText.h"  /* needed for Tk8.5 backport */
+#include "tkText.h"
 #include "tkTextUndo.h"
 #include "tkTextTagSet.h"
 #include "tkBitField.h"
 #include <stdlib.h>
 #include <ctype.h>
 #include <assert.h>
+
+#if __STDC_VERSION__ < 199901L
+# define _TK_NEED_IMPLEMENTATION
+# include "tkTextPriv.h"
+#endif
 
 #ifndef MAX
 # define MAX(a,b) ((a) < (b) ? b : a)
@@ -10860,9 +10865,39 @@ TkpTextDump(
 }
 #endif /* !NDEBUG */
 
-/* We need external linkage for our inline functions. */
-#define IMPLEMENTATION
-#include "tkTextPriv.h"
+
+#if __STDC_VERSION__ >= 199901L
+/* Additionally we need stand-alone object code. */
+#define inline extern
+inline TkSharedText	*TkBTreeGetShared(TkTextBTree tree);
+inline int		TkBTreeGetNumberOfDisplayLines(const TkTextPixelInfo *pixelInfo);
+inline TkTextPixelInfo *TkBTreeLinePixelInfo(const TkText *textPtr, TkTextLine *linePtr);
+inline unsigned		TkBTreeEpoch(TkTextBTree tree);
+inline unsigned		TkBTreeIncrEpoch(TkTextBTree tree);
+inline struct Node	*TkBTreeGetRoot(TkTextBTree tree);
+inline TkTextLine *	TkBTreePrevLogicalLine(const TkSharedText* sharedTextPtr,
+			    const TkText *textPtr, TkTextLine *linePtr);
+inline TkTextTag *	TkBTreeGetTags(const TkTextIndex *indexPtr);
+inline TkTextLine *	TkBTreeGetStartLine(const TkText *textPtr);
+inline TkTextLine *	TkBTreeGetLastLine(const TkText *textPtr);
+inline TkTextLine *	TkBTreeNextLine(const TkText *textPtr, TkTextLine *linePtr);
+inline TkTextLine *	TkBTreePrevLine(const TkText *textPtr, TkTextLine *linePtr);
+inline unsigned		TkBTreeCountLines(const TkTextBTree tree, const TkTextLine *linePtr1,
+			    const TkTextLine *linePtr2);
+inline bool		TkTextIsStartEndMarker(const TkTextSegment *segPtr);
+inline bool		TkTextIsSpecialMark(const TkTextSegment *segPtr);
+inline bool		TkTextIsPrivateMark(const TkTextSegment *segPtr);
+inline bool		TkTextIsSpecialOrPrivateMark(const TkTextSegment *segPtr);
+inline bool		TkTextIsNormalOrSpecialMark(const TkTextSegment *segPtr);
+inline bool		TkTextIsNormalMark(const TkTextSegment *segPtr);
+inline bool		TkTextIsStableMark(const TkTextSegment *segPtr);
+inline void		TkTextIndexSetEpoch(TkTextIndex *indexPtr, unsigned epoch);
+inline void		TkTextIndexUpdateEpoch(TkTextIndex *indexPtr, unsigned epoch);
+inline TkTextLine*	TkTextIndexGetLine(const TkTextIndex *indexPtr);
+inline TkTextSegment *TkTextIndexGetSegment(const TkTextIndex *indexPtr);
+inline TkSharedText *TkTextIndexGetShared(const TkTextIndex *indexPtr);
+inline bool		TkTextIndexSameLines(const TkTextIndex *indexPtr1, const TkTextIndex *indexPtr2);
+#endif
 
 
 /*

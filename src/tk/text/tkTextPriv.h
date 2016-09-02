@@ -13,14 +13,9 @@
 # error "do not include this private header file"
 #endif
 
-#include <assert.h>
 
-#ifndef __inline__
-# define __inline__
-#endif
-
-
-#ifndef IMPLEMENTATION
+#ifndef _TKTEXTPRIV
+#define _TKTEXTPRIV
 
 /*
  * The following struct is private for TkTextBTree.c, but we want fast access to
@@ -47,7 +42,15 @@ struct TkTextMyBTree {
     				 * list of all B-tree clients. */
 };
 
-#endif /* IMPLEMENTATION */
+#endif /* _TKTEXTPRIV */
+
+#ifdef _TK_NEED_IMPLEMENTATION
+
+#include <assert.h>
+
+#if __STDC_VERSION__ < 199901L
+# define inline
+#endif
 
 /*
  *----------------------------------------------------------------------
@@ -65,7 +68,7 @@ struct TkTextMyBTree {
  *----------------------------------------------------------------------
  */
 
-__inline__
+inline
 bool
 TkTextIsSpecialMark(
     const TkTextSegment *segPtr)
@@ -96,7 +99,7 @@ TkTextIsSpecialMark(
  *----------------------------------------------------------------------
  */
 
-__inline__
+inline
 bool
 TkTextIsPrivateMark(
     const TkTextSegment *segPtr)
@@ -124,7 +127,7 @@ TkTextIsPrivateMark(
  *----------------------------------------------------------------------
  */
 
-__inline__
+inline
 bool
 TkTextIsNormalMark(
     const TkTextSegment *segPtr)
@@ -155,7 +158,7 @@ TkTextIsNormalMark(
  *----------------------------------------------------------------------
  */
 
-__inline__
+inline
 bool
 TkTextIsStartEndMarker(
     const TkTextSegment *segPtr)
@@ -182,7 +185,7 @@ TkTextIsStartEndMarker(
  *----------------------------------------------------------------------
  */
 
-__inline__
+inline
 bool
 TkTextIsStableMark(
     const TkTextSegment *segPtr)
@@ -207,7 +210,7 @@ TkTextIsStableMark(
  *----------------------------------------------------------------------
  */
 
-__inline__
+inline
 bool
 TkTextIsSpecialOrPrivateMark(
     const TkTextSegment *segPtr)
@@ -234,7 +237,7 @@ TkTextIsSpecialOrPrivateMark(
  *----------------------------------------------------------------------
  */
 
-__inline__
+inline
 bool
 TkTextIsNormalOrSpecialMark(
     const TkTextSegment *segPtr)
@@ -261,7 +264,7 @@ TkTextIsNormalOrSpecialMark(
  *----------------------------------------------------------------------
  */
 
-__inline__
+inline
 TkTextPixelInfo *
 TkBTreeLinePixelInfo(
     const TkText *textPtr,
@@ -290,7 +293,7 @@ TkBTreeLinePixelInfo(
  *----------------------------------------------------------------------
  */
 
-__inline__
+inline
 TkTextLine *
 TkBTreeGetStartLine(
     const TkText *textPtr)
@@ -318,7 +321,7 @@ TkBTreeGetStartLine(
 MODULE_SCOPE TkTextLine * TkBTreeMyGetLastLine(
     const TkSharedText *sharedTextPtr, const TkText *textPtr);
 
-__inline__
+inline
 TkTextLine *
 TkBTreeGetLastLine(
     const TkText *textPtr)
@@ -343,7 +346,7 @@ TkBTreeGetLastLine(
  *----------------------------------------------------------------------
  */
 
-__inline__
+inline
 TkSharedText *
 TkBTreeGetShared(
     TkTextBTree tree)		/* Return shared resource of this tree. */
@@ -367,7 +370,7 @@ TkBTreeGetShared(
  *----------------------------------------------------------------------
  */
 
-__inline__
+inline
 unsigned
 TkBTreeIncrEpoch(
     TkTextBTree tree)		/* Tree to increment epoch. */
@@ -392,7 +395,7 @@ TkBTreeIncrEpoch(
  *----------------------------------------------------------------------
  */
 
-__inline__
+inline
 unsigned
 TkBTreeEpoch(
     TkTextBTree tree)		/* Tree to get epoch for. */
@@ -416,7 +419,7 @@ TkBTreeEpoch(
  *----------------------------------------------------------------------
  */
 
-__inline__
+inline
 struct Node *
 TkBTreeGetRoot(
     TkTextBTree tree)		/* Tree to get root node for. */
@@ -443,7 +446,7 @@ TkBTreeGetRoot(
  *----------------------------------------------------------------------
  */
 
-__inline__
+inline
 TkTextLine *
 TkBTreeNextLine(
     const TkText *textPtr,	/* Next line in the context of this client, can be NULL. */
@@ -470,7 +473,7 @@ TkBTreeNextLine(
  *----------------------------------------------------------------------
  */
 
-__inline__
+inline
 TkTextLine *
 TkBTreePrevLine(
     const TkText *textPtr,	/* Relative to this client of the B-tree, can be NULL. */
@@ -500,7 +503,7 @@ TkBTreePrevLine(
  *----------------------------------------------------------------------
  */
 
-__inline__
+inline
 TkTextLine *
 TkBTreePrevLogicalLine(
     const TkSharedText* sharedTextPtr,
@@ -530,7 +533,7 @@ TkBTreePrevLogicalLine(
  *----------------------------------------------------------------------
  */
 
-__inline__
+inline
 unsigned
 TkBTreeCountLines(
     const TkTextBTree tree,
@@ -565,7 +568,7 @@ TkBTreeCountLines(
  *----------------------------------------------------------------------
  */
 
-__inline__
+inline
 TkSharedText *
 TkTextIndexGetShared(
     const TkTextIndex *indexPtr)
@@ -595,7 +598,7 @@ TkTextIndexGetShared(
  *----------------------------------------------------------------------
  */
 
-__inline__
+inline
 TkTextTag *
 TkBTreeGetTags(
     const TkTextIndex *indexPtr)/* Indicates a particular position in the B-tree. */
@@ -620,7 +623,7 @@ TkBTreeGetTags(
  *----------------------------------------------------------------------
  */
 
-__inline__
+inline
 TkTextLine *
 TkTextIndexGetLine(
     const TkTextIndex *indexPtr)
@@ -647,7 +650,7 @@ TkTextIndexGetLine(
  *----------------------------------------------------------------------
  */
 
-__inline__
+inline
 TkTextSegment *
 TkTextIndexGetSegment(
     const TkTextIndex *indexPtr)/* Pointer to index. */
@@ -680,7 +683,7 @@ TkTextIndexGetSegment(
  *----------------------------------------------------------------------
  */
 
-__inline__
+inline
 bool
 TkTextIndexSameLines(
     const TkTextIndex *indexPtr1,	/* Pointer to index. */
@@ -712,7 +715,7 @@ TkTextIndexSameLines(
  *----------------------------------------------------------------------
  */
 
-__inline__
+inline
 void
 TkTextIndexUpdateEpoch(
     TkTextIndex *indexPtr,
@@ -742,7 +745,7 @@ TkTextIndexUpdateEpoch(
  *----------------------------------------------------------------------
  */
 
-__inline__
+inline
 void
 TkTextIndexSetEpoch(
     TkTextIndex *indexPtr,
@@ -779,7 +782,7 @@ TkTextIndexSetEpoch(
  *----------------------------------------------------------------------
  */
 
-__inline__
+inline
 int
 TkBTreeGetNumberOfDisplayLines(
     const TkTextPixelInfo *pixelInfo)
@@ -803,5 +806,6 @@ TkBTreeGetNumberOfDisplayLines(
     return dispLineInfo->numDispLines;
 }
 
-#undef __inline__
+#undef _TK_NEED_IMPLEMENTATION
+#endif /* _TK_NEED_IMPLEMENTATION */
 /* vi:set ts=8 sw=4: */
