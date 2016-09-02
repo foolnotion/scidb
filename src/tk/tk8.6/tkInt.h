@@ -1202,8 +1202,15 @@ MODULE_SCOPE void	TkpCreateBusy(Tk_FakeWin *winPtr, Tk_Window tkRef,
 			    TkBusy busy);
 MODULE_SCOPE int	TkBackgroundEvalObjv(Tcl_Interp *interp,
 			    int objc, Tcl_Obj *const *objv, int flags);
+#if TK_MAJOR_VERSION > 8 \
+	|| (TK_MAJOR_VERSION == 8 \
+	    && (TK_MINOR_VERSION > 6 || (TK_MINOR_VERSION == 6 && TK_RELEASE_SERIAL >= 5)))
+MODULE_SCOPE void	TkSendVirtualEvent(Tk_Window tgtWin,
+			    const char *eventName, Tcl_Obj *detail);
+#else
 MODULE_SCOPE void	TkSendVirtualEvent(Tk_Window tgtWin,
 			    const char *eventName);
+#endif
 MODULE_SCOPE Tcl_Command TkMakeEnsemble(Tcl_Interp *interp,
 			    const char *nsname, const char *name,
 			    ClientData clientData, const TkEnsemble *map);

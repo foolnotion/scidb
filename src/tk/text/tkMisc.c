@@ -18,6 +18,32 @@ typedef struct PixelRep {
 } PixelRep;
 
 
+#if TK_MAJOR_VERSION > 8 \
+	|| (TK_MAJOR_VERSION == 8 \
+	    && (TK_MINOR_VERSION > 6 || (TK_MINOR_VERSION == 6 && TK_RELEASE_SERIAL >= 5)))
+
+void
+TkSendVirtualEvent(
+    Tk_Window target,
+    const char *eventName,
+    Tcl_Obj *detail)
+{
+    union {XEvent general; XVirtualEvent virtual;} event;
+
+    memset(&event, 0, sizeof(event));
+    event.general.xany.type = VirtualEvent;
+    event.general.xany.serial = NextRequest(Tk_Display(target));
+    event.general.xany.send_event = False;
+    event.general.xany.window = Tk_WindowId(target);
+    event.general.xany.display = Tk_Display(target);
+    event.virtual.name = Tk_GetUid(eventName);
+    event.virtual.user_data = detail;
+
+    Tk_QueueWindowEvent(&event.general, TCL_QUEUE_TAIL);
+}
+
+#else
+
 void
 TkSendVirtualEvent(
     Tk_Window target,
@@ -35,6 +61,8 @@ TkSendVirtualEvent(
 
     Tk_QueueWindowEvent(&event.general, TCL_QUEUE_TAIL);
 }
+
+#endif
 
 
 Tcl_Obj*
