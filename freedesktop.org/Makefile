@@ -50,14 +50,17 @@ install-mime-icons:
 				--size $$size ./scid-ft-$$size.png application-x-chess-scid4;                    \
 		fi;                                                                                    \
 	done
-	@#for size in 16 22 32 48 64 128; do                                                      \
-		if [ ! -f /usr/share/icons/hicolor/32x32/mimetypes/application-x-chess-pgn.png ]; then \
-			if [ -f $$app-ft-$$size.png ]; then                                                 \
-				xdg-icon-resource install --noupdate --novendor --context mimetypes              \
-					--size $$size ./$$app-ft-$$size.png application-x-chess-$$app;                \
-			fi;                                                                                 \
-		fi; \
-	done
+
+## This belongs to install-mime-icons, but some shells are complaining a syntax error.
+## --------------------------------------------------------------------------------------
+#	#@for size in 16 22 32 48 64 128; do                                                      \
+# 		if [ ! -f /usr/share/icons/hicolor/32x32/mimetypes/application-x-chess-pgn.png ]; then \
+# 			if [ -f $$app-ft-$$size.png ]; then                                                 \
+# 				xdg-icon-resource install --noupdate --novendor --context mimetypes              \
+# 					--size $$size ./$$app-ft-$$size.png application-x-chess-$$app;                \
+# 			fi;                                                                                 \
+# 		fi	;                                                                                   \
+#	done                                                                                      \
 
 install-mime-types:
 	@echo "Install mime types (may take a long time)"
