@@ -512,7 +512,7 @@ private:
 	bool compact(Cursor& cursor, util::Progress& progress);
 	bool compact(Cursor& cursor);
 	void clearTreeCache();
-	void invalidateTreeCache(unsigned gameIndex);
+	void invalidateTreeCache(db::Database const& database, unsigned gameIndex);
 
 	Cursor*			m_current;
 	Cursor*			m_clipbase;

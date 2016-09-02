@@ -536,16 +536,19 @@ proc importGame {parent} {
 }
 
 
-proc saveGame {mode} {
+proc saveGame {mode {base ""}} {
 	variable ::scidb::scratchbaseName
 	variable Vars
 
 	set position [::scidb::game::current]
 	set parent $Vars(main)
-	lassign [::scidb::game::link? $position] base variant index
+	lassign [::scidb::game::link? $position] myBase variant index
 	set number [expr {$index + 1}]
 	if {$mode ne "add" && ![::game::verify $parent $position $number]} { return }
 
+	if {[string length $base] == 0} {
+		set base $myBase
+	}
 	if {$base eq $scratchbaseName} {
 		set base [::scidb::db::get name]
 	}

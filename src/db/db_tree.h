@@ -142,6 +142,7 @@ public:
 								rating::Type ratingType);
 	static void addToCache(Tree* tree);
 	static void clearCache(Database& base);
+	static void invalidateCache(Database& base);
 	static void invalidateCache(Database& base, unsigned gameIndex);
 
 private:

@@ -713,7 +713,7 @@ proc addDestinationsForSaveToMenu {parent m {discardActualBase 0}} {
 	foreach base [lsort $result] {
 		$m add command \
 			-label [::util::databaseName $base] \
-			-command [list ::application::pgn::saveGame add] \
+			-command [list ::application::pgn::saveGame add $base] \
 			;
 	}
 

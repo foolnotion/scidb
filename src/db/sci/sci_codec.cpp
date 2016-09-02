@@ -1651,9 +1651,6 @@ Codec::readNamebases(mstl::fstream& stream, util::Progress& progress)
 //if (i == 0) nextId = 1;
 #endif
 
-		if (nextId == 0) {
-			IO_RAISE(Namebase, Corrupted, "zero size");
-		}
 		m_lookup[i].resize(nextId);
 
 		switch (i)

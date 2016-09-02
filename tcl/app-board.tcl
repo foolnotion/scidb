@@ -1662,7 +1662,9 @@ proc GameClosed {position} {
 
 
 proc UpdateInfo {_ base variant} {
-	DatabaseSwitched $base $variant
+	if {$base eq [::scidb::db::get name]} {
+		DatabaseSwitched $base $variant
+	}
 }
 
 
@@ -1827,7 +1829,7 @@ proc UpdateGameInfo {position id} {
 		if {[lindex $Vars(current:game) 0] == $position} {
 			Unsubscribe $position
 			set Vars(current:game) {}
-			SwitchView base
+			#SwitchView base # not required
 		}
 	}
 }

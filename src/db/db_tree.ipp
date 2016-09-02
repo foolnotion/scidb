@@ -137,6 +137,14 @@ Tree::clearCache(Database& base)
 
 inline
 void
+Tree::invalidateCache(Database& base)
+{
+	base.treeCache().setIncomplete();
+}
+
+
+inline
+void
 Tree::invalidateCache(Database& base, unsigned gameIndex)
 {
 	base.treeCache().setIncomplete(gameIndex);
