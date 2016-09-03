@@ -155,6 +155,7 @@ array set feature {
     symbols         no
     fam             no
     assertions      no
+    sse2            yes
     gprof-profiling no
     gcov-coverage   no
     splash-screen   yes
@@ -1576,6 +1577,7 @@ proc checkClang {cc} {
     variable environment
     variable option
     variable compiler
+    variable feature
 
     if {$cc eq "CC"} { set clang clang } else { set clang clang++ }
     puts -nonewline "    Checking if your system has $clang installed: "
@@ -1600,16 +1602,18 @@ proc checkClang {cc} {
     }
     if {[string length $version] > 0 && $cc eq "CXX"} {
         set option(EXTRA_CXXFLAGS) "-std=c++0x"
-        puts -nonewline "    Checking if your compiler supports SSE2: "
-        flush stdout
-        if {[Probe testsse2 [regsub -all __CC__ $TestSSE2 $environment($cc)]]} {
-            # sse2 is not working with clang
-            set compiler(simd) -mno-sse2
-            puts "yes."
-        } else {
-            puts "no."
+        if {$feature(sse2)} {
+            puts -nonewline "    Checking if your compiler supports SSE2: "
+            flush stdout
+            if {[Probe testsse2 [regsub -all __CC__ $TestSSE2 $environment($cc)]]} {
+                # sse2 is not working with clang
+                set compiler(simd) -mno-sse2
+                puts "yes."
+            } else {
+                puts "no."
+            }
+            flush stdout
         }
-        flush stdout
         Append option(EXTRA_CFLAGS) -Wno-gnu
         Append option(EXTRA_CFLAGS) -Wno-invalid-source-encoding
         Append option(EXTRA_CXXFLAGS) -fexceptions
@@ -1648,7 +1652,7 @@ proc ProbeGCC {script cc {subst {}}} {
 #    Checks whether gcc/g++ is installed.
 proc checkGCC {cc} {
     global tcl_platform
-    global environment configure compiler warnings option problematicGCCVersions
+    global environment configure compiler warnings feature option problematicGCCVersions
 
     if {$configure(gcc-version) eq "clang"} { return [checkClang $cc] }
 
@@ -1694,25 +1698,31 @@ proc checkGCC {cc} {
     }
     if {[string length $version] > 0 && $cc eq "CXX"} {
         if {[string compare $version "4.3"] >= 0} {
+            # Check for c++11 before usinf c++0x
             set option(EXTRA_CXXFLAGS) "-std=c++0x"
         }
-        puts -nonewline "    Checking if your compiler supports POPCNT: "
-        if {8*$tcl_platform(wordSize) == 64} {
-            flush stdout
-            if {[ProbeGCC TestPOPCNT $cc]} {
-                set compiler(simd) -msse4
-                set compiler(popcnt) -DUSE_POPCNT
+        if {$feature(sse2)} {
+            ## Will be enabled later ------------------------------------------
+            # puts -nonewline "    Checking if your compiler supports POPCNT: "
+            # if {8*$tcl_platform(wordSize) == 64} {
+            #     flush stdout
+            #     if {[ProbeGCC TestPOPCNT $cc]} {
+            #         set compiler(simd) -msse4
+            #         set compiler(popcnt) -DUSE_POPCNT
+            #     }
+            # }
+            # if {[llength $compiler(popcnt)] == 0} { puts "no." } else { puts "yes." }
+            if {[llength $compiler(simd)] == 0} {
+                puts -nonewline "    Checking if your compiler supports SSE2: "
+                flush stdout
+                if {[ProbeGCC TestSSE2 $cc]} {
+                    set compiler(simd) -msse2
+                    puts "yes."
+                } else {
+                    puts "no"
+                }
             }
         }
-        if {[llength $compiler(popcnt)] == 0} { puts "no." } else { puts "yes." }
-        puts -nonewline "    Checking if your compiler supports SSE2: "
-        if {[llength $compiler(simd)] == 0} {
-            flush stdout
-            if {[ProbeGCC TestSSE2 $cc]} {
-                set compiler(simd) -msse2
-            }
-        }
-        if {[llength $compiler(simd)] == 0} { puts "no." } else { puts "yes." }
         puts -nonewline "    Checking if your kernel supports __sync_* builtin functions: "
         flush stdout
         if {[ProbeGCC TestSyncBuiltin $cc]} {
@@ -2113,6 +2123,8 @@ proc usage {rc} {
     puts "  --enable-symbols           build with debugging symbols \[default=$feature(symbols)\]"
     puts "  --enable-assertions        build with assertions (slows down the program)"
     puts "                             \[default=$feature(assertions)\]"
+    puts "  --enable-sse2              enable sse2 support (fast JPEG decompression)"
+    puts "                             \[default=$feature(gprof-profiling)\]"
     puts "  --enable-gprof-profiling   enable gprof profiling (slows down the program)"
     puts "                             \[default=$feature(gprof-profiling)\]"
     puts "  --enable-gcov-coverage     enable coverage (slows down the program)"

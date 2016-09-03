@@ -60,7 +60,7 @@ install-mime-icons:
 # 					--size $$size ./$$app-ft-$$size.png application-x-chess-$$app;                \
 # 			fi;                                                                                 \
 # 		fi	;                                                                                   \
-#	done                                                                                      \
+#	done
 
 install-mime-types:
 	@echo "Install mime types (may take a long time)"
