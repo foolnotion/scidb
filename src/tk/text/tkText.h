@@ -542,13 +542,18 @@ typedef void	Tk_ChunkBboxProc(struct TkText *textPtr, TkTextDispChunk *chunkPtr,
  */
 
 typedef enum {
-    TEXT_DISP_CHAR,	/* Character layout */
-    TEXT_DISP_HYPHEN,	/* Hyphen layout */
-    TEXT_DISP_ELIDED,	/* Elided content layout */
-    TEXT_DISP_WINDOW,	/* Embedded window layout */
-    TEXT_DISP_IMAGE,	/* Embedded image layout */
-    TEXT_DISP_CURSOR,	/* Insert cursor layout */
+    TEXT_DISP_CHAR   = 1 << 0, /* Character layout */
+    TEXT_DISP_HYPHEN = 1 << 1, /* Hyphen layout */
+    TEXT_DISP_ELIDED = 1 << 2, /* Elided content layout */
+    TEXT_DISP_WINDOW = 1 << 3, /* Embedded window layout */
+    TEXT_DISP_IMAGE  = 1 << 4, /* Embedded image layout */
+    TEXT_DISP_CURSOR = 1 << 5, /* Insert cursor layout */
 } TkTextDispType;
+
+/* This constants can be used for a test whether the chunk has any content. */
+#define TEXT_DISP_CONTENT (TEXT_DISP_CHAR|TEXT_DISP_HYPHEN|TEXT_DISP_WINDOW|TEXT_DISP_IMAGE)
+/* This constants can be used for a test whether the chunk contains text. */
+#define TEXT_DISP_TEXT    (TEXT_DISP_CHAR|TEXT_DISP_HYPHEN)
 
 typedef struct TkTextDispChunkProcs {
     TkTextDispType type;	/* Layout type. */
@@ -576,7 +581,7 @@ struct TkTextDispChunk {
 				/* Previous chunk in the display line or NULL for the start of the
 				 * list. */
     struct TkTextDispChunk *prevCharChunkPtr;
-				/* Previous char chunk in the display line, or NULL. */
+				/* Previous char/window/image chunk in the display line, or NULL. */
     struct TextStyle *stylePtr;	/* Display information, known only to tkTextDisp.c. */
 
     /*

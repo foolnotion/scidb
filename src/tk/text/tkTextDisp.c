@@ -165,7 +165,7 @@ typedef struct DLine {
     TkTextDispChunk *chunkPtr;	/* Pointer to first chunk in list of all of those that are displayed
     				 * on this line of the screen. */
     TkTextDispChunk *firstCharChunkPtr;
-    				/* Pointer to first chunk in list containing chars. */
+    				/* Pointer to first chunk in list containing chars, window, or image. */
     TkTextDispChunk *lastChunkPtr;
     				/* Pointer to last chunk in list containing chars. */
     TkTextDispChunk *cursorChunkPtr;
@@ -508,9 +508,9 @@ typedef struct LayoutData {
     TkTextDispChunk *lastChunkPtr;
 				/* Pointer to the current chunk. */
     TkTextDispChunk *firstCharChunkPtr;
-				/* Pointer to the first character chunk in chain. */
+				/* Pointer to the first char/window/image chunk in chain. */
     TkTextDispChunk *lastCharChunkPtr;
-				/* Pointer to the last character chunk in chain. */
+				/* Pointer to the last char/window/image chunk in chain. */
     TkTextDispChunk *breakChunkPtr;
 				/* Chunk containing best word break point, if any. */
     TkTextDispChunk *cursorChunkPtr;
@@ -2672,12 +2672,14 @@ LayoutFinalizeChunk(
 	if (data->lastCharChunkPtr) {
 	    data->chunkPtr->prevCharChunkPtr = data->lastCharChunkPtr;
 	}
-	if (layoutProcs->type == TEXT_DISP_CHAR || layoutProcs->type == TEXT_DISP_HYPHEN) {
+	if (layoutProcs->type & TEXT_DISP_CONTENT) {
 	    data->lastCharChunkPtr = data->chunkPtr;
 	    if (!data->firstCharChunkPtr) {
 		data->firstCharChunkPtr = data->chunkPtr;
 	    }
-	    LayoutDoWidthAdjustmentForContextDrawing(data);
+	    if (layoutProcs->type & TEXT_DISP_TEXT) {
+		LayoutDoWidthAdjustmentForContextDrawing(data);
+	    }
 	}
 	if (data->chunkPtr->breakIndex > 0) {
 	    data->breakChunkPtr = data->chunkPtr;
@@ -4222,12 +4224,13 @@ ComputeDisplayLineInfo(
 		&& TkTextIndexIsEqual(&info->index, &dInfoPtr->lastMetricDLinePtr->index)) {
 	    dlPtr = dInfoPtr->lastMetricDLinePtr;
 	    dInfoPtr->lastMetricDLinePtr = NULL;
+	    assert(dlPtr->displayLineNo == info->displayLineNo);
 	} else {
 	    dlPtr = LayoutDLine(&info->index, info->displayLineNo);
 	}
 	InsertDLine(textPtr, info, dlPtr, viewHeight);
 	TkTextIndexForwBytes(textPtr, &info->index, dlPtr->byteCount, &info->index);
-	if (byteOffset < dlPtr->byteCount) {
+	if (dInfoPtr->lineMetricUpdateEpoch == pixelInfo->epoch || byteOffset < dlPtr->byteCount) {
 	    info->byteOffset = byteOffset;
 	    info->nextByteOffset = dlPtr->byteCount - byteOffset;
 	    info->isComplete = (dInfoPtr->lineMetricUpdateEpoch == pixelInfo->epoch);

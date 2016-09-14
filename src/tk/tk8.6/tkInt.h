@@ -1204,7 +1204,7 @@ MODULE_SCOPE int	TkBackgroundEvalObjv(Tcl_Interp *interp,
 			    int objc, Tcl_Obj *const *objv, int flags);
 #if TK_MAJOR_VERSION > 8 \
 	|| (TK_MAJOR_VERSION == 8 \
-	    && (TK_MINOR_VERSION > 6 || (TK_MINOR_VERSION == 6 && TK_RELEASE_SERIAL >= 5)))
+	    && (TK_MINOR_VERSION > 6 || (TK_MINOR_VERSION == 6 && TK_RELEASE_SERIAL >= 6)))
 MODULE_SCOPE void	TkSendVirtualEvent(Tk_Window tgtWin,
 			    const char *eventName, Tcl_Obj *detail);
 #else

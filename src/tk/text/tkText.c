@@ -656,8 +656,8 @@ SendVirtualEvent(
 {
 #if TK_MAJOR_VERSION > 8 \
 	|| (TK_MAJOR_VERSION == 8 \
-	    && (TK_MINOR_VERSION > 6 || (TK_MINOR_VERSION == 6 && TK_RELEASE_SERIAL >= 5)))
-    /* new footprint since 8.6.5 */
+	    && (TK_MINOR_VERSION > 6 || (TK_MINOR_VERSION == 6 && TK_RELEASE_SERIAL >= 6)))
+    /* new footprint since 8.6.6 */
     TkSendVirtualEvent(tkwin, eventName, detail);
 #else
 # if TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION >= 6
