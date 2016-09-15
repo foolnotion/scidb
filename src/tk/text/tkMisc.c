@@ -13,14 +13,12 @@
 typedef struct PixelRep {
     double value;
     int units;
-    void *ptr1;
-    void *ptr2;
 } PixelRep;
 
 
 #if TK_MAJOR_VERSION > 8 \
 	|| (TK_MAJOR_VERSION == 8 \
-	    && (TK_MINOR_VERSION > 6 || (TK_MINOR_VERSION == 6 && TK_RELEASE_SERIAL >= 5)))
+	    && (TK_MINOR_VERSION > 6 || (TK_MINOR_VERSION == 6 && TK_RELEASE_SERIAL >= 6)))
 
 void
 TkSendVirtualEvent(
@@ -128,8 +126,8 @@ SetPixelFromAny(
 
     i = (int) d;
     if ((units < 0) && (i == d)) {
-	pixelPtr->ptr1 = INT2PTR(i);
-	pixelPtr->ptr2 = NULL;
+	pixelPtr->value = i;
+	pixelPtr->units = -1;
     } else {
 	pixelPtr->value = d;
 	pixelPtr->units = units;
@@ -154,7 +152,7 @@ GetPixelsFromObjEx(
     double *dblPtr)		/* Places to store resulting pixels. */
 {
     int result;
-    PixelRep pixelRep = { 0.0, 0, NULL, NULL };
+    PixelRep pixelRep = { 0.0, -1 };
     double d;
     static const double bias[] = {
 	1.0,	10.0,	25.4,	0.35278 /*25.4 / 72.0*/
@@ -165,16 +163,12 @@ GetPixelsFromObjEx(
 	return result;
     }
 
-    if (pixelRep.ptr2 == NULL) {
-	*dblPtr = (double)  PTR2INT(pixelRep.ptr1);
-    } else {
-	d = pixelRep.value;
-	if (pixelRep.units >= 0) {
-	    d *= bias[pixelRep.units] * WidthOfScreen(Tk_Screen(tkwin));
-	    d /= WidthMMOfScreen(Tk_Screen(tkwin));
-	}
-	*dblPtr = d;
+    d = pixelRep.value;
+    if (pixelRep.units >= 0) {
+	d *= bias[pixelRep.units] * WidthOfScreen(Tk_Screen(tkwin));
+	d /= WidthMMOfScreen(Tk_Screen(tkwin));
     }
+    *dblPtr = d;
     return TCL_OK;
 }
 
