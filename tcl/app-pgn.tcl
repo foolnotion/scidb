@@ -200,7 +200,7 @@ proc build {parent width height} {
 	if {$steadyMarks} {
 		# The revised version of tk::text has more useful features and bugfixes.
 		set Vars(indentbackground) {-indentbackground 1}
-		set Vars(deletemarks) -marks
+		# set Vars(deletemarks) -marks XXX not yet working
 	} else {
 		set Vars(old-editor) 1
 	}
