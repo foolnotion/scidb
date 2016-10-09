@@ -4612,7 +4612,14 @@ LinkSegment(
     linePtr->size += succPtr->size;
     succPtr->sectionPtr->size += succPtr->size;
     succPtr->sectionPtr->length += 1;
+#if 0
+    /*
+     * We cannot check for overflow here because this function may be used from
+     * DeleteIndexRange, and here the length may overflow, but it is irrelevant
+     * in this case.
+     */
     assert(succPtr->sectionPtr->length != 0); /* test for overflow */
+#endif
 }
 
 /*
