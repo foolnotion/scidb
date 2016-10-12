@@ -282,81 +282,6 @@ RedoLinkSegmentGetRange(
 /*
  *--------------------------------------------------------------
  *
- * TkTextPushImageUndo --
- *
- *	This function is pushing an undo item for given image
- *	segment.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	Some memory will be allocated, and see TkTextPushUndoToken.
- *
- *--------------------------------------------------------------
- */
-
-void
-TkTextPushImageUndo(
-    TkSharedText *sharedTextPtr,
-    TkTextSegment *eiPtr)
-{
-    UndoTokenLinkSegment *token;
-
-    assert(sharedTextPtr->undoStack);
-    assert(eiPtr->typePtr == &tkTextEmbImageType);
-
-    token = ckalloc(sizeof(UndoTokenLinkSegment));
-    token->undoType = &undoTokenLinkSegmentType;
-    token->segPtr = eiPtr;
-    eiPtr->refCount += 1;
-    DEBUG_ALLOC(tkTextCountNewUndoToken++);
-
-    TkTextPushUndoToken(sharedTextPtr, token, 0);
-}
-
-/*
- *--------------------------------------------------------------
- *
- * TkTextPushImageRedo --
- *
- *	This function is pushing a redo item for given image
- *	segment.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	Some memory will be allocated, and see TkTextPushRedoToken.
- *
- *--------------------------------------------------------------
- */
-
-void
-TkTextPushImageRedo(
-    TkSharedText *sharedTextPtr,
-    TkTextSegment *eiPtr,
-    const TkTextIndex *indexPtr)
-{
-    RedoTokenLinkSegment *token;
-
-    assert(sharedTextPtr->undoStack);
-    assert(eiPtr->typePtr == &tkTextEmbImageType);
-    assert(eiPtr->refCount == 1);
-
-    token = ckalloc(sizeof(UndoTokenLinkSegment));
-    token->undoType = &undoTokenLinkSegmentType;
-    token->index.lineIndex = TkTextIndexGetLineNumber(indexPtr, NULL);
-    token->index.u.byteIndex = TkTextIndexGetByteIndex(indexPtr);
-    token->segPtr = eiPtr;
-    DEBUG_ALLOC(tkTextCountNewUndoToken++);
-
-    TkTextPushRedoToken(sharedTextPtr, token, 1);
-}
-
-/*
- *--------------------------------------------------------------
- *
  * TkTextImageCmd --
  *
  *	This function implements the "image" widget command for text widgets.
@@ -526,14 +451,14 @@ TkTextImageCmd(
 		return TCL_ERROR;
 	    }
 
-	    if (textPtr->state == TK_TEXT_STATE_DISABLED) {
 #if !TK_TEXT_DEPRECATED_MODS_OF_DISABLED_WIDGET
+	    if (textPtr->state == TK_TEXT_STATE_DISABLED) {
 		Tcl_SetObjResult(interp, Tcl_ObjPrintf("attempt to modify disabled widget"));
 		Tcl_SetErrorCode(interp, "TK", "TEXT", "NOT_ALLOWED", NULL);
 		return TCL_ERROR;
-#endif
 		return TCL_OK;
 	    }
+#endif
 
 	    /*
 	     * Don't allow insertions on the last line of the text.
@@ -568,8 +493,21 @@ TkTextImageCmd(
 		    TkTextIndexGetLine(&index), 0, TK_TEXT_INVALIDATE_ONLY);
 
 	    if (!TkTextUndoStackIsFull(sharedTextPtr->undoStack)) {
-		TkTextPushImageUndo(sharedTextPtr, eiPtr);
+		UndoTokenLinkSegment *token;
+
+		assert(sharedTextPtr->undoStack);
+		assert(eiPtr->typePtr == &tkTextEmbImageType);
+
+		token = ckalloc(sizeof(UndoTokenLinkSegment));
+		token->undoType = &undoTokenLinkSegmentType;
+		token->segPtr = eiPtr;
+		eiPtr->refCount += 1;
+		DEBUG_ALLOC(tkTextCountNewUndoToken++);
+
+		TkTextPushUndoToken(sharedTextPtr, token, 0);
 	    }
+
+	    TkTextUpdateAlteredFlag(sharedTextPtr);
 	}
 	return TCL_OK;
     case CMD_NAMES: {

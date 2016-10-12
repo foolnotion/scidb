@@ -1073,7 +1073,7 @@ TkTextUpdateCurrentMark(
     for (tPtr = sharedTextPtr->peers; tPtr; tPtr = tPtr->next) {
 	if (tPtr->haveToSetCurrentMark) {
 	    tPtr->haveToSetCurrentMark = false;
-	    // TODO: only link and unlink if a real position change has occured
+	    /* TODO: only link and unlink if a real position change has occured */
 	    TkBTreeUnlinkSegment(sharedTextPtr, tPtr->currentMarkPtr);
 	    TkBTreeLinkSegment(sharedTextPtr, tPtr->currentMarkPtr, &tPtr->currentMarkIndex);
 	}
@@ -1299,7 +1299,7 @@ ChangeGravity(
 	TkBTreeLinkSegment(sharedTextPtr, markPtr, &index);
     }
 
-    // TODO: we cannot amalgamate in any case
+    /* TODO: we cannot amalgamate in any case */
     if (undoInfo
 	    && (!markPtr->body.mark.changePtr
 		|| (!markPtr->body.mark.changePtr->setMark
@@ -1318,7 +1318,7 @@ ChangeGravity(
     }
 
     if (sharedTextPtr->steadyMarks) {
-	// TODO: only if a normal mark is affected
+	/* TODO: only if a normal mark is affected */
 	TkTextUpdateAlteredFlag(sharedTextPtr);
     }
 }
@@ -1479,7 +1479,7 @@ TriggerWatchCursor(
 	ckfree(tagArrayPtr);
     }
 
-    rc = TkTriggerWatchCmd(textPtr, "cursor", idx[0], idx[1], Tcl_DStringValue(&buf));
+    rc = TkTriggerWatchCmd(textPtr, "cursor", idx[0], idx[1], Tcl_DStringValue(&buf), false);
     Tcl_DStringFree(&buf);
     return rc;
 }
@@ -1638,6 +1638,7 @@ SetMark(
     bool pushUndoToken, widgetSpecific;
 
     assert(textPtr);
+    assert(indexPtr->textPtr == textPtr);
 
     widgetSpecific = false;
     markPtr = NULL;
@@ -1675,8 +1676,8 @@ SetMark(
 	    unsigned num;
 
 	    if (sscanf(name, "##ID##%p##%p##%u##", &sPtr, &tPtr, &num) == 3) {
-		// XXX here the chance of a clash is relatively high.
-		// XXX We should bookkeeping all generated marks.
+		/* XXX here the chance of a clash is relatively high. */
+		/* XXX We should bookkeeping all generated marks. */
 		return NULL; /* this is an expired generated mark */
 	    }
 	}
@@ -1765,7 +1766,7 @@ SetMark(
     }
 
     if (typePtr) {
-	// TODO: also record change of gravity on undo stack, if mark is not new
+	/* TODO: also record change of gravity on undo stack, if mark is not new */
 	markPtr->typePtr = typePtr;
     }
 
@@ -1775,7 +1776,7 @@ SetMark(
     if (pushUndoToken) {
 	TkTextMarkChange *changePtr = MakeChangeItem(sharedTextPtr, markPtr);
 
-	// TODO: we cannot amalgamate in any case
+	/* TODO: we cannot amalgamate in any case */
 	if (!changePtr->setMark && !changePtr->moveMark) {
 	    if (TkTextIndexIsEmpty(&oldIndex)) {
 		UndoTokenSetMark *token;
@@ -1801,7 +1802,7 @@ SetMark(
     }
 
     if (sharedTextPtr->steadyMarks) {
-	// TODO: only if a normal mark is affected
+	/* TODO: only if a normal mark is affected */
 	TkTextUpdateAlteredFlag(sharedTextPtr);
     }
 
@@ -1885,7 +1886,7 @@ TkTextUnsetMark(
 	TkTextPushUndoToken(textPtr->sharedTextPtr, undoInfo.token, 0);
     }
     if (textPtr->sharedTextPtr->steadyMarks) {
-	// TODO: only if a normal mark is affected
+	/* TODO: only if a normal mark is affected */
 	TkTextUpdateAlteredFlag(textPtr->sharedTextPtr);
     }
 }
@@ -1914,7 +1915,7 @@ TkSaveCursorIndex(
 {
     if (TkTextIndexIsEmpty(&textPtr->insertIndex)) {
 	TkTextIndexSetSegment(&textPtr->insertIndex, textPtr->insertMarkPtr);
-	TkTextIndexToByteIndex(&textPtr->insertIndex);
+	TkTextIndexSave(&textPtr->insertIndex);
     }
 }
 
@@ -1941,8 +1942,12 @@ TkTriggerWatchCursor(
 {
     assert(textPtr->watchCmd);
 
-    return TkTextIndexIsEmpty(&textPtr->insertIndex)
-	    || TriggerWatchCursor(textPtr, &textPtr->insertIndex, NULL);
+    if (TkTextIndexIsEmpty(&textPtr->insertIndex)) {
+	return true;
+    }
+
+    TkTextIndexRebuild(&textPtr->insertIndex);
+    return TriggerWatchCursor(textPtr, &textPtr->insertIndex, NULL);
 }
 
 /*
@@ -2013,7 +2018,9 @@ MarkToIndex(
 {
     TkTextIndex index;
 
+    assert(textPtr);
     TkTextMarkSegToIndex(textPtr, markPtr, indexPtr);
+    indexPtr->textPtr = textPtr;
 
     /*
      * If indexPtr refers to somewhere outside the -start/-end range
@@ -2026,7 +2033,6 @@ MarkToIndex(
 	TkTextIndexClear(&index, textPtr);
 	TkTextIndexSetSegment(&index, textPtr->startMarker);
 	if (TkTextIndexCompare(indexPtr, &index) < 0) {
-	    DEBUG(indexPtr->textPtr = textPtr);
 	    return false;
 	}
     }
@@ -2038,12 +2044,10 @@ MarkToIndex(
 	    TkTextIndexSetupToEndOfText(&index, textPtr, indexPtr->tree);
 	}
 	if (TkTextIndexCompare(indexPtr, &index) > 0) {
-	    DEBUG(indexPtr->textPtr = textPtr);
 	    return false;
 	}
     }
 
-    DEBUG(indexPtr->textPtr = textPtr);
     return true;
 }
 
@@ -2644,7 +2648,7 @@ MarkFindNext(
 	    segPtr = TkTextIndexGetFirstSegment(&index, NULL);
 	    linePtr = segPtr->sectionPtr->linePtr;
 
-	    // TODO: this means that TkTextIndexGetFirstSegment don't give us the first segment!
+	    /* TODO: this means that TkTextIndexGetFirstSegment don't give us the first segment! */
 	    if (!forward) {
 		while (segPtr && segPtr->size == 0) {
 		    segPtr = segPtr->prevPtr;

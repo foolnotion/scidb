@@ -298,80 +298,6 @@ RedoLinkSegmentGetRange(
 /*
  *--------------------------------------------------------------
  *
- * TkTextPushWindowUndo --
- *
- *	This function is pushing an undo item for given window
- *	segment.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	Some memory will be allocated, and see TkTextPushUndoToken.
- *
- *--------------------------------------------------------------
- */
-
-void
-TkTextPushWindowUndo(
-    TkSharedText *sharedTextPtr,
-    TkTextSegment *ewPtr)
-{
-    UndoTokenLinkSegment *token;
-
-    assert(sharedTextPtr->undoStack);
-    assert(ewPtr->typePtr == &tkTextEmbWindowType);
-
-    token = ckalloc(sizeof(UndoTokenLinkSegment));
-    token->undoType = &undoTokenLinkSegmentType;
-    token->segPtr = ewPtr;
-    DEBUG_ALLOC(tkTextCountNewUndoToken++);
-
-    /* this undo item does not belong to a specific edit mode */
-    TkTextPushUndoToken(sharedTextPtr, token, 0);
-}
-
-/*
- *--------------------------------------------------------------
- *
- * TkTextPushWindowRedo --
- *
- *	This function is pushing a redo item for given window
- *	segment.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	Some memory will be allocated, and see TkTextPushRedoToken.
- *
- *--------------------------------------------------------------
- */
-
-void
-TkTextPushWindowRedo(
-    TkSharedText *sharedTextPtr,
-    TkTextSegment *ewPtr,
-    const TkTextIndex *indexPtr)
-{
-    RedoTokenLinkSegment *token;
-
-    assert(sharedTextPtr->undoStack);
-    assert(ewPtr->typePtr == &tkTextEmbWindowType);
-
-    token = ckalloc(sizeof(UndoTokenLinkSegment));
-    token->undoType = &redoTokenLinkSegmentType;
-    token->index.lineIndex = TkTextIndexGetLineNumber(indexPtr, NULL);
-    token->index.u.byteIndex = TkTextIndexGetByteIndex(indexPtr);
-    token->segPtr = ewPtr;
-    DEBUG_ALLOC(tkTextCountNewUndoToken++);
-
-    TkTextPushRedoToken(sharedTextPtr, token, 1);
-}
-
-/*
- *--------------------------------------------------------------
- *
  * TkTextWindowCmd --
  *
  *	This function implements the "window" widget command for text widgets.
@@ -531,14 +457,14 @@ TkTextWindowCmd(
 	    return TCL_ERROR;
 	}
 
-	if (textPtr->state == TK_TEXT_STATE_DISABLED) {
 #if !TK_TEXT_DEPRECATED_MODS_OF_DISABLED_WIDGET
+	if (textPtr->state == TK_TEXT_STATE_DISABLED) {
 	    Tcl_SetObjResult(interp, Tcl_ObjPrintf("attempt to modify disabled widget"));
 	    Tcl_SetErrorCode(interp, "TK", "TEXT", "NOT_ALLOWED", NULL);
 	    return TCL_ERROR;
-#endif
 	    return TCL_OK;
 	}
+#endif
 
 	/*
 	 * Don't allow insertions on the last line of the text.
@@ -575,8 +501,20 @@ TkTextWindowCmd(
 		TkTextIndexGetLine(&index), 0, TK_TEXT_INVALIDATE_ONLY);
 
 	if (!TkTextUndoStackIsFull(sharedTextPtr->undoStack)) {
-	    TkTextPushWindowUndo(sharedTextPtr, ewPtr);
+	    UndoTokenLinkSegment *token;
+
+	    assert(sharedTextPtr->undoStack);
+	    assert(ewPtr->typePtr == &tkTextEmbWindowType);
+
+	    token = ckalloc(sizeof(UndoTokenLinkSegment));
+	    token->undoType = &undoTokenLinkSegmentType;
+	    token->segPtr = ewPtr;
+	    DEBUG_ALLOC(tkTextCountNewUndoToken++);
+
+	    TkTextPushUndoToken(sharedTextPtr, token, 0);
 	}
+
+	TkTextUpdateAlteredFlag(sharedTextPtr);
 	break;
     }
     case WIND_NAMES: {

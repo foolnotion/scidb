@@ -96,7 +96,7 @@ LoadLibUnibreak(
     rc = LoadFile(interp, pathPtr, &handle, Symbols, Funcs);
     if (rc != TCL_OK) {
 	/*
-	 * We cannot find "libunibreak.so.1", so try the predecessor "liblinebreak.so.2".
+	 * We couldn't find "libunibreak.so.1", so try the predecessor "liblinebreak.so.2".
 	 */
 
 	Tcl_ResetResult(interp);
@@ -113,7 +113,7 @@ LoadLibUnibreak(
     Tcl_DecrRefCount(pathPtr);
 }
 
-#endif // __UNIX__
+#endif /* __UNIX__ */
 
 static ComputeBreakLocationsFunc
 GetLineBreakFunc(
@@ -189,6 +189,11 @@ TkTextComputeBreakLocations(
 	case LINEBREAK_MUSTBREAK:
 	    break;
 	case LINEBREAK_ALLOWBREAK:
+	    /*
+	     * TODO: iox the problem with the contextual '-', the implementation of
+	     * libunibreak has forgotten this case.
+	     */
+
 	    if (text[i] == '/' && i > 8) {
 		/*
 		 * Ignore the breaking chance if there is a chance immediately before:
@@ -649,6 +654,8 @@ ComputeBreakLocations(
 {
     size_t i;
     size_t nbytes;
+    size_t nletters;
+    size_t brkIndex;
     LBClass cls;
     LBClass prevCls;
 
@@ -657,8 +664,9 @@ ComputeBreakLocations(
     }
 
     i = 0;
+    nletters = 0;
+    brkIndex = 0;
     cls = BK;
-    prevCls = BK;
     brks[len - 1] = LINEBREAK_MUSTBREAK;
 
     while (i < len) {
@@ -824,7 +832,28 @@ ComputeBreakLocations(
 		    brks[i - 1] = LINEBREAK_NOBREAK;
 		    prevCls = SP;
 		}
+		nletters = 0;
 		break;
+	    case HY: {
+		char brk = BrkPairTable[cls][HY];
+
+	    	/*
+		 * A hyphen needs special context treatment. For simplicity we
+		 * will only check whether we have two preceding letters, and
+		 * two succeeding letters.
+		 */
+
+		brks[i - 1] = LINEBREAK_NOBREAK;
+		cls = pcls;
+
+		if (brk == INDIRECT) {
+		    prevCls = pcls;
+		} else if (brk == LINEBREAK_ALLOWBREAK && nletters >= 2) {
+		    brkIndex = i - 1;
+		}
+		nletters = 0;
+	    	break;
+	    }
 	    default: {
 		char brk = BrkPairTable[cls][pcls];
 
@@ -834,6 +863,17 @@ ComputeBreakLocations(
 		}
 		brks[i - 1] = brk;
 		cls = pcls;
+
+		if (pcls == AL) {
+		    nletters += 1;
+
+		    if (brkIndex && nletters >= 2) {
+			brks[brkIndex] = LINEBREAK_ALLOWBREAK;
+			brkIndex = 0;
+		    }
+		} else {
+		    nletters = 0;
+		}
 		break;
 	    }
 	    }

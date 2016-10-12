@@ -1132,6 +1132,6 @@ inline bool TkQTreeRectIntersects(const TkQTreeRect *rect1, const TkQTreeRect *r
 inline TkQTreeRect *TkQTreeRectSet(TkQTreeRect *rect,
     TkQTreeCoord xmin, TkQTreeCoord ymin, TkQTreeCoord xmax, TkQTreeCoord ymax);
 inline TkQTreeRect *TkQTreeRectTranslate(TkQTreeRect *rect, TkQTreeCoord dx, TkQTreeCoord dy);
-#endif
+#endif /* __STDC_VERSION__ >= 199901L */
 
 /* vi:set ts=8 sw=4: */

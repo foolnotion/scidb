@@ -257,6 +257,7 @@ TkTextIndexSetLine(
 	    indexPtr->priv.byteIndex = 0;
 	} else {
 	    indexPtr->priv.segPtr = indexPtr->textPtr->startMarker;
+	    indexPtr->priv.isCharSegment = false;
 	    indexPtr->priv.byteIndex = FindStartByteIndex(indexPtr);
 	}
     }
@@ -290,6 +291,7 @@ CheckByteIndex(
 
     if (byteIndex == -1 && (byteIndex = indexPtr->priv.byteIndex) == -1) {
 	assert(indexPtr->priv.segPtr);
+	assert(!indexPtr->priv.isCharSegment || TkBTreeEpoch(indexPtr->tree) == indexPtr->stateEpoch);
 	byteIndex = SegToIndex(indexPtr->priv.linePtr, indexPtr->priv.segPtr);
     }
 
@@ -331,6 +333,7 @@ TkTextIndexSetPosition(
     indexPtr->priv.lineNo = -1;
     indexPtr->priv.lineNoRel = -1;
     indexPtr->priv.segPtr = segPtr;
+    indexPtr->priv.isCharSegment = segPtr->typePtr == &tkTextCharType;
 
 #if !NDEBUG
     {
@@ -493,8 +496,10 @@ TkTextIndexSetSegment(
 
     if (segPtr->typePtr == &tkTextCharType) {
 	indexPtr->priv.byteIndex = SegToIndex(indexPtr->priv.linePtr, segPtr);
+	indexPtr->priv.isCharSegment = true;
     } else {
 	indexPtr->priv.byteIndex = -1;
+	indexPtr->priv.isCharSegment = false;
     }
 
     assert(CheckByteIndex(indexPtr, segPtr->sectionPtr->linePtr, -1));
@@ -719,6 +724,7 @@ TkTextIndexSetupToStartOfText(
     indexPtr->stateEpoch = TkBTreeEpoch(tree);
     indexPtr->priv.lineNo = textPtr ? -1 : 0;
     indexPtr->priv.lineNoRel = 0;
+    indexPtr->priv.isCharSegment = false;
 
     if (textPtr) {
 	indexPtr->priv.segPtr = textPtr->startMarker;
@@ -766,11 +772,13 @@ TkTextIndexSetupToEndOfText(
 
     if (!textPtr) {
 	indexPtr->priv.segPtr = TkBTreeGetShared(tree)->endMarker;
+	indexPtr->priv.isCharSegment = false;
 	indexPtr->priv.linePtr = indexPtr->priv.segPtr->sectionPtr->linePtr;
 	indexPtr->priv.byteIndex = 0;
     } else {
 	indexPtr->priv.linePtr = TkBTreeGetLastLine(textPtr);
 	indexPtr->priv.segPtr = indexPtr->priv.linePtr->segPtr;
+	indexPtr->priv.isCharSegment = indexPtr->priv.segPtr->typePtr == &tkTextCharType;
 	indexPtr->priv.byteIndex = 0;
     }
 }
@@ -916,6 +924,7 @@ TkTextIndexGetLineNumber(
 
 	if (iPtr->priv.byteIndex == -1) {
 	    assert(iPtr->priv.segPtr);
+	    assert(!iPtr->priv.isCharSegment || indexPtr->stateEpoch == epoch);
 	    iPtr->priv.byteIndex = SegToIndex(iPtr->priv.linePtr, iPtr->priv.segPtr);
 	    assert(CheckByteIndex(iPtr, iPtr->priv.linePtr, iPtr->priv.byteIndex));
 	}
@@ -978,6 +987,7 @@ TkTextIndexRebuild(
     TkTextLine *linePtr;
     int byteIndex;
     int lineNo;
+    bool rc;
 
     assert(indexPtr->tree);
     assert(indexPtr->priv.lineNo >= 0 || indexPtr->priv.lineNoRel >= 0);
@@ -997,16 +1007,17 @@ TkTextIndexRebuild(
 	indexPtr->priv.lineNoRel = lineNo;
     }
 
+    if (!(rc = (linePtr == indexPtr->priv.linePtr))) {
+	indexPtr->priv.linePtr = linePtr;
+    }
     byteIndex = MIN(indexPtr->priv.byteIndex, FindEndByteIndex(indexPtr));
+    if (byteIndex != indexPtr->priv.byteIndex) {
+	rc = false;
+    }
+    indexPtr->priv.byteIndex = byteIndex;
     indexPtr->priv.segPtr = NULL;
 
-    if (linePtr == indexPtr->priv.linePtr && byteIndex == indexPtr->priv.byteIndex) {
-	return true;
-    }
-
-    indexPtr->priv.linePtr = linePtr;
-    indexPtr->priv.byteIndex = byteIndex;
-    return false;
+    return rc;
 }
 
 /*
@@ -1170,6 +1181,46 @@ TkTextIndexInvalidate(
 /*
  *----------------------------------------------------------------------
  *
+ * TkTextIndexGetSegment --
+ *
+ *	Get the pointer to stored segment.
+ *
+ * Results:
+ *	Pointer to the stored segment, this can be NULL.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+TkTextSegment *
+TkTextIndexGetSegment(
+    const TkTextIndex *indexPtr)/* Pointer to index. */
+{
+    TkTextSegment *segPtr;
+
+    assert(indexPtr->tree);
+    assert(indexPtr->priv.linePtr);
+    assert(indexPtr->priv.linePtr->parentPtr); /* expired? */
+
+    segPtr = indexPtr->priv.segPtr;
+
+    if (!segPtr
+	    || (indexPtr->priv.isCharSegment && TkBTreeEpoch(indexPtr->tree) != indexPtr->stateEpoch)) {
+	return NULL;
+    }
+
+    assert(!segPtr || segPtr->typePtr); /* expired? */
+    assert(!segPtr || segPtr->sectionPtr); /* linked? */
+    assert(!segPtr || segPtr->sectionPtr->linePtr == indexPtr->priv.linePtr);
+
+    return segPtr;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
  * TkTextIndexGetContentSegment --
  *
  *	Get the pointer to the segment at this byte position which
@@ -1199,8 +1250,7 @@ TkTextIndexGetContentSegment(
     assert(indexPtr->priv.linePtr->parentPtr); /* expired? */
 
     if ((segPtr = indexPtr->priv.segPtr)
-	    && (segPtr->typePtr != &tkTextCharType
-		|| TkBTreeEpoch(indexPtr->tree) == indexPtr->stateEpoch)) {
+	    && (!indexPtr->priv.isCharSegment || TkBTreeEpoch(indexPtr->tree) == indexPtr->stateEpoch)) {
 	while (segPtr->size == 0) {
 	    segPtr = segPtr->nextPtr;
 	}
@@ -1223,7 +1273,9 @@ TkTextIndexGetContentSegment(
 	assert(indexPtr->priv.byteIndex >= 0);
 	segPtr = IndexToSeg(indexPtr, &myOffset);
 	if (myOffset == 0) {
-	    ((TkTextIndex *) indexPtr)->priv.segPtr = segPtr; /* mutable due to concept */
+	    TkTextIndex *iPtr = (TkTextIndex *) indexPtr; /* mutable due to concept */
+	    iPtr->priv.segPtr = segPtr;
+	    iPtr->priv.isCharSegment = segPtr->typePtr == &tkTextCharType;
 	}
 	if (offset) {
 	    *offset = myOffset;
@@ -1263,8 +1315,7 @@ TkTextIndexGetFirstSegment(
     assert(indexPtr->priv.linePtr->parentPtr); /* expired? */
 
     if ((segPtr = indexPtr->priv.segPtr)
-	    && (segPtr->typePtr != &tkTextCharType
-		|| TkBTreeEpoch(indexPtr->tree) == indexPtr->stateEpoch)) {
+	    && (!indexPtr->priv.isCharSegment || TkBTreeEpoch(indexPtr->tree) == indexPtr->stateEpoch)) {
 	if (indexPtr->priv.byteIndex >= 0) {
 	    myOffset = indexPtr->priv.byteIndex - SegToIndex(indexPtr->priv.linePtr, segPtr);
 	    assert(myOffset >= 0);
@@ -1282,10 +1333,15 @@ TkTextIndexGetFirstSegment(
     assert(segPtr->sectionPtr->linePtr == indexPtr->priv.linePtr);
 
     if (myOffset == 0) {
+	TkTextIndex *iPtr;
+
 	while ((prevPtr = segPtr->prevPtr) && prevPtr->size == 0) {
 	    segPtr = prevPtr;
 	}
-	((TkTextIndex *) indexPtr)->priv.segPtr = segPtr; /* mutable due to concept */
+
+	iPtr = (TkTextIndex *) indexPtr; /* mutable due to concept */
+	iPtr->priv.segPtr = segPtr;
+	iPtr->priv.isCharSegment = segPtr->typePtr == &tkTextCharType;
     }
     if (offset) {
 	*offset = myOffset;
@@ -1320,6 +1376,7 @@ TkTextIndexGetByteIndex(
 
     if (indexPtr->priv.byteIndex == -1) {
 	assert(indexPtr->priv.segPtr);
+	assert(!indexPtr->priv.isCharSegment || TkBTreeEpoch(indexPtr->tree) == indexPtr->stateEpoch);
 	assert(indexPtr->priv.segPtr->typePtr);    /* expired? */
 	assert(indexPtr->priv.segPtr->sectionPtr); /* linked? */
 	assert(indexPtr->priv.segPtr->sectionPtr->linePtr == indexPtr->priv.linePtr);
@@ -1363,6 +1420,7 @@ TkTextIndexIsStartOfLine(
     }
 
     assert(indexPtr->priv.segPtr);
+    assert(!indexPtr->priv.isCharSegment || TkBTreeEpoch(indexPtr->tree) == indexPtr->stateEpoch);
     assert(CheckByteIndex(indexPtr, indexPtr->priv.linePtr, -1));
 
     startPtr = indexPtr->textPtr ? indexPtr->textPtr->startMarker : NULL;
@@ -1414,6 +1472,7 @@ TkTextIndexIsEndOfLine(
     }
 
     assert(indexPtr->priv.segPtr);
+    assert(!indexPtr->priv.isCharSegment || TkBTreeEpoch(indexPtr->tree) == indexPtr->stateEpoch);
 
     if (indexPtr->priv.linePtr == TkBTreeGetLastLine(indexPtr->textPtr)) {
 	return true;
@@ -1530,6 +1589,9 @@ TkTextIndexIsEqual(
     const TkTextIndex *indexPtr1,	/* Pointer to index. */
     const TkTextIndex *indexPtr2)	/* Pointer to index. */
 {
+    const TkTextSegment *segPtr1;
+    const TkTextSegment *segPtr2;
+
     assert(indexPtr1->priv.linePtr);
     assert(indexPtr2->priv.linePtr);
     assert(indexPtr1->priv.linePtr->parentPtr); /* expired? */
@@ -1538,18 +1600,19 @@ TkTextIndexIsEqual(
     if (indexPtr1->priv.linePtr != indexPtr2->priv.linePtr) {
 	return false;
     }
-    if (indexPtr1->priv.segPtr && indexPtr1->priv.segPtr == indexPtr2->priv.segPtr) {
-	TkTextSegment *segPtr1 = indexPtr1->priv.segPtr;
-	TkTextSegment *segPtr2 = indexPtr2->priv.segPtr;
 
-	while (segPtr1->prevPtr && segPtr1->prevPtr->size == 0) {
-	    segPtr1 = segPtr1->prevPtr;
+    if ((segPtr1 = TkTextIndexGetSegment(indexPtr1))) {
+	if ((segPtr2 = TkTextIndexGetSegment(indexPtr2))) {
+	    while (segPtr1->prevPtr && segPtr1->prevPtr->size == 0) {
+		segPtr1 = segPtr1->prevPtr;
+	    }
+	    while (segPtr2->prevPtr && segPtr2->prevPtr->size == 0) {
+		segPtr2 = segPtr2->prevPtr;
+	    }
+	    return segPtr1 == segPtr2;
 	}
-	while (segPtr2->prevPtr && segPtr2->prevPtr->size == 0) {
-	    segPtr2 = segPtr2->prevPtr;
-	}
-	return segPtr1 == segPtr2;
     }
+
     return TkTextIndexGetByteIndex(indexPtr1) == TkTextIndexGetByteIndex(indexPtr2);
 }
 
@@ -1576,8 +1639,10 @@ TkTextIndexCompare(
     const TkTextIndex *indexPtr1,	/* Pointer to index. */
     const TkTextIndex *indexPtr2)	/* Pointer to index. */
 {
-    const TkTextSection *sectionPtr1, *sectionPtr2;
-    const TkTextSegment *segPtr1, *segPtr2;
+    const TkTextSection *sectionPtr1;
+    const TkTextSection *sectionPtr2;
+    const TkTextSegment *segPtr1;
+    const TkTextSegment *segPtr2;
 
     assert(indexPtr1->priv.linePtr);
     assert(indexPtr2->priv.linePtr);
@@ -1593,9 +1658,13 @@ TkTextIndexCompare(
     if (indexPtr1->priv.byteIndex >= 0 && indexPtr2->priv.byteIndex >= 0) {
 	return indexPtr1->priv.byteIndex - indexPtr2->priv.byteIndex;
     }
-    if (!indexPtr1->priv.segPtr || !indexPtr2->priv.segPtr) {
+
+    if (!(segPtr1 = TkTextIndexGetSegment(indexPtr1)) || !(segPtr2 = TkTextIndexGetSegment(indexPtr2))) {
 	return TkTextIndexGetByteIndex(indexPtr1) - TkTextIndexGetByteIndex(indexPtr2);
     }
+
+    assert(!indexPtr1->priv.isCharSegment || TkBTreeEpoch(indexPtr1->tree) == indexPtr1->stateEpoch);
+    assert(!indexPtr2->priv.isCharSegment || TkBTreeEpoch(indexPtr2->tree) == indexPtr2->stateEpoch);
 
     segPtr1 = indexPtr1->priv.segPtr;
     segPtr2 = indexPtr2->priv.segPtr;
@@ -1824,7 +1893,7 @@ TkTextMakeByteIndex(
     if (segPtr->typePtr == &tkTextCharType && byteIndex > index && index + segPtr->size > byteIndex) {
 	const char *p;
 	const char *start;
-	Tcl_UniChar ch;
+	int ch;
 
 	/*
 	 * Prevent UTF-8 character from being split up by ensuring that byteIndex
@@ -1834,7 +1903,7 @@ TkTextMakeByteIndex(
 
 	start = segPtr->body.chars + (byteIndex - index);
 	p = Tcl_UtfPrev(start, segPtr->body.chars);
-	p += Tcl_UtfToUniChar(p, &ch);
+	p += TkUtfToUniChar(p, &ch);
 	indexPtr->priv.byteIndex += p - start;
     }
 
@@ -1881,7 +1950,6 @@ TkTextMakeCharIndex(
     TkTextLine *linePtr;
     char *p, *start, *end;
     int index, offset;
-    Tcl_UniChar ch;
 
     TkTextIndexClear2(indexPtr, textPtr, tree);
 
@@ -1954,6 +2022,8 @@ TkTextMakeCharIndex(
     while (segPtr != lastPtr) {
 	if (segPtr->tagInfoPtr) {
 	    if (segPtr->typePtr == &tkTextCharType) {
+		int ch;
+
 		/*
 		 * Turn character offset into a byte offset.
 		 */
@@ -1967,7 +2037,7 @@ TkTextMakeCharIndex(
 			return indexPtr;
 		    }
 		    charIndex -= 1;
-		    offset = Tcl_UtfToUniChar(p, &ch);
+		    offset = TkUtfToUniChar(p, &ch);
 		    index += offset;
 		}
 	    } else if (charIndex < segPtr->size) {
@@ -2614,8 +2684,10 @@ TkTextIndexPrint(
      * indices can be avoided.
      */
 
-    if (indexPtr->priv.segPtr && indexPtr->priv.segPtr->typePtr != &tkTextCharType) {
+    if (indexPtr->priv.segPtr && !indexPtr->priv.isCharSegment) {
 	TkTextSegment *lastPtr = indexPtr->priv.segPtr;
+
+	assert(indexPtr->priv.segPtr->typePtr);
 
 	while (lastPtr->size == 0) {
 	    lastPtr = lastPtr->nextPtr;
@@ -3086,9 +3158,9 @@ TkTextIndexForwChars(
 		    const char *start = segPtr->body.chars + byteOffset;
 		    const char *end = segPtr->body.chars + segPtr->size;
 		    const char *p = start;
-		    Tcl_UniChar ch;
+		    int ch;
 
-		    for (p = start; p < end; p += Tcl_UtfToUniChar(p, &ch)) {
+		    for (p = start; p < end; p += TkUtfToUniChar(p, &ch)) {
 			if (charCount == 0) {
 			    dstPtr->priv.byteIndex += (p - start);
 			    goto forwardCharDone;
@@ -3101,6 +3173,7 @@ TkTextIndexForwChars(
 		    if (charCount < segPtr->size) {
 			dstPtr->priv.byteIndex += charCount;
 			dstPtr->priv.segPtr = segPtr;
+			dstPtr->priv.isCharSegment = false;
 			goto forwardCharDone;
 		    }
 		    charCount -= segPtr->size - byteOffset;
@@ -3246,10 +3319,10 @@ TkTextIndexGetChar(
 {
     TkTextSegment *segPtr;
     int byteOffset;
-    Tcl_UniChar ch;
+    int ch;
 
     segPtr = TkTextIndexGetContentSegment(indexPtr, &byteOffset);
-    Tcl_UtfToUniChar(segPtr->body.chars + byteOffset, &ch);
+    TkUtfToUniChar(segPtr->body.chars + byteOffset, &ch);
     return ch;
 }
 
@@ -3614,6 +3687,7 @@ TkTextIndexBackChars(
 		if (charCount <= segSize) {
 		    byteIndex -= charCount;
 		    dstPtr->priv.segPtr = segPtr;
+		    dstPtr->priv.isCharSegment = false;
 		    goto backwardCharDone;
 		}
 		charCount -= segSize;
@@ -3621,6 +3695,7 @@ TkTextIndexBackChars(
 	} else if (checkElided && segPtr->typePtr == &tkTextLinkType) {
 	    TkTextIndexSetSegment(dstPtr, segPtr = segPtr->body.link.prevPtr);
 	    dstPtr->priv.segPtr = segPtr;
+	    dstPtr->priv.isCharSegment = false;
 	    if (TkTextIndexRestrictToStartRange(dstPtr) <= 0) {
 		dstPtr->stateEpoch = TkBTreeEpoch(dstPtr->tree);
 		return true;
@@ -3769,9 +3844,9 @@ StartEnd(
 	    int chSize = 1;
 
 	    if (segPtr->typePtr == &tkTextCharType) {
-		Tcl_UniChar ch;
+		int ch;
 
-		chSize = Tcl_UtfToUniChar(segPtr->body.chars + offset, &ch);
+		chSize = TkUtfToUniChar(segPtr->body.chars + offset, &ch);
 		if (!Tcl_UniCharIsWordChar(ch)) {
 		    break;
 		}
@@ -3812,9 +3887,9 @@ StartEnd(
 	    int chSize = 1;
 
 	    if (segPtr->typePtr == &tkTextCharType) {
-		Tcl_UniChar ch;
+		int ch;
 
-		Tcl_UtfToUniChar(segPtr->body.chars + offset, &ch);
+		TkUtfToUniChar(segPtr->body.chars + offset, &ch);
 		if (!Tcl_UniCharIsWordChar(ch)) {
 		    break;
 		}

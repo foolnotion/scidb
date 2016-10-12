@@ -2096,6 +2096,6 @@ inline bool TkIntSetIntersects(const TkIntSet *set1, const TkIntSet *set2);
 inline unsigned TkIntSetFindFirst(const TkIntSet *set);
 inline unsigned TkIntSetFindNext(const TkIntSet *set);
 inline TkIntSet *TkIntSetAddOrErase(TkIntSet *set, unsigned n, bool add);
-#endif
+#endif /* __STDC_VERSION__ >= 199901L */
 
 /* vi:set ts=8 sw=4: */

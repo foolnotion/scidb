@@ -508,6 +508,7 @@ typedef struct TkTextIndex {
 	TkTextLine *linePtr;	/* Pointer to line containing position of interest. */
 	TkTextSegment *segPtr;	/* Pointer to segment containing position
 				 * of interest (NULL means not yet computed). */
+	int32_t isCharSegment;	/* Whether 'segPtr' is a char segment (if not NULL). */
 	int32_t byteIndex;	/* Index within line of desired character (0 means first one,
 				 * -1 means not yet computed). */
 	int32_t lineNo;		/* The line number of the line pointer. */
@@ -581,7 +582,7 @@ struct TkTextDispChunk {
 				/* Previous chunk in the display line or NULL for the start of the
 				 * list. */
     struct TkTextDispChunk *prevCharChunkPtr;
-				/* Previous char/window/image chunk in the display line, or NULL. */
+				/* Previous char chunk in the display line, or NULL. */
     struct TextStyle *stylePtr;	/* Display information, known only to tkTextDisp.c. */
 
     /*
@@ -837,6 +838,10 @@ typedef struct TkTextTag {
     bool underline;		/* True means draw underline underneath text. Only valid if
     				 * underlineString is non-NULL. */
     XColor *underlineColor;     /* Color for the underline. NULL means same color as foreground. */
+    XColor *eolColor;		/* Color for the end of line symbol. NULL means same color as
+    				 * foreground. */
+    XColor *hyphenColor;	/* Color for the soft hyphen character. NULL means same color as
+    				 * foreground. */
     TkWrapMode wrapMode;	/* How to handle wrap-around for this tag. Must be TEXT_WRAPMODE_CHAR,
 				 * TEXT_WRAPMODE_NONE, TEXT_WRAPMODE_WORD, TEXT_WRAPMODE_CODEPOINT, or
 				 * TEXT_WRAPMODE_NULL to use wrapmode for whole widget. */
@@ -1038,6 +1043,7 @@ typedef struct TkSharedText {
     bool isVirgin;		/* This widget is still virgin (no 2nd peer, no edit operation)? */
     unsigned imageCount;	/* Used for creating unique image names. */
     bool triggerWatchCmd;	/* Whether we should trigger the watch command for any peer. */
+    bool triggerAlways;		/* Whether we should trigger for any modification. */
     bool haveToSetCurrentMark;	/* Flag whether a position change of the "current" mark has
     				 * been postponed in any peer. */
 
@@ -1207,7 +1213,8 @@ typedef struct TkText {
     XColor *highlightColorPtr;	/* Color for drawing traversal highlight. */
     Tk_Cursor cursor;		/* Current cursor for window, or None. */
     XColor *fgColor;		/* Default foreground color for text. */
-    XColor *eolColor;		/* Foreground color for end of line symbol. */
+    XColor *eolColor;		/* Foreground color for end of line symbol, can be NULL. */
+    XColor *hyphenColor;	/* Foreground color for soft hyphens, can be NULL. */
     Tk_Font tkfont;		/* Default font for displaying text. */
     int charWidth;		/* Width of average character in default font. */
     int spaceWidth;		/* Width of space character in default font. */
@@ -1624,6 +1631,8 @@ inline int		TkBTreeGetNumberOfDisplayLines(const TkTextPixelInfo *pixelInfo);
 MODULE_SCOPE void	TkBTreeAdjustPixelHeight(const TkText *textPtr,
 			    TkTextLine *linePtr, int newPixelHeight, unsigned mergedLogicalLines,
 			    unsigned oldNumDispLines);
+MODULE_SCOPE void	TkBTreeUpdatePixelHeights(const TkText *textPtr, TkTextLine *linePtr,
+			    unsigned numLines);
 MODULE_SCOPE void	TkBTreeResetDisplayLineCounts(TkText* textPtr, TkTextLine *linePtr,
 			    unsigned numLines);
 MODULE_SCOPE bool	TkBTreeHaveElidedSegments(const TkSharedText* sharedTextPtr);
@@ -1720,7 +1729,7 @@ MODULE_SCOPE void	TkTextAllocStatistic();
 MODULE_SCOPE int	TkConfigureText(Tcl_Interp *interp, TkText *textPtr, int objc,
 			    Tcl_Obj *const objv[]);
 MODULE_SCOPE bool	TkTriggerWatchCmd(TkText *textPtr, const char *operation,
-			    const char *index1, const char *index2, const char *arg);
+			    const char *index1, const char *index2, const char *arg, bool userFlag);
 MODULE_SCOPE void	TkTextUpdateAlteredFlag(TkSharedText *sharedTextPtr);
 MODULE_SCOPE int	TkTextIndexBbox(TkText *textPtr,
 			    const TkTextIndex *indexPtr, int *xPtr, int *yPtr,
@@ -1765,6 +1774,7 @@ MODULE_SCOPE bool	TkTextTagChangedUndoRedo(const TkSharedText *sharedTextPtr, Tk
 MODULE_SCOPE bool	TkTextDeleteTag(TkText *textPtr, TkTextTag *tagPtr, Tcl_HashEntry *hPtr);
 MODULE_SCOPE void	TkTextReleaseTag(TkSharedText *sharedTextPtr, TkTextTag *tagPtr,
 			    Tcl_HashEntry *hPtr);
+MODULE_SCOPE void	TkTextFontHeightChanged(TkText *textPtr);
 MODULE_SCOPE int	TkTextTestRelation(Tcl_Interp *interp, int relation, const char* op);
 MODULE_SCOPE bool	TkTextReleaseIfDestroyed(TkText *textPtr);
 MODULE_SCOPE bool	TkTextDecrRefCountAndTestIfDestroyed(TkText *textPtr);
@@ -1880,9 +1890,6 @@ MODULE_SCOPE int	TkTextImageCmd(TkText *textPtr, Tcl_Interp *interp,
 			    int objc, Tcl_Obj *const objv[]);
 MODULE_SCOPE bool	TkTextImageIndex(TkText *textPtr, const char *name, TkTextIndex *indexPtr);
 MODULE_SCOPE TkTextSegment *TkTextMakeImage(TkText *textPtr, Tcl_Obj *options);
-MODULE_SCOPE void	TkTextPushImageUndo(TkSharedText *sharedTextPtr, TkTextSegment *eiPtr);
-MODULE_SCOPE void	TkTextPushImageRedo(TkSharedText *sharedTextPtr, TkTextSegment *eiPtr,
-			    const TkTextIndex *indexPtr);
 MODULE_SCOPE int	TkTextWindowCmd(TkText *textPtr, Tcl_Interp *interp,
 			    int objc, Tcl_Obj *const objv[]);
 MODULE_SCOPE bool	TkTextWindowIndex(TkText *textPtr, const char *name, TkTextIndex *indexPtr);
@@ -1891,9 +1898,6 @@ MODULE_SCOPE int	TkTextYviewCmd(TkText *textPtr, Tcl_Interp *interp,
 			    int objc, Tcl_Obj *const objv[]);
 MODULE_SCOPE void	TkTextGetViewOffset(TkText *textPtr, int *x, int *y);
 MODULE_SCOPE void	TkTextWinFreeClient(Tcl_HashEntry *hPtr, TkTextEmbWindowClient *client);
-MODULE_SCOPE void	TkTextPushWindowUndo(TkSharedText *sharedTextPtr, TkTextSegment *eiPtr);
-MODULE_SCOPE void	TkTextPushWindowRedo(TkSharedText *sharedTextPtr, TkTextSegment *eiPtr,
-			    const TkTextIndex *indexPtr);
 MODULE_SCOPE void	TkTextIndexSetPosition(TkTextIndex *indexPtr,
 			    int byteIndex, TkTextSegment *segPtr);
 MODULE_SCOPE int	TkTextSegToIndex(const TkTextSegment *segPtr);
@@ -1921,7 +1925,7 @@ MODULE_SCOPE void	TkTextIndexAddToByteIndex(TkTextIndex *indexPtr, int numBytes)
 inline TkTextLine*	TkTextIndexGetLine(const TkTextIndex *indexPtr);
 MODULE_SCOPE int	TkTextIndexGetByteIndex(const TkTextIndex *indexPtr);
 MODULE_SCOPE unsigned	TkTextIndexGetLineNumber(const TkTextIndex *indexPtr, const TkText *textPtr);
-inline TkTextSegment *TkTextIndexGetSegment(const TkTextIndex *indexPtr);
+MODULE_SCOPE TkTextSegment *TkTextIndexGetSegment(const TkTextIndex *indexPtr);
 MODULE_SCOPE TkTextSegment *TkTextIndexGetContentSegment(const TkTextIndex *indexPtr, int *offset);
 MODULE_SCOPE TkTextSegment *TkTextIndexGetFirstSegment(const TkTextIndex *indexPtr, int *offset);
 inline TkSharedText *TkTextIndexGetShared(const TkTextIndex *indexPtr);
@@ -1951,6 +1955,20 @@ MODULE_SCOPE bool	TkTextSkipElidedRegion(TkTextIndex *indexPtr);
 
 #define TK_TEXT_DEBUG(expr)	{ if (tkTextDebug) { expr; } }
 #define TK_BTREE_DEBUG(expr)	{ if (tkBTreeDebug) { expr; } }
+
+/*
+ * Backport definitions for Tk 8.6.
+ */
+
+#if TK_MAJOR_VERSION == 8 && TK_MINOR_VERSION < 7
+
+# if TCL_UTF_MAX > 4
+#  define TkUtfToUniChar Tcl_UtfToUniChar
+# else /* if TCL_UTF_MAX <= 4 */
+extern int TkUtfToUniChar(const char *src, int *chPtr);
+# endif /* TCL_UTF_MAX > 4 */
+
+#endif /* end of backport for 8.6 */
 
 /*
  * Backport definitions for Tk 8.5. Tk 8.6 is quite unstable under Mac OS X,

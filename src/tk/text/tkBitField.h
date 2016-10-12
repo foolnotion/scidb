@@ -120,7 +120,7 @@ bool TkBitDisjunctive(const TkBitField *bf1, const TkBitField *bf2);
 inline bool TkBitIntersects(const TkBitField *bf1, const TkBitField *bf2);
 bool TkBitIntersectionIsEqual(const TkBitField *bf1, const TkBitField *bf2, const TkBitField *del);
 
-// TODO: should be rewritten to TkIntSetIsContainedBits
+/* TODO: should be rewritten to TkIntSetIsContainedBits */
 bool TkBitContainsSet(const TkBitField *bf, const struct TkIntSet *set);
 
 unsigned TkBitFindFirst(const TkBitField *bf);

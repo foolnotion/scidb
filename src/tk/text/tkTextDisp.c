@@ -151,6 +151,7 @@ typedef struct BreakInfo {
  * either part or all of one line of the text.
  */
 
+/* TODO: use chunk sections instead */
 #define XARR_SIZE 16		/* Small lookup buffer size for x position. */
 
 typedef struct DLine {
@@ -241,7 +242,8 @@ typedef struct StyleValues {
     Pixmap bgStipple;		/* Stipple bitmap for background. None means
 				 * draw solid. */
     XColor *fgColor;		/* Foreground color for text. */
-    XColor *eolColor;		/* Foreground color for pilcrow symbol. */
+    XColor *eolColor;		/* Foreground color for pilcrow symbol, can be NULL. */
+    XColor *hyphenColor;	/* Foreground color for soft hyphens, can be NULL. */
     Tk_Font tkfont;		/* Font for displaying text. */
     Pixmap fgStipple;		/* Stipple bitmap for text and other foreground stuff. None means
     				 * draw solid.*/
@@ -287,6 +289,7 @@ typedef struct TextStyle {
     GC ulGC;			/* Graphics context for underline. */
     GC ovGC;			/* Graphics context for overstrike. */
     GC eolGC;			/* Graphics context for pilcrow symbol. */
+    GC hyphenGC;		/* Graphics context for soft hyphen character. */
     uint32_t refCount;		/* Number of times this structure is referenced in Chunks. */
 } TextStyle;
 
@@ -450,6 +453,9 @@ typedef struct TextDInfo {
      * and the vertical height calculations:
      */
 
+    int lineHeight;		/* TkTextRelayoutWindow is using this value: the line height of
+    				 * monospaced lines, is zero of the line heights are not monospaced
+				 * in last call of TkTextRelayoutWindow. */
     uint32_t lineMetricUpdateEpoch;
     				/* Stores a number which is incremented each time the text widget
 				 * changes in a significant way (e.g. resizing or geometry-influencing
@@ -1478,7 +1484,7 @@ TkTextFreeDInfo(
 	dlPtr = nextPtr;
     }
     if (dInfoPtr->defaultStyle) {
-	/* XXX this often fails, why? */
+	/* XXX this sometimes fails, why? */
 	/* DEBUG_ALLOC(assert(dInfoPtr->defaultStyle->refCount == 1)); */
 	FreeStyle(textPtr, dInfoPtr->defaultStyle);
     }
@@ -1583,6 +1589,7 @@ MakeStyle(
     int spacing1Prio = -1, spacing2Prio = -1, spacing3Prio = -1;
     int overstrikePrio = -1, tabPrio = -1, tabStylePrio = -1;
     int wrapPrio = -1, langPrio = -1, hyphenRulesPrio = -1;
+    int eolColorPrio = -1, hyphenColorPrio = -1;
 
     /*
      * Find out what tags are present for the character, then compute a
@@ -1594,6 +1601,7 @@ MakeStyle(
     styleValues.relief = TK_RELIEF_FLAT;
     styleValues.fgColor = textPtr->fgColor;
     styleValues.eolColor = textPtr->eolColor;
+    styleValues.hyphenColor = textPtr->hyphenColor;
     styleValues.underlineColor = textPtr->fgColor;
     styleValues.overstrikeColor = textPtr->fgColor;
     styleValues.tkfont = textPtr->tkfont;
@@ -1681,7 +1689,7 @@ MakeStyle(
 	    fgStipplePrio = tagPtr->priority;
 	}
 	if (tagPtr->justifyString && tagPtr->priority > justifyPrio) {
-	    assert(tagPtr->justify < 8);
+	    /* assert(tagPtr->justify < 8); always true due to range */
 	    styleValues.justify = tagPtr->justify;
 	    justifyPrio = tagPtr->priority;
 	}
@@ -1740,6 +1748,14 @@ MakeStyle(
 	    styleValues.tabStyle = tagPtr->tabStyle;
 	    tabStylePrio = tagPtr->priority;
 	}
+	if (tagPtr->eolColor && tagPtr->priority > eolColorPrio) {
+	    styleValues.eolColor = tagPtr->eolColor;
+	    eolColorPrio = tagPtr->priority;
+	}
+	if (tagPtr->hyphenColor && tagPtr->priority > hyphenColorPrio) {
+	    styleValues.hyphenColor = tagPtr->hyphenColor;
+	    hyphenColorPrio = tagPtr->priority;
+	}
 	if (tagPtr->underlineString && tagPtr->priority > underlinePrio) {
 	    assert(tagPtr->underline <= 1);
 	    styleValues.underline = tagPtr->underline;
@@ -1764,7 +1780,7 @@ MakeStyle(
 	    hyphenRulesPrio = tagPtr->priority;
 	}
 	if (tagPtr->wrapMode != TEXT_WRAPMODE_NULL && tagPtr->priority > wrapPrio) {
-	    assert(tagPtr->wrapMode < 8);
+	    /* assert(tagPtr->wrapMode < 8); always true due to range */
 	    styleValues.wrapMode = tagPtr->wrapMode;
 	    wrapPrio = tagPtr->priority;
 	}
@@ -1800,8 +1816,18 @@ MakeStyle(
     mask = GCFont;
     gcValues.font = Tk_FontId(styleValues.tkfont);
     mask |= GCForeground;
-    gcValues.foreground = styleValues.eolColor->pixel;
-    stylePtr->eolGC = Tk_GetGC(textPtr->tkwin, mask, &gcValues);
+    if (styleValues.eolColor) {
+	gcValues.foreground = styleValues.eolColor->pixel;
+	stylePtr->eolGC = Tk_GetGC(textPtr->tkwin, mask, &gcValues);
+    } else {
+	stylePtr->eolGC = None;
+    }
+    if (styleValues.hyphenColor) {
+	gcValues.foreground = styleValues.hyphenColor->pixel;
+	stylePtr->hyphenGC = Tk_GetGC(textPtr->tkwin, mask, &gcValues);
+    } else {
+	stylePtr->hyphenGC = None;
+    }
     gcValues.foreground = styleValues.fgColor->pixel;
     if (styleValues.fgStipple != None) {
 	gcValues.stipple = styleValues.fgStipple;
@@ -2421,10 +2447,11 @@ LayoutApplyHyphenRules(
 		}
 		if (prevChar == secondPrevChar) {
 		    if (prevChar == 'e') {
+			char *s = hyphenPtr->body.chars; /* this avoids warnings */
 			data->decreaseNumBytes = 2;
 			/* insert 'é' */
-			hyphenPtr->body.chars[0] = 0xc3;
-			hyphenPtr->body.chars[1] = 0xa9;
+			s[0] = 0xc3;
+			s[1] = 0xa9;
 			SetupHyphenChars(hyphenPtr, 2);
 		    } else {
 			data->decreaseNumBytes = 1;
@@ -2940,8 +2967,8 @@ LayoutChars(
 	    const char *p = base;
 	    int i;
 
-	    // TODO: also TK_TEXT_JUSTIFY_RIGHT should support tabs
-	    // TODO: direction of tabs should depend on gravity of insert mark
+	    /* TODO: also TK_TEXT_JUSTIFY_RIGHT should support tabs */
+	    /* TODO: direction of tabs should depend on gravity of insert mark */
 
 	    for (i = 0; i < maxBytes; ++i, ++p) {
 		if (*p == '\t') {
@@ -3823,7 +3850,7 @@ TriggerWatchCursor(
 		    dInfoPtr->curPixelPos.xFirst, dInfoPtr->curPixelPos.yFirst);
 	    snprintf(buf[1], sizeof(buf[1]), "@%d,%d",
 		    dInfoPtr->curPixelPos.xLast, dInfoPtr->curPixelPos.yLast);
-	    TkTriggerWatchCmd(textPtr, "view", buf[0], buf[1], NULL);
+	    TkTriggerWatchCmd(textPtr, "view", buf[0], buf[1], NULL, false);
 	    memcpy(&textPtr->dInfoPtr->prevPixelPos, &textPtr->dInfoPtr->curPixelPos, sizeof(PixelPos));
 	    textPtr->sharedTextPtr->triggerWatchCmd = true;
 	}
@@ -3942,7 +3969,7 @@ CheckIfLineMetricIsUpToDate(
  *	The display lines will be saved in TextDInfo. Function UpdateDisplayInfo
  *	is responsible to release the unused lines. The cached lines in
  *	argument 'info' will be taken over, this means that 'info->dLinePtr'
- *	is NULL after this function his work.
+ *	is NULL after this function has done his work.
  *
  *----------------------------------------------------------------------
  */
@@ -4126,7 +4153,6 @@ ComputeDisplayLineInfo(
     pixelInfo = TkBTreeLinePixelInfo(textPtr, logicalLinePtr);
     dispLineInfo = pixelInfo->dispLineInfo;
     info->index = *indexPtr;
-    // XXX we must set to real line start (ignore -startindex) ?
     TkTextIndexSetToStartOfLine2(&info->index, logicalLinePtr);
     byteOffset = TkTextIndexCountBytes(&info->index, indexPtr);
     byteOffset += TkTextIndexGetByteIndex(&info->index);
@@ -4202,15 +4228,6 @@ ComputeDisplayLineInfo(
      * Compute missing line metric information. Don't throw away the produced display
      * lines, probably the caller might use it. But do not cache more than fitting into
      * the widget.
-     */
-
-    /*
-     * TODO: probably we can handle this special case:
-     *
-     * if (textPtr->wrapMode == TEXT_WRAPMODE_NONE
-     *		&& TkTextTagSetDisjunctiveBits(linePtr->tagonPtr,
-     *			textPtr->sharedTextPtr->affectLineHeightTags)) {
-     * }
      */
 
     viewHeight = Tk_Height(textPtr->tkwin) - 2*textPtr->highlightWidth;
@@ -4321,8 +4338,7 @@ ComputeMissingMetric(
 	return;
     }
 
-    //byteOffset = info->entry[info->numDispLines].byteOffset;
-    byteOffset = info->entry[1].byteOffset;
+    byteOffset = info->entry[info->numDispLines].byteOffset;
     additionalLines = info->numDispLines - info->displayLineNo;
     displayLineNo = info->numDispLines;
     viewHeight = Tk_Height(textPtr->tkwin) - 2*textPtr->highlightWidth;
@@ -4468,6 +4484,7 @@ UpdateDisplayInfo(
 	ComputeDisplayLineInfo(textPtr, &index, &info);
 	TkTextIndexBackBytes(textPtr, &index, info.byteOffset, &index);
 	displayLineNo = info.displayLineNo;
+
 	if (info.lastDLinePtr) {
 	    /*
 	     * Keep last produced display line, probably we can re-use it for new top line.
@@ -4646,16 +4663,6 @@ UpdateDisplayInfo(
 	 */
 
 	if (y >= maxY) {
-	    break;
-	}
-
-	if (TkTextIndexIsEndOfText(&index)) {
-	    if (displayLineNo == 0 && TkTextIndexGetLine(&index)->nextPtr) {
-		/*
-		 * Special case: we have to draw an empty line, because it may
-		 * contain the insert cursor.
-		 */
-	    }
 	    break;
 	}
     }
@@ -5939,6 +5946,10 @@ AsyncUpdateLineMetrics(
      * examined, so we pass in 256 for 'doThisMuch'.
      */
 
+#if TRACE_BUG
+printf("AsyncUpdateLineMetrics\n");
+TkRangeListPrint(dInfoPtr->lineMetricUpdateRanges);
+#endif
     UpdateLineMetrics(textPtr, 256);
     TK_TEXT_DEBUG(LogTextInvalidateLine(textPtr, 0));
 
@@ -6027,6 +6038,9 @@ UpdateLineMetrics(
 	    linePtr = logicalLinePtr;
 	}
 
+#if TRACE_BUG
+printf("UpdateLineMetrics: %d - %d\n", range->low, range->high);
+#endif
 	while (lineNum <= high) {
 	    TkTextPixelInfo *pixelInfo;
 
@@ -6090,6 +6104,9 @@ UpdateLineMetrics(
 
 	/* The update process has removed the finished lines. */
 	range = TkRangeListFirst(dInfoPtr->lineMetricUpdateRanges);
+#if TRACE_BUG
+TkRangeListPrint(dInfoPtr->lineMetricUpdateRanges);
+#endif
     }
 }
 
@@ -6130,6 +6147,9 @@ TkTextUpdateLineMetrics(
     assert(endLine <= TkBTreeNumLines(textPtr->sharedTextPtr->tree, textPtr));
     assert(textPtr->sharedTextPtr->allowUpdateLineMetrics);
 
+#if TRACE_BUG
+printf("TkTextFindDisplayIndex: %d - %d\n", lineNum, endLine);
+#endif
     if ((range = TkRangeListFindNearest(dInfoPtr->lineMetricUpdateRanges, lineNum))) {
 	totalLines = TkBTreeNumLines(textPtr->sharedTextPtr->tree, textPtr);
 	endLine = MIN(endLine, totalLines - 1);
@@ -6194,6 +6214,9 @@ TkTextUpdateLineMetrics(
 	}
     }
 
+#if TRACE_BUG
+printf("--- finished\n");
+#endif
     CheckIfLineMetricIsUpToDate(textPtr);
 }
 
@@ -6263,11 +6286,21 @@ StartAsyncLineCalculation(
     }
 }
 
+static bool
+TestMonospacedLineHeights(
+    const TkText *textPtr)
+{
+return false; /* TODO */
+    return textPtr->wrapMode == TEXT_WRAPMODE_NONE
+	    && TkTextTagSetDisjunctiveBits(TkBTreeRootTagInfo(textPtr->sharedTextPtr->tree),
+		textPtr->sharedTextPtr->affectLineHeightTags);
+}
+
 static void
 TextInvalidateLineMetrics(
     TkText *textPtr,		/* Widget record for text widget. */
     TkTextLine *linePtr,	/* Invalidation starts from this line; can be NULL, but only in
-    				 * case of simple invaldiation. */
+    				 * case of simple invalidation. */
     unsigned lineCount,		/* And includes this amount of following lines. */
     TkTextInvalidateAction action)
 				/* Indicates what type of invalidation occurred (insert, delete,
@@ -6280,15 +6313,6 @@ TextInvalidateLineMetrics(
     assert(linePtr || action == TK_TEXT_INVALIDATE_ONLY);
     assert(TkBTreeLinesTo(textPtr->sharedTextPtr->tree, textPtr, linePtr, NULL) + lineCount
 	    < totalLines + (action == TK_TEXT_INVALIDATE_INSERT));
-
-    /*
-     * TODO: probably we can handle this special case:
-     *
-     * if (textPtr->wrapMode == TEXT_WRAPMODE_NONE
-     *		&& TkTextTagSetDisjunctiveBits(linePtr->tagonPtr,
-     *			textPtr->sharedTextPtr->affectLineHeightTags)) {
-     * }
-     */
 
     if (linePtr) {
 	int deviation;
@@ -6309,6 +6333,47 @@ TextInvalidateLineMetrics(
 	}
     }
 
+    if (TestMonospacedLineHeights(textPtr)) {
+	/*
+	 * This is a special case: all lines will have the same pixel height.
+	 */
+	
+	switch (action) {
+	case TK_TEXT_INVALIDATE_DELETE:
+	    if (!linePtr) {
+		FreeDLines(textPtr, textPtr->dInfoPtr->dLinePtr, NULL, DLINE_UNLINK);
+		lineCount = totalLines;
+	    } else {
+		TkTextIndex index;
+		DLine *dlPtr;
+
+		TkTextIndexClear(&index, textPtr);
+		TkTextIndexSetToStartOfLine2(&index, linePtr->nextPtr);
+		if ((dlPtr = FindDLine(textPtr, textPtr->dInfoPtr->dLinePtr, &index))) {
+		    TkTextIndexSetToEndOfLine2(&index,
+			    TkBTreeFindLine(textPtr->sharedTextPtr->tree, textPtr, lineNum + lineCount));
+		    FreeDLines(textPtr, dlPtr, FindDLine(textPtr, dlPtr, &index), DLINE_UNLINK);
+		}
+	    }
+	    /* TODO: recompute pixel info of affected nodes */
+	    textPtr->dInfoPtr->lastLineNo -= lineCount;
+	    break;
+	case TK_TEXT_INVALIDATE_INSERT:
+	    textPtr->dInfoPtr->lastLineNo += lineCount;
+	    /* fallthru */
+	case TK_TEXT_INVALIDATE_ONLY:
+	case TK_TEXT_INVALIDATE_ELIDE:
+	    if (!linePtr) {
+		linePtr = TkBTreeGetStartLine(textPtr);
+		lineCount = totalLines;
+	    }
+	    TkBTreeUpdatePixelHeights(textPtr, linePtr, lineCount);
+	    break;
+	}
+
+	return; /* we are finished */
+    }
+
     if (linePtr) {
 	if (TkRangeListSize(ranges) >= 200) {
 	    /*
@@ -6326,6 +6391,10 @@ TextInvalidateLineMetrics(
 
 	    TkRangeListClear(ranges);
 	    ranges = TkRangeListAdd(ranges, low, high);
+#if TRACE_BUG
+printf("range list compacted: ");
+TkRangeListPrint(ranges);
+#endif
 	}
 
 	switch (action) {
@@ -6358,7 +6427,7 @@ TextInvalidateLineMetrics(
 
 	    if (!TkRangeListContainsRange(ranges, lineNum, lineNum + counter)) {
 		TkTextLine *mergedLinePtr = NULL;
-		unsigned count;
+		unsigned count = 1;
 
 		/*
 		 * Invalidate the height calculations of each line in the given range.
@@ -6468,7 +6537,7 @@ TkTextInvalidateLineMetrics(
 	textPtr = sharedTextPtr->peers;
 
 	while (textPtr) {
-	    unsigned numLines = lineCount;
+	    int numLines = lineCount;
 	    TkTextLine *firstLinePtr = linePtr;
 
 	    if (textPtr->startMarker != sharedTextPtr->startMarker) {
@@ -6490,7 +6559,11 @@ TkTextInvalidateLineMetrics(
 		    numLines = endLineNo - lineNo - 1;
 		}
 	    }
-	    TextInvalidateLineMetrics(textPtr, firstLinePtr, numLines, action);
+
+	    if (numLines >= 0) {
+		TextInvalidateLineMetrics(textPtr, firstLinePtr, numLines, action);
+	    }
+
 	    textPtr = textPtr->next;
 	}
     }
@@ -6633,6 +6706,9 @@ TkTextFindDisplayIndex(
 	TkTextIndexBackBytes(textPtr, indexPtr, info.byteOffset, indexPtr);
 
 	if (displayLineOffset > 0) {
+#if TRACE_BUG
+TkRangeListPrint(textPtr->dInfoPtr->lineMetricUpdateRanges);
+#endif
 	    ComputeMissingMetric(textPtr, &info, THRESHOLD_LINE_OFFSET, displayLineOffset);
 	    info.numDispLines -= info.displayLineNo;
 
@@ -6657,6 +6733,9 @@ TkTextFindDisplayIndex(
 		ComputeMissingMetric(textPtr, &info, THRESHOLD_LINE_OFFSET, displayLineOffset);
 		assert(info.displayLineNo == 0);
 	    }
+#if TRACE_BUG
+printf("--- finished\n");
+#endif
 	} else if (displayLineOffset < 0) {
 	    info.numDispLines = info.displayLineNo + 1;
 
@@ -6864,6 +6943,8 @@ FindDisplayLineStartEnd(
 	 * We don't want an offset inside a multi-byte sequence, so find the start
 	 * of the current character.
 	 */
+
+	/* TODO: probably we have to do this also for line start? */
 	
 	while (p > segPtr->body.chars && (*p & 0xc0) == 0x80) {
 	    p -= 1;
@@ -7166,9 +7247,7 @@ TkTextUpdateOneLine(
     				 * to linePtr, at which we wish to start (e.g. up to which we have
 				 * already calculated). On return this will be set to the first index
 				 * on the next line. */
-    unsigned maxDispLines)	/* Don't compute more than this number of display lines. If we are
-    				 * allowed to do partial height calculations of long-lines we'll only
-				 * return what we know so far. */
+    unsigned maxDispLines)	/* Don't compute more than this number of display lines. */
 {
     TkTextIndex index;
     TkTextLine *logicalLinePtr;
@@ -7478,7 +7557,7 @@ DisplayText(
 	    y = dInfoPtr->y;
 	}
 
-#if 0 // XXX this can happen in certain situations
+#if 0 /* XXX this can happen in certain situations */
 	assert(height > 0); /* otherwise dInfoPtr->topPixelOffset is wrong */
 #else
 	if (height <= 0) {
@@ -8158,7 +8237,7 @@ TextRedrawTag(
 	 * re-layed out and redrawn.
 	 */
 
-	// TODO: keep the pre-computed brks info, but how?
+	/* TODO: keep the pre-computed brks info, but how? */
 	FreeDLines(textPtr, dlPtr, endPtr, DLINE_UNLINK);
     }
 }
@@ -8361,7 +8440,7 @@ TkTextRelayoutWindow(
      * they will not change.
      */
 
-    if (recomputeGeometry) {
+    if (recomputeGeometry || (mask & TK_TEXT_LINE_REDRAW)) {
 	FreeDLines(textPtr, dInfoPtr->dLinePtr, NULL, DLINE_UNLINK);
     }
 
@@ -8412,11 +8491,19 @@ TkTextRelayoutWindow(
 
     dInfoPtr->currChunkPtr = NULL;
 
-    if (recomputeGeometry) {
+    if (TestMonospacedLineHeights(textPtr)) {
+	TkRangeListClear(dInfoPtr->lineMetricUpdateRanges);
+
+	if (dInfoPtr->lineHeight != textPtr->charHeight) {
+	    TkBTreeUpdatePixelHeights(textPtr, TkBTreeGetStartLine(textPtr), lastLineNo - firstLineNo);
+	    dInfoPtr->lineHeight = textPtr->charHeight;
+	}
+    } else if (recomputeGeometry) {
 	/*
 	 * Set up line metric recalculation.
 	 */
 
+	dInfoPtr->lineHeight = 0;
 	TkRangeListClear(dInfoPtr->lineMetricUpdateRanges);
 	if (lastLineNo > firstLineNo) {
 	    dInfoPtr->lineMetricUpdateRanges =
@@ -8429,9 +8516,7 @@ TkTextRelayoutWindow(
 	DLine *dlPtr;
 	int numLines;
 
-	if (mask & TK_TEXT_LINE_REDRAW) {
-	    FreeDLines(textPtr, dInfoPtr->dLinePtr, NULL, DLINE_UNLINK);
-	}
+	dInfoPtr->lineHeight = 0;
 
 	/*
 	 * We have to handle -startindex, -endIndex.
@@ -8831,10 +8916,12 @@ MeasureDown(
     linePtr = TkTextIndexGetLine(srcPtr);
     lastLinePtr = TkBTreeGetLastLine(textPtr);
 
-    // TODO: firstly try to update the missing range:
-    // if (!TkRangeListIsEmpty(textPtr->dInfoPtr->lineMetricUpdateRanges)) {
-    //     AsyncUpdateLineMetrics(textPtr)
-    // }
+    /*
+     * TODO: firstly try to update the missing range:
+     * if (!TestIfLinesUpToDate(srcPtr)) {
+     *     AsyncUpdateLineMetrics(textPtr)
+     * }
+     */
 
     if (TkRangeListIsEmpty(textPtr->dInfoPtr->lineMetricUpdateRanges)) {
 	int pixelHeight;
@@ -8870,11 +8957,15 @@ MeasureDown(
 	 * Search down line by line until we'e found the bottom line for given distance.
 	 */
 
-	// TODO: use existing metric info, and then search down line by line.
+	/* TODO: use existing metric info, and then search down line by line. */
 
 	linePtr = ComputeDisplayLineInfo(textPtr, srcPtr, &info);
 	distance += GetPixelsTo(textPtr, srcPtr, false, &info);
 	index = *srcPtr;
+#if TRACE_BUG
+printf("MeasureDown: ");
+TkRangeListPrint(textPtr->dInfoPtr->lineMetricUpdateRanges);
+#endif
 
 	while (true) {
 	    ComputeMissingMetric(textPtr, &info, THRESHOLD_PIXEL_DISTANCE, distance);
@@ -8915,6 +9006,9 @@ MeasureDown(
 	    TkTextIndexSetToStartOfLine2(&index, linePtr);
 	    linePtr = ComputeDisplayLineInfo(textPtr, &index, &info);
 	}
+#if TRACE_BUG
+TkRangeListPrint(textPtr->dInfoPtr->lineMetricUpdateRanges);
+#endif
 
 	*overlap = distance;
     }
@@ -8993,10 +9087,12 @@ MeasureUp(
     startLinePtr = TkBTreeGetStartLine(textPtr);
     linePtr = TkTextIndexGetLine(srcPtr);
 
-    // TODO: firstly try to update the missing range:
-    // if (!TestIfLinesUpToDate(srcPtr)) {
-    //     AsyncUpdateLineMetrics(textPtr)
-    // }
+    /*
+     * TODO: firstly try to update the missing range:
+     * if (!TestIfLinesUpToDate(srcPtr)) {
+     *     AsyncUpdateLineMetrics(textPtr)
+     * }
+     */
 
     if (TestIfLinesUpToDate(srcPtr)) {
 	int pixelHeight;
@@ -9026,7 +9122,7 @@ MeasureUp(
 	 * Search up line by line until we have found the start line for given distance.
 	 */
 
-	// TODO: search up line by line until we have some pre-computed metric info.
+	/* TODO: search up line by line until we have some pre-computed metric info. */
 	
 	linePtr = ComputeDisplayLineInfo(textPtr, srcPtr, &info);
 	SaveDisplayLines(textPtr, &info, false);
@@ -10649,7 +10745,7 @@ DLineChunkOfX(
 {
     TextDInfo *dInfoPtr = textPtr->dInfoPtr;
     TkTextDispChunk *chunkPtr;
-    unsigned index, maxX;
+    unsigned index, maxX, countBytes;
 
     /*
      * Scan through the line's chunks to find the one that contains the desired x-coordinate.
@@ -10658,6 +10754,7 @@ DLineChunkOfX(
      */
 
     chunkPtr = dlPtr->chunkPtr;
+    *indexPtr = dlPtr->index;
 
     if (!chunkPtr) {
 	/* this may occur if everything is elided */
@@ -10667,7 +10764,6 @@ DLineChunkOfX(
 	return chunkPtr;
     }
 
-    *indexPtr = dlPtr->index;
     x -= dInfoPtr->x - dInfoPtr->curXPixelOffset;
 
     if (x < chunkPtr->x) {
@@ -10681,25 +10777,18 @@ DLineChunkOfX(
     maxX = dlPtr->lastChunkPtr->x + dlPtr->lastChunkPtr->width - chunkPtr->x + 1;
     index = ((x - chunkPtr->x)*XARR_SIZE)/maxX;
     chunkPtr = index < XARR_SIZE ? dlPtr->xPosArr[index] : dlPtr->lastChunkPtr;
-    TkTextIndexForwBytes(textPtr, indexPtr, chunkPtr->byteOffset, indexPtr);
+    countBytes = chunkPtr->byteOffset;
+    
+    /*
+     * NOTE: 'chunkPtr->x + chunkPtr->width == chunkPtr->nextPtr->x' must not be true.
+     */
 
     while (chunkPtr->nextPtr && x >= chunkPtr->x + chunkPtr->width) {
-	TkTextIndex index;
-
-	if (TkTextIndexForwBytes(textPtr, indexPtr, chunkPtr->numBytes, &index) == 1) {
-	    /*
-	     * We've reached the end of the text; skip back the newline character.
-	     * TODO: should never happen?
-	     */
-
-            TkTextIndexBackChars(textPtr, &index, 1, indexPtr, COUNT_INDICES);
-	    return chunkPtr;
-	}
-
-	*indexPtr = index;
+	countBytes += chunkPtr->numBytes;
 	chunkPtr = chunkPtr->nextPtr;
     }
 
+    TkTextIndexForwBytes(textPtr, indexPtr, countBytes, indexPtr);
     return chunkPtr;
 }
 
@@ -10907,7 +10996,13 @@ TkTextIndexBbox(
     byteCount = TkTextIndexCountBytes(&dlPtr->index, indexPtr);
     chunkPtr = dlPtr->chunkPtr;
 
-    /* TODO: can we enhance this search? */
+    /*
+     * TODO: can we enhance this search?
+     * Possibly we shall use a small lookup array like for the x position lookup.
+     * But is it worth the effort? This case may only happen when the user is
+     * setting the insert cursor.
+     */
+
     while (byteCount >= chunkPtr->numBytes) {
 	byteCount -= chunkPtr->numBytes;
 	if (!(chunkPtr = chunkPtr->nextPtr)) {
@@ -11184,7 +11279,7 @@ CharBboxProc(
 	    if (chunkPtr->additionalWidth && IsExpandableSpace(ciPtr->u.chars + offset)) {
 		/*
 		 * We've expanded some spaces for full line justification. Compute the
-		 * width of this character position.
+		 * width of this specific space character.
 		 */
 
 		const char *base = ciPtr->u.chars + ciPtr->baseOffset;
@@ -11906,7 +12001,7 @@ ComputeBreakIndex(
 	if (chunkPtr->numBytes + byteOffset == segPtr->size) {
 	    for (nextPtr = segPtr->nextPtr; nextPtr; nextPtr = nextPtr->nextPtr) {
 		if (nextPtr->size > 0) {
-		    if (nextPtr->typePtr != &tkTextCharType && nextPtr->typePtr != &tkTextHyphenType) {
+		    if (!(nextPtr->typePtr->group & (SEG_GROUP_CHAR|SEG_GROUP_HYPHEN))) {
 			return chunkPtr->numBytes;
 		    }
 		    break;
@@ -11918,18 +12013,27 @@ ComputeBreakIndex(
 
 	count = chunkPtr->numBytes;
 	if (chunkPtr->endsWithSyllable) {
+	    assert(chunkPtr->numBytes > 0);
 	    count -= 1;
 	}
 	p = segPtr->body.chars + byteOffset + count - 1;
 
 	if (wrapMode == TEXT_WRAPMODE_WORD) {
-
 	    /*
 	     * Don't use isspace(); effects are unpredictable (because the result
 	     * is locale dependent) and can lead to odd word-wrapping problems on
-	     * some platforms. Also don't use Tcl_UniCharIsSpace here either, as it
-	     * identifies non-breaking spaces as places to break. What we actually
-	     * want is only the ASCII space characters, so use them explicitly...
+	     * some platforms. Also don't use Tcl_UniCharIsSpace here either, this
+	     * can be used when displaying Markup in read-only mode (except the
+	     * non-breaking space), but in text data there is a difference between
+	     * ASCII spaces and all other spaces, and this difference must be
+	     * visible for the user (line break makes the spaces indistinguishable).
+	     * Keep in mind that the text widget will also be used for editing
+	     * text. What we actually want is only the ASCII space characters, so
+	     * use them explicitly...
+	     *
+	     * NOTE: don't break at hyphen character (U+002D), because the meaning
+	     * of this character is contextual. The user has to use the "codepoint"
+	     * wrap mode if he want's line breaking at hard hyphen characters.
 	     */
 
 	    for ( ; count > 0; --count, --p) {
@@ -11957,6 +12061,7 @@ ComputeBreakIndex(
 
 	    for ( ; i >= 0; --i, --p) {
 		if (brks[i] == LINEBREAK_ALLOWBREAK) {
+		    /* See the note above (wrapMode == TEXT_WRAPMODE_WORD). */
 		    switch (*p) {
 		    case '\t': case '\n': case '\v': case '\f': case '\r': case ' ':
 			i += 1;
@@ -12409,10 +12514,19 @@ TkTextCharLayoutProc(
     bytesThatFit = CharChunkMeasureChars(chunkPtr, ciPtr->u.chars, ciPtr->baseOffset + maxBytes,
 	    ciPtr->baseOffset, -1, chunkPtr->x, maxX, TK_ISOLATE_END, &nextX);
 
+    /*
+     * NOTE: do not trim white spaces at the end of line, it would be impossible
+     * for the user to see typos like mistakenly typing two consecutive spaces.
+     */
+
     if (bytesThatFit < maxBytes) {
 	if (bytesThatFit == 0 && noCharsYet) {
-	    Tcl_UniChar ch;
-	    int chLen = Tcl_UtfToUniChar(p, &ch);
+	    int ch;
+	    int chLen = TkUtfToUniChar(p, &ch);
+
+	    /*
+	     * At least one character should be contained in current display line.
+	     */
 
 	    bytesThatFit = CharChunkMeasureChars(chunkPtr, ciPtr->u.chars, ciPtr->baseOffset + chLen,
 		    ciPtr->baseOffset, -1, chunkPtr->x, -1, 0, &nextX);
@@ -12616,6 +12730,25 @@ HyphenUndisplayProc(
  *--------------------------------------------------------------
  */
 
+static GC
+GetForegroundGC(
+    const TkText *textPtr,
+    const TkTextDispChunk *chunkPtr)
+{
+    const TkTextSegment *segPtr = ((const CharInfo *) chunkPtr->clientData)->segPtr;
+
+    if (segPtr == textPtr->dInfoPtr->pilcrowSegPtr) {
+	if (chunkPtr->stylePtr->eolGC != None) {
+	    return chunkPtr->stylePtr->eolGC;
+	}
+    } else if (segPtr->typePtr == &tkTextHyphenType) {
+	if (chunkPtr->stylePtr->hyphenGC != None) {
+	    return chunkPtr->stylePtr->hyphenGC;
+	}
+    }
+    return chunkPtr->stylePtr->fgGC;
+}
+
 #if TK_DRAW_IN_CONTEXT
 # if defined(_WIN32) || defined(__UNIX__)
 
@@ -12703,6 +12836,8 @@ DrawChars(
 	start = ciPtr->baseOffset + offsetBytes;
 	len = ciPtr->numBytes - offsetBytes;
 
+	assert(ciPtr->numBytes >= offsetBytes);
+
 	if (len == 0 || (string[start + len - 1] == '\t' && --len == 0)) {
 	    return;
 	}
@@ -12711,12 +12846,7 @@ DrawChars(
 	sValuePtr = stylePtr->sValuePtr;
 	ciPtr = chunkPtr->clientData;
 	xDisplacement = x - chunkPtr->x;
-
-	if (((CharInfo *) chunkPtr->clientData)->segPtr == textPtr->dInfoPtr->pilcrowSegPtr) {
-	    fgGC = stylePtr->eolGC;
-	} else {
-	    fgGC = stylePtr->fgGC;
-	}
+	fgGC = GetForegroundGC(textPtr, chunkPtr);
 
 	/*
 	 * Draw the text, underline, and overstrike for this chunk.
@@ -12780,12 +12910,7 @@ DrawChars(
 	    }
 
 	    sValuePtr = stylePtr->sValuePtr;
-
-	    if (((CharInfo *) chunkPtr->clientData)->segPtr == textPtr->dInfoPtr->pilcrowSegPtr) {
-		fgGC = stylePtr->eolGC;
-	    } else {
-		fgGC = stylePtr->fgGC;
-	    }
+	    fgGC = GetForegroundGC(textPtr, chunkPtr);
 
 	    /*
 	     * Draw the text, underline, and overstrike for this chunk.

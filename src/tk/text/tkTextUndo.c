@@ -1016,6 +1016,6 @@ inline bool TkTextUndoIsPerformingRedo(const TkTextUndoStack stack);
 inline bool TkTextUndoIsPerformingUndoRedo(const TkTextUndoStack stack);
 inline bool TkTextUndoUndoStackIsFull(const TkTextUndoStack stack);
 inline bool TkTextUndoRedoStackIsFull(const TkTextUndoStack stack);
-#endif
+#endif /* __STDC_VERSION__ >= 199901L */
 
 /* vi:set ts=8 sw=4: */

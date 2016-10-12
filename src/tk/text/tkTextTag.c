@@ -65,12 +65,16 @@ static const Tk_OptionSpec tagOptionSpecs[] = {
     {TK_OPTION_STRING, "-elide", NULL, NULL,
 	"0", -1, Tk_Offset(TkTextTag, elideString),
 	TK_OPTION_NULL_OK|TK_OPTION_DONT_SET_DEFAULT, 0, 0},
+    {TK_OPTION_COLOR, "-eolcolor", NULL, NULL,
+	NULL, -1, Tk_Offset(TkTextTag, eolColor), TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_BITMAP, "-fgstipple", NULL, NULL,
 	NULL, -1, Tk_Offset(TkTextTag, fgStipple), TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_FONT, "-font", NULL, NULL,
 	NULL, -1, Tk_Offset(TkTextTag, tkfont), TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_COLOR, "-foreground", NULL, NULL,
 	NULL, -1, Tk_Offset(TkTextTag, fgColor), TK_OPTION_NULL_OK, 0, 0},
+    {TK_OPTION_COLOR, "-hyphencolor", NULL, NULL,
+	NULL, -1, Tk_Offset(TkTextTag, hyphenColor), TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_STRING, "-hyphenrules", NULL, NULL,
 	NULL, Tk_Offset(TkTextTag, hyphenRulesPtr), -1, TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_STRING, "-indentbackground", NULL, NULL,
@@ -425,7 +429,7 @@ TkTextTagCmd(
 	}
 
 	if (anyChanges) {
-	    // TODO: only if an undoable tag is affected
+	    /* TODO: only if an undoable tag is affected */
 	    TkTextUpdateAlteredFlag(sharedTextPtr);
 	}
 	AppendTags(interp, countTags, arrayPtr);
@@ -462,7 +466,7 @@ TkTextTagCmd(
 	    }
 	}
 	if (anyChanges) {
-	    // TODO: only if an undoable tag is affected
+	    /* TODO: only if an undoable tag is affected */
 	    TkTextUpdateAlteredFlag(sharedTextPtr);
 	}
 	break;
@@ -973,6 +977,8 @@ TkTextUpdateTagDisplayFlags(
 	    || tagPtr->fgColor
 	    || tagPtr->selFgColor
 	    || tagPtr->fgStipple != None
+	    || tagPtr->eolColor
+	    || tagPtr->hyphenColor
 	    || tagPtr->overstrikeString
 	    || tagPtr->overstrikeColor
 	    || tagPtr->underlineString
@@ -1016,6 +1022,7 @@ TkConfigureTag(
     bool elide = tagPtr->elide;
     bool undo = tagPtr->undo;
     bool affectsDisplay = tagPtr->affectsDisplay;
+    bool affectsLineHeight = false;
 
     if (objc <= 1) {
 	Tcl_Obj *objPtr = Tk_GetOptionInfo(interp, (char *) tagPtr, tagPtr->optionTable,
@@ -1155,7 +1162,7 @@ TkConfigureTag(
 	    return TCL_ERROR;
 	}
 	if (oldHyphenRules != tagPtr->hyphenRules && textPtr->hyphenate) {
-	    // TODO: in this case some more segments are involved
+	    /* TODO: in this case some more segments are involved */
 	    affectsDisplay = true;
 	}
     }
@@ -1224,10 +1231,19 @@ TkConfigureTag(
     if (tagPtr->affectsDisplay) {
 	affectsDisplay = true;
     }
+    if (tagPtr->tkfont != None && tagPtr->tkfont != textPtr->tkfont) {
+	Tk_FontMetrics fm;
+
+	Tk_GetFontMetrics(tagPtr->tkfont, &fm);
+	if (MAX(1, fm.linespace) != textPtr->charHeight) {
+	    affectsLineHeight = true;
+	}
+    }
+
     TkBitPut(sharedTextPtr->elisionTags, tagPtr->index, !!tagPtr->elideString);
     TkBitPut(sharedTextPtr->affectDisplayTags, tagPtr->index, tagPtr->affectsDisplay);
     TkBitPut(sharedTextPtr->affectGeometryTags, tagPtr->index, tagPtr->affectsDisplayGeometry);
-    TkBitPut(sharedTextPtr->affectLineHeightTags, tagPtr->index, tagPtr->tkfont != None);
+    TkBitPut(sharedTextPtr->affectLineHeightTags, tagPtr->index, affectsLineHeight);
 
     if (!TkBitTest(sharedTextPtr->selectionTags, tagPtr->index)) {
 	TkBitPut(sharedTextPtr->affectDisplayNonSelectionTags, tagPtr->index, tagPtr->affectsDisplay);
@@ -1256,6 +1272,49 @@ TkConfigureTag(
     }
 
     return TCL_OK;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkTextFontHeightChanged --
+ *
+ *	The font height of the text widget has changed, so we have to update
+ *	textPtr->affectLineHeightTags accordingly.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	textPtr->affectLineHeightTags will be updated.
+ *
+ *----------------------------------------------------------------------
+ */
+
+void
+TkTextFontHeightChanged(
+    TkText *textPtr)		/* Info about overall widget. */
+{
+    Tcl_HashSearch search;
+    Tcl_HashEntry *hPtr = NULL;
+    TkBitField *affectLineHeightTags = textPtr->sharedTextPtr->affectLineHeightTags;
+
+    TkBitClear(affectLineHeightTags);
+
+    for (hPtr = Tcl_FirstHashEntry(&textPtr->sharedTextPtr->tagTable, &search);
+	    hPtr;
+	    hPtr = Tcl_NextHashEntry(&search)) {
+	const TkTextTag *tagPtr = Tcl_GetHashValue(hPtr);
+
+	if (tagPtr->tkfont != None && tagPtr->tkfont != textPtr->tkfont) {
+	    Tk_FontMetrics fm;
+
+	    Tk_GetFontMetrics(tagPtr->tkfont, &fm);
+	    if (MAX(1, fm.linespace) != textPtr->charHeight) {
+		TkBitSet(affectLineHeightTags, tagPtr->index);
+	    }
+	}
+    }
 }
 
 /*
@@ -1535,7 +1594,7 @@ TkTextBindEvent(
 	mask = Tk_CreateBinding(interp, *bindingTablePtr,
 		(ClientData) name, Tcl_GetString(objv[0]), fifth, append);
 	if (mask & motionMask) {
-	    // TODO: count tags with motion mask
+	    /* TODO: count tags with motion mask */
 	    sharedTextPtr->numMotionEventBindings = 1;
 	}
 	if (mask == 0) {

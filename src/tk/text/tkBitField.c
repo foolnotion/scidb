@@ -69,7 +69,7 @@ DEBUG_ALLOC(unsigned tkBitCountDestroy = 0);
 static unsigned
 LsbIndex(uint64_t x)
 {
-    /* Source: https://chessprogramming.wikispaces.com/BitScan */
+    /* Source: http://chessprogramming.wikispaces.com/BitScan */
     static const unsigned MultiplyDeBruijnBitPosition[64] = {
 	 0,  1, 48,  2, 57, 49, 28,  3, 61, 58, 50, 42, 38, 29, 17,  4,
 	62, 55, 59, 36, 53, 51, 43, 22, 45, 39, 33, 30, 24, 18, 12,  5,
@@ -101,7 +101,7 @@ MsbIndex(uint64_t x)
 static unsigned
 PopCount(uint64_t x)
 {
-    /* Source: https://chessprogramming.wikispaces.com/Population+Count */
+    /* Source: http://chessprogramming.wikispaces.com/Population+Count */
     x -=  (x >> 1) & UINT64_C(0x5555555555555555);
     x  = ((x >> 2) & UINT64_C(0x3333333333333333)) + (x & UINT64_C(0x3333333333333333));
     x  = ((x >> 4) + x) & UINT64_C(0x0F0F0F0F0F0F0F0F);
@@ -170,7 +170,7 @@ MsbIndex(uint32_t x)
 
 static unsigned
 PopCount(uint32_t x) {
-    /* Source: https://graphics.stanford.edu/~seander/bithacks.html */
+    /* Source: http://graphics.stanford.edu/~seander/bithacks.html */
     /* NOTE: the GCC function __builtin_popcount() is slower on my system. */
     x -=  (x >> 1) & 0x55555555;
     x  = ((x >> 2) & 0x33333333) + (x & 0x33333333);
@@ -1529,6 +1529,6 @@ inline void TkBitSet(TkBitField *bf, unsigned n);
 inline void TkBitUnset(TkBitField *bf, unsigned n);
 inline void TkBitPut(TkBitField *bf, unsigned n, bool value);
 inline unsigned TkBitAdjustSize(unsigned size);
-#endif
+#endif /* __STDC_VERSION__ >= 199901L */
 
 /* vi:set ts=8 sw=4: */

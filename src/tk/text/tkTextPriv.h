@@ -307,10 +307,10 @@ TkBTreeGetStartLine(
  *
  * TkBTreeGetLastLine --
  *
- *	This function returns the first line for this text widget.
+ *	This function returns the last line for this text widget.
  *
  * Results:
- *	The first line in this widget.
+ *	The last line in this widget.
  *
  * Side effects:
  *	None.
@@ -632,38 +632,6 @@ TkTextIndexGetLine(
     assert(indexPtr->priv.linePtr->parentPtr); /* expired? */
 
     return indexPtr->priv.linePtr;
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * TkTextIndexGetSegment --
- *
- *	Get the pointer to stored segment.
- *
- * Results:
- *	Pointer to the stored segment, this can be NULL.
- *
- * Side effects:
- *	None.
- *
- *----------------------------------------------------------------------
- */
-
-inline
-TkTextSegment *
-TkTextIndexGetSegment(
-    const TkTextIndex *indexPtr)/* Pointer to index. */
-{
-    assert(indexPtr->tree);
-    assert(indexPtr->priv.linePtr);
-    assert(indexPtr->priv.linePtr->parentPtr); /* expired? */
-    assert(!indexPtr->priv.segPtr || indexPtr->priv.segPtr->typePtr); /* expired? */
-    assert(!indexPtr->priv.segPtr || indexPtr->priv.segPtr->sectionPtr); /* linked? */
-    assert(!indexPtr->priv.segPtr
-	    || indexPtr->priv.segPtr->sectionPtr->linePtr == indexPtr->priv.linePtr);
-
-    return indexPtr->priv.segPtr;
 }
 
 /*
