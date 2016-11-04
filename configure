@@ -169,19 +169,20 @@ array set force {
 }
 
 array set environment {
-    CC              gcc
-    CFLAGS          "-Wall"
-    SYS_CFLAGS      ""
-    CXX             g++
-    CXXFLAGS        "-Wall"
-    SYS_CXXFLAGS    ""
-    LDFLAGS         ""
-    SYS_LDFLAGS     ""
-    OPTIMIZE        "-O3 -funit-at-a-time -fomit-frame-pointer"
     AR              ar
     ARFLAGS         rc
+    CC              gcc
+    CFLAGS          "-Wall"
+    CXXFLAGS        "-Wall"
+    CXX             g++
+    DESTDIR         ""
+    LDFLAGS         ""
+    OPTIMIZE        "-O3 -funit-at-a-time -fomit-frame-pointer"
     RANLIB          ranlib
     STRIP           strip
+    SYS_CFLAGS      ""
+    SYS_CXXFLAGS    ""
+    SYS_LDFLAGS     ""
 }
 
 array set compiler {
@@ -1006,7 +1007,6 @@ proc SystemHasInotify {} {
     global TestInotify
     global TestInotifySys
     global tcl_platform
-    global environment
     global option
 
     set testinotify [regsub -all __CC__ $TestInotify [GetGCC]]
@@ -1086,7 +1086,7 @@ fi
 #    Determines if libfam is available.
 #
 proc SystemHasFAM {} {
-    global TestFAM environment package option
+    global TestFAM package option
 
     set lib -lfam
     set testfam [regsub -all __CC__ $TestFAM [GetGCC]]
@@ -1201,7 +1201,7 @@ fi
 #    the zlib version that comes with Scidb will be used.
 #
 proc SystemHasZlib {} {
-    global TestZlib TestGzOffset environment package force compiler
+    global TestZlib TestGzOffset package force compiler
 
     if {$force(zlib)} { return 0 }
 
@@ -1286,7 +1286,7 @@ fi
 #    the zziplib version that comes with Scidb will be used.
 #
 proc SystemHasZziplib {} {
-    global TestZziplib environment package force
+    global TestZziplib package force
 
     if {$force(zziplib)} { return 0 }
 
@@ -1359,7 +1359,7 @@ fi
 #    the gdbm version that comes with Scidb will be used.
 #
 proc SystemHasGdbm {} {
-    global TestGdbm environment package
+    global TestGdbm package
 
     set testGdbm [regsub -all __CC__ $TestGdbm [GetGCC]]
     set testGdbm [regsub -all __gdbm-inc__ $testGdbm $package(gdbm-inc)]
@@ -1430,7 +1430,7 @@ fi
 #    the expat version that comes with Scidb will be used.
 #
 proc SystemHasExpat {} {
-    global TestExpat environment package force
+    global TestExpat package force
 
     if {$force(expat)} { return 0 }
 
@@ -1637,7 +1637,7 @@ proc GetGCC {{cc "CC"}} {
 
 
 proc ProbeGCC {script cc {subst {}}} {
-    global $script environment
+    global $script
 
     set exe [string tolower $script]
     set probe [regsub -all __CC__ [set $script] [GetGCC $cc]]
@@ -1807,7 +1807,7 @@ proc dontUsePtrace {} {
 
 
 proc checkFontConfig {} {
-    global TestFontConfig environment configure
+    global TestFontConfig configure
 
     puts -nonewline "    Checking your fontconfig version: "
     set testfontconfig [regsub -all __CC__ $TestFontConfig [GetGCC]]
@@ -2075,7 +2075,7 @@ proc usage {rc} {
     puts "  --fontdir=DIR              truetype fonts \[PREFIX/share/fonts\]"
     puts ""
     puts "Fine tuning of the installation directory (see INSTALL):"
-    puts "  --destdir=DIR              installation directory for packaging \[\]"
+    puts "  --destdir=DIR              installation directory for packaging \[$environment(DESTDIR)\]"
     puts ""
     puts "Program names:"
     puts "  --program-suffix=SUFFIX    append SUFFIX to installed program names"
@@ -2136,20 +2136,21 @@ proc usage {rc} {
     puts "                             (not recommended)"
     puts ""
     puts "Some influential environment variables:"
-    puts "  CC           C compiler command \[$environment(CC)\]"
-    puts "  CFLAGS       C compiler flags \[$environment(CFLAGS)\]"
-    puts "  SYS_CFLAGS   system specific C compiler flags"
-    puts "  CXX          C++ compiler command \[$environment(CXX)\]"
-    puts "  CXXFLAGS     C++ compiler flags \[$environment(CXXFLAGS)\]"
-    puts "  SYS_CXXFLAGS system specific C++ compiler flags"
-    puts "  LDFLAGS      linker flags, e.g. -L<lib dir> if you have libraries in a"
-    puts "               nonstandard directory <lib dir>"
-    puts "  SYS_LDFLAGS  system specific linker flags"
-    puts "  OPTIMIZE     C/C++ optimization flags \[$environment(OPTIMIZE)\]"
     puts "  AR           AR for the host \[$environment(AR)\]"
     puts "  ARFLAGS      Flags for AR \[$environment(ARFLAGS)\]"
+    puts "  CC           C compiler command \[$environment(CC)\]"
+    puts "  CFLAGS       C compiler flags \[$environment(CFLAGS)\]"
+    puts "  CXX          C++ compiler command \[$environment(CXX)\]"
+    puts "  CXXFLAGS     C++ compiler flags \[$environment(CXXFLAGS)\]"
+    puts "  DESTDIR      install installation directory for packaging \[$environment(DESTDIR)\]"
+    puts "  LDFLAGS      linker flags, e.g. -L<lib dir> if you have libraries in a"
+    puts "               nonstandard directory <lib dir>"
+    puts "  OPTIMIZE     C/C++ optimization flags \[$environment(OPTIMIZE)\]"
     puts "  RANLIB       RANLIB for the host \[$environment(RANLIB)\]"
     puts "  STRIP        STRIP for the host \[$environment(STRIP)\]"
+    puts "  SYS_CFLAGS   system specific C compiler flags"
+    puts "  SYS_CXXFLAGS system specific C++ compiler flags"
+    puts "  SYS_LDFLAGS  system specific linker flags"
     puts ""
     puts "Use these variables to override the choices made by \`configure' or to help"
     puts "it to find libraries and programs with nonstandard names/locations."
@@ -2163,6 +2164,9 @@ set environment(OPTIMIZE) ""
 set feature(symbols) yes
 set feature(assertions) yes
 set configure(program-suffix) "-beta"
+if [string length $environment(DESTDIR)] {
+    set configure(destdir) $environment(DESTDIR)
+}
 
 if {[lsearch $argv -h] >= 0 || [lsearch $argv --help] >= 0} { usage 0 }
 
@@ -2294,6 +2298,10 @@ if {[string length $gxxVer]} {
     checkZziplib
     checkExpat
     checkGdbm
+
+    if {[info exists configure(destdir)]} {
+        puts "*** Installation directory is '$configure(destdir)'."
+    }
 
     # We will always use the broken linker hack, the newer versions
     # of the GNU linker are all broken (problems with the initialization

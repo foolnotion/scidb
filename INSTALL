@@ -165,6 +165,11 @@ But before integration of these scripts the paths used inside the scripts
 has to be adjusted.
 
 IMPORTANT NOTE:
+If the environment variable DESTDIR is set then the make/installation process
+will use this for --destdir, provided that --destdir is not explicitly
+specified.
+
+IMPORTANT NOTE:
 Without setup of the truetype fonts Scidb will not run properly.
 
 = vi:set et sw=3 ts=3: =
