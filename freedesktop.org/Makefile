@@ -251,7 +251,9 @@ distribute:
 
 remove:
 	@echo "Remove freedesktop.org stuff"
-	@rm -f $(SHAREDIR)/freedesktop.org/*
-	@rm -f $(SHAREDIR)/freedesktop.org
+	@if [ -d $(SHAREDIR)/freedesktop.org ]; then \
+		rm -f $(SHAREDIR)/freedesktop.org/*;      \
+		rmdir $(SHAREDIR)/freedesktop.org;        \
+	fi
 
 # vi:set ts=3 sw=3:

@@ -136,7 +136,7 @@ you have to create a symlink as a workaround:
     sudo ln -s /usr/include/freetype2/config /usr/include/freetype2/freetype/config
 
 -------------------------------------------------------------------------------
-Important note for built of packages
+Important notes for the built of packages
 -------------------------------------------------------------------------------
 For the built of packages in a temporary directory some fine tuning parameters
 should be used, for example:
@@ -155,7 +155,8 @@ directory $pkgdir/usr/games.
 Without the --destdir parameter the configure script would choose the path
 /usr/share/fonts/truetype/Scidb for the installation of the truetype fonts,
 because in a normal user installation this is the wanted directory, but
-in this example $pkgdir/usr/share/fonts/truetype/Scidb will be used instead.
+in the example above $pkgdir/usr/share/fonts/truetype/Scidb will be used
+instead.
 
 IMPORTANT NOTE:
 With parameter --destdir the setup of the truetype fonts and the
@@ -163,11 +164,6 @@ freedesktop.org stuff will be skipped. This means that the packager has to
 integrate the scripts postinstall-pak, postremove-pak, and preremove-pak.
 But before integration of these scripts the paths used inside the scripts
 has to be adjusted.
-
-IMPORTANT NOTE:
-If the environment variable DESTDIR is set then the make/installation process
-will use this for --destdir, provided that --destdir is not explicitly
-specified.
 
 IMPORTANT NOTE:
 Without setup of the truetype fonts Scidb will not run properly.

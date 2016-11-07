@@ -64,10 +64,19 @@ dist-clean: clean-subdirs
 
 install: check-mtime install-subdirs install-xdg # update-magic
 
-uninstall: uninstall-subdirs uninstall-xdg # update-magic
+cleanup:
+	@if [ -d $(SHAREDIR) ]; then                                        \
+		if [ "`find $(SHAREDIR) -type d -empty`" = "$(SHAREDIR)" ]; then \
+			rmdir $(SHAREDIR);                                            \
+		fi;                                                              \
+	fi
 
-uninstall-photos:
-	@$(MAKE) -C tcl uninstall-photos
+uninstall: uninstall-subdirs uninstall-xdg cleanup # update-magic
+
+uninstall-photos: cleanup-photos cleanup
+
+cleanup-photos:
+	@$(MAKE) -C tcl uninstall-photos;
 
 Makefile.in:
 	@echo "****** Please use the 'configure' script before building Scidb ******"

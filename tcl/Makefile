@@ -340,7 +340,7 @@ uninstall-themes:
 	fi
 
 install-text-scripts:
-	@echo "Install TeXt scripts"
+	@echo "Install additional TeXt scripts"
 	@install -m 755 -d $(SHAREDIR)/scripts
 	@install -m 644 -p scripts/*.eXt $(SHAREDIR)/scripts
 	@install -m 644 -p scripts/*.css $(SHAREDIR)/scripts
@@ -578,13 +578,16 @@ install: install-scripts install-pieces install-cursors install-flags \
 uninstall: uninstall-scripts uninstall-pieces uninstall-cursors uninstall-flags uninstall-localizations \
 				uninstall-themes uninstall-text-scripts uninstall-textures uninstall-images \
 				uninstall-help uninstall-config uninstall-fonts
-	@if [ -d $(SHAREDIR) ]; then                                                          \
-		if [ "`find $(SHAREDIR) -type d -empty`" = "`ls -d $(SHAREDIR)`" ]; then           \
-			rmdir $(SHAREDIR);                                                              \
-		fi;                                                                                \
-		if [ -d $(SHAREDIR)/photos ]; then                                                 \
-			echo "Type 'make uninstall-photos' if you want to uninstall all player photos"; \
-		fi;                                                                                \
+	@if [ -d $(SHAREDIR) ]; then                                                             \
+		if [ -n "$(XDGDIR)" ]; then                                                           \
+			rm -rf $(SHAREDIR)/photos;                                                         \
+		fi;                                                                                   \
+		if [ "`find $(SHAREDIR) -type d -empty`" = "`ls -d $(SHAREDIR)`" ]; then              \
+			rmdir $(SHAREDIR);                                                                 \
+		fi;                                                                                   \
+		if [ -d $(SHAREDIR)/photos ]; then                                                    \
+			echo "Type 'make uninstall-photos' if you want to uninstall all player photos";    \
+		fi;                                                                                   \
 	fi
 
 $(SCRIPT): $(SOURCES)
@@ -592,7 +595,7 @@ $(SCRIPT): $(SOURCES)
 	@if [ -e $(SCRIPT) ]; then rm -f $(SCRIPT); fi
 	@cat $(SOURCES) | sed                                  \
 		-e 's/# vi:set ts=3 sw=3:/update idletasks/'        \
-		-e 's#%SHAREDIR%#$(SHAREDIR)#g'                     \
+		-e 's#%SHAREDIR%#$(DATADIR)#g'                      \
 		-e 's#%%ENGINESDIR%%#$(%ENGINESDIR%)#g'             \
 		-e 's#%UPDATE_PHOTO_FILES%#$(UPDATE_PHOTO_FILES)#g' \
 		-e '/^##/d'                                         \
@@ -606,7 +609,7 @@ $(UPDATE_PHOTO_FILES): utils/update-photos.tcl
 	@if [ -e $(UPDATE_PHOTO_FILES) ]; then rm -f $(UPDATE_PHOTO_FILES); fi
 	@cat utils/update-photos.tcl | sed                     \
 		-e 's/%PROGRAM%/tclscidb$(SUFFIX)/g'                \
-		-e 's#%SHAREDIR%#$(SHAREDIR)#g'                     \
+		-e 's#%SHAREDIR%#$(DATADIR)#g'                      \
 		-e 's/%UPDATE_PHOTO_FILES%/$(UPDATE_PHOTO_FILES)/g' \
 		> $(UPDATE_PHOTO_FILES)
 	@chmod 0555 $(UPDATE_PHOTO_FILES)
@@ -616,7 +619,7 @@ $(ARCH): utils/archive.tcl
 	@if [ -e $(ARCH) ]; then rm -f $(ARCH); fi
 	@cat utils/archive.tcl | sed            \
 		-e 's/%PROGRAM%/tclscidb$(SUFFIX)/g' \
-		-e 's#%SHAREDIR%#$(SHAREDIR)#g'      \
+		-e 's#%SHAREDIR%#$(DATADIR)#g'       \
 		-e 's/%ARCH%/$(ARCH)/g'              \
 		> $(ARCH)
 	@chmod 0555 $(ARCH)
