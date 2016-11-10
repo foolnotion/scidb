@@ -1,5 +1,9 @@
+xdgdir=/usr/share/scidb-beta/freedesktop.org
 if [ -f /usr/local/share/scidb-beta/freedesktop.org/Makefile ]; then
-  cd /usr/local/share/scidb-beta/freedesktop.org
-  make -f Makefile uninstall-mime
-  make -f Makefile uninstall-desktop-menu
+	xdgdir=/usr/local/share/scidb-beta/freedesktop.org
+fi
+if [ -d $xdgdir ]; then
+	cd $xdgdir
+	make -f Makefile uninstall-mime
+	make -f Makefile uninstall-desktop-menu
 fi
