@@ -740,11 +740,9 @@ Decoder::decodeComments(MoveNode* node, Consumer* consumer)
 				node->addAnnotation(nag::Diagram);
 
 			comment.normalize();
-
-			if (node->next()->atLineEnd())
-				node->swapComment(comment, move::Post);
-			else
+			if (!node->next()->atLineEnd())
 				node->swapComment(comment, move::Ante);
+			node->swapComment(comment, move::Post);
 		}
 	}
 
@@ -987,9 +985,6 @@ void
 Decoder::decodeVariation(Consumer& consumer, MoveNode const* node)
 {
 	M_ASSERT(node);
-
-	if (node->hasNote())
-		consumer.putPrecedingComment(node->comment(move::Post), node->annotation(), node->marks());
 
 	for (node = node->next(); node; node = node->next())
 	{

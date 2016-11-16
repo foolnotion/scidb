@@ -209,6 +209,7 @@ if {[testOption help]} {
 	exit 0
 }
 
+# TODO: test this option
 if {0 && [testOption update-player-photos]} {
 	proc inform {what args} {
 		switch $what {
