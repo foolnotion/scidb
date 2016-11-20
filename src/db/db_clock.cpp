@@ -77,8 +77,10 @@ Clock::parse(char const* s)
 	m_hour = strtoul(s, &e, 10);
 	e = skipSpaces(e);
 
+#if 0 // we need at least hour and minutes
 	if (::isdelim(*e))
 		return e;
+#endif
 
 	if (*e != ':')
 		return 0;

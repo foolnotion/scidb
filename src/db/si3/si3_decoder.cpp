@@ -755,7 +755,6 @@ Decoder::decodeComments(MoveNode* node, Consumer* consumer)
 				mstl::string	content;
 				Comment			comment;
 				MarkSet			marks;
-				MoveInfoSet		moveInfoSet;
 
 				m_strm.get(content);
 				marks.extractFromComment(content);
@@ -917,8 +916,8 @@ Decoder::doDecoding(db::Consumer& consumer, TagSet& tags)
 	DataEnd();
 
 	decodeComments(&start, &consumer);
-	decodeVariation(consumer, &start);
 	m_engines.swap(consumer.engines());
+	decodeVariation(consumer, &start);
 	consumer.finishMoveSection(result::fromString(tags.value(tag::Result)));
 
 	if (m_codec->failed())
