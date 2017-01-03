@@ -296,6 +296,19 @@ Application::end() const
 }
 
 
+bool
+Application::exists(unsigned databaseId) const
+{
+	for (Iterator i = begin(), e = end(); i != e; ++i)
+	{
+		if (i->database().id() == databaseId)
+			return true;
+	}
+
+	return false;
+}
+
+
 mstl::string const& Application::clipbaseName()		{ return MultiCursor::clipbaseName(); }
 mstl::string const& Application::scratchbaseName()	{ return MultiCursor::scratchbaseName(); }
 

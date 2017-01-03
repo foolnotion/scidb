@@ -93,6 +93,7 @@ set CrosstableLimit			"The crosstable limit of %d players will be exceeded."
 set CrosstableLimitDetail	"'%s' is choosing another table mode."
 set CannotOverwriteFile		"Cannot overwrite file '%s': permission denied."
 set CannotCreateFile			"Cannot create file '%s': permission denied."
+set BaseIsClosed				"Database has been closed."
 
 } ;# namespace mc
 
@@ -233,8 +234,8 @@ proc open {parent base variant index view source} {
 		::scidb::crosstable::release $Vars(tableId) $Vars(viewId)
 		if {$Vars(open)} {
 			::scidb::view::close $Vars(base) $Vars(variant) $Vars(viewId)
-			array unset Vars viewId
 		}
+		array unset Vars viewId
 	}
 
 	set Vars(open) 1
@@ -261,10 +262,17 @@ proc open {parent base variant index view source} {
 	if {[winfo exists $dlg]} {
 		::widget::dialogRaise $dlg
 		set Vars(tableId) [::scidb::crosstable::make $base $variant $Vars(viewId)]
+		::scidb::view::unsubscribe {*}$Vars(subscribe)
+		set Vars(subscribe) [list [namespace current]::Close $base $variant $dlg]
+		::scidb::view::subscribe {*}$Vars(subscribe)
+		ConfigureToolbar $dlg normal
+		::toolbar::childconfigure $Vars(toolbar:refresh) -state disabled
+		::toolbar::childconfigure $Vars(toolbar:reset) -state disabled
 		UpdateContent $dlg 1
 		return
 	}
 
+	set Vars(options) {}
 	set Vars(subscribe) [list [namespace current]::Close $base $variant $dlg]
 	::scidb::view::subscribe {*}$Vars(subscribe)
 
@@ -317,6 +325,7 @@ proc open {parent base variant index view source} {
 		;
 	set Vars(widget:type) $f1.choose_type
 	set Vars(value:type) [lindex $List(type) 0]
+	lappend Vars(options) $Vars(widget:type)
 
 	tk::label $f1.label_order -textvar [namespace current]::mc::Order
 	::ttk::combobox $f1.choose_order \
@@ -328,6 +337,7 @@ proc open {parent base variant index view source} {
 		;
 	set Vars(widget:order) $f1.choose_order
 	set Vars(value:order) [lindex $List(order) 0]
+	lappend Vars(options) $Vars(widget:order)
 
 	tk::label $f1.scoring_label -textvar [namespace current]::mc::ScoringSystem
 	set Vars(widget:scoring) $f1.choose_scoring
@@ -339,20 +349,21 @@ proc open {parent base variant index view source} {
 		-width 12 \
 		;
 	set Vars(value:scoring) [lindex $List(scoring) 0]
+	lappend Vars(options) $Vars(widget:scoring)
 	
 	::toolbar::add $tb separator
-	::toolbar::add $tb button \
-		-image $icon::32x32::go \
+	set Vars(toolbar:refresh) [::toolbar::add $tb button \
+		-image [list [::icon::makeStateSpecificIcons $icon::32x32::go]] \
 		-command [namespace code [list Refresh $dlg]] \
 		-tooltipvar [namespace current]::mc::UpdateDisplay \
 		-padx 4 \
-		;
-	::toolbar::add $tb button \
-		-image $icon::32x32::reset \
+	]
+	set Vars(toolbar:reset) [::toolbar::add $tb button \
+		-image [list [::icon::makeStateSpecificIcons $icon::32x32::reset]] \
 		-command [namespace code [list Reset $dlg]] \
 		-tooltipvar [namespace current]::mc::RevertToStart \
 		-padx 4 \
-		;
+	]
 
 	grid $f1.label_type     -row 1 -column 1 -sticky w
 	grid $f1.choose_type    -row 1 -column 3 -sticky ew
@@ -368,6 +379,7 @@ proc open {parent base variant index view source} {
 		tk::label $f.label$i -textvar [namespace current]::${dlg}::Vars(label:tiebreak$i)
 		set Vars(widget:tiebreak$i) $f.choose$i
 		set Vars(value:tiebreak$i) [lindex $List(tiebreak) 0]
+		lappend Vars(options) $Vars(widget:tiebreak$i)
 		::ttk::combobox $Vars(widget:tiebreak$i) \
 			-takefocus 0 \
 			-exportselection 0 \
@@ -450,11 +462,29 @@ proc open {parent base variant index view source} {
 }
 
 
+proc ConfigureToolbar {dlg state} {
+	variable ${dlg}::Vars
+
+	foreach w $Vars(options) {
+		$w configure -state $state
+	}
+}
+
+
 proc Close {dlg base variant view} {
 	variable ${dlg}::Vars
 
 	if {$Vars(viewId) == $view} {
 		set [namespace current]::${dlg}::Vars(open) 0
+		set Vars(index) -1
+		ConfigureButtons $dlg
+
+		::toolbar::childconfigure $Vars(toolbar:refresh) -state disabled
+		::toolbar::childconfigure $Vars(toolbar:reset) -state disabled
+	}
+
+	if {$view == 0} {
+		ConfigureToolbar $dlg disabled
 	}
 }
 
@@ -922,6 +952,11 @@ proc Open {dlg which gameIndex} {
 
 	set base $Vars(base)
 	set variant $Vars(variant)
+
+	if {![::scidb::db::get open? $base $variant]} {
+		return [::dialog::error -parent $dlg -message $mc::BaseIsClosed]
+	}
+
 	set path $Vars(html)
 	set viewId $Vars(viewId)
 
@@ -962,7 +997,8 @@ proc NodeHandler {node} {
 	variable Nodes
 
 	set attr [$node attribute -default {} recv]
-	if {[string length $attr]} { set Nodes($attr) $node }
+	# don't hilite "event", because we have no special action for this attribute
+	if {[string length $attr] && $attr ne "event"} { set Nodes($attr) $node }
 }
 
 
@@ -1103,8 +1139,8 @@ proc Mouse1Down {dlg nodes} {
 		}
 
 		# don't use because Button-1 is used for highlighting
-#		set rank [$node attribute -default {} rank]
-#		if {[string length $rank]} { ShowPlayerCard $dlg $rank }
+		# set rank [$node attribute -default {} rank]
+		# if {[string length $rank]} { ShowPlayerCard $dlg $rank }
 
 		set mark [$node attribute -default {} mark]
 		if {[string length $mark]} {
@@ -1153,6 +1189,7 @@ proc Mouse2Up {dlg nodes} {
 
 proc Mouse3Down {dlg nodes} {
 	variable Popup_
+	variable ${dlg}::Vars
 
 	set rank {}
 	set gameIndex {}
@@ -1174,42 +1211,50 @@ proc Mouse3Down {dlg nodes} {
 	menu $m -tearoff false
 	catch { wm attributes $m -type popup_menu }
 
-	if {[llength $rank]} {
-		$m add command \
-			-compound left \
-			-image $::icon::16x16::playercard \
-			-label " $::playertable::mc::ShowPlayerCard" \
-			-command [namespace code [list ShowPlayerCard $dlg $rank]] \
+	set base $Vars(base)
+	set variant $Vars(variant)
+	set isOpen [expr {[::scidb::db::get open? $base $variant]}]
+
+	if {$isOpen} {
+		if {[llength $rank]} {
+			$m add command \
+				-compound left \
+				-image $::icon::16x16::playercard \
+				-label " $::playertable::mc::ShowPlayerCard" \
+				-command [namespace code [list ShowPlayerCard $dlg $rank]] \
+				;
+		} else {
+			$m add command \
+				-compound left \
+				-image $::icon::16x16::browse \
+				-label " $::browser::mc::BrowseGame" \
+				-command [namespace code [list Open $dlg browser $gameIndex]] \
+				;
+			$m add command \
+				-compound left \
+				-image $::icon::16x16::overview \
+				-label " $::overview::mc::Overview" \
+				-command [namespace code [list Open $dlg overview $gameIndex]] \
+				;
+			$m add command \
+				-compound left \
+				-image $::icon::16x16::document \
+				-label " $::browser::mc::LoadGame" \
+				-command [namespace code [list Open $dlg pgn $gameIndex]] \
+				;
+			if {[::scidb::game::current] < 9} { set state normal } else { set state disabled }
+			variable ${dlg}::Vars
+			set secondary [list $Vars(base) $Vars(variant) $Vars(viewId) $gameIndex]
+			$m add command \
+				-compound left \
+				-image $::icon::16x16::merge \
+				-label " $::browser::mc::MergeGame..." \
+				-command [list gamebar::mergeGame $dlg $secondary] \
+				-state $state \
 			;
-	} else {
-		$m add command \
-			-compound left \
-			-image $::icon::16x16::browse \
-			-label " $::browser::mc::BrowseGame" \
-			-command [namespace code [list Open $dlg browser $gameIndex]] \
-			;
-		$m add command \
-			-compound left \
-			-image $::icon::16x16::overview \
-			-label " $::overview::mc::Overview" \
-			-command [namespace code [list Open $dlg overview $gameIndex]] \
-			;
-		$m add command \
-			-compound left \
-			-image $::icon::16x16::document \
-			-label " $::browser::mc::LoadGame" \
-			-command [namespace code [list Open $dlg pgn $gameIndex]] \
-			;
-		if {[::scidb::game::current] < 9} { set state normal } else { set state disabled }
-		variable ${dlg}::Vars
-		set secondary [list $Vars(base) $Vars(variant) $Vars(viewId) $gameIndex]
-		$m add command \
-			-compound left \
-			-image $::icon::16x16::merge \
-			-label " $::browser::mc::MergeGame..." \
-			-command [list gamebar::mergeGame $dlg $secondary] \
-			-state $state \
-		;
+		}
+
+		$m add separator
 	}
 
 	if {[info exists m]} {
@@ -1229,41 +1274,49 @@ proc BuildMenu {dlg m} {
 	variable ${dlg}::Vars
 
 	set sub [menu $m.display]
+	set base $Vars(base)
+	set variant $Vars(variant)
+	set isOpen [expr {[::scidb::db::get open? $base $variant]}]
 
-	if {$Vars(bestMode) in {knockout simultan}} { set state disabled } else { set state normal }
-	foreach opt {rating performance tiebreak winDrawLoss} {
+	if {$isOpen} {
+		if {$Vars(bestMode) in {knockout simultan}} { set state disabled } else { set state normal }
+		foreach opt {rating performance tiebreak winDrawLoss} {
+			$sub add checkbutton \
+				-label [set mc::Show[string toupper $opt 0 0]] \
+				-command [namespace code [list UpdateContent $dlg]] \
+				-variable [namespace current]::Options(show:$opt) \
+				-state $state \
+				;
+			::theme::configureCheckEntry $sub
+		}
+
+		if {$Vars(bestMode) eq "swiss"} { set state normal } else { set state disabled }
 		$sub add checkbutton \
-			-label [set mc::Show[string toupper $opt 0 0]] \
-			-command [namespace code [list UpdateContent $dlg]] \
-			-variable [namespace current]::Options(show:$opt) \
-			-state $state \
+			-label $mc::ShowOpponent \
+			-variable [namespace current]::Options(show:opponent) \
+			-state $state
 			;
 		::theme::configureCheckEntry $sub
+
+		$m add command \
+			-label " $mc::SaveAsHTML..." \
+			-command [namespace code [list SaveAsHTML $dlg]] \
+			-image $::icon::16x16::save \
+			-compound left \
+			;
+
+		$m add separator
 	}
 
-	if {$Vars(bestMode) eq "swiss"} { set state normal } else { set state disabled }
-	$sub add checkbutton \
-		-label $mc::ShowOpponent \
-		-variable [namespace current]::Options(show:opponent) \
-		-state $state
-		;
-	::theme::configureCheckEntry $sub
-
-	$m add command \
-		-label " $mc::SaveAsHTML..." \
-		-command [namespace code [list SaveAsHTML $dlg]] \
-		-image $::icon::16x16::save \
-		-compound left \
-		;
-
-	$m add separator
 	if {[winfo exists $dlg.next]} {
+		set state [expr {$isOpen ? "normal" : "disabled"}]
 		$m add command \
 			-label " [::mc::stripAmpersand $::widget::mc::Previous]" \
 			-command [$dlg.previous cget -command] \
 			-image $::icon::16x16::previous \
 			-compound left \
 			-accelerator "$::mc::Key(Alt)-[::mc::extractAccelerator $::widget::mc::Previous]" \
+			-state $state \
 			;
 		$m add command \
 			-label " [::mc::stripAmpersand $::widget::mc::Next]" \
@@ -1271,6 +1324,7 @@ proc BuildMenu {dlg m} {
 			-image $::icon::16x16::next \
 			-compound left \
 			-accelerator "$::mc::Key(Alt)-[::mc::extractAccelerator $::widget::mc::Next]" \
+			-state $state \
 			;
 	}
 	$m add command \
@@ -1281,63 +1335,65 @@ proc BuildMenu {dlg m} {
 		-accelerator "$::mc::Key(Alt)-[::mc::extractAccelerator $::widget::mc::Close]" \
 		;
 
-	$m add separator
+	if {$isOpen} {
+		$m add separator
 
-	::font::html::addChangeFontSizeToMenu crosstable $m \
-		[list [namespace current]::ChangeFontSize $dlg] [::html::minFontSize] [::html::maxFontSize]
-	::font::html::addChangeFontToMenu crosstable $m [list [namespace current]::ApplyFont $dlg] yes
-	$m add separator
+		::font::html::addChangeFontSizeToMenu crosstable $m \
+			[list [namespace current]::ChangeFontSize $dlg] [::html::minFontSize] [::html::maxFontSize]
+		::font::html::addChangeFontToMenu crosstable $m [list [namespace current]::ApplyFont $dlg] yes
+		$m add separator
 
-	$m add cascade -label $mc::Display -menu $sub
-	set sub [menu $m.style]
+		$m add cascade -label $mc::Display -menu $sub
+		set sub [menu $m.style]
 
-	menu $sub.spacing
-	menu $sub.padding
-	menu $sub.knockout
+		menu $sub.spacing
+		menu $sub.padding
+		menu $sub.knockout
 
-	foreach pad {1 2 3 4 5 6} {
-		$sub.padding add radiobutton \
-			-label $pad \
+		foreach pad {1 2 3 4 5 6} {
+			$sub.padding add radiobutton \
+				-label $pad \
+				-command [namespace code [list UpdateContent $dlg]] \
+				-variable [namespace current]::Options(fmt:padding) \
+				-value $pad \
+				;
+			::theme::configureRadioEntry $sub.padding $pad
+		}
+		foreach spc {0 1} {
+			$sub.spacing add radiobutton \
+				-label $spc \
+				-command [namespace code [list UpdateContent $dlg]] \
+				-variable [namespace current]::Options(fmt:spacing) \
+				-value $spc \
+				;
+			::theme::configureRadioEntry $sub.spacing $spc
+		}
+
+		if {$Vars(bestMode) eq "knockout"} { set state normal } else { set state disabled }
+
+		$sub add cascade -label $mc::Spacing -menu $sub.spacing
+		$sub add cascade -label $mc::Padding -menu $sub.padding
+		$sub add cascade -label $mc::KnockoutStyle -menu $sub.knockout -state $state
+
+		set text $mc::Triangle
+		$sub.knockout add radiobutton \
+			-label $text \
 			-command [namespace code [list UpdateContent $dlg]] \
-			-variable [namespace current]::Options(fmt:padding) \
-			-value $pad \
+			-variable [namespace current]::Options(fmt:pyramid) \
+			-value 0 \
 			;
-		::theme::configureRadioEntry $sub.padding $pad
-	}
-	foreach spc {0 1} {
-		$sub.spacing add radiobutton \
-			-label $spc \
+		::theme::configureRadioEntry $sub.knockout $text
+		set text $mc::Pyramid
+		$sub.knockout add radiobutton \
+			-label $text \
 			-command [namespace code [list UpdateContent $dlg]] \
-			-variable [namespace current]::Options(fmt:spacing) \
-			-value $spc \
+			-variable [namespace current]::Options(fmt:pyramid) \
+			-value 1 \
 			;
-		::theme::configureRadioEntry $sub.spacing $spc
+		::theme::configureRadioEntry $sub.knockout $text
+
+		$m add cascade -label $mc::Style -menu $sub
 	}
-
-	if {$Vars(bestMode) eq "knockout"} { set state normal } else { set state disabled }
-
-	$sub add cascade -label $mc::Spacing -menu $sub.spacing
-	$sub add cascade -label $mc::Padding -menu $sub.padding
-	$sub add cascade -label $mc::KnockoutStyle -menu $sub.knockout -state $state
-
-	set text $mc::Triangle
-	$sub.knockout add radiobutton \
-		-label $text \
-		-command [namespace code [list UpdateContent $dlg]] \
-		-variable [namespace current]::Options(fmt:pyramid) \
-		-value 0 \
-		;
-	::theme::configureRadioEntry $sub.knockout $text
-	set text $mc::Pyramid
-	$sub.knockout add radiobutton \
-		-label $text \
-		-command [namespace code [list UpdateContent $dlg]] \
-		-variable [namespace current]::Options(fmt:pyramid) \
-		-value 1 \
-		;
-	::theme::configureRadioEntry $sub.knockout $text
-
-	$m add cascade -label $mc::Style -menu $sub
 
 	set sub [menu $m.debugging]
 

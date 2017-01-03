@@ -163,6 +163,7 @@ public:
 	static bool hasInstance();
 
 	bool isClosed() const;
+	bool exists(unsigned databaseId) const;
 	bool contains(Cursor& cursor) const;
 	bool contains(mstl::string const& name) const;
 	bool contains(mstl::string const& name, db::variant::Type variant) const;

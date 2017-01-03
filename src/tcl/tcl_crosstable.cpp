@@ -97,11 +97,17 @@ static TableHash tableHash;
 static TournamentTable*
 getTable(char const* cmd, unsigned dbId, unsigned view)
 {
+	if (!Scidb->exists(dbId))
+	{
+		error(cmd, nullptr, nullptr, "database %u is not existing", dbId);
+		return nullptr;
+	}
+
 	if (TableHash::const_pointer ptr = tableHash.find(Key(dbId, view)))
 		return *ptr;
 
 	error(cmd, nullptr, nullptr, "crosstable not exisiting in database %u", dbId);
-	return 0; // not reached
+	return nullptr; // not reached
 }
 
 
