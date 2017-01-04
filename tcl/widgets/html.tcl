@@ -802,7 +802,7 @@ proc Configure {parent width req} {
 
 	if {[winfo width $parent.sub.html] == $width} { return }
 
-	# This (using the serial field from the event) is working under x11
+	# This (using the serial field from the event) is working under X11
 	# to prevent endless loops. But does this work with windows and mac?
 	if {$req == $Priv(request)} { return }
 	set Priv(request) $req
@@ -1371,7 +1371,7 @@ proc SelectionHandler {w args} {
 proc WordStart {str index} {
 	set index [string wordstart $str $index]
 
-	# this is [string wordstart] but including zero with joiners
+	# this is [string wordstart] but including zero width joiners
 	while {	$index > 1
 			&& (	[string index $str [expr {$index - 1}]] eq "\u200c"
 				|| [string index $str [expr {$index - 1}]] eq "\u200d")} {
@@ -1385,7 +1385,7 @@ proc WordStart {str index} {
 proc WordEnd {str index} {
 	set index [string wordend $str $index]
 
-	# this is [string wordend] but including zero with joiners
+	# this is [string wordend] but including zero width joiners
 	while {	$index < [string length $str]
 			&& (	[string index $str $index] eq "\u200c"
 				|| [string index $str $index] eq "\u200d")} {
@@ -1466,13 +1466,17 @@ bind Html <Shift-Triple-ButtonPress-1>	[namespace code { WrapExtendSelection %W 
 switch [tk windowingsystem] {
 	win32 {
 		bind Html <MouseWheel> { [winfo parent %W] yview scroll [expr %D/-30] units; break }
+		bind _HTML_Frame_ <MouseWheel> { %W.html yview scroll [expr %D/-30] units; break }
 	}
 	aqua {
 		bind Html <MouseWheel> { [winfo parent %W] yview scroll [expr %D*-4] units; break }
+		bind _HTML_Frame_ <MouseWheel> { %W.html yview scroll [expr %D*-4] units; break }
 	}
 	x11 {
 		bind Html <ButtonPress-4> { [winfo parent %W] yview scroll -4 units; break }
 		bind Html <ButtonPress-5> { [winfo parent %W] yview scroll +4 units; break }
+		bind _HTML_Frame_ <ButtonPress-4> { %W.html yview scroll -4 units; break }
+		bind _HTML_Frame_ <ButtonPress-5> { %W.html yview scroll +4 units; break }
 	}
 }
 
