@@ -192,7 +192,7 @@ mstl::string&
 Move::printLan(mstl::string& s, protocol::ID protocol, encoding::CharSet charSet) const
 {
 	M_REQUIRE(!isInvalid());
-	M_REQUIRE(isPrintable());
+	M_REQUIRE(isPrintable() || isEmpty());
 
 	if (isNull())
 	{
