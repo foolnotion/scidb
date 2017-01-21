@@ -3,7 +3,7 @@
  *
  *	Private implementation for Q-Tree.
  *
- * Copyright (c) 2015-2016 Gregor Cramer
+ * Copyright (c) 2015-2017 Gregor Cramer
  *
  * See the file "license.terms" for information on usage and redistribution of
  * this file, and for a DISCLAIMER OF ALL WARRANTIES.
@@ -19,7 +19,7 @@
 #include <assert.h>
 
 #if __STDC_VERSION__ < 199901L
-# define inline
+# define inline /* we are not C99 conform */
 #endif
 
 
@@ -31,7 +31,7 @@ TkQTreeRectIsEmpty(
     assert(rect);
 
     /*
-     * Normally the following natural statement will be used here:
+     * Normally this natural statement will be used here:
      *
      *     return rect->xmin >= rect->xmax || rect->ymin >= rect->ymax;
      *
@@ -49,9 +49,9 @@ TkQTreeRectIsEmpty(
      * the transformed statement can be a bit slower than the natural statement,
      * but I will assume that on such architectures GCC will transform it (back)
      * to the natural one (when optimization is enabled), without giving a warning,
-     * because the natural statement does not use arithmetic.
+     * because the natural statement doesn't use arithmetic.
      *
-     * Note that this problem only occurs with signed values.
+     * Note that this problem only happen with signed values.
      */
 
     return rect->xmin - rect->xmax >= 0 || rect->ymin - rect->ymax >= 0;

@@ -3,7 +3,7 @@
  *
  *	This module implements bit field operations.
  *
- * Copyright (c) 2015-2016 Gregor Cramer
+ * Copyright (c) 2015-2017 Gregor Cramer
  *
  * See the file "license.terms" for information on usage and redistribution of
  * this file, and for a DISCLAIMER OF ALL WARRANTIES.
@@ -16,13 +16,8 @@
 #include "tk.h"
 #endif
 
+#include "tkBool.h"
 #include <stdint.h>
-
-#if !defined(TK_BOOL_IS_DEFINED) && !defined(__cplusplus)
-typedef int bool;
-enum { true = (int) 1, false = (int) 0 };
-# define TK_BOOL_IS_DEFINED
-#endif
 
 #if __STDC_VERSION__ < 199901L
 # define inline /* we are not C99 conform */
@@ -120,16 +115,13 @@ bool TkBitDisjunctive(const TkBitField *bf1, const TkBitField *bf2);
 inline bool TkBitIntersects(const TkBitField *bf1, const TkBitField *bf2);
 bool TkBitIntersectionIsEqual(const TkBitField *bf1, const TkBitField *bf2, const TkBitField *del);
 
-/* TODO: should be rewritten to TkIntSetIsContainedBits */
-bool TkBitContainsSet(const TkBitField *bf, const struct TkIntSet *set);
-
 unsigned TkBitFindFirst(const TkBitField *bf);
 unsigned TkBitFindLast(const TkBitField *bf);
 unsigned TkBitFindFirstNot(const TkBitField *bf);
 unsigned TkBitFindLastNot(const TkBitField *bf);
 unsigned TkBitFindNext(const TkBitField *bf, unsigned prev);
 unsigned TkBitFindPrev(const TkBitField *bf, unsigned prev);
-unsigned TkBitFindFirstInIntersection(const TkBitField* bf1, const TkBitField *bf2);
+unsigned TkBitFindFirstInIntersection(const TkBitField *bf1, const TkBitField *bf2);
 
 inline void TkBitSet(TkBitField *bf, unsigned n);
 inline void TkBitUnset(TkBitField *bf, unsigned n);

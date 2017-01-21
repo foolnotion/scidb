@@ -1,9 +1,9 @@
 /*
  * tkQTree.c --
  *
- * This module provides an implementation of a Q-Tree for fast search of
- * rectangles containing a specific point. This provides very fast mouse
- * hovering lookup, even insertion/deletion/update is fast.
+ * This module provides an implementation of a Q-Tree (Quartering Tree) for
+ * fast search of rectangles containing a specific point. This provides very
+ * fast mouse hovering lookup, even insertion/deletion/update is fast.
  *
  * The search algorithm is working with binary division on two dimensions
  * (in fact a quartering), so this is (in practice) the fastest possible
@@ -39,7 +39,7 @@
  * needs complex computations, but the Q-Tree doesn't need complex computations,
  * and is much faster.
  *
- * Copyright (c) 2015-2016 Gregor Cramer
+ * Copyright (c) 2015-2017 Gregor Cramer
  *
  * See the file "license.terms" for information on usage and redistribution of
  * this file, and for a DISCLAIMER OF ALL WARRANTIES.
@@ -169,7 +169,7 @@ FreeItems(
 
 static void
 FreeNode(
-    Node* node)
+    Node *node)
 {
     if (node) {
 	if (node->countPartial >= 0) {
@@ -962,7 +962,7 @@ TkQTreeUpdateRect(
 
 void
 TkQTreeDestroy(
-    TkQTree* treePtr)
+    TkQTree *treePtr)
 {
     assert(treePtr);
 
@@ -1037,12 +1037,16 @@ TkQTreeGetBoundingBox(
 /* *****************************************************************
  * This is an example how to detect whether a rectangle is contained
  * in at least one of the rectangles in the tree.
+ *
+ * We assume that TkQTreeInsertRect has been called with intitial
+ * state 0.
  * *****************************************************************/
 
 typedef struct {
     TkQTreeCallback cbHit;
     TkQTreeClientData cbArg;
     unsigned count;
+    unsigned epoch;
 } MyClientData;
 
 bool HitRectContaining1(
@@ -1051,7 +1055,8 @@ bool HitRectContaining1(
     TkQTreeState *state,
     TkQTreeClientData arg)
 {
-    *state = 0;
+    MyClientData *cd = (MyClientData *) arg;
+    *state = arg->epoch;
     return true;
 }
 
@@ -1071,13 +1076,15 @@ bool HitRectContaining3(
     TkQTreeState *state,
     TkQTreeClientData arg)
 {
-    if (++*state== 4) {
-	MyClientData *cd = (MyClientData *) arg;
+    MyClientData *cd = (MyClientData *) arg;
+
+    if (++*state == arg->epoch + 3) {
 	if (cd->cbHit) {
 	    cd->cbHit(uid, rect, NULL, cd->cbArg);
 	}
 	cd->count += 1;
     }
+
     return true;
 }
 
@@ -1088,6 +1095,8 @@ TkQTreeSearchRectsContaining(
     TkQTreeCallback cbHit,
     TkQTreeClientData cbArg)
 {
+    static unsigned epoch = 0;
+
     const Node *node;
     unsigned hitCount;
     TkQTreeRect bbox;
@@ -1106,6 +1115,7 @@ TkQTreeSearchRectsContaining(
     cd.cbHit = cbHit;
     cd.cbArg = cbArg;
     cd.count = 0;
+    cd.epoch = (epoch += 4);
 
     if (TkQTreeSearch(tree, rect->xmin, rect->ymin, HitRectContaining1, NULL) > 0) {
 	if (TkQTreeSearch(tree, rect->xmax, rect->ymin, HitRectContaining2, NULL) > 0) {

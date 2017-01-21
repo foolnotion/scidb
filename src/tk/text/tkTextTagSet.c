@@ -3,7 +3,7 @@
  *
  *	This module implements a set for tagging information.
  *
- * Copyright (c) 2015-2016 Gregor Cramer
+ * Copyright (c) 2015-2017 Gregor Cramer
  *
  * See the file "license.terms" for information on usage and redistribution of
  * this file, and for a DISCLAIMER OF ALL WARRANTIES.
@@ -24,6 +24,12 @@
 # ifndef MAX
 #  define MAX(a,b) (((int) a) < ((int) b) ? b : a)
 # endif
+
+/*
+ * Don't use expensive checks for speed improvements. But probably these "expensive"
+ * checks aren't so much expensive? This needs more testing for a final decision.
+ */
+#define USE_EXPENSIVE_CHECKS 0
 
 
 static bool IsPowerOf2(unsigned n) { return !(n & (n - 1)); }
@@ -256,7 +262,7 @@ TkTextTagSetContains_(
 	}
 	return TkIntSetContainsBits(&ts1->set, &ts2->bf);
     }
-    return TkBitContainsSet(&ts1->bf, &ts2->set);
+    return TkIntSetIsContainedBits(&ts2->set, &ts1->bf);
 }
 
 
@@ -318,7 +324,7 @@ TkTextTagSetJoin(
 	return Convert((TkTextTagSet *) src);
     }
 
-#if 0 /* too expensive!? */
+#if USE_EXPENSIVE_CHECKS
     if (TkTextTagSetContains(src, dst) || TkTextTagSetContains(dst, src)) {
 	return dst;
     }
@@ -370,7 +376,7 @@ TkTextTagSetJoin2(
 	return TkTextTagSetJoin((TkTextTagSet *) ts1, ts2);
     }
 
-#if 0 /* too expensive!? */
+#if USE_EXPENSIVE_CHECKS
     if (TkTextTagSetContains(ts1, ts2) || TkTextTagSetContains(dst, ts2)) {
 	return TkTextTagSetJoin(dst, ts1);
     }
@@ -427,7 +433,7 @@ TkTextTagSetIntersect(
 	return (TkTextTagSet *) src;
     }
 
-#if 0 /* too expensive!? */
+#if USE_EXPENSIVE_CHECKS
     if (TkTextTagSetContains(dst, src)) {
 	return dst;
     }
@@ -486,7 +492,7 @@ TkTextTagSetIntersectBits(
 	return Convert((TkTextTagSet *) src);
     }
 
-#if 0 /* too expensive!? */
+#if USE_EXPENSIVE_CHECKS
     if (TkTextTagSetContainsBits(dst, src)) {
 	return dst;
     }
@@ -522,7 +528,7 @@ TkTextTagSetRemove(
 	return ConvertToEmptySet(dst);
     }
 
-#if 0 /* too expensive!? */
+#if USE_EXPENSIVE_CHECKS
     if (TkTextTagSetContains(src, dst)) {
 	return ConvertToEmptySet(dst);
     }
@@ -568,7 +574,7 @@ TkTextTagSetRemoveBits(
 	return ConvertToEmptySet(dst);
     }
 
-#if 0 /* too expensive!? */
+#if USE_EXPENSIVE_CHECKS
     if (TkTextTagSetIsContainedBits(dst, src)) {
 	return ConvertToEmptySet(dst);
     }
@@ -601,7 +607,7 @@ TkTextTagSetComplementTo(
 	return (TkTextTagSet *) src;
     }
 
-#if 0 /* too expensive!? */
+#if USE_EXPENSIVE_CHECKS
     if (TkTextTagSetContains(dst, src)) {
 	return ConvertToEmptySet(dst);
     }
@@ -653,7 +659,7 @@ TkTextTagSetJoinComplementTo(
 	return TkTextTagSetJoin(dst, ts2);
     }
 
-#if 0 /* too expensive!? */
+#if USE_EXPENSIVE_CHECKS
     if (TkTextTagSetContains(dst, ts2) || TkTextTagSetContains(ts1, ts2)) {
 	return dst;
     }
@@ -703,6 +709,9 @@ TkTextTagSetJoinNonIntersection(
     if (ts1 == ts2) {
 	return dst;
     }
+    if (TkTextTagSetIsEmpty(ts1) && TkTextTagSetIsEmpty(ts2)) {
+	return dst;
+    }
     if (dst == ts1 || TkTextTagSetIsEmpty(ts1)) {
 	return TkTextTagSetJoin(dst, ts2);
     }
@@ -710,7 +719,7 @@ TkTextTagSetJoinNonIntersection(
 	return TkTextTagSetJoin(dst, ts1);
     }
 
-#if 0 /* too expensive!? */
+#if USE_EXPENSIVE_CHECKS
     if (TkTextTagSetIsEqual(ts1, ts2)) {
 	return dst;
     }
@@ -762,7 +771,7 @@ TkTextTagSetJoin2ComplementToIntersection(
 	return TkTextTagSetJoin2(dst, add, ts1);
     }
 
-#if 0 /* too expensive!? */
+#if USE_EXPENSIVE_CHECKS
     if (TkTextTagSetIsEqual(ts1, ts2)) {
 	return TkTextTagSetJoin(dst, add);
     }
@@ -810,7 +819,7 @@ TkTextTagSetJoinOfDifferences(
 	return TkTextTagSetRemove((TkTextTagSet *) ts1, ts2);
     }
 
-#if 0 /* too expensive!? */
+#if USE_EXPENSIVE_CHECKS
     if (TkTextTagSetIsEqual(ts1, ts2)) {
 	return TkTextTagSetRemove(dst, ts1);
     }
@@ -1059,7 +1068,7 @@ TkTextTagSetInnerJoinDifference(
 	return dst;
     }
 
-#if 0 /* too expensive!? */
+#if USE_EXPENSIVE_CHECKS
     if (TkTextTagSetContains(dst, add)) {
 	return dst;
     }

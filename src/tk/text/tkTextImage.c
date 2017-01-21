@@ -5,7 +5,7 @@
  *	widgets. It also implements the "image" widget command for texts.
  *
  * Copyright (c) 1997 Sun Microsystems, Inc.
- * Copyright (c) 2015-2016 Gregor Cramer
+ * Copyright (c) 2015-2017 Gregor Cramer
  *
  * See the file "license.terms" for information on usage and redistribution of
  * this file, and for a DISCLAIMER OF ALL WARRANTIES.
@@ -49,10 +49,11 @@ static void		EmbImageDisplayProc(TkText *textPtr, TkTextDispChunk *chunkPtr, int
 			    int lineHeight, int baseline, Display *display, Drawable dst, int screenY);
 static int		EmbImageLayoutProc(const TkTextIndex *indexPtr, TkTextSegment *segPtr,
 			    int offset, int maxX, int maxChars, bool noCharsYet, TkWrapMode wrapMode,
-			    TkTextDispChunk *chunkPtr);
+			    TkTextSpaceMode spaceMode, TkTextDispChunk *chunkPtr);
 static void		EmbImageProc(ClientData clientData, int x, int y, int width, int height,
 			    int imageWidth, int imageHeight);
 static TkTextSegment *	MakeImage(TkText *textPtr);
+static void		ReleaseImage(TkTextSegment *eiPtr);
 
 static const TkTextDispChunkProcs layoutImageProcs = {
     TEXT_DISP_IMAGE,		/* type */
@@ -69,9 +70,9 @@ static const TkTextDispChunkProcs layoutImageProcs = {
 static void UndoLinkSegmentPerform(TkSharedText *, TkTextUndoInfo *, TkTextUndoInfo *, bool);
 static void RedoLinkSegmentPerform(TkSharedText *, TkTextUndoInfo *, TkTextUndoInfo *, bool);
 static void UndoLinkSegmentDestroy(TkSharedText *, TkTextUndoToken *);
-static void UndoLinkSegmentGetRange(TkSharedText *, const TkTextUndoToken *,
+static void UndoLinkSegmentGetRange(const TkSharedText *, const TkTextUndoToken *,
 	TkTextIndex *, TkTextIndex *);
-static void RedoLinkSegmentGetRange(TkSharedText *, const TkTextUndoToken *,
+static void RedoLinkSegmentGetRange(const TkSharedText *, const TkTextUndoToken *,
 	TkTextIndex *, TkTextIndex *);
 static Tcl_Obj *UndoLinkSegmentGetCommand(const TkSharedText *, const TkTextUndoToken *);
 static Tcl_Obj *UndoLinkSegmentInspect(const TkSharedText *, const TkTextUndoToken *);
@@ -159,6 +160,33 @@ DEBUG_ALLOC(extern unsigned tkTextCountNewSegment);
  * Some functions for the undo/redo mechanism.
  */
 
+static void
+TextChanged(
+    TkSharedText *sharedTextPtr,
+    TkTextIndex *indexPtr)
+{
+    TkTextChanged(sharedTextPtr, NULL, indexPtr, indexPtr);
+
+    /*
+     * TODO: It's probably not true that all window configuration can change
+     * the line height, so we could be more efficient here and only call this
+     * when necessary.
+     */
+
+    TkTextInvalidateLineMetrics(sharedTextPtr, NULL,
+	    TkTextIndexGetLine(indexPtr), 0, TK_TEXT_INVALIDATE_ONLY);
+}
+
+static void
+GetIndex(
+    const TkSharedText *sharedTextPtr,
+    TkTextSegment *segPtr,
+    TkTextIndex *indexPtr)
+{
+    TkTextIndexClear2(indexPtr, NULL, sharedTextPtr->tree);
+    TkTextIndexSetSegment(indexPtr, segPtr);
+}
+
 static Tcl_Obj *
 UndoLinkSegmentGetCommand(
     const TkSharedText *sharedTextPtr,
@@ -179,8 +207,7 @@ UndoLinkSegmentInspect(
     char buf[TK_POS_CHARS];
     TkTextIndex index;
 
-    TkTextIndexClear2(&index, NULL,sharedTextPtr->tree);
-    TkTextIndexSetSegment(&index, token->segPtr);
+    GetIndex(sharedTextPtr, token->segPtr, &index);
     TkTextIndexPrint(sharedTextPtr, NULL, &index, buf);
     Tcl_ListObjAppendElement(NULL, objPtr, Tcl_NewStringObj(buf, -1));
     return objPtr;
@@ -195,19 +222,23 @@ UndoLinkSegmentPerform(
 {
     const UndoTokenLinkSegment *token = (const UndoTokenLinkSegment *) undoInfo->token;
     TkTextSegment *segPtr = token->segPtr;
+    TkTextIndex index;
 
     if (redoInfo) {
 	RedoTokenLinkSegment *redoToken;
 	redoToken = ckalloc(sizeof(RedoTokenLinkSegment));
 	redoToken->undoType = &redoTokenLinkSegmentType;
 	TkBTreeMakeUndoIndex(sharedTextPtr, segPtr, &redoToken->index);
-	redoToken->segPtr = segPtr;
-	redoInfo->token = (TkTextUndoToken *) token;
+	redoInfo->token = (TkTextUndoToken *) redoToken;
+	(redoToken->segPtr = segPtr)->refCount += 1;
 	DEBUG_ALLOC(tkTextCountNewUndoToken++);
     }
 
+    GetIndex(sharedTextPtr, segPtr, &index);
+    TextChanged(sharedTextPtr, &index);
     TkBTreeUnlinkSegment(sharedTextPtr, segPtr);
     EmbImageDeleteProc(sharedTextPtr->tree, segPtr, 0);
+    TK_BTREE_DEBUG(TkBTreeCheck(sharedTextPtr->tree));
 }
 
 static void
@@ -216,19 +247,22 @@ UndoLinkSegmentDestroy(
     TkTextUndoToken *item)
 {
     UndoTokenLinkSegment *token = (UndoTokenLinkSegment *) item;
-    EmbImageDeleteProc(sharedTextPtr->tree, token->segPtr, 0);
+
+    if (--token->segPtr->refCount == 0) {
+	ReleaseImage(token->segPtr);
+    }
 }
 
 static void
 UndoLinkSegmentGetRange(
-    TkSharedText *sharedTextPtr,
+    const TkSharedText *sharedTextPtr,
     const TkTextUndoToken *item,
     TkTextIndex *startIndex,
     TkTextIndex *endIndex)
 {
     const UndoTokenLinkSegment *token = (const UndoTokenLinkSegment *) item;
-    TkTextIndexClear2(startIndex, NULL, sharedTextPtr->tree);
-    TkTextIndexSetSegment(startIndex, token->segPtr);
+
+    GetIndex(sharedTextPtr, token->segPtr, startIndex);
     *endIndex = *startIndex;
 }
 
@@ -258,6 +292,7 @@ RedoLinkSegmentPerform(
     bool isRedo)
 {
     RedoTokenLinkSegment *token = (RedoTokenLinkSegment *) undoInfo->token;
+    TkTextIndex index;
 
     TkBTreeReInsertSegment(sharedTextPtr, &token->index, token->segPtr);
 
@@ -265,11 +300,16 @@ RedoLinkSegmentPerform(
 	redoInfo->token = undoInfo->token;
 	token->undoType = &undoTokenLinkSegmentType;
     }
+
+    GetIndex(sharedTextPtr, token->segPtr, &index);
+    TextChanged(sharedTextPtr, &index);
+    token->segPtr->refCount += 1;
+    TK_BTREE_DEBUG(TkBTreeCheck(sharedTextPtr->tree));
 }
 
 static void
 RedoLinkSegmentGetRange(
-    TkSharedText *sharedTextPtr,
+    const TkSharedText *sharedTextPtr,
     const TkTextUndoToken *item,
     TkTextIndex *startIndex,
     TkTextIndex *endIndex)
@@ -425,16 +465,7 @@ TkTextImageCmd(
 		return TCL_OK;
 	    }
 	} else {
-	    TkTextChanged(sharedTextPtr, NULL, &index, &index);
-
-	    /*
-	     * It's probably not true that all window configuration can change
-	     * the line height, so we could be more efficient here and only
-	     * call this when necessary.
-	     */
-
-	    TkTextInvalidateLineMetrics(sharedTextPtr, NULL,
-		    TkTextIndexGetLine(&index), 0, TK_TEXT_INVALIDATE_ONLY);
+	    TextChanged(sharedTextPtr, &index);
 	    return EmbImageConfigure(textPtr, eiPtr, objc - 4, objv + 4);
 	}
     case CMD_CREATE: {
@@ -451,24 +482,29 @@ TkTextImageCmd(
 		return TCL_ERROR;
 	    }
 
-#if !TK_TEXT_DEPRECATED_MODS_OF_DISABLED_WIDGET
 	    if (textPtr->state == TK_TEXT_STATE_DISABLED) {
+#if SUPPORT_DEPRECATED_MODS_OF_DISABLED_WIDGET
+		return TCL_OK;
+#else /* if !SUPPORT_DEPRECATED_MODS_OF_DISABLED_WIDGET */
 		Tcl_SetObjResult(interp, Tcl_ObjPrintf("attempt to modify disabled widget"));
 		Tcl_SetErrorCode(interp, "TK", "TEXT", "NOT_ALLOWED", NULL);
 		return TCL_ERROR;
-		return TCL_OK;
+#endif /* SUPPORT_DEPRECATED_MODS_OF_DISABLED_WIDGET */
 	    }
-#endif
 
 	    /*
 	     * Don't allow insertions on the last line of the text.
 	     */
 
 	    if (!TkTextIndexEnsureBeforeLastChar(&index)) {
+#if SUPPORT_DEPRECATED_MODS_OF_DISABLED_WIDGET
+		return TCL_OK;
+#else
 		Tcl_SetObjResult(textPtr->interp, Tcl_NewStringObj(
-			"cannot insert image into empty peer", -1));
+			"cannot insert image into dead peer", -1));
 		Tcl_SetErrorCode(textPtr->interp, "TK", "TEXT", "IMAGE_CREATE_USAGE", NULL);
 		return TCL_ERROR;
+#endif
 	    }
 
 	    /*
@@ -482,15 +518,13 @@ TkTextImageCmd(
 	     * again if the configuration fails).
 	     */
 
-	    TkTextChanged(sharedTextPtr, NULL, &index, &index);
 	    TkBTreeLinkSegment(sharedTextPtr, eiPtr, &index);
 	    if (EmbImageConfigure(textPtr, eiPtr, objc - 4, objv + 4) != TCL_OK) {
 		TkBTreeUnlinkSegment(sharedTextPtr, eiPtr);
 		EmbImageDeleteProc(sharedTextPtr->tree, eiPtr, 0);
 		return TCL_ERROR;
 	    }
-	    TkTextInvalidateLineMetrics(sharedTextPtr, NULL,
-		    TkTextIndexGetLine(&index), 0, TK_TEXT_INVALIDATE_ONLY);
+	    TextChanged(sharedTextPtr, &index);
 
 	    if (!TkTextUndoStackIsFull(sharedTextPtr->undoStack)) {
 		UndoTokenLinkSegment *token;
@@ -642,13 +676,14 @@ SetImageName(
     assert(!eiPtr->body.ei.hPtr);
 
     /*
-     * Create a unique name for this image.
+     * Create an unique name for this image.
      */
 
     Tcl_DStringInit(&newName);
-    if (Tcl_FindHashEntry(&textPtr->sharedTextPtr->imageTable, name)) {
+    while (Tcl_FindHashEntry(&textPtr->sharedTextPtr->imageTable, name)) {
 	char buf[4 + TCL_INTEGER_SPACE];
 	snprintf(buf, sizeof(buf), "#%d", ++textPtr->sharedTextPtr->imageCount);
+	Tcl_DStringTrunc(&newName, 0);
 	Tcl_DStringAppend(&newName, name, -1);
 	Tcl_DStringAppend(&newName, buf, -1);
 	name = Tcl_DStringValue(&newName);
@@ -674,6 +709,7 @@ EmbImageConfigure(
 {
     Tk_Image image;
     char *name;
+    int width;
     TkTextEmbImage *img = &eiPtr->body.ei;
 
     if (Tk_SetOptions(textPtr->interp, (char *) img, img->optionTable, objc, objv, textPtr->tkwin,
@@ -699,7 +735,9 @@ EmbImageConfigure(
     if (img->image) {
 	Tk_FreeImage(img->image);
     }
-    img->image = image;
+    if ((img->image = image)) {
+	Tk_SizeOfImage(image, &width, &img->imgHeight);
+    }
 
     if (!img->name) {
 	if (!(name = img->imageName) && !(name = img->imageString)) {
@@ -745,6 +783,7 @@ EmbImageInspectProc(
     TkTextTag **tagLookup = sharedTextPtr->tagLookup;
     const TkTextTagSet *tagInfoPtr = segPtr->tagInfoPtr;
     unsigned i = TkTextTagSetFindFirst(tagInfoPtr);
+    const TkTextEmbImage *img = &segPtr->body.ei;
     Tcl_DString opts;
 
     assert(sharedTextPtr->peers);
@@ -756,14 +795,60 @@ EmbImageInspectProc(
 
     Tcl_DStringInit(&opts);
     TkTextInspectOptions(sharedTextPtr->peers, &segPtr->body.ei, segPtr->body.ei.optionTable,
-	    &opts, false);
+	    &opts, false, false);
 
+    Tcl_ListObjAppendElement(NULL, objPtr, Tcl_NewStringObj(segPtr->typePtr->name, -1));
+    Tcl_ListObjAppendElement(NULL, objPtr, Tcl_NewStringObj(img->name, -1));
     Tcl_ListObjAppendElement(NULL, objPtr, objPtr2);
     Tcl_ListObjAppendElement(NULL, objPtr, Tcl_NewStringObj(Tcl_DStringValue(&opts),
 	    Tcl_DStringLength(&opts)));
 
     Tcl_DStringFree(&opts);
     return objPtr;
+}
+
+/*
+ *--------------------------------------------------------------
+ *
+ * ReleaseImage --
+ *
+ *	This function is releasing the embedded image all it's
+ *	associated resources.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	The embedded image is deleted, and any resources
+ *	associated with it are released.
+ *
+ *--------------------------------------------------------------
+ */
+
+static void
+ReleaseImage(
+    TkTextSegment *eiPtr)
+{
+    TkTextEmbImage *img = &eiPtr->body.ei;
+
+    if (img->image) {
+	Tk_FreeImage(img->image);
+    }
+    if (img->sharedTextPtr->imageBindingTable) {
+	Tk_DeleteAllBindings(img->sharedTextPtr->imageBindingTable, (ClientData) img->name);
+    }
+
+    /*
+     * No need to supply a tkwin argument, since we have no window-specific options.
+     */
+
+    Tk_FreeConfigOptions((char *) img, img->optionTable, NULL);
+    if (img->name) {
+	ckfree(img->name);
+    }
+    TkTextTagSetDecrRefCount(eiPtr->tagInfoPtr);
+    FREE_SEGMENT(eiPtr);
+    DEBUG_ALLOC(tkTextCountDestroySegment++);
 }
 
 /*
@@ -833,25 +918,9 @@ EmbImageDeleteProc(
     }
 
     if (--eiPtr->refCount == 0) {
-	if (img->image) {
-	    Tk_FreeImage(img->image);
-	}
-	if (img->sharedTextPtr->imageBindingTable) {
-	    Tk_DeleteAllBindings(img->sharedTextPtr->imageBindingTable, (ClientData) img->name);
-	}
-
-	/*
-	 * No need to supply a tkwin argument, since we have no window-specific options.
-	 */
-
-	Tk_FreeConfigOptions((char *) img, img->optionTable, NULL);
-	if (img->name) {
-	    ckfree(img->name);
-	}
-	TkTextTagSetDecrRefCount(eiPtr->tagInfoPtr);
-	FREE_SEGMENT(eiPtr);
-	DEBUG_ALLOC(tkTextCountDestroySegment++);
+	ReleaseImage(eiPtr);
     }
+
     return true;
 }
 
@@ -917,6 +986,7 @@ EmbImageLayoutProc(
     bool noCharsYet,		/* 'true' means no characters have been assigned to this line yet. */
     TkWrapMode wrapMode,	/* Wrap mode to use for line:
 				 * TEXT_WRAPMODE_CHAR, TEXT_WRAPMODE_NONE, or TEXT_WRAPMODE_WORD. */
+    TkTextSpaceMode spaceMode,	/* Not used. */
     TkTextDispChunk *chunkPtr)	/* Structure to fill in with information about this chunk. The x
 				 * field has already been set by the caller. */
 {
@@ -933,8 +1003,10 @@ EmbImageLayoutProc(
     if (!img->image) {
 	width = 0;
 	height = 0;
+	img->imgHeight = 0;
     } else {
 	Tk_SizeOfImage(img->image, &width, &height);
+	img->imgHeight = height;
 	width += 2*img->padX;
 	height += 2*img->padY;
     }
@@ -1220,18 +1292,19 @@ EmbImageProc(
     TkTextEmbImage *img = &eiPtr->body.ei;
     TkTextIndex index;
 
-    TkTextIndexClear2(&index, NULL, img->sharedTextPtr->tree);
-    TkTextIndexSetSegment(&index, eiPtr);
+    if (!img->hPtr) {
+	return;
+    }
+
+    assert(img->image);
+
+    GetIndex(img->sharedTextPtr, eiPtr, &index);
     TkTextChanged(img->sharedTextPtr, NULL, &index, &index);
 
-    /*
-     * It's probably not true that all image changes can change the line
-     * height, so we could be more efficient here and only call this when
-     * necessary.
-     */
-
-    TkTextInvalidateLineMetrics(img->sharedTextPtr, NULL,
-	    TkTextIndexGetLine(&index), 0, TK_TEXT_INVALIDATE_ONLY);
+    if (img->imgHeight != imgHeight) {
+	TkTextInvalidateLineMetrics(img->sharedTextPtr, NULL,
+		TkTextIndexGetLine(&index), 0, TK_TEXT_INVALIDATE_ONLY);
+    }
 }
 
 /*

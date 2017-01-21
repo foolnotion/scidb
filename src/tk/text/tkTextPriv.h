@@ -3,7 +3,7 @@
  *
  *	Private implementation for text widget.
  *
- * Copyright (c) 2015-2016 Gregor Cramer
+ * Copyright (c) 2015-2017 Gregor Cramer
  *
  * See the file "license.terms" for information on usage and redistribution of
  * this file, and for a DISCLAIMER OF ALL WARRANTIES.
@@ -49,7 +49,7 @@ struct TkTextMyBTree {
 #include <assert.h>
 
 #if __STDC_VERSION__ < 199901L
-# define inline
+# define inline /* we are not C99 conform */
 #endif
 
 /*
@@ -74,9 +74,6 @@ TkTextIsSpecialMark(
     const TkTextSegment *segPtr)
 {
     assert(segPtr);
-    assert(!(segPtr->insertMarkFlag | segPtr->currentMarkFlag)
-	    || segPtr->typePtr->group == SEG_GROUP_MARK);
-
     return !!(segPtr->insertMarkFlag | segPtr->currentMarkFlag);
 }
 
@@ -105,8 +102,6 @@ TkTextIsPrivateMark(
     const TkTextSegment *segPtr)
 {
     assert(segPtr);
-    assert(!segPtr->privateMarkFlag || segPtr->typePtr->group == SEG_GROUP_MARK);
-
     return segPtr->privateMarkFlag;
 }
 
@@ -133,12 +128,7 @@ TkTextIsNormalMark(
     const TkTextSegment *segPtr)
 {
     assert(segPtr);
-
-    return segPtr->typePtr->group == SEG_GROUP_MARK
-	    && !(segPtr->startEndMarkFlag
-		| segPtr->privateMarkFlag
-		| segPtr->insertMarkFlag
-		| segPtr->currentMarkFlag);
+    return segPtr->normalMarkFlag;
 }
 
 /*
@@ -190,7 +180,6 @@ bool
 TkTextIsStableMark(
     const TkTextSegment *segPtr)
 {
-    assert(segPtr);
     return TkTextIsStartEndMarker(segPtr) || TkTextIsNormalMark(segPtr);
 }
 
@@ -216,9 +205,7 @@ TkTextIsSpecialOrPrivateMark(
     const TkTextSegment *segPtr)
 {
     assert(segPtr);
-
-    return segPtr->typePtr->group == SEG_GROUP_MARK
-	    && !!(segPtr->privateMarkFlag | segPtr->insertMarkFlag | segPtr->currentMarkFlag);
+    return !!(segPtr->privateMarkFlag | segPtr->insertMarkFlag | segPtr->currentMarkFlag);
 }
 
 /*
@@ -242,10 +229,33 @@ bool
 TkTextIsNormalOrSpecialMark(
     const TkTextSegment *segPtr)
 {
-    assert(segPtr);
+    return TkTextIsNormalMark(segPtr) || TkTextIsSpecialMark(segPtr);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkTextIsDeadPeer --
+ *
+ *	Test whether given widget is dead, this means that the start
+ *	index is on last line. If it is dead, then this peer will not
+ *	have an insert mark.
+ *
+ * Results:
+ *	Returns whether given peer is dead.
+ *
+ * Side effects:
+ *	None
+ *
+ *----------------------------------------------------------------------
+ */
 
-    return segPtr->typePtr->group == SEG_GROUP_MARK
-	    && !(segPtr->startEndMarkFlag | segPtr->privateMarkFlag);
+inline
+bool
+TkTextIsDeadPeer(
+    const TkText *textPtr)
+{
+    return !textPtr->startMarker->sectionPtr->linePtr->nextPtr;
 }
 
 /*
@@ -318,16 +328,16 @@ TkBTreeGetStartLine(
  *----------------------------------------------------------------------
  */
 
-MODULE_SCOPE TkTextLine * TkBTreeMyGetLastLine(
-    const TkSharedText *sharedTextPtr, const TkText *textPtr);
-
 inline
 TkTextLine *
 TkBTreeGetLastLine(
     const TkText *textPtr)
 {
+    TkTextLine *endLine;
+
     assert(textPtr);
-    return TkBTreeMyGetLastLine(NULL, textPtr);
+    endLine = textPtr->endMarker->sectionPtr->linePtr;
+    return endLine->nextPtr ? endLine->nextPtr : endLine;
 }
 
 /*
@@ -555,6 +565,34 @@ TkBTreeCountLines(
 /*
  *----------------------------------------------------------------------
  *
+ * TkTextIndexSetPeer --
+ *
+ *	Set this index to the start of the line.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+inline
+void
+TkTextIndexSetPeer(
+    TkTextIndex *indexPtr,
+    TkText *textPtr)
+{
+    assert(indexPtr->tree);
+    
+    indexPtr->textPtr = textPtr;
+    indexPtr->priv.lineNoRel = -1;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
  * TkTextIndexGetShared --
  *
  *	Get the shared resource of this index.
@@ -626,12 +664,112 @@ TkBTreeGetTags(
 inline
 TkTextLine *
 TkTextIndexGetLine(
-    const TkTextIndex *indexPtr)
+    const TkTextIndex *indexPtr)/* Indicates a particular position in the B-tree. */
 {
     assert(indexPtr->priv.linePtr);
     assert(indexPtr->priv.linePtr->parentPtr); /* expired? */
 
     return indexPtr->priv.linePtr;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkTextIndexSetToLastChar2 --
+ *
+ *	Set the new line pointer, and set this index to one before the
+ *	end of the line.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+inline
+void
+TkTextIndexSetToLastChar2(
+    TkTextIndex *indexPtr,	/* Pointer to index. */
+    TkTextLine *linePtr)	/* Pointer to line. */
+{
+    assert(indexPtr->tree);
+    assert(linePtr);
+    assert(linePtr->parentPtr); /* expired? */
+
+    indexPtr->priv.linePtr = linePtr;
+    indexPtr->priv.lineNo = -1;
+    indexPtr->priv.lineNoRel = -1;
+    TkTextIndexSetToLastChar(indexPtr);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkTextIndexGetSegment --
+ *
+ *	Get the pointer to stored segment.
+ *
+ * Results:
+ *	Pointer to the stored segment, this can be NULL.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+inline
+TkTextSegment *
+TkTextIndexGetSegment(
+    const TkTextIndex *indexPtr)/* Pointer to index. */
+{
+    TkTextSegment *segPtr;
+
+    assert(indexPtr->tree);
+    assert(indexPtr->priv.linePtr);
+    assert(indexPtr->priv.linePtr->parentPtr); /* expired? */
+
+    segPtr = indexPtr->priv.segPtr;
+
+    if (!segPtr
+	    || (indexPtr->priv.isCharSegment
+		&& TkBTreeEpoch(indexPtr->tree) != indexPtr->stateEpoch)) {
+	return NULL;
+    }
+
+    assert(!segPtr || segPtr->typePtr);    /* expired? */
+    assert(!segPtr || segPtr->sectionPtr); /* linked? */
+    assert(!segPtr || segPtr->sectionPtr->linePtr == indexPtr->priv.linePtr);
+
+    return segPtr;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkTextIndexSave --
+ *
+ *	Makes the index robust, so that it can be rebuild after modifications.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+inline
+void
+TkTextIndexSave(
+    TkTextIndex *indexPtr)
+{
+    TkTextIndexGetLineNumber(indexPtr, indexPtr->textPtr);
+    TkTextIndexGetByteIndex(indexPtr);
 }
 
 /*
@@ -699,6 +837,32 @@ TkTextIndexUpdateEpoch(
 /*
  *----------------------------------------------------------------------
  *
+ * TkTextIndexInvalidate --
+ *
+ *	Clear position attributes: segPtr, and byteIndex.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	The given index will be in an invalid state, the TkIndexGet*
+ *	functions cannot be used.
+ *
+ *----------------------------------------------------------------------
+ */
+
+inline
+void
+TkTextIndexInvalidate(
+    TkTextIndex *indexPtr)	/* Pointer to index. */
+{
+    indexPtr->priv.segPtr = NULL;
+    indexPtr->priv.byteIndex = -1;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
  * TkTextIndexSetEpoch --
  *
  *	Set epoch of given index, and clear the segment pointer if
@@ -738,7 +902,7 @@ TkTextIndexSetEpoch(
  *	of lines known by the B-Tree (not the number of lines known
  *	by the display stuff).
  *
- *	We are putting the implementation into this private header file,
+ *	We are including the implementation into this private header file,
  *	because it uses some facts only known by the display stuff.
  *
  * Results:
@@ -767,12 +931,39 @@ TkBTreeGetNumberOfDisplayLines(
 	/*
 	 * This will return the old number of display lines, because the
 	 * computation of the corresponding logical line is currently in
-	 * progress, and unfinshed.
+	 * progress, and unfinished.
 	 */
 	return dispLineInfo->entry[dispLineInfo->numDispLines].pixels;
     }
     return dispLineInfo->numDispLines;
 }
+
+#if TCL_UTF_MAX <= 4 && TK_MAJOR_VERSION == 8 && TK_MINOR_VERSION < 7
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkUtfToUniChar --
+ *
+ *	Only needed for backporting, see source of version 8.7 about
+ *	this function.
+ *
+ *	IMO this function is only a bad hack, Tcl should provide the
+ *	appropriate functionality.
+ *
+ *----------------------------------------------------------------------
+ */
+
+inline
+int
+TkUtfToUniChar(const char *src, int *chPtr)
+{
+    Tcl_UniChar ch;
+    int result = Tcl_UtfToUniChar(src, &ch);
+    *chPtr = ch;
+    return result;
+}
+
+#endif /* end of backport for 8.6/8.5 */
 
 #undef _TK_NEED_IMPLEMENTATION
 #endif /* _TK_NEED_IMPLEMENTATION */

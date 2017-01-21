@@ -3,7 +3,7 @@
  *
  *	Private implementation.
  *
- * Copyright (c) 2015-2016 Gregor Cramer
+ * Copyright (c) 2015-2017 Gregor Cramer
  *
  * See the file "license.terms" for information on usage and redistribution of
  * this file, and for a DISCLAIMER OF ALL WARRANTIES.
@@ -67,7 +67,7 @@ MODULE_SCOPE bool TkTextTagSetIntersectionIsEqual_(const TkTextTagSet *ts1, cons
 #include <assert.h>
 
 #if __STDC_VERSION__ < 199901L
-# define inline
+# define inline /* we are not C99 conform */
 #endif
 
 
@@ -257,7 +257,7 @@ TkTextTagBitContainsSet(
     const TkBitField *bf,
     const TkTextTagSet *ts)
 {
-    return ts->base.isSetFlag ? TkBitContainsSet(bf, &ts->set) : TkBitContains(bf, &ts->bf);
+    return ts->base.isSetFlag ? TkIntSetIsContainedBits(&ts->set, bf) : TkBitContains(bf, &ts->bf);
 }
 
 
@@ -328,7 +328,7 @@ TkTextTagSetNone(
     const TkTextTagSet *ts)
 {
     assert(ts);
-    return ts->base.isSetFlag ? TkIntSetAny(&ts->set) : TkBitAny(&ts->bf);
+    return ts->base.isSetFlag ? TkIntSetNone(&ts->set) : TkBitNone(&ts->bf);
 }
 
 
@@ -338,7 +338,7 @@ TkTextTagSetAny(
     const TkTextTagSet *ts)
 {
     assert(ts);
-    return ts->base.isSetFlag ? TkIntSetNone(&ts->set) : TkBitNone(&ts->bf);
+    return ts->base.isSetFlag ? TkIntSetAny(&ts->set) : TkBitAny(&ts->bf);
 }
 
 
@@ -456,7 +456,7 @@ inline bool TkTextTagSetIntersectionIsEqual(const TkIntSet *ts1, const TkIntSet 
 { return TkIntSetIntersectionIsEqual(ts1, ts2, src); }
 
 inline bool TkTextTagBitContainsSet(const TkBitField *bf, const TkIntSet *ts)
-{ return TkBitContainsSet(bf, ts); }
+{ return TkIntSetIsContainedBits(ts, bf); }
 
 inline bool TkTextTagSetIsEqualBits(const TkIntSet *ts, const TkBitField *bf)
 { return TkIntSetIsEqualBits(ts, bf); }

@@ -5,7 +5,7 @@
  *	is either a bit field, or a set of integers, depending on the size
  *	of the tag set.
  *
- * Copyright (c) 2015-2016 Gregor Cramer
+ * Copyright (c) 2015-2017 Gregor Cramer
  *
  * See the file "license.terms" for information on usage and redistribution of
  * this file, and for a DISCLAIMER OF ALL WARRANTIES.
@@ -43,10 +43,11 @@
  * NOTE: The bit field implementation shouldn't be removed, even if this implementation
  * will not be used, because it is required for testing the integer set (TkIntSet).
  *
- * We will use the following compiler constant for the choice (with or without bitfields):
+ * We will use the compiler constant TK_TEXT_DONT_USE_BITFIELDS for the choice (with or
+ * without bitfields).
  */
 
-/* This is common to both implementations */
+/* This is common to both implementations. */
 # define TK_TEXT_TAG_SET_NPOS TK_SET_NPOS
 
 

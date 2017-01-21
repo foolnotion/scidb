@@ -6,7 +6,7 @@
  *	ranges, it is quite slow for large list sizes (large number of
  *	range items).
  *
- * Copyright (c) 2015-2016 Gregor Cramer
+ * Copyright (c) 2015-2017 Gregor Cramer
  *
  * See the file "license.terms" for information on usage and redistribution of
  * this file, and for a DISCLAIMER OF ALL WARRANTIES.
@@ -15,11 +15,7 @@
 #ifndef _TKRANGELIST
 #define _TKRANGELIST
 
-#if !defined(TK_BOOL_IS_DEFINED) && !defined(__cplusplus)
-typedef int bool;
-enum { true = (int) 1, false = (int) 0 };
-# define TK_BOOL_IS_DEFINED
-#endif
+#include "tkBool.h"
 
 #if defined(__GNUC__) || defined(__clang__)
 # define __warn_unused__ __attribute__((warn_unused_result))

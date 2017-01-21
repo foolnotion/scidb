@@ -7,7 +7,7 @@
  *
  * Copyright (c) 1994 The Regents of the University of California.
  * Copyright (c) 1994-1997 Sun Microsystems, Inc.
- * Copyright (c) 2015-2016 Gregor Cramer
+ * Copyright (c) 2015-2017 Gregor Cramer
  *
  * See the file "license.terms" for information on usage and redistribution of
  * this file, and for a DISCLAIMER OF ALL WARRANTIES.
@@ -57,7 +57,7 @@ static bool		EmbWinDeleteProc(TkTextBTree tree, TkTextSegment *segPtr, int treeG
 static void		EmbWinRestoreProc(TkTextSegment *segPtr);
 static int		EmbWinLayoutProc(const TkTextIndex *indexPtr, TkTextSegment *segPtr,
 			    int offset, int maxX, int maxChars, bool noCharsYet,
-			    TkWrapMode wrapMode, TkTextDispChunk *chunkPtr);
+			    TkWrapMode wrapMode, TkTextSpaceMode spaceMode, TkTextDispChunk *chunkPtr);
 static void		EmbWinStructureProc(ClientData clientData, XEvent *eventPtr);
 static void	        EmbWinDisplayProc(TkText *textPtr, TkTextDispChunk *chunkPtr,
                             int x, int y, int lineHeight, int baseline, Display *display,
@@ -65,6 +65,8 @@ static void	        EmbWinDisplayProc(TkText *textPtr, TkTextDispChunk *chunkPtr
 static void		EmbWinUndisplayProc(TkText *textPtr, TkTextDispChunk *chunkPtr);
 static TkTextEmbWindowClient *EmbWinGetClient(const TkText *textPtr, TkTextSegment *ewPtr);
 static TkTextSegment *	MakeWindow(TkText *textPtr);
+static void		ReleaseWindow(TkTextSegment *ewPtr);
+static void		DestroyOrUnmapWindow(TkTextSegment *ewPtr);
 
 static const TkTextDispChunkProcs layoutWindowProcs = {
     TEXT_DISP_WINDOW,		/* type */
@@ -81,9 +83,9 @@ static const TkTextDispChunkProcs layoutWindowProcs = {
 static void UndoLinkSegmentPerform(TkSharedText *, TkTextUndoInfo *, TkTextUndoInfo *, bool);
 static void RedoLinkSegmentPerform(TkSharedText *, TkTextUndoInfo *, TkTextUndoInfo *, bool);
 static void UndoLinkSegmentDestroy(TkSharedText *, TkTextUndoToken *);
-static void UndoLinkSegmentGetRange(TkSharedText *, const TkTextUndoToken *,
+static void UndoLinkSegmentGetRange(const TkSharedText *, const TkTextUndoToken *,
 	TkTextIndex *, TkTextIndex *);
-static void RedoLinkSegmentGetRange(TkSharedText *, const TkTextUndoToken *,
+static void RedoLinkSegmentGetRange(const TkSharedText *, const TkTextUndoToken *,
 	TkTextIndex *, TkTextIndex *);
 static Tcl_Obj *UndoLinkSegmentGetCommand(const TkSharedText *, const TkTextUndoToken *);
 static Tcl_Obj *UndoLinkSegmentInspect(const TkSharedText *, const TkTextUndoToken *);
@@ -171,8 +173,39 @@ DEBUG_ALLOC(extern unsigned tkTextCountNewSegment);
 DEBUG_ALLOC(extern unsigned tkTextCountNewUndoToken);
 
 /*
+ * Some useful helpers.
+ */
+
+static void
+TextChanged(
+    TkSharedText *sharedTextPtr,
+    TkTextIndex *indexPtr)
+{
+    TkTextChanged(sharedTextPtr, NULL, indexPtr, indexPtr);
+
+    /*
+     * TODO: It's probably not true that all window configuration can change
+     * the line height, so we could be more efficient here and only call this
+     * when necessary.
+     */
+
+    TkTextInvalidateLineMetrics(sharedTextPtr, NULL,
+	    TkTextIndexGetLine(indexPtr), 0, TK_TEXT_INVALIDATE_ONLY);
+}
+
+/*
  * Some functions for the undo/redo mechanism.
  */
+
+static void
+GetIndex(
+    const TkSharedText *sharedTextPtr,
+    TkTextSegment *segPtr,
+    TkTextIndex *indexPtr)
+{
+    TkTextIndexClear2(indexPtr, NULL, sharedTextPtr->tree);
+    TkTextIndexSetSegment(indexPtr, segPtr);
+}
 
 static Tcl_Obj *
 UndoLinkSegmentGetCommand(
@@ -194,8 +227,7 @@ UndoLinkSegmentInspect(
     char buf[TK_POS_CHARS];
     TkTextIndex index;
 
-    TkTextIndexClear2(&index, NULL,sharedTextPtr->tree);
-    TkTextIndexSetSegment(&index, token->segPtr);
+    GetIndex(sharedTextPtr, token->segPtr, &index);
     TkTextIndexPrint(sharedTextPtr, NULL, &index, buf);
     Tcl_ListObjAppendElement(NULL, objPtr, Tcl_NewStringObj(buf, -1));
     return objPtr;
@@ -210,20 +242,23 @@ UndoLinkSegmentPerform(
 {
     const UndoTokenLinkSegment *token = (const UndoTokenLinkSegment *) undoInfo->token;
     TkTextSegment *segPtr = token->segPtr;
+    TkTextIndex index;
 
     if (redoInfo) {
 	RedoTokenLinkSegment *redoToken;
 	redoToken = ckalloc(sizeof(RedoTokenLinkSegment));
 	redoToken->undoType = &redoTokenLinkSegmentType;
-	redoToken->segPtr = segPtr;
 	TkBTreeMakeUndoIndex(sharedTextPtr, segPtr, &redoToken->index);
-	redoInfo->token = (TkTextUndoToken *) token;
+	redoInfo->token = (TkTextUndoToken *) redoToken;
+	(redoToken->segPtr = segPtr)->refCount += 1;
 	DEBUG_ALLOC(tkTextCountNewUndoToken++);
     }
 
+    GetIndex(sharedTextPtr, segPtr, &index);
+    TextChanged(sharedTextPtr, &index);
     TkBTreeUnlinkSegment(sharedTextPtr, segPtr);
-    segPtr->refCount += 1;
-    EmbWinDeleteProc(sharedTextPtr->tree, segPtr, redoInfo ? DELETE_MARKS : 0);
+    EmbWinDeleteProc(sharedTextPtr->tree, segPtr, 0);
+    TK_BTREE_DEBUG(TkBTreeCheck(sharedTextPtr->tree));
 }
 
 static void
@@ -232,19 +267,22 @@ UndoLinkSegmentDestroy(
     TkTextUndoToken *item)
 {
     UndoTokenLinkSegment *token = (UndoTokenLinkSegment *) item;
-    EmbWinDeleteProc(sharedTextPtr->tree, token->segPtr, 0);
+
+    if (--token->segPtr->refCount == 0) {
+	ReleaseWindow(token->segPtr);
+    }
 }
 
 static void
 UndoLinkSegmentGetRange(
-    TkSharedText *sharedTextPtr,
+    const TkSharedText *sharedTextPtr,
     const TkTextUndoToken *item,
     TkTextIndex *startIndex,
     TkTextIndex *endIndex)
 {
     const UndoTokenLinkSegment *token = (const UndoTokenLinkSegment *) item;
-    TkTextIndexClear2(startIndex, NULL, sharedTextPtr->tree);
-    TkTextIndexSetSegment(startIndex, token->segPtr);
+
+    GetIndex(sharedTextPtr, token->segPtr, startIndex);
     *endIndex = *startIndex;
 }
 
@@ -274,6 +312,7 @@ RedoLinkSegmentPerform(
     bool isRedo)
 {
     RedoTokenLinkSegment *token = (RedoTokenLinkSegment *) undoInfo->token;
+    TkTextIndex index;
 
     TkBTreeReInsertSegment(sharedTextPtr, &token->index, token->segPtr);
 
@@ -281,11 +320,16 @@ RedoLinkSegmentPerform(
 	redoInfo->token = undoInfo->token;
 	token->undoType = &undoTokenLinkSegmentType;
     }
+
+    GetIndex(sharedTextPtr, token->segPtr, &index);
+    TextChanged(sharedTextPtr, &index);
+    token->segPtr->refCount += 1;
+    TK_BTREE_DEBUG(TkBTreeCheck(sharedTextPtr->tree));
 }
 
 static void
 RedoLinkSegmentGetRange(
-    TkSharedText *sharedTextPtr,
+    const TkSharedText *sharedTextPtr,
     const TkTextUndoToken *item,
     TkTextIndex *startIndex,
     TkTextIndex *endIndex)
@@ -425,16 +469,7 @@ TkTextWindowCmd(
 	    Tcl_SetObjResult(interp, objPtr);
 	    return TCL_OK;
 	} else {
-	    TkTextChanged(textPtr->sharedTextPtr, NULL, &index, &index);
-
-	    /*
-	     * It's probably not true that all window configuration can change
-	     * the line height, so we could be more efficient here and only
-	     * call this when necessary.
-	     */
-
-	    TkTextInvalidateLineMetrics(textPtr->sharedTextPtr, NULL,
-		    TkTextIndexGetLine(&index), 0, TK_TEXT_INVALIDATE_ONLY);
+	    TextChanged(textPtr->sharedTextPtr, &index);
 	    return EmbWinConfigure(textPtr, ewPtr, objc - 4, objv + 4);
 	}
     }
@@ -457,21 +492,29 @@ TkTextWindowCmd(
 	    return TCL_ERROR;
 	}
 
-#if !TK_TEXT_DEPRECATED_MODS_OF_DISABLED_WIDGET
 	if (textPtr->state == TK_TEXT_STATE_DISABLED) {
+#if SUPPORT_DEPRECATED_MODS_OF_DISABLED_WIDGET
+	    return TCL_OK;
+#else /* if !SUPPORT_DEPRECATED_MODS_OF_DISABLED_WIDGET */
 	    Tcl_SetObjResult(interp, Tcl_ObjPrintf("attempt to modify disabled widget"));
 	    Tcl_SetErrorCode(interp, "TK", "TEXT", "NOT_ALLOWED", NULL);
 	    return TCL_ERROR;
-	    return TCL_OK;
+#endif /* SUPPORT_DEPRECATED_MODS_OF_DISABLED_WIDGET */
 	}
-#endif
 
 	/*
 	 * Don't allow insertions on the last line of the text.
 	 */
 
 	if (!TkTextIndexEnsureBeforeLastChar(&index)) {
-	    return TCL_OK; /* peer is empty */
+#if SUPPORT_DEPRECATED_MODS_OF_DISABLED_WIDGET
+		return TCL_OK;
+#else
+		Tcl_SetObjResult(textPtr->interp, Tcl_NewStringObj(
+			"cannot insert window into dead peer", -1));
+		Tcl_SetErrorCode(textPtr->interp, "TK", "TEXT", "WINDOW_CREATE_USAGE", NULL);
+		return TCL_ERROR;
+#endif
 	}
 
 	/*
@@ -486,7 +529,6 @@ TkTextWindowCmd(
 	 * again if the configuration fails).
 	 */
 
-	TkTextChanged(sharedTextPtr, NULL, &index, &index);
 	TkBTreeLinkSegment(sharedTextPtr, ewPtr, &index);
 	res = EmbWinConfigure(textPtr, ewPtr, objc - 4, objv + 4);
 	client->tkwin = ewPtr->body.ew.tkwin;
@@ -494,11 +536,10 @@ TkTextWindowCmd(
 	    TkBTreeUnlinkSegment(sharedTextPtr, ewPtr);
 	    TkTextWinFreeClient(NULL, client);
 	    ewPtr->body.ew.clients = NULL;
-	    EmbWinDeleteProc(sharedTextPtr->tree, ewPtr, 0);
+	    ReleaseWindow(ewPtr);
 	    return TCL_ERROR;
 	}
-	TkTextInvalidateLineMetrics(sharedTextPtr, NULL,
-		TkTextIndexGetLine(&index), 0, TK_TEXT_INVALIDATE_ONLY);
+	TextChanged(sharedTextPtr, &index);
 
 	if (!TkTextUndoStackIsFull(sharedTextPtr->undoStack)) {
 	    UndoTokenLinkSegment *token;
@@ -509,6 +550,7 @@ TkTextWindowCmd(
 	    token = ckalloc(sizeof(UndoTokenLinkSegment));
 	    token->undoType = &undoTokenLinkSegmentType;
 	    token->segPtr = ewPtr;
+	    ewPtr->refCount += 1;
 	    DEBUG_ALLOC(tkTextCountNewUndoToken++);
 
 	    TkTextPushUndoToken(sharedTextPtr, token, 0);
@@ -617,7 +659,9 @@ TkTextMakeWindow(
     if (EmbWinConfigure(textPtr, ewPtr, objc, objv) == TCL_OK) {
 	Tcl_ResetResult(textPtr->interp);
     } else {
-	EmbWinDeleteProc(textPtr->sharedTextPtr->tree, ewPtr, 0);
+	TkTextWinFreeClient(NULL, ewPtr->body.ew.clients);
+	ewPtr->body.ew.clients = NULL;
+	ReleaseWindow(ewPtr);
 	ewPtr = NULL;
     }
 
@@ -801,34 +845,28 @@ EmbWinStructureProc(
     XEvent *eventPtr)		/* Describes what just happened. */
 {
     TkTextEmbWindowClient *client = clientData;
-    TkTextSegment *ewPtr = client->parent;
-    TkTextIndex index;
-    Tcl_HashEntry *hPtr;
+    TkTextSegment *ewPtr;
 
-    if (eventPtr->type != DestroyNotify) {
+    if (eventPtr->type != DestroyNotify || !client->hPtr) {
 	return;
     }
 
-    assert(!IsPreservedWindow(client));
+    ewPtr = client->parent;
 
-    hPtr = Tcl_FindHashEntry(&ewPtr->body.ew.sharedTextPtr->windowTable, Tk_PathName(client->tkwin));
-    if (hPtr) {
-	/*
-	 * This may not exist if the entire widget is being deleted.
-	 */
+    assert(ewPtr->typePtr);
+    assert(client->hPtr == Tcl_FindHashEntry(&ewPtr->body.ew.sharedTextPtr->windowTable,
+	    Tk_PathName(client->tkwin)));
 
-	ewPtr->body.ew.sharedTextPtr->numWindows -= 1;
-	Tcl_DeleteHashEntry(hPtr);
-    }
+    /*
+     * This may not exist if the entire widget is being deleted.
+     */
 
+    Tcl_DeleteHashEntry(client->hPtr);
+    ewPtr->body.ew.sharedTextPtr->numWindows -= 1;
     ewPtr->body.ew.tkwin = NULL;
     client->tkwin = NULL;
     client->hPtr = NULL;
-    TkTextIndexClear(&index, client->textPtr);
-    TkTextIndexSetSegment(&index, ewPtr);
-    TkTextChanged(ewPtr->body.ew.sharedTextPtr, NULL, &index, &index);
-    TkTextInvalidateLineMetrics(ewPtr->body.ew.sharedTextPtr, NULL,
-	    TkTextIndexGetLine(&index), 0, TK_TEXT_INVALIDATE_ONLY);
+    EmbWinRequestProc(client, NULL);
 }
 
 /*
@@ -849,7 +887,6 @@ EmbWinStructureProc(
  *--------------------------------------------------------------
  */
 
-	/* ARGSUSED */
 static void
 EmbWinRequestProc(
     ClientData clientData,	/* Pointer to record for window item. */
@@ -859,13 +896,14 @@ EmbWinRequestProc(
     TkTextSegment *ewPtr = client->parent;
     TkTextIndex index;
 
-    assert(!IsPreservedWindow(client));
+    assert(ewPtr->typePtr);
 
-    TkTextIndexClear(&index, client->textPtr);
-    TkTextIndexSetSegment(&index, ewPtr);
-    TkTextChanged(ewPtr->body.ew.sharedTextPtr, NULL, &index, &index);
-    TkTextInvalidateLineMetrics(ewPtr->body.ew.sharedTextPtr, NULL,
-	    TkTextIndexGetLine(&index), 0, TK_TEXT_INVALIDATE_ONLY);
+    if (ewPtr->sectionPtr) {
+	assert(ewPtr->sectionPtr);
+	TkTextIndexClear(&index, client->textPtr);
+	TkTextIndexSetSegment(&index, ewPtr);
+	TextChanged(ewPtr->body.ew.sharedTextPtr, &index);
+    }
 }
 
 /*
@@ -900,13 +938,10 @@ EmbWinLostSlaveProc(
 
     assert(!IsPreservedWindow(client));
 
+    assert(client->tkwin);
+    client->displayed = false;
     Tk_DeleteEventHandler(client->tkwin, StructureNotifyMask, EmbWinStructureProc, client);
-    Tcl_CancelIdleCall(EmbWinDelayedUnmap, client);
-    if (textPtr->tkwin != Tk_Parent(tkwin)) {
-	Tk_UnmaintainGeometry(tkwin, textPtr->tkwin);
-    } else {
-	Tk_UnmapWindow(tkwin);
-    }
+    EmbWinDelayedUnmap(client);
     if (client->hPtr) {
 	ewPtr->body.ew.sharedTextPtr->numWindows -= 1;
 	Tcl_DeleteHashEntry(client->hPtr);
@@ -932,9 +967,7 @@ EmbWinLostSlaveProc(
 
     TkTextIndexClear(&index, textPtr);
     TkTextIndexSetSegment(&index, ewPtr);
-    TkTextChanged(ewPtr->body.ew.sharedTextPtr, NULL, &index, &index);
-    TkTextInvalidateLineMetrics(ewPtr->body.ew.sharedTextPtr, NULL,
-	    TkTextIndexGetLine(&index), 0, TK_TEXT_INVALIDATE_ONLY);
+    TextChanged(ewPtr->body.ew.sharedTextPtr, &index);
 }
 
 /*
@@ -1033,7 +1066,7 @@ EmbWinInspectProc(
 
     Tcl_DStringInit(&opts);
     TkTextInspectOptions(sharedTextPtr->peers, &segPtr->body.ew, segPtr->body.ew.optionTable,
-	    &opts, false);
+	    &opts, false, false);
 
     Tcl_ListObjAppendElement(NULL, objPtr, Tcl_NewStringObj(segPtr->typePtr->name, -1));
     Tcl_ListObjAppendElement(NULL, objPtr, objPtr2);
@@ -1047,6 +1080,88 @@ EmbWinInspectProc(
 /*
  *--------------------------------------------------------------
  *
+ * ReleaseWindow --
+ *
+ *	Free embedded window
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	The embedded window is deleted, and any resources
+ *	associated with it are released.
+ *
+ *--------------------------------------------------------------
+ */
+
+static void
+ReleaseWindow(
+    TkTextSegment *ewPtr)
+{
+    TkTextEmbWindowClient *client = ewPtr->body.ew.clients;
+
+    assert(ewPtr->typePtr);
+
+    while (client) {
+	TkTextEmbWindowClient *next = client->next;
+	if (client->hPtr) {
+	    TkTextWinFreeClient(client->hPtr, client);
+	}
+	client = next;
+    }
+    ewPtr->body.ew.clients = NULL;
+    Tk_FreeConfigOptions((char *) &ewPtr->body.ew, ewPtr->body.ew.optionTable, NULL);
+    TkTextTagSetDecrRefCount(ewPtr->tagInfoPtr);
+    FREE_SEGMENT(ewPtr);
+    DEBUG_ALLOC(tkTextCountDestroySegment++);
+}
+
+/*
+ *--------------------------------------------------------------
+ *
+ * DestroyOrUnmapWindow --
+ *
+ *	Unmap all clients of given window.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	Either destroy or only unmap the embedded window.
+ *
+ *--------------------------------------------------------------
+ */
+
+static void
+DestroyOrUnmapWindow(
+    TkTextSegment *ewPtr)
+{
+    TkTextEmbWindowClient *client = ewPtr->body.ew.clients;
+
+    assert(ewPtr->typePtr);
+    assert(ewPtr->refCount > 0);
+
+    for ( ; client; client = client->next) {
+	if (client->hPtr) {
+	    client->parent->body.ew.sharedTextPtr->numWindows -= 1;
+	    Tcl_DeleteHashEntry(client->hPtr);
+	    client->hPtr = NULL;
+	    client->displayed = false;
+	}
+	Tcl_CancelIdleCall(EmbWinDelayedUnmap, client);
+	if (client->tkwin && ewPtr->body.ew.create) {
+	    Tk_DeleteEventHandler(client->tkwin, StructureNotifyMask, EmbWinStructureProc, client);
+	    Tk_DestroyWindow(client->tkwin);
+	    client->tkwin = NULL;
+	    ewPtr->body.ew.tkwin = NULL;
+	} else {
+	    EmbWinDelayedUnmap(client);
+	}
+    }
+}
+/*
+ *--------------------------------------------------------------
+ *
  * EmbWinDeleteProc --
  *
  *	This function is invoked by the text B-tree code whenever an embedded
@@ -1056,8 +1171,7 @@ EmbWinInspectProc(
  *	Returns true to indicate that the deletion has been accepted.
  *
  * Side effects:
- *	The embedded window is deleted, if it exists, and any resources
- *	associated with it are released.
+ *	Depends on the action, see ReleaseWindow and DestroyOrUnmapWindow.
  *
  *--------------------------------------------------------------
  */
@@ -1068,33 +1182,12 @@ EmbWinDeleteProc(
     TkTextSegment *ewPtr,	/* Segment being deleted. */
     int flags)			/* Flags controlling the deletion. */
 {
-    TkTextEmbWindowClient *client = ewPtr->body.ew.clients;
-
-    assert(ewPtr->refCount > 0);
+    assert(ewPtr->typePtr);
 
     if (--ewPtr->refCount == 0) {
-	while (client) {
-	    TkTextEmbWindowClient *next = client->next;
-	    if (client->hPtr) {
-		TkTextWinFreeClient(client->hPtr, client);
-	    }
-	    client = next;
-	}
-	ewPtr->body.ew.clients = NULL;
-	Tk_FreeConfigOptions((char *) &ewPtr->body.ew, ewPtr->body.ew.optionTable, NULL);
-	TkTextTagSetDecrRefCount(ewPtr->tagInfoPtr);
-	FREE_SEGMENT(ewPtr);
-	DEBUG_ALLOC(tkTextCountDestroySegment++);
+	ReleaseWindow(ewPtr);
     } else {
-	for ( ; client; client = client->next) {
-	    if (client->hPtr) {
-		client->parent->body.ew.sharedTextPtr->numWindows -= 1;
-		Tcl_DeleteHashEntry(client->hPtr);
-		client->hPtr = NULL;
-	    }
-	    Tcl_CancelIdleCall(EmbWinDelayedUnmap, client);
-	    EmbWinDelayedUnmap(client);
-	}
+	DestroyOrUnmapWindow(ewPtr);
     }
     return true;
 }
@@ -1171,7 +1264,8 @@ EmbWinLayoutProc(
     int maxChars,		/* Chunk must not include more than this many characters. */
     bool noCharsYet,		/* 'true' means no characters have been assigned to this line yet. */
     TkWrapMode wrapMode,	/* Wrap mode to use for line: TEXT_WRAPMODE_CHAR, TEXT_WRAPMODE_NONE,
-    				 * or TEXT_WRAPMODE_WORD. */
+    				 * TEXT_WRAPMODE_WORD, or TEXT_WRAPMODE_CODEPOINT. */
+    TkTextSpaceMode spaceMode,	/* Not used. */
     TkTextDispChunk *chunkPtr)	/* Structure to fill in with information about this chunk. The x
     				 * field has already been set by the caller. */
 {
@@ -1375,7 +1469,7 @@ EmbWinLayoutProc(
 static void
 EmbWinCheckProc(
     const TkSharedText *sharedTextPtr,	/* Handle to shared text resource. */
-    const TkTextSegment *ewPtr)	/* Segment to check. */
+    const TkTextSegment *ewPtr)		/* Segment to check. */
 {
     if (!ewPtr->nextPtr) {
 	Tcl_Panic("EmbWinCheckProc: embedded window is last segment in line");
@@ -1433,11 +1527,8 @@ EmbWinDisplayProc(
 	 * The window is off-screen; just unmap it.
 	 */
 
-	if (textPtr->tkwin != Tk_Parent(tkwin)) {
-	    Tk_UnmaintainGeometry(tkwin, textPtr->tkwin);
-	} else {
-	    Tk_UnmapWindow(tkwin);
-	}
+	client->displayed = false;
+	EmbWinDelayedUnmap(client);
 	return;
     }
 
@@ -1458,8 +1549,6 @@ EmbWinDisplayProc(
      * the embedded window its clients will get freed.
      */
 
-    client->displayed = true;
-
     if (textPtr->tkwin == Tk_Parent(tkwin)) {
 	if (windowX != Tk_X(tkwin)
 		|| windowY != Tk_Y(tkwin)
@@ -1467,10 +1556,14 @@ EmbWinDisplayProc(
 		|| height != Tk_Height(tkwin)) {
 	    Tk_MoveResizeWindow(tkwin, windowX, windowY, width, height);
 	}
-	Tk_MapWindow(tkwin);
+	if (!client->displayed) {
+	    Tk_MapWindow(tkwin);
+	}
     } else {
 	Tk_MaintainGeometry(tkwin, textPtr->tkwin, windowX, windowY, width, height);
     }
+
+    client->displayed = true;
 }
 
 /*
@@ -1608,7 +1701,7 @@ EmbWinDelayedUnmap(
 {
     TkTextEmbWindowClient *client = clientData;
 
-    if (!client->displayed && (client->tkwin)) {
+    if (!client->displayed && client->tkwin) {
 	if (client->textPtr->tkwin != Tk_Parent(client->tkwin)) {
 	    Tk_UnmaintainGeometry(client->tkwin, client->textPtr->tkwin);
 	} else {

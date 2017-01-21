@@ -3,7 +3,7 @@
  *
  *	This module implements bit field operations.
  *
- * Copyright (c) 2015-2016 Gregor Cramer
+ * Copyright (c) 2015-2017 Gregor Cramer
  *
  * See the file "license.terms" for information on usage and redistribution of
  * this file, and for a DISCLAIMER OF ALL WARRANTIES.
@@ -1064,7 +1064,7 @@ TkBitFindPrev(
 
 unsigned
 TkBitFindFirstInIntersection(
-    const TkBitField* bf1,
+    const TkBitField *bf1,
     const TkBitField *bf2)
 {
     unsigned words, i;
@@ -1136,30 +1136,6 @@ TkBitFill(
 {
     memset(bf->bits, 0xff, BYTE_SIZE(bf->size));
     ResetUnused(bf);
-}
-
-
-bool
-TkBitContainsSet(
-    const TkBitField *bf,
-    const TkIntSet *set)
-{
-    unsigned setSize, bitSize, i;
-
-    assert(bf);
-    assert(set);
- 
-    setSize = TkIntSetSize(set);
-    bitSize = TkBitSize(bf);
-
-    for (i = 0; i < setSize; ++i) {
-	TkIntSetType value = TkIntSetAccess(set, i);
-	if (value >= bitSize || !TkBitTest(bf, value)) {
-	    return false;
-	}
-    }
-
-    return true;
 }
 
 

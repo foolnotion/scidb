@@ -7,7 +7,7 @@
  *
  * Copyright (c) 1992-1994 The Regents of the University of California.
  * Copyright (c) 1994-1995 Sun Microsystems, Inc.
- * Copyright (c) 2015-2016 Gregor Cramer
+ * Copyright (c) 2015-2017 Gregor Cramer
  *
  * See the file "license.terms" for information on usage and redistribution of
  * this file, and for a DISCLAIMER OF ALL WARRANTIES.
@@ -24,6 +24,9 @@
 #endif
 #ifndef MAX
 # define MAX(a,b) (((int) a) < ((int) b) ? b : a)
+#endif
+#ifndef ABS
+# define ABS(a)   (a < 0 ? -a : a)
 #endif
 
 #if NDEBUG
@@ -55,6 +58,8 @@
  * valid line, rather it would point to the beginning of a non-existent line
  * one beyond all current lines - we could perhaps define that as a
  * TkTextIndex with a NULL TkTextLine ptr).
+ * Note by GC: the dummy line is quite useful, for instance it contains
+ * mark segments.
  */
 
 /*
@@ -87,14 +92,14 @@ typedef struct Node {
     TkTextTagSet *tagonPtr;	/* The union of tagonPtr over all childrens/lines. */
     TkTextTagSet *tagoffPtr;	/* The union of tagoffPtr over all childrens/lines. */
     NodePixelInfo *pixelInfo;	/* Array containing pixel information in the subtree rooted here,
-    				   one entry for each peer widget. */
+    				 * one entry for each peer widget. */
     uint32_t level;		/* Level of this node in the B-tree. 0 refers to the bottom of
     				 * the tree (children are lines, not nodes). */
     uint32_t size;		/* Sum of size over all lines belonging to this node. */
     uint32_t numChildren;	/* Number of children of this node. */
     uint32_t numLines;		/* Total number of lines (leaves) in the subtree rooted here. */
     uint32_t numLogicalLines;	/* Total number of logical lines (a line whose predecessing line
-    				 * don't has an elided newline). */
+    				 * don't have an elided newline). */
     uint32_t numBranches;	/* Counting the number of branches in this node. */
 } Node;
 
@@ -103,7 +108,7 @@ typedef struct Node {
  * commonly used functions. Must be > 0.
  */
 
-#define PIXEL_CLIENTS 5
+#define PIXEL_CLIENTS 8
 
 /*
  * Number of segments inside a section of segments. MAX_TEXT_SEGS must be
@@ -115,16 +120,6 @@ typedef struct Node {
 #define MIN_TEXT_SEGS 20
 #define MAX_TEXT_SEGS 60
 #define NUM_TEXT_SEGS (MAX_TEXT_SEGS - MIN_TEXT_SEGS)
-
-/*
- * Definition of flags for consistency checks.
- */
-
-#define CHECK_SEGMENTS	(1 << 0)
-#define CHECK_NODES	(1 << 1)
-#define CHECK_LINES	(1 << 2)
-#define CHECK_TAGS	(1 << 3)
-#define CHECK_ALL	(CHECK_SEGMENTS|CHECK_NODES|CHECK_LINES|CHECK_TAGS)
 
 /*
  * Definition of flags for UpdateElideInfo.
@@ -144,7 +139,7 @@ bool tkBTreeDebug = false;
  * Macros that determine how much space to allocate for new segments:
  */
 
-/* Computer math magic: ((n + 8)/8)*8 == (n + 8) & -8 */
+/* Computer math magic: (k/8)*8 == k & -8 */
 #define CSEG_CAPACITY(chars) ((int) (chars + 8) & -8)
 #define CSEG_SIZE(capacity) ((unsigned) (Tk_Offset(TkTextSegment, body) + capacity))
 
@@ -187,7 +182,7 @@ static void		HyphenCheckProc(const TkSharedText *sharedTextPtr, const TkTextSegm
 static Tcl_Obj *	HyphenInspectProc(const TkSharedText *sharedTextPtr,
 			    const TkTextSegment *segPtr);
 static TkTextSegment *	IncreaseCharSegment(TkTextSegment *segPtr, unsigned offset, int chunkSize);
-static void		FreeLine(const BTree* treePtr, TkTextLine *linePtr);
+static void		FreeLine(const BTree *treePtr, TkTextLine *linePtr);
 static void		LinkSegment(TkTextLine *linePtr, TkTextSegment *predPtr, TkTextSegment *succPtr);
 static void		LinkMark(const TkSharedText *sharedTextPtr, TkTextLine *linePtr,
 			    TkTextSegment *prevPtr, TkTextSegment *segPtr);
@@ -198,8 +193,7 @@ static TkTextSegment *	CopyCharSeg(TkTextSegment *segPtr, unsigned offset,
 			    unsigned length, unsigned newSize);
 static TkTextSegment *	SplitCharSegment(TkTextSegment *segPtr, unsigned index);
 static void		CheckNodeConsistency(const TkSharedText *sharedTextPtr, const Node *nodePtr,
-			    const Node *rootPtr, unsigned references, unsigned flags);
-static void		TreeCheck(TkTextBTree tree, unsigned flags);
+			    const Node *rootPtr, unsigned references);
 static void		RebuildSections(TkSharedText *sharedTextPtr, TkTextLine *linePtr,
 			    bool propagateChangeOfNumBranches);
 static bool		CheckSegments(const TkSharedText *sharedTextPtr, const TkTextLine *linePtr);
@@ -208,6 +202,7 @@ static bool		CheckSegmentItems(const TkSharedText *sharedTextPtr, const TkTextLi
 static void		FreeNode(Node *nodePtr);
 static void		DestroyNode(TkTextBTree tree, Node *nodePtr);
 static void		DeleteEmptyNode(BTree *treePtr, Node *nodePtr);
+static TkTextSegment *	FindTagStart(TkTextSearch *searchPtr, const TkTextIndex *stopIndex);
 static TkTextSegment *	FindTagEnd(TkTextSearch *searchPtr, const TkTextIndex *stopIndex);
 static void		Rebalance(BTree *treePtr, Node *nodePtr);
 static void		RemovePixelClient(BTree *treePtr, Node *nodePtr, unsigned useReference,
@@ -226,7 +221,6 @@ static void		UnlinkSegmentAndCleanup(const TkSharedText *sharedTextPtr,
 			    TkTextSegment *segPtr);
 static unsigned		CountSegments(const TkTextSection *sectionPtr);
 static unsigned		ComputeSectionSize(const TkTextSegment *segPtr);
-static TkTextSegment *	FindTagStart(TkTextSearch *searchPtr, const TkTextIndex *stopIndex);
 static void		BranchCheckProc(const TkSharedText *sharedTextPtr, const TkTextSegment *segPtr);
 static bool		BranchDeleteProc(TkTextBTree tree, TkTextSegment *segPtr, int flags);
 static void		BranchRestoreProc(TkTextSegment *segPtr);
@@ -254,14 +248,19 @@ static void		DeleteRange(TkSharedText *sharedTextPtr,
 static void		UpdateNodeTags(const TkSharedText *sharedTextPtr, Node *nodePtr);
 static void		MakeUndoIndex(const TkSharedText *sharedTextPtr, const TkTextIndex *indexPtr,
 			    TkTextUndoIndex *undoIndexPtr, int gravity);
+static bool		UndoIndexIsEqual(const TkTextUndoIndex *indexPtr1,
+			    const TkTextUndoIndex *indexPtr2);
 static void		AddTagToNode(Node *nodePtr, TkTextTag *tag, bool setTagoff);
 static void		RemoveTagFromNode(Node *nodePtr, TkTextTag *tag);
 static void		UpdateElideInfo(TkSharedText *sharedTextPtr, TkTextTag *tagPtr,
 			    TkTextSegment *firstSegPtr, TkTextSegment *lastSegPtr, unsigned reason);
-bool			SegmentIsElided(const TkSharedText *sharedTextPtr, const TkTextSegment *segPtr,
+static bool		SegmentIsElided(const TkSharedText *sharedTextPtr, const TkTextSegment *segPtr,
 			    const TkText *textPtr);
 static TkTextLine *	GetStartLine(const TkSharedText *sharedTextPtr, const TkText *textPtr);
-static TkTextLine *	GetLastLine(const TkText *textPtr);
+/*static TkTextLine *	GetFirstLine(const TkSharedText *sharedTextPtr, const TkText *textPtr);*/
+static TkTextLine *	GetLastLine(const TkSharedText *sharedTextPtr, const TkText *textPtr);
+static void		TreeReInsertSegment(const TkSharedText *sharedTextPtr,
+			    const TkTextUndoIndex *indexPtr, TkTextSegment *segPtr, bool updateNode);
 
 /*
  * Type record for character segments:
@@ -339,16 +338,6 @@ const Tk_SegType tkTextProtectionMarkType = {
 };
 
 /*
- * A helper for guarded deallocation.
- */
-
-#define FREE_SECTION(ptr) { \
-    assert(ptr->linePtr); \
-    assert(!(ptr->linePtr = NULL)); \
-    ckfree(ptr); \
-    DEBUG_ALLOC(tkTextCountDestroySection++); } \
-
-/*
  * We need some private undo/redo stuff.
  */
 
@@ -374,11 +363,13 @@ static void RedoDeletePerform(TkSharedText *, TkTextUndoInfo *, TkTextUndoInfo *
 static void UndoDeleteDestroy(TkSharedText *, TkTextUndoToken *token);
 static Tcl_Obj *UndoDeleteGetCommand(const TkSharedText *, const TkTextUndoToken *);
 static Tcl_Obj *UndoDeleteInspect(const TkSharedText *, const TkTextUndoToken *);
+static Tcl_Obj *RedoDeleteInspect(const TkSharedText *, const TkTextUndoToken *);
+static Tcl_Obj *RedoInsertInspect(const TkSharedText *, const TkTextUndoToken *);
 
 static void UndoInsertPerform(TkSharedText *, TkTextUndoInfo *, TkTextUndoInfo *, bool);
 static Tcl_Obj *UndoInsertGetCommand(const TkSharedText *, const TkTextUndoToken *);
 
-static void UndoGetRange(TkSharedText *, const TkTextUndoToken *, TkTextIndex *, TkTextIndex *);
+static void UndoGetRange(const TkSharedText *, const TkTextUndoToken *, TkTextIndex *, TkTextIndex *);
 
 static const Tk_UndoType undoTokenTagType = {
     TK_TEXT_UNDO_TAG,		/* action */
@@ -431,7 +422,7 @@ static const Tk_UndoType redoTokenDeleteType = {
     RedoDeletePerform,		/* undoProc */
     NULL,			/* destroyProc */
     UndoGetRange,		/* rangeProc */
-    UndoDeleteGetCommand	/* inspectProc */
+    RedoDeleteInspect		/* inspectProc */
 };
 
 static const Tk_UndoType undoTokenInsertType = {
@@ -449,7 +440,7 @@ static const Tk_UndoType redoTokenInsertType = {
     UndoDeletePerform,		/* undoProc */
     UndoDeleteDestroy,		/* destroyProc */
     UndoGetRange,		/* rangeProc */
-    UndoDeleteInspect		/* inspectProc */
+    RedoInsertInspect		/* inspectProc */
 };
 
 /* Derivation of TkTextUndoTokenRange */
@@ -457,7 +448,9 @@ typedef struct UndoTokenDelete {
     const Tk_UndoType *undoType;
     TkTextUndoIndex startIndex;	/* Start of deletion range. */
     TkTextUndoIndex endIndex;	/* End of deletion range. */
-    TkTextSegment **segments;	/* Deleted segments. */
+    TkTextSegment **segments;	/* Array containing the deleted segments. */
+    uint32_t numSegments:31;	/* Number of segments. */
+    uint32_t inclusive:1;	/* Inclusive bounds? */
 } UndoTokenDelete;
 
 /* Derivation of TkTextUndoTokenRange */
@@ -545,6 +538,16 @@ SegIsAtStartOfLine(
     return !segPtr;
 }
 
+static bool
+SegIsAtEndOfLine(
+    const TkTextSegment *segPtr)
+{
+    while (segPtr && segPtr->size == 0) {
+	segPtr = segPtr->nextPtr;
+    }
+    return !segPtr->nextPtr;
+}
+
 static TkTextSegment *
 GetPrevTagInfoSegment(
     TkTextSegment *segPtr)
@@ -576,10 +579,60 @@ GetNextTagInfoSegment(
 
 static TkTextSegment *
 GetFirstTagInfoSegment(
+    const TkText *textPtr,	/* can be NULL */
     const TkTextLine *linePtr)
 {
+    TkTextSegment *segPtr;
+
     assert(linePtr);
-    return GetNextTagInfoSegment(linePtr->segPtr);
+
+    if (textPtr && linePtr == textPtr->startMarker->sectionPtr->linePtr) {
+	segPtr = textPtr->startMarker;
+    } else {
+	segPtr = linePtr->segPtr;
+    }
+
+    return GetNextTagInfoSegment(segPtr);
+}
+
+static bool
+TagSetTestBits(
+    const TkTextTagSet *tagInfoPtr,
+    const TkBitField *bitField)		/* can be NULL */
+{
+    assert(tagInfoPtr);
+
+    if (TkTextTagSetIsEmpty(tagInfoPtr)) {
+	return false;
+    }
+
+    return !bitField || !TkTextTagBitContainsSet(bitField, tagInfoPtr);
+}
+
+static bool
+TagSetTestDisjunctiveBits(
+    const TkTextTagSet *tagInfoPtr,
+    const TkBitField *bitField)		/* can be NULL */
+{
+    assert(tagInfoPtr);
+
+    if (bitField) {
+	return TkTextTagSetDisjunctiveBits(tagInfoPtr, bitField);
+    }
+    return !TkTextTagSetIsEmpty(tagInfoPtr);
+}
+
+static bool
+TagSetTestDontContainsAny(
+    const TkTextTagSet *tagonPtr,
+    const TkTextTagSet *tagoffPtr,
+    const TkBitField *bitField)		/* can be NULL */
+{
+    assert(tagonPtr);
+    assert(tagoffPtr);
+
+    return !TagSetTestDisjunctiveBits(tagonPtr, bitField)
+	    || TagSetTestDisjunctiveBits(tagoffPtr, bitField);
 }
 
 static bool
@@ -616,10 +669,13 @@ TagSetAdd(
     TkTextTagSet *tagInfoPtr,
     const TkTextTag *tagPtr)
 {
+#if !TK_TEXT_DONT_USE_BITFIELDS
     if (tagPtr->index >= TkTextTagSetSize(tagInfoPtr)) {
 	assert(tagPtr->index < tagPtr->sharedTextPtr->tagInfoSize);
 	tagInfoPtr = TkTextTagSetResize(tagInfoPtr, tagPtr->sharedTextPtr->tagInfoSize);
     }
+#endif /* !TK_TEXT_DONT_USE_BITFIELDS */
+
     return TkTextTagSetAdd(tagInfoPtr, tagPtr->index);
 }
 
@@ -671,6 +727,51 @@ TagSetRemoveBits(
 }
 
 static TkTextTagSet *
+TagSetJoin(
+    TkTextTagSet *tagInfoPtr,		/* can be NULL */
+    const TkTextTagSet *otherInfoPtr)
+{
+    if (!tagInfoPtr) {
+	TkTextTagSetIncrRefCount(tagInfoPtr = (TkTextTagSet *) otherInfoPtr);
+    } else {
+	tagInfoPtr = TkTextTagSetJoin(tagInfoPtr, otherInfoPtr);
+    }
+    return tagInfoPtr;
+}
+
+static TkTextTagSet *
+TagSetJoinNonIntersection(
+    TkTextTagSet *tagInfoPtr,
+    const TkTextTagSet *otherInfoPtr1,
+    const TkTextTagSet *otherInfoPtr2,
+    const TkSharedText *sharedTextPtr)
+{
+    assert(tagInfoPtr);
+    assert(otherInfoPtr1);
+    assert(otherInfoPtr2);
+
+    if (otherInfoPtr1 == otherInfoPtr2) {
+	/* This is especially catching the case that both otherInfoPtr are empty. */
+	return tagInfoPtr;
+    }
+
+#if !TK_TEXT_DONT_USE_BITFIELDS
+    if (TkTextTagSetSize(tagInfoPtr) < sharedTextPtr->tagInfoSize) {
+	unsigned size = MAX(TkTextTagSetSize(otherInfoPtr1), TkTextTagSetSize(otherInfoPtr2));
+	tagInfoPtr = TkTextTagSetResize(tagInfoPtr, MAX(size, sharedTextPtr->tagInfoSize));
+    }
+#endif /* !TK_TEXT_DONT_USE_BITFIELDS */
+
+    tagInfoPtr = TkTextTagSetJoinNonIntersection(tagInfoPtr, otherInfoPtr1, otherInfoPtr2);
+
+    if (TkTextTagSetIsEmpty(tagInfoPtr)) {
+	TagSetAssign(&tagInfoPtr, sharedTextPtr->emptyTagInfoPtr);
+    }
+
+    return tagInfoPtr;
+}
+
+static TkTextTagSet *
 TagSetIntersect(
     TkTextTagSet *tagInfoPtr,		/* can be NULL */
     const TkTextTagSet *otherInfoPtr,
@@ -718,31 +819,18 @@ TagSetJoinComplementTo(
     if (otherInfoPtr2 == sharedTextPtr->emptyTagInfoPtr) {
 	return tagInfoPtr;
     }
+
+#if !TK_TEXT_DONT_USE_BITFIELDS
     if (TkTextTagSetSize(tagInfoPtr) < sharedTextPtr->tagInfoSize) {
 	tagInfoPtr = TkTextTagSetResize(tagInfoPtr, sharedTextPtr->tagInfoSize);
     }
+#endif /* !TK_TEXT_DONT_USE_BITFIELDS */
+
     if (TkTextTagSetIsEmpty(
 	    tagInfoPtr = TkTextTagSetJoinComplementTo(tagInfoPtr, otherInfoPtr1, otherInfoPtr2))) {
 	TagSetAssign(&tagInfoPtr, sharedTextPtr->emptyTagInfoPtr);
     }
     return tagInfoPtr;
-}
-
-static TkTextTagSet *
-TagSetJoinNonIntersection(
-    TkTextTagSet *tagInfoPtr,
-    const TkTextTagSet *otherInfoPtr1,
-    const TkTextTagSet *otherInfoPtr2,
-    const TkSharedText *sharedTextPtr)
-{
-    if (TkTextTagSetIsEqual(otherInfoPtr1, otherInfoPtr2)) {
-	return tagInfoPtr;
-    }
-    /* Now it's ensured that tagInfoPtr will increase. */
-    if (TkTextTagSetSize(tagInfoPtr) < sharedTextPtr->tagInfoSize) {
-	tagInfoPtr = TkTextTagSetResize(tagInfoPtr, sharedTextPtr->tagInfoSize);
-    }
-    return TkTextTagSetJoinNonIntersection(tagInfoPtr, otherInfoPtr1, otherInfoPtr2);
 }
 
 static TkTextTagSet *
@@ -752,9 +840,12 @@ TagSetJoinOfDifferences(
     const TkTextTagSet *otherInfoPtr2,
     const TkSharedText *sharedTextPtr)
 {
+#if !TK_TEXT_DONT_USE_BITFIELDS
     if (TkTextTagSetSize(tagInfoPtr) < sharedTextPtr->tagInfoSize) {
 	tagInfoPtr = TkTextTagSetResize(tagInfoPtr, sharedTextPtr->tagInfoSize);
     }
+#endif /* !TK_TEXT_DONT_USE_BITFIELDS */
+
     return TkTextTagSetJoinOfDifferences(tagInfoPtr, otherInfoPtr1, otherInfoPtr2);
 }
 
@@ -765,28 +856,26 @@ TagSetTestAndSet(
 {
     unsigned tagIndex = tagPtr->index;
 
+#if !TK_TEXT_DONT_USE_BITFIELDS
     if (tagPtr->index >= TkTextTagSetSize(tagInfoPtr)) {
 	tagInfoPtr = TkTextTagSetResize(tagInfoPtr, tagPtr->sharedTextPtr->tagInfoSize);
 	return TkTextTagSetAdd(tagInfoPtr, tagIndex);
     }
+#endif /* !TK_TEXT_DONT_USE_BITFIELDS */
+
     return TkTextTagSetTestAndSet(tagInfoPtr, tagIndex);
 }
 
 static bool
 LineTestAllSegments(
     const TkTextLine *linePtr,
-    const TkTextTag *tagPtr,	/* can be NULL */
+    const TkTextTag *tagPtr,
     bool tagged)
 {
-    if (tagPtr) {
-	unsigned tagIndex = tagPtr->index;
+    unsigned tagIndex = tagPtr->index;
 
-	return TkTextTagSetTest(linePtr->tagonPtr, tagIndex) == tagged
-		&& (!tagged || !TkTextTagSetTest(linePtr->tagoffPtr, tagIndex));
-    }
-
-    return TkTextTagSetAny(linePtr->tagonPtr) == tagged
-	    && (!tagged || !TkTextTagSetAny(linePtr->tagoffPtr));
+    return TkTextTagSetTest(linePtr->tagonPtr, tagIndex) == tagged
+	    && (!tagged || !TkTextTagSetTest(linePtr->tagoffPtr, tagIndex));
 }
 
 static bool
@@ -826,40 +915,25 @@ LineTestIfAnyIsUntagged(
 }
 
 static bool
-SegmentTestTag(
-    const TkTextSegment *segPtr,
-    const TkTextTag *tagPtr)	/* can be NULL */
-{
-    assert(segPtr);
-    assert(segPtr->tagInfoPtr);
-
-    if (tagPtr) {
-	return TkTextTagSetTest(segPtr->tagInfoPtr, tagPtr->index);
-    }
-
-    return !TkTextTagSetIsEmpty(segPtr->tagInfoPtr);
-}
-
-static bool
 LineTestIfToggleIsOpen(
     const TkTextLine *linePtr,	/* can be NULL */
-    const TkTextTag *tagPtr)	/* can be NULL */
+    unsigned tagIndex)
 {
-    return linePtr && SegmentTestTag(linePtr->lastPtr, tagPtr);
+    return linePtr && TkTextTagSetTest(linePtr->lastPtr->tagInfoPtr, tagIndex);
 }
 
 static bool
 LineTestIfToggleIsClosed(
     const TkTextLine *linePtr,	/* can be NULL */
-    const TkTextTag *tagPtr)	/* can be NULL */
+    unsigned tagIndex)
 {
-    return !linePtr || !SegmentTestTag(GetFirstTagInfoSegment(linePtr), tagPtr);
+    return !linePtr || !TkTextTagSetTest(GetFirstTagInfoSegment(NULL, linePtr)->tagInfoPtr, tagIndex);
 }
 
 static bool
 LineTestToggleFwd(
     const TkTextLine *linePtr,
-    const TkTextTag *tagPtr,	/* can be NULL */
+    unsigned tagIndex,
     bool testTagon)
 {
     assert(linePtr);
@@ -870,7 +944,7 @@ LineTestToggleFwd(
      */
 
     if (testTagon) {
-	return TestTag(linePtr->tagonPtr, tagPtr);
+	return TkTextTagSetTest(linePtr->tagonPtr, tagIndex);
     }
 
     /*
@@ -878,20 +952,14 @@ LineTestToggleFwd(
      * In this case this function assumes that this tag is open at end of previous line.
      */
 
-    if (tagPtr) {
-	unsigned tagIndex = tagPtr->index;
-
-	return TkTextTagSetTest(linePtr->tagoffPtr, tagIndex)
-		|| !TkTextTagSetTest(linePtr->tagonPtr, tagIndex);
-    }
-
-    return TkTextTagSetAny(linePtr->tagoffPtr) || TkTextTagSetIsEmpty(linePtr->tagonPtr);
+    return TkTextTagSetTest(linePtr->tagoffPtr, tagIndex)
+	    || !TkTextTagSetTest(linePtr->tagonPtr, tagIndex);
 }
 
 static bool
 LineTestToggleBack(
     const TkTextLine *linePtr,
-    const TkTextTag *tagPtr,	/* can be NULL */
+    unsigned tagIndex,
     bool testTagon)
 {
     assert(linePtr);
@@ -902,17 +970,9 @@ LineTestToggleBack(
      */
 
     if (testTagon) {
-	if (tagPtr) {
-	    unsigned tagIndex = tagPtr->index;
-
-	    return TkTextTagSetTest(linePtr->tagonPtr, tagIndex)
-		&& (TkTextTagSetTest(linePtr->tagoffPtr, tagIndex)
-		    || !LineTestIfToggleIsOpen(linePtr->prevPtr, tagPtr));
-	}
-
-	return TkTextTagSetAny(linePtr->tagonPtr)
-	    && (TkTextTagSetAny(linePtr->tagoffPtr)
-		|| !LineTestIfToggleIsOpen(linePtr->prevPtr, NULL));
+	return TkTextTagSetTest(linePtr->tagonPtr, tagIndex)
+	    && (TkTextTagSetTest(linePtr->tagoffPtr, tagIndex)
+		|| !LineTestIfToggleIsOpen(linePtr->prevPtr, tagIndex));
     }
 
     /*
@@ -920,15 +980,15 @@ LineTestToggleBack(
      * In this case this function assumes that this tag is not open at start of next line.
      */
 
-    return TestTag(linePtr->tagoffPtr, tagPtr)
-	    || LineTestIfToggleIsOpen(linePtr->prevPtr, tagPtr)
-	    || SegmentTestTag(GetFirstTagInfoSegment(linePtr), tagPtr);
+    return TkTextTagSetTest(linePtr->tagoffPtr, tagIndex)
+	    || LineTestIfToggleIsOpen(linePtr->prevPtr, tagIndex)
+	    || TkTextTagSetTest(GetFirstTagInfoSegment(NULL, linePtr)->tagInfoPtr, tagIndex);
 }
 
 static bool
 NodeTestAnySegment(
     const Node *nodePtr,
-    const TkTextTag *tagPtr,	/* can be NULL */
+    unsigned tagIndex,
     bool tagged)
 {
     /*
@@ -936,38 +996,24 @@ NodeTestAnySegment(
      * tagged == false: test whether any segments is not tagged with specified tag.
      */
 
-    if (tagPtr) {
-	unsigned tagIndex = tagPtr->index;
-
-	return TkTextTagSetTest(nodePtr->tagonPtr, tagIndex) == tagged
-		&& (tagged || TkTextTagSetTest(nodePtr->tagoffPtr, tagIndex));
-    }
-
-    return TkTextTagSetAny(nodePtr->tagonPtr) == tagged
-	    && (tagged || !TkTextTagSetIsEmpty(nodePtr->tagoffPtr));
+    return TkTextTagSetTest(nodePtr->tagonPtr, tagIndex) == tagged
+	    && (tagged || TkTextTagSetTest(nodePtr->tagoffPtr, tagIndex));
 }
 
 static bool
 NodeTestAllSegments(
     const Node *nodePtr,
-    const TkTextTag *tagPtr,	/* can be NULL */
+    unsigned tagIndex,
     bool tagged)
 {
-    if (tagPtr) {
-	unsigned tagIndex = tagPtr->index;
-
-	return TkTextTagSetTest(nodePtr->tagonPtr, tagIndex) == tagged
-		&& (!tagged || !TkTextTagSetTest(nodePtr->tagoffPtr, tagIndex));
-    }
-
-    return TkTextTagSetAny(nodePtr->tagonPtr) == tagged
-	    && (!tagged || TkTextTagSetIsEmpty(nodePtr->tagoffPtr));
+    return TkTextTagSetTest(nodePtr->tagonPtr, tagIndex) == tagged
+	    && (!tagged || !TkTextTagSetTest(nodePtr->tagoffPtr, tagIndex));
 }
 
 static bool
 NodeTestToggleFwd(
     const Node *nodePtr,
-    const TkTextTag *tagPtr,	/* can be NULL */
+    unsigned tagIndex,
     bool testTagon)
 {
     assert(nodePtr);
@@ -979,7 +1025,7 @@ NodeTestToggleFwd(
      */
 
     if (testTagon) {
-	return TestTag(nodePtr->tagonPtr, tagPtr);
+	return TkTextTagSetTest(nodePtr->tagonPtr, tagIndex);
     }
 
     /*
@@ -988,20 +1034,14 @@ NodeTestToggleFwd(
      * (line before first line of this node).
      */
 
-    if (tagPtr) {
-	unsigned tagIndex = tagPtr->index;
-
-	return TkTextTagSetTest(nodePtr->tagoffPtr, tagIndex)
-		|| !TkTextTagSetTest(nodePtr->tagonPtr, tagIndex);
-    }
-
-    return TkTextTagSetAny(nodePtr->tagoffPtr) || TkTextTagSetIsEmpty(nodePtr->tagonPtr);
+    return TkTextTagSetTest(nodePtr->tagoffPtr, tagIndex)
+	    || !TkTextTagSetTest(nodePtr->tagonPtr, tagIndex);
 }
 
 static bool
 NodeTestToggleBack(
     const Node *nodePtr,
-    const TkTextTag *tagPtr,	/* can be NULL */
+    unsigned tagIndex,
     bool testTagon)
 {
     assert(nodePtr);
@@ -1013,17 +1053,9 @@ NodeTestToggleBack(
      */
 
     if (testTagon) {
-	if (tagPtr) {
-	    unsigned tagIndex = tagPtr->index;
-
-	    return TkTextTagSetTest(nodePtr->tagonPtr, tagIndex)
-		&& (TkTextTagSetTest(nodePtr->tagoffPtr, tagIndex)
-		    || !LineTestIfToggleIsOpen(nodePtr->linePtr->prevPtr, tagPtr));
-	}
-
-	return TkTextTagSetAny(nodePtr->tagonPtr)
-	    && (TkTextTagSetAny(nodePtr->tagoffPtr)
-    		|| !LineTestIfToggleIsOpen(nodePtr->linePtr->prevPtr, NULL));
+	return TkTextTagSetTest(nodePtr->tagonPtr, tagIndex)
+	    && (TkTextTagSetTest(nodePtr->tagoffPtr, tagIndex)
+		|| !LineTestIfToggleIsOpen(nodePtr->linePtr->prevPtr, tagIndex));
     }
 
     /*
@@ -1032,38 +1064,44 @@ NodeTestToggleBack(
      * (line after last line of this node).
      */
 
-    return TestTag(nodePtr->tagoffPtr, tagPtr)
-	|| LineTestIfToggleIsOpen(nodePtr->linePtr->prevPtr, tagPtr);
+    return TkTextTagSetTest(nodePtr->tagoffPtr, tagIndex)
+	|| LineTestIfToggleIsOpen(nodePtr->linePtr->prevPtr, tagIndex);
 }
 
 static void
 RecomputeLineTagInfo(
     TkTextLine *linePtr,
+    const TkTextSegment *lastSegPtr,
     const TkSharedText *sharedTextPtr)
 {
     const TkTextSegment *segPtr;
+    TkTextTagSet *tagonPtr = NULL;
     TkTextTagSet *tagoffPtr = NULL;
 
+    assert(linePtr);
+    assert(!lastSegPtr || lastSegPtr->sectionPtr->linePtr == linePtr);
+
     /*
-     * Recompute the line tag information after deleting/adding tagged characters.
-     * Note that we do not update the tag information of the B-Tree here.
+     * Update the line tag information after inserting tagged characters.
+     * This function is not updating the tag information of the B-Tree.
      */
 
-    TagSetAssign(&linePtr->tagonPtr, sharedTextPtr->emptyTagInfoPtr);
-
-    for (segPtr = linePtr->segPtr; segPtr; segPtr = segPtr->nextPtr) {
+    for (segPtr = linePtr->segPtr; segPtr != lastSegPtr; segPtr = segPtr->nextPtr) {
 	if (segPtr->tagInfoPtr) {
-	    linePtr->tagonPtr = TkTextTagSetJoin(linePtr->tagonPtr, segPtr->tagInfoPtr);
-	    if (tagoffPtr) {
-		tagoffPtr = TkTextTagSetIntersect(tagoffPtr, segPtr->tagInfoPtr);
-	    } else {
-		TkTextTagSetIncrRefCount(tagoffPtr = segPtr->tagInfoPtr);
-	    }
+	    tagonPtr = TagSetJoin(tagonPtr, segPtr->tagInfoPtr);
+	    tagoffPtr = TagSetIntersect(tagoffPtr, segPtr->tagInfoPtr, sharedTextPtr);
 	}
     }
 
-    assert(tagoffPtr);
-    TagSetReplace(&linePtr->tagoffPtr, TagSetComplementTo(tagoffPtr, linePtr->tagonPtr, sharedTextPtr));
+    if (!tagonPtr) {
+	TkTextTagSetIncrRefCount(tagonPtr = sharedTextPtr->emptyTagInfoPtr);
+	TkTextTagSetIncrRefCount(tagoffPtr = sharedTextPtr->emptyTagInfoPtr);
+    } else {
+	tagoffPtr = TagSetComplementTo(tagoffPtr, tagonPtr, sharedTextPtr);
+    }
+
+    TagSetReplace(&linePtr->tagonPtr, tagonPtr);
+    TagSetReplace(&linePtr->tagoffPtr, tagoffPtr);
 }
 
 static unsigned
@@ -1072,6 +1110,17 @@ GetDisplayLines(
     unsigned ref)
 {
     return TkBTreeGetNumberOfDisplayLines(linePtr->pixelInfo + ref);
+}
+
+static void
+SetLineHasChanged(
+    const TkSharedText *sharedTextPtr,
+    TkTextLine *linePtr)
+{
+    if (!linePtr->logicalLine) {
+	 linePtr = TkBTreeGetLogicalLine(sharedTextPtr, NULL, linePtr);
+    }
+    linePtr->changed = true;
 }
 
 /*
@@ -1150,7 +1199,7 @@ MakeTagInfoObj(
 
 static void
 UndoGetRange(
-    TkSharedText *sharedTextPtr,
+    const TkSharedText *sharedTextPtr,
     const TkTextUndoToken *item,
     TkTextIndex *startIndex,
     TkTextIndex *endIndex)
@@ -1179,11 +1228,10 @@ UndoDeleteInspect(
 {
     Tcl_Obj *objPtr = UndoDeleteGetCommand(sharedTextPtr, item);
     TkTextSegment **segments = ((const UndoTokenDelete *) item)->segments;
+    unsigned numSegments = ((const UndoTokenDelete *) item)->numSegments;
     const TkTextSegment *segPtr;
 
-    UNMARK_POINTER(segments);
-
-    for (segPtr = *segments++; segPtr; segPtr = *segments++) {
+    for (segPtr = *segments++; numSegments > 0; segPtr = *segments++, --numSegments) {
 	assert(segPtr->typePtr->inspectProc);
 	Tcl_ListObjAppendElement(NULL, objPtr, segPtr->typePtr->inspectProc(sharedTextPtr, segPtr));
     }
@@ -1210,6 +1258,7 @@ UndoDeletePerform(
     TkTextTagSet *tagonPtr;
     TkTextTagSet *tagoffPtr;
     TkTextTagSet *additionalTagoffPtr;
+    unsigned numSegments = undoToken->numSegments - 1;
     unsigned changeToLineCount = 0;
     unsigned changeToLogicalLineCount = 0;
     unsigned changeToBranchCount = 0;
@@ -1218,7 +1267,6 @@ UndoDeletePerform(
     unsigned i;
 
     assert(segments);
-    UNMARK_POINTER(segments);
     assert(segments[0]);
 
     changeToPixelInfo = treePtr->pixelInfoBuffer;
@@ -1237,8 +1285,14 @@ UndoDeletePerform(
     nodePtr = startLinePtr->parentPtr;
     firstPtr = segPtr = *segments++;
     firstPtr->protectionFlag = true;
-    nextPtr = segPtr ? *segments++ : NULL;
     prevSegPtr = NULL;
+
+    if (numSegments > 0) {
+	nextPtr = *segments++;
+	numSegments -= 1;
+    } else {
+	nextPtr = NULL;
+    }
 
     TkTextTagSetIncrRefCount(tagonPtr = sharedTextPtr->emptyTagInfoPtr);
     TkTextTagSetIncrRefCount(tagoffPtr = sharedTextPtr->emptyTagInfoPtr);
@@ -1246,7 +1300,9 @@ UndoDeletePerform(
 
     while (segPtr) {
 	if (POINTER_IS_MARKED(segPtr)) {
-	    TkTextSection *sectionPtr = segPtr->sectionPtr;
+	    TkTextSection *sectionPtr;
+
+	    UNMARK_POINTER(segPtr);
 
 	    assert(segPtr->typePtr != &tkTextCharType);
 	    assert(segPtr->sectionPtr);
@@ -1255,6 +1311,7 @@ UndoDeletePerform(
 	     * This is a re-inserted segment, it will move.
 	     */
 
+	    sectionPtr = segPtr->sectionPtr;
 	    UNMARK_POINTER(segPtr);
 	    UnlinkSegment(segPtr);
 	    JoinSections(sectionPtr);
@@ -1264,7 +1321,7 @@ UndoDeletePerform(
 	lastPtr = segPtr;
 	DEBUG(segPtr->sectionPtr = NULL);
 	if (reinsertFirstSegment) {
-	    TkBTreeReInsertSegment(sharedTextPtr, &undoToken->startIndex, segPtr);
+	    TreeReInsertSegment(sharedTextPtr, &undoToken->startIndex, segPtr, false);
 	    reinsertFirstSegment = false;
 	} else {
 	    LinkSegment(linePtr, prevPtr, segPtr);
@@ -1283,7 +1340,7 @@ UndoDeletePerform(
 		AddPixelCount(treePtr, newLinePtr, linePtr, changeToPixelInfo);
 		changeToLineCount += 1;
 		changeToLogicalLineCount += linePtr->logicalLine;
-		RecomputeLineTagInfo(linePtr, sharedTextPtr);
+		RecomputeLineTagInfo(linePtr, NULL, sharedTextPtr);
 		tagonPtr = TkTextTagSetJoin(tagonPtr, linePtr->tagonPtr);
 		tagoffPtr = TkTextTagSetJoin(tagoffPtr, linePtr->tagoffPtr);
 		additionalTagoffPtr = TagSetIntersect(additionalTagoffPtr,
@@ -1304,11 +1361,16 @@ UndoDeletePerform(
 	}
 	prevPtr = segPtr;
 	if ((segPtr = nextPtr)) {
-	    nextPtr = *segments++;
+	    if (numSegments > 0) {
+		nextPtr = *segments++;
+		numSegments -= 1;
+	    } else {
+		nextPtr = NULL;
+	    }
 	}
     }
 
-    RecomputeLineTagInfo(linePtr, sharedTextPtr);
+    RecomputeLineTagInfo(linePtr, NULL, sharedTextPtr);
     tagonPtr = TkTextTagSetJoin(tagonPtr, linePtr->tagonPtr);
     tagoffPtr = TkTextTagSetJoin(tagoffPtr, linePtr->tagoffPtr);
     additionalTagoffPtr = TagSetIntersect(additionalTagoffPtr, linePtr->tagonPtr, sharedTextPtr);
@@ -1359,15 +1421,9 @@ UndoDeletePerform(
      * This also makes the token reusable.
      */
 
-    if (POINTER_IS_MARKED(undoToken->segments)) {
-	UNMARK_POINTER(undoToken->segments);
-	ckfree(undoToken->segments);
-	undoToken->segments = NULL;
-	MARK_POINTER(undoToken->segments);
-    } else {
-	ckfree(undoToken->segments);
-	undoToken->segments = NULL;
-    }
+    ckfree(undoToken->segments);
+    undoToken->segments = NULL;
+    undoToken->numSegments = 0;
 
     /*
      * Update the redo information.
@@ -1408,21 +1464,41 @@ UndoDeleteDestroy(
     TkTextUndoToken *token)
 {
     TkTextSegment **segments = ((UndoTokenDelete *) token)->segments;
+    unsigned numSegments = ((UndoTokenDelete *) token)->numSegments;
 
-    UNMARK_POINTER(segments);
-
-    if (segments) {
+    if (numSegments > 0) {
 	TkTextSegment *segPtr;
-	TkTextSegment **segments2 = segments;
 
-	for (segPtr = *segments2++; segPtr; segPtr = *segments2++) {
+	for (segPtr = *segments++; numSegments > 0; segPtr = *segments++, --numSegments) {
 	    UNMARK_POINTER(segPtr);
+	    assert(segPtr->typePtr);
 	    assert(segPtr->typePtr->deleteProc);
 	    segPtr->typePtr->deleteProc(sharedTextPtr->tree, segPtr, DELETE_BRANCHES | DELETE_MARKS);
 	}
 
-	ckfree(segments);
+	ckfree(((UndoTokenDelete *) token)->segments);
     }
+}
+
+static Tcl_Obj *
+RedoDeleteInspect(
+    const TkSharedText *sharedTextPtr,
+    const TkTextUndoToken *item)
+{
+    Tcl_Obj *objPtr = UndoDeleteGetCommand(sharedTextPtr, item);
+
+#if 0 /* not possible to inspect the range, because this range may be deleted */
+    TkTextIndex startIndex, endIndex;
+    char buf[TK_POS_CHARS];
+
+    UndoGetRange(sharedTextPtr, item, &startIndex, &endIndex);
+    TkTextIndexPrint(sharedTextPtr, NULL, &startIndex, buf);
+    Tcl_ListObjAppendElement(NULL, objPtr, Tcl_NewStringObj(buf, -1));
+    TkTextIndexPrint(sharedTextPtr, NULL, &endIndex, buf);
+    Tcl_ListObjAppendElement(NULL, objPtr, Tcl_NewStringObj(buf, -1));
+#endif
+
+    return objPtr;
 }
 
 static void
@@ -1437,7 +1513,7 @@ RedoDeletePerform(
     if (token->startIndex.lineIndex == -1 && token->endIndex.lineIndex == -1) {
 	TkTextSegment *segPtr1 = token->startIndex.u.markPtr;
 	TkTextSegment *segPtr2 = token->endIndex.u.markPtr;
-	int flags = POINTER_IS_MARKED(token->segments) ? DELETE_INCLUSIVE : 0;
+	int flags = token->inclusive ? DELETE_INCLUSIVE : 0;
 
 	DeleteRange(sharedTextPtr, segPtr1, segPtr2, flags, redoInfo);
 
@@ -1485,6 +1561,27 @@ UndoInsertPerform(
     if (redoInfo && redoInfo->token) {
 	redoInfo->token->undoType = &redoTokenInsertType;
     }
+}
+
+static Tcl_Obj *
+RedoInsertInspect(
+    const TkSharedText *sharedTextPtr,
+    const TkTextUndoToken *item)
+{
+    Tcl_Obj *objPtr = Tcl_NewListObj(0, NULL);
+    TkTextSegment **segments = ((const UndoTokenDelete *) item)->segments;
+    unsigned numSegments = ((const UndoTokenDelete *) item)->numSegments;
+    const TkTextSegment *segPtr;
+
+    Tcl_ListObjAppendElement(NULL, objPtr, Tcl_NewStringObj("insert", -1));
+
+    for (segPtr = *segments++; numSegments > 0; segPtr = *segments++, --numSegments) {
+	UNMARK_POINTER(segPtr);
+	assert(segPtr->typePtr->inspectProc);
+	Tcl_ListObjAppendElement(NULL, objPtr, segPtr->typePtr->inspectProc(sharedTextPtr, segPtr));
+    }
+
+    return objPtr;
 }
 
 /* TAG ADD/REMOVE ************************************************************/
@@ -1542,8 +1639,7 @@ UndoTagPerform(
 	}
 	redoInfo->token = undoInfo->token;
 	redoInfo->token->undoType = isRedo? &undoTokenTagType : &redoTokenTagType;
-    } else {
-	TkTextReleaseTag(sharedTextPtr, token->tagPtr, NULL);
+	token->tagPtr->refCount += 1;
     }
 }
 
@@ -1637,7 +1733,7 @@ UndoClearTagsPerform(
 		assert(linePtr->nextPtr);
 		skip -= linePtr->size - offs;
 		if (anyChanges) {
-		    RecomputeLineTagInfo(linePtr, sharedTextPtr);
+		    RecomputeLineTagInfo(linePtr, NULL, sharedTextPtr);
 		    if (nodePtr != linePtr->nextPtr->parentPtr) {
 			UpdateNodeTags(sharedTextPtr, nodePtr);
 			nodePtr = linePtr->nextPtr->parentPtr;
@@ -1688,7 +1784,7 @@ UndoClearTagsPerform(
 	}
     }
 
-    RecomputeLineTagInfo(linePtr, sharedTextPtr);
+    RecomputeLineTagInfo(linePtr, NULL, sharedTextPtr);
     UpdateNodeTags(sharedTextPtr, linePtr->parentPtr);
     if (updateElideInfo) {
 	UpdateElideInfo(sharedTextPtr, NULL, firstSegPtr, lastSegPtr, ELISION_HAS_BEEN_CHANGED);
@@ -1844,12 +1940,12 @@ GetStartLine(
 /*
  *----------------------------------------------------------------------
  *
- * TkBTreeMyGetLastLine --
+ * GetFirstLine --
  *
- *	This function returns the last line for given text widget.
+ *	This function returns the first line for given text widget.
  *
  * Results:
- *	The last line in this widget.
+ *	The first line in this widget.
  *
  * Side effects:
  *	None.
@@ -1857,32 +1953,21 @@ GetStartLine(
  *----------------------------------------------------------------------
  */
 
-TkTextLine *
-TkBTreeMyGetLastLine(
+#if 0 /* unused */
+static TkTextLine *
+GetFirstLine(
     const TkSharedText *sharedTextPtr,
     const TkText *textPtr)
 {
-    TkTextLine *startLine;
-    TkTextLine *endLine;
-
     assert(sharedTextPtr || textPtr);
 
     if (!textPtr) {
-	return sharedTextPtr->endMarker->sectionPtr->linePtr;
+	return sharedTextPtr->startMarker->sectionPtr->linePtr;
     }
 
-    startLine = textPtr->startMarker->sectionPtr->linePtr;
-    endLine = textPtr->endMarker->sectionPtr->linePtr;
-
-    assert(startLine->nextPtr);
-
-    if (startLine == endLine || !SegIsAtStartOfLine(textPtr->endMarker)) {
-	endLine = endLine->nextPtr;
-	assert(endLine);
-    }
-
-    return endLine;
+    return textPtr->startMarker->sectionPtr->linePtr;
 }
+#endif
 
 /*
  *----------------------------------------------------------------------
@@ -1902,9 +1987,19 @@ TkBTreeMyGetLastLine(
 
 static TkTextLine *
 GetLastLine(
+    const TkSharedText *sharedTextPtr,
     const TkText *textPtr)
 {
-    return TkBTreeMyGetLastLine(NULL, textPtr);
+    TkTextLine *endLine;
+
+    assert(sharedTextPtr || textPtr);
+
+    if (!textPtr) {
+	return sharedTextPtr->endMarker->sectionPtr->linePtr;
+    }
+
+    endLine = textPtr->endMarker->sectionPtr->linePtr;
+    return endLine->nextPtr ? endLine->nextPtr : endLine;
 }
 
 /*
@@ -1934,7 +2029,7 @@ TkBTreeNumLines(
     int count;
 
     if (textPtr) {
-	count = TkBTreeLinesTo(tree, NULL, GetLastLine(textPtr), NULL);
+	count = TkBTreeLinesTo(tree, NULL, TkBTreeGetLastLine(textPtr), NULL);
 	count -= TkBTreeLinesTo(tree, NULL, TkBTreeGetStartLine(textPtr), NULL);
     } else {
 	count = TkBTreeGetRoot(tree)->numLines - 1;
@@ -1988,7 +2083,7 @@ TkBTreeAddClient(
 	unsigned useReference = treePtr->numPixelReferences;
 
 	AdjustPixelClient(treePtr, defaultHeight, treePtr->rootPtr, TkBTreeGetStartLine(textPtr),
-		GetLastLine(textPtr), useReference, useReference + 1, NULL);
+		TkBTreeGetLastLine(textPtr), useReference, useReference + 1, NULL);
 
 	textPtr->pixelReference = useReference;
 	treePtr->numPixelReferences += 1;
@@ -2027,7 +2122,7 @@ TkBTreeClientRangeChanged(
 {
     BTree *treePtr = (BTree *) textPtr->sharedTextPtr->tree;
     TkTextLine *startLine = TkBTreeGetStartLine(textPtr);
-    TkTextLine *endLine = GetLastLine(textPtr);
+    TkTextLine *endLine = TkBTreeGetLastLine(textPtr);
 
     AdjustPixelClient(treePtr, defaultHeight, treePtr->rootPtr, startLine,
 	    endLine, textPtr->pixelReference, treePtr->numPixelReferences, NULL);
@@ -2303,6 +2398,133 @@ RemovePixelClient(
 /*
  *----------------------------------------------------------------------
  *
+ * TkBTreeJoinUndoInsert --
+ *
+ *	Joins an undo token with another token.
+ *
+ * Results:
+ *	Return whether the join was possible.
+ *
+ * Side effects:
+ *	The first given will be modified.
+ *
+ *----------------------------------------------------------------------
+ */
+
+bool
+TkBTreeJoinUndoInsert(
+    TkTextUndoToken *token1,
+    unsigned byteSize1,
+    TkTextUndoToken *token2,
+    unsigned byteSize2)
+{
+    struct UndoTokenInsert *myToken1 = (UndoTokenInsert *) token1;
+    struct UndoTokenInsert *myToken2 = (UndoTokenInsert *) token2;
+
+    if (UndoIndexIsEqual(&myToken1->endIndex, &myToken2->startIndex)) {
+	/* append to first token */
+	myToken1->endIndex = myToken2->endIndex;
+    } else if (UndoIndexIsEqual(&myToken1->startIndex, &myToken2->endIndex)) {
+	/* prepend to first token */
+	myToken1->startIndex = myToken2->startIndex;
+    } else {
+	return false;
+    }
+
+    return true;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkBTreeJoinUndoDelete --
+ *
+ *	Joins an undo token with another token.
+ *
+ * Results:
+ *	Return whether the join was possible.
+ *
+ * Side effects:
+ *	The first given will be modified.
+ *
+ *----------------------------------------------------------------------
+ */
+
+bool
+TkBTreeJoinUndoDelete(
+    TkTextUndoToken *token1,
+    unsigned byteSize1,
+    TkTextUndoToken *token2,
+    unsigned byteSize2)
+{
+    struct UndoTokenDelete *myToken1 = (UndoTokenDelete *) token1;
+    struct UndoTokenDelete *myToken2 = (UndoTokenDelete *) token2;
+
+    if (myToken1->inclusive != myToken2->inclusive) {
+	return false;
+    }
+
+    if (UndoIndexIsEqual(&myToken1->startIndex, &myToken2->startIndex)) {
+	unsigned numSegments1 = myToken1->numSegments;
+
+	if (myToken2->endIndex.lineIndex == -1) {
+	    myToken1->endIndex = myToken2->endIndex;
+	} else if (myToken1->endIndex.lineIndex != -1) {
+	    myToken1->endIndex.u.byteIndex += byteSize2;
+	} else if (myToken2->endIndex.lineIndex != -1) {
+	    myToken1->endIndex.u.byteIndex = myToken2->endIndex.u.byteIndex + byteSize1;
+	    myToken1->endIndex.lineIndex = myToken2->endIndex.lineIndex;
+	} else if (myToken2->startIndex.lineIndex != -1) {
+	    myToken1->endIndex.u.byteIndex = myToken2->startIndex.u.byteIndex + byteSize1 + byteSize2;
+	    myToken1->endIndex.lineIndex = myToken2->startIndex.lineIndex;
+	} else {
+	    myToken1->endIndex.u.byteIndex = myToken1->startIndex.u.byteIndex + byteSize1 + byteSize2;
+	    myToken1->endIndex.lineIndex = myToken1->startIndex.lineIndex;
+	}
+
+	myToken1->numSegments += myToken2->numSegments;
+	myToken1->segments = ckrealloc(myToken1->segments,
+		myToken1->numSegments*sizeof(myToken1->segments[0]));
+	memcpy(myToken1->segments + numSegments1, myToken2->segments,
+		myToken2->numSegments*sizeof(myToken2->segments[0]));
+	ckfree(myToken2->segments);
+	myToken2->numSegments = 0;
+    } else if (UndoIndexIsEqual(&myToken1->startIndex, &myToken2->endIndex)) {
+	unsigned numSegments1 = myToken1->numSegments;
+	TkTextSegment **segments;
+
+	if (myToken2->startIndex.lineIndex == -1) {
+	    myToken1->startIndex = myToken2->startIndex;
+	} else if (myToken2->endIndex.lineIndex != -1) {
+	    myToken1->startIndex.u.byteIndex = myToken2->endIndex.u.byteIndex - byteSize1;
+	    myToken1->startIndex.lineIndex = myToken2->endIndex.lineIndex;
+	} else if (myToken1->endIndex.lineIndex != -1) {
+	    myToken1->startIndex.u.byteIndex = myToken1->endIndex.u.byteIndex - byteSize1 - byteSize2;
+	    myToken1->startIndex.lineIndex = myToken1->endIndex.lineIndex;
+	} else {
+	    myToken1->startIndex.u.byteIndex = myToken1->startIndex.u.byteIndex + byteSize1 + byteSize2;
+	    myToken1->startIndex.lineIndex = myToken1->startIndex.lineIndex;
+	}
+
+	myToken1->numSegments += myToken2->numSegments;
+	segments = ckalloc(myToken1->numSegments*sizeof(segments[0]));
+	memcpy(segments, myToken2->segments, myToken2->numSegments*sizeof(myToken2->segments[0]));
+	memcpy(segments + myToken2->numSegments, myToken1->segments,
+		numSegments1*sizeof(myToken1->segments[0]));
+	ckfree(myToken1->segments);
+	ckfree(myToken2->segments);
+	myToken1->segments = segments;
+	myToken2->numSegments = 0;
+    } else {
+	return false;
+    }
+
+    return true;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
  * TkBTreeDestroy --
  *
  *	Delete a B-tree, recycling all of the storage it contains.
@@ -2350,7 +2572,7 @@ TkBTreeDestroy(
 
 bool
 TkBTreeHaveElidedSegments(
-    const TkSharedText* sharedTextPtr)
+    const TkSharedText *sharedTextPtr)
 {
     return TkBTreeGetRoot(sharedTextPtr->tree)->numBranches > 0;
 }
@@ -2422,7 +2644,7 @@ DestroyNode(
 	    sectionPtr = segPtr->sectionPtr;
 	    while (segPtr) {
 		TkTextSegment *nextPtr = segPtr->nextPtr;
-		assert(segPtr->typePtr); /* still existing */
+		assert(segPtr->typePtr); /* still existing? */
 		assert(segPtr->sectionPtr->linePtr == linePtr);
 		assert(segPtr->typePtr->deleteProc);
 		segPtr->typePtr->deleteProc(tree, segPtr, TREE_GONE);
@@ -2466,7 +2688,7 @@ PropagateDispLineChange(
     unsigned pixelReference,
     int subtractFromDispLines)
 {
-    if (subtractFromDispLines) {
+    if (subtractFromDispLines != 0) {
 	for ( ; nodePtr; nodePtr = nodePtr->parentPtr) {
 	    nodePtr->pixelInfo[pixelReference].numDispLines -= subtractFromDispLines;
 	}
@@ -2475,7 +2697,7 @@ PropagateDispLineChange(
 
 void
 TkBTreeResetDisplayLineCounts(
-    TkText* textPtr,
+    TkText *textPtr,
     TkTextLine *linePtr,	/* Start at this line. */
     unsigned numLines)		/* Number of succeeding lines to reset (includes the start line). */
 {
@@ -2625,25 +2847,28 @@ void
 TkBTreeUpdatePixelHeights(
     const TkText *textPtr,	/* Client of the B-tree. */
     TkTextLine *linePtr,	/* Start with this logical line. */
-    unsigned numLines)		/* Number of lines for update (inclusively start line). */
+    int numLines,		/* Number of lines for update (inclusively start line). If negative,
+    				 * this is the number of deleted lines. */
+    unsigned epoch)		/* Current line metric epoch. */
 {
     Node *nodePtr = linePtr->parentPtr;
     unsigned pixelReference = textPtr->pixelReference;
-    unsigned epoch = TkBTreeEpoch(textPtr->sharedTextPtr->tree);
-    int lineHeight = textPtr->charHeight;
+    int lineHeight = textPtr->lineHeight;
     int changeToDispLines = 0;
     int changeToPixels = 0;
+    int nlines = ABS(numLines);
 
     assert(textPtr->pixelReference >= 0);
     assert(textPtr->wrapMode == TEXT_WRAPMODE_NONE);
+    assert(lineHeight > 0);
 
-    for ( ; numLines > 0; --numLines) {
+    for ( ; nlines > 0; --nlines) {
 	TkTextPixelInfo *pixelInfo = TkBTreeLinePixelInfo(textPtr, linePtr);
 
 	if (pixelInfo->dispLineInfo) {
-	    changeToDispLines += (int) GetDisplayLines(linePtr, pixelReference);
+	    changeToDispLines -= (int) GetDisplayLines(linePtr, pixelReference);
 	    if (pixelInfo->height > 0) {
-		changeToDispLines -= 1;
+		changeToDispLines += 1;
 	    }
 	    if (pixelInfo->dispLineInfo) {
 		ckfree(pixelInfo->dispLineInfo);
@@ -2652,10 +2877,19 @@ TkBTreeUpdatePixelHeights(
 	    }
 	}
 
-	changeToPixels += lineHeight;
-	changeToPixels -= pixelInfo->height;
-	pixelInfo->height = lineHeight;
 	pixelInfo->epoch = epoch;
+	changeToPixels -= pixelInfo->height;
+
+	if (pixelInfo->height == 0) {
+	    changeToDispLines += 1;
+	}
+
+	pixelInfo->height = lineHeight;
+
+	if (numLines > 0) {
+	    changeToPixels += lineHeight;
+	}
+
 	linePtr = linePtr->nextPtr;
 
 	if (nodePtr != linePtr->parentPtr) {
@@ -2900,7 +3134,7 @@ TkTextIsElided(
  *----------------------------------------------------------------------
  */
 
-bool
+static bool
 SegmentIsElided(
     const TkSharedText *sharedTextPtr,
     const TkTextSegment *segPtr,
@@ -2966,7 +3200,7 @@ TkTextSegmentIsElided(
 static bool
 HasElidedNewline(
     const TkSharedText *sharedTextPtr,
-    const TkTextLine* linePtr)
+    const TkTextLine *linePtr)
 {
     return TkBTreeHaveElidedSegments(sharedTextPtr)
 	    && SegmentIsElided(sharedTextPtr, linePtr->lastPtr, NULL);
@@ -3005,6 +3239,7 @@ InsertNewLine(
     newLinePtr->segPtr = segPtr;
     newLinePtr->lastPtr = lastPtr;
     newLinePtr->logicalLine = true;
+    newLinePtr->changed = true;
     DEBUG_ALLOC(tkTextCountNewLine++);
 
     TkTextTagSetIncrRefCount(newLinePtr->tagonPtr = sharedTextPtr->emptyTagInfoPtr);
@@ -3335,7 +3570,8 @@ TkBTreeLoad(
 	STATE_RIGHT        = 1 << 4,
 	STATE_LEFT_INSERT  = 1 << 5,
 	STATE_RIGHT_INSERT = 1 << 6,
-	STATE_TEXT         = 1 << 7
+	STATE_TEXT         = 1 << 7,
+	STATE_BREAK        = 1 << 8
     };
 
     Tcl_Obj **objv;
@@ -3357,8 +3593,8 @@ TkBTreeLoad(
     NodePixelInfo *changeToPixelInfo;
     Tcl_Interp *interp = textPtr->interp;
     TkTextState textState;
-    const char* name;
-    const char* s;
+    const char *name;
+    const char *s;
     unsigned tagInfoCount;
     unsigned state;
     int changeToLineCount;
@@ -3400,10 +3636,8 @@ TkBTreeLoad(
     }
     charSegPtr = NULL;
 
-    /* TODO: we need gravity of "insert" (?) */
-
     for (i = 0; i < objc; ++i) {
-	const char* type;
+	const char *type;
 	Tcl_Obj **argv;
 	int argc;
 
@@ -3492,8 +3726,8 @@ TkBTreeLoad(
 		size += 1;
 		contentPtr = charSegPtr;
 		segPtr = charSegPtr = NULL;
-		state = STATE_TEXT;
-		RecomputeLineTagInfo(linePtr, sharedTextPtr);
+		state = STATE_BREAK;
+		RecomputeLineTagInfo(linePtr, NULL, sharedTextPtr);
 		if (argc != 3) {
 		    TkTextTagSetDecrRefCount(tagInfoPtr);
 		    tagInfoPtr = NULL;
@@ -3526,7 +3760,7 @@ TkBTreeLoad(
 	    break;
 	case 'c': {
 	    /*
-	     * {"configure" tagname configuration}
+	     * {"configure" tagname ?configuration?}
 	     */
 
 	    Tcl_Obj **objv;
@@ -3538,11 +3772,12 @@ TkBTreeLoad(
 	    if (!(state & (STATE_START|STATE_SETUP|STATE_CONFIG))) {
 		return LoadError(interp, "unexpected \"configure\" item", i, -1, -1, tagInfoPtr);
 	    }
-	    if (argc != 3) {
+	    if (argc == 2) {
+		TkTextCreateTag(textPtr, Tcl_GetString(argv[1]), NULL);
+	    } else if (argc != 3) {
 		return LoadError(interp, "wrong number of items", i, -1, -1, tagInfoPtr);
-	    }
-	    if (Tcl_ListObjGetElements(interp, argv[2], &objc, &objv) != TCL_OK
-		    || TkConfigureTag(interp, textPtr, Tcl_GetString(argv[1]), objc, objv) != TCL_OK) {
+	    } else if (Tcl_ListObjGetElements(interp, argv[2], &objc, &objv) != TCL_OK
+		    && TkConfigureTag(interp, textPtr, Tcl_GetString(argv[1]), objc, objv) != TCL_OK) {
 		return LoadError(interp, NULL, i, 2, -1, tagInfoPtr);
 	    }
 	    state = STATE_CONFIG;
@@ -3828,6 +4063,39 @@ TkBTreeLoad(
 	}
     }
 
+    /*
+     * Possible we have to add last newline.
+     */
+
+    if (state != STATE_BREAK) {
+	if (charSegPtr && TkTextTagSetIsEmpty(charSegPtr->tagInfoPtr)) {
+	    charSegPtr = IncreaseCharSegment(charSegPtr, charSegPtr->size, 1);
+	    charSegPtr->body.chars[charSegPtr->size - 1] = '\n';
+	    linePtr->lastPtr = charSegPtr;
+	    RebuildSections(sharedTextPtr, linePtr, true);
+	} else {
+	    nextSegPtr = charSegPtr = MakeCharSeg(NULL, sharedTextPtr->emptyTagInfoPtr, 1, "\n", 1);
+	    if (segPtr) {
+		segPtr->nextPtr = nextSegPtr;
+		nextSegPtr->prevPtr = segPtr;
+		linePtr->lastPtr = charSegPtr;
+		RebuildSections(sharedTextPtr, linePtr, true);
+	    } else {
+		newLinePtr = InsertNewLine(sharedTextPtr, linePtr->parentPtr,
+			linePtr, nextSegPtr);
+		AddPixelCount(treePtr, newLinePtr, linePtr, changeToPixelInfo);
+		linePtr = newLinePtr;
+	    }
+	}
+	size += 1;
+	RecomputeLineTagInfo(linePtr, NULL, sharedTextPtr);
+    } else {
+	changeToLineCount -= 1;
+	if (!isElided) {
+	    changeToLogicalLineCount -= 1;
+	}
+    }
+
     textPtr->state = textState;
 
     if (tagInfoPtr) {
@@ -3865,95 +4133,6 @@ TkBTreeLoad(
  *----------------------------------------------------------------------
  */
 
-static void
-AddToLineTagInfo(
-    TkTextLine *linePtr,
-    const TkTextSegment *segPtr,	/* Add tag info of this segment to line. */
-    const TkSharedText *sharedTextPtr)
-{
-    const TkTextSegment *prevPtr;
-    const TkTextSegment *nextPtr;
-    const TkTextTagSet *tagInfoPtr;
-
-    /*
-     * NOTE: This function is not updating the node tag information.
-     */
-
-    assert(linePtr);
-    assert(segPtr);
-    assert(segPtr->tagInfoPtr);
-    assert(segPtr->sectionPtr->linePtr == linePtr);
-
-    linePtr->tagonPtr = TkTextTagSetJoin(linePtr->tagonPtr, tagInfoPtr = segPtr->tagInfoPtr);
-
-    prevPtr = segPtr->prevPtr;
-    while (prevPtr && !prevPtr->tagInfoPtr) {
-	prevPtr = prevPtr->prevPtr;
-    }
-    if (prevPtr) {
-	linePtr->tagoffPtr = TagSetJoinNonIntersection(
-		linePtr->tagoffPtr, tagInfoPtr, prevPtr->tagInfoPtr, sharedTextPtr);
-    }
-
-    nextPtr = segPtr->nextPtr;
-    while (nextPtr && !nextPtr->tagInfoPtr) {
-	nextPtr = nextPtr->nextPtr;
-    }
-    if (nextPtr) {
-	linePtr->tagoffPtr = TagSetJoinNonIntersection(
-		linePtr->tagoffPtr, tagInfoPtr, nextPtr->tagInfoPtr, sharedTextPtr);
-    }
-}
-
-static void
-UpdateLineTagInfo(
-    TkTextLine *linePtr,
-    const TkTextSegment *lastPtr,
-    const TkSharedText *sharedTextPtr)
-{
-    const TkTextSegment *segPtr;
-    TkTextTagSet *tagonPtr;
-    TkTextTagSet *tagoffPtr = NULL;
-    Node *nodePtr = linePtr->parentPtr;
-    unsigned i;
-
-    /*
-     * Update the line tag information after inserting tagged characters.
-     * This function is also updating the tag information of the B-Tree.
-     */
-
-    TkTextTagSetIncrRefCount(tagonPtr = sharedTextPtr->emptyTagInfoPtr);
-
-    for (segPtr = linePtr->segPtr; segPtr != lastPtr; segPtr = segPtr->nextPtr) {
-	if (segPtr->tagInfoPtr) {
-	    tagonPtr = TkTextTagSetJoin(tagonPtr, segPtr->tagInfoPtr);
-	    tagoffPtr = TagSetIntersect(tagoffPtr, segPtr->tagInfoPtr, sharedTextPtr);
-	}
-    }
-
-    if (tagoffPtr) {
-	tagoffPtr = TagSetComplementTo(tagoffPtr, tagonPtr, sharedTextPtr);
-    } else {
-	TkTextTagSetIncrRefCount(tagoffPtr = tagonPtr);
-    }
-
-    TagSetReplace(&linePtr->tagonPtr, tagonPtr);
-    TagSetReplace(&linePtr->tagoffPtr, tagoffPtr);
-
-    TkTextTagSetIncrRefCount(tagonPtr);
-    tagonPtr = TkTextTagSetJoin(tagonPtr, tagoffPtr);
-    tagonPtr = TkTextTagSetRemove(tagonPtr, nodePtr->tagonPtr);
-
-    for (i = TkTextTagSetFindFirst(tagonPtr);
-	    i != TK_TEXT_TAG_SET_NPOS;
-	    i = TkTextTagSetFindNext(tagonPtr, i)) {
-	bool tagoff = TkTextTagSetTest(tagoffPtr, i);
-	AddTagToNode(nodePtr, sharedTextPtr->tagLookup[i], tagoff);
-    }
-
-    TkTextTagSetDecrRefCount(tagonPtr);
-}
-
 void
 TkBTreeInsertChars(
     TkTextBTree tree,		/* Tree to insert into. */
@@ -3962,6 +4141,8 @@ TkBTreeInsertChars(
     const char *string,		/* Pointer to bytes to insert (may contain newlines, must be
     				 * null-terminated). */
     TkTextTagSet *tagInfoPtr,	/* Tag information for the new segments, can be NULL. */
+    TkTextTag *hyphenTagPtr,	/* Tag information for hyphen segments, can be NULL. If not NULL
+    				 * this is a list of tags connected via 'nextPtr'. */
     TkTextUndoInfo *undoInfo)	/* Undo information, can be NULL. */
 {
     TkSharedText *sharedTextPtr;
@@ -3978,18 +4159,20 @@ TkBTreeInsertChars(
     TkTextLine *newLinePtr;
     TkTextLine *firstLinePtr;
     TkTextTagSet *emptyTagInfoPtr;
+    TkTextTagSet *hyphenTagInfoPtr = NULL;
+    TkTextTagSet *myTagInfoPtr;
+    TkTextTag *tagPtr;
+    TkTextTag *hyphenElideTagPtr = NULL;
     TkTextIndex index;
     UndoTokenInsert *undoToken = NULL;
     BTree *treePtr = (BTree *) tree;
     bool split = true;
-    bool updateLastLineTagInfo;
     SplitInfo info;
     unsigned chunkSize = 0; /* satisifies the compiler */
     unsigned size = 0;
     int hyphenRules = 0;
-    bool singleContentInFirstLine;
 
-    assert(*string);
+    assert(*string); /* otherwise tag information might become erroneous */
     assert(indexPtr->textPtr);
 
     sharedTextPtr = treePtr->sharedTextPtr;
@@ -4004,24 +4187,18 @@ TkBTreeInsertChars(
     }
 
     emptyTagInfoPtr = sharedTextPtr->emptyTagInfoPtr;
-    updateLastLineTagInfo = !!tagInfoPtr;
     firstSegPtr = lastSegPtr = NULL;
     prevPtr = NULL;
     memset(&info, 0, sizeof(SplitInfo));
     info.offset = -1;
     info.tagInfoPtr = tagInfoPtr;
     firstLinePtr = linePtr = TkTextIndexGetLine(indexPtr);
-    singleContentInFirstLine = (firstLinePtr->size == firstLinePtr->lastPtr->size);
     index = *indexPtr;
-    (void) TkTextIndexGetByteIndex(indexPtr); /* we need byte offset */
-
-    if (linePtr->tagonPtr != sharedTextPtr->emptyTagInfoPtr) {
-	updateLastLineTagInfo = true;
-    }
-
+    TkTextIndexGetByteIndex(indexPtr); /* we need byte offset */
     changeToLineCount = 0;
     changeToLogicalLineCount = 0;
     changeToPixelInfo = treePtr->pixelInfoBuffer;
+    SetLineHasChanged(sharedTextPtr, linePtr);
 
     if (tagInfoPtr && !TkTextTagSetContains(linePtr->parentPtr->tagonPtr, tagInfoPtr)) {
 	unsigned i;
@@ -4038,6 +4215,22 @@ TkBTreeInsertChars(
 		i = TkTextTagSetFindNext(tagInfoPtr, i)) {
 	    if (!TkTextTagSetTest(linePtr->parentPtr->tagonPtr, i)) {
 		AddTagToNode(linePtr->parentPtr, sharedTextPtr->tagLookup[i], true);
+	    }
+	}
+    }
+
+    if (hyphenTagPtr) {
+	int highestPriority = -1;
+	TkText *textPtr = index.textPtr;
+
+	for (tagPtr = hyphenTagPtr; tagPtr; tagPtr = tagPtr->nextPtr) {
+	    if (!TkTextTagSetTest(linePtr->parentPtr->tagonPtr, tagPtr->index)) {
+		AddTagToNode(linePtr->parentPtr, tagPtr, true);
+	    }
+	    if (tagPtr->elideString
+		    && tagPtr->priority > highestPriority
+		    && (!tagPtr->textPtr || tagPtr->textPtr == textPtr)) {
+		highestPriority = (hyphenElideTagPtr = tagPtr)->priority;
 	    }
 	}
     }
@@ -4074,7 +4267,7 @@ TkBTreeInsertChars(
 	    	break;
 	    case 0xff:
 	    	/*
-		 * Hyphen support (0xff is not allowed in UTF-8 strings, it's a priate flag
+		 * Hyphen support (0xff is not allowed in UTF-8 strings, it's a private flag
 		 * denoting a soft hyphen, see ParseHyphens [tkText.c]).
 		 */
 
@@ -4092,7 +4285,39 @@ TkBTreeInsertChars(
 	chunkSize = strEnd - string;
 
 	if (chunkSize == 0) {
-	    prevPtr = segPtr = SplitSeg(indexPtr, NULL);
+	    TkTextTag *tagPtr;
+
+	    prevPtr = SplitSeg(indexPtr, NULL);
+	    segPtr = MakeHyphen();
+	    segPtr->body.hyphen.rules = hyphenRules;
+	    LinkSegment(linePtr, prevPtr, segPtr);
+	    SplitSection(segPtr->sectionPtr);
+	    TkBTreeIncrEpoch(tree);
+	    if (hyphenTagInfoPtr) {
+		assert(firstSegPtr);
+		TkTextTagSetIncrRefCount(segPtr->tagInfoPtr = hyphenTagInfoPtr);
+	    } else {
+		if (tagInfoPtr) {
+		    assert(tagInfoPtr == info.tagInfoPtr);
+		    TkTextTagSetIncrRefCount(segPtr->tagInfoPtr = tagInfoPtr);
+		    if (!firstSegPtr) {
+			firstSegPtr = segPtr;
+		    }
+		} else {
+		    assert(!firstSegPtr);
+		    assert(!info.tagInfoPtr);
+		    tagInfoPtr = segPtr->tagInfoPtr = MakeTagInfo(index.textPtr, segPtr);
+		    info.tagInfoPtr = tagInfoPtr;
+		}
+		for (tagPtr = hyphenTagPtr; tagPtr; tagPtr = tagPtr->nextPtr) {
+		    segPtr->tagInfoPtr = TagSetAdd(segPtr->tagInfoPtr, tagPtr);
+		}
+		hyphenTagInfoPtr = segPtr->tagInfoPtr;
+	    }
+	    info.offset = -1;
+	    prevPtr = segPtr;
+	    split = false;
+	    size += segPtr->size;
 	} else {
 	    size += chunkSize;
 
@@ -4110,6 +4335,7 @@ TkBTreeInsertChars(
 		memcpy(segPtr->body.chars + info.offset, string, chunkSize);
 		segPtr->sectionPtr->size += chunkSize;
 		linePtr->size += chunkSize;
+		assert(!tagInfoPtr || TkTextTagSetIsEqual(tagInfoPtr, segPtr->tagInfoPtr));
 		tagInfoPtr = segPtr->tagInfoPtr;
 	    } else {
 		/*
@@ -4122,59 +4348,30 @@ TkBTreeInsertChars(
 		TkBTreeIncrEpoch(tree);
 	    }
 	    prevPtr = segPtr;
-	}
 
-	if (chunkSize == 0) {
-	    segPtr = MakeHyphen();
-	    segPtr->body.hyphen.rules = hyphenRules;
-	    LinkSegment(linePtr, prevPtr, segPtr);
-	    SplitSection(segPtr->sectionPtr);
-	    TkBTreeIncrEpoch(tree);
-	    if (firstSegPtr) {
-		if (tagInfoPtr) {
-		    TkTextTagSetIncrRefCount(segPtr->tagInfoPtr = tagInfoPtr);
-		} else {
-		    segPtr->tagInfoPtr = MakeTagInfo(index.textPtr, segPtr);
+	    assert(!firstSegPtr || tagInfoPtr);
+
+	    if (!firstSegPtr) {
+		firstSegPtr = segPtr;
+
+		if (!tagInfoPtr) {
+		    if (segPtr->tagInfoPtr) {
+			tagInfoPtr = segPtr->tagInfoPtr;
+		    } else {
+			tagInfoPtr = MakeTagInfo(index.textPtr, segPtr);
+		    }
+		    info.tagInfoPtr = tagInfoPtr;
 		}
 	    }
-	    info.offset = -1;
-	    prevPtr = segPtr;
-	    split = false;
-	    size += segPtr->size;
+
+	    if (!segPtr->tagInfoPtr) {
+		TkTextTagSetIncrRefCount(segPtr->tagInfoPtr = tagInfoPtr);
+	    } else {
+		assert(TkTextTagSetIsEqual(tagInfoPtr, segPtr->tagInfoPtr));
+	    }
 	}
 
 	assert(prevPtr);
-
-	if (!firstSegPtr) {
-	    TkTextSegment *lastSegPtr = isNewline ? segPtr->nextPtr : NULL;
-
-	    assert(!tagInfoPtr || !segPtr->tagInfoPtr || segPtr->tagInfoPtr == tagInfoPtr);
-
-	    firstSegPtr = segPtr;
-
-	    if (!tagInfoPtr) {
-		if (!segPtr->tagInfoPtr) {
-		    segPtr->tagInfoPtr = MakeTagInfo(index.textPtr, segPtr);
-		}
-		tagInfoPtr = segPtr->tagInfoPtr;
-	    } else if (!segPtr->tagInfoPtr) {
-		TkTextTagSetIncrRefCount(segPtr->tagInfoPtr = tagInfoPtr);
-	    }
-	    if (lastSegPtr) {
-		/*
-		 * In this case we have to recompute the line tag information, because
-		 * the line will be split before lastSegPtr.
-		 */
-		UpdateLineTagInfo(linePtr, lastSegPtr, sharedTextPtr);
-	    } else if (tagInfoPtr != sharedTextPtr->emptyTagInfoPtr
-		    || linePtr->tagonPtr != sharedTextPtr->emptyTagInfoPtr) {
-		AddToLineTagInfo(linePtr, segPtr, sharedTextPtr);
-	    }
-	    if (!info.tagInfoPtr) {
-		info.tagInfoPtr = tagInfoPtr;
-	    }
-	}
-
 	lastSegPtr = segPtr;
 	string = strEnd + (chunkSize == 0 ? 2 : 0);
 	TkTextIndexAddToByteIndex(indexPtr, MAX(chunkSize, 1));
@@ -4183,12 +4380,29 @@ TkBTreeInsertChars(
 	    continue;
 	}
 
+	/*
+	 * Update line tag information.
+	 */
+
+	if (changeToLineCount == 0
+		&& (hyphenTagInfoPtr
+		    || (tagInfoPtr && linePtr->tagonPtr != tagInfoPtr)
+		    || linePtr->tagoffPtr != emptyTagInfoPtr)) {
+	    /*
+	     * In this case we have to recompute the line tag information, because
+	     * the line will be split before segPtr->nextPtr.
+	     */
+	    RecomputeLineTagInfo(linePtr, segPtr->nextPtr, sharedTextPtr);
+	}
+
+	assert(segPtr->nextPtr);
+
 	split = info.splitted;
 	info.splitted = false;
 	info.offset = -1;
 
 	/*
-	 * The chunk ended with a newline, so create a new text line and move
+	 * This chunk ended with a newline, so create a new text line and move
 	 * the remainder of the old line to it.
 	 */
 
@@ -4198,7 +4412,15 @@ TkBTreeInsertChars(
 
 	newLinePtr = InsertNewLine(sharedTextPtr, linePtr->parentPtr, linePtr, segPtr->nextPtr);
 	AddPixelCount(treePtr, newLinePtr, linePtr, changeToPixelInfo);
-	TagSetAssign(&newLinePtr->tagonPtr, tagInfoPtr);
+	if (hyphenTagInfoPtr) {
+	    assert(TkTextTagSetContains(hyphenTagInfoPtr, tagInfoPtr));
+	    assert(linePtr->tagoffPtr == emptyTagInfoPtr);
+	    TagSetAssign(&newLinePtr->tagonPtr, hyphenTagInfoPtr);
+	    TagSetAssign(&newLinePtr->tagoffPtr, hyphenTagInfoPtr);
+	    newLinePtr->tagoffPtr = TagSetRemove(newLinePtr->tagoffPtr, tagInfoPtr, sharedTextPtr);
+	} else if (tagInfoPtr) {
+	    TagSetAssign(&newLinePtr->tagonPtr, tagInfoPtr);
+	}
 	TkTextIndexSetByteIndex2(indexPtr, newLinePtr, 0);
 	prevPtr = NULL;
 	linePtr = newLinePtr;
@@ -4206,14 +4428,51 @@ TkBTreeInsertChars(
 	changeToLogicalLineCount += linePtr->logicalLine;
     }
 
-    assert(tagInfoPtr);
+    /*
+     * Update line tag information of last line.
+     */
+    
+    assert(tagInfoPtr || hyphenTagInfoPtr);
 
-    if (updateLastLineTagInfo
-	    && (singleContentInFirstLine || linePtr != firstSegPtr->sectionPtr->linePtr)) {
-	/*
-	 * Update the tag information of last inserted line.
-	 */
-	UpdateLineTagInfo(linePtr, NULL, sharedTextPtr);
+    if (changeToLineCount == 0) {
+	if (hyphenTagInfoPtr) {
+	    assert(TkTextTagSetContains(hyphenTagInfoPtr, tagInfoPtr));
+	    linePtr->tagoffPtr = TagSetJoinNonIntersection(
+		    linePtr->tagoffPtr, linePtr->tagonPtr, hyphenTagInfoPtr, sharedTextPtr);
+	    linePtr->tagonPtr = TkTextTagSetJoin(linePtr->tagonPtr, hyphenTagInfoPtr);
+	    myTagInfoPtr = hyphenTagInfoPtr;
+	} else if (linePtr->tagonPtr != tagInfoPtr || linePtr->tagoffPtr != emptyTagInfoPtr) {
+	    linePtr->tagoffPtr = TagSetJoinNonIntersection(
+		    linePtr->tagoffPtr, linePtr->tagonPtr, tagInfoPtr, sharedTextPtr);
+	    linePtr->tagonPtr = TkTextTagSetJoin(linePtr->tagonPtr, tagInfoPtr);
+	}
+    } else {
+	SetLineHasChanged(sharedTextPtr, linePtr);
+	RecomputeLineTagInfo(linePtr, NULL, sharedTextPtr);
+    }
+
+    myTagInfoPtr = hyphenTagInfoPtr ? hyphenTagInfoPtr : tagInfoPtr;
+
+    if (myTagInfoPtr) {
+	Node *nodePtr = linePtr->parentPtr;
+
+	if (nodePtr->tagonPtr != emptyTagInfoPtr) {
+	    unsigned i;
+
+	    /*
+	     * Update the tag information of the B-Tree. Any tag in tagon of this
+	     * node, which is not contained in myTagInfoPtr, has to be added to the
+	     * tagoff information of this node.
+	     */
+
+	    for (i = TkTextTagSetFindFirst(nodePtr->tagonPtr);
+		    i != TK_TEXT_TAG_SET_NPOS;
+		    i = TkTextTagSetFindNext(nodePtr->tagonPtr, i)) {
+		if (!TkTextTagSetTest(myTagInfoPtr, i)) {
+		    AddTagToNode(nodePtr, sharedTextPtr->tagLookup[i], true);
+		}
+	    }
+	}
     }
 
     if (undoInfo) {
@@ -4238,8 +4497,13 @@ TkBTreeInsertChars(
 
     TkTextInvalidateLineMetrics(sharedTextPtr, NULL, firstLinePtr,
 	    changeToLineCount, TK_TEXT_INVALIDATE_INSERT);
+   	
+    /*
+     * Next step: update elision states if needed.
+     */
 
-    if (tagInfoPtr != emptyTagInfoPtr
+    if (tagInfoPtr
+	    && tagInfoPtr != emptyTagInfoPtr
 	    && TkTextTagSetIntersectsBits(tagInfoPtr, sharedTextPtr->elisionTags)) {
 	int highestPriority = -1;
 	TkTextTag *tagPtr = NULL;
@@ -4272,12 +4536,27 @@ TkBTreeInsertChars(
 
 	    CleanupSplitPoint(firstSegPtr, sharedTextPtr);
 	    CleanupSplitPoint(lastSegPtr, sharedTextPtr);
+
+	    if (hyphenElideTagPtr == tagPtr) {
+		hyphenElideTagPtr = NULL;
+	    }
 	}
+    }
+
+    if (hyphenElideTagPtr) {
+	firstSegPtr->protectionFlag = true;
+	lastSegPtr->protectionFlag = true;
+
+	UpdateElideInfo(sharedTextPtr, hyphenElideTagPtr, firstSegPtr, lastSegPtr,
+		ELISION_HAS_BEEN_ADDED);
+
+	CleanupSplitPoint(firstSegPtr, sharedTextPtr);
+	CleanupSplitPoint(lastSegPtr, sharedTextPtr);
     }
 
     TkTextIndexSetEpoch(indexPtr, TkBTreeIncrEpoch(tree));
 
-    TK_BTREE_DEBUG(TreeCheck(indexPtr->tree, CHECK_LINES | CHECK_NODES | CHECK_SEGMENTS | CHECK_TAGS));
+    TK_BTREE_DEBUG(TkBTreeCheck(indexPtr->tree));
 }
 
 /*
@@ -4303,7 +4582,7 @@ TkBTreeInsertChars(
  *----------------------------------------------------------------------
  */
 
-void
+static void
 MakeUndoIndex(
     const TkSharedText *sharedTextPtr,
     const TkTextIndex *indexPtr,	/* Convert this index. */
@@ -4416,7 +4695,42 @@ TkBTreeUndoIndexToIndex(
 /*
  *----------------------------------------------------------------------
  *
- * TkBTreeReInsertSegment --
+ * UndoIndexIsEqual --
+ *
+ *	Test whether both indices are equal. Note that this test
+ *	may return false even if both indices are referring the
+ *	same position.
+ *
+ * Results:
+ *	Return whether both indices are (probably) equal.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static bool
+UndoIndexIsEqual(
+    const TkTextUndoIndex *indexPtr1,
+    const TkTextUndoIndex *indexPtr2)
+{
+    if (indexPtr1->lineIndex == -1) {
+	return indexPtr2->u.markPtr && indexPtr1->u.markPtr == indexPtr2->u.markPtr;
+    }
+
+    if (indexPtr2->lineIndex == -1) {
+	return indexPtr1->u.markPtr && indexPtr1->u.markPtr == indexPtr2->u.markPtr;
+    }
+
+    return indexPtr1->lineIndex == indexPtr2->lineIndex
+	    && indexPtr1->u.byteIndex == indexPtr2->u.byteIndex;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TreeReInsertSegment --
  *
  *	Re-insert a previously removed segment at the given index.
  *	This function is not handling the special cases when a
@@ -4433,11 +4747,12 @@ TkBTreeUndoIndexToIndex(
  *----------------------------------------------------------------------
  */
 
-void
-TkBTreeReInsertSegment(
+static void
+TreeReInsertSegment(
     const TkSharedText *sharedTextPtr,
     const TkTextUndoIndex *indexPtr,
-    TkTextSegment *segPtr)
+    TkTextSegment *segPtr,
+    bool updateNode)
 {
     TkTextSegment *prevPtr;
     TkTextLine *linePtr;
@@ -4450,6 +4765,16 @@ TkBTreeReInsertSegment(
     if (indexPtr->lineIndex == -1) {
 	prevPtr = indexPtr->u.markPtr;
 	linePtr = prevPtr->sectionPtr->linePtr;
+
+	if (updateNode) {
+	    TkTextIndex index;
+
+	    linePtr = TkBTreeFindLine(sharedTextPtr->tree, NULL, indexPtr->lineIndex);
+	    TkTextIndexClear2(&index, NULL, sharedTextPtr->tree);
+	    TkTextIndexSetByteIndex2(&index, linePtr, indexPtr->u.byteIndex);
+	    TkBTreeLinkSegment(sharedTextPtr, segPtr, &index);
+	    return;
+	}
     } else {
 	TkTextIndex index;
 
@@ -4459,12 +4784,49 @@ TkBTreeReInsertSegment(
 	linePtr = TkBTreeFindLine(sharedTextPtr->tree, NULL, indexPtr->lineIndex);
 	TkTextIndexClear2(&index, NULL, sharedTextPtr->tree);
 	TkTextIndexSetByteIndex2(&index, linePtr, indexPtr->u.byteIndex);
+
+	if (updateNode) {
+	    TkBTreeLinkSegment(sharedTextPtr, segPtr, &index);
+	    return;
+	}
+
 	prevPtr = SplitSeg(&index, NULL);
     }
 
     LinkSegment(linePtr, prevPtr, segPtr);
     SplitSection(segPtr->sectionPtr);
     TkBTreeIncrEpoch(sharedTextPtr->tree);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkBTreeReInsertSegment --
+ *
+ *	Re-insert a previously removed segment at the given index.
+ *	This function is not handling the special cases when a
+ *	char segment will be inserted (join with neighbors, handling
+ *	of newline char, updating the line tag information), the caller
+ *	is responsible for this.
+ *
+ *	This function is updating the B-Tree.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	A segment will be inserted into a segment chain.
+ *
+ *----------------------------------------------------------------------
+ */
+
+void
+TkBTreeReInsertSegment(
+    const TkSharedText *sharedTextPtr,
+    const TkTextUndoIndex *indexPtr,
+    TkTextSegment *segPtr)
+{
+    TreeReInsertSegment(sharedTextPtr, indexPtr, segPtr, true);
 }
 
 /*
@@ -4583,7 +4945,7 @@ LinkMark(
  *----------------------------------------------------------------------
  */
 
-void
+static void
 LinkSwitch(
     TkTextLine *linePtr,	/* Pointer to line. */
     TkTextSegment *predPtr,	/* Pointer to segment within this line, can be NULL. */
@@ -4636,7 +4998,7 @@ LinkSwitch(
  *----------------------------------------------------------------------
  */
 
-void
+static void
 LinkSegment(
     TkTextLine *linePtr,	/* Pointer to line. */
     TkTextSegment *predPtr,	/* Pointer to segment within this line, can be NULL. */
@@ -4741,6 +5103,16 @@ UnlinkSegmentAndCleanup(
  *----------------------------------------------------------------------
  */
 
+static void
+FreeSection(
+    TkTextSection *sectionPtr)
+{
+    assert(sectionPtr->linePtr);
+    assert(!(sectionPtr->linePtr = NULL));
+    ckfree(sectionPtr);
+    DEBUG_ALLOC(tkTextCountDestroySection++);
+}
+
 static TkTextSegment *
 UnlinkSegment(
     TkTextSegment *segPtr)	/* Unlink this segment. */
@@ -4765,9 +5137,9 @@ UnlinkSegment(
     if (--segPtr->sectionPtr->length == 0) {
 	/*
 	 * This can happen in rare cases, e.g. the line is starting with a Branch.
-	 * We have to delete the unused section.
+	 * We have to free the unused section.
 	 */
-	FREE_SECTION(segPtr->sectionPtr);
+	FreeSection(segPtr->sectionPtr);
 	segPtr->nextPtr->sectionPtr->prevPtr = NULL;
     } else {
 	segPtr->sectionPtr->size -= segPtr->size;
@@ -4849,8 +5221,8 @@ CountSegments(
  *	belong to this section, by reducing the number of segments. If
  *	necessary a new section will be created.
  *
- *	It is guaranteed that a split operation will be done in constant
- *	time.
+ *	It is guaranteed that a split operation will be performed in
+ *	constant time.
  *
  * Results:
  *	None.
@@ -5040,7 +5412,7 @@ SplitSection(
  *	this must be ensured only if this section is not the rightmost
  *	section of this line.
  *
- *	It is guaranteed that a join operation will be done in constant
+ *	It is guaranteed that a join operation will be constant in constant
  *	time.
  *
  * Results:
@@ -5078,7 +5450,7 @@ JoinSections(
 	if (sectionPtr->nextPtr) {
 	    sectionPtr->nextPtr->prevPtr = sectionPtr->prevPtr;
 	}
-	FREE_SECTION(sectionPtr);
+	FreeSection(sectionPtr);
 	return;
     }
 
@@ -5149,7 +5521,7 @@ JoinSections(
 	    sectionPtr->prevPtr->nextPtr = sectionPtr->nextPtr;
 	}
 	sectionPtr->nextPtr->prevPtr = sectionPtr->prevPtr;
-	FREE_SECTION(sectionPtr);
+	FreeSection(sectionPtr);
 
 	if (lengthRHS + length > MAX_TEXT_SEGS) {
 	    /*
@@ -5374,7 +5746,7 @@ FreeSections(
     while (sectionPtr) {
 	assert(sectionPtr->linePtr); /* otherwise already freed */
 	nextPtr = sectionPtr->nextPtr;
-	FREE_SECTION(sectionPtr);
+	FreeSection(sectionPtr);
 	sectionPtr = nextPtr;
     }
 }
@@ -5430,7 +5802,7 @@ TkBTreeFreeSegment(
 
 static void
 FreeLine(
-    const BTree* treePtr,
+    const BTree *treePtr,
     TkTextLine *linePtr)
 {
     int i;
@@ -5472,7 +5844,7 @@ FreeLine(
  *--------------------------------------------------------------
  */
 
-TkTextSegment *
+static TkTextSegment *
 MakeCharSeg(
     TkTextSection *sectionPtr,	/* Section of new segment, can be NULL. */
     TkTextTagSet *tagInfoPtr,	/* Tga information for new segment, can be NULL. */
@@ -5516,7 +5888,7 @@ MakeCharSeg(
  *--------------------------------------------------------------
  */
 
-TkTextSegment *
+static TkTextSegment *
 CopyCharSeg(
     TkTextSegment *segPtr,	/* Copy text from this segment. */
     unsigned offset,		/* Copy text starting at this offset. */
@@ -5726,7 +6098,7 @@ PrepareInsertIntoCharSeg(
 	DEBUG(newPtr->sectionPtr = NULL);
 	memset(segPtr->body.chars + decreasedSize, 0, segPtr->size - decreasedSize);
 	segPtr->size = decreasedSize;
-	newPtr->size = 0; /* temporary, LinkSegment() should not change total size */
+	newPtr->size = 0; /* temporary; LinkSegment() should not change total size */
 	LinkSegment(segPtr->sectionPtr->linePtr, segPtr, newPtr);
 	newPtr->size = newSize;
 	SplitSection(segPtr->sectionPtr);
@@ -5911,7 +6283,7 @@ SplitSeg(
 		return segPtr->prevPtr;
 	    }
 	    /*
-	     * It is really a split of a char segment necessary.
+	     * Actually a split of a char segment necessary.
 	     */
 	    segPtr = SplitCharSegment(segPtr, count);
 	    TkTextIndexToByteIndex((TkTextIndex *) indexPtr); /* mutable due to concept */
@@ -6051,56 +6423,63 @@ UpdateNodeTags(
     unsigned i;
 
     assert(nodePtr->level == 0);
+    assert(linePtr);
 
-    TkTextTagSetIncrRefCount(tagonPtr = sharedTextPtr->emptyTagInfoPtr);
-    TkTextTagSetIncrRefCount(tagoffPtr = sharedTextPtr->emptyTagInfoPtr);
+    TkTextTagSetIncrRefCount(tagonPtr = linePtr->tagonPtr);
+    TkTextTagSetIncrRefCount(tagoffPtr = linePtr->tagoffPtr);
+    TkTextTagSetIncrRefCount(additionalTagoffPtr = tagonPtr);
     TkTextTagSetIncrRefCount(nodeTagonPtr = nodePtr->tagonPtr);
     TkTextTagSetIncrRefCount(nodeTagoffPtr = nodePtr->tagoffPtr);
-    additionalTagoffPtr = NULL;
 
-    for ( ; linePtr != lastPtr; linePtr = linePtr->nextPtr) {
-	tagonPtr = TkTextTagSetJoin(tagonPtr, linePtr->tagonPtr);
-	tagoffPtr = TkTextTagSetJoin(tagoffPtr, linePtr->tagoffPtr);
-	additionalTagoffPtr = TagSetIntersect(additionalTagoffPtr, linePtr->tagonPtr, sharedTextPtr);
-    }
-
-    if (additionalTagoffPtr) {
-	tagoffPtr = TagSetJoinComplementTo(tagoffPtr, additionalTagoffPtr, tagonPtr, sharedTextPtr);
-	TkTextTagSetDecrRefCount(additionalTagoffPtr);
-    } else {
-	TagSetAssign(&tagoffPtr, tagonPtr);
-    }
-
-    for (i = TkTextTagSetFindFirst(nodeTagonPtr);
-	    i != TK_TEXT_TAG_SET_NPOS;
-	    i = TkTextTagSetFindNext(nodeTagonPtr, i)) {
-	if (!TkTextTagSetTest(tagonPtr, i)) {
-	    RemoveTagFromNode(nodePtr, sharedTextPtr->tagLookup[i]);
+    if (linePtr != lastPtr) {
+	for (linePtr = linePtr->nextPtr; linePtr != lastPtr; linePtr = linePtr->nextPtr) {
+	    tagonPtr = TkTextTagSetJoin(tagonPtr, linePtr->tagonPtr);
+	    tagoffPtr = TkTextTagSetJoin(tagoffPtr, linePtr->tagoffPtr);
+	    additionalTagoffPtr = TagSetIntersect(additionalTagoffPtr, linePtr->tagonPtr, sharedTextPtr);
 	}
     }
 
-    for (i = TkTextTagSetFindFirst(tagonPtr);
-	    i != TK_TEXT_TAG_SET_NPOS;
-	    i = TkTextTagSetFindNext(tagonPtr, i)) {
-	if (!TkTextTagSetTest(nodeTagonPtr, i)) {
-	    AddTagToNode(nodePtr, sharedTextPtr->tagLookup[i], false);
+    if (!TkTextTagSetIsEqual(tagonPtr, nodeTagonPtr) || !TkTextTagSetIsEqual(tagoffPtr, nodeTagoffPtr)) {
+	if (additionalTagoffPtr) {
+	    tagoffPtr = TagSetJoinComplementTo(tagoffPtr, additionalTagoffPtr, tagonPtr, sharedTextPtr);
+	    TkTextTagSetDecrRefCount(additionalTagoffPtr);
+	} else {
+	    TagSetAssign(&tagoffPtr, tagonPtr);
 	}
-    }
 
-    if (!TkTextTagSetContains(tagoffPtr, nodeTagoffPtr)) {
-	for (i = TkTextTagSetFindFirst(nodeTagoffPtr);
+	for (i = TkTextTagSetFindFirst(nodeTagonPtr);
 		i != TK_TEXT_TAG_SET_NPOS;
-		i = TkTextTagSetFindNext(nodeTagoffPtr, i)) {
-	    if (!TkTextTagSetTest(tagoffPtr, i) && TkTextTagSetTest(tagonPtr, i)) {
-		RemoveTagoffFromNode(nodePtr, sharedTextPtr->tagLookup[i]);
+		i = TkTextTagSetFindNext(nodeTagonPtr, i)) {
+	    if (!TkTextTagSetTest(tagonPtr, i)) {
+		RemoveTagFromNode(nodePtr, sharedTextPtr->tagLookup[i]);
 	    }
 	}
+
+	for (i = TkTextTagSetFindFirst(tagonPtr);
+		i != TK_TEXT_TAG_SET_NPOS;
+		i = TkTextTagSetFindNext(tagonPtr, i)) {
+	    if (!TkTextTagSetTest(nodeTagonPtr, i)) {
+		AddTagToNode(nodePtr, sharedTextPtr->tagLookup[i], false);
+	    }
+	}
+
+	if (!TkTextTagSetContains(tagoffPtr, nodeTagoffPtr)) {
+	    for (i = TkTextTagSetFindFirst(nodeTagoffPtr);
+		    i != TK_TEXT_TAG_SET_NPOS;
+		    i = TkTextTagSetFindNext(nodeTagoffPtr, i)) {
+		if (!TkTextTagSetTest(tagoffPtr, i) && TkTextTagSetTest(tagonPtr, i)) {
+		    RemoveTagoffFromNode(nodePtr, sharedTextPtr->tagLookup[i]);
+		}
+	    }
+	}
+
+	AddTagoffToNode(nodePtr, tagoffPtr);
+
+	assert(TkTextTagSetIsEqual(tagonPtr, nodePtr->tagonPtr));
+	assert(TkTextTagSetIsEqual(tagoffPtr, nodePtr->tagoffPtr));
+    } else if (additionalTagoffPtr) {
+	TkTextTagSetDecrRefCount(additionalTagoffPtr);
     }
-
-    AddTagoffToNode(nodePtr, tagoffPtr);
-
-    assert(TkTextTagSetIsEqual(tagonPtr, nodePtr->tagonPtr));
-    assert(TkTextTagSetIsEqual(tagoffPtr, nodePtr->tagoffPtr));
 
     TkTextTagSetDecrRefCount(tagonPtr);
     TkTextTagSetDecrRefCount(tagoffPtr);
@@ -6167,7 +6546,7 @@ MoveSegmentToLeft(
      */
 
     if (--movePtr->sectionPtr->length == 0) {
-	FREE_SECTION(movePtr->sectionPtr);
+	FreeSection(movePtr->sectionPtr);
     }
     movePtr->sectionPtr = branchPtr->sectionPtr;
 }
@@ -6201,7 +6580,7 @@ MoveSegmentToRight(
      */
 
     if (--linkPtr->sectionPtr->length == 0) {
-	FREE_SECTION(linkPtr->sectionPtr);
+	FreeSection(linkPtr->sectionPtr);
     }
     linkPtr->sectionPtr = movePtr->sectionPtr;
 }
@@ -6263,19 +6642,23 @@ DeleteRange(
 	assert(firstSegPtr->typePtr != &tkTextBranchType);
 	assert(lastSegPtr->typePtr != &tkTextLinkType);
 
-	for (segPtr = firstSegPtr->prevPtr; segPtr && segPtr->size == 0; segPtr = segPtr->prevPtr) {
-	    if (segPtr->typePtr == &tkTextBranchType) {
-		/* firstSegPtr will become predecessor of this branch */
-		MoveSegmentToLeft(segPtr, firstSegPtr);
-		segPtr = firstSegPtr;
+	if (!sharedTextPtr->steadyMarks || !TkTextIsStableMark(firstSegPtr)) {
+	    for (segPtr = firstSegPtr->prevPtr; segPtr && segPtr->size == 0; segPtr = segPtr->prevPtr) {
+		if (segPtr->typePtr == &tkTextBranchType) {
+		    /* firstSegPtr will become predecessor of this branch */
+		    MoveSegmentToLeft(segPtr, firstSegPtr);
+		    segPtr = firstSegPtr;
+		}
 	    }
 	}
 
-	for (segPtr = lastSegPtr->nextPtr; segPtr && segPtr->size == 0; segPtr = segPtr->nextPtr) {
-	    if (segPtr->typePtr == &tkTextLinkType) {
-		/* lastSegPtr will become successor of this link */
-		MoveSegmentToRight(segPtr, lastSegPtr);
-		segPtr = lastSegPtr;
+	if (!sharedTextPtr->steadyMarks || !TkTextIsStableMark(lastSegPtr)) {
+	    for (segPtr = lastSegPtr->nextPtr; segPtr && segPtr->size == 0; segPtr = segPtr->nextPtr) {
+		if (segPtr->typePtr == &tkTextLinkType) {
+		    /* lastSegPtr will become successor of this link */
+		    MoveSegmentToRight(segPtr, lastSegPtr);
+		    segPtr = lastSegPtr;
+		}
 	    }
 	}
     }
@@ -6298,11 +6681,16 @@ DeleteRange(
     lineNo2 = linePtr1 == linePtr2 ? lineNo1 : TkBTreeLinesTo(sharedTextPtr->tree, NULL, linePtr2, NULL);
     lineDiff = linePtr1->size;
 
+    SetLineHasChanged(sharedTextPtr, linePtr1);
+    if (linePtr1 != linePtr2) {
+	SetLineHasChanged(sharedTextPtr, linePtr2);
+    }
+
     if (undoInfo) {
 	/* reserve the first entry if needed */
 	numSegments = (flags & DELETE_INCLUSIVE) && TkTextIsStableMark(firstSegPtr) ? 1 : 0;
 	maxSegments = 100;
-	segments = ckalloc(maxSegments*sizeof(TkTextSegment *));
+	segments = ckalloc(maxSegments * sizeof(TkTextSegment *));
 	DEBUG(segments[0] = NULL);
     } else {
 	flags |= DELETE_BRANCHES;
@@ -6383,8 +6771,8 @@ DeleteRange(
 	    byteSize += segPtr->size;
 	    if (undoInfo && !TkTextIsSpecialOrPrivateMark(segPtr)) {
 		if (numSegments == maxSegments) {
-		    maxSegments = MAX(50, numSegments*2);
-		    segments = ckrealloc(segments, maxSegments*sizeof(TkTextSegment *));
+		    maxSegments = MAX(50, numSegments * 2);
+		    segments = ckrealloc(segments, maxSegments * sizeof(TkTextSegment *));
 		}
 		if (segPtr->tagInfoPtr) {
 		    segPtr->tagInfoPtr = TagSetRemoveBits(segPtr->tagInfoPtr,
@@ -6462,9 +6850,9 @@ DeleteRange(
 
 		    /*
 		     * Prevent an overflow of the section length, because this may happen
-		     * when deleting segments. It doesn't matter here, because the section
-		     * structure will be rebuilt later. But LinkSegment will trap into an
-		     * assertion if we do not prevent this.
+		     * when deleting segments. The section length doesn't matter here,
+		     * because the section structure will be rebuilt later. But LinkSegment
+		     * will trap into an assertion if we do not prevent this.
 		     */
 		    DEBUG(segPtr->sectionPtr->length = 0);
 		}
@@ -6566,7 +6954,7 @@ DeleteRange(
      * Recompute the line tag information of first line.
      */
 
-    RecomputeLineTagInfo(linePtr1, sharedTextPtr);
+    RecomputeLineTagInfo(linePtr1, NULL, sharedTextPtr);
 
     /*
      * Update the size of the node which holds the first line.
@@ -6616,7 +7004,7 @@ DeleteRange(
 	    } else if (segments && TkTextIsStableMark(lastSegPtr)) {
 		if (numSegments == maxSegments) {
 		    maxSegments += 2;
-		    segments = ckrealloc(segments, maxSegments*sizeof(TkTextSegment *));
+		    segments = ckrealloc(segments, maxSegments * sizeof(TkTextSegment *));
 		}
 		segments[numSegments++] = lastSegPtr;
 		lastSegPtr->refCount += 1;
@@ -6630,7 +7018,7 @@ DeleteRange(
 
     /*
      * Do final update of nodes which contains the first/last line. This
-     * has to be done before any rebalance of the B-Tree will be done.
+     * has to be performed before any rebalance of the B-Tree will be done.
      */
 
     if (nodePtr2 && nodePtr2 != nodePtr1) {
@@ -6661,22 +7049,20 @@ DeleteRange(
 	assert(numSegments == 0 || segments[0]);
 
 	if (numSegments + 1 != maxSegments) {
-	    undoToken->segments = ckrealloc(segments, (numSegments + 1)*sizeof(TkTextSegment *));
+	    segments = ckrealloc(segments, (numSegments + 1)*sizeof(TkTextSegment *));
 	}
-	undoToken->segments[numSegments] = NULL;
+	undoToken->segments = segments;
+	undoToken->numSegments = numSegments;
+	undoToken->inclusive = !!(flags & DELETE_INCLUSIVE);
 	undoInfo->byteSize = byteSize;
-
-	if (flags & DELETE_INCLUSIVE) {
-	    MARK_POINTER(undoToken->segments);
-	}
     }
 
 #if SUPPORT_DEPRECATED_STARTLINE_ENDLINE
     {
 	TkText *peer;
+	bool oldBTreeDebug = tkBTreeDebug;
 
-	DEBUG(bool oldBTreeDebug = tkBTreeDebug);
-	DEBUG(tkBTreeDebug = false);
+	tkBTreeDebug = false;
 
 	/*
 	 * We have to adjust startline/endline.
@@ -6694,18 +7080,29 @@ DeleteRange(
 		}
 	    }
 	    if (peer->endLine) {
-		peer->endLine = peer->endMarker->sectionPtr->linePtr;
-		if (!SegIsAtStartOfLine(peer->endMarker)) {
+		TkTextLine *endLinePtr = peer->endMarker->sectionPtr->linePtr;
+		bool atEndOfLine = SegIsAtEndOfLine(peer->endMarker);
+		bool atStartOfLine = SegIsAtStartOfLine(peer->endMarker);
+
+		if ((!atEndOfLine || atStartOfLine) && peer->startLine != endLinePtr) {
 		    TkTextIndex index;
+
+		    assert(endLinePtr->prevPtr);
+		    TkTextInvalidateLineMetrics(NULL, peer, endLinePtr->prevPtr, 1,
+			    TK_TEXT_INVALIDATE_DELETE);
+		    peer->endLine = endLinePtr;
 		    TkTextIndexClear2(&index, NULL, sharedTextPtr->tree);
-		    TkTextIndexSetToStartOfLine2(&index, peer->endLine);
+		    TkTextIndexSetToLastChar2(&index, endLinePtr->prevPtr);
 		    TkBTreeUnlinkSegment(sharedTextPtr, peer->endMarker);
 		    TkBTreeLinkSegment(sharedTextPtr, peer->endMarker, &index);
+		} else {
+		    assert(endLinePtr->nextPtr);
+		    peer->endLine = endLinePtr->nextPtr;
 		}
 	    }
 	}
 
-	DEBUG(tkBTreeDebug = oldBTreeDebug);
+	tkBTreeDebug = oldBTreeDebug;
     }
 #endif
 
@@ -6824,6 +7221,7 @@ DeleteIndexRange(
 	redoToken = ckalloc(sizeof(UndoTokenDelete));
 	redoToken->undoType = &undoTokenDeleteType;
 	redoToken->segments = NULL;
+	redoToken->numSegments = 0;
 	if (undoToken) {
 	    redoToken->startIndex = undoToken->startIndex;
 	    redoToken->endIndex = undoToken->endIndex;
@@ -6924,7 +7322,7 @@ TkBTreeFindLine(
 	if (line >= nodePtr->numLines) {
 	    return NULL;
 	}
-	if (line > TkBTreeLinesTo(tree, NULL, GetLastLine(textPtr), NULL)) {
+	if (line > TkBTreeLinesTo(tree, NULL, TkBTreeGetLastLine(textPtr), NULL)) {
 	    return NULL;
 	}
     }
@@ -7004,7 +7402,7 @@ TkBTreeFindPixelLine(
 	return NULL;
     }
     if (pixels >= nodePtr->pixelInfo[pixelReference].pixels) {
-	return GetLastLine(textPtr);
+	return TkBTreeGetLastLine(textPtr);
     }
 
     /*
@@ -7033,8 +7431,8 @@ TkBTreeFindPixelLine(
 
     assert(linePtr);
 
-    if (textPtr->startMarker != textPtr->sharedTextPtr->startMarker) {
-	TkTextLine *endLinePtr = textPtr->startMarker->sectionPtr->linePtr;
+    if (textPtr->endMarker != textPtr->sharedTextPtr->endMarker) {
+	TkTextLine *endLinePtr = textPtr->endMarker->sectionPtr->linePtr;
 
 	if (TkBTreeLinesTo(tree, textPtr, linePtr, NULL) >
 		TkBTreeLinesTo(tree, textPtr, endLinePtr, NULL)) {
@@ -7092,7 +7490,7 @@ TkBTreePixelsTo(
     pixelReference = textPtr->pixelReference;
     sharedTextPtr = textPtr->sharedTextPtr;
 
-    if (linePtr == GetLastLine(textPtr)) {
+    if (linePtr == TkBTreeGetLastLine(textPtr)) {
 	index = ((BTree *) sharedTextPtr->tree)->rootPtr->pixelInfo[pixelReference].pixels;
     } else {
 	linePtr = TkBTreeGetLogicalLine(sharedTextPtr, textPtr, (TkTextLine *) linePtr);
@@ -7229,7 +7627,7 @@ TkBTreeLinesTo(
         unsigned indexStart, indexEnd;
 
 	indexStart = TkBTreeLinesTo(tree, NULL, TkBTreeGetStartLine(textPtr), NULL);
-	indexEnd = TkBTreeLinesTo(tree, NULL, GetLastLine(textPtr), NULL);
+	indexEnd = TkBTreeLinesTo(tree, NULL, TkBTreeGetLastLine(textPtr), NULL);
 
         if (index < indexStart) {
 	    if (deviation) { *deviation = indexStart - index; }
@@ -7319,6 +7717,8 @@ TkBTreeLinkSegment(
 	TkTextTagSet *tagoffPtr;
 	Node *nodePtr;
 
+	SetLineHasChanged(sharedTextPtr, linePtr);
+
 	/*
 	 * We have to update the tag information of the line and the related node.
 	 */
@@ -7356,7 +7756,7 @@ TkBTreeLinkSegment(
 	}
     }
 
-    TK_BTREE_DEBUG(TreeCheck(indexPtr->tree, CHECK_SEGMENTS));
+    TK_BTREE_DEBUG(TkBTreeCheck(indexPtr->tree));
 }
 
 /*
@@ -7411,8 +7811,10 @@ TkBTreeUnlinkSegment(
     if (segPtr->size > 0) {
 	Node *nodePtr;
 
+	SetLineHasChanged(sharedTextPtr, linePtr);
+
 	if (!TkTextTagSetIsEmpty(linePtr->tagoffPtr)) {
-	    RecomputeLineTagInfo(sectionPtr->linePtr, sharedTextPtr);
+	    RecomputeLineTagInfo(sectionPtr->linePtr, NULL, sharedTextPtr);
 	    UpdateNodeTags(sharedTextPtr, sectionPtr->linePtr->parentPtr);
 	}
 
@@ -7425,7 +7827,7 @@ TkBTreeUnlinkSegment(
 	}
     }
 
-    TK_BTREE_DEBUG(if (!segPtr->startEndMarkFlag) TreeCheck(sharedTextPtr->tree, CHECK_SEGMENTS));
+    TK_BTREE_DEBUG(if (!segPtr->startEndMarkFlag) TkBTreeCheck(sharedTextPtr->tree));
 }
 
 /*
@@ -7684,7 +8086,7 @@ PropagateChangeToLineCount(
 
 static TkTextSegment *
 FindNextLink(
-    const TkSharedText* sharedTextPtr,
+    const TkSharedText *sharedTextPtr,
     TkTextSegment *segPtr)
 {
     TkTextSection *sectionPtr = segPtr->sectionPtr;
@@ -7748,6 +8150,7 @@ UpdateElideInfo(
     int changeToLogicalLineCount;
 
     /*
+     * --------------------------------------------------------------------------
      * This function will be called in four cases:
      * --------------------------------------------------------------------------
      * 1. A tag with elide information has been added to the specified region.
@@ -7858,6 +8261,7 @@ UpdateElideInfo(
     linePtr = startSegPtr->sectionPtr->linePtr;
     lastLinePtr = lastSegPtr->sectionPtr->linePtr;
     segPtr = startSegPtr;
+    SetLineHasChanged(sharedTextPtr, linePtr);
 
     while (true) {
 	if (!segPtr) {
@@ -7870,6 +8274,9 @@ UpdateElideInfo(
 	    }
 
 	    anyChanges = false;
+	    if (linePtr->logicalLine) {
+		linePtr->changed = true;
+	    }
 	    linePtr = linePtr->nextPtr;
 	    assert(linePtr);
 
@@ -7888,6 +8295,9 @@ UpdateElideInfo(
 			linePtr->logicalLine = !actualElidden;
 			nodePtr = linePtr->parentPtr;
 			endLinePtr = linePtr;
+		    }
+		    if (linePtr->logicalLine) {
+			linePtr->changed = true;
 		    }
 		    linePtr = linePtr->nextPtr;
 		}
@@ -7999,15 +8409,11 @@ UpdateElideInfo(
 	    actualElidden = shouldBeElidden;
 	    prevBranchPtr = prevLinkPtr = NULL;
 	} else if (segPtr->typePtr == &tkTextBranchType) {
-	    lastBranchPtr = segPtr;
-	    prevBranchPtr = segPtr;
-	    lastLinkPtr = NULL;
-	    prevLinkPtr = NULL;
+	    lastBranchPtr = prevBranchPtr = segPtr;
+	    lastLinkPtr = prevLinkPtr = NULL;
 	} else if (segPtr->typePtr == &tkTextLinkType) {
-	    lastBranchPtr = NULL;
-	    prevBranchPtr = NULL;
-	    lastLinkPtr = segPtr;
-	    prevLinkPtr = segPtr;
+	    lastBranchPtr = prevBranchPtr = NULL;
+	    lastLinkPtr = prevLinkPtr = segPtr;
 	}
 	if (segPtr == endSegPtr) {
 	    break;
@@ -8057,6 +8463,10 @@ UpdateElideInfo(
     if (deletedBranchPtr) { TkBTreeFreeSegment(deletedBranchPtr); }
     if (deletedLinkPtr) { TkBTreeFreeSegment(deletedLinkPtr); }
 
+    if (linePtr->logicalLine) {
+	linePtr->changed = true;
+    }
+
     if (anyChanges) {
 	/* The branches and links are influencing the section structure. */
 	RebuildSections(sharedTextPtr, linePtr, true);
@@ -8076,7 +8486,7 @@ UpdateElideInfo(
 
 	if (!endLinePtr->nextPtr) {
 	    assert(lineNo1 < lineNo2);
-	    lineNo2 -= 1;
+	    lineNo2 -= 1; /* don't invalidate very last line */
 	}
 
 	TkTextInvalidateLineMetrics(sharedTextPtr, NULL, startLinePtr,
@@ -8127,7 +8537,7 @@ TkBTreeUpdateElideInfo(
     }
 
     TkBTreeIncrEpoch(sharedTextPtr->tree);
-    TK_BTREE_DEBUG(TreeCheck(sharedTextPtr->tree, CHECK_TAGS));
+    TK_BTREE_DEBUG(TkBTreeCheck(sharedTextPtr->tree));
 }
 
 /*
@@ -8200,7 +8610,7 @@ CompareIndices(
 static int
 MergeTagUndoToken(
     TkSharedText *sharedTextPtr,
-    TkTextUndoToken* token,
+    TkTextUndoToken *token,
     const TkTextIndex *indexPtr1,
     const TkTextIndex *indexPtr2,
     const TkTextTag *tagPtr,
@@ -8423,7 +8833,9 @@ TreeTagNode(
     tagPtr = data->tagPtr;
     add = data->add;
 
-    if (NodeTestAllSegments(nodePtr, tagPtr, add)) {
+    assert(tagPtr);
+
+    if (NodeTestAllSegments(nodePtr, tagPtr->index, add)) {
 	if (!data->firstSegPtr) {
 	    data->firstSegPtr = nodePtr->linePtr->segPtr;
 	}
@@ -8436,7 +8848,7 @@ TreeTagNode(
     if ((segPtr1 ? data->lineNo1 < firstLineNo : data->lineNo1 <= firstLineNo)
 	    && (segPtr2 ? endLineNo < data->lineNo2 : endLineNo <= data->lineNo2)) {
 	const TkSharedText *sharedTextPtr = tagPtr->sharedTextPtr;
-	bool delegateRedraw = redraw && NodeTestAnySegment(nodePtr, tagPtr, add);
+	bool delegateRedraw = redraw && NodeTestAnySegment(nodePtr, tagPtr->index, add);
 	TkTextIndex index1, index2;
 
 	if (delegateRedraw) {
@@ -8589,7 +9001,7 @@ TreeTagNode(
 		myFlags = 0;
 		if (TkTextTagSetTest(linePtr->tagonPtr, tagIndex)) { myFlags |= HAS_TAGON; }
 		if (TkTextTagSetTest(linePtr->tagoffPtr, tagIndex)) { myFlags |= HAS_TAGOFF; }
-		if (myFlags & HAS_TAGON) { nchilds += 1 ; }
+		if (myFlags & HAS_TAGON) { nchilds += 1; }
 		flags |= myFlags;
 	    }
 	}
@@ -8626,17 +9038,25 @@ FindSplitPoints(
     bool needSplit1;
     bool needSplit2;
 
+    assert(tagPtr || !add);
+
     TkTextIndexBackChars(NULL, indexPtr2, 1, &end, COUNT_INDICES);
 
     needSplit1 = (TkBTreeCharTagged(indexPtr1, tagPtr) != add);
     needSplit2 = (TkBTreeCharTagged(&end, tagPtr) != add);
 
     if (!needSplit1 && !needSplit2) {
-	TkTextSearch search;
+	if (tagPtr) {
+	    TkTextSearch search;
 
-	TkBTreeStartSearch(indexPtr1, indexPtr2, tagPtr, &search, SEARCH_EITHER_TAGON_TAGOFF);
-	if (!TkBTreeNextTag(&search)) {
-	    return false; /* whole range is already tagged/untagged */
+	    TkBTreeStartSearch(indexPtr1, indexPtr2, tagPtr, &search, SEARCH_EITHER_TAGON_TAGOFF);
+	    if (!TkBTreeNextTag(&search)) {
+		return false; /* whole range is already tagged/untagged */
+	    }
+	} else {
+	    if (!TkBTreeFindNextTagged(indexPtr1, indexPtr2, NULL)) {
+		return false; /* whole range is already untagged */
+	    }
 	}
     }
 
@@ -8796,6 +9216,20 @@ TkBTreeTag(
 	int rc;
 
 	/*
+	 * TODO:
+	 * Undo information only needs the changed regions, otherwise
+	 * tagging overlapped regions will not properly be undone.
+	 * Probably we should use a changeList like for clearing tags,
+	 * but then merge is a bit problematic.
+	 */
+	
+	/*
+	 * TODO:
+	 * Merge probably should also merge equal ranges with different tags,
+	 * but then we need an array of tags.
+	 */
+
+	/*
 	 * Setup the undo information.
 	 */
 
@@ -8804,7 +9238,7 @@ TkBTreeTag(
 	} else if (data.lastSegPtr->sectionPtr->linePtr->nextPtr) {
 	    data.lastSegPtr = data.lastSegPtr->sectionPtr->linePtr->nextPtr->segPtr;
 	}
-	if (data.lastSegPtr->sectionPtr->linePtr == TkBTreeMyGetLastLine(sharedTextPtr, textPtr)) {
+	if (data.lastSegPtr->sectionPtr->linePtr == GetLastLine(sharedTextPtr, textPtr)) {
 	    data.lastSegPtr = textPtr->endMarker;
 	}
 	TkTextIndexSetSegment(&index1, data.firstSegPtr);
@@ -8855,7 +9289,7 @@ TkBTreeTag(
     CleanupSplitPoint(segPtr2, sharedTextPtr);
     TkBTreeIncrEpoch(sharedTextPtr->tree);
 
-    TK_BTREE_DEBUG(TreeCheck(indexPtr1->tree, CHECK_TAGS));
+    TK_BTREE_DEBUG(TkBTreeCheck(indexPtr1->tree));
 
     return !!data.firstSegPtr;
 }
@@ -8916,7 +9350,7 @@ TestIfAnySegmentIsAffected(
     return tagInfoPtr != sharedTextPtr->emptyTagInfoPtr;
 }
 
-bool
+static bool
 TestIfDisplayGeometryIsAffected(
     TkSharedText *sharedTextPtr,
     const TkTextTagSet *tagInfoPtr,
@@ -8925,7 +9359,7 @@ TestIfDisplayGeometryIsAffected(
     unsigned i;
 
     i = TkTextTagSetFindFirstInIntersection(
-	    tagInfoPtr, discardSelection ? sharedTextPtr->affectGeometryNonSelectionTags
+	    tagInfoPtr, discardSelection ? sharedTextPtr->affectGeometryNonSelTags
 	    : sharedTextPtr->affectGeometryTags);
     return i != TK_TEXT_TAG_SET_NPOS && sharedTextPtr->tagLookup[i]->affectsDisplayGeometry;
 }
@@ -9019,7 +9453,7 @@ ClearTagsFromLine(
 			    if (undoToken->size == data->capacity) {
 				data->capacity = MAX(2*data->capacity, 50);
 				undoToken->changeList = ckrealloc(undoToken->changeList,
-					data->capacity*sizeof(undoToken->changeList[0]));
+					data->capacity * sizeof(undoToken->changeList[0]));
 			    }
 			    tagChangePtr = undoToken->changeList + undoToken->size++;
 			    tagChangePtr->tagInfoPtr = tagInfoPtr;
@@ -9072,7 +9506,7 @@ ClearTagsFromLine(
 	if (redraw
 		&& TkTextTagSetIntersectsBits(myAffectedTagInfoPtr,
 			discardSelection
-			    ? sharedTextPtr->affectDisplayNonSelectionTags
+			    ? sharedTextPtr->affectDisplayNonSelTags
 			    : sharedTextPtr->affectDisplayTags)) {
 	    bool affectsDisplayGeometry = TestIfDisplayGeometryIsAffected(
 		    sharedTextPtr, myAffectedTagInfoPtr, discardSelection);
@@ -9165,13 +9599,14 @@ static void
 ClearTagsFromAllNodes(
     TkSharedText *sharedTextPtr,
     Node *nodePtr,
+    ClearTagsData *data,
     bool discardSelection,
     TkTextTagChangedProc changedProc,
     TkText *textPtr)
 {
     /*
      * This is a very fast way to clear all tags, but this function only works
-     * if all tags in the widget will be cleared.
+     * if all the tags in the widget will be cleared.
      */
 
     if (!TestIfAnySegmentIsAffected(sharedTextPtr, nodePtr->tagonPtr, discardSelection)) {
@@ -9182,7 +9617,7 @@ ClearTagsFromAllNodes(
 	Node *childPtr;
 
 	for (childPtr = nodePtr->childPtr; childPtr; childPtr = childPtr->nextPtr) {
-	    ClearTagsFromAllNodes(sharedTextPtr, childPtr, discardSelection, changedProc, textPtr);
+	    ClearTagsFromAllNodes(sharedTextPtr, childPtr, data, discardSelection, changedProc, textPtr);
 	}
     } else {
 	TkTextLine *linePtr = nodePtr->linePtr;
@@ -9190,7 +9625,7 @@ ClearTagsFromAllNodes(
 
 	for ( ; linePtr != lastPtr; linePtr = linePtr->nextPtr) {
 	    if (TestIfAnySegmentIsAffected(sharedTextPtr, linePtr->tagonPtr, discardSelection)) {
-		ClearTagsFromLine(sharedTextPtr, linePtr, NULL, NULL, NULL, NULL, NULL,
+		ClearTagsFromLine(sharedTextPtr, linePtr, NULL, NULL, NULL, NULL, data,
 			discardSelection, false, changedProc, textPtr);
 	    }
 	}
@@ -9449,8 +9884,7 @@ TkBTreeClearTags(
     TkTextSegment *segPtr1, *segPtr2;
     TkTextTagSet *affectedTagInfoPtr;
     TkTextLine *linePtr1, *linePtr2;
-    TkTextIndex startIndex, endIndex, tmpIndex;
-    TkTextSearch search;
+    TkTextIndex startIndex, endIndex;
     Node *rootPtr;
     bool wholeText;
     unsigned i;
@@ -9480,17 +9914,22 @@ TkBTreeClearTags(
      */
 
     if (linePtr1->parentPtr != linePtr2->parentPtr) {
+	const TkTextSegment *segPtr;
+	TkTextIndex oneBack;
+
+	segPtr = TkBTreeFindNextTagged(indexPtr1, indexPtr2,
+		discardSelection ? sharedTextPtr->selectionTags : NULL);
+	if (!segPtr) {
+	    return NULL;
+	}
 	TkTextIndexClear2(&startIndex, NULL, sharedTextPtr->tree);
+	TkTextIndexSetSegment(&startIndex, (TkTextSegment *) segPtr);
+	TkTextIndexBackChars(textPtr, indexPtr1, 1, &oneBack, COUNT_DISPLAY_INDICES);
+	segPtr = TkBTreeFindPrevTagged(&oneBack, indexPtr1, discardSelection);
+	assert(segPtr);
 	TkTextIndexClear2(&endIndex, NULL, sharedTextPtr->tree);
-	TkTextIndexSetToStartOfLine2(&startIndex, linePtr1);
-	TkTextIndexSetToEndOfLine2(&endIndex, linePtr2);
-	TkBTreeStartSearch(&startIndex, &endIndex, NULL, &search, SEARCH_NEXT_TAGON);
-	TkBTreeNextTag(&search); /* cannot fail */
-	assert(search.segPtr);   /* proof this assumption */
-	tmpIndex = search.curIndex;
-	TkBTreeStartSearchBack(&endIndex, &startIndex, NULL, &search, SEARCH_NEXT_TAGON);
-	startIndex = tmpIndex;
-	endIndex = search.curIndex;
+	TkTextIndexSetSegment(&endIndex, (TkTextSegment *) segPtr);
+	assert(TkTextIndexCompare(&startIndex, &endIndex) <= 0);
     } else {
 	startIndex = *indexPtr1;
 	endIndex = *indexPtr2;
@@ -9518,17 +9957,22 @@ TkBTreeClearTags(
 	if (TkTextIndexIsStartOfText(indexPtr1) && TkTextIndexIsEndOfText(indexPtr2)) {
 	    wholeText = true;
 	} else if (linePtr1->parentPtr != linePtr2->parentPtr) {
-	    TkTextIndex index;
+	    TkTextIndex index1, index2;
 
-	    TkTextIndexClear2(&index, NULL, sharedTextPtr->tree);
-	    TkTextIndexSetSegment(&index, sharedTextPtr->endMarker);
-	    TkBTreeStartSearch(indexPtr2, &index, NULL, &search, SEARCH_NEXT_TAGON);
-	    if (!TkBTreeNextTag(&search)) {
-		TkTextIndexSetSegment(&index, sharedTextPtr->startMarker);
-		TkBTreeStartSearchBack(indexPtr1, &index, NULL, &search, SEARCH_NEXT_TAGON);
-		if (!TkBTreePrevTag(&search)) {
-		    /* Outside of given range no tag is affected, so we can accelerate. */
-		    wholeText = true;
+	    wholeText = true;
+
+	    if (TkTextIndexBackChars(textPtr, indexPtr1, 1, &index1, COUNT_DISPLAY_INDICES)) {
+		TkTextIndexSetupToStartOfText(&index2, textPtr, sharedTextPtr->tree);
+		if (TkBTreeFindPrevTagged(&index1, &index2, discardSelection)) {
+		    wholeText = false;
+		}
+	    }
+
+	    if (wholeText && !TkTextIndexIsEndOfText(indexPtr2)) {
+		TkTextIndexSetupToEndOfText(&index2, textPtr, sharedTextPtr->tree);
+		if (TkBTreeFindNextTagged(indexPtr2, &index2,
+			discardSelection ? sharedTextPtr->selectionTags : NULL)) {
+		    wholeText = false;
 		}
 	    }
 	}
@@ -9538,7 +9982,9 @@ TkBTreeClearTags(
 
     if (!wholeText || CheckIfAnyTagIsAffected(sharedTextPtr, rootPtr->tagonPtr, discardSelection)) {
 	bool anyChanges = wholeText; /* already checked for this case */
+	ClearTagsData data;
 
+	memset(&data, 0, sizeof(data));
 	rootPtr = TkBTreeGetRoot(sharedTextPtr->tree); /* we must start at top level */
 
 	if (TkBTreeHaveElidedSegments(sharedTextPtr)) {
@@ -9548,12 +9994,12 @@ TkBTreeClearTags(
 	if (wholeText) {
 	    assert(!undoInfo);
 	    TagSetAssign(&affectedTagInfoPtr, rootPtr->tagonPtr);
-	    ClearTagsFromAllNodes(sharedTextPtr, rootPtr, discardSelection, changedProc, textPtr);
+	    ClearTagsFromAllNodes(sharedTextPtr, rootPtr, &data, discardSelection, changedProc, textPtr);
 	    ClearTagRoots(sharedTextPtr, affectedTagInfoPtr);
 	    if (TkTextTagSetIntersectsBits(affectedTagInfoPtr, sharedTextPtr->affectDisplayTags)) {
 		/* TODO: probably it's better to search for all affected ranges. */
 		/* TODO: probably it's better to delegate the redraw to ClearTagsFromAllNodes,
-		 *       especially because of affectsDisplayGeometry */
+		 *       especially because of 'affectsDisplayGeometry'. */
 		bool affectsDisplayGeometry = TestIfDisplayGeometryIsAffected(sharedTextPtr,
 			affectedTagInfoPtr, discardSelection);
 		changedProc(sharedTextPtr, textPtr, &startIndex, &endIndex,
@@ -9562,7 +10008,6 @@ TkBTreeClearTags(
 	} else {
 	    TkTextSegment *firstPtr, *lastPtr;
 	    int lineNo1, lineNo2;
-	    ClearTagsData data;
 
 	    if (undoInfo) {
 		undoToken = ckalloc(sizeof(UndoTokenClearTags));
@@ -9584,7 +10029,6 @@ TkBTreeClearTags(
 	    lineNo1 = TkBTreeLinesTo(sharedTextPtr->tree, NULL, linePtr1, NULL);
 	    lineNo2 = (linePtr1 == linePtr2) ?
 		    lineNo1 : TkBTreeLinesTo(sharedTextPtr->tree, NULL, linePtr2, NULL);
-	    memset(&data, 0, sizeof(data));
 
 	    affectedTagInfoPtr = ClearTagsFromNode(sharedTextPtr, rootPtr, 0, lineNo1, lineNo2,
 	    		firstPtr, lastPtr, affectedTagInfoPtr, undoToken, &data, discardSelection,
@@ -9604,8 +10048,7 @@ TkBTreeClearTags(
 		    } else if (data.lastSegPtr->sectionPtr->linePtr->nextPtr) {
 			data.lastSegPtr = data.lastSegPtr->sectionPtr->linePtr->nextPtr->segPtr;
 		    }
-		    if (data.lastSegPtr->sectionPtr->linePtr ==
-			    TkBTreeMyGetLastLine(sharedTextPtr, textPtr)) {
+		    if (data.lastSegPtr->sectionPtr->linePtr == GetLastLine(sharedTextPtr, textPtr)) {
 			data.lastSegPtr = textPtr->endMarker;
 		    }
 		    MakeUndoIndex(sharedTextPtr, &index1, &undoToken->startIndex, GRAVITY_LEFT);
@@ -9619,13 +10062,13 @@ TkBTreeClearTags(
 	if (anyChanges) {
 	    if (!wholeText) {
 		if (!TkTextIndexIsStartOfLine(&startIndex)) {
-		    RecomputeLineTagInfo(linePtr1, sharedTextPtr);
+		    RecomputeLineTagInfo(linePtr1, NULL, sharedTextPtr);
 		    if (linePtr1 == linePtr2) {
 			linePtr2 = NULL;
 		    }
 		}
 		if (linePtr2 && !TkTextIndexIsStartOfLine(&endIndex)) {
-		    RecomputeLineTagInfo(linePtr2, sharedTextPtr);
+		    RecomputeLineTagInfo(linePtr2, NULL, sharedTextPtr);
 		}
 	    }
 
@@ -9658,14 +10101,14 @@ TkBTreeClearTags(
 	    DEBUG_ALLOC(tkTextCountNewUndoToken--);
 	} else {
 	    undoToken->changeList = ckrealloc(undoToken->changeList,
-		    undoToken->size*sizeof(undoToken->changeList[0]));
+		    undoToken->size * sizeof(undoToken->changeList[0]));
 	}
     }
 
     CleanupSplitPoint(segPtr1, sharedTextPtr);
     CleanupSplitPoint(segPtr2, sharedTextPtr);
 
-    TK_BTREE_DEBUG(TreeCheck(indexPtr1->tree, CHECK_TAGS));
+    TK_BTREE_DEBUG(TkBTreeCheck(indexPtr1->tree));
     return chainPtr;
 }
 
@@ -9699,6 +10142,8 @@ FindTagStartInLine(
     const TkTextSegment *lastPtr;
     int byteOffset;
 
+    assert(tagPtr);
+
     if (LineTestAllSegments(linePtr, tagPtr, testTagon)) {
 	if (!segPtr) {
 	    TkTextIndexSetToStartOfLine2(indexPtr, linePtr);
@@ -9712,6 +10157,7 @@ FindTagStartInLine(
     if (segPtr) {
 	byteOffset = TkTextIndexGetByteIndex(indexPtr);
     } else {
+	assert(!searchPtr->textPtr || linePtr != searchPtr->textPtr->startMarker->sectionPtr->linePtr);
 	segPtr = linePtr->segPtr;
 	byteOffset = 0;
     }
@@ -9719,7 +10165,7 @@ FindTagStartInLine(
 
     while (segPtr != lastPtr) {
 	if (segPtr->tagInfoPtr) {
-	    if (TestTag(segPtr->tagInfoPtr, tagPtr) == testTagon) {
+	    if (TkTextTagSetTest(segPtr->tagInfoPtr, tagPtr->index) == testTagon) {
 		TkTextIndexSetByteIndex2(indexPtr, linePtr, byteOffset);
 		return segPtr;
 	    }
@@ -9738,22 +10184,22 @@ FindTagStartInSubtree(
     unsigned endLineNo,
     unsigned lineNumber,
     const Node *excludePtr,	/* we don't want this result */
-    const TkTextTag *tagPtr)
+    unsigned tagIndex)
 {
     assert(nodePtr->level > 0);
 
     for (nodePtr = nodePtr->childPtr; nodePtr; nodePtr = nodePtr->nextPtr) {
 	if (nodePtr != excludePtr && startLineNo < lineNumber + nodePtr->numLines) {
-	    bool testTagon = !LineTestIfToggleIsOpen(nodePtr->linePtr->prevPtr, tagPtr);
+	    bool testTagon = !LineTestIfToggleIsOpen(nodePtr->linePtr->prevPtr, tagIndex);
 
-	    if (NodeTestToggleFwd(nodePtr, tagPtr, testTagon)) {
+	    if (NodeTestToggleFwd(nodePtr, tagIndex, testTagon)) {
 		const Node *nPtr;
 
 		if (nodePtr->level == 0) {
 		    return nodePtr;
 		}
 		nPtr = FindTagStartInSubtree(
-			nodePtr, startLineNo, endLineNo, lineNumber, excludePtr, tagPtr);
+			nodePtr, startLineNo, endLineNo, lineNumber, excludePtr, tagIndex);
 		if (nPtr) {
 		    return nPtr;
 		}
@@ -9773,7 +10219,6 @@ FindTagStart(
     const TkTextIndex *stopIndex)
 {
     TkTextIndex *indexPtr = &searchPtr->curIndex;
-    const TkSharedText *sharedTextPtr = TkTextIndexGetShared(indexPtr);
     const TkTextTag *tagPtr = searchPtr->tagPtr;
     TkTextLine *linePtr;
     const TkTextLine *lastLinePtr;
@@ -9785,32 +10230,33 @@ FindTagStart(
     unsigned startLineNumber;
     unsigned endLineNumber;
     unsigned lineNumber;
+    unsigned tagIndex;
 
-    if (tagPtr) {
-	if (!tagPtr->rootPtr) {
-	    return NULL;
-	}
-    } else {
-	if (TkBTreeGetRoot(sharedTextPtr->tree)->tagonPtr == sharedTextPtr->emptyTagInfoPtr) {
-	    return NULL;
-	}
+    assert(tagPtr);
+
+    if (!tagPtr->rootPtr) {
+	return NULL;
     }
 
+    tagIndex = tagPtr->index;
     linePtr = TkTextIndexGetLine(indexPtr);
     lastLinePtr = searchPtr->lastLinePtr;
-    testTagon = !LineTestIfToggleIsOpen(linePtr->prevPtr, tagPtr);
+    testTagon = !LineTestIfToggleIsOpen(linePtr->prevPtr, tagIndex);
 
-    if (LineTestToggleFwd(linePtr, tagPtr, testTagon)) {
+    if (LineTestToggleFwd(linePtr, tagIndex, testTagon)) {
 	TkTextSegment *sPtr;
 
 	segPtr = TkTextIndexGetContentSegment(&searchPtr->curIndex, NULL);
 
-	if (!TestTag(testTagon ? linePtr->tagoffPtr : linePtr->tagonPtr, tagPtr)) {
+	if (!TkTextTagSetTest(testTagon ? linePtr->tagoffPtr : linePtr->tagonPtr, tagIndex)) {
 	    return segPtr;
 	}
-	for (sPtr = linePtr->segPtr; sPtr != segPtr; sPtr = sPtr->nextPtr) {
-	    if (sPtr->tagInfoPtr && TestTag(sPtr->tagInfoPtr, tagPtr) == testTagon) {
-		testTagon = !testTagon;
+	if (searchPtr->mode == SEARCH_EITHER_TAGON_TAGOFF) {
+	    sPtr = GetFirstTagInfoSegment(searchPtr->textPtr, linePtr);
+	    for ( ; sPtr != segPtr; sPtr = sPtr->nextPtr) {
+		if (sPtr->tagInfoPtr && TkTextTagSetTest(sPtr->tagInfoPtr, tagIndex) == testTagon) {
+		    testTagon = !testTagon;
+		}
 	    }
 	}
 	if ((segPtr = FindTagStartInLine(searchPtr, linePtr, segPtr, testTagon))) {
@@ -9819,17 +10265,17 @@ FindTagStart(
 	if (linePtr == lastLinePtr) {
 	    return NULL;
 	}
-	testTagon = !LineTestIfToggleIsOpen(linePtr, tagPtr);
+	testTagon = !LineTestIfToggleIsOpen(linePtr, tagIndex);
     } else if (linePtr == lastLinePtr) {
 	return NULL;
     }
 
     nodePtr = linePtr->parentPtr;
-    if (TestTag(testTagon ? nodePtr->tagonPtr : nodePtr->tagoffPtr, tagPtr)) {
+    if (TkTextTagSetTest(testTagon ? nodePtr->tagonPtr : nodePtr->tagoffPtr, tagIndex)) {
 	lastPtr = nodePtr->lastPtr->nextPtr;
 
 	while ((linePtr = linePtr->nextPtr) != lastPtr) {
-	    if (LineTestToggleFwd(linePtr, tagPtr, testTagon)) {
+	    if (LineTestToggleFwd(linePtr, tagIndex, testTagon)) {
 		return FindTagStartInLine(searchPtr, linePtr, NULL, testTagon);
 	    }
 	    if (linePtr == lastLinePtr) {
@@ -9838,7 +10284,7 @@ FindTagStart(
 	}
     }
 
-    rootPtr = tagPtr ? tagPtr->rootPtr : TkBTreeGetRoot(sharedTextPtr->tree);
+    rootPtr = tagPtr->rootPtr;
     if (rootPtr == nodePtr) {
 	if (!nodePtr->nextPtr) {
 	    Node *parentPtr = nodePtr->parentPtr;
@@ -9875,7 +10321,7 @@ FindTagStart(
 	nodePtr = rootPtr;
     } else {
 	nodePtr = FindTagStartInSubtree(
-		rootPtr, startLineNumber, endLineNumber, lineNumber, nodePtr, tagPtr);
+		rootPtr, startLineNumber, endLineNumber, lineNumber, nodePtr, tagPtr->index);
 	if (!nodePtr) {
 	    return NULL;
 	}
@@ -9886,10 +10332,10 @@ FindTagStart(
     assert(lineNumber >= startLineNumber);
 
     lastPtr = nodePtr->lastPtr->nextPtr;
-    testTagon = !LineTestIfToggleIsOpen(linePtr->prevPtr, tagPtr);
+    testTagon = !LineTestIfToggleIsOpen(linePtr->prevPtr, tagIndex);
 
     for (linePtr = nodePtr->linePtr; linePtr != lastPtr; linePtr = linePtr->nextPtr) {
-	if (LineTestToggleFwd(linePtr, tagPtr, testTagon)) {
+	if (LineTestToggleFwd(linePtr, tagIndex, testTagon)) {
 	    return FindTagStartInLine(searchPtr, linePtr, NULL, testTagon);
 	}
 	if (linePtr == lastLinePtr) {
@@ -9923,8 +10369,7 @@ HasLeftNode(
     const Node *nodePtr)
 {
     assert(nodePtr);
-    assert(nodePtr->parentPtr);
-    return nodePtr->parentPtr->childPtr != nodePtr;
+    return nodePtr->parentPtr && nodePtr->parentPtr->childPtr != nodePtr;
 }
 
 static TkTextSegment *
@@ -9940,6 +10385,8 @@ FindTagEndInLine(
     TkTextSegment *firstPtr;
     TkTextSegment *prevPtr;
     int byteOffset, offset = 0;
+
+    assert(tagPtr);
 
     if (LineTestAllSegments(linePtr, tagPtr, testTagon)) {
 	if (!segPtr || linePtr != searchPtr->lastLinePtr) {
@@ -9957,6 +10404,9 @@ FindTagEndInLine(
 
     if (segPtr) {
 	byteOffset = TkTextIndexGetByteIndex(indexPtr);
+    } else if (searchPtr->textPtr && linePtr == searchPtr->textPtr->endMarker->sectionPtr->linePtr) {
+	segPtr = searchPtr->textPtr->endMarker;
+        byteOffset = TkTextSegToIndex(segPtr);
     } else {
 	segPtr = linePtr->lastPtr;
 	byteOffset = linePtr->size - segPtr->size;
@@ -9966,10 +10416,13 @@ FindTagEndInLine(
 
     while (segPtr) {
 	if (segPtr->tagInfoPtr) {
-	    if (TestTag(segPtr->tagInfoPtr, tagPtr)) {
+	    if (TkTextTagSetTest(segPtr->tagInfoPtr, tagPtr->index)) {
 		if (prevPtr) {
 		    TkTextIndexSetByteIndex2(indexPtr, linePtr, offset);
 		    return prevPtr;
+		}
+		if (testTagon) {
+		    prevPtr = segPtr;
 		}
 		firstPtr = segPtr;
 	    } else if (firstPtr) {
@@ -9986,11 +10439,11 @@ FindTagEndInLine(
 	if ((segPtr = segPtr->prevPtr)) {
 	    byteOffset -= segPtr->size;
 	}
-    };
+    }
 
     if (firstPtr
-	    && firstPtr == GetFirstTagInfoSegment(linePtr)
-	    && !LineTestIfToggleIsOpen(linePtr->prevPtr, tagPtr)) {
+	    && firstPtr == GetFirstTagInfoSegment(searchPtr->textPtr, linePtr)
+	    && !LineTestIfToggleIsOpen(linePtr->prevPtr, tagPtr->index)) {
 	TkTextIndexSetByteIndex2(&searchPtr->curIndex, linePtr, offset);
 	return firstPtr;
     }
@@ -10005,7 +10458,7 @@ FindTagEndInSubtree(
     unsigned endLineNo,		/* end of search interval */
     unsigned lineNumber,	/* line number of last line in this node */
     const Node *excludePtr,	/* we don't want this result */
-    const TkTextTag *tagPtr)
+    unsigned tagIndex)
 {
     const Node *stack[MAX_CHILDREN];
     unsigned count = 0;
@@ -10027,16 +10480,16 @@ FindTagEndInSubtree(
     while (count > 0) {
 	nodePtr = stack[--count];
 	if (nodePtr != excludePtr && startLineNo >= lineNumber - nodePtr->numLines + 1) {
-	    bool testTagon = !LineTestIfToggleIsClosed(nodePtr->lastPtr->nextPtr, tagPtr);
+	    bool testTagon = !LineTestIfToggleIsClosed(nodePtr->lastPtr->nextPtr, tagIndex);
 
-	    if (NodeTestToggleBack(nodePtr, tagPtr, testTagon)) {
+	    if (NodeTestToggleBack(nodePtr, tagIndex, testTagon)) {
 		const Node *nPtr;
 
 		if (nodePtr->level == 0) {
 		    return nodePtr;
 		}
 		nPtr = FindTagEndInSubtree(
-			nodePtr, startLineNo, endLineNo, lineNumber, excludePtr, tagPtr);
+			nodePtr, startLineNo, endLineNo, lineNumber, excludePtr, tagIndex);
 		if (nPtr) {
 		    return nPtr;
 		}
@@ -10056,7 +10509,6 @@ FindTagEnd(
     const TkTextIndex *stopIndex)
 {
     TkTextIndex *indexPtr = &searchPtr->curIndex;
-    const TkSharedText *sharedTextPtr = TkTextIndexGetShared(indexPtr);
     const TkTextTag *tagPtr = searchPtr->tagPtr;
     TkTextLine *linePtr;
     const TkTextLine *lastLinePtr, *lastPtr;
@@ -10067,32 +10519,30 @@ FindTagEnd(
     unsigned startLineNumber;
     unsigned endLineNumber;
     unsigned lineNumber;
+    unsigned tagIndex;
 
-    if (tagPtr) {
-	if (!tagPtr->rootPtr) {
-	    return NULL;
-	}
-    } else {
-	if (TkBTreeGetRoot(sharedTextPtr->tree)->tagonPtr == sharedTextPtr->emptyTagInfoPtr) {
-	    return NULL;
-	}
+    assert(tagPtr);
+
+    if (!tagPtr->rootPtr) {
+	return NULL;
     }
 
+    tagIndex = tagPtr->index;
     linePtr = TkTextIndexGetLine(indexPtr);
     lastLinePtr = searchPtr->lastLinePtr;
-    testTagon = !LineTestIfToggleIsClosed(linePtr->nextPtr, tagPtr);
+    testTagon = !LineTestIfToggleIsClosed(linePtr->nextPtr, tagIndex);
 
     /*
      * Here testTagon == true means: test for the segment which starts the tagged region.
      */
 
-    if (LineTestToggleBack(linePtr, tagPtr, testTagon)) {
+    if (LineTestToggleBack(linePtr, tagIndex, testTagon)) {
 	TkTextSegment *sPtr;
 
 	segPtr = TkTextIndexGetContentSegment(&searchPtr->curIndex, NULL);
 
 	for (sPtr = linePtr->lastPtr; sPtr != segPtr; sPtr = sPtr->prevPtr) {
-	    if (sPtr->tagInfoPtr && TestTag(sPtr->tagInfoPtr, tagPtr) != testTagon) {
+	    if (sPtr->tagInfoPtr && TkTextTagSetTest(sPtr->tagInfoPtr, tagIndex) != testTagon) {
 		testTagon = !testTagon;
 	    }
 	}
@@ -10102,17 +10552,17 @@ FindTagEnd(
 	if (linePtr == lastLinePtr) {
 	    return NULL;
 	}
-	testTagon = !LineTestIfToggleIsClosed(linePtr, tagPtr);
+	testTagon = !LineTestIfToggleIsClosed(linePtr, tagIndex);
     } else if (linePtr == lastLinePtr) {
 	return NULL;
     }
 
     nodePtr = linePtr->parentPtr;
-    if (TestTag(testTagon ? nodePtr->tagonPtr : nodePtr->tagoffPtr, tagPtr)) {
+    if (TkTextTagSetTest(testTagon ? nodePtr->tagonPtr : nodePtr->tagoffPtr, tagIndex)) {
 	lastPtr = nodePtr->linePtr->prevPtr;
 
 	while ((linePtr = linePtr->prevPtr) != lastPtr) {
-	    if (LineTestToggleBack(linePtr, tagPtr, testTagon)) {
+	    if (LineTestToggleBack(linePtr, tagIndex, testTagon)) {
 		return FindTagEndInLine(searchPtr, linePtr, NULL, testTagon);
 	    }
 	    if (linePtr == lastLinePtr) {
@@ -10121,7 +10571,7 @@ FindTagEnd(
 	}
     }
 
-    rootPtr = tagPtr ? tagPtr->rootPtr : TkBTreeGetRoot(sharedTextPtr->tree);
+    rootPtr = tagPtr->rootPtr;
     if (rootPtr == nodePtr) {
 	const Node *nPtr, *prevPtr = NULL;
 
@@ -10160,8 +10610,8 @@ FindTagEnd(
     if (rootPtr->level == 0) {
 	nodePtr = rootPtr;
     } else {
-	nodePtr = FindTagEndInSubtree(
-		rootPtr, startLineNumber, endLineNumber, lineNumber, nodePtr, tagPtr);
+	nodePtr = FindTagEndInSubtree(rootPtr, startLineNumber, endLineNumber,
+		lineNumber, nodePtr, tagPtr->index);
 	if (!nodePtr) {
 	    return NULL;
 	}
@@ -10171,7 +10621,7 @@ FindTagEnd(
     assert(nodePtr->level == 0);
     assert(lineNumber <= startLineNumber);
 
-    if (!testTagon && NodeTestAllSegments(nodePtr, tagPtr, true)) {
+    if (!testTagon && NodeTestAllSegments(nodePtr, tagIndex, true)) {
 	linePtr = nodePtr->lastPtr;
 	if (linePtr->nextPtr) { linePtr = linePtr->nextPtr; }
 	TkTextIndexSetToStartOfLine2(&searchPtr->curIndex, linePtr);
@@ -10179,10 +10629,10 @@ FindTagEnd(
     }
 
     lastPtr = nodePtr->linePtr->prevPtr;
-    testTagon = !LineTestIfToggleIsClosed(linePtr, tagPtr);
+    testTagon = !LineTestIfToggleIsClosed(linePtr, tagIndex);
 
     for (linePtr = nodePtr->lastPtr; linePtr != lastPtr; linePtr = linePtr->prevPtr) {
-	if (LineTestToggleBack(linePtr, tagPtr, testTagon)) {
+	if (LineTestToggleBack(linePtr, tagIndex, testTagon)) {
 	    return FindTagEndInLine(searchPtr, linePtr, NULL, testTagon);
 	}
 	if (linePtr == lastLinePtr) {
@@ -10216,6 +10666,35 @@ FindTagEnd(
  *----------------------------------------------------------------------
  */
 
+static bool
+TestPrevSegmentIsTagged(
+    const TkTextIndex *indexPtr,
+    const TkTextTag *tagPtr)
+{
+    const TkTextLine *linePtr = TkTextIndexGetLine(indexPtr);
+    const TkTextLine *startLinePtr = indexPtr->textPtr ? TkBTreeGetStartLine(indexPtr->textPtr) : NULL;
+    const TkTextSegment *segPtr;
+
+    if (linePtr == startLinePtr) {
+	if (!(segPtr = GetPrevTagInfoSegment(indexPtr->textPtr->startMarker))) {
+	    return false;
+	}
+    } else if (linePtr->prevPtr) {
+	const TkTextLine *endLinePtr = indexPtr->textPtr ? TkBTreeGetStartLine(indexPtr->textPtr) : NULL;
+
+	if (linePtr->prevPtr == endLinePtr) {
+	    if (TkTextIsDeadPeer(indexPtr->textPtr)) {
+		return false;
+	    }
+	    segPtr = GetPrevTagInfoSegment(indexPtr->textPtr->endMarker);
+	} else {
+	    segPtr = linePtr->prevPtr->lastPtr;
+	}
+    }
+
+    return TkTextTagSetTest(segPtr->tagInfoPtr, tagPtr->index);
+}
+
 void
 TkBTreeStartSearch(
     const TkTextIndex *indexPtr1,
@@ -10223,18 +10702,21 @@ TkBTreeStartSearch(
     const TkTextIndex *indexPtr2,
     				/* Search stops here. Tag toggles at this position *will* not be
 				 * returned. */
-    const TkTextTag *tagPtr,	/* Tag to search for, can be NULL when seaching for any tag. */
+    const TkTextTag *tagPtr,	/* Tag to search for. */
     TkTextSearch *searchPtr,	/* Where to store information about search's progress. */
     TkTextSearchMode mode)	/* The search mode, see definition of TkTextSearchMode. */
 {
     TkTextSegment *segPtr;
     int offset, nlines, lineNo;
 
+    assert(tagPtr);
+
     /*
      * Find the segment that contains the first toggle for the tag. This may
      * become the starting point in the search.
      */
 
+    searchPtr->textPtr = indexPtr1->textPtr;
     searchPtr->curIndex = *indexPtr1;
     searchPtr->tagPtr = tagPtr;
     searchPtr->segPtr = NULL;
@@ -10264,11 +10746,17 @@ TkBTreeStartSearch(
 		return;
 	    }
 	    TkTextIndexSetToStartOfLine2(&searchPtr->curIndex, linePtr);
-	    segPtr = GetFirstTagInfoSegment(linePtr);
+	    segPtr = GetFirstTagInfoSegment(NULL, linePtr);
 	}
     }
 
-    searchPtr->lastPtr = TkTextIndexGetContentSegment(indexPtr2, &offset);
+    if (indexPtr2->textPtr && TkTextIndexIsEndOfText(indexPtr2)) {
+	/* In this case indexPtr2 points to start of last line, but we need end marker. */
+	searchPtr->lastPtr = indexPtr2->textPtr->endMarker;
+	offset = 0;
+    } else {
+	searchPtr->lastPtr = TkTextIndexGetContentSegment(indexPtr2, &offset);
+    }
     searchPtr->lastLinePtr = searchPtr->lastPtr->sectionPtr->linePtr;
     if (offset > 0) {
 	searchPtr->lastPtr = searchPtr->lastPtr->nextPtr;
@@ -10282,7 +10770,7 @@ TkBTreeStartSearch(
 
     if (mode == SEARCH_NEXT_TAGON
 	    && TkTextIndexIsStartOfText(indexPtr1)
-	    && SegmentTestTag(segPtr, tagPtr)) {
+	    && TkTextTagSetTest(segPtr->tagInfoPtr, tagPtr->index)) {
 	/*
 	 * We must find start of text.
 	 */
@@ -10291,7 +10779,7 @@ TkBTreeStartSearch(
     } else if (!(searchPtr->resultPtr = FindTagStart(searchPtr, indexPtr2))) {
 	if (mode == SEARCH_EITHER_TAGON_TAGOFF
 	    	&& searchPtr->endOfText
-		&& LineTestIfToggleIsOpen(TkTextIndexGetLine(indexPtr2)->prevPtr, tagPtr)) {
+		&& TestPrevSegmentIsTagged(indexPtr2, tagPtr)) {
 	    /*
 	     * We must find end of text.
 	     */
@@ -10302,7 +10790,7 @@ TkBTreeStartSearch(
 	    searchPtr->tagon = false;
 	}
 	return;
-    } else if (!SegmentTestTag(searchPtr->resultPtr, tagPtr)) {
+    } else if (!TkTextTagSetTest(searchPtr->resultPtr->tagInfoPtr, tagPtr->index)) {
 	searchPtr->tagon = false;
 	if (mode == SEARCH_NEXT_TAGON) {
 	    /*
@@ -10351,22 +10839,26 @@ void
 TkBTreeStartSearchBack(
     const TkTextIndex *indexPtr1,
 				/* Search starts here. Tag toggles at this position will not be
-				 * returned. */
+				 * returned iff mode is SEARCH_NEXT_TAGON. */
     const TkTextIndex *indexPtr2,
     				/* Search stops here. Tag toggles at this position *will* be returned. */
-    const TkTextTag *tagPtr,	/* Tag to search for, can be NULL when seaching for any tag. */
+    const TkTextTag *tagPtr,	/* Tag to search for. */
     TkTextSearch *searchPtr,	/* Where to store information about search's progress. */
     TkTextSearchMode mode)	/* The search mode, see definition of TkTextSearchMode. */
 {
     TkTextSegment *segPtr;
+    TkTextSegment *lastPtr;
     int offset;
     int lineNo;
+
+    assert(tagPtr);
 
     /*
      * Find the segment that contains the last toggle for the tag. This may
      * become the starting point in the search.
      */
 
+    searchPtr->textPtr = indexPtr1->textPtr;
     searchPtr->curIndex = *indexPtr1;
     searchPtr->tagPtr = tagPtr;
     searchPtr->segPtr = NULL;
@@ -10380,7 +10872,17 @@ TkBTreeStartSearchBack(
 	return;
     }
 
-    segPtr = TkTextIndexGetContentSegment(indexPtr1, &offset);
+    if (indexPtr1->textPtr && TkTextIndexIsEndOfText(indexPtr1)) {
+	/*
+	 * In this case indexPtr2 points to start of last line, but we need
+	 * next content segment after end marker.
+	 */
+	segPtr = GetNextTagInfoSegment(indexPtr1->textPtr->endMarker);
+	offset = 0;
+    } else {
+	segPtr = TkTextIndexGetContentSegment(indexPtr1, &offset);
+    }
+
     if (offset == 0) {
 	segPtr = GetPrevTagInfoSegment(segPtr);
 	TkTextIndexSetSegment(&searchPtr->curIndex, segPtr);
@@ -10388,7 +10890,7 @@ TkBTreeStartSearchBack(
 	TkTextIndexAddToByteIndex(&searchPtr->curIndex, -offset);
     }
 
-    searchPtr->lastPtr = TkTextIndexGetContentSegment(indexPtr2, &offset);
+    lastPtr = searchPtr->lastPtr = TkTextIndexGetContentSegment(indexPtr2, &offset);
     if (offset == 0) {
 	if (searchPtr->lastPtr->prevPtr) {
 	    searchPtr->lastPtr = searchPtr->lastPtr->prevPtr;
@@ -10406,18 +10908,18 @@ TkBTreeStartSearchBack(
 
     if (mode == SEARCH_EITHER_TAGON_TAGOFF
 	    && TkTextIndexIsEndOfText(indexPtr1)
-	    && TkTextIndexGetLine(indexPtr1)->prevPtr
-	    && SegmentTestTag(TkTextIndexGetLine(indexPtr1)->prevPtr->lastPtr, tagPtr)) {
+	    && TestPrevSegmentIsTagged(indexPtr1, tagPtr)) {
 	/*
-	 * We must find end of text, return second last newline.
+	 * We must find end of text.
 	 */
-	TkTextIndexSetupToEndOfText(&searchPtr->curIndex, indexPtr1->textPtr, indexPtr1->tree);
-	searchPtr->segPtr = TkTextIndexGetContentSegment(&searchPtr->curIndex, NULL);
+	searchPtr->curIndex = *indexPtr1;
+	searchPtr->segPtr = TkTextIndexGetContentSegment(indexPtr1, NULL);
 	searchPtr->resultPtr = segPtr;
 	searchPtr->tagon = false;
     } else if (!(searchPtr->resultPtr = FindTagEnd(searchPtr, indexPtr2))) {
 	if (searchPtr->endOfText
-		&& LineTestIfToggleIsOpen(TkTextIndexGetLine(indexPtr2)->prevPtr, tagPtr)) {
+		&& TkTextTagSetTest(lastPtr->tagInfoPtr, tagPtr->index)
+		&& TestPrevSegmentIsTagged(indexPtr2, tagPtr)) {
 	    /*
 	     * We must find start of text.
 	     */
@@ -10428,7 +10930,7 @@ TkBTreeStartSearchBack(
 	    searchPtr->tagon = true;
 	}
 	return;
-    } else if (!SegmentTestTag(searchPtr->resultPtr, tagPtr)) {
+    } else if (!TkTextTagSetTest(searchPtr->resultPtr->tagInfoPtr, tagPtr->index)) {
 	searchPtr->tagon = false;
 	if (mode == SEARCH_NEXT_TAGON) {
 	    /*
@@ -10512,6 +11014,8 @@ NextTagFindNextNode(
     const Node *parentPtr;
     const TkTextTag *tagPtr = searchPtr->tagPtr;
 
+    assert(tagPtr);
+
     /*
      * Search forward across and up through the B-tree's node hierarchy looking for the
      * next node that has a relevant tag transition somewhere in its subtree. Be sure to
@@ -10521,7 +11025,7 @@ NextTagFindNextNode(
     parentPtr = nodePtr->parentPtr;
 
     while (true) {
-	if (!parentPtr || (tagPtr && nodePtr == tagPtr->rootPtr)) {
+	if (!parentPtr || nodePtr == tagPtr->rootPtr) {
 	    if (tagon) {
 		return NULL;
 	    }
@@ -10531,7 +11035,7 @@ NextTagFindNextNode(
 	if (!(nodePtr = nodePtr->nextPtr)) {
 	    nodePtr = parentPtr;
 	    parentPtr = nodePtr->parentPtr;
-	} else if (NodeTestToggleFwd(nodePtr, tagPtr, tagon)) {
+	} else if (NodeTestToggleFwd(nodePtr, tagPtr->index, tagon)) {
 	    return nodePtr;
 	} else if ((searchPtr->linesLeft -= nodePtr->numLines) <= 0) {
 	    return NULL;
@@ -10552,6 +11056,7 @@ NextTag(
     TkTextLine *linePtr;
     bool tagon;
 
+    assert(searchPtr->tagPtr);
     assert(searchPtr->segPtr);
 
     TkTextIndexAddToByteIndex(&searchPtr->curIndex, searchPtr->segPtr->size);
@@ -10578,18 +11083,24 @@ NextTag(
 
 	    wholeLine = LineTestAllSegments(linePtr, tagPtr, tagon);
 
-	    for ( ; segPtr; segPtr = segPtr->nextPtr) {
+	    while (segPtr) {
 		if (segPtr == searchPtr->lastPtr) {
 		    searchPtr->linesLeft = 0;
 		    return false;
 		}
 		if (segPtr->tagInfoPtr) {
-		    if (wholeLine || TestTag(segPtr->tagInfoPtr, tagPtr) == tagon) {
+		    if (wholeLine || TkTextTagSetTest(segPtr->tagInfoPtr, tagPtr->index) == tagon) {
 			searchPtr->segPtr = segPtr;
 			searchPtr->tagon = tagon;
 			return true;
 		    }
-		    TkTextIndexAddToByteIndex(&searchPtr->curIndex, segPtr->size);
+		    if (!TkTextIndexAddToByteIndex(&searchPtr->curIndex, segPtr->size)) {
+			segPtr = TkTextIndexGetFirstSegment(&searchPtr->curIndex, NULL);
+		    } else {
+			segPtr = segPtr->nextPtr;
+		    }
+		} else {
+		    segPtr = segPtr->nextPtr;
 		}
 	    }
 	}
@@ -10607,7 +11118,7 @@ NextTag(
 		return false;
 	    }
 	    linePtr = linePtr->nextPtr;
-	} while (linePtr != lastPtr && !LineTestToggleFwd(linePtr, tagPtr, tagon));
+	} while (linePtr != lastPtr && !LineTestToggleFwd(linePtr, tagPtr->index, tagon));
 
 	if (linePtr != lastPtr) {
 	    segPtr = linePtr->segPtr;
@@ -10636,7 +11147,7 @@ NextTag(
 
 	while (nodePtr->level > 0) {
 	    nodePtr = nodePtr->childPtr;
-	    while (!NodeTestToggleFwd(nodePtr, tagPtr, tagon)) {
+	    while (!NodeTestToggleFwd(nodePtr, tagPtr->index, tagon)) {
 		if ((searchPtr->linesLeft -= nodePtr->numLines) <= 0) {
 		    return false;
 		}
@@ -10657,7 +11168,7 @@ NextTag(
 	 * Now search through the lines.
 	 */
 	
-	while (!LineTestToggleFwd(linePtr, tagPtr, tagon)) {
+	while (!LineTestToggleFwd(linePtr, tagPtr->index, tagon)) {
 	    if (--searchPtr->linesLeft == 0) {
 		return false;
 	    }
@@ -10692,14 +11203,12 @@ TkBTreeNextTag(
 	return true;
     }
 
-    if (searchPtr->endOfText
-	    && (searchPtr->mode == SEARCH_EITHER_TAGON_TAGOFF
-		|| (searchPtr->mode == SEARCH_NEXT_TAGON && searchPtr->tagon))) {
-	/* we must find end of text */
+    if (searchPtr->endOfText && searchPtr->tagon) {
+	/* we must find end of text in this case */
 	TkTextIndexSetupToEndOfText(&searchPtr->curIndex,
 		searchPtr->curIndex.textPtr, searchPtr->curIndex.tree);
 	searchPtr->segPtr = TkTextIndexGetContentSegment(&searchPtr->curIndex, NULL);
-	searchPtr->tagon = !searchPtr->tagon;
+	searchPtr->tagon = false;
 	return true;
     }
 
@@ -10741,18 +11250,20 @@ PrevTagFindPrevNode(
     const Node *parentPtr;
     const Node *rootPtr;
 
+    assert(tagPtr);
+
     /*
      * Search backward across and up through the B-tree's node hierarchy looking for the
      * next node that has a relevant tag transition somewhere in its subtree. Be sure to
      * update linesLeft as we skip over large chunks of lines.
      */
 
-    if (tagPtr && nodePtr == tagPtr->rootPtr) {
+    if (nodePtr == tagPtr->rootPtr) {
 	return NULL;
     }
 
     parentPtr = nodePtr->parentPtr;
-    rootPtr = tagPtr ? tagPtr->rootPtr : NULL;
+    rootPtr = tagPtr->rootPtr;
 
     do {
 	const Node *nodeStack[MAX_CHILDREN];
@@ -10769,7 +11280,7 @@ PrevTagFindPrevNode(
 	    nodeStack[idx++] = nodePtr;
 	}
 	for (--idx; idx >= 0; --idx) {
-	    if (NodeTestToggleBack(nodePtr = nodeStack[idx], tagPtr, tagon)) {
+	    if (NodeTestToggleBack(nodePtr = nodeStack[idx], tagPtr->index, tagon)) {
 		return nodePtr;
 	    }
 	    if ((searchPtr->linesLeft -= nodePtr->numLines) <= 0) {
@@ -10794,6 +11305,7 @@ PrevTag(
     const Node *nodePtr;
     bool tagon;
 
+    assert(searchPtr->tagPtr);
     assert(searchPtr->segPtr);
 
     tagPtr = searchPtr->tagPtr;
@@ -10842,7 +11354,7 @@ PrevTag(
 
 	    while (true) {
 		if (segPtr->tagInfoPtr) {
-		    if (TestTag(segPtr->tagInfoPtr, tagPtr)) {
+		    if (TkTextTagSetTest(segPtr->tagInfoPtr, tagPtr->index)) {
 			if (prevPtr) {
 			    TkTextIndexSetByteIndex(&searchPtr->curIndex, offset);
 			    searchPtr->tagon = tagon;
@@ -10861,8 +11373,8 @@ PrevTag(
 		}
 		if (segPtr == searchPtr->lastPtr) {
 		    if (firstPtr
-			    && firstPtr == GetFirstTagInfoSegment(linePtr)
-			    && !LineTestIfToggleIsOpen(linePtr->prevPtr, tagPtr)) {
+			    && firstPtr == GetFirstTagInfoSegment(searchPtr->textPtr, linePtr)
+			    && !LineTestIfToggleIsOpen(linePtr->prevPtr, tagPtr->index)) {
 			TkTextIndexSetByteIndex(&searchPtr->curIndex, offset);
 			searchPtr->segPtr = firstPtr;
 			searchPtr->tagon = tagon;
@@ -10876,7 +11388,7 @@ PrevTag(
 		}
 		byteOffset -= segPtr->size;
 	    }
-	    if (firstPtr && !LineTestIfToggleIsOpen(linePtr->prevPtr, tagPtr)) {
+	    if (firstPtr && !LineTestIfToggleIsOpen(linePtr->prevPtr, tagPtr->index)) {
 		TkTextIndexSetByteIndex(&searchPtr->curIndex, offset);
 		searchPtr->segPtr = firstPtr;
 		searchPtr->tagon = tagon;
@@ -10899,7 +11411,7 @@ PrevTag(
 		return false;
 	    }
 	    linePtr = linePtr->prevPtr;
-	} while (linePtr != lastPtr && !LineTestToggleBack(linePtr, tagPtr, tagon));
+	} while (linePtr != lastPtr && !LineTestToggleBack(linePtr, tagPtr->index, tagon));
 
 	if (linePtr != lastPtr) {
 	    TkTextIndexSetSegment(&searchPtr->curIndex, segPtr = linePtr->lastPtr);
@@ -10926,7 +11438,7 @@ PrevTag(
 	    }
 	    assert(idx > 0);
 	    nodePtr = nodeStack[--idx];
-	    while (!NodeTestToggleBack(nodePtr, tagPtr, tagon)) {
+	    while (!NodeTestToggleBack(nodePtr, tagPtr->index, tagon)) {
 		if ((searchPtr->linesLeft -= nodePtr->numLines) <= 0) {
 		    return false;
 		}
@@ -10946,7 +11458,7 @@ PrevTag(
 	 * Now search through the lines.
 	 */
 	
-	while (!LineTestToggleBack(linePtr, tagPtr, tagon)) {
+	while (!LineTestToggleBack(linePtr, tagPtr->index, tagon)) {
 	    if (--searchPtr->linesLeft == 0) {
 		return false;
 	    }
@@ -10980,19 +11492,505 @@ TkBTreePrevTag(
 	return true;
     }
 
-    if (searchPtr->endOfText
-	    && (searchPtr->mode == SEARCH_EITHER_TAGON_TAGOFF
-		|| (searchPtr->mode == SEARCH_NEXT_TAGON && !searchPtr->tagon))) {
-	/* we must find start of text */
+    if (searchPtr->endOfText && !searchPtr->tagon) {
+	/* we must find start of text in this case */
 	TkTextIndexSetupToStartOfText(&searchPtr->curIndex,
 		searchPtr->curIndex.textPtr, searchPtr->curIndex.tree);
 	searchPtr->segPtr = TkTextIndexGetContentSegment(&searchPtr->curIndex, NULL);
 	searchPtr->tagon = true;
-	searchPtr->tagon = !searchPtr->tagon;
 	return true;
     }
 
     return false;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkBTreeFindNextTagged --
+ *
+ *	Find next segment which contains any tag inside given range.
+ *
+ * Results:
+ *	The return value is the next segment containing any tag.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+TkTextSegment *
+FindNextTaggedSegInLine(
+    TkTextSegment *segPtr,
+    const TkTextSegment *lastPtr,
+    const TkBitField *discardTags)
+{
+    if (lastPtr->sectionPtr->linePtr != segPtr->sectionPtr->linePtr) {
+	lastPtr = NULL;
+    }
+
+    for ( ; segPtr != lastPtr; segPtr = segPtr->nextPtr) {
+	const TkTextTagSet *tagInfoPtr = segPtr->tagInfoPtr;
+
+	if (tagInfoPtr) {
+	    if (TagSetTestBits(tagInfoPtr, discardTags)) {
+		return segPtr;
+	    }
+	}
+    }
+
+    return NULL;
+}
+
+TkTextSegment *
+FindNextTaggedSegInNode(
+    const TkTextSegment *lastPtr,
+    const TkTextLine *linePtr,
+    const TkBitField *discardTags)	/* can be NULL */
+{
+    const TkTextLine *lastLinePtr = lastPtr->sectionPtr->linePtr;
+    const TkTextLine *endLinePtr = linePtr->parentPtr->lastPtr;
+
+    while (linePtr) {
+	if (TagSetTestBits(linePtr->tagonPtr, discardTags)) {
+	    return FindNextTaggedSegInLine(linePtr->segPtr, lastPtr, discardTags);
+	}
+	if (linePtr == lastLinePtr || linePtr == endLinePtr) {
+	    return NULL;
+	}
+	linePtr = linePtr->nextPtr;
+    }
+
+    return NULL;
+}
+
+static const Node *
+FindNextTaggedNode(
+    const Node *nodePtr,
+    const TkBitField *discardTags)	/* can be NULL */
+{
+    while (nodePtr) {
+	const Node *startNodePtr = nodePtr;
+
+	for (nodePtr = nodePtr->nextPtr; nodePtr; nodePtr = nodePtr->nextPtr) {
+	    if (TagSetTestBits(nodePtr->tagonPtr, discardTags)) {
+		while (nodePtr->level > 0) {
+		    for (nodePtr = nodePtr->childPtr; nodePtr; nodePtr = nodePtr->nextPtr) {
+			if (TagSetTestBits(nodePtr->tagonPtr, discardTags)) {
+			    return nodePtr;
+			}
+		    }
+		}
+		return nodePtr;
+	    }
+	}
+
+	nodePtr = startNodePtr->parentPtr;
+    }
+
+    return NULL;
+}
+
+TkTextSegment *
+TkBTreeFindNextTagged(
+    const TkTextIndex *indexPtr1,
+    				/* Search starts here. Tag toggles at this position will be returned. */
+    const TkTextIndex *indexPtr2,
+    				/* Search stops here. Tag toggles at this position will not be
+				 * returned. */
+    const struct TkBitField *discardTags)
+				/* Discard these tags when searching, can be NULL. */
+{
+    const TkSharedText *sharedTextPtr = TkTextIndexGetShared(indexPtr1);
+    const TkTextLine *linePtr = TkTextIndexGetLine(indexPtr1);
+    const TkTextSegment *lastPtr = TkTextIndexGetFirstSegment(indexPtr2, NULL);
+    const TkText *textPtr;
+    const Node *nodePtr;
+
+    /*
+     * At first, search for next segment in first line.
+     */
+
+    if (TagSetTestBits(linePtr->tagonPtr, discardTags)) {
+	TkTextSegment *segPtr = TkTextIndexGetContentSegment(indexPtr1, NULL);
+
+	if ((segPtr = FindNextTaggedSegInLine(segPtr, lastPtr, discardTags))) {
+	    return segPtr;
+	}
+    }
+
+    /*
+     * At second, search for line containing any tag in current node.
+     */
+
+    textPtr = indexPtr1->textPtr;
+    nodePtr = linePtr->parentPtr;
+
+    if (linePtr != nodePtr->lastPtr && TagSetTestBits(nodePtr->tagonPtr, discardTags)) {
+	TkTextSegment *segPtr = FindNextTaggedSegInNode(lastPtr, linePtr->nextPtr, discardTags);
+	
+	if (segPtr) {
+	    return segPtr;
+	}
+    }
+
+    /*
+     * We couldn't find a line, so search inside B-Tree for next level-0
+     * node which contains any tag.
+     */
+
+    if (!(nodePtr = FindNextTaggedNode(nodePtr, discardTags))) {
+	return NULL;
+    }
+
+    if (textPtr && textPtr->startMarker != textPtr->sharedTextPtr->startMarker) {
+	int lineNo1 = TkBTreeLinesTo(sharedTextPtr->tree, NULL, nodePtr->linePtr, NULL);
+	int lineNo2 = TkTextIndexGetLineNumber(indexPtr2, NULL);
+
+	if (lineNo1 > lineNo2) {
+	    /* We've found a node after text end, so return NULL. */
+	    return NULL;
+	}
+    }
+
+    /*
+     * Final search of segment containing any tag.
+     */
+
+    return FindNextTaggedSegInNode(lastPtr, nodePtr->linePtr, discardTags);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkBTreeFindNextUntagged --
+ *
+ *	Find next segment which does not contain any tag.
+ *
+ * Results:
+ *	The return value is the next segment not containing any tag.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+TkTextSegment *
+FindNextUntaggedSegInLine(
+    TkTextSegment *segPtr,
+    const TkTextSegment *lastPtr,
+    const TkBitField *discardTags)
+{
+    if (lastPtr->sectionPtr->linePtr != segPtr->sectionPtr->linePtr) {
+	lastPtr = NULL;
+    }
+
+    for ( ; segPtr != lastPtr; segPtr = segPtr->nextPtr) {
+	const TkTextTagSet *tagInfoPtr = segPtr->tagInfoPtr;
+
+	if (tagInfoPtr) {
+	    if (!TagSetTestDisjunctiveBits(tagInfoPtr, discardTags)) {
+		return segPtr;
+	    }
+	}
+    }
+
+    return NULL;
+}
+
+TkTextSegment *
+FindNextUntaggedSegInNode(
+    const TkTextSegment *lastPtr,
+    const TkTextLine *linePtr,
+    const TkBitField *discardTags)	/* can be NULL */
+{
+    const TkTextLine *lastLinePtr = lastPtr->sectionPtr->linePtr;
+    const TkTextLine *endLinePtr = linePtr->parentPtr->lastPtr;
+
+    while (linePtr) {
+	if (TagSetTestDontContainsAny(linePtr->tagonPtr, linePtr->tagoffPtr, discardTags)) {
+	    return FindNextUntaggedSegInLine(linePtr->segPtr, lastPtr, discardTags);
+	}
+	if (linePtr == lastLinePtr || linePtr == endLinePtr) {
+	    return NULL;
+	}
+	linePtr = linePtr->nextPtr;
+    }
+
+    return NULL;
+}
+
+static const Node *
+FindNextUntaggedNode(
+    const Node *nodePtr,
+    const TkBitField *discardTags)	/* can be NULL */
+{
+    while (nodePtr) {
+	const Node *startNodePtr = nodePtr;
+
+	for (nodePtr = nodePtr->nextPtr; nodePtr; nodePtr = nodePtr->nextPtr) {
+	    if (TagSetTestDontContainsAny(nodePtr->tagonPtr, nodePtr->tagoffPtr, discardTags)) {
+		while (nodePtr->level > 0) {
+		    for (nodePtr = nodePtr->childPtr; nodePtr; nodePtr = nodePtr->nextPtr) {
+			if (TagSetTestDontContainsAny(nodePtr->tagonPtr, nodePtr->tagoffPtr,
+				discardTags)) {
+			    return nodePtr;
+			}
+		    }
+		}
+		return nodePtr;
+	    }
+	}
+
+	nodePtr = startNodePtr->parentPtr;
+    }
+
+    return NULL;
+}
+
+TkTextSegment *
+TkBTreeFindNextUntagged(
+    const TkTextIndex *indexPtr1,
+    				/* Search starts here. Tag toggles at this position will be
+				 * returned. */
+    const TkTextIndex *indexPtr2,
+    				/* Search stops here. Tag toggles at this position will not be
+				 * returned. */
+    const struct TkBitField *discardTags)
+				/* Discard these tags when searching, can be NULL. */
+{
+    const TkSharedText *sharedTextPtr = TkTextIndexGetShared(indexPtr1);
+    const TkTextLine *linePtr = TkTextIndexGetLine(indexPtr1);
+    const TkTextSegment *lastPtr = TkTextIndexGetFirstSegment(indexPtr2, NULL);
+    const TkText *textPtr;
+    const Node *nodePtr;
+
+    /*
+     * At first, search for next segment in first line.
+     */
+
+    if (TagSetTestDontContainsAny(linePtr->tagonPtr, linePtr->tagoffPtr, discardTags)) {
+	TkTextSegment *segPtr = TkTextIndexGetContentSegment(indexPtr1, NULL);
+
+	if ((segPtr = FindNextUntaggedSegInLine(segPtr, lastPtr, discardTags))) {
+	    return segPtr;
+	}
+    }
+
+    /*
+     * At second, search for line containing any tag in current node.
+     */
+
+    textPtr = indexPtr1->textPtr;
+    nodePtr = linePtr->parentPtr;
+
+    if (linePtr != nodePtr->lastPtr
+	    && (TagSetTestDontContainsAny(nodePtr->tagonPtr, nodePtr->tagoffPtr, discardTags))) {
+	TkTextSegment *segPtr = FindNextUntaggedSegInNode(lastPtr, linePtr->nextPtr, discardTags);
+	
+	if (segPtr) {
+	    return segPtr;
+	}
+    }
+
+    /*
+     * We couldn't find a line, so search inside B-Tree for next level-0
+     * node which don't contains any tag.
+     */
+
+    if (!(nodePtr = FindNextUntaggedNode(nodePtr, discardTags))) {
+	return NULL;
+    }
+
+    if (textPtr && textPtr->startMarker != textPtr->sharedTextPtr->startMarker) {
+	int lineNo1 = TkBTreeLinesTo(sharedTextPtr->tree, NULL, nodePtr->linePtr, NULL);
+	int lineNo2 = TkTextIndexGetLineNumber(indexPtr2, NULL);
+
+	if (lineNo1 > lineNo2) {
+	    /* We've found a node after text end, so return NULL. */
+	    return NULL;
+	}
+    }
+
+    /*
+     * Final search of segment not containing any tag.
+     */
+
+    return FindNextUntaggedSegInNode(lastPtr, nodePtr->linePtr, discardTags);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkBTreeFindPrevTagged --
+ *
+ *	Starting at given index, find previous segment which contains any tag.
+ *
+ * Results:
+ *	The return value is the previous segment containing any tag.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+const TkTextSegment *
+FindPrevTaggedSegInLine(
+    const TkTextSegment *segPtr,
+    const TkTextSegment *firstPtr,
+    const TkBitField *selTags)
+{
+    const TkTextLine *linePtr = segPtr->sectionPtr->linePtr;
+
+    firstPtr = (linePtr == firstPtr->sectionPtr->linePtr) ? firstPtr->prevPtr : NULL;
+
+    for ( ; segPtr != firstPtr; segPtr = segPtr->prevPtr) {
+	const TkTextTagSet *tagInfoPtr = segPtr->tagInfoPtr;
+
+	if (tagInfoPtr) {
+	    if (TagSetTestBits(tagInfoPtr, selTags)) {
+		return segPtr;
+	    }
+	}
+    }
+
+    return NULL;
+}
+
+const TkTextSegment *
+FindPrevTaggedSegInNode(
+    const TkTextSegment *firstPtr,
+    const TkTextLine *linePtr,
+    const TkBitField *selTags)		/* can be NULL */
+{
+    const TkTextLine *firstLinePtr = firstPtr->sectionPtr->linePtr;
+    const TkTextLine *startLinePtr = linePtr->parentPtr->linePtr;
+
+    while (true) {
+	if (TagSetTestBits(linePtr->tagonPtr, selTags)) {
+	    return FindPrevTaggedSegInLine(linePtr->lastPtr, firstPtr, selTags);
+	}
+	if (linePtr == startLinePtr || linePtr == firstLinePtr) {
+	    return NULL;
+	}
+	linePtr = linePtr->prevPtr;
+    };
+
+    return NULL;
+}
+
+static const Node *
+FindPrevTaggedNode(
+    const Node *nodePtr,
+    const TkBitField *selTags)	/* can be NULL */
+{
+    assert(nodePtr);
+
+    while (nodePtr->parentPtr) {
+	const Node *startNodePtr = nodePtr;
+	const Node *lastNodePtr = NULL;
+
+	nodePtr = nodePtr->parentPtr->childPtr;
+
+	for ( ; nodePtr != startNodePtr; nodePtr = nodePtr->nextPtr) {
+	    if (TagSetTestBits(nodePtr->tagonPtr, selTags)) {
+		lastNodePtr = nodePtr;
+	    }
+	}
+	if (lastNodePtr) {
+	    nodePtr = lastNodePtr;
+
+	    while (nodePtr->level > 0) {
+		DEBUG(lastNodePtr = NULL);
+
+		for (nodePtr = nodePtr->childPtr; nodePtr; nodePtr = nodePtr->nextPtr) {
+		    if (TagSetTestBits(nodePtr->tagonPtr, selTags)) {
+			lastNodePtr = nodePtr;
+		    }
+		}
+
+		assert(lastNodePtr);
+		nodePtr = lastNodePtr;
+	    }
+
+	    return lastNodePtr;
+	}
+
+	nodePtr = startNodePtr->parentPtr;
+    }
+
+    return NULL;
+}
+
+const TkTextSegment *
+TkBTreeFindPrevTagged(
+    const TkTextIndex *indexPtr1,
+    				/* Search starts here. Tag toggles at this position will be returned. */
+    const TkTextIndex *indexPtr2,
+    				/* Search stops here. Tag toggles at this position will be returned. */
+    bool discardSelection)	/* Discard selection tags? */
+{
+    const TkSharedText *sharedTextPtr = TkTextIndexGetShared(indexPtr1);
+    const TkBitField *selTags = discardSelection ? sharedTextPtr->selectionTags : NULL;
+    const TkTextLine *linePtr = TkTextIndexGetLine(indexPtr1);
+    const TkTextSegment *firstPtr = TkTextIndexGetFirstSegment(indexPtr2, NULL);
+    const TkText *textPtr;
+    const Node *nodePtr;
+
+    /*
+     * At first, search for previous segment in first line.
+     */
+
+    if (TagSetTestBits(linePtr->tagonPtr, selTags)) {
+	const TkTextSegment *segPtr = TkTextIndexGetContentSegment(indexPtr1, NULL);
+
+	if ((segPtr = FindPrevTaggedSegInLine(segPtr, firstPtr, selTags))) {
+	    return segPtr;
+	}
+    }
+
+    /*
+     * At second, search for line containing any tag in current node.
+     */
+
+    textPtr = indexPtr1->textPtr;
+    nodePtr = linePtr->parentPtr;
+
+    if (linePtr != nodePtr->linePtr && TagSetTestBits(nodePtr->tagonPtr, selTags)) {
+	const TkTextSegment *segPtr = FindPrevTaggedSegInNode(firstPtr, linePtr->prevPtr, selTags);
+	
+	if (segPtr) {
+	    return segPtr;
+	}
+    }
+
+    /*
+     * We couldn't find a line, so search inside B-Tree for previous level-0
+     * node which contains any tag.
+     */
+
+    if (!(nodePtr = FindPrevTaggedNode(nodePtr, selTags))) {
+	return NULL;
+    }
+
+    if (textPtr && textPtr->startMarker != textPtr->sharedTextPtr->startMarker) {
+	int lineNo1 = TkBTreeLinesTo(textPtr->sharedTextPtr->tree, NULL, nodePtr->lastPtr, NULL);
+	int lineNo2 = TkTextIndexGetLineNumber(indexPtr2, NULL);
+
+	if (lineNo1 < lineNo2) {
+	    /* We've found a node before text start, so return NULL. */
+	    return NULL;
+	}
+    }
+
+    /*
+     * Final search of segment containing any tag.
+     */
+
+    return FindPrevTaggedSegInNode(firstPtr, nodePtr->lastPtr, selTags);
 }
 
 /*
@@ -11017,7 +12015,8 @@ TkBTreeCharTagged(
     const TkTextIndex *indexPtr,/* Indicates a character position at which to check for a tag. */
     const TkTextTag *tagPtr)	/* Tag of interest, can be NULL. */
 {
-    return SegmentTestTag(TkTextIndexGetContentSegment(indexPtr, NULL), tagPtr);
+    const TkTextTagSet *tagInfoPtr = TkTextIndexGetContentSegment(indexPtr, NULL)->tagInfoPtr;
+    return tagPtr ? TkTextTagSetTest(tagInfoPtr, tagPtr->index) : !TkTextTagSetIsEmpty(tagInfoPtr);
 }
 
 /*
@@ -11089,7 +12088,7 @@ TkBTreeGetSegmentTags(
  *----------------------------------------------------------------------
  */
 
-const char*
+const char *
 TkBTreeGetLang(
     const TkText *textPtr,		/* Relative to this client of the B-tree. */
     const TkTextSegment *segPtr)	/* Get tags from this segment. */
@@ -11148,124 +12147,96 @@ void
 TkBTreeCheck(
     TkTextBTree tree)		/* Tree to check. */
 {
-    TreeCheck(tree, CHECK_ALL);
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * TreeCheck --
- *
- *	This function runs a set of consistency checks over a B-tree and
- *	panics if any inconsistencies are found. The given flags is specifying
- *	which checks will be done.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	If a structural defect is found, the function panics with an error
- *	message.
- *
- *----------------------------------------------------------------------
- */
-
-static void
-TreeCheck(
-    TkTextBTree tree,		/* Tree to check. */
-    unsigned flags)		/* Which checks will be done? */
-{
     BTree *treePtr = (BTree *) tree;
     const Node *nodePtr;
     const TkTextLine *linePtr, *prevLinePtr;
     const TkTextSegment *segPtr;
     const TkText *peer;
+    unsigned numBranches = 0;
+    unsigned numLinks = 0;
+    Tcl_HashEntry *entryPtr;
+    Tcl_HashSearch search;
+    const char *s;
 
     if (treePtr->sharedTextPtr->refCount == 0) {
 	Tcl_Panic("TkBTreeCheck: tree is destroyed");
     }
 
-flags = CHECK_ALL; /* XXX */
-    if (flags & (CHECK_LINES | CHECK_TAGS)) {
-	unsigned numBranches = 0;
-	unsigned numLinks = 0;
-
-	nodePtr = treePtr->rootPtr;
-	while (nodePtr->level > 0) {
-	    nodePtr = nodePtr->childPtr;
-	    if (!nodePtr) {
-		Tcl_Panic("TkBTreeCheck: no level 0 node in tree");
-	    }
+    nodePtr = treePtr->rootPtr;
+    while (nodePtr->level > 0) {
+	nodePtr = nodePtr->childPtr;
+	if (!nodePtr) {
+	    Tcl_Panic("TkBTreeCheck: no level 0 node in tree");
 	}
+    }
 
-	/*
-	 * Check line pointers.
-	 */
+    /*
+     * Check line pointers.
+     */
 
-	prevLinePtr = NULL;
-	for (linePtr = nodePtr->linePtr;
-		linePtr;
-		prevLinePtr = linePtr, linePtr = linePtr->nextPtr) {
-	    if (!linePtr->segPtr) {
-		Tcl_Panic("TkBTreeCheck: line has no segments");
-	    }
-	    if (linePtr->size == 0) {
-		Tcl_Panic("TkBTreeCheck: line has size zero");
-	    }
-	    if (!linePtr->lastPtr) {
-		Tcl_Panic("TkBTreeCheck: line has no last pointer");
-	    }
-	    if (linePtr->prevPtr != prevLinePtr) {
-		Tcl_Panic("TkBTreeCheck: line has wrong predecessor");
-	    }
-	    if (!linePtr->tagoffPtr || !linePtr->tagonPtr) {
-		Tcl_Panic("TkBTreeCheck: line tag information is incomplete");
-	    }
-	    if (TkTextTagSetRefCount(linePtr->tagonPtr) == 0) {
-		Tcl_Panic("TkBTreeCheck: unreferenced tag info (tagon)");
-	    }
-	    if (TkTextTagSetRefCount(linePtr->tagonPtr) > 0x3fffffff) {
-		Tcl_Panic("TkBTreeCheck: negative reference count in tagon info");
-	    }
-	    if (TkTextTagSetRefCount(linePtr->tagoffPtr) == 0) {
-		Tcl_Panic("TkBTreeCheck: unreferenced tag info (tagoff)");
-	    }
-	    if (TkTextTagSetRefCount(linePtr->tagoffPtr) > 0x3fffffff) {
-		Tcl_Panic("TkBTreeCheck: negative reference count in tagoff info");
-	    }
-	    if (!TkTextTagSetContains(linePtr->tagonPtr, linePtr->tagoffPtr)) {
-		Tcl_Panic("TkBTreeCheck: line tagoff not included in tagon");
-	    }
-	    if (TkTextTagSetIsEmpty(linePtr->tagonPtr)
-		    && linePtr->tagonPtr != treePtr->sharedTextPtr->emptyTagInfoPtr) {
-		Tcl_Panic("TkBTreeCheck: should use shared resource if tag info is empty");
-	    }
-	    if (TkTextTagSetIsEmpty(linePtr->tagoffPtr)
-		    && linePtr->tagoffPtr != treePtr->sharedTextPtr->emptyTagInfoPtr) {
-		Tcl_Panic("TkBTreeCheck: should use shared resource if tag info is empty");
-	    }
-	    if (TkTextTagSetRefCount(linePtr->tagonPtr) == 0) {
-		Tcl_Panic("TkBTreeCheck: reference count of line tagon is zero");
-	    }
-	    if (TkTextTagSetRefCount(linePtr->tagoffPtr) == 0) {
-		Tcl_Panic("TkBTreeCheck: reference count of line tagoff is zero");
-	    }
-	    if (linePtr->logicalLine ==
-		    (linePtr->prevPtr && HasElidedNewline(treePtr->sharedTextPtr, linePtr->prevPtr))) {
-		Tcl_Panic("TkBTreeCheck: wrong logicalLine flag");
-	    }
-	    numBranches += linePtr->numBranches;
-	    numLinks += linePtr->numLinks;
+    prevLinePtr = NULL;
+    for (linePtr = nodePtr->linePtr;
+	    linePtr;
+	    prevLinePtr = linePtr, linePtr = linePtr->nextPtr) {
+	if (!linePtr->segPtr) {
+	    Tcl_Panic("TkBTreeCheck: line has no segments");
 	}
+	if (linePtr->size == 0) {
+	    Tcl_Panic("TkBTreeCheck: line has size zero");
+	}
+	if (!linePtr->lastPtr) {
+	    Tcl_Panic("TkBTreeCheck: line has no last pointer");
+	}
+	if (linePtr->prevPtr != prevLinePtr) {
+	    Tcl_Panic("TkBTreeCheck: line has wrong predecessor");
+	}
+	if (!linePtr->tagoffPtr || !linePtr->tagonPtr) {
+	    Tcl_Panic("TkBTreeCheck: line tag information is incomplete");
+	}
+	if (TkTextTagSetRefCount(linePtr->tagonPtr) == 0) {
+	    Tcl_Panic("TkBTreeCheck: unreferenced tag info (tagon)");
+	}
+	if (TkTextTagSetRefCount(linePtr->tagonPtr) > 0x3fffffff) {
+	    Tcl_Panic("TkBTreeCheck: negative reference count in tagon info");
+	}
+	if (TkTextTagSetRefCount(linePtr->tagoffPtr) == 0) {
+	    Tcl_Panic("TkBTreeCheck: unreferenced tag info (tagoff)");
+	}
+	if (TkTextTagSetRefCount(linePtr->tagoffPtr) > 0x3fffffff) {
+	    Tcl_Panic("TkBTreeCheck: negative reference count in tagoff info");
+	}
+	if (!TkTextTagSetContains(linePtr->tagonPtr, linePtr->tagoffPtr)) {
+	    Tcl_Panic("TkBTreeCheck: line tagoff not included in tagon");
+	}
+	if (TkTextTagSetIsEmpty(linePtr->tagonPtr)
+		&& linePtr->tagonPtr != treePtr->sharedTextPtr->emptyTagInfoPtr) {
+	    Tcl_Panic("TkBTreeCheck: should use shared resource if tag info is empty");
+	}
+	if (TkTextTagSetIsEmpty(linePtr->tagoffPtr)
+		&& linePtr->tagoffPtr != treePtr->sharedTextPtr->emptyTagInfoPtr) {
+	    Tcl_Panic("TkBTreeCheck: should use shared resource if tag info is empty");
+	}
+	if (TkTextTagSetRefCount(linePtr->tagonPtr) == 0) {
+	    Tcl_Panic("TkBTreeCheck: reference count of line tagon is zero");
+	}
+	if (TkTextTagSetRefCount(linePtr->tagoffPtr) == 0) {
+	    Tcl_Panic("TkBTreeCheck: reference count of line tagoff is zero");
+	}
+	if (linePtr->logicalLine ==
+		(linePtr->prevPtr && HasElidedNewline(treePtr->sharedTextPtr, linePtr->prevPtr))) {
+	    Tcl_Panic("TkBTreeCheck: wrong logicalLine flag");
+	}
+	numBranches += linePtr->numBranches;
+	numLinks += linePtr->numLinks;
+    }
 
-	if (numBranches != treePtr->rootPtr->numBranches) {
-	    Tcl_Panic("TkBTreeCheck: wrong branch count %u (expected is %u)",
-		    numBranches, treePtr->rootPtr->numBranches);
-	}
-	if (numLinks != numBranches) {
-	    Tcl_Panic("TkBTreeCheck: mismatch in number of links (%d) and branches (%d)",
-		    numLinks, numBranches);
-	}
+    if (numBranches != treePtr->rootPtr->numBranches) {
+	Tcl_Panic("TkBTreeCheck: wrong branch count %u (expected is %u)",
+		numBranches, treePtr->rootPtr->numBranches);
+    }
+    if (numLinks != numBranches) {
+	Tcl_Panic("TkBTreeCheck: mismatch in number of links (%d) and branches (%d)",
+		numLinks, numBranches);
     }
 
     /*
@@ -11326,6 +12297,9 @@ flags = CHECK_ALL; /* XXX */
 	if (!peer->endMarker->sectionPtr) {
 	    Tcl_Panic("TkBTreeCheck: end marker of is not linked");
 	}
+	if (!peer->startMarker->sectionPtr->linePtr->nextPtr) {
+	    Tcl_Panic("TkBTreeCheck: start marker is on very last line");
+	}
 	if (peer->startMarker->sectionPtr->linePtr == peer->endMarker->sectionPtr->linePtr) {
 	    const TkTextSegment *segPtr = peer->startMarker;
 	    while (segPtr && segPtr != peer->endMarker) {
@@ -11348,104 +12322,93 @@ flags = CHECK_ALL; /* XXX */
      * Call a recursive function to do the main body of checks.
      */
 
-    if (flags & (CHECK_NODES | CHECK_SEGMENTS | CHECK_TAGS)) {
-	CheckNodeConsistency(treePtr->sharedTextPtr, treePtr->rootPtr,
-		treePtr->rootPtr, treePtr->numPixelReferences, flags);
+    CheckNodeConsistency(treePtr->sharedTextPtr, treePtr->rootPtr,
+	    treePtr->rootPtr, treePtr->numPixelReferences);
+
+    /*
+     * Make sure that there are at least two lines in the text and that the
+     * last line has no characters except a newline.
+     */
+
+    nodePtr = treePtr->rootPtr;
+    if (nodePtr->numLines < 2) {
+	Tcl_Panic("TkBTreeCheck: less than 2 lines in tree");
     }
-
-    if (flags & CHECK_LINES) {
-	const char *s;
-
-	/*
-	 * Make sure that there are at least two lines in the text and that the
-	 * last line has no characters except a newline.
-	 */
-
-	nodePtr = treePtr->rootPtr;
-	if (nodePtr->numLines < 2) {
-	    Tcl_Panic("TkBTreeCheck: less than 2 lines in tree");
-	}
-	if (!nodePtr->linePtr->logicalLine) {
-	    Tcl_Panic("TkBTreeCheck: first line must be a logical line");
-	}
-#if 0 /* XXX still unclear, is it allowed to elide second last newline? */
-	if (!nodePtr->lastPtr->logicalLine) {
-	    Tcl_Panic("TkBTreeCheck: last line must be a logical line");
-	}
+    if (!nodePtr->linePtr->logicalLine) {
+	Tcl_Panic("TkBTreeCheck: first line must be a logical line");
+    }
+#if 0 /* TODO: is it really allowed that the last line is not a logical line? */
+    if (!nodePtr->lastPtr->logicalLine) {
+	Tcl_Panic("TkBTreeCheck: last line must be a logical line");
+    }
 #endif
-	while (nodePtr->level > 0) {
-	    nodePtr = nodePtr->childPtr;
-	    while (nodePtr->nextPtr) {
-		nodePtr = nodePtr->nextPtr;
-	    }
-	}
-	linePtr = nodePtr->lastPtr;
-	segPtr = linePtr->segPtr;
-	if (segPtr->typePtr == &tkTextLinkType) {
-	    /* It's OK to have one link in the last line. */
-	    segPtr = segPtr->nextPtr;
-	}
-	while (segPtr->typePtr->group == SEG_GROUP_MARK) {
-	    /* It's OK to have marks or breaks in the last line. */
-	    segPtr = segPtr->nextPtr;
-	}
-	if (segPtr->typePtr != &tkTextCharType) {
-	    Tcl_Panic("TkBTreeCheck: last line has bogus segment type");
-	}
-	if (segPtr->nextPtr) {
-	    Tcl_Panic("TkBTreeCheck: last line has too many segments");
-	}
-	if (segPtr->size != 1) {
-	    Tcl_Panic("TkBTreeCheck: last line has wrong # characters: %d", segPtr->size);
-	}
-
-	s = segPtr->body.chars; /* this avoids warnings */
-	if (s[0] != '\n' || s[1] != '\0') {
-	    Tcl_Panic("TkBTreeCheck: last line had bad value: %s", segPtr->body.chars);
+    while (nodePtr->level > 0) {
+	nodePtr = nodePtr->childPtr;
+	while (nodePtr->nextPtr) {
+	    nodePtr = nodePtr->nextPtr;
 	}
     }
+    linePtr = nodePtr->lastPtr;
+    segPtr = linePtr->segPtr;
+    if (segPtr->typePtr == &tkTextLinkType) {
+	/* It's OK to have one link in the last line. */
+	segPtr = segPtr->nextPtr;
+    }
+    while (segPtr->typePtr->group == SEG_GROUP_MARK) {
+	/* It's OK to have marks or breaks in the last line. */
+	segPtr = segPtr->nextPtr;
+    }
+    if (segPtr->typePtr != &tkTextCharType) {
+	Tcl_Panic("TkBTreeCheck: last line has bogus segment type");
+    }
+    if (segPtr->nextPtr) {
+	Tcl_Panic("TkBTreeCheck: last line has too many segments");
+    }
+    if (segPtr->size != 1) {
+	Tcl_Panic("TkBTreeCheck: last line has wrong # characters: %d", segPtr->size);
+    }
 
-    if (flags & (CHECK_TAGS | CHECK_NODES)) {
-	Tcl_HashEntry *entryPtr;
-	Tcl_HashSearch search;
+    s = segPtr->body.chars; /* this avoids warnings */
+    if (s[0] != '\n' || s[1] != '\0') {
+	Tcl_Panic("TkBTreeCheck: last line had bad value: %s", segPtr->body.chars);
+    }
 
-	for (entryPtr = Tcl_FirstHashEntry(&treePtr->sharedTextPtr->tagTable, &search);
-		entryPtr;
-		entryPtr = Tcl_NextHashEntry(&search)) {
-	    const TkTextTag *tagPtr = Tcl_GetHashValue(entryPtr);
+    for (entryPtr = Tcl_FirstHashEntry(&treePtr->sharedTextPtr->tagTable, &search);
+	    entryPtr;
+	    entryPtr = Tcl_NextHashEntry(&search)) {
+	const TkTextTag *tagPtr = Tcl_GetHashValue(entryPtr);
 
-	    assert(tagPtr->index < treePtr->sharedTextPtr->tagInfoSize);
+	assert(tagPtr->index < treePtr->sharedTextPtr->tagInfoSize);
 
-	    if (TkBitTest(treePtr->sharedTextPtr->selectionTags, tagPtr->index) && tagPtr->elideString) {
-		Tcl_Panic("TkBTreeCheck: the selection tag '%s' is not allowed to elide (or un-elide)",
-			tagPtr->name);
+	if (TkBitTest(treePtr->sharedTextPtr->selectionTags, tagPtr->index) && tagPtr->elideString) {
+	    Tcl_Panic("TkBTreeCheck: the selection tag '%s' is not allowed to elide (or un-elide)",
+		    tagPtr->name);
+	}
+
+	if ((nodePtr = tagPtr->rootPtr)) {
+	    assert(nodePtr->linePtr); /* still unfree'd? */
+
+	    if (!TkTextTagSetTest(nodePtr->tagonPtr, tagPtr->index)) {
+		if (nodePtr->level == 0) {
+		    Tcl_Panic("TkBTreeCheck: level zero node is not root for tag '%s'",
+			    tagPtr->name);
+		} else {
+		    Tcl_Panic("TkBTreeCheck: node is not root for tag '%s'", tagPtr->name);
+		}
 	    }
 
-	    if ((nodePtr = tagPtr->rootPtr)) {
-		assert(nodePtr->linePtr); /* still unfree'd? */
-
-		if (!TkTextTagSetTest(nodePtr->tagonPtr, tagPtr->index)) {
-		    if (nodePtr->level == 0) {
-			Tcl_Panic("TkBTreeCheck: level zero node is not root for tag '%s'",
-				tagPtr->name);
-		    } else {
-			Tcl_Panic("TkBTreeCheck: node is not root for tag '%s'", tagPtr->name);
-		    }
-		}
-
-		if (nodePtr->level > 0 && CountChildsWithTag(nodePtr, tagPtr->index) < 2) {
-		    Tcl_Panic("TkBTreeCheck: node is not root for tag '%s', it has less "
-			    "than two childs containing this tag", tagPtr->name);
-		}
-
-		while ((nodePtr = nodePtr->parentPtr)) {
-		    if (CountChildsWithTag(nodePtr, tagPtr->index) > 1) {
-			Tcl_Panic("TkBTreeCheck: found higher node as root for tag '%s'", tagPtr->name);
-		    }
-		}
-	    } else if (TkTextTagSetTest(treePtr->rootPtr->tagonPtr, tagPtr->index)) {
-		Tcl_Panic("TkBTreeCheck: tag '%s' is used, but has no root", tagPtr->name);
+	    if (nodePtr->level > 0 && CountChildsWithTag(nodePtr, tagPtr->index) < 2) {
+		Tcl_Panic("TkBTreeCheck: node is not root for tag '%s', it has less "
+			"than two childs containing this tag", tagPtr->name);
 	    }
+
+	    while ((nodePtr = nodePtr->parentPtr)) {
+		if (CountChildsWithTag(nodePtr, tagPtr->index) > 1) {
+		    Tcl_Panic("TkBTreeCheck: found higher node as root for tag '%s'", tagPtr->name);
+		}
+	    }
+	} else if (TkTextTagSetTest(treePtr->rootPtr->tagonPtr, tagPtr->index)) {
+	    Tcl_Panic("TkBTreeCheck: tag '%s' is used, but has no root", tagPtr->name);
 	}
     }
 
@@ -11484,8 +12447,7 @@ CheckNodeConsistency(
     const TkSharedText *sharedTextPtr,/* Handle to shared text resource. */
     const Node *rootPtr,	/* The root node. */
     const Node *nodePtr,	/* Node whose subtree should be checked. */
-    unsigned references,	/* Number of referring widgets which have pixel counts. */
-    unsigned flags)		/* Which checks will be done? */
+    unsigned references)	/* Number of referring widgets which have pixel counts. */
 {
     const Node *childNodePtr;
     const TkTextLine *linePtr;
@@ -11497,6 +12459,7 @@ CheckNodeConsistency(
     TkTextTagSet *tagonPtr = NULL;
     TkTextTagSet *tagoffPtr = NULL;
     TkTextTagSet *additionalTagoffPtr = NULL;
+    unsigned memsize;
 
     if (nodePtr->level == 0 && !nodePtr->linePtr) {
 	Tcl_Panic("CheckNodeConsistency: this node is freed");
@@ -11548,17 +12511,13 @@ CheckNodeConsistency(
 
     numChildren = numLines = numLogicalLines = numBranches = size = 0;
 
-    if (flags & CHECK_NODES) {
-	unsigned memsize = sizeof(pixelInfo[0])*references;
-	pixelInfo = (references > PIXEL_CLIENTS) ? (NodePixelInfo *) ckalloc(memsize) : pixelInfoBuf;
-	memset(pixelInfo, 0, memsize);
-    }
+    memsize = sizeof(pixelInfo[0])*references;
+    pixelInfo = (references > PIXEL_CLIENTS) ? (NodePixelInfo *) ckalloc(memsize) : pixelInfoBuf;
+    memset(pixelInfo, 0, memsize);
 
-    if (flags & CHECK_TAGS) {
-	TkTextTagSetIncrRefCount(tagonPtr = sharedTextPtr->emptyTagInfoPtr);
-	TkTextTagSetIncrRefCount(tagoffPtr = sharedTextPtr->emptyTagInfoPtr);
-	additionalTagoffPtr = NULL;
-    }
+    TkTextTagSetIncrRefCount(tagonPtr = sharedTextPtr->emptyTagInfoPtr);
+    TkTextTagSetIncrRefCount(tagoffPtr = sharedTextPtr->emptyTagInfoPtr);
+    additionalTagoffPtr = NULL;
 
     if (nodePtr->level == 0) {
 	prevLinePtr = NULL;
@@ -11572,16 +12531,12 @@ CheckNodeConsistency(
 	    if (linePtr->parentPtr != nodePtr) {
 		Tcl_Panic("CheckNodeConsistency: line has wrong parent pointer");
 	    }
-	    if (flags & (CHECK_TAGS | CHECK_SEGMENTS)) {
-		CheckSegments(sharedTextPtr, linePtr);
-		CheckSegmentItems(sharedTextPtr, linePtr);
-		CheckSections(linePtr);
-	    }
-	    if (flags & CHECK_NODES) {
-		for (i = 0; i < references; ++i) {
-		    pixelInfo[i].pixels += linePtr->pixelInfo[i].height;
-		    pixelInfo[i].numDispLines += GetDisplayLines(linePtr, i);
-		}
+	    CheckSegments(sharedTextPtr, linePtr);
+	    CheckSegmentItems(sharedTextPtr, linePtr);
+	    CheckSections(linePtr);
+	    for (i = 0; i < references; ++i) {
+		pixelInfo[i].pixels += linePtr->pixelInfo[i].height;
+		pixelInfo[i].numDispLines += GetDisplayLines(linePtr, i);
 	    }
 	    if (tagonPtr) {
 		tagonPtr = TkTextTagSetJoin(tagonPtr, linePtr->tagonPtr);
@@ -11623,7 +12578,7 @@ CheckNodeConsistency(
 		}
 	    }
 	    startLinePtr = childNodePtr->lastPtr->nextPtr;
-	    CheckNodeConsistency(sharedTextPtr, rootPtr, childNodePtr, references, flags);
+	    CheckNodeConsistency(sharedTextPtr, rootPtr, childNodePtr, references);
 	    numChildren += 1;
 	    numLines += childNodePtr->numLines;
 	    numLogicalLines += childNodePtr->numLogicalLines;
@@ -11638,11 +12593,9 @@ CheckNodeConsistency(
 		    TkTextTagSetIncrRefCount(additionalTagoffPtr = nodePtr->tagonPtr);
 		}
 	    }
-	    if (flags & CHECK_NODES) {
-		for (i = 0; i < references; i++) {
-		    pixelInfo[i].pixels += childNodePtr->pixelInfo[i].pixels;
-		    pixelInfo[i].numDispLines += childNodePtr->pixelInfo[i].numDispLines;
-		}
+	    for (i = 0; i < references; i++) {
+		pixelInfo[i].pixels += childNodePtr->pixelInfo[i].pixels;
+		pixelInfo[i].numDispLines += childNodePtr->pixelInfo[i].numDispLines;
 	    }
 	}
     }
@@ -11650,23 +12603,21 @@ CheckNodeConsistency(
 	Tcl_Panic("CheckNodeConsistency: sum of size (%d) at level %d is wrong (%d is expected)",
 		nodePtr->size, nodePtr->level, size);
     }
-    if (flags & (CHECK_LINES | CHECK_SEGMENTS | CHECK_NODES | CHECK_TAGS)) {
-	if (numChildren != nodePtr->numChildren) {
-	    Tcl_Panic("CheckNodeConsistency: mismatch in numChildren (expected: %d, counted: %d)",
-		    numChildren, nodePtr->numChildren);
-	}
-	if (numLines != nodePtr->numLines) {
-	    Tcl_Panic("CheckNodeConsistency: mismatch in numLines (expected: %d, counted: %d)",
-		    numLines, nodePtr->numLines);
-	}
-	if (numLogicalLines != nodePtr->numLogicalLines) {
-	    Tcl_Panic("CheckNodeConsistency: mismatch in numLogicalLines (expected: %d, counted: %d)",
-		    numLogicalLines, nodePtr->numLogicalLines);
-	}
-	if (numBranches != nodePtr->numBranches) {
-	    Tcl_Panic("CheckNodeConsistency: mismatch in numLogicalLines (expected: %d, counted: %d)",
-		    numLogicalLines, nodePtr->numLogicalLines);
-	}
+    if (numChildren != nodePtr->numChildren) {
+	Tcl_Panic("CheckNodeConsistency: mismatch in numChildren (expected: %d, counted: %d)",
+		numChildren, nodePtr->numChildren);
+    }
+    if (numLines != nodePtr->numLines) {
+	Tcl_Panic("CheckNodeConsistency: mismatch in numLines (expected: %d, counted: %d)",
+		numLines, nodePtr->numLines);
+    }
+    if (numLogicalLines != nodePtr->numLogicalLines) {
+	Tcl_Panic("CheckNodeConsistency: mismatch in numLogicalLines (expected: %d, counted: %d)",
+		numLogicalLines, nodePtr->numLogicalLines);
+    }
+    if (numBranches != nodePtr->numBranches) {
+	Tcl_Panic("CheckNodeConsistency: mismatch in numLogicalLines (expected: %d, counted: %d)",
+		numLogicalLines, nodePtr->numLogicalLines);
     }
     if (tagonPtr) {
 	if (!TkTextTagSetIsEqual(tagonPtr, nodePtr->tagonPtr)) {
@@ -11693,23 +12644,21 @@ CheckNodeConsistency(
 	TkTextTagSetDecrRefCount(tagoffPtr);
 	TkTextTagSetDecrRefCount(additionalTagoffPtr);
     }
-    if (flags & CHECK_NODES) {
-	for (i = 0; i < references; i++) {
-	    if (pixelInfo[i].pixels != nodePtr->pixelInfo[i].pixels) {
-		Tcl_Panic("CheckNodeConsistency: mismatch in pixel count "
-			"(expected: %d, counted: %d) for widget (%d) at level %d",
-			pixelInfo[i].pixels, nodePtr->pixelInfo[i].pixels, i, nodePtr->level);
-	    }
-	    if (pixelInfo[i].numDispLines != nodePtr->pixelInfo[i].numDispLines) {
-		Tcl_Panic("CheckNodeConsistency: mismatch in number of display lines "
-			"(expected: %d, counted: %d) for widget (%d) at level %d",
-			pixelInfo[i].numDispLines, nodePtr->pixelInfo[i].numDispLines,
-			i, nodePtr->level);
-	    }
+    for (i = 0; i < references; i++) {
+	if (pixelInfo[i].pixels != nodePtr->pixelInfo[i].pixels) {
+	    Tcl_Panic("CheckNodeConsistency: mismatch in pixel count "
+		    "(expected: %d, counted: %d) for widget (%d) at level %d",
+		    pixelInfo[i].pixels, nodePtr->pixelInfo[i].pixels, i, nodePtr->level);
 	}
-	if (pixelInfo != pixelInfoBuf) {
-	    ckfree(pixelInfo);
+	if (pixelInfo[i].numDispLines != nodePtr->pixelInfo[i].numDispLines) {
+	    Tcl_Panic("CheckNodeConsistency: mismatch in number of display lines "
+		    "(expected: %d, counted: %d) for widget (%d) at level %d",
+		    pixelInfo[i].numDispLines, nodePtr->pixelInfo[i].numDispLines,
+		    i, nodePtr->level);
 	}
+    }
+    if (pixelInfo != pixelInfoBuf) {
+	ckfree(pixelInfo);
     }
 }
 
@@ -11747,7 +12696,7 @@ DeleteEmptyNode(
     assert(nodePtr->linePtr);
 
     changeToPixelInfo = treePtr->pixelInfoBuffer;
-    memset(changeToPixelInfo, 0, treePtr->numPixelReferences*sizeof(changeToPixelInfo[0]));
+    memset(changeToPixelInfo, 0, treePtr->numPixelReferences * sizeof(changeToPixelInfo[0]));
 
     /*
      * The pixel count of this node is going to zero.
@@ -11813,8 +12762,7 @@ DeleteEmptyNode(
 
 	FreeNode(nodePtr);
 	nodePtr = parentPtr;
-    }
-    while (nodePtr->numChildren == 0);
+    } while (nodePtr->numChildren == 0);
 }
 
 /*
@@ -11946,7 +12894,7 @@ RebalanceRecomputeNodeTagInfo(
     TkTextTagSetDecrRefCount(additionalTagoffPtr);
 }
 
-static Node*
+static Node *
 RebalanceFindSiblingForTag(
     Node *parentPtr,
     unsigned tagIndex)
@@ -12188,6 +13136,7 @@ RebalanceNodeJoinTagInfo(
     } else if (srcPtr->tagonPtr == sharedTextPtr->emptyTagInfoPtr) {
 	dstPtr->tagoffPtr = TkTextTagSetJoin2(dstPtr->tagoffPtr, srcPtr->tagoffPtr, dstPtr->tagonPtr);
     } else {
+#if !TK_TEXT_DONT_USE_BITFIELDS
 	unsigned size1 = TkTextTagSetSize(dstPtr->tagonPtr);
 	unsigned size2 = TkTextTagSetSize(srcPtr->tagonPtr);
 	unsigned minSize = MAX(TkTextTagSetSize(srcPtr->tagoffPtr), MAX(size1, size2));
@@ -12200,6 +13149,7 @@ RebalanceNodeJoinTagInfo(
 	} else if (size2 < size1) {
 	    srcPtr->tagonPtr = TkTextTagSetResize(srcPtr->tagonPtr, size1);
 	}
+#endif /* !TK_TEXT_DONT_USE_BITFIELDS */
 
 	dstPtr->tagoffPtr = TkTextTagSetJoin2ComplementToIntersection(
 		dstPtr->tagoffPtr, srcPtr->tagoffPtr, dstPtr->tagonPtr, srcPtr->tagonPtr);
@@ -12546,7 +13496,7 @@ TkBTreeGetLogicalLine(
 
     assert(linePtr);
 
-    if (linePtr->logicalLine || TkTextIsEmptyPeer(textPtr) || linePtr == TkBTreeGetStartLine(textPtr)) {
+    if (linePtr->logicalLine || linePtr == GetStartLine(sharedTextPtr, textPtr)) {
 	return linePtr;
     }
 
@@ -12654,11 +13604,8 @@ TkBTreeNextLogicalLine(
 
     assert(linePtr);
     assert(linePtr->nextPtr);
-    assert(linePtr != TkBTreeMyGetLastLine(sharedTextPtr, textPtr));
+    assert(linePtr != GetLastLine(sharedTextPtr, textPtr));
 
-    if (TkTextIsEmptyPeer(textPtr)) {
-	return linePtr;
-    }
     if (linePtr->nextPtr->logicalLine) {
 	return linePtr->nextPtr;
     }
@@ -12669,7 +13616,7 @@ TkBTreeNextLogicalLine(
 
     nodePtr = linePtr->parentPtr;
     linePtr = linePtr->nextPtr;
-    endLinePtr = TkBTreeMyGetLastLine(sharedTextPtr, textPtr);
+    endLinePtr = GetLastLine(sharedTextPtr, textPtr);
 
     while (linePtr && linePtr->parentPtr == nodePtr) {
 	if (linePtr->logicalLine || linePtr == endLinePtr) {
@@ -12729,7 +13676,7 @@ TkBTreeNextLogicalLine(
  *----------------------------------------------------------------------
  */
 
-TkTextLine *
+static TkTextLine *
 GetLastDisplayLine(
     TkText *textPtr,
     int *displayLineNo)
@@ -12738,7 +13685,7 @@ GetLastDisplayLine(
 
     linePtr = textPtr->endMarker->sectionPtr->linePtr;
     linePtr = TkBTreeGetLogicalLine(textPtr->sharedTextPtr, textPtr, linePtr);
-    *displayLineNo = GetDisplayLines(linePtr, textPtr->pixelReference) - 1;
+    *displayLineNo = GetDisplayLines(linePtr, textPtr->pixelReference);
     return linePtr;
 }
 
@@ -12761,7 +13708,7 @@ TkBTreeNextDisplayLine(
     assert(*displayLineNo >= 0);
     assert(*displayLineNo < GetDisplayLines(linePtr, textPtr->pixelReference));
 
-    if (offset == 0 || TkTextIsEmptyPeer(textPtr)) {
+    if (offset == 0) {
 	return linePtr;
     }
 
@@ -12801,7 +13748,7 @@ TkBTreeNextDisplayLine(
      */
 
     lineNo = TkBTreeLinesTo(textPtr->sharedTextPtr->tree, NULL, linePtr, NULL);
-    numLines = TkBTreeLinesTo(textPtr->sharedTextPtr->tree, NULL, GetLastLine(textPtr), NULL);
+    numLines = TkBTreeLinesTo(textPtr->sharedTextPtr->tree, NULL, TkBTreeGetLastLine(textPtr), NULL);
 
     while (parentPtr) {
 	if (!nodePtr || (!HasLeftNode(nodePtr) && offset >= parentPtr->pixelInfo[ref].numDispLines)) {
@@ -12865,7 +13812,7 @@ TkBTreeNextDisplayLine(
  *----------------------------------------------------------------------
  */
 
-TkTextLine *
+static TkTextLine *
 GetFirstDisplayLine(
     TkText *textPtr,
     int *displayLineNo)
@@ -12895,7 +13842,6 @@ TkBTreePrevDisplayLine(
     assert(linePtr->logicalLine || linePtr == TkBTreeGetStartLine(textPtr));
     assert(*displayLineNo >= 0);
     assert(*displayLineNo < GetDisplayLines(linePtr, textPtr->pixelReference));
-    assert(!TkTextIsEmptyPeer(textPtr));
 
     if (offset == 0) {
 	return linePtr;
@@ -13321,7 +14267,7 @@ TkBTreeSize(
     if (!textPtr) {
 	return TkBTreeGetRoot(tree)->size - 1;
     }
-    return TkBTreeCountSize(tree, textPtr, TkBTreeGetStartLine(textPtr), GetLastLine(textPtr));
+    return TkBTreeCountSize(tree, textPtr, TkBTreeGetStartLine(textPtr), TkBTreeGetLastLine(textPtr));
 
 }
 /*
@@ -13387,7 +14333,7 @@ CountSize(
 unsigned
 TkBTreeCountSize(
     const TkTextBTree tree,
-    const TkText* textPtr,	/* Relative to this client, can be NULL. */
+    const TkText *textPtr,	/* Relative to this client, can be NULL. */
     const TkTextLine *linePtr1,	/* Start counting at this line. */
     const TkTextLine *linePtr2)	/* Stop counting at this line (don't count this line). */
 {
@@ -13467,9 +14413,6 @@ TkBTreeMoveForward(
 
     if (byteCount == 0) {
 	return true;
-    }
-    if (TkTextIsEmptyPeer(indexPtr->textPtr)) {
-	return false;
     }
 
     byteIndex = byteCount + TkTextIndexGetByteIndex(indexPtr);
@@ -13580,9 +14523,6 @@ TkBTreeMoveBackward(
 
     if (byteCount == 0) {
 	return true;
-    }
-    if (TkTextIsEmptyPeer(indexPtr->textPtr)) {
-	return false;
     }
 
     linePtr = TkTextIndexGetLine(indexPtr);
@@ -14037,9 +14977,6 @@ CharCheckProc(
      * tagging adjacent to each other: they should be merged together.
      */
 
-    if (segPtr->refCount <= 0) {
-	Tcl_Panic("CharCheckProc: reference count <= 0");
-    }
     if (segPtr->size <= 0) {
 	Tcl_Panic("CharCheckProc: segment has size <= 0");
     }
@@ -14135,9 +15072,6 @@ HyphenCheckProc(
     const TkSharedText *sharedTextPtr,	/* Handle to shared text resource. */
     const TkTextSegment *segPtr)	/* Segment to check. */
 {
-    if (segPtr->refCount <= 0) {
-	Tcl_Panic("HyphenCheckProc: reference count <= 0");
-    }
     if (segPtr->size != 1) {
 	Tcl_Panic("HyphenCheckProc: hyphen has size %d", segPtr->size);
     }
@@ -14262,9 +15196,6 @@ BranchCheckProc(
     const TkTextSegment *prevPtr, *nextPtr;
     const TkTextLine *linePtr;
 
-    if (segPtr->refCount <= 0) {
-	Tcl_Panic("BranchCheckProc: reference count <= 0");
-    }
     if (segPtr->size != 0) {
 	Tcl_Panic("BranchCheckProc: branch has size %d", segPtr->size);
     }
@@ -14392,7 +15323,7 @@ static void
 LinkRestoreProc(
     TkTextSegment *segPtr)	/* Segment to reuse. */
 {
-    /* Restore old relationship (misuse an unused pointer). */
+    /* Restore old relationship (misuse of an unused pointer). */
     segPtr->body.link.prevPtr = (TkTextSegment *) segPtr->tagInfoPtr;
     assert(segPtr->body.link.prevPtr->typePtr == &tkTextBranchType);
     segPtr->tagInfoPtr = NULL;
@@ -14451,9 +15382,6 @@ LinkCheckProc(
     const TkTextSegment *prevPtr, *nextPtr;
     const TkTextLine *linePtr;
 
-    if (segPtr->refCount <= 0) {
-	Tcl_Panic("LinkCheckProc: reference count <= 0");
-    }
     if (segPtr->size != 0) {
 	Tcl_Panic("LinkCheckProc: link has size %d", segPtr->size);
     }
@@ -14646,6 +15574,9 @@ CheckSegments(
 	if (!segPtr->typePtr) {
 	    Tcl_Panic("CheckSegments: segment has null type");
 	}
+	if (segPtr->refCount <= 0) {
+	    Tcl_Panic("CheckSegments: reference count <= 0");
+	}
 	if (segPtr->protectionFlag) {
 	    Tcl_Panic("CheckSegments: segment is protected");
 	}
@@ -14659,14 +15590,14 @@ CheckSegments(
 		: segPtr != linePtr->segPtr) {
 	    Tcl_Panic("CheckSegments: wrong predecessor in segment");
 	}
-	if (segPtr->typePtr->group != SEG_GROUP_MARK && segPtr->privateMarkFlag) {
-	    Tcl_Panic("CheckSegments: wrong private flag in segment");
-	}
-	if (segPtr->typePtr->group != SEG_GROUP_MARK && segPtr->currentMarkFlag) {
-	    Tcl_Panic("CheckSegments: wrong current flag in segment");
-	}
-	if (segPtr->typePtr->group != SEG_GROUP_MARK && segPtr->insertMarkFlag) {
-	    Tcl_Panic("CheckSegments: wrong insert flag in segment");
+	if (segPtr->typePtr->group != SEG_GROUP_MARK) {
+	    if (segPtr->normalMarkFlag
+		    || segPtr->privateMarkFlag
+		    || segPtr->currentMarkFlag
+		    || segPtr->insertMarkFlag
+		    || segPtr->startEndMarkFlag) {
+		Tcl_Panic("CheckSegments: wrong mark flag in segment");
+	    }
 	}
 	if (!sharedTextPtr->steadyMarks
 	    	&& segPtr->typePtr->gravity == GRAVITY_RIGHT

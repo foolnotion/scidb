@@ -3,7 +3,7 @@
  *
  *	This module implements an integer set.
  *
- * Copyright (c) 2015-2016 Gregor Cramer
+ * Copyright (c) 2015-2017 Gregor Cramer
  *
  * See the file "license.terms" for information on usage and redistribution of
  * this file, and for a DISCLAIMER OF ALL WARRANTIES.
@@ -16,13 +16,8 @@
 #include "tk.h"
 #endif
 
+#include "tkBool.h"
 #include <stdint.h>
-
-#if !defined(TK_BOOL_IS_DEFINED) && !defined(__cplusplus)
-typedef int bool;
-enum { true = (int) 1, false = (int) 0 };
-# define TK_BOOL_IS_DEFINED
-#endif
 
 #if defined(__GNUC__) || defined(__clang__)
 # define __warn_unused__ __attribute__((warn_unused_result))
@@ -70,7 +65,9 @@ typedef struct TkIntSet {
 
 
 TkIntSet *TkIntSetNew();
+#if !TK_TEXT_DONT_USE_BITFIELDS
 TkIntSet *TkIntSetFromBits(const struct TkBitField *bf);
+#endif
 void TkIntSetDestroy(TkIntSet **setPtr);
 
 inline unsigned TkIntSetByteSize(const TkIntSet *set);
@@ -82,16 +79,20 @@ TkIntSet *TkIntSetJoin(TkIntSet *dst, const TkIntSet *src) __warn_unused__;
 TkIntSet *TkIntSetIntersect(TkIntSet *dst, const TkIntSet *src) __warn_unused__;
 TkIntSet *TkIntSetRemove(TkIntSet *dst, const TkIntSet *src) __warn_unused__;
 
+#if !TK_TEXT_DONT_USE_BITFIELDS
 TkIntSet *TkIntSetJoinBits(TkIntSet *dst, const struct TkBitField *src) __warn_unused__;
 TkIntSet *TkIntSetIntersectBits(TkIntSet *dst, const struct TkBitField *src) __warn_unused__;
 TkIntSet *TkIntSetRemoveBits(TkIntSet *dst, const struct TkBitField *src) __warn_unused__;
+/* dst := src - dst */
+TkIntSet *TkIntSetComplementToBits(TkIntSet *dst, const struct TkBitField *src) __warn_unused__;
+#endif
 
 /* dst := dst + set1 + set2 */
 TkIntSet *TkIntSetJoin2(TkIntSet *dst, const TkIntSet *set1, const TkIntSet *set2) __warn_unused__;
 /* dst := src - dst */
 TkIntSet *TkIntSetComplementTo(TkIntSet *dst, const TkIntSet *src) __warn_unused__;
 /* dst := dst + (set2 - set1) */
-TkIntSet* TkIntSetJoinComplementTo(TkIntSet *dst, const TkIntSet *set1, const TkIntSet *set2)
+TkIntSet *TkIntSetJoinComplementTo(TkIntSet *dst, const TkIntSet *set1, const TkIntSet *set2)
     __warn_unused__;
 /* dst := dst + (set1 - set2) + (set2 - set1) */
 TkIntSet *TkIntSetJoinNonIntersection(TkIntSet *dst, const TkIntSet *set1, const TkIntSet *set2)
@@ -102,9 +103,6 @@ TkIntSet *TkIntSetJoin2ComplementToIntersection(TkIntSet *dst,
 /* dst := (dst - set1) + (set1 - set2) */
 TkIntSet *TkIntSetJoinOfDifferences(TkIntSet *dst, const TkIntSet *set1, const TkIntSet *set2)
     __warn_unused__;
-
-/* dst := src - dst */
-TkIntSet *TkIntSetComplementToBits(TkIntSet *dst, const struct TkBitField *src) __warn_unused__;
 
 inline bool TkIntSetIsEmpty(const TkIntSet *set);
 inline unsigned TkIntSetSize(const TkIntSet *set);
@@ -124,26 +122,31 @@ inline bool TkIntSetIsEqual(const TkIntSet *set1, const TkIntSet *set2);
 inline bool TkIntSetContains(const TkIntSet *set1, const TkIntSet *set2);
 inline bool TkIntSetDisjunctive(const TkIntSet *set1, const TkIntSet *set2);
 inline bool TkIntSetIntersects(const TkIntSet *set1, const TkIntSet *set2);
+
+#if !TK_TEXT_DONT_USE_BITFIELDS
 bool TkIntSetIntersectionIsEqual(const TkIntSet *set1, const TkIntSet *set2,
     const struct TkBitField *del);
-
 bool TkIntSetIsEqualBits(const TkIntSet *set, const struct TkBitField *bf);
 bool TkIntSetContainsBits(const TkIntSet *set, const struct TkBitField *bf);
 bool TkIntSetDisjunctiveBits(const TkIntSet *set, const struct TkBitField *bf);
 bool TkIntSetIntersectionIsEqualBits(const TkIntSet *set, const struct TkBitField *bf,
     const struct TkBitField *del);
+bool TkIntSetIsContainedBits(const TkIntSet *set, const struct TkBitField *bf);
+#endif
 
 inline unsigned TkIntSetFindFirst(const TkIntSet *set);
 inline unsigned TkIntSetFindNext(const TkIntSet *set);
 
+#if !TK_TEXT_DONT_USE_BITFIELDS
 unsigned TkIntSetFindFirstInIntersection(const TkIntSet *set, const struct TkBitField *bf);
+#endif
 
 TkIntSet *TkIntSetAdd(TkIntSet *set, unsigned n) __warn_unused__;
 TkIntSet *TkIntSetErase(TkIntSet *set, unsigned n) __warn_unused__;
 TkIntSet *TkIntSetTestAndSet(TkIntSet *set, unsigned n) __warn_unused__;
 TkIntSet *TkIntSetTestAndUnset(TkIntSet *set, unsigned n) __warn_unused__;
 inline TkIntSet *TkIntSetAddOrErase(TkIntSet *set, unsigned n, bool add) __warn_unused__;
-TkIntSet* TkIntSetClear(TkIntSet *set) __warn_unused__;
+TkIntSet *TkIntSetClear(TkIntSet *set) __warn_unused__;
 
 #if !NDEBUG
 void TkIntSetPrint(const TkIntSet *set);

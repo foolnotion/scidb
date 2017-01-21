@@ -1613,7 +1613,7 @@ proc InsertMove {context position w level key data} {
 								if {$number ne "-"} { set txt "($number)" } else { set txt "\u2022" }
 								$w insert cur "$txt " [list variation $tag numbering]
 							} elseif {$level != 1 || !$Options(spacing:paragraph)} {
-								$w insert cur "( " [list variation $tag bracket]
+								$w insert cur "(\u00a0" [list variation $tag bracket]
 							} else {
 								set txt [format "(%c) " [expr {96 + $number}]]
 								$w insert cur $txt [list variation $tag numbering]

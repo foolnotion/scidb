@@ -3,7 +3,7 @@
  *
  *	This module implements operations on a list of integer ranges.
  *
- * Copyright (c) 2015-2016 Gregor Cramer
+ * Copyright (c) 2015-2017 Gregor Cramer
  *
  * See the file "license.terms" for information on usage and redistribution of
  * this file, and for a DISCLAIMER OF ALL WARRANTIES.
@@ -12,7 +12,6 @@
 #include "tkRangeList.h"
 
 #include <tk.h>
-#include <limits.h>
 #include <string.h>
 #include <assert.h>
 
@@ -502,16 +501,6 @@ TkRangeListRemove(
     TkRange *curr;
     TkRange *last;
     int span;
-#if TRACE_DISPLAY
-int meth = -1;
-unsigned i;
-char buf[8192];
-int size = 0;
-for (i = 0; i < ranges->size && size < sizeof(buf); ++i) {
-size += snprintf(buf + size, sizeof(buf) - size, "{%d,%d} ", ranges->items[i].low, ranges->items[i].high);
-}
-buf[sizeof(buf) - 1] = '\0';
-#endif
 
     assert(ranges);
     assert(low <= high);
@@ -537,9 +526,6 @@ buf[sizeof(buf) - 1] = '\0';
 
 	if (high < curr->high) {
 	    if (curr->low < low) {
-#if TRACE_DISPLAY
-meth = 1;
-#endif
 		/* Example: cur:{1,4} - arg:{2,3} -> {1,1}{4,4} */
 		int h = curr->high;
 		ranges->count -= span;
@@ -549,22 +535,13 @@ meth = 1;
 		curr->low = low;
 		curr->high = h;
 	    } else if (curr->low <= high) {
-#if TRACE_DISPLAY
-meth = 2;
-#endif
 		/* Example: cur:{1,4} - arg:{1,3} -> {4,4} */
 		int low = high + 1;
 		ranges->count -= low - curr->low;
 		curr->low = low;
 	    }
-#if TRACE_DISPLAY
-else meth = 3;
-#endif
 	} else {
 	    if (curr->low < low && low <= curr->high) {
-#if TRACE_DISPLAY
-meth = 4;
-#endif
 		/* Example: cur:{1,7} - arg:{2,5} -> {1,1} */
 		/* Example: cur:{1,3} - arg:{3,6} -> {1,2} */
 		/* Example: cur:{1,1} - arg:{2,5} -> {1,1} */
@@ -573,14 +550,8 @@ meth = 4;
 		curr->high = high;
 		curr += 1;
 	    } else if (curr->high < low) {
-#if TRACE_DISPLAY
-meth = 5;
-#endif
 		curr += 1;
 	    }
-#if TRACE_DISPLAY
-else meth = 6;
-#endif
 
 	    for (next = curr; next != last && next->high <= high; ++next) {
 		ranges->count -= TkRangeSpan(next);
@@ -599,14 +570,6 @@ else meth = 6;
 	}
     }
 
-#if TRACE_DISPLAY
-if (ComputeRangeSize(ranges) == ranges->count) {
-    printf("BUG: %s\n", buf);
-    printf("method: %d\n", meth);
-    printf("result: ");
-    TkRangeListPrint(ranges);
-}
-#endif
     assert(ComputeRangeSize(ranges) == ranges->count);
     return ranges;
 }

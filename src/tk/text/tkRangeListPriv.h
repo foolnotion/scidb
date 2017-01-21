@@ -3,7 +3,7 @@
  *
  *	Private implementation for range list.
  *
- * Copyright (c) 2015-2016 Gregor Cramer
+ * Copyright (c) 2015-2017 Gregor Cramer
  *
  * See the file "license.terms" for information on usage and redistribution of
  * this file, and for a DISCLAIMER OF ALL WARRANTIES.
@@ -20,7 +20,7 @@
 #include <assert.h>
 
 #if __STDC_VERSION__ < 199901L
-# define inline
+# define inline /* we are not C99 conform */
 #endif
 
 

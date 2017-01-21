@@ -21,7 +21,7 @@
  *
  * 4. Moreover our stack supports to limit the size, not only the depth.
  *
- * Copyright (c) 2015-2016 Gregor Cramer.
+ * Copyright (c) 2015-2017 Gregor Cramer.
  *
  * See the file "license.terms" for information on usage and redistribution of
  * this file, and for a DISCLAIMER OF ALL WARRANTIES.
@@ -30,13 +30,8 @@
 #ifndef _TKTEXTUNDO
 #define _TKTEXTUNDO
 
+#include "tkBool.h"
 #include <stdint.h>
-
-#if !defined(TK_BOOL_IS_DEFINED) && !defined(__cplusplus)
-typedef int bool;
-enum { true = (int) 1, false = (int) 0 };
-# define TK_BOOL_IS_DEFINED
-#endif
 
 #if __STDC_VERSION__ < 199901L
 # define inline /* we are not C99 conform */
@@ -179,6 +174,8 @@ inline unsigned TkTextUndoGetCurrentDepth(const TkTextUndoStack stack);
 inline unsigned TkTextUndoGetCurrentSize(const TkTextUndoStack stack);
 inline unsigned TkTextUndoGetCurrentUndoStackDepth(const TkTextUndoStack stack);
 inline unsigned TkTextUndoGetCurrentRedoStackDepth(const TkTextUndoStack stack);
+inline unsigned TkTextUndoCountUndoItems(const TkTextUndoStack stack);
+inline unsigned TkTextUndoCountRedoItems(const TkTextUndoStack stack);
 inline unsigned TkTextUndoGetCurrentUndoSize(const TkTextUndoStack stack);
 inline unsigned TkTextUndoGetCurrentRedoSize(const TkTextUndoStack stack);
 inline unsigned TkTextUndoCountCurrentUndoItems(const TkTextUndoStack stack);
@@ -188,8 +185,9 @@ inline bool TkTextUndoContentIsModified(const TkTextUndoStack stack);
 inline bool TkTextUndoIsPerformingUndo(const TkTextUndoStack stack);
 inline bool TkTextUndoIsPerformingRedo(const TkTextUndoStack stack);
 inline bool TkTextUndoIsPerformingUndoRedo(const TkTextUndoStack stack);
-const TkTextUndoAtom *TkTextUndoCurrentUndoAtom(const TkTextUndoStack stack);
-const TkTextUndoAtom *TkTextUndoCurrentRedoAtom(const TkTextUndoStack stack);
+inline const TkTextUndoAtom *TkTextUndoCurrentUndoAtom(const TkTextUndoStack stack);
+inline const TkTextUndoAtom *TkTextUndoCurrentRedoAtom(const TkTextUndoStack stack);
+inline const TkTextUndoSubAtom *TkTextUndoGetLastUndoSubAtom(const TkTextUndoStack stack);
 
 /*
  * Stack iterator functions.
@@ -223,6 +221,17 @@ void TkTextUndoPushSeparator(TkTextUndoStack stack);
  */
 
 int TkTextUndoPushRedoItem(TkTextUndoStack stack, TkTextUndoItem item, unsigned size);
+
+/*
+ * Swap newest undo item with given item. Returns the old item. Note that this
+ * function does not check whether the maximal undo byte size will be exceeded.
+ *
+ * Parameter 'size':
+ * In: size of given item.
+ * Out: size of returned item.
+ */
+
+TkTextUndoItem TkTextUndoSwapLastItem(TkTextUndoStack stack, TkTextUndoItem item, unsigned *size);
 
 /*
  * Perform undo/redo operations. Before the action starts a separator will be

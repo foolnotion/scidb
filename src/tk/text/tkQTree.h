@@ -3,7 +3,7 @@
  *
  *	Declarations for the Q-Tree implementation.
  *
- * Copyright (c) 2015-2016 Gregor Cramer
+ * Copyright (c) 2015-2017 Gregor Cramer
  *
  * See the file "license.terms" for information on usage and redistribution of
  * this file, and for a DISCLAIMER OF ALL WARRANTIES.
@@ -16,13 +16,8 @@
 #include "tkInt.h"
 #endif
 
+#include "tkBool.h"
 #include <stdint.h>
-
-#if !defined(TK_BOOL_IS_DEFINED) && !defined(__cplusplus)
-typedef int bool;
-enum { true = (int) 1, false = (int) 0 };
-# define TK_BOOL_IS_DEFINED
-#endif
 
 #if __STDC_VERSION__ < 199901L
 # define inline /* we are not C99 conform */
@@ -34,7 +29,6 @@ enum { true = (int) 1, false = (int) 0 };
  * ========================================================================= */
 
 typedef int32_t TkQTreeCoord;
-typedef int32_t TkQTreeState;
 
 typedef struct TkQTreeRect {
     TkQTreeCoord xmin, ymin, xmax, ymax;
@@ -66,6 +60,7 @@ inline TkQTreeRect *TkQTreeRectTranslate(TkQTreeRect *rect, TkQTreeCoord dx, TkQ
  * Definitions for the Q-Tree (Quartering Tree).
  * ========================================================================= */
 
+typedef int32_t TkQTreeState;
 typedef uintptr_t TkQTreeUid;
 typedef void *TkQTreeClientData;
 
@@ -92,7 +87,7 @@ bool TkQTreeConfigure(TkQTree *treePtr, const TkQTreeRect *rect);
  * Destroy the given tree. Will do nothing if given tree (derefernced treePtr)
  * is NULL.
  */
-void TkQTreeDestroy(TkQTree* treePtr);
+void TkQTreeDestroy(TkQTree *treePtr);
 
 /*
  * Return the bounding box of given tree.

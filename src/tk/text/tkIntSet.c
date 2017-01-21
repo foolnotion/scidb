@@ -6,7 +6,7 @@
  *	NOTE: the current implementation is for TkTextTagSet, so in general these
  *	functions are not modifying the arguments, except if this is expected.
  *
- * Copyright (c) 2015-2016 Gregor Cramer
+ * Copyright (c) 2015-2017 Gregor Cramer
  *
  * See the file "license.terms" for information on usage and redistribution of
  * this file, and for a DISCLAIMER OF ALL WARRANTIES.
@@ -21,7 +21,6 @@
 #endif
 
 #include <string.h>
-#include <limits.h>
 #include <assert.h>
 
 #ifndef MIN
@@ -93,6 +92,8 @@ TkIntSetIsEqual__(
 }
 
 
+#if !TK_TEXT_DONT_USE_BITFIELDS
+
 unsigned
 TkIntSetFindFirstInIntersection(
     const TkIntSet *set,
@@ -117,6 +118,8 @@ TkIntSetFindFirstInIntersection(
 
     return TK_SET_NPOS;
 }
+
+#endif /* !TK_TEXT_DONT_USE_BITFIELDS */
 
 
 TkIntSetType *
@@ -151,6 +154,8 @@ TkIntSetNew()
 }
 
 
+#if !TK_TEXT_DONT_USE_BITFIELDS
+
 TkIntSet *
 TkIntSetFromBits(
     const TkBitField *bf)
@@ -172,6 +177,8 @@ TkIntSetFromBits(
 
     return set;
 }
+
+#endif /* !TK_TEXT_DONT_USE_BITFIELDS */
 
 
 void
@@ -311,6 +318,8 @@ JoinBits(
 }
 
 
+#if !TK_TEXT_DONT_USE_BITFIELDS
+
 TkIntSet *
 TkIntSetJoinBits(
     TkIntSet *dst,
@@ -350,6 +359,8 @@ TkIntSetJoinBits(
     set->isSetFlag = true;
     return set;
 }
+
+#endif /* !TK_TEXT_DONT_USE_BITFIELDS */
 
 
 static TkIntSetType *
@@ -519,6 +530,8 @@ IntersectBits(
 }
 
 
+#if !TK_TEXT_DONT_USE_BITFIELDS
+
 TkIntSet *
 TkIntSetIntersectBits(
     TkIntSet *dst,
@@ -558,8 +571,10 @@ TkIntSetIntersectBits(
     return set;
 }
 
+#endif /* !TK_TEXT_DONT_USE_BITFIELDS */
 
-static TkIntSetType*
+
+static TkIntSetType *
 Remove(
     TkIntSetType *dst,
     const TkIntSetType *src, const TkIntSetType *srcEnd,
@@ -586,7 +601,7 @@ Remove(
 }
 
 
-TkIntSet*
+TkIntSet *
 TkIntSetRemove(
     TkIntSet *dst,
     const TkIntSet *src)
@@ -623,7 +638,7 @@ TkIntSetRemove(
 }
 
 
-static TkIntSetType*
+static TkIntSetType *
 RemoveBits(
     TkIntSetType *dst,
     const TkIntSetType *src, const TkIntSetType *srcEnd,
@@ -648,6 +663,8 @@ RemoveBits(
     return dst;
 }
 
+
+#if !TK_TEXT_DONT_USE_BITFIELDS
 
 TkIntSet *
 TkIntSetRemoveBits(
@@ -684,6 +701,8 @@ TkIntSetRemoveBits(
     set->isSetFlag = true;
     return set;
 }
+
+#endif /* !TK_TEXT_DONT_USE_BITFIELDS */
 
 
 static TkIntSetType *
@@ -733,7 +752,7 @@ TkIntSetComplementTo(
 }
 
 
-static TkIntSetType*
+static TkIntSetType *
 ComplementToBits(
     TkIntSetType *dst,
     const TkIntSetType *sub, const TkIntSetType *subEnd,
@@ -763,10 +782,12 @@ ComplementToBits(
 }
 
 
+#if !TK_TEXT_DONT_USE_BITFIELDS
+
 TkIntSet *
 TkIntSetComplementToBits(
     TkIntSet *dst,
-    const struct TkBitField *src)
+    const TkBitField *src)
 {
     TkIntSet *set;
     unsigned capacity1, capacity2;
@@ -798,6 +819,8 @@ TkIntSetComplementToBits(
     set->isSetFlag = true;
     return set;
 }
+
+#endif /* !TK_TEXT_DONT_USE_BITFIELDS */
 
 
 static TkIntSetType *
@@ -1166,10 +1189,36 @@ TkIntSetContains__(
 
 
 bool
+TkIntSetIsContainedBits(
+    const TkIntSet *set,
+    const TkBitField *bf)
+{
+    unsigned setSize, bitSize, i;
+
+    assert(bf);
+    assert(set);
+ 
+    setSize = TkIntSetSize(set);
+    bitSize = TkBitSize(bf);
+
+    for (i = 0; i < setSize; ++i) {
+	TkIntSetType value = set->buf[i];
+	if (value >= bitSize || !TkBitTest(bf, value)) {
+	    return false;
+	}
+    }
+
+    return true;
+}
+
+
+#if !TK_TEXT_DONT_USE_BITFIELDS
+
+bool
 TkIntSetIntersectionIsEqual(
     const TkIntSet *set1,
     const TkIntSet *set2,
-    const struct TkBitField *del)
+    const TkBitField *del)
 {
     const TkIntSetType *s1;
     const TkIntSetType *e1;
@@ -1223,8 +1272,8 @@ TkIntSetIntersectionIsEqual(
 bool
 TkIntSetIntersectionIsEqualBits(
     const TkIntSet *set,
-    const struct TkBitField *bf,
-    const struct TkBitField *del)
+    const TkBitField *bf,
+    const TkBitField *del)
 {
     TkBitField *cp = TkBitCopy(del, -1);
     bool test;
@@ -1241,6 +1290,8 @@ TkIntSetIntersectionIsEqualBits(
     return test;
 }
 
+#endif /* !TK_TEXT_DONT_USE_BITFIELDS */
+
 
 static TkIntSet *
 Add(
@@ -1251,7 +1302,7 @@ Add(
     unsigned size = set->end - set->buf;
 
     if (IsPowerOf2(size)) {
-	TkIntSet* newSet = malloc(SET_SIZE(MAX(2*size, 1)));
+	TkIntSet *newSet = malloc(SET_SIZE(MAX(2*size, 1)));
 	unsigned offs = pos - set->buf;
 
 	assert(offs <= size);
@@ -1279,7 +1330,7 @@ Add(
 }
 
 
-TkIntSet*
+TkIntSet *
 TkIntSetAdd(
     TkIntSet *set,
     unsigned n)
@@ -1308,7 +1359,7 @@ Erase(
     unsigned size = set->end - set->buf - 1;
 
     if (IsPowerOf2(size)) {
-	TkIntSet* newSet = malloc(SET_SIZE(size));
+	TkIntSet *newSet = malloc(SET_SIZE(size));
 	unsigned offs = pos - set->buf;
 
 	memcpy(newSet->buf, set->buf, offs*sizeof(TkIntSetType));
@@ -1353,7 +1404,7 @@ TkIntSetErase(
 }
 
 
-TkIntSet*
+TkIntSet *
 TkIntSetTestAndSet(
     TkIntSet *set,
     unsigned n)
@@ -1420,6 +1471,8 @@ TkIntSetClear(
     return newSet;
 }
 
+
+#if !TK_TEXT_DONT_USE_BITFIELDS
 
 bool
 TkIntSetIsEqualBits(
@@ -1507,6 +1560,9 @@ TkIntSetDisjunctiveBits(
 
     return true;
 }
+
+#endif /* !TK_TEXT_DONT_USE_BITFIELDS */
+
 
 #if !NDEBUG
 

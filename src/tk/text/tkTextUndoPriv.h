@@ -3,7 +3,7 @@
  *
  *	Private implementation for undo stack.
  *
- * Copyright (c) 2015-2016 Gregor Cramer
+ * Copyright (c) 2015-2017 Gregor Cramer
  *
  * See the file "license.terms" for information on usage and redistribution of
  * this file, and for a DISCLAIMER OF ALL WARRANTIES.
@@ -13,9 +13,10 @@
 # error "do not include this private header file"
 #endif
 
-
 #ifndef _TKTEXTUNDOPRIV
 #define _TKTEXTUNDOPRIV
+
+#include <stddef.h>
 
 typedef struct TkTextUndoMyAtom {
     unsigned capacity;
@@ -44,23 +45,23 @@ struct TkTextUndoStack {
     unsigned maxSize;		/* Maximal size of the stack. */
     unsigned undoDepth;		/* Current depth of undo stack. */
     unsigned redoDepth;		/* Current depth of redo stack. */
+    unsigned undoItems;		/* Current number of items on undo stack. */
+    unsigned redoItems;		/* Current number of items on redo stack. */
     unsigned undoSize;		/* Total size of undo items. */
     unsigned redoSize;		/* Total size of redo items. */
     bool doingUndo;		/* Currently an undo action is performed? */
-    bool doingRedo;		/* Currently an redo action is performed? */
+    bool doingRedo;		/* Currently a redo action is performed? */
 };
 
 #endif /* _TKTEXTUNDOPRIV */
-
 
 #ifdef _TK_NEED_IMPLEMENTATION
 
 #include <assert.h>
 
 #if __STDC_VERSION__ < 199901L
-# define inline
+# define inline /* we are not C99 conform */
 #endif
-
 
 inline unsigned
 TkTextUndoGetMaxUndoDepth(const TkTextUndoStack stack)
@@ -118,6 +119,14 @@ inline unsigned
 TkTextUndoGetCurrentRedoStackDepth(const TkTextUndoStack stack)
 { assert(stack); return stack->redoDepth + (TkTextUndoCountCurrentRedoItems(stack) ? 1 : 0); }
 
+inline unsigned
+TkTextUndoCountUndoItems(const TkTextUndoStack stack)
+{ assert(stack); return stack->undoItems + TkTextUndoCountCurrentUndoItems(stack); }
+
+inline unsigned
+TkTextUndoCountRedoItems(const TkTextUndoStack stack)
+{ assert(stack); return stack->redoItems + TkTextUndoCountCurrentRedoItems(stack); }
+
 inline void
 TkTextUndoSetContext(TkTextUndoStack stack, TkTextUndoContext context)
 { assert(stack); stack->context = context; }
@@ -157,6 +166,60 @@ TkTextUndoGetCurrentSize(
 {
     assert(stack);
     return stack->undoSize + stack->redoSize + (stack->current ? stack->current->undoSize : 0);
+}
+
+inline const TkTextUndoAtom *
+TkTextUndoCurrentUndoAtom(
+    const TkTextUndoStack stack)
+{
+    assert(stack);
+
+#if 0
+    if (stack->undoDepth > 0) {
+	assert(stack->last);
+	return &stack->last->data;
+    }
+#endif
+    if (stack->doingUndo) {
+	return NULL;
+    }
+    return stack->current && stack->current->data.arraySize > 0 ? &stack->current->data : NULL;
+}
+
+inline const TkTextUndoAtom *
+TkTextUndoCurrentRedoAtom(
+    const TkTextUndoStack stack)
+{
+    assert(stack);
+
+#if 0
+    if (stack->redoDepth > 0) {
+	assert(stack->last ? stack->last->next : stack->root);
+	return &(stack->last ? stack->last->next : stack->root)->data;
+    }
+#endif
+    if (stack->doingRedo) {
+	return NULL;
+    }
+    return stack->current && stack->current->data.arraySize > 0 ? &stack->current->data : NULL;
+}
+
+inline const TkTextUndoSubAtom *
+TkTextUndoGetLastUndoSubAtom(
+    const TkTextUndoStack stack)
+{
+    TkTextUndoAtom *last;
+
+    assert(stack);
+
+    if (stack->current) {
+	last = &stack->current->data;
+    } else if (stack->last) {
+	last = &stack->last->data;
+    } else {
+	return NULL;
+    }
+    return last->arraySize > 0 ? last->array + (last->arraySize - 1) : NULL;
 }
 
 #undef _TK_NEED_IMPLEMENTATION

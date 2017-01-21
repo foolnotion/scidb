@@ -1,5 +1,5 @@
 /*
- * tkTextDispLineBreak.c --
+ * tkTextLineBreak.c --
  *
  *	This module provides line break computation for line wrapping.
  *	It uses the library "libunibreak" (from Wu Yongwei) for the
@@ -8,7 +8,16 @@
  *	algorithm is used (it's a simplified version of the recommendation
  *	at http://www.unicode.org/reports/tr14/tr14-26.html).
  *
- * Copyright (c) 2015-2016 Gregor Cramer
+ *	The alternative is the use of ICU library (http://site.icu-project.org/),
+ *	instead of libunibreak, but this would require to support a very
+ *	complex interface of a dynamic load library, with other words, we
+ *	would need dozens of functions pointers. This is not really a drawback,
+ *	and probably the ICU library is the better choice, but I think that a
+ *	change to the ICU library is reasonable only if the Tcl/Tk developer team
+ *	is deciding to use this library also for complete Unicode support (character
+ *	conversion, for instance).
+ *
+ * Copyright (c) 2015-2017 Gregor Cramer
  *
  * See the file "license.terms" for information on usage and redistribution of
  * this file, and for a DISCLAIMER OF ALL WARRANTIES.
@@ -63,15 +72,16 @@ static int
 LoadFile(
     Tcl_Interp *interp,
     Tcl_Obj *pathPtr,
-    Tcl_LoadHandle* handle,
-    char const** symbols,
-    void** funcs)
+    Tcl_LoadHandle *handle,
+    char const **symbols,
+    void **funcs)
 {
-#if TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION == 5
+    /* Keep backward compatibility to 8.5 */
+# if TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION == 5
     return Tcl_FSLoadFile(interp, pathPtr, symbols[0], symbols[1], &funcs[0], &funcs[1], handle, NULL);
-#else
+# else
     return Tcl_LoadFile(interp, pathPtr, symbols, TCL_LOAD_GLOBAL, funcs, handle);
-#endif
+# endif
 }
 
 static void
@@ -181,7 +191,7 @@ TkTextComputeBreakLocations(
      */
 
     len += 1;
-    (*func)((const unsigned char*) text, len, lang, brks);
+    (*func)((const unsigned char *) text, len, lang, brks);
     len -= 1;
 
     for (i = 0; i < len; ++i) {
@@ -189,12 +199,48 @@ TkTextComputeBreakLocations(
 	case LINEBREAK_MUSTBREAK:
 	    break;
 	case LINEBREAK_ALLOWBREAK:
-	    /*
-	     * TODO: iox the problem with the contextual '-', the implementation of
-	     * libunibreak has forgotten this case.
-	     */
+	    if (text[i] == '-') {
+		if (brks[i] == LINEBREAK_ALLOWBREAK) {
+		    /*
+		     * Fix the problem with the contextual hyphen-minus sign, the implementation of
+		     * libunibreak has possibly forgotten this case.
+		     *
+		     * The hyphen-minus (U+002D) needs special context treatment. For simplicity we
+		     * will only check whether we have two preceding, and two succeeding letters.
+		     * TODO: Is there a better method for the decision?
+		     */
 
-	    if (text[i] == '/' && i > 8) {
+		    const char *r = text + i;
+		    const char *p, *q, *s;
+		    Tcl_UniChar uc;
+		    bool allow = false;
+
+		    q = Tcl_UtfPrev(r, text);
+		    if (q != r) {
+			Tcl_UtfToUniChar(q, &uc);
+			if (Tcl_UniCharIsAlpha(uc)) {
+			    p = Tcl_UtfPrev(q, text);
+			    if (p != q) {
+				Tcl_UtfToUniChar(p, &uc);
+				if (Tcl_UniCharIsAlpha(uc)) {
+				    s = r + 1;
+				    s += Tcl_UtfToUniChar(s, &uc);
+				    if (Tcl_UniCharIsAlpha(uc)) {
+					Tcl_UtfToUniChar(s, &uc);
+					if (Tcl_UniCharIsAlpha(uc)) {
+					    allow = true;
+					}
+				    }
+				}
+			    }
+			}
+		    }
+
+		    if (!allow) {
+			brks[i] = LINEBREAK_NOBREAK;
+		    }
+		}
+	    } else if (text[i] == '/' && i > 8) {
 		/*
 		 * Ignore the breaking chance if there is a chance immediately before:
 		 * no break inside "c/o", and no break after "http://" in a long line
@@ -667,6 +713,7 @@ ComputeBreakLocations(
     nletters = 0;
     brkIndex = 0;
     cls = BK;
+    prevCls = WJ;
     brks[len - 1] = LINEBREAK_MUSTBREAK;
 
     while (i < len) {
@@ -805,14 +852,52 @@ ComputeBreakLocations(
 	    nbytes = 3;
 	    brks[i + 0] = LINEBREAK_INSIDEACHAR;
 	    brks[i + 1] = LINEBREAK_INSIDEACHAR;
-	} else {
-	    /* Tcl does not support > 4 bytes (and it shouldn't do this) */
-	    assert((ch & 0xf8) == 0xf0);
+	} else if ((ch & 0xf8) == 0xf0) {
 	    pcls = AI;
 	    nbytes = 4;
 	    brks[i + 0] = LINEBREAK_INSIDEACHAR;
 	    brks[i + 1] = LINEBREAK_INSIDEACHAR;
 	    brks[i + 2] = LINEBREAK_INSIDEACHAR;
+#if TCL_UTF_MAX > 4
+	/*
+	 * NOTE: For any reason newer TCL versions will allow > 4 bytes. I cannot
+	 * understand this decision, this is not conform to UTF-8 standard.
+	 * Moreover this decision is introducing severe compatibility problems.
+	 */
+	} else if ((ch & 0xf8) == 0xf8) {
+	    pcls = AI;
+	    nbytes = 5;
+	    brks[i + 0] = LINEBREAK_INSIDEACHAR;
+	    brks[i + 1] = LINEBREAK_INSIDEACHAR;
+	    brks[i + 2] = LINEBREAK_INSIDEACHAR;
+	    brks[i + 3] = LINEBREAK_INSIDEACHAR;
+# if TCL_UTF_MAX > 5
+	} else if ((ch & 0xf8) == 0xfe) {
+	    pcls = AI;
+	    nbytes = 6;
+	    brks[i + 0] = LINEBREAK_INSIDEACHAR;
+	    brks[i + 1] = LINEBREAK_INSIDEACHAR;
+	    brks[i + 2] = LINEBREAK_INSIDEACHAR;
+	    brks[i + 3] = LINEBREAK_INSIDEACHAR;
+	    brks[i + 4] = LINEBREAK_INSIDEACHAR;
+# endif /*  TCL_UTF_MAX > 5 */
+#endif  /*  TCL_UTF_MAX > 4 */
+	} else {
+	    /*
+	     * This fallback is required, because ths current character conversion
+	     * algorithm in Tcl library is producing overlong sequences (a violation
+	     * of the UTF-8 standard). This observation has been reported to the
+	     * Tcl/Tk team, but the response was ignorance.
+	     */
+
+	    int k;
+	    const char *p = (const char *) text + i;
+
+	    pcls = AI;
+	    nbytes = Tcl_UtfNext(p) - p;
+	    for (k = 0; k < nbytes; ++k) {
+		brks[i + k] = LINEBREAK_INSIDEACHAR;
+	    }
 	}
 
 	if (i == 0) {
@@ -825,12 +910,15 @@ ComputeBreakLocations(
 	    case BK:
 		brks[i - 1] = LINEBREAK_NOBREAK;
 		brks[i] = LINEBREAK_MUSTBREAK;
+		prevCls = WJ;
 		return;
 	    case SP:
 		/* handle spaces explicitly; do not update cls */
 		if (i > 0) {
 		    brks[i - 1] = LINEBREAK_NOBREAK;
 		    prevCls = SP;
+		} else {
+		    prevCls = WJ;
 		}
 		nletters = 0;
 		break;
@@ -838,9 +926,9 @@ ComputeBreakLocations(
 		char brk = BrkPairTable[cls][HY];
 
 	    	/*
-		 * A hyphen needs special context treatment. For simplicity we
-		 * will only check whether we have two preceding letters, and
-		 * two succeeding letters.
+		 * The hyphen-minus (U+002D) needs special context treatment. For simplicity we
+		 * will only check whether we have two preceding, and two succeeding letters.
+		 * TODO: Is there a better method for the decision?
 		 */
 
 		brks[i - 1] = LINEBREAK_NOBREAK;
@@ -848,8 +936,12 @@ ComputeBreakLocations(
 
 		if (brk == INDIRECT) {
 		    prevCls = pcls;
-		} else if (brk == LINEBREAK_ALLOWBREAK && nletters >= 2) {
-		    brkIndex = i - 1;
+		} else {
+		    prevCls = WJ;
+
+		    if (brk == LINEBREAK_ALLOWBREAK && nletters >= 2) {
+			brkIndex = i - 1;
+		    }
 		}
 		nletters = 0;
 	    	break;
@@ -860,6 +952,8 @@ ComputeBreakLocations(
 		if (brk == INDIRECT) {
 		    brk = (prevCls == SP) ? LINEBREAK_ALLOWBREAK : LINEBREAK_NOBREAK;
 		    prevCls = pcls;
+		} else {
+		    prevCls = WJ;
 		}
 		brks[i - 1] = brk;
 		cls = pcls;
