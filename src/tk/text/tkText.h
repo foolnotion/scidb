@@ -146,6 +146,8 @@ typedef struct TkTextLine {
     				/* This set contains tag t if and only if at least one segment in
 				 * this line does not use tag t, provided that tag t is also included
 				 * in tagonPtr. */
+    TkTextPixelInfo *pixelInfo;	/* Array containing the pixel information for each referring
+    				 * text widget. */
     int32_t size;		/* Sum of sizes over all segments belonging to this line. */
     uint32_t numBranches;	/* Counting the number of branches on this line. Only count branches
     				 * connected with links, do not count branches pointing to a mark. */
@@ -155,8 +157,6 @@ typedef struct TkTextLine {
 				 * lines. The purpose of this flag is the acceleration of the line
 				 * break information. */
     uint32_t logicalLine:1;	/* Flag whether this is the start of a logical line. */
-    TkTextPixelInfo *pixelInfo;	/* Array containing the pixel information for each referring
-    				 * text widget. */
 } TkTextLine;
 
 /*
@@ -788,10 +788,10 @@ typedef struct TkTextTag {
      */
 
     Tk_3DBorder border;		/* Used for drawing background. NULL means no value specified here. */
-    int32_t borderWidth;	/* Width of 3-D border for background. */
+    int borderWidth;		/* Width of 3-D border for background. */
     Tcl_Obj *borderWidthPtr;	/* Width of 3-D border for background. */
     char *reliefString;		/* -relief option string (malloc-ed). NULL means option not specified. */
-    int32_t relief;		/* 3-D relief for background. */
+    int relief;			/* 3-D relief for background. */
     Pixmap bgStipple;		/* Stipple bitmap for background. None means no value specified here. */
     char *indentBgString;	/* Background will be indented accordingly to the -lmargin1, and
     				 * -lmargin2 options. */
@@ -808,16 +808,16 @@ typedef struct TkTextTag {
 				 * justifyString is non-NULL. */
     char *lMargin1String;	/* -lmargin1 option string (malloc-ed). NULL means option not
 				 * specified. */
-    int32_t lMargin1;		/* Left margin for first display line of each text line, in pixels.
+    int lMargin1;		/* Left margin for first display line of each text line, in pixels.
     				 * Only valid if lMargin1String is non-NULL. */
     char *lMargin2String;	/* -lmargin2 option string (malloc-ed). NULL means option not
     				 * specified. */
-    int32_t lMargin2;		/* Left margin for second and later display lines of each text line,
+    int lMargin2;		/* Left margin for second and later display lines of each text line,
     				 * in pixels. Only valid if lMargin2String is non-NULL. */
     Tk_3DBorder lMarginColor;	/* Used for drawing background in left margins. This is used for both
     				 * lmargin1 and lmargin2. NULL means no value specified here. */
     char *offsetString;		/* -offset option string (malloc-ed). NULL means option not specified. */
-    int32_t offset;		/* Vertical offset of text's baseline from baseline of line. Used
+    int offset;			/* Vertical offset of text's baseline from baseline of line. Used
     				 * for superscripts and subscripts. Only valid if offsetString is
 				 * non-NULL. */
     char *overstrikeString;	/* -overstrike option string (malloc-ed). NULL means option not
@@ -827,7 +827,7 @@ typedef struct TkTextTag {
     XColor *overstrikeColor;    /* Color for the overstrike. NULL means same color as foreground. */
     char *rMarginString;	/* -rmargin option string (malloc-ed). NULL means option not
     				 * specified. */
-    int32_t rMargin;		/* Right margin for text, in pixels. Only valid if rMarginString
+    int rMargin;		/* Right margin for text, in pixels. Only valid if rMarginString
     				 * is non-NULL. */
     Tk_3DBorder rMarginColor;	/* Used for drawing background in right margin. NULL means no value
     				 * specified here. */
@@ -837,21 +837,21 @@ typedef struct TkTextTag {
     				 * here. */
     char *spacing1String;	/* -spacing1 option string (malloc-ed). NULL means option not
     				 * specified. */
-    int32_t spacing1;		/* Extra spacing above first display line for text line. Only valid
+    int spacing1;		/* Extra spacing above first display line for text line. Only valid
     				 * if spacing1String is non-NULL. */
     char *spacing2String;	/* -spacing2 option string (malloc-ed). NULL means option not
     				 * specified. */
-    int32_t spacing2;		/* Extra spacing between display lines for the same text line. Only
+    int spacing2;		/* Extra spacing between display lines for the same text line. Only
     				 * valid if spacing2String is non-NULL. */
     char *spacing3String;	/* -spacing2 option string (malloc-ed). NULL means option not
     				 * specified. */
-    int32_t spacing3;		/* Extra spacing below last display line for text line. Only valid
+    int spacing3;		/* Extra spacing below last display line for text line. Only valid
     				 * if spacing3String is non-NULL. */
     Tcl_Obj *tabStringPtr;	/* -tabs option string. NULL means option not specified. */
     struct TkTextTabArray *tabArrayPtr;
 				/* Info about tabs for tag (malloc-ed) or NULL. Corresponds to
 				 * tabString. */
-    int32_t tabStyle;		/* One of TABULAR or WORDPROCESSOR or NONE (if not specified). */
+    int tabStyle;		/* One of TABULAR or WORDPROCESSOR or NONE (if not specified). */
     char *underlineString;	/* -underline option string (malloc-ed). NULL means option not
     				 * specified. */
     bool underline;		/* True means draw underline underneath text. Only valid if
@@ -867,7 +867,7 @@ typedef struct TkTextTag {
     TkTextSpaceMode spaceMode;	/* How to handle displaying spaces. Must be TEXT_SPACEMODE_NULL,
     				 * TEXT_SPACEMODE_NONE, TEXT_SPACEMODE_EXACT, or TEXT_SPACEMODE_TRIM. */
     Tcl_Obj *hyphenRulesPtr;	/* The hyphen rules string. */
-    int32_t hyphenRules;	/* The hyphen rules, only useful for soft hyphen segments. */
+    int hyphenRules;		/* The hyphen rules, only useful for soft hyphen segments. */
     Tcl_Obj *langPtr;		/* -lang option string. NULL means option not specified. */
     char lang[3];		/* The specified language for the text content, only enabled if not
     				 * NUL. */
@@ -887,7 +887,7 @@ typedef struct TkTextTag {
     				 * information is displayed on the screen (so need to recalculate
 				 * line dimensions if tag changes). */
     Tk_OptionTable optionTable;	/* Token representing the configuration specifications. */
-} TkTextTag;
+    } TkTextTag;
 
 /*
  * Some definitions for tag search, used by TkBTreeStartSearch, TkBTreeStartSearchBack:
@@ -1264,7 +1264,7 @@ typedef struct TkText {
     TkTextJustify justify;	/* How to justify text: TK_TEXT_JUSTIFY_LEFT, TK_TEXT_JUSTIFY_RIGHT,
     				 * TK_TEXT_JUSTIFY_CENTER, or TK_TEXT_JUSTIFY_FULL. */
     Tcl_Obj *hyphenRulesPtr;	/* The hyphen rules string. */
-    int32_t hyphenRules;	/* The hyphen rules, only useful for soft hyphen segments. */
+    int hyphenRules;		/* The hyphen rules, only useful for soft hyphen segments. */
     Tcl_Obj *langPtr;		/* -lang option string. NULL means option not specified. */
     char lang[3];		/* The specified language for the text content, only enabled if not
     				 * NUL. */
@@ -1854,7 +1854,7 @@ MODULE_SCOPE int	TkTextIndexYPixels(TkText *textPtr, const TkTextIndex *indexPtr
 MODULE_SCOPE bool	TkTextComputeBreakLocations(Tcl_Interp *interp, const char *text, unsigned len,
 			    const char *lang, char *brks);
 MODULE_SCOPE bool	TkTextTestLangCode(Tcl_Interp *interp, Tcl_Obj *langCodePtr);
-MODULE_SCOPE int	TkTextParseHyphenRules(TkText *textPtr, Tcl_Obj *objPtr, int32_t *rulesPtr);
+MODULE_SCOPE int	TkTextParseHyphenRules(TkText *textPtr, Tcl_Obj *objPtr, int *rulesPtr);
 MODULE_SCOPE void	TkTextLostSelection(ClientData clientData);
 MODULE_SCOPE void	TkTextConfigureUndoStack(TkSharedText *sharedTextPtr, int maxUndoDepth,
 			    int maxByteSize);
