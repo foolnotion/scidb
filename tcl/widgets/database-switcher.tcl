@@ -1099,8 +1099,8 @@ proc HandleDropPosition {w actions x y} {
 		return refuse_drop
 	}
 
-	if {$Vars(curr-item) == -1} { return refuse_drop }
-	return copy
+	if {$Vars(curr-item) == -1} { return copy }
+	return ask
 }
 
 
