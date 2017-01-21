@@ -37,9 +37,12 @@ tkText_Init(Tcl_Interp *interp)
     if (0 == Tcl_PkgRequire(interp, "Tk", "8.5", 0)) {
         return TCL_ERROR;
     }
+
+#if USE_INLINE_TEXT
     Tcl_PkgProvide(interp, "TkText", "1.0");
     Tcl_CreateObjCommand(interp, "text", Tk_TextObjCmd, 0, 0);
     Tcl_CreateObjCommand(interp, "::tk::text", Tk_TextObjCmd, 0, 0);
+#endif
 
     return TCL_OK;
 }
