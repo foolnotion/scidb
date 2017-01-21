@@ -1460,8 +1460,12 @@ proc UpdateHeader {context position w data} {
 				$w insert cur $::mc::VariantName($variant) opening
 			}
 		}
+	} else if {$Vars(old-editor)} {
+		while {[$w count -lines 1.0 end] > 1 && [$w get 1.0] == "\n"} {
+			$w delete 1.0
+		}
 	} else {
-		while {[$w get 1.0] == "\n"} {
+		while {![$w isempty] > 1 && [$w get 1.0] == "\n"} {
 			$w delete 1.0
 		}
 	}

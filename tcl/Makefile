@@ -43,7 +43,6 @@ SOURCES = \
 	dialogs/fileselectionbox.tcl \
 	dialogs/help.tcl \
 	contrib/tkmenu.tcl \
-	contrib/tktext.tcl \
 	contrib/treectrl.tcl \
 	contrib/filelist-bindings.tcl \
 	utils/locale.tcl \
@@ -147,6 +146,10 @@ SOURCES = \
 	utils/shadow.tcl \
 	menu.tcl \
 	end.tcl \
+
+ifneq ($(USE_INLINE_TEXT),)
+	contrib/tktext.tcl
+endif
 
 SCRIPTS = $(SCRIPT) $(UPDATE_PHOTO_FILES)
 
