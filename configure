@@ -159,6 +159,7 @@ array set feature {
     gprof-profiling no
     gcov-coverage   no
     splash-screen   yes
+    inline-text     yes
 }
 
 array set force {
@@ -204,6 +205,7 @@ array set option {
     SYS_INOTIFY     {}
     HAVE_STATVFS    {}
     ENGINES         {stockfish Sjeng}
+    USE_INLINE_TEXT {}
 }
 
 array set defaults {
@@ -1914,6 +1916,7 @@ proc writeMakefile {success} {
     if { $feature(gcov-coverage)}   { Append option(PROFILING) "-coverage" }
 #   if {$feature(splash-screen)}    { set option(SPLASH) "yes" }
 #   if {!$feature(splash-screen)}   { set option(SPLASH) "no" }
+    if { $feature(inline-text)}     { set option(USE_INLINE_TEXT) "-DUSE_INLINE_TEXT=1" }
 
     set option(FREEDESKTOP) $feature(freedesktop)
     set option(TCL_VERSION) $configure(tcl-version)
@@ -2127,6 +2130,7 @@ proc usage {rc} {
     puts "  --enable-gcov-coverage     enable coverage (slows down the program)"
     puts "                             \[default=$feature(gcov-coverage)\]"
 #   puts "  --enable-splash-screen    enable (or disable) the splash screen \[default=$feature(splash-screen)\]"
+    puts "  --enable-inline-text      enable inline text widget (revised implementation) \[default=$feature(inline-text)\]"
     puts ""
     puts "Additional Options:"
     puts "  --suppress-insane-message  suppress the message about an insane distribution"
