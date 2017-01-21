@@ -760,8 +760,16 @@ Variation::difference(Root const* root, Variation const* var, unsigned level, No
 	{
 		KeyNode const* lhs = m_list[i];			// node from current game
 		KeyNode const* rhs = var->m_list[k];	// node from previous game
+		int cmp = 0;
 
-		if (lhs->key() < rhs->key())
+		if (lhs->key() == rhs->key()) {
+			if (lhs->key() < rhs->key())
+				cmp = -1;
+			else if (rhs->key() < lhs->key())
+				cmp = +1;
+		}
+
+		if (cmp < 0)
 		{
 			unsigned ii = i;
 
@@ -774,7 +782,7 @@ Variation::difference(Root const* root, Variation const* var, unsigned level, No
 			nodes.push_back(root->newAction(Action::Finish, level));
 			i = ii;
 		}
-		else if (rhs->key() < lhs->key())
+		else if (cmp > 0)
 		{
 			do
 				++k;
