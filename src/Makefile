@@ -22,8 +22,8 @@ ALL_INCLUDE		= $(INCLUDE) $(TCL_INCLUDE) $(TK_INCLUDE) $(X_INCLUDE) $(ZLIB_INC)
 ALL_CXXFLAGS	= $(OPTIMIZE) $(PROFILING) $(CXX_DEBUG) $(CXXFLAGS) $(SYS_CXXFLAGS)
 MINIZIP_LIB		= -Lutil/minizip -lminizip
 
-MAKEFLAGS	+= --no-print-directory
-LDFLAGS		+= $(SYS_LDFLAGS)
+MAKEFLAGS		+= --no-print-directory
+LDFLAGS			+= $(SYS_LDFLAGS)
 
 LIBS_BASE = \
 	mstl/libmstl.a \
@@ -56,8 +56,11 @@ TK_LIBS = \
 	tk/jpeg/libjpegd.a \
 	tk/treectrl/libtreectrl.a \
 	tk/html/libTkhtml3.a \
-	tk/text/libTkText.a \
 	tk/tkdnd/libtkDnd.a \
+
+ifneq ($(USE_INLINE_TEXT),)
+	TK_LIBS += tk/text/libTkText.a
+endif
 
 SRC = \
 	best_move.cpp \
