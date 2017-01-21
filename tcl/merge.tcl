@@ -94,7 +94,7 @@ proc openDialog {parent primary secondary} {
 		wm withdraw $dlg
 
 		set pw [panedwindow $dlg.main -orient horizontal -borderwidth 0 -opaqueresize true -sashwidth 6]
-#			$pw configure -background [::theme::getColor background]
+#		$pw configure -background [::theme::getColor background]
 		::theme::configurePanedWindow $pw
 		pack $pw -fill both -expand yes
 
@@ -361,11 +361,11 @@ proc alreadyMerged {primary secondary} {
 proc TableConfigured {t} {
 	variable Priv
 
+	bind $t <<TableConfigured>> {#}
+
 	foreach cmd $Priv(script) {
 		{*}$cmd
 	}
-
-	bind $t <<TableConfigured>> {#}
 }
 
 
@@ -533,6 +533,7 @@ proc UpdatePreview {} {
 	::pgn::setup::setupStyle merge $Priv(pos:merge)
 	set updateCmd [namespace current]::UpdateDisplay(merge)
 	::scidb::game::subscribe pgn $Priv(pos:merge) $updateCmd no
+	::scidb::game::layout $Priv(pos:merge)
 	$Priv(pgn:merge) yview moveto 0.0
 	::scidb::game::unsubscribe pgn $Priv(pos:merge) $updateCmd
 

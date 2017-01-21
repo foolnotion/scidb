@@ -148,12 +148,14 @@ proc textLineScroll {w cmd args} {
 			lassign [$w yview] first last
 
 			set incr     [font metrics [$w cget -font] -linespace]
-			set height   [expr {[winfo height $w] - 2*([$w cget -borderwidth] + [$w cget -pady])}]
-			set visible  [expr {$height/$incr}]
+			set height   [expr {max(1, [winfo height $w] - 2*([$w cget -borderwidth] + [$w cget -pady]))}]
+			set visible  [expr {double($height)/$incr}]
 			set total    [expr {int($visible/($last - $first) + 0.5)}]
 			set topline  [expr {int($fraction*double($total) + 0.5)}]
 
-			$w yview moveto [expr {double($topline)/double($total)}]
+			if {$total > 0} {
+				$w yview moveto [expr {double($topline)/double($total)}]
+			}
 		}
 
 		default {
