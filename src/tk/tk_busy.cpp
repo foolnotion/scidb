@@ -102,6 +102,8 @@ ScCreateBusy(Tk_FakeWin *winPtr, Tk_Window tkRef, Window *parentPtr, Tk_Window t
 	    busyPtr->width = rect.right - rect.left;
 	    busyPtr->height = rect.bottom - rect.top;
 	}
+
+        /* XXX parentPtr will not be set. */
     } else {
 	*parentPtr = Tk_WindowId(tkParent);
 	*parentPtr = (Window) Tk_GetHWND(*parentPtr);

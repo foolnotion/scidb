@@ -181,7 +181,7 @@ PlayerDictionary::search(mstl::string const& name) const
 	if (name.empty())
 		return 0;
 
-	char letter = name.front();
+	char letter = ::toupper(name.front());
 
 	for (unsigned i = 0, k = 0; i < m_selector.size(); ++i)
 	{
@@ -191,7 +191,7 @@ PlayerDictionary::search(mstl::string const& name) const
 		{
 			char const* s = Player::getPlayer(index).asciiName();
 
-			if (*s == letter && ::strncmp(name, s, name.size()) == 0)
+			if (*s == letter && ::strncasecmp(name, s, name.size()) == 0)
 				return k;
 
 			++k;
