@@ -148,7 +148,7 @@ SOURCES = \
 	end.tcl \
 
 ifneq ($(USE_INLINE_TEXT),)
-	contrib/tktext.tcl
+SOURCES += contrib/tktext.tcl
 endif
 
 SCRIPTS = $(SCRIPT) $(UPDATE_PHOTO_FILES)

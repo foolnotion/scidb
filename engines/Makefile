@@ -19,6 +19,7 @@ all:
 	done
 
 depend:
+	# no action
 
 clean:
 	@for dir in $(ENGINES); do \
