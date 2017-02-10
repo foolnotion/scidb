@@ -559,7 +559,7 @@ proc Activate {nb} {
 proc Deactivate {nb} {
 	variable Vars
 
-	if {$Vars(active)} {
+	if {$Vars(active) && ![string match {.application.*} [focus]]} {
 		set Vars(active) 0
 		set current [lindex [split [$nb select] .] end]
 		${current}::setActive no

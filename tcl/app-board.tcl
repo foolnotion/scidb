@@ -429,8 +429,14 @@ proc activate {w flag} {
 
 
 proc setActive {flag} {
+	variable Vars
+
 	::move::enable ;# required here because <<ControlOff>> might fail
 	::marks::releaseSquare
+
+	if {$flag && $Vars(active)} {
+		focus $Vars(widget:frame)
+	}
 }
 
 

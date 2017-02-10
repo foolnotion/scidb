@@ -245,6 +245,7 @@ proc buildText {path context {forceSbSet 0}} {
 	variable ContextList
 	variable Context
 	variable Lookup
+	global env
 
 	variable [namespace parent]::${context}::Options
 	variable [namespace parent]::${context}::Colors

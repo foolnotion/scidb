@@ -192,22 +192,29 @@ proc build {parent width height} {
 	set Vars(diagram:state) 0
 	set Vars(diagram:caps) 0
 	set Vars(old-editor) 0
+	set Vars(steadymarks) 0
 	set Vars(indentbackground) {}
 	set Vars(deletemarks) {}
 
-	set steadyMarks 0
-	catch { set steadyMarks [$Vars(pgn:0) cget -steadymarks] }
-	if {$steadyMarks} {
-		# The revised version of tk::text has more useful features and bugfixes.
-		set Vars(indentbackground) {-indentbackground 1}
-		# set Vars(deletemarks) -marks XXX not yet working
-	} else {
+	if {[catch { set Vars(steadymarks) [$Vars(pgn:0) cget -steadymarks] }]} {
 		set Vars(old-editor) 1
+	} else {
+		## The following does not work, because it may happen that we have the following
+		## succeeding actions:
+		##		action {remove 1 m-0.22.0.77.0.76 m-0.23}
+		##		action {replace 1 m-0.22.0.78 m-0.23}
+		# if {$Vars(steadymarks)} {
+		# 	set Vars(deletemarks) -marks
+		# }
+		set Vars(indentbackground) {-indentbackground 1}
 	}
 
 	::pgn::setup::setupStyle editor {0 1 2 3 4 5 6 7 8}
-#	::scidb::game::undoSetup 20 9999
-	::scidb::game::undoSetup 200 1
+	if {$Vars(old-editor)} {
+		::scidb::game::undoSetup 20 9999
+	} else {
+		::scidb::game::undoSetup 200 1
+	}
 
 	set tbGame [::toolbar::toolbar $top \
 		-id editor-game \
@@ -1149,7 +1156,7 @@ proc DoLayout {position content {context editor} {w {}}} {
 
 			end {
 				set level [lindex $node 3]
-				Indent $context $w $level $startVar($level)
+				Indent $context $w $level $startVar($level) cur
 				incr level -1
 			}
 
@@ -1162,7 +1169,7 @@ proc DoLayout {position content {context editor} {w {}}} {
 						lassign $args unused level removePos insertMark
 						$w delete {*}$Vars(deletemarks) $removePos $insertMark
 						$w mark gravity $insertMark right
-						$w mark set indent:start $insertMark
+						$w mark set indent:start $removePos
 						$w mark gravity indent:start left
 						$w mark set cur $insertMark
 					}
@@ -1177,7 +1184,7 @@ proc DoLayout {position content {context editor} {w {}}} {
 
 					finish {
 						set level [lindex $args 1]
-						Indent $context $w $level indent:start
+						Indent $context $w $level indent:start cur
 						$w mark gravity cur left
 						Mark $w $insertMark
 						$w mark gravity cur right
@@ -1260,7 +1267,7 @@ proc DoLayout {position content {context editor} {w {}}} {
 								if {[string length $result]} { $w insert cur " " }
 								$w insert cur "($reason)"
 							}
-						} elseif {$Vars(old-editor)} {
+						} elseif {!$Vars(steadymarks)} {
 							# NOTE: We need a blind character between two mark because
 							# the editor is shuffling consecutive marks.
  							$w insert cur "\u200b"
@@ -1328,7 +1335,8 @@ proc DoLayout {position content {context editor} {w {}}} {
 	if {[llength $content] > 1} {
 		if {[info exists env(SCIDB_PGN_DUMP)]} {
 			puts "==============================================="
-			puts [$w dump -all -command [namespace code [list Dump $w]] 1.0 end]
+			# puts [$w dump -all -command [namespace code [list Dump $w]] 1.0 end]
+			puts [$w dump -text -mark -command [namespace code [list Dump $w]] 1.0 end]
 			puts "==============================================="
 		}
 		if {[info exists env(SCIDB_PGN_INSPECT)]} {
@@ -1345,7 +1353,7 @@ proc DoLayout {position content {context editor} {w {}}} {
 }
 
 
-proc Indent {context w level key} {
+proc Indent {context w level from to} {
 	variable ::pgn::${context}::Options
 
 	if {$level > 0} {
@@ -1353,7 +1361,7 @@ proc Indent {context w level key} {
 			if {[incr level -1] == 0} { return }
 		}
 		set level [expr {min($level, $Options(indent:max))}]
-		$w tag add indent$level $key cur
+		$w tag add indent$level $from $to
 	}
 }
 
@@ -1489,7 +1497,7 @@ proc InsertMove {context position w level key data} {
 	variable Vars
 
 	if {[llength $data] == 0} {
-		if {$Vars(old-editor)} {
+		if {!$Vars(steadymarks)} {
 			# NOTE: We need a blind character between each mark because
 			# the editor is shuffling consecutive marks.
 			if {$level == 0} { set main main } else { set main variation }
@@ -1528,7 +1536,7 @@ proc InsertMove {context position w level key data} {
 					")" {
 						if {$level != 1 || !$Options(spacing:paragraph)} {
 							$w insert cur "\u00a0)" {variation bracket}
-						} elseif {$Vars(old-editor)} {
+						} elseif {!$Vars(steadymarks)} {
 							# NOTE: We need a blind character between each mark because
 							# the editor is shuffling consecutive marks.
 							$w insert cur "\u200b" $main
@@ -1553,7 +1561,7 @@ proc InsertMove {context position w level key data} {
 					"]" {
 						if {$count == $number && $level > $Options(indent:max)} {
 							$w insert cur "]" {variation bracket}
-						} elseif {$Vars(old-editor)} {
+						} elseif {!$Vars(steadymarks)} {
 							# NOTE: We need a blind character between each marks because
 							# the editor is shuffling consecutive marks.
  							$w insert cur "\u200b" {variation bracket}
@@ -1593,7 +1601,7 @@ proc InsertMove {context position w level key data} {
 						}
 						if {$space eq "*" && ($level != 1 || !$Options(spacing:paragraph))} {
 							$w insert cur "\u00a0)" {variation bracket}
-						} elseif {$Vars(old-editor)} {
+						} elseif {!$Vars(steadymarks)} {
 							# NOTE: We need a blind character between each mark because
 							# the editor is shuffling consecutive marks.
 							$w insert cur "\u200b" $main
