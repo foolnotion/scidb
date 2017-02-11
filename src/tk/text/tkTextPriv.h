@@ -641,7 +641,7 @@ TkTextTag *
 TkBTreeGetTags(
     const TkTextIndex *indexPtr)/* Indicates a particular position in the B-tree. */
 {
-    TkTextSegment *segPtr = TkTextIndexGetContentSegment(indexPtr, NULL);
+    const TkTextSegment *segPtr = TkTextIndexGetContentSegment(indexPtr, NULL);
     return TkBTreeGetSegmentTags(TkTextIndexGetShared(indexPtr), segPtr, indexPtr->textPtr);
 }
 

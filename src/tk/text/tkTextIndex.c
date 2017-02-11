@@ -30,15 +30,6 @@
 # define DEBUG(expr) expr
 #endif
 
-#if TK_MAJOR_VERSION < 9
-/*
- * The special index identifier "begin" currently has the lowest precedence,
- * because of portability reasons. But in a future Tk version it should have
- * the same precedence as the special index identifier "end".
- */
-# define BEGIN_DOES_NOT_BELONG_TO_BASE 1
-#endif
-
 /*
  * Modifiers for index parsing: 'display', 'any' or nothing.
  */
@@ -674,6 +665,7 @@ TkTextIndexSetupToStartOfText(
     indexPtr->priv.lineNo = textPtr ? -1 : 0;
     indexPtr->priv.lineNoRel = 0;
     indexPtr->priv.isCharSegment = false;
+    DEBUG(indexPtr->discardConsistencyCheck = false);
 
     if (textPtr) {
 	indexPtr->priv.segPtr = textPtr->startMarker;
@@ -718,6 +710,7 @@ TkTextIndexSetupToEndOfText(
     indexPtr->stateEpoch = TkBTreeEpoch(tree);
     indexPtr->priv.lineNo = -1;
     indexPtr->priv.lineNoRel = -1;
+    DEBUG(indexPtr->discardConsistencyCheck = false);
 
     if (!textPtr) {
 	indexPtr->priv.segPtr = TkBTreeGetShared(tree)->endMarker;
@@ -2277,7 +2270,7 @@ GetIndex(
 	    return true;
 	}
     }
-#endif
+#endif /* BEGIN_DOES_NOT_BELONG_TO_BASE */
 
     /*
      *------------------------------------------------

@@ -78,7 +78,8 @@ LoadFile(
 {
     /* Keep backward compatibility to 8.5 */
 # if TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION == 5
-    return Tcl_FSLoadFile(interp, pathPtr, symbols[0], symbols[1], &funcs[0], &funcs[1], handle, NULL);
+    return Tcl_FSLoadFile(interp, pathPtr, symbols[0], symbols[1],
+	    (void *) &funcs[0], (void *) &funcs[1], handle, NULL);
 # else
     return Tcl_LoadFile(interp, pathPtr, symbols, TCL_LOAD_GLOBAL, funcs, handle);
 # endif
@@ -203,7 +204,7 @@ TkTextComputeBreakLocations(
 		if (brks[i] == LINEBREAK_ALLOWBREAK) {
 		    /*
 		     * Fix the problem with the contextual hyphen-minus sign, the implementation of
-		     * libunibreak has possibly forgotten this case.
+		     * libunibreak has (possibly) forgotten this case.
 		     *
 		     * The hyphen-minus (U+002D) needs special context treatment. For simplicity we
 		     * will only check whether we have two preceding, and two succeeding letters.
@@ -290,7 +291,7 @@ typedef enum {
 
 /*
  * Changes in table below (different from Unicode recommendation):
- * 
+ *
  * 0a: CB -> BK	(LINE FEED)
  * 0d: CR -> BK (CARRIAGE RETURN)
  * 0e: XX -> BK (SHIFT OUT)
@@ -323,7 +324,7 @@ static const char Table_0000[256] = {
 
 /*
  * Changes in table below (different from Unicode recommendation):
- * 
+ *
  * e2 80 89: BA -> WJ (THIN SPACE)
  * e2 80 0a: BA -> WJ (HAIR SPACE)
  */

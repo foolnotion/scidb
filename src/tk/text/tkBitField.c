@@ -11,6 +11,7 @@
 
 #include "tkBitField.h"
 #include "tkIntSet.h"
+#include "tkAlloc.h"
 #include <string.h>
 #include <assert.h>
 
@@ -31,11 +32,6 @@
 #else
 # define DEBUG_ALLOC(expr)
 #endif
-
-
-/* the main reason for this definition is portability to 8.5 */
-# define malloc(size)	(void *) ckalloc(size)
-# define free(ptr)	ckfree((char *) ptr)
 
 
 #define NBITS		TK_BIT_NBITS
@@ -128,7 +124,7 @@ LsbIndex(uint32_t x)
 {
     /* Source: http://graphics.stanford.edu/~seander/bithacks.html#ZerosOnRightLinear */
     static const unsigned MultiplyDeBruijnBitPosition[32] = {
-	 0,  1, 28,  2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17,  4, 8, 
+	 0,  1, 28,  2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17,  4, 8,
 	31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18,  6, 11,  5, 10, 9
     };
     return MultiplyDeBruijnBitPosition[((uint32_t) ((x & -x)*0x077cb531)) >> 27];
@@ -302,7 +298,7 @@ TkBitResize(
 
 	if (bf->refCount <= 1) {
 	    DEBUG_ALLOC(Free(bf));
-	    bf = (TkBitField *) ckrealloc((char *) bf, BF_SIZE(newSize));
+	    bf = realloc((char *) bf, BF_SIZE(newSize));
 	    DEBUG_ALLOC(Use(bf));
 	} else {
 	    TkBitField *newBF = malloc(BF_SIZE(newSize));
@@ -1035,6 +1031,36 @@ TkBitFindNext(
 
 
 unsigned
+TkBitFindNextNot(
+    const TkBitField *bf,
+    unsigned prev)
+{
+    TkBitWord bits;
+    unsigned i, words;
+
+    assert(bf);
+    assert(prev < TkBitSize(bf));
+
+    i = WORD_INDEX(prev);
+    bits = bf->bits[i] & ~BIT_SPAN(0, BIT_INDEX(prev));
+
+    if (~bits != ~((TkBitWord) 0)) {
+	return NBITS*i + LsbIndex(bits);
+    }
+
+    words = NWORDS(bf->size);
+
+    for (++i; i < words; ++i) {
+	if (bits != ~((TkBitWord) 0)) {
+	    return NBITS*i + LsbIndex(~bits);
+	}
+    }
+
+    return TK_BIT_NPOS;
+}
+
+
+unsigned
 TkBitFindPrev(
     const TkBitField *bf,
     unsigned next)
@@ -1162,12 +1188,11 @@ TkBitPrint(
 
 #endif /* !NDEBUG */
 
-#if TK_TEXT_LINE_TAGGING
+#if 0
 
 /*
- * These functions are not yet needed, but shouldn't be removed, because they will
- * be important if the text widget is supporting line based tagging (currently line
- * based tagging is not supported by the display functions).
+ * These functions are not needed anymore, but shouldn't be removed, because sometimes
+ * any of these functions might be useful.
  */
 
 void
@@ -1484,7 +1509,7 @@ TkBitInnerJoinDifferenceIsEqual(
     return true;
 }
 
-#endif /* TK_TEXT_LINE_TAGGING */
+#endif /* 0 */
 
 
 #if __STDC_VERSION__ >= 199901L

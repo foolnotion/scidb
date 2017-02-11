@@ -51,6 +51,7 @@ struct TkTextUndoStack {
     unsigned redoSize;		/* Total size of redo items. */
     bool doingUndo;		/* Currently an undo action is performed? */
     bool doingRedo;		/* Currently a redo action is performed? */
+    bool pushSeparator;		/* Push a separator before pushing a new item (iff true). */
 };
 
 #endif /* _TKTEXTUNDOPRIV */
@@ -67,7 +68,7 @@ inline unsigned
 TkTextUndoGetMaxUndoDepth(const TkTextUndoStack stack)
 { assert(stack); return stack->maxUndoDepth; }
 
-inline unsigned
+inline int
 TkTextUndoGetMaxRedoDepth(const TkTextUndoStack stack)
 { assert(stack); return stack->maxRedoDepth; }
 

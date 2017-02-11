@@ -43,19 +43,19 @@
  */
 
 struct TkTextUndoStack;
-typedef struct TkTextUndoStack *TkTextUndoStack;
+typedef struct TkTextUndoStack * TkTextUndoStack;
 
 /*
  * The generic context type.
  */
 
-typedef void *TkTextUndoContext;
+typedef void * TkTextUndoContext;
 
 /*
  * Basic type of an undo/redo item, the user has to know the real type.
  */
 
-typedef void *TkTextUndoItem;
+typedef void * TkTextUndoItem;
 
 /*
  * Struct defining a single action, one or more of which may be defined (and
@@ -168,7 +168,7 @@ inline TkTextUndoContext TkTextUndoGetContext(const TkTextUndoStack stack);
  */
 
 inline unsigned TkTextUndoGetMaxUndoDepth(const TkTextUndoStack stack);
-inline unsigned TkTextUndoGetMaxRedoDepth(const TkTextUndoStack stack);
+inline int TkTextUndoGetMaxRedoDepth(const TkTextUndoStack stack);
 inline unsigned TkTextUndoGetMaxSize(const TkTextUndoStack stack);
 inline unsigned TkTextUndoGetCurrentDepth(const TkTextUndoStack stack);
 inline unsigned TkTextUndoGetCurrentSize(const TkTextUndoStack stack);
@@ -213,7 +213,7 @@ bool TkTextUndoStackIsFull(const TkTextUndoStack stack);
  */
 
 int TkTextUndoPushItem(TkTextUndoStack stack, TkTextUndoItem item, unsigned size);
-void TkTextUndoPushSeparator(TkTextUndoStack stack);
+void TkTextUndoPushSeparator(TkTextUndoStack stack, bool immediately);
 
 /*
  * Normally redo items will be pushed while undo will be performed. The next function

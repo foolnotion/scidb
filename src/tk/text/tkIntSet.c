@@ -14,6 +14,7 @@
 
 #include "tkIntSet.h"
 #include "tkBitField.h"
+#include "tkAlloc.h"
 
 #if __STDC_VERSION__ < 199901L
 # define _TK_NEED_IMPLEMENTATION
@@ -35,12 +36,6 @@
 #else
 # define DEBUG_ALLOC(expr)
 #endif
-
-
-/* the main reason for this definition is portability to 8.5 */
-# define malloc(size)		(void *) ckalloc(size)
-# define realloc(ptr, size)	(void *) ckrealloc((char *) ptr, size)
-# define free(ptr)		ckfree((char *) ptr)
 
 
 #define TestIfEqual TkIntSetIsEqual__
@@ -1197,7 +1192,7 @@ TkIntSetIsContainedBits(
 
     assert(bf);
     assert(set);
- 
+
     setSize = TkIntSetSize(set);
     bitSize = TkBitSize(bf);
 
@@ -1588,12 +1583,11 @@ TkIntSetPrint(
 
 #endif /* !NDEBUG */
 
-#if TK_TEXT_LINE_TAGGING
+#if 0
 
 /*
- * These functions are not needed yet, but shouldn't be removed, because they will
- * be important if the text widget is supporting line based tagging (currently line
- * based tagging is not supported by the display functions).
+ * These functions are not needed anymore, but shouldn't be removed, because sometimes
+ * any of these functions might be useful.
  */
 
 static TkIntSetType *
@@ -1824,7 +1818,7 @@ TkIntSetIsEqualToDifference(
 
     assert(set1P == set1End);
     /* set2 - sub2 == nil */
- 
+
     return DifferenceIsEmpty(set2P, set2End, sub2P, sub2End);
 }
 
@@ -2127,7 +2121,7 @@ TkIntSetInnerJoinDifferenceIsEqual(
     return true;
 }
 
-#endif /* TK_TEXT_LINE_TAGGING */
+#endif /* 0 */
 
 
 #if __STDC_VERSION__ >= 199901L

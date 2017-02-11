@@ -26,6 +26,18 @@
 #endif
 
 /*
+ * Support of tk8.5.
+ */
+#ifdef CONST
+# undef CONST
+#endif
+#if TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION == 5
+# define CONST
+#else
+# define CONST const
+#endif
+
+/*
  * The following structure is the official type record for the embedded window
  * geometry manager:
  */
@@ -82,7 +94,7 @@ static const TkTextDispChunkProcs layoutWindowProcs = {
 
 static void UndoLinkSegmentPerform(TkSharedText *, TkTextUndoInfo *, TkTextUndoInfo *, bool);
 static void RedoLinkSegmentPerform(TkSharedText *, TkTextUndoInfo *, TkTextUndoInfo *, bool);
-static void UndoLinkSegmentDestroy(TkSharedText *, TkTextUndoToken *);
+static void UndoLinkSegmentDestroy(TkSharedText *, TkTextUndoToken *, bool);
 static void UndoLinkSegmentGetRange(const TkSharedText *, const TkTextUndoToken *,
 	TkTextIndex *, TkTextIndex *);
 static void RedoLinkSegmentGetRange(const TkSharedText *, const TkTextUndoToken *,
@@ -139,7 +151,7 @@ const Tk_SegType tkTextEmbWindowType = {
  * Definitions for alignment values:
  */
 
-static const char *const alignStrings[] = {
+static const char *CONST alignStrings[] = {
     "baseline", "bottom", "center", "top", NULL
 };
 
@@ -153,8 +165,7 @@ typedef enum {
 
 static const Tk_OptionSpec optionSpecs[] = {
     {TK_OPTION_STRING_TABLE, "-align", NULL, NULL,
-	"center", -1, Tk_Offset(TkTextEmbWindow, align),
-	0, alignStrings, 0},
+	"center", -1, Tk_Offset(TkTextEmbWindow, align), 0, alignStrings, 0},
     {TK_OPTION_STRING, "-create", NULL, NULL,
 	NULL, -1, Tk_Offset(TkTextEmbWindow, create), TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_PIXELS, "-padx", NULL, NULL,
@@ -212,7 +223,7 @@ UndoLinkSegmentGetCommand(
     const TkSharedText *sharedTextPtr,
     const TkTextUndoToken *item)
 {
-    Tcl_Obj *objPtr = Tcl_NewListObj(0, NULL);
+    Tcl_Obj *objPtr = Tcl_NewObj();
     Tcl_ListObjAppendElement(NULL, objPtr, Tcl_NewStringObj("window", -1));
     return objPtr;
 }
@@ -246,7 +257,7 @@ UndoLinkSegmentPerform(
 
     if (redoInfo) {
 	RedoTokenLinkSegment *redoToken;
-	redoToken = ckalloc(sizeof(RedoTokenLinkSegment));
+	redoToken = malloc(sizeof(RedoTokenLinkSegment));
 	redoToken->undoType = &redoTokenLinkSegmentType;
 	TkBTreeMakeUndoIndex(sharedTextPtr, segPtr, &redoToken->index);
 	redoInfo->token = (TkTextUndoToken *) redoToken;
@@ -264,9 +275,12 @@ UndoLinkSegmentPerform(
 static void
 UndoLinkSegmentDestroy(
     TkSharedText *sharedTextPtr,
-    TkTextUndoToken *item)
+    TkTextUndoToken *item,
+    bool reused)
 {
     UndoTokenLinkSegment *token = (UndoTokenLinkSegment *) item;
+
+    assert(!reused);
 
     if (--token->segPtr->refCount == 0) {
 	ReleaseWindow(token->segPtr);
@@ -493,9 +507,7 @@ TkTextWindowCmd(
 	}
 
 	if (textPtr->state == TK_TEXT_STATE_DISABLED) {
-#if SUPPORT_DEPRECATED_MODS_OF_DISABLED_WIDGET
-	    return TCL_OK;
-#else /* if !SUPPORT_DEPRECATED_MODS_OF_DISABLED_WIDGET */
+#if !SUPPORT_DEPRECATED_MODS_OF_DISABLED_WIDGET
 	    Tcl_SetObjResult(interp, Tcl_ObjPrintf("attempt to modify disabled widget"));
 	    Tcl_SetErrorCode(interp, "TK", "TEXT", "NOT_ALLOWED", NULL);
 	    return TCL_ERROR;
@@ -547,7 +559,7 @@ TkTextWindowCmd(
 	    assert(sharedTextPtr->undoStack);
 	    assert(ewPtr->typePtr == &tkTextEmbWindowType);
 
-	    token = ckalloc(sizeof(UndoTokenLinkSegment));
+	    token = malloc(sizeof(UndoTokenLinkSegment));
 	    token->undoType = &undoTokenLinkSegmentType;
 	    token->segPtr = ewPtr;
 	    ewPtr->refCount += 1;
@@ -605,7 +617,7 @@ MakeWindow(
     TkTextSegment *ewPtr;
     TkTextEmbWindowClient *client;
 
-    ewPtr = memset(ckalloc(SEG_SIZE(TkTextEmbWindow)), 0, SEG_SIZE(TkTextEmbWindow));
+    ewPtr = memset(malloc(SEG_SIZE(TkTextEmbWindow)), 0, SEG_SIZE(TkTextEmbWindow));
     ewPtr->typePtr = &tkTextEmbWindowType;
     ewPtr->size = 1;
     ewPtr->refCount = 1;
@@ -614,7 +626,7 @@ MakeWindow(
     ewPtr->body.ew.optionTable = Tk_CreateOptionTable(textPtr->interp, optionSpecs);
     DEBUG_ALLOC(tkTextCountNewSegment++);
 
-    client = memset(ckalloc(sizeof(TkTextEmbWindowClient)), 0, sizeof(TkTextEmbWindowClient));
+    client = memset(malloc(sizeof(TkTextEmbWindowClient)), 0, sizeof(TkTextEmbWindowClient));
     client->textPtr = textPtr;
     client->parent = ewPtr;
     ewPtr->body.ew.clients = client;
@@ -784,7 +796,7 @@ EmbWinConfigure(
 		 * Have to make the new client.
 		 */
 
-		client = ckalloc(sizeof(TkTextEmbWindowClient));
+		client = malloc(sizeof(TkTextEmbWindowClient));
 		memset(client, 0, sizeof(TkTextEmbWindowClient));
 		client->next = ewPtr->body.ew.clients;
 		client->textPtr = textPtr;
@@ -963,7 +975,7 @@ EmbWinLostSlaveProc(
 	}
 	loop->next = client->next;
     }
-    ckfree(client);
+    free(client);
 
     TkTextIndexClear(&index, textPtr);
     TkTextIndexSetSegment(&index, ewPtr);
@@ -1024,7 +1036,7 @@ TkTextWinFreeClient(
      * Free up this client.
      */
 
-    ckfree(client);
+    free(client);
 }
 
 /*
@@ -1050,8 +1062,8 @@ EmbWinInspectProc(
     const TkSharedText *sharedTextPtr,
     const TkTextSegment *segPtr)
 {
-    Tcl_Obj *objPtr = Tcl_NewListObj(0, NULL);
-    Tcl_Obj *objPtr2 = Tcl_NewListObj(0, NULL);
+    Tcl_Obj *objPtr = Tcl_NewObj();
+    Tcl_Obj *objPtr2 = Tcl_NewObj();
     TkTextTag **tagLookup = sharedTextPtr->tagLookup;
     const TkTextTagSet *tagInfoPtr = segPtr->tagInfoPtr;
     unsigned i = TkTextTagSetFindFirst(tagInfoPtr);
@@ -1383,7 +1395,7 @@ EmbWinLayoutProc(
 	     * now need to add to our client list.
 	     */
 
-	    client = ckalloc(sizeof(TkTextEmbWindowClient));
+	    client = malloc(sizeof(TkTextEmbWindowClient));
 	    memset(client, 0, sizeof(TkTextEmbWindowClient));
 	    client->next = ewPtr->body.ew.clients;
 	    client->textPtr = textPtr;

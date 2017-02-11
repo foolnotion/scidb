@@ -153,12 +153,11 @@ void TkIntSetPrint(const TkIntSet *set);
 #endif
 
 
-#if TK_TEXT_LINE_TAGGING
+#if 0
 
 /*
- * These functions are not yet needed, but shouldn't be removed, because they will
- * be important if the text widget is supporting line based tagging (currently line
- * based tagging is not supported by the display functions).
+ * These functions are not needed anymore, but shouldn't be removed, because sometimes
+ * any of these functions might be useful.
  */
 
 /* dst := (dst + (set - sub)) & set */
@@ -177,7 +176,7 @@ bool TkIntSetIsEqualToInnerJoinDifference(const TkIntSet *set1, const TkIntSet *
 bool TkIntSetInnerJoinDifferenceIsEqual(const TkIntSet *set1, const TkIntSet *set2,
     const TkIntSet *add, const TkIntSet *sub);
 
-#endif /* TK_TEXT_LINE_TAGGING */
+#endif /* 0 */
 
 
 #undef __warn_unused__

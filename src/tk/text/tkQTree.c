@@ -46,6 +46,7 @@
  */
 
 #include "tkQTree.h"
+#include "tkAlloc.h"
 
 #if __STDC_VERSION__ < 199901L
 # define _TK_NEED_IMPLEMENTATION
@@ -128,7 +129,7 @@ NewElement(
     assert(rect);
 
     DEBUG_ALLOC(tkQTreeCountNewElement++);
-    elem = ckalloc(sizeof(Element));
+    elem = malloc(sizeof(Element));
     elem->prev = NULL;
     if ((elem->next = tree->elem)) {
 	elem->next->prev = elem;
@@ -148,7 +149,7 @@ NewNode(int initialPartialCount)
     Node *n;
 
     DEBUG_ALLOC(tkQTreeCountNewNode++);
-    n = memset(ckalloc(sizeof(Node)), 0, sizeof(Node));
+    n = memset(malloc(sizeof(Node)), 0, sizeof(Node));
     n->countPartial = initialPartialCount;
     return n;
 }
@@ -160,7 +161,7 @@ FreeItems(
 {
     while (item) {
 	Item *next = item->next;
-	ckfree(item);
+	free(item);
 	item = next;
 	DEBUG_ALLOC(tkQTreeCountDestroyItem++);
     }
@@ -181,7 +182,7 @@ FreeNode(
 	    FreeNode(node->sw);
 	}
 	FreeItems(node->spanningItem);
-	ckfree(node);
+	free(node);
 	DEBUG_ALLOC(tkQTreeCountDestroyNode++);
     }
 }
@@ -193,7 +194,7 @@ FreeElements(
 {
     while (elem) {
 	Element *next = elem->next;
-	ckfree(elem);
+	free(elem);
 	elem = next;
 	DEBUG_ALLOC(tkQTreeCountDestroyElement++);
     }
@@ -211,7 +212,7 @@ AddItem(
     assert(elem);
 
     DEBUG_ALLOC(tkQTreeCountNewItem++);
-    newItem = ckalloc(sizeof(Item));
+    newItem = malloc(sizeof(Item));
     newItem->elem = elem;
     newItem->next = *itemPtr;
     *itemPtr = newItem;
@@ -518,7 +519,7 @@ RemoveItem(
 	    } else {
 		*itemPtr = item->next;
 	    }
-	    ckfree(item);
+	    free(item);
 	    *count -= 1;
 	    DEBUG_ALLOC(tkQTreeCountDestroyItem++);
 	    return;
@@ -728,7 +729,7 @@ RemoveElem(
     if (elem->next) {
 	elem->next->prev = elem->prev;
     }
-    ckfree(elem);
+    free(elem);
     DEBUG_ALLOC(tkQTreeCountDestroyElement++);
 }
 
@@ -969,7 +970,7 @@ TkQTreeDestroy(
     if (*treePtr) {
 	FreeNode((*treePtr)->root);
 	FreeElements((*treePtr)->elem);
-	ckfree(*treePtr);
+	free(*treePtr);
 	DEBUG_ALLOC(tkQTreeCountDestroyTree++);
 	*treePtr = NULL;
     }
@@ -999,7 +1000,7 @@ TkQTreeConfigure(
 	FreeNode(tree->root);
     } else {
 	DEBUG_ALLOC(tkQTreeCountNewTree++);
-	*treePtr = tree = ckalloc(sizeof(struct TkQTree));
+	*treePtr = tree = malloc(sizeof(struct TkQTree));
 	tree->elem = NULL;
 	tree->epoch = 0;
     }
@@ -1012,8 +1013,6 @@ TkQTreeConfigure(
 
 	if (TkQTreeRectIntersects(&elem->bbox, &tree->bbox)) {
 	    InsertRect(&tree->bbox, tree->root, elem);
-	} else {
-	    RemoveElem(tree, elem);
 	}
 
 	elem = next;

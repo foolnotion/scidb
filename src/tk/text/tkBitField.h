@@ -65,6 +65,9 @@ typedef struct TkBitField {
 } TkBitField;
 
 
+/*
+ * This value will be returned in case of end of iteration.
+ */
 #define TK_BIT_NPOS ((unsigned) -1)
 
 
@@ -120,6 +123,7 @@ unsigned TkBitFindLast(const TkBitField *bf);
 unsigned TkBitFindFirstNot(const TkBitField *bf);
 unsigned TkBitFindLastNot(const TkBitField *bf);
 unsigned TkBitFindNext(const TkBitField *bf, unsigned prev);
+unsigned TkBitFindNextNot(const TkBitField *bf, unsigned prev);
 unsigned TkBitFindPrev(const TkBitField *bf, unsigned prev);
 unsigned TkBitFindFirstInIntersection(const TkBitField *bf1, const TkBitField *bf2);
 
@@ -143,12 +147,11 @@ void TkBitCheckAllocs();
 #endif
 
 
-#if TK_TEXT_LINE_TAGGING
+#if 0
 
 /*
- * These functions are not yet needed, but shouldn't be removed, because they will
- * be important if the text widget is supporting line based tagging (currently line
- * based tagging is not supported by the display functions).
+ * These functions are not needed anymore, but shouldn't be removed, because sometimes
+ * any of these functions might be useful.
  */
 
 /* dst := (dst + (add - sub)) & add */
@@ -166,7 +169,7 @@ bool TkBitIsEqualToInnerJoinDifference(const TkBitField *bf1, const TkBitField *
 bool TkBitInnerJoinDifferenceIsEqual(const TkBitField *bf1, const TkBitField *bf2,
     const TkBitField *add, const TkBitField *sub);
 
-#endif /* TK_TEXT_LINE_TAGGING */
+#endif /* 0 */
 
 #if __STDC_VERSION__ >= 199901L
 # define _TK_NEED_IMPLEMENTATION

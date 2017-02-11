@@ -33,13 +33,25 @@
 #endif
 
 /*
+ * Support of tk8.5.
+ */
+#ifdef CONST
+# undef CONST
+#endif
+#if TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION == 5
+# define CONST
+#else
+# define CONST const
+#endif
+
+/*
  * The 'TkWrapMode' enum in tkText.h is used to define a type for the -wrap
  * option of tags in a Text widget. These values are used as indices into the
  * string table below. Tags are allowed an empty wrap value, but the widget as
  * a whole is not.
  */
 
-static const char *const wrapStrings[] = {
+static const char *CONST wrapStrings[] = {
     "char", "none", "word", "", NULL
 };
 
@@ -61,7 +73,7 @@ static const char *const spaceModeStrings[] = {
  * widget as a whole is not.
  */
 
-static const char *const tabStyleStrings[] = {
+static const char *CONST tabStyleStrings[] = {
     "tabular", "wordprocessor", "", NULL
 };
 
@@ -92,25 +104,30 @@ static const Tk_OptionSpec tagOptionSpecs[] = {
 	"0", -1, Tk_Offset(TkTextTag, indentBgString),
 	TK_OPTION_DONT_SET_DEFAULT|TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_STRING, "-justify", NULL, NULL,
-	NULL, -1, Tk_Offset(TkTextTag, justifyString), TK_OPTION_NULL_OK, 0,0},
+	NULL, -1, Tk_Offset(TkTextTag, justifyString), TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_STRING, "-lang", NULL, NULL,
 	NULL, Tk_Offset(TkTextTag, langPtr), -1, TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_STRING, "-lmargin1", NULL, NULL,
-	NULL, -1, Tk_Offset(TkTextTag, lMargin1String), TK_OPTION_NULL_OK,0,0},
+	NULL, -1, Tk_Offset(TkTextTag, lMargin1String), TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_STRING, "-lmargin2", NULL, NULL,
-	NULL, -1, Tk_Offset(TkTextTag, lMargin2String), TK_OPTION_NULL_OK,0,0},
+	NULL, -1, Tk_Offset(TkTextTag, lMargin2String), TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_BORDER, "-lmargincolor", NULL, NULL,
 	NULL, -1, Tk_Offset(TkTextTag, lMarginColor), TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_STRING, "-offset", NULL, NULL,
 	NULL, -1, Tk_Offset(TkTextTag, offsetString), TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_STRING, "-overstrike", NULL, NULL,
 	NULL, -1, Tk_Offset(TkTextTag, overstrikeString), TK_OPTION_NULL_OK, 0, 0},
-    {TK_OPTION_COLOR, "-overstrikefg", NULL, NULL,
+    {TK_OPTION_COLOR, "-overstrikecolor", NULL, NULL,
 	NULL, -1, Tk_Offset(TkTextTag, overstrikeColor), TK_OPTION_NULL_OK, 0, 0},
+#if SUPPORT_DEPRECATED_TAG_OPTIONS
+    {TK_OPTION_COLOR, "-overstrikefg", NULL, NULL,
+	NULL, -1, Tk_Offset(TkTextTag, overstrikeColor), TK_OPTION_NULL_OK, 0,
+	TK_TEXT_DEPRECATED_OVERSTRIKE_FG},
+#endif /* SUPPORT_DEPRECATED_TAG_OPTIONS */
     {TK_OPTION_STRING, "-relief", NULL, NULL,
 	NULL, -1, Tk_Offset(TkTextTag, reliefString), TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_STRING, "-rmargin", NULL, NULL,
-	NULL, -1, Tk_Offset(TkTextTag, rMarginString), TK_OPTION_NULL_OK, 0,0},
+	NULL, -1, Tk_Offset(TkTextTag, rMarginString), TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_BORDER, "-rmargincolor", NULL, NULL,
 	NULL, -1, Tk_Offset(TkTextTag, rMarginColor), TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_BORDER, "-selectbackground", NULL, NULL,
@@ -118,27 +135,28 @@ static const Tk_OptionSpec tagOptionSpecs[] = {
     {TK_OPTION_COLOR, "-selectforeground", NULL, NULL,
 	NULL, -1, Tk_Offset(TkTextTag, selFgColor), TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_STRING, "-spacing1", NULL, NULL,
-	NULL, -1, Tk_Offset(TkTextTag, spacing1String), TK_OPTION_NULL_OK,0,0},
+	NULL, -1, Tk_Offset(TkTextTag, spacing1String), TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_STRING, "-spacing2", NULL, NULL,
-	NULL, -1, Tk_Offset(TkTextTag, spacing2String), TK_OPTION_NULL_OK,0,0},
+	NULL, -1, Tk_Offset(TkTextTag, spacing2String), TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_STRING, "-spacing3", NULL, NULL,
-	NULL, -1, Tk_Offset(TkTextTag, spacing3String), TK_OPTION_NULL_OK,0,0},
+	NULL, -1, Tk_Offset(TkTextTag, spacing3String), TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_STRING, "-tabs", NULL, NULL,
 	NULL, Tk_Offset(TkTextTag, tabStringPtr), -1, TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_STRING_TABLE, "-tabstyle", NULL, NULL,
-	NULL, -1, Tk_Offset(TkTextTag, tabStyle),
-	TK_OPTION_NULL_OK, tabStyleStrings, 0},
+	NULL, -1, Tk_Offset(TkTextTag, tabStyle), TK_OPTION_NULL_OK, tabStyleStrings, 0},
     {TK_OPTION_STRING, "-underline", NULL, NULL,
-	NULL, -1, Tk_Offset(TkTextTag, underlineString),
-	TK_OPTION_NULL_OK, 0, 0},
+	NULL, -1, Tk_Offset(TkTextTag, underlineString), TK_OPTION_NULL_OK, 0, 0},
+    {TK_OPTION_COLOR, "-underlinecolor", NULL, NULL,
+	NULL, -1, Tk_Offset(TkTextTag, underlineColor), TK_OPTION_NULL_OK, 0, 0},
+#if SUPPORT_DEPRECATED_TAG_OPTIONS
     {TK_OPTION_COLOR, "-underlinefg", NULL, NULL,
-	NULL, -1, Tk_Offset(TkTextTag, underlineColor),
-        TK_OPTION_NULL_OK, 0, 0},
+	NULL, -1, Tk_Offset(TkTextTag, underlineColor), TK_OPTION_NULL_OK, 0,
+	TK_TEXT_DEPRECATED_UNDERLINE_FG},
+#endif /* SUPPORT_DEPRECATED_TAG_OPTIONS */
     {TK_OPTION_BOOLEAN, "-undo", NULL, NULL,
 	"1", -1, Tk_Offset(TkTextTag, undo), 0, 0, 0},
     {TK_OPTION_STRING_TABLE, "-wrap", NULL, NULL,
-	NULL, -1, Tk_Offset(TkTextTag, wrapMode),
-	TK_OPTION_NULL_OK, wrapStrings, 0},
+	NULL, -1, Tk_Offset(TkTextTag, wrapMode), TK_OPTION_NULL_OK, wrapStrings, 0},
     {TK_OPTION_END, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0}
 };
 
@@ -162,6 +180,8 @@ static void		FindTags(Tcl_Interp *interp, TkText *textPtr, const TkTextSegment *
 static void		AppendTags(Tcl_Interp *interp, unsigned numTags, TkTextTag **tagArray);
 static void		GrabSelection(TkText *textPtr, const TkTextTag *tagPtr, bool add);
 static TkTextTag *	FindTag(Tcl_Interp *interp, const TkText *textPtr, Tcl_Obj *tagName);
+static int		EnumerateTags(Tcl_Interp *interp, TkText *textPtr, int objc,
+			    Tcl_Obj *const *objv);
 
 /*
  * We need some private undo/redo stuff.
@@ -201,7 +221,7 @@ UndoChangeTagPriorityGetCommand(
     const TkTextUndoToken *item)
 {
     const UndoTokenTagPriority *token = (const UndoTokenTagPriority *) item;
-    Tcl_Obj *objPtr = Tcl_NewListObj(0, NULL);
+    Tcl_Obj *objPtr = Tcl_NewObj();
 
     Tcl_ListObjAppendElement(NULL, objPtr, Tcl_NewStringObj("tag", -1));
     Tcl_ListObjAppendElement(NULL, objPtr, Tcl_NewStringObj("priority", -1));
@@ -388,7 +408,7 @@ TkTextTagCmd(
 		discardSelection = true;
 	    } else {
 		Tcl_SetObjResult(interp, Tcl_ObjPrintf(
-			"bad option \"%s\" must be -discardselection", Tcl_GetString(objv[3])));
+			"bad option \"%s\": must be -discardselection", Tcl_GetString(objv[3])));
 		Tcl_SetErrorCode(interp, "TK", "TEXT", "BAD_OPTION", NULL);
 		return TCL_ERROR;
 	    }
@@ -396,7 +416,7 @@ TkTextTagCmd(
 
 	discardSelection = false;
 	epoch = TkBTreeEpoch(sharedTextPtr->tree);
-	arrayPtr = ckalloc(sharedTextPtr->numEnabledTags * sizeof(TkTextTag *));
+	arrayPtr = malloc(sharedTextPtr->numEnabledTags * sizeof(TkTextTag *));
 	countTags = 0;
 	anyChanges = false;
 
@@ -444,7 +464,7 @@ TkTextTagCmd(
 	    TkTextUpdateAlteredFlag(sharedTextPtr);
 	}
 	AppendTags(interp, countTags, arrayPtr);
-	ckfree(arrayPtr);
+	free(arrayPtr);
 	break;
     }
     case TAG_CONFIGURE:
@@ -482,7 +502,7 @@ TkTextTagCmd(
 	break;
     }
     case TAG_FINDNEXT: {
-	const TkTextSegment *segPtr;
+	TkTextSegment *segPtr;
 	const TkBitField *selTags = NULL;
 
 	if (objc != 4 && objc != 5) {
@@ -494,7 +514,7 @@ TkTextTagCmd(
 		selTags = sharedTextPtr->selectionTags;
 	    } else {
 		Tcl_SetObjResult(interp, Tcl_ObjPrintf(
-			"bad option \"%s\" must be -discardselection", Tcl_GetString(objv[3])));
+			"bad option \"%s\": must be -discardselection", Tcl_GetString(objv[3])));
 		Tcl_SetErrorCode(interp, "TK", "TEXT", "BAD_OPTION", NULL);
 		return TCL_ERROR;
 	    }
@@ -503,15 +523,20 @@ TkTextTagCmd(
 	    return TCL_ERROR;
 	}
 	TkTextIndexSetupToEndOfText(&index2, textPtr, sharedTextPtr->tree);
-	segPtr = TkBTreeFindNextTagged(&index1, &index2, selTags);
-	if (segPtr) {
-	    FindTags(interp, textPtr, segPtr, !!selTags);
+	if ((segPtr = TkBTreeFindNextTagged(&index1, &index2, selTags))) {
+	    TkTextIndex index;
+	    char buf[TK_POS_CHARS];
+
+	    TkTextIndexClear(&index, textPtr);
+	    TkTextIndexSetSegment(&index, segPtr);
+	    TkTextPrintIndex(textPtr, &index, buf);
+	    Tcl_AppendElement(interp, buf);
 	}
 	break;
     }
     case TAG_FINDPREV: {
 	bool discardSelection = false;
-	const TkTextSegment *segPtr;
+	TkTextSegment *segPtr;
 
 	if (objc != 4 && objc != 5) {
 	    Tcl_WrongNumArgs(interp, 3, objv, "-discardselection? index");
@@ -522,7 +547,7 @@ TkTextTagCmd(
 		discardSelection = true;
 	    } else {
 		Tcl_SetObjResult(interp, Tcl_ObjPrintf(
-			"bad option \"%s\" must be -discardselection", Tcl_GetString(objv[3])));
+			"bad option \"%s\": must be -discardselection", Tcl_GetString(objv[3])));
 		Tcl_SetErrorCode(interp, "TK", "TEXT", "BAD_OPTION", NULL);
 		return TCL_ERROR;
 	    }
@@ -531,9 +556,14 @@ TkTextTagCmd(
 	    return TCL_ERROR;
 	}
 	TkTextIndexSetupToStartOfText(&index2, textPtr, sharedTextPtr->tree);
-	segPtr = TkBTreeFindPrevTagged(&index1, &index2, discardSelection);
-	if (segPtr) {
-	    FindTags(interp, textPtr, segPtr, discardSelection);
+	if ((segPtr = TkBTreeFindPrevTagged(&index1, &index2, discardSelection))) {
+	    TkTextIndex index;
+	    char buf[TK_POS_CHARS];
+
+	    TkTextIndexClear(&index, textPtr);
+	    TkTextIndexSetSegment(&index, segPtr);
+	    TkTextPrintIndex(textPtr, &index, buf);
+	    Tcl_AppendElement(interp, buf);
 	}
 	break;
     }
@@ -612,55 +642,9 @@ TkTextTagCmd(
 	}
 	break;
     }
-    case TAG_NAMES: {
-	bool discardSelection = false;
-	int argc = 3;
-
-	if (objc > 5) {
-	    Tcl_WrongNumArgs(interp, 3, objv, "?-discardselection? ?index?");
-	    return TCL_ERROR;
-	}
-	if (objc > 3 && *Tcl_GetString(objv[3]) == '-') {
-	    if (strcmp(Tcl_GetString(objv[3]), "-discardselection") == 0) {
-		discardSelection = true;
-	    } else {
-		Tcl_SetObjResult(interp, Tcl_ObjPrintf(
-			"bad option \"%s\" must be -discardselection", Tcl_GetString(objv[3])));
-		Tcl_SetErrorCode(interp, "TK", "TEXT", "BAD_OPTION", NULL);
-		return TCL_ERROR;
-	    }
-	    argc += 1;
-	}
-	if (argc == objc) {
-	    TkTextTag **arrayPtr;
-	    unsigned arraySize;
-	    Tcl_HashSearch search;
-	    Tcl_HashEntry *hPtr;
-
-	    arrayPtr = ckalloc(sharedTextPtr->numEnabledTags * sizeof(TkTextTag *));
-	    for (arraySize = 0, hPtr = Tcl_FirstHashEntry(&sharedTextPtr->tagTable, &search);
-		    hPtr;
-		    ++arraySize, hPtr = Tcl_NextHashEntry(&search)) {
-		arrayPtr[arraySize] = Tcl_GetHashValue(hPtr);
-	    }
-
-	    if (!discardSelection) {
-		/* The 'sel' tag is not in the hash table. */
-		arrayPtr[arraySize++] = textPtr->selTagPtr;
-	    }
-	    AppendTags(interp, arraySize, arrayPtr);
-	    ckfree(arrayPtr);
-	} else if (objc - argc > 1) {
-	    Tcl_WrongNumArgs(interp, 3, objv, "?-discardselection? ?index?");
-	    return TCL_ERROR;
-	} else {
-	    if (!TkTextGetIndexFromObj(interp, textPtr, objv[argc], &index1)) {
-		return TCL_ERROR;
-	    }
-	    FindTags(interp, textPtr, TkTextIndexGetContentSegment(&index1, NULL), discardSelection);
-	}
-	break;
-    }
+    case TAG_NAMES:
+    	return EnumerateTags(interp, textPtr, objc, objv);
+	/* not reached */
     case TAG_NEXTRANGE: {
 	TkTextSearch tSearch;
 	char position[TK_POS_CHARS];
@@ -817,7 +801,7 @@ TkTextTagCmd(
     case TAG_RANGES: {
 	TkTextIndex first, last;
 	TkTextSearch tSearch;
-	Tcl_Obj *listObj = Tcl_NewListObj(0, NULL);
+	Tcl_Obj *listObj = Tcl_NewObj();
 	DEBUG(bool found = false);
 
 	if (objc != 4) {
@@ -1003,6 +987,7 @@ TkConfigureTag(
     int objc,			/* Number of arguments. */
     Tcl_Obj *const objv[])	/* Remaining argument objects. */
 {
+    int mask = 0;
     bool newTag;
     TkSharedText *sharedTextPtr = textPtr->sharedTextPtr;
     TkTextTag *tagPtr = TkTextCreateTag(textPtr, tagName, &newTag);
@@ -1024,9 +1009,33 @@ TkConfigureTag(
     }
 
     if (Tk_SetOptions(interp, (char *) tagPtr, tagPtr->optionTable,
-	    objc, objv, textPtr->tkwin, NULL, NULL) != TCL_OK) {
+	    objc, objv, textPtr->tkwin, NULL, &mask) != TCL_OK) {
 	return TCL_ERROR;
     }
+
+#if SUPPORT_DEPRECATED_TAG_OPTIONS
+
+    if (mask & (TK_TEXT_DEPRECATED_OVERSTRIKE_FG|TK_TEXT_DEPRECATED_UNDERLINE_FG)) {
+	static bool warnAboutOverstrikeFg = true;
+	static bool warnAboutUnderlineFg = true;
+
+	if (mask & TK_TEXT_DEPRECATED_OVERSTRIKE_FG) {
+	    if (warnAboutOverstrikeFg) {
+		fprintf(stderr, "Tag option \"-overstrikefg\" is deprecated, please use option "
+			"\"-overstrikecolor\"\n");
+		warnAboutOverstrikeFg = false;
+	    }
+	}
+	if (mask & TK_TEXT_DEPRECATED_UNDERLINE_FG) {
+	    if (warnAboutUnderlineFg) {
+		fprintf(stderr, "Tag option \"-underlinefg\" is deprecated, please use option "
+			"\"-underlinecolor\"\n");
+		warnAboutUnderlineFg = false;
+	    }
+	}
+    }
+
+#endif /* SUPPORT_DEPRECATED_TAG_OPTIONS */
 
     /*
       Some of the configuration options, like -underline and -justify, require
@@ -1135,7 +1144,7 @@ TkConfigureTag(
 	}
     }
     if (tagPtr->tabArrayPtr) {
-	ckfree(tagPtr->tabArrayPtr);
+	free(tagPtr->tabArrayPtr);
 	tagPtr->tabArrayPtr = NULL;
     }
     if (tagPtr->tabStringPtr) {
@@ -1169,7 +1178,7 @@ TkConfigureTag(
 	     * to 'true' (this would cause errors, because this case is not implemented).
 	     */
 
-	    ckfree(tagPtr->elideString);
+	    free(tagPtr->elideString);
 	    tagPtr->elideString = NULL;
 	    tagPtr->elide = false;
             Tcl_SetObjResult(interp, Tcl_ObjPrintf(
@@ -1244,6 +1253,7 @@ TkConfigureTag(
 	 * Eventually we have to insert/remove branches and links according to
 	 * the elide information of this tag.
 	 */
+
 	TkBTreeUpdateElideInfo(textPtr, tagPtr);
     }
 
@@ -1335,7 +1345,7 @@ AppendTags(
     }
 
     TkTextSortTags(numTags, tagArray);
-    listObj = Tcl_NewListObj(0, NULL);
+    listObj = Tcl_NewObj();
 
     for (i = 0; i < numTags; ++i) {
 	if (tagArray[i]) {
@@ -1375,7 +1385,7 @@ FindTags(
 
     assert(segPtr);
 
-    tagArray = ckalloc(textPtr->sharedTextPtr->numEnabledTags * sizeof(TkTextTag *));
+    tagArray = malloc(textPtr->sharedTextPtr->numEnabledTags * sizeof(TkTextTag *));
     tagPtr = TkBTreeGetSegmentTags(textPtr->sharedTextPtr, segPtr, textPtr);
 
     for (count = 0; tagPtr; tagPtr = tagPtr->nextPtr) {
@@ -1385,7 +1395,7 @@ FindTags(
     }
 
     AppendTags(interp, count, tagArray);
-    ckfree(tagArray);
+    free(tagArray);
 }
 
 /*
@@ -1500,7 +1510,7 @@ TagAddRemove(
 				/* Indicates first character in range. */
     const TkTextIndex *index2Ptr,
 				/* Indicates character just after the last one in range. */
-    TkTextTag *tagPtr,		/* Tag to add or remove, can be NULL for removing all tags. */
+    TkTextTag *tagPtr,		/* Tag to add or remove. */
     bool add)			/* 'true' means add tag to the given range of characters;
 				 * 'false' means remove the tag from the range. */
 {
@@ -1522,9 +1532,12 @@ TagAddRemove(
 	return false;
     }
 
-    if (undoInfoPtr && undoInfo.token) {
-	tagPtr->refCount += 1;
-	TkTextUndoPushItem(sharedTextPtr->undoStack, undoInfo.token, undoInfo.byteSize);
+    if (undoInfoPtr) {
+	if (undoInfo.token) {
+	    tagPtr->refCount += 1;
+	    TkTextUndoPushItem(sharedTextPtr->undoStack, undoInfo.token, undoInfo.byteSize);
+	}
+	sharedTextPtr->undoStackEvent = true;
     }
 
     return true;
@@ -1722,7 +1735,7 @@ TkTextCreateTag(
 	sharedTextPtr->affectGeometryNonSelTags = TkBitResize(
 		sharedTextPtr->affectGeometryNonSelTags, newSize);
 	sharedTextPtr->affectLineHeightTags = TkBitResize(sharedTextPtr->affectLineHeightTags, newSize);
-	sharedTextPtr->tagLookup = ckrealloc(sharedTextPtr->tagLookup, newSize * sizeof(TkTextTag *));
+	sharedTextPtr->tagLookup = realloc(sharedTextPtr->tagLookup, newSize * sizeof(TkTextTag *));
 	DEBUG(memset(sharedTextPtr->tagLookup + oldSize, 0, (newSize - oldSize) * sizeof(TkTextTag *)));
     }
 
@@ -1735,7 +1748,7 @@ TkTextCreateTag(
      * to it to the hash table entry.
      */
 
-    tagPtr = memset(ckalloc(sizeof(TkTextTag)), 0, sizeof(TkTextTag));
+    tagPtr = memset(malloc(sizeof(TkTextTag)), 0, sizeof(TkTextTag));
     tagPtr->name = name;
     tagPtr->index = index;
     tagPtr->priority = textPtr->sharedTextPtr->numEnabledTags;
@@ -1926,7 +1939,7 @@ TkTextReleaseTag(
      */
 
     if (tagPtr->tabArrayPtr) {
-	ckfree(tagPtr->tabArrayPtr);
+	free(tagPtr->tabArrayPtr);
     }
 
     if (sharedTextPtr->tagBindingTable) {
@@ -1940,7 +1953,7 @@ TkTextReleaseTag(
 
     if (tagPtr->textPtr) {
 	if (--((TkText *) tagPtr->textPtr)->refCount == 0) {
-	    ckfree(tagPtr->textPtr);
+	    free(tagPtr->textPtr);
 	}
 	tagPtr->textPtr = NULL;
     }
@@ -1949,7 +1962,7 @@ TkTextReleaseTag(
      * Finally free the tag's memory.
      */
 
-    ckfree(tagPtr);
+    free(tagPtr);
     DEBUG_ALLOC(tkTextCountDestroyTag++);
 }
 /*
@@ -2122,7 +2135,7 @@ TkTextFreeAllTags(
 	 */
 
 	if (tagPtr->tabArrayPtr) {
-	    ckfree(tagPtr->tabArrayPtr);
+	    free(tagPtr->tabArrayPtr);
 	}
 
 	if (tagPtr->undoTagListIndex >= 0) {
@@ -2137,7 +2150,7 @@ TkTextFreeAllTags(
 	if (tagPtr->textPtr) {
 	    assert(textPtr == tagPtr->textPtr);
 	    if (--textPtr->refCount == 0) {
-		ckfree(textPtr);
+		free(textPtr);
 	    }
 	    tagPtr->textPtr = NULL;
 	}
@@ -2146,7 +2159,7 @@ TkTextFreeAllTags(
 	 * Finally free the tag's memory.
 	 */
 
-	ckfree(tagPtr);
+	free(tagPtr);
 	DEBUG_ALLOC(tkTextCountDestroyTag++);
     }
 
@@ -2249,12 +2262,12 @@ TkTextReleaseUndoTagToken(
     assert(tagPtr->undoTagListIndex < sharedTextPtr->undoTagListCount);
 
     if (tagPtr->recentTagAddRemoveToken) {
-	ckfree(tagPtr->recentTagAddRemoveToken);
+	free(tagPtr->recentTagAddRemoveToken);
 	DEBUG_ALLOC(tkTextCountDestroyUndoToken++);
 	tagPtr->recentTagAddRemoveToken = NULL;
     }
     if (tagPtr->recentChangePriorityToken) {
-	ckfree(tagPtr->recentChangePriorityToken);
+	free(tagPtr->recentChangePriorityToken);
 	DEBUG_ALLOC(tkTextCountDestroyUndoToken++);
 	tagPtr->recentChangePriorityToken = NULL;
     }
@@ -2263,6 +2276,40 @@ TkTextReleaseUndoTagToken(
     tagPtr->undoTagListIndex = -1;
     assert(tagPtr->refCount > 1);
     tagPtr->refCount -= 1;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkTextInspectUndoTagItem --
+ *
+ *	Inspect retained undo token.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	Memory is allocated for the result.
+ *
+ *----------------------------------------------------------------------
+ */
+
+void
+TkTextInspectUndoTagItem(
+    const TkSharedText *sharedTextPtr,
+    const TkTextTag *tagPtr,
+    Tcl_Obj* objPtr)
+{
+    if (tagPtr) {
+	if (tagPtr->recentTagAddRemoveToken && !tagPtr->recentTagAddRemoveTokenIsNull) {
+	    Tcl_ListObjAppendElement(NULL, objPtr,
+		    TkBTreeUndoTagInspect(sharedTextPtr, tagPtr->recentTagAddRemoveToken));
+	}
+	if (tagPtr->recentChangePriorityToken) {
+	    Tcl_ListObjAppendElement(NULL, objPtr,
+		    UndoChangeTagPriorityInspect(sharedTextPtr, tagPtr->recentChangePriorityToken));
+	}
+    }
 }
 
 /*
@@ -2298,7 +2345,7 @@ TkTextPushUndoTagTokens(
 
     if (tagPtr->recentTagAddRemoveToken) {
 	if (tagPtr->recentTagAddRemoveTokenIsNull) {
-	    ckfree(tagPtr->recentTagAddRemoveToken);
+	    free(tagPtr->recentTagAddRemoveToken);
 	    DEBUG_ALLOC(tkTextCountDestroyUndoToken++);
 	} else {
 	    TkTextUndoPushItem(sharedTextPtr->undoStack, tagPtr->recentTagAddRemoveToken, 0);
@@ -2311,7 +2358,7 @@ TkTextPushUndoTagTokens(
 	    TkTextUndoPushItem(sharedTextPtr->undoStack, tagPtr->recentChangePriorityToken, 0);
 	    tagPtr->refCount += 1;
 	} else {
-	    ckfree(tagPtr->recentChangePriorityToken);
+	    free(tagPtr->recentChangePriorityToken);
 	    DEBUG_ALLOC(tkTextCountDestroyUndoToken++);
 	}
 	tagPtr->recentChangePriorityToken = NULL;
@@ -2354,10 +2401,12 @@ TkTextTagAddRetainedUndo(
 
     if (sharedTextPtr->undoTagListCount == sharedTextPtr->undoTagListSize) {
 	sharedTextPtr->undoTagListSize = 2*sharedTextPtr->numEnabledTags;
-	sharedTextPtr->undoTagList = ckrealloc(sharedTextPtr->undoTagList,
+	sharedTextPtr->undoTagList = realloc(sharedTextPtr->undoTagList,
 		sharedTextPtr->undoTagListSize * sizeof(sharedTextPtr->undoTagList[0]));
     }
     sharedTextPtr->undoTagList[sharedTextPtr->undoTagListCount] = tagPtr;
+    sharedTextPtr->undoStackEvent = true;
+    sharedTextPtr->lastUndoTokenType = -1;
     tagPtr->undoTagListIndex = sharedTextPtr->undoTagListCount++;
     tagPtr->refCount += 1;
 }
@@ -2387,7 +2436,7 @@ TkTextPushTagPriorityUndo(
 {
     UndoTokenTagPriority *token;
 
-    token = ckalloc(sizeof(UndoTokenTagPriority));
+    token = malloc(sizeof(UndoTokenTagPriority));
     token->undoType = &undoTokenTagPriorityType;
     (token->tagPtr = tagPtr)->refCount += 1;
     token->priority = priority;
@@ -2421,7 +2470,7 @@ TkTextPushTagPriorityRedo(
 {
     UndoTokenTagPriority *token;
 
-    token = ckalloc(sizeof(UndoTokenTagPriority));
+    token = malloc(sizeof(UndoTokenTagPriority));
     token->undoType = &redoTokenTagPriorityType;
     (token->tagPtr = tagPtr)->refCount += 1;
     token->priority = priority;
@@ -2482,7 +2531,7 @@ ChangeTagPriority(
 	
 	if (!tagPtr->recentChangePriorityToken) {
 	    tagPtr->savedPriority = tagPtr->priority;
-	    token = ckalloc(sizeof(UndoTokenTagPriority));
+	    token = malloc(sizeof(UndoTokenTagPriority));
 	    DEBUG_ALLOC(tkTextCountNewUndoToken++);
 	    tagPtr->recentChangePriorityToken = (TkTextUndoToken *) token;
 	    TkTextTagAddRetainedUndo(sharedTextPtr, tagPtr);
@@ -2621,7 +2670,7 @@ TkTextBindProc(
 
   done:
     if (--textPtr->refCount == 0) {
-	ckfree(textPtr);
+	free(textPtr);
     }
 }
 
@@ -2764,7 +2813,7 @@ TkTextPickCurrent(
 	    TkTextTag *tagPtr = TkBTreeGetTags(&index);
 	    if (tagPtr) {
 		epoch = ++sharedTextPtr->pickEpoch;
-		newArrayPtr = ckalloc(sharedTextPtr->numEnabledTags * sizeof(newArrayPtr[0]));
+		newArrayPtr = malloc(sharedTextPtr->numEnabledTags * sizeof(newArrayPtr[0]));
 		for (i = 0; i < textPtr->numCurTags; ++i) {
 		    textPtr->curTagArrayPtr[i]->flag = false; /* mark as *not* common */
 		    textPtr->curTagArrayPtr[i]->epoch = epoch;
@@ -2792,7 +2841,7 @@ TkTextPickCurrent(
 	    if (size < sizeof(copyArrayBuffer)/sizeof(copyArrayBuffer[0])) {
 		copyArrayPtr = copyArrayBuffer;
 	    } else {
-		copyArrayPtr = memcpy(ckalloc(size), newArrayPtr, size);
+		copyArrayPtr = memcpy(malloc(size), newArrayPtr, size);
 	    }
 	    memcpy(copyArrayPtr, newArrayPtr, size);
 
@@ -2841,7 +2890,7 @@ TkTextPickCurrent(
 		event.xcrossing.detail = NotifyAncestor;
 		TagBindEvent(textPtr, &event, numOldTags, oldArrayPtr);
 	    }
-	    ckfree(oldArrayPtr);
+	    free(oldArrayPtr);
 	}
     }
 
@@ -2868,7 +2917,7 @@ TkTextPickCurrent(
 	    TagBindEvent(textPtr, &event, numNewTags, copyArrayPtr);
 	}
 	if (copyArrayPtr != copyArrayBuffer) {
-	    ckfree(copyArrayPtr);
+	    free(copyArrayPtr);
 	}
     }
 
@@ -2929,7 +2978,7 @@ TkTextPickCurrent(
 	textPtr->hoveredImageArrSize = 0;
 	if (countHoveredImages > textPtr->hoveredImageArrCapacity) {
 	    textPtr->hoveredImageArrCapacity = MAX(4, 2*textPtr->hoveredImageArrCapacity);
-	    textPtr->hoveredImageArr = ckrealloc(textPtr->hoveredImageArr,
+	    textPtr->hoveredImageArr = realloc(textPtr->hoveredImageArr,
 		textPtr->hoveredImageArrCapacity * sizeof(textPtr->hoveredImageArr[0]));
 	}
 	for (eiPtr = eiListPtr; eiPtr; eiPtr = eiPtr->nextPtr) {
@@ -2980,7 +3029,7 @@ TagBindEvent(
      */
 
     if (numTags > sizeof(nameArrayBuf) / sizeof(nameArrayBuf[0])) {
-	nameArrPtr = ckalloc(numTags * sizeof(nameArrPtr[0]));
+	nameArrPtr = malloc(numTags * sizeof(nameArrPtr[0]));
     } else {
 	nameArrPtr = nameArrayBuf;
     }
@@ -3010,8 +3059,229 @@ TagBindEvent(
 	    textPtr->tkwin, numTags, (ClientData *) nameArrPtr);
 
     if (nameArrPtr != nameArrayBuf) {
-	ckfree(nameArrPtr);
+	free(nameArrPtr);
     }
+}
+
+/*
+ *--------------------------------------------------------------
+ *
+ * EnumerateTags --
+ *
+ *	Implements the "tag enumerate" command, see documentation.
+ *
+ * Results:
+ *	A standard Tcl result.
+ *
+ * Side effects:
+ *	Memory is allocated for the result, if needed (standard Tcl result
+ *	side effects).
+ *
+ *--------------------------------------------------------------
+ */
+
+static TkBitField *
+AddBits(
+    TkBitField *dst,		/* can be NULL */
+    const TkBitField *src)
+{
+    if (!dst) {
+	dst = TkBitResize(NULL, TkBitSize(src));
+    }
+    TkBitJoin(dst, src);
+    return dst;
+}
+
+static TkBitField *
+AddComplementBits(
+    TkBitField *dst,		/* can be NULL */
+    const TkBitField *src)
+{
+    if (!dst) {
+	dst = TkBitResize(NULL, TkBitSize(src));
+    }
+    TkBitComplementTo(dst, src);
+    return dst;
+}
+
+static TkBitField *
+AddSet(
+    const TkSharedText *sharedTextPtr,
+    TkBitField *dst,		/* can be NULL */
+    const TkTextTagSet *src)
+{
+    TkBitField *compl = TkTextTagSetToBits(src, TkBitSize(sharedTextPtr->usedTags));
+    
+    dst = AddBits(dst, compl);
+    TkBitDecrRefCount(compl);
+    return dst;
+}
+
+static TkBitField *
+AddComplementSet(
+    const TkSharedText *sharedTextPtr,
+    TkBitField *dst,		/* can be NULL */
+    const TkTextTagSet *src)
+{
+    TkBitField *compl = TkTextTagSetToBits(src, TkBitSize(sharedTextPtr->usedTags));
+    
+    dst = AddComplementBits(dst, compl);
+    TkBitDecrRefCount(compl);
+    return dst;
+}
+
+static int
+EnumerateTags(
+    Tcl_Interp *interp,
+    TkText *textPtr,
+    int objc,
+    Tcl_Obj *const *objv)
+{
+    static const char *const optStrings[] = {
+	"-all", "-discardselection", "-display", "-elide", "-geometry", "-lineheight",
+	"-nodisplay", "-noelide", "-nogeometry", "-nolineheight", "-noselection",
+	"-noundo", "-noused", "-selection", "-undo", "-unused", "-used", NULL
+    };
+    enum opts {
+	ENUM_ALL, ENUM_DISCARD_SELECTION, ENUM_DISPLAY, ENUM_ELIDE, ENUM_GEOEMTRY, ENUM_LINEHEIGHT,
+	ENUM_NO_DISPLAY, ENUM_NO_ELIDE, ENUM_NO_GEOMETRY, ENUM_NO_LINEHEIGHT, ENUM_NO_SELECTION,
+	ENUM_NO_UNDO, ENUM_NO_USED, ENUM_SELECTION, ENUM_UNDO, ENUM_UNUSED, ENUM_USED
+    };
+
+    const TkSharedText *sharedTextPtr = textPtr->sharedTextPtr;
+    TkBitField *includeBits = NULL;
+    TkBitField *discardBits = NULL;
+    bool discardSelection = false;
+    TkTextTag **arrayPtr;
+    int index, countTags, i;
+
+    for (i = 3; i < objc; ++i) {
+	const char *option = Tcl_GetString(objv[i]);
+
+	if (*option != '-') {
+	    break;
+	}
+
+	if (Tcl_GetIndexFromObjStruct(interp, objv[i], optStrings, sizeof(char *),
+		"tag option", 0, &index) != TCL_OK) {
+	    if (includeBits) { TkBitDecrRefCount(includeBits); }
+	    if (discardBits) { TkBitDecrRefCount(discardBits); }
+	    return TCL_ERROR;
+	}
+
+	switch ((enum opts) index) {
+	case ENUM_ALL:
+	case ENUM_DISCARD_SELECTION:
+	    discardSelection = true;
+	    break;
+	case ENUM_DISPLAY:
+	    includeBits = AddBits(includeBits, sharedTextPtr->affectDisplayTags);
+	    break;
+	case ENUM_ELIDE:
+	    includeBits = AddBits(includeBits, sharedTextPtr->elisionTags);
+	    break;
+	case ENUM_GEOEMTRY:
+	    includeBits = AddBits(includeBits, sharedTextPtr->affectGeometryTags);
+	    break;
+	case ENUM_LINEHEIGHT:
+	    includeBits = AddBits(includeBits, sharedTextPtr->affectLineHeightTags);
+	    break;
+	case ENUM_NO_DISPLAY:
+	    discardBits = AddBits(discardBits, sharedTextPtr->affectDisplayTags);
+	    break;
+	case ENUM_NO_ELIDE:
+	    discardBits = AddBits(discardBits, sharedTextPtr->elisionTags);
+	    break;
+	case ENUM_NO_GEOMETRY:
+	    discardBits = AddBits(discardBits, sharedTextPtr->affectGeometryTags);
+	    break;
+	case ENUM_NO_LINEHEIGHT:
+	    discardBits = AddBits(discardBits, sharedTextPtr->affectLineHeightTags);
+	    break;
+	case ENUM_NO_SELECTION:
+	    discardSelection = true;
+	    break;
+	case ENUM_NO_UNDO:
+	    discardBits = AddComplementBits(discardBits, sharedTextPtr->dontUndoTags);
+	    break;
+	case ENUM_NO_USED:
+	    discardBits = AddComplementSet(sharedTextPtr, discardBits,
+		    TkBTreeRootTagInfo(sharedTextPtr->tree));
+	    break;
+	case ENUM_SELECTION:
+	    includeBits = AddBits(includeBits, sharedTextPtr->selectionTags);
+	    break;
+	case ENUM_UNDO:
+	    includeBits = AddComplementBits(includeBits, sharedTextPtr->dontUndoTags);
+	    break;
+	case ENUM_UNUSED:
+	    includeBits = AddComplementSet(sharedTextPtr, includeBits,
+		    TkBTreeRootTagInfo(sharedTextPtr->tree));
+	    break;
+	case ENUM_USED:
+	    includeBits = AddSet(sharedTextPtr, includeBits, TkBTreeRootTagInfo(sharedTextPtr->tree));
+	    break;
+	}
+    }
+
+    if (objc == i + 1) {
+	TkTextIndex index;
+	TkTextSegment *segPtr;
+	TkTextTagSet *tagInfoPtr;
+
+	if (!TkTextGetIndexFromObj(interp, textPtr, objv[i], &index)) {
+	    return TCL_ERROR;
+	}
+
+	segPtr = TkTextIndexGetContentSegment(&index, NULL);
+
+	if (!includeBits && !discardBits) {
+	    FindTags(interp, textPtr, segPtr, discardSelection);
+	    return TCL_OK;
+	}
+
+	TkTextTagSetIncrRefCount(tagInfoPtr = segPtr->tagInfoPtr);
+	if (includeBits) {
+	    tagInfoPtr = TkTextTagSetIntersectBits(tagInfoPtr, includeBits);
+	    TkBitDecrRefCount(includeBits);
+	}
+	includeBits = TkTextTagSetToBits(tagInfoPtr, TkBitSize(sharedTextPtr->usedTags));
+	TkTextTagSetDecrRefCount(tagInfoPtr);
+    } else if (objc > i) {
+	Tcl_WrongNumArgs(interp, 3, objv, "?options? ?index?");
+	return TCL_ERROR;
+    }
+
+    if (discardSelection) {
+	discardBits = AddBits(discardBits, sharedTextPtr->selectionTags);
+    }
+    if (!includeBits) {
+	if (discardBits) {
+	    includeBits = TkBitCopy(sharedTextPtr->usedTags, -1);
+	} else {
+	    TkBitIncrRefCount(includeBits = sharedTextPtr->usedTags);
+	}
+    }
+    if (discardBits) {
+	TkBitRemove(includeBits, discardBits);
+    }
+
+    arrayPtr = malloc(sharedTextPtr->numEnabledTags * sizeof(TkTextTag *));
+    countTags = 0;
+
+    for (i = TkBitFindFirst(includeBits); i != TK_BIT_NPOS; i = TkBitFindNext(includeBits, i)) {
+	arrayPtr[countTags++] = sharedTextPtr->tagLookup[i];
+    }
+
+    AppendTags(interp, countTags, arrayPtr);
+    free(arrayPtr);
+
+    TkBitDecrRefCount(includeBits);
+    if (discardBits) {
+	TkBitDecrRefCount(discardBits);
+    }
+
+    return TCL_OK;
 }
 
 /*

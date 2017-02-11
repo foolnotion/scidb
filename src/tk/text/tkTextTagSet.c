@@ -184,6 +184,26 @@ ToIntSet(
 }
 
 
+TkBitField *
+TkTextTagSetToBits(
+    const TkTextTagSet *src,
+    int size)
+{
+    assert(src);
+
+    if (src->base.isSetFlag) {
+	return TkBitFromSet(&src->set, size < 0 ? TkIntSetMax(&src->set) + 1 : size);
+    }
+
+    if (size < 0 || TkBitSize(&src->bf) == size) {
+	((TkTextTagSet *) src)->base.refCount += 1;
+	return (TkBitField *) &src->bf;
+    }
+
+    return TkBitCopy(&src->bf, size);
+}
+
+
 void
 TkTextTagSetDestroy(
     TkTextTagSet **tsPtr)
@@ -997,12 +1017,11 @@ TkTextTagSetPrint(
 }
 
 # endif /* !NDEBUG */
-# if TK_TEXT_LINE_TAGGING
+# if 0
 
 /*
- * These functions are not needed yet, but shouldn't be removed, because they will
- * be important if the text widget is supporting line based tagging (currently line
- * based tagging is not supported by the display functions).
+ * These functions are not needed anymore, but shouldn't be removed, because sometimes
+ * any of these functions might be useful.
  */
 
 static unsigned
@@ -1317,7 +1336,7 @@ TkTextTagSetInnerJoinDifferenceIsEqual(
     return isEqual;
 }
 
-# endif /* TK_TEXT_LINE_TAGGING */
+# endif /* 0 */
 #else /* integer set only implementation **************************************/
 
 static TkIntSet *
@@ -1347,6 +1366,16 @@ MakeCopyIfNeeded(
     }
     ts->refCount -= 1;
     return TkIntSetCopy(ts);
+}
+
+
+TkBitField *
+TkTextTagSetToBits(
+    const TkTextTagSet *src,
+    int size)
+{
+    assert(src);
+    return TkBitFromSet(&src->set, size < 0 ? TkIntSetMax(&src->set) + 1 : size);
 }
 
 

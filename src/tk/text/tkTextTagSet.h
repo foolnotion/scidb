@@ -89,6 +89,7 @@ inline void TkTextTagSetIncrRefCount(TkTextTagSet *ts);
 inline unsigned TkTextTagSetDecrRefCount(TkTextTagSet *ts);
 
 inline TkTextTagSet *TkTextTagSetCopy(const TkTextTagSet *src) __warn_unused__;
+TkBitField *TkTextTagSetToBits(const TkTextTagSet *src, int size) __warn_unused__;
 
 TkTextTagSet *TkTextTagSetJoin(TkTextTagSet *dst, const TkTextTagSet *src) __warn_unused__;
 TkTextTagSet *TkTextTagSetIntersect(TkTextTagSet *dst, const TkTextTagSet *src) __warn_unused__;
@@ -161,12 +162,11 @@ void TkTextTagSetPrint(const TkTextTagSet *set);
 # endif
 
 
-# if TK_TEXT_LINE_TAGGING
+# if 0
 
 /*
- * These functions are not needed yet, but shouldn't be removed, because they will
- * be important if the text widget is supporting line based tagging (currently line
- * based tagging is not supported by the display functions).
+ * These functions are not needed anymore, but shouldn't be removed, because sometimes
+ * any of these functions might be useful.
  */
 
 /* dst := (dst + (ts - sub)) & ts */
@@ -188,7 +188,7 @@ bool TkTextTagSetIsEqualToInnerJoinDifference(const TkTextTagSet *ts1, const TkT
 bool TkTextTagSetInnerJoinDifferenceIsEqual(const TkTextTagSet *ts1, const TkTextTagSet *ts2,
     const TkTextTagSet *add, const TkTextTagSet *sub);
 
-# endif /* TK_TEXT_LINE_TAGGING */
+# endif /* 0 */
 
 #else /* integer set only implementation **************************************/
 
@@ -203,6 +203,7 @@ inline void TkTextTagSetIncrRefCount(TkIntSet *ts);
 inline unsigned TkTextTagSetDecrRefCount(TkIntSet *ts);
 
 inline TkIntSet *TkTextTagSetCopy(const TkIntSet *src) __warn_unused__;
+TkBitField *TkTextTagSetToBits(const TkTextTagSet *src, int size) __warn_unused__;
 
 TkIntSet *TkTextTagSetJoin(TkIntSet *dst, const TkIntSet *src) __warn_unused__;
 TkIntSet *TkTextTagSetIntersect(TkIntSet *dst, const TkIntSet *src) __warn_unused__;
