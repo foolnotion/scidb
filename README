@@ -33,10 +33,10 @@ message to the author.
 How a message can be sent:
 
    1. A membership in Sourceforge is needed (open
-      <https://sourceforge.net/account/registration/>).
+      <https://sourceforge.net/user/registration?>).
       The membership is free of charge and duties.
-   2. Open <http://sourceforge.net/project/memberlist.php?group_id=307371>
-   3. Click "gcramer at users.sourceforge.net"
+   2. Open <https://sourceforge.net/u/gcramer/profile/send_message>,
+      you must be logged in.
 
 For additional wanted functionalities feature requests can be entered.
 These requests will partly be a basis of decision-making for further
@@ -44,8 +44,8 @@ development.
 
 How to enter feature requests:
 
-   1. Open <http://sourceforge.net/tracker/?group_id=307371&atid=1294800>
-   2. Click "Add new"
+   1. Open <https://sourceforge.net/p/scidb/feature-requests/>.
+   2. Click "Create Ticket", you must be logged in.
 
 These request should consider that Scidb is a pure database application.
 That means the following functionalities are not destined for Scidb:
@@ -71,19 +71,9 @@ Furthermore project help is welcome. The following tasks are open:
      Furthermore the sub-windows should be movable (with drag&drop),
      currently the positions of the sub-windows are fixed.
 
-   - Embedding of a HTML text widget (htmlwidget).
+   - Writing HTML help pages.
 
-   - Programming a help dialog with the help of the HTML text widget.
-     The (currently non-existent) HTML online help pages should be
-     used.
-
-   - Programming a 'Tip of the Day' dialog with appendant tips.
-
-   - Writing of the HTML online help pages.
-
-   - Printing PDF documents and images (board dumps).
-
-   - Programming an ECO browser.
+   - Printing PDF documents.
 
    C++
    ------------------
@@ -94,11 +84,6 @@ Furthermore project help is welcome. The following tasks are open:
      for this task is the library 'newlib' (only the stdio part).
      More programming effort for the porting shouldn't be neccessary.
 
-   - Extending the libHaru PDF library. For PDF export the support of
-     'IDENTITY-H' is mandatory.
-
-   - Embedding a drag&drop library.
-   
    - LaTeX generation with the help of the already existing TeXt library.
      The TeXt library supports the generation of text documents with
      TeX like scripts. Realizing this task will test the TeXt library
