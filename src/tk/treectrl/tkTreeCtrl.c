@@ -64,7 +64,7 @@ static CONST char *columnResizeModeST[] = {
 	"proxy", "realtime", (char *) NULL
 };
 static CONST char *doubleBufferST[] = {
-	"none", "item", "window", (char *) NULL
+	"none", "item", "window", "never", (char *) NULL
 };
 static CONST char *lineStyleST[] = {
 	"dot", "solid", (char *) NULL

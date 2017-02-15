@@ -7,6 +7,9 @@ bug fixes, new options:
 	treectrl <pathName> -class <string>
 		Sets the class name (cannot be used with 'configure').
 
+	treectrl <pathName> -doublebuffer never
+		Never use double buffering for this widget.
+
 	treectrl <pathName> -fullstripes <boolean>
 		If set, the whole area will be filled with stripes.
 		Defaults to "no".

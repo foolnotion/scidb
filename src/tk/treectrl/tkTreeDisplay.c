@@ -3688,7 +3688,7 @@ DblBufWinDirty(
 
     /* Fix BUG ID: 3015429 */
     if (x1 >= x2 || y1 >= y2)
-	return;
+		return;
 
 	rect.x = x1;
 	rect.y = y1;
@@ -3704,7 +3704,6 @@ AddRgnToRedrawRgn(
     TkRegion rgn)
 {
     TreeDInfo dInfo = tree->dInfo;
-
     Tree_UnionRegion(dInfo->redrawRgn, rgn, dInfo->redrawRgn);
 }
 
@@ -5408,7 +5407,7 @@ DisplayDItem(
 		DisplayDelay(tree);
 	}
 
-	if (tree->doubleBuffer != DOUBLEBUFFER_NONE) {
+	if (tree->doubleBuffer != DOUBLEBUFFER_NONE && tree->doubleBuffer != DOUBLEBUFFER_NEVER) {
 
 		if (tree->doubleBuffer == DOUBLEBUFFER_WINDOW) {
 			DblBufWinDirty(tree, left, top, right, bottom);
@@ -5419,8 +5418,10 @@ DisplayDItem(
 		tree->drawableXOrigin = left + tree->xOrigin;
 		tree->drawableYOrigin = top + tree->yOrigin;
 
-		TreeItem_Draw(tree, dItem->item, lock,
-				area->x - left, dItem->y - top,
+		TreeItem_Draw(tree, dItem->item,
+				lock,
+				area->x - left,
+				dItem->y - top,
 				area->width, dItem->height,
 				pixmap,
 				0, right - left,
@@ -5609,27 +5610,27 @@ SetBuffering(
     int overlays = FALSE;
 
     if ((TreeDragImage_IsVisible(tree->dragImage) &&
-	!TreeDragImage_IsXOR(tree->dragImage)) ||
-	(TreeMarquee_IsVisible(tree->marquee) &&
-	!TreeMarquee_IsXOR(tree->marquee)) ||
-	((tree->columnProxy.xObj || tree->rowProxy.yObj) &&
-	!Proxy_IsXOR())) {
+			!TreeDragImage_IsXOR(tree->dragImage)) ||
+		(TreeMarquee_IsVisible(tree->marquee) &&
+			!TreeMarquee_IsXOR(tree->marquee)) ||
+		((tree->columnProxy.xObj || tree->rowProxy.yObj) &&
+			!Proxy_IsXOR())) {
 
-	overlays = TRUE;
+		overlays = TRUE;
     }
 
     if (overlays) {
-	tree->doubleBuffer = DOUBLEBUFFER_WINDOW;
+		tree->doubleBuffer = DOUBLEBUFFER_WINDOW;
     } else {
-	tree->doubleBuffer = DOUBLEBUFFER_ITEM;
+		tree->doubleBuffer = DOUBLEBUFFER_ITEM;
     }
 
     if (overlays != dInfo->overlays) {
-	dInfo->flags |=
-	    DINFO_DRAW_HEADER |
-	    DINFO_INVALIDATE |
-	    DINFO_DRAW_WHITESPACE;
-	dInfo->overlays = overlays;
+		dInfo->flags |=
+			DINFO_DRAW_HEADER |
+			DINFO_INVALIDATE |
+			DINFO_DRAW_WHITESPACE;
+		dInfo->overlays = overlays;
     }
 }
 
@@ -5686,7 +5687,9 @@ Tree_Display(
 
 displayRetry:
 
-	SetBuffering(tree);
+	if (tree->doubleBuffer != DOUBLEBUFFER_NEVER) {
+		SetBuffering(tree);
+	}
 
 	/* Some change requires selection changes */
 	if (dInfo->flags & DINFO_REDO_SELECTION) {
@@ -6138,7 +6141,7 @@ displayRetry:
 	if (count > 0) {
 		TreeDrawable tpixmap = tdrawable;
 
-		if (tree->doubleBuffer != DOUBLEBUFFER_NONE) {
+		if (tree->doubleBuffer != DOUBLEBUFFER_NONE && tree->doubleBuffer != DOUBLEBUFFER_NEVER) {
 			/* Allocate pixmap for largest item */
 			tpixmap.width = MIN(Tk_Width(tkwin), dInfo->itemWidth);
 			tpixmap.height = MIN(Tk_Height(tkwin), dInfo->itemHeight);
@@ -6301,7 +6304,7 @@ displayRetry:
 	if (Proxy_IsXOR())
 		TreeColumnProxy_Display(tree);
 
-	if (tree->doubleBuffer == DOUBLEBUFFER_NONE)
+	if (tree->doubleBuffer == DOUBLEBUFFER_NONE || tree->doubleBuffer == DOUBLEBUFFER_NEVER)
 		dInfo->flags |= DINFO_DRAW_HIGHLIGHT | DINFO_DRAW_BORDER;
 
 	if (dInfo->flags & (DINFO_DRAW_BORDER | DINFO_DRAW_HIGHLIGHT)) {
@@ -7025,7 +7028,7 @@ Tree_RelayoutWindow(
 			dInfo->pixmapW.drawable = None;
 		}
 	}
-	if (tree->doubleBuffer == DOUBLEBUFFER_NONE) {
+	if (tree->doubleBuffer == DOUBLEBUFFER_NONE || tree->doubleBuffer == DOUBLEBUFFER_NEVER) {
 		if (dInfo->pixmapI.drawable != None) {
 			Tk_FreePixmap(tree->display, dInfo->pixmapI.drawable);
 			dInfo->pixmapI.drawable = None;

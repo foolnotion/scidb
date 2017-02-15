@@ -267,6 +267,7 @@ struct TreeCtrl
 #define DOUBLEBUFFER_NONE 0
 #define DOUBLEBUFFER_ITEM 1
 #define DOUBLEBUFFER_WINDOW 2
+#define DOUBLEBUFFER_NEVER 3
 	int doubleBuffer;			/* -doublebuffer */
 	XColor *buttonColor;		/* -buttoncolor */
 	Tcl_Obj *buttonSizeObj;		/* -buttonSize */
@@ -897,22 +898,23 @@ MODULE_SCOPE void TreeRowProxy_Display(TreeCtrl *tree);
 MODULE_SCOPE void Tree_DrawTiledImage(TreeCtrl *tree, Drawable drawable, Tk_Image image,
 	int x1, int y1, int x2, int y2, int xOffset, int yOffset);
 
-#define DINFO_OUT_OF_DATE 0x0001
-#define DINFO_CHECK_COLUMN_WIDTH 0x0002
-#define DINFO_DRAW_HEADER 0x0004
-#define DINFO_SET_ORIGIN_X 0x0008
-#define DINFO_UPDATE_SCROLLBAR_X 0x0010
-#define DINFO_REDRAW_PENDING 0x00020
-#define DINFO_INVALIDATE 0x0040
-#define DINFO_DRAW_HIGHLIGHT 0x0080
-#define DINFO_DRAW_BORDER 0x0100
-#define DINFO_REDO_RANGES 0x0200
-#define DINFO_SET_ORIGIN_Y 0x0400
-#define DINFO_UPDATE_SCROLLBAR_Y 0x0800
-#define DINFO_REDO_INCREMENTS 0x1000
-#define DINFO_REDO_COLUMN_WIDTH 0x2000
-#define DINFO_REDO_SELECTION 0x4000
-#define DINFO_DRAW_WHITESPACE 0x8000
+#define DINFO_OUT_OF_DATE        (1 << 0)
+#define DINFO_CHECK_COLUMN_WIDTH (1 << 1)
+#define DINFO_DRAW_HEADER        (1 << 2)
+#define DINFO_SET_ORIGIN_X       (1 << 3)
+#define DINFO_UPDATE_SCROLLBAR_X (1 << 4)
+#define DINFO_REDRAW_PENDING     (1 << 5)
+#define DINFO_INVALIDATE         (1 << 6)
+#define DINFO_DRAW_HIGHLIGHT     (1 << 7)
+#define DINFO_DRAW_BORDER        (1 << 8)
+#define DINFO_REDO_RANGES        (1 << 9)
+#define DINFO_SET_ORIGIN_Y       (1 << 10)
+#define DINFO_UPDATE_SCROLLBAR_Y (1 << 11)
+#define DINFO_REDO_INCREMENTS    (1 << 12)
+#define DINFO_REDO_COLUMN_WIDTH  (1 << 13)
+#define DINFO_REDO_SELECTION     (1 << 14)
+#define DINFO_DRAW_WHITESPACE    (1 << 15)
+#define DINFO_EXPOSURE           (1 << 16)
 MODULE_SCOPE void Tree_DInfoChanged(TreeCtrl *tree, int flags);
 
 MODULE_SCOPE void Tree_TheWorldHasChanged(Tcl_Interp *interp);
