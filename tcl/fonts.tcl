@@ -1215,18 +1215,20 @@ proc truetypeSupport? {} {
 proc useLanguage {lang} {
 	variable ::figurines::langSet
 	variable GraphicMap
+	variable Options
 
 	if {$lang eq "graphic"} {
 		useFigurines yes
 	} else {
 		set GraphicMap {}
 		set graphic $langSet(graphic)
+		if {[string length $Options(figurine:lang)]} {
+			set lang $Options(figurine:lang)
+		}
 		set figurine $langSet($lang)
-
 		for {set i 0} {$i < 5} {incr i} {
 			lappend GraphicMap [lindex $graphic $i] [lindex $figurine $i]
 		}
-
 		lappend GraphicMap [lindex $graphic $i] ""
 	}
 }
