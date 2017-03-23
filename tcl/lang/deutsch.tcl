@@ -441,6 +441,8 @@
 ::application::board::mc::LoadGame(prev)				"Vorhergehende Partie laden"
 ::application::board::mc::LoadGame(first)				"Erste Partie laden"
 ::application::board::mc::LoadGame(last)				"Letzte Partie laden"
+::application::board::mc::LoadFirstLast(next)		"Ende der Liste erreicht, mit der ersten Partie fortfahren?"
+::application::board::mc::LoadFirstLast(prev)		"Start der Liste erreicht, mit der letzten Partie fortfahren?"
 
 ::application::board::mc::SwitchView(base)			"Zur Datenbanksicht wechseln"
 ::application::board::mc::SwitchView(list)			"Zur Partielistensicht wechseln"

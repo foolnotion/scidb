@@ -440,6 +440,8 @@
 ::application::board::mc::LoadGame(prev)				"Load previous game"
 ::application::board::mc::LoadGame(first)				"Load first game"
 ::application::board::mc::LoadGame(last)				"Load last game"
+::application::board::mc::LoadFirstLast(next)		"End of list reached, continue with first game?"
+::application::board::mc::LoadFirstLast(prev)		"Start of list reached, continue with last game?"
 
 ::application::board::mc::SwitchView(base)			"Switch to database view"
 ::application::board::mc::SwitchView(list)			"Switch to game list view"

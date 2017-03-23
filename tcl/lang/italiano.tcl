@@ -442,6 +442,8 @@
 ::application::board::mc::LoadGame(prev)				"Carica la partita precedente"
 ::application::board::mc::LoadGame(first)				"Carica la prima partita"
 ::application::board::mc::LoadGame(last)				"Carica l'ultima partita"
+::application::board::mc::LoadFirstLast(next)		"End of list reached, continue with first game?" ;# NEW
+::application::board::mc::LoadFirstLast(prev)		"Start of list reached, continue with last game?" ;# NEW
 
 ::application::board::mc::SwitchView(base)			"Passa alla vista database"
 ::application::board::mc::SwitchView(list)			"Passa alla vista della partita"

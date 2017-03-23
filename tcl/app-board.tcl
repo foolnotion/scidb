@@ -53,6 +53,8 @@ set LoadGame(next)			"Load next game"
 set LoadGame(prev)			"Load previous game"
 set LoadGame(first)			"Load first game"
 set LoadGame(last)			"Load last game"
+set LoadFirstLast(next)		"End of list reached, continue with first game?"
+set LoadFirstLast(prev)		"Start of list reached, continue with last game?"
 
 set SwitchView(base)			"Switch to database view"
 set SwitchView(list)			"Switch to game list view"
@@ -254,22 +256,22 @@ proc build {w width height} {
 
 	set Vars(game:prev) [::toolbar::add $tbGame button \
 		-image $::icon::toolbarPrev \
-		-command [namespace code [list LoadGame(any) prev]] \
+		-command [namespace code [list LoadGame(any) $w prev]] \
 		-state disabled \
 	]
 	set Vars(game:next) [::toolbar::add $tbGame button \
 		-image $::icon::toolbarNext \
-		-command [namespace code [list LoadGame(any) next]] \
+		-command [namespace code [list LoadGame(any) $w next]] \
 		-state disabled \
 	]
 	set Vars(game:first) [::toolbar::add $tbGame button \
 		-image $::icon::toolbarFront \
-		-command [namespace code [list LoadGame(any) first]] \
+		-command [namespace code [list LoadGame(any) $w first]] \
 		-state disabled \
 	]
 	set Vars(game:last) [::toolbar::add $tbGame button \
 		-image $::icon::toolbarBack \
-		-command [namespace code [list LoadGame(any) last]] \
+		-command [namespace code [list LoadGame(any) $w last]] \
 		-state disabled \
 	]
 	set Vars(game:view) [::toolbar::add $tbGame button \
@@ -279,7 +281,7 @@ proc build {w width height} {
 	]
 	set Vars(game:random) [::toolbar::add $tbGame button \
 		-image $::icon::toolbarDiceGreen \
-		-command [namespace code [list LoadGame(any) random]] \
+		-command [namespace code [list LoadGame(any) $w random]] \
 		-tooltipvar [namespace current]::mc::LoadRandomGame \
 		-state disabled \
 	]
@@ -337,10 +339,10 @@ proc build {w width height} {
 	bind <End>							[namespace code { Goto end }]
 	bind <Down>							[namespace code { Goto down }]
 	bind <Up>							[namespace code { Goto up }]
-	bind <Control-Down>				[namespace code [list LoadGame(any) next]]
-	bind <Control-Up>					[namespace code [list LoadGame(any) prev]]
-	bind <Control-Home>				[namespace code [list LoadGame(any) first]]
-	bind <Control-End>				[namespace code [list LoadGame(any) last]]
+	bind <Control-Down>				[namespace code [list LoadGame(any) $w next]]
+	bind <Control-Up>					[namespace code [list LoadGame(any) $w prev]]
+	bind <Control-Home>				[namespace code [list LoadGame(any) $w first]]
+	bind <Control-End>				[namespace code [list LoadGame(any) $w last]]
 	bind <Shift-Up>					[list [namespace parent]::pgn::scroll -1 units]
 	bind <Shift-Down>					[list [namespace parent]::pgn::scroll +1 units]
 	bind <Shift-Prior>				[list [namespace parent]::pgn::scroll -1 pages]
@@ -731,25 +733,25 @@ proc SelectAlternative {index} {
 }
 
 
-proc LoadGame(any) {incr} {
-	LoadGame([set [namespace current]::Vars(load:method)]) $incr
+proc LoadGame(any) {w incr} {
+	LoadGame([set [namespace current]::Vars(load:method)]) $w $incr
 }
 
 
-proc LoadGame(list) {incr} {
+proc LoadGame(list) {w incr} {
 	variable Vars
 
 	if {[llength $Vars(current:game)] > 1} {
 		::widget::busyCursor on
-		set number [LoadGame(all) {*}$Vars(current:game) $incr]
+		set number [LoadGame(all) $w {*}$Vars(current:game) $incr]
 		lset Vars(current:game) 4 $number
-		UpdateGameButtonState(list) [lindex $$Vars(current:game) 0]
+		UpdateGameButtonState(list) [lindex $Vars(current:game) 0]
 		::widget::busyCursor off
 	}
 }
 
 
-proc LoadGame(base) {incr} {
+proc LoadGame(base) {w incr} {
 	::widget::busyCursor on
 	set position [::scidb::game::current]
 	lassign [::scidb::game::link? $position] base variant index
@@ -758,26 +760,34 @@ proc LoadGame(base) {incr} {
 	set currentVariant [::scidb::app::variant]
 
 	if {$index >= 0 && $currentBase eq $base && $currentVariant eq $variant} {
-		set number [::scidb::db::get gameNumber $base $variant $index 0]
+		set number [::scidb::db::get gameNumber $base $variant $index -1]
 	} else {
 		set number -1
 	}
 
-	LoadGame(all) $position $currentBase $currentVariant -1 $number $incr
+	set n [LoadGame(all) $w $position $currentBase $currentVariant -1 $number $incr]
 	UpdateGameButtonState(base) $currentBase $currentVariant
 	::widget::busyCursor off
 }
 
 
-proc LoadGame(all) {position base variant view number incr} {
+proc LoadGame(all) {w position base variant view number incr} {
 	variable Vars
 
-	if {$view >= 0} {
-		set number [scidb::game::view $position $incr]
-	} else {
-		set numGames [scidb::view::count games $base $variant $view]
-		if {$numGames == 0} { return }
+	set numGames [scidb::view::count games $base $variant $view]
+	if {$numGames == 0} { return }
 
+	if {$view >= 0} {
+		set prevNumber $number
+		set number [scidb::game::view $position $incr]
+		if {$number == -1} {
+			set number [::scidb::db::get gameNumber $base $variant 0 $view]
+			if {$prevNumber == $number} {
+				set number [::scidb::db::get gameNumber $base $variant [expr {$numGames - 1}] $view]
+			}
+			return [LoadFirstLastGame $w $base $variant $view $number $incr]
+		}
+	} else {
 		if {$incr eq "random"} {
 			if {$numGames == 1} {
 				set index 0
@@ -799,34 +809,43 @@ proc LoadGame(all) {position base variant view number incr} {
 			if {$index == -1} { return }
 
 			switch $incr {
-				next	{
-					if {$index + 1 == $numGames} { return }
-					incr index +1
-				}
-				prev	{
-					if {$index == 0} { return }
-					incr index -1
-				}
-				first {
-					set index 0
-				}
-				last {
-					set index [expr {$numGames - 1}]
-				}
+				next	{ incr index +1 }
+				prev	{ incr index -1 }
+				first { set index 0 }
+				last  { set index [expr {$numGames - 1}] }
+			}
+
+			if {$index < 0 || $numGames <= $index} {
+				if {$index < 0} { set index [expr {$numGames - 1}] } else { set index 0 }
+				set number [::scidb::db::get gameNumber $base $variant $index $view]
+				return [LoadFirstLastGame $w $base $variant $view $number $incr]
 			}
 		}
 
 		set number [::scidb::db::get gameNumber $base $variant $index $view]
 	}
 
+	return [LoadGame(single) $w $base $variant $view $number]
+}
+
+
+proc LoadGame(single) {w base variant view number} {
 	if {[::scidb::tree::isRefBase? $base] && $view == [::scidb::tree::view]} {
 		set fen [::scidb::tree::position]
 	} else {
 		set fen ""
 	}
-
 	::game::new .application -base $base -variant $variant -view $view -number $number -fen $fen
 	return $number
+}
+
+
+proc LoadFirstLastGame {w base variant view number incr} {
+	if {[::dialog::question \
+			-parent $w \
+			-message [set [namespace current]::mc::LoadFirstLast($incr)]] eq "yes"} {
+		return [LoadGame(single) $w $base $variant $view $number]
+	}
 }
 
 

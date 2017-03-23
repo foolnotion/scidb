@@ -441,6 +441,8 @@
 ::application::board::mc::LoadGame(prev)				"Ladda föregående parti"
 ::application::board::mc::LoadGame(first)				"Ladda första parti"
 ::application::board::mc::LoadGame(last)				"Ladda sista parti"
+::application::board::mc::LoadFirstLast(next)		"End of list reached, continue with first game?" ;# NEW
+::application::board::mc::LoadFirstLast(prev)		"Start of list reached, continue with last game?" ;# NEW
 
 ::application::board::mc::SwitchView(base)			"Växla till databasvy"
 ::application::board::mc::SwitchView(list)			"Växla till partilistvy"
