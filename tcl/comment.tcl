@@ -1638,9 +1638,9 @@ proc PopupMenu {parent} {
 
 
 proc MakeEmoticonMenu {w menu} {
-	set emotions [::emoticons::emotions]
-	set n [expr {[llength $emotions]/2 + 1}]
-	foreach emotion $emotions {
+	set emoticons [::emoticons::emoticons]
+	set n [expr {[llength $emoticons]/2 + 1}]
+	foreach emotion $emoticons {
 		$menu add command \
 			-image $::emoticons::icon($emotion) \
 			-label " $::emoticons::mc::Tooltip($emotion)" \

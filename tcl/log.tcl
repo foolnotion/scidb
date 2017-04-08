@@ -96,7 +96,9 @@ proc close {} {
 	if {[incr Priv(open) -1] > 0} { return }
 
 	if {$Priv(newline)} {
-		$Log.top.text delete end-1
+		$Log.top.text configure -state normal
+		$Log.top.text delete end-1c
+		$Log.top.text configure -state disabled
 	}
 
 	if {$Priv(hide)} {
