@@ -42,15 +42,15 @@ struct TkTextMyBTree {
     				 * list of all B-tree clients. */
 };
 
+
+MODULE_SCOPE bool TkpTextGetIndex(Tcl_Interp *interp, TkSharedText *sharedTextPtr, TkText *textPtr,
+			    const char *string, unsigned lenOfString, TkTextIndex *indexPtr);
+
 #endif /* _TKTEXTPRIV */
 
 #ifdef _TK_NEED_IMPLEMENTATION
 
 #include <assert.h>
-
-#if __STDC_VERSION__ < 199901L
-# define inline /* we are not C99 conform */
-#endif
 
 /*
  *----------------------------------------------------------------------
@@ -585,7 +585,7 @@ TkTextIndexSetPeer(
     TkText *textPtr)
 {
     assert(indexPtr->tree);
-    
+
     indexPtr->textPtr = textPtr;
     indexPtr->priv.lineNoRel = -1;
 }
@@ -642,7 +642,59 @@ TkBTreeGetTags(
     const TkTextIndex *indexPtr)/* Indicates a particular position in the B-tree. */
 {
     const TkTextSegment *segPtr = TkTextIndexGetContentSegment(indexPtr, NULL);
-    return TkBTreeGetSegmentTags(TkTextIndexGetShared(indexPtr), segPtr, indexPtr->textPtr);
+    return TkBTreeGetSegmentTags(TkTextIndexGetShared(indexPtr), segPtr, indexPtr->textPtr, NULL);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkTextGetFirstChunkOfNextDispLine --
+ *
+ *	This function returns the first chunk of succeeding display line
+ *	which contains characters.
+ *
+ * Results:
+ *	Returns the first chunk of succeeding display line which contains
+ *	characters.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+inline
+const TkTextDispChunk *
+TkTextGetFirstChunkOfNextDispLine(
+    const TkTextDispChunk *chunkPtr)
+{
+    return chunkPtr->dlPtr->nextPtr ? chunkPtr->dlPtr->nextPtr->firstCharChunkPtr : NULL;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkTextGetLastChunkOfPrevDispLine --
+ *
+ *	This function returns the last chunk of predecessing display line
+ *	which contains characters.
+ *
+ * Results:
+ *	Returns the last chunk of predecessing display line which contains
+ *	characters.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+inline
+const TkTextDispChunk *
+TkTextGetLastChunkOfPrevDispLine(
+    const TkTextDispChunk *chunkPtr)
+{
+    return chunkPtr->dlPtr->prevPtr ? chunkPtr->dlPtr->prevPtr->lastChunkPtr : NULL;
 }
 
 /*
@@ -745,6 +797,40 @@ TkTextIndexGetSegment(
     assert(!segPtr || segPtr->sectionPtr->linePtr == indexPtr->priv.linePtr);
 
     return segPtr;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkTextGetIndexFromObj --
+ *
+ *	Create new text index from given position.
+ *
+ * Results:
+ *	Returns true if and only if the index could be created.
+ *
+ * Side effects:
+ *	Store the new text index in 'indexPtr'.
+ *
+ *----------------------------------------------------------------------
+ */
+
+inline
+bool
+TkTextGetIndexFromObj(
+    Tcl_Interp *interp,		/* Use this for error reporting. */
+    TkText *textPtr,		/* Information about text widget, can be NULL. */
+    Tcl_Obj *objPtr,		/* Object containing description of position. */
+    TkTextIndex *indexPtr)	/* Store the result here. */
+{
+    int length;
+
+    assert(textPtr);
+    assert(objPtr);
+
+    Tcl_GetStringFromObj(objPtr, &length);
+    return TkpTextGetIndex(interp, textPtr->sharedTextPtr, textPtr,
+	    Tcl_GetStringFromObj(objPtr, &length), length, indexPtr);
 }
 
 /*

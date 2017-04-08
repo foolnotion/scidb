@@ -12,21 +12,15 @@
 #ifndef _TKBITFIELD
 #define _TKBITFIELD
 
-#ifndef _TK
 #include "tk.h"
-#endif
-
+#include "tkInt.h" /* needed for inline support and 64 bit support */
 #include "tkBool.h"
-#include <stdint.h>
 
-#if __STDC_VERSION__ < 199901L
-# define inline /* we are not C99 conform */
-#endif
-
-
-#ifdef TCL_WIDE_INT_IS_LONG
+#ifdef TK_IS_64_BIT_ARCH
+/* It is important to use 64 bit integers for performance resaons. */
 typedef uint64_t TkBitWord;
 #else
+/* On 32 bit platforms the use of 64 bit integers would slowing down. */
 typedef uint32_t TkBitWord;
 #endif
 
@@ -41,7 +35,7 @@ struct TkIntSet;
  * way we have a struct inheritance, based on the first two members. This
  * is portable due to C99 section 6.7.2.1 bullet point 13:
  *
- *	Within a structure object, the non-bit-field members and the units 
+ *	Within a structure object, the non-bit-field members and the units
  *	in which bit-fields reside have addresses that increase in the order
  *	in which they are declared. A pointer to a structure object, suitably
  *	converted, points to its initial member (or if that member is a
@@ -138,7 +132,7 @@ void TkBitClear(TkBitField *bf);
 /* Return nearest multiple of TK_BIT_NBITS which is greater or equal to given argument. */
 inline unsigned TkBitAdjustSize(unsigned size);
 
-#if !NDEBUG
+#ifndef NDEBUG
 void TkBitPrint(const TkBitField *bf);
 #endif
 
@@ -147,7 +141,7 @@ void TkBitCheckAllocs();
 #endif
 
 
-#if 0
+#if TK_UNUSED_BITFIELD_FUNCTIONS
 
 /*
  * These functions are not needed anymore, but shouldn't be removed, because sometimes
@@ -169,15 +163,11 @@ bool TkBitIsEqualToInnerJoinDifference(const TkBitField *bf1, const TkBitField *
 bool TkBitInnerJoinDifferenceIsEqual(const TkBitField *bf1, const TkBitField *bf2,
     const TkBitField *add, const TkBitField *sub);
 
-#endif /* 0 */
+#endif /* TK_UNUSED_BITFIELD_FUNCTIONS */
 
-#if __STDC_VERSION__ >= 199901L
+#ifdef TK_C99_INLINE_SUPPORT
 # define _TK_NEED_IMPLEMENTATION
 # include "tkBitFieldPriv.h"
-# undef _TK_NEED_IMPLEMENTATION
-#else
-# undef inline
 #endif
-
 #endif /* _TKBITFIELD */
 /* vi:set ts=8 sw=4: */

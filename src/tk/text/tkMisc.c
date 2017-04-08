@@ -202,4 +202,73 @@ Tk_FontObjCmd(
     return TCL_ERROR; /* not implemented */
 }
 
+#ifdef __unix__
+
+void
+TkUnderlineCharsInContext(
+    Display *display,		/* Display on which to draw. */
+    Drawable drawable,		/* Window or pixmap in which to draw. */
+    GC gc,			/* Graphics context for actually drawing
+				 * line. */
+    Tk_Font tkfont,		/* Font used in GC; must have been allocated
+				 * by Tk_GetFont(). Used for character
+				 * dimensions, etc. */
+    const char *string,		/* String containing characters to be
+				 * underlined or overstruck. */
+    int numBytes,		/* Number of bytes in string. */
+    int x, int y,		/* Coordinates at which the first character of
+				 * the whole string would be drawn. */
+    int firstByte,		/* Index of first byte of first character. */
+    int lastByte)		/* Index of first byte after the last
+				 * character. */
+{
+#if 0 // will be discarded when context drawing is used
+    TkFont *fontPtr = (TkFont *) tkfont;
+    int startX, endX;
+
+    TkpMeasureCharsInContext(tkfont, string, numBytes, 0, firstByte, -1, 0,
+	    &startX);
+    TkpMeasureCharsInContext(tkfont, string, numBytes, 0, lastByte, -1, 0,
+	    &endX);
+
+    XFillRectangle(display, drawable, gc, x + startX,
+	    y + fontPtr->underlinePos, (unsigned) (endX - startX),
+	    (unsigned) fontPtr->underlineHeight);
+#endif
+}
+
+int
+TkpMeasureCharsInContext(
+    Tk_Font tkfont,		/* Font in which characters will be drawn. */
+    const char *source,		/* UTF-8 string to be displayed. Need not be
+				 * '\0' terminated. */
+    int numBytes,		/* Maximum number of bytes to consider from
+				 * source string in all. */
+    int rangeStart,		/* Index of first byte to measure. */
+    int rangeLength,		/* Length of range to measure in bytes. */
+    int maxLength,		/* If >= 0, maxLength specifies the longest
+				 * permissible line length; don't consider any
+				 * character that would cross this x-position.
+				 * If < 0, then line length is unbounded and
+				 * the flags argument is ignored. */
+    int flags,			/* Various flag bits OR-ed together:
+				 * TK_PARTIAL_OK means include the last char
+				 * which only partially fit on this line.
+				 * TK_WHOLE_WORDS means stop on a word
+				 * boundary, if possible. TK_AT_LEAST_ONE
+				 * means return at least one character even if
+				 * no characters fit. TK_ISOLATE_END means
+				 * that the last character should not be
+				 * considered in context with the rest of the
+				 * string (used for breaking lines). */
+    int *lengthPtr)		/* Filled with x-location just after the
+				 * terminating character. */
+{
+    (void) numBytes; /*unused*/
+    return Tk_MeasureChars(tkfont, source + rangeStart, rangeLength,
+	    maxLength, flags, lengthPtr);
+}
+
+#endif // __unix__
+
 // vi:set ts=8 sw=4:

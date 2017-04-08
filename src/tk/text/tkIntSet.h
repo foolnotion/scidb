@@ -16,19 +16,14 @@
 #include "tk.h"
 #endif
 
+#include "tkInt.h" /* required for inline support */
 #include "tkBool.h"
-#include <stdint.h>
 
 #if defined(__GNUC__) || defined(__clang__)
 # define __warn_unused__ __attribute__((warn_unused_result))
 #else
 # define __warn_unused__
 #endif
-
-#if __STDC_VERSION__ < 199901L
-# define inline /* we are not C99 conform */
-#endif
-
 
 struct TkBitField;
 
@@ -41,7 +36,7 @@ typedef uint32_t TkIntSetType;
  * way we have a struct inheritance, based on the first two members. This
  * is portable due to C99 section 6.7.2.1 bullet point 13:
  *
- *	Within a structure object, the non-bit-field members and the units 
+ *	Within a structure object, the non-bit-field members and the units
  *	in which bit-fields reside have addresses that increase in the order
  *	in which they are declared. A pointer to a structure object, suitably
  *	converted, points to its initial member (or if that member is a
@@ -148,12 +143,12 @@ TkIntSet *TkIntSetTestAndUnset(TkIntSet *set, unsigned n) __warn_unused__;
 inline TkIntSet *TkIntSetAddOrErase(TkIntSet *set, unsigned n, bool add) __warn_unused__;
 TkIntSet *TkIntSetClear(TkIntSet *set) __warn_unused__;
 
-#if !NDEBUG
+#ifndef NDEBUG
 void TkIntSetPrint(const TkIntSet *set);
 #endif
 
 
-#if 0
+#if TK_UNUSED_INTSET_FUNCTIONS
 
 /*
  * These functions are not needed anymore, but shouldn't be removed, because sometimes
@@ -176,18 +171,14 @@ bool TkIntSetIsEqualToInnerJoinDifference(const TkIntSet *set1, const TkIntSet *
 bool TkIntSetInnerJoinDifferenceIsEqual(const TkIntSet *set1, const TkIntSet *set2,
     const TkIntSet *add, const TkIntSet *sub);
 
-#endif /* 0 */
+#endif /* TK_UNUSED_INTSET_FUNCTIONS */
 
 
 #undef __warn_unused__
 
-#if __STDC_VERSION__ >= 199901L
+#ifdef TK_C99_INLINE_SUPPORT
 # define _TK_NEED_IMPLEMENTATION
-#include "tkIntSetPriv.h"
-# undef _TK_NEED_IMPLEMENTATION
-#else
-# undef inline
+# include "tkIntSetPriv.h"
 #endif
-
 #endif /* _TKINTSET */
 /* vi:set ts=8 sw=4: */

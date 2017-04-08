@@ -12,16 +12,8 @@
 #ifndef _TKQTREE
 #define _TKQTREE
 
-#ifndef _TKINT
-#include "tkInt.h"
-#endif
-
+#include "tkInt.h" /* required for inline support */
 #include "tkBool.h"
-#include <stdint.h>
-
-#if __STDC_VERSION__ < 199901L
-# define inline /* we are not C99 conform */
-#endif
 
 
 /* =========================================================================
@@ -168,13 +160,9 @@ unsigned TkQTreeSearchRectsContaining(const TkQTree tree, const TkQTreeRect *rec
 #endif /* QTREE_SEARCH_RECTS_CONTAINING */
 
 
-#if __STDC_VERSION__ >= 199901L
+#ifdef TK_C99_INLINE_SUPPORT
 # define _TK_NEED_IMPLEMENTATION
-#include "tkQTreePriv.h"
-# undef _TK_NEED_IMPLEMENTATION
-#else
-# undef inline
+# include "tkQTreePriv.h"
 #endif
-
 #endif /* _TKQTREE */
 /* vi:set ts=8 sw=4: */

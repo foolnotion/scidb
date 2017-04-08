@@ -17,9 +17,10 @@
 #include "tkText.h"
 #include "tkTextTagSet.h"
 #include "tkTextUndo.h"
+#include "tkAlloc.h"
 #include <assert.h>
 
-#if NDEBUG
+#ifdef NDEBUG
 # define DEBUG(expr)
 #else
 # define DEBUG(expr) expr
@@ -77,7 +78,7 @@ static void	        EmbWinDisplayProc(TkText *textPtr, TkTextDispChunk *chunkPtr
 static void		EmbWinUndisplayProc(TkText *textPtr, TkTextDispChunk *chunkPtr);
 static TkTextEmbWindowClient *EmbWinGetClient(const TkText *textPtr, TkTextSegment *ewPtr);
 static TkTextSegment *	MakeWindow(TkText *textPtr);
-static void		ReleaseWindow(TkTextSegment *ewPtr);
+static void		ReleaseEmbeddedWindow(TkTextSegment *ewPtr);
 static void		DestroyOrUnmapWindow(TkTextSegment *ewPtr);
 
 static const TkTextDispChunkProcs layoutWindowProcs = {
@@ -168,6 +169,8 @@ static const Tk_OptionSpec optionSpecs[] = {
 	"center", -1, Tk_Offset(TkTextEmbWindow, align), 0, alignStrings, 0},
     {TK_OPTION_STRING, "-create", NULL, NULL,
 	NULL, -1, Tk_Offset(TkTextEmbWindow, create), TK_OPTION_NULL_OK, 0, 0},
+    {TK_OPTION_BOOLEAN, "-owner", NULL, NULL,
+	"1", -1, Tk_Offset(TkTextEmbWindow, isOwner), 0, 0, 0},
     {TK_OPTION_PIXELS, "-padx", NULL, NULL,
 	"0", -1, Tk_Offset(TkTextEmbWindow, padX), 0, 0, 0},
     {TK_OPTION_PIXELS, "-pady", NULL, NULL,
@@ -179,7 +182,6 @@ static const Tk_OptionSpec optionSpecs[] = {
     {TK_OPTION_END, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0}
 };
 
-DEBUG_ALLOC(extern unsigned tkTextCountDestroySegment);
 DEBUG_ALLOC(extern unsigned tkTextCountNewSegment);
 DEBUG_ALLOC(extern unsigned tkTextCountNewUndoToken);
 
@@ -283,7 +285,7 @@ UndoLinkSegmentDestroy(
     assert(!reused);
 
     if (--token->segPtr->refCount == 0) {
-	ReleaseWindow(token->segPtr);
+	ReleaseEmbeddedWindow(token->segPtr);
     }
 }
 
@@ -506,12 +508,9 @@ TkTextWindowCmd(
 	    return TCL_ERROR;
 	}
 
-	if (textPtr->state == TK_TEXT_STATE_DISABLED) {
-#if !SUPPORT_DEPRECATED_MODS_OF_DISABLED_WIDGET
-	    Tcl_SetObjResult(interp, Tcl_ObjPrintf("attempt to modify disabled widget"));
-	    Tcl_SetErrorCode(interp, "TK", "TEXT", "NOT_ALLOWED", NULL);
+	if (textPtr->state == TK_TEXT_STATE_DISABLED &&
+		TkTextAttemptToModifyDisabledWidget(interp) != TCL_OK) {
 	    return TCL_ERROR;
-#endif /* SUPPORT_DEPRECATED_MODS_OF_DISABLED_WIDGET */
 	}
 
 	/*
@@ -519,14 +518,7 @@ TkTextWindowCmd(
 	 */
 
 	if (!TkTextIndexEnsureBeforeLastChar(&index)) {
-#if SUPPORT_DEPRECATED_MODS_OF_DISABLED_WIDGET
-		return TCL_OK;
-#else
-		Tcl_SetObjResult(textPtr->interp, Tcl_NewStringObj(
-			"cannot insert window into dead peer", -1));
-		Tcl_SetErrorCode(textPtr->interp, "TK", "TEXT", "WINDOW_CREATE_USAGE", NULL);
-		return TCL_ERROR;
-#endif
+	    return TkTextAttemptToModifyDeadWidget(interp);
 	}
 
 	/*
@@ -548,7 +540,7 @@ TkTextWindowCmd(
 	    TkBTreeUnlinkSegment(sharedTextPtr, ewPtr);
 	    TkTextWinFreeClient(NULL, client);
 	    ewPtr->body.ew.clients = NULL;
-	    ReleaseWindow(ewPtr);
+	    ReleaseEmbeddedWindow(ewPtr);
 	    return TCL_ERROR;
 	}
 	TextChanged(sharedTextPtr, &index);
@@ -623,6 +615,7 @@ MakeWindow(
     ewPtr->refCount = 1;
     ewPtr->body.ew.sharedTextPtr = textPtr->sharedTextPtr;
     ewPtr->body.ew.align = ALIGN_CENTER;
+    ewPtr->body.ew.isOwner = true;
     ewPtr->body.ew.optionTable = Tk_CreateOptionTable(textPtr->interp, optionSpecs);
     DEBUG_ALLOC(tkTextCountNewSegment++);
 
@@ -673,7 +666,7 @@ TkTextMakeWindow(
     } else {
 	TkTextWinFreeClient(NULL, ewPtr->body.ew.clients);
 	ewPtr->body.ew.clients = NULL;
-	ReleaseWindow(ewPtr);
+	ReleaseEmbeddedWindow(ewPtr);
 	ewPtr = NULL;
     }
 
@@ -796,8 +789,7 @@ EmbWinConfigure(
 		 * Have to make the new client.
 		 */
 
-		client = malloc(sizeof(TkTextEmbWindowClient));
-		memset(client, 0, sizeof(TkTextEmbWindowClient));
+		client = memset(malloc(sizeof(TkTextEmbWindowClient)), 0, sizeof(TkTextEmbWindowClient));
 		client->next = ewPtr->body.ew.clients;
 		client->textPtr = textPtr;
 		client->parent = ewPtr;
@@ -953,6 +945,7 @@ EmbWinLostSlaveProc(
     assert(client->tkwin);
     client->displayed = false;
     Tk_DeleteEventHandler(client->tkwin, StructureNotifyMask, EmbWinStructureProc, client);
+    Tcl_CancelIdleCall(EmbWinDelayedUnmap, client);
     EmbWinDelayedUnmap(client);
     if (client->hPtr) {
 	ewPtr->body.ew.sharedTextPtr->numWindows -= 1;
@@ -1028,7 +1021,9 @@ TkTextWinFreeClient(
 
     if (client->tkwin) {
 	Tk_DeleteEventHandler(client->tkwin, StructureNotifyMask, EmbWinStructureProc, client);
-	Tk_DestroyWindow(client->tkwin);
+	if (client->parent->body.ew.isOwner) {
+	    Tk_DestroyWindow(client->tkwin);
+	}
     }
     Tcl_CancelIdleCall(EmbWinDelayedUnmap, client);
 
@@ -1092,7 +1087,7 @@ EmbWinInspectProc(
 /*
  *--------------------------------------------------------------
  *
- * ReleaseWindow --
+ * ReleaseEmbeddedWindow --
  *
  *	Free embedded window
  *
@@ -1107,7 +1102,7 @@ EmbWinInspectProc(
  */
 
 static void
-ReleaseWindow(
+ReleaseEmbeddedWindow(
     TkTextSegment *ewPtr)
 {
     TkTextEmbWindowClient *client = ewPtr->body.ew.clients;
@@ -1123,9 +1118,7 @@ ReleaseWindow(
     }
     ewPtr->body.ew.clients = NULL;
     Tk_FreeConfigOptions((char *) &ewPtr->body.ew, ewPtr->body.ew.optionTable, NULL);
-    TkTextTagSetDecrRefCount(ewPtr->tagInfoPtr);
-    FREE_SEGMENT(ewPtr);
-    DEBUG_ALLOC(tkTextCountDestroySegment++);
+    TkBTreeFreeSegment(ewPtr);
 }
 
 /*
@@ -1163,7 +1156,9 @@ DestroyOrUnmapWindow(
 	Tcl_CancelIdleCall(EmbWinDelayedUnmap, client);
 	if (client->tkwin && ewPtr->body.ew.create) {
 	    Tk_DeleteEventHandler(client->tkwin, StructureNotifyMask, EmbWinStructureProc, client);
-	    Tk_DestroyWindow(client->tkwin);
+	    if (ewPtr->body.ew.isOwner) {
+		Tk_DestroyWindow(client->tkwin);
+	    }
 	    client->tkwin = NULL;
 	    ewPtr->body.ew.tkwin = NULL;
 	} else {
@@ -1183,7 +1178,7 @@ DestroyOrUnmapWindow(
  *	Returns true to indicate that the deletion has been accepted.
  *
  * Side effects:
- *	Depends on the action, see ReleaseWindow and DestroyOrUnmapWindow.
+ *	Depends on the action, see ReleaseEmbeddedWindow and DestroyOrUnmapWindow.
  *
  *--------------------------------------------------------------
  */
@@ -1195,10 +1190,12 @@ EmbWinDeleteProc(
     int flags)			/* Flags controlling the deletion. */
 {
     assert(ewPtr->typePtr);
+    assert(ewPtr->refCount > 0);
 
-    if (--ewPtr->refCount == 0) {
-	ReleaseWindow(ewPtr);
+    if (ewPtr->refCount == 1) {
+	ReleaseEmbeddedWindow(ewPtr);
     } else {
+	ewPtr->refCount -= 1;
 	DestroyOrUnmapWindow(ewPtr);
     }
     return true;
@@ -1395,8 +1392,7 @@ EmbWinLayoutProc(
 	     * now need to add to our client list.
 	     */
 
-	    client = malloc(sizeof(TkTextEmbWindowClient));
-	    memset(client, 0, sizeof(TkTextEmbWindowClient));
+	    client = memset(malloc(sizeof(TkTextEmbWindowClient)), 0, sizeof(TkTextEmbWindowClient));
 	    client->next = ewPtr->body.ew.clients;
 	    client->textPtr = textPtr;
 	    client->parent = ewPtr;

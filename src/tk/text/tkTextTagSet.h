@@ -14,19 +14,15 @@
 #ifndef _TKTEXTTAGSET
 #define _TKTEXTTAGSET
 
+#include "tkInt.h"
 #include "tkBitField.h"
 #include "tkIntSet.h"
-
-#include <stdint.h>
+#include "tkBool.h"
 
 #if defined(__GNUC__) || defined(__clang__)
 # define __warn_unused__ __attribute__((warn_unused_result))
 #else
 # define __warn_unused__
-#endif
-
-#if __STDC_VERSION__ < 199901L
-# define inline /* we are not C99 conform */
 #endif
 
 
@@ -57,7 +53,7 @@
  * The struct below is using C inheritance, this is portable due to C99 section
  * 6.7.2.1 bullet point 13:
  *
- *	Within a structure object, the non-bit-field members and the units 
+ *	Within a structure object, the non-bit-field members and the units
  *	in which bit-fields reside have addresses that increase in the order
  *	in which they are declared. A pointer to a structure object, suitably
  *	converted, points to its initial member (or if that member is a
@@ -152,12 +148,17 @@ TkTextTagSet *TkTextTagSetTestAndSet(TkTextTagSet *ts, unsigned n) __warn_unused
 TkTextTagSet *TkTextTagSetTestAndUnset(TkTextTagSet *ts, unsigned n) __warn_unused__;
 TkTextTagSet *TkTextTagSetClear(TkTextTagSet *ts) __warn_unused__;
 
+inline TkTextTagSet *TkTextTagSetAddToThis(TkTextTagSet *ts, unsigned n) __warn_unused__;
+inline TkTextTagSet *TkTextTagSetEraseFromThis(TkTextTagSet *ts, unsigned n) __warn_unused__;
+TkTextTagSet *TkTextTagSetRemoveFromThis(TkTextTagSet *dst, const TkTextTagSet *src) __warn_unused__;
+TkTextTagSet *TkTextTagSetIntersectThis(TkTextTagSet *dst, const TkTextTagSet *src) __warn_unused__;
+
 inline unsigned TkTextTagSetRangeSize(const TkTextTagSet *ts);
 
 inline const unsigned char *TkTextTagSetData(const TkTextTagSet *ts);
 inline unsigned TkTextTagSetByteSize(const TkTextTagSet *ts);
 
-# if !NDEBUG
+# ifndef NDEBUG
 void TkTextTagSetPrint(const TkTextTagSet *set);
 # endif
 
@@ -264,6 +265,9 @@ TkIntSet *TkTextTagSetTestAndSet(TkIntSet *ts, unsigned n) __warn_unused__;
 TkIntSet *TkTextTagSetTestAndUnset(TkIntSet *ts, unsigned n) __warn_unused__;
 inline TkIntSet *TkTextTagSetClear(TkIntSet *ts) __warn_unused__;
 
+inline TkIntSet *TkTextTagSetAddToThis(TkIntSet *ts, unsigned n);
+inline TkIntSet *TkTextTagSetEraseFromThis(TkIntSet *ts, unsigned n);
+
 inline unsigned TkTextTagSetRangeSize(const TkIntSet *ts);
 
 inline const unsigned char *TkTextTagSetData(const TkIntSet *ts);
@@ -274,13 +278,9 @@ inline unsigned TkTextTagSetByteSize(const TkIntSet *ts);
 
 #undef __warn_unused__
 
-#if __STDC_VERSION__ >= 199901L
+#ifdef TK_C99_INLINE_SUPPORT
 # define _TK_NEED_IMPLEMENTATION
 # include "tkTextTagSetPriv.h"
-# undef _TK_NEED_IMPLEMENTATION
-#else
-# undef inline
 #endif
-
 #endif /* _TKTEXTTAGSET */
 /* vi:set ts=8 sw=4: */

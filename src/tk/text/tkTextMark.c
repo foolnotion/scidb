@@ -14,9 +14,19 @@
 
 #include "tkInt.h"
 #include "tkText.h"
+#include "tkAlloc.h"
 #include "tk3d.h"
-#include <inttypes.h>
 #include <assert.h>
+
+#if HAVE_INTTYPES_H
+# include <inttypes.h>
+#elif defined(_WIN32) || defined(_WIN64)
+/* work-around for ancient MSVC versions */
+# define PRIx64 "I64x"
+# define PRIx32 "x"
+#else
+# error "configure failed - can't include inttypes.h"
+#endif
 
 #ifndef MAX
 # define MAX(a,b) ((a) < (b) ? b : a)
@@ -25,7 +35,7 @@
 # define MIN(a,b) ((a) < (b) ? a : b)
 #endif
 
-#if NDEBUG
+#ifdef NDEBUG
 # define DEBUG(expr)
 #else
 # define DEBUG(expr) expr
@@ -44,7 +54,7 @@ static int		MarkLayoutProc(const TkTextIndex *indexPtr,
 			    TkTextSegment *segPtr, int offset, int maxX,
 			    int maxChars, bool noCharsYet, TkWrapMode wrapMode,
 			    TkTextSpaceMode spaceMode, TkTextDispChunk *chunkPtr);
-static int		MarkFindNext(Tcl_Interp *interp, TkText *textPtr, const char *markName,
+static int		MarkFindNext(Tcl_Interp *interp, TkText *textPtr, Tcl_Obj* markObj,
 			    bool forward);
 static void		ChangeGravity(TkSharedText *sharedTextPtr, TkText *textPtr,
 			    TkTextSegment *markPtr, const Tk_SegType *newTypePtr,
@@ -226,7 +236,7 @@ typedef union {
 #define GET_HPTR(seg)		((Tcl_HashEntry *) seg->body.mark.ptr)
 #define PTR_TO_INT(ptr)		((uintptr_t) ptr)
 
-#if !NDEBUG
+#ifndef NDEBUG
 
 # undef GET_HPTR
 # undef GET_NAME
@@ -237,7 +247,7 @@ static Tcl_HashEntry *GET_HPTR(const TkTextSegment *markPtr)
 static char *GET_NAME(const TkTextSegment *markPtr)
 { assert(IS_PRESERVED(markPtr)); return (char *) GET_POINTER(markPtr->body.mark.ptr); }
 
-#endif /* !NDEBUG */
+#endif /* NDEBUG */
 
 DEBUG_ALLOC(extern unsigned tkTextCountNewSegment);
 DEBUG_ALLOC(extern unsigned tkTextCountDestroySegment);
@@ -341,7 +351,7 @@ UndoMoveMarkPerform(
 	redoInfo->token = undoInfo->token;
 	redoInfo->token->undoType = isRedo ? &undoTokenMoveMarkType : &redoTokenMoveMarkType;
     }
- 
+
     TkBTreeUnlinkSegment(sharedTextPtr, token->markPtr);
     TkBTreeReInsertSegment(sharedTextPtr, &index, token->markPtr);
 }
@@ -635,12 +645,16 @@ TkTextMarkCmd(
 
 	TkTextIndexClear(&index, textPtr);
 	TkTextIndexSetSegment(&index, textPtr->startMarker);
-	/* ensure fixed length (depending on pointer size) */
+	/* IMPORTANT NOTE: ensure fixed length (depending on pointer size) */
 	snprintf(uniqName, sizeof(uniqName),
-	    sizeof(uintptr_t) == 8 ?
-		"##ID##0x%016"PRIx64"##0x%016"PRIx64"##%08u##" : /* we're on a real 64-bit system */
-		"##ID##0x%08"PRIx32"##0x%08"PRIx32"##%08u##",    /* we're on a 32-bit system */
-	    (uintptr_t) textPtr, (uintptr_t) textPtr->sharedTextPtr, ++textPtr->uniqueIdCounter);
+#ifdef TK_IS_64_BIT_ARCH
+	    "##ID##0x%016"PRIx64"##0x%016"PRIx64"##%08u##", /* we're on a real 64-bit system */
+	    (uint64_t) textPtr, (uint64_t) textPtr->sharedTextPtr, ++textPtr->uniqueIdCounter
+#else /* if defined(TK_IS_32_BIT_ARCH) */
+	    "##ID##0x%08"PRIx32"##0x%08"PRIx32"##%08u##",   /* we're on a 32-bit system */
+	    (uint32_t) textPtr, (uint32_t) textPtr->sharedTextPtr, ++textPtr->uniqueIdCounter
+#endif /* TK_IS_64_BIT_ARCH */
+	);
 	assert(!TkTextFindMark(textPtr, uniqName));
     	markPtr = TkTextMakeMark(textPtr, uniqName);
     	markPtr->privateMarkFlag = true;
@@ -675,7 +689,7 @@ TkTextMarkCmd(
 	    Tcl_SetObjResult(interp, Tcl_NewStringObj(typeStr, -1));
 	    return TCL_OK;
 	}
-	str = Tcl_GetStringFromObj(objv[4],&length);
+	str = Tcl_GetStringFromObj(objv[4], &length);
 	if (strncmp(str, "left", length) == 0) {
 	    newTypePtr = &tkTextLeftMarkType;
 	} else if (strncmp(str, "right", length) == 0) {
@@ -734,13 +748,13 @@ TkTextMarkCmd(
 	    Tcl_WrongNumArgs(interp, 3, objv, "index");
 	    return TCL_ERROR;
 	}
-	return MarkFindNext(interp, textPtr, Tcl_GetString(objv[3]), true);
+	return MarkFindNext(interp, textPtr, objv[3], true);
     case MARK_PREVIOUS:
 	if (objc != 4) {
 	    Tcl_WrongNumArgs(interp, 3, objv, "index");
 	    return TCL_ERROR;
 	}
-	return MarkFindNext(interp, textPtr, Tcl_GetString(objv[3]), false);
+	return MarkFindNext(interp, textPtr, objv[3], false);
     case MARK_SET: {
 	const Tk_SegType *typePtr = NULL;
 	const char *name;
@@ -903,7 +917,7 @@ ReactivateMark(
     TkTextSegment *markPtr)		/* Reactivate this mark. */
 {
     Tcl_HashEntry *hPtr;
-    const char *name;
+    char *name;
     bool isNew;
 
     assert(IS_PRESERVED(markPtr));
@@ -1186,7 +1200,7 @@ MakeChangeItem(
 
     if (!changePtr) {
 	if (sharedTextPtr->undoMarkListCount == sharedTextPtr->undoMarkListSize) {
-	    sharedTextPtr->undoMarkListSize = MAX(20, 2*sharedTextPtr->undoMarkListSize);
+	    sharedTextPtr->undoMarkListSize = MAX(20u, 2*sharedTextPtr->undoMarkListSize);
 	    sharedTextPtr->undoMarkList = realloc(sharedTextPtr->undoMarkList,
 		    sharedTextPtr->undoMarkListSize * sizeof(sharedTextPtr->undoMarkList[0]));
 	}
@@ -1561,10 +1575,9 @@ TkTextPushUndoMarkTokens(
  *	this function will always return non-NULL in case of setting the
  *	"insert" mark).
  *
- *	The footprint of this function is public, so we cannot extend it
- *	without changing tkIntDecls.h, and I will not touch this file. So
- *	I gave parameter 'name' an additional flag: if this parameter is
- *	marked, then it's a private mark.
+ *	Note that parameter indexPtr may be adjusted if the position
+ *	is outside of visible text, and we are setting the "insert"
+ *	mark.
  *
  * Results:
  *	The return value is a pointer to the mark that was just set.
@@ -1627,7 +1640,12 @@ SetMark(
 
     if (!markPtr) {
 	if (name[0] == '#' && name[1] == '#' && name[2] == 'I') {
-	    static const int length = 32 + 2*sizeof(uintptr_t);
+#ifdef TK_IS_64_BIT_ARCH
+	    static const size_t length = 32 + 2*sizeof(uint64_t);
+#else /* if defined(TK_IS_32_BIT_ARCH) */
+	    static const size_t length = 32 + 2*sizeof(uint32_t);
+#endif /* TK_IS_64_BIT_ARCH */
+
 	    void *sPtr, *tPtr;
 	    unsigned num;
 
@@ -1705,6 +1723,11 @@ SetMark(
 		     * to call TkTextInvalidateLineMetrics.
 		     */
 
+		    /*
+		     * TODO: this will do too much, but currently the implementation
+		     * lacks on an efficient redraw functionality especially designed
+		     * for cursor updates.
+		     */
 		    TkTextChanged(NULL, textPtr, &oldIndex, &index2);
 		}
 	    }
@@ -1794,6 +1817,7 @@ SetMark(
 	     * Instead of inserting a cursor chunk (not needed) we want to overlay
 	     * with a cursor. This would speed up cursor movement.
 	     */
+
 	    TkTextChanged(NULL, textPtr, indexPtr, &index2);
 
 	    /*
@@ -2474,7 +2498,7 @@ TkTextGetCursorWidth(
 
     if (textPtr->blockCursorType) {
 	TkTextMarkSegToIndex(textPtr, textPtr->insertMarkPtr, &index);
-	TkTextIndexBbox(textPtr, &index, &ix, &iy, &iw, &ih, &charWidth);
+	TkTextIndexBbox(textPtr, &index, false, &ix, &iy, &iw, &ih, &charWidth);
 
 	/*
 	 * Don't draw the full lengh of a tab, in this case we are drawing
@@ -2543,7 +2567,7 @@ TkTextInsertDisplayProc(
 	 * HACK: We are drawing into a tailored pixmap, because Tk has no clipping;
 	 * see DisplayDLine().
 	 */
-	
+
 	x = y = 0;
     }
 
@@ -2629,19 +2653,23 @@ static int
 MarkFindNext(
     Tcl_Interp *interp,		/* For error reporting */
     TkText *textPtr,		/* The widget */
-    const char *string,		/* The starting index or mark name */
+    Tcl_Obj* markObj,		/* The mark name. */
     bool forward)		/* Search forward. */
 {
     TkTextIndex index;
     Tcl_HashEntry *hPtr;
     TkTextSegment *segPtr;
     TkTextLine *linePtr;
+    const char *string;
 
     assert(textPtr);
+    assert(markObj);
 
     if (TkTextIsDeadPeer(textPtr)) {
 	return TCL_OK;
     }
+
+    string = Tcl_GetString(markObj);
 
     if (strcmp(string, "insert") == 0) {
 	segPtr = textPtr->insertMarkPtr;
@@ -2671,7 +2699,7 @@ MarkFindNext(
 	     * return any marks that are right at the index.
 	     */
 
-	    if (TkTextGetIndex(interp, textPtr, string, &index) != TCL_OK) {
+	    if (!TkTextGetIndexFromObj(interp, textPtr, markObj, &index)) {
 		return TCL_ERROR;
 	    }
 	    segPtr = TkTextIndexGetFirstSegment(&index, NULL);

@@ -30,12 +30,8 @@
 #ifndef _TKTEXTUNDO
 #define _TKTEXTUNDO
 
+#include "tkInt.h"
 #include "tkBool.h"
-#include <stdint.h>
-
-#if __STDC_VERSION__ < 199901L
-# define inline /* we are not C99 conform */
-#endif
 
 
 /*
@@ -242,13 +238,9 @@ int TkTextUndoDoUndo(TkTextUndoStack stack);
 int TkTextUndoDoRedo(TkTextUndoStack stack);
 
 
-#if __STDC_VERSION__ >= 199901L
+#ifdef TK_C99_INLINE_SUPPORT
 # define _TK_NEED_IMPLEMENTATION
 # include "tkTextUndoPriv.h"
-# undef _TK_NEED_IMPLEMENTATION
-#else
-# undef inline
 #endif
-
 #endif /* _TKTEXTUNDO */
 /* vi:set ts=8 sw=4: */

@@ -14,6 +14,8 @@
 #include "default.h"
 #include "tkInt.h"
 #include "tkText.h"
+#include "tkTextTagSet.h"
+#include "tkAlloc.h"
 #include <stdlib.h>
 #include <assert.h>
 
@@ -24,7 +26,7 @@
 # define MIN(a,b) (((int) a) < ((int) b) ? a : b)
 #endif
 
-#if NDEBUG
+#ifdef NDEBUG
 # define DEBUG(expr)
 #else
 # define DEBUG(expr) expr
@@ -42,31 +44,8 @@ enum { TKINDEX_NONE, TKINDEX_DISPLAY, TKINDEX_CHAR };
 
 static const char *	ForwBack(TkText *textPtr, const char *string, TkTextIndex *indexPtr);
 static const char *	StartEnd(TkText *textPtr, const char *string, TkTextIndex *indexPtr);
-static bool		GetIndex(Tcl_Interp *interp, TkSharedText *sharedTextPtr, TkText *textPtr,
-			    const char *string, TkTextIndex *indexPtr);
 static TkTextSegment *	IndexToSeg(const TkTextIndex *indexPtr, int *offsetPtr);
 static int		SegToIndex(const TkTextLine *linePtr, const TkTextSegment *segPtr);
-
-/*
- * This object is no longer in use anymore.
- *
- * The cache of indices has been eliminated, because it has worked in only
- * one case: the user has given a numeric index. But this case is quite seldom,
- * and the overhead for caching is not considerably faster than the mapping
- * to an internal index. And the trivial indices, like 1.0 or 1.end, will be
- * mapped very fast. Furthermore the revised version is using a section
- * structure for acceleration.
- */
-#if TCL_MAJOR_VERSION > 8 || TCL_MINOR_VERSION > 5
-const
-#endif /* end of backport to 8.5 */
-Tcl_ObjType tkTextIndexType = {
-    "textindex",/* name */
-    NULL,	/* freeIntRepProc */
-    NULL,	/* dupIntRepProc */
-    NULL,	/* updateStringProc */
-    NULL	/* setFromAnyProc */
-};
 
 /*
  * A note about sizeof(char). Due to the specification of sizeof in C99,
@@ -106,33 +85,6 @@ TkTextIndexIsEmpty(
 /*
  *----------------------------------------------------------------------
  *
- * TkTextGetIndexFromObj --
- *
- *	Create new text index from given position.
- *
- * Results:
- *	Returns true if and only if the index could be created.
- *
- * Side effects:
- *	Store the new text index in 'indexPtr'.
- *
- *----------------------------------------------------------------------
- */
-
-bool
-TkTextGetIndexFromObj(
-    Tcl_Interp *interp,		/* Use this for error reporting. */
-    TkText *textPtr,		/* Information about text widget, can be NULL. */
-    Tcl_Obj *objPtr,		/* Object containing description of position. */
-    TkTextIndex *indexPtr)	/* Store the result here. */
-{
-    assert(textPtr);
-    return GetIndex(interp, textPtr->sharedTextPtr, textPtr, Tcl_GetString(objPtr), indexPtr);
-}
-
-/*
- *----------------------------------------------------------------------
- *
  * TkTextIndexSetLine --
  *
  *	Set the line pointer of this index.
@@ -146,7 +98,7 @@ TkTextGetIndexFromObj(
  *----------------------------------------------------------------------
  */
 
-#if !NDEBUG
+#ifndef NDEBUG
 static bool
 CheckLine(
     const TkTextIndex *indexPtr,
@@ -161,12 +113,12 @@ CheckLine(
 	}
 	if (indexPtr->priv.lineNo != -1
 		&& indexPtr->priv.lineNo !=
-		    TkBTreeLinesTo(indexPtr->tree, NULL, indexPtr->priv.linePtr, NULL)) {
+		(int) TkBTreeLinesTo(indexPtr->tree, NULL, indexPtr->priv.linePtr, NULL)) {
 	    return false;
 	}
 	if (indexPtr->priv.lineNoRel != -1
 		&& indexPtr->priv.lineNoRel !=
-		    TkBTreeLinesTo(indexPtr->tree, indexPtr->textPtr, indexPtr->priv.linePtr, NULL)) {
+		(int) TkBTreeLinesTo(indexPtr->tree, indexPtr->textPtr, indexPtr->priv.linePtr, NULL)) {
 	    return false;
 	}
     }
@@ -176,17 +128,17 @@ CheckLine(
 	const TkTextLine *endLine = TkBTreeGetLastLine(indexPtr->textPtr);
 	int lineNo = TkBTreeLinesTo(indexPtr->tree, NULL, linePtr, NULL);
 
-	if (lineNo < TkBTreeLinesTo(indexPtr->tree, NULL, startLine, NULL)) {
+	if (lineNo < (int) TkBTreeLinesTo(indexPtr->tree, NULL, startLine, NULL)) {
 	    return false;
 	}
-	if (lineNo > TkBTreeLinesTo(indexPtr->tree, NULL, endLine, NULL)) {
+	if (lineNo > (int) TkBTreeLinesTo(indexPtr->tree, NULL, endLine, NULL)) {
 	    return false;
 	}
     }
 
     return true;
 }
-#endif
+#endif /* NDEBUG */
 
 static int
 FindStartByteIndex(
@@ -279,7 +231,7 @@ TkTextIndexSetLine(
  *----------------------------------------------------------------------
  */
 
-#if !NDEBUG
+#ifndef NDEBUG
 static bool
 CheckByteIndex(
     const TkTextIndex *indexPtr,
@@ -310,7 +262,7 @@ CheckByteIndex(
 
     return byteIndex < linePtr->size;
 }
-#endif /* !NDEBUG */
+#endif /* NDEBUG */
 
 void
 TkTextIndexSetPosition(
@@ -334,7 +286,7 @@ TkTextIndexSetPosition(
     indexPtr->priv.segPtr = segPtr;
     indexPtr->priv.isCharSegment = segPtr->typePtr == &tkTextCharType;
 
-#if !NDEBUG
+#ifndef NDEBUG
     {
 	int pos = SegToIndex(indexPtr->priv.linePtr, segPtr);
 
@@ -344,7 +296,7 @@ TkTextIndexSetPosition(
 	    assert(pos == byteIndex);
 	}
     }
-#endif /* !NDEBUG */
+#endif /* NDEBUG */
 }
 
 /*
@@ -912,7 +864,7 @@ TkTextIndexGetLineNumber(
 	TkTextIndexSetEpoch(iPtr, epoch);
 	*lineNo = TkBTreeLinesTo(iPtr->tree, textPtr, iPtr->priv.linePtr, NULL);
     } else {
-	assert(*lineNo == TkBTreeLinesTo(indexPtr->tree, textPtr, indexPtr->priv.linePtr, NULL));
+	assert(*lineNo == (int) TkBTreeLinesTo(indexPtr->tree, textPtr, indexPtr->priv.linePtr, NULL));
     }
 
     return *lineNo;
@@ -1230,20 +1182,19 @@ TkTextIndexGetFirstSegment(
     assert(segPtr->sectionPtr->linePtr == indexPtr->priv.linePtr);
 
     if (myOffset == 0) {
-	TkTextIndex *iPtr;
+	TkTextIndex *iPtr = (TkTextIndex *) indexPtr; /* mutable due to concept */
 
 	while ((prevPtr = segPtr->prevPtr) && prevPtr->size == 0) {
 	    segPtr = prevPtr;
 	}
 
-	iPtr = (TkTextIndex *) indexPtr; /* mutable due to concept */
 	iPtr->priv.segPtr = segPtr;
 	iPtr->priv.isCharSegment = segPtr->typePtr == &tkTextCharType;
     }
     if (offset) {
 	*offset = myOffset;
     }
- 
+
     return segPtr;
 }
 
@@ -1639,7 +1590,7 @@ TkTextIndexAddToByteIndex(
  *
  *---------------------------------------------------------------------------
  */
-#if !NDEBUG
+#ifndef NDEBUG
 
 void
 TkpTextIndexDump(
@@ -1651,7 +1602,7 @@ TkpTextIndexDump(
     printf("%s\n", buf);
 }
 
-#endif /* !NDEBUG */
+#endif /* NDEBUG */
 
 /*
  *---------------------------------------------------------------------------
@@ -2174,13 +2125,16 @@ TkTextGetIndex(
     TkTextIndex *indexPtr)	/* Index structure to fill in. */
 {
     assert(textPtr);
-    return GetIndex(interp, textPtr->sharedTextPtr, textPtr, string, indexPtr) ? TCL_OK : TCL_ERROR;
+    assert(string);
+
+    return TkpTextGetIndex(interp, textPtr->sharedTextPtr, textPtr, string, strlen(string), indexPtr) ?
+	    TCL_OK : TCL_ERROR;
 }
 
 /*
  *---------------------------------------------------------------------------
  *
- * GetIndex --
+ * TkpTextGetIndex --
  *
  *	Given a string, return the index that is described.
  *
@@ -2213,12 +2167,13 @@ SkipSegments(
     return charIndex;
 }
 
-static bool
-GetIndex(
+bool
+TkpTextGetIndex(
     Tcl_Interp *interp,		/* Use this for error reporting. */
     TkSharedText *sharedTextPtr,/* Pointer to shared resource. */
     TkText *textPtr,		/* Information about text widget. */
     const char *string,		/* Textual description of position. */
+    unsigned lenOfString,	/* Length of textual description. */
     TkTextIndex *indexPtr)	/* Index structure to fill in. */
 {
     char *p, *end, *endOfBase;
@@ -2227,8 +2182,11 @@ GetIndex(
     const char *cp;
     char *myString;
     Tcl_DString copy;
-    bool tagFound;
+    Tcl_HashEntry *hPtr;
+    TkTextTag *tagPtr;
     bool skipMark;
+    bool wantLast;
+    bool wantCurrent;
     bool result;
 
     assert(textPtr);
@@ -2246,13 +2204,15 @@ GetIndex(
      *		<mark>
      *		<tag>.first
      *		<tag>.last
+     *		<tag>.current.first
+     *		<tag>.current.last
      *		<pathName>
      *		<imageName>
      *
      * Furthermore the documentation says:
      *
      *	If the base could match more than one of the above forms, such as a mark and imageName
-     *	both having the same value, then the form earlier in the above list takes precedence. 
+     *	both having the same value, then the form earlier in the above list takes precedence.
      */
 
 #if BEGIN_DOES_NOT_BELONG_TO_BASE
@@ -2281,65 +2241,134 @@ GetIndex(
     TkTextIndexClear(indexPtr, textPtr);
 
     /*
-     * First look for the form "tag.first" or "tag.last" where "tag" is the
-     * name of a valid tag. Try to use up as much as possible of the string in
-     * this check (strrchr instead of strchr below). Doing the check now, and
-     * in this way, allows tag names to include funny characters like "@" or
-     * "+1c".
+     * First look for the form "tag.first", "tag.last", "tag.current.first" or
+     * "tag.current.last", where "tag" is the name of a valid tag. Try to use
+     * up as much as possible of the string in this check. Doing the check now,
+     * and in this way, allows tag names to include funny characters like "@"
+     * or "+1c".
      */
 
     Tcl_DStringInit(&copy);
     myString = Tcl_DStringAppend(&copy, string, -1);
-    p = strrchr(myString, '.');
     skipMark = false;
 
-    if (p) {
-	TkTextSearch search;
-	TkTextTag *tagPtr;
-	Tcl_HashEntry *hPtr = NULL;
-	const char *tagName;
-	bool wantLast;
-
-	if (p[1] == 'f' && strncmp(p + 1, "first", 5) == 0) {
-	    wantLast = false;
-	    endOfBase = p + 6;
-	} else if (p[1] == 'l' && strncmp(p + 1, "last", 4) == 0) {
-	    wantLast = true;
-	    endOfBase = p + 5;
-	} else {
+    p = myString + lenOfString;
+    do {
+	if (p-- == myString) {
 	    goto tryxy;
 	}
+    } while (*p != '.');
 
+    if (p[1] == 'f' && strncmp(p + 2, "irst", 4) == 0) {
+	wantLast = false;
+	endOfBase = p + 6;
+	lenOfString = p - myString;
+    } else if (p[1] == 'l' && strncmp(p + 2, "ast", 3) == 0) {
+	wantLast = true;
+	endOfBase = p + 5;
+	lenOfString = p - myString;
+    } else {
+	goto tryxy;
+    }
+
+    /*
+     * Marks have a higher precedence than tag.first or tag.last, so we will
+     * search for marks before proceeding with tags.
+     */
+
+    if (TkTextMarkNameToIndex(textPtr, string, indexPtr)) {
+	Tcl_DStringFree(&copy);
+	return true;
+    }
+
+    skipMark = true;
+
+    if (lenOfString >= 8 && p[-8] == '.' && strncmp(p - 7, "current", 7) == 0) {
+	wantCurrent = true;
+	lenOfString -= 8;
+    } else {
+	wantCurrent = false;
+    }
+
+    if (lenOfString == 3 && strncmp(myString, "sel", 3) == 0) {
 	/*
-	 * Marks have a higher precedence than tag.first or tag.last, so we will
-	 * search for marks before proceeding with tags.
+	 * Special case for sel tag which is not stored in the hash table.
 	 */
-
-	if (TkTextMarkNameToIndex(textPtr, string, indexPtr)) {
-	    Tcl_DStringFree(&copy);
-	    return true;
+	tagPtr = textPtr->selTagPtr;
+	hPtr = NULL;
+    } else {
+	myString[lenOfString] = '\0';
+	hPtr = Tcl_FindHashEntry(&sharedTextPtr->tagTable, myString);
+	myString[lenOfString] = '.';
+	if (!hPtr) {
+	    goto tryxy;
 	}
+	tagPtr = Tcl_GetHashValue(hPtr);
+    }
 
-	skipMark = true;
-	tagPtr = NULL;
-	tagName = myString;
-	if (p - tagName == 3 && strncmp(tagName, "sel", 3) == 0) {
-	    /*
-	     * Special case for sel tag which is not stored in the hash table.
-	     */
-	    tagPtr = textPtr->selTagPtr;
-	} else {
-	    *p = '\0';
-	    hPtr = Tcl_FindHashEntry(&sharedTextPtr->tagTable, tagName);
-	    *p = '.';
-	    if (hPtr) {
-		tagPtr = Tcl_GetHashValue(hPtr);
+    if (wantCurrent) {
+	bool tagFound = false;
+
+	if (tagPtr->rootPtr) {
+	    TkTextIndex currIndex;
+	    TkTextSegment *segPtr;
+
+	    assert(!textPtr->haveToSetCurrentMark);
+
+	    segPtr = textPtr->currentMarkPtr;
+	    do {
+		segPtr = segPtr->nextPtr;
+	    } while (!segPtr->tagInfoPtr);
+
+	    if (TkTextTagSetTest(segPtr->tagInfoPtr, tagPtr->index)) {
+		TkTextIndexClear(&currIndex, textPtr);
+		TkTextIndexSetSegment(&currIndex, segPtr);
+		TkTextIndexForwChars(textPtr, &currIndex, 1, &currIndex, COUNT_INDICES);
+		tagFound = true;
+	    } else {
+		segPtr = textPtr->currentMarkPtr;
+		do {
+		    segPtr = segPtr->prevPtr;
+		} while (segPtr && !segPtr->tagInfoPtr);
+
+		if (!segPtr) {
+		    TkTextLine *linePtr = textPtr->currentMarkPtr->sectionPtr->linePtr->prevPtr;
+		    segPtr = linePtr ? linePtr->lastPtr : NULL;
+		}
+		if (segPtr) {
+		    if (wantLast) {
+			/* in this case we've already found the end of the range */
+			TkTextIndexClear(indexPtr, textPtr);
+			TkTextIndexSetSegment(indexPtr, textPtr->currentMarkPtr);
+			goto gotBase;
+		    }
+
+		    TkTextIndexClear(&currIndex, textPtr);
+		    TkTextIndexSetSegment(&currIndex, textPtr->currentMarkPtr);
+		    tagFound = true;
+		}
+	    }
+
+	    if (tagFound) {
+		if (wantLast) {
+		    TkTextTagFindEndOfRange(textPtr, tagPtr, &currIndex, indexPtr);
+		} else {
+		    TkTextTagFindStartOfRange(textPtr, tagPtr, &currIndex, indexPtr);
+		}
 	    }
 	}
+	if (!tagFound) {
+	    const char *tagName = hPtr ? Tcl_GetHashKey(&sharedTextPtr->tagTable, hPtr) : "sel";
 
-	if (!tagPtr) {
-	    goto tryxy;
+	    Tcl_SetObjResult(interp, Tcl_ObjPrintf(
+		    "character at current position isn't tagged with \"%s\"", tagName));
+	    Tcl_SetErrorCode(interp, "TK", "LOOKUP", "TEXT_INDEX", tagName, NULL);
+	    Tcl_DStringFree(&copy);
+	    return false;
 	}
+    } else {
+	TkTextSearch search;
+	bool tagFound;
 
 	TkTextIndexSetupToStartOfText(&first, textPtr, sharedTextPtr->tree);
 	TkTextIndexSetupToEndOfText(&last, textPtr, sharedTextPtr->tree);
@@ -2351,11 +2380,8 @@ GetIndex(
 	    tagFound = TkBTreeNextTag(&search);
 	}
 	if (!tagFound) {
-	    if (tagPtr == textPtr->selTagPtr) {
-		tagName = "sel";
-	    } else if (hPtr) {
-		tagName = Tcl_GetHashKey(&sharedTextPtr->tagTable, hPtr);
-	    }
+	    const char *tagName = hPtr ? Tcl_GetHashKey(&sharedTextPtr->tagTable, hPtr) : "sel";
+
 	    Tcl_SetObjResult(interp, Tcl_ObjPrintf(
 		    "text doesn't contain any characters tagged with \"%s\"", tagName));
 	    Tcl_SetErrorCode(interp, "TK", "LOOKUP", "TEXT_INDEX", tagName, NULL);
@@ -2363,8 +2389,9 @@ GetIndex(
 	    return false;
 	}
 	*indexPtr = search.curIndex;
-	goto gotBase;
     }
+
+    goto gotBase;
 
   tryxy:
     if (string[0] == '@') {
@@ -2437,7 +2464,7 @@ GetIndex(
 	goto gotBase;
     }
 
-    for (p = myString; *p != 0; ++p) {
+    for (p = myString; *p; ++p) {
 	if (isspace(*p) || *p == '+' || *p == '-') {
 	    break;
 	}
@@ -2472,7 +2499,7 @@ GetIndex(
 	TkTextIndexSetupToEndOfText(indexPtr, textPtr, sharedTextPtr->tree);
 	goto gotBase;
     }
-    
+
     /*
      * See if the base position is the name of a mark.
      */
@@ -2590,7 +2617,7 @@ TkTextIndexPrint(
      *
      * The user of the Tk text widget is encouraged to work with marks,
      * in this way the expensive mappings between char indices and byte
-     * indices can be avoided.
+     * indices can be avoided in many cases.
      */
 
     if (indexPtr->priv.segPtr && !indexPtr->priv.isCharSegment) {
@@ -2712,12 +2739,12 @@ ForwBack(
 	p++;
     }
     length = p - units;
-    if (*units == 'd' && strncmp(units, "display", MIN(length, 7)) == 0) {
+    if (*units == 'd' && strncmp(units, "display", MIN(length, 7u)) == 0) {
 	modifier = TKINDEX_DISPLAY;
 	if (length > 7) {
 	    p -= (length - 7);
 	}
-    } else if (*units == 'a' && strncmp(units, "any", MIN(length, 3)) == 0) {
+    } else if (*units == 'a' && strncmp(units, "any", MIN(length, 3u)) == 0) {
 	modifier = TKINDEX_CHAR;
 	if (length > 3) {
 	    p -= (length - 3);
@@ -2964,9 +2991,10 @@ TkTextIndexForwBytes(
     }
 
     if ((byteIndex = dstPtr->priv.byteIndex + byteCount) > linePtr->size) {
+	bool rc;
 	DEBUG(TkTextIndex index = *srcPtr);
-	bool rc = TkBTreeMoveForward(dstPtr, byteCount);
-	assert(!rc || TkTextIndexCountBytes(&index, dstPtr) == byteCount);
+	rc = TkBTreeMoveForward(dstPtr, byteCount);
+	assert(!rc || (int) TkTextIndexCountBytes(&index, dstPtr) == byteCount);
 	return rc ? 0 : 1;
     }
 
@@ -3461,7 +3489,7 @@ TkTextIndexBackBytes(
 	/*
 	 * Special case: this is the first line, and we have to consider the start marker.
 	 */
-	
+
 	if ((byteIndex -= byteCount) < SegToIndex(linePtr, textPtr->startMarker)) {
 	    TkTextIndexSetupToStartOfText(dstPtr, (TkText *) textPtr, textPtr->sharedTextPtr->tree);
 	    return 1;
@@ -3472,9 +3500,10 @@ TkTextIndexBackBytes(
     }
 
     if (byteCount > byteIndex + 1) {
+	bool rc;
 	DEBUG(TkTextIndex index = *srcPtr);
-	bool rc = TkBTreeMoveBackward(dstPtr, byteCount);
-	assert(!rc || TkTextIndexCountBytes(dstPtr, &index) == byteCount);
+	rc = TkBTreeMoveBackward(dstPtr, byteCount);
+	assert(!rc || (int) TkTextIndexCountBytes(dstPtr, &index) == byteCount);
 	return rc ? 0 : 1;
     }
 
@@ -3730,8 +3759,8 @@ StartEnd(
     const char *p;
     size_t length;
     TkTextSegment *segPtr;
-    int modifier;
-    int mode;
+    int modifier = TKINDEX_NONE;
+    int mode = COUNT_INDICES;
 
     assert(textPtr);
 
@@ -3744,21 +3773,25 @@ StartEnd(
     }
     length = p - string;
 
-    if (*string == 'd' && strncmp(string, "display", MIN(length, 7)) == 0) {
-	modifier = TKINDEX_DISPLAY;
-	mode = COUNT_DISPLAY_INDICES;
-	if (length > 7) {
-	    p -= (length - 7);
-	}
-    } else if (*string == 'a' && strncmp(string, "any", MIN(length, 3)) == 0) {
-	modifier = TKINDEX_CHAR;
-	mode = COUNT_CHARS;
-	if (length > 3) {
-	    p -= (length - 3);
-	}
-    } else {
-	modifier = TKINDEX_NONE;
-	mode = COUNT_INDICES;
+    switch (string[0]) {
+	case 'd':
+	    if (strncmp(string, "display", MIN(length, 7u)) == 0) {
+		modifier = TKINDEX_DISPLAY;
+		mode = COUNT_DISPLAY_INDICES;
+		if (length > 7) {
+		    p -= (length - 7);
+		}
+	    }
+	    break;
+	case 'a':
+	    if (strncmp(string, "any", MIN(length, 3u)) == 0) {
+		modifier = TKINDEX_CHAR;
+		mode = COUNT_CHARS;
+		if (length > 3) {
+		    p -= (length - 3);
+		}
+	    }
+	    break;
     }
 
     /*
@@ -3776,118 +3809,150 @@ StartEnd(
 	length = p - string;
     }
 
-    if (*string == 'l' && strncmp(string, "lineend", length) == 0 && length >= 5) {
-	if (modifier == TKINDEX_DISPLAY) {
-	    TkTextFindDisplayLineStartEnd(textPtr, indexPtr, DISP_LINE_END);
-	} else {
-	    TkTextIndexSetToLastChar(indexPtr);
-	}
-    } else if (*string == 'l' && strncmp(string, "linestart", length) == 0 && length >= 5) {
-	if (modifier == TKINDEX_DISPLAY) {
-	    TkTextFindDisplayLineStartEnd(textPtr, indexPtr, DISP_LINE_START);
-	} else {
-	    TkTextIndexSetToStartOfLine(indexPtr);
-	}
-    } else if (*string == 'w' && strncmp(string, "wordend", length) == 0 && length >= 5) {
-	int firstChar = 1;
-	int offset;
-
-	/*
-	 * If the current character isn't part of a word then just move
-	 * forward one character. Otherwise move forward until finding a
-	 * character that isn't part of a word and stop there.
-	 */
-
-	if (modifier == TKINDEX_DISPLAY) {
-	    TkTextIndexForwChars(textPtr, indexPtr, 0, indexPtr, COUNT_DISPLAY_INDICES);
-	}
-	segPtr = TkTextIndexGetContentSegment(indexPtr, &offset);
-	while (true) {
-	    int chSize = 1;
-
-	    if (segPtr->typePtr == &tkTextCharType) {
-		int ch;
-
-		chSize = TkUtfToUniChar(segPtr->body.chars + offset, &ch);
-		if (!Tcl_UniCharIsWordChar(ch)) {
-		    break;
-		}
-		firstChar = 0;
-	    }
-	    offset += chSize;
-	    indexPtr->priv.byteIndex += chSize;
-	    if (offset >= segPtr->size) {
-		do {
-		    segPtr = segPtr->nextPtr;
-		} while (segPtr->size == 0);
-		offset = 0;
-	    }
-	}
-	if (firstChar) {
-	    TkTextIndexForwChars(textPtr, indexPtr, 1, indexPtr, mode);
-	}
-    } else if (*string == 'w' && strncmp(string, "wordstart", length) == 0 && length >= 5) {
-	int firstChar = 1;
-	int offset;
-
-	if (modifier == TKINDEX_DISPLAY) {
-	    /*
-	     * Skip elided region.
-	     */
-	    TkTextIndexForwChars(textPtr, indexPtr, 0, indexPtr, COUNT_DISPLAY_INDICES);
-	}
-
-	/*
-	 * Starting with the current character, look for one that's not part
-	 * of a word and keep moving backward until you find one. Then if the
-	 * character found wasn't the first one, move forward again one
-	 * position.
-	 */
-
-	segPtr = TkTextIndexGetContentSegment(indexPtr, &offset);
-	while (true) {
-	    int chSize = 1;
-
-	    if (segPtr->typePtr == &tkTextCharType) {
-		int ch;
-
-		TkUtfToUniChar(segPtr->body.chars + offset, &ch);
-		if (!Tcl_UniCharIsWordChar(ch)) {
-		    break;
-		}
-		if (offset > 0) {
-		    const char *prevPtr = Tcl_UtfPrev(segPtr->body.chars + offset, segPtr->body.chars);
-		    chSize = segPtr->body.chars + offset - prevPtr;
-		}
-		firstChar = 0;
-	    }
-            if (offset == 0) {
-		TkTextIndexBackChars(textPtr, indexPtr, 1, indexPtr, mode);
-		segPtr = TkTextIndexGetContentSegment(indexPtr, &offset);
-
-		if (offset < chSize && indexPtr->priv.byteIndex == 0) {
+    if (length >= 5) {
+	switch (string[0]) {
+	case 'l':
+	    switch (string[4]) {
+	    case 'e':
+		if (strncmp(string, "lineend", length) == 0) {
+		    if (modifier == TKINDEX_DISPLAY) {
+			TkTextFindDisplayLineStartEnd(textPtr, indexPtr, DISP_LINE_END);
+		    } else {
+			TkTextIndexSetToLastChar(indexPtr);
+		    }
 		    return p;
 		}
-            } else if ((indexPtr->priv.byteIndex -= chSize) == 0) {
-		return p;
-	    } else if ((offset -= chSize) < 0) {
-		assert(indexPtr->priv.byteIndex > 0);
-		do {
-		    segPtr = segPtr->prevPtr;
-		    assert(segPtr);
-		} while (segPtr->size == 0);
-		offset = 0;
+		break;
+	    case 's':
+		if (strncmp(string, "linestart", length) == 0) {
+		    if (modifier == TKINDEX_DISPLAY) {
+			TkTextFindDisplayLineStartEnd(textPtr, indexPtr, DISP_LINE_START);
+		    } else {
+			TkTextIndexSetToStartOfLine(indexPtr);
+		    }
+		    return p;
+		}
+		break;
 	    }
-	}
+	    break;
+	case 'w':
+	    switch (string[4]) {
+	    case 'e':
+		if (strncmp(string, "wordend", length) == 0) {
+		    bool firstChar = true;
+		    int offset;
 
-	if (!firstChar) {
-	    TkTextIndexForwChars(textPtr, indexPtr, 1, indexPtr, mode);
+		    /*
+		     * If the current character isn't part of a word then just move
+		     * forward one character. Otherwise move forward until finding a
+		     * character that isn't part of a word and stop there.
+		     */
+
+		    if (modifier == TKINDEX_DISPLAY) {
+			TkTextIndexForwChars(textPtr, indexPtr, 0, indexPtr, COUNT_DISPLAY_INDICES);
+		    }
+		    segPtr = TkTextIndexGetContentSegment(indexPtr, &offset);
+
+		    while (true) {
+			int chSize = 1;
+
+			if (segPtr->typePtr == &tkTextCharType) {
+			    int ch;
+
+			    chSize = TkUtfToUniChar(segPtr->body.chars + offset, &ch);
+			    if (!Tcl_UniCharIsWordChar(ch)) {
+				break;
+			    }
+			    firstChar = false;
+			}
+			offset += chSize;
+			indexPtr->priv.byteIndex += chSize;
+			if (offset >= segPtr->size) {
+			    do {
+				segPtr = segPtr->nextPtr;
+			    } while (segPtr->size == 0);
+			    offset = 0;
+			}
+		    }
+		    indexPtr->priv.segPtr = segPtr;
+		    indexPtr->priv.isCharSegment = segPtr->typePtr == &tkTextCharType;
+		    if (firstChar) {
+			TkTextIndexForwChars(textPtr, indexPtr, 1, indexPtr, mode);
+		    }
+		    return p;
+		}
+		break;
+	    case 's':
+		if (strncmp(string, "wordstart", length) == 0) {
+		    bool firstChar = true;
+		    int offset;
+
+		    if (modifier == TKINDEX_DISPLAY) {
+			/*
+			 * Skip elided region.
+			 */
+			TkTextIndexForwChars(textPtr, indexPtr, 0, indexPtr, COUNT_DISPLAY_INDICES);
+		    }
+
+		    /*
+		     * Starting with the current character, look for one that's not part
+		     * of a word and keep moving backward until you find one. Then if the
+		     * character found wasn't the first one, move forward again one
+		     * position.
+		     */
+
+		    segPtr = TkTextIndexGetContentSegment(indexPtr, &offset);
+
+		    while (true) {
+			int chSize = 1;
+
+			if (segPtr->typePtr == &tkTextCharType) {
+			    int ch;
+
+			    TkUtfToUniChar(segPtr->body.chars + offset, &ch);
+			    if (!Tcl_UniCharIsWordChar(ch)) {
+				break;
+			    }
+			    if (offset > 0) {
+				const char *prevPtr;
+				prevPtr = Tcl_UtfPrev(segPtr->body.chars + offset, segPtr->body.chars);
+				chSize = segPtr->body.chars + offset - prevPtr;
+			    }
+			    firstChar = false;
+			}
+			if (offset == 0) {
+			    TkTextIndexBackChars(textPtr, indexPtr, 1, indexPtr, mode);
+			    segPtr = TkTextIndexGetContentSegment(indexPtr, &offset);
+			    if (offset < chSize && indexPtr->priv.byteIndex == 0) {
+				return p;
+			    }
+			} else if ((indexPtr->priv.byteIndex -= chSize) == 0) {
+			    indexPtr->priv.segPtr = segPtr;
+			    indexPtr->priv.isCharSegment = segPtr->typePtr == &tkTextCharType;
+			    return p;
+			} else if ((offset -= chSize) < 0) {
+			    do {
+				segPtr = segPtr->prevPtr;
+				assert(segPtr);
+			    } while (segPtr->size == 0);
+			    offset = 0;
+			}
+		    }
+
+		    indexPtr->priv.segPtr = segPtr;
+		    indexPtr->priv.isCharSegment = segPtr->typePtr == &tkTextCharType;
+		    if (!firstChar) {
+			TkTextIndexForwChars(textPtr, indexPtr, 1, indexPtr, mode);
+		    }
+		    return p;
+		}
+		break;
+	    }
+	    break;
 	}
-    } else {
-	p = NULL;
     }
 
-    return p;
+    return NULL;
 }
 
 /*

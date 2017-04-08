@@ -60,9 +60,12 @@ struct TkTextUndoStack {
 
 #include <assert.h>
 
-#if __STDC_VERSION__ < 199901L
-# define inline /* we are not C99 conform */
+#ifndef _MSC_VER
+# if __STDC_VERSION__ < 199901L
+#  define inline /* we are not C99 conform */
+# endif
 #endif
+
 
 inline unsigned
 TkTextUndoGetMaxUndoDepth(const TkTextUndoStack stack)
@@ -102,7 +105,7 @@ TkTextUndoUndoStackIsFull(const TkTextUndoStack stack)
 
 inline bool
 TkTextUndoRedoStackIsFull(const TkTextUndoStack stack)
-{ return !stack || (stack->maxRedoDepth >= 0 && stack->redoDepth >= stack->maxRedoDepth); }
+{ return !stack || (stack->maxRedoDepth >= 0 && (int) stack->redoDepth >= stack->maxRedoDepth); }
 
 inline unsigned
 TkTextUndoCountCurrentUndoItems(const TkTextUndoStack stack)
@@ -175,12 +178,6 @@ TkTextUndoCurrentUndoAtom(
 {
     assert(stack);
 
-#if 0
-    if (stack->undoDepth > 0) {
-	assert(stack->last);
-	return &stack->last->data;
-    }
-#endif
     if (stack->doingUndo) {
 	return NULL;
     }
@@ -193,12 +190,6 @@ TkTextUndoCurrentRedoAtom(
 {
     assert(stack);
 
-#if 0
-    if (stack->redoDepth > 0) {
-	assert(stack->last ? stack->last->next : stack->root);
-	return &(stack->last ? stack->last->next : stack->root)->data;
-    }
-#endif
     if (stack->doingRedo) {
 	return NULL;
     }

@@ -15,7 +15,7 @@
 #include <string.h>
 #include <assert.h>
 
-#if __STDC_VERSION__ < 199901L
+#ifndef TK_C99_INLINE_SUPPORT
 # define _TK_NEED_IMPLEMENTATION
 # include "tkBitFieldPriv.h"
 #endif
@@ -49,7 +49,7 @@ DEBUG_ALLOC(unsigned tkBitCountNew = 0);
 DEBUG_ALLOC(unsigned tkBitCountDestroy = 0);
 
 
-#ifdef TCL_WIDE_INT_IS_LONG
+#ifdef TK_IS_64_BIT_ARCH
 
 /* ****************************************************************************/
 /*                 64 bit implementation                                      */
@@ -65,20 +65,25 @@ DEBUG_ALLOC(unsigned tkBitCountDestroy = 0);
 static unsigned
 LsbIndex(uint64_t x)
 {
-    /* Source: http://chessprogramming.wikispaces.com/BitScan */
+    /* Source: http://chessprogramming.wikispaces.com/BitScan (adapted for MSVC) */
     static const unsigned MultiplyDeBruijnBitPosition[64] = {
 	 0,  1, 48,  2, 57, 49, 28,  3, 61, 58, 50, 42, 38, 29, 17,  4,
 	62, 55, 59, 36, 53, 51, 43, 22, 45, 39, 33, 30, 24, 18, 12,  5,
 	63, 47, 56, 27, 60, 41, 37, 16, 54, 35, 52, 21, 44, 32, 23, 11,
 	46, 26, 40, 15, 34, 20, 31, 10, 25, 14, 19,  9, 13,  8,  7,  6
     };
-    return MultiplyDeBruijnBitPosition[((uint64_t) ((x & -x)*UINT64_C(0x03f79d71b4cb0a89))) >> 58];
+    uint64_t idx = ((uint64_t) ((x & -((int64_t) x))*UINT64_C(0x03f79d71b4cb0a89))) >> 58;
+    return MultiplyDeBruijnBitPosition[idx];
 }
 
 static unsigned
 MsbIndex(uint64_t x)
 {
-    /* Source: http://stackoverflow.com/questions/671815/what-is-the-fastest-most-efficient-way-to-find-the-highest-set-bit-msb-in-an-i (extended to 64 bit by GC) */
+    /*
+     * Source: http://stackoverflow.com/questions/671815/what-is-the-fastest-most-efficient-way-to-find-the-highest-set-bit-msb-in-an-i
+     * (extended to 64 bit by GC)
+     */
+
    static const uint8_t Table[16] = { -1, 0, 1,1, 2,2,2,2, 3,3,3,3,3,3,3,3 };
 
    unsigned r = 0;
@@ -104,7 +109,7 @@ PopCount(uint64_t x)
     return (x * UINT64_C(0x0101010101010101)) >> 56;
 }
 
-#else /* TCL_WIDE_INT_IS_LONG */
+#else /* TK_IS_64_BIT_ARCH */
 
 /* ****************************************************************************/
 /*                 32 bit implementation                                      */
@@ -122,12 +127,15 @@ PopCount(uint64_t x)
 static unsigned
 LsbIndex(uint32_t x)
 {
-    /* Source: http://graphics.stanford.edu/~seander/bithacks.html#ZerosOnRightLinear */
+    /*
+     * Source: http://graphics.stanford.edu/~seander/bithacks.html#ZerosOnRightLinear
+     * (adapted for MSVC)
+     */
     static const unsigned MultiplyDeBruijnBitPosition[32] = {
 	 0,  1, 28,  2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17,  4, 8,
 	31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18,  6, 11,  5, 10, 9
     };
-    return MultiplyDeBruijnBitPosition[((uint32_t) ((x & -x)*0x077cb531)) >> 27];
+    return MultiplyDeBruijnBitPosition[((uint32_t) ((x & -((int32_t) x))*0x077cb531)) >> 27];
 }
 #  else
 /* The "classical" method, but about 20% slower than the DeBruijn method on my system. */
@@ -165,7 +173,8 @@ MsbIndex(uint32_t x)
 # endif /* defined(__GNUC__) || defined(__clang__) */
 
 static unsigned
-PopCount(uint32_t x) {
+PopCount(uint32_t x)
+{
     /* Source: http://graphics.stanford.edu/~seander/bithacks.html */
     /* NOTE: the GCC function __builtin_popcount() is slower on my system. */
     x -=  (x >> 1) & 0x55555555;
@@ -174,7 +183,7 @@ PopCount(uint32_t x) {
     return (x*0x01010101) >> 24;
 }
 
-#endif /* !TCL_WIDE_INT_IS_LONG */
+#endif /* !TK_IS_64_BIT_ARCH */
 
 
 #if TK_CHECK_ALLOCS
@@ -1165,7 +1174,7 @@ TkBitFill(
 }
 
 
-#if !NDEBUG
+#ifndef NDEBUG
 
 # include <stdio.h>
 
@@ -1186,9 +1195,9 @@ TkBitPrint(
     printf(" }\n");
 }
 
-#endif /* !NDEBUG */
+#endif /* NDEBUG */
 
-#if 0
+#if TK_UNUSED_BITFIELD_FUNCTIONS
 
 /*
  * These functions are not needed anymore, but shouldn't be removed, because sometimes
@@ -1509,27 +1518,26 @@ TkBitInnerJoinDifferenceIsEqual(
     return true;
 }
 
-#endif /* 0 */
+#endif /* TK_UNUSED_BITFIELD_FUNCTIONS */
 
 
-#if __STDC_VERSION__ >= 199901L
+#ifdef TK_C99_INLINE_SUPPORT
 /* Additionally we need stand-alone object code. */
-#define inline extern
-inline TkBitField *TkBitNew(unsigned size);
-inline const unsigned char *TkBitData(const TkBitField *bf);
-inline unsigned TkBitByteSize(const TkBitField *bf);
-inline unsigned TkBitRefCount(const TkBitField *bf);
-inline void TkBitIncrRefCount(TkBitField *bf);
-inline unsigned TkBitDecrRefCount(TkBitField *bf);
-inline bool TkBitIsEmpty(const TkBitField *bf);
-inline unsigned TkBitSize(const TkBitField *bf);
-inline bool TkBitTest(const TkBitField *bf, unsigned n);
-inline bool TkBitNone(const TkBitField *bf);
-inline bool TkBitIntersects(const TkBitField *bf1, const TkBitField *bf2);
-inline void TkBitSet(TkBitField *bf, unsigned n);
-inline void TkBitUnset(TkBitField *bf, unsigned n);
-inline void TkBitPut(TkBitField *bf, unsigned n, bool value);
-inline unsigned TkBitAdjustSize(unsigned size);
-#endif /* __STDC_VERSION__ >= 199901L */
+extern TkBitField *TkBitNew(unsigned size);
+extern const unsigned char *TkBitData(const TkBitField *bf);
+extern unsigned TkBitByteSize(const TkBitField *bf);
+extern unsigned TkBitRefCount(const TkBitField *bf);
+extern void TkBitIncrRefCount(TkBitField *bf);
+extern unsigned TkBitDecrRefCount(TkBitField *bf);
+extern bool TkBitIsEmpty(const TkBitField *bf);
+extern unsigned TkBitSize(const TkBitField *bf);
+extern bool TkBitTest(const TkBitField *bf, unsigned n);
+extern bool TkBitNone(const TkBitField *bf);
+extern bool TkBitIntersects(const TkBitField *bf1, const TkBitField *bf2);
+extern void TkBitSet(TkBitField *bf, unsigned n);
+extern void TkBitUnset(TkBitField *bf, unsigned n);
+extern void TkBitPut(TkBitField *bf, unsigned n, bool value);
+extern unsigned TkBitAdjustSize(unsigned size);
+#endif /* TK_C99_INLINE_SUPPORT */
 
 /* vi:set ts=8 sw=4: */

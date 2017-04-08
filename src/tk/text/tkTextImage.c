@@ -15,16 +15,10 @@
 #include "tkText.h"
 #include "tkTextTagSet.h"
 #include "tkTextUndo.h"
+#include "tkAlloc.h"
 #include <assert.h>
 
-#ifndef MIN
-# define MIN(a,b) ((a) < (b) ? a : b)
-#endif
-#ifndef MAX
-# define MAX(a,b) ((a) < (b) ? b : a)
-#endif
-
-#if NDEBUG
+#ifdef NDEBUG
 # define DEBUG(expr)
 #else
 # define DEBUG(expr) expr
@@ -161,10 +155,11 @@ static const Tk_OptionSpec optionSpecs[] = {
 	NULL, -1, Tk_Offset(TkTextEmbImage, imageString), TK_OPTION_NULL_OK, 0, TK_TEXT_LINE_GEOMETRY},
     {TK_OPTION_STRING, "-name", NULL, NULL,
 	NULL, -1, Tk_Offset(TkTextEmbImage, imageName), TK_OPTION_NULL_OK, 0, 0},
+    {TK_OPTION_STRING, "-tags", NULL, NULL,
+	NULL, -1, -1, TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_END, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0}
 };
 
-DEBUG_ALLOC(extern unsigned tkTextCountDestroySegment);
 DEBUG_ALLOC(extern unsigned tkTextCountNewUndoToken);
 DEBUG_ALLOC(extern unsigned tkTextCountNewSegment);
 
@@ -353,12 +348,20 @@ RedoLinkSegmentGetRange(
  */
 
 static bool
-Displayed(
-    const TkTextEmbImage *img,
-    const TkText *peer)
+MatchTagsOption(
+    const char *opt)
 {
-    return peer->pixelReference < img->numClients
-	    && !TkQTreeRectIsEmpty(&img->bbox[peer->pixelReference]);
+    static const char *pattern = "-tags";
+    const char *p = pattern;
+    const char *start = opt;
+
+    for ( ; *opt; ++p, ++opt) {
+	if (*p != *opt) {
+	    return opt > start && *p == '\0';
+	}
+    }
+
+    return true;
 }
 
 int
@@ -375,10 +378,10 @@ TkTextImageCmd(
     TkSharedText *sharedTextPtr;
     TkTextIndex index;
     static const char *CONST optionStrings[] = {
-	"bind", "cget", "configure", "create", "names", NULL
+	"cget", "configure", "create", "names", NULL
     };
     enum opts {
-	CMD_BIND, CMD_CGET, CMD_CONF, CMD_CREATE, CMD_NAMES
+	CMD_CGET, CMD_CONF, CMD_CREATE, CMD_NAMES
     };
 
     if (objc < 3) {
@@ -392,62 +395,7 @@ TkTextImageCmd(
     sharedTextPtr = textPtr->sharedTextPtr;
 
     switch ((enum opts) idx) {
-    case CMD_BIND: {
-	TkTextEmbImage *img;
-	int rc;
-
-	if (objc < 4 || objc > 6) {
-	    Tcl_WrongNumArgs(interp, 3, objv, "index ?sequence? ?command?");
-	    return TCL_ERROR;
-	}
-	if (!TkTextGetIndexFromObj(interp, textPtr, objv[3], &index)) {
-	    return TCL_ERROR;
-	}
-	eiPtr = TkTextIndexGetContentSegment(&index, NULL);
-	if (eiPtr->typePtr != &tkTextEmbImageType) {
-	    Tcl_AppendResult(interp, "no embedded image at index \"",
-		    Tcl_GetString(objv[3]), "\"", NULL);
-	    Tcl_SetErrorCode(interp, "TK", "TEXT", "NO_IMAGE", NULL);
-	    return TCL_ERROR;
-	}
-	img = &eiPtr->body.ei;
-	rc = TkTextBindEvent(interp, objc - 4, objv + 4, sharedTextPtr,
-		&sharedTextPtr->imageBindingTable, img->name);
-	if (rc == TCL_OK && !img->haveBindings) {
-	    img->haveBindings = true;
-
-	    if (!textPtr->imageBboxTree) {
-		TkText *peer;
-
-		for (peer = sharedTextPtr->peers; peer; peer = peer->next) {
-		    if (Displayed(img, peer)) {
-			TkQTreeRect bbox;
-			int dx, dy;
-
-			/*
-			 * This image is already displayed, so we have to insert the bounding
-			 * box of this image in the lookup tree, but this tree must be
-			 * configured before we can add the bbox.
-			 */
-
-			TkTextGetViewOffset(peer, &dx, &dy);
-			TkQTreeRectSet(&bbox, dx, dy,
-				Tk_Width(peer->tkwin) + dx, Tk_Height(peer->tkwin) + dy);
-			TkQTreeConfigure(&peer->imageBboxTree, &bbox);
-			peer->configureBboxTree = false;
-			TkQTreeInsertRect(peer->imageBboxTree, &img->bbox[peer->pixelReference],
-				(TkQTreeUid) img, 0);
-		    } else if (!peer->imageBboxTree) {
-			peer->configureBboxTree = true;
-		    }
-		}
-	    }
-	}
-	return rc;
-    }
-    case CMD_CGET: {
-	Tcl_Obj *objPtr;
-
+    case CMD_CGET:
 	if (objc != 5) {
 	    Tcl_WrongNumArgs(interp, 3, objv, "index option");
 	    return TCL_ERROR;
@@ -461,15 +409,17 @@ TkTextImageCmd(
 		    Tcl_GetString(objv[3]), "\"", NULL);
 	    return TCL_ERROR;
 	}
-	objPtr = Tk_GetOptionValue(interp, (char *) &eiPtr->body.ei,
-		eiPtr->body.ei.optionTable, objv[4], textPtr->tkwin);
-	if (!objPtr) {
-	    return TCL_ERROR;
+	if (MatchTagsOption(Tcl_GetString(objv[4]))) {
+	    TkTextFindTags(interp, textPtr, eiPtr, true);
 	} else {
+	    Tcl_Obj *objPtr = Tk_GetOptionValue(interp, (char *) &eiPtr->body.ei,
+		    eiPtr->body.ei.optionTable, objv[4], textPtr->tkwin);
+	    if (!objPtr) {
+		return TCL_ERROR;
+	    }
 	    Tcl_SetObjResult(interp, objPtr);
-	    return TCL_OK;
 	}
-    }
+	return TCL_OK;
     case CMD_CONF:
 	if (objc < 4) {
 	    Tcl_WrongNumArgs(interp, 3, objv, "index ?option value ...?");
@@ -485,16 +435,33 @@ TkTextImageCmd(
 	    return TCL_ERROR;
 	}
 	if (objc <= 5) {
+	    Tcl_Obj **objs;
+	    int objn = 0, i;
+
 	    Tcl_Obj *objPtr = Tk_GetOptionInfo(interp,
 		    (char *) &eiPtr->body.ei, eiPtr->body.ei.optionTable,
 		    objc == 5 ? objv[4] : NULL, textPtr->tkwin);
-
 	    if (!objPtr) {
 		return TCL_ERROR;
-	    } else {
-		Tcl_SetObjResult(interp, objPtr);
-		return TCL_OK;
 	    }
+
+	    Tcl_ListObjGetElements(NULL, objPtr, &objn, &objs);
+	    for (i = 0; i < objn; ++i) {
+		Tcl_Obj **objv;
+		int objc = 0;
+
+		Tcl_ListObjGetElements(NULL, objs[i], &objc, &objv);
+		if (objc == 5 && strcmp(Tcl_GetString(objv[0]), "-tags") == 0) {
+		    Tcl_Obj *valuePtr;
+
+		    /* { argvName, dbName, dbClass, defValue, current value } */
+		    TkTextFindTags(interp, textPtr, eiPtr, true);
+		    valuePtr = Tcl_GetObjResult(interp);
+		    Tcl_ListObjReplace(NULL, objs[i], 4, 1, 1, &valuePtr);
+		}
+	    }
+	    Tcl_SetObjResult(interp, objPtr);
+	    return TCL_OK;
 	} else {
 	    int mask;
 	    int rc = EmbImageConfigure(textPtr, eiPtr, &mask, objc - 4, objv + 4);
@@ -516,13 +483,9 @@ TkTextImageCmd(
 	    if (!TkTextGetIndexFromObj(interp, textPtr, objv[3], &index)) {
 		return TCL_ERROR;
 	    }
-
-	    if (textPtr->state == TK_TEXT_STATE_DISABLED) {
-#if !SUPPORT_DEPRECATED_MODS_OF_DISABLED_WIDGET
-		Tcl_SetObjResult(interp, Tcl_ObjPrintf("attempt to modify disabled widget"));
-		Tcl_SetErrorCode(interp, "TK", "TEXT", "NOT_ALLOWED", NULL);
+	    if (textPtr->state == TK_TEXT_STATE_DISABLED &&
+		    TkTextAttemptToModifyDisabledWidget(interp) != TCL_OK) {
 		return TCL_ERROR;
-#endif /* SUPPORT_DEPRECATED_MODS_OF_DISABLED_WIDGET */
 	    }
 
 	    /*
@@ -530,14 +493,7 @@ TkTextImageCmd(
 	     */
 
 	    if (!TkTextIndexEnsureBeforeLastChar(&index)) {
-#if SUPPORT_DEPRECATED_MODS_OF_DISABLED_WIDGET
-		return TCL_OK;
-#else
-		Tcl_SetObjResult(textPtr->interp, Tcl_NewStringObj(
-			"cannot insert image into dead peer", -1));
-		Tcl_SetErrorCode(textPtr->interp, "TK", "TEXT", "IMAGE_CREATE_USAGE", NULL);
-		return TCL_ERROR;
-#endif
+		return TkTextAttemptToModifyDeadWidget(interp);
 	    }
 
 	    /*
@@ -595,50 +551,6 @@ TkTextImageCmd(
     }
     assert(!"unexpected switch fallthrough");
     return TCL_ERROR; /* shouldn't be reached */
-}
-
-/*
- *--------------------------------------------------------------
- *
- * TkTextImageAddClient --
- *
- *	This function is called to provide the image binding
- *	support of a client.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	None.
- *
- *--------------------------------------------------------------
- */
-
-void
-TkTextImageAddClient(
-    TkSharedText *sharedTextPtr,
-    TkText *textPtr)
-{
-    Tcl_HashSearch search;
-    Tcl_HashEntry *hPtr;
-    TkText *peer;
-
-    for (peer = sharedTextPtr->peers; peer; peer = peer->next) {
-	if (peer != textPtr && (peer->imageBboxTree || peer->configureBboxTree)) {
-	    textPtr->configureBboxTree = true;
-	}
-    }
-
-    for (hPtr = Tcl_FirstHashEntry(&sharedTextPtr->imageTable, &search);
-	    hPtr;
-	    hPtr = Tcl_NextHashEntry(&search)) {
-	TkTextSegment *eiPtr = Tcl_GetHashValue(hPtr);
-	TkTextEmbImage *img = &eiPtr->body.ei;
-
-	if (img->numClients > textPtr->pixelReference) {
-	    memset(&img->bbox[textPtr->pixelReference], 0, sizeof(img->bbox[0]));
-	}
-    }
 }
 
 /*
@@ -788,7 +700,8 @@ EmbImageConfigure(
 {
     Tk_Image image;
     char *name;
-    int width;
+    int width, i;
+    TkSharedText *sharedTextPtr = textPtr->sharedTextPtr;
     TkTextEmbImage *img = &eiPtr->body.ei;
 
     if (maskPtr) {
@@ -798,6 +711,94 @@ EmbImageConfigure(
     if (Tk_SetOptions(textPtr->interp, (char *) img, img->optionTable, objc, objv, textPtr->tkwin,
 		NULL, maskPtr) != TCL_OK) {
 	return TCL_ERROR;
+    }
+
+    for (i = 0; i < objc; i += 2) {
+	if (MatchTagsOption(Tcl_GetString(objv[i]))) {
+	    TkTextTagSet *newTagInfoPtr;
+	    TkTextTagSet *oldTagInfoPtr;
+	    TkTextTag *tagArrBuf[128];
+	    TkTextTag **tagArrPtr = tagArrBuf;
+	    TkTextTag *tagPtr;
+	    TkTextIndex index[2];
+	    bool altered = false;
+	    bool anyChanges = false;
+	    Tcl_Obj **objs;
+	    int objn = 0, k;
+	    unsigned j;
+
+	    Tcl_ListObjGetElements(NULL, objv[i + 1], &objn, &objs);
+	    TkTextIndexClear(&index[0], textPtr);
+	    TkTextIndexSetSegment(&index[0], eiPtr);
+	    TkTextIndexForwBytes(textPtr, &index[0], 1, &index[1]);
+	    TkTextTagSetIncrRefCount(oldTagInfoPtr = eiPtr->tagInfoPtr);
+
+	    if (objn > (int) (sizeof(tagArrBuf)/sizeof(tagArrBuf[0]))) {
+		tagArrPtr = malloc(objn*sizeof(tagArrPtr[0]));
+	    }
+
+	    for (k = 0; k < objn; ++k) {
+		tagArrPtr[k] = TkTextCreateTag(textPtr, Tcl_GetString(objs[k]), NULL);
+	    }
+
+	    newTagInfoPtr = TkTextTagSetResize(NULL, sharedTextPtr->tagInfoSize);
+
+	    for (k = 0; k < objn; ++k) {
+		newTagInfoPtr = TkTextTagSetAddToThis(newTagInfoPtr, tagArrPtr[k]->index);
+	    }
+
+	    /*
+	     * Remove the deleted tags, but ignore the "sel" tag.
+	     */
+
+	    for (j = TkTextTagSetFindFirst(oldTagInfoPtr);
+		    j != TK_TEXT_TAG_SET_NPOS;
+		    j = TkTextTagSetFindNext(oldTagInfoPtr, j)) {
+		if (!TkTextTagSetTest(newTagInfoPtr, j)) {
+		    tagPtr = sharedTextPtr->tagLookup[j];
+		    if (tagPtr != textPtr->selTagPtr
+			    && TkTextTagAddRemove(textPtr, &index[0], &index[1], tagPtr, false)) {
+			anyChanges = true;
+			if (tagPtr->undo) {
+			    altered = true;
+			}
+		    }
+		}
+	    }
+
+	    /*
+	     * Add new tags, but ignore the "sel" tag.
+	     */
+
+	    for (j = TkTextTagSetFindFirst(newTagInfoPtr);
+		    j != TK_TEXT_TAG_SET_NPOS;
+		    j = TkTextTagSetFindNext(newTagInfoPtr, j)) {
+		if (!TkTextTagSetTest(eiPtr->tagInfoPtr, j)) {
+		    tagPtr = sharedTextPtr->tagLookup[j];
+		    if (tagPtr != textPtr->selTagPtr
+			    && TkTextTagAddRemove(textPtr, &index[0], &index[1], tagPtr, true)) {
+			anyChanges = true;
+			if (tagPtr->undo) {
+			    altered = true;
+			}
+		    }
+		}
+	    }
+
+	    TkTextTagSetDecrRefCount(oldTagInfoPtr);
+	    TkTextTagSetDecrRefCount(newTagInfoPtr);
+
+	    if (anyChanges) {
+		/* still need to trigger enter/leave events on tags that have changed */
+		TkTextEventuallyRepick(textPtr);
+	    }
+	    if (altered) {
+		TkTextUpdateAlteredFlag(sharedTextPtr);
+	    }
+	    if (tagArrPtr != tagArrBuf) {
+		free(tagArrPtr);
+	    }
+	}
     }
 
     /*
@@ -917,9 +918,6 @@ ReleaseImage(
     if (img->image) {
 	Tk_FreeImage(img->image);
     }
-    if (img->sharedTextPtr->imageBindingTable) {
-	Tk_DeleteAllBindings(img->sharedTextPtr->imageBindingTable, (ClientData) img->name);
-    }
 
     /*
      * No need to supply a tkwin argument, since we have no window-specific options.
@@ -929,12 +927,7 @@ ReleaseImage(
     if (img->name) {
 	free(img->name);
     }
-    if (img->bbox) {
-	free(img->bbox);
-    }
-    TkTextTagSetDecrRefCount(eiPtr->tagInfoPtr);
-    FREE_SEGMENT(eiPtr);
-    DEBUG_ALLOC(tkTextCountDestroySegment++);
+    TkBTreeFreeSegment(eiPtr);
 }
 
 /*
@@ -961,9 +954,12 @@ EmbImageDeleteProc(
     TkTextSegment *eiPtr,	/* Segment being deleted. */
     int flags)			/* Flags controlling the deletion. */
 {
-    TkTextEmbImage *img = &eiPtr->body.ei;
+    TkTextEmbImage *img;
 
+    assert(eiPtr->typePtr);
     assert(eiPtr->refCount > 0);
+
+    img = &eiPtr->body.ei;
 
     if (img->hPtr) {
 	img->sharedTextPtr->numImages -= 1;
@@ -971,41 +967,10 @@ EmbImageDeleteProc(
 	img->hPtr = NULL;
     }
 
-    /*
-     * Remove this image from bounding box tree in all peers, and clear
-     * the information about the currently hovered image if necessary.
-     */
-
-    if (img->haveBindings) {
-	TkText *peer = img->sharedTextPtr->peers;
-
-	for ( ; peer; peer = peer->next) {
-	    if (!(peer->flags & DESTROYED && Displayed(img, peer))) {
-		if (peer->hoveredImageArrSize) {
-		    unsigned i;
-
-		    for (i = 0; i < peer->hoveredImageArrSize; ++i) {
-			if (peer->hoveredImageArr[i] == img) {
-			    /*
-			     * One problem here, the mouse leave event will not be
-			     * triggered anymore. The user should avoid this situation.
-			     */
-			    memmove(peer->hoveredImageArr + i, peer->hoveredImageArr + i + 1,
-				    --peer->hoveredImageArrSize - i);
-			    break;
-			}
-		    }
-		}
-		if (peer->imageBboxTree) {
-		    TkQTreeDeleteRect(peer->imageBboxTree, &img->bbox[peer->pixelReference],
-			    (TkQTreeUid) img);
-		}
-	    }
-	}
-    }
-
-    if (--eiPtr->refCount == 0) {
+    if (eiPtr->refCount == 1) {
 	ReleaseImage(eiPtr);
+    } else {
+	eiPtr->refCount -= 1;
     }
 
     return true;
@@ -1042,9 +1007,6 @@ EmbImageRestoreProc(
 	img->sharedTextPtr->numImages += 1;
 	assert(isNew);
 	Tcl_SetHashValue(img->hPtr, eiPtr);
-    }
-    if (img->bbox) {
-	memset(img->bbox, 0, img->numClients * sizeof(img->bbox[0]));
     }
 }
 
@@ -1193,76 +1155,23 @@ EmbImageDisplayProc(
 {
     TkTextSegment *eiPtr = chunkPtr->clientData;
     TkTextEmbImage *img = &eiPtr->body.ei;
-    int lineX, imageX, imageY, width, height;
-    TkQTreeRect oldBbox;
-    TkQTreeRect *bbox;
     Tk_Image image;
-    int dx, dy;
 
-    if (!(image = img->image)) {
-	return;
-    }
-
-    /*
-     * Compute the image's location and size in the text widget, taking into
-     * account the align value for the image.
-     */
-
-    EmbImageBboxProc(textPtr, chunkPtr, 0, y, lineHeight, baseline, &lineX, &imageY, &width, &height);
-    imageX = lineX - chunkPtr->x + x;
-
-    TkTextGetViewOffset(textPtr, &dx, &dy);
-
-    if (textPtr->configureBboxTree) {
-	TkQTreeRect bbox;
+    if ((image = img->image) && x + chunkPtr->width > 0) {
+	int lineX, imageY, width, height;
 
 	/*
-	 * The view of the widget has changed. This is the appropriate place to
-	 * re-configure the bounding box tree.
+	 * Compute the image's location and size in the text widget, taking into
+	 * account the align value for the image.
 	 */
 
-	TkQTreeRectSet(&bbox, dx, dy, Tk_Width(textPtr->tkwin) + dx, Tk_Height(textPtr->tkwin) + dy);
-	TkQTreeConfigure(&textPtr->imageBboxTree, &bbox);
-	textPtr->configureBboxTree = false;
-    }
+	EmbImageBboxProc(textPtr, chunkPtr, 0, y, lineHeight, baseline, &lineX,
+		&imageY, &width, &height);
 
-    if (img->numClients <= textPtr->pixelReference) {
-	unsigned numClients = textPtr->pixelReference + 1;
-
-	assert((img->numClients == 0) == !img->bbox);
-	img->bbox = realloc(img->bbox, numClients * sizeof(img->bbox[0]));
-	memset(img->bbox + img->numClients, 0, (numClients - img->numClients) * sizeof(img->bbox[0]));
-	img->numClients = numClients;
-    }
-
-    /*
-     * Update the bounding box, used for detection of mouse hovering.
-     */
-
-    bbox = &img->bbox[textPtr->pixelReference];
-    oldBbox = *bbox;
-    bbox->xmin = imageX + dx;
-    bbox->xmax = bbox->xmin + width;
-    bbox->ymin = screenY + imageY + dy;
-    bbox->ymax = bbox->ymin + height;
-
-    if (img->haveBindings && textPtr->imageBboxTree) {
-	const TkQTreeRect *oldBboxPtr = TkQTreeRectIsEmpty(&oldBbox) ? NULL : &oldBbox;
-
-	if (!TkQTreeRectIsEmpty(bbox)) {
-	    TkQTreeUpdateRect(textPtr->imageBboxTree, oldBboxPtr, bbox, (TkQTreeUid) img, 0);
-	} else if (oldBboxPtr) {
-	    /* Possibly this case is not possible at all, but we want to be sure. */
-	    TkQTreeDeleteRect(textPtr->imageBboxTree, oldBboxPtr, (TkQTreeUid) img);
+	if (x + chunkPtr->width > 0) {
+	    int imageX = lineX - chunkPtr->x + x;
+	    Tk_RedrawImage(image, 0, 0, width, height, dst, imageX, imageY);
 	}
-    }
-
-    if (x + chunkPtr->width > 0) {
-	/*
-	 * Finally, redraw the image if inside widget area.
-	 */
-
-	Tk_RedrawImage(image, 0, 0, width, height, dst, imageX, imageY);
     }
 }
 

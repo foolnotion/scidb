@@ -28,7 +28,7 @@
  * The constant TK_TEXT_SET_MAX_BIT_SIZE must be a multiple of TK_BIT_NBITS.
  */
 
-#ifdef TCL_WIDE_INT_IS_LONG
+#ifdef TK_IS_64_BIT_ARCH
 
 /*
  * On 64 bit systems this is the optimal size and it is not recommended to
@@ -36,7 +36,7 @@
  */
 # define TK_TEXT_SET_MAX_BIT_SIZE (((512 + TK_BIT_NBITS - 1)/TK_BIT_NBITS)*TK_BIT_NBITS)
 
-#else /* TCL_WIDE_INT_IS_LONG */
+#else /* TK_IS_64_BIT_ARCH */
 
 /*
  * On 32 bit systems the current size (512) might be too large. If so it should
@@ -45,7 +45,7 @@
  */
 # define TK_TEXT_SET_MAX_BIT_SIZE (((512 + TK_BIT_NBITS - 1)/TK_BIT_NBITS)*TK_BIT_NBITS)
 
-#endif /* TCL_WIDE_INT_IS_LONG */
+#endif /* TK_IS_64_BIT_ARCH */
 
 
 MODULE_SCOPE bool TkTextTagSetIsEqual_(const TkTextTagSet *ts1, const TkTextTagSet *ts2);
@@ -65,10 +65,6 @@ MODULE_SCOPE bool TkTextTagSetIntersectionIsEqual_(const TkTextTagSet *ts1, cons
 #endif
 
 #include <assert.h>
-
-#if __STDC_VERSION__ < 199901L
-# define inline /* we are not C99 conform */
-#endif
 
 
 #if !TK_TEXT_DONT_USE_BITFIELDS /* shared implementation ****************************/
@@ -390,6 +386,42 @@ TkTextTagSetAddOrErase(
 
 
 inline
+TkTextTagSet *
+TkTextTagSetAddToThis(
+    TkTextTagSet *ts,
+    unsigned n)
+{
+    assert(ts);
+    assert(n < TkTextTagSetSize(ts));
+
+    if (ts->base.isSetFlag) {
+	ts = (TkTextTagSet *) TkIntSetAdd(&ts->set, n);
+    } else {
+	TkBitSet(&ts->bf, n);
+    }
+    return ts;
+}
+
+
+inline
+TkTextTagSet *
+TkTextTagSetEraseFromThis(
+    TkTextTagSet *ts,
+    unsigned n)
+{
+    assert(ts);
+    assert(n < TkTextTagSetSize(ts));
+
+    if (ts->base.isSetFlag) {
+	ts = (TkTextTagSet *) TkIntSetErase(&ts->set, n);
+    } else {
+	TkBitUnset(&ts->bf, n);
+    }
+    return ts;
+}
+
+
+inline
 const unsigned char *
 TkTextTagSetData(
     const TkTextTagSet *ts)
@@ -480,6 +512,12 @@ inline unsigned TkTextTagSetFindFirstInIntersection(const TkIntSet *ts, const Tk
 
 inline TkIntSet *TkTextTagSetAddOrErase(TkIntSet *ts, unsigned n, bool value)
 { return value ? TkTextTagSetAdd(ts, n) : TkTextTagSetErase(ts, n); }
+
+inline TkIntSet * TkTextTagSetAddToThis(TkIntSet *ts, unsigned n)
+{ assert(ts); return TkIntSetAdd(ts, n); }
+
+inline TkIntSet *TkTextTagSetEraseFromThis(TkIntSet *ts, unsigned n)
+{ assert(ts); return TkIntSetErase(ts, n); }
 
 inline TkIntSet *TkTextTagSetClear(TkIntSet *ts) { return TkIntSetClear(ts); }
 
