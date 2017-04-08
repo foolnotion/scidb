@@ -1213,7 +1213,7 @@ proc DoLayout {position content {context editor} {w {}}} {
 								$w insert cur $result result
 							}
 							if {[string length $reason]} {
-								$w insert cur "$space($reason)"
+								$w insert cur "${space}($reason)"
 							}
 						}
 						$w mark gravity m-0 right
