@@ -331,36 +331,36 @@ proc configureText {path {fontContext ""}} {
 	set w $path.pgn
 
 	if {[string length $fontContext] == 0} { set fontContext $context }
-	if {$context ne "browser"} { set bold $Options(weight:mainline) } else { set bold normal }
+	set bold [expr {$context eq "browser" ? "normal" : $Options(weight:mainline)}]
 	set charwidth [font measure [$w cget -font] "0"]
 
 	$w configure -font $::font::text($fontContext:normal)
 
 	if {$context ne "browser"} {
-		$w tag configure main	-font $::font::text($fontContext:$bold) \
-										-foreground [::colors::lookup $Colors(foreground:main)] \
-										;
-		$w tag configure italic -font $::font::text($fontContext:italic)
-		$w tag configure bold -font $::font::text($fontContext:bold)
-		$w tag configure bold-italic -font $::font::text($fontContext:bold-italic)
+		$w tag configure main	   -foreground [::colors::lookup $Colors(foreground:main)]
 		$w tag configure variation -foreground [::colors::lookup $Colors(foreground:variation)]
+		$w tag configure opening   -foreground [::colors::lookup $Colors(foreground:opening)]
 
-		$w tag configure opening -foreground [::colors::lookup $Colors(foreground:opening)]
-		$w tag configure opening -font $::font::text($fontContext:bold)
-		$w tag configure comment -foreground [::colors::lookup $Colors(foreground:comment)]
+		$w tag configure italic      -font $::font::text($fontContext:italic)
+		$w tag configure bold        -font $::font::text($fontContext:bold)
+		$w tag configure bold-italic -font $::font::text($fontContext:bold-italic)
 
+		$w tag configure main	   -font $::font::text($fontContext:$bold)
+		$w tag configure opening   -font $::font::text($fontContext:bold)
+		$w tag configure m:comment -font $::font::text($fontContext:normal)
 		$w tag configure figurineb -font $::font::figurine($fontContext:bold) -underline no
-		$w tag configure symbol -font $::font::symbol($fontContext:normal)
-		$w tag configure symbolb -font $::font::symbol($fontContext:bold)
-		$w tag configure code -font $::font::text($fontContext:normal)
-		$w tag configure codeb -font $::font::text($fontContext:bold)
+		$w tag configure code      -font $::font::text($fontContext:normal)
+		$w tag configure codeb     -font $::font::text($fontContext:bold)
+		$w tag configure symbol    -font $::font::symbol($fontContext:normal)
+		$w tag configure symbolb   -font $::font::symbol($fontContext:bold)
 
-		$w tag configure nag -foreground [::colors::lookup $Colors(foreground:nag)]
-		$w tag configure nagtext -foreground [::colors::lookup $Colors(foreground:nagtext)]
-		$w tag configure bracket -foreground [::colors::lookup $Colors(foreground:bracket)]
-		$w tag configure numbering -foreground [::colors::lookup $Colors(foreground:numbering)]
-		$w tag configure marks -foreground [::colors::lookup $Colors(foreground:marks)]
-		$w tag configure info -foreground [::colors::lookup $Colors(foreground:info)]
+		$w tag configure m:nag       -foreground [::colors::lookup $Colors(foreground:nag)]
+		$w tag configure m:nagtext   -foreground [::colors::lookup $Colors(foreground:nagtext)]
+		$w tag configure m:comment   -foreground [::colors::lookup $Colors(foreground:comment)]
+		$w tag configure m:bracket   -foreground [::colors::lookup $Colors(foreground:bracket)]
+		$w tag configure m:numbering -foreground [::colors::lookup $Colors(foreground:numbering)]
+		$w tag configure m:marks     -foreground [::colors::lookup $Colors(foreground:marks)]
+		$w tag configure m:info      -foreground [::colors::lookup $Colors(foreground:info)]
 
 		$w tag configure circled -font [list {Scidb Circled} [::font::currentFontSize $fontContext]]
 		$w tag configure circled -foreground #008b00
@@ -371,14 +371,39 @@ proc configureText {path {fontContext ""}} {
 			set indent $margin
 			$w tag configure indent$k -lmargin1 $margin -lmargin2 $indent
 		}
+
+		$w tag configure h:next -indentbackground 1 \
+										-background [::colors::lookup $Colors(background:nextmove)]
+
+		$w tag configure h:nag  -indentbackground 1 -background [::colors::lookup $Colors(hilite:move)]
+		$w tag configure h:move -indentbackground 1 -background [::colors::lookup $Colors(hilite:move)]
+		$w tag configure h:mark -indentbackground 1 -background [::colors::lookup $Colors(hilite:move)]
+
+		$w tag configure h:curr -indentbackground 1 \
+										-background [::colors::lookup $Colors(background:current)]
+
+		$w tag configure h:merge -background [::colors::lookup pgn,background:merge]
+
+		$w tag configure h:move    -foreground black
+		$w tag configure h:next    -foreground black
+		$w tag configure h:curr    -foreground black
+		$w tag configure h:comment -foreground [::colors::lookup $Colors(hilite:comment)]
+		$w tag configure h:info    -foreground [::colors::lookup $Colors(hilite:info)]
+
+		$w tag configure m:move    -indentbackground 1
+		$w tag configure m:nag     -indentbackground 1
+		$w tag configure m:nagtext -indentbackground 1
+		$w tag configure m:comment -indentbackground 1
+		$w tag configure m:info    -indentbackground 1
 	}
 
 	$w tag configure figurine -font $::font::figurine($fontContext:normal) -underline no
-	$w tag configure result -font $::font::text($fontContext:$bold)
-	$w tag configure result -foreground  [::colors::lookup $Colors(foreground:result)]
-	$w tag configure empty -foreground [::colors::lookup $Colors(foreground:empty)]
+	$w tag configure result   -font $::font::text($fontContext:$bold)
+
+	$w tag configure result  -foreground [::colors::lookup $Colors(foreground:result)]
+	$w tag configure empty   -foreground [::colors::lookup $Colors(foreground:empty)]
 	$w tag configure illegal -foreground [::colors::lookup $Colors(foreground:illegal)]
-	$w tag configure state -foreground [::colors::lookup $Colors(foreground:illegal)]
+	$w tag configure state   -foreground [::colors::lookup $Colors(foreground:illegal)]
 
 	if {$Options(style:column)} {
 		set tab1 [expr {round($Options(tabstop:1)*$charwidth)}]
@@ -446,7 +471,7 @@ proc setupStyle {context positionList} {
 
 proc setupNags {context} {
 	variable [namespace parent]::${context}::Options
-	if {$Options(show:nagtext)} { set nags [::annotation::unusualNags] } else { set nags {} }
+	set nags [expr {$Options(show:nagtext) ? [::annotation::unusualNags] : {}}]
 	::scidb::game::setupNags $nags
 }
 
@@ -752,39 +777,46 @@ proc InitText {path} {
 	set w $path.pgn
 
 	foreach k [array names ::annotation::mc::Nag] {
-		$w tag bind nag$k <Any-Enter> [namespace code [list Tooltip $w $k]]
-		$w tag bind nag$k <Any-Leave> [namespace code [list Tooltip $w hide]]
+		$w tag bind t:nag:$k <Enter> [namespace code [list Tooltip $w $k]]
+		$w tag bind t:nag:$k <Leave> [namespace code [list Tooltip $w hide]]
 	}
 
 	foreach k [array names ::annotation::mc::Nag] {
-		$w tag bind nag$k <Any-Enter> [namespace code [list Tooltip $w $k]]
-		$w tag bind nag$k <Any-Leave> [namespace code [list Tooltip $w hide]]
+		$w tag bind t:nag:$k <Enter> [namespace code [list Tooltip $w $k]]
+		$w tag bind t:nag:$k <Leave> [namespace code [list Tooltip $w hide]]
 	}
 
-	$w tag bind threefold <Any-Enter> [namespace code [list Tooltip $w threefold]]
-	$w tag bind threefold <Any-Leave> [namespace code [list Tooltip $w hide]]
-	$w tag bind fifty     <Any-Enter> [namespace code [list Tooltip $w fifty]]
-	$w tag bind fifty     <Any-Leave> [namespace code [list Tooltip $w hide]]
+	foreach emo [array names ::emoticons::emoticons] {
+		$w tag bind t:emo:$emo <Enter> [namespace code [list Tooltip $w $emo]]
+		$w tag bind t:emo:$emo <Leave> [namespace code [list Tooltip $w hide]]
+	}
 
-	$w tag bind illegal <Any-Enter> [namespace code [list Tooltip $w illegal]]
-	$w tag bind illegal <Any-Leave> [namespace code [list Tooltip $w hide]]
+	$w tag bind threefold <Enter> [namespace code [list Tooltip $w threefold]]
+	$w tag bind threefold <Leave> [namespace code [list Tooltip $w hide]]
+	$w tag bind fifty     <Enter> [namespace code [list Tooltip $w fifty]]
+	$w tag bind fifty     <Leave> [namespace code [list Tooltip $w hide]]
+
+	$w tag bind illegal <Enter> [namespace code [list Tooltip $w illegal]]
+	$w tag bind illegal <Leave> [namespace code [list Tooltip $w hide]]
 
 	$w tag configure underline -underline true
 }
 
 
-proc Tooltip {path nag} {
+proc Tooltip {path sym} {
 	variable ::annotation::mc::Nag
 
-	switch $nag {
+	switch $sym {
 		hide			{ ::tooltip::hide }
 		illegal		{ ::tooltip::show $path $::browser::mc::IllegalMove }
 		threefold	{ ::tooltip::show $path $mc::ThreefoldRepetition }
 		fifty			{ ::tooltip::show $path $mc::FiftyMoveRule }
 		
 		default {
-			if {[info exists Nag($nag)]} {
-				::tooltip::show $path $Nag($nag)
+			if {[info exists Nag($sym)]} {
+				::tooltip::show $path $Nag($sym)
+			} else if {[info exists ::emoticons::mc::Tooltip($sym)]} {
+				::tooltip::show $path $::emoticons::mc::Tooltip($sym)
 			}
 		}
 	}

@@ -173,9 +173,9 @@ proc build {parent width height} {
 
 	for {set i 0} {$i < 9} {incr i} {
 		set pgn [::pgn::setup::buildText $edit.f$i editor]
-		$pgn mark gravity insert left
+		$pgn mark set insert begin left ;# fix the position of this mark
 		bind $pgn <Button-3> [namespace code [list PopupMenu $edit $i]]
-		bind $pgn <Leave> [namespace code [list HidePosition $i $pgn]]
+		bind $pgn <Leave> [namespace code [list HidePosition $pgn]]
 		$panes add $edit.f$i
 		set Vars(pgn:$i) $pgn
 		set Vars(frame:$i) $edit.f$i
@@ -191,30 +191,16 @@ proc build {parent width height} {
 	set Vars(diagram:show) 0
 	set Vars(diagram:state) 0
 	set Vars(diagram:caps) 0
-	set Vars(old-editor) 0
-	set Vars(steadymarks) 0
-	set Vars(indentbackground) {}
-	set Vars(deletemarks) {}
 
-	if {[catch { set Vars(steadymarks) [$Vars(pgn:0) cget -steadymarks] }]} {
-		set Vars(old-editor) 1
-	} else {
-		## The following does not work, because it may happen that we have the following
-		## succeeding actions:
-		##		action {remove 1 m-0.22.0.77.0.76 m-0.23}
-		##		action {replace 1 m-0.22.0.78 m-0.23}
-		# if {$Vars(steadymarks)} {
-		# 	set Vars(deletemarks) -marks
-		# }
-		set Vars(indentbackground) {-indentbackground 1}
-	}
+	## The following does not work, because it may happen that we have the following
+	## succeeding actions:
+	##		action {remove 1 m-0.22.0.77.0.76 m-0.23}
+	##		action {replace 1 m-0.22.0.78 m-0.23}
+	## So we have to retain the marks.
+	# set Vars(deletemarks) -marks
 
 	::pgn::setup::setupStyle editor {0 1 2 3 4 5 6 7 8}
-	if {$Vars(old-editor)} {
-		::scidb::game::undoSetup 20 9999
-	} else {
-		::scidb::game::undoSetup 200 1
-	}
+	::scidb::game::undoSetup 200 1
 
 	set tbGame [::toolbar::toolbar $top \
 		-id editor-game \
@@ -427,32 +413,16 @@ proc getTags {position} {
 
 proc resetGoto {w position} {
 	variable Vars
-	variable ::pgn::editor::Colors
 
 	if {![info exists Vars(current:$position)]} {
 		return
 	}
 
-	if {[llength $Vars(current:$position)]} {
-		$w tag configure $Vars(current:$position) \
-			-background [::colors::lookup $Colors(background)] \
-			{*}[MoveForeground $Vars(current:$position)] \
-			;
-		set Vars(current:$position) {}
-	}
+	$w tag remove h:next begin end
+	$w tag remove h:curr begin end
 
-	foreach k $Vars(next:$position) {
-		$w tag configure $k -background [::colors::lookup $Colors(background)] {*}[MoveForeground $k] 
-	}
-	set Vars(next:$position) {}
-
-	if {[llength $Vars(previous:$position)]} {
-		$w tag configure $Vars(previous:$position) \
-			-background [::colors::lookup $Colors(background)] \
-			{*}[MoveForeground $Vars(previous:$position)] \
-			;
-		set Vars(previous:$position) {}
-	}
+	set Vars(current:$position) {}
+	set Vars(previous:$position) {}
 }
 
 
@@ -571,21 +541,41 @@ proc saveGame {mode {base ""}} {
 }
 
 
-proc editAnnotation {{position -1} {key {}}} {
+proc FindKey {w attr} {
+	set key m:$attr.current.last
+	while {[string index [set key [$w mark previous $key]] 0] ne "m"} {
+		if {[string length $key] == 0} {
+			puts stderr "Error: cannot find key for attribute '$attr'"
+			return m-0
+		}
+	}
+	return $key
+}
+
+
+proc FindRange {w key} {
+	if {$key eq "m-0.0"} { return {end end} }
+	return [$w tag nextrange m:move $key]
+}
+
+
+proc EditAnnotation {{attr {}}} {
 	variable Vars
 
-	if {$position == -1} {
-		if {[::annotation::open?]} {
-			return [::annotation::close]
-		}
-		set position $Vars(position)
+	set position $Vars(position)
+	if {[llength $attr]} {
+		GotoMove $position [FindKey $Vars(pgn:$position) $attr]
 	}
-
-	if {[string length $key]} {
-		GotoMove $position $key
-	}
-
 	Edit $position ::annotation
+}
+
+
+proc editAnnotation {} {
+	if {[::annotation::open?]} {
+		::annotation::close
+	} else {
+		EditAnnotation
+	}
 }
 
 
@@ -629,8 +619,8 @@ proc openMarksPalette {{position -1} {key {}}} {
 
 
 proc scroll {args} {
-	::widget::textLineScroll \
-		[set [namespace current]::Vars(pgn:[::scidb::game::current])] scroll {*}$args
+	variable Vars
+	::widget::textLineScroll $Vars(pgn:[::scidb::game::current]) scroll {*}$args
 }
 
 
@@ -719,7 +709,7 @@ proc CheckKey {w mode keysym state} {
 	if {$mode eq "release" && ($keysym == "Alt_L" || $keysym == "ISO_Level3_Shift")} {
 		bind $w <Alt-KeyPress> {#}
 		bind $w <Alt-KeyRelease> {#}
-		HidePosition $position $Vars(pgn:$position)
+		HidePosition $Vars(pgn:$position)
 	} elseif {[string match Shift_? $keysym] || ($keysym eq "Caps_Lock" && $mode eq "press")} {
 		set key $Vars(active:$position)
 		set w $Vars(pgn:$position)
@@ -787,7 +777,6 @@ proc InitScratchGame {} {
 	set Vars(current:9) {}
 	set Vars(successor:9) {}
 	set Vars(previous:9) {}
-	set Vars(next:9) {}
 	set Vars(active:9) {}
 	set Vars(see:9) 1
 	set Vars(last:9) {}
@@ -805,16 +794,6 @@ proc StateChanged {position modified} {
 		::gamebar::setState [set [namespace current]::Vars(gamebar)] $position $modified
 		::game::stateChanged $position $modified
 	}
-}
-
-
-proc MoveForeground {key} {
-	variable ::pgn::editor::Colors
-
-	if {![string match {*.*.*} $key]} {
-		return {}
-	}
-	return [list -foreground [::colors::lookup $Colors(foreground:variation)]]
 }
 
 
@@ -837,7 +816,7 @@ proc See {position {key ""} {succKey ""}} {
 	set w $Vars(pgn:$position)
 
 	if {$key eq [::scidb::game::position startKey]} {
-		$w see 1.0
+		$w see begin 
 		return
 	}
 
@@ -858,13 +837,13 @@ proc See {position {key ""} {succKey ""}} {
 		set r $row
 		while {$r < $last} {
 			incr r
-			incr count [$w count -chars $r.0 $r.end]
+			incr count [$w count -chars $r.begin $r.end]
 			if {$count > $CharLimit} {
 				incr r -1
 				break
 			}
 		}
-		if {$r > $row} { $w see $r.0 }
+		if {$r > $row} { $w see $r.begin }
 		if {$rest < $CharLimit} {
 			set offs [expr {[winfo width $w]/$Vars(charwidth)}]
 			$w see $row.[expr {$col + min($CharLimit, 3*$offs)}]
@@ -1048,11 +1027,9 @@ proc Edit {position ns {key {}} {pos {}} {lang {}}} {
 		if {$position == -1} {
 			set position $Vars(position)
 		}
-
 		if {[llength $key]} {
 			GotoMove $position $key
 		}
-
 		${ns}::open [winfo toplevel $Vars(pgn:$position)] {*}$pos {*}$lang
 	}
 }
@@ -1067,7 +1044,6 @@ proc ConfigureEditor {} {
 	set Vars(current:10) {}
 	set Vars(successor:10) {}
 	set Vars(previous:10) {}
-	set Vars(next:10) {}
 	set Vars(active:10) {}
 	set Vars(lang:set:10) [list {} $::mc::langID]
 	set Vars(see:10) 1
@@ -1130,31 +1106,29 @@ proc DoLayout {position content {context editor} {w {}}} {
 	}
 
 	foreach node $content {
-		if {$trace} {
-			puts $node
-		}
+		if {$trace} { puts $node }
 
 		switch [lindex $node 0] {
-			start {
-				if {$Vars(old-editor)} {
-					$w configure -state normal
-				}
-			}
-
-			languages {
-				UpdateLanguages $position [lindex $node 1]
-			}
-
-			header {
-				UpdateHeader $context $position $w [lindex $node 1]
-			}
+			start     { # no action }
+			languages { UpdateLanguages $position [lindex $node 1] }
+			header    { UpdateHeader $context $position $w [lindex $node 1] }
 
 			begin {
 				set level [lindex $node 3]
+				if {$level == 0} {
+					$w mark set main:start cur
+				} elseif {$level == 1} {
+					$w tag add main main:start cur
+				}
 				set startVar($level) [lindex $node 2]
 			}
 
 			end {
+				if {$level == 0} {
+					$w tag add main main:start cur
+				} elseif {$level == 1} {
+					$w mark set main:start cur
+				}
 				set level [lindex $node 3]
 				Indent $context $w $level $startVar($level) cur
 				incr level -1
@@ -1167,39 +1141,30 @@ proc DoLayout {position content {context editor} {w {}}} {
 				switch [lindex $args 0] {
 					replace {
 						lassign $args unused level removePos insertMark
-						$w delete {*}$Vars(deletemarks) $removePos $insertMark
+						$w delete $removePos $insertMark
 						$w mark gravity $insertMark right
-						$w mark set indent:start $removePos
-						$w mark gravity indent:start left
+						$w mark set indent:start $removePos left
 						$w mark set cur $insertMark
 					}
 
 					insert {
 						lassign $args unused level insertMark
 						$w mark gravity $insertMark right
-						$w mark set indent:start $insertMark
-						$w mark gravity indent:start left
+						$w mark set indent:start $insertMark left
 						$w mark set cur $insertMark
 					}
 
 					finish {
 						set level [lindex $args 1]
 						Indent $context $w $level indent:start cur
-						$w mark gravity cur left
-						Mark $w $insertMark
-						$w mark gravity cur right
 					}
 
 					remove {
-						$w delete {*}$Vars(deletemarks) {*}[lrange $args 2 end]
+						$w delete {*}[lrange $args 2 end]
 					}
 
 					clear {
- 						$w delete {*}$Vars(deletemarks) m-start m-0
-						# because old editor has invisible chars
-						if {[$w count -chars 1.0 2.0] > 1 + $Vars(old-editor)} {
-							$w insert m-0 "\n"
-						}
+ 						$w delete m-start m-0
 						set Vars(result:$position) ""
 					}
 
@@ -1212,7 +1177,7 @@ proc DoLayout {position content {context editor} {w {}}} {
 				set key  [lindex $node 1]
 				set data [lindex $node 2]
 
-				Mark $w $key
+				$w mark set $key cur left
 				InsertMove $context $position $w $level $key $data
 				set Vars(last:$position) $key
 			}
@@ -1221,7 +1186,7 @@ proc DoLayout {position content {context editor} {w {}}} {
 				set key  [lindex $node 1]
 				set data [lindex $node 2]
 
-				Mark $w $key
+				$w mark set $key cur left
 				InsertDiagram $context $position $w $level $key $data
 			}
 
@@ -1232,68 +1197,39 @@ proc DoLayout {position content {context editor} {w {}}} {
 					set stm [lindex $node 2]
 
 					if {$Vars(result:$position) != $resultList} {
-						if {[string length $Vars(last:$position)]} {
-							$w mark gravity $Vars(last:$position) left
-						}
+						set last $Vars(last:$position)
+						if {[string length $last]} { $w mark gravity $last left }
 						$w mark gravity m-0 left
 						$w mark set cur m-0
-						set newline ""
-						if {$Vars(old-editor)} {
-							set line [lindex [split [$w index cur] .] 0]
-							$w delete cur end
-							if {[lindex [split [$w index cur] .] 0] < $line} {
-								# NOTE: the old text editor has a severe bug:
-								# If the char after <pos1> is a newline, the command
-								# '<text> delete <pos1> <pos2>' will also delete one
-								# newline before <pos1>. We have to catch this case.
-								set newline \n
-							}
-						} else {
-							$w delete cur end
-						}
+						$w delete cur end
 						set variant [::scidb::game::query $position variant]
 						set result [::browser::makeResult {*}[lrange $resultList 0 end-1] $variant]
 						if {[llength $result]} {
 							lassign $result result reason
-							if {$Options(spacing:paragraph)} {
-								$w insert cur \n\n
-							} else {
-								$w insert cur \n
-							}
+							$w insert cur [expr {$Options(spacing:paragraph) ? "\n\n" : "\n"}]
+							set space ""
 							if {[string length $result]} {
+								set space " "
 								$w insert cur $result result
 							}
 							if {[string length $reason]} {
-								if {[string length $result]} { $w insert cur " " }
-								$w insert cur "($reason)"
+								$w insert cur "$space($reason)"
 							}
-						} elseif {!$Vars(steadymarks)} {
-							# NOTE: We need a blind character between two mark because
-							# the editor is shuffling consecutive marks.
- 							$w insert cur "\u200b"
 						}
 						$w mark gravity m-0 right
-						$w insert m-0 $newline ;# bugfix for old editor
-						if {[string length $Vars(last:$position)]} {
-							$w mark gravity $Vars(last:$position) right
-						}
+						if {[string length $last]} { $w mark gravity $last right }
 						set Vars(result:$position) $resultList
 					}
 					$w mark gravity m-0 right
 					$w mark set cur m-0
-					set Vars(lastrow:$position) [lindex [split [$w index end] .] 0]
+					set Vars(lastrow:$position) [$w lineno end]
 				} elseif {[$w get cur-1c] eq "\n"} {
 					$w delete cur-1c end
-				}
-
-				if {$Vars(old-editor)} {
-					$w configure -state disabled
 				}
 			}
 
 			merge {
-				$w tag delete merge
-				$w tag configure merge -background [::colors::lookup pgn,background:merge]
+				$w tag remove h:merge begin end
 				set ranges {}
 				foreach {start end} [lindex $node 1] {
 					set ismove [expr {$start == $end}]
@@ -1305,7 +1241,7 @@ proc DoLayout {position content {context editor} {w {}}} {
 					set start [$w index $start]
 					set end [$w index $end]
 
-					if {[lindex [split $start "."] 1] ne "1"} {
+					if {[$w compare "$start linestart" != begin]} {
 						while {[$w compare $start < $end] && [string is space [$w get $start]]} {
 							set start [$w index $start+1c]
 						}
@@ -1316,27 +1252,26 @@ proc DoLayout {position content {context editor} {w {}}} {
 
 					if {!$ismove} {
 						lassign [scan $end "%u.%u"] line col
-						set end [expr {$line + 1}].0
+						set end [expr {$line + 1}].begin
 					}
 
 					lappend ranges $start $end
 				}
 				$w tag add merge {*}$ranges
-				$w tag raise merge
 			}
 		}
 	}
 
-	catch { $w tag raise symbol }
-	catch { $w tag raise symbolb }
+	# delete all the temporary marks
+	$w mark unset indent:start main:start cur:start my:start cur
 
 	after idle [namespace code UpdateButtons]
 
 	if {[llength $content] > 1} {
 		if {[info exists env(SCIDB_PGN_DUMP)]} {
 			puts "==============================================="
-			# puts [$w dump -all -command [namespace code [list Dump $w]] 1.0 end]
-			puts [$w dump -text -mark -command [namespace code [list Dump $w]] 1.0 end]
+			# puts [$w dump -all -command [namespace code [list Dump $w]] begin end]
+			puts [$w dump -text -mark -command [namespace code [list Dump $w]] begin end]
 			puts "==============================================="
 		}
 		if {[info exists env(SCIDB_PGN_INSPECT)]} {
@@ -1356,19 +1291,16 @@ proc DoLayout {position content {context editor} {w {}}} {
 proc Indent {context w level from to} {
 	variable ::pgn::${context}::Options
 
-	if {$level > 0} {
-		if {$Options(style:column)} {
-			if {[incr level -1] == 0} { return }
-		}
+	if {$level > 0 && (!$Options(style:column) || [incr level -1] > 0)} {
 		set level [expr {min($level, $Options(indent:max))}]
 		$w tag add indent$level $from $to
+		$w tag add variation $from $to
 	}
 }
 
 
 proc ProcessGoto {position key succKey} {
 	variable Vars
-	variable ::pgn::editor::Colors
 
 	if {[llength $Vars(tags:$position)] == 0} { return }
 
@@ -1379,38 +1311,22 @@ proc ProcessGoto {position key succKey} {
 
 	if {$Vars(current:$position) ne $key} {
 		::scidb::game::variation unfold
-		foreach k $Vars(next:$position) {
-			$w tag configure $k -background [::colors::lookup $Colors(background)] {*}[MoveForeground $k]
-		}
-		set Vars(next:$position) [::scidb::game::next keys $position]
+		$w tag remove h:next begin end
+		$w tag remove h:curr begin end
+		$w tag add h:curr {*}[FindRange $w $key]
 		if {$Vars(active:$position) eq $key} { $w configure -cursor {} }
-		if {[llength $Vars(previous:$position)]} {
-			$w tag configure $Vars(previous:$position) \
-				-background [::colors::lookup $Colors(background)] \
-				{*}[MoveForeground $Vars(previous:$position)] \
-				;
-		}
-		$w tag configure $key \
-			-background [::colors::lookup $Colors(background:current)] \
-			-foreground black \
-			{*}$Vars(indentbackground) \
-			;
 		set Vars(current:$position) $key
 		set Vars(successor:$position) $succKey
 		if {[llength $Vars(previous:$position)]} {
 			See $position $key $succKey
 			if {$Vars(active:$position) eq $Vars(previous:$position)} {
-				EnterMove $position $Vars(previous:$position)
+				EnterMove $w $Vars(previous:$position)
 			}
 		}
-		foreach k $Vars(next:$position) {
-			$w tag configure $k \
-				-background [::colors::lookup $Colors(background:nextmove)] \
-				-foreground black \
-				{*}$Vars(indentbackground) \
-				;
+		set Vars(previous:$position) $key
+		foreach k [::scidb::game::next keys $position] {
+			$w tag add h:next {*}[FindRange $w $k]
 		}
-		set Vars(previous:$position) $Vars(current:$position)
 		[namespace parent]::board::updateMarks [::scidb::game::query marks]
 		if {$position < 9} { ::annotation::update $key }
 	} elseif {$Vars(dirty:$position)} {
@@ -1425,10 +1341,10 @@ proc UpdateHeader {context position w data} {
 	variable Vars
 
 	if {!$Vars(virgin:$position)} {
-		$w delete 1.0 m-start
+		$w delete begin m-start
 	}
 
-	$w mark set cur 1.0
+	$w mark set cur begin
 
 	if {$Options(show:opening) || $position < 9} {
 		set idn 0
@@ -1451,14 +1367,14 @@ proc UpdateHeader {context position w data} {
 		switch $variant {
 			Normal {
 				foreach line [::browser::makeOpeningLines [list $idn $pos $eco $opg]] {
-					set tags {}
-					lassign $line content tags
-					if {$tags eq "figurine"} {
-						set tags figurineb
+					set tag {}
+					lassign $line content tag
+					if {$tag eq "figurine"} {
+						set tag figurineb
 					} else {
-						lappend tags opening
+						lappend tag opening
 					}
-					$w insert cur $content $tags
+					$w insert cur $content $tag
 				}
 			}
 			Suicide - Giveaway - Losers {
@@ -1468,13 +1384,11 @@ proc UpdateHeader {context position w data} {
 				$w insert cur $::mc::VariantName($variant) opening
 			}
 		}
-	} elseif {$Vars(old-editor)} {
-		while {[$w count -lines 1.0 end] > 1 && [$w get 1.0] == "\n"} {
-			$w delete 1.0
-		}
+
+		$w insert cur "\n"
 	} else {
-		while {![$w isempty] > 1 && [$w get 1.0] == "\n"} {
-			$w delete 1.0
+		while {![$w isempty] && [$w get begin] == "\n"} {
+			$w delete begin
 		}
 	}
 
@@ -1482,8 +1396,7 @@ proc UpdateHeader {context position w data} {
 	$w mark gravity m-start left
 
 	if {$Vars(virgin:$position)} {
-		$w mark set m-0 cur
-		$w mark gravity m-0 right
+		$w mark set m-0 cur right
 		$w mark set cur m-0
 	}
 
@@ -1496,20 +1409,10 @@ proc InsertMove {context position w level key data} {
 	variable ::pgn::editor::Options
 	variable Vars
 
-	if {[llength $data] == 0} {
-		if {!$Vars(steadymarks)} {
-			# NOTE: We need a blind character between each mark because
-			# the editor is shuffling consecutive marks.
-			if {$level == 0} { set main main } else { set main variation }
-			$w insert cur "\u200b" $main
-		}
-	}
-
 	set havePly 0
 	set prefixAnnotation {}
 	set suffixAnnotation {}
 	set textualAnnotation {}
-	if {$level == 0} { set main main } else { set main variation }
 
 	foreach node $data {
 		switch [lindex $node 0] {
@@ -1518,15 +1421,14 @@ proc InsertMove {context position w level key data} {
 				if {$lvl <= $Options(indent:max)} {
 					set space "\n"
 				} elseif {$lvl + 1 == $Options(indent:max)} {
-					if {$Options(style:column)} { set space "\n" } else { set space " " }
+					set space [expr {$Options(style:column) ? "\n" : " "}]
 				} elseif {	$Options(indent:max) == 0
-							&& (	$Options(style:column)
-								|| ($lvl == 1 && $Options(spacing:paragraph)))} {
+							&& ($Options(style:column) || ($lvl == 1 && $Options(spacing:paragraph)))} {
 					set space "\n"
 				} else {
 					set space " "
 				}
-				$w insert cur $space $main
+				$w insert cur $space
 			}
 
 			space {
@@ -1535,11 +1437,7 @@ proc InsertMove {context position w level key data} {
 				switch $space {
 					")" {
 						if {$level != 1 || !$Options(spacing:paragraph)} {
-							$w insert cur "\u00a0)" {variation bracket}
-						} elseif {!$Vars(steadymarks)} {
-							# NOTE: We need a blind character between each mark because
-							# the editor is shuffling consecutive marks.
-							$w insert cur "\u200b" $main
+							$w insert cur "\u00a0)" m:bracket
 						}
 					}
 
@@ -1551,60 +1449,29 @@ proc InsertMove {context position w level key data} {
 					}
 
 					"s" {
-						if {[$w compare cur != 1.0]} {
+						if {[$w compare cur != begin]} {
 							$w insert cur "\n"
 						}
 					}
 
-					" " { $w insert cur " " $main }
+					" " { $w insert cur " " }
 
 					"]" {
 						if {$count == $number && $level > $Options(indent:max)} {
-							$w insert cur "]" {variation bracket}
-						} elseif {!$Vars(steadymarks)} {
-							# NOTE: We need a blind character between each marks because
-							# the editor is shuffling consecutive marks.
- 							$w insert cur "\u200b" {variation bracket}
+							$w insert cur "]" m:bracket
 						}
 					}
 
 					"+" - "*" {
-						variable ::pgn::editor::Colors
-						set enterCmd [namespace code [list EnterPlus $w]]
-						set leaveCmd [namespace code [list LeavePlus $w]]
-						set foldCmd [namespace code [list ToggleFold $w $key 0]]
-						$w insert cur " " variation
+						$w insert cur " "
 						if {[::font::truetypeSupport?]} {
-							set myKey unfold:$key
-							$w insert cur "+" [list variation circled $myKey]
-							$w tag bind $myKey <ButtonPress-1> $foldCmd
-							$w tag bind $myKey <Any-Enter> [namespace code [list EnterPlus $w]]
-							$w tag bind $myKey <Any-Leave> [namespace code [list LeavePlus $w]]
-						} elseif ($Vars(old-editor)) {
-							set img $w.[string map {. :} $key]
-							tk::label $img \
-								-background [::colors::lookup $Colors(background)] \
-								-borderwidth 0 \
-								-padx 0 \
-								-pady 0 \
-								-image $icon::12x12::expand \
-								;
-							$w window create cur -align center -window $img
-							bind $img <Any-Enter> $enterCmd
-							bind $img <Any-Leave> $leaveCmd
-							bind $img <ButtonPress-1> $foldCmd
+							$w insert cur "+" {m:expand circled}
 						} else {
 							set img [$w image create cur -align center -image $icon::12x12::expand]
-							$w image bind $img <Any-Enter> $enterCmd
-							$w image bind $img <Any-Leave> $leaveCmd
-							$w image bind $img <ButtonPress-1> $foldCmd
+							$w tag add cur-1i m:expand
 						}
 						if {$space eq "*" && ($level != 1 || !$Options(spacing:paragraph))} {
-							$w insert cur "\u00a0)" {variation bracket}
-						} elseif {!$Vars(steadymarks)} {
-							# NOTE: We need a blind character between each mark because
-							# the editor is shuffling consecutive marks.
-							$w insert cur "\u200b" $main
+							$w insert cur "\u00a0)" m:bracket
 						}
 					}
 
@@ -1612,34 +1479,28 @@ proc InsertMove {context position w level key data} {
 						variable cursor::collapse
 
 						if {[info exists collapse]} {
-							set tag fold:$key
 							if {$space eq "\["} {
 								if {$count == $number && $level > $Options(indent:max)} {
-									$w insert cur "\[" [list variation bracket $tag]
+									$w insert cur "\[" {m:bracket m:fold}
 								}
 								# TODO "-"
 								if {$number ne "-"} { set txt "($number)" } else { set txt "\u2022" }
-								$w insert cur "$txt " [list variation $tag numbering]
+								$w insert cur "$txt " {m:fold m:numbering}
 							} elseif {$level != 1 || !$Options(spacing:paragraph)} {
-								$w insert cur "(\u00a0" [list variation $tag bracket]
+								$w insert cur "(\u00a0" {m:fold m:bracket}
 							} else {
 								set txt [format "(%c) " [expr {96 + $number}]]
-								$w insert cur $txt [list variation $tag numbering]
-							}
-							if {$position < 9} {
-								$w tag bind $tag <Any-Enter> +[namespace code [list EnterBracket $w $key]]
-								$w tag bind $tag <Any-Leave> +[namespace code [list LeaveBracket $w]]
-								$w tag bind $tag <ButtonPress-1> [namespace code [list ToggleFold $w $key 1]]
+								$w insert cur $txt {m:fold m:numbering}
 							}
 						} elseif {$space eq "\["} {
 							if {$count == $number && $level > $Options(indent:max)} {
-								$w insert cur "\[" {variation bracket}
+								$w insert cur "\[" m:bracket
 							}
 							# TODO "-"
 							if {$number ne "-"} { set number "($number)" } else { set number "\u2022" }
-							$w insert cur "$number " {variation numbering}
+							$w insert cur "$number " m:numbering
 						} else {
-							$w insert cur "(\u00a0" {variation bracket}
+							$w insert cur "(\u00a0" m:bracket
 						}
 					}
 				}
@@ -1670,32 +1531,25 @@ proc InsertMove {context position w level key data} {
 			states {
 				set states [lindex $node 1]
 				if {[string match *3* $states]} {
-					$w insert cur " " $main
-					$w insert cur "3\u00d7" [list $main state threefold]
+					$w insert cur " "
+					$w insert cur "3\u00d7" {state threefold}
 				}
 				if {[string match *f* $states]} {
-					$w insert cur " " $main
-					$w insert cur "50" [list $main state fifty]
+					$w insert cur " "
+					$w insert cur "50" {state fifty}
 				}
 			}
 
 			marks {
 				set hasMarks [lindex $node 1]
 				if {$hasMarks} {
-					if {$havePly} { $w insert cur " " $main }
-					set tag marks:$key
-					$w insert cur "\u27f8" [list $main marks $tag]
-					if {$position < 9} {
-						$w tag bind $tag <Any-Enter> +[namespace code [list EnterMark $w $tag $key]]
-						$w tag bind $tag <Any-Leave> +[namespace code [list LeaveMark $w $tag]]
-						$w tag bind $tag <ButtonPress-1> \
-							[namespace code [list openMarksPalette $position $key]]
-					}
+					if {$havePly} { $w insert cur " " }
+					$w insert cur "\u27f8" m:marks
 				}
 			}
 
 			comment {
-				set startPos [$w index cur]
+				$w mark set cur:start cur left
 				set type [lindex $node 1]
 				if {$type eq "finally"} {
 					PrintMoveInfo $position $w $level $key [lindex $node 2]
@@ -1703,7 +1557,7 @@ proc InsertMove {context position w level key data} {
 					PrintComment $position $w $level $key $type [lindex $node 2]
 				}
 				if {$level == 0 && !($Options(style:column))} {
-					$w tag add indent1 $startPos cur
+					$w tag add indent1 cur:start cur
 				}
 			}
 		}
@@ -1721,12 +1575,11 @@ proc InsertDiagram {context position w level key data} {
 	variable Vars
 
 	set color white
-	if {$level == 0} { set main main } else { set main variation }
 
 	foreach entry $data {
 		switch [lindex $entry 0] {
 			color { set color [lindex $entry 1] }
-			break { $w insert cur \n $main }
+			break { $w insert cur "\n" }
 
 			board {
 				set linespace [font metrics [$w cget -font] -linespace]
@@ -1742,25 +1595,26 @@ proc InsertDiagram {context position w level key data} {
 				set board [lindex $entry 1]
 				set index 0
 				set key [string map {d m} $key]
-				set img $w.[string map {. :} $key]
-				board::diagram::new $img $size -bordersize $borderSize
+				set emb $w.[string map {. :} $key]
+				board::diagram::new $emb $size -bordersize $borderSize
 				if {2*$pady < $alignment} {
-					board::diagram::alignBoard $img [::colors::lookup $Colors(background)] 
+					board::diagram::alignBoard $emb [::colors::lookup $Colors(background)] 
 				}
-				if {$color eq "black"} { ::board::diagram::rotate $img }
-				::board::diagram::update $img $board
-				::board::diagram::bind $img <Button-1> [namespace code [list editAnnotation $position $key]]
-				::board::diagram::bind $img <Button-3> [namespace code [list PopupMenu $w $position]]
-				::board::diagram::bind $img <Button-4> [string map [list %W $w] [bind $w <Button-4>]]
-				::board::diagram::bind $img <Button-4> {+ break }
-				::board::diagram::bind $img <Button-5> [string map [list %W $w] [bind $w <Button-5>]]
-				::board::diagram::bind $img <Button-5> {+ break }
+				if {$color eq "black"} { ::board::diagram::rotate $emb }
+				::board::diagram::update $emb $board
+				::board::diagram::bind $emb <Button-1> [namespace code [list EditAnnotation nag]]
+				::board::diagram::bind $emb <Button-3> [namespace code [list PopupMenu $w $position]]
+				::board::diagram::bind $emb <Button-4> [string map [list %W $w] [bind $w <Button-4>]]
+				::board::diagram::bind $emb <Button-4> {+ break }
+				::board::diagram::bind $emb <Button-5> [string map [list %W $w] [bind $w <Button-5>]]
+				::board::diagram::bind $emb <Button-5> {+ break }
 				$w window create cur \
 					-align center \
-					-window $img \
+					-window $emb \
 					-padx $Options(diagram:padx) \
 					-pady $pady \
 					;
+				$w tag add m:nag cur-1i
 			}
 		}
 	}
@@ -1769,10 +1623,9 @@ proc InsertDiagram {context position w level key data} {
 
 proc PrintMove {context position w level key data annotation} {
 	variable ::pgn::${context}::Options
+	variable Vars
 
 	lassign $data moveNo stm san legal
-
-	if {$level == 0} { set main main } else { set main variation }
 
 	if {$level == 0 && $Options(style:column)} {
 		set text "\t"
@@ -1782,58 +1635,48 @@ proc PrintMove {context position w level key data annotation} {
 			if {$stm eq "black"} { append text "...\t" }
 		} 
 
-		$w insert cur $text main
+		$w insert cur $text
 
 		if {[llength $annotation]} {
 			PrintNumericalAnnotation $context $position $w $level $key $annotation 1 1
-			$w insert cur "\u2006" main
+			$w insert cur "\u2006"
 		}
 	} else {
 		if {[llength $annotation]} {
 			PrintNumericalAnnotation $context $position $w $level $key $annotation 1 1
-			$w insert cur "\u2006" $main
+			$w insert cur "\u2006"
 		}
 
 		if {$moveNo} {
-			set myTags [list $key $main]
-			$w insert cur $moveNo $myTags
 			set text "."
 			if {$stm eq "black"} { append text ".." }
-			$w insert cur $text $myTags
+			$w insert cur ${moveNo}${text} m:move
 		}
 	}
 
-	if {$legal || $level == 0} { set illegal {} } else { set illegal illegal }
-	if {$level == 0 && $Options(weight:mainline) eq "bold"} { set t figurineb } else { set t figurine }
+	set illegal [expr {$legal || $level == 0 ? "" : "illegal"}]
+	set t [expr {$level == 0 && $Options(weight:mainline) eq "bold" ? "figurineb" : "figurine"}]
 
 	foreach {text tag} [::font::splitMoves $san $t] {
-		$w insert cur $text [list $key $main {*}$tag {*}$illegal]
-	}
-
-	if {$position < 9} {
-		$w tag bind $key <Any-Enter> [namespace code [list EnterMove $position $key %s]]
-		$w tag bind $key <Any-Leave> [namespace code [list LeaveMove $position $key]]
-		$w tag bind $key <ButtonPress-1> [namespace code [list GotoMove $position $key]]
-		$w tag bind $key <ButtonPress-2> [namespace code [list ShowPosition $position $w $key %s]]
-		$w tag bind $key <ButtonRelease-2> [namespace code [list HidePosition $position $w]]
-		$w tag bind $key <Any-Button> [namespace code [list HidePosition $position $w]]
+		$w insert cur $text [list m:move {*}$tag {*}$illegal]
 	}
 
 	if {!$legal} {
-		$w insert cur "\u26A1" [list $key illegal] ;# alternatives: u26A0, u2716
-		if {$position < 9} {
-			$w tag bind illegal <ButtonPress-1> [namespace code [list GotoMove $position $key]]
-		}
+		$w insert cur "\u26A1" {m:move m:illegal} ;# alternatives: u26A0, u2716
 	}
 }
 
 
-proc ShowPosition {position w key state} {
+proc ShowPosition {w state} {
+	variabls Vars
+
+	set position $Vars(position)
+	set key [FindKey $w move]
 	::browser::showPosition $w $position [[namespace parent]::board::rotated?] $key $state
 }
 
 
-proc HidePosition {position w} {
+proc HidePosition {w} {
 	variable Vars
 
 	set Vars(diagram:show) 0
@@ -1844,14 +1687,13 @@ proc HidePosition {position w} {
 
 
 proc PrintComment {position w level key pos data} {
-	set startPos {}
+	set startPos 0
 	set underline 0
 	set flags 0
 	set count 0
 	set needSpace 0
 	set lastChar ""
 	set paragraph 0
-	set keyTag comment:$key:$pos
 
 	foreach entry [::scidb::misc::xml toList $data] {
 		lassign $entry lang comment
@@ -1861,69 +1703,44 @@ proc PrintComment {position w level key pos data} {
 			$w insert cur " \u2726 "
 			set needSpace 0
 		}
-		set langTag $keyTag:$lang
 		foreach pair $comment {
 			lassign $pair code text
 			set text [string map {"<brace/>" "\{"} $text]
 			if {$needSpace} {
 				if {![string is space -strict [string index $text 0]]} {
-					$w insert cur " " $langTag
+					$w insert cur " " $lang
 				}
 				set needSpace 0
 			}
 			set lastChar [string index $text end]
 			switch -- $code {
 				sym {
-					if {[llength $startPos] == 0} { set startPos [$w index cur] }
-					if {$flags & 1} { set fig figurineb } else { set fig figurine }
-					$w insert cur [string map $::figurines::pieceMap $text] [list $fig $langTag]
+					if {$startPos == 0} { $w mark set my:start cur left; set startPos 1 }
+					set tag [expr {$flags & 1 ? "figurineb" : "figurine"}]
+					$w insert cur [string map $::figurines::pieceMap $text] $tag
 				}
 				nag {
-					if {[llength $startPos] == 0} { set startPos [$w index cur] }
+					if {$startPos == 0} { $w mark set my:start cur left; set startPos 1 }
 					lassign [::font::splitAnnotation $text] value sym tag
-					set nagTag nag$text
+					set tags {}
 					if {$tag eq "symbol"} {
-						if {$flags & 1} { set tag symbolb }
+						if {$flags & 1} { set tags symbolb }
 					} else {
-						if {$flags & 1} { set tag codeb } else { set tag code }
+						set tags [expr {$flags & 1 ? "codeb" : "code"}]
 					}
-					lappend tag $langTag $nagTag
+					lappend tags nag$text
 					set sym [::font::mapNagToUtfSymbol $sym]
 					if {[string is integer $sym]} { set sym "{\$$sym}" }
-					$w insert cur [::font::mapNagToUtfSymbol $sym] $tag
+					$w insert cur [::font::mapNagToUtfSymbol $sym] $tags
 					incr count
 				}
 				emo {
-					if {[llength $startPos] == 0} { set startPos [$w index cur] }
+					if {$startPos == 0} { $w mark set my:start cur left; set startPos 1 }
 					set emotion [::emoticons::lookupEmotion $text]
 					if {[string length $emotion]} {
-						variable ::pgn::editor::Colors
-						variable Vars
-						set editCmd [namespace code [list EditComment $position $key $pos $lang]]
-						set enterCmd [list ::tooltip::show $w $::emoticons::mc::Tooltip($emotion)]
-						set leaveCmd [list ::tooltip::hide]
-						if {$Vars(old-editor)} {
-							variable EmoticonCounter
-							set img $w.emoticon_[incr EmoticonCounter]
-							tk::label $img \
-								-background [::colors::lookup $Colors(background)] \
-								-height [font metrics [$w cget -font] -linespace] \
-								-borderwidth 0 \
-								-padx 0 \
-								-pady 0 \
-								-image $::emoticons::icon($emotion) \
-								;
-							$w window create cur -align center -window $img
-							bind $img <ButtonPress-1> $editCmd
-							bind $img <Enter> $enterCmd
-							bind $img <Leave> $leaveCmd
-						} else {
-							set img [$w image create cur -align center -image $::emoticons::icon($emotion)]
-							$w image bind $img <ButtonPress-1> $editCmd
-							$w image bind $img <Enter> $enterCmd
-							$w image bind $img <Leave> $leaveCmd
-						}
-						$w insert cur "\ufeff" $langTag
+						set img [$w image create cur -align center -image $::emoticons::icon($emotion)]
+						$w tag add cur-1i t:emo:$emotion
+						$w insert cur "\ufeff"
 					} else {
 						switch $flags {
 							0 { set tag {} }
@@ -1931,19 +1748,19 @@ proc PrintComment {position w level key pos data} {
 							2 { set tag italic }
 							3 { set tag bold-italic }
 						}
-						$w insert cur $text [list $langTag $tag]
+						$w insert cur $text $tag
 					}
 				}
 				str {
-					if {[llength $startPos] == 0} { set startPos [$w index cur] }
-					set tags $langTag
+					if {$startPos == 0} { $w mark set my:start cur left; set startPos 1 }
+					set tags {}
 					switch $flags {
 						1 { lappend tags bold }
 						2 { lappend tags italic }
 						3 { lappend tags bold-italic }
 					}
 					if {$underline} { lappend tags underline }
-					$w insert cur $text $tags
+					$w insert cur $text {*}$tags
 				}
 				+bold			{ incr flags +1 }
 				-bold			{ incr flags -1 }
@@ -1954,16 +1771,11 @@ proc PrintComment {position w level key pos data} {
 			}
 		}
 
-		if {[llength $startPos]} {
-			$w tag add comment $startPos cur
-			if {$position < 9} {
-				$w tag bind $langTag <Enter> [namespace code [list EnterComment $w $key:$pos:$lang]]
-				$w tag bind $langTag <Leave> \
-					[namespace code [list LeaveComment $w $position $key:$pos:$lang]]
-				$w tag bind $langTag <ButtonPress-1> \
-					[namespace code [list EditComment $position $key $pos $lang]]
-			}
-			set startPos {}
+		if {$startPos} {
+			$w tag add m:comment my:start cur
+			$w tag add lang:$lang my:start cur
+			$w tag add pos:$pos my:start cur
+			set startPos 0
 		}
 
 		if {![string is space -strict $lastChar]} {
@@ -1977,31 +1789,23 @@ proc PrintMoveInfo {position w level key data} {
 	set underline 0
 	set flags 0
 	set count 0
-	set keyTag info:$key
 	set moveInfo [lindex [::scidb::misc::xml toList $data] 0 1]
-	if {$level == 0} { set main main } else { set main variation }
 
 	foreach pair $moveInfo {
 		lassign $pair code text
 		switch -- $code {
 			str {
-				set k 0
 				while {$k < [string length $text]} {
 					set n [string first ";" $text $k]
 					if {$n == -1} { set n [string length $text] }
-					if {$k > 0} { $w insert cur " \u2726 " $main }
+					set space [expr {$k ? " \u2726 " : ""}]
 					switch $flags {
 						0 { set tag {} }
 						1 { set tag bold }
 						2 { set tag italic }
 						3 { set tag bold-italic }
 					}
-					$w insert cur [string range $text $k [expr {$n - 1}]] [list $main info $keyTag $tag]
-					if {$position < 9} {
-						$w tag bind $keyTag <Enter> [namespace code [list EnterInfo $w $key]]
-						$w tag bind $keyTag <Leave> [namespace code [list LeaveInfo $w $position $key]]
-						$w tag bind $keyTag <ButtonPress-1> [namespace code [list EditInfo $w $position $key]]
-					}
+					$w insert cur ${space}[string range $text $k [expr {$n - 1}]] [list m:info {*}$tag]
 					set k [incr n]
 				}
 			}
@@ -2017,130 +1821,104 @@ proc PrintMoveInfo {position w level key data} {
 
 
 proc PrintNumericalAnnotation {context position w level key nags isPrefix afterPly} {
-	variable ::pgn::${context}::Options
-
-	set annotation [::font::splitAnnotation $nags]
-	set pos [$w index cur]
-	set keyTag nag:$key
+	$w mark set my:start cur left
 	set prevSym -1
-	set count 0
+	set firstSym 1
 
-	foreach {value nag tag} $annotation {
+	foreach {value nag tag} [::font::splitAnnotation $nags] {
+		set space ""
 		if {$tag eq "symbol"} {
 			if {$level == 0} { set tag symbolb }
 			set sym 1
 		} else {
 			set sym 0
 		}
-		set nagTag $keyTag:[incr count]
 		set c [string index $nag 0]
 		if {[string is alpha $c] && [string is ascii $c]} {
-			if {$isPrefix || $afterPly || $prevSym >= 0} {
-				$w insert cur " "
-			}
+			if {$isPrefix || $afterPly || $prevSym >= 0} { set space " " }
 			set prevSym 2
 		} elseif {$value <= 6} {
-			if {$count > 1} { $w insert cur "\u2005" }
+			if {!$firstSym} { set space "\u2005" }
 			set prevSym 1
 			set needSpace 1
 		} elseif {$value == 155 || $value == 156} {
-			if {$count > 1 || $value > 6} { $w insert cur "\u2005" }
-			if {$isPrefix || $afterPly} { $w insert cur "\u2005" }
+			if {!$firstSym || $value > 6} { set space "\u2005" }
+			if {$isPrefix || $afterPly} { set space "\u2005" }
 			set prevSym $sym
 		} elseif {!$sym && !$isPrefix} {
-			$w insert cur "\u2005"
+			set space "\u2005"
 			set prevSym $sym
-		} elseif {$count > 1 || $value > 6} {
-			$w insert cur "\u2005"
+		} elseif {!$firstSym || $value > 6} {
+			set space "\u2005"
 		}
-		if {[string length $nag]} {
-			$w insert cur $nag [list nag$value $nagTag {*}$tag]
-			if {$position < 9} {
-				$w tag bind $nagTag <Enter> [namespace code [list EnterAnnotation $w $nagTag]]
-				$w tag bind $nagTag <Leave> [namespace code [list LeaveAnnotation $w $nagTag]]
-				$w tag bind $nagTag <ButtonPress-1> [namespace code [list editAnnotation $position $key]]
-			}
-		}
-		set prefix 0
+		$w insert cur ${space}${nag} [list t:nag:$value {*}$tag]
+		set isPrefix 0
 		set afterPly 0
+		set firstSym 0
 	}
 
+	$w tag add m:nag my:start cur
 	if {$isPrefix && $prevSym == 2} { $w insert cur " " }
-	if {$level == 0} { set main main } else { set main variation }
-	$w tag add $main $pos cur
-	$w tag add nag $pos cur
 }
 
 
 proc PrintTextualAnnotation {position w level key nags {needSpace 0}} {
-	set pos [$w index cur]
-	set keyTag nagtext:$key
-	set count 0
-
-	if {$needSpace} { $w insert cur " " }
-#	if {![string match *.0 $pos]} { $w insert cur " " }
+	set space [expr {$needSpace ? " " : ""}]
+	set text ""
 
 	foreach nag $nags {
-		if {$count > 0} { $w insert cur " \u2726 " }
-		set nagTag $keyTag:[incr count]
-		set txt $::annotation::mc::Nag([string range $nag 1 end])
-		$w insert cur $txt $nagTag
-		if {$position < 9} {
-			$w tag bind $nagTag <Enter> [namespace code [list EnterAnnotation $w $nagTag]]
-			$w tag bind $nagTag <Leave> [namespace code [list LeaveAnnotation $w $nagTag]]
-			$w tag bind $nagTag <ButtonPress-1> [namespace code [list editAnnotation $position $key]]
-		}
+		append text $space $::annotation::mc::Nag([string range $nag 1 end])
+		set space " \u2726 "
 	}
 
-	if {$level == 0} { set main main } else { set main variation }
-	$w tag add $main $pos cur
-	$w tag add nag $pos cur
-	$w tag add nagtext $pos cur
+	$w insert cur $text m:nagtext
 }
 
 
-proc EditComment {position key pos lang} {
+proc EditComment {w} {
 	variable Vars
 
-	if {[llength $key]} {
-		GotoMove $position $key
-	}
-
-	set w $Vars(pgn:$position)
+	set position $Vars(position)
+	set key [FindKey $w comment]
+	GotoMove $position $key
+	set tags [$w tag names m:comment.current.first]
+	regexp {lang:([a-z]+)} $tags -> lang
+	regexp {pos:([a-z]+)} $tags -> pos
 	set Vars(edit:comment) 1
 	editComment $pos $position $key $lang
 	set Vars(edit:comment) 0
-	LeaveComment $w $position $key:$pos:$lang
+	LeaveComment $w
 }
 
 
-proc Mark {w key} {
-	variable Vars
-
-#	$w mark unset $key
-	$w mark set $key cur
-	$w mark gravity $key left
+proc EnterNag {w} {
+	$w tag add h:nag m:nag.current.first m:nag.current.last
 }
 
 
-proc EnterMove {position key {state 0}} {
-	variable ::pgn::editor::Colors
+proc LeaveNag {w} {
+	$w tag remove h:nag begin end
+}
+
+
+proc EnterMove {w key {state 0}} {
 	variable ::util::lockMask
 	variable Vars
 
-	set w $Vars(pgn:$position)
-
-	if {$Vars(current:$position) ne $key} {
-		$w tag configure $key \
-			-background [::colors::lookup $Colors(hilite:move)] \
-			-foreground black \
-			{*}$Vars(indentbackground) \
-			;
-		# after cancel $Vars(after:$position)
-		# set Vars(after:$position) [after 75 [namespace code [list ChangeCursor $position hand2]]]
+	if {$key eq "current"} {
+		set range {m:move.current.first m:move.current.last}
+		set key [FindKey $w move]
+	} else {
+		set range [FindRange $w $key]
 	}
+	$w tag add h:move {*}$range
 
+	set position $Vars(position)
 	set Vars(active:$position) $key
+
+   # this seems to be a performance problem
+	# after cancel $Vars(after:$position)
+	# set Vars(after:$position) [after 75 [namespace code [list ChangeCursor $position hand2]]]
 
 	if {$Vars(diagram:show)} {
 		set Vars(diagram:state) $state
@@ -2150,62 +1928,48 @@ proc EnterMove {position key {state 0}} {
 }
 
 
-proc LeaveMove {position key} {
-	variable ::pgn::editor::Colors
+proc LeaveMove {w} {
 	variable Vars
 
-	set Vars(active:$position) {}
+	set position $Vars(position)
+	if {$Vars(current:$position) ne $Vars(active:$position)} {
+		$w tag remove h:move begin end
 
-	if {$Vars(current:$position) ne $key} {
-		if {$key in $Vars(next:$position)} {
-			set background $Colors(background:nextmove)
-		} else {
-			set background $Colors(background)
-		}
-		set background [::colors::lookup $background]
-		$Vars(pgn:$position) tag configure $key -background $background {*}[MoveForeground $key]
+   	# this seems to be a performance problem
 		# after cancel $Vars(after:$position)
 		# set Vars(after:$position) [after 75 [namespace code [list ChangeCursor $position {}]]]
 	}
+	set Vars(active:$position) {}
 }
 
 
-proc ChangeCursor {position cursor} {
-	variable Vars
+#proc ChangeCursor {position cursor} {
+#	variable Vars
+#
+#	if {[winfo exists $Vars(pgn:$position)]} {
+#		set Vars(after:$position) {}
+#		$Vars(pgn:$position) configure -cursor $cursor
+#	}
+#}
 
-	if {[winfo exists $Vars(pgn:$position)]} {
-		set Vars(after:$position) {}
-		$Vars(pgn:$position) configure -cursor $cursor
-	}
-}
 
-
-proc EnterMark {w tag key} {
-	variable ::pgn::editor::Colors
-	variable Vars
-
-	$w tag configure $tag -background [::colors::lookup $Colors(hilite:move)] {*}$Vars(indentbackground)
-	::tooltip::show $w [string map {",," "," " " "\n"} [::scidb::game::query marks $key]]
+proc EnterMark {w} {
+	$w tag add h:mark m:mark.current.first m:mark.current.last
+	::tooltip::show $w [string map {",," "," " " "\n"} [::scidb::game::query marks [FindKey $w mark]]]
 }
 
 
 proc LeaveMark {w tag} {
-	variable ::pgn::editor::Colors
-
-	$w tag configure $tag -background [::colors::lookup $Colors(background)]
+	$w tag remove h:mark begin end
 	::tooltip::hide
 }
 
 
-proc EnterBracket {w key} {
+proc EnterBracket {w} {
 	variable CursorCounter
 
-	if {[::scidb::game::variation folded? $key]} {
-		set cursor $cursor::expand
-	} else {
-		set cursor $cursor::collapse
-	}
-
+	set mode [expr {[::scidb::game::variation folded? [FindKey $w fold]] ? "expand" : "collapse"}]
+	set cursor [set cursor::$mode]
 	incr CursorCounter
 	after 75 [namespace code [list SetCursor $w $CursorCounter $cursor]]
 }
@@ -2235,10 +1999,10 @@ proc LeavePlus {w} {
 }
 
 
-proc ToggleFold {w key triggerEnter} {
-	::scidb::game::variation fold $key toggle
+proc ToggleFold {w mode triggerEnter} {
+	::scidb::game::variation fold [FindKey $w $mode] toggle
 	if {$triggerEnter} {
-		EnterBracket $w $key	;# toggle cursor
+		EnterBracket $w ;# toggle cursor
 	}
 }
 
@@ -2272,71 +2036,58 @@ proc UnsetCursor {w counter} {
 }
 
 
-proc GotoMove {position key} {
+proc GotoMove {{position {}} {key {}}} {
 	variable Vars
 
+	if {[llength $position] == 0} { set position $Vars(position) }
+	if {[llength $key] == 0} { set key $Vars(active:$position) }
+
 	set Vars(see:$position) 0
-	if {[llength $key] == 0} { set key [::scidb::game::query start] }
 	::scidb::game::moveto $position $key
 	set Vars(see:$position) 1
 }
 
 
-proc EnterComment {w key} {
-	variable ::pgn::editor::Colors
-	$w tag configure comment:$key -foreground [::colors::lookup $Colors(hilite:comment)]
+proc EnterComment {w} {
+	$w tag add h:comment m:comment.current.first m:comment.current.last
 }
 
 
-proc LeaveComment {w position key} {
-	variable ::pgn::editor::Colors
+proc LeaveComment {w} {
 	variable Vars
 
 	if {!$Vars(edit:comment)} {
-		$w tag configure comment:$key -foreground [::colors::lookup $Colors(foreground:comment)]
+		$w tag remove h:comment begin end
 	}
 }
 
 
-proc EnterInfo {w key} {
-	variable ::pgn::editor::Colors
-	$w tag configure info:$key -foreground [::colors::lookup $Colors(hilite:info)]
+proc EnterInfo {w} {
+	$w tag add h:info m:info.current.first m:info.current.last
 }
 
 
-proc LeaveInfo {w position key} {
-	variable ::pgn::editor::Colors
+proc LeaveInfo {w} {
 	variable Vars
 
 	if {!$Vars(edit:comment)} {
-		$w tag configure info:$key -foreground [::colors::lookup $Colors(foreground:info)]
+		$w tag remove h:info begin end
 	}
 }
 
 
-proc EnterAnnotation {w tag} {
-	variable ::pgn::editor::Colors
-	variable Vars
-
-	$w tag configure $tag -background [::colors::lookup $Colors(hilite:move)] {*}$Vars(indentbackground)
-}
-
-
-proc LeaveAnnotation {w tag} {
-	variable ::pgn::editor::Colors
-	$w tag configure $tag -background [::colors::lookup $Colors(background)]
-}
-
-
-proc EditInfo {w position {key {}}} {
+proc EditInfo {w} {
 	variable Vars
 
 	if {[string length $key]} {
+		set position $Vars(position)
+		if {[string length $Vars(active:$position)]} {
+			set key [FindKey $w info]
+		} else {
+			set key [::scidb::game::query start]
+		}
 		GotoMove $position $key
-	} else {
-		set key $Vars(current:$position)
 	}
-
 	::beta::notYetImplemented $w moveinfo
 }
 
@@ -2355,26 +2106,45 @@ proc Undo {action} {
 }
 
 
+proc SetupBindings {w position} {
+	$w tag bind m:nag     <Enter> [namespace code [list EnterNag $w]]
+	$w tag bind m:nag     <Leave> [namespace code [list LeaveNag $w]]
+	$w tag bind m:move    <Enter> [namespace code [list EnterMove $w current %s]]
+	$w tag bind m:move    <Leave> [namespace code [list LeaveMove $w]]
+	$w tag bind m:mark    <Enter> [namespace code [list EnterMark $w]]
+	$w tag bind m:mark    <Leave> [namespace code [list LeaveMark $w]]
+	$w tag bind m:info    <Enter> [namespace code [list EnterInfo $w]]
+	$w tag bind m:info    <Leave> [namespace code [list LeaveInfo $w]]
+	$w tag bind m:comment <Enter> [namespace code [list EnterComment $w]]
+	$w tag bind m:comment <Leave> [namespace code [list LeaveComment $w]]
+	$w tag bind m:expand  <Enter> [namespace code [list EnterPlus $w]]
+	$w tag bind m:expand  <Leave> [namespace code [list LeavePlus $w]]
+	$w tag bind m:fold    <Enter> [namespace code [list EnterBracket $w]]
+	$w tag bind m:fold    <Leave> [namespace code [list LeaveBracket $w]]
+
+	if {$position < 9} {
+		$w tag bind m:move    <ButtonPress-1>   [namespace code [list GotoMove]]
+		$w tag bind m:move    <ButtonPress-2>   [namespace code [list ShowPosition $w %s]]
+		$w tag bind m:move    <ButtonRelease-2> [namespace code [list HidePosition $w]]
+		$w tag bind m:illegal <ButtonPress-1>   [namespace code [list GotoMove]]
+		$w tag bind m:nag     <ButtonPress-1>   [namespace code [list EditAnnotation nag]]
+		$w tag bind m:mark    <ButtonPress-1>   [namespace code [list OpenMarksPalette]]
+		$w tag bind m:info    <ButtonPress-1>   [namespace code [list EditInfo $w]]
+		$w tag bind m:move    <Any-Button>      [namespace code [list HidePosition $w]]
+		$w tag bind m:comment <ButtonPress-1>   [namespace code [list EditComment $w]]
+		$w tag bind m:expand  <ButtonPress-1>   [namespace code [list ToggleFold $w expand 0]]
+		$w tag bind m:fold    <ButtonPress-1>   [namespace code [list ToggleFold $w fold 1]]
+	}
+}
+
+
 proc ResetGame {w position {tags {}}} {
 	variable Vars
 	variable ::pgn::editor::Colors
 
-	if {$Vars(old-editor)} {
-		$w configure -state normal
-	}
-
-	if {[catch { $w clear }]} {
-		$w delete 1.0 end
-		# delete superfluous tags, this will speed up the text widget
-		$w tag delete {*}[$w tag names]
-		$w edit reset
-	}
-
-	if {$Vars(old-editor)} {
-		$w configure -state disabled
-	}
-
+	$w clear
 	::pgn::setup::configureText [::pgn::setup::getPath $w]
+	SetupBindings $w $position
 
 	if {$position <= 9} {
 		::gamebar::activate $Vars(gamebar) $position
@@ -2384,7 +2154,6 @@ proc ResetGame {w position {tags {}}} {
 	set Vars(current:$position) {}
 	set Vars(successor:$position) {}
 	set Vars(previous:$position) {}
-	set Vars(next:$position) {}
 	set Vars(active:$position) {}
 	set Vars(lang:set:$position) {}
 	set Vars(see:$position) 1
@@ -2738,7 +2507,7 @@ proc PopupMenu {parent position} {
 			-image $::icon::16x16::annotation(all) \
 			-compound left \
 			-state $state \
-			-command [namespace code [list editAnnotation $position]] \
+			-command [namespace code EditAnnotation] \
 			-accel "$::mc::Key(Ctrl)-[set [namespace parent]::board::mc::Accel(edit-annotation)]" \
 			;
 		set accel "$::mc::Key(Ctrl)-$::mc::Key(Shift)-"
@@ -2780,7 +2549,7 @@ proc PopupMenu {parent position} {
 			-image $::icon::16x16::clock \
 			-compound left \
 			-state $state \
-			-command [namespace code [list EditInfo $parent $position]] \
+			-command [namespace code [list EditInfo $parent]] \
 			;
 		if {[::marks::open?]} { set state disabled } else { set state normal }
 		$menu add command \
@@ -3342,13 +3111,7 @@ proc LanguageChanged {} {
 			::scidb::game::refresh $position
 		} else {
 			set w $Vars(pgn:$position)
-			if {$Vars(old-editor)} {
-				$w configure -state normal
-			}
 			UpdateHeader editor $position $w $Vars(header:$position)
-			if {$Vars(old-editor)} {
-				$w configure -state disabled
-			}
 		}
 	}
 
