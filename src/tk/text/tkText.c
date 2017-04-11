@@ -21,6 +21,9 @@
 #include "tkTextUndo.h"
 #include "tkTextTagSet.h"
 #include "tkBitField.h"
+#if TCL_MAJOR_VERSION > 8 || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION >= 7)
+#include "tkFont.h"
+#endif
 #include "tkAlloc.h"
 #include <stdlib.h>
 #include <ctype.h>
@@ -6255,11 +6258,9 @@ TextInsertCmd(
 
 		    for (i = 0; i < numTags; ++i) {
 			tagPtr = TkTextCreateTag(textPtr, Tcl_GetString(tagNamePtrs[i]), NULL);
-#if !TK_TEXT_DONT_USE_BITFIELDS
 			if (tagPtr->index >= TkTextTagSetSize(tagInfoPtr)) {
 			    tagInfoPtr = TkTextTagSetResize(NULL, sharedTextPtr->tagInfoSize);
 			}
-#endif
 			tagInfoPtr = TkTextTagSetAddToThis(tagInfoPtr, tagPtr->index);
 		    }
 		}
@@ -8063,11 +8064,8 @@ ObjIsEqual(
     return true;
 }
 
-/*
- * NOTE: This function should be moved to tkFont.c. I will not do this,
- * because I won't touch any file not belonging to text widget implementation.
- * So the Tk Team has to do this.
- */
+#if TCL_MAJOR_VERSION < 8 || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION < 7)
+
 static Tcl_Obj *
 GetFontAttrs(
     TkText *textPtr,
@@ -8149,6 +8147,8 @@ GetFontAttrs(
     return objPtr;
 }
 
+#endif /* TCL_MAJOR_VERSION < 8 || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION < 7) */
+
 void
 TkTextInspectOptions(
     TkText *textPtr,
@@ -8164,18 +8164,22 @@ TkTextInspectOptions(
     Tcl_DStringTrunc(result, 0);
 
     if ((objPtr = Tk_GetOptionInfo(interp, (char *) recordPtr, optionTable, NULL, textPtr->tkwin))) {
-	Tcl_Obj **objv;
+#if TCL_MAJOR_VERSION < 8 || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION < 7)
 	Tcl_Obj *font = NULL;   /* shut up compiler */
 	Tcl_Obj *actual = NULL; /* shut up compiler */
+#endif /* TCL_MAJOR_VERSION < 8 || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION < 7) */
+	Tcl_Obj **objv;
 	int objc = 0;
 	int i;
 
 	Tcl_ListObjGetElements(interp, objPtr, &objc, &objv);
 
+#if TCL_MAJOR_VERSION < 8 || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION < 7)
 	if (resolveFontNames) {
 	    Tcl_IncrRefCount(font = Tcl_NewStringObj("font", -1));
 	    Tcl_IncrRefCount(actual = Tcl_NewStringObj("actual", -1));
 	}
+#endif /* TCL_MAJOR_VERSION < 8 || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION < 7) */
 
 	for (i = 0; i < objc; ++i) {
 	    Tcl_Obj **argv;
@@ -8219,6 +8223,7 @@ TkTextInspectOptions(
 			if (len < 7
 				|| strncmp(s, "Tk", 2) != 0
 				|| strncmp(s + len - 4, "Font", 4) != 0) {
+#if TCL_MAJOR_VERSION < 8 || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION < 7)
 			    Tcl_Obj *args[3];
 			    Tcl_Obj *result;
 
@@ -8233,6 +8238,14 @@ TkTextInspectOptions(
 			    if ((result = GetFontAttrs(textPtr, 3, args))) {
 				value = result;
 			    }
+#else /* TCL_MAJOR_VERSION < 8 || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION < 7) */
+			    Tk_Font tkfont = Tk_AllocFontFromObj(interp, textPtr->tkwin, val);
+
+			    if (tkfont) {
+				Tcl_IncrRefCount(value = TkFontGetDescription(tkfont));
+				Tk_FreeFont(tkfont);
+			    }
+#endif /* TCL_MAJOR_VERSION < 8 || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION < 7) */
 			}
 		    }
 
@@ -8245,10 +8258,12 @@ TkTextInspectOptions(
 	    }
 	}
 
+#if TCL_MAJOR_VERSION < 8 || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION < 7)
 	if (resolveFontNames) {
 	    Tcl_DecrRefCount(actual);
 	    Tcl_DecrRefCount(font);
 	}
+#endif /* TCL_MAJOR_VERSION < 8 || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION < 7) */
     }
 }
 
@@ -11472,7 +11487,7 @@ TkpTesttextCmd(
     return TCL_OK;
 }
 
-#endif /* TCL_MAJOR_VERSION > 8 || TCL_MINOR_VERSION > 5 */
+#endif /* TK_MAJOR_VERSION > 8 || (TK_MAJOR_VERSION == 8 && TK_MINOR_VERSION > 5) */
 
 #ifndef NDEBUG
 /*
@@ -11665,7 +11680,7 @@ extern void		TkTextIndexSave(TkTextIndex *indexPtr);
 # if TK_MAJOR_VERSION == 8 && TK_MINOR_VERSION < 7 && TCL_UTF_MAX <= 4
 extern int		TkUtfToUniChar(const char *src, int *chPtr);
 # endif
-#endif /* __STDC_VERSION__ >= 199901L */
+#endif /* TK_C99_INLINE_SUPPORT */
 
 
 /*

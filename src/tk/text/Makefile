@@ -19,7 +19,7 @@ INCL_POST     = -I../tcl$(TCL_VERSION) -I../tk$(TCL_VERSION)
 INCLUDE       = $(INCL_PRE) $(INCL_POST)
 ALL_INCLUDE   = $(INCL_PRE) $(TCL_INCLUDE) $(TK_INCLUDE) $(INCL_POST)
 CFLAGS       += $(OPTIMIZE) $(PROFILING) $(C_DEBUG) $(SYS_CFLAGS)
-CFLAGS       += -std=c99 -Wno-maybe-uninitialized # avoid unnecessary warnings
+CFLAGS       += -std=c99
 #CFLAGS      += -DTK_LAYOUT_WITH_BASE_CHUNKS=0 -DTK_DRAW_IN_CONTEXT=0
 EXTRA_CFLAGS += -DMODULE_SCOPE="" -g -O2 #-DNDEBUG=1
 
