@@ -1324,8 +1324,10 @@ proc ProcessGoto {position key succKey} {
 			}
 		}
 		set Vars(previous:$position) $key
-		foreach k [::scidb::game::next keys $position] {
-			$w tag add h:next {*}[FindRange $w $k]
+		if {[llength [set nextKeys [::scidb::game::next keys $position]]] > 1} {
+			foreach k [::scidb::game::next keys $position] {
+				$w tag add h:next {*}[FindRange $w $k]
+			}
 		}
 		[namespace parent]::board::updateMarks [::scidb::game::query marks]
 		if {$position < 9} { ::annotation::update $key }
@@ -1467,8 +1469,11 @@ proc InsertMove {context position w level key data} {
 						if {[::font::truetypeSupport?]} {
 							$w insert cur "+" {m:expand circled}
 						} else {
-							set img [$w image create cur -align center -image $icon::12x12::expand]
-							$w tag add cur-1i m:expand
+							set img [$w image create cur \
+								-align center \
+								-image $icon::12x12::expand \
+								-tags m:expand \
+							]
 						}
 						if {$space eq "*" && ($level != 1 || !$Options(spacing:paragraph))} {
 							$w insert cur "\u00a0)" m:bracket
@@ -1613,8 +1618,8 @@ proc InsertDiagram {context position w level key data} {
 					-window $emb \
 					-padx $Options(diagram:padx) \
 					-pady $pady \
+					-tags m:nag \
 					;
-				$w tag add m:nag cur-1i
 			}
 		}
 	}
@@ -1738,8 +1743,11 @@ proc PrintComment {position w level key pos data} {
 					if {$startPos == 0} { $w mark set my:start cur left; set startPos 1 }
 					set emotion [::emoticons::lookupEmotion $text]
 					if {[string length $emotion]} {
-						set img [$w image create cur -align center -image $::emoticons::icon($emotion)]
-						$w tag add cur-1i t:emo:$emotion
+						set img [$w image create cur  \
+							-align center \
+							-image $::emoticons::icon($emotion) \
+							-tags t:emo:$emotion \
+						]
 						$w insert cur "\ufeff"
 					} else {
 						switch $flags {
@@ -1795,6 +1803,7 @@ proc PrintMoveInfo {position w level key data} {
 		lassign $pair code text
 		switch -- $code {
 			str {
+				set k 0
 				while {$k < [string length $text]} {
 					set n [string first ";" $text $k]
 					if {$n == -1} { set n [string length $text] }
@@ -2076,7 +2085,7 @@ proc LeaveInfo {w} {
 }
 
 
-proc EditInfo {w} {
+proc EditInfo {w {key {}}} {
 	variable Vars
 
 	if {[string length $key]} {
@@ -2129,7 +2138,7 @@ proc SetupBindings {w position} {
 		$w tag bind m:illegal <ButtonPress-1>   [namespace code [list GotoMove]]
 		$w tag bind m:nag     <ButtonPress-1>   [namespace code [list EditAnnotation nag]]
 		$w tag bind m:mark    <ButtonPress-1>   [namespace code [list OpenMarksPalette]]
-		$w tag bind m:info    <ButtonPress-1>   [namespace code [list EditInfo $w]]
+		$w tag bind m:info    <ButtonPress-1>   [namespace code [list EditInfo $w this]]
 		$w tag bind m:move    <Any-Button>      [namespace code [list HidePosition $w]]
 		$w tag bind m:comment <ButtonPress-1>   [namespace code [list EditComment $w]]
 		$w tag bind m:expand  <ButtonPress-1>   [namespace code [list ToggleFold $w expand 0]]
