@@ -1117,17 +1117,17 @@ proc DoLayout {position content {context editor} {w {}}} {
 				set level [lindex $node 3]
 				if {$level == 0} {
 					$w mark set main:start cur
-				} elseif {$level == 1} {
+				} elseif {$level == 1 && [$w mark exists main:start]} {
 					$w tag add main main:start cur
 				}
 				set startVar($level) [lindex $node 2]
 			}
 
 			end {
-				if {$level == 0} {
-					$w tag add main main:start cur
-				} elseif {$level == 1} {
+				if {$level == 1} {
 					$w mark set main:start cur
+				} elseif {$level == 0 && [$w mark exists main:start]} {
+					$w tag add main main:start cur
 				}
 				set level [lindex $node 3]
 				Indent $context $w $level $startVar($level) cur
