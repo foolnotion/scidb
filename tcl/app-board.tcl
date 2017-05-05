@@ -886,6 +886,7 @@ proc GotFocus {w} {
 	if {[::application::pgn::empty?]} { focus [::tk_focusNext $w] }
 	set Vars(select-var-is-pending) 0
 	::variation::hide 0
+	::move::enable
 }
 
 
