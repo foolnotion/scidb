@@ -34,6 +34,7 @@
 #include "u_zstream.h"
 
 #include "m_exception.h"
+#include "m_assert.h"
 
 #include <tcl.h>
 #include <tk.h>
@@ -53,6 +54,17 @@
 # include "si3_encoder.h"
 # include "tcl_progress.h"
 #endif
+
+
+static app::Application *m_app = nullptr;
+
+
+/*
+ * Call this C function in case of failed assertions.
+ */
+
+extern "C" void assertionFailed(char const *message);
+void assertionFailed(char const *message) { M_ASSERT(!message); }
 
 
 static int
@@ -88,7 +100,7 @@ init(Tcl_Interp* ti)
 
 #endif
 
-		tcl::app::setup(new app::Application);
+		tcl::app::setup(m_app = new app::Application);
 
 #ifdef __WIN32__
 		return Tcl_FSEvalFileEx(tcl::interp(), "scidb.gui", 0);
