@@ -110,9 +110,8 @@ static const Tk_OptionSpec tagOptionSpecs[] = {
     {TK_OPTION_COLOR, "-overstrikecolor", NULL, NULL,
 	NULL, -1, Tk_Offset(TkTextTag, overstrikeColor), TK_OPTION_NULL_OK, 0, 0},
 #if SUPPORT_DEPRECATED_TAG_OPTIONS
-    {TK_OPTION_COLOR, "-overstrikefg", NULL, NULL,
-	NULL, -1, Tk_Offset(TkTextTag, overstrikeColor), TK_OPTION_NULL_OK, 0,
-	TK_TEXT_DEPRECATED_OVERSTRIKE_FG},
+    {TK_OPTION_SYNONYM, "-overstrikefg", NULL, NULL,
+	NULL, 0, -1, TK_OPTION_NULL_OK, "-overstrikecolor", TK_TEXT_DEPRECATED_OVERSTRIKE_FG},
 #endif /* SUPPORT_DEPRECATED_TAG_OPTIONS */
     {TK_OPTION_STRING, "-relief", NULL, NULL,
 	NULL, Tk_Offset(TkTextTag, reliefPtr), -1, TK_OPTION_NULL_OK, 0, 0},
@@ -139,9 +138,8 @@ static const Tk_OptionSpec tagOptionSpecs[] = {
     {TK_OPTION_COLOR, "-underlinecolor", NULL, NULL,
 	NULL, -1, Tk_Offset(TkTextTag, underlineColor), TK_OPTION_NULL_OK, 0, 0},
 #if SUPPORT_DEPRECATED_TAG_OPTIONS
-    {TK_OPTION_COLOR, "-underlinefg", NULL, NULL,
-	NULL, -1, Tk_Offset(TkTextTag, underlineColor), TK_OPTION_NULL_OK, 0,
-	TK_TEXT_DEPRECATED_UNDERLINE_FG},
+    {TK_OPTION_SYNONYM, "-underlinefg", NULL, NULL,
+	NULL, 0, -1, TK_OPTION_NULL_OK, "-underlinecolor", 0},
 #endif /* SUPPORT_DEPRECATED_TAG_OPTIONS */
     {TK_OPTION_BOOLEAN, "-undo", NULL, NULL,
 	"1", -1, Tk_Offset(TkTextTag, undo), 0, 0, 0},
@@ -176,6 +174,7 @@ static void		GrabSelection(TkText *textPtr, const TkTextTag *tagPtr, bool add, b
  */
 
 static void UndoChangeTagPriorityPerform(TkSharedText *, TkTextUndoInfo *, TkTextUndoInfo *, bool);
+static void UndoChangeTagPriorityDestroy(TkSharedText *, TkTextUndoToken *, bool);
 static Tcl_Obj *UndoChangeTagPriorityGetCommand(const TkSharedText *, const TkTextUndoToken *);
 static Tcl_Obj *UndoChangeTagPriorityInspect(const TkSharedText *, const TkTextUndoToken *);
 
@@ -183,7 +182,7 @@ static const Tk_UndoType undoTokenTagPriorityType = {
     TK_TEXT_UNDO_TAG_PRIORITY,		/* action */
     UndoChangeTagPriorityGetCommand,	/* commandProc */
     UndoChangeTagPriorityPerform,	/* undoProc */
-    NULL,				/* destroyProc */
+    UndoChangeTagPriorityDestroy,	/* destroyProc */
     NULL,				/* rangeProc */
     UndoChangeTagPriorityInspect	/* inspectProc */
 };
@@ -192,7 +191,7 @@ static const Tk_UndoType redoTokenTagPriorityType = {
     TK_TEXT_REDO_TAG_PRIORITY,		/* action */
     UndoChangeTagPriorityGetCommand,	/* commandProc */
     UndoChangeTagPriorityPerform,	/* undoProc */
-    NULL,				/* destroyProc */
+    UndoChangeTagPriorityDestroy,	/* destroyProc */
     NULL,				/* rangeProc */
     UndoChangeTagPriorityInspect	/* inspectProc */
 };
@@ -247,6 +246,16 @@ UndoChangeTagPriorityPerform(
 	token->priority = oldPriority;
     }
 }
+
+static void
+UndoChangeTagPriorityDestroy(
+    TkSharedText *sharedTextPtr,
+    TkTextUndoToken *item,
+    bool isRedo)
+{
+    UndoTokenTagPriority *token = (UndoTokenTagPriority *) item;
+    TkTextReleaseTag(sharedTextPtr, token->tagPtr, NULL);
+}
 
 /*
  *--------------------------------------------------------------
@@ -276,13 +285,13 @@ TkTextTagCmd(
 {
     static const char *const tagOptionStrings[] = {
 	"add", "bind", "cget", "clear", "configure", "delete", "findnext", "findprev",
-	"getrange", "lower", "names", "nextrange", "prevrange", "raise", "ranges",
-	"remove", NULL
+	"getrange", "lower", "names", "nextrange", "prevrange", "priority", "raise",
+	"ranges", "remove", NULL
     };
     enum tagOptions {
 	TAG_ADD, TAG_BIND, TAG_CGET, TAG_CLEAR, TAG_CONFIGURE, TAG_DELETE, TAG_FINDNEXT, TAG_FINDPREV,
-	TAG_GETRANGE, TAG_LOWER, TAG_NAMES, TAG_NEXTRANGE, TAG_PREVRANGE, TAG_RAISE, TAG_RANGES,
-	TAG_REMOVE
+	TAG_GETRANGE, TAG_LOWER, TAG_NAMES, TAG_NEXTRANGE, TAG_PREVRANGE, TAG_PRIORITY, TAG_RAISE,
+	TAG_RANGES, TAG_REMOVE
     };
     int optionIndex, i;
     TkTextTag *tagPtr;
@@ -744,6 +753,16 @@ TkTextTagCmd(
 	}
 	break;
     }
+    case TAG_PRIORITY:
+	if (objc != 4) {
+	    Tcl_WrongNumArgs(interp, 3, objv, "tagName");
+	    return TCL_ERROR;
+	}
+	if (!(tagPtr = FindTag(interp, textPtr, objv[3]))) {
+	    return TCL_ERROR;
+	}
+	Tcl_SetObjResult(interp, Tcl_NewIntObj(tagPtr->priority));
+	break;
     case TAG_RAISE: {
 	TkTextTag *tagPtr2;
 	unsigned newPriority;
@@ -948,7 +967,7 @@ TkTextClearSelection(
 TkTextTag *
 TkTextClearTags(
     TkSharedText *sharedTextPtr,
-    TkText *textPtr,
+    TkText *textPtr,			/* can be NULL */
     const TkTextIndex *indexPtr1,
     const TkTextIndex *indexPtr2,
     bool discardSelection)
@@ -1440,6 +1459,7 @@ void
 TkTextReplaceTags(
     TkText *textPtr,		/* Info about overall window. */
     TkTextSegment *segPtr,	/* Setup tag info of this segment. */
+    bool undoable,		/* Replacement of tags is undoable? */
     Tcl_Obj *tagListPtr)	/* List of tags. */
 {
     TkTextTagSet *newTagInfoPtr;
@@ -1448,6 +1468,7 @@ TkTextReplaceTags(
     TkTextTag *tagArrBuf[TK_TEXT_SET_MAX_BIT_SIZE];
     TkTextTag **tagArrPtr = tagArrBuf;
     TkTextTag *tagPtr;
+    TkTextUndoStack undoStack;
     TkTextIndex index[2];
     bool altered = false;
     bool anyChanges = false;
@@ -1479,6 +1500,11 @@ TkTextReplaceTags(
 
     for (k = 0; k < objn; ++k) {
 	newTagInfoPtr = TkTextTagSetAddToThis(newTagInfoPtr, tagArrPtr[k]->index);
+    }
+
+    undoStack = sharedTextPtr->undoStack;
+    if (!undoable) {
+	sharedTextPtr->undoStack = NULL; /* disable undo temporarily */
     }
 
     /*
@@ -1521,6 +1547,7 @@ TkTextReplaceTags(
 
     TkTextTagSetDecrRefCount(oldTagInfoPtr);
     TkTextTagSetDecrRefCount(newTagInfoPtr);
+    sharedTextPtr->undoStack = undoStack;
 
     if (anyChanges) {
 	/* still need to trigger enter/leave events on tags that have changed */
@@ -2155,9 +2182,7 @@ TkTextReleaseTag(
      */
 
     if (tagPtr->textPtr) {
-	if (--((TkText *) tagPtr->textPtr)->refCount == 0) {
-	    free(tagPtr->textPtr);
-	}
+	TkTextDecrRefCountAndTestIfDestroyed((TkText *) tagPtr->textPtr);
 	tagPtr->textPtr = NULL;
     }
 
@@ -2396,7 +2421,7 @@ TagSortProc(
     const void *first,
     const void *second)		/* Elements to be compared. */
 {
-    return (*(TkTextTag **) first)->priority - (*(TkTextTag **) second)->priority;
+    return (int) (*(TkTextTag **) first)->priority - (int) (*(TkTextTag **) second)->priority;
 }
 
 void
@@ -2854,6 +2879,7 @@ TkTextBindProc(
 	if (sharedTextPtr->tagBindingTable && !TkTextTagSetIsEmpty(textPtr->curTagInfoPtr)) {
 	    TagBindEvent(textPtr, eventPtr, textPtr->curTagInfoPtr, sharedTextPtr->tagEpoch);
 	    if (textPtr->flags & DESTROYED) {
+		TkTextDecrRefCountAndTestIfDestroyed(textPtr);
 		return;
 	    }
 	}
@@ -2871,7 +2897,7 @@ TkTextBindProc(
 
   done:
     textPtr->dontRepick = dontRepick;
-    TkTextReleaseIfDestroyed(textPtr);
+    TkTextDecrRefCountAndTestIfDestroyed(textPtr);
 }
 
 /*
@@ -3083,12 +3109,6 @@ TkTextPickCurrent(
 	    bool movedToLeft;
 	    int sx, sy; /* translation to current scroll position */
 
-	    if (TkTextTagSetSize(leaveTags) < sharedTextPtr->tagInfoSize) {
-		leaveTags = TkTextTagSetResize(leaveTags, sharedTextPtr->tagInfoSize);
-	    }
-	    if (TkTextTagSetSize(enterTags) < sharedTextPtr->tagInfoSize) {
-		enterTags = TkTextTagSetResize(enterTags, sharedTextPtr->tagInfoSize);
-	    }
 
 	    TkTextGetViewOffset(textPtr, &sx, &sy);
 	    movedToLeft = textPtr->pickEvent.xcrossing.x + sx <= lastX;
@@ -3127,19 +3147,35 @@ TkTextPickCurrent(
 	    }
 
 	    if (nextDispChunkPtr != newDispChunkPtr) {
-		do {
-		    const TkTextTagSet *chunkTagInfoPtr;
-
-		    if ((chunkTagInfoPtr = TkTextGetTagSetFromChunk(nextDispChunkPtr))) {
-			leaveTags = TkTextTagSetJoinComplementTo(leaveTags,
-				chunkTagInfoPtr, textPtr->curTagInfoPtr);
-			enterTags = TkTextTagSetJoinComplementTo(enterTags,
-				chunkTagInfoPtr, textPtr->curTagInfoPtr);
+		if (textPtr->curTagInfoPtr != sharedTextPtr->emptyTagInfoPtr) {
+		    /*
+		     * TkTextTagSetJoinComplementTo() requires this:
+		     */
+		    if (TkTextTagSetSize(textPtr->curTagInfoPtr) < sharedTextPtr->tagInfoSize) {
+			textPtr->curTagInfoPtr = TkTextTagSetResize(
+				textPtr->curTagInfoPtr, sharedTextPtr->tagInfoSize);
+		    }
+		    if (TkTextTagSetSize(leaveTags) < sharedTextPtr->tagInfoSize) {
+			leaveTags = TkTextTagSetResize(leaveTags, sharedTextPtr->tagInfoSize);
+		    }
+		    if (TkTextTagSetSize(enterTags) < sharedTextPtr->tagInfoSize) {
+			enterTags = TkTextTagSetResize(enterTags, sharedTextPtr->tagInfoSize);
 		    }
 
-		    nextDispChunkPtr = movedToLeft ?
-			    nextDispChunkPtr->prevPtr : nextDispChunkPtr->nextPtr;
-		} while (nextDispChunkPtr != newDispChunkPtr);
+		    do {
+			const TkTextTagSet *chunkTagInfoPtr;
+
+			if ((chunkTagInfoPtr = TkTextGetTagSetFromChunk(nextDispChunkPtr))) {
+			    leaveTags = TkTextTagSetJoinComplementTo(leaveTags,
+				    chunkTagInfoPtr, textPtr->curTagInfoPtr);
+			    enterTags = TkTextTagSetJoinComplementTo(enterTags,
+				    chunkTagInfoPtr, textPtr->curTagInfoPtr);
+			}
+
+			nextDispChunkPtr = movedToLeft ?
+				nextDispChunkPtr->prevPtr : nextDispChunkPtr->nextPtr;
+		    } while (nextDispChunkPtr != newDispChunkPtr);
+		}
 
 		/* Delete intermediate enter/leave pairs. */
 		leaveTags = TkTextTagSetIntersect(leaveTags, textPtr->curTagInfoPtr);
@@ -3223,7 +3259,7 @@ TkTextPickCurrent(
 
     tagEpoch = sharedTextPtr->tagEpoch;
 
-    if (sharedTextPtr->tagBindingTable && leaveTags != sharedTextPtr->emptyTagInfoPtr) {
+    if (sharedTextPtr->tagBindingTable && !TkTextTagSetIsEmpty(leaveTags)) {
 	/*
 	 * Invoke the binding system with a LeaveNotify event for all of the tags
 	 * that have gone away.
@@ -3263,7 +3299,7 @@ TkTextPickCurrent(
 	    sharedTextPtr->haveToSetCurrentMark = true;
 	}
 
-	if (sharedTextPtr->tagBindingTable && enterTags != sharedTextPtr->emptyTagInfoPtr) {
+	if (sharedTextPtr->tagBindingTable && !TkTextTagSetIsEmpty(enterTags)) {
 	    /*
 	     * Invoke the binding system with a EnterNotify event for all of the tags
 	     * that have just appeared.
@@ -3280,7 +3316,8 @@ TkTextPickCurrent(
 	}
 
 	TkTextTagSetDecrRefCount(textPtr->curTagInfoPtr);
-	TkTextTagSetIncrRefCount(textPtr->curTagInfoPtr = newTagInfoPtr);
+	TkTextTagSetIncrRefCount(textPtr->curTagInfoPtr = TkTextTagSetIsEmpty(newTagInfoPtr) ?
+		sharedTextPtr->emptyTagInfoPtr : newTagInfoPtr);
 
 	TkTextGetViewOffset(textPtr, &sx, &sy);
 	textPtr->lastLineY = newLineY;
@@ -3336,7 +3373,7 @@ TagBindEvent(
 	TkTextTag *tagPtr;
 
 	/*
-	 * Take into account that same tags have been gone in the meanwhile.
+	 * Take into account that some tags have been gone in the meanwhile.
 	 */
 
 	if (i >= maxTags) {

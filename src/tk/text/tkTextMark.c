@@ -46,9 +46,9 @@
  */
 
 static void		InsertUndisplayProc(TkText *textPtr, TkTextDispChunk *chunkPtr);
-static bool		MarkDeleteProc(TkTextBTree tree, TkTextSegment *segPtr, int flags);
-static Tcl_Obj *	MarkInspectProc(const TkSharedText *textPtr, const TkTextSegment *segPtr);
-static void		MarkRestoreProc(TkTextSegment *segPtr);
+static bool		MarkDeleteProc(TkSharedText *sharedTextPtr, TkTextSegment *segPtr, int flags);
+static Tcl_Obj *	MarkInspectProc(const TkSharedText *sharedTextPtr, const TkTextSegment *segPtr);
+static void		MarkRestoreProc(TkSharedText *sharedTextPtr, TkTextSegment *segPtr);
 static void		MarkCheckProc(const TkSharedText *sharedTextPtr, const TkTextSegment *segPtr);
 static int		MarkLayoutProc(const TkTextIndex *indexPtr,
 			    TkTextSegment *segPtr, int offset, int maxX,
@@ -60,7 +60,7 @@ static void		ChangeGravity(TkSharedText *sharedTextPtr, TkText *textPtr,
 			    TkTextSegment *markPtr, const Tk_SegType *newTypePtr,
 			    TkTextUndoInfo *redoInfo);
 static struct TkTextSegment *SetMark(struct TkText *textPtr, const char *name,
-			    const Tk_SegType *typePtr, struct TkTextIndex *indexPtr);
+			    const Tk_SegType *typePtr, TkTextIndex *indexPtr);
 static void		UnsetMark(TkSharedText *sharedTextPtr, TkTextSegment *markPtr,
 			    TkTextUndoInfo *redoInfo);
 static void		ReactivateMark(TkSharedText *sharedTextPtr, TkTextSegment *markPtr);
@@ -329,7 +329,7 @@ UndoToggleGravityDestroy(
 
     if (!reused) {
 	UndoTokenToggleGravity *token = (UndoTokenToggleGravity *) item;
-	MarkDeleteProc(sharedTextPtr->tree, token->markPtr, DELETE_MARKS);
+	MarkDeleteProc(sharedTextPtr, token->markPtr, DELETE_MARKS);
     }
 }
 
@@ -366,7 +366,7 @@ UndoMoveMarkDestroy(
 
     if (!reused) {
 	UndoTokenMoveMark *token = (UndoTokenMoveMark *) item;
-	MarkDeleteProc(sharedTextPtr->tree, token->markPtr, DELETE_MARKS);
+	MarkDeleteProc(sharedTextPtr, token->markPtr, DELETE_MARKS);
     }
 }
 
@@ -432,7 +432,7 @@ UndoSetMarkDestroy(
     assert(!reused);
     assert(!markPtr->body.mark.changePtr);
 
-    MarkDeleteProc(sharedTextPtr->tree, markPtr, DELETE_PRESERVE);
+    MarkDeleteProc(sharedTextPtr, markPtr, DELETE_PRESERVE);
 }
 
 static void
@@ -450,6 +450,7 @@ RedoSetMarkPerform(
 
     if (IS_PRESERVED(markPtr)) {
 	ReactivateMark(sharedTextPtr, markPtr);
+	sharedTextPtr->numMarks += 1;
     }
 
     TkBTreeReInsertSegment(sharedTextPtr, &token->index, markPtr);
@@ -478,7 +479,7 @@ RedoSetMarkDestroy(
 
     assert(!reused);
     assert(!markPtr->body.mark.changePtr);
-    MarkDeleteProc(sharedTextPtr->tree, markPtr, DELETE_MARKS);
+    MarkDeleteProc(sharedTextPtr, markPtr, DELETE_MARKS);
 }
 
 static void
@@ -958,46 +959,56 @@ TkTextFreeMarks(
 {
     Tcl_HashSearch search;
     Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&sharedTextPtr->markTable, &search);
-    TkTextSegment *chainPtr = NULL;
+    TkTextSegment *deletePtr = NULL;
+    TkTextSegment *retainedPtr = NULL;
+    TkTextSegment *markPtr;
 
     for ( ; hPtr; hPtr = Tcl_NextHashEntry(&search)) {
-	TkTextSegment *markPtr = Tcl_GetHashValue(hPtr);
+	markPtr = Tcl_GetHashValue(hPtr);
+
+	assert(markPtr->body.mark.changePtr != (void *) 0xdeadbeef);
+	assert(markPtr->refCount > 0);
 
 	if (!retainPrivateMarks || !TkTextIsPrivateMark(markPtr)) {
-	    MarkDeleteProc(sharedTextPtr->tree, markPtr, DELETE_CLEANUP);
+	    markPtr->nextPtr = deletePtr;
+	    markPtr->prevPtr = NULL;
+	    deletePtr = markPtr;
 	} else {
 	    const char *name = Tcl_GetHashKey(&sharedTextPtr->markTable, hPtr);
 	    char *dup;
 
-	    MarkDeleteProc(sharedTextPtr->tree, markPtr, 0);
-	    markPtr->nextPtr = NULL;
-	    markPtr->prevPtr = NULL;
 	    markPtr->sectionPtr = NULL;
-	    markPtr->nextPtr = chainPtr;
+	    markPtr->prevPtr = NULL;
+	    markPtr->nextPtr = retainedPtr;
 	    dup = malloc(strlen(name) + 1);
 	    markPtr->body.mark.ptr = PTR_TO_INT(strcpy(dup, name));
 	    MAKE_PRESERVED(markPtr);
-	    chainPtr = markPtr;
+	    retainedPtr = markPtr;
 	}
+    }
+
+    markPtr = deletePtr;
+    while (markPtr) {
+	TkTextSegment *nextPtr = markPtr->nextPtr;
+	assert(TkTextIsSpecialMark(markPtr) || markPtr->refCount == 1);
+	MarkDeleteProc(sharedTextPtr, markPtr, DELETE_CLEANUP|TREE_GONE);
+	markPtr = nextPtr;
     }
 
     Tcl_DeleteHashTable(&sharedTextPtr->markTable);
     sharedTextPtr->numMarks = 0;
 
     if (retainPrivateMarks) {
-	TkTextSegment *markPtr;
-
 	Tcl_InitHashTable(&sharedTextPtr->markTable, TCL_STRING_KEYS);
 
-	for (markPtr = chainPtr; markPtr; markPtr = markPtr->nextPtr) {
+	for (markPtr = retainedPtr; markPtr; markPtr = markPtr->nextPtr) {
 	    ReactivateMark(sharedTextPtr, markPtr);
-	    markPtr->refCount += 1;
 	}
     } else {
 	sharedTextPtr->numPrivateMarks = 0;
     }
 
-    return chainPtr;
+    return retainedPtr;
 }
 
 /*
@@ -1149,26 +1160,25 @@ TkTextMakeMark(
 
 TkTextSegment *
 TkTextMakeNewMark(
-    TkText *textPtr,		/* Text widget in which to create mark. */
-    const char *name)		/* Name of this mark. */
+    TkSharedText *sharedTextPtr,	/* Shared text resource. */
+    const char *name)			/* Name of this mark. */
 {
     TkTextSegment *markPtr;
     Tcl_HashEntry *hPtr;
     bool isNew;
 
-    assert(textPtr);
     assert(name);
 
-    hPtr = Tcl_CreateHashEntry(&textPtr->sharedTextPtr->markTable, name, (int *) &isNew);
+    hPtr = Tcl_CreateHashEntry(&sharedTextPtr->markTable, name, (int *) &isNew);
 
     if (!isNew) {
 	return NULL;
     }
 
-    markPtr = MakeMark(textPtr);
+    markPtr = MakeMark(NULL);
     markPtr->body.mark.ptr = PTR_TO_INT(hPtr);
     Tcl_SetHashValue(hPtr, markPtr);
-    textPtr->sharedTextPtr->numMarks += 1;
+    sharedTextPtr->numMarks += 1;
 
     return markPtr;
 }
@@ -1362,7 +1372,7 @@ UnsetMark(
     sharedTextPtr->undoStackEvent = true;
     sharedTextPtr->lastUndoTokenType = -1;
     TkBTreeUnlinkSegment(sharedTextPtr, markPtr);
-    MarkDeleteProc(sharedTextPtr->tree, markPtr, flags);
+    MarkDeleteProc(sharedTextPtr, markPtr, flags);
 }
 
 /*
@@ -1444,7 +1454,8 @@ TriggerWatchCursor(
 	free(tagArrayPtr);
     }
 
-    rc = TkTextTriggerWatchCmd(textPtr, "cursor", idx[0], idx[1], Tcl_DStringValue(&buf), false);
+    rc = TkTextTriggerWatchCmd(textPtr, "cursor", idx[0], idx[1], Tcl_DStringValue(&buf),
+	    NULL, NULL, false);
     Tcl_DStringFree(&buf);
     return rc;
 }
@@ -1656,12 +1667,11 @@ SetMark(
 	    }
 	}
 
-	markPtr = MakeMark(textPtr);
-
 	if (widgetSpecific) {
 	    /*
 	     * This is a special mark.
 	     */
+	    markPtr = MakeMark(textPtr);
 	    if (*name == 'i') { /* "insert" */
 		textPtr->insertMarkPtr = markPtr;
 		markPtr->insertMarkFlag = true;
@@ -1671,11 +1681,12 @@ SetMark(
 	    }
 	    pushUndoToken = false;
 	} else {
+	    markPtr = MakeMark(NULL);
 	    markPtr->body.mark.ptr = PTR_TO_INT(hPtr);
 	    markPtr->normalMarkFlag = true;
 	    Tcl_SetHashValue(hPtr, markPtr);
-	    pushUndoToken = sharedTextPtr->steadyMarks && sharedTextPtr->undoStack;
 	    textPtr->sharedTextPtr->numMarks += 1;
+	    pushUndoToken = sharedTextPtr->steadyMarks && sharedTextPtr->undoStack;
 	}
     } else {
 	const TkTextSegment *segPtr;
@@ -2174,28 +2185,26 @@ MarkInspectProc(
 
 static bool
 MarkDeleteProc(
-    TkTextBTree tree,
+    TkSharedText *sharedTextPtr,/* Handle to shared text resource. */
     TkTextSegment *segPtr,	/* Segment being deleted. */
     int flags)			/* The deletion flags. */
 {
-    TkSharedText *sharedTextPtr;
-
     assert(segPtr->refCount > 0);
 
     if (TkTextIsSpecialMark(segPtr)) {
+	assert(!segPtr->body.mark.changePtr);
 	return false;
     }
 
-    assert(segPtr->refCount > 0);
-
     if (TkTextIsPrivateMark(segPtr)) {
-	if (!(flags & (DELETE_CLEANUP))) {
+	assert(!segPtr->body.mark.changePtr);
+	if (!(flags & DELETE_CLEANUP)) {
 	    return false;
 	}
 	if (--segPtr->refCount == 0) {
-	    if (segPtr->body.mark.ptr) {
+	    DEBUG(segPtr->body.mark.changePtr = (void *) 0xdeadbeef);
+	    if (!(flags & TREE_GONE)) {
 		Tcl_DeleteHashEntry(GET_HPTR(segPtr));
-		segPtr->body.mark.textPtr->sharedTextPtr->numPrivateMarks -= 1;
 	    }
 	    FREE_SEGMENT(segPtr);
 	    DEBUG_ALLOC(tkTextCountDestroySegment++);
@@ -2203,14 +2212,11 @@ MarkDeleteProc(
 	return true;
     }
 
-    if (!(flags & (DELETE_MARKS|DELETE_PRESERVE|DELETE_CLEANUP|TREE_GONE))) {
+    if (!(flags & (DELETE_CLEANUP|DELETE_MARKS|DELETE_PRESERVE|TREE_GONE))) {
 	return false;
     }
 
     assert(segPtr->body.mark.ptr);
-    assert(segPtr->body.mark.textPtr);
-
-    sharedTextPtr = segPtr->body.mark.textPtr->sharedTextPtr;
 
     if (segPtr->body.mark.changePtr) {
 	unsigned index;
@@ -2225,22 +2231,34 @@ MarkDeleteProc(
 	if (IS_PRESERVED(segPtr)) {
 	    free(GET_NAME(segPtr));
 	} else {
-	    sharedTextPtr->numMarks -= 1;
 	    Tcl_DeleteHashEntry(GET_HPTR(segPtr));
+	    sharedTextPtr->numMarks -= 1;
 	}
+	DEBUG(segPtr->body.mark.changePtr = (void *) 0xdeadbeef);
 	FREE_SEGMENT(segPtr);
 	DEBUG_ALLOC(tkTextCountDestroySegment++);
-    } else if ((flags & DELETE_PRESERVE) && !IS_PRESERVED(segPtr)) {
-	Tcl_HashEntry *hPtr;
-	const char *name;
-	unsigned size;
+    } else if (flags & DELETE_PRESERVE) {
+	if (!IS_PRESERVED(segPtr)) {
+	    Tcl_HashEntry *hPtr;
+	    const char *name;
+	    unsigned size;
 
-	name = Tcl_GetHashKey(&sharedTextPtr->markTable, hPtr = GET_HPTR(segPtr));
-	size = strlen(name) + 1;
-	segPtr->body.mark.ptr = PTR_TO_INT(memcpy(malloc(size), name, size));
-	MAKE_PRESERVED(segPtr);
-	Tcl_DeleteHashEntry(hPtr);
-	sharedTextPtr->numMarks -= 1;
+	    name = Tcl_GetHashKey(&sharedTextPtr->markTable, hPtr = GET_HPTR(segPtr));
+	    size = strlen(name) + 1;
+	    segPtr->body.mark.ptr = PTR_TO_INT(memcpy(malloc(size), name, size));
+	    MAKE_PRESERVED(segPtr);
+	    Tcl_DeleteHashEntry(hPtr);
+	    sharedTextPtr->numMarks -= 1;
+	}
+    } else if (flags & DELETE_MARKS) {
+	/*
+	 * This case can only happen with an undo/redo operation. We have nothing
+	 * to do, the mark is still existing.
+	 */
+	assert(!IS_PRESERVED(segPtr));
+	assert(segPtr->sectionPtr); /* still linked? */
+    } else /*if (flags & DELETE_CLEANUP)*/ {
+	assert(!"should not happen");
     }
 
     return true;
@@ -2266,21 +2284,21 @@ MarkDeleteProc(
 
 static void
 MarkRestoreProc(
+    TkSharedText *sharedTextPtr,/* Handle to shared text resource. */
     TkTextSegment *segPtr)	/* Segment to restore. */
 {
     assert(TkTextIsNormalMark(segPtr));
 
     if (IS_PRESERVED(segPtr)) {
-	TkSharedText *sharedTextPtr = segPtr->body.mark.textPtr->sharedTextPtr;
 	Tcl_HashEntry *hPtr;
 	int isNew;
 
 	hPtr = Tcl_CreateHashEntry(&sharedTextPtr->markTable, GET_NAME(segPtr), &isNew);
 	assert(isNew);
 	Tcl_SetHashValue(hPtr, segPtr);
+	sharedTextPtr->numMarks += 1;
 	free(GET_NAME(segPtr));
 	segPtr->body.mark.ptr = PTR_TO_INT(hPtr);
-	sharedTextPtr->numMarks += 1;
     }
 }
 
@@ -2469,6 +2487,97 @@ TkTextDrawBlockCursor(
 /*
  *--------------------------------------------------------------
  *
+ * TkTextGetCursorBbox --
+ *
+ *	This function computes the cursor dimensions.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	None.
+ *
+ *--------------------------------------------------------------
+ */
+
+bool
+TkTextGetCursorBbox(
+    TkText *textPtr,		/* The current text widget. */
+    int *x, int *y,		/* X/Y coordinate. */
+    int *w, int *h)		/* Width/height of cursor. */
+{
+    TkTextIndex index;
+    Tcl_UniChar thisChar;
+    int cursorExtent;
+    int charWidth = -1;
+
+    assert(textPtr);
+    assert(x);
+    assert(y);
+    assert(w);
+    assert(h);
+
+    cursorExtent = MIN(textPtr->padX, textPtr->insertWidth/2);
+    TkTextMarkSegToIndex(textPtr, textPtr->insertMarkPtr, &index);
+
+    if (!TkTextIndexBbox(textPtr, &index, false, x, y, w, h, &charWidth, &thisChar)) {
+	int base, ix, iw;
+
+	/*
+	 * Testing whether the cursor is visible is not as trivial at it seems,
+	 * see this example:
+	 *
+	 * ~~~~~~~~~~~~~~~~
+	 * |   +-----+
+	 * |   |     |
+	 * |~~~|~~~~~|~~~~~
+	 * |   |     |
+	 * | a |     |
+	 * |   |     |
+	 * |   +-----+
+	 *
+	 * At left side we have the visible cursor, then char "a", then a window.
+	 * The region between the tilde bars is the visible screen. The cursor
+	 * is positioned before char "a", and the bbox of char "a" is outside of
+	 * the visible screen, so a simple test with TkTextIndexBbox() at char
+	 * position "a" fails here. Now we have to test with the display line.
+	 */
+
+	if (!TkTextGetDLineInfo(textPtr, &index, false, &ix, y, &iw, h, &base)) {
+	    return false; /* cursor is not visible at all */
+	}
+
+	if (charWidth == -1) {
+	    /* This char is outside of the screen, so use a default. */
+	    charWidth = textPtr->charWidth;
+	}
+    }
+
+    /*
+     * Don't draw the full lengh of a tab, in this case we are drawing
+     * a cursor at the right boundary with a standard width.
+     */
+
+    if (thisChar == '\t') {
+	*x += charWidth;
+	charWidth = MIN(textPtr->charWidth, charWidth);
+	*x -= charWidth;
+    }
+
+    if (textPtr->blockCursorType) {
+	/* NOTE: the block cursor extent is always rounded towards zero. */
+	*w = charWidth + 2*cursorExtent;
+    } else {
+	*w = MIN(textPtr->insertWidth, textPtr->padX + cursorExtent);
+    }
+
+    *x -= cursorExtent;
+    return true;
+}
+
+/*
+ *--------------------------------------------------------------
+ *
  * TkTextGetCursorWidth --
  *
  *	This function computes the cursor dimensions.
@@ -2486,33 +2595,26 @@ unsigned
 TkTextGetCursorWidth(
     TkText *textPtr,		/* The current text widget. */
     int *x,			/* Shift x coordinate, can be NULL. */
-    int *offs)			/* Offset in x-direction, can be NULL. */
+    int *extent)		/* Extent of cursor to left side, can be NULL. */
 {
-    TkTextIndex index;
-    int ix = 0, iy = 0, iw = 0, ih = 0;
-    int charWidth = 0;
+    int width;
+    int cursorExtent = MIN(textPtr->padX, textPtr->insertWidth/2);
 
-    if (offs) {
-	*offs = -(textPtr->insertWidth/2);
+    if (extent) {
+	*extent = -cursorExtent;
     }
 
     if (textPtr->blockCursorType) {
-	TkTextMarkSegToIndex(textPtr, textPtr->insertMarkPtr, &index);
-	TkTextIndexBbox(textPtr, &index, false, &ix, &iy, &iw, &ih, &charWidth);
+	int ix, iy, ih;
 
-	/*
-	 * Don't draw the full lengh of a tab, in this case we are drawing
-	 * a cursor at the right boundary with a standard with.
-	 */
-
-	if (TkTextIndexGetChar(&index) == '\t') {
-	    if (x) { *x += charWidth; }
-	    charWidth = MIN(textPtr->charWidth, charWidth);
-	    if (x) { *x -= charWidth; }
+	if (!TkTextGetCursorBbox(textPtr, &ix, &iy, &width, &ih)) {
+	    return 0; /* cursor is not visible at all */
 	}
+    } else {
+	width = MIN(textPtr->insertWidth, textPtr->padX + cursorExtent);
     }
 
-    return charWidth + textPtr->insertWidth;
+    return width;
 }
 
 /*
@@ -2835,6 +2937,47 @@ TkTextMarkName(
     }
     return Tcl_GetHashKey(&sharedTextPtr->markTable, (Tcl_HashEntry *) markPtr->body.mark.ptr);
 }
+
+/*
+ * ------------------------------------------------------------------------
+ *
+ * TkTextMarkCheckTable --
+ *
+ *	Returns the name of the mark that is the given text segment, or NULL
+ *	if it is unnamed (i.e., a widget-specific mark that isn't "current" or
+ *	"insert").
+ *
+ * Results:
+ *	The name of the mark, or NULL.
+ *
+ * Side effects:
+ *	None.
+ *
+ * ------------------------------------------------------------------------
+ */
+
+#ifdef TK_TEXT_NDEBUG
+
+void
+TkTextMarkCheckTable(
+    TkSharedText *sharedTextPtr)
+{
+    Tcl_HashSearch search;
+    Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&sharedTextPtr->markTable, &search);
+
+    for ( ; hPtr; hPtr = Tcl_NextHashEntry(&search)) {
+	TkTextSegment *markPtr = Tcl_GetHashValue(hPtr);
+
+	if (markPtr->body.mark.changePtr == (void *) 0xdeadbeef) {
+	    Tcl_Panic("TkTextMarkCheckTable: deleted mark in table");
+	}
+	if (!IS_PRESERVED(markPtr) && !markPtr->sectionPtr) {
+	    Tcl_Panic("TkTextMarkCheckTable: unlinked mark in table");
+	}
+    }
+}
+
+#endif /* TK_TEXT_NDEBUG */
 
 /*
  * Local Variables:
