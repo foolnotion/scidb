@@ -77,6 +77,7 @@ tkBitField.o: ../tk8.6/tkIntDecls.h
 tkBitField.o: tkBool.h
 tkBitField.o: tkIntSet.h
 tkBitField.o: tkAlloc.h
+tkBitField.o: ./assert.h
 tkBitField.o: tkBitFieldPriv.h
 tkIntSet.o: tkIntSet.h
 tkIntSet.o: ../tk8.6/tkInt.h
@@ -87,6 +88,7 @@ tkIntSet.o: tkBool.h
 tkIntSet.o: tkBitField.h
 tkIntSet.o: tkAlloc.h
 tkIntSet.o: tkIntSetPriv.h
+tkIntSet.o: ./assert.h
 tkMisc.o: ../tk8.6/tkInt.h
 tkMisc.o: ../tk8.6/tkPort.h
 tkMisc.o: ../tk8.6/tkUnixPort.h
@@ -98,6 +100,7 @@ tkRangeList.o: ../tk8.6/tkUnixPort.h
 tkRangeList.o: ../tk8.6/tkIntDecls.h
 tkRangeList.o: tkBool.h
 tkRangeList.o: tkAlloc.h
+tkRangeList.o: ./assert.h
 tkRangeList.o: tkRangeListPriv.h
 tkTextBTree.o: ../tk8.6/tkInt.h
 tkTextBTree.o: ../tk8.6/tkPort.h
@@ -111,6 +114,7 @@ tkTextBTree.o: tkTextTagSet.h
 tkTextBTree.o: tkBitField.h
 tkTextBTree.o: tkIntSet.h
 tkTextBTree.o: tkAlloc.h
+tkTextBTree.o: ./assert.h
 tkText.o: ../tk8.6/default.h
 tkText.o: ../tk8.6/tkUnixDefault.h
 tkText.o: ../tk8.6/tkInt.h
@@ -124,6 +128,7 @@ tkText.o: tkTextTagSet.h
 tkText.o: tkBitField.h
 tkText.o: tkIntSet.h
 tkText.o: tkAlloc.h
+tkText.o: ./assert.h
 tkText.o: tkTextPriv.h
 tkTextDisp.o: tkText.h
 tkTextDisp.o: tkTextUndo.h
@@ -137,6 +142,7 @@ tkTextDisp.o: tkBitField.h
 tkTextDisp.o: tkIntSet.h
 tkTextDisp.o: tkRangeList.h
 tkTextDisp.o: tkAlloc.h
+tkTextDisp.o: ./assert.h
 tkTextImage.o: ../tk8.6/tkPort.h
 tkTextImage.o: ../tk8.6/tkUnixPort.h
 tkTextImage.o: tkText.h
@@ -148,6 +154,7 @@ tkTextImage.o: tkTextTagSet.h
 tkTextImage.o: tkBitField.h
 tkTextImage.o: tkIntSet.h
 tkTextImage.o: tkAlloc.h
+tkTextImage.o: ./assert.h
 tkTextIndex.o: ../tk8.6/default.h
 tkTextIndex.o: ../tk8.6/tkUnixDefault.h
 tkTextIndex.o: ../tk8.6/tkInt.h
@@ -161,6 +168,7 @@ tkTextIndex.o: tkTextTagSet.h
 tkTextIndex.o: tkBitField.h
 tkTextIndex.o: tkIntSet.h
 tkTextIndex.o: tkAlloc.h
+tkTextIndex.o: ./assert.h
 tkTextLineBreak.o: tkText.h
 tkTextLineBreak.o: tkTextUndo.h
 tkTextLineBreak.o: ../tk8.6/tkInt.h
@@ -168,6 +176,7 @@ tkTextLineBreak.o: ../tk8.6/tkPort.h
 tkTextLineBreak.o: ../tk8.6/tkUnixPort.h
 tkTextLineBreak.o: ../tk8.6/tkIntDecls.h
 tkTextLineBreak.o: tkBool.h
+tkTextLineBreak.o: ./assert.h
 tkTextMark.o: ../tk8.6/tkInt.h
 tkTextMark.o: ../tk8.6/tkPort.h
 tkTextMark.o: ../tk8.6/tkUnixPort.h
@@ -177,6 +186,7 @@ tkTextMark.o: tkTextUndo.h
 tkTextMark.o: tkBool.h
 tkTextMark.o: tkAlloc.h
 tkTextMark.o: ../tk8.6/tk3d.h
+tkTextMark.o: ./assert.h
 tkTextTag.o: ../tk8.6/default.h
 tkTextTag.o: ../tk8.6/tkUnixDefault.h
 tkTextTag.o: ../tk8.6/tkInt.h
@@ -190,6 +200,7 @@ tkTextTag.o: tkTextTagSet.h
 tkTextTag.o: tkBitField.h
 tkTextTag.o: tkIntSet.h
 tkTextTag.o: tkAlloc.h
+tkTextTag.o: ./assert.h
 tkTextTagSet.o: tkTextTagSet.h
 tkTextTagSet.o: ../tk8.6/tkInt.h
 tkTextTagSet.o: ../tk8.6/tkPort.h
@@ -199,6 +210,7 @@ tkTextTagSet.o: tkBitField.h
 tkTextTagSet.o: tkBool.h
 tkTextTagSet.o: tkIntSet.h
 tkTextTagSet.o: tkTextTagSetPriv.h
+tkTextTagSet.o: ./assert.h
 tkTextUndo.o: tkTextUndo.h
 tkTextUndo.o: ../tk8.6/tkInt.h
 tkTextUndo.o: ../tk8.6/tkPort.h
@@ -206,6 +218,7 @@ tkTextUndo.o: ../tk8.6/tkUnixPort.h
 tkTextUndo.o: ../tk8.6/tkIntDecls.h
 tkTextUndo.o: tkBool.h
 tkTextUndo.o: tkAlloc.h
+tkTextUndo.o: ./assert.h
 tkTextUndo.o: tkTextUndoPriv.h
 tkTextWind.o: ../tk8.6/tkPort.h
 tkTextWind.o: ../tk8.6/tkUnixPort.h
@@ -218,3 +231,4 @@ tkTextWind.o: tkTextTagSet.h
 tkTextWind.o: tkBitField.h
 tkTextWind.o: tkIntSet.h
 tkTextWind.o: tkAlloc.h
+tkTextWind.o: ./assert.h
