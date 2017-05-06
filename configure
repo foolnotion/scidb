@@ -429,6 +429,11 @@ proc detectUnixDistribution {} {
 }
 
 
+proc hasPTraceProblem {} {
+    return [file exists /proc/sys/kernel/yama/ptrace_scope]
+}
+
+
 proc isInsaneUnixRelease {} {
     global insaneRelease
     variable distribution
@@ -1798,11 +1803,9 @@ fi
 
 
 proc dontUsePtrace {} {
-    catch {
-        set result [exec cat /proc/sys/kernel/yama/ptrace_scope]
-        if {$result eq "0"} { return yes }
-    }
-
+    set result "1"
+    catch { set result [exec cat /proc/sys/kernel/yama/ptrace_scope] }
+    if {$result eq "1"} { return yes }
     return no
 }
 
@@ -2304,16 +2307,7 @@ if {[string length $gxxVer]} {
     if {[dontUsePtrace]} {
         # What a shame, some systems do not allow the debugging of own processes.
         Append option(EXTRA_CXXFLAGS) "-DDONT_USE_GDB"
-    }
 
-    # For any reason the method with the frame addresses is crashing with newer compilers
-    Append option(EXTRA_CXXFLAGS) "-DDONT_USE_FRAME_ADDR"
-
-    if {[lsearch $argv -n] == -1 && [lsearch $argv --no-create] == -1} {
-        writeMakefile $success
-    }
-
-    if {[dontUsePtrace]} {
         puts ""
         puts "IMPORTANT NOTE:"
         puts "-------------------------------------------------------------------------------"
@@ -2322,6 +2316,13 @@ if {[string length $gxxVer]} {
         puts "<http://sourceforge.net/p/scidb/mailman/message/28418675/>, and then configure"
         puts "again, otherwise you will not see useful error messages in case of internal"
         puts "errors."
+    }
+
+    # For any reason the method with the frame addresses is crashing with newer compilers
+    Append option(EXTRA_CXXFLAGS) "-DDONT_USE_FRAME_ADDR"
+
+    if {[lsearch $argv -n] == -1 && [lsearch $argv --no-create] == -1} {
+        writeMakefile $success
     }
 
     if {[llength $instableTkLibrary]} {
@@ -2337,6 +2338,10 @@ if {[string length $gxxVer]} {
 
     if {[info exists configure(destdir)]} {
         set suppressInsaneMessage 1
+
+        if {[hasPTraceProblem] && "-DDONT_USE_GDB" ni $option(EXTRA_CXXFLAGS)} {
+            Append option(EXTRA_CXXFLAGS) "-DDONT_USE_GDB"
+        }
     }
 
     if {!$suppressInsaneMessage && [isInsaneUnixRelease]} {
