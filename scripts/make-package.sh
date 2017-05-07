@@ -11,7 +11,7 @@ esac
 checkinstall --type=$type \
 	--pkgname="scidb-beta" \
 	--pkgversion="1.0" \
-	--pkgrelease="r1004" \
+	--pkgrelease="r1153" \
 	--pkglicense="GPL" \
 	--pkggroup="Application/Games" \
 	--pkgsource="http://sourceforge.net/projects/scidb" \

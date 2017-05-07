@@ -136,9 +136,9 @@ you have to create a symlink as a workaround:
     sudo ln -s /usr/include/freetype2/config /usr/include/freetype2/freetype/config
 
 -------------------------------------------------------------------------------
-Important notes for the built of packages
+Important notes for the build of packages
 -------------------------------------------------------------------------------
-For the built of packages in a temporary directory some fine tuning parameters
+For the build of packages in a temporary directory some fine tuning parameters
 should be used, for example:
 
    ./configure \
@@ -154,7 +154,7 @@ directory $pkgdir/usr/games.
 
 Without the --destdir parameter the configure script would choose the path
 /usr/share/fonts/truetype/Scidb for the installation of the truetype fonts,
-because in a normal user installation this is the wanted directory, but
+because in a normal user installation this is the desired directory, but
 in the example above $pkgdir/usr/share/fonts/truetype/Scidb will be used
 instead.
 

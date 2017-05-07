@@ -21,7 +21,7 @@
 
 0	string		Scid.sn		Scid name base
 
-# Only Scid game files written with Scidb do have a magic header
+# Only Scid game files written with Scidb have a magic header
 0	string		Scid.sg		Scid game data,
 >8	ubeshort/100	x		version %d
 
