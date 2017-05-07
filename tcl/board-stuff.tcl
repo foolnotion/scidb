@@ -524,12 +524,14 @@ proc finishDrag {w} {
 	if {$Board(drag:active)} {
 		if {$Board(drag:square) != -1} {
 			set sq [getSquare $w $Board(pointer:x) $Board(pointer:y)]
-			$w.c coords piece:$sq {*}[$w.c coords square:$sq]
+			$w.c coords piece:$Board(drag:square) {*}[$w.c coords square:$sq]
 		}
 
 		foreach t $Board(targets) { $t delete drag-target }
 		$w.c dtag piece:$Board(drag:square) drag-target
 	}
+
+	set Board(drag:active) 0
 }
 
 

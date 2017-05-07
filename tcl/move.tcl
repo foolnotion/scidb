@@ -309,6 +309,10 @@ proc releaseSquare {x y state} {
 	variable Drop
 	variable Disabled
 
+	if {[$board cget -cursor] ne "crosshair"} {
+		$board configure -cursor crosshair
+	}
+
 	if {$Disabled} { return }
 
 	set suggested $Square(suggested)
@@ -383,6 +387,10 @@ proc dragPiece {x y state} {
 	if {[::board::diagram::dragSquare $board] == -1} { return }
 	set isDragging [::board::diagram::isDragged? $board]
 	::board::diagram::dragPiece $board $x $y
+
+	if {[$board cget -cursor] ne "hand2"} {
+		$board configure -cursor hand2
+	}
 
 	if {$hilite(show-suggested)} {
 		set from [::board::diagram::dragSquare $board]
