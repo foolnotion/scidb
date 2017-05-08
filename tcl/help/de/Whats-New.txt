@@ -19,6 +19,32 @@
 TITLE Was ist neu?
 
 <h3>
+Fünfte öffentliche Vorschau-Version
+</h3>
+
+<ul style="padding: 5px;">
+  <li class="space">Revidiertes Tk Text Widget integriert, damit sind nun alle Performanceprobleme mit langen Varianten im Partieeditor behoben.</li>
+  <li class="space">Überarbeitete Partieeditorsteuerung, nun wird optimale Performance beim Laden von Partien erreicht.</li>
+  <li class="space">"Drag&amp;Dop" in Stellungseingabe nun möglich.</li>
+  <li class="space">Gleitender Untervariantenauswahldialog im Brettbereich verfügbar (optional).</li>
+  <li class="space">Die Variantenpfeile auf dem Brett sind nun anklickbar (optional).</li>
+  <li class="space">Auswahl der Sprachen im Export von einzelnen Partien.</li>
+  <li class="space">Optionale Einblendung der Zuganmerkung im Bretthintergrund.</li>
+  <li class="space">Ungültige Rochaderechte in der FEN werden beim Import von PGN-Partien automatisch korrigiert.</li>
+  <li class="space">Scidb hat nun einen Informationsreiter mit aktuellen Neuigkeiten.</li>
+  <li class="space">Zusätzlicher Turniertyp "Simultan" im Turniertabellendialog.</li>
+  <li class="space">Verbessertes Figurenrendering.</li>
+  <li class="space">Neue Figurensätze:  Aquarium, Bookup, Chess7, ChessCube, Celtic, Fritz, Habsburg, Military, Old Style, Segoe und Zurich.</li>
+  <li class="space">Figurensatz "Standard" wurde ausgetauscht, der alte hatte Defizite.</li>
+  <li class="space">Neue Brettthemen: Burnt, Fritz, Kitsch, Navajo, Marmorate, Melamine und Military.</li>
+  <li class="space">Brettthema "Virtual" überarbeitet und umbenannt in "Virtual - Brown".</li>
+  <li class="space">Brettthema "Virtual - Colored" umbenannt in "Virtual - Blue".</li>
+  <li class="space">Brettthemen "Marble - Brown" und "Marble - Red": der Figurensatz "Merida" wurde durch "Habsburg" ersetzt.</li>
+  <li class="space">Brettthema "Blackjack": der Figurensatz "Usual" wurde durch "Segoe" ersetzt.</li>
+  <li class="space">Einige Figurensätze wurden neu adjustiert.</li>
+</ul>
+
+<h3>
 Vierte öffentliche Vorschau-Version
 </h3>
 

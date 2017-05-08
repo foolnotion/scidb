@@ -542,12 +542,10 @@ proc saveGame {mode {base ""}} {
 
 
 proc FindKey {w attr} {
-	set key m:$attr.current.last
-	while {[string index [set key [$w mark previous $key]] 0] ne "m"} {
-		if {[string length $key] == 0} {
-			puts stderr "Error: cannot find key for attribute '$attr'"
-			return m-0
-		}
+	set key [$w mark previous m:$attr.current.last {m-*}]
+	if {[string length $key] == 0} {
+		puts stderr "Error: cannot find key for attribute '$attr'"
+		return m-0
 	}
 	return $key
 }
