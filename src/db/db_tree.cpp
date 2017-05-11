@@ -581,7 +581,7 @@ Tree::buildTreeStart(unsigned myIdn,
 
 
 Tree*
-Tree::makeTree(TreeP tree,
+Tree::makeTree(TreeP& tree,
 					unsigned myIdn,
 					Board startPosition,
 					Board myPosition,
@@ -718,7 +718,7 @@ Tree::makeTree(TreeP tree,
 
 #ifdef VARIATIONS
 Tree*
-Tree::makeTree(TreeP tree,
+Tree::makeTree(TreeP& tree,
 					Board myPosition,
 					Line myLine,
 					uint16_t hpSig,

@@ -121,7 +121,7 @@ public:
 	void compressFilter();
 	void uncompressFilter();
 
-	static Tree* makeTree(	TreeP tree,
+	static Tree* makeTree(	TreeP& tree,
 									unsigned myIdn,
 									Board startPosition,
 									Board myPosition,
