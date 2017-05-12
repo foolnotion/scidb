@@ -982,17 +982,9 @@ proc makeStateSpecificIcons {img} {
 
 
 switch [tk windowingsystem] {
-	x11 {
-		proc makeFrameless {w} { ;# XXX how to do this?  }
-	}
-
-	win32 {
-		proc makeFrameless {w} { wm attributes $w -toolwindow }
-	}
-
-	aqua {
-		proc makeFrameless {w} { ::tk::unsupported::MacWindowStyle style $w plainDBox {} }
-	}
+	x11	{ proc makeFrameless {w} { ;# XXX how to do this?  } }
+	win32	{ proc makeFrameless {w} { wm attributes $w -toolwindow } }
+	aqua	{ proc makeFrameless {w} { ::tk::unsupported::MacWindowStyle style $w plainDBox {} } }
 }
 
 
@@ -1540,18 +1532,49 @@ proc GetFolders {w} {
 
 	switch [tk windowingsystem] {
 		x11 {
-			set list {}
-			catch { set list [exec cat /proc/mounts] }
-			foreach entry [split $list \n] {
-				set path [lindex $entry 1]
-				if {[string match /media/* $path]} {
-					set name [string range $path 7 end]
-					set id [string tolower $name]
-					set Vars(folder:$id) $path
-					set Vars(icon:$id) $icon::16x16::usb
-					set Vars(lookup:$path) usb
-					lappend Vars(usb-devices) $name
-					lappend folders $name
+			set gdbus [auto_execok gdbus]
+			if {[string length $gdbus] > 0} {
+				set result [exec -ignorestderr $gdbus introspect \
+					--system \
+					--dest org.freedesktop.UDisks \
+					--object-path /org/freedesktop/UDisks/devices \
+					--recurse \
+					--only-properties \
+				]
+				lassign {0 0 "" {}} usb fs id paths
+				foreach line [split $result \n] {
+					set line [string trim $line]
+					if {[string index $line 0] eq "\}"} {
+						if {$usb && $fs && [string length $id] > 0 && [llength $paths] > 0} {
+							set path ""
+							foreach p $paths {
+								set p [string range $p 1 end-1]
+								if {[file readable $p]} {
+									if {[string match {/media/*} $p] || [string length $path] == 0} {
+										set path $p
+									}
+								}
+							}
+							if {[string length $path] > 0} {
+								lappend folders $id
+								lappend Vars(usb-devices) $id
+								set id [string tolower $id]
+								set Vars(folder:$id) $path
+								set Vars(icon:$id) $icon::16x16::usb
+								set Vars(lookup:$path) usb
+								lappend Vars(folders) $path
+							}
+						}
+						lassign {0 0 "" {}} usb fs id paths
+					} elseif {[string match {* DriveConnectionInterface = 'usb';} $line]} {
+						set usb 1
+					} elseif {[string match {* IdUsage = 'filesystem';} $line]} {
+						set fs 1
+					} elseif {[string match {* IdLabel *} $line]} {
+						set id [string range [lindex $line 4] 1 end-2]
+					} elseif {[string match {* DeviceMountPaths *} $line]} {
+						set paths [string range [lindex $line 4] 1 end-2]
+					}
 				}
 			}
 		}
@@ -2695,6 +2718,9 @@ proc BuildBookmarks {w} {
 				if {[string length $Vars(folder:[string tolower $folder])] == 0} { continue }
 				set icon [string tolower $folder]
 			}
+			Home - FileSystem {
+				set icon [string tolower $folder]
+			}
 		}
 		lappend Vars(bookmarks) [list $icon $folder]
 	}
@@ -3399,7 +3425,7 @@ proc Build {w path args} {
 	bind $sv <ButtonPress-1> [list focus $t]
 	SetColumnBackground $t tail $Vars(stripes) $opts(-background)
 
-	set linespace [max [font metrics [$t cget -font] -linespace] 20]
+	set linespace [max 20 [font metrics [$t cget -font] -linespace]]
 	set Vars(charwidth) [font measure [$t cget -font] "0"]
 	$t configure -itemheight $linespace
 	$t state define hilite
@@ -3494,7 +3520,7 @@ proc SwitchHidden {w} {
 }
 
 
-proc DetailsLayout {w} {
+proc DetailedLayout {w} {
 	variable [namespace parent]::${w}::Vars
 
 	set t $Vars(widget:list:file)
@@ -3720,7 +3746,7 @@ proc ListLayout {w} {
 
 	set t $Vars(widget:list:file)
 
-	$t configure -itemwidthequal yes
+	$t configure -itemwidthequal no
 	$t configure -wrap window
 	$t configure -showheader no
 	$t configure -yscrollcommand {}
@@ -3826,8 +3852,9 @@ proc SwitchLayout {w {layout {}}} {
 
 	switch $Options(show:layout) {
 		details {
-			DetailsLayout $w
+			DetailedLayout $w
 			$t xview moveto 0.0
+			# TODO: expand columns
 		}
 		list {
 			ListLayout $w
@@ -5766,11 +5793,40 @@ bind FSBox <Leave> {
 
 switch [tk windowingsystem] {
 	x11 {
-		bind FSBox <4> { %W yview scroll -5 units }
-		bind FSBox <5> { %W yview scroll +5 units }
+		bind FSBox <4> {
+			if {[%W yview] eq {0 1}} { %W xview scroll -40 units } else { %W yview scroll -5 units }
+		}
+		bind FSBox <5> {
+			if {[%W yview] eq {0 1}} { %W xview scroll +40 units } else { %W yview scroll +5 units }
+		}
 	}
-	aqua	{ bind FSBox <MouseWheel> { %W yview scroll [expr {-(%D)}] units } }
-	win32	{ bind FSBox <MouseWheel> { %W yview scroll [expr {-(%D/120)*4}] units } }
+	aqua {
+		bind FSBox <MouseWheel> {
+			if {[%W yview] eq {0 1}} {
+				%W xview scroll -40 units
+			} else {
+				%W yview scroll [expr {-(%D)}] units
+			}
+		}
+	}
+	win32	{
+		bind FSBox <MouseWheel> {
+			if {[%W yview] eq {0 1}} {
+				%W xview scroll -40 units
+			} else {
+				%W yview scroll [expr {-(%D/120)*4}] units }
+			}
+	}
+}
+
+# Touchpad Binding for Horizontal Scrolling
+# see http://wiki.tcl.tk/12696
+bind FSBox <Button> {
+	if {"%b" eq 6} {
+		%W xview scroll -40 units
+	} elseif {"%b" eq 7} {
+		%W xview scroll +40 units
+	}
 }
 
 # vi:set ts=3 sw=3:
