@@ -452,8 +452,8 @@ SetWmFrameAware(Tk_Window path)
 static int
 IsXdndAware(Tk_Window tkwin)
 {
-	int f;
-	unsigned long n, a;
+	int format;
+	unsigned long count, a;
 	unsigned char* data;
 	Atom actual = None;
 
@@ -465,12 +465,12 @@ IsXdndAware(Tk_Window tkwin)
 		False,
 		AnyPropertyType,
 		&actual,
-		&f, &n, &a, &data);
+		&format, &count, &a, &data);
 
 	if (data)
 		XFree(data);
 
-	return actual != None;
+	return actual == XA_ATOM && format == 32 && count > 0 && data;
 }
 
 #endif /* GNOME_SUPPORT */
@@ -643,6 +643,7 @@ TkDND_HandleXdndEnter(Tk_Window tkwin, Tk_Window target, XClientMessageEvent* cm
 	Atom* typeList = typeListBuf;
 	const long *l = cm->data.l;
 	int version = (int)(((unsigned long)(l[1])) >> 24);
+	unsigned long itemCount = 0;
 	int i;
 	Window drag_source;
 	Tcl_Obj* objv[4];
@@ -660,7 +661,6 @@ TkDND_HandleXdndEnter(Tk_Window tkwin, Tk_Window target, XClientMessageEvent* cm
 	{
 		Atom actualType = None;
 		int actualFormat;
-		unsigned long itemCount;
 		unsigned long remainingBytes;
 		unsigned char* data;
 
@@ -669,23 +669,30 @@ TkDND_HandleXdndEnter(Tk_Window tkwin, Tk_Window target, XClientMessageEvent* cm
 			cm->display,
 			drag_source,
 			Tk_InternAtom(tkwin, "XdndTypeList"), 0,
-			LONG_MAX, False, XA_ATOM, &actualType, &actualFormat,
+			0x8000000, False, XA_ATOM, &actualType, &actualFormat,
 			&itemCount, &remainingBytes, &data);
 
-		if (  itemCount >= sizeof(typeListBuf)/sizeof(typeListBuf[0])
-			&& !(typeList = (Atom *) Tcl_Alloc(sizeof(Atom)*(itemCount + 1))))
+		if (	actualType != XA_ATOM
+			|| actualFormat != 32
+			|| itemCount == 0
+			|| !data
+			|| (	itemCount >= sizeof(typeListBuf)/sizeof(typeListBuf[0])
+				&& !(typeList = (Atom *) Tcl_Alloc(sizeof(Atom)*(itemCount + 1)))))
 		{
-			return False;
+			itemCount = 0;
 		}
+		else
+		{
+			for (i = 0; i < itemCount; i++)
+				typeList[i] = ((Atom*) data)[i];
+			typeList[itemCount] = None;
 
-		for (i = 0; i < itemCount; i++)
-			typeList[i] = ((Atom*) data)[i];
-		typeList[itemCount] = None;
-
-		if (data)
-			XFree(data);
+			if (data)
+				XFree(data);
+		}
 	}
-	else /* if enter three types */
+
+	if (itemCount == 0)
 	{
 		typeList[0] = cm->data.l[2];
 		typeList[1] = cm->data.l[3];
@@ -700,7 +707,10 @@ TkDND_HandleXdndEnter(Tk_Window tkwin, Tk_Window target, XClientMessageEvent* cm
 	objv[3] = Tcl_NewListObj(0, NULL);
 
 	for (i = 0; typeList[i] != None; ++i)
-		Tcl_ListObjAppendElement(NULL, objv[3], Tcl_NewStringObj(Tk_GetAtomName(tkwin, typeList[i]), -1));
+	{
+		Tcl_ListObjAppendElement(NULL, objv[3],
+			Tcl_NewStringObj(Tk_GetAtomName(tkwin, typeList[i]), -1));
+	}
 
 	TkDND_Eval(Tk_Interp(tkwin), 4, objv);
 
@@ -761,32 +771,32 @@ TkDND_HandleXdndPosition(Tk_Window tkwin, Tk_Window target, XClientMessageEvent*
 		objv[3] = Tcl_NewIntObj(rootY);
 		objv[4] = Tcl_NewLongObj(cm->data.l[0]);
 
-		if (TkDND_Eval(Tk_Interp(tkwin), 5, objv) == TCL_OK)
-		{
-			/* Get the returned action... */
-			result = Tcl_GetObjResult(interp);
-			Tcl_IncrRefCount(result);
-			status = Tcl_GetIndexFromObj(
-				interp, result, (const char **) DropActions, "dropactions", 0, &index);
-			Tcl_DecrRefCount(result);
-			if (status != TCL_OK)
-				index = Refuse_Drop;
-			if (index >= sizeof(DropAtomNames)/sizeof(DropAtomNames[0]))
-				return False;
-		}
+		if (TkDND_Eval(Tk_Interp(tkwin), 5, objv) != TCL_OK)
+			return False;
+
+		/* Get the returned action... */
+		result = Tcl_GetObjResult(interp);
+		Tcl_IncrRefCount(result);
+		status = Tcl_GetIndexFromObj(
+			interp, result, (const char **) DropActions, "dropactions", 0, &index);
+		Tcl_DecrRefCount(result);
+		if (status != TCL_OK)
+			index = Refuse_Drop;
+		if (index >= sizeof(DropAtomNames)/sizeof(DropAtomNames[0]))
+			return False;
 	}
 
 	/* Send response */
 	memset(&response, 0, sizeof(response));
-	response.type			  = ClientMessage;
+	response.type			   = ClientMessage;
 	response.format			= 32;
 	response.window			= cm->data.l[0];
 	response.message_type	= Tk_InternAtom(tkwin, "XdndStatus");
 	response.data.l[0]		= Tk_WindowId(tkwin);
 	response.data.l[1]		= 1; /* yes */
-	response.data.l[2]		= ((rootX) << 16) | ((rootY)	& 0xFFFFUL); /* x, y */
-	response.data.l[3]		= ((width) << 16) | ((height) & 0xFFFFUL); /* w, h */
-	response.data.l[4]		= index == Refuse_Drop ? 0 : Tk_InternAtom(tkwin, DropAtomNames[index]);
+	response.data.l[2]		= (rootX << 16) | (rootY  & 0xFFFFUL); /* x, y */
+	response.data.l[3]		= (width << 16) | (height & 0xFFFFUL); /* w, h */
+	response.data.l[4]		= index == Refuse_Drop ? None : Tk_InternAtom(tkwin, DropAtomNames[index]);
 	XSendEvent(cm->display, response.window, False, NoEventMask, (XEvent*) &response);
 
 	return True;
