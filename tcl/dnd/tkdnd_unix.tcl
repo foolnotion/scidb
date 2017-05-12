@@ -284,10 +284,10 @@ proc xdnd::_HandleXdndDrop { time } {
 
   # puts "xdnd::_HandleXdndDrop: $time"
 
-  if {![info exists _drag_source] && ![string length $_drag_source]} {
+  if {![info exists _drag_source] || ![string length $_drag_source]} {
     return refuse_drop
   }
-  if {![info exists _drop_target] && ![string length $_drop_target]} {
+  if {![info exists _drop_target] || ![string length $_drop_target]} {
     return refuse_drop
   }
   if {![llength $_common_drag_source_types]} {return refuse_drop}
@@ -797,7 +797,7 @@ proc xdnd::_HandleXdndStatus {event} {
   variable _dodragdrop_drop_occured
   if {$_dodragdrop_drop_occured} return
 #puts "_HandleXdndStatus: [set [namespace current]::_dodragdrop_current_cursor]"
-  _update_cursor
+  _update_drag_cursor
   set _dodragdrop_action [dict get $event action]
   # puts "XdndStatus: $event"
 };# xdnd::_HandleXdndStatus
@@ -837,7 +837,7 @@ proc xdnd::_SendXdndLeave {} {
   variable _dodragdrop_drop_occured
   if {$_dodragdrop_drop_occured} return
 #puts "_SendXdndLeave: [set [namespace current]::_dodragdrop_current_cursor]"
-  _update_cursor
+  _update_drag_cursor
 };# xdnd::_SendXdndLeave
 
 # ----------------------------------------------------------------------------
@@ -859,7 +859,7 @@ proc xdnd::_SendXdndDrop {} {
 
   set _dodragdrop_drop_occured 1
 #puts "_SendXdndDrop(clock): [set [namespace current]::_dodragdrop_current_cursor]"
-  _update_cursor watch
+  _update_drag_cursor watch
 
   if {!$_dodragdrop_drop_target_accepts_drop} {
     _SendXdndLeave
@@ -893,10 +893,10 @@ proc xdnd::_SendXdndDrop {} {
 };# xdnd::_SendXdndDrop
 
 # ----------------------------------------------------------------------------
-#  Command xdnd::_update_cursor
+#  Command xdnd::_update_drag_cursor
 # ----------------------------------------------------------------------------
-proc xdnd::_update_cursor { {cursor {}}} {
-  # puts "_update_cursor $cursor"
+proc xdnd::_update_drag_cursor { {cursor {}}} {
+  # puts "_update_drag_cursor $cursor"
   variable _dodragdrop_current_cursor
   variable _dodragdrop_drag_source
   variable _dodragdrop_drop_target_accepts_drop
@@ -917,7 +917,7 @@ proc xdnd::_update_cursor { {cursor {}}} {
     }
     set _dodragdrop_current_cursor $cursor
   }
-};# xdnd::_update_cursor
+};# xdnd::_update_drag_cursor
 
 # ----------------------------------------------------------------------------
 #  Command xdnd::_default_action
