@@ -1534,13 +1534,15 @@ proc GetFolders {w} {
 		x11 {
 			set gdbus [auto_execok gdbus]
 			if {[string length $gdbus] > 0} {
-				set result [exec -ignorestderr $gdbus introspect \
-					--system \
-					--dest org.freedesktop.UDisks \
-					--object-path /org/freedesktop/UDisks/devices \
-					--recurse \
-					--only-properties \
-				]
+				set result ""
+				catch {
+					set result [exec -ignorestderr $gdbus introspect \
+						--system \
+						--dest org.freedesktop.UDisks \
+						--object-path /org/freedesktop/UDisks/devices \
+						--recurse \
+						--only-properties \
+					]}
 				lassign {0 0 "" {}} usb fs id paths
 				foreach line [split $result \n] {
 					set line [string trim $line]
