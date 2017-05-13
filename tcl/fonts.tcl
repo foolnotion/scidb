@@ -1555,12 +1555,8 @@ proc splitMoves {text {tag figurine}} {
 		variable figurineEncoding
 
 		set moves [split [string map $UnicodeMap $text] &]
+		set encoding $figurineEncoding([expr {$tag eq "figurineb" ? "bold" : "normal"}])
 		set result {}
-		if {$tag eq "figurineb"} {
-			set encoding $figurineEncoding(bold)
-		} else {
-			set encoding $figurineEncoding(normal)
-		}
 
 		foreach m $moves {
 			if {[string index $m 0] == "*"} {

@@ -547,6 +547,7 @@ proc FindKey {w attr} {
 		set cy [expr {[winfo pointery $w] - [winfo rooty $w]}]
 		$w mark set current [$w index @$cx,$cy]
 		set key [$w mark previous m:$attr.current.last {m-*}]
+		puts stderr "Couldn't find tag m:$attr near $key ([$w index current])"
 	}
 	return $key
 }
@@ -1315,6 +1316,7 @@ proc ProcessGoto {position key succKey} {
 		::scidb::game::variation unfold
 		$w tag remove h:next begin end
 		$w tag remove h:curr begin end
+		$w tag remove h:move begin end
 		$w tag add h:curr {*}[FindRange $w $key]
 		if {$Vars(active:$position) eq $key} { $w configure -cursor {} }
 		set Vars(current:$position) $key
@@ -1669,7 +1671,7 @@ proc PrintMove {context position w level key data annotation} {
 	}
 
 	if {!$legal} {
-		$w insert cur "\u26A1" {m:move m:illegal} ;# alternatives: u26A0, u2716
+		$w insert cur "\u26A1" {m:move illegal} ;# alternatives: u26A0, u2716
 	}
 }
 

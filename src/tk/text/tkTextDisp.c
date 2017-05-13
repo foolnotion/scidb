@@ -9079,7 +9079,7 @@ TkTextRedrawTag(
 				 * means process all the characters in the text. Note that either
 				 * both indices are NULL, or both are non-Null. */
     const TkTextTag *tagPtr,	/* Information about tag, can be NULL, but only if the indices are
-    				 * non-NULL*/
+    				 * non-NULL. */
     bool affectsDisplayGeometry)/* Whether the display geometry is affected. If argument tagPtr is
     				 * given, then also this tag will be tested if the display geometry
 				 * is affected. */
