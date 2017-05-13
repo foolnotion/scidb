@@ -33,8 +33,6 @@
 
 #include "u_zstream.h"
 
-#include "m_exception.h"
-
 #include <tcl.h>
 #include <tk.h>
 #include <stdlib.h>
@@ -56,20 +54,6 @@
 
 
 static app::Application *m_app = nullptr;
-
-
-/*
- * Call this C function in case of failed assertions.
- */
-
-extern "C" void assertionFailed(char const* expr,  char const* file, unsigned line, char const* func);
-
-
-void
-assertionFailed(char const* expr, char const* file, unsigned line, char const* func)
-{
-	::mstl::bits::throw_exc(::mstl::exception(expr), file, line, func);
-}
 
 
 static int

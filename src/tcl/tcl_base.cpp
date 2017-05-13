@@ -38,6 +38,7 @@
 #include <tcl.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <setjmp.h>
 #include <assert.h>
 
 extern "C" { int Treectrl_Init(Tcl_Interp*); }
@@ -728,6 +729,26 @@ tcl::ioError(mstl::string const& file, mstl::string const& error, mstl::string c
 
 	setResult(Tcl_NewListObj(U_NUMBER_OF(objs), objs));
 	return TCL_ERROR;
+}
+
+
+/*
+ * Call this C function in case of failed assertions.
+ */
+
+extern "C" void assertionFailed(char const* expr,  char const* file, unsigned line, char const* func);
+
+::jmp_buf assertJumpBuf;
+
+
+void
+assertionFailed(char const* expr, char const* file, unsigned line, char const* func)
+{
+	fprintf(stderr, "assertion failed: %s (%s:%u) [%s]\n", expr, file, line, func);
+	Tcl_SetObjResult(
+		tcl::bits::interp,
+		Tcl_ObjPrintf("assertion failed: %s (%s:%u) [%s]", expr, file, line, func));
+	longjmp(::assertJumpBuf, 1);
 }
 
 

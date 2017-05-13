@@ -1104,15 +1104,15 @@ TkConfigureTag(
 
 	if (mask & TK_TEXT_DEPRECATED_OVERSTRIKE_FG) {
 	    if (warnAboutOverstrikeFg) {
-		fprintf(stderr, "Tag option \"-overstrikefg\" is deprecated, please use option "
-			"\"-overstrikecolor\"\n");
+		fprintf(stderr, "tk::text: Tag option \"-overstrikefg\" is deprecated, "
+			"please use option \"-overstrikecolor\".\n");
 		warnAboutOverstrikeFg = false;
 	    }
 	}
 	if (mask & TK_TEXT_DEPRECATED_UNDERLINE_FG) {
 	    if (warnAboutUnderlineFg) {
-		fprintf(stderr, "Tag option \"-underlinefg\" is deprecated, please use option "
-			"\"-underlinecolor\"\n");
+		fprintf(stderr, "tk::text: Tag option \"-underlinefg\" is deprecated, "
+			"please use option \"-underlinecolor\".\n");
 		warnAboutUnderlineFg = false;
 	    }
 	}
@@ -3071,7 +3071,10 @@ TkTextPickCurrent(
 	     * the content of the B-Tree.
 	     */
 
-	    TkTextTagSetIncrRefCount(newTagInfoPtr = TkTextGetTagSetFromChunk(newDispChunkPtr));
+	    if (!(newTagInfoPtr = TkTextGetTagSetFromChunk(newDispChunkPtr))) {
+	    	newTagInfoPtr = sharedTextPtr->emptyTagInfoPtr;
+	    }
+	    TkTextTagSetIncrRefCount(newTagInfoPtr);
 	    leaveTags = TkTextTagSetCopy(textPtr->curTagInfoPtr);
 	    leaveTags = TkTextTagSetRemoveFromThis(leaveTags, newTagInfoPtr);
 	    enterTags = TkTextTagSetRemoveFromThis(TkTextTagSetCopy(newTagInfoPtr), leaveTags);

@@ -713,14 +713,15 @@ AllocStatistic()
 static void WarnAboutDeprecatedStartLineOption() {
     static bool printWarning = true;
     if (printWarning) {
-	fprintf(stderr, "Option \"-startline\" is deprecated, please use option \"-startindex\"\n");
+	fprintf(stderr, "Option \"-startline\" is deprecated, please use option \"-startindex\".\n");
 	printWarning = false;
     }
 }
 static void WarnAboutDeprecatedEndLineOption() {
     static bool printWarning = true;
     if (printWarning) {
-	fprintf(stderr, "Option \"-endline\" is deprecated, please use option \"-endindex\"\n");
+	fprintf(stderr, "tk::text: Option \"-endline\" is deprecated, "
+		"please use option \"-endindex\".\n");
 	printWarning = false;
     }
 }
@@ -1248,7 +1249,7 @@ TkTextAttemptToModifyDisabledWidget(
 #if SUPPORT_DEPRECATED_MODS_OF_DISABLED_WIDGET
     static bool showWarning = true;
     if (showWarning) {
-	fprintf(stderr, "Attempt to modify a disabled widget is deprecated\n");
+	fprintf(stderr, "tk::text: Attempt to modify a disabled widget is deprecated.\n");
 	showWarning = false;
     }
     return TCL_OK;
@@ -1282,7 +1283,7 @@ TkTextAttemptToModifyDeadWidget(
 #if SUPPORT_DEPRECATED_MODS_OF_DISABLED_WIDGET
     static bool showWarning = true;
     if (showWarning) {
-	fprintf(stderr, "Attempt to modify a dead widget is deprecated\n");
+	fprintf(stderr, "tk::text: Attempt to modify a dead widget is deprecated.\n");
 	showWarning = false;
     }
     return TCL_OK;
@@ -1486,6 +1487,11 @@ TextWidgetObjCmd(
 
     if (sharedTextPtr->haveToSetCurrentMark) {
 	TkTextUpdateCurrentMark(sharedTextPtr);
+    }
+
+    if (CATCH_ASSERTION_FAILED) {
+	result = TCL_ERROR;
+	goto done;
     }
 
     switch ((enum options) commandIndex) {
@@ -3117,7 +3123,7 @@ TextReplaceCmd(
 	sharedTextPtr->autoSeparators = origAutoSep;
     }
 
-    TkTextReleaseIfDestroyed(textPtr);
+    TkTextDecrRefCountAndTestIfDestroyed(textPtr);
     return result;
 }
 
@@ -8939,7 +8945,8 @@ TextEditCmd(
 
 	if (warnDeprecated) {
 	    warnDeprecated = false;
-	    fprintf(stderr, "Command \"edit canredo\" is deprecated, please use \"edit info\"\n");
+	    fprintf(stderr, "tk::text: Command \"edit canredo\" is deprecated, "
+		    "please use \"edit info\".\n");
 	}
 	if (objc != 3) {
 	    Tcl_WrongNumArgs(interp, 3, objv, NULL);
@@ -8957,7 +8964,8 @@ TextEditCmd(
 
 	if (warnDeprecated) {
 	    warnDeprecated = false;
-	    fprintf(stderr, "Command \"edit canundo\" is deprecated, please use \"edit info\"\n");
+	    fprintf(stderr, "tk::text: Command \"edit canundo\" is deprecated, "
+		    "please use \"edit info\".\n");
 	}
 	if (objc != 3) {
 	    Tcl_WrongNumArgs(interp, 3, objv, NULL);

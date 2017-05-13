@@ -542,10 +542,11 @@ proc saveGame {mode {base ""}} {
 
 
 proc FindKey {w attr} {
-	set key [$w mark previous m:$attr.current.last {m-*}]
-	if {[string length $key] == 0} {
-		puts stderr "Error: cannot find key for attribute '$attr'"
-		return m-0
+	if {[catch { set key [$w mark previous m:$attr.current.last {m-*}] }]} {
+		set cx [expr {[winfo pointerx $w] - [winfo rootx $w]}]
+		set cy [expr {[winfo pointery $w] - [winfo rooty $w]}]
+		$w mark set current [$w index @$cx,$cy]
+		set key [$w mark previous m:$attr.current.last {m-*}]
 	}
 	return $key
 }
@@ -1165,7 +1166,7 @@ proc DoLayout {position content {context editor} {w {}}} {
 					}
 
 					clear {
- 						$w delete m-start m-0
+ 						$w delete m-start m-0 ;# TODO use option -marks?
 						set Vars(result:$position) ""
 					}
 
@@ -2010,8 +2011,10 @@ proc LeavePlus {w} {
 
 
 proc ToggleFold {w mode triggerEnter} {
+	set current [$w index current]
 	::scidb::game::variation fold [FindKey $w $mode] toggle
 	if {$triggerEnter} {
+		$w mark set current $current
 		EnterBracket $w ;# toggle cursor
 	}
 }

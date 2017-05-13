@@ -22,6 +22,9 @@
 # include "tkInt.h"
 #endif
 
+/* Support of assertion handler. */
+#define CATCH_ASSERTION_FAILED 0
+
 #include "tkTextUndo.h"
 #include "tkBool.h"
 
@@ -1534,7 +1537,7 @@ typedef enum {
  */
 
 typedef bool Tk_SegDeleteProc(TkSharedText *sharedTextPtr, struct TkTextSegment *segPtr, int flags);
-typedef void Tk_SegReuseProc(TkSharedText *sharedTextPtr, struct TkTextSegment *segPtr);
+typedef bool Tk_SegReuseProc(TkSharedText *sharedTextPtr, struct TkTextSegment *segPtr);
 typedef int Tk_SegLayoutProc(const struct TkTextIndex *indexPtr, TkTextSegment *segPtr,
 		    int offset, int maxX, int maxChars, bool noCharsYet, TkWrapMode wrapMode,
 		    TkTextSpaceMode spaceMode, struct TkTextDispChunk *chunkPtr);
@@ -1604,7 +1607,6 @@ typedef enum {
  * DELETE_INCLUSIVE	The deletion of the marks includes also the marks given as arguments
  *			for the range.
  * DELETE_CLEANUP	We have to delete anyway, due to a cleanup.
- * DELETE_PRESERVE	We have to preserve this segment.
  */
 
 #define TREE_GONE		(1 << 0)
@@ -1612,8 +1614,7 @@ typedef enum {
 #define DELETE_MARKS		(1 << 2)
 #define DELETE_INCLUSIVE	(1 << 3)
 #define DELETE_CLEANUP		(1 << 4)
-#define DELETE_PRESERVE		(1 << 5)
-#define DELETE_LASTLINE		(1 << 6)
+#define DELETE_LASTLINE		(1 << 5)
 
 /*
  * The following definition specifies the maximum number of characters needed
@@ -2109,19 +2110,11 @@ MODULE_SCOPE int	TkTextIndexRestrictToEndRange(TkTextIndex *indexPtr);
 MODULE_SCOPE bool	TkTextIndexEnsureBeforeLastChar(TkTextIndex *indexPtr);
 MODULE_SCOPE bool	TkTextSkipElidedRegion(TkTextIndex *indexPtr);
 
-#if TK_TEXT_NDEBUG
-MODULE_SCOPE void	TkTextMarkCheckTable(TkSharedText *sharedTextPtr);
-#endif
-
 /*
  * Debugging info macros:
  */
 
-#ifdef TK_TEXT_NDEBUG
-# ifdef NDEBUG
-#  error "Do not define TK_TEXT_NDEBUG when NDEBUG is also defined"
-# endif
-
+#if defined(NDEBUG) || defined(TK_TEXT_NDEBUG)
 # define TK_BTREE_DEBUG(expr)
 #else
 # define TK_BTREE_DEBUG(expr)	{ if (tkBTreeDebug) { expr; } }
