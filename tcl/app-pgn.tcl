@@ -2122,6 +2122,8 @@ proc Undo {action} {
 
 
 proc SetupBindings {w position} {
+	if {$position >= 9} { return }
+
 	$w tag bind m:nag     <Enter> [namespace code [list EnterNag $w]]
 	$w tag bind m:nag     <Leave> [namespace code [list LeaveNag $w]]
 	$w tag bind m:move    <Enter> [namespace code [list EnterMove $w current %s]]
@@ -2137,19 +2139,17 @@ proc SetupBindings {w position} {
 	$w tag bind m:fold    <Enter> [namespace code [list EnterBracket $w]]
 	$w tag bind m:fold    <Leave> [namespace code [list LeaveBracket $w]]
 
-	if {$position < 9} {
-		$w tag bind m:move    <ButtonPress-1>   [namespace code [list GotoMove]]
-		$w tag bind m:move    <ButtonPress-2>   [namespace code [list ShowPosition $w %s]]
-		$w tag bind m:move    <ButtonRelease-2> [namespace code [list HidePosition $w]]
-		$w tag bind m:illegal <ButtonPress-1>   [namespace code [list GotoMove]]
-		$w tag bind m:nag     <ButtonPress-1>   [namespace code [list EditAnnotation nag]]
-		$w tag bind m:mark    <ButtonPress-1>   [namespace code [list OpenMarksPalette]]
-		$w tag bind m:info    <ButtonPress-1>   [namespace code [list EditInfo $w this]]
-		$w tag bind m:move    <Any-Button>      [namespace code [list HidePosition $w]]
-		$w tag bind m:comment <ButtonPress-1>   [namespace code [list EditComment $w]]
-		$w tag bind m:expand  <ButtonPress-1>   [namespace code [list ToggleFold $w expand 0]]
-		$w tag bind m:fold    <ButtonPress-1>   [namespace code [list ToggleFold $w fold 1]]
-	}
+	$w tag bind m:move    <ButtonPress-1>   [namespace code [list GotoMove]]
+	$w tag bind m:move    <ButtonPress-2>   [namespace code [list ShowPosition $w %s]]
+	$w tag bind m:move    <ButtonRelease-2> [namespace code [list HidePosition $w]]
+	$w tag bind m:move    <Any-Button>      [namespace code [list HidePosition $w]]
+	$w tag bind m:illegal <ButtonPress-1>   [namespace code [list GotoMove]]
+	$w tag bind m:nag     <ButtonPress-1>   [namespace code [list EditAnnotation nag]]
+	$w tag bind m:mark    <ButtonPress-1>   [namespace code [list OpenMarksPalette]]
+	$w tag bind m:info    <ButtonPress-1>   [namespace code [list EditInfo $w this]]
+	$w tag bind m:comment <ButtonPress-1>   [namespace code [list EditComment $w]]
+	$w tag bind m:expand  <ButtonPress-1>   [namespace code [list ToggleFold $w expand 0]]
+	$w tag bind m:fold    <ButtonPress-1>   [namespace code [list ToggleFold $w fold 1]]
 }
 
 
