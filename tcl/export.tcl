@@ -3244,7 +3244,9 @@ proc DoExport {parent dlg file} {
 
 	switch $Values(Type) {
 		pgn {
-			if {$Values(pgn,flag,use_utf8_encoding)} {
+			if {$Values(pgn,flag,use_utf8_encoding)
+					|| $Values(pgn,flag,use_chessbase_format)
+					|| $Values(pgn,flag,use_scidb_import_format)} {
 				set encoding "utf-8"
 			} else {
 				set encoding $Values($Values(Type),encoding)

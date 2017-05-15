@@ -1081,17 +1081,17 @@ proc FindOle!Fonts {} {
 	set reset 0
 
 	if {[lsearch -exact -nocase $chessFigurineFonts {Scidb Chess Ole!}] == -1} {
-		array set opts [font actual {{Scidb Chess Ole!} -12}]
-		if {[string compare -nocase $opts(-family) {Scidb Chess Ole!}] == 0} {
-			AddFigurineFont $opts(-family)
+		set family [font actual {{Scidb Chess Ole!} -12} -family]
+		if {[string compare -nocase $family {Scidb Chess Ole!}] == 0} {
+			AddFigurineFont $family
 			set reset 1
 		}
 	}
 
 	if {[lsearch -exact -nocase $chessSymbolFonts {Scidb Symbol Ole!}] == -1} {
-		array set opts [font actual {{Scidb Symbol Ole!} -12}]
-		if {[string compare -nocase $opts(-family) {Scidb Symbol Ole!}] == 0} {
-			AddSymbolFont $opts(-family)
+		set family [font actual {{Scidb Symbol Ole!} -12} -family]
+		if {[string compare -nocase $family {Scidb Symbol Ole!}] == 0} {
+			AddSymbolFont $family
 			set reset 1
 		}
 	}
@@ -1292,6 +1292,19 @@ proc registerTextFonts {context {styles {normal}}} {
 	foreach style $styles {
 		set text($context:$style) [font create ::font::text($context:$style) \
 			-family $family -weight [Weight $style] -slant [Slant $style] -size $size]
+
+		# XXX work-around for font problems with size 0, see
+		# https://groups.google.com/forum/#!topic/comp.lang.tcl/XnkRQ5TI-Nc
+		if {[font actual $text($context:$style) -size] == 0} {
+			dialog::alert \
+				-message "Because of incompatibility problems of the Tk library with the font\
+					server Scidb is not working on this system, I'm sorry." \
+				-detail "See\u00a0https://groups.google.com/forum/#!topic/comp.lang.tcl/XnkRQ5TI-Nc about\
+					this problem" \
+				-title "Scidb" \
+				;
+			exit 1
+		}
 	}
 }
 
@@ -1352,6 +1365,25 @@ proc registerSymbolFonts {context} {
 	} else {
 		set symbol($context:normal) $text($context:normal)
 		set symbol($context:bold) $text($context:bold)
+	}
+
+	# XXX work-around for font problems with size 0, see
+	# https://groups.google.com/forum/#!topic/comp.lang.tcl/XnkRQ5TI-Nc
+	if {	[font actual $symbol($context:normal) -size] == 0
+		|| [font actual $symbol($context:bold) -size] == 0} {
+		if {!$UseSymbols} {
+			dialog::alert \
+				-message "Because of incompatibility problems of the Tk library with the font\
+					server Scidb is not working on this system, I'm sorry." \
+				-detail "See\u00a0https://groups.google.com/forum/#!topic/comp.lang.tcl/XnkRQ5TI-Nc about\
+					this problem" \
+				-title "Scidb" \
+				;
+			exit 1
+		}
+		set UseSymbols 0
+		unset symbol($context:normal) symbol($context:bold)
+		registerFigurineFonts $context
 	}
 }
 
@@ -1423,6 +1455,36 @@ proc registerFigurineFonts {context} {
 		if {$context eq "text"} {
 			set figurine(small:normal) TkTooltipFont
 		}
+	}
+
+	# XXX work-around for font problems with size 0, see
+	# https://groups.google.com/forum/#!topic/comp.lang.tcl/XnkRQ5TI-Nc
+	if {	[font actual $figurine($context:normal) -size] == 0
+		|| [font actual $figurine($context:bold) -size] == 0} {
+		if {!$UseFigurines} {
+			dialog::alert \
+				-message "Because of incompatibility problems of the Tk library with the font\
+					server Scidb is not working on this system, I'm sorry." \
+				-detail "See\u00a0https://groups.google.com/forum/#!topic/comp.lang.tcl/XnkRQ5TI-Nc about\
+					this problem" \
+				-title "Scidb" \
+				;
+			exit 1
+		}
+		variable Alert 0
+		if {!$Alert} {
+			dialog::alert \
+				-message "Because of incompatibility problems of the Tk library with the font\
+					server Scidb cannot use figurine fonts, I'm sorry." \
+				-detail "See\u00a0https://groups.google.com/forum/#!topic/comp.lang.tcl/XnkRQ5TI-Nc about\
+					this problem" \
+				-title "Scidb" \
+				;
+			set Alert 1
+		}
+		set UseFigurines 0
+		unset figurine($context:normal) figurine($context:bold)
+		registerFigurineFonts $context
 	}
 }
 

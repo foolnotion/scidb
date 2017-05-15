@@ -4463,7 +4463,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdClear,			cmdClear);
 	createCommand(ti, CmdClose,			cmdClose);
 	createCommand(ti, CmdCompact,			cmdCompact);
-	createCommand(ti, CmdCopy,			cmdCopy);
+	createCommand(ti, CmdCopy,				cmdCopy);
 	createCommand(ti, CmdCount,			cmdCount);
 	createCommand(ti, CmdFetch,			cmdFetch);
 	createCommand(ti, CmdFind,				cmdFind);
@@ -4473,7 +4473,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdSet,				cmdSet);
 	createCommand(ti, CmdGet,				cmdGet);
 	createCommand(ti, CmdMatch,			cmdMatch);
-	createCommand(ti, CmdOpen,			cmdOpen);
+	createCommand(ti, CmdOpen,				cmdOpen);
 	createCommand(ti, CmdPlayerCard,		cmdPlayerCard);
 	createCommand(ti, CmdPlayerInfo,		cmdPlayerInfo);
 	createCommand(ti, CmdRecode,			cmdRecode);

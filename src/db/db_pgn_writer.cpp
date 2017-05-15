@@ -102,6 +102,7 @@ PgnWriter::PgnWriter(format::Type srcFormat,
 		addFlag(Flag_Include_Position_Tag);
 		addFlag(Flag_Include_Time_Mode_Tag);
 		addFlag(Flag_Comment_To_Html);
+		addFlag(Flag_Use_UTF8);
 
 		removeFlag(Flag_Exclude_Extra_Tags);
 		removeFlag(Flag_Symbolic_Annotation_Style);

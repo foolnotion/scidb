@@ -785,6 +785,9 @@ View::exportGames(mstl::string const& filename,
 		else if (ext == "zip")	type = util::ZStream::Zip;
 		else							type = util::ZStream::Text;
 
+		if (flags & (PgnWriter::Flag_Use_Scidb_Import_Format | PgnWriter::Flag_Use_ChessBase_Format))
+			flags |= PgnWriter::Flag_Use_UTF8;
+
 		mstl::ios_base::openmode mode = mstl::ios_base::out;
 		mstl::string internalName(sys::file::internalName(filename));
 
