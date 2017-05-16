@@ -1295,15 +1295,25 @@ proc registerTextFonts {context {styles {normal}}} {
 
 		# XXX work-around for font problems with size 0, see
 		# https://groups.google.com/forum/#!topic/comp.lang.tcl/XnkRQ5TI-Nc
-		if {[font actual $text($context:$style) -size] == 0} {
-			dialog::alert \
-				-message "Because of incompatibility problems of the Tk library with the font\
-					server Scidb is not working on this system, I'm sorry." \
-				-detail "See\u00a0https://groups.google.com/forum/#!topic/comp.lang.tcl/XnkRQ5TI-Nc about\
-					this problem" \
-				-title "Scidb" \
-				;
-			exit 1
+		if {[font measure $text($context:$style) "A"] == 0} {
+			variable TextFontAlert
+			set fam [lindex [font actual $text($context:$style)] 1]
+			if !{[info exists TextFontAlert($fam)]} {
+				dialog::alert \
+					-message "Because of incompatibility problems of the Tk library with the font\
+						service Scidb cannot display this font\
+						('[lindex [font actual $text($context:$style)] 1]')." \
+					-detail "See\u00a0https://groups.google.com/forum/#!topic/comp.lang.tcl/XnkRQ5TI-Nc\
+						about this problem." \
+					-title "Scidb" \
+					;
+				puts "Because of incompatibility problems of the Tk library with the font\
+						service Scidb cannot display this font\
+						('[lindex [font actual $text($context:$style)] 1]').\n\
+						See https://groups.google.com/forum/#!topic/comp.lang.tcl/XnkRQ5TI-Nc\
+						about this problem."
+				set TextFontAlert($fam) 1
+			}
 		}
 	}
 }
@@ -1369,17 +1379,16 @@ proc registerSymbolFonts {context} {
 
 	# XXX work-around for font problems with size 0, see
 	# https://groups.google.com/forum/#!topic/comp.lang.tcl/XnkRQ5TI-Nc
+	if {!$UseSymbols} { return }
 	if {	[font actual $symbol($context:normal) -size] == 0
 		|| [font actual $symbol($context:bold) -size] == 0} {
-		if {!$UseSymbols} {
-			dialog::alert \
-				-message "Because of incompatibility problems of the Tk library with the font\
-					server Scidb is not working on this system, I'm sorry." \
-				-detail "See\u00a0https://groups.google.com/forum/#!topic/comp.lang.tcl/XnkRQ5TI-Nc about\
-					this problem" \
-				-title "Scidb" \
-				;
-			exit 1
+		variable NoSymbolFontAlert
+		if {![info exists NoSymbolFontAlert]} {
+			puts "Because of incompatibility problems of the Tk library with the font\
+					service Scidb is not working properly on this system. See\
+					https://groups.google.com/forum/#!topic/comp.lang.tcl/XnkRQ5TI-Nc about\
+					this problem."
+			set NoSymbolFontAlert 1
 		}
 		set UseSymbols 0
 		unset symbol($context:normal) symbol($context:bold)
@@ -1459,28 +1468,19 @@ proc registerFigurineFonts {context} {
 
 	# XXX work-around for font problems with size 0, see
 	# https://groups.google.com/forum/#!topic/comp.lang.tcl/XnkRQ5TI-Nc
-	if {	[font actual $figurine($context:normal) -size] == 0
-		|| [font actual $figurine($context:bold) -size] == 0} {
-		if {!$UseFigurines} {
+	if {!$UseFigurines} { return }
+	if {	[font measure $figurine($context:normal) "\u2654"] == 0
+		|| [font measure $figurine($context:bold) "\u2654"] == 0} {
+		variable NoFigurineAlert 0
+		if {!$NoFigurineAlert} {
 			dialog::alert \
 				-message "Because of incompatibility problems of the Tk library with the font\
-					server Scidb is not working on this system, I'm sorry." \
-				-detail "See\u00a0https://groups.google.com/forum/#!topic/comp.lang.tcl/XnkRQ5TI-Nc about\
-					this problem" \
+					service Scidb cannot use figurine fonts." \
+				-detail "See\u00a0https://groups.google.com/forum/#!topic/comp.lang.tcl/XnkRQ5TI-Nc\
+					about this problem." \
 				-title "Scidb" \
 				;
-			exit 1
-		}
-		variable Alert 0
-		if {!$Alert} {
-			dialog::alert \
-				-message "Because of incompatibility problems of the Tk library with the font\
-					server Scidb cannot use figurine fonts, I'm sorry." \
-				-detail "See\u00a0https://groups.google.com/forum/#!topic/comp.lang.tcl/XnkRQ5TI-Nc about\
-					this problem" \
-				-title "Scidb" \
-				;
-			set Alert 1
+			set NoFigurineAlert 1
 		}
 		set UseFigurines 0
 		unset figurine($context:normal) figurine($context:bold)
