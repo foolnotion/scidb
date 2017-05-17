@@ -644,6 +644,7 @@ void
 Codec::doEncoding(util::ByteStream& strm,
 						GameData const& data,
 						Signature const& signature,
+						unsigned langFlags,
 						TagBits const&,
 						bool)
 {

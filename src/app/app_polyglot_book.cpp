@@ -964,7 +964,7 @@ Book::add(Board const& position, variant::Type variant, Entry const& entry)
 	uint64_t	key	= ::hash(position, variant);
 	unsigned	offs	= findKey(key);
 
-	if (offs >= 0)
+	if (offs == 0u)
 		return false;
 
 	if (m_entryMap == 0)

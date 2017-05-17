@@ -102,7 +102,7 @@ public:
 		unsigned		length;
 	};
 
-	struct Opening { mstl::string part[Num_Name_Parts]; };
+	struct Opening { Opening() {}; mstl::string part[Num_Name_Parts]; };
 
 	EcoTable();
 	~EcoTable();

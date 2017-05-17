@@ -116,8 +116,9 @@ public:
 	void doEncoding(	util::ByteStream& strm,
 							GameData const& data,
 							Signature const& signature,
+							unsigned langFlags,
 							TagBits const& allowedTags,
-							bool allowExtraTags);
+							bool allowExtraTags) override;
 	Consumer* getConsumer(format::Type srcFormat) override;
 
 	void reset() override;

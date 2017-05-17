@@ -600,7 +600,8 @@ inline
 void
 Board::incrMaterial<piece::King>(unsigned color)
 {
-	(color == White ? m_whiteKing : m_blackKing) = (1 << ++m_material[color].king) - 1;
+	uint16_t k = (1 << ++m_material[color].king) - 1;
+	if (color == White) m_whiteKing = k; else m_blackKing = k;
 }
 
 
@@ -654,7 +655,8 @@ inline
 void
 Board::decrMaterial<piece::King>(unsigned color)
 {
-	(color == White ? m_whiteKing : m_blackKing) = (1 << --m_material[color].king) - 1;
+	uint16_t k = (1 << --m_material[color].king) - 1;
+	if (color == White) m_whiteKing = k; else m_blackKing = k;
 }
 
 
