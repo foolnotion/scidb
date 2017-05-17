@@ -1293,9 +1293,9 @@ proc registerTextFonts {context {styles {normal}}} {
 		set text($context:$style) [font create ::font::text($context:$style) \
 			-family $family -weight [Weight $style] -slant [Slant $style] -size $size]
 
-		# XXX work-around for font problems with size 0, see
+		# XXX work-around for font problems, see
 		# https://groups.google.com/forum/#!topic/comp.lang.tcl/XnkRQ5TI-Nc
-		if {[font measure $text($context:$style) "A"] == 0} {
+		if {[font measure $text($context:$style) "A"] <= 1} {
 			variable TextFontAlert
 			set fam [lindex [font actual $text($context:$style)] 1]
 			if !{[info exists TextFontAlert($fam)]} {
@@ -1377,11 +1377,12 @@ proc registerSymbolFonts {context} {
 		set symbol($context:bold) $text($context:bold)
 	}
 
-	# XXX work-around for font problems with size 0, see
+	# XXX work-around for font problems, see
 	# https://groups.google.com/forum/#!topic/comp.lang.tcl/XnkRQ5TI-Nc
 	if {!$UseSymbols} { return }
-	if {	[font actual $symbol($context:normal) -size] == 0
-		|| [font actual $symbol($context:bold) -size] == 0} {
+	set sym [mapNagToUtfSymbol 40]
+	if {	[font measure $symbol($context:normal) $sym] <= 1
+		|| [font measure $symbol($context:bold) $sym] <= 1} {
 		variable NoSymbolFontAlert
 		if {![info exists NoSymbolFontAlert]} {
 			puts "Because of incompatibility problems of the Tk library with the font\
@@ -1392,7 +1393,7 @@ proc registerSymbolFonts {context} {
 		}
 		set UseSymbols 0
 		unset symbol($context:normal) symbol($context:bold)
-		registerFigurineFonts $context
+		registerSymbolFonts $context
 	}
 }
 
@@ -1466,11 +1467,11 @@ proc registerFigurineFonts {context} {
 		}
 	}
 
-	# XXX work-around for font problems with size 0, see
+	# XXX work-around for font problems, see
 	# https://groups.google.com/forum/#!topic/comp.lang.tcl/XnkRQ5TI-Nc
 	if {!$UseFigurines} { return }
-	if {	[font measure $figurine($context:normal) "\u2654"] == 0
-		|| [font measure $figurine($context:bold) "\u2654"] == 0} {
+	if {	[font measure $figurine($context:normal) "\u2654"] <= 1
+		|| [font measure $figurine($context:bold) "\u2654"] <= 1} {
 		variable NoFigurineAlert 0
 		if {!$NoFigurineAlert} {
 			dialog::alert \
