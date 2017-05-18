@@ -316,7 +316,6 @@ private:
 
 	void putContent();
 	void putTag(char const* tag);
-	void putTag(char const* tag, mstl::string const& content);
 	void appendTag(mstl::string const& tag, mstl::string const& content);
 	void resolveSpaces();
 
@@ -441,19 +440,6 @@ ToList::appendTag(mstl::string const& tag, mstl::string const& content)
 	}
 
 	Tcl_ListObjAppendElement(0, m_stack.top(), list);
-}
-
-
-void
-ToList::putTag(char const* tag, mstl::string const& content)
-{
-	M_ASSERT(!m_stack.empty());
-
-	if (!content.empty())
-	{
-		m_tag = tag;
-		m_content.append(content);
-	}
 }
 
 

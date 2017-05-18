@@ -871,7 +871,7 @@ proc FitBottom {dst src cols} {
 }
 
 
-# proc # oPoint {} {
+# proc SetUndoPoint {} {
 # 	variable Vars
 # 
 # 	if {$Vars(histindex) >= 0} {

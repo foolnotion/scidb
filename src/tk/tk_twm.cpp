@@ -786,28 +786,34 @@ Node::maxWidth() const
 }
 
 
+#if 0 // UNUSED
 Node*
 Node::child(unsigned index) const
 {
 	M_ASSERT(index < m_childs.size());
 	return m_childs[index];
 }
+#endif
 
 
+#if 0 // UNUSED
 Node*
 Node::firstChild() const
 {
 	M_ASSERT(!m_childs.empty());
 	return m_childs[0];
 }
+#endif
 
 
+#if 0 // UNUSED
 Node*
 Node::lastChild() const
 {
 	M_ASSERT(!m_childs.empty());
 	return m_childs[m_childs.size() - 1];
 }
+#endif
 
 
 bool
@@ -879,6 +885,7 @@ Node::configure()
 }
 
 
+#if 0 // UNUSED
 void
 Node::packBefore(Node* node, Node const* succ)
 {
@@ -899,8 +906,10 @@ Node::packBefore(Node* node, Node const* succ)
 
 	Tcl_DecrRefCount(opts);
 }
+#endif
 
 
+#if 0 // UNUSED
 void
 Node::packAfter(Node* node, Node const* pred)
 {
@@ -921,6 +930,7 @@ Node::packAfter(Node* node, Node const* pred)
 
 	Tcl_DecrRefCount(opts);
 }
+#endif
 
 
 void
@@ -935,6 +945,7 @@ Node::pack(Node* node)
 }
 
 
+#if 0 // UNUSED
 void
 Node::pack(Childs const& childs)
 {
@@ -943,8 +954,10 @@ Node::pack(Childs const& childs)
 	for (Childs::const_iterator i = childs.begin(); i != childs.end(); ++i)
 		pack(*i);
 }
+#endif
 
 
+#if 0 // UNUSED
 void
 Node::unpack(unsigned index)
 {
@@ -954,8 +967,10 @@ Node::unpack(unsigned index)
 	m_childs[index]->m_parent = 0;
 //	tcl::call(__func__, m_objUnpackCmd, root()->path(), m_parent->path(), m_childs[index]->path(), nullptr);
 }
+#endif
 
 
+#if 0 // UNUSED
 void
 Node::unpack(Node const* node)
 {
@@ -966,8 +981,10 @@ Node::unpack(Node const* node)
 	unpack(i - m_childs.begin());
 	m_childs.erase(i);
 }
+#endif
 
 
+#if 0 // UNUSED
 void
 Node::unpack()
 {
@@ -976,6 +993,7 @@ Node::unpack()
 //	if (m_type == Notebook || m_type == PanedWindow)
 //		tcl::call(__func__, m_objUnpackCmd, root()->path(), path(), nullptr);
 }
+#endif
 
 
 enum Relation { Successor, Predecessor, Ancestor };

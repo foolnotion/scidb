@@ -77,32 +77,32 @@ void backtrace::text_write(ostringstream&, size_t) const {}
 #  endif
 
 
-# define M_HAVE_THREADS
+#  define M_HAVE_THREADS
 
-# ifndef M_HAVE_THREADS
+#  ifndef M_HAVE_THREADS
 
 static bool isMainThread() { return true; }
 
-# elif defined(__WIN32__)
+#  elif defined(__WIN32__)
 
 static bool isMainThread() { return false; } // backtrace not needed under windows
 
-# elif defined(__MacOSX__)
+#  elif defined(__MacOSX__)
 
-#  include <pthread.h>
+#   include <pthread.h>
 static bool isMainThread() { return pthread_main_np(); }
 
-# elif defined(__linux__)
+#  elif defined(__linux__)
 
-#  include <sys/syscall.h>
-#  include <unistd.h>
+#   include <sys/syscall.h>
+#   include <unistd.h>
 static bool isMainThread() { return syscall(SYS_gettid) == getpid(); }
 
-# else // don't know how this should be determined
+#  else // don't know how this should be determined
 
 static bool isMainThread() { return true; }
 
-# endif
+#  endif
 
 
 #  ifdef USE_GDB
@@ -175,6 +175,8 @@ gdb_cmd(char const* script_name)
 }
 
 #  endif // USE_GDB
+
+#  ifdef USE_ADDR2LINE
 
 namespace {
 
@@ -307,7 +309,6 @@ proc_stream::~proc_stream() throw()
 
 } // namespace
 
-#   ifdef USE_ADDR2LINE
 
 static string
 addr2line_cmd()
@@ -333,7 +334,7 @@ addr2line_cmd()
 	return string();
 }
 
-#   endif // USE_ADDR2LINE
+#  endif // USE_ADDR2LINE
 
 bool
 mstl::backtrace::is_debug_mode()

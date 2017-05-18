@@ -3217,7 +3217,7 @@ HtmlComputedValuesCompare(HtmlComputedValues *pV1, HtmlComputedValues *pV2)
         pV1->imListStyleImage != pV2->imListStyleImage     ||
         pV1->fFont != pV2->fFont ||
         pV1->eVerticalAlign != pV2->eVerticalAlign ||
-        (!pV1->eVerticalAlign && pV1->iVerticalAlign != pV1->iVerticalAlign)
+        (!pV1->eVerticalAlign && pV1->iVerticalAlign != pV2->iVerticalAlign)
     ) {
         return HTML_REQUIRE_LAYOUT;
     }

@@ -39,9 +39,8 @@ static int scentral[144] = {
 0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0};
 
-static const int rook_o[4] = {12, -12, 1, -1};
-static const int bishop_o[4] = {11, -11, 13, -13};
-static const int knight_o[8] = {10, -10, 14, -14, 23, -23, 25, -25};
+/*static const int rook_o[4] = {12, -12, 1, -1};*/
+/*static const int bishop_o[4] = {11, -11, 13, -13};*/
 
 static int s_bishop_mobility(int square)
 {

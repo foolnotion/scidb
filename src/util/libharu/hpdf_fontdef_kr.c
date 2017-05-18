@@ -619,6 +619,7 @@ static const HPDF_CID_Width Dotum_W_ARRAY[] = {
 };
 
 
+#if 0 // UNUSED
 static const HPDF_CID_Width BatangChe_W_ARRAY[] = {
     {1, 500},
     {2, 500},
@@ -1210,6 +1211,7 @@ static const HPDF_CID_Width Batang_W_ARRAY[] = {
     {8188, 791},
     {0xFFFF, 0}
 };
+#endif /* UNUSED */
 
 
 /*---------------------------------------------------------------------------*/

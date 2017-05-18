@@ -39,6 +39,9 @@
 #include <time.h>
 
 
+#if 0 // THIS CODE IS STLL UNUSED
+
+
 template <typename T> static T max(T a, T b) { return a < b ? b : a; }
 
 
@@ -414,6 +417,8 @@ ClockRenderer::makeHand(agg::path_storage& path, double radius, double length)
 }
 
 } // namespace
+
+#endif // UNUSED
 
 
 static int

@@ -322,7 +322,7 @@ Key::isValid(mstl::string const& key)
 	if (s[0] == '\0' || s[1] != '-')
 		return false;
 
-		s += 2;
+	s += 2;
 
 	if (*s++ != '0')
 		return false;

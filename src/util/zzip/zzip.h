@@ -87,8 +87,8 @@ uint16_t __zzip_get16(unsigned char * s);
 #define ZZIP_GET32(x) (*(uint32_t*)(x))
 #define ZZIP_GET16(x) (*(uint16_t*)(x))
 #else
-#define ZZIP_GET32(x) (__zzip_get32(x))
-#define ZZIP_GET16(x) (__zzip_get16(x))
+#define ZZIP_GET32(x) (__zzip_get32((unsigned char *) x))
+#define ZZIP_GET16(x) (__zzip_get16((unsigned char *) x))
 #endif
 
 #endif /* _ZZIP_H */

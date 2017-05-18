@@ -626,7 +626,7 @@ restart:
 	/* ep move: */
 	else if (ep_square == from-11)
 	  push_pawn (from-11, TRUE);
-	  break;
+	break;
       case (bknight):
 	/* use the knight offsets: */
 	push_knight (from-25);
@@ -637,7 +637,7 @@ restart:
 	push_knight (from+14);
 	push_knight (from+23);
 	push_knight (from+25);
-	  break;
+	break;
       case (bbishop):
 	/* use the bishop offsets: */
 	push_slide (from-13);

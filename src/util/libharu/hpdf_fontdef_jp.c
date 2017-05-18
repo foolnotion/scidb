@@ -780,6 +780,7 @@ static const HPDF_CID_Width MS_PGothic_W_ARRAY[] = {
 };
 
 
+#if 0 /* UNUSED */
 static const HPDF_CID_Width MS_Mincyo_W_ARRAY[] = {
     {1, 500},
     {2, 500},
@@ -1036,7 +1037,6 @@ static const HPDF_CID_Width MS_Mincyo_W_ARRAY[] = {
     {631, 500},
     {0xFFFF, 0}
 };
-
 
 
 static const HPDF_CID_Width MS_PMincyo_W_ARRAY[] = {
@@ -1542,6 +1542,7 @@ static const HPDF_CID_Width MS_PMincyo_W_ARRAY[] = {
     {1010, 765},
     {0xFFFF, 0}
 };
+#endif /* UNUSED */
 
 
 /*---------------------------------------------------------------------------*/
