@@ -1472,16 +1472,19 @@ proc registerFigurineFonts {context} {
 	if {!$UseFigurines} { return }
 	if {	[font measure $figurine($context:normal) "\u2654"] <= 1
 		|| [font measure $figurine($context:bold) "\u2654"] <= 1} {
-		variable NoFigurineAlert 0
-		if {!$NoFigurineAlert} {
-			dialog::alert \
-				-message "Because of incompatibility problems of the Tk library with the font\
-					service Scidb cannot use figurine fonts." \
-				-detail "See\u00a0https://groups.google.com/forum/#!topic/comp.lang.tcl/XnkRQ5TI-Nc\
-					about this problem." \
-				-title "Scidb" \
-				;
-			set NoFigurineAlert 1
+		if {$Options(figurine:use)} {
+			variable NoFigurineAlert 0
+			if {!$NoFigurineAlert} {
+				dialog::alert \
+					-message "Because of incompatibility problems of the Tk library with the font\
+						service Scidb cannot use figurine fonts." \
+					-detail "See\u00a0https://groups.google.com/forum/#!topic/comp.lang.tcl/XnkRQ5TI-Nc\
+						about this problem." \
+					-title "Scidb" \
+					;
+				set NoFigurineAlert 1
+			}
+			set Options(figurine:use) 0
 		}
 		set UseFigurines 0
 		unset figurine($context:normal) figurine($context:bold)
