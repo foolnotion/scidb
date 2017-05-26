@@ -919,8 +919,11 @@ proc recover {parent} {
 				close $chan
 
 				set header [split $content "\n"]
-				lassign {"" "" ""} line1 line2 line3
-				lassign $header line1 line2 line3
+				lassign {"" "" "" ""} line1 line2 line3 line4
+				lassign $header line1 line2 line3 line4
+				if {$line1 eq [encoding convertfrom identity "\xef\xbb\xbf"]} {
+					set line1 $line2; set line2 $line3; set line3 $line4
+				}
 				set line1 [string range $line1 2 end]
 				set line2 [string range $line2 2 end]
 				set line3 [string range $line3 2 end]

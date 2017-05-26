@@ -581,7 +581,7 @@ proc open {parent} {
 		foreach side {w b} {
 			::ttk::spinbox $checks.val$side \
 				-from 0 \
-				-to 3 \
+				-to 2 \
 				-textvariable [namespace current]::Vars(checks:$side) \
 				-command [namespace code Update] \
 				-width 1 \
