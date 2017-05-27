@@ -181,82 +181,89 @@ cmdAnalyseFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	Board board;
 	char const* fen = stringFromObj(objc, objv, 1);
 	variant::Type variant = Scidb->game().variant();
-	bool invalid = !board.setup(fen, variant);
+	variant::Type testVariant;
 
-	// TODO: strip zeroes from first part
+	// Do not test check counts, this will be handled separately.
+	testVariant = objc > 2 && variant::isThreeCheck(variant) ? variant::Normal : variant;
 
-	if (objc > 2)
+	if (!board.setup(fen, testVariant))
 	{
-		unsigned			rights	= castling::NoRights;
-		char const*		castling	= stringFromObj(objc, objv, 2);
-		char const*		fyles		= stringFromObj(objc, objv, 3);
-		char const*		checks	= stringFromObj(objc, objv, 4);
-
-		board.removeCastlingRights();
-
-		for ( ; *castling; ++castling)
-		{
-			switch (*castling)
-			{
-				case 'K':
-					rights |= castling::WhiteKingside;
-					board.setCastleShort(color::White);
-					break;
-
-				case 'k':
-					rights |= castling::BlackKingside;
-					board.setCastleShort(color::Black);
-					break;
-
-				case 'Q':
-					rights |= castling::WhiteQueenside;
-					board.setCastleLong(color::White);
-					break;
-
-				case 'q':
-					rights |= castling::BlackQueenside;
-					board.setCastleLong(color::Black);
-					break;
-			}
-		}
-
-		for ( ; *fyles; ++fyles)
-		{
-			if ('A' <= *fyles && *fyles <= 'H')
-				board.setCastlingFyle(color::White, sq::Fyle(sq::FyleA + *fyles - 'A'));
-			else if ('a' <= *fyles && *fyles <= 'h')
-				board.setCastlingFyle(color::Black, sq::Fyle(sq::FyleA + *fyles - 'a'));
-		}
-
-		if (*checks)
-		{
-			int nchecks[2] = { -1, -1 };
-
-			for ( ; *checks; ++checks)
-			{
-				if (::isdigit(*checks))
-					nchecks[nchecks[0] == -1 ? 0 : 1] = *checks - '0';
-			}
-
-			board.setChecksGiven(nchecks[0], nchecks[1]);
-		}
-
-		error = ::validate(board, variant, warnings);
-
-		if (error == 0 && board.castlingRights() != castling::Rights(rights))
-			error = "BadCastlingRights";
-
-		board.setCastlingRights(castling::Rights(rights));
-	}
-
-	if (!error)
-	{
-		warnings.clear();
-		error = ::validate(board, variant, warnings);
-	}
-
-	if (!error && invalid)
 		error = "InvalidFen";
+	}
+	else
+	{
+		// TODO: strip zeroes from first part
+
+		if (objc > 2)
+		{
+			unsigned			rights	= castling::NoRights;
+			char const*		castling	= stringFromObj(objc, objv, 2);
+			char const*		fyles		= stringFromObj(objc, objv, 3);
+			char const*		checks	= stringFromObj(objc, objv, 4);
+
+			board.removeCastlingRights();
+
+			for ( ; *castling; ++castling)
+			{
+				switch (*castling)
+				{
+					case 'K':
+						rights |= castling::WhiteKingside;
+						board.setCastleShort(color::White);
+						break;
+
+					case 'k':
+						rights |= castling::BlackKingside;
+						board.setCastleShort(color::Black);
+						break;
+
+					case 'Q':
+						rights |= castling::WhiteQueenside;
+						board.setCastleLong(color::White);
+						break;
+
+					case 'q':
+						rights |= castling::BlackQueenside;
+						board.setCastleLong(color::Black);
+						break;
+				}
+			}
+
+			for ( ; *fyles; ++fyles)
+			{
+				if ('A' <= *fyles && *fyles <= 'H')
+					board.setCastlingFyle(color::White, sq::Fyle(sq::FyleA + *fyles - 'A'));
+				else if ('a' <= *fyles && *fyles <= 'h')
+					board.setCastlingFyle(color::Black, sq::Fyle(sq::FyleA + *fyles - 'a'));
+			}
+
+			if (*checks)
+			{
+				int nchecks[2] = { -1, -1 };
+
+				for ( ; *checks; ++checks)
+				{
+					if (::isdigit(*checks))
+						nchecks[nchecks[0] == -1 ? 0 : 1] = *checks - '0';
+				}
+
+				board.setChecksGiven(nchecks[0], nchecks[1]);
+			}
+
+			error = ::validate(board, variant, warnings);
+
+			if (error == 0 && board.castlingRights() != castling::Rights(rights))
+				error = "BadCastlingRights";
+
+			board.setCastlingRights(castling::Rights(rights));
+		}
+
+		if (!error)
+		{
+			warnings.clear();
+			error = ::validate(board, variant, warnings);
+		}
+	}
 
 	if (!error && board.isStartPosition() && !board.isShuffleChessPosition(variant))
 		warnings.push_back("UnsupportedVariant");
