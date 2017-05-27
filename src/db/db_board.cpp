@@ -1170,7 +1170,7 @@ Board::checkState(variant::Type variant) const
 			default: state |= Check | DoubleCheck; break;
 		}
 
-		if (variant::isThreeCheck(variant) && m_checksGiven[m_stm ^ 1] >= 3)
+		if (/*variant::isThreeCheck(variant) && */m_checksGiven[m_stm ^ 1] >= 3)
 			return state |= ThreeChecks;
 
 		if (findAnyLegalMove(variant))
@@ -4075,7 +4075,7 @@ Board::findAnyLegalMove(variant::Type variant) const
 				return true;
 		}
 	}
-	else if (!variant::isThreeCheck(variant) || m_checksGiven[m_stm ^ 1] < 3)
+	else if (/*!variant::isThreeCheck(variant) || */m_checksGiven[m_stm ^ 1] < 3)
 	{
 		moves.clear();
 		generateNonCapturingPawnMoves(variant, moves);
@@ -4134,7 +4134,7 @@ Board::generateMoves(variant::Type variant, MoveList& result) const
 				generateCastlingMoves(result);
 		}
 	}
-	else if (!variant::isThreeCheck(variant) || m_checksGiven[m_stm ^ 1] < 3)
+	else if (/*!variant::isThreeCheck(variant) || */m_checksGiven[m_stm ^ 1] < 3)
 	{
 		generateCapturingPawnMoves(variant, result);
 		generateNonCapturingPawnMoves(variant, result);
@@ -6492,7 +6492,7 @@ Board::prepareMove(Move& move, variant::Type variant, move::Constraint flag) con
 				}
 			}
 		}
-		else if (variant::isThreeCheck(variant) && m_checksGiven[m_stm ^ 1] == 3)
+		else if (/*variant::isThreeCheck(variant) && */m_checksGiven[m_stm ^ 1] == 3)
 		{
 			move.clear();
 		}

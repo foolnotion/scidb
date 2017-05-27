@@ -1001,46 +1001,49 @@ db::Guess::quiesce(int alpha, int beta)
 	if (score > alpha)
 		alpha = score;
 
-	MoveList		moves;
-	ScoreList	scoreList;
-
-	Board::generateCapturingPawnMoves(m_variant, moves);
-	Board::generateCapturingPieceMoves(m_variant, moves);
-
-	filterLegalMoves(moves, m_variant);
-
-	M_ASSERT(moves.size() <= U_NUMBER_OF(scoreList));
-
-	for (unsigned i = 0; i < moves.size(); ++i)
-		scoreList[i] = staticExchangeEvaluator(moves[i]);
-
-	int value = score;
-
-	for (unsigned i = 0; i < moves.size(); ++i)
+	if (m_checksGiven[m_stm ^ 1] < 3)
 	{
-		moves.sort(i, scoreList);
+		MoveList		moves;
+		ScoreList	scoreList;
 
-		Move			move		= moves[i];
-		piece::Type	promoted	= move.promoted();
+		Board::generateCapturingPawnMoves(m_variant, moves);
+		Board::generateCapturingPieceMoves(m_variant, moves);
 
-		// all moves but under-promotions:
-		if (promoted == piece::None || promoted == piece::Queen)
+		filterLegalMoves(moves, m_variant);
+
+		M_ASSERT(moves.size() <= U_NUMBER_OF(scoreList));
+
+		for (unsigned i = 0; i < moves.size(); ++i)
+			scoreList[i] = staticExchangeEvaluator(moves[i]);
+
+		int value = score;
+
+		for (unsigned i = 0; i < moves.size(); ++i)
 		{
-			if (scoreList[i] < mstl::max(0, alpha - value - m_pieceValues[piece::Pawn]))
-				return alpha;	// we cannot improve alpha
+			moves.sort(i, scoreList);
 
-			prepareUndo(move);
-			doMove(move, m_variant);
-			M_ASSERT(boardIsLegal());
-			score = -quiesce(-beta, -alpha);
-			TRACE(::printf("(%d): quiesce(%s) = %d\n", m_ply, move.asString().c_str(), score));
-			undoMove(move, m_variant);
+			Move			move		= moves[i];
+			piece::Type	promoted	= move.promoted();
 
-			if (score >= beta)
-				return score;
+			// all moves but under-promotions:
+			if (promoted == piece::None || promoted == piece::Queen)
+			{
+				if (scoreList[i] < mstl::max(0, alpha - value - m_pieceValues[piece::Pawn]))
+					return alpha;	// we cannot improve alpha
 
-			if (score > alpha)
-				alpha = score;
+				prepareUndo(move);
+				doMove(move, m_variant);
+				M_ASSERT(boardIsLegal());
+				score = -quiesce(-beta, -alpha);
+				TRACE(::printf("(%d): quiesce(%s) = %d\n", m_ply, move.asString().c_str(), score));
+				undoMove(move, m_variant);
+
+				if (score >= beta)
+					return score;
+
+				if (score > alpha)
+					alpha = score;
+			}
 		}
 	}
 
