@@ -130,6 +130,7 @@ proc build {parent width height} {
 
 	$main add $hist $logo $games
 	$hist bind <Button-3> [namespace code [list PopupHistoryMenu $hist]]
+	$hist bind <Double-3> {#} ;# catch double clicks
 	bind $hist <<GameHistorySelection>> [namespace code HistorySelectionChanged]
 
 	# logo pane --------------------------------------------------------------------------------
@@ -159,9 +160,15 @@ proc build {parent width height} {
 
 	set popupcmd [namespace code [list ::gamebar::popupMenu $gamebar $top no]]
 	bind $main <Button-3> $popupcmd
+	bind $main <Double-3> {#} ;# catch double clicks
 	bind $logo <Button-3> $popupcmd
+	bind $logo <Double-3> {#} ;# catch double clicks
 	bind $games <Button-3> [list ::gamebar::popupMenu $gamebar $top]
-	foreach child [winfo children $logo] { bind $child <Button-3> $popupcmd }
+	bind $games <Double-3> {#} ;# catch double clicks
+	foreach child [winfo children $logo] {
+		bind $child <Button-3> $popupcmd
+		bind $child <Double-3> ;# catch double clicks
+	}
 
 	set Vars(frame) $edit
 	set Vars(delta) 0
@@ -175,6 +182,7 @@ proc build {parent width height} {
 		set pgn [::pgn::setup::buildText $edit.f$i editor]
 		$pgn mark set insert begin left ;# fix the position of this mark
 		bind $pgn <Button-3> [namespace code [list PopupMenu $edit $i]]
+		bind $pgn <Double-3> {#} ;# catch double clicks
 		bind $pgn <Leave> [namespace code [list HidePosition $pgn]]
 		$panes add $edit.f$i
 		set Vars(pgn:$i) $pgn
@@ -1612,7 +1620,9 @@ proc InsertDiagram {context position w level key data} {
 				if {$color eq "black"} { ::board::diagram::rotate $emb }
 				::board::diagram::update $emb $board
 				::board::diagram::bind $emb <Button-1> [namespace code [list EditAnnotation nag]]
+				::board::diagram::bind $emb <Double-1> {#} ;# catch double clicks
 				::board::diagram::bind $emb <Button-3> [namespace code [list PopupMenu $w $position]]
+				::board::diagram::bind $emb <Double-3> {#} ;# catch double clicks
 				::board::diagram::bind $emb <Button-4> [string map [list %W $w] [bind $w <Button-4>]]
 				::board::diagram::bind $emb <Button-4> {+ break }
 				::board::diagram::bind $emb <Button-5> [string map [list %W $w] [bind $w <Button-5>]]
@@ -1635,6 +1645,8 @@ proc PrintMove {context position w level key data annotation} {
 	variable Vars
 
 	lassign $data moveNo stm san legal
+	set additional {}
+	if {$key eq $Vars(current:$position)} { lappend additional h:curr }
 
 	if {$level == 0 && $Options(style:column)} {
 		set text "\t"
@@ -1659,15 +1671,15 @@ proc PrintMove {context position w level key data annotation} {
 		if {$moveNo} {
 			set text "."
 			if {$stm eq "black"} { append text ".." }
-			$w insert cur ${moveNo}${text} m:move
+			$w insert cur ${moveNo}${text} [list m:move {*}$additional]
 		}
 	}
 
-	set illegal [expr {$legal || $level == 0 ? "" : "illegal"}]
+	if {!$legal && $level > 0} { lappend additional illegal }
 	set t [expr {$level == 0 && $Options(weight:mainline) eq "bold" ? "figurineb" : "figurine"}]
 
 	foreach {text tag} [::font::splitMoves $san $t] {
-		$w insert cur $text [list m:move {*}$tag {*}$illegal]
+		$w insert cur $text [list m:move {*}$tag {*}$additional]
 	}
 
 	if {!$legal} {
@@ -1905,7 +1917,9 @@ proc EditComment {w} {
 
 
 proc EnterNag {w} {
-	$w tag add h:nag m:nag.current.first m:nag.current.last
+	if {[lindex [$w dump -window current] 0] ne "window"} {
+		$w tag add h:nag m:nag.current.first m:nag.current.last
+	}
 }
 
 
@@ -1945,14 +1959,14 @@ proc LeaveMove {w} {
 	variable Vars
 
 	set position $Vars(position)
-	if {$Vars(current:$position) ne $Vars(active:$position)} {
-		$w tag remove h:move begin end
+	set Vars(active:$position) {}
+	$w tag remove h:move begin end
 
+#	if {$Vars(current:$position) ne $Vars(active:$position)} {
    	# this seems to be a performance problem
 		# after cancel $Vars(after:$position)
 		# set Vars(after:$position) [after 75 [namespace code [list ChangeCursor $position {}]]]
-	}
-	set Vars(active:$position) {}
+#	}
 }
 
 
@@ -2244,7 +2258,8 @@ proc PopupMenu {parent position} {
 	variable Vars
 
 	set menu $parent.__menu__
-	catch { destroy $menu }
+	# Try to catch accidental double clicks.
+	if {[winfo exists $menu]} { return }
 	menu $menu
 	catch { wm attributes $m -type popup_menu }
 
@@ -2428,20 +2443,20 @@ proc PopupMenu {parent position} {
 
 		$menu add separator
 
-		if {[::scidb::game::position atStart?]} {
-			$menu add command \
-				-label " $mc::InsertDiagram" \
-				-image $::icon::16x16::board \
-				-compound left \
-				-command [list ::annotation::setNags suffix 155] \
-				;
-			$menu add command \
-				-label " $mc::InsertDiagramFromBlack" \
-				-image $::icon::16x16::board \
-				-compound left \
-				-command [list ::annotation::setNags suffix 156] \
-				;
-		} else {
+		$menu add command \
+			-label " $mc::InsertDiagram" \
+			-image $::icon::16x16::board \
+			-compound left \
+			-command [list ::annotation::setNags suffix 155] \
+			;
+		$menu add command \
+			-label " $mc::InsertDiagramFromBlack" \
+			-image $::icon::16x16::board \
+			-compound left \
+			-command [list ::annotation::setNags suffix 156] \
+			;
+
+		if {![::scidb::game::position atStart?]} {
 			set cmd ::annotation::setNags
 
 			if {[::scidb::pos::stm] eq "w"} {
@@ -2730,6 +2745,7 @@ proc PopupMenu {parent position} {
 #	$menu add command -label $CopyGameToClipboard
 #	$menu add command -label "$PrintToFile..."
 
+	bind $menu <<MenuUnpost>> [list after idle [list catch [list destroy $menu]]]
 	tk_popup $menu {*}[winfo pointerxy $parent]
 }
 
