@@ -826,6 +826,7 @@
 ::board::options::mc::SolidColor				"Tinta Unita"
 ::board::options::mc::EditList				"Modifica lista"
 ::board::options::mc::Embossed				"In Rilievo"
+::board::options::mc::Small					"Small Letters" ;# NEW
 ::board::options::mc::Highlighting			"Evidenzia"
 ::board::options::mc::Border					"Bordo"
 ::board::options::mc::SaveWorkingSet		"Salva set di lavoro"

@@ -37,6 +37,7 @@ set Coordinates			"Coordinates"
 set SolidColor				"Solid Color"
 set EditList				"Edit list"
 set Embossed				"Embossed"
+set Small					"Small"
 set Highlighting			"Highlighting"
 set Border					"Border"
 set SaveWorkingSet		"Save Working Set"
@@ -154,6 +155,12 @@ proc makeBasicFrame {path} {
 		-variable [namespace parent]::layout(coordinates) \
 		-command [namespace code ToggleShowCoords]
 	if {$layout(coordinates)} { set state normal } else { set state disabled }
+	::ttk::checkbutton $f.small \
+		-textvar [namespace current]::mc::Small \
+		-variable [namespace parent]::layout(coords-small) \
+		-command [namespace code RefreshBoard] \
+		-state $state
+	set Vars(widget:small) $f.small
 	::ttk::checkbutton $f.embossed \
 		-textvar [namespace current]::mc::Embossed \
 		-variable [namespace parent]::layout(coords-embossed) \
@@ -166,11 +173,12 @@ proc makeBasicFrame {path} {
 	grid $f.mvbar			-row  5 -column 2 -sticky w
 	grid $f.stm				-row  7 -column 1 -sticky w -columnspan 2
 	grid $f.coords			-row  9 -column 1 -sticky w -columnspan 2
-	grid $f.embossed		-row 11 -column 2 -sticky w
+	grid $f.small			-row 11 -column 2 -sticky w
+	grid $f.embossed		-row 13 -column 2 -sticky w
 	grid columnconfigure $f {0 3} -minsize $::theme::padx
 	grid columnconfigure $f 1 -minsize 25
 	grid columnconfigure $f 2 -weight 1
-	grid rowconfigure $f {0 2 4 6 8 10 12} -minsize $::theme::pady
+	grid rowconfigure $f {0 2 4 6 8 10 12 14} -minsize $::theme::pady
 
 	# Highlighting #################################
 
@@ -1093,21 +1101,17 @@ proc ToggleShowCoords {} {
 	ConfigureBoard
 	RefreshBoard
 
-	if {$layout(coordinates)} {
-		$Vars(widget:embossed) configure -state normal
-	} else {
-		$Vars(widget:embossed) configure -state disabled
-	}
+	set state [expr {$layout(coordinates) ? "normal" : "disabled"}]
+	$Vars(widget:embossed) configure -state $state
+	$Vars(widget:small) configure -state $state
 
 	if {$layout(coordinates) && $colors(locked)} {
-		$Vars(widget:coordinates) configure -state normal
-		::tooltip::tooltip \
-			$Vars(widget:coordinates) \
-			"${::mc::Color}: extendColorName $colors(user,coordinates)]"
+		set state normal; set tip "${::mc::Color}: extendColorName $colors(user,coordinates)]"
 	} else {
-		$Vars(widget:coordinates) configure -state disabled
-		::tooltip::tooltip $Vars(widget:coordinates) ""
+		set state disabled; set tip ""
 	}
+	$Vars(widget:coordinates) configure -state $state
+	::tooltip::tooltip $Vars(widget:coordinates) $tip
 }
 
 
@@ -1423,6 +1427,15 @@ proc RefreshBoard {} {
 				if {$luma >= 128} { $w itemconfigure bcoords -state normal }
 				if {$luma <  128} { $w itemconfigure wcoords -state normal }
 			}
+
+			foreach col {A B C D} {
+				set letter $col
+				if {$layout(coords-small)} { set letter [string tolower $col] }
+				$w itemconfigure cc$col -text $letter
+				$w itemconfigure wcoords$col -text $letter
+				$w itemconfigure bcoords$col -text $letter
+				$w itemconfigure coords$col -text $letter
+			}
 		}
 	}
 
@@ -1605,6 +1618,7 @@ proc ConfigureBoard {} {
 
 proc DrawBoard {h w} {
 	variable [namespace parent]::colors
+	variable [namespace parent]::layout
 	variable [namespace parent]::needRefresh
 	variable ::application::board::stmWhite
 	variable ::application::board::stmBlack
@@ -1715,13 +1729,13 @@ proc DrawBoard {h w} {
 	set y4 [expr {4*$squareSize + $bdw + $bdw/2 - 1}]
 	foreach col {A B C D} {
 		$canv create text [expr {$x3 - 1}] [expr {$y3 - 1}] \
-			-text $col -fill white -tag coords -tags [list wcoords wcoords$col]
+			-fill white -tag coords -tags [list wcoords wcoords$col cc$col]
 		$canv create text [expr {$x3 + 1}] [expr {$y3 + 1}] \
-			-text $col -fill black -tag coords -tags [list bcoords bcoords$col]
-		$canv create text $x3 $y3 -text $col -tags [list coords coords$col]
-		$bord create text [expr {$x4 - 1}] [expr {$y4 - 1}] -text $col -fill white -tag wcoords
-		$bord create text [expr {$x4 + 1}] [expr {$y4 + 1}] -text $col -fill black -tag bcoords
-		$bord create text $x4 $y4 -text $col -tag coords
+			-fill black -tag coords -tags [list bcoords bcoords$col cc$col]
+		$canv create text $x3 $y3 -tags [list coords coords$col cc$col]
+		$bord create text [expr {$x4 - 1}] [expr {$y4 - 1}] -fill white -tag [list wcoords cc$col]
+		$bord create text [expr {$x4 + 1}] [expr {$y4 + 1}] -fill black -tag [list bcoords cc$col]
+		$bord create text $x4 $y4 -tag [list coords cc$col]
 		incr x3 $squareSize
 		incr x4 $squareSize
 	}

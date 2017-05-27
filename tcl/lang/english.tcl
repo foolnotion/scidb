@@ -819,6 +819,7 @@
 ::board::options::mc::SolidColor				"Solid Color"
 ::board::options::mc::EditList				"Edit list"
 ::board::options::mc::Embossed				"Embossed"
+::board::options::mc::Small					"Small Letters"
 ::board::options::mc::Highlighting			"Highlighting"
 ::board::options::mc::Border					"Border"
 ::board::options::mc::SaveWorkingSet		"Save Working Set"

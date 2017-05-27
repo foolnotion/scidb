@@ -821,7 +821,8 @@
 ::board::options::mc::Coordinates			"Coordenadas"
 ::board::options::mc::SolidColor				"Color sólido"
 ::board::options::mc::EditList				"Editar lista"
-::board::options::mc::Embossed				"repujado"
+::board::options::mc::Embossed				"Repujado"
+::board::options::mc::Small					"Small Letters" ;# NEW
 ::board::options::mc::Highlighting			"Resaltar"
 ::board::options::mc::Border					"Borde"
 ::board::options::mc::SaveWorkingSet		"Guardar el conjunto usado"

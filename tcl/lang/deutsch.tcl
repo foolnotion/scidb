@@ -821,6 +821,7 @@
 ::board::options::mc::SolidColor				"Farbton"
 ::board::options::mc::EditList				"Liste bearbeiten"
 ::board::options::mc::Embossed				"Geprägt"
+::board::options::mc::Small					"Kleinbuchstaben"
 ::board::options::mc::Highlighting			"Hervorhebung"
 ::board::options::mc::Border					"Umrandung"
 ::board::options::mc::SaveWorkingSet		"Arbeitssatz sichern"

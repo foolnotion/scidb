@@ -825,6 +825,7 @@
 ::board::options::mc::SolidColor				"Enfärgad"
 ::board::options::mc::EditList				"Redigera lista"
 ::board::options::mc::Embossed				"Relief"
+::board::options::mc::Small					"Small Letters" ;# NEW
 ::board::options::mc::Highlighting			"Markerade"
 ::board::options::mc::Border					"Ram"
 ::board::options::mc::SaveWorkingSet		"Spara arbetsuppsättning"

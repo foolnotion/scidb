@@ -273,7 +273,7 @@ array set layout {
 	side-to-move		1
 	border				1
 	coordinates			1
-	small-letters		0
+	coords-small		0
 	coords-embossed	0
 }
 

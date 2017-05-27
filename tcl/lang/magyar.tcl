@@ -826,6 +826,7 @@
 ::board::options::mc::SolidColor			"Solid Color"
 ::board::options::mc::EditList				"Lista szerkesztése"
 ::board::options::mc::Embossed				"Embossed"
+::board::options::mc::Small				"Small Letters" ;# NEW
 ::board::options::mc::Highlighting			"Kijelölés"
 ::board::options::mc::Border				"Határvonal"
 ::board::options::mc::SaveWorkingSet		"Save Working Set"

@@ -1035,7 +1035,7 @@ proc PopupMenu {w} {
 	::theme::configureCheckEntry $m
 	$m add checkbutton \
 		-label "$::board::options::mc::UseSmallLetters" \
-		-variable ::board::layout(small-letters) \
+		-variable ::board::layout(coords-small) \
 		-command [namespace code RedrawCoordinates] \
 		-state [expr {$::board::layout(coordinates) ? "normal" : "disabled"}] \
 		;
@@ -1063,7 +1063,7 @@ proc PopupMenu {w} {
 		-compound left \
 		-image $::icon::16x16::setup \
 		-label " $::board::options::mc::BoardSetup..." \
-		-command [list ::board::options::openConfigDialog $w [namespace current]::Apply] \
+		-command [list ::board::options::openConfigDialog $w [namespace current]::Redraw] \
 		-state $state \
 		;
 	set slider [menu $m.slider -tearoff false]
@@ -1112,6 +1112,12 @@ proc Apply {} {
 }
 
 
+proc Redraw {} {
+	Apply
+	RedrawCoordinates
+}
+
+
 proc RedrawCoordinates {} {
 	variable ::board::layout
 	variable Vars
@@ -1123,10 +1129,8 @@ proc RedrawCoordinates {} {
 		foreach w [list $canv $border] {
 			foreach c {A B C D E F G H} {
 				set letter $c
-				if {$layout(small-letters)} { set letter [string tolower $c] }
-				$w itemconfigure wcoord$c -text $letter
-				$w itemconfigure bcoord$c -text $letter
-				$w itemconfigure coord$c -text $letter
+				if {$layout(coords-small)} { set letter [string tolower $c] }
+				$w itemconfigure cc$c -text $letter
 			}
 		}
 	}
@@ -1611,10 +1615,10 @@ proc BuildBoard {canv} {
 			}
 			foreach c {A B C D E F G H} {
 				set letter $c
-				if {$layout(small-letters)} { set letter [string tolower $c] }
-				$w create text 0 0 -text $letter -tags [list coords wcoords wcoord$c]
-				$w create text 0 0 -text $letter -tags [list coords bcoords bcoord$c]
-				$w create text 0 0 -text $letter -tags [list coords ncoords coord$c]
+				if {$layout(coords-small)} { set letter [string tolower $c] }
+				$w create text 0 0 -text $letter -tags [list coords wcoords cc$c wcoord$c]
+				$w create text 0 0 -text $letter -tags [list coords bcoords cc$c bcoord$c]
+				$w create text 0 0 -text $letter -tags [list coords ncoords cc$c coord$c]
 			}
 		}
 	}
