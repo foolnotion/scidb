@@ -186,7 +186,7 @@ array set environment {
 }
 
 array set compiler {
-    simd            {}
+    sse2            {}
     popcnt          {}
     thread-support  {}
     no-gzoffset     {}
@@ -1613,7 +1613,7 @@ proc checkClang {cc} {
             flush stdout
             if {[Probe testsse2 [regsub -all __CC__ $TestSSE2 $environment($cc)]]} {
                 # sse2 is not working with clang
-                set compiler(simd) -mno-sse2
+                set compiler(sse2) -mno-sse2
                 puts "yes."
             } else {
                 puts "no."
@@ -1713,16 +1713,16 @@ proc checkGCC {cc} {
             # if {8*$tcl_platform(wordSize) == 64} {
             #     flush stdout
             #     if {[ProbeGCC TestPOPCNT $cc]} {
-            #         set compiler(simd) -msse4
+            #         set compiler(sse2) -msse4
             #         set compiler(popcnt) -DUSE_POPCNT
             #     }
             # }
             # if {[llength $compiler(popcnt)] == 0} { puts "no." } else { puts "yes." }
-            if {[llength $compiler(simd)] == 0} {
+            if {[llength $compiler(sse2)] == 0} {
                 puts -nonewline "    Checking if your compiler supports SSE2: "
                 flush stdout
                 if {[ProbeGCC TestSSE2 $cc]} {
-                    set compiler(simd) -msse2
+                    set compiler(sse2) -msse2
                     puts "yes."
                 } else {
                     puts "no"
@@ -1875,8 +1875,8 @@ proc writeMakefile {success} {
     Append option(EXTRA_CXXFLAGS) $extra_c_flags
     Append option(EXTRA_CFLAGS) $extra_c_flags
 
-    if {[string length $compiler(simd)]} {
-        Append environment(CXXFLAGS) $compiler(simd)
+    if {[string length $compiler(sse2)]} {
+        Append environment(CXXFLAGS) $compiler(sse2)
     }
 
     if {[string length $compiler(no-gzoffset)]} {
@@ -2127,7 +2127,7 @@ proc usage {rc} {
     puts "  --enable-assertions        build with assertions (slows down the program)"
     puts "                             \[default=$feature(assertions)\]"
     puts "  --enable-sse2              enable sse2 support (fast JPEG decompression)"
-    puts "                             \[default=$feature(gprof-profiling)\]"
+    puts "                             \[default=$feature(sse2)\]"
     puts "  --enable-gprof-profiling   enable gprof profiling (slows down the program)"
     puts "                             \[default=$feature(gprof-profiling)\]"
     puts "  --enable-gcov-coverage     enable coverage (slows down the program)"
@@ -2164,6 +2164,7 @@ proc usage {rc} {
 
 # XXX for BETA version
 set environment(OPTIMIZE) ""
+set feature(sse2) no ;# newer compiler versions are buggy
 set feature(symbols) yes
 set feature(assertions) yes
 set configure(program-suffix) "-beta"
