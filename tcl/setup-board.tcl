@@ -581,7 +581,7 @@ proc open {parent} {
 		foreach side {w b} {
 			::ttk::spinbox $checks.val$side \
 				-from 0 \
-				-to 2 \
+				-to 3 \
 				-textvariable [namespace current]::Vars(checks:$side) \
 				-command [namespace code Update] \
 				-width 1 \
@@ -1042,7 +1042,9 @@ proc AnalyseFen {fen {cmd none}} {
 		set castlingFiles ""
 		foreach right {w:short w:long b:short b:long} { append castlingFiles $Vars($right:fyle) }
 
-		lassign [::scidb::board::analyseFen $fen $castling $castlingFiles] \
+		set checksGiven [list $Vars(checks:w) $Vars(checks:b)]
+
+		lassign [::scidb::board::analyseFen $fen $castling $castlingFiles $checksGiven] \
 			error warnings idn _ _ _ ep stm moveno halfmoves checksGiven promoted
 		if {$idn > 4*960} { set idn 0 }
 	}

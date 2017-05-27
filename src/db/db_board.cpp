@@ -1170,7 +1170,7 @@ Board::checkState(variant::Type variant) const
 			default: state |= Check | DoubleCheck; break;
 		}
 
-		if (variant == variant::ThreeCheck && m_checksGiven[m_stm ^ 1] >= 3)
+		if (variant::isThreeCheck(variant) && m_checksGiven[m_stm ^ 1] >= 3)
 			return state |= ThreeChecks;
 
 		if (findAnyLegalMove(variant))
@@ -1371,7 +1371,7 @@ Board::prepareForPrint(Move& move, variant::Type variant, Representation represe
 					if (state & Checkmate)
 						move.setMate();
 
-					if (variant == variant::ThreeCheck)
+					if (variant::isThreeCheck(variant))
 						move.setChecksGiven(m_checksGiven[m_stm] + 1);
 				}
 			}
@@ -1549,13 +1549,12 @@ Board::setChecksGiven(unsigned white, unsigned black)
 {
 	M_REQUIRE(0 <= white && white <= 3);
 	M_REQUIRE(0 <= black && black <= 3);
-	M_REQUIRE(white < 3 || black < 3);
+	//M_REQUIRE(white < 3 || black < 3); don't check at this place
 
-	hashChecksGiven(White, m_checksGiven[White]);
-	hashChecksGiven(Black, m_checksGiven[Black]);
-
-	hashChecksGiven(White, m_checksGiven[White] = white);
-	hashChecksGiven(Black, m_checksGiven[Black] = black);
+	hashChecksGiven(m_checksGiven[White], m_checksGiven[Black]);
+	m_checksGiven[White] = white;
+	m_checksGiven[Black] = black;
+	hashChecksGiven(m_checksGiven[White], m_checksGiven[Black]);
 }
 
 
@@ -1871,10 +1870,10 @@ Board::transpose(variant::Type variant)
 	board.m_plyNumber = m_plyNumber;
 	board.m_castle = castling::transpose(m_castle);
 
-	board.m_castleRookCurrent[WhiteKS] = ::flipFyle(m_castleRookCurrent[WhiteQS]);
-	board.m_castleRookCurrent[WhiteQS] = ::flipFyle(m_castleRookCurrent[WhiteKS]);
-	board.m_castleRookCurrent[BlackKS] = ::flipFyle(m_castleRookCurrent[BlackQS]);
-	board.m_castleRookCurrent[BlackQS] = ::flipFyle(m_castleRookCurrent[BlackKS]);
+	board.m_castleRookCurr[WhiteKS] = ::flipFyle(m_castleRookCurr[WhiteQS]);
+	board.m_castleRookCurr[WhiteQS] = ::flipFyle(m_castleRookCurr[WhiteKS]);
+	board.m_castleRookCurr[BlackKS] = ::flipFyle(m_castleRookCurr[BlackQS]);
+	board.m_castleRookCurr[BlackQS] = ::flipFyle(m_castleRookCurr[BlackKS]);
 
 	board.m_castleRookAtStart[WhiteKS] = ::flipFyle(m_castleRookAtStart[WhiteQS]);
 	board.m_castleRookAtStart[WhiteQS] = ::flipFyle(m_castleRookAtStart[WhiteKS]);
@@ -1913,7 +1912,7 @@ Board::transpose(variant::Type variant)
 
 		board.hashHolding(board.m_holding[White], board.m_holding[Black]);
 	}
-	else if (variant == variant::ThreeCheck)
+	else if (variant::isThreeCheck(variant))
 	{
 		board.m_checksGiven[White] = m_checksGiven[White];
 		board.m_checksGiven[Black] = m_checksGiven[Black];
@@ -1939,11 +1938,11 @@ bool
 Board::shortCastlingWhiteIsLegal() const
 {
 	M_ASSERT(kingOnBoard(White));
-	M_ASSERT(m_castleRookCurrent[WhiteKS] != Null);
-	M_ASSERT(m_castleRookCurrent[WhiteKS] > m_ksq[White]);
+	M_ASSERT(m_castleRookCurr[WhiteKS] != Null);
+	M_ASSERT(m_castleRookCurr[WhiteKS] > m_ksq[White]);
 
 	Square ksq = m_ksq[White];
-	Square rsq = m_castleRookCurrent[WhiteKS];
+	Square rsq = m_castleRookCurr[WhiteKS];
 
 	if (allSquaresBetween(mstl::min(sq::ID(ksq), e1), h1) & ~set1Bit(ksq) & ~set1Bit(rsq) & m_occupied)
 		return false;
@@ -1966,11 +1965,11 @@ bool
 Board::shortCastlingBlackIsLegal() const
 {
 	M_ASSERT(kingOnBoard(Black));
-	M_ASSERT(m_castleRookCurrent[BlackKS] != Null);
-	M_ASSERT(m_castleRookCurrent[BlackKS] > m_ksq[Black]);
+	M_ASSERT(m_castleRookCurr[BlackKS] != Null);
+	M_ASSERT(m_castleRookCurr[BlackKS] > m_ksq[Black]);
 
 	Square ksq = m_ksq[Black];
-	Square rsq = m_castleRookCurrent[BlackKS];
+	Square rsq = m_castleRookCurr[BlackKS];
 
 	if (allSquaresBetween(mstl::min(sq::ID(ksq), e8), h8) & ~set1Bit(ksq) & ~set1Bit(rsq) & m_occupied)
 		return false;
@@ -1993,11 +1992,11 @@ bool
 Board::longCastlingWhiteIsLegal() const
 {
 	M_ASSERT(kingOnBoard(White));
-	M_ASSERT(m_castleRookCurrent[WhiteQS] != Null);
-	M_ASSERT(m_castleRookCurrent[WhiteQS] < m_ksq[White]);
+	M_ASSERT(m_castleRookCurr[WhiteQS] != Null);
+	M_ASSERT(m_castleRookCurr[WhiteQS] < m_ksq[White]);
 
 	Square ksq = m_ksq[White];
-	Square rsq = m_castleRookCurrent[WhiteQS];
+	Square rsq = m_castleRookCurr[WhiteQS];
 	Square esq = mstl::max(sq::ID(ksq), e1);
 	Square bsq = mstl::min(sq::ID(rsq), b1);
 
@@ -2025,11 +2024,11 @@ bool
 Board::longCastlingBlackIsLegal() const
 {
 	M_ASSERT(kingOnBoard(Black));
-	M_ASSERT(m_castleRookCurrent[BlackQS] != Null);
-	M_ASSERT(m_castleRookCurrent[BlackQS] < m_ksq[Black]);
+	M_ASSERT(m_castleRookCurr[BlackQS] != Null);
+	M_ASSERT(m_castleRookCurr[BlackQS] < m_ksq[Black]);
 
 	Square ksq = m_ksq[Black];
-	Square rsq = m_castleRookCurrent[BlackQS];
+	Square rsq = m_castleRookCurr[BlackQS];
 	Square esq = mstl::max(sq::ID(ksq), e8);
 	Square bsq = mstl::min(sq::ID(rsq), b8);
 
@@ -2046,7 +2045,7 @@ Board::longCastlingBlackIsLegal() const
 		return true;
 
 	// check for hidden attackers
-	if (m_castleRookCurrent[BlackQS] >= c8)
+	if (m_castleRookCurr[BlackQS] >= c8)
 		return (rookAttacks(c8) & (A8 | B8) & (m_rooks | m_queens) & m_occupiedBy[White]) == 0;
 
 	return (rookAttacks(b8) & A8 & (m_rooks | m_queens) & m_occupiedBy[White]) == 0;
@@ -2057,10 +2056,10 @@ bool
 Board::shortCastlingWhiteIsPossible() const
 {
 	M_ASSERT(kingOnBoard(White));
-	M_ASSERT(m_castleRookCurrent[WhiteKS] != Null);
+	M_ASSERT(m_castleRookCurr[WhiteKS] != Null);
 
 	Square ksq = m_ksq[White];
-	Square rsq = m_castleRookCurrent[WhiteKS];
+	Square rsq = m_castleRookCurr[WhiteKS];
 	Square esq = mstl::min(sq::ID(ksq), e1);
 
 	return (allSquaresBetween(esq, h1) & ~set1Bit(ksq) & ~set1Bit(rsq) & m_occupied) == 0;
@@ -2071,10 +2070,10 @@ bool
 Board::shortCastlingBlackIsPossible() const
 {
 	M_ASSERT(kingOnBoard(Black));
-	M_ASSERT(m_castleRookCurrent[BlackKS] != Null);
+	M_ASSERT(m_castleRookCurr[BlackKS] != Null);
 
 	Square ksq = m_ksq[Black];
-	Square rsq = m_castleRookCurrent[BlackKS];
+	Square rsq = m_castleRookCurr[BlackKS];
 	Square esq = mstl::min(sq::ID(ksq), e8);
 
 	return (allSquaresBetween(esq, h8) & ~set1Bit(ksq) & ~set1Bit(rsq) & m_occupied) == 0;
@@ -2085,10 +2084,10 @@ bool
 Board::longCastlingWhiteIsPossible() const
 {
 	M_ASSERT(kingOnBoard(White));
-	M_ASSERT(m_castleRookCurrent[WhiteQS] != Null);
+	M_ASSERT(m_castleRookCurr[WhiteQS] != Null);
 
 	Square ksq = m_ksq[White];
-	Square rsq = m_castleRookCurrent[WhiteQS];
+	Square rsq = m_castleRookCurr[WhiteQS];
 	Square esq = mstl::max(sq::ID(ksq), e1);
 	Square bsq = mstl::min(sq::ID(rsq), b1);
 
@@ -2100,10 +2099,10 @@ bool
 Board::longCastlingBlackIsPossible() const
 {
 	M_ASSERT(kingOnBoard(Black));
-	M_ASSERT(m_castleRookCurrent[BlackQS] != Null);
+	M_ASSERT(m_castleRookCurr[BlackQS] != Null);
 
 	Square ksq = m_ksq[Black];
-	Square rsq = m_castleRookCurrent[BlackQS];
+	Square rsq = m_castleRookCurr[BlackQS];
 	Square esq = mstl::max(sq::ID(ksq), e8);
 	Square bsq = mstl::min(sq::ID(rsq), b8);
 
@@ -2272,32 +2271,32 @@ Board::validate(variant::Type variant, Handicap handicap, move::Constraint flag)
 	// Detect unreasonable rook squares (for castling)
 	// (in standard chess we allow castling with missing rook for historical reasons (handicap games))
 	{
-		if (	((m_castle & WhiteQueenside) && rank(m_castleRookCurrent[WhiteQS]) != Rank1)
-			|| ((m_castle & WhiteKingside ) && rank(m_castleRookCurrent[WhiteKS]) != Rank1)
-			|| ((m_castle & BlackQueenside) && rank(m_castleRookCurrent[BlackQS]) != Rank8)
-			|| ((m_castle & BlackKingside ) && rank(m_castleRookCurrent[BlackKS]) != Rank8))
+		if (	((m_castle & WhiteQueenside) && rank(m_castleRookCurr[WhiteQS]) != Rank1)
+			|| ((m_castle & WhiteKingside ) && rank(m_castleRookCurr[WhiteKS]) != Rank1)
+			|| ((m_castle & BlackQueenside) && rank(m_castleRookCurr[BlackQS]) != Rank8)
+			|| ((m_castle & BlackKingside ) && rank(m_castleRookCurr[BlackKS]) != Rank8))
 		{
 			return InvalidCastlingRights;
 		}
 
 		if (	(m_castle & WhiteKingside)
 			&& (m_castle & BlackKingside)
-			&& fyle(m_castleRookCurrent[WhiteKS]) != fyle(m_castleRookCurrent[BlackKS]))
+			&& fyle(m_castleRookCurr[WhiteKS]) != fyle(m_castleRookCurr[BlackKS]))
 		{
 			return InvalidCastlingRights;
 		}
 
 		if (	(m_castle & WhiteQueenside)
 			&& (m_castle & BlackQueenside)
-			&& fyle(m_castleRookCurrent[WhiteQS]) != fyle(m_castleRookCurrent[BlackQS]))
+			&& fyle(m_castleRookCurr[WhiteQS]) != fyle(m_castleRookCurr[BlackQS]))
 		{
 			return InvalidCastlingRights;
 		}
 
-		uint64_t whiteKS = m_castleRookCurrent[WhiteKS] == Null ? 0 : set1Bit(m_castleRookCurrent[WhiteKS]);
-		uint64_t whiteQS = m_castleRookCurrent[WhiteQS] == Null ? 0 : set1Bit(m_castleRookCurrent[WhiteQS]);
-		uint64_t blackKS = m_castleRookCurrent[BlackKS] == Null ? 0 : set1Bit(m_castleRookCurrent[BlackKS]);
-		uint64_t blackQS = m_castleRookCurrent[BlackQS] == Null ? 0 : set1Bit(m_castleRookCurrent[BlackQS]);
+		uint64_t whiteKS = m_castleRookCurr[WhiteKS] == Null ? 0 : set1Bit(m_castleRookCurr[WhiteKS]);
+		uint64_t whiteQS = m_castleRookCurr[WhiteQS] == Null ? 0 : set1Bit(m_castleRookCurr[WhiteQS]);
+		uint64_t blackKS = m_castleRookCurr[BlackKS] == Null ? 0 : set1Bit(m_castleRookCurr[BlackKS]);
+		uint64_t blackQS = m_castleRookCurr[BlackQS] == Null ? 0 : set1Bit(m_castleRookCurr[BlackQS]);
 
 		uint64_t whiteRooks = rooks(White);
 		uint64_t blackRooks = rooks(Black);
@@ -2396,7 +2395,7 @@ Board::validate(variant::Type variant, Handicap handicap, move::Constraint flag)
 		if (n < 16)
 			return TooFewPromotedPieces;
 	}
-	else if (variant == variant::ThreeCheck)
+	else if (variant::isThreeCheck(variant))
 	{
 		if (	m_checksGiven[White] > 3
 			|| m_checksGiven[Black] > 3
@@ -2429,7 +2428,7 @@ Board::setCastleShort(color::ID color, unsigned square)
 	Byte rights	= kingSide(color);
 	Byte index	= ::kingSideIndex(color);
 
-	m_castleRookCurrent[index] = m_castleRookAtStart[index] = square;
+	m_castleRookCurr[index] = m_castleRookAtStart[index] = square;
 	m_destroyCastle[square] = ~rights;
 
 	if (!(m_castle & rights))
@@ -2449,7 +2448,7 @@ Board::setCastleLong(color::ID color, unsigned square)
 	Byte rights	= queenSide(color);
 	Byte index	= ::queenSideIndex(color);
 
-	m_castleRookCurrent[index] = m_castleRookAtStart[index] = square;
+	m_castleRookCurr[index] = m_castleRookAtStart[index] = square;
 	m_destroyCastle[square] = ~rights;
 
 	if (!(m_castle & rights))
@@ -2472,7 +2471,7 @@ Board::tryCastleShort(color::ID color)
 		if (sq != Null && m_piece[sq] == piece::Rook && (set1Bit(sq) & m_occupiedBy[m_stm]))
 		{
 			m_destroyCastle[sq] = ~rights;
-			m_castleRookCurrent[::kingSideIndex(color)] = sq;
+			m_castleRookCurr[::kingSideIndex(color)] = sq;
 
 			if (!(m_castle & rights))
 			{
@@ -2496,7 +2495,7 @@ Board::tryCastleLong(color::ID color)
 		if (sq != Null && m_piece[sq] == piece::Rook && (set1Bit(sq) & m_occupiedBy[m_stm]))
 		{
 			m_destroyCastle[sq] = ~rights;
-			m_castleRookCurrent[::queenSideIndex(color)] = sq;
+			m_castleRookCurr[::queenSideIndex(color)] = sq;
 
 			if (!(m_castle & rights))
 			{
@@ -2586,8 +2585,8 @@ Board::removeCastlingRights(castling::Index index)
 	if (m_castle & (1 << index))
 	{
 		hashCastling(index);
-		m_destroyCastle[m_castleRookCurrent[index]] = 0xff;
-		m_castleRookCurrent[index] = Null;
+		m_destroyCastle[m_castleRookCurr[index]] = 0xff;
+		m_castleRookCurr[index] = Null;
 		m_castleRookAtStart[index] = Null;
 		m_unambiguous[index] = false;
 		m_castle &= ~(1 << index);
@@ -2647,7 +2646,7 @@ Board::setCastlingFyle(color::ID color, Fyle fyle)
 	Square	sq	= sq::make(fyle, HomeRank[color]);
 	Byte		i	= sq < m_ksq[color] ? queenSideIndex(color) : kingSideIndex(color);
 
-	m_castleRookCurrent[i] = m_castleRookAtStart[i] = sq;
+	m_castleRookCurr[i] = m_castleRookAtStart[i] = sq;
 	m_destroyCastle[sq] = ~(1 << i);
 	m_unambiguous[i] = true;
 }
@@ -2666,8 +2665,8 @@ Board::fixBadCastlingRights()
 		m_castle &= ~WhiteBothSides;
 		m_destroyCastle[WhiteKS] = 0xff;
 		m_destroyCastle[WhiteQS] = 0xff;
-		m_castleRookCurrent[WhiteKS] = m_castleRookAtStart[WhiteKS] = Null;
-		m_castleRookCurrent[WhiteQS] = m_castleRookAtStart[WhiteQS] = Null;
+		m_castleRookCurr[WhiteKS] = m_castleRookAtStart[WhiteKS] = Null;
+		m_castleRookCurr[WhiteQS] = m_castleRookAtStart[WhiteQS] = Null;
 	}
 	else
 	{
@@ -2691,7 +2690,7 @@ Board::fixBadCastlingRights()
 				}
 			}
 
-			m_castleRookCurrent[WhiteKS] = m_castleRookAtStart[WhiteKS] = Null;
+			m_castleRookCurr[WhiteKS] = m_castleRookAtStart[WhiteKS] = Null;
 		}
 
 		if (!(whiteRooks & A1))
@@ -2712,7 +2711,7 @@ Board::fixBadCastlingRights()
 				}
 			}
 
-			m_castleRookCurrent[WhiteQS] = m_castleRookAtStart[WhiteQS] = Null;
+			m_castleRookCurr[WhiteQS] = m_castleRookAtStart[WhiteQS] = Null;
 		}
 	}
 
@@ -2722,8 +2721,8 @@ Board::fixBadCastlingRights()
 		m_castle &= ~BlackBothSides;
 		m_destroyCastle[BlackKS] = 0xff;
 		m_destroyCastle[BlackQS] = 0xff;
-		m_castleRookCurrent[BlackKS] = m_castleRookAtStart[BlackKS] = Null;
-		m_castleRookCurrent[BlackQS] = m_castleRookAtStart[BlackQS] = Null;
+		m_castleRookCurr[BlackKS] = m_castleRookAtStart[BlackKS] = Null;
+		m_castleRookCurr[BlackQS] = m_castleRookAtStart[BlackQS] = Null;
 	}
 	else
 	{
@@ -2747,7 +2746,7 @@ Board::fixBadCastlingRights()
 				}
 			}
 
-			m_castleRookCurrent[BlackKS] = m_castleRookAtStart[BlackKS] = Null;
+			m_castleRookCurr[BlackKS] = m_castleRookAtStart[BlackKS] = Null;
 		}
 
 		if (!(blackRooks & A8))
@@ -2768,7 +2767,7 @@ Board::fixBadCastlingRights()
 				}
 			}
 
-			m_castleRookCurrent[BlackQS] = m_castleRookAtStart[BlackQS] = Null;
+			m_castleRookCurr[BlackQS] = m_castleRookAtStart[BlackQS] = Null;
 		}
 	}
 
@@ -3378,7 +3377,7 @@ Board::setup(char const* fen, variant::Type variant)
 	while (*p == ' ')
 		++p;
 
-	if (variant == variant::ThreeCheck)
+	if (variant::isThreeCheck(variant))
 	{
 		char const* q = p;
 
@@ -3461,8 +3460,8 @@ Board::setup(ExactZHPosition const& position, variant::Type variant)
 		}
 	}
 
-	::memcpy(m_castleRookCurrent, position.m_castleRookCurrent, sizeof(m_castleRookCurrent));
-	::memcpy(m_castleRookAtStart, m_castleRookCurrent, sizeof(m_castleRookCurrent));
+	::memcpy(m_castleRookCurr, position.m_castleRookCurr, sizeof(m_castleRookCurr));
+	::memcpy(m_castleRookAtStart, m_castleRookCurr, sizeof(m_castleRookCurr));
 
 	static_assert(sizeof(m_emptyBoard.m_unambiguous[0]) == 1, "setup not working");
 	::memset(m_unambiguous, true, sizeof(m_unambiguous));
@@ -3477,7 +3476,7 @@ Board::setup(ExactZHPosition const& position, variant::Type variant)
 
 		m_kingHasMoved = position.m_kingHasMoved;
 	}
-	else if (variant == variant::ThreeCheck)
+	else if (variant::isThreeCheck(variant))
 	{
 		m_checksGiven[White] = position.m_checksGiven[White];
 		m_checksGiven[Black] = position.m_checksGiven[Black];
@@ -3488,20 +3487,20 @@ Board::setup(ExactZHPosition const& position, variant::Type variant)
 bool
 Board::notDerivableFromStandardChess() const
 {
-	return	((m_castle & WhiteKingside ) && (m_ksq[White] != e1 || m_castleRookCurrent[WhiteKS] != h1))
-			|| ((m_castle & BlackKingside ) && (m_ksq[Black] != e8 || m_castleRookCurrent[BlackKS] != h8))
-			|| ((m_castle & WhiteQueenside) && (m_ksq[White] != e1 || m_castleRookCurrent[WhiteQS] != a1))
-			|| ((m_castle & BlackQueenside) && (m_ksq[Black] != e8 || m_castleRookCurrent[BlackQS] != a8));
+	return	((m_castle & WhiteKingside ) && (m_ksq[White] != e1 || m_castleRookCurr[WhiteKS] != h1))
+			|| ((m_castle & BlackKingside ) && (m_ksq[Black] != e8 || m_castleRookCurr[BlackKS] != h8))
+			|| ((m_castle & WhiteQueenside) && (m_ksq[White] != e1 || m_castleRookCurr[WhiteQS] != a1))
+			|| ((m_castle & BlackQueenside) && (m_ksq[Black] != e8 || m_castleRookCurr[BlackQS] != a8));
 }
 
 
 bool
 Board::notDerivableFromChess960() const
 {
-	return	((m_castle & WhiteKingside ) && m_castleRookCurrent[WhiteKS] < m_ksq[White])
-			|| ((m_castle & BlackKingside ) && m_castleRookCurrent[BlackKS] < m_ksq[Black])
-			|| ((m_castle & WhiteQueenside) && m_castleRookCurrent[WhiteQS] > m_ksq[White])
-			|| ((m_castle & BlackQueenside) && m_castleRookCurrent[BlackQS] > m_ksq[Black]);
+	return	((m_castle & WhiteKingside ) && m_castleRookCurr[WhiteKS] < m_ksq[White])
+			|| ((m_castle & BlackKingside ) && m_castleRookCurr[BlackKS] < m_ksq[Black])
+			|| ((m_castle & WhiteQueenside) && m_castleRookCurr[WhiteQS] > m_ksq[White])
+			|| ((m_castle & BlackQueenside) && m_castleRookCurr[BlackQS] > m_ksq[Black]);
 }
 
 
@@ -3764,7 +3763,7 @@ void
 Board::setup(unsigned idn, variant::Type variant)
 {
 	M_REQUIRE(idn > 0);
-	M_REQUIRE(idn <= 4*960 || variant == variant::Normal || variant == variant::ThreeCheck);
+	M_REQUIRE(idn <= 4*960 || variant == variant::Normal || variant::isThreeCheck(variant));
 
 	if (idn > 4*960)
 	{
@@ -4022,9 +4021,9 @@ void
 Board::genCastleShort(MoveList& result, color::ID side) const
 {
 	M_ASSERT(kingOnBoard(side));
-	M_ASSERT(m_castleRookCurrent[::kingSideIndex(side)] != Null);
+	M_ASSERT(m_castleRookCurr[::kingSideIndex(side)] != Null);
 
-	Move m(Move::genCastling(m_ksq[side], m_castleRookCurrent[::kingSideIndex(side)]));
+	Move m(Move::genCastling(m_ksq[side], m_castleRookCurr[::kingSideIndex(side)]));
 	m.setLegalMove();
 	result.append(m);
 }
@@ -4034,9 +4033,9 @@ void
 Board::genCastleLong(MoveList& result, color::ID side) const
 {
 	M_ASSERT(kingOnBoard(side));
-	M_ASSERT(m_castleRookCurrent[::queenSideIndex(side)] != Null);
+	M_ASSERT(m_castleRookCurr[::queenSideIndex(side)] != Null);
 
-	Move m(Move::genCastling(m_ksq[side], m_castleRookCurrent[::queenSideIndex(side)]));
+	Move m(Move::genCastling(m_ksq[side], m_castleRookCurr[::queenSideIndex(side)]));
 	m.setLegalMove();
 	result.append(m);
 }
@@ -4076,7 +4075,7 @@ Board::findAnyLegalMove(variant::Type variant) const
 				return true;
 		}
 	}
-	else if (variant != variant::ThreeCheck || m_checksGiven[m_stm ^ 1] < 3)
+	else if (!variant::isThreeCheck(variant) || m_checksGiven[m_stm ^ 1] < 3)
 	{
 		moves.clear();
 		generateNonCapturingPawnMoves(variant, moves);
@@ -4135,7 +4134,7 @@ Board::generateMoves(variant::Type variant, MoveList& result) const
 				generateCastlingMoves(result);
 		}
 	}
-	else if (variant != variant::ThreeCheck || m_checksGiven[m_stm ^ 1] < 3)
+	else if (!variant::isThreeCheck(variant) || m_checksGiven[m_stm ^ 1] < 3)
 	{
 		generateCapturingPawnMoves(variant, result);
 		generateNonCapturingPawnMoves(variant, result);
@@ -4692,7 +4691,7 @@ Board::parseMove(char const* algebraic, Move& move, variant::Type variant, move:
 						s += 3;
 					}
 
-					unsigned rook = m_castleRookCurrent[index];
+					unsigned rook = m_castleRookCurr[index];
 
 					if (rook != Null)
 					{
@@ -5066,14 +5065,14 @@ Board::parseMove(char const* algebraic, Move& move, variant::Type variant, move:
 		// probably a castling move is desired
 		if (type == piece::King)
 		{
-			if (canCastleShort(color::ID(m_stm)) && toSquare == m_castleRookCurrent[::kingSideIndex(m_stm)])
+			if (canCastleShort(color::ID(m_stm)) && toSquare == m_castleRookCurr[::kingSideIndex(m_stm)])
 			{
 				M_ASSERT(kingOnBoard());
 				move = prepareMove(m_ksq[m_stm], toSquare, variant, flag);
 				return s;
 			}
 
-			if (canCastleLong(color::ID(m_stm)) && toSquare == m_castleRookCurrent[::queenSideIndex(m_stm)])
+			if (canCastleLong(color::ID(m_stm)) && toSquare == m_castleRookCurr[::queenSideIndex(m_stm)])
 			{
 				M_ASSERT(kingOnBoard());
 				move = prepareMove(m_ksq[m_stm], toSquare, variant, flag);
@@ -5087,7 +5086,7 @@ Board::parseMove(char const* algebraic, Move& move, variant::Type variant, move:
 					{
 						M_ASSERT(kingOnBoard());
 						move = prepareMove(	m_ksq[White],
-													m_castleRookCurrent[::queenSideIndex(White)],
+													m_castleRookCurr[::queenSideIndex(White)],
 													variant,
 													flag);
 						return s;
@@ -5099,7 +5098,7 @@ Board::parseMove(char const* algebraic, Move& move, variant::Type variant, move:
 					{
 						M_ASSERT(kingOnBoard());
 						move = prepareMove(	m_ksq[White],
-													m_castleRookCurrent[::kingSideIndex(White)],
+													m_castleRookCurr[::kingSideIndex(White)],
 													variant,
 													flag);
 						return s;
@@ -5111,7 +5110,7 @@ Board::parseMove(char const* algebraic, Move& move, variant::Type variant, move:
 					{
 						M_ASSERT(kingOnBoard());
 						move = prepareMove(	m_ksq[Black],
-													m_castleRookCurrent[::queenSideIndex(Black)],
+													m_castleRookCurr[::queenSideIndex(Black)],
 													variant,
 													flag);
 						return s;
@@ -5123,7 +5122,7 @@ Board::parseMove(char const* algebraic, Move& move, variant::Type variant, move:
 					{
 						M_ASSERT(kingOnBoard());
 						move = prepareMove(	m_ksq[Black],
-													m_castleRookCurrent[::kingSideIndex(Black)],
+													m_castleRookCurr[::kingSideIndex(Black)],
 													variant,
 													flag);
 						return s;
@@ -5255,7 +5254,7 @@ Board::restoreCastlingRights(uint8_t prevCastlingRights)
 	while (castling)
 	{
 		Index index = Index(lsbClear(castling));
-		m_castleRookCurrent[index] = m_castleRookAtStart[index];
+		m_castleRookCurr[index] = m_castleRookAtStart[index];
 		hashCastling(index);
 	}
 
@@ -5350,7 +5349,7 @@ Board::doMove(Move const& m, variant::Type variant)
 					Index index = Index(lsb(uint8_t(~castling)));
 					hashCastling(index);
 					m_castle &= castling;
-					m_castleRookCurrent[index] = Null;
+					m_castleRookCurr[index] = Null;
 				}
 			}
 			if (m_promoted[m_stm] & fromMask)
@@ -5379,8 +5378,8 @@ Board::doMove(Move const& m, variant::Type variant)
 			{
 				hashCastling(color::ID(m_stm));
 				destroyCastle(color::ID(m_stm));
-				m_castleRookCurrent[::kingSideIndex(m_stm)] = Null;
-				m_castleRookCurrent[::queenSideIndex(m_stm)] = Null;
+				m_castleRookCurr[::kingSideIndex(m_stm)] = Null;
+				m_castleRookCurr[::queenSideIndex(m_stm)] = Null;
 			}
 			break;
 
@@ -5398,8 +5397,8 @@ Board::doMove(Move const& m, variant::Type variant)
 
 			hashCastling(color::ID(m_stm));
 			destroyCastle(color::ID(m_stm));
-			m_castleRookCurrent[::kingSideIndex(m_stm)] = Null;
-			m_castleRookCurrent[::queenSideIndex(m_stm)] = Null;
+			m_castleRookCurr[::kingSideIndex(m_stm)] = Null;
+			m_castleRookCurr[::queenSideIndex(m_stm)] = Null;
 
 			if (from < to)
 			{
@@ -5450,7 +5449,7 @@ Board::doMove(Move const& m, variant::Type variant)
 			m_piece[to] = piece::King;
 			m_occupied = m_occupiedBy[White] | m_occupiedBy[Black];
 
-			if (variant == variant::ThreeCheck && givesCheck())
+			if (variant::isThreeCheck(variant) && givesCheck())
 			{
 				M_ASSERT(m_checksGiven[m_stm] < 3);
 				hashChecksGiven(m_stm, m_checksGiven[m_stm]++);
@@ -5555,7 +5554,7 @@ Board::doMove(Move const& m, variant::Type variant)
 						unsigned index = ::kingSideIndex(m_stm);
 						if (to == m_castleRookAtStart[index])
 						{
-							m_castleRookCurrent[index] = to;
+							m_castleRookCurr[index] = to;
 							m_castle |= kingSide(color::ID(m_stm));
 							hashCastling(Index(index));
 						}
@@ -5564,7 +5563,7 @@ Board::doMove(Move const& m, variant::Type variant)
 							unsigned index = ::queenSideIndex(m_stm);
 							if (to == m_castleRookAtStart[index])
 							{
-								m_castleRookCurrent[index] = to;
+								m_castleRookCurr[index] = to;
 								m_castle |= queenSide(color::ID(m_stm));
 								hashCastling(Index(index));
 							}
@@ -5642,7 +5641,7 @@ Board::doMove(Move const& m, variant::Type variant)
 					Index index = Index(lsb(uint8_t(~castling)));
 					hashCastling(index);
 					m_castle &= castling;
-					m_castleRookCurrent[index] = Null;
+					m_castleRookCurr[index] = Null;
 				}
 			}
 			decrMaterial<piece::Rook>(sntm);
@@ -5696,7 +5695,7 @@ Board::doMove(Move const& m, variant::Type variant)
 	m_occupiedR45 ^= MaskR45[from];
 	m_occupied = m_occupiedBy[White] | m_occupiedBy[Black];
 
-	if (variant == variant::ThreeCheck && givesCheck())
+	if (variant::isThreeCheck(variant) && givesCheck())
 	{
 		M_ASSERT(m_checksGiven[m_stm] < 3);
 		hashChecksGiven(m_stm, m_checksGiven[m_stm]++);
@@ -5721,7 +5720,7 @@ Board::undoMove(Move const& m, variant::Type variant)
 	uint64_t toMask	= set1Bit(to);
 	uint64_t bothMask	= fromMask ^ toMask;
 
-	if (variant == variant::ThreeCheck && isInCheck())
+	if (variant::isThreeCheck(variant) && isInCheck())
 	{
 		M_ASSERT(m_checksGiven[sntm] > 0);
 		hashChecksGiven(sntm, --m_checksGiven[sntm]);
@@ -6147,7 +6146,7 @@ Board::checkMove(Move const& move, variant::Type variant, move::Constraint flag)
 
 		if (move.isShortCastling())
 		{
-			if (m_castleRookCurrent[::kingSideIndex(m_stm)] == Null)
+			if (m_castleRookCurr[::kingSideIndex(m_stm)] == Null)
 				return flag == move::AllowIllegalMove;
 
 			if (flag == move::AllowIllegalMove)
@@ -6156,7 +6155,7 @@ Board::checkMove(Move const& move, variant::Type variant, move::Constraint flag)
 			return canCastleShort(sideToMove()) && shortCastlingIsLegal();
 		}
 
-		if (m_castleRookCurrent[::queenSideIndex(m_stm)] == Null)
+		if (m_castleRookCurr[::queenSideIndex(m_stm)] == Null)
 			return flag == move::AllowIllegalMove;
 
 		if (flag == move::AllowIllegalMove)
@@ -6207,14 +6206,14 @@ Board::checkMove(Move const& move, variant::Type variant, move::Constraint flag)
 			break;
 
 		case Move::Castle:
-			if (to == m_castleRookCurrent[::kingSideIndex(m_stm)])
+			if (to == m_castleRookCurr[::kingSideIndex(m_stm)])
 			{
 				if (flag == move::AllowIllegalMove)
 					return shortCastlingIsPossible();
 
 				return canCastleShort(sideToMove()) && shortCastlingIsLegal();
 			}
-			if (to == m_castleRookCurrent[::queenSideIndex(m_stm)])
+			if (to == m_castleRookCurr[::queenSideIndex(m_stm)])
 			{
 				if (flag == move::AllowIllegalMove)
 					return longCastlingIsPossible();
@@ -6314,7 +6313,7 @@ Board::prepareMove(Square from, Square to, variant::Type variant, move::Constrai
 			{
 				if (from < to)
 				{
-					if (m_castleRookCurrent[::kingSideIndex(m_stm)] == to && canCastleShort(color::ID(m_stm)))
+					if (m_castleRookCurr[::kingSideIndex(m_stm)] == to && canCastleShort(color::ID(m_stm)))
 					{
 						if (shortCastlingIsLegal())
 							return setMoveColor(setLegalMove(Move::genCastling(m_ksq[m_stm], to)));
@@ -6325,7 +6324,7 @@ Board::prepareMove(Square from, Square to, variant::Type variant, move::Constrai
 				}
 				else
 				{
-					if (m_castleRookCurrent[::queenSideIndex(m_stm)] == to && canCastleLong(color::ID(m_stm)))
+					if (m_castleRookCurr[::queenSideIndex(m_stm)] == to && canCastleLong(color::ID(m_stm)))
 					{
 						if (longCastlingIsLegal())
 							return setMoveColor(setLegalMove(Move::genCastling(m_ksq[m_stm], to)));
@@ -6341,7 +6340,7 @@ Board::prepareMove(Square from, Square to, variant::Type variant, move::Constrai
 				{
 					if (canCastleShort(color::ID(m_stm)))
 					{
-						to = m_castleRookCurrent[::kingSideIndex(m_stm)];
+						to = m_castleRookCurr[::kingSideIndex(m_stm)];
 
 						if (shortCastlingIsLegal())
 							return setMoveColor(setLegalMove(Move::genCastling(m_ksq[m_stm], to)));
@@ -6354,7 +6353,7 @@ Board::prepareMove(Square from, Square to, variant::Type variant, move::Constrai
 				{
 					if (canCastleLong(color::ID(m_stm)))
 					{
-						to = m_castleRookCurrent[::queenSideIndex(m_stm)];
+						to = m_castleRookCurr[::queenSideIndex(m_stm)];
 
 						if (longCastlingIsLegal())
 							return setMoveColor(setLegalMove(Move::genCastling(m_ksq[m_stm], to)));
@@ -6493,7 +6492,7 @@ Board::prepareMove(Move& move, variant::Type variant, move::Constraint flag) con
 				}
 			}
 		}
-		else if (variant == variant::ThreeCheck && m_checksGiven[m_stm ^ 1] == 3)
+		else if (variant::isThreeCheck(variant) && m_checksGiven[m_stm ^ 1] == 3)
 		{
 			move.clear();
 		}
@@ -6526,49 +6525,49 @@ Board::prepareCastle(Square from, Square to, move::Constraint flag) const
 			switch (to)
 			{
 				case g1:
-					if (m_castleRookCurrent[WhiteKS] == h1 && (m_castle & WhiteKingside))
+					if (m_castleRookCurr[WhiteKS] == h1 && (m_castle & WhiteKingside))
 					{
 						if (shortCastlingWhiteIsLegal())
-							return setLegalMove(Move::genCastling(m_ksq[White], m_castleRookCurrent[WhiteKS]));
+							return setLegalMove(Move::genCastling(m_ksq[White], m_castleRookCurr[WhiteKS]));
 
 						if (flag == move::AllowIllegalMove && shortCastlingWhiteIsPossible())
-							return Move::genCastling(m_ksq[White], m_castleRookCurrent[WhiteKS]);
+							return Move::genCastling(m_ksq[White], m_castleRookCurr[WhiteKS]);
 					}
 					break;
 
 				case c1:
-					if (m_castleRookCurrent[WhiteQS] == a1 && (m_castle & WhiteQueenside))
+					if (m_castleRookCurr[WhiteQS] == a1 && (m_castle & WhiteQueenside))
 					{
 						if (longCastlingWhiteIsLegal())
-							return setLegalMove(Move::genCastling(m_ksq[White], m_castleRookCurrent[WhiteQS]));
+							return setLegalMove(Move::genCastling(m_ksq[White], m_castleRookCurr[WhiteQS]));
 
 						if (flag == move::AllowIllegalMove && longCastlingWhiteIsPossible())
-							return Move::genCastling(m_ksq[White], m_castleRookCurrent[WhiteQS]);
+							return Move::genCastling(m_ksq[White], m_castleRookCurr[WhiteQS]);
 					}
 					break;
 			}
 		}
 
-		if (to == m_castleRookCurrent[WhiteKS])
+		if (to == m_castleRookCurr[WhiteKS])
 		{
 			if (m_castle & WhiteKingside)
 			{
 				if (shortCastlingWhiteIsLegal())
-					return setLegalMove(Move::genCastling(m_ksq[White], m_castleRookCurrent[WhiteKS]));
+					return setLegalMove(Move::genCastling(m_ksq[White], m_castleRookCurr[WhiteKS]));
 
 				if (flag == move::AllowIllegalMove && shortCastlingWhiteIsPossible())
-					return Move::genCastling(m_ksq[White], m_castleRookCurrent[WhiteKS]);
+					return Move::genCastling(m_ksq[White], m_castleRookCurr[WhiteKS]);
 			}
 		}
-		else if (to == m_castleRookCurrent[WhiteQS])
+		else if (to == m_castleRookCurr[WhiteQS])
 		{
 			if (m_castle & WhiteQueenside)
 			{
 				if (longCastlingWhiteIsLegal())
-					return setLegalMove(Move::genCastling(m_ksq[White], m_castleRookCurrent[WhiteQS]));
+					return setLegalMove(Move::genCastling(m_ksq[White], m_castleRookCurr[WhiteQS]));
 
 				if (flag == move::AllowIllegalMove && longCastlingWhiteIsPossible())
-					return Move::genCastling(m_ksq[White], m_castleRookCurrent[WhiteQS]);
+					return Move::genCastling(m_ksq[White], m_castleRookCurr[WhiteQS]);
 			}
 		}
 	}
@@ -6579,49 +6578,49 @@ Board::prepareCastle(Square from, Square to, move::Constraint flag) const
 			switch (to)
 			{
 				case g8:
-					if (m_castleRookCurrent[BlackKS] == h8 && (m_castle & BlackKingside))
+					if (m_castleRookCurr[BlackKS] == h8 && (m_castle & BlackKingside))
 					{
 						if (shortCastlingBlackIsLegal())
-							return setLegalMove(Move::genCastling(m_ksq[Black], m_castleRookCurrent[BlackKS]));
+							return setLegalMove(Move::genCastling(m_ksq[Black], m_castleRookCurr[BlackKS]));
 
 						if (flag == move::AllowIllegalMove && shortCastlingBlackIsPossible())
-							return Move::genCastling(m_ksq[Black], m_castleRookCurrent[BlackKS]);
+							return Move::genCastling(m_ksq[Black], m_castleRookCurr[BlackKS]);
 					}
 					break;
 
 				case c8:
-					if (m_castleRookCurrent[BlackQS] == a8 && (m_castle & BlackQueenside))
+					if (m_castleRookCurr[BlackQS] == a8 && (m_castle & BlackQueenside))
 					{
 						if (longCastlingBlackIsLegal())
-							return setLegalMove(Move::genCastling(m_ksq[Black], m_castleRookCurrent[BlackQS]));
+							return setLegalMove(Move::genCastling(m_ksq[Black], m_castleRookCurr[BlackQS]));
 
 						if (flag == move::AllowIllegalMove && longCastlingBlackIsPossible())
-							return Move::genCastling(m_ksq[Black], m_castleRookCurrent[BlackQS]);
+							return Move::genCastling(m_ksq[Black], m_castleRookCurr[BlackQS]);
 					}
 					break;
 			}
 		}
 
-		if (to == m_castleRookCurrent[BlackKS])
+		if (to == m_castleRookCurr[BlackKS])
 		{
 			if (m_castle & BlackKingside)
 			{
 				if (shortCastlingBlackIsLegal())
-					return setLegalMove(Move::genCastling(m_ksq[Black], m_castleRookCurrent[BlackKS]));
+					return setLegalMove(Move::genCastling(m_ksq[Black], m_castleRookCurr[BlackKS]));
 
 				if (flag == move::AllowIllegalMove && shortCastlingBlackIsPossible())
-					return Move::genCastling(m_ksq[Black], m_castleRookCurrent[BlackKS]);
+					return Move::genCastling(m_ksq[Black], m_castleRookCurr[BlackKS]);
 			}
 		}
-		else if (to == m_castleRookCurrent[BlackQS])
+		else if (to == m_castleRookCurr[BlackQS])
 		{
 			if (m_castle & BlackQueenside)
 			{
 				if (longCastlingBlackIsLegal())
-					return setLegalMove(Move::genCastling(m_ksq[Black], m_castleRookCurrent[BlackQS]));
+					return setLegalMove(Move::genCastling(m_ksq[Black], m_castleRookCurr[BlackQS]));
 
 				if (flag == move::AllowIllegalMove && longCastlingBlackIsPossible())
-					return Move::genCastling(m_ksq[Black], m_castleRookCurrent[BlackQS]);
+					return Move::genCastling(m_ksq[Black], m_castleRookCurr[BlackQS]);
 			}
 		}
 	}
@@ -6680,11 +6679,11 @@ Board::makeMove(Square from, Square to, piece::Type promotedOrDrop) const
 			{
 				case -2: // short castling
 					return setMoveColor(
-						Move::genCastling(from, m_castleRookCurrent[::kingSideIndex(m_stm)]));
+						Move::genCastling(from, m_castleRookCurr[::kingSideIndex(m_stm)]));
 
 				case +2: // long castling
 					return setMoveColor(
-						Move::genCastling(from, m_castleRookCurrent[::queenSideIndex(m_stm)]));
+						Move::genCastling(from, m_castleRookCurr[::queenSideIndex(m_stm)]));
 			}
 
 			return setMoveColor(Move::genKingMove(from, to, captured));
@@ -6943,7 +6942,7 @@ Board::toFen(mstl::string& result, variant::Type variant, Format format) const
 	// move number
 	result.format(" %u", unsigned(moveNumber()));
 
-	if (variant == variant::ThreeCheck)
+	if (variant::isThreeCheck(variant))
 	{
 		// checks given counter (+<checks given with White>+<checks given with Black>)
 		if (m_checksGiven[White] | m_checksGiven[Black])
@@ -7062,7 +7061,7 @@ Board::neitherPlayerHasMatingMaterial(variant::Type variant) const
 	if (wtotal == 1 && btotal == 1)
 		return true;
 
-	if (variant == variant::ThreeCheck)
+	if (variant::isThreeCheck(variant))
 		return false;
 
 	if (wtotal == 2 && btotal == 1 && wmat.minor() == 1)
@@ -7092,7 +7091,7 @@ Board::cannotWin(color::ID color, variant::Type variant) const
 	if (total == 1)
 		return true;
 	
-	if (variant == variant::ThreeCheck)
+	if (variant::isThreeCheck(variant))
 		return false;
 	
 	return total == 2 && material.minor() == 1;
@@ -7333,7 +7332,7 @@ Board::initialize()
 	base::initialize();
 #endif
 
-	static_assert(sizeof(m_emptyBoard.m_castleRookCurrent[0]) == 1, "setup not working");
+	static_assert(sizeof(m_emptyBoard.m_castleRookCurr[0]) == 1, "setup not working");
 	static_assert(sizeof(m_emptyBoard.m_castleRookAtStart[0]) == 1, "setup not working");
 	static_assert(sizeof(m_emptyBoard.m_unambiguous[0]) == 1, "setup not working");
 	static_assert(sizeof(m_emptyBoard.m_destroyCastle[0]) == 1, "setup not working");
@@ -7347,7 +7346,7 @@ Board::initialize()
 	// Empty board
 	::memset(&m_emptyBoard, 0, sizeof(m_emptyBoard));
 	::memset(m_emptyBoard.m_destroyCastle, 0xff, sizeof(m_emptyBoard.m_destroyCastle));
-	::memset(m_emptyBoard.m_castleRookCurrent, Null, U_NUMBER_OF(m_emptyBoard.m_castleRookCurrent));
+	::memset(m_emptyBoard.m_castleRookCurr, Null, U_NUMBER_OF(m_emptyBoard.m_castleRookCurr));
 	::memset(m_emptyBoard.m_castleRookAtStart, Null, U_NUMBER_OF(m_emptyBoard.m_castleRookAtStart));
 	m_emptyBoard.m_epSquare = Null;
 	m_emptyBoard.m_ksq[0] = Null;

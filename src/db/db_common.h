@@ -828,6 +828,7 @@ namespace variant
 	bool isAntichess(Type variant);
 	bool isAntichessExceptLosers(Type variant);
 	bool isZhouse(Type variant);
+	bool isThreeCheck(Type variant);
 	bool isMainVariant(Type variant);
 
 	bool isStandardChess(uint16_t idn, variant::Type variant);

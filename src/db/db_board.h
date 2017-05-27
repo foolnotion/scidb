@@ -62,11 +62,11 @@ struct ExactPosition : public Position
 	bool operator==(ExactPosition const& position) const;
 	bool operator!=(ExactPosition const& position) const;
 
-	Square	m_castleRookCurrent[4];	// squares of the castling rooks
-	Byte		m_stm;						// side to move
-	Byte		m_castle;					// flags for castle legality (these can be merged)
-	Square	m_epSquare;					// square of a possible ep capture
-	Byte		__alignment;				// needed for alignment (otherwise memcmp() won't work)
+	Square	m_castleRookCurr[4];	// squares of the castling rooks
+	Byte		m_stm;					// side to move
+	Byte		m_castle;				// flags for castle legality (these can be merged)
+	Square	m_epSquare;				// square of a possible ep capture
+	Byte		__alignment;			// needed for alignment (otherwise memcmp() won't work)
 }
 __attribute__((packed));
 
@@ -148,7 +148,7 @@ public:
 		TooFewPiecesInHolding,		///< too few pieces in holding
 		TooManyPromotedPieces,		///< too many pieces marked as promoted
 		TooFewPromotedPieces,		///< too many pieces marked as promoted
-		IllegalCheckCount,			///< illegal check count
+		IllegalCheckCount,			///< illegal check count (Three-check)
 	};
 
 	enum Representation
