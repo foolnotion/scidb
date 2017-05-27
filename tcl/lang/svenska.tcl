@@ -831,6 +831,7 @@
 ::board::options::mc::SelectedSquare		"Markerad ruta"
 ::board::options::mc::ShowBorder				"Visa ram"
 ::board::options::mc::ShowCoordinates		"Visa kordinater"
+::board::options::mc::UseSmallLetters		"Use Small Letters" ;# NEW
 ::board::options::mc::ShowMaterialValues	"Visa materiella värde"
 ::board::options::mc::ShowMaterialBar		"Visa material stapel"
 ::board::options::mc::ShowSideToMove		"Visa sida vid draget"

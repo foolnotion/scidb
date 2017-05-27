@@ -825,6 +825,7 @@
 ::board::options::mc::SelectedSquare		"Selected Square"
 ::board::options::mc::ShowBorder				"Show Border"
 ::board::options::mc::ShowCoordinates		"Show Coordinates"
+::board::options::mc::UseSmallLetters		"Use Small Letters"
 ::board::options::mc::ShowMaterialValues	"Show Material Values"
 ::board::options::mc::ShowMaterialBar		"Show Material Bar"
 ::board::options::mc::ShowSideToMove		"Show Side to Move"

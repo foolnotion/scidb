@@ -832,6 +832,7 @@
 ::board::options::mc::SelectedSquare		"Kijelölt mező"
 ::board::options::mc::ShowBorder			"Határvonal mutatása"
 ::board::options::mc::ShowCoordinates		"Koordináták mutatása"
+::board::options::mc::UseSmallLetters		"Use Small Letters" ;# NEW
 ::board::options::mc::ShowMaterialValues	"Anyageloszlás mutatása"
 ::board::options::mc::ShowMaterialBar		"Anyageloszlás háttércsík"
 ::board::options::mc::ShowSideToMove		"Lépésre jövő fél jelzése"

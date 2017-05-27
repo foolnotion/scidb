@@ -832,6 +832,7 @@
 ::board::options::mc::SelectedSquare		"Seleziona casa"
 ::board::options::mc::ShowBorder				"Mostra bordo"
 ::board::options::mc::ShowCoordinates		"Mostra coordinate"
+::board::options::mc::UseSmallLetters		"Use Small Letters" ;# NEW
 ::board::options::mc::ShowMaterialValues	"Mostra valore dei pezzi"
 ::board::options::mc::ShowMaterialBar		"Mostra barra del materiale"
 ::board::options::mc::ShowSideToMove		"Mostra lato con il tratto"

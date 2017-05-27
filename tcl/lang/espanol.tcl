@@ -828,6 +828,7 @@
 ::board::options::mc::SelectedSquare		"Casilla elegida"
 ::board::options::mc::ShowBorder				"Mostrar borde"
 ::board::options::mc::ShowCoordinates		"Mostrar coordenadas"
+::board::options::mc::UseSmallLetters		"Use Small Letters" ;# NEW
 ::board::options::mc::ShowMaterialValues	"Mostrar material"
 ::board::options::mc::ShowMaterialBar		"Mostrar Barra de Matrial" 
 ::board::options::mc::ShowSideToMove		"Mostrar el lado que mueve"

@@ -827,6 +827,7 @@
 ::board::options::mc::SelectedSquare		"Ausgewähltes Feld"
 ::board::options::mc::ShowBorder				"Umrandung anzeigen"
 ::board::options::mc::ShowCoordinates		"Koordinaten anzeigen"
+::board::options::mc::UseSmallLetters		"Kleinbuchstaben verwenden"
 ::board::options::mc::ShowMaterialValues	"Materialwerte anzeigen"
 ::board::options::mc::ShowMaterialBar		"Materialleiste anzeigen"
 ::board::options::mc::ShowSideToMove		"Zugrecht anzeigen"

@@ -1034,6 +1034,13 @@ proc PopupMenu {w} {
 		;
 	::theme::configureCheckEntry $m
 	$m add checkbutton \
+		-label "$::board::options::mc::UseSmallLetters" \
+		-variable ::board::layout(small-letters) \
+		-command [namespace code RedrawCoordinates] \
+		-state [expr {$::board::layout(coordinates) ? "normal" : "disabled"}] \
+		;
+	::theme::configureCheckEntry $m
+	$m add checkbutton \
 		-label $::board::options::mc::ShowSuggestedMove \
 		-variable ::board::hilite(show-suggested) \
 		-command [namespace code Apply] \
@@ -1101,6 +1108,27 @@ proc Apply {} {
 
 	if {[info exists Vars(width)]} {
 		RebuildBoard $Vars(widget:frame) $Vars(width) $Vars(height)
+	}
+}
+
+
+proc RedrawCoordinates {} {
+	variable ::board::layout
+	variable Vars
+
+	set border $Vars(widget:border)
+	set canv $Vars(widget:frame)
+
+	if {[llength [$border find withtag coords]] > 0} {
+		foreach w [list $canv $border] {
+			foreach c {A B C D E F G H} {
+				set letter $c
+				if {$layout(small-letters)} { set letter [string tolower $c] }
+				$w itemconfigure wcoord$c -text $letter
+				$w itemconfigure bcoord$c -text $letter
+				$w itemconfigure coord$c -text $letter
+			}
+		}
 	}
 }
 
@@ -1582,9 +1610,11 @@ proc BuildBoard {canv} {
 				$w create text 0 0 -justify right -text $r -tags [list coords ncoords coord$r]
 			}
 			foreach c {A B C D E F G H} {
-				$w create text 0 0 -text $c -tags [list coords wcoords wcoord$c]
-				$w create text 0 0 -text $c -tags [list coords bcoords bcoord$c]
-				$w create text 0 0 -text $c -tags [list coords ncoords coord$c]
+				set letter $c
+				if {$layout(small-letters)} { set letter [string tolower $c] }
+				$w create text 0 0 -text $letter -tags [list coords wcoords wcoord$c]
+				$w create text 0 0 -text $letter -tags [list coords bcoords bcoord$c]
+				$w create text 0 0 -text $letter -tags [list coords ncoords coord$c]
 			}
 		}
 	}
