@@ -1360,6 +1360,9 @@ proc CheckIdn {} {
 			set Vars(idn) 960
 			set Vars(positionId) 960
 			set Vars(freeze) 0
+		} else {
+			set Vars(checks:w) 0
+			set Vars(checks:b) 0
 		}
 		Shuffle update
 	}
