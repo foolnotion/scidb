@@ -429,7 +429,7 @@
 ::application::board::mc::SlidingVarPanePosition	"Sliding variation pane position" ;# NEW
 ::application::board::mc::ShowVariationArrows		"Show variation arrows" ;# NEW
 ::application::board::mc::ShowAnnotation           "Show annotation glyph" ;# NEW
-::application::board::mc::ShowAnnotationTimeout    "Timeout for annoation glyph" ;# NEW
+::application::board::mc::ShowAnnotationTimeout    "Timeout for annotation glyph" ;# NEW
 ::application::board::mc::None                     "None" ;# NEW
 
 ::application::board::mc::Tools							"Herramientas"

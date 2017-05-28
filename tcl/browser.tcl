@@ -579,7 +579,7 @@ if {0} {
 			}
 		}
 	} elseif {$idn == 0 && [llength $position]} {
-		append line1 "FEN: "
+		append line1 "FEN:\u00a0"
 		append line1 [lindex $position 0]
 	}
 

@@ -1682,6 +1682,7 @@ proc PopupMenu {path menu base variant index} {
 	variable Columns
 
 	if {$index eq "none"} { return }
+	if {[string length $base] == 0} { return }
 
 	set view [{*}$Vars(viewcmd) $base $variant]
 	if {[scidb::view::count games $base $variant $view] == 0} { return }

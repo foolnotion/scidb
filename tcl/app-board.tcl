@@ -40,7 +40,7 @@ set AddNewGame					"Add New Game..."
 set SlidingVarPanePosition	"Sliding variation pane position"
 set ShowVariationArrows		"Show variation arrows"
 set ShowAnnotation			"Show annotation glyph"
-set ShowAnnotationTimeout	"Timeout for annoation glyph"
+set ShowAnnotationTimeout	"Timeout for annotation glyph"
 set None							"None"
 
 set Tools						"Tools"

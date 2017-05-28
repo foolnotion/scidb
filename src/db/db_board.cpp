@@ -3531,7 +3531,7 @@ Board::isStandardPosition(variant::Type variant) const
 bool
 Board::isStartPosition() const
 {
-	if (m_epSquare != Null || m_stm == Black)
+	if (m_epSquare != Null || m_stm == Black || m_checksGiven[White] > 0 || m_checksGiven[Black] > 0)
 		return false;
 
 	return	// check material: KQRRBBNN
@@ -6985,11 +6985,14 @@ Board::handicap() const
 		}
 	}
 
-	Board board(*this);
-	board.setAt(square, m_standardBoard.pieceAt(square), variant::Normal);
+	if (square != sq::Null)
+	{
+		Board board(*this);
+		board.setAt(square, m_standardBoard.pieceAt(square), variant::Normal);
 
-	if (!board.isStandardPosition(variant::Normal))
-		square = sq::Null;
+		if (!board.isStandardPosition(variant::Normal))
+			square = sq::Null;
+	}
 
 	return square;
 }
