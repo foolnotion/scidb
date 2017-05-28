@@ -149,13 +149,18 @@ proc build {w width height} {
 	set Vars(autoplay) 0
 	set Vars(active) 0
 	set Vars(material) {}
-	set Vars(registered) {}
+	set Vars(registered:0) {}
+	set Vars(registered:1) {}
 	set Vars(subscribe:list) {}
 	set Vars(subscribe:info) {}
 	set Vars(current:game) {}
 	set Vars(load:method) base
 	set Vars(select-var-is-pending) 0
-	foreach layout $Layouts { set Vars(inuse:$layout) {}; set Vars(registered:$layout) 0 }
+	foreach layout $Layouts {
+		set Vars(inuse:$layout) {}
+		set Vars(registered:$layout) 0
+		set Vars(registered:$layout) 0
+	}
 
 	$board configure -cursor crosshair
 	::bind $canv <Configure> [namespace code { ConfigureWindow %W %w %h }]
@@ -532,6 +537,7 @@ proc update {position cmd data} {
 	::board::diagram::clearMarks $board
 	UpdateSideToMove $Vars(widget:frame)
 	DrawMaterialValues $Vars(widget:frame)
+	DrawChecks $Vars(widget:frame)
 	UpdateControls
 	::variation::hide 0
 }
@@ -911,6 +917,7 @@ proc Preload {width height} {
 	::board::setupSquares $Dim(squaresize)
 	::board::setupPieces $Dim(squaresize)
 	::board::pieceset::registerFigurines $Dim(piece:size) $layout(material-bar)
+	::board::pieceset::registerFigurines $Dim(piece:size) 0
 }
 
 
@@ -1160,13 +1167,26 @@ proc RebuildBoard {canv width height} {
 		$Vars(widget:border) configure -background [$canv cget -background]
 	}
 
-	set pieceSize $Dim(piece:size)
-	set inuse 0
-	catch { set inuse [image inuse photo_Piece(figurine,$layout(material-bar),wq,$pieceSize)] }
-	if {$inuse == 0} {
-		::board::pieceset::registerFigurines $pieceSize $layout(material-bar)
-		if {[llength $Vars(registered)]} { ::board::pieceset::unregisterFigurines {*}$Vars(registered) }
-		set Vars(registered) [list $pieceSize $layout(material-bar)]
+	set inuse(0) 0
+	set inuse(1) 0
+	if {$Vars(layout) eq "Normal"} {
+		set pieceSize $Dim(piece:size)
+		catch { set inuse(0) [image inuse photo_Piece(figurine,0,wq,$pieceSize)] }
+		catch { set inuse(1) [image inuse photo_Piece(figurine,1,wq,$pieceSize)] }
+		if {!$inuse($layout(material-bar))} {
+			::board::pieceset::registerFigurines $pieceSize $layout(material-bar)
+			set Vars(registered:$layout(material-bar)) [list $pieceSize $layout(material-bar)]
+		}
+		if {!$inuse(0)} {
+			::board::pieceset::registerFigurines $pieceSize 0
+			set Vars(registered:0) [list $pieceSize $layout(material-bar)]
+		}
+	}
+	if {!$inuse(0) && [llength $Vars(registered:0)]} {
+		::board::pieceset::unregisterFigurines {*}$Vars(registered:0)
+	}
+	if {!$inuse(1) && [llength $Vars(registered:1)]} {
+		::board::pieceset::unregisterFigurines {*}$Vars(registered:1)
 	}
 
 	if {$squareSize != $Dim(squaresize) || $edgeThickness != $Dim(edgethickness)} {
@@ -1195,6 +1215,7 @@ proc RebuildBoard {canv width height} {
 	BuildBoard $canv
 	ConfigureBoard $canv
 	DrawMaterialValues $canv
+	DrawChecks $canv
 }
 
 
@@ -1239,6 +1260,21 @@ proc DrawMaterialValues {canv} {
 }
 
 
+proc DrawChecks {canv} {
+	variable Vars
+
+	lassign [::scidb::pos::checks] w b
+	$canv itemconfigure checks -state hidden
+
+	for {set i 1} {$i <= $w} {incr i} {
+		$canv itemconfigure chb-$i -state normal
+	}
+	for {set i 1} {$i <= $b} {incr i} {
+		$canv itemconfigure chw-$i -state normal
+	}
+}
+
+
 proc AddMaterial {count piece canv rank sum} {
 	variable ::board::layout
 	variable Vars
@@ -1265,8 +1301,7 @@ proc AddMaterial {count piece canv rank sum} {
 		if {$color eq "w"} { set color "b" } else { set color "w" }
 	}
 
-	set pieceSize $Dim(piece:size)
-	set img photo_Piece(figurine,$layout(material-bar),${color}${piece},$pieceSize)
+	set img photo_Piece(figurine,$layout(material-bar),${color}${piece},$Dim(piece:size))
 
 	for {set i 0} {$i < $count} {incr i} {
 		set n [expr {$i + $rank}]
@@ -1344,7 +1379,7 @@ proc ComputeLayout {canvWidth canvHeight {bordersize -1}} {
 		set Dim(squaresize)	[expr {($boardsize - 2*$Dim(edgethickness))/8}]
 	}
 
-	set Dim(border:gap)	[::board::computeGap $Dim(squaresize)]
+	set Dim(border:gap) [::board::computeGap $Dim(squaresize)]
 
 	if {$Dim(border:gap) > 0} {
 		if {[::board::borderlineGap] > 0 || $layout(border)} {
@@ -1368,6 +1403,7 @@ proc ComputeLayout {canvWidth canvHeight {bordersize -1}} {
 
 	if {$bordersize != -1 && $Dim(bordersize) != $bordersize} {
 		$Vars(widget:frame) delete stm
+		$Vars(widget:frame) delete checks
 		$Vars(widget:border) delete shadow
 		$Vars(widget:border) delete mvbar
 		$Vars(widget:border) delete holdingbar
@@ -1448,6 +1484,35 @@ proc ConfigureBoard {canv} {
 		$canv itemconfigure mvbar-1 -state $state
 		$canv itemconfigure mvbar-2 -state $state
 		$canv itemconfigure mvbar-3 -state $state
+	}
+
+	# configure check counts #######################
+	if {$Vars(layout) eq "Normal" && ($layout(side-to-move) || $layout(material-values))} {
+		set size $Dim(piece)
+		set dist [expr {max($Dim(gap:x), ($Dim(stm) + $Dim(gap:x) - $size)/2)}]
+		set dist [expr {$Dim(stm) + $Dim(gap:x) - $size}]
+		set x0 [expr {$Dim(border:x1) - $size - $dist}]
+		set y1 [expr {$Dim(border:y1) + $Dim(borderthickness) + 1}]
+		set y2 [expr {$y1 + $size + $Dim(gap:y)}]
+		set y3 [expr {$y2 + $size + $Dim(gap:y)}]
+		set z1 [expr {$Dim(border:y2) - $Dim(borderthickness) - $size - 1}]
+		set z2 [expr {$z1 - $size - $Dim(gap:y)}]
+		set z3 [expr {$z2 - $size - $Dim(gap:y)}]
+
+		if {[::board::diagram::flipped? $board]} {
+			set t1 $y1; set y1 $z1; set z1 $t1
+			set t2 $y2; set y2 $z2; set z2 $t2
+			set t3 $y3; set y3 $z3; set z3 $t3
+		}
+
+		$canv coords chw-1 $x0 $y1
+		$canv coords chw-2 $x0 $y2
+		$canv coords chw-3 $x0 $y3
+		$canv coords chb-1 $x0 $z1
+		$canv coords chb-2 $x0 $z2
+		$canv coords chb-3 $x0 $z3
+	} else {
+		$canv delete checks
 	}
 
 	# configure in-hand bars #######################
@@ -1597,6 +1662,18 @@ proc BuildBoard {canv} {
 		$canv create rectangle 0 0 0 0  -fill #e6e6e6 -width 0 -tags {mvbar mvbar-3}
 	}
 
+	# check counts #################################
+	if {$Vars(layout) ne "Normal" || !$layout(side-to-move) && !$layout(material-values)} {
+		$canv delete checks
+	} elseif {[llength [$canv find withtag checks]] == 0} {
+		set wk photo_Piece(figurine,0,wk,$Dim(piece:size))
+		set bk photo_Piece(figurine,0,bk,$Dim(piece:size))
+		for {set i 1} {$i <= 3} {incr i} {
+			$canv create image 0 0 -image $wk -tags [list checks chw-$i] -anchor nw -state hidden
+			$canv create image 0 0 -image $bk -tags [list checks chb-$i] -anchor nw -state hidden
+		}
+	}
+
 	# in-hand bars #################################
 	if {$Vars(layout) eq "Normal"} {
 		$canv delete holdingbar
@@ -1632,6 +1709,7 @@ proc Rotate {canv} {
 	::board::diagram::rotate $board
 	ConfigureBoard $canv
 	DrawMaterialValues $Vars(widget:frame)
+	DrawChecks $Vars(widget:frame)
 }
 
 
