@@ -1001,7 +1001,7 @@ db::Guess::quiesce(int alpha, int beta)
 	if (score > alpha)
 		alpha = score;
 
-	if (m_checksGiven[m_stm ^ 1] < 3)
+	if (!isThreeCheck(m_variant) || m_checksGiven[m_stm ^ 1] < 3)
 	{
 		MoveList		moves;
 		ScoreList	scoreList;
