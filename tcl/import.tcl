@@ -1118,7 +1118,7 @@ proc DoImport {position dlg} {
 				Show info $mc::TextIsEmpty
 				$log configure -state disabled -takefocus 0
 			} elseif {[$log index end] == 0} {
-				Show info "$mc::SeemsNotToBePgnText."
+				Show info "$mc::Error(SeemsNotToBePgnText)."
 				$log configure -state disabled -takefocus 0
 			} else {
 				Show info $mc::ImportAborted

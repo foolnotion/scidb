@@ -237,7 +237,7 @@ cmdAnalyseFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 					board.setCastlingFyle(color::Black, sq::Fyle(sq::FyleA + *fyles - 'a'));
 			}
 
-			if (*checks)
+			if (variant::isThreeCheck(variant) && *checks)
 			{
 				int nchecks[2] = { -1, -1 };
 
@@ -246,6 +246,9 @@ cmdAnalyseFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 					if (::isdigit(*checks))
 						nchecks[nchecks[0] == -1 ? 0 : 1] = *checks - '0';
 				}
+
+				M_ASSERT(nchecks[0] <= 3);
+				M_ASSERT(nchecks[1] <= 3);
 
 				board.setChecksGiven(nchecks[0], nchecks[1]);
 			}
