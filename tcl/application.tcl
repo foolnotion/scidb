@@ -356,9 +356,10 @@ if {[::process::testOption use-clock]} {
 		database::openBase .application [::util::databasePath $file] yes \
 			-encoding $::encoding::autoEncoding
 	}
-
-	::game::recover $app
-	::game::reopenLockedGames $app
+ 
+	if {[::game::recover $app] + [::game::reopenLockedGames $app] > 0} {
+		set tab board
+	}
 
 	after idle [namespace code [list switchTab $tab]]
 	after idle [list ::beta::welcomeToScidb $app]
