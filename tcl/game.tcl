@@ -1030,7 +1030,7 @@ proc reopenLockedGames {parent} {
 	set LockedGames {}
 
 	set reply [::dialog::question -parent $parent -message $mc::ReopenLockedGames -default yes]
-	if {$reply eq "no"} { [UnlockGames]; return 0 }
+	if {$reply eq "no"} { UnlockGames; return 0 }
 
 	set selection -1
 	set count [llength $Vars(slots)]
