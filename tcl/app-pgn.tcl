@@ -1691,7 +1691,7 @@ proc PrintMove {context position w level key data annotation} {
 
 
 proc ShowPosition {w state} {
-	variabls Vars
+	variable Vars
 
 	set position $Vars(position)
 	set key [FindKey $w move]

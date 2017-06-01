@@ -110,7 +110,10 @@ proc build {w width height} {
 	set border [tk::canvas $canv.border -takefocus 0 -borderwidth 0]
 	$border xview moveto 0
 	$border yview moveto 0
-	set board [::board::diagram::new $border.board $Dim(squaresize) -bordersize $Dim(edgethickness)]
+	set board [::board::diagram::new $border.board $Dim(squaresize) \
+		-bordersize $Dim(edgethickness) \
+		-bordertype lines \
+	]
 	::board::diagram::setTargets $board $border $canv
 	set boardc [::board::diagram::canvas $board]
 	::variation::build $canv [namespace code SelectAlternative]

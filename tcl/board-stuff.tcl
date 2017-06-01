@@ -73,7 +73,7 @@ proc new {w size args} {
 	namespace eval [namespace current]::${w} {}
 	variable ${w}::Board
 
-	array set opts { -bordersize 0 -flipped 0 -relief raised }
+	array set opts { -bordersize 0 -bordertype "normal" -flipped 0 -relief raised }
 	array set opts $args
 
 	set Board(flip) $opts(-flipped)
@@ -92,13 +92,20 @@ proc new {w size args} {
 	set Board(animate,piece) ""
 	set Board(targets) {}
 	set Board(bordersize) $opts(-bordersize)
-
+	set Board(bordertype) $opts(-bordertype)
    set boardSize [expr {8*$size}]
+	set borderSize $Board(bordersize)
+
+	if {$Board(bordertype) == "lines"} {
+		set boardSize [expr {$boardSize + 2*$borderSize}]
+		set borderSize 0
+	}
+
    tk::frame $w -class Board
    tk::canvas $w.c \
 		-width $boardSize \
 		-height $boardSize \
-		-borderwidth $Board(bordersize) \
+		-borderwidth $borderSize \
 		-relief $opts(-relief) \
 		-takefocus 0 \
 		;
@@ -135,9 +142,14 @@ proc resize {w size args} {
 
 		set oldSize $Board(size)
 		set boardSize [expr {8*$size}]
-		set Board(bordersize) $opts(-bordersize)
+		set borderSize $opts(-bordersize)
 
-		$w.c configure -width $boardSize -height $boardSize -borderwidth $Board(bordersize)
+		if {$Board(bordertype) == "lines"} {
+			set boardSize [expr {$boardSize + 2*$Board(bordersize)}]
+			set borderSize 0
+		}
+
+		$w.c configure -width $boardSize -height $boardSize -borderwidth $borderSize
 		$w.c xview moveto 0
 		$w.c yview moveto 0
 
@@ -146,15 +158,24 @@ proc resize {w size args} {
 
 		set Board(size) $size
 		set Board(afterid) [after 50 [namespace code [list [namespace parent]::setupPieces $size]]]
+		set Board(bordersize) $opts(-bordersize)
 
 		rebuild $w
 		::board::unregisterSize $oldSize
 	} elseif {$Board(bordersize) != $opts(-bordersize)} {
 		set Board(bordersize) $opts(-bordersize)
 		set boardSize [expr {8*$size}]
-		$w.c configure -width $boardSize -height $boardSize -borderwidth $Board(bordersize)
+
+		if {$Board(bordertype) == "lines"} {
+			set boardSize [expr {$boardSize + 2*$borderSize}]
+			set borderSize 0
+		}
+
+		$w.c configure -width $boardSize -height $boardSize -borderwidth $borderSize
 		$w.c xview moveto 0
 		$w.c yview moveto 0
+
+		SetupBorders $w
 	}
 }
 
@@ -375,6 +396,7 @@ proc rotated? {w} {
 
 proc rebuild {w} {
 	Build $w
+	SetupBorders $w
 	update $w
 }
 
@@ -861,12 +883,13 @@ proc Build {w} {
 
 	set size $Board(size)
 	set flip $Board(flip)
+	set offs [expr {$Board(bordertype) == "lines" ? $Board(bordersize) : 0}]
 
 	for {set i 0} {$i < 64} {incr i} {
 		set row [expr {$i/8}]
 		set col [expr {$i%8}]
-		set x [expr {$col*$size}]
-		set y [expr {(7 - $row)*$size}]
+		set x [expr {$col*$size + $offs}]
+		set y [expr {(7 - $row)*$size + $offs}]
 		set k [expr {$flip ? 63 - $i : $i}]
 		set color [expr {($row + $col) % 2 ? "lite" : "dark"}]
 		$w.c delete square:$k
@@ -882,6 +905,21 @@ proc Build {w} {
 			-tags [list input input:$k] \
 			-outline {} \
 			;
+	}
+}
+
+
+proc SetupBorders {w} {
+	variable ${w}::Board
+
+	$w.c delete borderline
+	if {$Board(bordertype) ne "lines"} { return }
+	set borderSize $Board(bordersize)
+	set boardSize [expr {8*$Board(size) + 2*$borderSize}]
+
+	for {set i 0; set bs [expr {$boardSize - 1}]} {$i < $borderSize} {incr i; decr bs} {
+		$w.c create line $i $bs $boardSize $bs -width 1 -fill #4f4f4f -tag borderline
+		$w.c create line $bs [expr {$i + 1}] $bs $boardSize -width 1 -fill #4f4f4f -tag borderline
 	}
 }
 
