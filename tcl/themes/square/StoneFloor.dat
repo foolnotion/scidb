@@ -13,12 +13,13 @@
   hilite,selected          {#b0d0e0}
   hilite,suggested         {#eebb16}
   hint,background-color    {}
+  hint,background-coords   {#000000}
   hint,background-tile     {marble marble_234.jpg}
   hint,background-rotation {0}
   hint,border-color        {}
+  hint,border-coords       {#ffffff}
   hint,border-tile         {marble color_green_22.jpg}
   hint,border-rotation     {0}
-  hint,coordinates         {#ffffff}
   identifier               {Stone Floor|1244113188050|yellow.color|gregor}
   lite,rotation            {0}
   lite,solid               {}

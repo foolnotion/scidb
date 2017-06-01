@@ -738,9 +738,8 @@ proc SaveSquareStyle {parent} {
 	if {!$showBorder} { set layout(border) false }
 
 	if {$colors(locked)} {
-		foreach attr {	background-tile background-color background-rotation
-							border-tile border-color border-rotation
-							coordinates} {
+		foreach attr {	background-tile background-color background-rotation background-coords
+							border-tile border-color border-rotation border-coords} {
 			set colors(hint,$attr) $colors(user,$attr)
 		}
 	}
@@ -977,28 +976,28 @@ proc ToggleLock {} {
 
 	if {$colors(locked)} {
 		$Vars(widget:background) configure -state normal
-		foreach attr {	background-tile background-rotation background-color
-							border-tile border-rotation border-color
-							coordinates} {
+		foreach attr {	background-tile background-rotation background-color background-coords
+							border-tile border-rotation border-color border-coords} {
 			set colors(hint,$attr) $colors(user,$attr)
 		}
 		SetRecent \
 			window \
 			$style(hint,background-color) \
+			$style(hint,background-coords) \
 			$style(hint,background-tile) \
 			$style(hint,background-rotation) \
 			;
 		SetRecent \
 			border \
 			$style(hint,border-color) \
+			$style(hint,border-coords) \
 			$style(hint,border-tile) \
 			$style(hint,border-rotation) \
 			;
 	} else {
 		$Vars(widget:background) configure -state disabled
-		foreach attr {	background-tile background-rotation background-color
-							border-tile border-rotation border-color
-							coordinates} {
+		foreach attr {	background-tile background-rotation background-color background-coords
+							border-tile border-rotation border-color border-coords} {
 			set colors(hint,$attr) $style(hint,$attr)
 		}
 	}
@@ -1412,16 +1411,18 @@ proc RefreshBoard {} {
 	if {$layout(border)}				{ $canv itemconfigure shadow	-state normal }
 
 	foreach w [list $canv $border] {
+		if {$layout(border)} { set which border } else { set which background }
+
 		$w itemconfigure coords		-state hidden
 		$w itemconfigure wcoords	-state hidden
 		$w itemconfigure bcoords	-state hidden
-		$w itemconfigure coords		-fill $colors(hint,coordinates)
+		$w itemconfigure coords		-fill $colors(hint,${which}-coords)
 
 		if {$layout(coordinates)} {
 			$w itemconfigure coords -state normal
 
 			if {$layout(coords-embossed)} {
-				scan $colors(hint,coordinates) "\#%2x%2x%2x" r g b
+				scan $colors(hint,${which}-coords) "\#%2x%2x%2x" r g b
 				set luma	[expr {$r*0.2125 + $g*0.7154 + $b*0.0721}]
 
 				if {$luma >= 128} { $w itemconfigure bcoords -state normal }
@@ -1823,21 +1824,22 @@ proc SetColors {} {
 	variable [namespace parent]::square::style
 
 #	if {[[namespace parent]::isWorkingSet square]} {
-#		foreach which {background-tile background-rotation background-color
-#							border-tile border-rotation border-color
-#							coordinates} {
+#		foreach which {background-tile background-rotation background-color background-coords
+#							border-tile border-rotation border-color border-coords} {
 #			set colors(hint,$which) $colors(user,$which)
 #		}
 #	}
 	if {!$colors(locked)} {
-		foreach which {background-tile background-rotation background-color
-							border-tile border-rotation border-color
-							coordinates} {
+		foreach which {background-tile background-rotation background-color background-coords
+							border-tile border-rotation border-color border-coords} {
 			set colors(hint,$which) $style(hint,$which)
 		}
 
-		if {[llength $colors(hint,coordinates)] == 0} {
-			set colors(hint,coordinates) #ffffff
+		if {[llength $colors(hint,border-coords)] == 0} {
+			set colors(hint,border-coords) #ffffff
+		}
+		if {[llength $colors(hint,background-coords)] == 0} {
+			set colors(hint,background-coords) #000000
 		}
 	}
 }
@@ -1905,7 +1907,8 @@ proc MakePreview {path} {
 	} else {
 		$canv configure -background [::colors::lookup theme,background]
 	}
-	$canv create text 75 10 -text "a b c d" -fill $colors(hint,coordinates) -tag abcd
+	if {$layout(border)} { set which border } else { set which background }
+	$canv create text 75 10 -text "a b c d" -fill $colors(hint,${which}-coords) -tag abcd
 	bind $canv <<ChooseColorSelected>> "$canv itemconfigure abcd -fill %d"
 	pack $f -expand yes -fill both
 	pack $canv -pady $::theme::padY
@@ -1919,7 +1922,7 @@ proc SelectCoordsColor {which parent} {
 
 	set selection [::colormenu::popup $parent \
 							-class Dialog \
-							-initialcolor $colors(hint,coordinates) \
+							-initialcolor $colors(hint,border-coords) \
 							-recentcolors [namespace current]::RecentColors(coordinates) \
 							-geometry last \
 							-modal true \
@@ -1929,9 +1932,9 @@ proc SelectCoordsColor {which parent} {
 							-place centeronparent]
 	
 	if {[llength $selection]} {
-		addToList [namespace current]::RecentColors(coordinates) $colors(hint,coordinates)
-		set colors(hint,coordinates) $selection
-		if {$which eq "user"} { set colors(user,coordinates) $colors(hint,coordinates) }
+		addToList [namespace current]::RecentColors(coordinates) $colors(hint,border-coords)
+		set colors(hint,border-coords) $selection
+		if {$which eq "user"} { set colors(user,coordinates) $colors(hint,border-coords) }
 		::tooltip::tooltip $parent "${::mc::Color}: [extendColorName $selection]"
 		RefreshBoard
 	}
@@ -1940,11 +1943,16 @@ proc SelectCoordsColor {which parent} {
 
 proc SetRecentColors {what which} {
 	variable [namespace parent]::colors
-	SetRecent $what $colors(hint,$which-color) $colors(hint,$which-tile) $colors(hint,$which-rotation)
+	SetRecent $what \
+		$colors(hint,$which-color) \
+		$colors(hint,$which-coords) \
+		$colors(hint,$which-tile) \
+		$colors(hint,$which-rotation) \
+		;
 }
 
 
-proc SetRecent {what recentColor recentTexture recentRotation} {
+proc SetRecent {what recentColor recentCoords recentTexture recentRotation} {
 	variable [namespace parent]::texture
 	variable RecentColors
 	variable RecentTextures
@@ -1965,6 +1973,9 @@ proc SetRecent {what recentColor recentTexture recentRotation} {
 
 	if {[llength $recentColor]} {
 		addToList [namespace current]::RecentColors(background) $recentColor
+	}
+	if {[llength $recentCoords]} {
+		addToList [namespace current]::RecentColors(coordinates) $recentCoords
 	}
 }
 

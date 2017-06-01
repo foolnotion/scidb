@@ -13,12 +13,13 @@
   hilite,selected          {#9e4f00}
   hilite,suggested         {#feff08}
   hint,background-color    {}
+  hint,background-coords   {#ffffff}
   hint,background-rotation {0}
   hint,background-tile     {wood peruvianwalnut-tile.png}
   hint,border-color        {}
+  hint,border-coords       {#ffffff}
   hint,border-rotation     {0}
   hint,border-tile         {wood DarkMaple.jpg}
-  hint,coordinates         {#ffffff}
   identifier               {Fritz|1422383955583|purple|gregor}
   lite,rotation            {0}
   lite,solid               {#b0c4de}

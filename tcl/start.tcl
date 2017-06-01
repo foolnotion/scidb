@@ -116,6 +116,7 @@ proc update {} {
 
 	array set identifiers {
 		{} {
+			{Akira|1386332524223|purple|gregor}
 			{Alpha|1295711284602|yellow.color|gregor}
 			{Antique|1263914483272|yellow.color|gregor}
 			{Apollo|1296050637190|yellow.color|gregor}
@@ -143,6 +144,7 @@ proc update {} {
 			{Mayan - Wood|1244309428838|yellow.color|gregor}
 			{Melamine|1422439776799|purple|gregor}
 			{Military|1423693429142|purple|gregor}
+			{Mystic|1386288990195|purple|gregor}
 			{Modern Cheq|1244122899886|yellow.color|gregor}
 			{Motif|1262882557387|yellow.color|gregor}
 			{Navajo|1422301347006|purple|gregor}
@@ -160,6 +162,7 @@ proc update {} {
 			{Woodgrain|1296150310528|yellow.color|gregor}
 		}
 		piece {
+			{Akira|1386332239604|purple|gregor}
 			{Arena|1348599563208|yellow.color|gregor}
 			{Burly|1262881395698|yellow.color|gregor}
 			{Condal|1263914065014|yellow.color|gregor}
@@ -179,6 +182,7 @@ proc update {} {
 			{Lemon|1227320554192|yellow.color|gregor}
 			{Mayan - Red|1243775183896|yellow.color|gregor}
 			{Military|1423693087335|purple|gregor}
+			{Mystic|1386288655513|purple|gregor}
 			{Not Black nor White|1371197617696|purple|gregor}
 			{Orange - Lemon|1243778153963|yellow.color|gregor}
 			{Sand|1326983597299|yellow.color|gregor}
@@ -188,6 +192,7 @@ proc update {} {
 			{Yellow - Blue|1243787883127|yellow.color|gregor}
 		}
 		square {
+			{Akira|1386332477369|purple|gregor}
 			{Apollo|1243715687066|yellow.color|gregor}
 			{Arena|1348599714170|yellow.color|gregor}
 			{Black & White|1322146381433|yellow.color|gregor}
@@ -209,6 +214,7 @@ proc update {} {
 			{Marble - Brown|1243715874135|yellow.color|gregor}
 			{Marble - Red|1296049694406|yellow.color|gregor}
 			{Melamine|1422438051463|purple|gregor}
+			{Mystic|1386288723197|purple|gregor}
 			{Navajo|1422301339767|purple|gregor}
 			{Ocean|1262882896027|yellow.color|gregor}
 			{Primus|1368794504056|yellow.color|gregor}
@@ -236,17 +242,21 @@ proc update {} {
 	foreach dir {piece square {}} {
 		set themesDir [file join $::scidb::dir::user themes $dir]
 		foreach file [glob -nocomplain -directory [file join $::scidb::dir::share themes $dir] *.dat] {
-			set ignore 1
-			set f [open $file r]
-			while {[gets $f line] >= 0} {
-				if {[string match *identifier* $line]} {
-					if {	[regexp {[{](.*)[}]} $line _ identifier]
-						|| [regexp {identifier[ \t]+([^ \t]+)} $line _ identifier]} {
-						if {$identifier in $identifiers($dir)} { set ignore 0 }
+			if {[::process::testOption update-themes]} {
+				set ignore 0
+			} else {
+				set ignore 1
+				set f [open $file r]
+				while {[gets $f line] >= 0} {
+					if {[string match *identifier* $line]} {
+						if {	[regexp {[{](.*)[}]} $line _ identifier]
+							|| [regexp {identifier[ \t]+([^ \t]+)} $line _ identifier]} {
+							if {$identifier in $identifiers($dir)} { set ignore 0 }
+						}
 					}
 				}
+				close $f
 			}
-			close $f
 			if {!$ignore} {
 				set overwrite 1
 				set path [file join $themesDir [file tail $file]]

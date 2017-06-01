@@ -13,12 +13,13 @@
   hilite,selected          {#ee5d3a}
   hilite,suggested         {#4c22ff}
   hint,background-color    {}
+  hint,background-coords   {#000000}
   hint,background-rotation {0}
   hint,background-tile     {misc Antique_White.jpg}
   hint,border-color        {#867047}
+  hint,border-coords       {#ffffff}
   hint,border-rotation     {0}
   hint,border-tile         {}
-  hint,coordinates         {#ffffff}
   identifier               {Navajo|1422301339767|purple|gregor}
   lite,rotation            {0}
   lite,solid               {#f7ce84}

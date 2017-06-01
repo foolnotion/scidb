@@ -13,6 +13,7 @@
   hilite,selected          {#b0d0e0}
   hilite,suggested         {#c32424}
   hint,background-color    {}
+  hint,background-coords   {#000000}
   hint,background-tile     {marble marble12.jpg}
   hint,background-rotation {0}
   hint,border-color        {}

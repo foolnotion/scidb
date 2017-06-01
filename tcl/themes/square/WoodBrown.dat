@@ -27,10 +27,11 @@
   hilite,suggested         {#3bbdbe}
 
   hint,border-color        {}
+  hint,background-coords   {#000000}
   hint,border-tile         {wood WoodFine0006_S.jpg}
   hint,border-rotation   	{0}
   hint,background-color    {}
+  hint,border-coords       {#000000}
   hint,background-tile     {wood WoodFine0006_S.jpg}
   hint,background-rotation	{90}
-  hint,coordinates         {#000000}
 }

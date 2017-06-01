@@ -13,12 +13,13 @@
   hilite,selected          {#519ce8}
   hilite,suggested         {#f0f0a0}
   hint,background-color    {}
+  hint,background-coords   {#000000}
   hint,background-tile     {marble marble_252.jpg}
   hint,background-rotation {0}
   hint,border-color        {}
+  hint,border-coords       {#ffffff}
   hint,border-tile         {marble marble_252.jpg}
   hint,border-rotation     {0}
-  hint,coordinates         {#ffffff}
   identifier               {Marble - Blue|1243715888985|yellow.color|gregor}
   lite,rotation            {0}
   lite,solid               {#e0d070}

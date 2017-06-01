@@ -79,7 +79,7 @@ variable board {}
 
 variable Vars
 variable Dim
-variable Layouts {Normal Crazyhouse}
+variable Layouts {Normal ThreeCheck Crazyhouse}
 
 set Defaults(coords-font-family) [font configure TkDefaultFont -family]
 
@@ -1172,7 +1172,7 @@ proc RebuildBoard {canv width height} {
 
 	set inuse(0) 0
 	set inuse(1) 0
-	if {$Vars(layout) eq "Normal"} {
+	if {$Vars(layout) eq "Normal" || $Vars(layout) eq "ThreeCheck"} {
 		set pieceSize $Dim(piece:size)
 		catch { set inuse(0) [image inuse photo_Piece(figurine,0,wq,$pieceSize)] }
 		catch { set inuse(1) [image inuse photo_Piece(figurine,1,wq,$pieceSize)] }
@@ -1210,7 +1210,7 @@ proc RebuildBoard {canv width height} {
 		::board::diagram::rebuild $board
 	}
 
-	if {$Vars(layout) ne "Normal"} {
+	if {$Vars(layout) eq "Crazyhouse"} {
 		::board::holding::resize $Vars(holding:w) $Dim(squaresize)
 		::board::holding::resize $Vars(holding:b) $Dim(squaresize)
 	}
@@ -1226,7 +1226,7 @@ proc DrawMaterialValues {canv} {
 	variable ::board::layout
 	variable Vars
 
-	if {$Vars(layout) eq "Normal"} {
+	if {$Vars(layout) eq "Normal" || $Vars(layout) eq "ThreeCheck"} {
 		if {$layout(material-values)} {
 			set material [::scidb::game::material]
 			if {[string equal $material $Vars(material)]} { return }
@@ -1234,7 +1234,7 @@ proc DrawMaterialValues {canv} {
 			$canv delete material
 			lassign $material p n b r q k
 
-			if {$Vars(variant) eq "Normal"} {
+			if {$Vars(variant) ne "Crazyhouse"} {
 				# match knights and bishops
 				for {} {$n < 0 && $b > 0} {incr b -1} {incr n}
 				for {} {$b < 0 && $n > 0} {incr n -1} {incr b}
@@ -1327,7 +1327,7 @@ proc ComputeLayout {canvWidth canvHeight {bordersize -1}} {
 	set width		[expr {$canvWidth - 2*$distance}]
 	set height		[expr {$canvHeight - 2*$distance}]
 
-	if {$layout(side-to-move) || ($layout(material-values) && $Vars(layout) eq "Normal")} {
+	if {$layout(side-to-move) || ($layout(material-values) && $Vars(layout) ne "Crazyhouse")} {
 		if {$layout(side-to-move)} { set minsize 64 } else { set minsize 34 }
 		set Dim(stm) [expr {max(18, min($minsize, (min($canvWidth, $canvHeight) - 19)/24 + 5))}]
 		set Dim(gap:x) [expr {max(7, $Dim(stm)/3)}]
@@ -1338,30 +1338,39 @@ proc ComputeLayout {canvWidth canvHeight {bordersize -1}} {
 		set Dim(gap:y) 0
 	}
 
-	if {$Vars(layout) eq "Normal"} {
+	if {$Vars(layout) ne "Crazyhouse"} {
 		set stmsize [expr {$Dim(gap:x) + $Dim(stm)}]
 	} else {
 		set stmsize 0
 	}
 
 	if {$layout(border) && $layout(coordinates)} {
-		set Dim(borderthickness) [expr {min(36, max(12, int(min($width, $height)/24.0 + 0.5)))}]
+		set Dim(borderthickness) [expr {min(36, max(16, int(min($width, $height)/24.0 + 0.5)))}]
 		set Dim(offset) $Dim(borderthickness)
 	} elseif {$layout(border)} {
 		set Dim(borderthickness) 12
 		set Dim(offset) 12
 	} elseif {$layout(coordinates)} {
 		set Dim(borderthickness) 0
-		set Dim(offset) [expr {min(36, max(12, int(min($width, $height)/24.0 + 0.5)))}]
+		set Dim(offset) [expr {min(36, max(16, int(min($width, $height)/20.0 + 0.5)))}]
 	} else {
 		set Dim(borderthickness) 0
 		set Dim(offset) 0
 	}
 
+	if {	$Vars(layout) eq "ThreeCheck"
+		&& $layout(coordinates)
+		&& !$layout(border)
+		&& ($layout(side-to-move) || $layout(material-values))} {
+		set Dim(offset:checks) $Dim(offset)
+	} else {
+		set Dim(offset:checks) 0
+	}
+
 	if {$layout(border)} {
 		set width [expr {$width - 2*$Dim(borderthickness) - 2*$stmsize}]
 	} else {
-		set width [expr {$width - 2*max($Dim(offset), $stmsize)}]
+		set width [expr {$width - 2*max($Dim(offset), $stmsize) - $Dim(offset:checks)}]
 	}
 
 	set height					[expr {$height - 2*$Dim(offset)}]
@@ -1398,7 +1407,7 @@ proc ComputeLayout {canvWidth canvHeight {bordersize -1}} {
 
 	set Dim(boardsize)	[expr {8*$Dim(squaresize) + 2*$Dim(edgethickness)}]
 	set Dim(bordersize)	[expr {$Dim(boardsize) + 2*$Dim(borderthickness)}]
-	set Dim(border:x1)	[expr {($canvWidth - $Dim(bordersize))/2}]
+	set Dim(border:x1)	[expr {($canvWidth - $Dim(bordersize) + $Dim(offset:checks))/2}]
 	set Dim(border:y1)	[expr {($canvHeight - $Dim(bordersize))/2}]
 	set Dim(border:x2)	[expr {$Dim(border:x1) + $Dim(bordersize)}]
 	set Dim(border:y2)	[expr {$Dim(border:y1) + $Dim(bordersize)}]
@@ -1459,7 +1468,7 @@ proc ConfigureBoard {canv} {
 	# configure material bar #######################
 	$canv delete material
 
-	if {$Vars(layout) eq "Normal"} {
+	if {$Vars(layout) ne "Crazyhouse"} {
 		set state hidden
 		if {$layout(material-values) && $layout(material-bar)} {
 			set size $Dim(piece)
@@ -1490,15 +1499,15 @@ proc ConfigureBoard {canv} {
 	}
 
 	# configure check counts #######################
-	if {$Vars(layout) eq "Normal" && ($layout(side-to-move) || $layout(material-values))} {
+	if {$Vars(layout) eq "ThreeCheck" && ($layout(side-to-move) || $layout(material-values))} {
 		set size $Dim(piece)
 		set dist [expr {max($Dim(gap:x), ($Dim(stm) + $Dim(gap:x) - $size)/2)}]
-		set dist [expr {$Dim(stm) + $Dim(gap:x) - $size}]
+		set dist [expr {$Dim(stm) + $Dim(gap:x) + $Dim(offset:checks) - $size}]
 		set x0 [expr {$Dim(border:x1) - $size - $dist}]
-		set y1 [expr {$Dim(border:y1) + $Dim(borderthickness) + 1}]
+		set y1 [expr {$Dim(border:y1) + $Dim(gap:y) + $Dim(borderthickness)}]
 		set y2 [expr {$y1 + $size + $Dim(gap:y)}]
 		set y3 [expr {$y2 + $size + $Dim(gap:y)}]
-		set z1 [expr {$Dim(border:y2) - $Dim(borderthickness) - $size - 1}]
+		set z1 [expr {$Dim(border:y2) - $Dim(borderthickness) - $Dim(gap:y) - $size}]
 		set z2 [expr {$z1 - $size - $Dim(gap:y)}]
 		set z3 [expr {$z2 - $size - $Dim(gap:y)}]
 
@@ -1508,18 +1517,14 @@ proc ConfigureBoard {canv} {
 			set t3 $y3; set y3 $z3; set z3 $t3
 		}
 
-		$canv coords chw-1 $x0 $y1
-		$canv coords chw-2 $x0 $y2
-		$canv coords chw-3 $x0 $y3
-		$canv coords chb-1 $x0 $z1
-		$canv coords chb-2 $x0 $z2
-		$canv coords chb-3 $x0 $z3
+		$canv coords chw-1 $x0 $y1; $canv coords chw-2 $x0 $y2; $canv coords chw-3 $x0 $y3
+		$canv coords chb-1 $x0 $z1; $canv coords chb-2 $x0 $z2; $canv coords chb-3 $x0 $z3
 	} else {
 		$canv delete checks
 	}
 
 	# configure in-hand bars #######################
-	if {$Vars(layout) ne "Normal"} {
+	if {$Vars(layout) eq "Crazyhouse"} {
 		set wd [::board::holding::width $Vars(holding:w)]
 		set ht [::board::holding::height $Vars(holding:w)]
 		set distance $Dim(distance)
@@ -1551,10 +1556,11 @@ proc ConfigureBoard {canv} {
 	$border itemconfigure coords -state hidden
 	if {$layout(coordinates)} {
 		if {$layout(border)} { set w $border } else { set w $canv }
-		$w itemconfigure ncoords -state normal -fill $colors(hint,coordinates)
+		if {$layout(border)} { set which border } else { set which background }
+		$w itemconfigure ncoords -state normal -fill $colors(hint,${which}-coords)
 		$w itemconfigure coords -font $font
 		if {$layout(coords-embossed)} {
-			scan $colors(hint,coordinates) "\#%2x%2x%2x" r g b
+			scan $colors(hint,${which}-coords) "\#%2x%2x%2x" r g b
 			set luma	[expr {$r*0.2125 + $g*0.7154 + $b*0.0721}]
 			if {$luma >= 128} { $w itemconfigure bcoords -state normal -fill black }
 			if {$luma <  128} { $w itemconfigure wcoords -state normal -fill white }
@@ -1598,10 +1604,11 @@ proc ConfigureBoard {canv} {
 
 
 proc ComputeCoordFont {w size} {
+	variable ::board::layout
 	variable Defaults
 	variable Dim
 
-	set delta [expr {min(7, int(($size - 10)/3.0 + 0.5) + 2)}]
+	set delta [expr {min(6, int(($size - 10)/3.0 + 0.5) + 2)}]
 	if {$Dim(fontsize) == $size} { return $Dim(font) }
 	set size [max 6 $size]
 	set Dim(fontsize) $size
@@ -1657,7 +1664,7 @@ proc BuildBoard {canv} {
 	}
 
 	# material bar #################################
-	if {$Vars(layout) ne "Normal" || !$layout(material-values) || !$layout(material-bar)} {
+	if {$Vars(layout) eq "Crazyhouse" || !$layout(material-values) || !$layout(material-bar)} {
 		$canv delete mvbar
 	} elseif {[llength [$canv find withtag mvbar]] == 0} {
 		$canv create rectangle 0 0 0 0 -fill white -width 0 -tags {mvbar mvbar-1}
@@ -1666,7 +1673,7 @@ proc BuildBoard {canv} {
 	}
 
 	# check counts #################################
-	if {$Vars(layout) ne "Normal" || !$layout(side-to-move) && !$layout(material-values)} {
+	if {$Vars(layout) eq "Crazyhouse" || !$layout(side-to-move) && !$layout(material-values)} {
 		$canv delete checks
 	} elseif {[llength [$canv find withtag checks]] == 0} {
 		set wk photo_Piece(figurine,0,wk,$Dim(piece:size))
@@ -1678,7 +1685,7 @@ proc BuildBoard {canv} {
 	}
 
 	# in-hand bars #################################
-	if {$Vars(layout) eq "Normal"} {
+	if {$Vars(layout) ne "Crazyhouse"} {
 		$canv delete holdingbar
 	} elseif {[llength [$canv find withtag holdingbar]] == 0} {
 		$canv create window 0 0 -anchor nw -tags {holdingbar holdingbar-w} -window $Vars(holding:w)
@@ -1787,7 +1794,11 @@ proc GameSwitched {position} {
 	UpdateGameButtonState(base) [::scidb::db::get name] [::scidb::app::variant]
 	UpdateSaveButton
 
-	if {$variant eq "Crazyhouse"} { set layout Crazyhouse } else { set layout Normal }
+	if {$variant eq "Crazyhouse" || $variant eq "ThreeCheck"} {
+		set layout $variant
+	} else {
+		set layout Normal
+	}
 	if {$layout ne $Vars(layout)} {
 		set Vars(layout) $layout
 		Apply

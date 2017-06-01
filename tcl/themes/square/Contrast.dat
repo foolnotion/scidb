@@ -13,12 +13,13 @@
   hilite,selected          {#ffdb8f}
   hilite,suggested         {#3bbdbe}
   hint,background-color    {}
+  hint,background-coords   {#ffffff}
   hint,background-rotation {0}
   hint,background-tile     {wood Melamine-wood-004.png}
   hint,border-color        {}
+  hint,border-coords       {#000000}
   hint,border-rotation     {0}
   hint,border-tile         {wood Melamine-wood-005.png}
-  hint,coordinates         {#000000}
   identifier               {Contrast|1371196032342|purple|gregor}
   lite,rotation            {0}
   lite,solid               {#b0c4de}

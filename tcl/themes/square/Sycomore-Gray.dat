@@ -13,12 +13,13 @@
   hilite,selected          {#ea3954}
   hilite,suggested         {#eeed2a}
   hint,background-color    {}
+  hint,background-coords   {#000000}
   hint,background-tile     {misc 24f5b46cc7ca935416ef41396840c3a2.jpg}
   hint,background-rotation {0}
   hint,border-color        {#781d2b}
+  hint,border-coords       {#ffffff}
   hint,border-tile         {}
   hint,border-rotation     {0}
-  hint,coordinates         {#ffffff}
   identifier               {Sycomore Gray|1244122565844|yellow.color|gregor}
   lite,rotation            {0}
   lite,solid               {}

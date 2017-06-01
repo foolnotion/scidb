@@ -13,12 +13,13 @@
   hilite,selected          {#88b9e0}
   hilite,suggested         {#ffff00}
   hint,background-color    {}
+  hint,background-coords   {#000000}
   hint,background-tile     {misc patterncooler-10.png}
   hint,background-rotation {0}
   hint,border-color        {#995f26}
+  hint,border-coords       {#ffffff}
   hint,border-tile         {}
   hint,border-rotation     {0}
-  hint,coordinates         {#ffffff}
   identifier               {Staidly|1326985703375|yellow.color|gregor}
   lite,rotation            {0}
   lite,solid               {#f2c36e}

@@ -83,12 +83,13 @@ array set Default {
 	hilite,suggested				#fff056
 
 	hint,border-color				#32719d
+	hint,border-coords			#ffffff
 	hint,border-tile				{}
 	hint,border-rotation			0
 	hint,background-color		{}
+	hint,background-coords		#000000
 	hint,background-tile			{marble marble_252.jpg}
 	hint,background-rotation	0
-	hint,coordinates				#ffffff
 }
 set Default(identifier) $defaultId
 set Default(version) [set [namespace parent]::Version]
@@ -291,20 +292,22 @@ array set colors {
 	locked							false
 
 	user,background-tile			{}
+	user,background-coords		#ffffff
 	user,background-color		{}
 	user,background-rotation	0
 	user,border-tile				{}
 	user,border-color				#999999
+	user,border-coords			#ffffff
 	user,border-rotation			0
-	user,coordinates				#ffffff
 }
 set colors(hint,border-color)				$square::Default(hint,border-color)
+set colors(hint,border-coords)			$square::Default(hint,border-coords)
 set colors(hint,border-tile)				$square::Default(hint,border-tile)
 set colors(hint,border-rotation)			$square::Default(hint,border-rotation)
 set colors(hint,background-color)		$square::Default(hint,background-color)
+set colors(hint,background-coords)		$square::Default(hint,background-coords)
 set colors(hint,background-tile)			$square::Default(hint,background-tile)
 set colors(hint,background-rotation)	$square::Default(hint,background-rotation)
-set colors(hint,coordinates)				$square::Default(hint,coordinates)
 
 array set needRefresh {
 	piece,all		false
@@ -1161,7 +1164,8 @@ proc saveWorkingSet {name {which theme}} {
 	set currentFile $filename
 	if {$which eq "square"} {
 		variable colors
-		foreach attr {background-color background-tile border-color border-tile coordinates} {
+		foreach attr {	background-color background-coords background-tile \
+							border-color border-coords border-tile} {
 			set style(hint,$attr) $colors(hint,$attr)
 		}
 	}

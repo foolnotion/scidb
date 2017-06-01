@@ -19,6 +19,7 @@
   dark,y2                  {150}
 
   borderline,color         {#816b52}
+  hint,background-coords   {#000000}
   borderline,width         {0.021}
   borderline,opacity       {0x50}
   borderline,gap           {0}
@@ -27,10 +28,10 @@
   hilite,suggested         {#be6623}
 
   hint,border-color        {}
+  hint,border-coords       {#ffffff}
   hint,border-tile         {marble marble_206.jpg}
   hint,border-rotation     {0}
   hint,background-color    {}
   hint,background-tile     {misc patterncooler-31.png}
   hint,background-rotation {0}
-  hint,coordinates         {#ffffff}
 }

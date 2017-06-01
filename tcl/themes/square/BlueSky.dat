@@ -13,12 +13,13 @@
   hilite,selected          {#7559e0}
   hilite,suggested         {#e03046}
   hint,background-color    {}
+  hint,background-coords   {#ffffff}
   hint,background-rotation {0}
   hint,background-tile     {misc denim.jpg}
   hint,border-color        {#4777ca}
+  hint,border-coords       {#ffffff}
   hint,border-rotation     {0}
   hint,border-tile         {}
-  hint,coordinates         {#ffffff}
   identifier               {Blue Sky|1381592499969|purple|gregor}
   lite,rotation            {0}
   lite,solid               {#c9ebff}

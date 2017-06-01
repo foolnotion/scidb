@@ -27,10 +27,11 @@
   hilite,suggested         {#ffff00}
 
   hint,border-color        {#587851}
+  hint,background-coords   {#ffffcc}
   hint,border-tile         {}
   hint,border-rotation     {0}
   hint,background-color    {#70a070}
+  hint,border-coords       {#ffffcc}
   hint,background-tile     {}
   hint,background-rotation {0}
-  hint,coordinates         {#ffffcc}
 }

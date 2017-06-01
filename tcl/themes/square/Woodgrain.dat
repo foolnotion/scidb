@@ -14,9 +14,11 @@
   hilite,selected          {#b0d0e0}
   hilite,suggested         {#ffff00}
   hint,background-color    {}
+  hint,background-coords   {#000000}
   hint,background-tile     {wood wood_112.jpg}
   hint,background-rotation {0}
   hint,border-color        {}
+  hint,border-coords       {#000000}
   hint,border-tile         {wood WoodFine0009_S.jpg}
   hint,border-rotation     {0}
   hint,coordinates         {#000000}

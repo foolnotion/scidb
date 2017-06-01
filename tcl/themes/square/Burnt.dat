@@ -13,12 +13,13 @@
   hilite,selected          {#57b234}
   hilite,suggested         {#ff1e0e}
   hint,background-color    {}
+  hint,background-coords   {#ffffff}
   hint,background-rotation {0}
   hint,background-tile     {wood WoodFine0006_Green.png}
   hint,border-color        {#695d07}
+  hint,border-coords       {#ffffff}
   hint,border-rotation     {0}
   hint,border-tile         {}
-  hint,coordinates         {#ffffff}
   identifier               {Burnt|1422299233126|purple|gregor}
   lite,rotation            {0}
   lite,solid               {#cbbd16}

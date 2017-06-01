@@ -13,12 +13,13 @@
   hilite,selected          {#b3e088}
   hilite,suggested         {#ffff00}
   hint,background-color    {}
+  hint,background-coords   {#000000}
   hint,background-tile     {marble BlueTexture5.jpg}
   hint,background-rotation	0
   hint,border-color        {#77b5de}
+  hint,border-coords       {#000000}
   hint,border-tile         {}
   hint,border-rotation   	0
-  hint,coordinates         {#000000}
   identifier               {Arena|1348599714170|yellow.color|gregor}
   lite,rotation            {0}
   lite,solid               {#e0e0e0}

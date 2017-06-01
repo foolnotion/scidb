@@ -13,12 +13,13 @@
   hilite,selected          {#e05524}
   hilite,suggested         {#ffd700}
   hint,background-color    {}
+  hint,background-coords   {#ffffff}
   hint,background-tile     {wood peruvianwalnut-tile.png}
   hint,background-rotation {0}
   hint,border-color        {}
+  hint,border-coords       {#ffffff}
   hint,border-tile         {wood mVX4E0Q.jpg}
   hint,border-rotation     {90}
-  hint,coordinates         {#ffffff}
   identifier               {Country Style|1370798009651|INE543149|cmartins}
   lite,rotation            {0}
   lite,solid               {#e0d070}

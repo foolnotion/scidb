@@ -13,12 +13,13 @@
   hilite,selected          {#5de05b}
   hilite,suggested         {#ee0500}
   hint,background-color    {}
+  hint,background-coords   {#000000}
   hint,background-rotation {0}
   hint,background-tile     {misc Antique_White.jpg}
   hint,border-color        {}
+  hint,border-coords       {#ffffff}
   hint,border-rotation     {0}
   hint,border-tile         {misc denim.jpg}
-  hint,coordinates         {#ffffff}
   identifier               {Vinyl 2|1423677444276|purple|gregor}
   lite,rotation            {0}
   lite,solid               {#d0d0d0}
