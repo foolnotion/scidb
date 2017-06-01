@@ -1362,18 +1362,27 @@ proc ComputeLayout {canvWidth canvHeight {bordersize -1}} {
 		&& $layout(coordinates)
 		&& !$layout(border)
 		&& ($layout(side-to-move) || $layout(material-values))} {
-		set Dim(offset:checks) $Dim(offset)
+		set Dim(offset:coords) $Dim(offset)
 	} else {
-		set Dim(offset:checks) 0
+		set Dim(offset:coords) 0
+	}
+
+	if {$Vars(layout) eq "Crazyhouse" && $layout(coordinates) && !$layout(border)} {
+		set Dim(offset:coords) [expr {(2*$Dim(offset))/3}]
 	}
 
 	if {$layout(border)} {
 		set width [expr {$width - 2*$Dim(borderthickness) - 2*$stmsize}]
 	} else {
-		set width [expr {$width - 2*max($Dim(offset), $stmsize) - $Dim(offset:checks)}]
+		set width [expr {$width - 2*max($Dim(offset), $stmsize)}]
 	}
 
-	set height					[expr {$height - 2*$Dim(offset)}]
+	set height [expr {$height - 2*$Dim(offset)}]
+
+	if {$Vars(layout) eq "Crazyhouse" && ($layout(border) || !$layout(coordinates))} {
+		set width [expr {$width - min($width, $height)/24}]
+	}
+
 	set boardsize				[expr {min($width, $height)}]
 	set Dim(edgethickness)	[expr {$Dim(borderthickness) ? 0 : ($boardsize/8 < 45 ? 1 : 2)}]
 
@@ -1407,7 +1416,7 @@ proc ComputeLayout {canvWidth canvHeight {bordersize -1}} {
 
 	set Dim(boardsize)	[expr {8*$Dim(squaresize) + 2*$Dim(edgethickness)}]
 	set Dim(bordersize)	[expr {$Dim(boardsize) + 2*$Dim(borderthickness)}]
-	set Dim(border:x1)	[expr {($canvWidth - $Dim(bordersize) + $Dim(offset:checks))/2}]
+	set Dim(border:x1)	[expr {($canvWidth - $Dim(bordersize) + $Dim(offset:coords))/2}]
 	set Dim(border:y1)	[expr {($canvHeight - $Dim(bordersize))/2}]
 	set Dim(border:x2)	[expr {$Dim(border:x1) + $Dim(bordersize)}]
 	set Dim(border:y2)	[expr {$Dim(border:y1) + $Dim(bordersize)}]
@@ -1502,7 +1511,7 @@ proc ConfigureBoard {canv} {
 	if {$Vars(layout) eq "ThreeCheck" && ($layout(side-to-move) || $layout(material-values))} {
 		set size $Dim(piece)
 		set dist [expr {max($Dim(gap:x), ($Dim(stm) + $Dim(gap:x) - $size)/2)}]
-		set dist [expr {$Dim(stm) + $Dim(gap:x) + $Dim(offset:checks) - $size}]
+		set dist [expr {$Dim(stm) + $Dim(gap:x) + $Dim(offset:coords) - $size}]
 		set x0 [expr {$Dim(border:x1) - $size - $dist}]
 		set y1 [expr {$Dim(border:y1) + $Dim(gap:y) + $Dim(borderthickness)}]
 		set y2 [expr {$y1 + $size + $Dim(gap:y)}]
@@ -1537,6 +1546,8 @@ proc ConfigureBoard {canv} {
 		set yw [expr {$Dim(border:y2) - $ht - $yincr}]
 		set xb [expr {$Dim(border:x1) - $distance - $wd}]
 		set yb [expr {$Dim(border:y1) + $yincr}]
+		if {[rotated?]} { set side w } else { set side b }
+		set x$side [expr {[set x$side] - $Dim(offset:coords)}]
 		if {[::board::diagram::flipped? $board]} { lassign {b w} w b } else { lassign {w b} w b }
 		$canv coords holdingbar-$w $xw $yw
 		$canv coords holdingbar-$b $xb $yb
