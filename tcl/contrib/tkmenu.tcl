@@ -1506,6 +1506,8 @@ proc menu {args} {
 
 
 proc ::tk::menu::WidgetProc {m command args} {
+    if {![winfo exists $m]} { return }
+
     if {$command eq "post" && [llength $args] == 2} {
         lassign $args x y
         set w [winfo parent $m]
