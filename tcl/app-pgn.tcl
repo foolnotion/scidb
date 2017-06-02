@@ -909,8 +909,8 @@ proc UpdateScrollbar {} {
 
 
 proc GameBarEvent {action position} {
-	variable Vars
 	variable ::pgn::editor::Colors
+	variable Vars
 
 	switch $action {
 		removed {

@@ -1361,9 +1361,9 @@ proc Update {_ position} {
 		if {$i >= 0} {
 			set filename [lindex $History $i 1 0]
 			set var [lindex $History $i 1 3]
-			if {$base eq $filename && $variant eq $var} {
-				set History [lreplace $History $i $i]
-			}
+ 			if {$base ne $filename || $variant ne $var} {
+ 				set History [lreplace $History $i $i]
+ 			}
 		}
 
 		if {[::scidb::db::get open? $base $variant]} {
