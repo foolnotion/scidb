@@ -1580,6 +1580,7 @@
 ::import::mc::UnsupportedVariantRejected		"Unsuported variant '%s' rejected" ;# NEW
 ::import::mc::Accepted								"accepted" ;# NEW
 ::import::mc::Rejected								"rejected" ;# NEW
+::import::mc::ImportDialogAlreadyOpen			"Import dialog for this game is already open." ;# NEW
 
 ::import::mc::DifferentEncoding					"La codificación seleccinada %src no coincide con la codificación del archivo %dst."
 ::import::mc::DifferentEncodingDetails			"Recodificar la base de datos no funcionará más despué de esta acción."

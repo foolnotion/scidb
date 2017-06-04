@@ -47,6 +47,7 @@ set AbortImport							"Abort PGN import?"
 set UnsupportedVariantRejected		"Unsuported variant '%s' rejected"
 set Accepted								"accepted"
 set Rejected								"rejected"
+set ImportDialogAlreadyOpen			"Import dialog for this game is already open."
 
 set DifferentEncoding					"Selected encoding %src does not match file encoding %dst."
 set DifferentEncodingDetails			"Recoding of the database will not be successful anymore after this action."
@@ -158,6 +159,13 @@ proc openEdit {parent position args} {
 	variable Colors
 	variable ::log::colors
 
+	set dlg ${parent}.importOnePgnGame${position}
+	if {[winfo exists $dlg]} {
+		::dialog::error -parent $parent -message $mc::ImportDialogAlreadyOpen
+		::widget::dialogRaise $dlg
+		return
+	}
+
 	array set opts {
 		-mode		{}
 		-variant	{}
@@ -174,7 +182,7 @@ proc openEdit {parent position args} {
 		set opts(-mode) game
 	}
 
-	set dlg [tk::toplevel ${parent}.importOnePgnGame${position} -class Scidb]
+	tk::toplevel $dlg -class Scidb
 	set top [ttk::frame $dlg.top]
 	set vlb [ttk::label $top.variantsText -textvariable ::mc::Variant]
 	if {$opts(-mode) eq "game"} {

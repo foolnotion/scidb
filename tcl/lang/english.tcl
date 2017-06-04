@@ -1574,6 +1574,7 @@
 ::import::mc::UnsupportedVariantRejected		"Unsuported variant '%s' rejected"
 ::import::mc::Accepted								"accepted"
 ::import::mc::Rejected								"rejected"
+::import::mc::ImportDialogAlreadyOpen			"Import dialog for this game is already open."
 
 ::import::mc::DifferentEncoding					"Selected encoding %src does not match file encoding %dst."
 ::import::mc::DifferentEncodingDetails			"Recoding of the database will not be successful anymore after this action."

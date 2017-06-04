@@ -1585,6 +1585,7 @@
 ::import::mc::AbortImport							"Avbryta PGN-import?"
 ::import::mc::Accepted								"accepterat"
 ::import::mc::Rejected								"avvisat"
+::import::mc::ImportDialogAlreadyOpen			"Import dialog for this game is already open." ;# NEW
 
 ::import::mc::DifferentEncoding					"Den valda kodningen %src överensstämmer inte med filkodningen %dst."
 ::import::mc::DifferentEncodingDetails			"Databasen kan därefter inte omkoderas."

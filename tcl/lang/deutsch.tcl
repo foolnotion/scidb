@@ -1575,6 +1575,7 @@
 ::import::mc::UnsupportedVariantRejected		"Nicht unterstütze Schachform '%s' zurückgewiesen"
 ::import::mc::Accepted								"akzeptiert"
 ::import::mc::Rejected								"zurückgewiesen"
+::import::mc::ImportDialogAlreadyOpen			"Ein Importdialog is bereits geöffnet für diese Partie."
 
 ::import::mc::DifferentEncoding					"Die ausgewählte Zeichenkodierung %src stimmt nicht mit der Dateikodierung %dst überein."
 ::import::mc::DifferentEncodingDetails			"Eine Umkodierung wird danach nicht mehr erfolgreich sein."

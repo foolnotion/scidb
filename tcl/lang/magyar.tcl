@@ -1586,6 +1586,7 @@
 ::import::mc::UnsupportedVariantRejected	"Unsuported variant '%s' rejected" ;# NEW
 ::import::mc::Accepted				"accepted" ;# NEW
 ::import::mc::Rejected				"rejected" ;# NEW
+::import::mc::ImportDialogAlreadyOpen		"Import dialog for this game is already open." ;# NEW
 
 ::import::mc::DifferentEncoding			"A kiválasztott %src kódolás nem illeszkedik %dst fájl kódoláshoz."
 ::import::mc::DifferentEncodingDetails		"Az adatbázis kódolásának megváltoztatása ez után a művelet után már nem lesz lehetséges." ;#?
