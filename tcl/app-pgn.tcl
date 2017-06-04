@@ -1322,10 +1322,13 @@ proc ProcessGoto {position key succKey} {
 
 	if {$Vars(current:$position) ne $key} {
 		::scidb::game::variation unfold
-		$w tag remove h:next begin end
+		if {[llength [set range [FindRange $w $key]]] == 0} {
+			return ;# TODO: How can this happen? We know that it happens sproadically.
+		}
 		$w tag remove h:curr begin end
 		$w tag remove h:move begin end
-		$w tag add h:curr {*}[FindRange $w $key]
+		$w tag remove h:next begin end
+		$w tag add h:curr {*}$range
 		if {$Vars(active:$position) eq $key} { $w configure -cursor {} }
 		set Vars(current:$position) $key
 		set Vars(successor:$position) $succKey
@@ -1338,7 +1341,9 @@ proc ProcessGoto {position key succKey} {
 		set Vars(previous:$position) $key
 		if {[llength [set nextKeys [::scidb::game::next keys $position]]] > 1} {
 			foreach k [::scidb::game::next keys $position] {
-				$w tag add h:next {*}[FindRange $w $k]
+				if {[llength [set range [FindRange $w $k]]]} {
+					$w tag add h:next {*}$range
+				}
 			}
 		}
 		[namespace parent]::board::updateMarks [::scidb::game::query marks]
@@ -1940,6 +1945,7 @@ proc EnterMove {w key {state 0}} {
 	} else {
 		set range [FindRange $w $key]
 	}
+	if {[llength $range] == 0} { return } ;# should not happen
 	$w tag add h:move {*}$range
 
 	set position $Vars(position)
