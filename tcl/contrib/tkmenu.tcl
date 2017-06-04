@@ -649,17 +649,28 @@ proc ::tk::MenuMotion {menu x y state} {
                 if {[string is false $mode]} {
                     set delay [expr {[$menu cget -type] eq "menubar" ? 0 : 50}]
                     if {[$menu type $index] eq "cascade"} {
+                        ### FIX begin ####################################################
                         set Priv(menuActivatedTimer) \
-                            [after $delay [list $menu postcascade active]]
+                            [after $delay [list ::tk::MenuTrigger $menu postcascade active]]
+                        ### FIX end ######################################################
                     } else {
+                        ### FIX begin ####################################################
                         set Priv(menuDeactivatedTimer) \
-                            [after $delay [list $menu postcascade none]]
+                            [after $delay [list ::tk::MenuTrigger $menu postcascade none]]
+                        ### FIX end ######################################################
                     }
                 }
             }
         }
     }
 }
+
+
+### FIX begin ###############################################################
+proc ::tk::MenuTrigger {menu args} {
+    if {[winfo exists $menu]} { $menu {*}$args }
+}
+### FIX end #################################################################
 
 
 # ::tk::MenuButtonDown --
@@ -1506,8 +1517,6 @@ proc menu {args} {
 
 
 proc ::tk::menu::WidgetProc {m command args} {
-    if {![winfo exists $m]} { return }
-
     if {$command eq "post" && [llength $args] == 2} {
         lassign $args x y
         set w [winfo parent $m]
