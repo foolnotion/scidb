@@ -1323,7 +1323,7 @@ proc ProcessGoto {position key succKey} {
 	if {$Vars(current:$position) ne $key} {
 		::scidb::game::variation unfold
 		if {[llength [set range [FindRange $w $key]]] == 0} {
-			return ;# TODO: How can this happen? We know that it happens sproadically.
+			return ;# TODO: How can this happen? We know that it happens sporadically.
 		}
 		$w tag remove h:curr begin end
 		$w tag remove h:move begin end
