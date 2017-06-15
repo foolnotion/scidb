@@ -345,7 +345,7 @@ Position::setup(BitStream& strm)
 	bool wshrt = strm.next(1);
 	bool wlong = strm.next(1);
 
-	board.setPlyNumber(mstl::mul2(mstl::max(1u, unsigned(strm.next(8))) - 1) + 1 + toMove);
+	board.setPlyNumber(mstl::mul2(mstl::max(1u, unsigned(strm.next(8))) - 1) + toMove);
 
 	::memset(pieces, Null, sizeof(pieces));
 	::memset(pieceCount, 0, sizeof(pieceCount));
