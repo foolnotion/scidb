@@ -1326,6 +1326,7 @@ proc ComputeLayout {canvWidth canvHeight {bordersize -1}} {
 	set distance	[expr {max(1, min($canvWidth, $canvHeight)/150)}]
 	set width		[expr {$canvWidth - 2*$distance}]
 	set height		[expr {$canvHeight - 2*$distance}]
+	set stmsize		0
 
 	if {$layout(side-to-move) || ($layout(material-values) && $Vars(layout) ne "Crazyhouse")} {
 		if {$layout(side-to-move)} { set minsize 64 } else { set minsize 34 }
@@ -1340,8 +1341,6 @@ proc ComputeLayout {canvWidth canvHeight {bordersize -1}} {
 
 	if {$Vars(layout) ne "Crazyhouse"} {
 		set stmsize [expr {$Dim(gap:x) + $Dim(stm)}]
-	} else {
-		set stmsize 0
 	}
 
 	if {$layout(border) && $layout(coordinates)} {
@@ -1456,7 +1455,7 @@ proc ConfigureBoard {canv} {
 
 	# configure side to move #######################
 	if {$layout(side-to-move)} {
-		if {[::board::diagram::flipped? $board]} {
+		if {[rotated?]} {
 			set stmw stmb
 			set stmb stmw
 		} else {
@@ -1520,7 +1519,7 @@ proc ConfigureBoard {canv} {
 		set z2 [expr {$z1 - $size - $Dim(gap:y)}]
 		set z3 [expr {$z2 - $size - $Dim(gap:y)}]
 
-		if {[::board::diagram::flipped? $board]} {
+		if {[rotated?]} {
 			set t1 $y1; set y1 $z1; set z1 $t1
 			set t2 $y2; set y2 $z2; set z2 $t2
 			set t3 $y3; set y3 $z3; set z3 $t3
@@ -1544,15 +1543,13 @@ proc ConfigureBoard {canv} {
 		}
 		set xw [expr {$Dim(border:x2) + $distance}]
 		set yw [expr {$Dim(border:y2) - $ht - $yincr}]
-		set xb [expr {$Dim(border:x1) - $distance - $wd}]
+		set xb [expr {$Dim(border:x1) - $distance - $Dim(offset:coords) - $wd}]
 		set yb [expr {$Dim(border:y1) + $yincr}]
-		if {[rotated?]} { set side w } else { set side b }
-		set x$side [expr {[set x$side] - $Dim(offset:coords)}]
-		if {[::board::diagram::flipped? $board]} { lassign {b w} w b } else { lassign {w b} w b }
-		$canv coords holdingbar-$w $xw $yw
-		$canv coords holdingbar-$b $xb $yb
-		$canv raise holdingbar-$w
-		$canv raise holdingbar-$b
+		if {[rotated?]} { lassign {b w} w b } else { lassign {w b} w b }
+		$canv coords holdingbar-w [set x$w] [set y$w]
+		$canv coords holdingbar-b [set x$b] [set y$b]
+		$canv raise holdingbar-w
+		$canv raise holdingbar-b
 	}
 
 	# configure coordinates ########################
@@ -1587,7 +1584,7 @@ proc ConfigureBoard {canv} {
 		}
 		set columns {8 7 6 5 4 3 2 1}
 		set rows {A B C D E F G H}
-		if {[::board::diagram::flipped? $board]} {
+		if {[rotated?]} {
 			set columns [lreverse $columns]
 			set rows [lreverse $rows]
 		}

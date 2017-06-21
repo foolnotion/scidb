@@ -73,10 +73,10 @@ proc new {w size args} {
 	namespace eval [namespace current]::${w} {}
 	variable ${w}::Board
 
-	array set opts { -bordersize 0 -bordertype "normal" -flipped 0 -relief raised }
+	array set opts { -bordersize 0 -bordertype "normal" -rotate 0 -relief raised }
 	array set opts $args
 
-	set Board(flip) $opts(-flipped)
+	set Board(flip) $opts(-rotate)
 	set Board(marks) {}
 	set Board(alternatives) {}
 	set Board(size) $size
@@ -399,11 +399,6 @@ proc rebuild {w} {
 	Build $w
 	SetupBorders $w
 	update $w
-}
-
-
-proc flipped? {w} {
-	return [set [namespace current]::${w}::Board(flip)]
 }
 
 

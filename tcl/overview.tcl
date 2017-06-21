@@ -461,7 +461,7 @@ proc ConfigureTab {pane} {
 	for {set row 0} {$row < $nrows} {incr row} {
 		for {set col 0} {$col < $ncols} {incr col} {
 			pack [::board::diagram::new $pane.frame_${row}_${col}.board $boardSize \
-				-bordersize 1 -flipped $Priv(flip)]
+				-bordersize 1 -rotate $Priv(flip)]
 		}
 	}
 
