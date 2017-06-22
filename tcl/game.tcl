@@ -143,7 +143,6 @@ proc new {parent args} {
 
 	set lock [expr {$number == -1 ? 1 : $opts(-lock)}]
 	if {[llength $base] == 0} { set base $scratchbaseName }
-	set variant $opts(-variant)
 	set codec [::scidb::db::get codec $base $variant]
 	set id [list $base $codec $number $variant]
 	set time [clock format [clock seconds] -format {%Y.%m.%d %H:%M:%S}]
@@ -165,7 +164,7 @@ proc new {parent args} {
 			-number $number \
 			-checkEncoding yes \
 			-fen $opts(-fen) \
-			-variant $opts(-variant) \
+			-variant $variant \
 		]} {
 			return -1
 		}
@@ -234,7 +233,7 @@ proc new {parent args} {
 			if {[::scidb::game::query $pos open?]} {
 				set backupPos [expr {$MaxPosition + 1}]
 				if {![::scidb::game::query $backupPos open?]} {
-					::scidb::game::new $backupPos $opts(-variant)
+					::scidb::game::new $backupPos $variant
 				}
 				::scidb::game::swapPositions $pos $backupPos
 				::scidb::game::release $pos ;# release scratch game
@@ -244,11 +243,11 @@ proc new {parent args} {
 				-number $number \
 				-checkEncoding yes \
 				-fen $opts(-fen) \
-				-variant $opts(-variant) \
+				-variant $variant \
 			]} {
 				if {$backupPos >= 0} {
 					if {![::scidb::game::query $pos open?]} {
-						::scidb::game::new $pos $opts(-variant)
+						::scidb::game::new $pos $variant
 					}
 					::scidb::game::swapPositions $pos $backupPos
 				}
@@ -492,11 +491,9 @@ proc load {parent position base args} {
 
 	if {$base eq $scratchbaseName} {
 		set Vars(lookup:$position) {}
-		set variant [::util::toMainVariant $opts(-variant)]
-		::scidb::game::new $position $variant
+		::scidb::game::new $position $opts(-variant)
 		set rc 1
 	} else {
-		set variant [::util::toMainVariant $opts(-variant)]
 		set parent [winfo toplevel $parent]
 		set options {}
 		if {$opts(-view) >= 0} { lappend options -view $opts(-view) }
