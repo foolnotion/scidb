@@ -49,6 +49,10 @@ proc validate {y m d {minYear 0} {maxYear 9999}} {
 	set error ""
 	set result ""
 
+	set y [string trimleft $y 0]
+	set m [string trimleft $m 0]
+	set d [string trimleft $d 0]
+
 	if {[llength $y]} { append result $y } else { append result "????" }
 	if {[llength $m]} { append result ".[Format $m]" } else { append result ".??" }
 	if {[llength $d]} { append result ".[Format $d]" } else { append result ".??" }
