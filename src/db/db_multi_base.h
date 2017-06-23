@@ -81,6 +81,8 @@ public:
 
 	/// Return the name of the database.
 	mstl::string const& name() const;
+	/// Returns the type of database
+	Type type() const;
 	/// Returns the (decoding) format of database
 	Format format() const;
 	/// Returns the variant of the leading database.

@@ -190,7 +190,7 @@ MultiBase::descriptionHasChanged() const
 bool
 MultiBase::isUnsaved(unsigned variantIndex) const
 {
-	if (format() != format::Pgn)
+	if (type() != type::PGNFile)
 		return false;
 
 	Database const* base = m_bases[variantIndex];
@@ -201,7 +201,7 @@ MultiBase::isUnsaved(unsigned variantIndex) const
 bool
 MultiBase::isUnsaved() const
 {
-	if (format() != format::Pgn)
+	if (type() != type::PGNFile)
 		return false;
 	if (descriptionHasChanged())
 		return true;
@@ -248,6 +248,14 @@ MultiBase::countGames(Mode mode) const
 	}
 
 	return total;
+}
+
+
+MultiBase::Type
+MultiBase::type() const
+{
+	M_ASSERT(m_leader);
+	return m_leader->type();
 }
 
 
