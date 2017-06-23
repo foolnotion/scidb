@@ -725,7 +725,7 @@ proc Mouse3Down {w key info nodes} {
 	$m add cascade -label $::crosstable::mc::Debugging -menu $sub
 
 	set Vars(lock) 1
-	bind $menu <<MenuUnpost>> [list set [namespace current]::Vars(lock) 0]
+	bind $m <<MenuUnpost>> [list set [namespace current]::Vars(lock) 0]
 	tk_popup $m {*}[winfo pointerxy $w]
 }
 
