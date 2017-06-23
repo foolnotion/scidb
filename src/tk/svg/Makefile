@@ -97,6 +97,8 @@ svg_gradient.o: ../../mstl/m_algobase.h
 svg_gradient.o: ../../mstl/m_algobase.ipp
 svg_gradient.o: ../../mstl/m_construct.h
 svg_gradient.o: ../../mstl/m_construct.ipp
+svg_gradient.o: ../../mstl/m_algorithm.h
+svg_gradient.o: ../../mstl/m_algorithm.ipp
 svg_gradient.o: ../../mstl/m_pair.h
 svg_gradient.o: ../../mstl/m_pair.ipp
 svg_gradient.o: ../../mstl/m_map.ipp
@@ -142,6 +144,8 @@ svg_parser.o: ../../mstl/m_algobase.h
 svg_parser.o: ../../mstl/m_algobase.ipp
 svg_parser.o: ../../mstl/m_construct.h
 svg_parser.o: ../../mstl/m_construct.ipp
+svg_parser.o: ../../mstl/m_algorithm.h
+svg_parser.o: ../../mstl/m_algorithm.ipp
 svg_parser.o: ../../mstl/m_pair.h
 svg_parser.o: ../../mstl/m_pair.ipp
 svg_parser.o: ../../mstl/m_map.ipp
@@ -218,6 +222,8 @@ svg_path_renderer.o: ../../mstl/m_algobase.h
 svg_path_renderer.o: ../../mstl/m_algobase.ipp
 svg_path_renderer.o: ../../mstl/m_construct.h
 svg_path_renderer.o: ../../mstl/m_construct.ipp
+svg_path_renderer.o: ../../mstl/m_algorithm.h
+svg_path_renderer.o: ../../mstl/m_algorithm.ipp
 svg_path_renderer.o: ../../mstl/m_pair.h
 svg_path_renderer.o: ../../mstl/m_pair.ipp
 svg_path_renderer.o: ../../mstl/m_map.ipp

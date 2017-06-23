@@ -296,6 +296,8 @@ cql/cql_match.o: ../mstl/m_uninitialized.h
 cql/cql_match.o: ../mstl/m_uninitialized.ipp
 cql/cql_match.o: ../mstl/m_algobase.h
 cql/cql_match.o: ../mstl/m_algobase.ipp
+cql/cql_match.o: ../mstl/m_algorithm.h
+cql/cql_match.o: ../mstl/m_algorithm.ipp
 cql/cql_match.o: ../mstl/m_pair.h
 cql/cql_match.o: ../mstl/m_pair.ipp
 cql/cql_match.o: cql/cql_match.ipp
@@ -336,8 +338,6 @@ cql/cql_match.o: db_board.h
 cql/cql_match.o: db_move_list.h
 cql/cql_match.o: db_move_list.ipp
 cql/cql_match.o: db_board.ipp
-cql/cql_match.o: ../mstl/m_algorithm.h
-cql/cql_match.o: ../mstl/m_algorithm.ipp
 cql/cql_match.o: ../mstl/m_auto_ptr.h
 cql/cql_match.o: ../mstl/m_auto_ptr.ipp
 cql/cql_match_board.o: cql/cql_match_board.h
@@ -400,6 +400,8 @@ cql/cql_match_board.o: ../mstl/m_uninitialized.h
 cql/cql_match_board.o: ../mstl/m_uninitialized.ipp
 cql/cql_match_board.o: ../mstl/m_algobase.h
 cql/cql_match_board.o: ../mstl/m_algobase.ipp
+cql/cql_match_board.o: ../mstl/m_algorithm.h
+cql/cql_match_board.o: ../mstl/m_algorithm.ipp
 cql/cql_match_board.o: ../mstl/m_ring.ipp
 cql/cql_match_board.o: ../mstl/m_hash.h
 cql/cql_match_board.o: ../mstl/m_pair.h
@@ -481,6 +483,8 @@ cql/cql_match_info.o: ../mstl/m_uninitialized.h
 cql/cql_match_info.o: ../mstl/m_uninitialized.ipp
 cql/cql_match_info.o: ../mstl/m_algobase.h
 cql/cql_match_info.o: ../mstl/m_algobase.ipp
+cql/cql_match_info.o: ../mstl/m_algorithm.h
+cql/cql_match_info.o: ../mstl/m_algorithm.ipp
 cql/cql_match_info.o: ../mstl/m_pair.h
 cql/cql_match_info.o: ../mstl/m_pair.ipp
 cql/cql_match_info.o: db_player.ipp
@@ -634,6 +638,8 @@ cql/cql_position.o: ../mstl/m_uninitialized.h
 cql/cql_position.o: ../mstl/m_uninitialized.ipp
 cql/cql_position.o: ../mstl/m_algobase.h
 cql/cql_position.o: ../mstl/m_algobase.ipp
+cql/cql_position.o: ../mstl/m_algorithm.h
+cql/cql_position.o: ../mstl/m_algorithm.ipp
 cql/cql_position.o: ../mstl/m_function.h
 cql/cql_position.o: ../mstl/m_function_base.h
 cql/cql_position.o: ../mstl/m_function_base.ipp
@@ -691,8 +697,6 @@ cql/cql_position.o: db_board_base.h
 cql/cql_position.o: db_board_base.ipp
 cql/cql_position.o: ../mstl/m_auto_ptr.h
 cql/cql_position.o: ../mstl/m_auto_ptr.ipp
-cql/cql_position.o: ../mstl/m_algorithm.h
-cql/cql_position.o: ../mstl/m_algorithm.ipp
 cql/cql_relation.o: cql/cql_relation.h
 cql/cql_relation.o: cql/cql_designator.h
 cql/cql_relation.o: cql/cql_board.h
@@ -747,11 +751,11 @@ cql/cql_relation.o: ../mstl/m_algobase.h
 cql/cql_relation.o: ../mstl/m_algobase.ipp
 cql/cql_relation.o: ../mstl/m_construct.h
 cql/cql_relation.o: ../mstl/m_construct.ipp
+cql/cql_relation.o: ../mstl/m_algorithm.h
+cql/cql_relation.o: ../mstl/m_algorithm.ipp
 cql/cql_relation.o: cql/cql_relation.ipp
 cql/cql_relation.o: cql/cql_match_relation.h
 cql/cql_relation.o: cql/cql_match_relation.ipp
-cql/cql_relation.o: ../mstl/m_algorithm.h
-cql/cql_relation.o: ../mstl/m_algorithm.ipp
 db_annotation.o: db_annotation.h
 db_annotation.o: db_common.h
 db_annotation.o: ../util/u_base.h
@@ -915,6 +919,8 @@ db_bpgn_reader.o: ../mstl/m_algobase.h
 db_bpgn_reader.o: ../mstl/m_algobase.ipp
 db_bpgn_reader.o: ../mstl/m_construct.h
 db_bpgn_reader.o: ../mstl/m_construct.ipp
+db_bpgn_reader.o: ../mstl/m_algorithm.h
+db_bpgn_reader.o: ../mstl/m_algorithm.ipp
 db_bpgn_reader.o: db_move_info_set.ipp
 db_bpgn_reader.o: db_engine_list.h
 db_bpgn_reader.o: ../mstl/m_map.h
@@ -999,6 +1005,8 @@ db_comment.o: ../mstl/m_algobase.h
 db_comment.o: ../mstl/m_algobase.ipp
 db_comment.o: ../mstl/m_construct.h
 db_comment.o: ../mstl/m_construct.ipp
+db_comment.o: ../mstl/m_algorithm.h
+db_comment.o: ../mstl/m_algorithm.ipp
 db_comment.o: ../mstl/m_pair.h
 db_comment.o: ../mstl/m_pair.ipp
 db_comment.o: ../mstl/m_map.ipp
@@ -1018,8 +1026,6 @@ db_comment.o: ../mstl/m_stack.h
 db_comment.o: ../mstl/m_stack.ipp
 db_comment.o: ../mstl/m_set.h
 db_comment.o: ../mstl/m_set.ipp
-db_comment.o: ../mstl/m_algorithm.h
-db_comment.o: ../mstl/m_algorithm.ipp
 db_comment.o: ../util/expat/expat.h
 db_comment.o: ../util/expat/xmlparse.h
 db_common.o: db_common.h
@@ -1110,6 +1116,8 @@ db_consumer.o: ../mstl/m_algobase.h
 db_consumer.o: ../mstl/m_algobase.ipp
 db_consumer.o: ../mstl/m_construct.h
 db_consumer.o: ../mstl/m_construct.ipp
+db_consumer.o: ../mstl/m_algorithm.h
+db_consumer.o: ../mstl/m_algorithm.ipp
 db_consumer.o: db_move_info_set.ipp
 db_consumer.o: db_engine_list.h
 db_consumer.o: ../mstl/m_map.h
@@ -1205,6 +1213,8 @@ db_database.o: ../mstl/m_uninitialized.h
 db_database.o: ../mstl/m_uninitialized.ipp
 db_database.o: ../mstl/m_algobase.h
 db_database.o: ../mstl/m_algobase.ipp
+db_database.o: ../mstl/m_algorithm.h
+db_database.o: ../mstl/m_algorithm.ipp
 db_database.o: ../mstl/m_pair.h
 db_database.o: ../mstl/m_pair.ipp
 db_database.o: db_player.ipp
@@ -1395,6 +1405,8 @@ db_database_content.o: ../mstl/m_uninitialized.h
 db_database_content.o: ../mstl/m_uninitialized.ipp
 db_database_content.o: ../mstl/m_algobase.h
 db_database_content.o: ../mstl/m_algobase.ipp
+db_database_content.o: ../mstl/m_algorithm.h
+db_database_content.o: ../mstl/m_algorithm.ipp
 db_database_content.o: ../mstl/m_pair.h
 db_database_content.o: ../mstl/m_pair.ipp
 db_database_content.o: db_player.ipp
@@ -1475,6 +1487,8 @@ db_database_codec.o: ../mstl/m_uninitialized.h
 db_database_codec.o: ../mstl/m_uninitialized.ipp
 db_database_codec.o: ../mstl/m_algobase.h
 db_database_codec.o: ../mstl/m_algobase.ipp
+db_database_codec.o: ../mstl/m_algorithm.h
+db_database_codec.o: ../mstl/m_algorithm.ipp
 db_database_codec.o: ../mstl/m_pair.h
 db_database_codec.o: ../mstl/m_pair.ipp
 db_database_codec.o: db_player.ipp
@@ -1560,8 +1574,6 @@ db_database_codec.o: db_comment.h
 db_database_codec.o: db_comment.ipp
 db_database_codec.o: ../mstl/m_set.h
 db_database_codec.o: ../mstl/m_set.ipp
-db_database_codec.o: ../mstl/m_algorithm.h
-db_database_codec.o: ../mstl/m_algorithm.ipp
 db_database_codec.o: db_move_node.ipp
 db_database_codec.o: ../mstl/m_fixed_size_allocator.h
 db_database_codec.o: ../mstl/m_fixed_size_allocator.ipp
@@ -1641,6 +1653,8 @@ db_document_writer.o: ../mstl/m_algobase.h
 db_document_writer.o: ../mstl/m_algobase.ipp
 db_document_writer.o: ../mstl/m_construct.h
 db_document_writer.o: ../mstl/m_construct.ipp
+db_document_writer.o: ../mstl/m_algorithm.h
+db_document_writer.o: ../mstl/m_algorithm.ipp
 db_document_writer.o: db_move_info_set.ipp
 db_document_writer.o: db_engine_list.h
 db_document_writer.o: ../mstl/m_map.h
@@ -1764,6 +1778,8 @@ db_edit_key.o: ../mstl/m_algobase.h
 db_edit_key.o: ../mstl/m_algobase.ipp
 db_edit_key.o: ../mstl/m_construct.h
 db_edit_key.o: ../mstl/m_construct.ipp
+db_edit_key.o: ../mstl/m_algorithm.h
+db_edit_key.o: ../mstl/m_algorithm.ipp
 db_edit_key.o: db_tag_set.ipp
 db_edit_key.o: db_engine_list.h
 db_edit_key.o: ../mstl/m_map.h
@@ -1805,8 +1821,6 @@ db_edit_key.o: db_game.ipp
 db_edit_key.o: db_move_node.h
 db_edit_key.o: ../mstl/m_set.h
 db_edit_key.o: ../mstl/m_set.ipp
-db_edit_key.o: ../mstl/m_algorithm.h
-db_edit_key.o: ../mstl/m_algorithm.ipp
 db_edit_key.o: db_move_node.ipp
 db_edit_key.o: ../mstl/m_stdio.h
 db_edit_node.o: db_edit_node.h
@@ -1862,6 +1876,8 @@ db_edit_node.o: ../mstl/m_algobase.h
 db_edit_node.o: ../mstl/m_algobase.ipp
 db_edit_node.o: ../mstl/m_construct.h
 db_edit_node.o: ../mstl/m_construct.ipp
+db_edit_node.o: ../mstl/m_algorithm.h
+db_edit_node.o: ../mstl/m_algorithm.ipp
 db_edit_node.o: ../mstl/m_pair.h
 db_edit_node.o: ../mstl/m_pair.ipp
 db_edit_node.o: ../mstl/m_map.ipp
@@ -1878,8 +1894,6 @@ db_edit_node.o: db_edit_node.ipp
 db_edit_node.o: db_move_node.h
 db_edit_node.o: ../mstl/m_set.h
 db_edit_node.o: ../mstl/m_set.ipp
-db_edit_node.o: ../mstl/m_algorithm.h
-db_edit_node.o: ../mstl/m_algorithm.ipp
 db_edit_node.o: db_move_node.ipp
 db_edit_node.o: db_mark_set.h
 db_edit_node.o: db_mark.h
@@ -1939,6 +1953,8 @@ db_engine_list.o: ../mstl/m_algobase.h
 db_engine_list.o: ../mstl/m_algobase.ipp
 db_engine_list.o: ../mstl/m_construct.h
 db_engine_list.o: ../mstl/m_construct.ipp
+db_engine_list.o: ../mstl/m_algorithm.h
+db_engine_list.o: ../mstl/m_algorithm.ipp
 db_engine_list.o: ../mstl/m_pair.h
 db_engine_list.o: ../mstl/m_pair.ipp
 db_engine_list.o: ../mstl/m_map.ipp
@@ -1984,6 +2000,8 @@ db_file_offsets.o: ../mstl/m_algobase.h
 db_file_offsets.o: ../mstl/m_algobase.ipp
 db_file_offsets.o: ../mstl/m_construct.h
 db_file_offsets.o: ../mstl/m_construct.ipp
+db_file_offsets.o: ../mstl/m_algorithm.h
+db_file_offsets.o: ../mstl/m_algorithm.ipp
 db_file_offsets.o: db_file_offsets.ipp
 db_filter.o: db_filter.h
 db_filter.o: ../mstl/m_bitset.h
@@ -2026,6 +2044,8 @@ db_filter.o: ../mstl/m_algobase.h
 db_filter.o: ../mstl/m_algobase.ipp
 db_filter.o: ../mstl/m_construct.h
 db_filter.o: ../mstl/m_construct.ipp
+db_filter.o: ../mstl/m_algorithm.h
+db_filter.o: ../mstl/m_algorithm.ipp
 db_filter.o: db_selector.ipp
 db_filter.o: db_query.h
 db_filter.o: ../mstl/m_ref_counted_ptr.h
@@ -2132,6 +2152,8 @@ db_game.o: ../mstl/m_algobase.h
 db_game.o: ../mstl/m_algobase.ipp
 db_game.o: ../mstl/m_construct.h
 db_game.o: ../mstl/m_construct.ipp
+db_game.o: ../mstl/m_algorithm.h
+db_game.o: ../mstl/m_algorithm.ipp
 db_game.o: db_tag_set.ipp
 db_game.o: db_engine_list.h
 db_game.o: ../mstl/m_map.h
@@ -2181,8 +2203,6 @@ db_game.o: db_player.ipp
 db_game.o: db_move_node.h
 db_game.o: ../mstl/m_set.h
 db_game.o: ../mstl/m_set.ipp
-db_game.o: ../mstl/m_algorithm.h
-db_game.o: ../mstl/m_algorithm.ipp
 db_game.o: db_move_node.ipp
 db_game.o: db_annotation.h
 db_game.o: ../mstl/m_bitset.h
@@ -2261,6 +2281,8 @@ db_game_data.o: ../mstl/m_algobase.h
 db_game_data.o: ../mstl/m_algobase.ipp
 db_game_data.o: ../mstl/m_construct.h
 db_game_data.o: ../mstl/m_construct.ipp
+db_game_data.o: ../mstl/m_algorithm.h
+db_game_data.o: ../mstl/m_algorithm.ipp
 db_game_data.o: db_tag_set.ipp
 db_game_data.o: db_engine_list.h
 db_game_data.o: ../mstl/m_map.h
@@ -2283,8 +2305,6 @@ db_game_data.o: db_comment.h
 db_game_data.o: db_comment.ipp
 db_game_data.o: ../mstl/m_set.h
 db_game_data.o: ../mstl/m_set.ipp
-db_game_data.o: ../mstl/m_algorithm.h
-db_game_data.o: ../mstl/m_algorithm.ipp
 db_game_data.o: db_move_node.ipp
 db_game_info.o: db_game_info.h
 db_game_info.o: db_signature.h
@@ -2341,6 +2361,8 @@ db_game_info.o: ../mstl/m_uninitialized.h
 db_game_info.o: ../mstl/m_uninitialized.ipp
 db_game_info.o: ../mstl/m_algobase.h
 db_game_info.o: ../mstl/m_algobase.ipp
+db_game_info.o: ../mstl/m_algorithm.h
+db_game_info.o: ../mstl/m_algorithm.ipp
 db_game_info.o: ../mstl/m_pair.h
 db_game_info.o: ../mstl/m_pair.ipp
 db_game_info.o: db_player.ipp
@@ -2439,6 +2461,8 @@ db_guess.o: ../mstl/m_algobase.h
 db_guess.o: ../mstl/m_algobase.ipp
 db_guess.o: ../mstl/m_construct.h
 db_guess.o: ../mstl/m_construct.ipp
+db_guess.o: ../mstl/m_algorithm.h
+db_guess.o: ../mstl/m_algorithm.ipp
 db_guess.o: ../mstl/m_pair.h
 db_guess.o: ../mstl/m_pair.ipp
 db_guess.o: ../mstl/m_map.ipp
@@ -2638,6 +2662,8 @@ db_html_writer.o: ../mstl/m_algobase.h
 db_html_writer.o: ../mstl/m_algobase.ipp
 db_html_writer.o: ../mstl/m_construct.h
 db_html_writer.o: ../mstl/m_construct.ipp
+db_html_writer.o: ../mstl/m_algorithm.h
+db_html_writer.o: ../mstl/m_algorithm.ipp
 db_html_writer.o: db_move_info_set.ipp
 db_html_writer.o: db_engine_list.h
 db_html_writer.o: ../mstl/m_map.h
@@ -2744,6 +2770,8 @@ db_info_consumer.o: ../mstl/m_algobase.h
 db_info_consumer.o: ../mstl/m_algobase.ipp
 db_info_consumer.o: ../mstl/m_construct.h
 db_info_consumer.o: ../mstl/m_construct.ipp
+db_info_consumer.o: ../mstl/m_algorithm.h
+db_info_consumer.o: ../mstl/m_algorithm.ipp
 db_info_consumer.o: db_move_info_set.ipp
 db_info_consumer.o: db_engine_list.h
 db_info_consumer.o: ../mstl/m_map.h
@@ -2823,6 +2851,8 @@ db_latex_writer.o: ../mstl/m_algobase.h
 db_latex_writer.o: ../mstl/m_algobase.ipp
 db_latex_writer.o: ../mstl/m_construct.h
 db_latex_writer.o: ../mstl/m_construct.ipp
+db_latex_writer.o: ../mstl/m_algorithm.h
+db_latex_writer.o: ../mstl/m_algorithm.ipp
 db_latex_writer.o: db_move_info_set.ipp
 db_latex_writer.o: db_engine_list.h
 db_latex_writer.o: ../mstl/m_map.h
@@ -3014,9 +3044,9 @@ db_mark_set.o: ../mstl/m_algobase.h
 db_mark_set.o: ../mstl/m_algobase.ipp
 db_mark_set.o: ../mstl/m_construct.h
 db_mark_set.o: ../mstl/m_construct.ipp
-db_mark_set.o: db_mark_set.ipp
 db_mark_set.o: ../mstl/m_algorithm.h
 db_mark_set.o: ../mstl/m_algorithm.ipp
+db_mark_set.o: db_mark_set.ipp
 db_move.o: db_move.h
 db_move.o: db_common.h
 db_move.o: ../util/u_base.h
@@ -3089,6 +3119,8 @@ db_move_info.o: ../mstl/m_algobase.h
 db_move_info.o: ../mstl/m_algobase.ipp
 db_move_info.o: ../mstl/m_construct.h
 db_move_info.o: ../mstl/m_construct.ipp
+db_move_info.o: ../mstl/m_algorithm.h
+db_move_info.o: ../mstl/m_algorithm.ipp
 db_move_info.o: ../mstl/m_pair.h
 db_move_info.o: ../mstl/m_pair.ipp
 db_move_info.o: ../mstl/m_map.ipp
@@ -3144,6 +3176,8 @@ db_move_info_set.o: ../mstl/m_algobase.h
 db_move_info_set.o: ../mstl/m_algobase.ipp
 db_move_info_set.o: ../mstl/m_construct.h
 db_move_info_set.o: ../mstl/m_construct.ipp
+db_move_info_set.o: ../mstl/m_algorithm.h
+db_move_info_set.o: ../mstl/m_algorithm.ipp
 db_move_info_set.o: db_move_info_set.ipp
 db_move_info_set.o: db_engine_list.h
 db_move_info_set.o: ../mstl/m_map.h
@@ -3156,8 +3190,6 @@ db_move_info_set.o: ../mstl/m_bitfield.h
 db_move_info_set.o: ../mstl/m_bitfield.ipp
 db_move_info_set.o: ../mstl/m_bitfield128.h
 db_move_info_set.o: db_common.ipp
-db_move_info_set.o: ../mstl/m_algorithm.h
-db_move_info_set.o: ../mstl/m_algorithm.ipp
 db_move_list.o: db_move_list.h
 db_move_list.o: db_move.h
 db_move_list.o: db_common.h
@@ -3236,6 +3268,8 @@ db_move_node.o: ../mstl/m_algobase.h
 db_move_node.o: ../mstl/m_algobase.ipp
 db_move_node.o: ../mstl/m_construct.h
 db_move_node.o: ../mstl/m_construct.ipp
+db_move_node.o: ../mstl/m_algorithm.h
+db_move_node.o: ../mstl/m_algorithm.ipp
 db_move_node.o: ../mstl/m_pair.h
 db_move_node.o: ../mstl/m_pair.ipp
 db_move_node.o: ../mstl/m_map.ipp
@@ -3244,8 +3278,6 @@ db_move_node.o: db_move.h
 db_move_node.o: db_move.ipp
 db_move_node.o: ../mstl/m_set.h
 db_move_node.o: ../mstl/m_set.ipp
-db_move_node.o: ../mstl/m_algorithm.h
-db_move_node.o: ../mstl/m_algorithm.ipp
 db_move_node.o: db_move_node.ipp
 db_move_node.o: db_annotation.h
 db_move_node.o: ../mstl/m_bitset.h
@@ -3309,6 +3341,8 @@ db_multi_base.o: ../mstl/m_algobase.h
 db_multi_base.o: ../mstl/m_algobase.ipp
 db_multi_base.o: ../mstl/m_construct.h
 db_multi_base.o: ../mstl/m_construct.ipp
+db_multi_base.o: ../mstl/m_algorithm.h
+db_multi_base.o: ../mstl/m_algorithm.ipp
 db_multi_base.o: db_file_offsets.ipp
 db_multi_base.o: ../mstl/m_string.h
 db_multi_base.o: ../mstl/m_string.ipp
@@ -3474,6 +3508,8 @@ db_namebase.o: ../mstl/m_uninitialized.h
 db_namebase.o: ../mstl/m_uninitialized.ipp
 db_namebase.o: ../mstl/m_algobase.h
 db_namebase.o: ../mstl/m_algobase.ipp
+db_namebase.o: ../mstl/m_algorithm.h
+db_namebase.o: ../mstl/m_algorithm.ipp
 db_namebase.o: ../mstl/m_pair.h
 db_namebase.o: ../mstl/m_pair.ipp
 db_namebase.o: db_player.ipp
@@ -3492,8 +3528,6 @@ db_namebase.o: ../sys/sys_utf8.h
 db_namebase.o: ../sys/sys_utf8.ipp
 db_namebase.o: ../sys/sys_utf8_codec.h
 db_namebase.o: ../sys/sys_utf8_codec.ipp
-db_namebase.o: ../mstl/m_algorithm.h
-db_namebase.o: ../mstl/m_algorithm.ipp
 db_namebase_entry.o: db_namebase_entry.h
 db_namebase_entry.o: db_date.h
 db_namebase_entry.o: ../util/u_crc.h
@@ -3543,6 +3577,8 @@ db_namebase_entry.o: ../mstl/m_uninitialized.h
 db_namebase_entry.o: ../mstl/m_uninitialized.ipp
 db_namebase_entry.o: ../mstl/m_algobase.h
 db_namebase_entry.o: ../mstl/m_algobase.ipp
+db_namebase_entry.o: ../mstl/m_algorithm.h
+db_namebase_entry.o: ../mstl/m_algorithm.ipp
 db_namebase_entry.o: ../mstl/m_pair.h
 db_namebase_entry.o: ../mstl/m_pair.ipp
 db_namebase_entry.o: db_player.ipp
@@ -3599,6 +3635,8 @@ db_namebases.o: ../mstl/m_uninitialized.h
 db_namebases.o: ../mstl/m_uninitialized.ipp
 db_namebases.o: ../mstl/m_algobase.h
 db_namebases.o: ../mstl/m_algobase.ipp
+db_namebases.o: ../mstl/m_algorithm.h
+db_namebases.o: ../mstl/m_algorithm.ipp
 db_namebases.o: ../mstl/m_pair.h
 db_namebases.o: ../mstl/m_pair.ipp
 db_namebases.o: db_player.ipp
@@ -3676,6 +3714,8 @@ db_pdf_writer.o: ../mstl/m_algobase.h
 db_pdf_writer.o: ../mstl/m_algobase.ipp
 db_pdf_writer.o: ../mstl/m_construct.h
 db_pdf_writer.o: ../mstl/m_construct.ipp
+db_pdf_writer.o: ../mstl/m_algorithm.h
+db_pdf_writer.o: ../mstl/m_algorithm.ipp
 db_pdf_writer.o: db_move_info_set.ipp
 db_pdf_writer.o: db_engine_list.h
 db_pdf_writer.o: ../mstl/m_map.h
@@ -3798,6 +3838,8 @@ db_pgn_reader.o: ../mstl/m_algobase.h
 db_pgn_reader.o: ../mstl/m_algobase.ipp
 db_pgn_reader.o: ../mstl/m_construct.h
 db_pgn_reader.o: ../mstl/m_construct.ipp
+db_pgn_reader.o: ../mstl/m_algorithm.h
+db_pgn_reader.o: ../mstl/m_algorithm.ipp
 db_pgn_reader.o: db_move_info_set.ipp
 db_pgn_reader.o: db_engine_list.h
 db_pgn_reader.o: ../mstl/m_map.h
@@ -3854,8 +3896,6 @@ db_pgn_reader.o: ../util/u_progress.h
 db_pgn_reader.o: ../util/u_progress.ipp
 db_pgn_reader.o: ../util/u_nul_string.h
 db_pgn_reader.o: ../util/u_nul_string.ipp
-db_pgn_reader.o: ../mstl/m_algorithm.h
-db_pgn_reader.o: ../mstl/m_algorithm.ipp
 db_pgn_reader.o: ../mstl/m_istream.h
 db_pgn_reader.o: ../mstl/m_ios.h
 db_pgn_reader.o: ../mstl/m_ios.ipp
@@ -3929,6 +3969,8 @@ db_pgn_writer.o: ../mstl/m_algobase.h
 db_pgn_writer.o: ../mstl/m_algobase.ipp
 db_pgn_writer.o: ../mstl/m_construct.h
 db_pgn_writer.o: ../mstl/m_construct.ipp
+db_pgn_writer.o: ../mstl/m_algorithm.h
+db_pgn_writer.o: ../mstl/m_algorithm.ipp
 db_pgn_writer.o: db_move_info_set.ipp
 db_pgn_writer.o: db_engine_list.h
 db_pgn_writer.o: ../mstl/m_map.h
@@ -4011,6 +4053,8 @@ db_player.o: ../mstl/m_uninitialized.h
 db_player.o: ../mstl/m_uninitialized.ipp
 db_player.o: ../mstl/m_algobase.h
 db_player.o: ../mstl/m_algobase.ipp
+db_player.o: ../mstl/m_algorithm.h
+db_player.o: ../mstl/m_algorithm.ipp
 db_player.o: ../mstl/m_pair.h
 db_player.o: ../mstl/m_pair.ipp
 db_player.o: db_player.ipp
@@ -4082,8 +4126,6 @@ db_player.o: ../sys/sys_utf8.h
 db_player.o: ../sys/sys_utf8.ipp
 db_player.o: ../sys/sys_utf8_codec.h
 db_player.o: ../sys/sys_utf8_codec.ipp
-db_player.o: ../mstl/m_algorithm.h
-db_player.o: ../mstl/m_algorithm.ipp
 db_player.o: ../mstl/m_istream.h
 db_player.o: ../mstl/m_ios.h
 db_player.o: ../mstl/m_ios.ipp
@@ -4135,6 +4177,8 @@ db_player_stats.o: ../mstl/m_algobase.h
 db_player_stats.o: ../mstl/m_algobase.ipp
 db_player_stats.o: ../mstl/m_construct.h
 db_player_stats.o: ../mstl/m_construct.ipp
+db_player_stats.o: ../mstl/m_algorithm.h
+db_player_stats.o: ../mstl/m_algorithm.ipp
 db_player_stats.o: ../mstl/m_pair.h
 db_player_stats.o: ../mstl/m_pair.ipp
 db_player_stats.o: ../mstl/m_map.ipp
@@ -4248,6 +4292,8 @@ db_producer.o: ../mstl/m_algobase.h
 db_producer.o: ../mstl/m_algobase.ipp
 db_producer.o: ../mstl/m_construct.h
 db_producer.o: ../mstl/m_construct.ipp
+db_producer.o: ../mstl/m_algorithm.h
+db_producer.o: ../mstl/m_algorithm.ipp
 db_producer.o: db_move_info_set.ipp
 db_producer.o: db_engine_list.h
 db_producer.o: ../mstl/m_map.h
@@ -4400,6 +4446,8 @@ db_reader.o: ../mstl/m_algobase.h
 db_reader.o: ../mstl/m_algobase.ipp
 db_reader.o: ../mstl/m_construct.h
 db_reader.o: ../mstl/m_construct.ipp
+db_reader.o: ../mstl/m_algorithm.h
+db_reader.o: ../mstl/m_algorithm.ipp
 db_reader.o: db_move_info_set.ipp
 db_reader.o: db_engine_list.h
 db_reader.o: ../mstl/m_map.h
@@ -4518,6 +4566,8 @@ db_search.o: ../mstl/m_uninitialized.h
 db_search.o: ../mstl/m_uninitialized.ipp
 db_search.o: ../mstl/m_algobase.h
 db_search.o: ../mstl/m_algobase.ipp
+db_search.o: ../mstl/m_algorithm.h
+db_search.o: ../mstl/m_algorithm.ipp
 db_search.o: ../mstl/m_pair.h
 db_search.o: ../mstl/m_pair.ipp
 db_search.o: db_player.ipp
@@ -4558,6 +4608,8 @@ db_selector.o: ../mstl/m_algobase.h
 db_selector.o: ../mstl/m_algobase.ipp
 db_selector.o: ../mstl/m_construct.h
 db_selector.o: ../mstl/m_construct.ipp
+db_selector.o: ../mstl/m_algorithm.h
+db_selector.o: ../mstl/m_algorithm.ipp
 db_selector.o: db_selector.ipp
 db_selector.o: db_database.h
 db_selector.o: db_database_content.h
@@ -4677,11 +4729,11 @@ db_signature.o: ../mstl/m_algobase.h
 db_signature.o: ../mstl/m_algobase.ipp
 db_signature.o: ../mstl/m_construct.h
 db_signature.o: ../mstl/m_construct.ipp
+db_signature.o: ../mstl/m_algorithm.h
+db_signature.o: ../mstl/m_algorithm.ipp
 db_signature.o: ../mstl/m_pair.h
 db_signature.o: ../mstl/m_pair.ipp
 db_signature.o: ../mstl/m_hash.ipp
-db_signature.o: ../mstl/m_algorithm.h
-db_signature.o: ../mstl/m_algorithm.ipp
 db_signature.o: ../mstl/m_string.h
 db_signature.o: ../mstl/m_string.ipp
 db_signature.o: ../mstl/m_stdio.h
@@ -4724,6 +4776,8 @@ db_site.o: ../mstl/m_algobase.h
 db_site.o: ../mstl/m_algobase.ipp
 db_site.o: ../mstl/m_construct.h
 db_site.o: ../mstl/m_construct.ipp
+db_site.o: ../mstl/m_algorithm.h
+db_site.o: ../mstl/m_algorithm.ipp
 db_site.o: db_site.ipp
 db_site.o: ../sys/sys_utf8.h
 db_site.o: ../sys/sys_utf8.ipp
@@ -4741,8 +4795,6 @@ db_site.o: ../mstl/m_chunk_allocator.h
 db_site.o: ../mstl/m_stack.h
 db_site.o: ../mstl/m_stack.ipp
 db_site.o: ../mstl/m_chunk_allocator.ipp
-db_site.o: ../mstl/m_algorithm.h
-db_site.o: ../mstl/m_algorithm.ipp
 db_site.o: ../mstl/m_istream.h
 db_site.o: ../mstl/m_ios.h
 db_site.o: ../mstl/m_ios.ipp
@@ -4804,6 +4856,8 @@ db_statistic.o: ../mstl/m_uninitialized.h
 db_statistic.o: ../mstl/m_uninitialized.ipp
 db_statistic.o: ../mstl/m_algobase.h
 db_statistic.o: ../mstl/m_algobase.ipp
+db_statistic.o: ../mstl/m_algorithm.h
+db_statistic.o: ../mstl/m_algorithm.ipp
 db_statistic.o: ../mstl/m_pair.h
 db_statistic.o: ../mstl/m_pair.ipp
 db_statistic.o: db_player.ipp
@@ -4893,6 +4947,8 @@ db_tag_set.o: ../mstl/m_algobase.h
 db_tag_set.o: ../mstl/m_algobase.ipp
 db_tag_set.o: ../mstl/m_construct.h
 db_tag_set.o: ../mstl/m_construct.ipp
+db_tag_set.o: ../mstl/m_algorithm.h
+db_tag_set.o: ../mstl/m_algorithm.ipp
 db_tag_set.o: db_tag_set.ipp
 db_tag_set.o: ../mstl/m_stdio.h
 db_time_table.o: db_time_table.h
@@ -4938,6 +4994,8 @@ db_time_table.o: ../mstl/m_algobase.h
 db_time_table.o: ../mstl/m_algobase.ipp
 db_time_table.o: ../mstl/m_construct.h
 db_time_table.o: ../mstl/m_construct.ipp
+db_time_table.o: ../mstl/m_algorithm.h
+db_time_table.o: ../mstl/m_algorithm.ipp
 db_time_table.o: db_move_info_set.ipp
 db_time_table.o: db_time_table.ipp
 db_tournament_table.o: db_tournament_table.h
@@ -4985,6 +5043,8 @@ db_tournament_table.o: ../mstl/m_algobase.h
 db_tournament_table.o: ../mstl/m_algobase.ipp
 db_tournament_table.o: ../mstl/m_construct.h
 db_tournament_table.o: ../mstl/m_construct.ipp
+db_tournament_table.o: ../mstl/m_algorithm.h
+db_tournament_table.o: ../mstl/m_algorithm.ipp
 db_tournament_table.o: ../mstl/m_pair.h
 db_tournament_table.o: ../mstl/m_pair.ipp
 db_tournament_table.o: ../mstl/m_map.ipp
@@ -5094,8 +5154,6 @@ db_tournament_table.o: ../util/libTeXt/T_ActiveToken.h
 db_tournament_table.o: ../mstl/m_scoped_ptr.h
 db_tournament_table.o: ../mstl/m_scoped_ptr.ipp
 db_tournament_table.o: ../util/libTeXt/T_Environment.ipp
-db_tournament_table.o: ../mstl/m_algorithm.h
-db_tournament_table.o: ../mstl/m_algorithm.ipp
 db_tree.o: db_tree.h
 db_tree.o: db_tree_info.h
 db_tree.o: db_move.h
@@ -5158,6 +5216,8 @@ db_tree.o: ../mstl/m_algobase.h
 db_tree.o: ../mstl/m_algobase.ipp
 db_tree.o: ../mstl/m_construct.h
 db_tree.o: ../mstl/m_construct.ipp
+db_tree.o: ../mstl/m_algorithm.h
+db_tree.o: ../mstl/m_algorithm.ipp
 db_tree.o: ../mstl/m_pvector.ipp
 db_tree.o: ../mstl/m_ref_counter.h
 db_tree.o: ../mstl/m_ref_counter.ipp
@@ -5289,6 +5349,8 @@ db_tree_info.o: ../mstl/m_uninitialized.h
 db_tree_info.o: ../mstl/m_uninitialized.ipp
 db_tree_info.o: ../mstl/m_algobase.h
 db_tree_info.o: ../mstl/m_algobase.ipp
+db_tree_info.o: ../mstl/m_algorithm.h
+db_tree_info.o: ../mstl/m_algorithm.ipp
 db_tree_info.o: ../mstl/m_pair.h
 db_tree_info.o: ../mstl/m_pair.ipp
 db_tree_info.o: db_player.ipp
@@ -5367,6 +5429,8 @@ db_tree_cache.o: ../mstl/m_algobase.h
 db_tree_cache.o: ../mstl/m_algobase.ipp
 db_tree_cache.o: ../mstl/m_construct.h
 db_tree_cache.o: ../mstl/m_construct.ipp
+db_tree_cache.o: ../mstl/m_algorithm.h
+db_tree_cache.o: ../mstl/m_algorithm.ipp
 db_tree_cache.o: ../mstl/m_pvector.ipp
 db_tree_cache.o: ../mstl/m_ref_counter.h
 db_tree_cache.o: ../mstl/m_ref_counter.ipp
@@ -5511,6 +5575,8 @@ db_var_consumer.o: ../mstl/m_algobase.h
 db_var_consumer.o: ../mstl/m_algobase.ipp
 db_var_consumer.o: ../mstl/m_construct.h
 db_var_consumer.o: ../mstl/m_construct.ipp
+db_var_consumer.o: ../mstl/m_algorithm.h
+db_var_consumer.o: ../mstl/m_algorithm.ipp
 db_var_consumer.o: db_move_info_set.ipp
 db_var_consumer.o: db_engine_list.h
 db_var_consumer.o: ../mstl/m_map.h
@@ -5529,8 +5595,6 @@ db_var_consumer.o: db_comment.h
 db_var_consumer.o: db_comment.ipp
 db_var_consumer.o: ../mstl/m_set.h
 db_var_consumer.o: ../mstl/m_set.ipp
-db_var_consumer.o: ../mstl/m_algorithm.h
-db_var_consumer.o: ../mstl/m_algorithm.ipp
 db_var_consumer.o: db_move_node.ipp
 db_var_consumer.o: db_annotation.h
 db_var_consumer.o: ../mstl/m_bitset.h
@@ -5605,6 +5669,8 @@ db_writer.o: ../mstl/m_algobase.h
 db_writer.o: ../mstl/m_algobase.ipp
 db_writer.o: ../mstl/m_construct.h
 db_writer.o: ../mstl/m_construct.ipp
+db_writer.o: ../mstl/m_algorithm.h
+db_writer.o: ../mstl/m_algorithm.ipp
 db_writer.o: db_move_info_set.ipp
 db_writer.o: db_engine_list.h
 db_writer.o: ../mstl/m_map.h
@@ -5704,6 +5770,8 @@ sci/sci_codec.o: ../mstl/m_uninitialized.h
 sci/sci_codec.o: ../mstl/m_uninitialized.ipp
 sci/sci_codec.o: ../mstl/m_algobase.h
 sci/sci_codec.o: ../mstl/m_algobase.ipp
+sci/sci_codec.o: ../mstl/m_algorithm.h
+sci/sci_codec.o: ../mstl/m_algorithm.ipp
 sci/sci_codec.o: ../mstl/m_pair.h
 sci/sci_codec.o: ../mstl/m_pair.ipp
 sci/sci_codec.o: db_player.ipp
@@ -5865,6 +5933,8 @@ sci/sci_consumer.o: db_clock.ipp
 sci/sci_consumer.o: db_move_info.ipp
 sci/sci_consumer.o: ../mstl/m_vector.h
 sci/sci_consumer.o: ../mstl/m_vector.ipp
+sci/sci_consumer.o: ../mstl/m_algorithm.h
+sci/sci_consumer.o: ../mstl/m_algorithm.ipp
 sci/sci_consumer.o: db_move_info_set.ipp
 sci/sci_consumer.o: db_engine_list.h
 sci/sci_consumer.o: ../mstl/m_map.h
@@ -5998,6 +6068,8 @@ sci/sci_decoder.o: db_eco.ipp
 sci/sci_decoder.o: ../mstl/m_map.h
 sci/sci_decoder.o: ../mstl/m_vector.h
 sci/sci_decoder.o: ../mstl/m_vector.ipp
+sci/sci_decoder.o: ../mstl/m_algorithm.h
+sci/sci_decoder.o: ../mstl/m_algorithm.ipp
 sci/sci_decoder.o: ../mstl/m_pair.h
 sci/sci_decoder.o: ../mstl/m_pair.ipp
 sci/sci_decoder.o: ../mstl/m_map.ipp
@@ -6022,8 +6094,6 @@ sci/sci_decoder.o: db_comment.h
 sci/sci_decoder.o: db_comment.ipp
 sci/sci_decoder.o: ../mstl/m_set.h
 sci/sci_decoder.o: ../mstl/m_set.ipp
-sci/sci_decoder.o: ../mstl/m_algorithm.h
-sci/sci_decoder.o: ../mstl/m_algorithm.ipp
 sci/sci_decoder.o: db_move_node.ipp
 sci/sci_decoder.o: db_mark_set.h
 sci/sci_decoder.o: db_mark.h
@@ -6192,6 +6262,8 @@ sci/sci_encoder.o: db_clock.ipp
 sci/sci_encoder.o: db_move_info.ipp
 sci/sci_encoder.o: ../mstl/m_vector.h
 sci/sci_encoder.o: ../mstl/m_vector.ipp
+sci/sci_encoder.o: ../mstl/m_algorithm.h
+sci/sci_encoder.o: ../mstl/m_algorithm.ipp
 sci/sci_encoder.o: db_move_info_set.ipp
 sci/sci_encoder.o: db_engine_list.h
 sci/sci_encoder.o: ../mstl/m_map.h
@@ -6212,8 +6284,6 @@ sci/sci_encoder.o: db_comment.h
 sci/sci_encoder.o: db_comment.ipp
 sci/sci_encoder.o: ../mstl/m_set.h
 sci/sci_encoder.o: ../mstl/m_set.ipp
-sci/sci_encoder.o: ../mstl/m_algorithm.h
-sci/sci_encoder.o: ../mstl/m_algorithm.ipp
 sci/sci_encoder.o: db_move_node.ipp
 sci/sci_encoder.o: db_mark_set.h
 sci/sci_encoder.o: db_mark.h
@@ -6335,6 +6405,8 @@ sci/v91/sci_v91_codec.o: ../mstl/m_uninitialized.h
 sci/v91/sci_v91_codec.o: ../mstl/m_uninitialized.ipp
 sci/v91/sci_v91_codec.o: ../mstl/m_algobase.h
 sci/v91/sci_v91_codec.o: ../mstl/m_algobase.ipp
+sci/v91/sci_v91_codec.o: ../mstl/m_algorithm.h
+sci/v91/sci_v91_codec.o: ../mstl/m_algorithm.ipp
 sci/v91/sci_v91_codec.o: ../mstl/m_pair.h
 sci/v91/sci_v91_codec.o: ../mstl/m_pair.ipp
 sci/v91/sci_v91_codec.o: db_player.ipp
@@ -6476,6 +6548,8 @@ sci/v91/sci_v91_decoder.o: db_game_data.h
 sci/v91/sci_v91_decoder.o: db_tag_set.h
 sci/v91/sci_v91_decoder.o: ../mstl/m_vector.h
 sci/v91/sci_v91_decoder.o: ../mstl/m_vector.ipp
+sci/v91/sci_v91_decoder.o: ../mstl/m_algorithm.h
+sci/v91/sci_v91_decoder.o: ../mstl/m_algorithm.ipp
 sci/v91/sci_v91_decoder.o: db_tag_set.ipp
 sci/v91/sci_v91_decoder.o: db_engine_list.h
 sci/v91/sci_v91_decoder.o: ../mstl/m_map.h
@@ -6498,8 +6572,6 @@ sci/v91/sci_v91_decoder.o: db_comment.h
 sci/v91/sci_v91_decoder.o: db_comment.ipp
 sci/v91/sci_v91_decoder.o: ../mstl/m_set.h
 sci/v91/sci_v91_decoder.o: ../mstl/m_set.ipp
-sci/v91/sci_v91_decoder.o: ../mstl/m_algorithm.h
-sci/v91/sci_v91_decoder.o: ../mstl/m_algorithm.ipp
 sci/v91/sci_v91_decoder.o: db_move_node.ipp
 sci/v91/sci_v91_decoder.o: db_mark.h
 sci/v91/sci_v91_decoder.o: db_mark.ipp
@@ -6655,6 +6727,8 @@ sci/v92/sci_v92_codec.o: ../mstl/m_uninitialized.h
 sci/v92/sci_v92_codec.o: ../mstl/m_uninitialized.ipp
 sci/v92/sci_v92_codec.o: ../mstl/m_algobase.h
 sci/v92/sci_v92_codec.o: ../mstl/m_algobase.ipp
+sci/v92/sci_v92_codec.o: ../mstl/m_algorithm.h
+sci/v92/sci_v92_codec.o: ../mstl/m_algorithm.ipp
 sci/v92/sci_v92_codec.o: ../mstl/m_pair.h
 sci/v92/sci_v92_codec.o: ../mstl/m_pair.ipp
 sci/v92/sci_v92_codec.o: db_player.ipp
@@ -6797,6 +6871,8 @@ sci/v92/sci_v92_decoder.o: db_game_data.h
 sci/v92/sci_v92_decoder.o: db_tag_set.h
 sci/v92/sci_v92_decoder.o: ../mstl/m_vector.h
 sci/v92/sci_v92_decoder.o: ../mstl/m_vector.ipp
+sci/v92/sci_v92_decoder.o: ../mstl/m_algorithm.h
+sci/v92/sci_v92_decoder.o: ../mstl/m_algorithm.ipp
 sci/v92/sci_v92_decoder.o: db_tag_set.ipp
 sci/v92/sci_v92_decoder.o: db_engine_list.h
 sci/v92/sci_v92_decoder.o: ../mstl/m_map.h
@@ -6819,8 +6895,6 @@ sci/v92/sci_v92_decoder.o: db_comment.h
 sci/v92/sci_v92_decoder.o: db_comment.ipp
 sci/v92/sci_v92_decoder.o: ../mstl/m_set.h
 sci/v92/sci_v92_decoder.o: ../mstl/m_set.ipp
-sci/v92/sci_v92_decoder.o: ../mstl/m_algorithm.h
-sci/v92/sci_v92_decoder.o: ../mstl/m_algorithm.ipp
 sci/v92/sci_v92_decoder.o: db_move_node.ipp
 sci/v92/sci_v92_decoder.o: db_mark_set.h
 sci/v92/sci_v92_decoder.o: db_mark.h
@@ -6976,6 +7050,8 @@ sci/v93/sci_v93_codec.o: ../mstl/m_uninitialized.h
 sci/v93/sci_v93_codec.o: ../mstl/m_uninitialized.ipp
 sci/v93/sci_v93_codec.o: ../mstl/m_algobase.h
 sci/v93/sci_v93_codec.o: ../mstl/m_algobase.ipp
+sci/v93/sci_v93_codec.o: ../mstl/m_algorithm.h
+sci/v93/sci_v93_codec.o: ../mstl/m_algorithm.ipp
 sci/v93/sci_v93_codec.o: ../mstl/m_pair.h
 sci/v93/sci_v93_codec.o: ../mstl/m_pair.ipp
 sci/v93/sci_v93_codec.o: db_player.ipp
@@ -7120,6 +7196,8 @@ sci/v93/sci_v93_decoder.o: db_game_data.h
 sci/v93/sci_v93_decoder.o: db_tag_set.h
 sci/v93/sci_v93_decoder.o: ../mstl/m_vector.h
 sci/v93/sci_v93_decoder.o: ../mstl/m_vector.ipp
+sci/v93/sci_v93_decoder.o: ../mstl/m_algorithm.h
+sci/v93/sci_v93_decoder.o: ../mstl/m_algorithm.ipp
 sci/v93/sci_v93_decoder.o: db_tag_set.ipp
 sci/v93/sci_v93_decoder.o: db_engine_list.h
 sci/v93/sci_v93_decoder.o: ../mstl/m_map.h
@@ -7142,8 +7220,6 @@ sci/v93/sci_v93_decoder.o: db_comment.h
 sci/v93/sci_v93_decoder.o: db_comment.ipp
 sci/v93/sci_v93_decoder.o: ../mstl/m_set.h
 sci/v93/sci_v93_decoder.o: ../mstl/m_set.ipp
-sci/v93/sci_v93_decoder.o: ../mstl/m_algorithm.h
-sci/v93/sci_v93_decoder.o: ../mstl/m_algorithm.ipp
 sci/v93/sci_v93_decoder.o: db_move_node.ipp
 sci/v93/sci_v93_decoder.o: db_mark_set.h
 sci/v93/sci_v93_decoder.o: db_mark.h
@@ -7299,6 +7375,8 @@ si3/si3_codec.o: ../mstl/m_uninitialized.h
 si3/si3_codec.o: ../mstl/m_uninitialized.ipp
 si3/si3_codec.o: ../mstl/m_algobase.h
 si3/si3_codec.o: ../mstl/m_algobase.ipp
+si3/si3_codec.o: ../mstl/m_algorithm.h
+si3/si3_codec.o: ../mstl/m_algorithm.ipp
 si3/si3_codec.o: ../mstl/m_pair.h
 si3/si3_codec.o: ../mstl/m_pair.ipp
 si3/si3_codec.o: db_player.ipp
@@ -7479,6 +7557,8 @@ si3/si3_consumer.o: db_clock.ipp
 si3/si3_consumer.o: db_move_info.ipp
 si3/si3_consumer.o: ../mstl/m_vector.h
 si3/si3_consumer.o: ../mstl/m_vector.ipp
+si3/si3_consumer.o: ../mstl/m_algorithm.h
+si3/si3_consumer.o: ../mstl/m_algorithm.ipp
 si3/si3_consumer.o: db_move_info_set.ipp
 si3/si3_consumer.o: db_engine_list.h
 si3/si3_consumer.o: ../mstl/m_map.h
@@ -7607,6 +7687,8 @@ si3/si3_decoder.o: db_engine_list.h
 si3/si3_decoder.o: ../mstl/m_map.h
 si3/si3_decoder.o: ../mstl/m_vector.h
 si3/si3_decoder.o: ../mstl/m_vector.ipp
+si3/si3_decoder.o: ../mstl/m_algorithm.h
+si3/si3_decoder.o: ../mstl/m_algorithm.ipp
 si3/si3_decoder.o: ../mstl/m_pair.h
 si3/si3_decoder.o: ../mstl/m_pair.ipp
 si3/si3_decoder.o: ../mstl/m_map.ipp
@@ -7652,8 +7734,6 @@ si3/si3_decoder.o: db_comment.ipp
 si3/si3_decoder.o: db_move_node.h
 si3/si3_decoder.o: ../mstl/m_set.h
 si3/si3_decoder.o: ../mstl/m_set.ipp
-si3/si3_decoder.o: ../mstl/m_algorithm.h
-si3/si3_decoder.o: ../mstl/m_algorithm.ipp
 si3/si3_decoder.o: db_move_node.ipp
 si3/si3_decoder.o: db_database_codec.h
 si3/si3_decoder.o: db_database_content.h
@@ -7812,6 +7892,8 @@ si3/si3_encoder.o: db_clock.ipp
 si3/si3_encoder.o: db_move_info.ipp
 si3/si3_encoder.o: ../mstl/m_vector.h
 si3/si3_encoder.o: ../mstl/m_vector.ipp
+si3/si3_encoder.o: ../mstl/m_algorithm.h
+si3/si3_encoder.o: ../mstl/m_algorithm.ipp
 si3/si3_encoder.o: db_move_info_set.ipp
 si3/si3_encoder.o: db_engine_list.h
 si3/si3_encoder.o: ../mstl/m_map.h
@@ -7829,8 +7911,6 @@ si3/si3_encoder.o: db_comment.h
 si3/si3_encoder.o: db_comment.ipp
 si3/si3_encoder.o: ../mstl/m_set.h
 si3/si3_encoder.o: ../mstl/m_set.ipp
-si3/si3_encoder.o: ../mstl/m_algorithm.h
-si3/si3_encoder.o: ../mstl/m_algorithm.ipp
 si3/si3_encoder.o: db_move_node.ipp
 si3/si3_encoder.o: db_tag_set.h
 si3/si3_encoder.o: db_tag_set.ipp
@@ -7948,6 +8028,8 @@ si3/si3_name_list.o: ../mstl/m_algobase.h
 si3/si3_name_list.o: ../mstl/m_algobase.ipp
 si3/si3_name_list.o: ../mstl/m_construct.h
 si3/si3_name_list.o: ../mstl/m_construct.ipp
+si3/si3_name_list.o: ../mstl/m_algorithm.h
+si3/si3_name_list.o: ../mstl/m_algorithm.ipp
 si3/si3_name_list.o: ../mstl/m_bitset.h
 si3/si3_name_list.o: ../mstl/m_bitset_iterator.h
 si3/si3_name_list.o: ../mstl/m_bitfield.h
@@ -7983,8 +8065,6 @@ si3/si3_name_list.o: db_player.ipp
 si3/si3_name_list.o: db_namebase.ipp
 si3/si3_name_list.o: ../sys/sys_utf8_codec.h
 si3/si3_name_list.o: ../sys/sys_utf8_codec.ipp
-si3/si3_name_list.o: ../mstl/m_algorithm.h
-si3/si3_name_list.o: ../mstl/m_algorithm.ipp
 si3/si3_stored_line.o: si3/si3_stored_line.h
 si3/si3_stored_line.o: db_eco.h
 si3/si3_stored_line.o: ../util/u_base.h
@@ -8043,6 +8123,8 @@ si3/si3_stored_line.o: ../mstl/m_algobase.h
 si3/si3_stored_line.o: ../mstl/m_algobase.ipp
 si3/si3_stored_line.o: ../mstl/m_construct.h
 si3/si3_stored_line.o: ../mstl/m_construct.ipp
+si3/si3_stored_line.o: ../mstl/m_algorithm.h
+si3/si3_stored_line.o: ../mstl/m_algorithm.ipp
 si3/si3_stored_line.o: ../mstl/m_pair.h
 si3/si3_stored_line.o: ../mstl/m_pair.ipp
 si3/si3_stored_line.o: ../mstl/m_map.ipp
@@ -8118,6 +8200,8 @@ cbf/cbf_codec.o: ../mstl/m_uninitialized.h
 cbf/cbf_codec.o: ../mstl/m_uninitialized.ipp
 cbf/cbf_codec.o: ../mstl/m_algobase.h
 cbf/cbf_codec.o: ../mstl/m_algobase.ipp
+cbf/cbf_codec.o: ../mstl/m_algorithm.h
+cbf/cbf_codec.o: ../mstl/m_algorithm.ipp
 cbf/cbf_codec.o: ../mstl/m_pair.h
 cbf/cbf_codec.o: ../mstl/m_pair.ipp
 cbf/cbf_codec.o: db_player.ipp
@@ -8259,6 +8343,8 @@ cbf/cbf_decoder.o: db_game_data.h
 cbf/cbf_decoder.o: db_tag_set.h
 cbf/cbf_decoder.o: ../mstl/m_vector.h
 cbf/cbf_decoder.o: ../mstl/m_vector.ipp
+cbf/cbf_decoder.o: ../mstl/m_algorithm.h
+cbf/cbf_decoder.o: ../mstl/m_algorithm.ipp
 cbf/cbf_decoder.o: db_tag_set.ipp
 cbf/cbf_decoder.o: db_engine_list.h
 cbf/cbf_decoder.o: ../mstl/m_map.h
@@ -8281,8 +8367,6 @@ cbf/cbf_decoder.o: db_comment.h
 cbf/cbf_decoder.o: db_comment.ipp
 cbf/cbf_decoder.o: ../mstl/m_set.h
 cbf/cbf_decoder.o: ../mstl/m_set.ipp
-cbf/cbf_decoder.o: ../mstl/m_algorithm.h
-cbf/cbf_decoder.o: ../mstl/m_algorithm.ipp
 cbf/cbf_decoder.o: db_move_node.ipp
 cbf/cbf_decoder.o: db_consumer.h
 cbf/cbf_decoder.o: db_provider.h
@@ -8414,6 +8498,8 @@ cbh/cbh_codec.o: ../mstl/m_uninitialized.h
 cbh/cbh_codec.o: ../mstl/m_uninitialized.ipp
 cbh/cbh_codec.o: ../mstl/m_algobase.h
 cbh/cbh_codec.o: ../mstl/m_algobase.ipp
+cbh/cbh_codec.o: ../mstl/m_algorithm.h
+cbh/cbh_codec.o: ../mstl/m_algorithm.ipp
 cbh/cbh_codec.o: ../mstl/m_pair.h
 cbh/cbh_codec.o: ../mstl/m_pair.ipp
 cbh/cbh_codec.o: db_player.ipp
@@ -8448,8 +8534,6 @@ cbh/cbh_codec.o: ../mstl/m_map.ipp
 cbh/cbh_codec.o: db_comment.ipp
 cbh/cbh_codec.o: ../mstl/m_set.h
 cbh/cbh_codec.o: ../mstl/m_set.ipp
-cbh/cbh_codec.o: ../mstl/m_algorithm.h
-cbh/cbh_codec.o: ../mstl/m_algorithm.ipp
 cbh/cbh_codec.o: db_move_node.ipp
 cbh/cbh_codec.o: ../util/universalchardet/nsUniversalDetector.h
 cbh/cbh_codec.o: ../util/universalchardet/nstypes.h
@@ -8568,14 +8652,14 @@ cbh/cbh_decoder.o: db_comment.h
 cbh/cbh_decoder.o: ../mstl/m_map.h
 cbh/cbh_decoder.o: ../mstl/m_vector.h
 cbh/cbh_decoder.o: ../mstl/m_vector.ipp
+cbh/cbh_decoder.o: ../mstl/m_algorithm.h
+cbh/cbh_decoder.o: ../mstl/m_algorithm.ipp
 cbh/cbh_decoder.o: ../mstl/m_pair.h
 cbh/cbh_decoder.o: ../mstl/m_pair.ipp
 cbh/cbh_decoder.o: ../mstl/m_map.ipp
 cbh/cbh_decoder.o: db_comment.ipp
 cbh/cbh_decoder.o: ../mstl/m_set.h
 cbh/cbh_decoder.o: ../mstl/m_set.ipp
-cbh/cbh_decoder.o: ../mstl/m_algorithm.h
-cbh/cbh_decoder.o: ../mstl/m_algorithm.ipp
 cbh/cbh_decoder.o: db_move_node.ipp
 cbh/cbh_decoder.o: ../mstl/m_fixed_size_allocator.h
 cbh/cbh_decoder.o: ../mstl/m_fixed_size_allocator.ipp
@@ -8747,6 +8831,8 @@ db_eco_table.o: ../mstl/m_algobase.h
 db_eco_table.o: ../mstl/m_algobase.ipp
 db_eco_table.o: ../mstl/m_construct.h
 db_eco_table.o: ../mstl/m_construct.ipp
+db_eco_table.o: ../mstl/m_algorithm.h
+db_eco_table.o: ../mstl/m_algorithm.ipp
 db_eco_table.o: ../mstl/m_pair.h
 db_eco_table.o: ../mstl/m_pair.ipp
 db_eco_table.o: ../mstl/m_map.ipp
@@ -8832,6 +8918,8 @@ db_eco_table_stubs.o: ../mstl/m_algobase.h
 db_eco_table_stubs.o: ../mstl/m_algobase.ipp
 db_eco_table_stubs.o: ../mstl/m_construct.h
 db_eco_table_stubs.o: ../mstl/m_construct.ipp
+db_eco_table_stubs.o: ../mstl/m_algorithm.h
+db_eco_table_stubs.o: ../mstl/m_algorithm.ipp
 db_eco_table_stubs.o: ../mstl/m_pair.h
 db_eco_table_stubs.o: ../mstl/m_pair.ipp
 db_eco_table_stubs.o: ../mstl/m_map.ipp

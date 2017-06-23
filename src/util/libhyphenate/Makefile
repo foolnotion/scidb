@@ -82,6 +82,8 @@ HyphenationRule.o: ../../mstl/m_algobase.h
 HyphenationRule.o: ../../mstl/m_algobase.ipp
 HyphenationRule.o: ../../mstl/m_construct.h
 HyphenationRule.o: ../../mstl/m_construct.ipp
+HyphenationRule.o: ../../mstl/m_algorithm.h
+HyphenationRule.o: ../../mstl/m_algorithm.ipp
 HyphenationTree.o: HyphenationTree.h
 HyphenationTree.o: HyphenationRule.h
 HyphenationTree.o: ../../mstl/m_string.h
@@ -114,6 +116,8 @@ HyphenationTree.o: ../../mstl/m_algobase.h
 HyphenationTree.o: ../../mstl/m_algobase.ipp
 HyphenationTree.o: ../../mstl/m_construct.h
 HyphenationTree.o: ../../mstl/m_construct.ipp
+HyphenationTree.o: ../../mstl/m_algorithm.h
+HyphenationTree.o: ../../mstl/m_algorithm.ipp
 HyphenationTree.o: ../../mstl/m_auto_ptr.h
 HyphenationTree.o: ../../mstl/m_auto_ptr.ipp
 HyphenationTree.o: ../../sys/sys_utf8.h
@@ -156,10 +160,10 @@ Hyphenator.o: ../../mstl/m_algobase.h
 Hyphenator.o: ../../mstl/m_algobase.ipp
 Hyphenator.o: ../../mstl/m_construct.h
 Hyphenator.o: ../../mstl/m_construct.ipp
-Hyphenator.o: ../../mstl/m_set.h
-Hyphenator.o: ../../mstl/m_set.ipp
 Hyphenator.o: ../../mstl/m_algorithm.h
 Hyphenator.o: ../../mstl/m_algorithm.ipp
+Hyphenator.o: ../../mstl/m_set.h
+Hyphenator.o: ../../mstl/m_set.ipp
 Hyphenator.o: ../../mstl/m_auto_ptr.h
 Hyphenator.o: ../../mstl/m_auto_ptr.ipp
 Hyphenator.o: ../../mstl/m_pair.h

@@ -101,11 +101,11 @@ u_block_file.o: ../mstl/m_algobase.h
 u_block_file.o: ../mstl/m_algobase.ipp
 u_block_file.o: ../mstl/m_construct.h
 u_block_file.o: ../mstl/m_construct.ipp
+u_block_file.o: ../mstl/m_algorithm.h
+u_block_file.o: ../mstl/m_algorithm.ipp
 u_block_file.o: u_block_file.ipp
 u_block_file.o: u_progress.h
 u_block_file.o: u_progress.ipp
-u_block_file.o: ../mstl/m_algorithm.h
-u_block_file.o: ../mstl/m_algorithm.ipp
 u_block_file.o: ../mstl/m_fstream.h
 u_block_file.o: ../mstl/m_ifstream.h
 u_block_file.o: ../mstl/m_istream.h
@@ -211,12 +211,12 @@ u_html.o: ../mstl/m_algobase.h
 u_html.o: ../mstl/m_algobase.ipp
 u_html.o: ../mstl/m_construct.h
 u_html.o: ../mstl/m_construct.ipp
+u_html.o: ../mstl/m_algorithm.h
+u_html.o: ../mstl/m_algorithm.ipp
 u_html.o: u_html.ipp
 u_html.o: libhyphenate/Hyphenator.h
 u_html.o: ../mstl/m_set.h
 u_html.o: ../mstl/m_set.ipp
-u_html.o: ../mstl/m_algorithm.h
-u_html.o: ../mstl/m_algorithm.ipp
 u_html.o: ../mstl/m_auto_ptr.h
 u_html.o: ../mstl/m_auto_ptr.ipp
 u_html.o: ../mstl/m_pair.h
@@ -394,6 +394,8 @@ u_zstream.o: ../mstl/m_algobase.h
 u_zstream.o: ../mstl/m_algobase.ipp
 u_zstream.o: ../mstl/m_construct.h
 u_zstream.o: ../mstl/m_construct.ipp
+u_zstream.o: ../mstl/m_algorithm.h
+u_zstream.o: ../mstl/m_algorithm.ipp
 u_zstream.o: ../mstl/m_string.h
 u_zstream.o: ../mstl/m_string.ipp
 u_zstream.o: u_byte_stream.h

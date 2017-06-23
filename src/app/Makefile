@@ -129,6 +129,8 @@ app_application.o: ../mstl/m_algobase.h
 app_application.o: ../mstl/m_algobase.ipp
 app_application.o: ../mstl/m_construct.h
 app_application.o: ../mstl/m_construct.ipp
+app_application.o: ../mstl/m_algorithm.h
+app_application.o: ../mstl/m_algorithm.ipp
 app_application.o: ../mstl/m_pvector.ipp
 app_application.o: ../mstl/m_ref_counter.h
 app_application.o: ../mstl/m_ref_counter.ipp
@@ -259,8 +261,6 @@ app_application.o: ../sys/sys_info.h
 app_application.o: ../mstl/m_ifstream.h
 app_application.o: ../mstl/m_file.h
 app_application.o: ../mstl/m_file.ipp
-app_application.o: ../mstl/m_algorithm.h
-app_application.o: ../mstl/m_algorithm.ipp
 app_application.o: ../mstl/m_stdio.h
 app_book.o: app_book.h
 app_book.o: ../db/db_move.h
@@ -306,6 +306,8 @@ app_book.o: ../mstl/m_algobase.h
 app_book.o: ../mstl/m_algobase.ipp
 app_book.o: ../mstl/m_construct.h
 app_book.o: ../mstl/m_construct.ipp
+app_book.o: ../mstl/m_algorithm.h
+app_book.o: ../mstl/m_algorithm.ipp
 app_book.o: ../mstl/m_pvector.ipp
 app_book.o: app_polyglot_book.h
 app_book.o: ../util/u_rkiss.h
@@ -359,6 +361,8 @@ app_chessbase_book.o: ../mstl/m_algobase.h
 app_chessbase_book.o: ../mstl/m_algobase.ipp
 app_chessbase_book.o: ../mstl/m_construct.h
 app_chessbase_book.o: ../mstl/m_construct.ipp
+app_chessbase_book.o: ../mstl/m_algorithm.h
+app_chessbase_book.o: ../mstl/m_algorithm.ipp
 app_chessbase_book.o: ../mstl/m_pvector.ipp
 app_chessbase_book.o: ../util/u_byte_stream.h
 app_chessbase_book.o: ../util/u_exception.h
@@ -434,6 +438,8 @@ app_cql_engine.o: ../mstl/m_algobase.h
 app_cql_engine.o: ../mstl/m_algobase.ipp
 app_cql_engine.o: ../mstl/m_construct.h
 app_cql_engine.o: ../mstl/m_construct.ipp
+app_cql_engine.o: ../mstl/m_algorithm.h
+app_cql_engine.o: ../mstl/m_algorithm.ipp
 app_cql_engine.o: ../mstl/m_pvector.ipp
 app_cql_engine.o: ../mstl/m_list.h
 app_cql_engine.o: ../mstl/m_list_node.h
@@ -531,6 +537,8 @@ app_cursor.o: ../mstl/m_algobase.h
 app_cursor.o: ../mstl/m_algobase.ipp
 app_cursor.o: ../mstl/m_construct.h
 app_cursor.o: ../mstl/m_construct.ipp
+app_cursor.o: ../mstl/m_algorithm.h
+app_cursor.o: ../mstl/m_algorithm.ipp
 app_cursor.o: ../db/db_selector.ipp
 app_cursor.o: ../db/db_log.h
 app_cursor.o: ../mstl/m_pvector.h
@@ -690,6 +698,8 @@ app_engine.o: ../mstl/m_algobase.h
 app_engine.o: ../mstl/m_algobase.ipp
 app_engine.o: ../mstl/m_construct.h
 app_engine.o: ../mstl/m_construct.ipp
+app_engine.o: ../mstl/m_algorithm.h
+app_engine.o: ../mstl/m_algorithm.ipp
 app_engine.o: ../mstl/m_pvector.ipp
 app_engine.o: ../mstl/m_list.h
 app_engine.o: ../mstl/m_list_node.h
@@ -750,8 +760,6 @@ app_engine.o: ../mstl/m_ostream.h
 app_engine.o: ../mstl/m_ios.h
 app_engine.o: ../mstl/m_ios.ipp
 app_engine.o: ../mstl/m_ostream.ipp
-app_engine.o: ../mstl/m_algorithm.h
-app_engine.o: ../mstl/m_algorithm.ipp
 app_exception.o: app_exception.h
 app_exception.o: ../util/u_exception.h
 app_exception.o: ../mstl/m_exception.h
@@ -792,6 +800,8 @@ app_fam_service.o: ../mstl/m_algobase.h
 app_fam_service.o: ../mstl/m_algobase.ipp
 app_fam_service.o: ../mstl/m_construct.h
 app_fam_service.o: ../mstl/m_construct.ipp
+app_fam_service.o: ../mstl/m_algorithm.h
+app_fam_service.o: ../mstl/m_algorithm.ipp
 app_fam_service.o: ../mstl/m_pair.h
 app_fam_service.o: ../mstl/m_pair.ipp
 app_fam_service.o: ../mstl/m_map.ipp
@@ -844,6 +854,8 @@ app_multi_cursor.o: ../mstl/m_algobase.h
 app_multi_cursor.o: ../mstl/m_algobase.ipp
 app_multi_cursor.o: ../mstl/m_construct.h
 app_multi_cursor.o: ../mstl/m_construct.ipp
+app_multi_cursor.o: ../mstl/m_algorithm.h
+app_multi_cursor.o: ../mstl/m_algorithm.ipp
 app_multi_cursor.o: ../db/db_selector.ipp
 app_multi_cursor.o: ../db/db_log.h
 app_multi_cursor.o: ../mstl/m_pvector.h
@@ -991,6 +1003,8 @@ app_player_dictionary.o: ../mstl/m_algobase.h
 app_player_dictionary.o: ../mstl/m_algobase.ipp
 app_player_dictionary.o: ../mstl/m_construct.h
 app_player_dictionary.o: ../mstl/m_construct.ipp
+app_player_dictionary.o: ../mstl/m_algorithm.h
+app_player_dictionary.o: ../mstl/m_algorithm.ipp
 app_player_dictionary.o: app_player_dictionary.ipp
 app_player_dictionary.o: ../db/db_player.h
 app_player_dictionary.o: ../db/db_date.h
@@ -1066,6 +1080,8 @@ app_polyglot_book.o: ../mstl/m_algobase.h
 app_polyglot_book.o: ../mstl/m_algobase.ipp
 app_polyglot_book.o: ../mstl/m_construct.h
 app_polyglot_book.o: ../mstl/m_construct.ipp
+app_polyglot_book.o: ../mstl/m_algorithm.h
+app_polyglot_book.o: ../mstl/m_algorithm.ipp
 app_polyglot_book.o: ../mstl/m_pvector.ipp
 app_polyglot_book.o: ../util/u_rkiss.h
 app_polyglot_book.o: ../db/db_board.h
@@ -1097,8 +1113,6 @@ app_polyglot_book.o: ../mstl/m_pair.ipp
 app_polyglot_book.o: ../mstl/m_hash.ipp
 app_polyglot_book.o: ../mstl/m_set.h
 app_polyglot_book.o: ../mstl/m_set.ipp
-app_polyglot_book.o: ../mstl/m_algorithm.h
-app_polyglot_book.o: ../mstl/m_algorithm.ipp
 app_tree_admin.o: app_tree_admin.h
 app_tree_admin.o: ../db/db_tree.h
 app_tree_admin.o: ../db/db_tree_info.h
@@ -1162,6 +1176,8 @@ app_tree_admin.o: ../mstl/m_algobase.h
 app_tree_admin.o: ../mstl/m_algobase.ipp
 app_tree_admin.o: ../mstl/m_construct.h
 app_tree_admin.o: ../mstl/m_construct.ipp
+app_tree_admin.o: ../mstl/m_algorithm.h
+app_tree_admin.o: ../mstl/m_algorithm.ipp
 app_tree_admin.o: ../mstl/m_pvector.ipp
 app_tree_admin.o: ../mstl/m_ref_counter.h
 app_tree_admin.o: ../mstl/m_ref_counter.ipp
@@ -1298,6 +1314,8 @@ app_uci_engine.o: ../mstl/m_algobase.h
 app_uci_engine.o: ../mstl/m_algobase.ipp
 app_uci_engine.o: ../mstl/m_construct.h
 app_uci_engine.o: ../mstl/m_construct.ipp
+app_uci_engine.o: ../mstl/m_algorithm.h
+app_uci_engine.o: ../mstl/m_algorithm.ipp
 app_uci_engine.o: ../mstl/m_pvector.ipp
 app_uci_engine.o: ../mstl/m_list.h
 app_uci_engine.o: ../mstl/m_list_node.h
@@ -1390,6 +1408,8 @@ app_view.o: ../mstl/m_algobase.h
 app_view.o: ../mstl/m_algobase.ipp
 app_view.o: ../mstl/m_construct.h
 app_view.o: ../mstl/m_construct.ipp
+app_view.o: ../mstl/m_algorithm.h
+app_view.o: ../mstl/m_algorithm.ipp
 app_view.o: ../db/db_selector.ipp
 app_view.o: ../db/db_log.h
 app_view.o: ../mstl/m_pvector.h
@@ -1611,6 +1631,8 @@ app_winboard_engine.o: ../mstl/m_algobase.h
 app_winboard_engine.o: ../mstl/m_algobase.ipp
 app_winboard_engine.o: ../mstl/m_construct.h
 app_winboard_engine.o: ../mstl/m_construct.ipp
+app_winboard_engine.o: ../mstl/m_algorithm.h
+app_winboard_engine.o: ../mstl/m_algorithm.ipp
 app_winboard_engine.o: ../mstl/m_pvector.ipp
 app_winboard_engine.o: ../mstl/m_list.h
 app_winboard_engine.o: ../mstl/m_list_node.h

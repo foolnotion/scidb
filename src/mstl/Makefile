@@ -254,6 +254,8 @@ m_equiv_classes.o: m_algobase.h
 m_equiv_classes.o: m_algobase.ipp
 m_equiv_classes.o: m_construct.h
 m_equiv_classes.o: m_construct.ipp
+m_equiv_classes.o: m_algorithm.h
+m_equiv_classes.o: m_algorithm.ipp
 m_equiv_classes.o: m_equiv_classes.ipp
 m_exception.o: m_exception.h
 m_exception.o: m_backtrace.h
@@ -278,6 +280,7 @@ m_exception.o: m_bit_functions.ipp
 m_exception.o: m_uint128_t.h
 m_exception.o: m_uint128.h
 m_exception.o: m_assert.h
+m_exception.o: m_stdio.h
 m_file.o: m_file.h
 m_file.o: m_ios.h
 m_file.o: m_exception.h
@@ -355,6 +358,8 @@ m_hash.o: m_algobase.h
 m_hash.o: m_algobase.ipp
 m_hash.o: m_construct.h
 m_hash.o: m_construct.ipp
+m_hash.o: m_algorithm.h
+m_hash.o: m_algorithm.ipp
 m_hash.o: m_pair.h
 m_hash.o: m_pair.ipp
 m_hash.o: m_hash.ipp

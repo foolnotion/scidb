@@ -204,12 +204,12 @@ T_AhoCorasick.o: ../../mstl/m_algobase.h
 T_AhoCorasick.o: ../../mstl/m_algobase.ipp
 T_AhoCorasick.o: ../../mstl/m_construct.h
 T_AhoCorasick.o: ../../mstl/m_construct.ipp
+T_AhoCorasick.o: ../../mstl/m_algorithm.h
+T_AhoCorasick.o: ../../mstl/m_algorithm.ipp
 T_AhoCorasick.o: ../../mstl/m_chunk_allocator.h
 T_AhoCorasick.o: ../../mstl/m_stack.h
 T_AhoCorasick.o: ../../mstl/m_stack.ipp
 T_AhoCorasick.o: ../../mstl/m_chunk_allocator.ipp
-T_AhoCorasick.o: ../../mstl/m_algorithm.h
-T_AhoCorasick.o: ../../mstl/m_algorithm.ipp
 T_Alignment.o: T_Alignment.h
 T_Alignment.o: T_Package.h
 T_Alignment.o: T_Generic.h
@@ -268,6 +268,8 @@ T_Alignment.o: ../../mstl/m_algobase.h
 T_Alignment.o: ../../mstl/m_algobase.ipp
 T_Alignment.o: ../../mstl/m_construct.h
 T_Alignment.o: ../../mstl/m_construct.ipp
+T_Alignment.o: ../../mstl/m_algorithm.h
+T_Alignment.o: ../../mstl/m_algorithm.ipp
 T_Alignment.o: T_ListToken.ipp
 T_Alignment.o: T_TextToken.h
 T_Alignment.o: T_TextToken.ipp
@@ -936,6 +938,8 @@ T_Environment.o: T_ExpandableToken.h
 T_Environment.o: T_ListToken.h
 T_Environment.o: ../../mstl/m_vector.h
 T_Environment.o: ../../mstl/m_vector.ipp
+T_Environment.o: ../../mstl/m_algorithm.h
+T_Environment.o: ../../mstl/m_algorithm.ipp
 T_Environment.o: T_ListToken.ipp
 T_Environment.o: T_TextToken.h
 T_Environment.o: T_TextToken.ipp
@@ -1171,6 +1175,8 @@ T_Expansion.o: T_Environment.ipp
 T_Expansion.o: T_ListToken.h
 T_Expansion.o: ../../mstl/m_vector.h
 T_Expansion.o: ../../mstl/m_vector.ipp
+T_Expansion.o: ../../mstl/m_algorithm.h
+T_Expansion.o: ../../mstl/m_algorithm.ipp
 T_Expansion.o: T_ListToken.ipp
 T_Expansion.o: T_TextToken.h
 T_Expansion.o: T_TextToken.ipp
@@ -1987,6 +1993,8 @@ T_List.o: ../../mstl/m_algobase.h
 T_List.o: ../../mstl/m_algobase.ipp
 T_List.o: ../../mstl/m_construct.h
 T_List.o: ../../mstl/m_construct.ipp
+T_List.o: ../../mstl/m_algorithm.h
+T_List.o: ../../mstl/m_algorithm.ipp
 T_List.o: T_ListToken.ipp
 T_List.o: T_TextToken.h
 T_List.o: T_TextToken.ipp
@@ -2063,6 +2071,8 @@ T_ListToken.o: ../../mstl/m_algobase.h
 T_ListToken.o: ../../mstl/m_algobase.ipp
 T_ListToken.o: ../../mstl/m_construct.h
 T_ListToken.o: ../../mstl/m_construct.ipp
+T_ListToken.o: ../../mstl/m_algorithm.h
+T_ListToken.o: ../../mstl/m_algorithm.ipp
 T_ListToken.o: T_ListToken.ipp
 T_ListToken.o: T_TextToken.h
 T_ListToken.o: T_TextToken.ipp
@@ -2085,8 +2095,6 @@ T_ListToken.o: T_ActiveToken.h
 T_ListToken.o: ../../mstl/m_scoped_ptr.h
 T_ListToken.o: ../../mstl/m_scoped_ptr.ipp
 T_ListToken.o: T_Environment.ipp
-T_ListToken.o: ../../mstl/m_algorithm.h
-T_ListToken.o: ../../mstl/m_algorithm.ipp
 T_MacroToken.o: T_MacroToken.h
 T_MacroToken.o: T_ExpandableToken.h
 T_MacroToken.o: T_Token.h
@@ -2135,6 +2143,8 @@ T_MacroToken.o: ../../mstl/m_algobase.h
 T_MacroToken.o: ../../mstl/m_algobase.ipp
 T_MacroToken.o: ../../mstl/m_construct.h
 T_MacroToken.o: ../../mstl/m_construct.ipp
+T_MacroToken.o: ../../mstl/m_algorithm.h
+T_MacroToken.o: ../../mstl/m_algorithm.ipp
 T_MacroToken.o: ../../mstl/m_scoped_ptr.h
 T_MacroToken.o: ../../mstl/m_scoped_ptr.ipp
 T_MacroToken.o: T_ListToken.h
@@ -2228,6 +2238,8 @@ T_Macros.o: ../../mstl/m_algobase.h
 T_Macros.o: ../../mstl/m_algobase.ipp
 T_Macros.o: ../../mstl/m_construct.h
 T_Macros.o: ../../mstl/m_construct.ipp
+T_Macros.o: ../../mstl/m_algorithm.h
+T_Macros.o: ../../mstl/m_algorithm.ipp
 T_Macros.o: ../../mstl/m_scoped_ptr.h
 T_Macros.o: ../../mstl/m_scoped_ptr.ipp
 T_Macros.o: T_ParameterToken.h
@@ -2253,8 +2265,6 @@ T_Macros.o: T_TextConsumer.h
 T_Macros.o: T_Consumer.h
 T_Macros.o: T_Messages.h
 T_Macros.o: T_Verify.h
-T_Macros.o: ../../mstl/m_algorithm.h
-T_Macros.o: ../../mstl/m_algorithm.ipp
 T_Memory.o: T_Memory.h
 T_Memory.o: T_Config.h
 T_Memory.o: ../../mstl/m_types.h
@@ -2334,6 +2344,8 @@ T_Memory.o: T_LeftBraceToken.h
 T_Memory.o: T_ListToken.h
 T_Memory.o: ../../mstl/m_vector.h
 T_Memory.o: ../../mstl/m_vector.ipp
+T_Memory.o: ../../mstl/m_algorithm.h
+T_Memory.o: ../../mstl/m_algorithm.ipp
 T_Memory.o: T_ListToken.ipp
 T_Memory.o: T_TextToken.h
 T_Memory.o: T_TextToken.ipp
@@ -2499,6 +2511,8 @@ T_Miscellaneous.o: T_TextToken.ipp
 T_Miscellaneous.o: T_ListToken.h
 T_Miscellaneous.o: ../../mstl/m_vector.h
 T_Miscellaneous.o: ../../mstl/m_vector.ipp
+T_Miscellaneous.o: ../../mstl/m_algorithm.h
+T_Miscellaneous.o: ../../mstl/m_algorithm.ipp
 T_Miscellaneous.o: T_ListToken.ipp
 T_Miscellaneous.o: T_NumberToken.h
 T_Miscellaneous.o: T_NumberToken.ipp
@@ -2831,6 +2845,8 @@ T_ParameterToken.o: T_Environment.ipp
 T_ParameterToken.o: T_ListToken.h
 T_ParameterToken.o: ../../mstl/m_vector.h
 T_ParameterToken.o: ../../mstl/m_vector.ipp
+T_ParameterToken.o: ../../mstl/m_algorithm.h
+T_ParameterToken.o: ../../mstl/m_algorithm.ipp
 T_ParameterToken.o: T_ListToken.ipp
 T_ParameterToken.o: T_TextToken.h
 T_ParameterToken.o: T_TextToken.ipp
@@ -3145,6 +3161,8 @@ T_TextToken.o: ../../mstl/m_algobase.h
 T_TextToken.o: ../../mstl/m_algobase.ipp
 T_TextToken.o: ../../mstl/m_construct.h
 T_TextToken.o: ../../mstl/m_construct.ipp
+T_TextToken.o: ../../mstl/m_algorithm.h
+T_TextToken.o: ../../mstl/m_algorithm.ipp
 T_TextToken.o: T_ListToken.ipp
 T_TextToken.o: T_NumberToken.h
 T_TextToken.o: T_NumberToken.ipp
@@ -3283,6 +3301,8 @@ T_TokenBuffer.o: ../../mstl/m_algobase.h
 T_TokenBuffer.o: ../../mstl/m_algobase.ipp
 T_TokenBuffer.o: ../../mstl/m_construct.h
 T_TokenBuffer.o: ../../mstl/m_construct.ipp
+T_TokenBuffer.o: ../../mstl/m_algorithm.h
+T_TokenBuffer.o: ../../mstl/m_algorithm.ipp
 T_TokenBuffer.o: ../../mstl/m_pvector.h
 T_TokenBuffer.o: ../../mstl/m_pvector.ipp
 T_TokenBuffer.o: ../../mstl/m_hash.h
@@ -3623,6 +3643,8 @@ T_Unicode.o: T_Environment.ipp
 T_Unicode.o: ../../mstl/m_map.h
 T_Unicode.o: ../../mstl/m_vector.h
 T_Unicode.o: ../../mstl/m_vector.ipp
+T_Unicode.o: ../../mstl/m_algorithm.h
+T_Unicode.o: ../../mstl/m_algorithm.ipp
 T_Unicode.o: ../../mstl/m_pair.h
 T_Unicode.o: ../../mstl/m_pair.ipp
 T_Unicode.o: ../../mstl/m_map.ipp
@@ -3695,6 +3717,8 @@ T_ValueBuffer.o: ../../mstl/m_algobase.h
 T_ValueBuffer.o: ../../mstl/m_algobase.ipp
 T_ValueBuffer.o: ../../mstl/m_construct.h
 T_ValueBuffer.o: ../../mstl/m_construct.ipp
+T_ValueBuffer.o: ../../mstl/m_algorithm.h
+T_ValueBuffer.o: ../../mstl/m_algorithm.ipp
 T_ValueBuffer.o: T_ValueBuffer.ipp
 T_Values.o: T_Values.h
 T_Values.o: T_Package.h
