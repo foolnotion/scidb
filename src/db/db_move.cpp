@@ -53,6 +53,11 @@ printPiece(mstl::string& s, piece::Type piece, encoding::CharSet charSet, int (*
 void
 Move::transpose()
 {
+	M_ASSERT(!isEmpty());
+
+	if (isNull())
+		return;
+
 	setFrom(sq::flipFyle(sq::ID(from())));
 	setTo(sq::flipFyle(sq::ID(to())));
 
