@@ -36,12 +36,6 @@ package require Ttk
 package require tkscidb
 
 
-namespace eval remote {
-	variable blocked 1
-	variable postponed 0
-}
-
-
 namespace eval scidb {
 	set app		Scidb
 	set version "1.0 BETA"
@@ -259,30 +253,36 @@ array set Vars {
 
 
 proc blocked? {} {
-	return [set [namespace current]::blocked]
+	return $::scidb::intern::blocked
 }
 
 
 proc pending? {} {
-	variable blocked
-	variable postponed
 	variable Vars
-
-	return [expr {!$blocked && !$Vars(busy) && $postponed}]
+	return [expr {!$::scidb::intern::blocked && !$Vars(busy) && $::scidb::intern::postponed}]
 }
 
 
 proc busyOperation {cmd} {
 	variable Vars
-	variable postponed
 
 	incr Vars(busy)
-	set code [catch {uplevel 1 $cmd} res]
+	set code [catch {uplevel 1 $cmd} result options]
 	incr Vars(busy) -1
-	if {$postponed} {
+	if {$::scidb::intern::postponed} {
 		after idle [namespace code update]
 	}
-	return -code $code -rethrow 1 $res
+	if {$code == 0} {
+		return $result
+	}
+	array set opts $options
+	return \
+		-code $opts(-code) \
+		-errorcode $opts(-errorcode) \
+		-errorinfo $opts(-errorinfo) \
+		-rethrow 1 \
+		$result \
+	;
 }
 
 
@@ -302,15 +302,13 @@ proc cleanup {} {
 
 
 proc requestOpenBases {pathList} {
-	variable blocked
-	variable postponed
 	variable Vars
 
 	if {[llength $pathList]} {
-		if {$blocked} {
+		if {$::scidb::intern::blocked} {
 			foreach path $pathList {
 				if {![info exists Vars(infoBox:$path)]} {
-					set postponed 1
+					set ::scidb::intern::postponed 1
 					lappend Vars(pending) $path
 					set msg [format $mc::PostponedMessage $path]
 					set Vars(infoBox:$path) \
@@ -325,8 +323,6 @@ proc requestOpenBases {pathList} {
 
 
 proc Update {} {
-	variable blocked
-	variable postponed
 	variable Vars
 
 	if {[llength $Vars(pending)] == 0} { return }
@@ -342,7 +338,7 @@ proc Update {} {
 
 	set files $Vars(pending)
 	set Vars(pending) {}
-	set postponed 0
+	set ::scidb::intern::postponed 0
 	openBases $files
 }
 
@@ -384,11 +380,9 @@ proc IncomingOffered {chan} {
 
 
 #proc Vwait {varname} {
-#	variable ::remote::blocked
-#
-#	set blocked 1
+#	set ::scidb::intern::blocked 1
 #	set code [catch {uplevel 1 [list ::remote::VwaitOrig $varname]} res]
-#	set blocked 0
+#	set ::scidb::intern::blocked 0
 #
 #	after idle ::remote::update
 #	return -code $code $res

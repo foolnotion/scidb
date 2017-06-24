@@ -284,7 +284,10 @@ struct Subscriber : public Application::Subscriber
 
 		Args(Type type, Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
 			:m_type(type)
-			,m_tuple(updateCmd, closeCmd, arg ? arg : Tcl_NewListObj(0, 0))
+			,m_tuple(
+				updateCmd && *Tcl_GetString(updateCmd) ? updateCmd : nullptr,
+				closeCmd && *Tcl_GetString(closeCmd) ? closeCmd : nullptr,
+				arg ? arg : Tcl_NewListObj(0, 0))
 			,m_ref(0)
 		{
 			static_assert(table::Games      < 5, "index failure");

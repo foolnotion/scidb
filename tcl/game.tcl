@@ -488,10 +488,11 @@ proc load {parent position base args} {
 	array set opts $args
 
 	set rc 0
+	set variant $opts(-variant)
 
 	if {$base eq $scratchbaseName} {
 		set Vars(lookup:$position) {}
-		::scidb::game::new $position $opts(-variant)
+		::scidb::game::new $position $variant
 		set rc 1
 	} else {
 		set parent [winfo toplevel $parent]

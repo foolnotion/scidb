@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2013 Gregor Cramer
+# Copyright: (C) 2009-2017 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -33,6 +33,8 @@ set revision 83 ;# first revision ever
 variable clipbaseName		[::scidb::db::get clipbase name]
 variable scratchbaseName	[::scidb::db::get scratchbase name]
 variable mergebaseName		"Mergebase"
+
+namespace eval intern { variable tclStack "" }
 
 namespace eval dir {
 
@@ -601,7 +603,13 @@ proc catchException {cmd {resultVar {}}} {
 			if {$count == -1} { return -1 }
 			return [expr {-$count - 2}]
 		}
-		return -code $opts(-code) -errorcode $opts(-errorcode) -rethrow 1 $result
+		return \
+			-code $opts(-code) \
+			-errorcode $opts(-errorcode) \
+			-errorinfo $opts(-errorinfo) \
+			-rethrow 1 \
+			$result \
+		;
 	}
 	if {[llength $resultVar]} { uplevel 1 [list set $resultVar $result] }
 	return 0
@@ -649,10 +657,18 @@ proc openBases {pathList} {
 
 } ;# namespace remote
 
-proc bgerror {err} {
+
+namespace eval scidb {
+
+proc bgerror {err args} {
+	global errorCode errorInfo
+	variable intern::errresult
+	variable intern::errmsg
+	variable intern::tclStack
+
 	if {$err eq "selection owner didn't respond"} {
-      set parent [::tkdnd::get_drop_target]
-      if {[llength $parent]} {
+		set parent [::tkdnd::get_drop_target]
+		if {[llength $parent]} {
 			after idle [list dialog::error \
 				-parent $parent \
 				-message $::util::mc::SelectionOwnerDidntRespond \
@@ -665,9 +681,27 @@ proc bgerror {err} {
 		# in case of empty strings. this is not an error!
 	} elseif {[string length $err] == 0} {
 		# an empty background error! ignore this nonsense.
-	} else {
+	} elseif {$errorCode ne "SCIDB INTERMEDIATE"} {
+		if {[string length [grab current]]} {
+			catch { ttk::releaseGrab [grab current] }
+		}
+		set info ""
+		if {[string length $errmsg] > 0} { append info "\n" }
+		append info $errmsg
+		append info [expr {[string length $tclStack] > 0 ? $tclStack : $errorInfo }]
+		if {[string length $errresult] > 0} { set err $errresult } else { set err $errorInfo }
+		set errorInfo $info
+		set errmsg ""
+		set errresult ""
 		::tk::dialog::error::bgerror $err
+	} elseif {[string length $errorInfo] > 0} {
+		# only save the stack info for next call of bgerror
+		set tclStack $errorInfo
 	}
 }
+
+} ;# namespace scidb
+
+interp bgerror {} ::scidb::bgerror
 
 # vi:set ts=3 sw=3:
