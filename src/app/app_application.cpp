@@ -105,6 +105,21 @@ struct WriteGuard
 	Application& m_app;
 };
 
+
+struct ReleaseReservedGame
+{
+	ReleaseReservedGame(Application& app, unsigned position) :m_app(app), m_position(position) {}
+
+	~ReleaseReservedGame()
+	{
+		if (m_position == Application::ReservedPosition)
+			m_app.releaseGame(Application::ReservedPosition);
+	}
+
+	Application&	m_app;
+	unsigned			m_position;
+};
+
 } // namespace
 
 namespace app {
@@ -115,6 +130,25 @@ bool operator==(Cursor const* cursor, mstl::string const& name)
 }
 
 } // namespace app
+
+
+struct Application::SwapTrialGame
+{
+	SwapTrialGame(Application::EditGame& game)
+		:m_game(game)
+	{
+		if (m_game.data.backup)
+			mstl::swap(m_game.data.backup, m_game.data.game);
+	}
+
+	~SwapTrialGame()
+	{
+		if (m_game.data.backup)
+			mstl::swap(m_game.data.backup, m_game.data.game);
+	}
+
+	Application::EditGame& m_game;
+};
 
 
 Application::EditGame::Data::Data()
@@ -1706,6 +1740,8 @@ Application::writeGame(	unsigned position,
 	mstl::string internalName(sys::file::internalName(filename));
 	save::State state = save::Ok;
 
+	SwapTrialGame trialGameGuard(*g);
+
 	if (isScratchGame(position))
 	{
 		g->data.game->setIndex(m_indexMap[position]);
@@ -1720,76 +1756,68 @@ Application::writeGame(	unsigned position,
 		g->data.game->setIndex(g->sink.index);
 	}
 
-	try
-	{
-		if (isScratchGame(position))
-			state = g->sink.cursor->getDatabase().updateGame(*g->data.game);
+	ReleaseReservedGame releaseGuard(*this, position);
 
-		if (save::isOk(state))
+	if (isScratchGame(position))
+		state = g->sink.cursor->getDatabase().updateGame(*g->data.game);
+
+	if (save::isOk(state))
+	{
+		ZStream::Type type;
+		mstl::string ext = util::misc::file::suffix(filename);
+
+		if (ext == "gz")			type = ZStream::GZip;
+		else if (ext == "zip")	type = ZStream::Zip;
+		else							type = ZStream::Text;
+
+		mstl::ios_base::openmode mode = mstl::ios_base::out;
+
+		if (fmode == Append)
 		{
-			ZStream::Type type;
-			mstl::string ext = util::misc::file::suffix(filename);
+			mode |= mstl::ios_base::app;
 
-			if (ext == "gz")			type = ZStream::GZip;
-			else if (ext == "zip")	type = ZStream::Zip;
-			else							type = ZStream::Text;
-
-			mstl::ios_base::openmode mode = mstl::ios_base::out;
-
-			if (fmode == Append)
+			if (type != ZStream::Zip)
 			{
-				mode |= mstl::ios_base::app;
+				flags |= PgnWriter::Flag_Append_Games;
 
-				if (type != ZStream::Zip)
-				{
-					flags |= PgnWriter::Flag_Append_Games;
-
-					if (ZStream::testByteOrderMark(internalName))
-						flags |= PgnWriter::Flag_Use_UTF8;
-					else
-						flags &= ~PgnWriter::Flag_Use_UTF8;
-				}
+				if (ZStream::testByteOrderMark(internalName))
+					flags |= PgnWriter::Flag_Use_UTF8;
+				else
+					flags &= ~PgnWriter::Flag_Use_UTF8;
 			}
-			else
-			{
-				mode |= mstl::ios_base::trunc;
-			}
-
-			ZStream strm(internalName, type, mode);
-
-			if (!strm)
-				IO_RAISE(Unspecified, Write_Failed, "cannot open file '%s'", filename.c_str());
-
-			mstl::string useEncoding(flags & PgnWriter::Flag_Use_UTF8 ? sys::utf8::Codec::utf8() : encoding);
-			PgnWriter::LineEnding lineEnding = PgnWriter::Unix;
-
-			if (ZStream::isWindowsLineEnding(internalName))
-				lineEnding = PgnWriter::Windows;
-
-			PgnWriter writer(	format::Scidb,
-									strm,
-									useEncoding,
-									lineEnding,
-									flags,
-									languages,
-									significantLanguages);
-			writer.setUsedLanguages(g->data.game->languageSet());
-			writer.setupVariant(g->sink.cursor->variant());
-
-			if (!comment.empty())
-				writer.writeCommentLines(comment);
-
-			state = g->sink.cursor->database().exportGame(g->data.game->index(), writer);
 		}
-	}
-	catch (...)
-	{
-		releaseGame(ReservedPosition);
-		throw;
-	}
+		else
+		{
+			mode |= mstl::ios_base::trunc;
+		}
 
-	if (position == ReservedPosition)
-		releaseGame(ReservedPosition);
+		ZStream strm(internalName, type, mode);
+
+		if (!strm)
+			IO_RAISE(Unspecified, Write_Failed, "cannot open file '%s'", filename.c_str());
+
+		mstl::string useEncoding(
+			flags & PgnWriter::Flag_Use_UTF8 ? sys::utf8::Codec::utf8() : encoding);
+		PgnWriter::LineEnding lineEnding = PgnWriter::Unix;
+
+		if (ZStream::isWindowsLineEnding(internalName))
+			lineEnding = PgnWriter::Windows;
+
+		PgnWriter writer(	format::Scidb,
+								strm,
+								useEncoding,
+								lineEnding,
+								flags,
+								languages,
+								significantLanguages);
+		writer.setUsedLanguages(g->data.game->languageSet());
+		writer.setupVariant(g->sink.cursor->variant());
+
+		if (!comment.empty())
+			writer.writeCommentLines(comment);
+
+		state = g->sink.cursor->database().exportGame(g->data.game->index(), writer);
+	}
 
 	return state;
 }
@@ -1867,8 +1895,8 @@ Application::endTrialMode()
 
 	delete game.data.game;
 	game.data.game = game.data.backup;
-	game.data.game->moveTo(game.data.backup->currentKey());
 	game.data.backup = 0;
+	game.data.game->moveTo(game.data.backup->currentKey());
 }
 
 
@@ -2215,6 +2243,7 @@ Application::saveGame(Cursor& cursor, bool replace)
 	M_REQUIRE(cursor.isOpen());
 	M_REQUIRE(!cursor.isReadonly());
 	M_REQUIRE(haveCurrentGame());
+	M_REQUIRE(!hasTrialMode());
 
 	EditGame& g = *m_gameMap.find(m_currentPosition)->second;
 
@@ -3256,38 +3285,36 @@ Application::copyGame(MultiCursor& sink, unsigned position, copy::Source source)
 	if (m_referenceBase == &destination)
 		stopUpdateTree();
 
-	if (isScratchGame(position))
 	{
-		g->data.game->setIndex(m_indexMap[position]);
-	}
-	else if (source == copy::ModifiedVersion)
-	{
-		g = createIntermediateGame(g);
-		position = ReservedPosition;
-	}
-	else
-	{
-		g->data.game->setIndex(g->sink.index);
-	}
+		SwapTrialGame trialGameGuard(*g);
 
-	try
-	{
+		if (isScratchGame(position))
+		{
+			g->data.game->setIndex(m_indexMap[position]);
+		}
+		else if (source == copy::ModifiedVersion || hasTrialMode(position))
+		{
+			g = createIntermediateGame(g);
+			position = ReservedPosition;
+		}
+		else
+		{
+			g->data.game->setIndex(g->sink.index);
+		}
+
+		ReleaseReservedGame releaseGuard(*this, position);
+
 		if (isScratchGame(position))
 			state = g->sink.cursor->base().updateGame(*g->data.game);
 
 		if (state == save::Ok)
 			state = g->sink.cursor->base().exportGame(g->data.game->index(), database);
-	}
-	catch (...)
-	{
-		releaseGame(ReservedPosition);
-		throw;
-	}
 
-	M_ASSERT(state == save::Ok);
+		M_ASSERT(state == save::Ok);
 
-	util::Progress progress;
-	database.save(progress);
+		util::Progress progress;
+		database.save(progress);
+	}
 
 	if (position == ReservedPosition)
 		releaseGame(ReservedPosition);
@@ -3317,11 +3344,13 @@ Application::exportGame(unsigned position, mstl::ostream& strm, unsigned flags, 
 	GameP			g		= m_gameMap.find(position)->second;
 	save::State	state	= save::Ok;
 
+	SwapTrialGame trialGameGuard(*g);
+
 	if (isScratchGame(position))
 	{
 		g->data.game->setIndex(m_indexMap[position]);
 	}
-	else if (source == copy::ModifiedVersion)
+	else if (source == copy::ModifiedVersion || hasTrialMode(position))
 	{
 		g = createIntermediateGame(g);
 		position = ReservedPosition;
@@ -3331,38 +3360,29 @@ Application::exportGame(unsigned position, mstl::ostream& strm, unsigned flags, 
 		g->data.game->setIndex(g->sink.index);
 	}
 
-	try
+	ReleaseReservedGame releaseGuard(*this, position);
+
+	if (isScratchGame(position))
+		state = g->sink.cursor->getDatabase().updateGame(*g->data.game);
+
+	if (state == save::Ok)
 	{
-		if (isScratchGame(position))
-			state = g->sink.cursor->getDatabase().updateGame(*g->data.game);
+		mstl::string encoding;
 
-		if (state == save::Ok)
-		{
-			mstl::string encoding;
+		if (flags & PgnWriter::Flag_Use_UTF8)
+			encoding = sys::utf8::Codec::utf8();
+		else
+			encoding = sys::utf8::Codec::latin1();
 
-			if (flags & PgnWriter::Flag_Use_UTF8)
-				encoding = sys::utf8::Codec::utf8();
-			else
-				encoding = sys::utf8::Codec::latin1();
+		PgnWriter::LineEnding lineEnding = PgnWriter::Unix;
 
-			PgnWriter::LineEnding lineEnding = PgnWriter::Unix;
+		if (::sys::info::isWindows())
+			lineEnding = PgnWriter::Windows;
 
-			if (::sys::info::isWindows())
-				lineEnding = PgnWriter::Windows;
-
-			PgnWriter writer(format::Scidb, strm, encoding, lineEnding, flags);
-			writer.setupVariant(g->sink.cursor->variant());
-			state = g->sink.cursor->database().exportGame(g->data.game->index(), writer);
-		}
+		PgnWriter writer(format::Scidb, strm, encoding, lineEnding, flags);
+		writer.setupVariant(g->sink.cursor->variant());
+		state = g->sink.cursor->database().exportGame(g->data.game->index(), writer);
 	}
-	catch (...)
-	{
-		releaseGame(ReservedPosition);
-		throw;
-	}
-
-	if (position == ReservedPosition)
-		releaseGame(ReservedPosition);
 
 	return state;
 }

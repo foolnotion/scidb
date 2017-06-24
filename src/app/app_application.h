@@ -466,6 +466,9 @@ private:
 		Data data;
 	};
 
+	class SwapTrialGame;
+	friend class SwapTrialGame;
+
 	typedef mstl::ref_counted_ptr<EditGame>		GameP;
 	typedef mstl::map<unsigned,GameP>				GameMap;
 	typedef mstl::map<unsigned,unsigned> 			IndexMap;
