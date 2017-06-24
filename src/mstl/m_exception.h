@@ -6,7 +6,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2009-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -31,11 +31,13 @@
 # define M_THROW(exc) ({ ::mstl::bits::throw_exc(exc, __FILE__, __LINE__, __func__); })
 #endif
 
-#include "m_exception.ipp"
-
 namespace mstl {
 
+class exception;
 class string;
+
+namespace bits { void prepare_msg(exception&, char const*, unsigned, char const*, char const*); }
+
 
 class basic_exception
 {
@@ -50,6 +52,9 @@ public:
 
 	virtual char const* what() const throw();
 
+	static bool isEnabled();
+	static void setDisabled(bool flag = true);
+
 protected:
 
 	void set_message(char const* fmt, va_list args);
@@ -62,6 +67,8 @@ private:
 #endif
 
 	string* m_msg;
+
+	static bool m_isDisabled;
 };
 
 class exception : public basic_exception
@@ -73,15 +80,18 @@ public:
 	explicit exception(char const* fmt, ...) __attribute__((__format__(__printf__, 2, 3)));
 	exception(char const* fmt, va_list args);
 	exception(exception const& exc);
+	~exception() throw();
 
 #if HAVE_OX_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
 	exception& operator=(exception const&) = delete;
 #endif
 
+	string const& report() const;
 	::mstl::backtrace const& backtrace() const;
 
 protected:
 
+	void set_report(mstl::string const& report);
 	void set_backtrace(::mstl::backtrace const& backtrace);
 
 private:
@@ -90,6 +100,7 @@ private:
 	friend void bits::prepare_msg(exception& exc, char const*, unsigned, char const*, char const*);
 #endif
 
+	string* m_report;
 	::mstl::backtrace	m_backtrace;
 };
 
@@ -97,6 +108,8 @@ private:
 bool uncaught_exception() throw();
 
 } // namespace mstl
+
+#include "m_exception.ipp"
 
 #endif // _mstl_exception_included
 

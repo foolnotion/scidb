@@ -35,7 +35,7 @@ using namespace mstl;
 
 #ifdef __OPTIMIZE__
 
-backtrace::backtrace() {}
+backtrace::backtrace(bool) {}
 backtrace::backtrace(backtrace const&) {}
 backtrace::~backtrace() throw() {}
 
@@ -165,7 +165,7 @@ gdb_cmd(char const* script_name)
 
 	if (search_exe("gdb", cmd))
 	{
-		cmd += " --nx --quiet --batch -x ";
+		cmd += " --nx --quiet --batch -iex 'set auto-load no' -x ";
 		cmd += script_name;
 		cmd += " --pid ";
 		cmd.format("%ld", long(getpid()));
@@ -467,14 +467,15 @@ extract_abi_name(char const* isym, char* nmbuf)
 }
 
 
-mstl::backtrace::backtrace()
+mstl::backtrace::backtrace(bool wanted)
 	:m_nframes(0)
 	,m_allocator(new allocator(512))
 	,m_skip(0)
 	,m_refCount(new unsigned)
 {
 	*m_refCount += 1;
-	symbols();
+	if (wanted)
+		symbols();
 }
 
 
@@ -562,7 +563,7 @@ mstl::backtrace::symbols_gdb()
 		char* rp_pos;
 		char* at_pos;
 
-		if ((in_pos = const_cast<char*>(strstr(line, " in "))) == 0)
+		if ((in_pos = const_cast<char*>(::strstr(line, " in "))) == 0)
 			continue;
 		in_pos += 4;
 
@@ -843,8 +844,11 @@ mstl::backtrace::text_write(ostringstream& os, unsigned skip) const
 
 		if (	s
 			&& ::strstr(s, "m_exception.ipp") == 0
-			&& ::strstr(s, "mstl::backtrace::backtrace") == 0
-			&& ::strstr(s, "mstl::exception::exception") == 0)
+			&& ::strstr(s, "assertion_failure_exception") == 0
+			&& ::strstr(s, "backtrace::backtrace") == 0
+			&& ::strstr(s, "exception::exception") == 0
+			&& ::strstr(s, "Exception::Exception") == 0
+			&& ::strstr(s, "Error::Error") == 0)
 		{
 			char const* e = ::strchr(s, '\n') + 1;
 

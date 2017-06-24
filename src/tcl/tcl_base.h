@@ -40,14 +40,59 @@ extern "C"
 }
 
 namespace mstl { class string; }
+namespace mstl { template <typename T> class vector; }
+namespace mstl { template <typename T> class carray; }
 
 namespace tcl {
 
+typedef mstl::carray<Tcl_Obj*> Array;
+typedef mstl::vector<Tcl_Obj*> List;
+
 Tcl_Interp* interp();
+
+Tcl_Obj* incrRef(Tcl_Obj* obj);
+void decrRef(Tcl_Obj* obj);
+
+Tcl_Obj* newObj();
+Tcl_Obj* newObj(char const* s);
+Tcl_Obj* newObj(char const* s, unsigned len);
+Tcl_Obj* newObj(mstl::string const& s);
+Tcl_Obj* newObj(unsigned objc, Tcl_Obj* const objv[]);
+Tcl_Obj* newObj(mstl::vector<Tcl_Obj*> const& list);
+Tcl_Obj* newObj(int value);
+
+bool isInt(Tcl_Obj* obj);
+bool isUnsigned(Tcl_Obj* obj);
+bool isBoolean(Tcl_Obj* obj);
+
+char const* asString(Tcl_Obj* obj);
+int asInt(Tcl_Obj* obj);
+unsigned asUnsigned(Tcl_Obj* obj);
+bool asBoolean(Tcl_Obj* obj);
+
+bool equal(char const* lhs, Tcl_Obj* rhs);
+bool equal(Tcl_Obj* lhs, char const* rhs);
+bool equal(Tcl_Obj* lhs, Tcl_Obj* rhs);
+bool equal(char const* lhs, char const* rhs);
+
+void set(Tcl_Obj*& obj, Tcl_Obj* value);
+void zero(Tcl_Obj*& obj);
+
+Tcl_Obj* getGlobalVar(Tcl_Obj* var);
+void setGlobalVar(Tcl_Obj* var, Tcl_Obj* value);
+
+unsigned getElements(Tcl_Obj* obj, Tcl_Obj**& objv);
+Array getElements(Tcl_Obj* obj);
+Tcl_Obj* addElement(Tcl_Obj*& list, Tcl_Obj* elem);
+
+Tcl_Obj* result();
+
+} // namespace tcl
+
+namespace tcl {
 
 void init(Tcl_Interp* ti);
 
-bool equal(char const* lhs, char const* rhs);
 bool updateTreeIsBlocked();
 
 int uniqueMatch(char const* option, char const** options);
@@ -66,6 +111,12 @@ void setResult(unsigned result);
 void setResult(bool result);
 void setResult(long result);
 void setResult(unsigned long result);
+void setResult(mstl::vector<Tcl_Obj*> const& list);
+void
+__attribute__((__format__(__printf__, 1, 2)))
+setResultV(char const* format, ...);
+int setError(char const* type);
+int wrongNumArgs(int objc, Tcl_Obj* const objv[], char const* args);
 
 int ioError(mstl::string const& file, mstl::string const& error, mstl::string const& message);
 int interrupt(int count);

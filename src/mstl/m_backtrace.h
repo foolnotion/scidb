@@ -30,7 +30,7 @@ class backtrace
 {
 public:
 
-	backtrace();
+	explicit backtrace(bool wanted);
 	backtrace(backtrace const& v);
 	~backtrace() throw();
 

@@ -23,7 +23,9 @@ namespace bits {
 
 struct any_conversion
 {
-	template <typename T> any_conversion(volatile const T&);
+	template <typename T> any_conversion(volatile T const&);
+	template <typename T> any_conversion(T const&);
+	template <typename T> any_conversion(volatile T&);
 	template <typename T> any_conversion(T&);
 };
 
@@ -37,8 +39,8 @@ struct is_convertible_checker
 template <typename From, typename To>
 struct is_convertible
 {
-	static From m_from;
-	enum { value = sizeof(is_convertible_checker<To>::m_check(m_from, 0)) == sizeof(int16_t) };
+	static From& m_from;
+	enum { value = sizeof(is_convertible_checker<To>::m_check((m_from), 0)) == sizeof(int16_t) };
 };
 
 template <class U> int16_t is_class_tester(void(U::*)(void));
@@ -51,6 +53,11 @@ struct is_class
 };
 
 template <typename T> struct is_member_pointer { enum { value = 0 }; };
+
+struct __not_char {};
+template <typename T> struct __char_type { typedef char type; };
+template <> struct __char_type<signed char> { typedef __not_char type; };
+template <> struct __char_type<unsigned char> { typedef __not_char type; };
 
 } // namespace bits
 
@@ -74,6 +81,18 @@ template <> struct is_integral<unsigned int>			{ enum { value = 1 }; };
 template <> struct is_integral<unsigned long>		{ enum { value = 1 }; };
 template <> struct is_integral<unsigned long long>	{ enum { value = 1 }; };
 
+// Handle the special case with 'char':
+// 'char' is either 'signed char', or 'unsigned char', or it is
+// distinct from each of 'signed char' or 'unsigned char'.
+template <> struct is_integral<typename bits::__char_type<char>::type> { enum { value = 1 }; };
+
+template <typename T> struct is_signed_integral				{ enum { value = 0 }; };
+template <> struct is_signed_integral<signed char>			{ enum { value = 1 }; };
+template <> struct is_signed_integral<signed short>		{ enum { value = 1 }; };
+template <> struct is_signed_integral<signed int>			{ enum { value = 1 }; };
+template <> struct is_signed_integral<signed long>			{ enum { value = 1 }; };
+template <> struct is_signed_integral<signed long long>	{ enum { value = 1 }; };
+
 template <typename T> struct is_float					{ enum { value = 0 }; };
 template <> struct is_float<float>						{ enum { value = 1 }; };
 template <> struct is_float<double>						{ enum { value = 1 }; };
@@ -88,31 +107,31 @@ template <> struct is_void<void const volatile>		{ enum { value = 1 }; };
 template <typename T> struct is_reference				{ enum { value = 0 }; };
 template <typename T> struct is_reference<T&>		{ enum { value = 1 }; };
 
-template <typename T> struct is_arithmetic		{ enum { value = is_integral<T>::value
-																					| is_float<T>::value }; };
+template <typename T> struct is_arithmetic			{ enum { value = is_integral<T>::value
+																						| is_float<T>::value }; };
 
-template <typename T> struct is_enum				{ enum { value = !is_arithmetic<T>::value
-																					& !is_reference<T>::value
-																					& !is_function<T>::value
-																					& !is_class<T>::value }; };
+template <typename T> struct is_enum					{ enum { value = !is_arithmetic<T>::value
+																						& !is_reference<T>::value
+																						& !is_function<T>::value
+																						& !is_class<T>::value }; };
 
-template <typename T> struct is_scalar			{ enum { value = is_arithmetic<T>::value
-																				| is_enum<T>::value
-																				| is_pointer<T>::value
-																				| is_member_pointer<T>::value }; };
+template <typename T> struct is_scalar					{ enum { value = is_arithmetic<T>::value
+																						| is_enum<T>::value
+																						| is_pointer<T>::value
+																						| is_member_pointer<T>::value }; };
 
-template <typename T> struct is_pod				{ enum { value = is_scalar<T>::value
-																				| is_void<T>::value }; };
+template <typename T> struct is_pod						{ enum { value = is_scalar<T>::value
+																						| is_void<T>::value }; };
 
 template <typename T, size_t N> struct is_pod<T[N]> : is_pod<T> {};
 
-template <typename T> struct is_pointer							{ enum { value = 0 }; };
-template <typename T> struct is_pointer<T*>						{ enum { value = 1 }; };
-template <typename T> struct is_pointer<T const*>				{ enum { value = 1 }; };
-template <typename T> struct is_pointer<T volatile*>			{ enum { value = 1 }; };
-template <typename T> struct is_pointer<T volatile const*>	{ enum { value = 1 }; };
+template <typename T> struct is_pointer										{ enum { value = 0 }; };
+template <typename T> struct is_pointer<T*>									{ enum { value = 1 }; };
+template <typename T> struct is_pointer<T const*>							{ enum { value = 1 }; };
+template <typename T> struct is_pointer<T volatile*>						{ enum { value = 1 }; };
+template <typename T> struct is_pointer<T volatile const*>				{ enum { value = 1 }; };
 
-template <typename T> struct is_member_pointer							{ enum { value = 0 }; };
+template <typename T> struct is_member_pointer								{ enum { value = 0 }; };
 template <typename T, typename U> struct is_member_pointer<U T::*>	{ enum { value = 1 }; };
 
 template <typename T> struct is_array											{ enum { value = 0 }; };
@@ -121,18 +140,23 @@ template <typename T, size_t N> struct is_array<T const[N]>				{ enum { value = 
 template <typename T, size_t N> struct is_array<T volatile[N]>			{ enum { value = 1 }; };
 template <typename T, size_t N> struct is_array<T volatile const[N]>	{ enum { value = 1 }; };
 
+#if 0 // NOT WORKING
 template <typename T>
 struct is_function { enum { value = !is_convertible<T*, volatile void const*>::value }; };
+#else // curently we cannot detect functions
+template <typename T> struct is_function { enum { value = 0 }; };
+#endif
 
 template <typename T> struct is_class { enum { value = bits::is_class<T>::value }; };
 
 template <typename T> struct has_trivial_destructor	{ enum { value = is_pod<T>::value }; };
+template <typename T> struct memory_is_contiguous		{ enum { value = is_array<T>::value }; };
 template <typename T> struct is_movable					{ enum { value = is_pod<T>::value }; };
 
-template <typename T> struct remove_reference		{ typedef T type; };
-template <typename T> struct remove_reference<T&>	{ typedef T type; };
+template <typename T> struct remove_reference			{ typedef T type; };
+template <typename T> struct remove_reference<T&>		{ typedef T type; };
 #if USE_0X_STANDARD
-template <typename T> struct remove_reference<T&&>	{ typedef T type; };
+template <typename T> struct remove_reference<T&&>		{ typedef T type; };
 #endif
 
 } // namespace mstl

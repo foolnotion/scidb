@@ -6,7 +6,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2009-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -19,15 +19,20 @@
 #include "m_exception.h"
 #include "m_sstream.h"
 #include "m_string.h"
+#include "m_stdio.h"
 
 #include <stdlib.h>
 #include <stdarg.h>
 
 using namespace mstl;
 
-basic_exception::basic_exception() throw() : m_msg(new string) {}
-basic_exception::basic_exception(string const& msg) : m_msg(new string(msg)) {}
-basic_exception::basic_exception(basic_exception const& exc) : m_msg(new mstl::string(*exc.m_msg)) {}
+
+bool basic_exception::m_isDisabled = false;
+
+basic_exception::basic_exception() throw() :m_msg(new string) {}
+basic_exception::basic_exception(string const& msg) :m_msg(new string(msg)) {}
+basic_exception::basic_exception(basic_exception const& exc) :m_msg(new string(*exc.m_msg)) {}
+
 basic_exception::~basic_exception() throw() { delete m_msg; }
 
 char const* basic_exception::what() const throw() { return *m_msg; }
@@ -60,26 +65,42 @@ basic_exception::set_message(char const* fmt, va_list args)
 
 
 void
-basic_exception::assign(mstl::string const& s)
+basic_exception::assign(string const& s)
 {
 	m_msg->assign(s);
 }
 
 
-exception::exception() throw() {}
-exception::exception(string const& msg) : basic_exception(msg) {}
-exception::exception(exception const& exc) : basic_exception(exc) {}
+exception::exception() throw() :m_report(new string), m_backtrace(isEnabled()) {}
 
-backtrace const& exception::backtrace() const { return m_backtrace; }
+
+exception::exception(string const& msg)
+	:basic_exception(msg)
+	,m_report(new string)
+	,m_backtrace(isEnabled())
+{
+}
+
+
+exception::exception(exception const& exc)
+	:basic_exception(exc)
+	,m_report(new string(*exc.m_report))
+	,m_backtrace(exc.m_backtrace)
+{
+}
 
 
 exception::exception(char const* fmt, va_list args)
 	:basic_exception(fmt, args)
+	,m_report(new string)
+	,m_backtrace(isEnabled())
 {
 }
 
 
 exception::exception(char const* fmt, ...)
+	:m_report(new string)
+	,m_backtrace(isEnabled())
 {
 	M_REQUIRE(fmt);
 
@@ -90,11 +111,11 @@ exception::exception(char const* fmt, ...)
 }
 
 
-void
-exception::set_backtrace(::mstl::backtrace const& backtrace)
-{
-	m_backtrace = backtrace;
-}
+exception::~exception() throw() { delete m_report; }
+backtrace const& exception::backtrace() const { return m_backtrace; }
+string const& exception::report() const { return *m_report; }
+void exception::set_report(string const& report) { m_report->assign(report); }
+void exception::set_backtrace(::mstl::backtrace const& backtrace) { m_backtrace = backtrace; }
 
 
 #ifndef __OPTIMIZE__
@@ -131,11 +152,12 @@ mstl::bits::prepare_msg(mstl::exception& exc,
 			strm.format("=== Backtrace ============================================\n");
 			exc.backtrace().text_write(strm, 3);
 			strm.format("==========================================================\n");
+			::fprintf(stderr, "%s\n", strm.str().c_str());
 		}
 #endif
 
 		excbreak();
-		exc.assign(strm.str());
+		exc.set_report(strm.str());
 	}
 	catch (...)
 	{
