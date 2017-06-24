@@ -504,6 +504,10 @@ proc registerPieceSize {size} {
 			image create photo photo_Piece($piece,$size) -width $size -height $size
 		}
 
+		image create photo photo_Marker($size) -width $size -height $size
+		photo_Marker($size) copy $icon::12x12::marker \
+			-to 2 [expr {$size - [image height $icon::12x12::marker] - 2}]
+
 		image create photo photo_Square(white,$size) -width $size -height $size
 		image create photo photo_Square(black,$size) -width $size -height $size
 
@@ -521,6 +525,7 @@ proc unregisterPieceSize {size} {
 		foreach piece {wk wq wr wb wn wp bk bq br bb bn bp} {
 			catch { image delete photo_Piece($piece,$size) }
 		}
+		catch { image delete photo_Marker($size) }
 		catch { image delete photo_Square(white,$size) }
 		catch { image delete photo_Square(black,$size) }
 		dict unset PieceSizeDict $size
@@ -1507,6 +1512,28 @@ if {[llength $colors(hint,background-tile)]} {
 
 ::options::hookWriter [namespace current]::WriteOptions
 
+namespace eval icon {
+namespace eval 12x12 {
+
+set marker [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAMAAABhq6zVAAABp1BMVEWCfXmAe3d6dHGQi4egnZql
+	o6Olo6OgnZqQi4d6dHCAe3eAe3eBfHiopKDPzcrq4NT527j52rnq39XQzcqopKCBfHiAe3d6dHGo
+	pKDk3dXk3NaopKB6dHCQi4fQzcrPzcuQi4egnJrq4NXo3dagnZqlo6P527z1zrGmpKOlo6P52rv2
+	0bKmpKOgnJrq3dHp3tOgnZqQiobPzMnPzcqQi4d6dHCoo5/j2NDk3tOnpJ96dHGAe3eBfHino5/P
+	zMno29D20LH41bXq39PPzcqnpKCBfHiAe3eAe3d6dXGQi4agnZqmpKOlpKOgnZqQi4d6dHGAe3f/
+	1qT/tmX/pkz/pE/+sW390av/1qX/pkT+mzz8mUL4lkb1lEn0mlj6z7H/t2n+nD77mEX0j0HvhTrt
+	gTfugzn0pG3/p1L6kTjyeiDrbRbrbRXtcRfwdhryhzP9lTnzcArqZQfqaQ7wdRj0gCD3hSP5kjf6
+	kTruZADpZgzvdBf1giL7jiv9lSz/sFz6vIvsaxHraQzyexv5jCj+mSz/qDf/1571uI7yj0b2izL8
+	mz3/tlz/2Z3AYnMlAAAAUXRSTlMAAiN+w+7uw34jAgM4rvT+///+9K44AyOu+/uuI3709H7D/v7D
+	7v//7u7//+7D/v7DfvT0fiOu+/uuIwM4rvT+///+9K44AwIjfsPu7sN+IwJnwL0eAAAACXBIWXMA
+	AABIAAAASABGyWs+AAAAPklEQVQI12NkYISDb4zcCA4jCw8jowWYdQSIZRktoeIHGVlYGDlgisji
+	MLGw7GAHg01sbIzWSJYyMrjDmRsABwQG0lOvEaIAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTMtMTEt
+	MjRUMTY6MDI6MDIrMDE6MDDntQ0LAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDEzLTExLTI0VDE2OjAy
+	OjAyKzAxOjAwlui1twAAAABJRU5ErkJggg==
+}]
+
+} ;# namespace 12x12
+} ;# namespace icon
 } ;# namespace board
 
 # vi:set ts=3 sw=3:

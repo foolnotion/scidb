@@ -343,6 +343,8 @@ public:
 	bool neitherPlayerHasMatingMaterial(variant::Type variant) const;
 	/// Returns whether given side cannot win.
 	bool cannotWin(color::ID color, variant::Type variant) const;
+	/// Returns whether piece on given square is a promoted piece.
+	bool isPromotedPiece(Square s) const;
 
 	/// Returns current board state (check mate, stale mate, ...)
 	unsigned checkState(variant::Type variant) const;
@@ -455,7 +457,7 @@ public:
 	/// Fix bad castling rights (may happen in Scid or in PGN files)
 	void fixBadCastlingRights();
 	/// Mark piece at given position as promoted
-	void setPromoted(Square sq, variant::Type variant);
+	void markAsPromoted(Square sq, variant::Type variant);
 	/// Setup the holding.
 	void setHolding(char const* pieces);
 	/// Setup castling rook for short castling from given fen
@@ -485,6 +487,10 @@ public:
 	uint64_t empty() const;
 	/// Return all squares attacked by any piece of given color on given square
 	uint64_t attacks(unsigned color, Square square) const;
+	/// Return all promoted pieces
+	uint64_t promoted() const;
+	/// Return all promoted pieces of given color
+	uint64_t promoted(color::ID color) const;
 
 	// Miscellaneous
 
@@ -697,7 +703,7 @@ private:
 	bool		m_capturePromoted;		// position after a pawn capture with promotion
 	uint64_t	m_hash;						// hash value
 	uint64_t	m_pawnHash;					// pawn hash value
-	uint64_t	m_promoted[2];				// positions of promoted pieces
+	uint64_t	m_promotedPieces[2];		// position of promoted pieces (Zhouse)
 	uint32_t	m_countKingMoves[2];		// count king moves
 	Square	m_castleRookAtStart[4];	// initial squares of the castling rooks
 	Material	m_material[2];				// material count
@@ -732,7 +738,7 @@ private:
 	// m_hash
 	// m_pawnHash
 	// m_material
-	// m_promoted			(Zhouse)
+	// m_promotedPieces	(Zhouse)
 	// ------------------------------------------------------------------------
 	// Signature:
 	// ------------------------------------------------------------------------

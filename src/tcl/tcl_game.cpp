@@ -40,6 +40,7 @@
 #include "app_view.h"
 
 #include "db_database.h"
+#include "db_board_base.h"
 #include "db_game.h"
 #include "db_edit_node.h"
 #include "db_move.h"
@@ -108,6 +109,7 @@ static char const* CmdPly				= "::scidb::game::ply";
 static char const* CmdPop				= "::scidb::game::pop";
 static char const* CmdPosition		= "::scidb::game::position";
 static char const* CmdPrint			= "::scidb::game::print";
+static char const* CmdPromoted		= "::scidb::game::promoted";
 static char const* CmdPush				= "::scidb::game::push";
 static char const* CmdQuery			= "::scidb::game::query";
 static char const* CmdRefresh			= "::scidb::game::refresh";
@@ -237,6 +239,21 @@ getMoveInfoTypes(char const* cmd, char const* subcmd, Tcl_Obj* moveInfo, unsigne
 	}
 
 	return TCL_OK;
+}
+
+
+static Tcl_Obj*
+makePromotionList(Board const& board)
+{
+	Tcl_Obj* objs[64];
+
+	unsigned n = 0;
+	uint64_t promoted = board.promoted();
+
+	while (promoted)
+		objs[n++] = Tcl_NewIntObj(::db::board::lsbClear(promoted));
+
+	return Tcl_NewListObj(n, objs);
 }
 
 
@@ -1088,13 +1105,17 @@ struct Subscriber : public Game::Subscriber
 			mstl::string pos;
 			pos::dumpBoard(board, pos);
 
+			Tcl_Obj* promoted = ::makePromotionList(board);
 			Tcl_Obj* b = Tcl_NewStringObj(pos, pos.size());
+
 			Tcl_IncrRefCount(b);
+			Tcl_IncrRefCount(promoted);
 
 			for (unsigned i = 0; i < m_board.size(); ++i)
-				invoke(__func__, m_board[i], m_position, m_set, b, nullptr);
+				invoke(__func__, m_board[i], m_position, m_set, b, promoted, nullptr);
 
 			Tcl_DecrRefCount(b);
+			Tcl_DecrRefCount(promoted);
 		}
 
 		for (unsigned i = 0; i < m_tree.size(); ++i)
@@ -1105,7 +1126,8 @@ struct Subscriber : public Game::Subscriber
 	{
 		if (!m_board.empty())
 		{
-			char pieceFrom	= piece::print(move.piece());
+			char pieceFrom		= piece::print(move.piece());
+			char pieceHolding	= '.';
 			char pieceCap;
 			char pieceTo;
 
@@ -1122,15 +1144,24 @@ struct Subscriber : public Game::Subscriber
 			if (forward && move.isEnPassant())
 				pieceCap = '.';
 
+			//if (board.variant() == variant::Crazyhouse) // not needed
+			{
+				if (!forward && board.isPromotedPiece(move.to()))
+					pieceHolding = piece::print(piece::piece(piece::Pawn, move.color()));
+				else if (move.isCapture())
+					pieceHolding = piece::print(piece::piece(move.captured(), move.color()));
+			}
+
 			int squareCap = move.isCapture() ? move.capturedSquare() : -1;
 
-			Tcl_Obj* objv[9];
+			Tcl_Obj* objv[11];
 
 			objv[0] = Tcl_NewStringObj(color::isWhite(move.color()) ? "w" : "b", 1);
 			objv[3] = Tcl_NewIntObj(squareCap);
 			objv[4] = Tcl_NewStringObj(&pieceFrom, 1);
 			objv[5] = Tcl_NewStringObj(&pieceTo, 1);
 			objv[6] = Tcl_NewStringObj(&pieceCap, 1);
+			objv[7] = Tcl_NewStringObj(&pieceHolding, 1);
 
 			if (move.isCastling())
 			{
@@ -1158,31 +1189,37 @@ struct Subscriber : public Game::Subscriber
 
 				objv[1] = Tcl_NewIntObj(move.castlingKingFrom());
 				objv[2] = Tcl_NewIntObj(move.castlingKingTo());
-				objv[7] = Tcl_NewIntObj(rookFrom);
-				objv[8] = Tcl_NewIntObj(rookTo);
+				objv[8] = Tcl_NewIntObj(rookFrom);
+				objv[9] = Tcl_NewIntObj(rookTo);
 			}
 			else
 			{
 				objv[1] = Tcl_NewIntObj(move.from());
 				objv[2] = Tcl_NewIntObj(move.to());
-				objv[7] = Tcl_NewIntObj(-1);
 				objv[8] = Tcl_NewIntObj(-1);
+				objv[9] = Tcl_NewIntObj(-1);
 			}
 
 			if (!forward)
 			{
 				mstl::swap(objv[1], objv[2]);
 				mstl::swap(objv[4], objv[5]);
-				mstl::swap(objv[7], objv[8]);
+				mstl::swap(objv[8], objv[9]);
 			}
 
+			objv[10] = Tcl_NewBooleanObj(forward);
+
 			Tcl_Obj* list = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
+			Tcl_Obj* promoted = Tcl_NewListObj(0, 0);
+
 			Tcl_IncrRefCount(list);
+			Tcl_IncrRefCount(promoted);
 
 			for (unsigned i = 0; i < m_board.size(); ++i)
-				invoke(__func__, m_board[i], m_position, m_move, list, nullptr);
+				invoke(__func__, m_board[i], m_position, m_move, list, promoted, nullptr);
 
 			Tcl_DecrRefCount(list);
+			Tcl_DecrRefCount(promoted);
 		}
 
 		pos::resetMoveCache();
@@ -2773,6 +2810,23 @@ cmdFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 
 static int
+cmdPromoted(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	Board board;
+
+	switch (objc)
+	{
+		case 1:	board = Scidb->game().currentBoard(); break;
+		case 2:	board = Scidb->game(intFromObj(objc, objv, 1)).currentBoard(); break;
+		default:	board = Scidb->game(intFromObj(objc, objv, 1)).board(stringFromObj(objc, objv, 2)); break;
+	}
+
+	setResult(makePromotionList(board));
+	return TCL_OK;
+}
+
+
+static int
 cmdMaterial(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	Game const& game = Scidb->game();
@@ -3862,6 +3916,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdPop,				cmdPop);
 	createCommand(ti, CmdPosition,		cmdPosition);
 	createCommand(ti, CmdPrint,			cmdPrint);
+	createCommand(ti, CmdPromoted,		cmdPromoted);
 	createCommand(ti, CmdPush,				cmdPush);
 	createCommand(ti, CmdQuery,			cmdQuery);
 	createCommand(ti, CmdRefresh,			cmdRefresh);

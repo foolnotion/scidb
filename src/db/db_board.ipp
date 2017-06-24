@@ -80,6 +80,7 @@ inline uint64_t Board::bishops(color::ID side) const	{ return m_occupiedBy[side]
 inline uint64_t Board::knights(color::ID side) const	{ return m_occupiedBy[side] & m_knights; }
 inline uint64_t Board::pawns(color::ID side) const		{ return m_occupiedBy[side] & m_pawns; }
 inline uint64_t Board::pieces(color::ID color) const	{ return m_occupiedBy[color]; }
+inline uint64_t Board::promoted(color::ID color) const{ return m_promotedPieces[color]; }
 inline uint64_t Board::hash() const							{ return m_hash; }
 inline uint64_t Board::pawnHash() const					{ return m_pawnHash; }
 
@@ -88,6 +89,14 @@ inline void Board::setToMove(color::ID color)			{ m_stm = color; }
 inline void Board::setPlyNumber(unsigned number)		{ m_plyNumber = number; }
 inline void Board::setEnPassantFyle(sq::Fyle fyle)		{ setEnPassantFyle(sideToMove(), fyle); }
 inline void Board::setHalfMoveClock(unsigned number)	{ m_halfMoveClock = number; }
+
+
+inline
+uint64_t
+Board::promoted() const
+{
+	return m_promotedPieces[color::White] | m_promotedPieces[color::Black];
+}
 
 
 inline

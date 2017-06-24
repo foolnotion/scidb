@@ -350,7 +350,7 @@ cmdMakeFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		switch (int(pos.piece(sq)))
 		{
 			case piece::Queen: case piece::Rook: case piece::Bishop: case piece::Knight:
-				pos.setPromoted(sq, variant);
+				pos.markAsPromoted(sq, variant);
 				break;
 		}
 	}

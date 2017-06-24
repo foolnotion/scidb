@@ -38,6 +38,7 @@ set SelectStartPosition		"Select Start Position"
 set LoadRandomGame			"Load random game"
 set AddNewGame					"Add New Game..."
 set SlidingVarPanePosition	"Sliding variation pane position"
+set MarkPromotedPiece		"Mark promoted pieces"
 set ShowVariationArrows		"Show variation arrows"
 set ShowAnnotation			"Show annotation glyph"
 set ShowAnnotationTimeout	"Timeout for annotation glyph"
@@ -87,6 +88,7 @@ array set Options {
 	variations:arrows		0
 	show:annotation		0
 	annotation:timeout	1500
+	promoted:mark			1
 }
 
 
@@ -113,8 +115,9 @@ proc build {w width height} {
 	set board [::board::diagram::new $border.board $Dim(squaresize) \
 		-bordersize $Dim(edgethickness) \
 		-bordertype lines \
+		-markpromoted $Options(promoted:mark) \
+		-targets $board $border $canv \
 	]
-	::board::diagram::setTargets $board $border $canv
 	set boardc [::board::diagram::canvas $board]
 	::variation::build $canv [namespace code SelectAlternative]
 
@@ -526,13 +529,13 @@ proc finishDrop {} {
 }
 
 
-proc update {position cmd data} {
+proc update {position cmd data promoted} {
 	variable ::board::layout
 	variable board
 	variable Vars
 
 	switch $cmd {
-		set	{ ::board::diagram::update $board $data }
+		set	{ ::board::diagram::update $board $data $promoted }
 		move	{ ::board::diagram::move $board $data }
 	}
 
@@ -1066,6 +1069,14 @@ proc PopupMenu {w} {
 		-variable [namespace current]::Options(show:annotation) \
 		;
 	::theme::configureCheckEntry $m
+	if {[::scidb::game::query variant?] in {Crazyhouse}} {
+		$m add checkbutton \
+			-label $mc::MarkPromotedPiece \
+			-variable [namespace current]::Options(promoted:mark) \
+			-command [namespace code UpdatePromotionFlag] \
+			;
+		::theme::configureCheckEntry $m
+	}
 
 	$m add separator
 	if {[::board::options::isOpen]} { set state disabled } else { set state normal }
@@ -1801,6 +1812,7 @@ proc GameSwitched {position} {
 	UpdateGameButtonState(list) $position
 	UpdateGameButtonState(base) [::scidb::db::get name] [::scidb::app::variant]
 	UpdateSaveButton
+	UpdatePromotionFlag
 
 	if {$variant eq "Crazyhouse" || $variant eq "ThreeCheck"} {
 		set layout $variant
@@ -1833,6 +1845,23 @@ proc DatabaseSwitched {base variant} {
 	UpdateGameButtonState(base) $base $variant
 	UpdateSaveButton
 	UpdateCrossTableButton
+}
+
+
+proc UpdatePromotionFlag {} {
+	variable Options
+	variable board
+
+	set flag [expr {$Options(promoted:mark) && [::scidb::game::query variant?] in {Crazyhouse}}]
+	::board::diagram::markPromoted $board $flag
+
+	if {$flag} {
+		foreach sq [::scidb::game::promoted] {
+			::board::diagram::drawPromoted $board $sq
+		}
+	} else {
+		::board::diagram::removeAllPromoted $board
+	}
 }
 
 

@@ -907,9 +907,9 @@ Board::addToHolding(uint64_t toMask, variant::Type variant, unsigned color)
 {
 	static_assert(Piece != piece::Pawn, "do not use for pawns");
 
-	if (m_promoted[color] & toMask)
+	if (m_promotedPieces[color] & toMask)
 	{
-		m_promoted[color] ^= toMask;
+		m_promotedPieces[color] ^= toMask;
 		m_partner->m_capturePromoted = true;
 		m_partner->addToHolding<piece::Pawn>(variant, color);
 	}
@@ -929,7 +929,7 @@ Board::removeFromHolding(uint64_t fromMask, variant::Type variant, unsigned colo
 
 	if (m_capturePromoted)
 	{
-		m_partner->m_promoted[color] ^= fromMask;
+		m_partner->m_promotedPieces[color] ^= fromMask;
 		m_partner->removeFromHolding<piece::Pawn>(variant, color);
 	}
 	else
@@ -1559,7 +1559,7 @@ Board::setChecksGiven(unsigned white, unsigned black)
 
 
 void
-Board::setPromoted(Square sq, variant::Type variant)
+Board::markAsPromoted(Square sq, variant::Type variant)
 {
 	M_REQUIRE(piece(sq) != piece::None);
 	M_REQUIRE(piece(sq) != piece::Pawn);
@@ -1569,7 +1569,7 @@ Board::setPromoted(Square sq, variant::Type variant)
 	unsigned		color	= m_occupiedBy[White] & mask ? White : Black;
 	piece::ID	piece	= ::toPiece(this->piece(sq), color);
 
-	m_promoted[color] |= mask;
+	m_promotedPieces[color] |= mask;
 	hashPiece(sq, piece);
 	hashPromotedPiece(sq, piece, variant);
 }
@@ -1579,7 +1579,7 @@ bool
 Board::hasPromoted(Square sq) const
 {
 	uint64_t mask = set1Bit(sq);
-	return m_promoted[m_occupiedBy[White] & mask ? White : Black] & mask;
+	return m_promotedPieces[m_occupiedBy[White] & mask ? White : Black] & mask;
 }
 
 
@@ -1885,18 +1885,18 @@ Board::transpose(variant::Type variant)
 	board.m_unambiguous[BlackKS] = m_unambiguous[BlackQS];
 	board.m_unambiguous[BlackQS] = m_unambiguous[BlackKS];
 
-	board.m_promoted[White] = ::transpose(m_promoted[White]);
-	board.m_promoted[Black] = ::transpose(m_promoted[Black]);
+	board.m_promotedPieces[White] = ::transpose(m_promotedPieces[White]);
+	board.m_promotedPieces[Black] = ::transpose(m_promotedPieces[Black]);
 
 	// We assume a start board:
-	uint64_t promoted = board.m_promoted[White];
+	uint64_t promoted = board.m_promotedPieces[White];
 	while (promoted)
 	{
 		Square sq = lsbClear(promoted);
 		hashPromotedPiece(set1Bit(sq), ::toPiece(m_piece[sq], White), variant);
 	}
 
-	promoted = board.m_promoted[Black];
+	promoted = board.m_promotedPieces[Black];
 	while (promoted)
 	{
 		Square sq = lsbClear(promoted);
@@ -2386,8 +2386,8 @@ Board::validate(variant::Type variant, Handicap handicap, move::Constraint flag)
 		  + m_material[White].pawn
 		  + m_partner->m_holding[Black].pawn
 		  + m_partner->m_holding[White].pawn
-		  + count(m_promoted[Black])
-		  + count(m_promoted[White]);
+		  + count(m_promotedPieces[Black])
+		  + count(m_promotedPieces[White]);
 
 		if (n > 16)
 			return TooManyPromotedPieces;
@@ -3035,7 +3035,7 @@ Board::setup(char const* fen, variant::Type variant)
 				return 0;
 
 			if (variant::isZhouse(variant))
-				setPromoted(s - 1, variant);
+				markAsPromoted(s - 1, variant);
 		}
 		else if (s > 63)
 		{
@@ -5324,8 +5324,8 @@ Board::doMove(Move const& m, variant::Type variant)
 			m_knights ^= bothMask;
 			m_piece[to] = piece::Knight;
 			hashPiece(from, to, ::toPiece(piece::Knight, m_stm));
-			if (m_promoted[m_stm] & fromMask)
-				m_promoted[m_stm] ^= bothMask;
+			if (m_promotedPieces[m_stm] & fromMask)
+				m_promotedPieces[m_stm] ^= bothMask;
 			break;
 
 		case piece::Bishop:
@@ -5333,8 +5333,8 @@ Board::doMove(Move const& m, variant::Type variant)
 			m_bishops ^= bothMask;
 			m_piece[to] = piece::Bishop;
 			hashPiece(from, to, ::toPiece(piece::Bishop, m_stm));
-			if (m_promoted[m_stm] & fromMask)
-				m_promoted[m_stm] ^= bothMask;
+			if (m_promotedPieces[m_stm] & fromMask)
+				m_promotedPieces[m_stm] ^= bothMask;
 			break;
 
 		case piece::Rook:
@@ -5352,8 +5352,8 @@ Board::doMove(Move const& m, variant::Type variant)
 					m_castleRookCurr[index] = Null;
 				}
 			}
-			if (m_promoted[m_stm] & fromMask)
-				m_promoted[m_stm] ^= bothMask;
+			if (m_promotedPieces[m_stm] & fromMask)
+				m_promotedPieces[m_stm] ^= bothMask;
 			break;
 
 		case piece::Queen:
@@ -5361,8 +5361,8 @@ Board::doMove(Move const& m, variant::Type variant)
 			m_queens ^= bothMask;
 			m_piece[to] = piece::Queen;
 			hashPiece(from, to, ::toPiece(piece::Queen, m_stm));
-			if (m_promoted[m_stm] & fromMask)
-				m_promoted[m_stm] ^= bothMask;
+			if (m_promotedPieces[m_stm] & fromMask)
+				m_promotedPieces[m_stm] ^= bothMask;
 			break;
 
 		case piece::King:
@@ -5476,7 +5476,7 @@ Board::doMove(Move const& m, variant::Type variant)
 					++m_underPromotions;
 					incrMaterial<piece::Knight>(m_stm);
 					hashPromotedPiece(to, ::toPiece(piece::Knight, m_stm), variant);
-					m_promoted[m_stm] ^= toMask;
+					m_promotedPieces[m_stm] ^= toMask;
 					break;
 
 				case piece::Bishop:
@@ -5485,7 +5485,7 @@ Board::doMove(Move const& m, variant::Type variant)
 					++m_underPromotions;
 					incrMaterial<piece::Bishop>(m_stm);
 					hashPromotedPiece(to, ::toPiece(piece::Bishop, m_stm), variant);
-					m_promoted[m_stm] ^= toMask;
+					m_promotedPieces[m_stm] ^= toMask;
 					break;
 
 				case piece::Rook:
@@ -5494,7 +5494,7 @@ Board::doMove(Move const& m, variant::Type variant)
 					++m_underPromotions;
 					incrMaterial<piece::Rook>(m_stm);
 					hashPromotedPiece(to, ::toPiece(piece::Rook, m_stm), variant);
-					m_promoted[m_stm] ^= toMask;
+					m_promotedPieces[m_stm] ^= toMask;
 					break;
 
 				case piece::Queen:
@@ -5502,7 +5502,7 @@ Board::doMove(Move const& m, variant::Type variant)
 					m_piece[to] = piece::Queen;
 					incrMaterial<piece::Queen>(m_stm);
 					hashPromotedPiece(to, ::toPiece(piece::Queen, m_stm), variant);
-					m_promoted[m_stm] ^= toMask;
+					m_promotedPieces[m_stm] ^= toMask;
 					break;
 
 				case piece::King:
@@ -5753,32 +5753,32 @@ Board::undoMove(Move const& m, variant::Type variant)
 			m_knights ^= bothMask;
 			m_piece[from] = piece::Knight;
 			hashPiece(from, to, ::toPiece(piece::Knight, sntm));
-			if (m_promoted[sntm] & toMask)
-				m_promoted[sntm] ^= bothMask;
+			if (m_promotedPieces[sntm] & toMask)
+				m_promotedPieces[sntm] ^= bothMask;
 			break;
 
 		case piece::Bishop:
 			m_bishops ^= bothMask;
 			m_piece[from] = piece::Bishop;
 			hashPiece(from, to, ::toPiece(piece::Bishop, sntm));
-			if (m_promoted[sntm] & toMask)
-				m_promoted[sntm] ^= bothMask;
+			if (m_promotedPieces[sntm] & toMask)
+				m_promotedPieces[sntm] ^= bothMask;
 			break;
 
 		case piece::Rook:
 			m_rooks ^= bothMask;
 			m_piece[from] = piece::Rook;
 			hashPiece(from, to, ::toPiece(piece::Rook, sntm));
-			if (m_promoted[sntm] & toMask)
-				m_promoted[sntm] ^= bothMask;
+			if (m_promotedPieces[sntm] & toMask)
+				m_promotedPieces[sntm] ^= bothMask;
 			break;
 
 		case piece::Queen:
 			m_queens ^= bothMask;
 			m_piece[from] = piece::Queen;
 			hashPiece(from, to, ::toPiece(piece::Queen, sntm));
-			if (m_promoted[sntm] & toMask)
-				m_promoted[sntm] ^= bothMask;
+			if (m_promotedPieces[sntm] & toMask)
+				m_promotedPieces[sntm] ^= bothMask;
 			break;
 
 		case piece::King:
@@ -5863,7 +5863,7 @@ Board::undoMove(Move const& m, variant::Type variant)
 					--m_underPromotions;
 					decrMaterial<piece::Knight>(sntm);
 					hashPromotedPiece(to, ::toPiece(piece::Knight, sntm), variant);
-					m_promoted[sntm] ^= toMask;
+					m_promotedPieces[sntm] ^= toMask;
 					break;
 
 				case piece::Bishop:
@@ -5871,7 +5871,7 @@ Board::undoMove(Move const& m, variant::Type variant)
 					--m_underPromotions;
 					decrMaterial<piece::Bishop>(sntm);
 					hashPromotedPiece(to, ::toPiece(piece::Bishop, sntm), variant);
-					m_promoted[sntm] ^= toMask;
+					m_promotedPieces[sntm] ^= toMask;
 					break;
 
 				case piece::Rook:
@@ -5879,14 +5879,14 @@ Board::undoMove(Move const& m, variant::Type variant)
 					--m_underPromotions;
 					decrMaterial<piece::Rook>(sntm);
 					hashPromotedPiece(to, ::toPiece(piece::Rook, sntm), variant);
-					m_promoted[sntm] ^= toMask;
+					m_promotedPieces[sntm] ^= toMask;
 					break;
 
 				case piece::Queen:
 					m_queens ^= toMask;
 					decrMaterial<piece::Queen>(sntm);
 					hashPromotedPiece(to, ::toPiece(piece::Queen, sntm), variant);
-					m_promoted[sntm] ^= toMask;
+					m_promotedPieces[sntm] ^= toMask;
 					break;
 
 				case piece::King:
@@ -6770,7 +6770,7 @@ Board::toFen(mstl::string& result, variant::Type variant, Format format) const
 
 				result += piece::print(piece);
 
-				if (variant::isZhouse(variant) && (m_promoted[piece::color(piece)] & set1Bit(square)))
+				if (variant::isZhouse(variant) && (m_promotedPieces[piece::color(piece)] & set1Bit(square)))
 					result += '~';
 			}
 		}
@@ -7273,6 +7273,14 @@ Board::staticExchangeEvaluator(Move const& move, int const* pieceValues) const
 }
 
 
+bool
+Board::isPromotedPiece(Square s) const
+{
+	uint64_t mask = set1Bit(s);
+	return bool(m_promotedPieces[m_occupiedBy[White] & mask ? White : Black] & mask);
+}
+
+
 void
 Board::dump() const
 {
@@ -7303,12 +7311,12 @@ Board::dump() const
 					unsigned(m_holding[1].knight),
 					unsigned(m_holding[1].pawn));
 	}
-	if (m_promoted[White] || m_promoted[Black])
+	if (m_promotedPieces[White] || m_promotedPieces[Black])
 	{
 		::printf("\nPromoted:");
 		for (unsigned i = 0; i < 2; i++)
 		{
-			uint64_t promoted = m_promoted[i];
+			uint64_t promoted = m_promotedPieces[i];
 			while (promoted)
 			{
 				Square sq = lsbClear(promoted);

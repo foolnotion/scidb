@@ -73,14 +73,23 @@ proc new {w size args} {
 	namespace eval [namespace current]::${w} {}
 	variable ${w}::Board
 
-	array set opts { -bordersize 0 -bordertype "normal" -rotate 0 -relief raised }
+	array set opts {
+		-relief			raised
+		-bordertype		normal
+		-bordersize		0
+		-rotate			0
+		-markpromoted	0
+		-targets			{}
+	}
 	array set opts $args
 
 	set Board(flip) $opts(-rotate)
+	set Board(mark:promoted) $opts(-markpromoted)
 	set Board(marks) {}
 	set Board(alternatives) {}
 	set Board(size) $size
 	set Board(data) ""
+	set Board(promoted) ""
 	set Board(drag:square) -1
 	set Board(drag:active) 0
 	set Board(drag:x) -1
@@ -90,7 +99,7 @@ proc new {w size args} {
 	set Board(afterid) [after 50 [namespace code [list [namespace parent]::setupPieces $size]]]
 	set Board(animate) 1
 	set Board(animate,piece) ""
-	set Board(targets) {}
+	set Board(targets) $opts(-targets)
 	set Board(bordersize) $opts(-bordersize)
 	set Board(bordertype) $opts(-bordertype)
    set boardSize [expr {8*$size}]
@@ -121,6 +130,13 @@ proc new {w size args} {
 	::bind $w.c <Destroy> [namespace code [list Destroy $w]]
 
    return $w
+}
+
+
+proc markPromoted {w flag} {
+	variable ${w}::Board
+
+	set Board(mark:promoted) $flag
 }
 
 
@@ -204,7 +220,7 @@ proc bind {w args} {
 }
 
 
-proc update {w {board {}}} {
+proc update {w {board {}} {promoted {}}} {
 	variable ${w}::Board
 	variable emptyBoard
 	variable standardBoard
@@ -240,6 +256,7 @@ proc update {w {board {}}} {
 		default {
 			if {[string length $board] == 0} {
 				set board $Board(data)
+				set promoted $Board(promoted)
 				if {[string length $board] == 0} {
 					set board $standardBoard
 				}
@@ -249,6 +266,7 @@ proc update {w {board {}}} {
 	}
 
 	set Board(data) $board
+	set Board(promoted) $promoted
 
 	if {$redraw || $Board(data) ne $oldBoard} {
 		set size $Board(size)
@@ -266,7 +284,14 @@ proc update {w {board {}}} {
 			$w.c itemconfigure selected:$sq -state hidden
 			$w.c itemconfigure suggested:$sq -state hidden
 			set piece [string index $board $sq]
-			if {$redraw || $piece ne [string index $oldBoard $sq]} { DrawPiece $w $sq $piece }
+			if {$redraw || $piece ne [string index $oldBoard $sq]} {
+				DrawPiece $w $sq $piece
+				if {$Board(mark:promoted) && $sq in $promoted} {
+					DrawPromoted $w $sq
+				} else {
+					removePromoted $w $sq
+				}
+			}
 		}
 
 		# Redraw marks and arrows:
@@ -288,7 +313,10 @@ proc move {w list} {
 	variable [namespace parent]::effects
 	variable ${w}::Board
 
-	lassign $list color squareFrom squareTo squareCaptured pieceFrom pieceTo pieceCaptured rookFrom rookTo
+	CancelAnimation $w
+
+	lassign $list color squareFrom squareTo squareCaptured \
+		pieceFrom pieceTo pieceCaptured pieceHolding rookFrom rookTo forward
 
 	if {$pieceTo eq " "} {
 		if {$pieceFrom eq " "} { return }  ;# null move
@@ -308,7 +336,22 @@ proc move {w list} {
 		set Board(data) [string replace $Board(data) $squareCaptured $squareCaptured $pieceCaptured]
 	}
 
-	CancelAnimation $w
+	if {$Board(mark:promoted)} {
+		if {$pieceFrom != $pieceTo && $pieceTo ne "." && $pieceFrom ne " "} {
+			if {$squareFrom in $Board(promoted) && [string match {[Pp]} $pieceTo]} {
+				# take back promotion
+				removePromoted $w $squareFrom
+			} elseif {$squareTo ni $Board(promoted) && [string match {[Pp]} $pieceFrom]} {
+				# mark promoted piece
+				lappend Board(promoted) $squareTo
+			}
+		}
+
+		if {$forward && $squareCaptured in $Board(promoted)} {
+			# remove mark of captured promoted piece
+			removePromoted $w $squareCaptured
+		}
+	}
 
 	if {!$Board(animate) || $effects(animation) <= 0} {
 		DoMove $w $list
@@ -346,6 +389,7 @@ proc move {w list} {
 			set Board(animate,to) $squareTo
 			set Board(animate,rookFrom) $rookFrom
 			$w.c raise piece:$squareFrom
+			$w.c raise promoted:$squareFrom
 			$w.c raise text
 			$w.c raise arrow
 			$w.c raise input
@@ -360,6 +404,7 @@ proc move {w list} {
 			set Board(animate,to) $rookTo
 			set Board(animate,rookFrom) -1
 			$w.c raise piece:$rookFrom
+			$w.c raise promoted:$rookFrom
 			$w.c raise text
 			$w.c raise arrow
 			$w.c raise input
@@ -433,6 +478,7 @@ proc hilite {w i which} {
 		$w.c raise $which:$i
 		$w.c raise suggested:$i
 		$w.c raise piece
+		$w.c raise promoted
 		$w.c raise text
 		$w.c raise arrow
 		$w.c raise alternative
@@ -484,6 +530,38 @@ proc drawMarker {w square marker} {
 	set tags [list marker marker-$square]
 	$w.c create image $x $y -anchor sw -image $marker -tags $tags
 	raiseMarker $w
+}
+
+
+proc drawPromoted {w square} {
+	DrawPromoted $w $square
+	raisePromoted $w
+}
+
+
+proc removePromoted {w square} {
+	variable ${w}::Board
+
+	$w.c delete promoted:$square
+
+	if {[set i [lsearch -exact $Board(promoted) $square]] >= 0} {
+		set Board(promoted) [lreplace $Board(promoted) $i $i]
+	}
+}
+
+
+proc removeAllPromoted {w} {
+	variable ${w}::Board
+
+	$w.c delete promoted
+	set Board(promoted) {}
+}
+
+
+proc raisePromoted {w} {
+	$w.c raise promoted
+	$w.c raise input
+	$w.c raise click
 }
 
 
@@ -542,11 +620,18 @@ proc finishDrag {w} {
 	if {$Board(drag:active)} {
 		if {$Board(drag:square) != -1} {
 			set sq [getSquare $w $Board(pointer:x) $Board(pointer:y)]
-			$w.c coords piece:$Board(drag:square) {*}[$w.c coords square:$sq]
+			lassign [$w.c coords square:$sq] x y
+			if {[llength $x]} {
+				$w.c coords drag-target $x $y
+				# hack: for any reason the mark will not be moved with 'drag-target'
+				$w.c coords promoted:$Board(drag:square) $x $y
+				$w.c raise drag-target
+			}
 		}
 
 		foreach t $Board(targets) { $t delete drag-target }
 		$w.c dtag piece:$Board(drag:square) drag-target
+		$w.c dtag promoted:$Board(drag:square) drag-target
 	}
 
 	set Board(drag:active) 0
@@ -556,6 +641,12 @@ proc finishDrag {w} {
 proc cancelDrag {w} {
 	variable ${w}::Board
 	set Board(drag:square) -1
+}
+
+
+proc dragTarget {w} {
+	variable ${w}::Board
+	return [getSquare $w $Board(pointer:x) $Board(pointer:y)]
 }
 
 
@@ -588,6 +679,7 @@ proc setDragSquare {w {sq -1}} {
 
 proc raisePiece {w square} {
 	$w.c raise piece:$square
+	$w.c raise promoted:$square
 }
 
 
@@ -620,6 +712,7 @@ proc dragPiece {w x y} {
 		if {abs($x0 - $xc) > 5 || abs($y0 - $yc) > 5} {
 			set Board(drag:active) 1
 			$w.c addtag drag-target withtag piece:$sq
+			$w.c addtag drag-target withtag promoted:$sq
 
 			if {[llength $Board(targets)]} {
 				set piece [piece $w $sq]
@@ -642,6 +735,7 @@ proc dragPiece {w x y} {
 	set y0 [expr {$yc - $dy}]
 
 	$w.c coords piece:$sq $x0 $y0
+	$w.c coords promoted:$sq $x0 $y0
 	$w.c raise drag-target
 
 	if {[llength $Board(targets)]} {
@@ -675,6 +769,7 @@ proc setSign {w square} {
 	$w.c raise hilite
 	$w.c raise sign
 	$w.c raise piece
+	$w.c raise promoted
 	$w.c raise text
 	$w.c raise arrow
 	$w.c raise input
@@ -781,7 +876,7 @@ proc drawText {canv squareSize color x y text} {
 	set font [list [font configure TkFixedFont -family] $size bold]
 	set x1 [expr {$x0 + 1}]
 	set y1 [expr {$y0 + 1}]
-	set tags [list mark text]
+	set tags {mark text}
 	if {$luma < 50} {
 		$canv create text $x0 $y0 -fill white  -font $font -text $text -anchor center -tags $tags
 		$canv create text $x1 $y1 -fill $color -font $font -text $text -anchor center -tags $tags
@@ -858,7 +953,8 @@ proc DrawPiece {w sq piece} {
 	variable ${w}::Board
 
 	set piece $LetterToPiece($piece)
-	$w.c delete piece:$sq
+	set promoted [$w.c find withtag promoted:$sq]
+	$w.c delete piece:$sq promoted:$sq
 
 	if {$piece ne "e"} {
 		$w.c create image {*}[$w.c coords square:$sq] \
@@ -866,11 +962,26 @@ proc DrawPiece {w sq piece} {
 			-anchor nw \
 			-tags [list piece piece:$sq] \
 			;
+		if {[string length $promoted]} { DrawPromoted $w $sq }
 		
 		$w.c raise text
 		$w.c raise arrow
 		$w.c raise input
 	}
+}
+
+
+
+proc DrawPromoted {w square} {
+	variable ${w}::Board
+
+	if {[string length [$w.c find withtag promoted:$square]] == 0} {
+		lassign [$w.c coords square:$square] x y
+		set tags [list promoted promoted:$square]
+		$w.c create image $x $y -anchor nw -image photo_Marker($Board(size)) -tags $tags
+	}
+
+	if {$square ni $Board(promoted)} { lappend Board(promoted) $square }
 }
 
 
@@ -888,10 +999,7 @@ proc Build {w} {
 		set y [expr {(7 - $row)*$size + $offs}]
 		set k [expr {$flip ? 63 - $i : $i}]
 		set color [expr {($row + $col) % 2 ? "lite" : "dark"}]
-		$w.c delete square:$k
-		$w.c delete selected:$k
-		$w.c delete suggested:$k
-		$w.c delete input:$k
+		$w.c delete square:$k selected:$k suggested:$k input:$k
 		$w.c create image $x $y -anchor nw -image photo_Square($color,$size) -tag square:$k
 		$w.c create rectangle $x $y [expr {$x + $size}] [expr {$y + $size}] \
 			-tag mark:$k -width 0 -state hidden
@@ -947,7 +1055,10 @@ proc DeleteImages {w} {
 
 
 proc DoMove {w list} {
-	lassign $list color squareFrom squareTo squareCaptured pieceFrom pieceTo pieceCaptured rookFrom rookTo
+	variable ${w}::Board
+
+	lassign $list color squareFrom squareTo squareCaptured \
+		pieceFrom pieceTo pieceCaptured pieceHolding rookFrom rookTo forward
 
 	if {$squareFrom != $squareTo} {
 		DrawPiece $w $squareFrom .
@@ -964,6 +1075,24 @@ proc DoMove {w list} {
 
 	if {$squareCaptured != -1 && $squareCaptured != $squareTo} {
 		DrawPiece $w $squareCaptured $pieceCaptured
+	}
+
+	if {$Board(mark:promoted)} {
+		if {	$squareFrom in $Board(promoted)
+			|| (	$pieceFrom != $pieceTo
+				&& $pieceTo ne " "
+				&& [string match {[Pp]} $pieceFrom])} {
+			# 1. move promotion marker to new piece position, or
+			# 2. mark newly promoted piece
+			removePromoted $w $squareFrom
+			DrawPromoted $w $squareTo
+		} elseif {	$pieceCaptured != $pieceHolding
+					&& $pieceCaptured != "."
+					&& [string match {[Pp]} $pieceHolding]
+					&& ![string match {[Pp]} $pieceCaptured]} {
+			# take back capture of promoted piece
+			DrawPromoted $w $squareFrom
+		}
 	}
 }
 
@@ -1065,6 +1194,7 @@ proc AnimateMove {w} {
 		set x [expr {$fromX + round(($toX - $fromX)*$ratio)}]
 		set y [expr {$fromY + round(($toY - $fromY)*$ratio)}]
 		$w.c coords piece:$from $x $y
+		$w.c coords promoted:$from $x $y
 	}
 
 	# Schedule another animation update in a few milliseconds:
@@ -1107,6 +1237,7 @@ proc DrawAllMarks {w} {
 	$w.c raise rect
 	$w.c raise hilite
 	$w.c raise piece
+	$w.c raise promoted
 	$w.c raise text
 	$w.c raise arrow
 	$w.c raise input
