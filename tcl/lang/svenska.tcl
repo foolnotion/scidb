@@ -426,6 +426,7 @@
 ::application::board::mc::LoadRandomGame				"Ladda slumpvis parti"
 ::application::board::mc::AddNewGame					"Lägg till nytt parti..."
 ::application::board::mc::SlidingVarPanePosition	"Sliding variation pane position" ;# NEW
+::application::board::mc::MarkPromotedPiece			"Mark promoted pieces" ;# NEW
 ::application::board::mc::ShowVariationArrows		"Show variation arrows" ;# NEW
 ::application::board::mc::ShowAnnotation           "Show annotation glyph" ;# NEW
 ::application::board::mc::ShowAnnotationTimeout    "Timeout for annotation glyph" ;# NEW

@@ -427,6 +427,7 @@
 ::application::board::mc::LoadRandomGame				"Carica partita casualmente"
 ::application::board::mc::AddNewGame					"Aggiunti nuova partita..."
 ::application::board::mc::SlidingVarPanePosition	"Sliding variation pane position" ;# NEW
+::application::board::mc::MarkPromotedPiece			"Mark promoted pieces" ;# NEW
 ::application::board::mc::ShowVariationArrows		"Show variation arrows" ;# NEW
 ::application::board::mc::ShowAnnotation           "Show annotation glyph" ;# NEW
 ::application::board::mc::ShowAnnotationTimeout    "Timeout for annotation glyph" ;# NEW

@@ -425,6 +425,7 @@
 ::application::board::mc::LoadRandomGame				"Load random game"
 ::application::board::mc::AddNewGame					"Add New Game..."
 ::application::board::mc::SlidingVarPanePosition	"Sliding variation pane position"
+::application::board::mc::MarkPromotedPiece			"Mark promoted pieces"
 ::application::board::mc::ShowVariationArrows		"Show variation arrows"
 ::application::board::mc::ShowAnnotation				"Show annotation glyph"
 ::application::board::mc::ShowAnnotationTimeout		"Timeout for annotation glyph"

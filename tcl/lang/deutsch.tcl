@@ -426,6 +426,7 @@
 ::application::board::mc::LoadRandomGame				"Zufällige Partie laden"
 ::application::board::mc::AddNewGame					"Partie hinzufügen..."
 ::application::board::mc::SlidingVarPanePosition	"Position der gleitenden Variantenanzeige"
+::application::board::mc::MarkPromotedPiece			"Verwandelte Figuren markieren"
 ::application::board::mc::ShowVariationArrows		"Pfeile für Variantenauswahl"
 ::application::board::mc::ShowAnnotation				"Anmerkungssymbol anzeigen"
 ::application::board::mc::ShowAnnotationTimeout		"Zeitbeschränkung for Anmerkungssymbol"
