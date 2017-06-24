@@ -192,7 +192,7 @@ proc open {parent} {
 	variable Memo
 	variable History
 	variable Options
-	variable Marker
+	variable Promoted
 
 	set dlg $parent.setup_board
 	if {[winfo exists $dlg]} { return }
@@ -204,7 +204,7 @@ proc open {parent} {
 	pack $dlg.top
 
 	unset -nocomplain Vars
-	unset -nocomplain Marker
+	unset -nocomplain Promoted
 
 	set variant [::scidb::game::query Variant?]
 	if {$variant eq "Antichess"} {
@@ -482,7 +482,7 @@ proc open {parent} {
 		set promo $bottom.promo
 		tk::radiobutton $promo \
 			-textvar [namespace current]::mc::Promoted \
-			-image $icon::16x16::marker \
+			-image $::board::icon::12x12::marker \
 			-compound bottom \
 			-indicatoron no \
 			-value "." \
@@ -950,18 +950,18 @@ proc SetupCastlingButtons {f} {
 
 proc SetupPromoted {} {
 	variable Vars
-	variable Marker
+	variable Promoted
 
 	lassign [::scidb::board::analyseFen $Vars(fen)] error _ idn _ _ _ _ _ _ _ _ promoted
 	if {$idn > 4*960} { set idn 0 }
 
-	::board::diagram::removeAllMarkers $Vars(board)
+	::board::diagram::removeAllPromoted $Vars(board)
 
-	for {set i 0} {$i < 64} {incr i} { set Marker($i) 0 }
+	for {set i 0} {$i < 64} {incr i} { set Promoted($i) 0 }
 
 	foreach i $promoted {
-		set Marker($i) 1
-		::board::diagram::drawMarker $Vars(board) $i $icon::16x16::marker
+		set Promoted($i) 1
+		::board::diagram::drawPromoted $Vars(board) $i
 	}
 }
 
@@ -1156,11 +1156,11 @@ proc ChangeColor {} {
 
 proc SetPiece {square pieceType} {
 	variable Vars
-	variable Marker
+	variable Promoted
 
 	if {$pieceType eq "."} {
-		set Marker($square) [expr {!$Marker($square)}]
-		if {$Marker($square)} {
+		set Promoted($square) [expr {!$Promoted($square)}]
+		if {$Promoted($square)} {
 			::board::diagram::drawMarker $Vars(board) $square $icon::16x16::marker
 		} else {
 			::board::diagram::removeMarker $Vars(board) $square
@@ -1384,7 +1384,7 @@ proc ValidateIdn {value} {
 proc Update {} {
 	variable Vars
 	variable Options
-	variable Marker
+	variable Promoted
 
 	set Vars(skip) 0
 
@@ -1412,7 +1412,7 @@ proc Update {} {
 
 	set promoted {}
 	for {set i 0} {$i < 64} {incr i} {
-		if {$Marker($i)} { lappend promoted $i }
+		if {$Promoted($i)} { lappend promoted $i }
 	}
 
 	set Vars(fen) [::scidb::board::makeFen $Vars(pos) $Vars(stm) $Vars(ep) $Vars(moveno) \
@@ -1684,24 +1684,6 @@ proc WriteOptions {chan} {
 
 namespace eval icon {
 namespace eval 16x16 {
-
-set marker [image create photo -data {
-	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAABrVBMVEWCfXmCfXmCfXmCfXmC
-	fXmCfXmCfXmalJCalZGalpKblpKblpOCfXnBvLfCvLfCv7jCv7nDv7rDv7vFwb3Fwb7Fwr7F
-	wr/Gwr/k4uHoYgjoYgnpYgfpZgzpZw3qZAbqaA7qaQ/qbx3rdCHsaArsbhLseSztZgXtZwXt
-	bxPtdyPuchbucxbvdBfvgjTvk1TwdhjwhDfwkVHwlFfxagTxeBrxeRvxehvxkk7yexzzfB30
-	fB70fx/0lEv0lU70s4b1cQf1gSH1gyL1m1X2bwP2hST2k0b2lUv3hST3hyX3lkj4o1v49/f5
-	cwL5jCn5pV35uIT5+fn6jSr6l0X6zKr607X62sP7jyz7kCz7mET7mEX7mUf8ki78mkX9ji79
-	lC/9mUL9mkP9rWP9zqb+lzH+mDH+nEH+nUP+3Lz+9vD++PX/m0D/nDH/nD//nT7/njH/nz3/
-	nz//n0X/oC//oDv/oUH/ozn/ozv/pD3/piz/pyz/uG7/umv/unb/u3P/1J7/1J//1pf/2Zb/
-	2rf/4L3/4MH/4r//4sH/9+//+fL/+fP/+vL/+vP/+/j//Pr//flu8RMVAAAAGHRSTlMAIEaM
-	jaPH6+vr6+vw+fn5+fn5/f39/f3XsTcUAAAA70lEQVQY013Pu07DMBQA0HuvHdt1QqJKUGCp
-	ECtjB0AVYuhvsfJbgBh4DPmISpUQIi2pnLit4wc75w8OAgAQkQAXYwQABEBSms2gTuYQEyAg
-	L+5vgk06e381PiGw8mG7iy5YL64et4GRWoz3bjCbtvveTJeBUz5vnO1aM7jQXxeOExuC7Zuf
-	3qNMDREb3Z4c1stVC0pqEaYrDpCar7WVulQSRQBytfjtOq6ranw8Oa8djz7bmSTzvCo1n4TI
-	o/ks9iTF6KiU8sNEiv7p7oJxoZVQ5fMQEZCrxVljTy/l20vvEwIgZXk2gzp0LibA//0/DtN0
-	smnEFL8AAAAASUVORK5CYII=
-}]
 
 set xfen [image create photo -data {
 	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAAnNCSVQICFXsRgQAAAEsSURB
