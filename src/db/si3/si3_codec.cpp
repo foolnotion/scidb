@@ -1429,25 +1429,25 @@ Codec::decodeIndex(ByteStream& strm, unsigned index)
 	if (whiteRatingType == rating::Elo)
 	{
 		item.m_player[color::White]->setElo(
-			item.m_pd[color::White].elo = mstl::min(int(rating::Max_Value), whiteRating & 0x0fff));
+			item.m_pd[color::White].elo = mstl::min(rating::Max_Value, uint16_t(whiteRating & 0x0fffu)));
 	}
 	else
 	{
 		item.m_player[color::White]->setRating(
 			whiteRatingType,
-			item.m_pd[color::White].rating = mstl::min(int(rating::Max_Value), whiteRating & 0x0fff));
+			item.m_pd[color::White].rating = mstl::min(rating::Max_Value, uint16_t(whiteRating & 0x0fffu)));
 	}
 
 	if (blackRatingType == rating::Elo)
 	{
 		item.m_player[color::Black]->setElo(
-			item.m_pd[color::Black].elo = mstl::min(int(rating::Max_Value), blackRating & 0x0fff));
+			item.m_pd[color::Black].elo = mstl::min(rating::Max_Value, uint16_t(blackRating & 0x0fffu)));
 	}
 	else
 	{
 		item.m_player[color::Black]->setRating(
 			blackRatingType,
-			item.m_pd[color::Black].rating = mstl::min(int(rating::Max_Value), blackRating & 0x0fff));
+			item.m_pd[color::Black].rating = mstl::min(rating::Max_Value, uint16_t(blackRating & 0x0fffu)));
 	}
 
 	if (item.m_positionId == variant::Standard)
