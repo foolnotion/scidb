@@ -634,7 +634,7 @@ namespace sex
 
 namespace rating
 {
-	enum { Max_Value = 4000 };
+	static constexpr uint16_t Max_Value = 4000;
 
 	// first seven coincides with Scid
 	enum Type
