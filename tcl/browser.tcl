@@ -1260,11 +1260,11 @@ proc LeaveMove {w position key} {
 }
 
 
-proc UpdateBoard {position cmd data} {
+proc UpdateBoard {position cmd data promoted} {
 	variable ${position}::Vars
 
 	switch $cmd {
-		set	{ ::board::diagram::update $Vars(board) $data }
+		set	{ ::board::diagram::update $Vars(board) $data $promoted }
 		move	{ ::board::diagram::move $Vars(board) $data }
 	}
 }
