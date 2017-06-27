@@ -1329,6 +1329,8 @@ tcl_game.o: ../db/db_selector.h
 tcl_game.o: ../db/db_selector.ipp
 tcl_game.o: ../app/app_view.ipp
 tcl_game.o: ../app/app_cursor.ipp
+tcl_game.o: ../db/db_board_base.h
+tcl_game.o: ../db/db_board_base.ipp
 tcl_game.o: ../db/db_game.h
 tcl_game.o: ../db/db_game_data.h
 tcl_game.o: ../db/db_edit_key.h
