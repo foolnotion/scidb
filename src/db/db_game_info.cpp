@@ -577,9 +577,16 @@ GameInfo::setup(	uint32_t gameOffset,
 		m_pd[1].matN = matCount.knight >= 3;
 	}
 
+	if (whiteElo == 0 && tags.contains(tag::WhiteElo))
+		whiteElo = rating::clip(tags.asInt(tag::WhiteElo));
+	whitePlayer->setElo(m_pd[White].elo = whiteElo);
+
+	if (blackElo == 0 && tags.contains(tag::BlackElo))
+		blackElo = rating::clip(tags.asInt(tag::BlackElo));
+	blackPlayer->setElo(m_pd[Black].elo = blackElo);
+
 	static_assert(rating::Last == 8, "reimplementation required");
 
-	setupRating(tags, White, rating::Elo,		tag::WhiteElo);
 	setupRating(tags, White, rating::Rating,	tag::WhiteRating);
 	setupRating(tags, White, rating::Rapid,	tag::WhiteRapid);
 	setupRating(tags, White, rating::ICCF,		tag::WhiteICCF);
@@ -588,7 +595,6 @@ GameInfo::setup(	uint32_t gameOffset,
 	setupRating(tags, White, rating::ECF,		tag::WhiteECF);
 	setupRating(tags, White, rating::IPS,		tag::WhiteIPS);
 
-	setupRating(tags, Black, rating::Elo,		tag::BlackElo);
 	setupRating(tags, Black, rating::Rating,	tag::BlackRating);
 	setupRating(tags, Black, rating::Rapid,	tag::BlackRapid);
 	setupRating(tags, Black, rating::ICCF,		tag::BlackICCF);
