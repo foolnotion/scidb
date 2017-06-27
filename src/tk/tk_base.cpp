@@ -28,9 +28,7 @@
 
 #include "tcl_exception.h"
 
-#define namespace namespace_ // bug in tcl8.6/tkInt.h
 #include <tkInt.h>
-#undef namespace
 
 
 extern "C" { void TkpWmSetState(TkWindow* winPtr, int state); }
@@ -45,9 +43,9 @@ reparent(TkWindow* childPtr, TkWindow* newParentPtr = nullptr)
 
 #if defined(__WIN32__) || defined(__WIN64__)
 
-		// Reparent to nullptr so UpdateWrapper won't delete our original parent window
-		HWND handle = newParentPtr ? TkWinGetHWND(newParentPtr->window) : None;
-		SetParent(TkWinGetHWND(winPtr->window), hwnd);
+	// Reparent to nullptr so UpdateWrapper won't delete our original parent window
+	HWND handle = newParentPtr ? TkWinGetHWND(newParentPtr->window) : None;
+	SetParent(TkWinGetHWND(winPtr->window), hwnd);
 
 #elif defined(__MacOSX__)
 
@@ -55,9 +53,9 @@ reparent(TkWindow* childPtr, TkWindow* newParentPtr = nullptr)
 
 #else // if defined(__unix__)
 
-		Window parent = newParentPtr ?
-			newParentPtr->window : XRootWindow(childPtr->display, childPtr->screenNum);
-		XReparentWindow(childPtr->display, childPtr->window, parent, 0, 0);
+	Window parent = newParentPtr ?
+		newParentPtr->window : XRootWindow(childPtr->display, childPtr->screenNum);
+	XReparentWindow(childPtr->display, childPtr->window, parent, 0, 0);
 
 #endif
 }
@@ -165,9 +163,10 @@ tk::raise(Tk_Window window, Tk_Window aboveThis)
 
 	if (Tk_RestackWindow(window, Above, aboveThis) != TCL_OK)
 	{
-		M_THROW(tcl::Exception("can't raise \"%s\" above \"%s\"",
-									Tk_PathName(window),
-									Tk_PathName(aboveThis)));
+		M_THROW(tcl::Exception(
+			"can't raise \"%s\" above \"%s\"",
+			Tk_PathName(window),
+			Tk_PathName(aboveThis)));
 	}
 }
 
