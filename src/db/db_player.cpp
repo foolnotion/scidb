@@ -463,7 +463,7 @@ getElo(mstl::string const& elo)
 	{
 		int value = strtoul(elo.c_str() + 1, nullptr, 10);
 
-		if (value <= rating::Max_Value)
+		if (rating::isValid(value))
 		{
 			if (elo[5] == '*')
 				value = -value;
@@ -2309,7 +2309,7 @@ Player::parseFideRating(mstl::istream& stream)
 				if (year && (!player->dateOfBirth() || player->dateOfBirth().month() == 0))
 					player->setDateOfBirth(Date(year));
 
-				if (0 < rating && rating <= rating::Max_Value)
+				if (0 < rating && rating::isValid(rating))
 				{
 					player->setLatestElo(rating);
 

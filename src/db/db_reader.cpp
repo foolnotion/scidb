@@ -127,7 +127,7 @@ Reader::extractPlayerData(mstl::string& data, mstl::string& value)
 
 			if (s < e)
 			{
-				if (rating::isElo(s, e) && ::strtoul(s, nullptr, 10) <= rating::Max_Value)
+				if (rating::isElo(s, e) && rating::isValid(::strtoul(s, nullptr, 10)))
 				{
 					if (*s == '0')
 						value.hook(s + 1, e - (s + 1));

@@ -674,7 +674,7 @@ inline
 void
 NamebasePlayer::setElo(uint16_t value)
 {
-	M_REQUIRE(value <= rating::Max_Value);
+	M_REQUIRE(rating::isValid(value));
 	m_rating[rating::Elo] = mstl::max(m_rating[rating::Elo], value);
 }
 
@@ -684,7 +684,7 @@ void
 NamebasePlayer::setRating(rating::Type type, uint16_t value)
 {
 	M_REQUIRE(type != rating::Any);
-	M_REQUIRE(value <= rating::Max_Value);
+	M_REQUIRE(rating::isValid(value));
 
 	if (value)
 	{

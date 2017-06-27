@@ -130,12 +130,8 @@ getRatingValue(TagSet const& tags, tag::ID tag)
 	if (!tags.contains(tag))
 		return 0;
 
-	int value = tags.asInt(tag);
-
-	if (value > rating::Max_Value)
-		return 0;
-
-	return value;
+	unsigned value = tags.asInt(tag);
+	return rating::isValid(value) ? value : 0;
 }
 
 
@@ -287,7 +283,7 @@ GameInfo::update(	NamebasePlayer* whitePlayer,
 			case tag::WhiteElo:
 			{
 				unsigned value = tags.asInt(tag::WhiteElo);
-				if (value <= rating::Max_Value)
+				if (rating::isValid(value))
 					whitePlayer->setElo(m_pd[White].elo = value);
 				break;
 			}
@@ -295,7 +291,7 @@ GameInfo::update(	NamebasePlayer* whitePlayer,
 			case tag::BlackElo:
 			{
 				unsigned value = tags.asInt(tag::BlackElo);
-				if (value <= rating::Max_Value)
+				if (rating::isValid(value))
 					blackPlayer->setElo(m_pd[Black].elo = value);
 				break;
 			}
@@ -511,10 +507,13 @@ GameInfo::setupRating(TagSet const& tags, color::ID color, rating::Type rtType, 
 {
 	if (uint16_t value = ::getRatingValue(tags, tag))
 	{
-		m_player[color]->setRating(rtType, value);
+		if (m_player[color]->rating(rtType) == 0)
+		{
+			m_player[color]->setRating(rtType, value);
 
-		if (tags.significance(tag))
-			setRating(color, rtType, value);
+			if (rtType == rating::Elo || tags.significance(tag))
+				setRating(color, rtType, value);
+		}
 	}
 }
 
@@ -533,8 +532,8 @@ GameInfo::setup(	uint32_t gameOffset,
 						Namebases& namebases)
 {
 	M_REQUIRE(isEmpty());
-	M_REQUIRE(whiteElo <= rating::Max_Value);
-	M_REQUIRE(blackElo <= rating::Max_Value);
+	M_REQUIRE(rating::isValid(whiteElo));
+	M_REQUIRE(rating::isValid(blackElo));
 
 	setup(gameOffset, gameRecordLength, whitePlayer, blackPlayer, event, annotator, namebases);
 
@@ -544,8 +543,8 @@ GameInfo::setup(	uint32_t gameOffset,
 	m_signature			= provider.getFinalBoard().signature();
 	m_result				= result::fromString(tags.value(tag::Result));
 	m_plyCount			= mstl::min(MaxPlyCount, provider.plyCount());
-	m_pd[0].langFlag	= !!(langFlags & i18n::English);
-	m_pd[1].langFlag	= !!(langFlags & i18n::Other_Lang);
+	m_pd[0].langFlag	= bool(langFlags & i18n::English);
+	m_pd[1].langFlag	= bool(langFlags & i18n::Other_Lang);
 
 	m_gameFlags = (provider.gameFlags() & ~Flag_Special) | (m_gameFlags & Flag_Special);
 
@@ -578,16 +577,9 @@ GameInfo::setup(	uint32_t gameOffset,
 		m_pd[1].matN = matCount.knight >= 3;
 	}
 
-	if (tags.contains(tag::WhiteElo))
-		whiteElo = tags.asInt(tag::WhiteElo);
-	whitePlayer->setElo(m_pd[White].elo = whiteElo);
-
-	if (tags.contains(tag::BlackElo))
-		blackElo = tags.asInt(tag::BlackElo);
-	blackPlayer->setElo(m_pd[Black].elo = blackElo);
-
 	static_assert(rating::Last == 8, "reimplementation required");
 
+	setupRating(tags, White, rating::Elo,		tag::WhiteElo);
 	setupRating(tags, White, rating::Rating,	tag::WhiteRating);
 	setupRating(tags, White, rating::Rapid,	tag::WhiteRapid);
 	setupRating(tags, White, rating::ICCF,		tag::WhiteICCF);
@@ -596,6 +588,7 @@ GameInfo::setup(	uint32_t gameOffset,
 	setupRating(tags, White, rating::ECF,		tag::WhiteECF);
 	setupRating(tags, White, rating::IPS,		tag::WhiteIPS);
 
+	setupRating(tags, Black, rating::Elo,		tag::BlackElo);
 	setupRating(tags, Black, rating::Rating,	tag::BlackRating);
 	setupRating(tags, Black, rating::Rapid,	tag::BlackRapid);
 	setupRating(tags, Black, rating::ICCF,		tag::BlackICCF);

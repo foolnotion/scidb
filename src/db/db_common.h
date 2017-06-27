@@ -655,6 +655,8 @@ namespace rating
 	tag::ID toWhiteTag(rating::Type type);
 	tag::ID toBlackTag(rating::Type type);
 
+	uint16_t clip(unsigned score);
+
 	unsigned convertEloToUscf(unsigned elo);
 	unsigned convertEloToEcf(unsigned elo);
 	unsigned convertUscfToElo(unsigned uscf);
@@ -664,6 +666,7 @@ namespace rating
 	mstl::string const& toString(Type type);
 	Type fromString(char const* s);
 	bool isElo(char const* s, char const* e);
+	bool isValid(uint16_t score);
 }
 
 namespace federation

@@ -384,6 +384,10 @@ inline bool isScore(int score) { return !isError(score); }
 
 namespace rating {
 
+inline bool isValid(uint16_t score)		{ return score <= Max_Value; }
+inline uint16_t clip(unsigned score)	{ return score <= Max_Value ? score : Max_Value; }
+
+
 inline
 unsigned
 convertUscfToElo(unsigned uscf)

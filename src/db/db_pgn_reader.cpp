@@ -3093,7 +3093,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 					if (rat == 0)
 						return false;
 
-					if (rat > rating::Max_Value)
+					if (!rating::isValid(rat))
 					{
 						sendWarning(RatingTooHigh, m_prevPos, value);
 						return false;
@@ -3265,8 +3265,8 @@ PgnReader::readTags()
 											case 'B':
 												if (name == "BlackIsComp")
 												{
-													species::ID species =
-														::caseEqual(value, "yes", 3) ? species::Program : species::Human;
+													species::ID species = ::caseEqual(value, "yes", 3) ?
+														species::Program : species::Human;
 													m_tags.add(tag::BlackType, species);
 													ignore = true;
 												}
@@ -3275,8 +3275,8 @@ PgnReader::readTags()
 											case 'W':
 												if (name == "WhiteIsComp")
 												{
-													species::ID species =
-														::caseEqual(value, "yes", 3) ? species::Program : species::Human;
+													species::ID species = ::caseEqual(value, "yes", 3) ?
+															species::Program : species::Human;
 													m_tags.add(tag::WhiteType, species);
 													ignore = true;
 												}

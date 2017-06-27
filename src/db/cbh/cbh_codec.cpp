@@ -2405,14 +2405,14 @@ Codec::decodeIndex(ByteStream& strm, GameInfo& info)
 	unsigned whiteElo = strm.uint16();
 	unsigned blackElo = strm.uint16();
 
-	if (whiteElo <= rating::Max_Value)
+	if (rating::isValid(whiteElo))
 	{
 		info.m_pd[color::White].elo = whiteElo;
 		if (white != m_illegalPlayer)
 			white->setElo(whiteElo);
 	}
 
-	if (blackElo <= rating::Max_Value)
+	if (rating::isValid(blackElo))
 	{
 		info.m_pd[color::Black].elo = blackElo;
 		if (black != m_illegalPlayer)

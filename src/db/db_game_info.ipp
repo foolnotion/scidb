@@ -411,7 +411,7 @@ void
 GameInfo::setRating(color::ID color, rating::Type ratingType, uint16_t value)
 {
 	M_ASSERT(value > 0);
-	M_ASSERT(value < rating::Max_Value);
+	M_ASSERT(rating::isValid(value));
 
 	m_pd[color].rating = value;
 	m_pd[color].ratingType = ratingType;
