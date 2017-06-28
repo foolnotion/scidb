@@ -17,10 +17,9 @@
 // ======================================================================
 
 #include "tk_init.h"
+#include "tkInt.h"
 
 #include "tcl_base.h"
-
-#include "tkInt.h"
 
 #include "m_types.h"
 
@@ -101,11 +100,14 @@ typedef struct MultiWindow
     Tcl_Obj*			heightObj;		// Tcl_Obj rep for height.
     int					width;			// Width of the widget.
 	 int					height;			// Height of the widget.
+	 Tcl_Obj*			takeFocusObj;	// Value of -takefocus option.
     Tk_Cursor			cursor;			// Current cursor for window, or None.
     GC					gc;				// Graphics context for copying from off-screen pixmap onto screen.
     Slave**				slaves;			// Pointer to array of Slaves.
     int					numSlaves;		// Number of slaves.
+#if 0
 	 int					overlay;			// Overlay flag.
+#endif
     int					flags;			// Flags for widget; see below.
 }
 MultiWindow;
@@ -180,6 +182,7 @@ static Tk_ObjCustomOption stickyOption =
 #define DEF_MULTIWINDOW_HEIGHT		""
 #define DEF_MULTIWINDOW_RELIEF		"flat"
 #define DEF_MULTIWINDOW_WIDTH			""
+#define DEF_MULTIWINDOW_TAKEFOCUS	"0"
 
 static const Tk_OptionSpec optionSpecs[] =
 {
@@ -199,9 +202,15 @@ static const Tk_OptionSpec optionSpecs[] =
     {TK_OPTION_PIXELS, "-height", "height", "Height",
 	 DEF_MULTIWINDOW_HEIGHT, Tk_Offset(MultiWindow, heightObj),
 	 Tk_Offset(MultiWindow, height), TK_OPTION_NULL_OK, 0, GEOMETRY},
+#if 0
+	 // This is a bit critical, because of the stacking order.
 	 {TK_OPTION_BOOLEAN, "-overlay", "overlay", "Overlay",
 	 DEF_MULTIWINDOW_OVERLAY, -1, Tk_Offset(MultiWindow, overlay),
 	 0, 0, 0},
+#endif
+	 {TK_OPTION_STRING, "-takefocus", "takeFocus", "TakeFocus",
+	 DEF_MULTIWINDOW_TAKEFOCUS, Tk_Offset(MultiWindow, takeFocusObj), -1,
+	 TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_RELIEF, "-relief", "relief", "Relief",
 	 DEF_MULTIWINDOW_RELIEF, -1, Tk_Offset(MultiWindow, relief), 0, 0, 0},
     {TK_OPTION_PIXELS, "-width", "width", "Width",
@@ -549,7 +558,7 @@ AdjustForSticky(	int sticky,				// Sticky value; see top of file for definition
 //	Check if there exists one pane which is not hidden.
 //
 // Results:
-//	Returns whezjer one pane exists which is not hidden.
+//	Returns whether one pane exists which is not hidden.
 //
 // Side effects:
 //	None.
@@ -596,10 +605,14 @@ ArrangePane(ClientData clientData)	// Structure describing parent whose slaves a
 	int paneHeight;
 	int slaveWidth;
 	int slaveHeight;
+	int width;
+	int height;
 	int slaveX;
 	int slaveY;
 
 	Slave* slave;
+
+	mw->flags &= ~(REQUESTED_RELAYOUT|RESIZE_PENDING);
 
 	// If the parent has no slaves anymore, then don't do anything at all:
 	// just leave the parent's size as-is. Otherwise there is no way to
@@ -616,10 +629,12 @@ ArrangePane(ClientData clientData)	// Structure describing parent whose slaves a
 
 	slaveX = slave->padx;
 	slaveY = slave->pady;
+	width = Tk_Width(mw->tkwin);
+	height = Tk_Height(mw->tkwin);
 	slaveWidth = slave->width > 0 ? slave->width : Tk_ReqWidth(slave->tkwin) + doubleBw;
 	slaveHeight = slave->height > 0 ? slave->height : Tk_ReqHeight(slave->tkwin) + doubleBw;
-	paneWidth = (mw->width > 0 ? mw->width : Tk_Width(mw->tkwin)) - 2*slave->padx;
-	paneHeight = (mw->height > 0 ? mw->height : Tk_Height(mw->tkwin)) - 2*slave->pady;
+	paneWidth = (mw->width > 0 ? mw->width : width) - 2*slave->padx;
+	paneHeight = (mw->height > 0 ? mw->height : height) - 2*slave->pady;
 
 	AdjustForSticky(slave->sticky, paneWidth, paneHeight, &slaveX, &slaveY, &slaveWidth, &slaveHeight);
 
@@ -630,7 +645,7 @@ ArrangePane(ClientData clientData)	// Structure describing parent whose slaves a
 	}
 	else
 	{
-		Tk_MaintainGeometry(slave->tkwin, mw->tkwin, slaveX, slaveY, slaveWidth, slaveHeight);
+		Tk_MaintainGeometry(slave->tkwin, mw->tkwin, slaveX, slaveY, width, height);
 	}
 
 	Tcl_Release((ClientData)mw);
@@ -691,8 +706,10 @@ static void
 UnmapSlave(	MultiWindow* mw,	// Information about multi window
 				Slave* slave)		// Slave to unmap, use first unhidden slave if zero
 {
+#if 0
 	if (mw->overlay)
 		return;
+#endif
 
 	if (slave == 0 && mw->numSlaves > 0 && !mw->slaves[0]->hide)
 		slave = mw->slaves[0];
@@ -725,8 +742,7 @@ PlaceSlave(	MultiWindow* mw,	// Information about multi window
 		if (Tk_IsMapped(mw->tkwin))
 		{
 			Slave* slave = mw->slaves[0];
-
-			Tk_RestackWindow(slave->tkwin, Above, nullptr);
+			Tk_RestackWindow(slave->tkwin, Above, mw->tkwin);
 			Tk_MapWindow(slave->tkwin);
 		}
 	}
@@ -980,7 +996,7 @@ SlaveStructureProc(	ClientData clientData,	// Pointer to record describing windo
 //
 //----------------------------------------------------------------------
 static int
-ConfigureSlaves(	MultiWindow* mw,		// Information about multi window
+ConfigureSlaves(	MultiWindow* mw,			// Information about multi window
 						Tcl_Interp* interp,		// Current interpreter
 						int objc,					// Number of arguments
 						Tcl_Obj* const objv[])	// Argument objects
@@ -1218,6 +1234,8 @@ ConfigureSlaves(	MultiWindow* mw,		// Information about multi window
 		}
 	}
 
+	Slave* oldSlave = mw->numSlaves ? mw->slaves[0] : nullptr;
+
 	// Allocate the new slaves array, then copy the slaves into it, in order.
 
 	i = sizeof(Slave*)*(mw->numSlaves + numNewSlaves);
@@ -1273,6 +1291,12 @@ ConfigureSlaves(	MultiWindow* mw,		// Information about multi window
 	mw->numSlaves += numNewSlaves;
 	Tk_FreeConfigOptions((char*)&options, mw->slaveOpts, mw->tkwin);
 	ComputeGeometry(mw);
+
+	if (mw->numSlaves > 0 && oldSlave != mw->slaves[0])
+	{
+		PlaceSlave(mw, mw->slaves[0]);
+		UnmapSlave(mw, oldSlave);
+	}
 
 	return TCL_OK;
 }
@@ -1724,11 +1748,8 @@ DestroyMultiWindow(MultiWindow* mw)		// Info about multi window widget
 
 	// Cancel idle callbacks for redrawing the widget and for rearranging the panes.
 
-	if (mw->flags & REDRAW_PENDING)
-		Tcl_CancelIdleCall(DisplayMultiWindow, (ClientData)mw);
-
-	if (mw->flags & RESIZE_PENDING)
-		Tcl_CancelIdleCall(ArrangePane, (ClientData)mw);
+	Tcl_CancelIdleCall(DisplayMultiWindow, (ClientData)mw);
+	Tcl_CancelIdleCall(ArrangePane, (ClientData)mw);
 
 	if (mw->gc)
 		Tk_FreeGC(Tk_Display(mw->tkwin), mw->gc);
@@ -2010,7 +2031,10 @@ Tk_MultiWindowObjCmd(	ClientData clientData,	// nullptr
 	mw->relief = TK_RELIEF_RAISED;
 	mw->gc = None;
 	mw->cursor = None;
+#if 0
 	mw->overlay = 0;
+#endif
+	mw->takeFocusObj = 0;
 
 	// Keep a hold of the associated tkwin until we destroy the widget,
 	// otherwise Tk might free it while we still need it.

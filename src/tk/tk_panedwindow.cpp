@@ -34,9 +34,7 @@
 // We need the fixed version, Tk 8.6 has a severe problem with resizing.
 // *********************************************************************
 
-#define namespace namespace_	// bug in tcl8.6/tkInt.h
 #include "tkInt.h"
-#undef namespace
 
 /*
  * Defaults for panedwindows
