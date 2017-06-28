@@ -150,7 +150,7 @@ proc build {parent width height} {
 	set edit [::tk::frame $games.edit -borderwidth 0]
 	pack $edit -expand yes -fill both
 	bind $edit <Configure> [namespace code { Configure %h }]
-	set panes [::tk::multiwindow $edit.panes -borderwidth 0 -background white -overlay yes]
+	set panes [::tk::multiwindow $edit.panes -borderwidth 0 -background white]
 	set gamebar [::gamebar::gamebar $edit.gamebar]
 
 	grid $gamebar -row 1 -column 1 -sticky nsew
