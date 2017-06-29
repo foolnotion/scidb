@@ -1161,7 +1161,7 @@ proc SetPiece {square pieceType} {
 	if {$pieceType eq "."} {
 		set Promoted($square) [expr {!$Promoted($square)}]
 		if {$Promoted($square)} {
-			::board::diagram::drawMarker $Vars(board) $square $icon::16x16::marker
+			::board::diagram::drawMarker $Vars(board) $square $::board::icon::12x12::marker
 		} else {
 			::board::diagram::removeMarker $Vars(board) $square
 		}
