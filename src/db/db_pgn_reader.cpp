@@ -334,14 +334,6 @@ appendSpace(mstl::string& str)
 }
 
 
-static bool
-setTermination(db::TagSet& tags, termination::Reason reason)
-{
-	tags.set(tag::Termination, termination::toString(reason));
-	return false;
-}
-
-
 namespace {
 
 struct CharsetDetector : public nsUniversalDetector
@@ -1454,6 +1446,20 @@ PgnReader::convertToUtf(mstl::string& s)
 
 
 bool
+PgnReader::setTermination(termination::Reason reason)
+{
+	M_ASSERT(m_modification != Raw);
+
+	if (	!m_tags.contains(tag::Termination)
+		|| termination::fromString(m_tags.value(tag::Termination)) == termination::Unknown)
+	{
+		m_tags.set(tag::Termination, termination::toString(reason));
+	}
+	return false;
+}
+
+
+bool
 PgnReader::parseFinalComment(mstl::string const& comment)
 {
 	char const* s = comment;
@@ -1462,18 +1468,18 @@ PgnReader::parseFinalComment(mstl::string const& comment)
 	{
 		case 'B':
 			if (::matchEndOfSentence(s, "Black mates", 11))
-				return ::setTermination(m_tags, termination::Normal);
+				return setTermination(termination::Normal);
 			if (::matchEndOfSentence(s, "Both players ran out of time", 28))
-				return ::setTermination(m_tags, termination::TimeForfeit);
+				return setTermination(termination::TimeForfeit);
 			if (::matchEndOfSentence(s, "Bare king", 9))
-				return ::setTermination(m_tags, termination::Normal);
+				return setTermination(termination::Normal);
 			break;
 
 		case 'D':
 			if (::matchEndOfSentence(s, "Draw", 4))
-				return ::setTermination(m_tags, termination::Normal);
+				return setTermination(termination::Normal);
 			if (::matchEndOfSentence(s, "Draw agreed", 11))
-				return ::setTermination(m_tags, termination::Normal);
+				return setTermination(termination::Normal);
 			if (::equal(s, "Draw claim: ", 12))
 			{
 				s += 12;
@@ -1482,43 +1488,43 @@ PgnReader::parseFinalComment(mstl::string const& comment)
 					|| ::equal(s, "3-fold repetition", 17)
 					|| ::equal(s, "insufficient mating material", 28))
 				{
-					return ::setTermination(m_tags, termination::Normal);
+					return setTermination(termination::Normal);
 				}
 			}
 			break;
 
 		case 'F':
 			if (::matchEndOfSentence(s, "Forfeits on time", 16))
-				return ::setTermination(m_tags, termination::TimeForfeit);
+				return setTermination(termination::TimeForfeit);
 			if (::matchEndOfSentence(s, "Forfeits by disconnection", 25))
-				return ::setTermination(m_tags, termination::Disconnection);
+				return setTermination(termination::Disconnection);
 			break;
 
 		case 'N':
 			if (::matchEndOfSentence(s, "Neither player has mating material", 34))
-				return ::setTermination(m_tags, termination::Normal);
+				return setTermination(termination::Normal);
 			break;
 
 		case 'P':
 			if (::matchEndOfSentence(s, "Partners' game drawn", 20))
-				return ::setTermination(m_tags, termination::Normal);
+				return setTermination(termination::Normal);
 			if (::matchEndOfSentence(s, "Partners' game aborted", 20))
-				return ::setTermination(m_tags, termination::Abandoned);
+				return setTermination(termination::Abandoned);
 			break;
 
 		case 'T':
 			if (::matchEndOfSentence(s, "Time forfeits", 13))
-				return ::setTermination(m_tags, termination::TimeForfeit);
+				return setTermination(termination::TimeForfeit);
 			break;
 
 		case 'W':
 			if (::matchEndOfSentence(s, "White mates", 11))
-				return ::setTermination(m_tags, termination::Normal);
+				return setTermination(termination::Normal);
 			break;
 
 		case 'X':
 			if (::equal(s, "Xboard adjudication: ", 21))
-				return ::setTermination(m_tags, termination::Normal);
+				return setTermination(termination::Normal);
 			break;
 	}
 
@@ -1529,94 +1535,90 @@ PgnReader::parseFinalComment(mstl::string const& comment)
 	{
 		case '\'':
 			if (::matchEndOfSentence(s, "'s partner won", 14))
-				return ::setTermination(m_tags, termination::Normal);
+				return setTermination(termination::Normal);
 			break;
 
 		case 'a':
 			if (::matchEndOfSentence(s, "aborted by adjudication", 23))
-				return ::setTermination(m_tags, termination::Adjudication);
+				return setTermination(termination::Adjudication);
 			if (::matchEndOfSentence(s, "aborted by mutual agreement", 27))
-				return ::setTermination(m_tags, termination::Abandoned);
+				return setTermination(termination::Abandoned);
 			if (::matchEndOfSentence(s, "aborted on move 1", 27))
-				return ::setTermination(m_tags, termination::Abandoned);
+				return setTermination(termination::Abandoned);
 			if (::matchEndOfSentence(s, "aborted by simul holder", 23))
-				return ::setTermination(m_tags, termination::Abandoned);
+				return setTermination(termination::Abandoned);
 			if (::matchEndOfSentence(s, "aborted by server shutdown", 23))
-				return ::setTermination(m_tags, termination::Disconnection);
+				return setTermination(termination::Disconnection);
 			if (::matchEndOfSentence(s, "aborted", 7))
-				return ::setTermination(m_tags, termination::Abandoned);
+				return setTermination(termination::Abandoned);
 			if (::matchEndOfSentence(s, "adjourned by mutual agreement", 34))
-				return ::setTermination(m_tags, termination::Unterminated);
+				return setTermination(termination::Unterminated);
 			if (::matchEndOfSentence(s, "adjourned by server shutdown", 33))
-				return ::setTermination(m_tags, termination::Disconnection);
+				return setTermination(termination::Disconnection);
 			if (::matchEndOfSentence(s, "adjourned by simul holder", 25))
-				return ::setTermination(m_tags, termination::Unterminated);
+				return setTermination(termination::Unterminated);
 			break;
 
 		case 'c':
 			if (::matchEndOfSentence(s, "checkmated", 10))
-				return ::setTermination(m_tags, termination::Normal);
+				return setTermination(termination::Normal);
 			if (::matchEndOfSentence(s, "courtesyaborted by White", 24))
-				return ::setTermination(m_tags, termination::Abandoned);
+				return setTermination(termination::Abandoned);
 			if (::matchEndOfSentence(s, "courtesyaborted by Black", 24))
-				return ::setTermination(m_tags, termination::Abandoned);
-			if (::matchEndOfSentence(s, "courtesyaborted by White", 24))
-				return ::setTermination(m_tags, termination::Unterminated);
-			if (::matchEndOfSentence(s, "courtesyaborted by Black", 24))
-				return ::setTermination(m_tags, termination::Unterminated);
+				return setTermination(termination::Abandoned);
 			break;
 
 		case 'd':
 			if (::matchEndOfSentence(s, "drawn because both players ran out of time", 42))
-				return ::setTermination(m_tags, termination::TimeForfeit);
+				return setTermination(termination::TimeForfeit);
 			if (::matchEndOfSentence(s, "drawn by mutual agreement", 25))
-				return ::setTermination(m_tags, termination::Normal);
+				return setTermination(termination::Normal);
 			if (::matchEndOfSentence(s, "drawn by stalemate", 18))
-				return ::setTermination(m_tags, termination::Normal);
+				return setTermination(termination::Normal);
 			if (::matchEndOfSentence(s, "drawn by repetition", 19))
-				return ::setTermination(m_tags, termination::Normal);
+				return setTermination(termination::Normal);
 			if (::matchEndOfSentence(s, "drawn by the 50 move rule", 25))
-				return ::setTermination(m_tags, termination::Normal);
+				return setTermination(termination::Normal);
 			if (::matchEndOfSentence(s, "drawn by stalemate (equal material)", 35))
-				return ::setTermination(m_tags, termination::Normal);
+				return setTermination(termination::Normal);
 			if (::matchEndOfSentence(s, "drawn by stalemate (opposite color bishops)", 43))
-				return ::setTermination(m_tags, termination::Normal);
+				return setTermination(termination::Normal);
 			if (::matchEndOfSentence(s, "drawn by adjudication", 21))
-				return ::setTermination(m_tags, termination::Adjudication);
+				return setTermination(termination::Adjudication);
 			if (::matchEndOfSentence(s, "drawn by mate on both boards", 28))
-				return ::setTermination(m_tags, termination::Normal);
+				return setTermination(termination::Normal);
 			if (::matchEndOfSentence(s, "drawn due to length", 28))
-				return ::setTermination(m_tags, termination::Normal);
+				return setTermination(termination::Normal);
 			break;
 
 		case 'f':
 			if (::matchEndOfSentence(s, "forfeits on time", 16))
-				return ::setTermination(m_tags, termination::TimeForfeit);
+				return setTermination(termination::TimeForfeit);
 			 if (::matchEndOfSentence(s, "forfeits by disconnection", 25))
-				return ::setTermination(m_tags, termination::Disconnection);
+				return setTermination(termination::Disconnection);
 			break;
 
 		case 'l':
 			if (::matchEndOfSentence(s, "lost connection; game adjourned", 13))
-				return ::setTermination(m_tags, termination::Disconnection);
+				return setTermination(termination::Disconnection);
 			if (::matchEndOfSentence(s, "lost connection and too few moves; game aborted", 47))
-				return ::setTermination(m_tags, termination::Disconnection);
+				return setTermination(termination::Disconnection);
 			if (::matchEndOfSentence(s, "lost connection", 15))
-				return ::setTermination(m_tags, termination::Disconnection);
+				return setTermination(termination::Disconnection);
 			break;
 
 		case 'p':
 			if (::matchEndOfSentence(s, "Partners' game adjourned", 24))
-				return ::setTermination(m_tags, termination::Unterminated);
+				return setTermination(termination::Unterminated);
 			break;
 
 		case 'r':
 			if (::matchEndOfSentence(s, "resigned", 8))
-				return ::setTermination(m_tags, termination::Normal);
+				return setTermination(termination::Normal);
 			if (::matchEndOfSentence(s, "resigns", 7))
-				return ::setTermination(m_tags, termination::Normal);
+				return setTermination(termination::Normal);
 			if (::matchEndOfSentence(s, "ran out of time", 15))
-				return ::setTermination(m_tags, termination::TimeForfeit);
+				return setTermination(termination::TimeForfeit);
 
 			if (::caseEqual(s, "ran out of time and ", 20))
 			{
@@ -1625,35 +1627,37 @@ PgnReader::parseFinalComment(mstl::string const& comment)
 				while (::isspace(*s)) ++s;
 
 				if (::matchEndOfSentence(s, "has no material to mate", 23))
-					return ::setTermination(m_tags, termination::TimeForfeit);
+					return setTermination(termination::TimeForfeit);
 				if (::matchEndOfSentence(s, "has no material to win", 22))
-					return ::setTermination(m_tags, termination::TimeForfeit);
+					return setTermination(termination::TimeForfeit);
 			}
 			break;
 
 		case 'w':
 			if (::matchEndOfSentence(s, "won", 3))
-				return ::setTermination(m_tags, termination::Normal);
+				return setTermination(termination::Normal);
 			if (::matchEndOfSentence(s, "was drawn", 9))
-				return ::setTermination(m_tags, termination::Normal);
+				return setTermination(termination::Normal);
 			if (::matchEndOfSentence(s, "was adjourned", 13))
-				return ::setTermination(m_tags, termination::Unterminated);
+				return setTermination(termination::Unterminated);
 			if (::matchEndOfSentence(s, "was sent for adjudication", 25))
-				return ::setTermination(m_tags, termination::Unterminated);
+				return setTermination(termination::Unterminated);
 			if (::matchEndOfSentence(s, "wins on time", 12))
-				return ::setTermination(m_tags, termination::Normal);
+				return setTermination(termination::Normal);
 			if (::matchEndOfSentence(s, "wins by adjudication", 20))
-				return ::setTermination(m_tags, termination::Adjudication);
+				return setTermination(termination::Adjudication);
+			if (::matchEndOfSentence(s, "wins by checkmate", 17))
+				return setTermination(termination::Normal);
 			if (::matchEndOfSentence(s, "wins by stalemate", 17))
-				return ::setTermination(m_tags, termination::Normal);
+				return setTermination(termination::Normal);
 			if (::matchEndOfSentence(s, "wins by losing all material", 27))
-				return ::setTermination(m_tags, termination::Normal);
+				return setTermination(termination::Normal);
 			if (::matchEndOfSentence(s, "wins by having less material", 28))
-				return ::setTermination(m_tags, termination::Normal);
+				return setTermination(termination::Normal);
 			if (::matchEndOfSentence(s, "wins by having less material (stalemate)", 40))
-				return ::setTermination(m_tags, termination::Normal);
+				return setTermination(termination::Normal);
 			if (::matchEndOfSentence(s, "went on to win", 14))
-				return ::setTermination(m_tags, termination::Normal);
+				return setTermination(termination::Normal);
 			break;
 	}
 
@@ -1664,15 +1668,13 @@ PgnReader::parseFinalComment(mstl::string const& comment)
 void
 PgnReader::filterFinalComments()
 {
-	if (	m_modification != Raw
-		&& (	!m_tags.contains(tag::Termination)
-			|| termination::fromString(m_tags.value(tag::Termination)) == termination::Unknown))
+	if (m_modification == Raw)
+		return;
+
+	for (Comments::iterator j = m_comments.begin(); j != m_comments.end(); ++j)
 	{
-		for (Comments::iterator j = m_comments.begin(); j != m_comments.end(); ++j)
-		{
-			if (!parseFinalComment(j->content()))
-				j = m_comments.erase(j) - 1;
-		}
+		if (!parseFinalComment(j->content()))
+			j = m_comments.erase(j) - 1;
 	}
 }
 

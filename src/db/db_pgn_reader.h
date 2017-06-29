@@ -157,6 +157,7 @@ private:
 	void advanceLinePos(int n = 1);
 	variant::Type getVariant() const;
 	void setUtf8Codec();
+	bool setTermination(termination::Reason reason);
 
 	Token searchTag(mstl::string* str = 0);
 	Token nextToken(Token prevToken);
