@@ -2113,19 +2113,25 @@ Board::longCastlingBlackIsPossible() const
 Board::SetupStatus
 Board::validate(variant::Type variant, Handicap handicap, move::Constraint flag) const
 {
+	if (count(m_kings) > 2) return TooManyKings;
+
+	// Exactly one king per side
+	if (m_ksq[White] == Null) return NoWhiteKing;
+	if (m_ksq[Black] == Null) return NoBlackKing;
+
 	// Pawns on 1st or 8th (although it cannot happen)
 	if (pawns(White) & RankMask8 || pawns(Black) & RankMask1)
 		return PawnsOn18;
 
 	if (variant::isZhouse(variant))
 	{
-		// No more than 8 pawns per side
-		if (count(pawns(White)) + count(pawns(Black)) > 16)
-			return count(pawns(White)) > 8 ? TooManyWhitePawns : TooManyBlackPawns;
+		// No more than 16 pawns + promoted pieces per side
+		if (count(pawns()) + count(promoted()) > 16)
+			return TooManyPawns;
 
-		// Maximum 16 pieces per side
-		if (count(pieces(White)) > 16) return TooManyWhite;
-		if (count(pieces(Black)) > 16) return TooManyBlack;
+		// Maximum 16 pieces (minus promoted) in total
+		if (count(pieces()) - count(pawns()) - count(promoted()) > 16)
+			return TooManyPieces;
 	}
 	else
 	{
@@ -2175,12 +2181,6 @@ Board::validate(variant::Type variant, Handicap handicap, move::Constraint flag)
 		if (m_material[notToMove()].total() == 1)
 			return OppositeLosing;
 	}
-
-	if (count(m_kings) > 2) return TooManyKings;
-
-	// Exactly one king per side
-	if (m_ksq[White] == Null) return NoWhiteKing;
-	if (m_ksq[Black] == Null) return NoBlackKing;
 
 	// Detect unreasonable ep square
 	if (	m_epSquare != Null

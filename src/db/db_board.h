@@ -130,6 +130,8 @@ public:
 		BothInCheck,					///< both kings are in check
 		OppositeCheck,					///< opposite king is in check
 		OppositeLosing,				///< opponent has lost all pieces
+		TooManyPawns,					///< more than 16 pawns + promoted piees (Zhouse)
+		TooManyPieces,					///< more than 16 pieces - promoted pieces (Zhouse)
 		TooManyWhitePawns,			///< more than eight white pawns
 		TooManyBlackPawns,			///< more than eight black pawns
 		TooManyWhitePieces,			///< too many white queens, rooks, bishops, or knights
@@ -469,6 +471,8 @@ public:
 
 	/// Return all sqaures occupied by any piece of any color
 	uint64_t pieces() const;
+	/// Return all sqaures occupied by pawns of any color
+	uint64_t pawns() const;
 	/// Return all sqaures occupied by any piece of given color
 	uint64_t pieces(color::ID color) const;
 	/// Return all sqaures occupied by kings of given color

@@ -110,6 +110,8 @@ toError(db::Board::SetupStatus status)
 		case Board::BothInCheck:				return "BothInCheck";
 		case Board::OppositeCheck:				return "OppositeCheck";
 		case Board::OppositeLosing:			return "OppositeLosing";
+		case Board::TooManyPawns:				return "TooManyPawns";
+		case Board::TooManyPieces:				return "TooManyPieces";
 		case Board::TooManyWhitePawns:		return "TooManyWhitePawns";
 		case Board::TooManyBlackPawns:		return "TooManyBlackPawns";
 		case Board::TooManyWhitePieces:		return "TooManyWhitePieces";
