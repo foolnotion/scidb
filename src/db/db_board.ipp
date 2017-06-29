@@ -70,6 +70,7 @@ inline Board::Material Board::holding(color::ID color) const			{ return m_holdin
 inline Board const& Board::emptyBoard()										{ return m_emptyBoard; }
 
 inline uint64_t Board::pieces() const						{ return m_occupied; }
+inline uint64_t Board::pawns() const						{ return m_pawns; }
 inline uint64_t Board::empty() const						{ return ~m_occupied; }
 inline uint64_t Board::whitePieces() const				{ return m_occupiedBy[color::White]; }
 inline uint64_t Board::blackPieces() const				{ return m_occupiedBy[color::Black]; }
