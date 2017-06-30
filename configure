@@ -267,7 +267,7 @@ array set release {
     yellowdog       "Yellow Dog"
 }
 
-set problematicGCCVersions {4.6}
+set problematicGCCVersions {4.6 7.1}
 
 set instableTkLibrary ""
 set x11Libraries " -lX11 -lSM -lICE"
@@ -1697,8 +1697,8 @@ proc checkGCC {cc} {
         puts ""
         puts "I found a GCC compiler with version $version, but due to some problems with"
         puts "this compiler version it cannot be used. Please use another GCC compiler"
-        puts "version; for example: \"./configure --gcc-version=4.4\". Possibly you have"
-        puts "to install another compiler beforehand: \"sudo apt-get install g++-4.4\"."
+        puts "version; for example: \"./configure --gcc-version=4.8\". Possibly you have"
+        puts "to install another compiler beforehand: \"sudo apt-get install g++-4.8\"."
         puts ""
         exit 1
     }
