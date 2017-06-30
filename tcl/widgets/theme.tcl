@@ -135,7 +135,7 @@ switch $::tcl_platform(platform) {
 
 
 # This is not working under older Tk versions.
-#proc currentTheme {} { return ttk::style theme use] }
+#proc currentTheme {} { return [ttk::style theme use] }
 proc currentTheme {} { return $::ttk::currentTheme }
 
 

@@ -311,6 +311,21 @@ uninstall-textures:
 		fi;                                                                                \
 	fi
 
+install-ttk-themes:
+	@echo "Install Ttk themes"
+	@install -m 755 -d $(SHAREDIR)/themes/ttk
+	@install -m 644 -p themes/ttk/*.tcl $(SHAREDIR)/themes/ttk
+
+uninstall-ttk-themes:
+	@echo "Uninstall Ttk themes"
+	@if [ -d $(SHAREDIR)/themes/ttk ]; then                            \
+		for f in `ls themes/ttk/*.tcl`; do rm -f $(SHAREDIR)/$$f; done; \
+		dir=$(SHAREDIR)/themes/ttk;                                     \
+		if [ "`find $$dir -type d -empty`" = "`ls -d $$dir`" ]; then    \
+			rmdir $$dir;                                                 \
+		fi;                                                             \
+	fi
+
 install-themes:
 	@echo "Install board themes"
 	@install -m 755 -d $(SHAREDIR)/themes/square
@@ -574,13 +589,13 @@ uninstall-photos:
 		fi;                                                                               \
 	fi
 
-install: install-scripts install-pieces install-cursors install-flags \
-				install-localizations install-textures install-themes install-text-scripts  \
-				install-images install-help install-config install-photos install-fonts
+install: install-scripts install-pieces install-cursors install-flags install-localizations \
+				install-textures install-themes install-ttk-themes install-text-scripts install-images \
+				install-help install-config install-photos install-fonts
 
 uninstall: uninstall-scripts uninstall-pieces uninstall-cursors uninstall-flags uninstall-localizations \
-				uninstall-themes uninstall-text-scripts uninstall-textures uninstall-images \
-				uninstall-help uninstall-config uninstall-fonts
+				uninstall-ttk-themes uninstall-themes uninstall-text-scripts uninstall-textures \
+				uninstall-images uninstall-help uninstall-config uninstall-fonts
 	@if [ -d $(SHAREDIR) ]; then                                                             \
 		if [ -n "$(XDGDIR)" ]; then                                                           \
 			rm -rf $(SHAREDIR)/photos;                                                         \

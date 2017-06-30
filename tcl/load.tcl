@@ -313,13 +313,19 @@ foreach subdir {piece square {}} {
 		load::source $file -message $msg
 	}
 }
-unset msg
 
 set file [file join $::scidb::dir::share textures preferences.dat]
 if {[file readable $file]} { load::source $file }
-unset file subdir
+
+###################################################
+
+set msg [format $load::mc::Loading "Ttk $load::mc::Theme"]
+foreach file [glob -directory [file join $::scidb::dir::share themes ttk] -nocomplain *.tcl] {
+	load::source $file -message $msg
+}
 
 # --- Load done --------------------------------------------------------
+unset file subdir msg
 ::scidb::app::load done
 
 #puts "[expr {[clock microseconds] - $t}] micro-secs"
