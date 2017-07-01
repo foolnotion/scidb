@@ -538,6 +538,7 @@ containsFemaleTitle(unsigned titles)
 namespace variant {
 
 inline bool isZhouse(Type variant)		{ return variant & (Bughouse | Crazyhouse); }
+inline bool isBughouse(Type variant)	{ return variant == Bughouse; }
 inline bool isThreeCheck(Type variant)	{ return variant == ThreeCheck; }
 inline bool isAntichess(Type variant)	{ return variant >= Antichess; }
 inline bool isAntichessExceptLosers(Type variant) { return variant & Antichess; }

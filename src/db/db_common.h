@@ -831,6 +831,7 @@ namespace variant
 	bool isAntichess(Type variant);
 	bool isAntichessExceptLosers(Type variant);
 	bool isZhouse(Type variant);
+	bool isBughouse(Type variant);
 	bool isThreeCheck(Type variant);
 	bool isMainVariant(Type variant);
 
