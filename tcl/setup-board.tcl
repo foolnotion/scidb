@@ -676,9 +676,11 @@ proc open {parent} {
 		::board::registerSize $squareSize
 		set Vars(SquareSize) $squareSize
 	}
+	set mark $::application::board::Options(promoted:mark)
+	if {$mark eq "none"} { set mark "bullet" }
 	set board [::board::diagram::new $canv.board $squareSize \
 		-bordersize $BorderThickness \
-		-promosign $::application::board::Options(promoted:mark) \
+		-promosign $mark \
 	]
 	::board::diagram::update $board $Vars(pos)
 #	$board configure -cursor crosshair

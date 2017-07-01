@@ -64,8 +64,6 @@ array set LetterToPiece {
  	. e
 }
 
-array set Image {}
-
 set emptyBoard		"................................................................"
 set standardBoard	"RNBQKBNRPPPPPPPP................................pppppppprnbqkbnr"
 
@@ -136,19 +134,11 @@ proc new {w size args} {
 
 proc setPromoSign {w method} {
 	variable ${w}::Board
-	variable Image
 
 	if {$method ne $Board(mark:promoted)} {
 		set oldMethod $Board(mark:promoted)
+		MakePromoImage $w $method
 		set Board(mark:promoted) $method
-		if {$method eq "none"} {
-			if {[info exists Image(image,marker,$Board(size))]} {
-				image delete $Image(image,marker,$Board(size))
-				array unset Image image,marker,$Board(size)
-			}
-		} else {
-			MakePromoImage $w 1
-		}
 		if {$oldMethod eq "none"} {
 			foreach sq $Board(promoted) {
 				DrawPromoted $w $sq
@@ -925,16 +915,15 @@ proc RaiseSign {w} {
 
 proc HiliteArrow {w rows cols color index type} {
 	variable ${w}::Board
-	variable ${w}::Image
 
 	set size $Board(size)
 
-	if {![info exists Image(image,$type,$rows,$cols,$size,$color)]} {
+	if {![info exists Board(image,$type,$rows,$cols,$size,$color)]} {
 		if {$type eq "click"} { set hilite [GetHiliteColor $color] } else { set hilite $color }
-		set Image(image,$type,$rows,$cols,$size,$color) [MakeArrow $size $rows $cols $hilite click]
+		set Board(image,$type,$rows,$cols,$size,$color) [MakeArrow $size $rows $cols $hilite click]
 	}
 
-	$w.c itemconfigure alternative:$index -image $Image(image,$type,$rows,$cols,$size,$color)
+	$w.c itemconfigure alternative:$index -image $Board(image,$type,$rows,$cols,$size,$color)
 }
 
 
@@ -1274,35 +1263,42 @@ proc MakeSquare {squareSize color} {
 
 
 proc DrawSquare {w square color {tags {}}} {
-	variable Image
+	variable ${w}::Board
 
-	if {![info exists Image(image,square,$Board(size),$color)]} {
-		set Image(image,square,$Board(size),$color) [MakeSquare $Board(size) $color]
+	if {![info exists Board(image,square,$Board(size),$color)]} {
+		set Board(image,square,$Board(size),$color) [MakeSquare $Board(size) $color]
 	}
 
 	SetImage $w.c $Board(size) {*}[$w.c coords square:$square] \
-		$Image(image,square,$Board(size),$color) $tags
+		$Board(image,square,$Board(size),$color) $tags
 }
 
 
-proc MakePromoImage {w {redraw 0}} {
+proc MakePromoImage {w {method ""}} {
 	variable ${w}::Board
-	variable Image
 
+	if {[string length $method] == 0} { set method $Board(mark:promoted) }
 	set size $Board(size)
+	set create 0
 
-	if {[info exists Image(image,marker,$size)]} {
-		set img $Image(image,marker,$size)
+	if {[info exists Board(image,marker)]} {
+		set img $Board(image,marker)
+		if {$method eq "none"} {
+			image delete $Board(image,marker)
+			unset Board(image,marker)
+			return
+		}
+		set create [expr {$method ne $Board(mark:promoted)}]
 	} else {
 		set img [image create photo -width $size -height $size]
-		set Image(image,marker,$size) $img
-		set redraw 1
+		set Board(image,marker) $img
+		set create 1
 	}
 
-	if {$redraw} {
+	if {$create} {
 		$img blank
 
-		switch $Board(mark:promoted) {
+		switch $method {
 			bullet {
 				$img copy $::board::icon::12x12::marker -to 2 [expr {$size - 14}] 14 [expr {$size - 2}]
 			}
@@ -1317,8 +1313,11 @@ proc MakePromoImage {w {redraw 0}} {
 			}
 			disk {
 				variable Disk
-				::scidb::tk::image copy $Disk $img
-				::scidb::tk::image colorize orange 0.7 $img
+				set tmp [image create photo -width [image width $Disk] -height [image height $Disk]]
+				::scidb::tk::image copy $Disk $tmp
+				::scidb::tk::image colorize orange 0.7 $tmp
+				::scidb::tk::image copy $tmp $img
+				image delete $tmp
 				#::scidb::tk::image alpha 0.9 $img -composite overlay
 			}
 		}
@@ -1329,19 +1328,19 @@ proc MakePromoImage {w {redraw 0}} {
 
 
 proc MakeCircle {squareSize color} {
-	variable Image
+	variable ${w}::Board
 
 	set size [expr {int(double($squareSize)*0.8 + 0.5)}]
 	if {($squareSize % 2) != ($size % 2)} { incr size }
-	if {![info exists Image(image,circle,$squareSize,$color)]} {
+	if {![info exists Board(image,circle,$squareSize,$color)]} {
 		variable Circle
 		set img [image create photo -width [image width $Circle] -height [image height $Circle]]
 		$img copy $Circle
 		::scidb::tk::image colorize $color 0.7 $img
-		set Image(image,circle,$squareSize,$color) $img
+		set Board(image,circle,$squareSize,$color) $img
 	}
 	set img [image create photo -width $size -height $size]
-	::scidb::tk::image copy $Image(image,circle,$squareSize,$color) $img
+	::scidb::tk::image copy $Board(image,circle,$squareSize,$color) $img
 	::scidb::tk::image alpha 0.8 $img -composite overlay
 	return $img
 }
@@ -1349,30 +1348,29 @@ proc MakeCircle {squareSize color} {
 
 proc DrawCircle {w square color} {
 	variable ${w}::Board
-	variable Image
 
-	if {![info exists Image(image,circle,$Board(size),$color)]} {
-		set Image(image,circle,$Board(size),$color) [MakeCircle $Board(size) $color]
+	if {![info exists Board(image,circle,$Board(size),$color)]} {
+		set Board(image,circle,$Board(size),$color) [MakeCircle $Board(size) $color]
 	}
 
-	SetImage $w.c $Board(size) {*}[$w.c coords square:$square] $Image(image,circle,$Board(size),$color)
+	SetImage $w.c $Board(size) {*}[$w.c coords square:$square] $Board(image,circle,$Board(size),$color)
 }
 
 
 proc MakeDisk {squareSize color} {
-	variable Image
+	variable ${w}::Board
 
 	set size [expr {int(double($squareSize)*0.8 + 0.5)}]
 	if {($squareSize % 2) != ($size % 2)} { incr size }
-	if {![info exists Image(disk,$color)]} {
+	if {![info exists Board(disk,$color)]} {
 		variable Disk
 		set img [image create photo -width [image width $Disk] -height [image height $Disk]]
 		$img copy $Disk
 		::scidb::tk::image colorize $color 0.7 $img
-		set Image(disk,$color) $img
+		set Board(disk,$color) $img
 	}
 	set img [image create photo -width $size -height $size]
-	::scidb::tk::image copy $Image(disk,$color) $img
+	::scidb::tk::image copy $Board(disk,$color) $img
 	::scidb::tk::image alpha 0.8 $img -composite overlay
 	return $img
 }
@@ -1380,19 +1378,17 @@ proc MakeDisk {squareSize color} {
 
 proc DrawDisk {w square color} {
 	variable ${w}::Board
-	variable Image
 
-	if {![info exists Image(image,disk,$Board(size),$color)]} {
-		set Image(image,disk,$Board(size),$color) [MakeDisk $Board(size) $color]
+	if {![info exists Board(image,disk,$Board(size),$color)]} {
+		set Board(image,disk,$Board(size),$color) [MakeDisk $Board(size) $color]
 	}
 
-	SetImage $w.c $Board(size) {*}[$w.c coords square:$square] $Image(image,disk,$Board(size),$color)
+	SetImage $w.c $Board(size) {*}[$w.c coords square:$square] $Board(image,disk,$Board(size),$color)
 }
 
 
 proc DrawArrow {w from to color {index -1}} {
 	variable ${w}::Board
-	variable Image
 
 	if {$from == $to} { return }
 
@@ -1409,8 +1405,8 @@ proc DrawArrow {w from to color {index -1}} {
 		set rows [expr {-$rows}]
 	}
 
-	if {![info exists Image(image,$type,$rows,$cols,$size,$color)]} {
-		set Image(image,$type,$rows,$cols,$size,$color) [MakeArrow $size $rows $cols $color $type]
+	if {![info exists Board(image,$type,$rows,$cols,$size,$color)]} {
+		set Board(image,$type,$rows,$cols,$size,$color) [MakeArrow $size $rows $cols $color $type]
 	}
 
 	lassign [$w.c coords square:$from] x1 y1
@@ -1420,7 +1416,7 @@ proc DrawArrow {w from to color {index -1}} {
 	if {$cols} { incr x0 $sizh }
 	if {$rows} { incr y0 $sizh }
 
-	set img $Image(image,$type,$rows,$cols,$size,$color)
+	set img $Board(image,$type,$rows,$cols,$size,$color)
 	set tags [list mark $type]
 
 	incr x0 [expr {-([image width  $img] - [expr {max(1, [abs $cols])*$size}])/2}]
