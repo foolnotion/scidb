@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2009-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -37,7 +37,6 @@
 
 #include "m_assert.h"
 #include "m_bitfield.h"
-#include "m_bit_functions.h"
 #include "m_utility.h"
 #include "m_stdio.h"
 
@@ -207,25 +206,6 @@ skipPromotion(char const* s)
 	}
 
 	return t;
-}
-
-
-static uint64_t
-transpose(uint64_t bf)
-{
-	uint64_t result	= bf;
-	uint8_t* ranks		= reinterpret_cast<uint8_t*>(&result);
-
-	ranks[0] = mstl::bf::reverse(ranks[0]);
-	ranks[1] = mstl::bf::reverse(ranks[1]);
-	ranks[2] = mstl::bf::reverse(ranks[2]);
-	ranks[3] = mstl::bf::reverse(ranks[3]);
-	ranks[4] = mstl::bf::reverse(ranks[4]);
-	ranks[5] = mstl::bf::reverse(ranks[5]);
-	ranks[6] = mstl::bf::reverse(ranks[6]);
-	ranks[7] = mstl::bf::reverse(ranks[7]);
-
-	return result;
 }
 
 
@@ -1885,23 +1865,13 @@ Board::transpose(variant::Type variant)
 	board.m_unambiguous[BlackKS] = m_unambiguous[BlackQS];
 	board.m_unambiguous[BlackQS] = m_unambiguous[BlackKS];
 
-	board.m_promotedPieces[White] = ::transpose(m_promotedPieces[White]);
-	board.m_promotedPieces[Black] = ::transpose(m_promotedPieces[Black]);
-
-	// We assume a start board:
-	uint64_t promoted = board.m_promotedPieces[White];
+	uint64_t promoted = m_promotedPieces[White];
 	while (promoted)
-	{
-		Square sq = lsbClear(promoted);
-		hashPromotedPiece(set1Bit(sq), ::toPiece(m_piece[sq], White), variant);
-	}
+		board.markAsPromoted(::flipFyle(lsbClear(promoted)), variant);
 
-	promoted = board.m_promotedPieces[Black];
+	promoted = m_promotedPieces[Black];
 	while (promoted)
-	{
-		Square sq = lsbClear(promoted);
-		hashPromotedPiece(set1Bit(sq), ::toPiece(m_piece[sq], Black), variant);
-	}
+		board.markAsPromoted(::flipFyle(lsbClear(promoted)), variant);
 
 	if (variant::isZhouse(variant))
 	{
@@ -2127,11 +2097,11 @@ Board::validate(variant::Type variant, Handicap handicap, move::Constraint flag)
 	{
 		// No more than 16 pawns + promoted pieces per side
 		if (count(pawns()) + count(promoted()) > 16)
-			return TooManyPawns;
+			return TooManyPawnsPlusPromoted;
 
 		// Maximum 16 pieces (minus promoted) in total
 		if (count(pieces()) - count(pawns()) - count(promoted()) > 16)
-			return TooManyPieces;
+			return TooManyPiecesMinusPromoted;
 	}
 	else
 	{
@@ -2314,7 +2284,7 @@ Board::validate(variant::Type variant, Handicap handicap, move::Constraint flag)
 		}
 		else
 		{
-			if (mstl::bf::count_bits(whiteRooks) == 2 && mstl::bf::count_bits(pawns(White)) == 8)
+			if (count(whiteRooks) == 2 && count(pawns(White)) == 8)
 			{
 				if (	((m_castle & WhiteKingside ) && !(whiteKS & whiteRooks))
 					|| ((m_castle & WhiteQueenside) && !(whiteQS & whiteRooks)))
@@ -2323,7 +2293,7 @@ Board::validate(variant::Type variant, Handicap handicap, move::Constraint flag)
 				}
 			}
 
-			if (mstl::bf::count_bits(blackRooks) == 2 && mstl::bf::count_bits(pawns(Black)) == 8)
+			if (count(blackRooks) == 2 && count(pawns(Black)) == 8)
 			{
 				if (	((m_castle & BlackKingside ) && !(blackKS & blackRooks))
 					|| ((m_castle & BlackQueenside) && !(blackQS & blackRooks)))
@@ -2371,23 +2341,42 @@ Board::validate(variant::Type variant, Handicap handicap, move::Constraint flag)
 	{
 		unsigned n;
 
+		if (m_partner->m_holding[White].queen  >  2) return TooManyWhiteQueensInHolding;
+		if (m_partner->m_holding[Black].queen  >  2) return TooManyBlackQueensInHolding;
+		if (m_partner->m_holding[White].rook   >  4) return TooManyWhiteRooksInHolding;
+		if (m_partner->m_holding[Black].rook   >  4) return TooManyBlackRooksInHolding;
+		if (m_partner->m_holding[White].bishop >  4) return TooManyWhiteBishopsInHolding;
+		if (m_partner->m_holding[Black].bishop >  4) return TooManyBlackBishopsInHolding;
+		if (m_partner->m_holding[White].knight >  4) return TooManyWhiteKnightsInHolding;
+		if (m_partner->m_holding[Black].knight >  4) return TooManyBlackKnightsInHolding;
+		if (m_partner->m_holding[White].pawn   > 16) return TooManyWhitePawnsInHolding;
+		if (m_partner->m_holding[Black].pawn   > 16) return TooManyBlackPawnsInHolding;
+
 		n = m_partner->m_holding[White].total()
 		  + m_partner->m_holding[Black].total()
 		  + m_material[White].total()
 		  + m_material[Black].total();
 
-		if (n > 32)
-			return TooManyPiecesInHolding;
+		if (n > 32) return TooManyPiecesInHolding;
+		if (n < 32) return TooFewPiecesInHolding;
 
-		if (n < 32)
-			return TooFewPiecesInHolding;
+		if (m_material[Black].pawn + count(m_promotedPieces[White]) > 16)
+			return TooManyPromotedWhitePieces;
+		if (m_material[White].pawn + count(m_promotedPieces[Black]) > 16)
+			return TooManyPromotedBlackPieces;
+
+		uint64_t promoted = m_promotedPieces[White]|m_promotedPieces[Black];
+
+		if (count(m_queens  & ~promoted) > 2) return TooFewPromotedQueens;
+		if (count(m_rooks   & ~promoted) > 4) return TooFewPromotedRooks;
+		if (count(m_bishops & ~promoted) > 4) return TooFewPromotedBishops;
+		if (count(m_knights & ~promoted) > 4) return TooFewPromotedKnights;
 
 		n = m_material[Black].pawn
 		  + m_material[White].pawn
 		  + m_partner->m_holding[Black].pawn
 		  + m_partner->m_holding[White].pawn
-		  + count(m_promotedPieces[Black])
-		  + count(m_promotedPieces[White]);
+		  + count(promoted);
 
 		if (n > 16)
 			return TooManyPromotedPieces;
@@ -2989,7 +2978,7 @@ Board::setup(char const* fen, variant::Type variant)
 
 	clear();
 
-	if (variant::isZhouse(variant))
+	if (variant::isBughouse(variant))
 		m_holding[White] = m_holding[Black] = m_initialHolding;
 
 	for ( ; *p && *p != ' '; ++p)
@@ -3008,7 +2997,7 @@ Board::setup(char const* fen, variant::Type variant)
 
 					--p;
 				}
-				else if (variant::isZhouse(variant))
+				else if (variant::isBughouse(variant))
 				{
 					resetHolding();
 				}
@@ -3060,7 +3049,7 @@ Board::setup(char const* fen, variant::Type variant)
 					m_occupiedBy[Black] |= pieceMask;
 					incrMaterial<piece::Pawn>(Black);
 					m_progress.side[Black].add(::flipRank(s));
-					if (variant::isZhouse(variant) && m_partner->m_holding[White].pawn > 0)
+					if (variant::isBughouse(variant) && m_partner->m_holding[White].pawn > 0)
 						--m_partner->m_holding[White].pawn;
 					break;
 
@@ -3070,7 +3059,7 @@ Board::setup(char const* fen, variant::Type variant)
 					m_knights |= pieceMask;
 					m_occupiedBy[Black] |= pieceMask;
 					incrMaterial<piece::Knight>(Black);
-					if (variant::isZhouse(variant) && m_partner->m_holding[White].knight)
+					if (variant::isBughouse(variant) && m_partner->m_holding[White].knight)
 						--m_partner->m_holding[White].knight;
 					break;
 
@@ -3080,7 +3069,7 @@ Board::setup(char const* fen, variant::Type variant)
 					m_bishops |= pieceMask;
 					m_occupiedBy[Black] |= pieceMask;
 					incrMaterial<piece::Bishop>(Black);
-					if (variant::isZhouse(variant) && m_partner->m_holding[White].bishop)
+					if (variant::isBughouse(variant) && m_partner->m_holding[White].bishop)
 						--m_partner->m_holding[White].bishop;
 					break;
 
@@ -3090,7 +3079,7 @@ Board::setup(char const* fen, variant::Type variant)
 					m_rooks |= pieceMask;
 					m_occupiedBy[Black] |= pieceMask;
 					incrMaterial<piece::Rook>(Black);
-					if (variant::isZhouse(variant) && m_partner->m_holding[White].rook)
+					if (variant::isBughouse(variant) && m_partner->m_holding[White].rook)
 						--m_partner->m_holding[White].rook;
 					break;
 
@@ -3100,7 +3089,7 @@ Board::setup(char const* fen, variant::Type variant)
 					m_queens |= pieceMask;
 					m_occupiedBy[Black] |= pieceMask;
 					incrMaterial<piece::Queen>(Black);
-					if (variant::isZhouse(variant) && m_partner->m_holding[White].queen)
+					if (variant::isBughouse(variant) && m_partner->m_holding[White].queen)
 						--m_partner->m_holding[White].queen;
 					break;
 
@@ -3114,7 +3103,7 @@ Board::setup(char const* fen, variant::Type variant)
 						incrMaterial<piece::King>(Black);
 					else
 						++m_material[Black].king;
-					if (variant::isZhouse(variant))
+					if (variant::isBughouse(variant))
 					{
 						// This information is missing in FEN, we can do only a rough assessment.
 						// We use this information to decide whether the king has moved during the
@@ -3137,7 +3126,7 @@ Board::setup(char const* fen, variant::Type variant)
 					m_occupiedBy[White] |= pieceMask;
 					incrMaterial<piece::Pawn>(White);
 					m_progress.side[White].add(s);
-					if (variant::isZhouse(variant) && m_partner->m_holding[Black].pawn > 0)
+					if (variant::isBughouse(variant) && m_partner->m_holding[Black].pawn > 0)
 						--m_partner->m_holding[Black].pawn;
 					break;
 
@@ -3147,7 +3136,7 @@ Board::setup(char const* fen, variant::Type variant)
 					m_knights |= pieceMask;
 					m_occupiedBy[White] |= pieceMask;
 					incrMaterial<piece::Knight>(White);
-					if (variant::isZhouse(variant) && m_partner->m_holding[Black].knight)
+					if (variant::isBughouse(variant) && m_partner->m_holding[Black].knight)
 						--m_partner->m_holding[Black].knight;
 					break;
 
@@ -3157,7 +3146,7 @@ Board::setup(char const* fen, variant::Type variant)
 					m_bishops |= pieceMask;
 					m_occupiedBy[White] |= pieceMask;
 					incrMaterial<piece::Bishop>(White);
-					if (variant::isZhouse(variant) && m_partner->m_holding[Black].bishop)
+					if (variant::isBughouse(variant) && m_partner->m_holding[Black].bishop)
 						--m_partner->m_holding[Black].bishop;
 					break;
 
@@ -3167,7 +3156,7 @@ Board::setup(char const* fen, variant::Type variant)
 					m_rooks |= pieceMask;
 					m_occupiedBy[White] |= pieceMask;
 					incrMaterial<piece::Rook>(White);
-					if (variant::isZhouse(variant) && m_partner->m_holding[Black].rook)
+					if (variant::isBughouse(variant) && m_partner->m_holding[Black].rook)
 						--m_partner->m_holding[Black].rook;
 					break;
 
@@ -3177,7 +3166,7 @@ Board::setup(char const* fen, variant::Type variant)
 					m_queens |= pieceMask;
 					m_occupiedBy[White] |= pieceMask;
 					incrMaterial<piece::Queen>(White);
-					if (variant::isZhouse(variant) && m_partner->m_holding[Black].queen)
+					if (variant::isBughouse(variant) && m_partner->m_holding[Black].queen)
 						--m_partner->m_holding[Black].queen;
 					break;
 
@@ -3192,7 +3181,7 @@ Board::setup(char const* fen, variant::Type variant)
 						incrMaterial<piece::King>(White);
 					else
 						++m_material[White].king;
-					if (variant::isZhouse(variant))
+					if (variant::isBughouse(variant))
 					{
 						// This information is missing in FEN, we can do only a rough assessment.
 						// We use this information to decide whether the king has moved during the
@@ -3217,9 +3206,6 @@ Board::setup(char const* fen, variant::Type variant)
 
 	if (s != 8)
 		return 0;
-
-	if (variant::isZhouse(variant))
-		m_partner->hashHolding(m_partner->m_holding[White], m_partner->m_holding[Black]);
 
 	// Set remainder of board data appropriately
 	m_occupied = m_occupiedBy[White] | m_occupiedBy[Black];
@@ -3325,10 +3311,13 @@ Board::setup(char const* fen, variant::Type variant)
 		// We use this information to decide whether the king has moved during the
 		// game. Only if the king did not move it is allowed to castle with a
 		// dropped rook.
+
 		if (!(m_castle & (WhiteQS | WhiteKS)))
 			m_kingHasMoved |= 1 << White;
 		if (!(m_castle & (BlackQS | BlackKS)))
 			m_kingHasMoved |= 1 << Black;
+
+		m_partner->hashHolding(m_partner->m_holding[White], m_partner->m_holding[Black]);
 	}
 
 	while (*p == ' ')

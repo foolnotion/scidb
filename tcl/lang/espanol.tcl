@@ -427,11 +427,16 @@
 ::application::board::mc::LoadRandomGame				"Load random game" ;# NEW
 ::application::board::mc::AddNewGame					"Agregar nueva partida..."
 ::application::board::mc::SlidingVarPanePosition	"Sliding variation pane position" ;# NEW
-::application::board::mc::MarkPromotedPiece			"Mark promoted pieces" ;# NEW
 ::application::board::mc::ShowVariationArrows		"Show variation arrows" ;# NEW
 ::application::board::mc::ShowAnnotation           "Show annotation glyph" ;# NEW
 ::application::board::mc::ShowAnnotationTimeout    "Timeout for annotation glyph" ;# NEW
 ::application::board::mc::None                     "None" ;# NEW
+
+::application::board::mc::MarkPromotedPiece			"Mark promoted pieces" ;# NEW
+::application::board::mc::PromoSign(none)				"None" ;# NEW
+::application::board::mc::PromoSign(bullet)			"Bullet" ;# NEW
+::application::board::mc::PromoSign(star)				"Star" ;# NEW
+::application::board::mc::PromoSign(disk)				"Disk" ;# NEW
 
 ::application::board::mc::Tools							"Herramientas"
 ::application::board::mc::Control						"Control"
@@ -1528,39 +1533,60 @@
 ::setup::board::mc::StandardPosition			"Posición estándar"
 ::setup::board::mc::Chess960Castling			"Enroque en Chess 960"
 
-::setup::board::mc::ChangeToFormat(xfen)				"Cambiar a formato X-Fen"
-::setup::board::mc::ChangeToFormat(shredder)			"Cambiar a formato Shredder"
+::setup::board::mc::ChangeToFormat(xfen)		"Cambiar a formato X-Fen"
+::setup::board::mc::ChangeToFormat(shredder)	"Cambiar a formato Shredder"
 
-::setup::board::mc::Error(InvalidFen)					"FEN no válido."
-::setup::board::mc::Error(EmptyBoard)					"El tablero está vacío."
-::setup::board::mc::Error(NoWhiteKing)					"Sin rey blanco."
-::setup::board::mc::Error(NoBlackKing)					"Sin rey negro."
-::setup::board::mc::Error(BothInCheck)					"Ambos reyes en jaque."
-::setup::board::mc::Error(OppositeCheck)				"El lado que no mueve está en jaque."
-::setup::board::mc::Error(OppositeLosing)				"Side not to move has no pieces." ;# NEW
-::setup::board::mc::Error(TooManyWhitePawns)			"Demasiados peones blancos."
-::setup::board::mc::Error(TooManyBlackPawns)			"Demasiados peones negros."
-::setup::board::mc::Error(TooManyWhitePieces)		"Demasiadas piezas blancas."
-::setup::board::mc::Error(TooManyBlackPieces)		"Demasiadas piezas negras."
-::setup::board::mc::Error(PawnsOn18)					"Peón en la 1ra o en la 8va fila."
-::setup::board::mc::Error(TooManyKings)				"Más de dos reyes."
-::setup::board::mc::Error(TooManyWhite)				"Demasiadas piezas blancas."
-::setup::board::mc::Error(TooManyBlack)				"Demasiadas piezas negras."
-::setup::board::mc::Error(BadCastlingRights)			"Derechos de enroque equivocados."
-::setup::board::mc::Error(InvalidCastlingRights)	"Fila(s) de la torre irrazonable para el enroque."
-::setup::board::mc::Error(InvalidCastlingFile)		"Fila no válida para el enroque."
-::setup::board::mc::Error(AmbiguousCastlingFyles)	"El enroque requiere filas con torre para no ser ambiguo (posiblemente estén mal configuradas)."
-::setup::board::mc::Error(TooManyPiecesInHolding)	"Too many pieces in holding." ;# NEW
-::setup::board::mc::Error(TooManyPromotedPieces)	"Too many pieces marked as promoted." ;# NEW
-::setup::board::mc::Error(TooFewPromotedPieces)		"Too few pieces marked as promoted."
-::setup::board::mc::Error(InvalidEnPassant)			"Fila al paso no razonable."
-::setup::board::mc::Error(MultiPawnCheck)				"Dos o más peones dando jaque."
-::setup::board::mc::Error(TripleCheck)					"Tres o más piezas dando jaque."
-::setup::board::mc::Error(IllegalCheckCount)			"Unreasonable check count." ;# NEW (Three-check Chess)
+::setup::board::mc::Error(InvalidFen)							"FEN no válido."
+::setup::board::mc::Error(EmptyBoard)							"El tablero está vacío."
+::setup::board::mc::Error(NoWhiteKing)							"Sin rey blanco."
+::setup::board::mc::Error(NoBlackKing)							"Sin rey negro."
+::setup::board::mc::Error(BothInCheck)							"Ambos reyes en jaque."
+::setup::board::mc::Error(OppositeCheck)						"El lado que no mueve está en jaque."
+::setup::board::mc::Error(TooManyWhitePawns)					"Demasiados peones blancos." ;# NEW changed a bit
+::setup::board::mc::Error(TooManyBlackPawns)					"Demasiados peones negros." ;# NEW changed a bit
+::setup::board::mc::Error(TooManyWhitePieces)				"Demasiadas piezas blancas." ;# NEW changed a bit
+::setup::board::mc::Error(TooManyBlackPieces)				"Demasiadas piezas negras." ;# NEW changed a bit
+::setup::board::mc::Error(PawnsOn18)							"Peón en la 1ra o en la 8va fila."
+::setup::board::mc::Error(TooManyKings)						"Más de dos reyes."
+::setup::board::mc::Error(TooManyWhite)						"Demasiadas piezas blancas." ;# NEW changed a bit
+::setup::board::mc::Error(TooManyBlack)						"Demasiadas piezas negras." ;# NEW changed a bit
+::setup::board::mc::Error(BadCastlingRights)					"Derechos de enroque equivocados."
+::setup::board::mc::Error(InvalidCastlingRights)			"Fila(s) de la torre irrazonable para el enroque."
+::setup::board::mc::Error(InvalidCastlingFile)				"Fila no válida para el enroque."
+::setup::board::mc::Error(AmbiguousCastlingFyles)			"El enroque requiere filas con torre para no ser ambiguo (posiblemente estén mal configuradas)."
+::setup::board::mc::Error(InvalidEnPassant)					"Fila al paso no razonable."
+::setup::board::mc::Error(MultiPawnCheck)						"Dos o más peones dando jaque."
+::setup::board::mc::Error(TripleCheck)							"Tres o más piezas dando jaque."
 
-::setup::board::mc::Warning(TooFewPiecesInHolding)	"Too few pieces marked as promoted. Are you sure that this is ok?" ;# NEW
-::setup::board::mc::Warning(CastlingWithoutRook)	"Existen derechos de enroque pero al menos una de las torres no está. Esto sólo sucede en partidas con ventaja. ¿Está seguro que los derechos de enroque son correctos?"
-::setup::board::mc::Warning(UnsupportedVariant)		"La posición es una posición de inicio pero no corresponde a una posición de Shuffle Chess. ¿Está seguro?"
+::setup::board::mc::Error(OppositeLosing)						"Side not to move has no pieces." ;# NEW
+
+::setup::board::mc::Error(TooManyPawnsPlusPromoted)		"Sum of pawns and promoted pieces is too large." ;# NEW
+::setup::board::mc::Error(TooManyPiecesMinusPromoted)		"Sum of pieces on board (incl. King, but excl. promoted) is too large." ;# NEW
+::setup::board::mc::Error(TooManyPiecesInHolding)			"Too many pieces n holding." ;# NEW
+::setup::board::mc::Error(TooManyWhiteQueensInHolding)	"Too many white queens in holding." ;# NEW
+::setup::board::mc::Error(TooManyBlackQueensInHolding)	"Too many black queens in holding." ;# NEW
+::setup::board::mc::Error(TooManyWhiteRooksInHolding)		"Too many white rooks in holding." ;# NEW
+::setup::board::mc::Error(TooManyBlackRooksInHolding)		"Too many black rooks in holding." ;# NEW
+::setup::board::mc::Error(TooManyWhiteBishopsInHolding)	"Too many white bishops in holding." ;# NEW
+::setup::board::mc::Error(TooManyBlackBishopsInHolding)	"Too many black bishops in holding." ;# NEW
+::setup::board::mc::Error(TooManyWhiteKnightsInHolding)	"Too many white knights in holding." ;# NEW
+::setup::board::mc::Error(TooManyBlackKnightsInHolding)	"Too many black knights in holding." ;# NEW
+::setup::board::mc::Error(TooManyWhitePawnsInHolding)		"Too many white pawns in holding." ;# NEW
+::setup::board::mc::Error(TooManyBlackPawnsInHolding)		"Too many black pawns in holding." ;# NEW
+::setup::board::mc::Error(TooManyPromotedPieces)			"Too many pieces marked as promoted." ;# NEW
+::setup::board::mc::Error(TooFewPromotedPieces)				"Too few pieces marked as promoted." ;# NEW
+::setup::board::mc::Error(TooManyPromotedWhitePieces)		"Too many white pieces marked as promoted." ;# NEW
+::setup::board::mc::Error(TooManyPromotedBlackPieces)		"Too many black pieces marked as promoted." ;# NEW
+::setup::board::mc::Error(TooFewPromotedQueens)				"Too few queens marked as promoted." ;# NEW
+::setup::board::mc::Error(TooFewPromotedRooks)				"Too few rooks marked as promoted." ;# NEW
+::setup::board::mc::Error(TooFewPromotedBishops)			"Too few bishops marked as promoted." ;# NEW
+::setup::board::mc::Error(TooFewPromotedKnights)			"Too few knights marked as promoted." ;# NEW
+
+::setup::board::mc::Error(IllegalCheckCount)					"Unreasonable check count." ;# NEW (Three-check Chess)
+
+::setup::board::mc::Warning(TooFewPiecesInHolding)			"Too few pieces marked as promoted. Are you sure that this is ok?" ;# NEW
+::setup::board::mc::Warning(CastlingWithoutRook)			"Existen derechos de enroque pero al menos una de las torres no está. Esto sólo sucede en partidas con ventaja. ¿Está seguro que los derechos de enroque son correctos?"
+::setup::board::mc::Warning(UnsupportedVariant)				"La posición es una posición de inicio pero no corresponde a una posición de Shuffle Chess. ¿Está seguro?"
 
 ### import #############################################################
 ::import::mc::ImportingFile(pgn)					"Importar archivo PGN"

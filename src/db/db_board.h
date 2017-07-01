@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2009-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -123,34 +123,59 @@ public:
 
 	enum SetupStatus
 	{
-		Valid,							///< position seems to be valid (cannot detect all invalid cases)
-		EmptyBoard,						///< board is empty (Anti-Chess)
-		NoWhiteKing,					///< white king is missing
-		NoBlackKing,					///< black king is missing
-		BothInCheck,					///< both kings are in check
-		OppositeCheck,					///< opposite king is in check
-		OppositeLosing,				///< opponent has lost all pieces
-		TooManyPawns,					///< more than 16 pawns + promoted piees (Zhouse)
-		TooManyPieces,					///< more than 16 pieces - promoted pieces (Zhouse)
-		TooManyWhitePawns,			///< more than eight white pawns
-		TooManyBlackPawns,			///< more than eight black pawns
-		TooManyWhitePieces,			///< too many white queens, rooks, bishops, or knights
-		TooManyBlackPieces,			///< too many black queens, rooks, bishops, or knights
-		PawnsOn18,						///< pawn on 1st or 8th rank
-		TooManyKings,					///< more than 2 kings
-		TooManyWhite,					///< more than sixteen white pieces
-		TooManyBlack,					///< more than sixteen black pieces
-		BadCastlingRights,			///< can't castle
-		InvalidCastlingRights,		///< unreasonable rook fyles (or ranks)
-		AmbiguousCastlingFyles,		///< castling rook fyles are ambiguous
-		InvalidEnPassant,				///< unreasonable en passant square
-		MultiPawnCheck,				///< two or more pawns give check
-		TripleCheck,					///< three or more pieces give check
-		TooManyPiecesInHolding,		///< too many pieces in holding
-		TooFewPiecesInHolding,		///< too few pieces in holding
-		TooManyPromotedPieces,		///< too many pieces marked as promoted
-		TooFewPromotedPieces,		///< too many pieces marked as promoted
-		IllegalCheckCount,			///< illegal check count (Three-check)
+		Valid,								///< position seems to be valid (cannot detect all invalid cases)
+		EmptyBoard,							///< board is empty (Anti-Chess)
+		NoWhiteKing,						///< white king is missing
+		NoBlackKing,						///< black king is missing
+		BothInCheck,						///< both kings are in check
+		OppositeCheck,						///< opposite king is in check
+		TooManyWhitePawns,				///< more than eight white pawns
+		TooManyBlackPawns,				///< more than eight black pawns
+		TooManyWhitePieces,				///< too many white queens, rooks, bishops, or knights
+		TooManyBlackPieces,				///< too many black queens, rooks, bishops, or knights
+		PawnsOn18,							///< pawn on 1st or 8th rank
+		TooManyKings,						///< more than 2 kings
+		TooManyWhite,						///< more than sixteen white pieces
+		TooManyBlack,						///< more than sixteen black pieces
+		BadCastlingRights,				///< can't castle
+		InvalidCastlingRights,			///< unreasonable rook fyles (or ranks)
+		AmbiguousCastlingFyles,			///< castling rook fyles are ambiguous
+		InvalidEnPassant,					///< unreasonable en passant square
+		MultiPawnCheck,					///< two or more pawns give check
+		TripleCheck,						///< three or more pieces give check
+
+		// Anti-Chess
+
+		OppositeLosing,					///< opponent has lost all pieces
+
+		// Zhouse
+
+		TooManyPawnsPlusPromoted,		///< more than 16 pawns + promoted piees
+		TooManyPiecesMinusPromoted,	///< more than 16 pieces - promoted pieces
+		TooManyWhiteQueensInHolding,	///< too many white queens in holding
+		TooManyBlackQueensInHolding,	///< too many black queens in holding
+		TooManyWhiteRooksInHolding,	///< too many white rooks in holding
+		TooManyBlackRooksInHolding,	///< too many black rooks in holding
+		TooManyWhiteBishopsInHolding,	///< too many white bishops in holding
+		TooManyBlackBishopsInHolding,	///< too many black bishops in holding
+		TooManyWhiteKnightsInHolding,	///< too many white knights in holding
+		TooManyBlackKnightsInHolding,	///< too many black knights in holding
+		TooManyWhitePawnsInHolding,	///< too many white pawns in holding
+		TooManyBlackPawnsInHolding,	///< too many black pawns in holding
+		TooManyPiecesInHolding,			///< too many pieces in holding
+		TooFewPiecesInHolding,			///< too few pieces in holding
+		TooManyPromotedPieces,			///< too many pieces marked as promoted
+		TooFewPromotedPieces,			///< too many pieces marked as promoted
+		TooManyPromotedWhitePieces,	///< too many white pieces marked as promoted
+		TooManyPromotedBlackPieces,	///< too many black pieces marked as promoted
+		TooFewPromotedQueens,			///< too many white queens marked as promoted
+		TooFewPromotedRooks,				///< too many white rooks marked as promoted
+		TooFewPromotedBishops,			///< too many white bishops marked as promoted
+		TooFewPromotedKnights,			///< too many white knights marked as promoted
+
+		// Three-Check
+
+		IllegalCheckCount,				///< illegal check count
 	};
 
 	enum Representation

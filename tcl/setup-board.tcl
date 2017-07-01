@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2010-2013 Gregor Cramer
+# Copyright: (C) 2010-2017 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -110,59 +110,78 @@ proc popupPositionMenu {ns w} {
 namespace eval board {
 namespace eval mc {
 
-set SetStartBoard							"Set Start Board"
-set SideToMove								"Side to move"
-set Castling								"Castling"
-set MoveNumber								"Move number"
-set HalfMoves								"Half moves"
-set EnPassantFile							"En passant"
-set StartPosition							"Start position"
-set Fen										"FEN"
-set Promoted								"Promoted"
-set Holding									"Holding"
-set ChecksGiven							"Checks Given"
-set Clear									"Clear"
-set CopyFen									"Copy FEN to clipboard"
-set Shuffle									"Shuffle..."
-set FICSPosition							"FICS Start Position..."
-set StandardPosition						"Standard Position"
-set Chess960Castling						"Chess 960 castling"
+set SetStartBoard									"Set Start Board"
+set SideToMove										"Side to move"
+set Castling										"Castling"
+set MoveNumber										"Move number"
+set HalfMoves										"Half moves"
+set EnPassantFile									"En passant"
+set StartPosition									"Start position"
+set Fen												"FEN"
+set Promoted										"Promoted"
+set Holding											"Holding"
+set ChecksGiven									"Checks Given"
+set Clear											"Clear"
+set CopyFen											"Copy FEN to clipboard"
+set Shuffle											"Shuffle..."
+set FICSPosition									"FICS Start Position..."
+set StandardPosition								"Standard Position"
+set Chess960Castling								"Chess 960 castling"
 
-set ChangeToFormat(xfen)				"Change to X-Fen format"
-set ChangeToFormat(shredder)			"Change to Shredder format"
+set ChangeToFormat(xfen)						"Change to X-Fen format"
+set ChangeToFormat(shredder)					"Change to Shredder format"
 
-set Error(InvalidFen)					"FEN is invalid."
-set Error(EmptyBoard)					"Board is empty."
-set Error(NoWhiteKing)					"Missing white king."
-set Error(NoBlackKing)					"Missing black king."
-set Error(BothInCheck)					"Both kings are in check."
-set Error(OppositeCheck)				"Side not to move is in check."
-set Error(OppositeLosing)				"Side not to move has no pieces."
-set Error(TooManyPawns)					"Sum of pawns and promoted pieces is too large."
-set Error(TooManyPieces)				"Sum of pieces (incl. King, but excl. promoted) is too large."
-set Error(TooManyWhitePawns)			"Too many white pawns."
-set Error(TooManyBlackPawns)			"Too many black pawns."
-set Error(TooManyWhitePieces)			"Too many white pieces."
-set Error(TooManyBlackPieces)			"Too many black pieces."
-set Error(PawnsOn18)						"Pawn on 1st or 8th rank."
-set Error(TooManyKings)					"More than two kings."
-set Error(TooManyWhite)					"Too many white pieces."
-set Error(TooManyBlack)					"Too many black pieces."
-set Error(BadCastlingRights)			"Bad castling rights."
-set Error(InvalidCastlingRights)		"Unreasonable rook files for castling."
-set Error(InvalidCastlingFile)		"Invalid castling file."
-set Error(AmbiguousCastlingFyles)	"Castling needs rook files to be disambiguous (possibly they are set wrong)."
-set Error(TooManyPiecesInHolding)	"Too many pieces in holding."
-set Error(TooManyPromotedPieces)		"Too many pieces marked as promoted."
-set Error(TooFewPromotedPieces)		"Too few pieces marked as promoted."
-set Error(InvalidEnPassant)			"Unreasonable en passant file."
-set Error(MultiPawnCheck)				"Two or more pawns give check."
-set Error(TripleCheck)					"Three or more pieces give check."
-set Error(IllegalCheckCount)			"Unreasonable check count."
+set Error(InvalidFen)							"FEN is invalid."
+set Error(EmptyBoard)							"Board is empty."
+set Error(NoWhiteKing)							"Missing white king."
+set Error(NoBlackKing)							"Missing black king."
+set Error(BothInCheck)							"Both kings are in check."
+set Error(OppositeCheck)						"Side not to move is in check."
+set Error(TooManyWhitePawns)					"Too many white pawns on board."
+set Error(TooManyBlackPawns)					"Too many black pawns on board."
+set Error(TooManyWhitePieces)					"Too many white pieces on board."
+set Error(TooManyBlackPieces)					"Too many black pieces on board."
+set Error(PawnsOn18)								"Pawn on 1st or 8th rank."
+set Error(TooManyKings)							"More than two kings."
+set Error(TooManyWhite)							"Too many white pieces on board."
+set Error(TooManyBlack)							"Too many black pieces on board."
+set Error(BadCastlingRights)					"Bad castling rights."
+set Error(InvalidCastlingRights)				"Unreasonable rook files for castling."
+set Error(InvalidCastlingFile)				"Invalid castling file."
+set Error(AmbiguousCastlingFyles)			"Castling needs rook files to be disambiguous (possibly they are set wrong)."
+set Error(InvalidEnPassant)					"Unreasonable en passant file."
+set Error(MultiPawnCheck)						"Two or more pawns give check."
+set Error(TripleCheck)							"Three or more pieces give check."
 
-set Warning(TooFewPiecesInHolding)	"Too few pieces in holding. Are you sure that this is ok?"
-set Warning(CastlingWithoutRook)		"You have set castling rights, but at least one rook for castling is missing. This can happen only in handicap games. Are you sure that the castling rights are ok?"
-set Warning(UnsupportedVariant)		"Position is a start position but not a Shuffle Chess position. Are you sure?"
+set Error(OppositeLosing)						"Side not to move has no pieces."
+
+set Error(TooManyPawnsPlusPromoted)			"Sum of pawns and promoted pieces on board is too large."
+set Error(TooManyPiecesMinusPromoted)		"Sum of pieces on board (incl. King, but excl. promoted) is too large."
+set Error(TooManyPiecesInHolding)			"Too many pieces in holding."
+set Error(TooManyWhiteQueensInHolding)		"Too many white queens in holding."
+set Error(TooManyBlackQueensInHolding)		"Too many black queens in holding."
+set Error(TooManyWhiteRooksInHolding)		"Too many white rooks in holding."
+set Error(TooManyBlackRooksInHolding)		"Too many black rooks in holding."
+set Error(TooManyWhiteBishopsInHolding)	"Too many white bishops in holding."
+set Error(TooManyBlackBishopsInHolding)	"Too many black bishops in holding."
+set Error(TooManyWhiteKnightsInHolding)	"Too many white knights in holding."
+set Error(TooManyBlackKnightsInHolding)	"Too many black knights in holding."
+set Error(TooManyWhitePawnsInHolding)		"Too many white pawns in holding."
+set Error(TooManyBlackPawnsInHolding)		"Too many black pawns in holding."
+set Error(TooManyPromotedPieces)				"Too many pieces marked as promoted."
+set Error(TooFewPromotedPieces)				"Too few pieces marked as promoted."
+set Error(TooManyPromotedWhitePieces)		"Too many white pieces marked as promoted."
+set Error(TooManyPromotedBlackPieces)		"Too many black pieces marked as promoted."
+set Error(TooFewPromotedQueens)				"Too few queens marked as promoted."
+set Error(TooFewPromotedRooks)				"Too few rooks marked as promoted."
+set Error(TooFewPromotedBishops)				"Too few bishops marked as promoted."
+set Error(TooFewPromotedKnights)				"Too few knights marked as promoted."
+
+set Error(IllegalCheckCount)					"Unreasonable check count."
+
+set Warning(TooFewPiecesInHolding)			"Too few pieces in holding. Are you sure that this is ok?"
+set Warning(CastlingWithoutRook)				"You have set castling rights, but at least one rook for castling is missing. This can happen only in handicap games. Are you sure that the castling rights are ok?"
+set Warning(UnsupportedVariant)				"This start position is not a Shuffle Chess position. Are you sure?"
 
 } ;# namespace mc
 
@@ -194,7 +213,6 @@ proc open {parent} {
 	variable Memo
 	variable History
 	variable Options
-	variable Promoted
 
 	set dlg $parent.setup_board
 	if {[winfo exists $dlg]} { return }
@@ -206,7 +224,6 @@ proc open {parent} {
 	pack $dlg.top
 
 	unset -nocomplain Vars
-	unset -nocomplain Promoted
 
 	set variant [::scidb::game::query Variant?]
 	if {$variant eq "Antichess"} {
@@ -502,8 +519,8 @@ proc open {parent} {
 		set figfont [list [font configure $figfont -family] -20]
 
 		set col 1
-		foreach {piece fig} {q "\u265b" r "\u265c" b "\u265d" n "\u265e" p "\u265f"
-									Q "\u2655" R "\u2656" B "\u2657" N "\u2658" P "\u2659"} {
+		foreach {piece max fig} {q 2 "\u265b" r 4 "\u265c" b 4 "\u265d" n 4 "\u265e" p 16 "\u265f"
+										 Q 2 "\u2655" R 4 "\u2656" B 4 "\u2657" N 4 "\u2658" P 16 "\u2659"} {
 			set lbl $hold._$piece
 			set spb ${lbl}_s
 			ttk::label $lbl \
@@ -515,7 +532,7 @@ proc open {parent} {
 				-command [namespace code Update] \
 				-width 2 \
 				-from 0 \
-				-to 8 \
+				-to $max \
 				;
 			::validate::spinboxInt $spb
 			::theme::configureSpinbox $spb
@@ -659,7 +676,10 @@ proc open {parent} {
 		::board::registerSize $squareSize
 		set Vars(SquareSize) $squareSize
 	}
-	set board [::board::diagram::new $canv.board $squareSize -bordersize $BorderThickness]
+	set board [::board::diagram::new $canv.board $squareSize \
+		-bordersize $BorderThickness \
+		-promosign $::application::board::Options(promoted:mark) \
+	]
 	::board::diagram::update $board $Vars(pos)
 #	$board configure -cursor crosshair
 	set Vars(board) $board
@@ -952,17 +972,13 @@ proc SetupCastlingButtons {f} {
 
 proc SetupPromoted {} {
 	variable Vars
-	variable Promoted
 
 	lassign [::scidb::board::analyseFen $Vars(fen)] error _ idn _ _ _ _ _ _ _ _ promoted
 	if {$idn > 4*960} { set idn 0 }
 
 	::board::diagram::removeAllPromoted $Vars(board)
 
-	for {set i 0} {$i < 64} {incr i} { set Promoted($i) 0 }
-
 	foreach i $promoted {
-		set Promoted($i) 1
 		::board::diagram::drawPromoted $Vars(board) $i
 	}
 }
@@ -1014,9 +1030,9 @@ proc AnalyseFen {fen {cmd none}} {
 		if {$idn > 4*960} { set idn 0 }
 		AnalyseCastlingRights $fen $castling $idn
 
-		switch -- $error {
+		switch -glob -- $error {
 			CastlingWithoutRook -
-			TooManyPiecesInHolding -
+			TooMany*InHolding -
 			TooFewPiecesInHolding -
 			TooManyPromotedPieces -
 			TooFewPromotedPieces -
@@ -1149,6 +1165,7 @@ proc NextPiece {state {wrap 0}} {
 proc ChangeColor {} {
 	variable Vars
 
+	if {[string length $Vars(piece)] != 2} { return }
 	lassign [split $Vars(piece) {}] side piece
 	if {$side eq "w"} { set side b } else { set side w }
 	set Vars(piece) ${side}${piece}
@@ -1156,28 +1173,30 @@ proc ChangeColor {} {
 }
 
 
-proc SetPiece {square pieceType} {
+proc SetPiece {square piece} {
 	variable Vars
-	variable Promoted
 
-	if {$pieceType eq "."} {
-		set Promoted($square) [expr {!$Promoted($square)}]
-		if {$Promoted($square)} {
-			::board::diagram::drawMarker $Vars(board) $square $::board::icon::12x12::marker
-		} else {
-			::board::diagram::removeMarker $Vars(board) $square
+	if {$piece eq "."} {
+		set piece [string index [::board::diagram::piece $Vars(board) $square] end]
+		if {$piece in {q r b n}} {
+			if {$square in [::board::diagram::promotedSquares $Vars(board)]} {
+				set action remove
+			} else {
+				set action draw
+			}
+			::board::diagram::${action}Promoted $Vars(board) $square
 		}
 	} else {
-		if {$pieceType eq [::board::diagram::piece $Vars(board) $square]} {
-			set piece "."
+		if {$piece eq [::board::diagram::piece $Vars(board) $square]} {
+			set letter "."
 		} else {
-			set piece $::board::diagram::pieceToLetter($pieceType)
+			set letter $::board::diagram::pieceToLetter($piece)
 		}
 
-		switch $pieceType {
+		switch $piece {
 			wk - bk {
 				if {[Variant?] ne "Antichess"} {
-					set i [string first [expr {$pieceType eq "wk" ? "K" : "k"}] $Vars(pos)]
+					set i [string first [expr {$piece eq "wk" ? "K" : "k"}] $Vars(pos)]
 					if {$i >= 0} {
 						::board::diagram::setPiece $Vars(board) $i "."
 					}
@@ -1193,8 +1212,8 @@ proc SetPiece {square pieceType} {
 			}
 		}
 
-		set Vars(pos) [::board::diagram::setPiece $Vars(board) $square $piece]
-		::board::diagram::raiseMarker $Vars(board)
+		::board::diagram::removePromoted $Vars(board) $square
+		set Vars(pos) [::board::diagram::setPiece $Vars(board) $square $letter]
 	}
 
 	Update
@@ -1216,14 +1235,19 @@ proc SetupBoard {cmd} {
 		}
 
 		flip {
-			set Vars(pos) [::board::diagram::update $Vars(board) $cmd]
+			set promoted {}
+			foreach sq [::board::diagram::promotedSquares $Vars(board)] {
+				lappend promoted [expr {($sq % 8) + (7 - $sq/8)*8}]
+			}
+			set Vars(pos) [::board::diagram::update $Vars(board) $cmd $promoted]
 		}
 
 		mirror {
 			set Vars(fen) [::scidb::board::transposeFen $Vars(fen) $Options(fen:format)]
 			set Vars(fen) [scidb::board::normalizeFen $Vars(fen) $Options(fen:format)]
 			set Vars(pos) [::scidb::board::fenToBoard $Vars(fen)]
-			::board::diagram::update $Vars(board) $Vars(pos)
+			set promoted [lindex [::scidb::board::analyseFen $Vars(fen)] 11]
+			::board::diagram::update $Vars(board) $Vars(pos) $promoted
 		}
 	}
 
@@ -1386,7 +1410,6 @@ proc ValidateIdn {value} {
 proc Update {} {
 	variable Vars
 	variable Options
-	variable Promoted
 
 	set Vars(skip) 0
 
@@ -1412,10 +1435,7 @@ proc Update {} {
 		append holding [string repeat $piece $Vars(holding:$piece)]
 	}
 
-	set promoted {}
-	for {set i 0} {$i < 64} {incr i} {
-		if {$Promoted($i)} { lappend promoted $i }
-	}
+	set promoted [::board::diagram::promotedSquares $Vars(board)]
 
 	set Vars(fen) [::scidb::board::makeFen $Vars(pos) $Vars(stm) $Vars(ep) $Vars(moveno) \
 		$Vars(halfmoves) $Vars(checks:w) $Vars(checks:b) $holding $promoted $Options(fen:format)]
@@ -1511,7 +1531,7 @@ proc ResetFen {} {
 		lassign [::scidb::board::analyseFen $Vars(fen)] \
 			error _ _ _ _ castling ep stm moveno halfmoves _ promoted
 
-		if {$error eq "TooManyPiecesInHolding"} {
+		if {[string match {TooMany*InHolding} $error]} {
 			set Vars(fen) [::scidb::board::normalizeFen $Vars(fen) $Options(fen:format) -clearholding]
 			set error ""
 		}
@@ -1725,6 +1745,7 @@ set fics [image create photo -data {
 }]
 
 } ;# namespace 16x16
+
 } ;# namespace icon
 } ;# namespace board
 } ;# namespace setup

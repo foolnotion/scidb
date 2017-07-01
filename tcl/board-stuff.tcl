@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2013 Gregor Cramer
+# Copyright: (C) 2009-2017 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -64,6 +64,7 @@ array set LetterToPiece {
  	. e
 }
 
+array set Image {}
 
 set emptyBoard		"................................................................"
 set standardBoard	"RNBQKBNRPPPPPPPP................................pppppppprnbqkbnr"
@@ -74,17 +75,17 @@ proc new {w size args} {
 	variable ${w}::Board
 
 	array set opts {
-		-relief			raised
-		-bordertype		normal
-		-bordersize		0
-		-rotate			0
-		-markpromoted	0
-		-targets			{}
+		-relief		raised
+		-bordertype	normal
+		-bordersize	0
+		-rotate		0
+		-promosign	0
+		-targets		{}
 	}
 	array set opts $args
 
 	set Board(flip) $opts(-rotate)
-	set Board(mark:promoted) $opts(-markpromoted)
+	set Board(mark:promoted) $opts(-promosign)
 	set Board(marks) {}
 	set Board(alternatives) {}
 	set Board(size) $size
@@ -133,10 +134,28 @@ proc new {w size args} {
 }
 
 
-proc markPromoted {w flag} {
+proc setPromoSign {w method} {
 	variable ${w}::Board
+	variable Image
 
-	set Board(mark:promoted) $flag
+	if {$method ne $Board(mark:promoted)} {
+		set oldMethod $Board(mark:promoted)
+		set Board(mark:promoted) $method
+		if {$method eq "none"} {
+			if {[info exists Image(image,marker,$Board(size))]} {
+				image delete $Image(image,marker,$Board(size))
+				array unset Image image,marker,$Board(size)
+			}
+		} else {
+			MakePromoImage $w 1
+		}
+		if {$oldMethod eq "none"} {
+			foreach sq $Board(promoted) {
+				DrawPromoted $w $sq
+			}
+		}
+		raisePiece $w
+	}
 }
 
 
@@ -286,7 +305,7 @@ proc update {w {board {}} {promoted {}}} {
 			set piece [string index $board $sq]
 			if {$redraw || $piece ne [string index $oldBoard $sq]} {
 				DrawPiece $w $sq $piece
-				if {$Board(mark:promoted) && $sq in $promoted} {
+				if {$sq in $promoted} {
 					DrawPromoted $w $sq
 				} else {
 					removePromoted $w $sq
@@ -336,21 +355,19 @@ proc move {w list} {
 		set Board(data) [string replace $Board(data) $squareCaptured $squareCaptured $pieceCaptured]
 	}
 
-	if {$Board(mark:promoted)} {
-		if {$pieceFrom != $pieceTo && $pieceTo ne "." && $pieceFrom ne " "} {
-			if {$squareFrom in $Board(promoted) && [string match {[Pp]} $pieceTo]} {
-				# take back promotion
-				removePromoted $w $squareFrom
-			} elseif {$squareTo ni $Board(promoted) && [string match {[Pp]} $pieceFrom]} {
-				# mark promoted piece
-				lappend Board(promoted) $squareTo
-			}
+	if {$pieceFrom != $pieceTo && $pieceTo ne "." && $pieceFrom ne " "} {
+		if {$squareFrom in $Board(promoted) && [string match {[Pp]} $pieceTo]} {
+			# take back promotion
+			removePromoted $w $squareFrom
+		} elseif {$squareTo ni $Board(promoted) && [string match {[Pp]} $pieceFrom]} {
+			# mark promoted piece
+			lappend Board(promoted) $squareTo
 		}
+	}
 
-		if {$forward && $squareCaptured in $Board(promoted)} {
-			# remove mark of captured promoted piece
-			removePromoted $w $squareCaptured
-		}
+	if {$forward && $squareCaptured in $Board(promoted)} {
+		# remove mark of captured promoted piece
+		removePromoted $w $squareCaptured
 	}
 
 	if {!$Board(animate) || $effects(animation) <= 0} {
@@ -388,11 +405,7 @@ proc move {w list} {
 			set Board(animate,from) $squareFrom
 			set Board(animate,to) $squareTo
 			set Board(animate,rookFrom) $rookFrom
-			$w.c raise piece:$squareFrom
-			$w.c raise promoted:$squareFrom
-			$w.c raise text
-			$w.c raise arrow
-			$w.c raise input
+			raisePiece $w $squareFrom
 
 #			if {$rookFrom >= 0} {
 #				# castling w/ moving king and w/ moving rook
@@ -403,11 +416,7 @@ proc move {w list} {
 			set Board(animate,from) $rookFrom
 			set Board(animate,to) $rookTo
 			set Board(animate,rookFrom) -1
-			$w.c raise piece:$rookFrom
-			$w.c raise promoted:$rookFrom
-			$w.c raise text
-			$w.c raise arrow
-			$w.c raise input
+			raisePiece $w $squareFrom
 		} else {
 			# castling w/o moving king and w/o rook
 			# TODO: probably we should animate a piece swap twice times
@@ -477,13 +486,8 @@ proc hilite {w i which} {
 		$w.c itemconfigure $which:$i -state normal
 		$w.c raise $which:$i
 		$w.c raise suggested:$i
-		$w.c raise piece
-		$w.c raise promoted
-		$w.c raise text
-		$w.c raise arrow
-		$w.c raise alternative
-		$w.c raise input
-		$w.c raise click
+		raisePiece $w
+		RaiseAdornment $w
 	}
 }
 
@@ -521,21 +525,10 @@ proc updateMarks {w marks} {
 }
 
 
-proc drawMarker {w square marker} {
-	variable ${w}::Board
-
-	lassign [$w.c coords square:$square] x y
-	set x [expr {$x + 2}]
-	set y [expr {$y + $Board(size) - 2}]
-	set tags [list marker marker-$square]
-	$w.c create image $x $y -anchor sw -image $marker -tags $tags
-	raiseMarker $w
-}
-
-
 proc drawPromoted {w square} {
 	DrawPromoted $w $square
-	raisePromoted $w
+	raisePiece $w $square
+	RaiseAdornment $w
 }
 
 
@@ -558,27 +551,9 @@ proc removeAllPromoted {w} {
 }
 
 
-proc raisePromoted {w} {
-	$w.c raise promoted
-	$w.c raise input
-	$w.c raise click
-}
-
-
-proc removeMarker {w square} {
-	$w.c delete marker-$square
-}
-
-
-proc removeAllMarkers {w} {
-	$w.c delete marker
-}
-
-
-proc raiseMarker {w} {
-	$w.c raise marker
-	$w.c raise input
-	$w.c raise click
+proc promotedSquares {w} {
+	variable ${w}::Board
+	return $Board(promoted)
 }
 
 
@@ -622,16 +597,16 @@ proc finishDrag {w} {
 			set sq [getSquare $w $Board(pointer:x) $Board(pointer:y)]
 			lassign [$w.c coords square:$sq] x y
 			if {[llength $x]} {
-				$w.c coords drag-target $x $y
 				# hack: for any reason the mark will not be moved with 'drag-target'
 				$w.c coords promoted:$Board(drag:square) $x $y
+				$w.c coords drag-target $x $y
 				$w.c raise drag-target
 			}
 		}
 
 		foreach t $Board(targets) { $t delete drag-target }
-		$w.c dtag piece:$Board(drag:square) drag-target
 		$w.c dtag promoted:$Board(drag:square) drag-target
+		$w.c dtag piece:$Board(drag:square) drag-target
 	}
 
 	set Board(drag:active) 0
@@ -677,9 +652,18 @@ proc setDragSquare {w {sq -1}} {
 }
 
 
-proc raisePiece {w square} {
-	$w.c raise piece:$square
-	$w.c raise promoted:$square
+proc raisePiece {w {square ""}} {
+	variable ${w}::Board
+
+	if {[string length $square] == 0} {
+		if {$Board(mark:promoted) eq "disk"} { $w.c raise promoted }
+		$w.c raise piece
+		if {$Board(mark:promoted) in {bullet star}} { $w.c raise promoted }
+	} else {
+		if {$Board(mark:promoted) eq "disk"} { $w.c raise promoted:$square }
+		$w.c raise piece:$square
+		if {$Board(mark:promoted) in {bullet star}} { $w.c raise promoted:$square }
+	}
 }
 
 
@@ -711,8 +695,8 @@ proc dragPiece {w x y} {
 		lassign [$w.c coords square:$sq] x0 y0
 		if {abs($x0 - $xc) > 5 || abs($y0 - $yc) > 5} {
 			set Board(drag:active) 1
-			$w.c addtag drag-target withtag piece:$sq
 			$w.c addtag drag-target withtag promoted:$sq
+			$w.c addtag drag-target withtag piece:$sq
 
 			if {[llength $Board(targets)]} {
 				set piece [piece $w $sq]
@@ -734,8 +718,8 @@ proc dragPiece {w x y} {
 	set x0 [expr {$xc - $dx}]
 	set y0 [expr {$yc - $dy}]
 
-	$w.c coords piece:$sq $x0 $y0
 	$w.c coords promoted:$sq $x0 $y0
+	$w.c coords piece:$sq $x0 $y0
 	$w.c raise drag-target
 
 	if {[llength $Board(targets)]} {
@@ -752,7 +736,6 @@ proc setPiece {w sq piece} {
 	variable ${w}::Board
 
 	set Board(data) [string replace $Board(data) $sq $sq $piece]
-	 
 	DrawPiece $w $sq $piece
 	return $Board(data)
 }
@@ -764,15 +747,9 @@ proc setSign {w square} {
 
 	makeHiliteRect $w.c sign $square $Board(size) {*}[$w.c coords square:$square] $style(hilite,selected)
 
-	$w.c raise rect
-	$w.c raise mark
-	$w.c raise hilite
-	$w.c raise sign
-	$w.c raise piece
-	$w.c raise promoted
-	$w.c raise text
-	$w.c raise arrow
-	$w.c raise input
+	RaiseSign $w
+	raisePiece $w
+	RaiseAdornment $w
 }
 
 
@@ -929,15 +906,35 @@ proc drawAlternative {w from to color cmd} {
 }
 
 
+proc RaiseAdornment {w} {
+	$w.c raise text
+	$w.c raise arrow
+	$w.c raise alternative
+	$w.c raise input
+	$w.c raise click
+}
+
+
+proc RaiseSign {w} {
+	$w.c raise rect
+	$w.c raise mark
+	$w.c raise hilite
+	$w.c raise sign
+}
+
+
 proc HiliteArrow {w rows cols color index type} {
 	variable ${w}::Board
+	variable ${w}::Image
 
-	if {![info exists Board(image,$type,$rows,$cols,$color)]} {
+	set size $Board(size)
+
+	if {![info exists Image(image,$type,$rows,$cols,$size,$color)]} {
 		if {$type eq "click"} { set hilite [GetHiliteColor $color] } else { set hilite $color }
-		set Board(image,$type,$rows,$cols,$color) [MakeArrow $Board(size) $rows $cols $hilite click]
+		set Image(image,$type,$rows,$cols,$size,$color) [MakeArrow $size $rows $cols $hilite click]
 	}
 
-	$w.c itemconfigure alternative:$index -image $Board(image,$type,$rows,$cols,$color)
+	$w.c itemconfigure alternative:$index -image $Image(image,$type,$rows,$cols,$size,$color)
 }
 
 
@@ -963,10 +960,7 @@ proc DrawPiece {w sq piece} {
 			-tags [list piece piece:$sq] \
 			;
 		if {[string length $promoted]} { DrawPromoted $w $sq }
-		
-		$w.c raise text
-		$w.c raise arrow
-		$w.c raise input
+		RaiseAdornment $w
 	}
 }
 
@@ -975,10 +969,11 @@ proc DrawPiece {w sq piece} {
 proc DrawPromoted {w square} {
 	variable ${w}::Board
 
-	if {[string length [$w.c find withtag promoted:$square]] == 0} {
+	if {$Board(mark:promoted) ne "none" && [string length [$w.c find withtag promoted:$square]] == 0} {
 		lassign [$w.c coords square:$square] x y
 		set tags [list promoted promoted:$square]
-		$w.c create image $x $y -anchor nw -image photo_Marker($Board(size)) -tags $tags
+		set img [MakePromoImage $w]
+		$w.c create image $x $y -anchor nw -image $img -tags $tags
 	}
 
 	if {$square ni $Board(promoted)} { lappend Board(promoted) $square }
@@ -1077,21 +1072,25 @@ proc DoMove {w list} {
 		DrawPiece $w $squareCaptured $pieceCaptured
 	}
 
-	if {$Board(mark:promoted)} {
-		if {	$squareFrom in $Board(promoted)
-			|| (	$pieceFrom != $pieceTo
-				&& $pieceTo ne " "
-				&& [string match {[Pp]} $pieceFrom])} {
-			# 1. move promotion marker to new piece position, or
-			# 2. mark newly promoted piece
-			removePromoted $w $squareFrom
-			DrawPromoted $w $squareTo
-		} elseif {	$pieceCaptured != $pieceHolding
-					&& $pieceCaptured != "."
-					&& [string match {[Pp]} $pieceHolding]
-					&& ![string match {[Pp]} $pieceCaptured]} {
-			# take back capture of promoted piece
-			DrawPromoted $w $squareFrom
+	if {	$squareFrom in $Board(promoted)
+		|| (	$pieceFrom != $pieceTo
+			&& $pieceTo ne " "
+			&& [string match {[Pp]} $pieceFrom])} {
+		# 1. move promotion marker to new piece position, or
+		# 2. mark newly promoted piece
+		removePromoted $w $squareFrom
+		DrawPromoted $w $squareTo
+		if {$Board(mark:promoted) ne "none"} {
+			raisePiece $w $squareTo
+		}
+	} elseif {	$pieceCaptured != $pieceHolding
+				&& $pieceCaptured != "."
+				&& [string match {[Pp]} $pieceHolding]
+				&& ![string match {[Pp]} $pieceCaptured]} {
+		# take back capture of promoted piece
+		DrawPromoted $w $squareFrom
+		if {$Board(mark:promoted) ne "none"} {
+			raisePiece $w $squareFrom
 		}
 	}
 }
@@ -1124,10 +1123,8 @@ proc DrawFadingPiece {w sq piece dir} {
 			$w.c delete piece:$sq
 			$w.c create image {*}[$w.c coords square:$sq] \
 				-image $Board(animate,piece) -anchor nw -tag piece:$sq
-			$w.c raise piece:$sq
-			$w.c raise text
-			$w.c raise arrow
-			$w.c raise input
+			raisePiece $w $sq
+			RaiseAdornment $w
 		}
 
 		::scidb::tk::image disable \
@@ -1177,11 +1174,7 @@ proc AnimateMove {w} {
 		set Board(animate,end) [expr {$Board(animate,end) + $Board(animate,time)} ]
 		set Board(animate,rookFrom) -1
 		set Board(animate,rookTo) -1
-
-		$w.c raise piece:$Board(animate,from)
-		$w.c raise text
-		$w.c raise arrow
-		$w.c raise input
+		raisePiece $w $Board(animate,from)
 	} else {
 		set from $Board(animate,from)
 		set to $Board(animate,to)
@@ -1193,8 +1186,8 @@ proc AnimateMove {w} {
 		lassign [$w.c coords square:$to] toX toY
 		set x [expr {$fromX + round(($toX - $fromX)*$ratio)}]
 		set y [expr {$fromY + round(($toY - $fromY)*$ratio)}]
-		$w.c coords piece:$from $x $y
 		$w.c coords promoted:$from $x $y
+		$w.c coords piece:$from $x $y
 	}
 
 	# Schedule another animation update in a few milliseconds:
@@ -1234,13 +1227,9 @@ proc DrawAllMarks {w} {
 		}
 	}
 
-	$w.c raise rect
-	$w.c raise hilite
-	$w.c raise piece
-	$w.c raise promoted
-	$w.c raise text
-	$w.c raise arrow
-	$w.c raise input
+	RaiseSign $w
+	raisePiece $w
+	RaiseAdornment $w
 }
 
 
@@ -1285,30 +1274,74 @@ proc MakeSquare {squareSize color} {
 
 
 proc DrawSquare {w square color {tags {}}} {
-	variable ${w}::Board
+	variable Image
 
-	if {![info exists Board(image,square,$color)]} {
-		set Board(image,square,$color) [MakeSquare $Board(size) $color]
+	if {![info exists Image(image,square,$Board(size),$color)]} {
+		set Image(image,square,$Board(size),$color) [MakeSquare $Board(size) $color]
 	}
 
-	SetImage $w.c $Board(size) {*}[$w.c coords square:$square] $Board(image,square,$color) $tags
+	SetImage $w.c $Board(size) {*}[$w.c coords square:$square] \
+		$Image(image,square,$Board(size),$color) $tags
+}
+
+
+proc MakePromoImage {w {redraw 0}} {
+	variable ${w}::Board
+	variable Image
+
+	set size $Board(size)
+
+	if {[info exists Image(image,marker,$size)]} {
+		set img $Image(image,marker,$size)
+	} else {
+		set img [image create photo -width $size -height $size]
+		set Image(image,marker,$size) $img
+		set redraw 1
+	}
+
+	if {$redraw} {
+		$img blank
+
+		switch $Board(mark:promoted) {
+			bullet {
+				$img copy $::board::icon::12x12::marker -to 2 [expr {$size - 14}] 14 [expr {$size - 2}]
+			}
+			star {
+				set s [expr {$size/2}]
+				if {$s % 2 == 0} { incr s }
+				set star [image create photo -width $s -height $s]
+				::scidb::tk::image create [namespace current]::Star $star
+				set x1 [expr {($size - $s)/2}]
+				set y1 [expr {$size - $s - 2}]
+				$img copy $star -to $x1 $y1 [expr {$x1 + $s}] [expr {$y1 + $s}]
+			}
+			disk {
+				variable Disk
+				::scidb::tk::image copy $Disk $img
+				::scidb::tk::image colorize orange 0.7 $img
+				#::scidb::tk::image alpha 0.9 $img -composite overlay
+			}
+		}
+	}
+
+	return $img
 }
 
 
 proc MakeCircle {squareSize color} {
-	variable Board
+	variable Image
 
 	set size [expr {int(double($squareSize)*0.8 + 0.5)}]
 	if {($squareSize % 2) != ($size % 2)} { incr size }
-	if {![info exists Board(circle,$color)]} {
+	if {![info exists Image(image,circle,$squareSize,$color)]} {
 		variable Circle
 		set img [image create photo -width [image width $Circle] -height [image height $Circle]]
 		$img copy $Circle
 		::scidb::tk::image colorize $color 0.7 $img
-		set Board(circle,$color) $img
+		set Image(image,circle,$squareSize,$color) $img
 	}
 	set img [image create photo -width $size -height $size]
-	::scidb::tk::image copy $Board(circle,$color) $img
+	::scidb::tk::image copy $Image(image,circle,$squareSize,$color) $img
 	::scidb::tk::image alpha 0.8 $img -composite overlay
 	return $img
 }
@@ -1316,29 +1349,30 @@ proc MakeCircle {squareSize color} {
 
 proc DrawCircle {w square color} {
 	variable ${w}::Board
+	variable Image
 
-	if {![info exists Board(image,circle,$color)]} {
-		set Board(image,circle,$color) [MakeCircle $Board(size) $color]
+	if {![info exists Image(image,circle,$Board(size),$color)]} {
+		set Image(image,circle,$Board(size),$color) [MakeCircle $Board(size) $color]
 	}
 
-	SetImage $w.c $Board(size) {*}[$w.c coords square:$square] $Board(image,circle,$color)
+	SetImage $w.c $Board(size) {*}[$w.c coords square:$square] $Image(image,circle,$Board(size),$color)
 }
 
 
 proc MakeDisk {squareSize color} {
-	variable Board
+	variable Image
 
 	set size [expr {int(double($squareSize)*0.8 + 0.5)}]
 	if {($squareSize % 2) != ($size % 2)} { incr size }
-	if {![info exists Board(disk,$color)]} {
+	if {![info exists Image(disk,$color)]} {
 		variable Disk
 		set img [image create photo -width [image width $Disk] -height [image height $Disk]]
 		$img copy $Disk
 		::scidb::tk::image colorize $color 0.7 $img
-		set Board(disk,$color) $img
+		set Image(disk,$color) $img
 	}
 	set img [image create photo -width $size -height $size]
-	::scidb::tk::image copy $Board(disk,$color) $img
+	::scidb::tk::image copy $Image(disk,$color) $img
 	::scidb::tk::image alpha 0.8 $img -composite overlay
 	return $img
 }
@@ -1346,17 +1380,19 @@ proc MakeDisk {squareSize color} {
 
 proc DrawDisk {w square color} {
 	variable ${w}::Board
+	variable Image
 
-	if {![info exists Board(image,disk,$color)]} {
-		set Board(image,disk,$color) [MakeDisk $Board(size) $color]
+	if {![info exists Image(image,disk,$Board(size),$color)]} {
+		set Image(image,disk,$Board(size),$color) [MakeDisk $Board(size) $color]
 	}
 
-	SetImage $w.c $Board(size) {*}[$w.c coords square:$square] $Board(image,disk,$color)
+	SetImage $w.c $Board(size) {*}[$w.c coords square:$square] $Image(image,disk,$Board(size),$color)
 }
 
 
 proc DrawArrow {w from to color {index -1}} {
 	variable ${w}::Board
+	variable Image
 
 	if {$from == $to} { return }
 
@@ -1373,8 +1409,8 @@ proc DrawArrow {w from to color {index -1}} {
 		set rows [expr {-$rows}]
 	}
 
-	if {![info exists Board(image,$type,$rows,$cols,$color)]} {
-		set Board(image,$type,$rows,$cols,$color) [MakeArrow $size $rows $cols $color $type]
+	if {![info exists Image(image,$type,$rows,$cols,$size,$color)]} {
+		set Image(image,$type,$rows,$cols,$size,$color) [MakeArrow $size $rows $cols $color $type]
 	}
 
 	lassign [$w.c coords square:$from] x1 y1
@@ -1384,7 +1420,7 @@ proc DrawArrow {w from to color {index -1}} {
 	if {$cols} { incr x0 $sizh }
 	if {$rows} { incr y0 $sizh }
 
-	set img $Board(image,$type,$rows,$cols,$color)
+	set img $Image(image,$type,$rows,$cols,$size,$color)
 	set tags [list mark $type]
 
 	incr x0 [expr {-([image width  $img] - [expr {max(1, [abs $cols])*$size}])/2}]
@@ -2062,6 +2098,18 @@ set Disk [image create photo -data {
 #	ZjU0dOGeF3dlH1zoKOU3be59IDXOV/rlqDmXLbZPHjn8zzD+RqnxjP8BfPmoXlir33YAAAAA
 #	SUVORK5CYII=
 #}]
+
+# fdff00 605a00
+# ff8100 602e00
+set Star "
+<svg width=\"300px\" height=\"275px\" viewBox=\"0 0 300 275\"
+     xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">
+  <polygon fill=\"#ff8100\" stroke=\"#602e00\" stroke-width=\"15\" 
+            points=\"150,25  179,111 269,111 197,165
+                    223,251  150,200 77,251  103,165
+                    31,111 121,111\" />
+</svg>
+"
 
 # TODO: use rounded rect (we need a SVG extension for this task)
 set Rectangle "

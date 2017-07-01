@@ -38,11 +38,16 @@ set SelectStartPosition		"Select Start Position"
 set LoadRandomGame			"Load random game"
 set AddNewGame					"Add New Game..."
 set SlidingVarPanePosition	"Sliding variation pane position"
-set MarkPromotedPiece		"Mark promoted pieces"
 set ShowVariationArrows		"Show variation arrows"
 set ShowAnnotation			"Show annotation glyph"
 set ShowAnnotationTimeout	"Timeout for annotation glyph"
 set None							"None"
+
+set MarkPromotedPiece		"Use mark for promoted pieces"
+set PromoSign(none)			"None"
+set PromoSign(bullet)		"Bullet"
+set PromoSign(star)			"Star"
+set PromoSign(disk)			"Disk"
 
 set Tools						"Tools"
 set Control						"Control"
@@ -88,7 +93,7 @@ array set Options {
 	variations:arrows		0
 	show:annotation		0
 	annotation:timeout	1500
-	promoted:mark			1
+	promoted:mark			bullet
 }
 
 
@@ -115,7 +120,7 @@ proc build {w width height} {
 	set board [::board::diagram::new $border.board $Dim(squaresize) \
 		-bordersize $Dim(edgethickness) \
 		-bordertype lines \
-		-markpromoted $Options(promoted:mark) \
+		-promosign $Options(promoted:mark) \
 		-targets $board $border $canv \
 	]
 	set boardc [::board::diagram::canvas $board]
@@ -335,6 +340,8 @@ proc build {w width height} {
 
 	needBinding $Vars(widget:border)
 	needBinding $Vars(widget:frame)
+	needBinding $Vars(holding:w)
+	needBinding $Vars(holding:b)
 	needBinding [::board::diagram::canvas $board]
 
 	foreach w $Vars(need-binding) {
@@ -953,6 +960,7 @@ proc SetBackground {canv which {width 0} {height 0}} {
 proc PopupMenu {w} {
 	variable Options
 	variable Vars
+	variable board
 
 	set m $w.popup_menu
 	if {[winfo exists $m]} { destroy $m }
@@ -1069,14 +1077,6 @@ proc PopupMenu {w} {
 		-variable [namespace current]::Options(show:annotation) \
 		;
 	::theme::configureCheckEntry $m
-	if {[::scidb::game::query variant?] in {Crazyhouse}} {
-		$m add checkbutton \
-			-label $mc::MarkPromotedPiece \
-			-variable [namespace current]::Options(promoted:mark) \
-			-command [namespace code UpdatePromotionFlag] \
-			;
-		::theme::configureCheckEntry $m
-	}
 
 	$m add separator
 	if {[::board::options::isOpen]} { set state disabled } else { set state normal }
@@ -1111,6 +1111,24 @@ proc PopupMenu {w} {
 			-command [list $Vars(widget:frame) itemconfigure annotation -state hidden] \
 			;
 		::theme::configureRadioEntry $timeout
+	}
+	if {[::scidb::game::query variant?] in {Crazyhouse}} {
+		menu $m.promo
+		$m add cascade \
+			-menu $m.promo \
+			-compound left \
+			-image $::icon::16x16::none \
+			-label " $mc::MarkPromotedPiece" \
+			;
+		foreach mark {none bullet star disk} {
+			$m.promo add radiobutton \
+				-label $mc::PromoSign($mark) \
+				-variable [namespace current]::Options(promoted:mark) \
+				-value $mark \
+				-command [list ::board::diagram::setPromoSign $board $mark] \
+				;
+			::theme::configureRadioEntry $m.promo
+		}
 	}
 
 	tk_popup $m {*}[winfo pointerxy $w]
@@ -1812,7 +1830,7 @@ proc GameSwitched {position} {
 	UpdateGameButtonState(list) $position
 	UpdateGameButtonState(base) [::scidb::db::get name] [::scidb::app::variant]
 	UpdateSaveButton
-	UpdatePromotionFlag
+	UpdatePromotions
 
 	if {$variant eq "Crazyhouse" || $variant eq "ThreeCheck"} {
 		set layout $variant
@@ -1848,19 +1866,11 @@ proc DatabaseSwitched {base variant} {
 }
 
 
-proc UpdatePromotionFlag {} {
-	variable Options
+proc UpdatePromotions {} {
 	variable board
 
-	set flag [expr {$Options(promoted:mark) && [::scidb::game::query variant?] in {Crazyhouse}}]
-	::board::diagram::markPromoted $board $flag
-
-	if {$flag} {
-		foreach sq [::scidb::game::promoted] {
-			::board::diagram::drawPromoted $board $sq
-		}
-	} else {
-		::board::diagram::removeAllPromoted $board
+	foreach sq [::scidb::game::promoted] {
+		::board::diagram::drawPromoted $board $sq
 	}
 }
 

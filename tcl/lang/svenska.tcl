@@ -426,11 +426,16 @@
 ::application::board::mc::LoadRandomGame				"Ladda slumpvis parti"
 ::application::board::mc::AddNewGame					"Lägg till nytt parti..."
 ::application::board::mc::SlidingVarPanePosition	"Sliding variation pane position" ;# NEW
-::application::board::mc::MarkPromotedPiece			"Mark promoted pieces" ;# NEW
 ::application::board::mc::ShowVariationArrows		"Show variation arrows" ;# NEW
 ::application::board::mc::ShowAnnotation           "Show annotation glyph" ;# NEW
 ::application::board::mc::ShowAnnotationTimeout    "Timeout for annotation glyph" ;# NEW
 ::application::board::mc::None                     "None" ;# NEW
+
+::application::board::mc::MarkPromotedPiece			"Mark promoted pieces" ;# NEW
+::application::board::mc::PromoSign(none)				"None" ;# NEW
+::application::board::mc::PromoSign(bullet)			"Bullet" ;# NEW
+::application::board::mc::PromoSign(star)				"Star" ;# NEW
+::application::board::mc::PromoSign(disk)				"Disk" ;# NEW
 
 ::application::board::mc::Tools							"Verktyg"
 ::application::board::mc::Control						"Kontroll"
@@ -1534,39 +1539,60 @@
 ::setup::board::mc::StandardPosition			"Standardposition" ;# NEW
 ::setup::board::mc::Chess960Castling			"Schack960 rockad"
 
-::setup::board::mc::ChangeToFormat(xfen)				"Ändra till X-Fen format"
-::setup::board::mc::ChangeToFormat(shredder)			"Ändra till Shredder format"
+::setup::board::mc::ChangeToFormat(xfen)		"Ändra till X-Fen format"
+::setup::board::mc::ChangeToFormat(shredder)	"Ändra till Shredder format"
 
-::setup::board::mc::Error(InvalidFen)					"FEN är ogiltigt."
-::setup::board::mc::Error(EmptyBoard)					"Brädet är tomt."
-::setup::board::mc::Error(NoWhiteKing)					"Vit kung saknas."
-::setup::board::mc::Error(NoBlackKing)					"Svart kung saknas."
-::setup::board::mc::Error(BothInCheck)					"Båda kungar står i schack."
-::setup::board::mc::Error(OppositeCheck)				"Spelaren som inte är vid draget står i schack."
-::setup::board::mc::Error(OppositeLosing)				"Side not to move has no pieces." ;# NEW
-::setup::board::mc::Error(TooManyWhitePawns)			"För många vita bönder."
-::setup::board::mc::Error(TooManyBlackPawns)			"För många svarta bönder."
-::setup::board::mc::Error(TooManyWhitePieces)		"För många vita pjäser."
-::setup::board::mc::Error(TooManyBlackPieces)		"För många svarta pjäser."
-::setup::board::mc::Error(PawnsOn18)					"Bonde på rad 1 eller 8."
-::setup::board::mc::Error(TooManyKings)				"Fler än två kungar."
-::setup::board::mc::Error(TooManyWhite)				"För många vita pjäser."
-::setup::board::mc::Error(TooManyBlack)				"För många svarta pjäser."
-::setup::board::mc::Error(BadCastlingRights)			"Ogiltiga rockadrättigheter."
-::setup::board::mc::Error(InvalidCastlingRights)	"Ogiltig tornlinje för rockad."
-::setup::board::mc::Error(InvalidCastlingFile)		"Ogiltig rockadlinje."
-::setup::board::mc::Error(AmbiguousCastlingFyles)	"För rockad måste entydiga tornlinjer anges. (Möjligtvis är fel linjer angivna.)"
-::setup::board::mc::Error(TooManyPiecesInHolding)	"Too many pieces in holding." ;# NEW
-::setup::board::mc::Error(TooManyPromotedPieces)	"Too many pieces marked as promoted." ;# NEW
-::setup::board::mc::Error(TooFewPromotedPieces)		"Too few pieces marked as promoted." ;# NEW
-::setup::board::mc::Error(InvalidEnPassant)			"Ogiltig en passant-linje."
-::setup::board::mc::Error(MultiPawnCheck)				"Två eller fler bönder ger schack."
-::setup::board::mc::Error(TripleCheck)					"Tre eller fler pjäser ger schack."
-::setup::board::mc::Error(IllegalCheckCount)			"Unreasonable check count." ;# NEW (Three-check Chess)
+::setup::board::mc::Error(InvalidFen)							"FEN är ogiltigt."
+::setup::board::mc::Error(EmptyBoard)							"Brädet är tomt."
+::setup::board::mc::Error(NoWhiteKing)							"Vit kung saknas."
+::setup::board::mc::Error(NoBlackKing)							"Svart kung saknas."
+::setup::board::mc::Error(BothInCheck)							"Båda kungar står i schack."
+::setup::board::mc::Error(OppositeCheck)						"Spelaren som inte är vid draget står i schack."
+::setup::board::mc::Error(TooManyWhitePawns)					"För många vita bönder." ;# NEW changed a bit
+::setup::board::mc::Error(TooManyBlackPawns)					"För många svarta bönder." ;# NEW changed a bit
+::setup::board::mc::Error(TooManyWhitePieces)				"För många vita pjäser." ;# NEW changed a bit
+::setup::board::mc::Error(TooManyBlackPieces)				"För många svarta pjäser." ;# NEW changed a bit
+::setup::board::mc::Error(PawnsOn18)							"Bonde på rad 1 eller 8."
+::setup::board::mc::Error(TooManyKings)						"Fler än två kungar."
+::setup::board::mc::Error(TooManyWhite)						"För många vita pjäser." ;# NEW changed a bit
+::setup::board::mc::Error(TooManyBlack)						"För många svarta pjäser." ;# NEW changed a bit
+::setup::board::mc::Error(BadCastlingRights)					"Ogiltiga rockadrättigheter."
+::setup::board::mc::Error(InvalidCastlingRights)			"Ogiltig tornlinje för rockad."
+::setup::board::mc::Error(InvalidCastlingFile)				"Ogiltig rockadlinje."
+::setup::board::mc::Error(AmbiguousCastlingFyles)			"För rockad måste entydiga tornlinjer anges. (Möjligtvis är fel linjer angivna.)"
+::setup::board::mc::Error(InvalidEnPassant)					"Ogiltig en passant-linje."
+::setup::board::mc::Error(MultiPawnCheck)						"Två eller fler bönder ger schack."
+::setup::board::mc::Error(TripleCheck)							"Tre eller fler pjäser ger schack."
 
-::setup::board::mc::Warning(TooFewPiecesInHolding)	"Too few pieces marked as promoted. Are you sure that this is ok?" ;# NEW
-::setup::board::mc::Warning(CastlingWithoutRook)	"Du har valt att rockad är tillåten men det saknas minst ett torn. Detta är bara möjligt i partier med handikapp. Är du säker att du valt rätt?"
-::setup::board::mc::Warning(UnsupportedVariant)		"Positionen är en startposition men ingen Shuffle schackposition. Är du säker?"
+::setup::board::mc::Error(OppositeLosing)						"Side not to move has no pieces." ;# NEW
+
+::setup::board::mc::Error(TooManyPawnsPlusPromoted)		"Sum of pawns and promoted pieces is too large." ;# NEW
+::setup::board::mc::Error(TooManyPiecesMinusPromoted)		"Sum of pieces on board (incl. King, but excl. promoted) is too large." ;# NEW
+::setup::board::mc::Error(TooManyPiecesInHolding)			"Too many pieces n holding." ;# NEW
+::setup::board::mc::Error(TooManyWhiteQueensInHolding)	"Too many white queens in holding." ;# NEW
+::setup::board::mc::Error(TooManyBlackQueensInHolding)	"Too many black queens in holding." ;# NEW
+::setup::board::mc::Error(TooManyWhiteRooksInHolding)		"Too many white rooks in holding." ;# NEW
+::setup::board::mc::Error(TooManyBlackRooksInHolding)		"Too many black rooks in holding." ;# NEW
+::setup::board::mc::Error(TooManyWhiteBishopsInHolding)	"Too many white bishops in holding." ;# NEW
+::setup::board::mc::Error(TooManyBlackBishopsInHolding)	"Too many black bishops in holding." ;# NEW
+::setup::board::mc::Error(TooManyWhiteKnightsInHolding)	"Too many white knights in holding." ;# NEW
+::setup::board::mc::Error(TooManyBlackKnightsInHolding)	"Too many black knights in holding." ;# NEW
+::setup::board::mc::Error(TooManyWhitePawnsInHolding)		"Too many white pawns in holding." ;# NEW
+::setup::board::mc::Error(TooManyBlackPawnsInHolding)		"Too many black pawns in holding." ;# NEW
+::setup::board::mc::Error(TooManyPromotedPieces)			"Too many pieces marked as promoted." ;# NEW
+::setup::board::mc::Error(TooFewPromotedPieces)				"Too few pieces marked as promoted." ;# NEW
+::setup::board::mc::Error(TooManyPromotedWhitePieces)		"Too many white pieces marked as promoted." ;# NEW
+::setup::board::mc::Error(TooManyPromotedBlackPieces)		"Too many black pieces marked as promoted." ;# NEW
+::setup::board::mc::Error(TooFewPromotedQueens)				"Too few queens marked as promoted." ;# NEW
+::setup::board::mc::Error(TooFewPromotedRooks)				"Too few rooks marked as promoted." ;# NEW
+::setup::board::mc::Error(TooFewPromotedBishops)			"Too few bishops marked as promoted." ;# NEW
+::setup::board::mc::Error(TooFewPromotedKnights)			"Too few knights marked as promoted." ;# NEW
+
+::setup::board::mc::Error(IllegalCheckCount)					"Unreasonable check count." ;# NEW (Three-check Chess)
+
+::setup::board::mc::Warning(TooFewPiecesInHolding)			"Too few pieces marked as promoted. Are you sure that this is ok?" ;# NEW
+::setup::board::mc::Warning(CastlingWithoutRook)			"Du har valt att rockad är tillåten men det saknas minst ett torn. Detta är bara möjligt i partier med handikapp. Är du säker att du valt rätt?"
+::setup::board::mc::Warning(UnsupportedVariant)				"Positionen är en startposition men ingen Shuffle schackposition. Är du säker?"
 
 ### import #############################################################
 ::import::mc::ImportingFile(pgn)					"Importerar PGN-fil"

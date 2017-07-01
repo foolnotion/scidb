@@ -427,11 +427,16 @@
 ::application::board::mc::LoadRandomGame		"Load random game" ;# NEW
 ::application::board::mc::AddNewGame			"új játszma hozzáadása..."
 ::application::board::mc::SlidingVarPanePosition	"Sliding variation pane position" ;# NEW
-::application::board::mc::MarkPromotedPiece		"Mark promoted pieces" ;# NEW
 ::application::board::mc::ShowVariationArrows		"Show variation arrows" ;# NEW
 ::application::board::mc::ShowAnnotation                "Show annotation glyph" ;# NEW
 ::application::board::mc::ShowAnnotationTimeout         "Timeout for annotation glyph" ;# NEW
 ::application::board::mc::None                          "None" ;# NEW
+
+::application::board::mc::MarkPromotedPiece		"Mark promoted pieces" ;# NEW
+::application::board::mc::PromoSign(none)		"None" ;# NEW
+::application::board::mc::PromoSign(bullet)		"Bullet" ;# NEW
+::application::board::mc::PromoSign(star)		"Star" ;# NEW
+::application::board::mc::PromoSign(disk)		"Disk" ;# NEW
 
 ::application::board::mc::Tools				"Eszközök"
 ::application::board::mc::Control			"Kezelés"
@@ -1543,26 +1548,47 @@
 ::setup::board::mc::Error(NoBlackKing)			"Sötét király hiányzik."
 ::setup::board::mc::Error(BothInCheck)			"Mindkét király sakkban áll."
 ::setup::board::mc::Error(OppositeCheck)		"A nem lépésre jövő fél királya sakkban áll."
-::setup::board::mc::Error(OppositeLosing)		"Side not to move has no pieces." ;# NEW
-::setup::board::mc::Error(TooManyWhitePawns)		"Túl sok világos gyalog."
-::setup::board::mc::Error(TooManyBlackPawns)		"Túl sok sötét gyalog."
-::setup::board::mc::Error(TooManyWhitePieces)		"Túl sok világos tiszt."
-::setup::board::mc::Error(TooManyBlackPieces)		"Túl sok sötét tiszt."
+::setup::board::mc::Error(TooManyWhitePawns)		"Túl sok világos gyalog." ;# NEW changed a bit
+::setup::board::mc::Error(TooManyBlackPawns)		"Túl sok sötét gyalog." ;# NEW changed a bit
+::setup::board::mc::Error(TooManyWhitePieces)		"Túl sok világos tiszt." ;# NEW changed a bit
+::setup::board::mc::Error(TooManyBlackPieces)		"Túl sok sötét tiszt." ;# NEW changed a bit
 ::setup::board::mc::Error(PawnsOn18)			"Gyalog az 1. vagy a 8. soron."
 ::setup::board::mc::Error(TooManyKings)			"Több mint két király."
-::setup::board::mc::Error(TooManyWhite)			"Túl sok világos figura."
-::setup::board::mc::Error(TooManyBlack)			"Túl sok sötét figura."
+::setup::board::mc::Error(TooManyWhite)			"Túl sok világos figura." ;# NEW changed a bit
+::setup::board::mc::Error(TooManyBlack)			"Túl sok sötét figura." ;# NEW changed a bit
 ::setup::board::mc::Error(BadCastlingRights)		"Hibás sáncolási jogok."
 ::setup::board::mc::Error(InvalidCastlingRights)	"Értelmetlen bástya vonal(ak) sáncoláshoz."
 ::setup::board::mc::Error(InvalidCastlingFile)		"Érvénytelen sáncolási vonal."
 ::setup::board::mc::Error(AmbiguousCastlingFyles)	"Castling needs rook files to be disambiguous (possibly they are set wrong)."
-::setup::board::mc::Error(TooManyPiecesInHolding)	"Too many pieces in holding." ;# NEW
-::setup::board::mc::Error(TooManyPromotedPieces)	"Too many pieces marked as promoted." ;# NEW
-::setup::board::mc::Error(TooFewPromotedPieces)		"Too few pieces marked as promoted." ;# NEW
 ::setup::board::mc::Error(InvalidEnPassant)		"Értelmetlen menetközbeni ütés vonal." ;#?
 ::setup::board::mc::Error(MultiPawnCheck)		"Kettő vagy több gyalog ad sakkot."
 ::setup::board::mc::Error(TripleCheck)			"Három vagy több figura ad sakkot."
-::setup::board::mc::Error(IllegalCheckCount)			"Unreasonable check count." ;# NEW (Three-check Chess)
+
+::setup::board::mc::Error(OppositeLosing)		"Side not to move has no pieces." ;# NEW
+
+::setup::board::mc::Error(TooManyPawnsPlusPromoted)	"Sum of pawns and promoted pieces is too large." ;# NEW
+::setup::board::mc::Error(TooManyPiecesMinusPromoted)	"Sum of pieces on board (incl. King, but excl. promoted) is too large." ;# NEW
+::setup::board::mc::Error(TooManyPiecesInHolding)	"Too many pieces n holding." ;# NEW
+::setup::board::mc::Error(TooManyWhiteQueensInHolding)	"Too many white queens in holding." ;# NEW
+::setup::board::mc::Error(TooManyBlackQueensInHolding)	"Too many black queens in holding." ;# NEW
+::setup::board::mc::Error(TooManyWhiteRooksInHolding)	"Too many white rooks in holding." ;# NEW
+::setup::board::mc::Error(TooManyBlackRooksInHolding)	"Too many black rooks in holding." ;# NEW
+::setup::board::mc::Error(TooManyWhiteBishopsInHolding)	"Too many white bishops in holding." ;# NEW
+::setup::board::mc::Error(TooManyBlackBishopsInHolding)	"Too many black bishops in holding." ;# NEW
+::setup::board::mc::Error(TooManyWhiteKnightsInHolding)	"Too many white knights in holding." ;# NEW
+::setup::board::mc::Error(TooManyBlackKnightsInHolding)	"Too many black knights in holding." ;# NEW
+::setup::board::mc::Error(TooManyWhitePawnsInHolding)	"Too many white pawns in holding." ;# NEW
+::setup::board::mc::Error(TooManyBlackPawnsInHolding)	"Too many black pawns in holding." ;# NEW
+::setup::board::mc::Error(TooManyPromotedPieces)	"Too many pieces marked as promoted." ;# NEW
+::setup::board::mc::Error(TooFewPromotedPieces)		"Too few pieces marked as promoted." ;# NEW
+::setup::board::mc::Error(TooManyPromotedWhitePieces)	"Too many white pieces marked as promoted." ;# NEW
+::setup::board::mc::Error(TooManyPromotedBlackPieces)	"Too many black pieces marked as promoted." ;# NEW
+::setup::board::mc::Error(TooFewPromotedQueens)		"Too few queens marked as promoted." ;# NEW
+::setup::board::mc::Error(TooFewPromotedRooks)		"Too few rooks marked as promoted." ;# NEW
+::setup::board::mc::Error(TooFewPromotedBishops)	"Too few bishops marked as promoted." ;# NEW
+::setup::board::mc::Error(TooFewPromotedKnights)	"Too few knights marked as promoted." ;# NEW
+
+::setup::board::mc::Error(IllegalCheckCount)		"Unreasonable check count." ;# NEW (Three-check Chess)
 
 ::setup::board::mc::Warning(TooFewPiecesInHolding)	"Too few pieces marked as promoted. Are you sure that this is ok?" ;# NEW
 ::setup::board::mc::Warning(CastlingWithoutRook)	"You have set castling rights, but at least one rook for castling is missing. This can happen only in handicap games. Are you sure that the castling rights are ok?"

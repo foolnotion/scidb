@@ -103,34 +103,53 @@ toError(db::Board::SetupStatus status)
 {
 	switch (status)
 	{
-		case Board::Valid:						return 0;
-		case Board::EmptyBoard:					return "EmptyBoard";
-		case Board::NoWhiteKing:				return "NoWhiteKing";
-		case Board::NoBlackKing:				return "NoBlackKing";
-		case Board::BothInCheck:				return "BothInCheck";
-		case Board::OppositeCheck:				return "OppositeCheck";
-		case Board::OppositeLosing:			return "OppositeLosing";
-		case Board::TooManyPawns:				return "TooManyPawns";
-		case Board::TooManyPieces:				return "TooManyPieces";
-		case Board::TooManyWhitePawns:		return "TooManyWhitePawns";
-		case Board::TooManyBlackPawns:		return "TooManyBlackPawns";
-		case Board::TooManyWhitePieces:		return "TooManyWhitePieces";
-		case Board::TooManyBlackPieces:		return "TooManyBlackPieces";
-		case Board::PawnsOn18:					return "PawnsOn18";
-		case Board::TooManyKings:				return "TooManyKings";
-		case Board::TooManyWhite:				return "TooManyWhite";
-		case Board::TooManyBlack:				return "TooManyBlack";
-		case Board::BadCastlingRights:		return "BadCastlingRights";
-		case Board::InvalidEnPassant:			return "InvalidEnPassant";
-		case Board::MultiPawnCheck:			return "MultiPawnCheck";
-		case Board::TripleCheck:				return "TripleCheck";
-		case Board::InvalidCastlingRights:	return "InvalidCastlingRights";
-		case Board::AmbiguousCastlingFyles:	return "AmbiguousCastlingFyles";
-		case Board::TooManyPiecesInHolding:	return "TooManyPiecesInHolding";
-		case Board::TooManyPromotedPieces:	return "TooManyPromotedPieces";
-		case Board::TooFewPromotedPieces:	return "TooFewPromotedPieces";
-		case Board::TooFewPiecesInHolding:	return "TooFewPiecesInHolding";
-		case Board::IllegalCheckCount:		return "IllegalCheckCount";
+		case Board::Valid:								return 0;
+		case Board::EmptyBoard:							return "EmptyBoard";
+		case Board::NoWhiteKing:						return "NoWhiteKing";
+		case Board::NoBlackKing:						return "NoBlackKing";
+		case Board::BothInCheck:						return "BothInCheck";
+		case Board::OppositeCheck:						return "OppositeCheck";
+		case Board::TooManyWhitePawns:				return "TooManyWhitePawns";
+		case Board::TooManyBlackPawns:				return "TooManyBlackPawns";
+		case Board::TooManyWhitePieces:				return "TooManyWhitePieces";
+		case Board::TooManyBlackPieces:				return "TooManyBlackPieces";
+		case Board::PawnsOn18:							return "PawnsOn18";
+		case Board::TooManyKings:						return "TooManyKings";
+		case Board::TooManyWhite:						return "TooManyWhite";
+		case Board::TooManyBlack:						return "TooManyBlack";
+		case Board::BadCastlingRights:				return "BadCastlingRights";
+		case Board::InvalidEnPassant:					return "InvalidEnPassant";
+		case Board::MultiPawnCheck:					return "MultiPawnCheck";
+		case Board::TripleCheck:						return "TripleCheck";
+		case Board::InvalidCastlingRights:			return "InvalidCastlingRights";
+		case Board::AmbiguousCastlingFyles:			return "AmbiguousCastlingFyles";
+
+		case Board::OppositeLosing:					return "OppositeLosing";
+
+		case Board::TooManyPawnsPlusPromoted:		return "TooManyPawnsPlusPromoted";
+		case Board::TooManyPiecesMinusPromoted:	return "TooManyPiecesMinusPromoted";
+		case Board::TooManyPiecesInHolding:			return "TooManyPiecesInHolding";
+		case Board::TooFewPiecesInHolding:			return "TooFewPiecesInHolding";
+		case Board::TooManyWhiteQueensInHolding:	return "TooManyWhiteQueensInHolding";
+		case Board::TooManyBlackQueensInHolding:	return "TooManyBlackQueensInHolding";
+		case Board::TooManyWhiteRooksInHolding:	return "TooManyWhiteRooksInHolding";
+		case Board::TooManyBlackRooksInHolding:	return "TooManyBlackRooksInHolding";
+		case Board::TooManyWhiteBishopsInHolding:	return "TooManyWhiteBishopsInHolding";
+		case Board::TooManyBlackBishopsInHolding:	return "TooManyBlackBishopsInHolding";
+		case Board::TooManyWhiteKnightsInHolding:	return "TooManyWhiteKnightsInHolding";
+		case Board::TooManyBlackKnightsInHolding:	return "TooManyBlackKnightsInHolding";
+		case Board::TooManyWhitePawnsInHolding:	return "TooManyWhitePawnsInHolding";
+		case Board::TooManyBlackPawnsInHolding:	return "TooManyBlackPawnsInHolding";
+		case Board::TooManyPromotedPieces:			return "TooManyPromotedPieces";
+		case Board::TooFewPromotedPieces:			return "TooFewPromotedPieces";
+		case Board::TooManyPromotedWhitePieces:	return "TooManyPromotedWhitePieces";
+		case Board::TooManyPromotedBlackPieces:	return "TooManyPromotedBlackPieces";
+		case Board::TooFewPromotedQueens:			return "TooFewPromotedQueens";
+		case Board::TooFewPromotedRooks:				return "TooFewPromotedRooks";
+		case Board::TooFewPromotedBishops:			return "TooFewPromotedBishops";
+		case Board::TooFewPromotedKnights:			return "TooFewPromotedKnights";
+
+		case Board::IllegalCheckCount:				return "IllegalCheckCount";
 	}
 
 	return 0; // satisfies the compiler

@@ -349,6 +349,12 @@ if {$scidb::revision < 701} {
 	}
 }
 
+if {$::application::board::Options(promoted:mark) eq "1"} {
+	set ::application::board::Options(promoted:mark) bullet
+} elseif {$::application::board::Options(promoted:mark) eq "0"} {
+	set ::application::board::Options(promoted:mark) none
+}
+
 set ::scidb::revision [::scidb::misc::revision]
 
 # --- Initalization ----------------------------------------------------

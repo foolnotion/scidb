@@ -666,6 +666,8 @@ proc bgerror {err args} {
 	variable intern::errmsg
 	variable intern::tclStack
 
+	if {[string length $err] == 0} { set err $errmsg }
+
 	if {$err eq "selection owner didn't respond"} {
 		set parent [::tkdnd::get_drop_target]
 		if {[llength $parent]} {
