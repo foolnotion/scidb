@@ -1532,6 +1532,8 @@
 ::setup::board::mc::FICSPosition					"FICS Start Position..." ;# NEW
 ::setup::board::mc::StandardPosition			"Posición estándar"
 ::setup::board::mc::Chess960Castling			"Enroque en Chess 960"
+::setup::board::mc::TooManyPiecesInHolding	"one extra piece|%d extra pieces" ;# NEW
+::setup::board::mc::TooFewPiecesInHolding		"one piece is missing|%d pieces are missing" ;# NEW
 
 ::setup::board::mc::ChangeToFormat(xfen)		"Cambiar a formato X-Fen"
 ::setup::board::mc::ChangeToFormat(shredder)	"Cambiar a formato Shredder"

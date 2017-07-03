@@ -456,6 +456,10 @@ public:
 	Move& prepareForPrint(Move& move, variant::Type variant, Representation representation) const;
 	/// Returns the IDN (chess 960 unique IDentification Number)
 	unsigned computeIdn(variant::Type variant) const;
+	/// Returns the material on board for side to move.
+	Material material() const;
+	/// Returns the material on board for given color.
+	Material material(color::ID color) const;
 	/// Returns the material in hand for side to move.
 	Material holding() const;
 	/// Returns the material in hand for given color.

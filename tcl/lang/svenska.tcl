@@ -1538,6 +1538,8 @@
 ::setup::board::mc::FICSPosition					"FICS startposition..."
 ::setup::board::mc::StandardPosition			"Standardposition" ;# NEW
 ::setup::board::mc::Chess960Castling			"Schack960 rockad"
+::setup::board::mc::TooManyPiecesInHolding	"one extra piece|%d extra pieces" ;# NEW
+::setup::board::mc::TooFewPiecesInHolding		"one piece is missing|%d pieces are missing" ;# NEW
 
 ::setup::board::mc::ChangeToFormat(xfen)		"Ändra till X-Fen format"
 ::setup::board::mc::ChangeToFormat(shredder)	"Ändra till Shredder format"

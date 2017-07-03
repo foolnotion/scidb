@@ -51,11 +51,11 @@ static int (*compareFunc)(void const*, void const*) = 0;
 
 
 template <typename T>
-inline static int compare(T lhs, T rhs) { return lhs - rhs; }
-inline static int compare(Date const& lhs, Date const& rhs) { return Date::compare(lhs, rhs); }
+inline static int myCompare(T lhs, T rhs) { return lhs - rhs; }
+inline static int myCompare(Date const& lhs, Date const& rhs) { return Date::compare(lhs, rhs); }
 
 inline static int
-compare(mstl::string const& lhs, mstl::string const& rhs)
+myCompare(mstl::string const& lhs, mstl::string const& rhs)
 {
 	return sys::utf8::casecmp(lhs, rhs);
 }
@@ -76,9 +76,9 @@ compRound(unsigned const* lhs, unsigned const* rhs)
 	GameInfo const& r = database->gameInfo(*rhs);
 
 	if (l.round() == r.round())
-		return compare(l.subround(), r.subround());
+		return myCompare(l.subround(), r.subround());
 
-	return compare(l.round(), r.round());
+	return myCompare(l.round(), r.round());
 }
 
 
@@ -88,8 +88,8 @@ compAcv(unsigned const* lhs, unsigned const* rhs)
 	GameInfo const& l = database->gameInfo(*lhs);
 	GameInfo const& r = database->gameInfo(*rhs);
 
-	return compare(l.countAnnotations() + l.countComments() + l.countVariations(),
-						r.countAnnotations() + r.countComments() + r.countVariations());
+	return myCompare(	l.countAnnotations() + l.countComments() + l.countVariations(),
+							r.countAnnotations() + r.countComments() + r.countVariations());
 }
 
 
@@ -99,7 +99,7 @@ compRatingWhite(unsigned const* lhs, unsigned const* rhs, rating::Type type)
 	GameInfo const& l = database->gameInfo(*lhs);
 	GameInfo const& r = database->gameInfo(*rhs);
 
-	return compare(l.findRating(White, type), r.findRating(White, type));
+	return myCompare(l.findRating(White, type), r.findRating(White, type));
 }
 
 
@@ -109,7 +109,7 @@ compRatingBlack(unsigned const* lhs, unsigned const* rhs, rating::Type type)
 	GameInfo const& l = database->gameInfo(*lhs);
 	GameInfo const& r = database->gameInfo(*rhs);
 
-	return compare(l.findRating(Black, type), r.findRating(Black, type));
+	return myCompare(l.findRating(Black, type), r.findRating(Black, type));
 }
 
 
@@ -125,7 +125,7 @@ compWhiteAny(unsigned const* lhs, unsigned const* rhs)
 	if (eloL == 0) eloL = l.findElo(White);
 	if (eloR == 0) eloR = r.findElo(White);
 
-	return compare(eloL, eloR);
+	return myCompare(eloL, eloR);
 }
 
 
@@ -141,7 +141,7 @@ compBlackAny(unsigned const* lhs, unsigned const* rhs)
 	if (eloL == 0) eloL = l.findElo(Black);
 	if (eloR == 0) eloR = r.findElo(Black);
 
-	return compare(eloL, eloR);
+	return myCompare(eloL, eloR);
 }
 
 
@@ -157,7 +157,7 @@ compAverageElo(unsigned const* lhs, unsigned const* rhs)
 	int rb = r.findElo(Black);
 	int av = lw + lb - rw - rb;
 
-	return -(av ? av : compare(mstl::max(lw, lb), mstl::max(rw, rb)));
+	return -(av ? av : myCompare(mstl::max(lw, lb), mstl::max(rw, rb)));
 }
 
 
@@ -173,7 +173,7 @@ compRatingAverage(unsigned const* lhs, unsigned const* rhs, rating::Type type)
 	int rb = r.findRating(Black, type);
 	int av = lw + lb - rw - rb;
 
-	return -(av ? av : compare(mstl::max(lw, lb), mstl::max(rw, rb)));
+	return -(av ? av : myCompare(mstl::max(lw, lb), mstl::max(rw, rb)));
 }
 
 
@@ -195,7 +195,7 @@ compAverageAny(unsigned const* lhs, unsigned const* rhs)
 
 	int av = lw + lb - rw - rb;
 
-	return -(av ? av : compare(mstl::max(lw, lb), mstl::max(rw, rb)));
+	return -(av ? av : myCompare(mstl::max(lw, lb), mstl::max(rw, rb)));
 }
 
 
@@ -317,7 +317,7 @@ compUserEco(unsigned const* lhs, unsigned const* rhs)
 	if (ir.idn() != variant::Standard)
 		return -1;
 
-	return compare(il.userEco(), ir.userEco());
+	return myCompare(il.userEco(), ir.userEco());
 }
 
 
@@ -390,7 +390,7 @@ compBlackCountry(unsigned const* lhs, unsigned const* rhs)
 	static int \
 	comp##Func(unsigned const* lhs, unsigned const* rhs) \
 	{ \
-		return compare(database->gameInfo(*lhs).Accessor, database->gameInfo(*rhs).Accessor); \
+		return myCompare(database->gameInfo(*lhs).Accessor, database->gameInfo(*rhs).Accessor); \
 	}
 
 DEF_COMPARE(WhitePlayer, playerName(White));
@@ -448,7 +448,7 @@ compRatingAny(unsigned const* lhs, unsigned const* rhs)
 	if (eloL == 0) eloL = l.playerHighestElo();
 	if (eloR == 0) eloR = r.playerHighestElo();
 
-	return compare(eloL, eloR);
+	return myCompare(eloL, eloR);
 }
 
 
@@ -464,7 +464,7 @@ compRatingLatestAny(unsigned const* lhs, unsigned const* rhs)
 	if (eloL == 0) eloL = l.playerLatestElo();
 	if (eloR == 0) eloR = r.playerLatestElo();
 
-	return compare(eloL, eloR);
+	return myCompare(eloL, eloR);
 }
 
 
@@ -495,14 +495,14 @@ compSex(unsigned const* lhs, unsigned const* rhs)
 #define DEF_COMPARE(Type) \
 	static int compRating##Type(unsigned const* lhs, unsigned const* rhs) \
 	{ \
-		return compare(database->player(*lhs).playerHighestRating(rating::Type),  \
-							database->player(*rhs).playerHighestRating(rating::Type)); \
+		return myCompare(database->player(*lhs).playerHighestRating(rating::Type),  \
+							  database->player(*rhs).playerHighestRating(rating::Type)); \
 	} \
 	\
 	static int compRatingLatest##Type(unsigned const* lhs, unsigned const* rhs) \
 	{ \
-		return compare(database->player(*lhs).playerLatestRating(rating::Type),  \
-							database->player(*rhs).playerLatestRating(rating::Type)); \
+		return myCompare(database->player(*lhs).playerLatestRating(rating::Type),  \
+							  database->player(*rhs).playerLatestRating(rating::Type)); \
 	}
 
 DEF_COMPARE(DWZ)
@@ -519,7 +519,7 @@ DEF_COMPARE(USCF)
 	static int \
 	comp##Func(unsigned const* lhs, unsigned const* rhs) \
 	{ \
-		return compare(database->player(*lhs).Accessor, database->player(*rhs).Accessor); \
+		return myCompare(database->player(*lhs).Accessor, database->player(*rhs).Accessor); \
 	}
 
 //DEF_COMPARE(Sex, findSex());
@@ -543,7 +543,7 @@ namespace event {
 	static int \
 	comp##Func(unsigned const* lhs, unsigned const* rhs) \
 	{ \
-		return compare(database->event(*lhs).Accessor, database->event(*rhs).Accessor); \
+		return myCompare(database->event(*lhs).Accessor, database->event(*rhs).Accessor); \
 	}
 
 DEF_COMPARE(Country, site()->country());
@@ -565,7 +565,7 @@ namespace site {
 	static int \
 	comp##Func(unsigned const* lhs, unsigned const* rhs) \
 	{ \
-		return compare(database->site(*lhs).Accessor, database->site(*rhs).Accessor); \
+		return myCompare(database->site(*lhs).Accessor, database->site(*rhs).Accessor); \
 	}
 
 DEF_COMPARE(Country, country());
@@ -582,7 +582,7 @@ namespace annotator {
 	static int \
 	comp##Func(unsigned const* lhs, unsigned const* rhs) \
 	{ \
-		return compare(database->annotator(*lhs).Accessor, database->annotator(*rhs).Accessor); \
+		return myCompare(database->annotator(*lhs).Accessor, database->annotator(*rhs).Accessor); \
 	}
 
 DEF_COMPARE(Name, name());

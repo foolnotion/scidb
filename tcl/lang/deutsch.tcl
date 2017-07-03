@@ -1527,6 +1527,8 @@
 ::setup::board::mc::FICSPosition					"FICS-Startposition..."
 ::setup::board::mc::StandardPosition			"Standardposition"
 ::setup::board::mc::Chess960Castling			"Schach-960-Rochade"
+::setup::board::mc::TooManyPiecesInHolding	"eine ExtraFigur|%d Extrafiguren"
+::setup::board::mc::TooFewPiecesInHolding		"eine Figur fehlend|%d Figuren fehlend"
 
 ::setup::board::mc::ChangeToFormat(xfen)		"Zum X-Fen-Format wechseln"
 ::setup::board::mc::ChangeToFormat(shredder)	"Zum Shredder-Format wechseln"

@@ -127,6 +127,8 @@ set Shuffle											"Shuffle..."
 set FICSPosition									"FICS Start Position..."
 set StandardPosition								"Standard Position"
 set Chess960Castling								"Chess 960 castling"
+set TooManyPiecesInHolding						"one extra piece|%d extra pieces"
+set TooFewPiecesInHolding						"one piece is missing|%d pieces are missing"
 
 set ChangeToFormat(xfen)						"Change to X-Fen format"
 set ChangeToFormat(shredder)					"Change to Shredder format"
@@ -512,9 +514,14 @@ proc open {parent} {
 			;
 		::theme::configureBackground $promo
 
-		set hold [ttk::labelframe $bottom.hold \
-			-labelwidget [ttk::label $bottom.holdlbl -textvar [namespace current]::mc::Holding]]
+		set Vars(holding:warning) ""
+		set Vars(holding:widget) [ttk::frame $bottom.holdlbl -borderwidth 0]
+		ttk::label $bottom.holdlbl.title -textvar [namespace current]::mc::Holding
+		ttk::label $bottom.holdlbl.space -textvar [namespace current]::Vars(holding:space)
+		ttk::label $bottom.holdlbl.warning -textvar [namespace current]::Vars(holding:warning)
+		pack $bottom.holdlbl.title $bottom.holdlbl.space $bottom.holdlbl.warning -side left
 
+		set hold [ttk::labelframe $bottom.hold -labelwidget $bottom.holdlbl]
 		set figfont $::font::figurine(text:normal)
 		set figfont [list [font configure $figfont -family] -20]
 
@@ -523,10 +530,7 @@ proc open {parent} {
 										 Q 2 "\u2655" R 4 "\u2656" B 4 "\u2657" N 4 "\u2658" P 16 "\u2659"} {
 			set lbl $hold._$piece
 			set spb ${lbl}_s
-			ttk::label $lbl \
-				-text $fig \
-				-font $figfont \
-				;
+			ttk::label $lbl -text $fig -font $figfont 
 			tk::spinbox $spb \
 				-textvariable [namespace current]::Vars(holding:$piece) \
 				-command [namespace code Update] \
@@ -704,6 +708,7 @@ proc open {parent} {
 	set y [expr {8*$squareSize + 2*$BorderThickness + $edge/2}]
 	set x [expr {$BorderThickness + $panelWidth + $edge + $squareSize/2}]
 	foreach c {A B C D E F G H} {
+		if {$::board::layout(coords-small)} { set c [string tolower $c] }
 		$canv create text $x $y -font TkTextFont -text $c
 		incr x $squareSize
 	}
@@ -975,14 +980,11 @@ proc SetupCastlingButtons {f} {
 proc SetupPromoted {} {
 	variable Vars
 
-	lassign [::scidb::board::analyseFen $Vars(fen)] error _ idn _ _ _ _ _ _ _ _ promoted
+	lassign [::scidb::board::analyseFen $Vars(fen)] error _ idn _ _ _ _ _ _ _ _ promoted difference
+	ShowHoldingInfo $difference
 	if {$idn > 4*960} { set idn 0 }
-
 	::board::diagram::removeAllPromoted $Vars(board)
-
-	foreach i $promoted {
-		::board::diagram::drawPromoted $Vars(board) $i
-	}
+	foreach i $promoted { ::board::diagram::drawPromoted $Vars(board) $i }
 }
 
 
@@ -1021,13 +1023,41 @@ proc UpdateChess960CastlingFlag {positionId} {
 }
 
 
+proc ShowHoldingInfo {difference} {
+	variable Vars
+
+	if {![info exists Vars(variant)]} { return }
+	if {$Vars(variant) ne "Crazyhouse"} { return }
+
+	if {$difference != 0} {
+		set color darkred
+		set space " \u2013 "
+
+		if {$difference > 0} {
+			append warning [::mc::extract [format $mc::TooManyPiecesInHolding $difference] $difference]
+		} else {
+			set difference [expr {abs($difference)}]
+			append warning [::mc::extract [format $mc::TooFewPiecesInHolding $difference] $difference]
+		}
+	} else {
+		set color black
+		set space ""
+		set warning ""
+	}
+
+	set Vars(holding:warning) $warning
+	set Vars(holding:space) $space
+	$Vars(holding:widget).warning configure -foreground $color
+}
+
+
 proc AnalyseFen {fen {cmd none}} {
 	variable FenPattern
 	variable Vars
 
 	if {$cmd eq "init"} {
 		lassign [::scidb::board::analyseFen $fen] \
-			error _ idn _ _ castling ep stm moveno halfmoves checksGiven promoted
+			error _ idn _ _ castling ep stm moveno halfmoves checksGiven promoted difference
 
 		if {$idn > 4*960} { set idn 0 }
 		AnalyseCastlingRights $fen $castling $idn
@@ -1065,7 +1095,7 @@ proc AnalyseFen {fen {cmd none}} {
 		set checksGiven [list $Vars(checks:w) $Vars(checks:b)]
 
 		lassign [::scidb::board::analyseFen $fen $castling $castlingFiles $checksGiven] \
-			error warnings idn _ _ _ ep stm moveno halfmoves checksGiven promoted
+			error warnings idn _ _ _ ep stm moveno halfmoves checksGiven promoted difference
 		if {$idn > 4*960} { set idn 0 }
 	}
 
@@ -1087,6 +1117,8 @@ proc AnalyseFen {fen {cmd none}} {
 			if {$answer eq "no"} { return 0 }
 		}
 	}
+
+	ShowHoldingInfo $difference
 
 	set Vars(freeze) 1
 	set Vars(positionId) $idn
@@ -1531,7 +1563,9 @@ proc ResetFen {} {
 
 	if {[string length $Vars(fen)]} {
 		lassign [::scidb::board::analyseFen $Vars(fen)] \
-			error _ _ _ _ castling ep stm moveno halfmoves _ promoted
+			error _ _ _ _ castling ep stm moveno halfmoves _ promoted difference
+
+		ShowHoldingInfo $difference
 
 		if {[string match {TooMany*InHolding} $error]} {
 			set Vars(fen) [::scidb::board::normalizeFen $Vars(fen) $Options(fen:format) -clearholding]

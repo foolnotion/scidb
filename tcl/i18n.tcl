@@ -385,6 +385,14 @@ proc mappingToAscii {}	{ return $mc::AsciiMapping }
 proc sortOrderTable {}	{ return $mc::SortOrder }
 
 
+proc extract {msg n} {
+	set msg2 ""
+	lassign [split $msg |] msg msg2
+	if {[string length $msg2] == 0 || $n == 1} { return $msg }
+	return $msg2
+}
+
+
 proc setup {} {
 	variable languages
 

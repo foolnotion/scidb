@@ -1538,6 +1538,8 @@
 ::setup::board::mc::FICSPosition			"FICS Start Position..." ;# NEW
 ::setup::board::mc::StandardPosition			"Standard Position" ;# NEW
 ::setup::board::mc::Chess960Castling			"Chess 960 castling" ;# NEW
+::setup::board::mc::TooManyPiecesInHolding		"one extra piece|%d extra pieces" ;# NEW
+::setup::board::mc::TooFewPiecesInHolding		"one piece is missing|%d pieces are missing" ;# NEW
 
 ::setup::board::mc::ChangeToFormat(xfen)		"Change to X-Fen format" ;# NEW
 ::setup::board::mc::ChangeToFormat(shredder)		"Change to Shredder format" ;# NEW

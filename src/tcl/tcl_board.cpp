@@ -307,11 +307,22 @@ cmdAnalyseFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			promoted[n++] = Tcl_NewIntObj(i);
 	}
 
+	int holdingPieceCount = 0;
+
+	if (variant::isZhouse(variant))
+	{
+		holdingPieceCount = board.holding(color::White).total()
+								+ board.holding(color::Black).total()
+								+ board.material(color::White).total()
+								+ board.material(color::Black).total();
+		holdingPieceCount = holdingPieceCount - 32;
+	}
+
 	Tcl_Obj* w[warnings.size()];
 	for (unsigned i = 0; i < warnings.size(); ++i)
 		w[i] = Tcl_NewStringObj(warnings[i], -1);
 
-	Tcl_Obj* objs[12];
+	Tcl_Obj* objs[13];
 
 	objs[ 0] = Tcl_NewStringObj(error ? error : "", -1);
 	objs[ 1] = Tcl_NewListObj(warnings.size(), w);
@@ -325,6 +336,7 @@ cmdAnalyseFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	objs[ 9] = Tcl_NewIntObj(board.halfMoveClock());
 	objs[10] = Tcl_NewListObj(2, checksGiven);
 	objs[11] = Tcl_NewListObj(n, promoted);
+	objs[12] = Tcl_NewIntObj(holdingPieceCount);
 
 	setResult(U_NUMBER_OF(objs), objs);
 	return TCL_OK;
