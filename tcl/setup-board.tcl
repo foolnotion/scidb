@@ -519,7 +519,9 @@ proc open {parent} {
 		ttk::label $bottom.holdlbl.title -textvar [namespace current]::mc::Holding
 		ttk::label $bottom.holdlbl.space -textvar [namespace current]::Vars(holding:space)
 		ttk::label $bottom.holdlbl.warning -textvar [namespace current]::Vars(holding:warning)
-		pack $bottom.holdlbl.title $bottom.holdlbl.space $bottom.holdlbl.warning -side left
+		grid $bottom.holdlbl.title -row 1 -column 1
+		grid $bottom.holdlbl.space -row 1 -column 2
+		grid $bottom.holdlbl.warning -row 1 -column 3
 
 		set hold [ttk::labelframe $bottom.hold -labelwidget $bottom.holdlbl]
 		set figfont $::font::figurine(text:normal)
@@ -1032,6 +1034,7 @@ proc ShowHoldingInfo {difference} {
 	if {$difference != 0} {
 		set color darkred
 		set space " \u2013 "
+		grid $Vars(holding:widget).space $Vars(holding:widget).warning
 
 		if {$difference > 0} {
 			append warning [::mc::extract [format $mc::TooManyPiecesInHolding $difference] $difference]
@@ -1039,15 +1042,13 @@ proc ShowHoldingInfo {difference} {
 			set difference [expr {abs($difference)}]
 			append warning [::mc::extract [format $mc::TooFewPiecesInHolding $difference] $difference]
 		}
-	} else {
-		set color black
-		set space ""
-		set warning ""
-	}
 
-	set Vars(holding:warning) $warning
-	set Vars(holding:space) $space
-	$Vars(holding:widget).warning configure -foreground $color
+		set Vars(holding:warning) $warning
+		set Vars(holding:space) $space
+		$Vars(holding:widget).warning configure -foreground $color
+	} else {
+		grid remove $Vars(holding:widget).space $Vars(holding:widget).warning
+	}
 }
 
 
