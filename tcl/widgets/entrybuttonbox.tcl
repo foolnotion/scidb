@@ -131,7 +131,8 @@ proc WidgetProc {w command args} {
 
 proc ChangeStyle {w} {
 	if {"entrybuttonbox.downarrow" ni [ttk::style element names]} {
-		if {[font metrics [$w cget -font] -linespace] == 15} {
+		if {	[font metrics [$w cget -font] -linespace] == 15
+			&& [info exists icon::dots([::theme::currentTheme])]} {
 			set icon $icon::dots([::theme::currentTheme])
 		} else {
 			set icon $icon::14x16::open
