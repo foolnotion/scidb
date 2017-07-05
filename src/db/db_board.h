@@ -338,6 +338,8 @@ public:
 	bool isValidMove(	Move const& move,
 							variant::Type variant,
 							move::Constraint flag = move::AllowIllegalMove) const;
+	/// Return whether the piece drop is invalid, because the piece is not in holding.
+	bool isInvalidPieceDrop(Move const& move) const;
 	/// Return whether castling rook position is ambiguous
 	bool needCastlingFyles() const;
 	/// Return whether position cannot be derived from standard chess position
