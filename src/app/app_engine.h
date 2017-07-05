@@ -199,7 +199,8 @@ public:
 		Options const& options() const;
 		::db::variant::Type currentVariant() const;
 		unsigned supportedVariants() const;
-		int findVariation(db::Move const& move) const;
+		int findVariationNo(db::Move const& move) const;
+		db::MoveList const* findVariation(db::Move const& move) const;
 
 		long pid() const;
 
@@ -473,7 +474,8 @@ protected:
 	void setCurrentMove(unsigned number, unsigned moveCount, db::Move const& move);
 	void setHashFullness(unsigned fullness);
 
-	int findVariation(db::Move const& move) const;
+	int findVariationNo(db::Move const& move) const;
+	db::MoveList const* findVariation(db::Move const& move) const;
 
 	void setIdentifier(mstl::string const& name);
 	void setShortName(mstl::string const& name);

@@ -1676,7 +1676,7 @@ Engine::insertPV(db::MoveList const& moves)
 
 
 int
-Engine::findVariation(db::Move const& move) const
+Engine::findVariationNo(db::Move const& move) const
 {
 	for (unsigned i = 0; i < m_usedMultiPV; ++i)
 	{

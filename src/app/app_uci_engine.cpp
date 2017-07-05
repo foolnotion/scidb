@@ -945,6 +945,8 @@ uci::Engine::parseMoveList(char const* s, db::Board& board, db::MoveList& moves)
 {
 	M_ASSERT(!variant::isZhouse(m_variant)); // because isLan(), parseLAN() is not working
 
+	char const* str = s;
+
 	while (::isLan(s))
 	{
 		Move move;
@@ -953,20 +955,24 @@ uci::Engine::parseMoveList(char const* s, db::Board& board, db::MoveList& moves)
 
 		if (next == 0)
 		{
+			char const* t = ::skipNonSpaces(s);
 			mstl::string msg("Illegal move in PV: ");
-			msg.append(s, ::skipNonSpaces(s));
+			msg.append(s, t);
+			if (!moves.isEmpty())
+			{
+				msg.append(" (", 2);
+				msg.append(str, t);
+				msg.append(")", 1);
+			}
 			error(msg);
 
-			if (moves.isEmpty())
+			if (moves.isEmpty() && isAnalyzing())
 			{
-				if (isAnalyzing())
-				{
-					// Some engines (e,g. Gaviota) are playing the bestmove
-					// automatically, thus starting from a wrong position in
-					// case of restart. Restart analysis again in this case.
-					stopAnalysis(true);
-					startAnalysis(true);
-				}
+				// Some engines (e,g. Gaviota) are playing the bestmove
+				// automatically, thus starting from a wrong position in
+				// case of restart. Restart analysis again in this case.
+				stopAnalysis(true);
+				startAnalysis(true);
 			}
 
 			return 0;

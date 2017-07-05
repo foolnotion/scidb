@@ -275,7 +275,6 @@ proc update {w {board {}} {promoted {}}} {
 	}
 
 	set Board(data) $board
-	set Board(promoted) $promoted
 
 	if {$redraw || $Board(data) ne $oldBoard} {
 		set size $Board(size)
@@ -295,17 +294,22 @@ proc update {w {board {}} {promoted {}}} {
 			set piece [string index $board $sq]
 			if {$redraw || $piece ne [string index $oldBoard $sq]} {
 				DrawPiece $w $sq $piece
-				if {$sq in $promoted} {
-					DrawPromoted $w $sq
-				} else {
-					removePromoted $w $sq
-				}
 			}
 		}
 
 		# Redraw marks and arrows:
 		DrawAllMarks $w
 		DrawAllAlternatives $w
+	}
+
+	if {$redraw || $Board(promoted) ne $promoted} {
+		foreach sq $Board(promoted) {
+			if {$sq ni $promoted} { $w.c delete promoted:$sq }
+		}
+		set Board(promoted) {}
+		foreach sq $promoted {
+			DrawPromoted $w $sq
+		}
 	}
 
 	return $board
@@ -1303,7 +1307,7 @@ proc MakePromoImage {w {method ""}} {
 				$img copy $::board::icon::12x12::marker -to 2 [expr {$size - 14}] 14 [expr {$size - 2}]
 			}
 			star {
-				set s [expr {$size/2}]
+				set s [expr {($size*2)/5}]
 				if {$s % 2 == 0} { incr s }
 				set star [image create photo -width $s -height $s]
 				::scidb::tk::image create [namespace current]::Star $star

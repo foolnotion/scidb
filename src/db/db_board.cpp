@@ -2358,7 +2358,9 @@ Board::validate(variant::Type variant, Handicap handicap, move::Constraint flag)
 		  + m_material[Black].total();
 
 		if (n > 32) return TooManyPiecesInHolding;
-		if (n < 32) return TooFewPiecesInHolding;
+
+		if (flag != move::AllowIllegalMove && n < 32)
+			return TooFewPiecesInHolding;
 
 		if (m_material[Black].pawn + count(m_promotedPieces[White]) > 16)
 			return TooManyPromotedWhitePieces;
@@ -2367,10 +2369,13 @@ Board::validate(variant::Type variant, Handicap handicap, move::Constraint flag)
 
 		uint64_t promoted = m_promotedPieces[White]|m_promotedPieces[Black];
 
-		if (count(m_queens  & ~promoted) > 2) return TooFewPromotedQueens;
-		if (count(m_rooks   & ~promoted) > 4) return TooFewPromotedRooks;
-		if (count(m_bishops & ~promoted) > 4) return TooFewPromotedBishops;
-		if (count(m_knights & ~promoted) > 4) return TooFewPromotedKnights;
+		if (flag != move::AllowIllegalMove)
+		{
+			if (count(m_queens  & ~promoted) > 2) return TooFewPromotedQueens;
+			if (count(m_rooks   & ~promoted) > 4) return TooFewPromotedRooks;
+			if (count(m_bishops & ~promoted) > 4) return TooFewPromotedBishops;
+			if (count(m_knights & ~promoted) > 4) return TooFewPromotedKnights;
+		}
 
 		n = m_material[Black].pawn
 		  + m_material[White].pawn
@@ -2381,7 +2386,7 @@ Board::validate(variant::Type variant, Handicap handicap, move::Constraint flag)
 		if (n > 16)
 			return TooManyPromotedPieces;
 
-		if (n < 16)
+		if (flag != move::AllowIllegalMove && n < 16)
 			return TooFewPromotedPieces;
 	}
 	else if (variant::isThreeCheck(variant))
@@ -5157,18 +5162,14 @@ Board::parsePieceDrop(	char const* s,
 
 	int to = ::mul8(::toRank(*s++)) + fromFyle;
 
-	if (m_occupied & set1Bit(to))
-		return 0;
-
-	move = Move::genPieceDrop(to, pieceType);
-	prepareMove(move, variant, flag);
-
-	if (count == 0)
+	if ((m_occupied & set1Bit(to)) || count == 0)
 	{
-		if (flag == move::DontAllowIllegalMove)
-			return 0;
-
 		move.setIllegalMove();
+	}
+	else
+	{
+		move = Move::genPieceDrop(to, pieceType);
+		prepareMove(move, variant, flag);
 	}
 
 	return s;
@@ -6115,8 +6116,15 @@ Board::checkMove(Move const& move, variant::Type variant, move::Constraint flag)
 
 	uint64_t src = set1Bit(from);
 
-	if (!(m_occupiedBy[m_stm] & src) && !move.isPieceDrop())
+	if (move.isPieceDrop())
+	{
+		if ((m_occupied & src) || isInvalidPieceDrop(move))
+			return false;
+	}
+	else if (!(m_occupiedBy[m_stm] & src))
+	{
 		return false;
+	}
 
 	Square to = move.to();
 
@@ -6430,6 +6438,30 @@ Board::prepareMove(Square from, Square to, variant::Type variant, move::Constrai
 }
 
 
+bool
+Board::isInvalidPieceDrop(Move const& move) const
+{
+	M_REQUIRE(move.isPieceDrop());
+
+	switch (move.droppedPiece())
+	{
+		case piece::WhiteQueen:  if (m_holding[White].queen  == 0) return true; break;
+		case piece::WhiteRook:   if (m_holding[White].rook   == 0) return true; break;
+		case piece::WhiteBishop: if (m_holding[White].bishop == 0) return true; break;
+		case piece::WhiteKnight: if (m_holding[White].knight == 0) return true; break;
+
+		case piece::BlackQueen:  if (m_holding[Black].queen  == 0) return true; break;
+		case piece::BlackRook:   if (m_holding[Black].rook   == 0) return true; break;
+		case piece::BlackBishop: if (m_holding[Black].bishop == 0) return true; break;
+		case piece::BlackKnight: if (m_holding[Black].knight == 0) return true; break;
+
+		default: return true;
+	}
+
+	return false;
+}
+
+
 Move
 Board::preparePieceDrop(Square to, piece::Type piece, move::Constraint flag) const
 {
@@ -6441,6 +6473,8 @@ Board::preparePieceDrop(Square to, piece::Type piece, move::Constraint flag) con
 	Move move = Move::genPieceDrop(to, piece);
 	move.setColor(m_stm);
 
+	if (move.isPieceDrop() && isInvalidPieceDrop(move))
+		move.clear();
 	if (!isIntoCheck(move, variant::Crazyhouse))
 		move.setLegalMove();
 	else if (flag == move::DontAllowIllegalMove)
@@ -6482,6 +6516,10 @@ Board::prepareMove(Move& move, variant::Type variant, move::Constraint flag) con
 			}
 		}
 		else if (variant::isThreeCheck(variant) && m_checksGiven[m_stm ^ 1] == 3)
+		{
+			move.clear();
+		}
+		else if (move.isPieceDrop() && isInvalidPieceDrop(move))
 		{
 			move.clear();
 		}
