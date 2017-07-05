@@ -843,6 +843,8 @@
 ::board::options::mc::ShowMaterialBar		"Visa material stapel"
 ::board::options::mc::ShowSideToMove		"Visa sida vid draget"
 ::board::options::mc::ShowSuggestedMove	"Visa föreslagna drag"
+::board::options::mc::ShowPieceShadow		"Show Piece Shadow" ;# NEW
+::board::options::mc::ShowPieceContour		"Show Piece Contour" ;# NEW
 ::board::options::mc::SuggestedMove			"Föreslagna drag"
 ::board::options::mc::Basic					"Enkelt"
 ::board::options::mc::PieceStyle				"Pjäser"

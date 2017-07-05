@@ -696,6 +696,7 @@ proc bgerror {err args} {
 		set errmsg ""
 		set errresult ""
 		::tk::dialog::error::bgerror $err
+		catch { ::widget::busyCursor clear }
 	} elseif {[string length $errorInfo] > 0} {
 		# only save the stack info for next call of bgerror
 		set tclStack $errorInfo

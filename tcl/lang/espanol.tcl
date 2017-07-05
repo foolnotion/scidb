@@ -840,6 +840,8 @@
 ::board::options::mc::ShowMaterialBar		"Mostrar Barra de Matrial" 
 ::board::options::mc::ShowSideToMove		"Mostrar el lado que mueve"
 ::board::options::mc::ShowSuggestedMove	"Mostar jugada sugerida"
+::board::options::mc::ShowPieceShadow		"Show Piece Shadow" ;# NEW
+::board::options::mc::ShowPieceContour		"Show Piece Contour" ;# NEW
 ::board::options::mc::SuggestedMove			"Jugada sugerida"
 ::board::options::mc::Basic					"Básico"
 ::board::options::mc::PieceStyle				"Estilo de pieza"

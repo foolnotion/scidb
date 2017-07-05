@@ -839,6 +839,8 @@
 ::board::options::mc::ShowMaterialBar		"Materialleiste anzeigen"
 ::board::options::mc::ShowSideToMove		"Zugrecht anzeigen"
 ::board::options::mc::ShowSuggestedMove	"Zugvorschlag anzeigen"
+::board::options::mc::ShowPieceShadow		"Figurenschatten anzeigen"
+::board::options::mc::ShowPieceContour		"Figurenumrandungen anzeigen"
 ::board::options::mc::SuggestedMove			"Zugvorschlag"
 ::board::options::mc::Basic					"Grundaufbau"
 ::board::options::mc::PieceStyle				"Figurengestaltung"

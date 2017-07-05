@@ -844,6 +844,8 @@
 ::board::options::mc::ShowMaterialBar		"Anyageloszlás háttércsík"
 ::board::options::mc::ShowSideToMove		"Lépésre jövő fél jelzése"
 ::board::options::mc::ShowSuggestedMove		"Ajánlott lépés mutatása"
+::board::options::mc::ShowPieceShadow		"Show Piece Shadow" ;# NEW
+::board::options::mc::ShowPieceContour		"Show Piece Contour" ;# NEW
 ::board::options::mc::SuggestedMove		"Ajánlott lépés"
 ::board::options::mc::Basic			"Basic"
 ::board::options::mc::PieceStyle		"Figura stílus"

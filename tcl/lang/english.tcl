@@ -837,6 +837,8 @@
 ::board::options::mc::ShowMaterialBar		"Show Material Bar"
 ::board::options::mc::ShowSideToMove		"Show Side to Move"
 ::board::options::mc::ShowSuggestedMove	"Show Suggested Move"
+::board::options::mc::ShowPieceShadow		"Show Piece Shadow"
+::board::options::mc::ShowPieceContour		"Show Piece Contour"
 ::board::options::mc::SuggestedMove			"Suggested Move"
 ::board::options::mc::Basic					"Basic"
 ::board::options::mc::PieceStyle				"Piece Style"

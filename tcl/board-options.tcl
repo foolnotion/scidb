@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2013 Gregor Cramer
+# Copyright: (C) 2009-2017 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -49,6 +49,8 @@ set ShowMaterialValues	"Show Material Values"
 set ShowMaterialBar		"Show Material Bar"
 set ShowSideToMove		"Show Side to Move"
 set ShowSuggestedMove	"Show Suggested Move"
+set ShowPieceShadow		"Show Piece Shadow"
+set ShowPieceContour		"Show Piece Contour"
 set SuggestedMove			"Suggested Move"
 set Basic					"Basic"
 set PieceStyle				"Piece Style"
@@ -91,7 +93,7 @@ array set Options {
 	modifiedForeground	board,modifiedForeground
 	modifiedBackground	board,modifiedBackground
 	fixedBackground		board,fixedBackground
-	pieceSetListCount		11
+	pieceSetListCount		13
 	figurineSize			18
 }
 set Options(boardSize)	[expr {45*$Options(pieceSetListCount)}]
@@ -167,6 +169,16 @@ proc makeBasicFrame {path} {
 		-command [namespace code RefreshBoard] \
 		-state $state
 	set Vars(widget:embossed) $f.embossed
+	::ttk::checkbutton $f.shadow \
+		-textvar [namespace current]::mc::ShowPieceShadow \
+		-variable [namespace parent]::layout(piece-shadow) \
+		-command [namespace code RefreshPieces]
+	set Vars(widget:shadow) $f.shadow
+	::ttk::checkbutton $f.contour \
+		-textvar [namespace current]::mc::ShowPieceContour \
+		-variable [namespace parent]::layout(piece-contour) \
+		-command [namespace code RefreshPieces]
+	set Vars(widget:contour) $f.contour
 	
 	grid $f.border			-row  1 -column 1 -sticky w -columnspan 2
 	grid $f.mv				-row  3 -column 1 -sticky w -columnspan 2
@@ -175,10 +187,12 @@ proc makeBasicFrame {path} {
 	grid $f.coords			-row  9 -column 1 -sticky w -columnspan 2
 	grid $f.small			-row 11 -column 2 -sticky w
 	grid $f.embossed		-row 13 -column 2 -sticky w
+	grid $f.shadow			-row 15 -column 1 -sticky w -columnspan 2
+	grid $f.contour		-row 17 -column 1 -sticky w -columnspan 2
 	grid columnconfigure $f {0 3} -minsize $::theme::padx
 	grid columnconfigure $f 1 -minsize 25
 	grid columnconfigure $f 2 -weight 1
-	grid rowconfigure $f {0 2 4 6 8 10 12 14} -minsize $::theme::pady
+	grid rowconfigure $f {0 2 4 6 8 10 12 14 16 18} -minsize $::theme::pady
 
 	# Highlighting #################################
 
@@ -894,7 +908,7 @@ proc Apply {applyProc} {
 	variable [namespace parent]::needRefresh
 	variable Vars
 
-	$Vars(widget:dialog) configure -cursor watch
+	::widget::busyCursor on
 	[namespace parent]::apply
 	foreach which {piece lite dark white black} {
 		set needRefresh($which,all) true
@@ -902,7 +916,7 @@ proc Apply {applyProc} {
 	[namespace parent]::setupSquares all
 	[namespace parent]::setupPieces all
 	eval $applyProc
-	$Vars(widget:dialog) configure -cursor {}
+	::widget::busyCursor off
 }
 
 
@@ -910,7 +924,7 @@ proc Reset {applyProc} {
 	variable [namespace parent]::needRefresh
 	variable Vars
 
-	$Vars(widget:dialog) configure -cursor watch
+	::widget::busyCursor on
 	[namespace parent]::reset
 	foreach which {piece lite dark white black} {
 		set needRefresh($which,all) true
@@ -920,7 +934,7 @@ proc Reset {applyProc} {
 	setBackground $Vars(widget:canv:preview) window
 	setBackground $Vars(widget:canv:border) border
 	eval $applyProc
-	$Vars(widget:dialog) configure -cursor {}
+	::widget::busyCursor off
 	SetCurrentSelection theme
 	SetCurrentSelection piece
 	SetCurrentSelection square
@@ -1389,6 +1403,21 @@ proc MakeHiliteRect {canv tag} {
 }
 
 
+proc RefreshPieces {} {
+	variable [namespace parent]::needRefresh
+	variable Options
+
+	::widget::busyCursor on
+	set size $Options(squareSize)
+
+	foreach which {piece white black} {
+		set needRefresh($which,$size) true
+	}
+	[namespace parent]::setupPieces all
+	::widget::busyCursor off
+}
+
+
 proc RefreshBoard {} {
 	variable [namespace parent]::layout
 	variable [namespace parent]::colors
@@ -1554,7 +1583,6 @@ proc ConfigureBoard {} {
 	$preview coords stmw $x $y
 
 	# configure coordinates ########################
-	set bdw	20
 	set x3	[expr {$x1 - 10}]
 	set y3	[expr {$y1 + $squareSize/2}]
 	set x4	12
@@ -1788,10 +1816,10 @@ proc ThemeSelected {list {nameList {}}} {
 	# strange: we can get a <<ListboxSelect>> event although the listbox is disabled
 	if {[$list cget -state] eq "disabled"} { return }
 
-	[winfo toplevel $list] configure -cursor watch
+	::widget::busyCursor on
 	update idletasks
 	setTheme [GetCurrentSelection $list $nameList theme] $Options(squareSize)
-	[winfo toplevel $list] configure -cursor {}
+	::widget::busyCursor off
 
 	variable [namespace parent]::square::style
 	SetRecentColors border border
@@ -1849,10 +1877,10 @@ proc SquareStyleSelected {list {nameList {}}} {
 	variable Options
 	variable Vars
 
-	[winfo toplevel $list] configure -cursor watch
+	::widget::busyCursor on
 	update idletasks
 	setSquareStyle [GetCurrentSelection $list $nameList square] $Options(squareSize)
-	[winfo toplevel $list] configure -cursor {}
+	::widget::busyCursor off
 
 	SetRecentColors border border
 	SetColors
@@ -1865,10 +1893,10 @@ proc SquareStyleSelected {list {nameList {}}} {
 proc PieceStyleSelected {list {nameList {}}} {
 	variable Options
 
-	[winfo toplevel $list] configure -cursor watch
+	::widget::busyCursor on
 	update idletasks
 	setPieceStyle [GetCurrentSelection $list $nameList piece] $Options(squareSize)
-	[winfo toplevel $list] configure -cursor {}
+	::widget::busyCursor off
 
 	ConfigStyleSelectionFrame piece
 	ConfigStyleSelectionFrame theme
@@ -1879,11 +1907,11 @@ proc PieceSetSelected {identifier} {
 	variable Options
 	variable Vars
 
-	[winfo toplevel $Vars(widget:pieceset)] configure -cursor watch
+	::widget::busyCursor on
 	update idletasks
 	setPieceSet $identifier $Options(squareSize)
 	[namespace parent]::piece::notifyPieceSetChanged
-	[winfo toplevel $Vars(widget:pieceset)] configure -cursor {}
+	::widget::busyCursor off
 	ConfigThemeSelectionFrame
 }
 

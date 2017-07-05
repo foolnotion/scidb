@@ -844,6 +844,8 @@
 ::board::options::mc::ShowMaterialBar		"Mostra barra del materiale"
 ::board::options::mc::ShowSideToMove		"Mostra lato con il tratto"
 ::board::options::mc::ShowSuggestedMove	"Mostra mossa suggerita"
+::board::options::mc::ShowPieceShadow		"Show Piece Shadow" ;# NEW
+::board::options::mc::ShowPieceContour		"Show Piece Contour" ;# NEW
 ::board::options::mc::SuggestedMove			"Mossa suggerita"
 ::board::options::mc::Basic					"Basilare"
 ::board::options::mc::PieceStyle				"Stile dei pezzi"
