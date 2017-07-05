@@ -1328,20 +1328,17 @@ proc MakePromoImage {w {method ""}} {
 
 
 proc MakeCircle {squareSize color} {
-	variable ${w}::Board
+	variable Circle
 
 	set size [expr {int(double($squareSize)*0.8 + 0.5)}]
 	if {($squareSize % 2) != ($size % 2)} { incr size }
-	if {![info exists Board(image,circle,$squareSize,$color)]} {
-		variable Circle
-		set img [image create photo -width [image width $Circle] -height [image height $Circle]]
-		$img copy $Circle
-		::scidb::tk::image colorize $color 0.7 $img
-		set Board(image,circle,$squareSize,$color) $img
-	}
+	set tmp [image create photo -width [image width $Circle] -height [image height $Circle]]
+	$tmp copy $Circle
+	::scidb::tk::image colorize $color 0.7 $tmp
 	set img [image create photo -width $size -height $size]
-	::scidb::tk::image copy $Board(image,circle,$squareSize,$color) $img
+	::scidb::tk::image copy $tmp $img
 	::scidb::tk::image alpha 0.8 $img -composite overlay
+	image delete $tmp
 	return $img
 }
 
@@ -1352,26 +1349,22 @@ proc DrawCircle {w square color} {
 	if {![info exists Board(image,circle,$Board(size),$color)]} {
 		set Board(image,circle,$Board(size),$color) [MakeCircle $Board(size) $color]
 	}
-
 	SetImage $w.c $Board(size) {*}[$w.c coords square:$square] $Board(image,circle,$Board(size),$color)
 }
 
 
 proc MakeDisk {squareSize color} {
-	variable ${w}::Board
+	variable Disk
 
 	set size [expr {int(double($squareSize)*0.8 + 0.5)}]
 	if {($squareSize % 2) != ($size % 2)} { incr size }
-	if {![info exists Board(disk,$color)]} {
-		variable Disk
-		set img [image create photo -width [image width $Disk] -height [image height $Disk]]
-		$img copy $Disk
-		::scidb::tk::image colorize $color 0.7 $img
-		set Board(disk,$color) $img
-	}
+	set tmp [image create photo -width [image width $Disk] -height [image height $Disk]]
+	$tmp copy $Disk
+	::scidb::tk::image colorize $color 0.7 $tmp
 	set img [image create photo -width $size -height $size]
-	::scidb::tk::image copy $Board(disk,$color) $img
+	::scidb::tk::image copy $tmp $img
 	::scidb::tk::image alpha 0.8 $img -composite overlay
+	image delete $tmp
 	return $img
 }
 
@@ -1382,7 +1375,6 @@ proc DrawDisk {w square color} {
 	if {![info exists Board(image,disk,$Board(size),$color)]} {
 		set Board(image,disk,$Board(size),$color) [MakeDisk $Board(size) $color]
 	}
-
 	SetImage $w.c $Board(size) {*}[$w.c coords square:$square] $Board(image,disk,$Board(size),$color)
 }
 
