@@ -541,7 +541,6 @@ proc update {position cmd data promoted} {
 	variable board
 	variable Vars
 
-puts "update: $promoted"
 	switch $cmd {
 		set	{ ::board::diagram::update $board $data $promoted }
 		move	{ ::board::diagram::move $board $data }
