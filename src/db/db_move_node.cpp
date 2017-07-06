@@ -776,6 +776,19 @@ MoveNode::stripMoveInfo()
 
 
 void
+MoveNode::stripFlag(Flag flag)
+{
+	for (MoveNode* n = this; n; n = n->m_next)
+	{
+		n->m_flags &= ~flag;
+
+		for (unsigned i = 0; i < n->m_variations.size(); ++i)
+			n->m_variations[i]->stripFlag(flag);
+	}
+}
+
+
+void
 MoveNode::stripMarks()
 {
 	for (MoveNode* n = this; n; n = n->m_next)

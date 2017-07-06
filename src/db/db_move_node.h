@@ -96,6 +96,7 @@ public:
 		ChangedAnnotation	= 1 << 13,
 		ChangedDiagram		= 1 << 14,
 		MoveHasChanged		= ChangedComment | ChangedAnnotation | ChangedDiagram,
+		IsMerged				= 1 << 15,
 	};
 
 	MoveNode(Move const& move);
@@ -209,6 +210,7 @@ public:
 	void stripComments();
 	void stripComments(mstl::string const& lang);
 	void stripVariations();
+	void stripFlag(Flag flag);
 	void copyComments(mstl::string const& fromLang, mstl::string const& toLang, bool stripOriginal);
 	void updateFromTimeTable(TimeTable const& timeTable);
 
