@@ -348,7 +348,7 @@ if {[::process::testOption use-clock]} {
 	TabChanged $nb $app
 	::load::writeLog
 	update idletasks
-	set ::remote::blocked 0
+	set ::scidb::intern::blocked 0
 
 	database::preOpen $app
 
