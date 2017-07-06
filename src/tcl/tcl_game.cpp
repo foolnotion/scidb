@@ -1098,8 +1098,9 @@ struct Subscriber : public Game::Subscriber
 		}
 	}
 
-	void boardSetup(Board const& board) override
+	void boardSetup(Board const& board, variant::Type variant) override
 	{
+		// TODO: realize that the board contains the variant, then remove the parameter 'variant'
 		pos::resetMoveCache();
 
 		if (!m_board.empty())
@@ -1107,8 +1108,10 @@ struct Subscriber : public Game::Subscriber
 			mstl::string pos;
 			pos::dumpBoard(board, pos);
 
-			Tcl_Obj* promoted = ::makePromotionList(board);
+			Tcl_Obj* promoted;
 			Tcl_Obj* b = Tcl_NewStringObj(pos, pos.size());
+
+			promoted = (variant == variant::Crazyhouse) ? ::makePromotionList(board) : Tcl_NewObj();
 
 			Tcl_IncrRefCount(b);
 			Tcl_IncrRefCount(promoted);

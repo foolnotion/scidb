@@ -1810,6 +1810,7 @@ proc UpdateControls {} {
 
 proc GameSwitched {position} {
 	variable Vars
+	variable board
 
 	# reset if position is 9 (all games closed)
 
@@ -1830,7 +1831,8 @@ proc GameSwitched {position} {
 	UpdateGameButtonState(list) $position
 	UpdateGameButtonState(base) [::scidb::db::get name] [::scidb::app::variant]
 	UpdateSaveButton
-	UpdatePromotions
+
+	::board::diagram::showPromoted $board [expr {$variant eq "Crazyhouse"}]
 
 	if {$variant eq "Crazyhouse" || $variant eq "ThreeCheck"} {
 		set layout $variant
@@ -1863,15 +1865,6 @@ proc DatabaseSwitched {base variant} {
 	UpdateGameButtonState(base) $base $variant
 	UpdateSaveButton
 	UpdateCrossTableButton
-}
-
-
-proc UpdatePromotions {} {
-	variable board
-
-	foreach sq [::scidb::game::promoted] {
-		::board::diagram::drawPromoted $board $sq
-	}
 }
 
 

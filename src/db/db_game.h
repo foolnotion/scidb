@@ -169,7 +169,7 @@ public:
 		virtual void updateMarks(mstl::string const& marks) = 0;
 		virtual void gotoMove(mstl::string const& key, mstl::string const& succKey) = 0;
 
-		virtual void boardSetup(Board const& board) = 0;
+		virtual void boardSetup(Board const& board, variant::Type variant) = 0;
 		virtual void boardMove(Board const& board, Move const& move, bool forward) = 0;
 
 		virtual void updateEditor(	edit::Root const* node,

@@ -84,6 +84,7 @@ proc new {w size args} {
 
 	set Board(flip) $opts(-rotate)
 	set Board(mark:promoted) $opts(-promosign)
+	set Board(show:promoted) 0
 	set Board(marks) {}
 	set Board(alternatives) {}
 	set Board(size) $size
@@ -141,11 +142,23 @@ proc setPromoSign {w method} {
 		set Board(mark:promoted) $method
 		if {$oldMethod eq "none"} {
 			foreach sq $Board(promoted) {
-				DrawPromoted $w $sq
+				$w.c delete promoted:$sq
+				drawPromoted $w $sq
 			}
 		}
-		raisePiece $w
 	}
+}
+
+
+proc showPromoted {w flag} {
+	variable ${w}::Board
+	set Board(show:promoted) $flag
+}
+
+
+proc showPromoted? {w} {
+	variable ${w}::Board
+	return $Board(show:promoted)
 }
 
 
@@ -349,7 +362,7 @@ proc move {w list} {
 		set Board(data) [string replace $Board(data) $squareCaptured $squareCaptured $pieceCaptured]
 	}
 
-	if {$pieceFrom != $pieceTo && $squareFrom != $squareTo} {
+	if {$Board(show:promoted) && $pieceFrom != $pieceTo && $squareFrom != $squareTo} {
 		if {!$forward} {
 			removePromoted $w $squareFrom
 		} elseif {$squareFrom ni $Board(promoted)} {
@@ -381,7 +394,6 @@ proc move {w list} {
 		}
 	} else {
 		if {$pieceFrom != $pieceTo && [string match {[Pp]} $pieceTo]} {
-			# take back a promotion; move a pawn, not the promoted piece
 			DrawPiece $w $squareFrom $pieceTo
 		}
 
@@ -1042,7 +1054,7 @@ proc DoMove {w list} {
 	lassign $list color squareFrom squareTo squareCaptured \
 		pieceFrom pieceTo pieceCaptured pieceHolding rookFrom rookTo forward
 
-	if {$forward && $squareCaptured != -1} {
+	if {$Board(show:promoted) && $forward && $squareCaptured != -1} {
 		# we have to remove a possible promotion mark
 		removePromoted $w $squareCaptured
 	}
@@ -1064,27 +1076,25 @@ proc DoMove {w list} {
 		DrawPiece $w $squareCaptured $pieceCaptured
 	}
 
-	if {	$squareFrom in $Board(promoted)
-		|| (	$pieceFrom != $pieceTo
-			&& $pieceTo ne " "
-			&& [string match {[Pp]} $pieceFrom])} {
-		# 1. move promotion marker to new piece position, or
-		# 2. mark newly promoted piece
-		removePromoted $w $squareFrom
-		DrawPromoted $w $squareTo
-		if {$Board(mark:promoted) ne "none"} {
+	if {$Board(show:promoted)} {
+		if {	$squareFrom in $Board(promoted)
+			|| (	$pieceFrom != $pieceTo
+				&& $pieceTo ne " "
+				&& [string match {[Pp]} $pieceFrom])} {
+			# 1. move promotion marker to new piece position, or
+			# 2. mark newly promoted piece
+			removePromoted $w $squareFrom
+			DrawPromoted $w $squareTo
 			raisePiece $w $squareTo
 		}
-	}
 
-	if {	!$forward
-		&& $pieceCaptured != $pieceHolding
-		&& $pieceCaptured != "."
-		&& [string match {[Pp]} $pieceHolding]
-		&& ![string match {[Pp]} $pieceCaptured]} {
-		# take back capture of promoted piece
-		DrawPromoted $w $squareFrom
-		if {$Board(mark:promoted) ne "none"} {
+		if {	!$forward
+			&& $pieceCaptured != $pieceHolding
+			&& $pieceCaptured != "."
+			&& [string match {[Pp]} $pieceHolding]
+			&& ![string match {[Pp]} $pieceCaptured]} {
+			# take back capture of promoted piece
+			DrawPromoted $w $squareFrom
 			raisePiece $w $squareFrom
 		}
 	}

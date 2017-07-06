@@ -298,6 +298,9 @@ mergeComments(MoveNode* dst, MoveNode const* src, MoveNode::LanguageSet const& l
 	M_ASSERT(dst);
 	M_ASSERT(src);
 
+	if (src->testFlag(MoveNode::IsMerged))
+		return false;
+
 	bool changed = false;
 
 	for (unsigned i = 0; i < 2; ++i)
@@ -320,6 +323,7 @@ mergeComments(MoveNode* dst, MoveNode const* src, MoveNode::LanguageSet const& l
 		}
 	}
 
+	const_cast<MoveNode*>(src)->setFlag(MoveNode::IsMerged); // mutable data
 	return changed;
 }
 
@@ -370,6 +374,8 @@ makeVariation(	MoveNode* const* first,
 
 		if (leadingLanguageSet)
 			stripComments(n->next(), *leadingLanguageSet);
+
+		const_cast<MoveNode*>(*first)->setFlag(MoveNode::IsMerged); // mutable data
 	}
 
 	M_ASSERT((*(last - 1))->next());
@@ -2041,7 +2047,7 @@ Game::goToCurrentMove() const
 	if (m_subscriber && m_previousKey != m_currentKey)
 	{
 		m_previousKey = m_currentKey;
-		m_subscriber->boardSetup(m_currentBoard);
+		m_subscriber->boardSetup(m_currentBoard, m_variant);
 		m_subscriber->gotoMove(m_currentKey.id(), successorKey());
 	}
 }
@@ -4006,6 +4012,23 @@ Game::updateLine()
 	m_idn = idn;
 	updateFinalBoard();
 
+	// TODO:
+	// Bare king
+	// Both players ran out of time
+	// Partners' game drawn
+	// Partners' game aborted
+	// White's partner won
+	// Aborted by simul holder
+	// Adjourned by mutual agreement
+	// Adjourned by server shutdown
+	// Adjourned by simul holder
+	// Partners' game adjourned
+	// Courtesyaborted by White
+	// Drawn by mate on both board
+	// Drawn by stalemate (opposite color bishops)
+	// Drawn due to length
+	// Was sent for adjudication
+
 	unsigned state = m_finalBoard.checkState(m_variant);
 
 	if (state & Board::Checkmate)
@@ -4599,8 +4622,8 @@ Game::merge(unsigned modificationPosition,
 		return false;
 
 	mstl::auto_ptr<MoveNode> clone(m_startNode->clone());
-
 	Variants variants;
+
 	::splitForMerge(variants, node, m_variant, variationDepth);
 
 	if (order == move::Transposition)
@@ -4617,6 +4640,9 @@ Game::merge(unsigned modificationPosition,
 
 	mstl::string	delim(game.isModified() ? mstl::string::empty_string : m_delim);
 	bool				changed(false);
+
+	node->stripFlag(MoveNode::IsMerged);
+	m_startNode->stripFlag(MoveNode::IsMerged);
 
 	for (Variants::const_iterator i = variants.begin(); i != variants.end(); ++i)
 	{
@@ -4691,6 +4717,8 @@ Game::merge(Game const& game1,
 	Variants variants1;
 	Variants variants2;
 
+	game1.m_startNode->stripFlag(MoveNode::IsMerged);
+	game2.m_startNode->stripFlag(MoveNode::IsMerged);
 	::splitForMerge(variants1, game1.m_startNode, m_variant, variationDepth);
 	::splitForMerge(variants2, node2, m_variant, variationDepth);
 
