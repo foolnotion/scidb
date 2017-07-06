@@ -349,19 +349,15 @@ proc move {w list} {
 		set Board(data) [string replace $Board(data) $squareCaptured $squareCaptured $pieceCaptured]
 	}
 
-	if {$pieceFrom != $pieceTo && $pieceTo ne "." && $pieceFrom ne " "} {
-		if {$squareFrom in $Board(promoted) && [string match {[Pp]} $pieceTo]} {
-			# take back promotion
-			removePromoted $w $squareFrom
-		} elseif {$squareTo ni $Board(promoted) && [string match {[Pp]} $pieceFrom]} {
-			# mark promoted piece
-			lappend Board(promoted) $squareTo
+	if {$forward} {
+		if {$pieceFrom != $pieceTo && $squareFrom != $squareTo && $squareFrom ni $Board(promoted)} {
+			# the moving piece is a promoted piece
+			lappend Board(promoted) $squareFrom
 		}
-	}
-
-	if {$forward && $squareCaptured in $Board(promoted)} {
-		# remove mark of captured promoted piece
-		removePromoted $w $squareCaptured
+	} else {
+		if {$pieceFrom != $pieceTo && $squareFrom != $squareTo} {
+			removePromoted $w $squareFrom
+		}
 	}
 
 	if {!$Board(animate) || $effects(animation) <= 0} {
@@ -1048,6 +1044,11 @@ proc DoMove {w list} {
 	lassign $list color squareFrom squareTo squareCaptured \
 		pieceFrom pieceTo pieceCaptured pieceHolding rookFrom rookTo forward
 
+	if {$forward && $squareCaptured != -1} {
+		# we have to remove a possible promotion mark
+		removePromoted $w $squareCaptured
+	}
+
 	if {$squareFrom != $squareTo} {
 		DrawPiece $w $squareFrom .
 	}
@@ -1076,10 +1077,13 @@ proc DoMove {w list} {
 		if {$Board(mark:promoted) ne "none"} {
 			raisePiece $w $squareTo
 		}
-	} elseif {	$pieceCaptured != $pieceHolding
-				&& $pieceCaptured != "."
-				&& [string match {[Pp]} $pieceHolding]
-				&& ![string match {[Pp]} $pieceCaptured]} {
+	}
+
+	if {	!$forward
+		&& $pieceCaptured != $pieceHolding
+		&& $pieceCaptured != "."
+		&& [string match {[Pp]} $pieceHolding]
+		&& ![string match {[Pp]} $pieceCaptured]} {
 		# take back capture of promoted piece
 		DrawPromoted $w $squareFrom
 		if {$Board(mark:promoted) ne "none"} {
