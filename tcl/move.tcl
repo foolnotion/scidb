@@ -219,7 +219,7 @@ proc enterSquare {{square {}}} {
 		} else {
 			set suggested -1
 		}
-	
+
 		if {$suggested != -1} {
 			::board::diagram::hilite $board $square suggested
 			::board::diagram::hilite $board $suggested suggested
@@ -253,6 +253,7 @@ proc leaveSquare {{square {}}} {
 			::board::diagram::hilite $board $Square(suggested) off
 			set Square(suggested) -1
 		}
+		set Square(selected) -1
 	} elseif {$Leave <= 0} {
 		set Leave [expr {-($square + 1)}]
 	} else {

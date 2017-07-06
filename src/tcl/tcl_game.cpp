@@ -1100,6 +1100,8 @@ struct Subscriber : public Game::Subscriber
 
 	void boardSetup(Board const& board) override
 	{
+		pos::resetMoveCache();
+
 		if (!m_board.empty())
 		{
 			mstl::string pos;
@@ -1250,6 +1252,8 @@ struct Subscriber : public Game::Subscriber
 
 	void gotoMove(mstl::string const& key, mstl::string const& succKey) override
 	{
+		pos::resetMoveCache();
+
 		if (m_pgn)
 		{
 			Tcl_Obj* objv_1[3];
@@ -1267,8 +1271,6 @@ struct Subscriber : public Game::Subscriber
 
 			invoke(__func__, m_pgn, m_position, Tcl_NewListObj(1, objv_3), nullptr);
 		}
-
-		pos::resetMoveCache();
 	}
 };
 
