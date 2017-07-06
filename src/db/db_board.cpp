@@ -6443,17 +6443,13 @@ Board::isInvalidPieceDrop(Move const& move) const
 {
 	M_REQUIRE(move.isPieceDrop());
 
-	switch (move.droppedPiece())
+	switch (move.dropped())
 	{
-		case piece::WhiteQueen:  if (m_holding[White].queen  == 0) return true; break;
-		case piece::WhiteRook:   if (m_holding[White].rook   == 0) return true; break;
-		case piece::WhiteBishop: if (m_holding[White].bishop == 0) return true; break;
-		case piece::WhiteKnight: if (m_holding[White].knight == 0) return true; break;
-
-		case piece::BlackQueen:  if (m_holding[Black].queen  == 0) return true; break;
-		case piece::BlackRook:   if (m_holding[Black].rook   == 0) return true; break;
-		case piece::BlackBishop: if (m_holding[Black].bishop == 0) return true; break;
-		case piece::BlackKnight: if (m_holding[Black].knight == 0) return true; break;
+		case piece::Queen:  if (m_holding[move.color()].queen  == 0) return true; break;
+		case piece::Rook:   if (m_holding[move.color()].rook   == 0) return true; break;
+		case piece::Bishop: if (m_holding[move.color()].bishop == 0) return true; break;
+		case piece::Knight: if (m_holding[move.color()].knight == 0) return true; break;
+		case piece::Pawn:   if (m_holding[move.color()].pawn   == 0) return true; break;
 
 		default: return true;
 	}
@@ -6473,9 +6469,9 @@ Board::preparePieceDrop(Square to, piece::Type piece, move::Constraint flag) con
 	Move move = Move::genPieceDrop(to, piece);
 	move.setColor(m_stm);
 
-	if (move.isPieceDrop() && isInvalidPieceDrop(move))
+	if (isInvalidPieceDrop(move))
 		move.clear();
-	if (!isIntoCheck(move, variant::Crazyhouse))
+	else if (!isIntoCheck(move, variant::Crazyhouse))
 		move.setLegalMove();
 	else if (flag == move::DontAllowIllegalMove)
 		move.clear();

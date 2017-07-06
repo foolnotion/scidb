@@ -297,7 +297,7 @@ piece::ID
 Move::droppedPiece() const
 {
 	M_REQUIRE(isPieceDrop());
-	return piece::piece(dropped(), color::opposite(color()));
+	return piece::piece(dropped(), color());
 }
 
 

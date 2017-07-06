@@ -43,12 +43,19 @@ void setup_epd_line(char* inbuff)
   int stage = 0;
 
   static int rankoffsets[] = {110, 98, 86, 74, 62, 50, 38, 26};
- 
+
   /* conversion from algebraic to sjeng internal for ep squares */
   int converterf = (int) 'a';
   int converterr = (int) '1';
   int ep_file, ep_rank, norm_file, norm_rank;
   
+#ifndef EXCLUDE_FIXES_FOR_SCIDB
+  int pc = 0; /* piece count */
+  int promoted_board[144];
+  memset(promoted_board, 0, sizeof(promoted_board));
+  memset(is_promoted, 0, sizeof(is_promoted));
+#endif
+ 
   memset(board, frame, sizeof(board));
   
   white_castled = no_castle;
@@ -75,6 +82,12 @@ void setup_epd_line(char* inbuff)
 	  rankoffset = rankoffsets[rankp];	
 	  fileoffset = 0;
 	}
+#ifndef EXCLUDE_FIXES_FOR_SCIDB
+      else if (stage == 0 && inbuff[i] == '~')
+	{
+	  promoted_board[rankoffset + fileoffset - 1] = 1;
+	}
+#endif
       else if (stage == 0 && isalpha(inbuff[i]))
 	{
 	  switch (inbuff[i])
@@ -184,6 +197,19 @@ void setup_epd_line(char* inbuff)
     }
 
   reset_piece_square();
+#ifndef EXCLUDE_FIXES_FOR_SCIDB
+
+  for (i = 26; i < 118; i++)
+    {
+      if (board[i] && (board[i] < npiece))
+      {
+	pc += 1;
+	if (promoted_board[i])
+	  is_promoted[pc] = 1;
+      }
+    }
+
+#endif
   initialize_hash();
 
 }
