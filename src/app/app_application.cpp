@@ -1895,8 +1895,8 @@ Application::endTrialMode()
 
 	delete game.data.game;
 	game.data.game = game.data.backup;
-	game.data.backup = 0;
 	game.data.game->moveTo(game.data.backup->currentKey());
+	game.data.backup = nullptr;
 }
 
 
