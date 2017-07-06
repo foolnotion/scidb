@@ -1062,7 +1062,11 @@ int interrupt(void)
 
       ungetc(c, stdin);
 
+#if SCIDB_VERSION
+      if (!is_pondering && (Variant & Zhouse)) return 0; 
+#else
       if (!is_pondering && (Variant == Bughouse || Variant == Crazyhouse)) return 0; 
+#endif
 
       return 1;
     }
@@ -1100,7 +1104,11 @@ int interrupt(void)
 	  
 	  ungetc(c, stdin);
 	  
+#if SCIDB_VERSION
+	  if (!is_pondering && (Variant & Zhouse)) return 0; 
+#else
 	  if (!is_pondering && (Variant == Bughouse || Variant == Crazyhouse)) return 0; 
+#endif
 	  
 	  return 1;
 	}
@@ -1121,7 +1129,11 @@ int interrupt(void)
 	  
 	  ungetc(c, stdin);
 	  
+#if SCIDB_VERSION
+	  if (!is_pondering && (Variant & Zhouse)) return 0; 
+#else
 	  if (!is_pondering && (Variant == Bughouse || Variant == Crazyhouse)) return 0; 
+#endif
 	  
 	  return 1;
 	}
@@ -1149,7 +1161,11 @@ int interrupt(void)
 	  
 	  ungetc(c, stdin);
 	  
+#if SCIDB_VERSION
+	  if (!is_pondering && (Variant & Zhouse)) return 0; 
+#else
 	  if (!is_pondering && (Variant == Bughouse || Variant == Crazyhouse)) return 0; 
+#endif
 	  
 	  return 1;
 	};

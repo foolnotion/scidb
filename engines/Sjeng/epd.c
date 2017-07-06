@@ -49,11 +49,15 @@ void setup_epd_line(char* inbuff)
   int converterr = (int) '1';
   int ep_file, ep_rank, norm_file, norm_rank;
   
-#ifndef EXCLUDE_FIXES_FOR_SCIDB
-  int pc = 0; /* piece count */
+#if SCIDB_VERSION
+  int pc; /* piece count */
   int promoted_board[144];
-  memset(promoted_board, 0, sizeof(promoted_board));
-  memset(is_promoted, 0, sizeof(is_promoted));
+
+  if (Variant & (Crazyhouse|Bughouse))
+  {
+    memset(promoted_board, 0, sizeof(promoted_board));
+    memset(is_promoted, 0, sizeof(is_promoted));
+  }
 #endif
  
   memset(board, frame, sizeof(board));
@@ -82,10 +86,11 @@ void setup_epd_line(char* inbuff)
 	  rankoffset = rankoffsets[rankp];	
 	  fileoffset = 0;
 	}
-#ifndef EXCLUDE_FIXES_FOR_SCIDB
+#if SCIDB_VERSION
       else if (stage == 0 && inbuff[i] == '~')
 	{
-	  promoted_board[rankoffset + fileoffset - 1] = 1;
+	  if (Variant & (Crazyhouse|Bughouse))
+	    promoted_board[rankoffset + fileoffset - 1] = 1;
 	}
 #endif
       else if (stage == 0 && isalpha(inbuff[i]))
@@ -197,16 +202,18 @@ void setup_epd_line(char* inbuff)
     }
 
   reset_piece_square();
-#ifndef EXCLUDE_FIXES_FOR_SCIDB
-
-  for (i = 26; i < 118; i++)
+#if SCIDB_VERSION
+  if (Variant & (Crazyhouse|Bughouse))
     {
-      if (board[i] && (board[i] < npiece))
-      {
-	pc += 1;
-	if (promoted_board[i])
-	  is_promoted[pc] = 1;
-      }
+      for (i = 26, pc = 0; i < 118; i++)
+	{
+	  if (board[i] && (board[i] < npiece))
+	  {
+	    pc += 1;
+	    if (promoted_board[i])
+	      is_promoted[pc] = 1;
+	  }
+	}
     }
 
 #endif

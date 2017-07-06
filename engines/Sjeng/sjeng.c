@@ -260,7 +260,11 @@ int main (int argc, char *argv[]) {
 	        && 
 	      ((result != white_is_mated) && (result != black_is_mated)))
 	      || 
+#if SCIDB_VERSION
+	      ((Variant == Normal || (Variant & Zhouse))
+#else
 	      ((Variant == Normal || Variant == Crazyhouse || Variant == Bughouse)
+#endif
 	      && ((comp_color == 1 && result != white_is_mated) 
 	         ||
 	         (comp_color == 0 && result != black_is_mated)
@@ -682,6 +686,20 @@ int main (int argc, char *argv[]) {
 	    memcpy(material, std_material, sizeof(std_material));
 	    init_book();
 	  }
+#if SCIDB_VERSION
+	else if (strstr(input, "loopchess"))
+	  {
+	    Variant = LoopChess;
+	    memcpy(material, zh_material, sizeof(zh_material));
+	    init_book();
+	  }
+	else if (strstr(input, "chessgi"))
+	  {
+	    Variant = Chessgi;
+	    memcpy(material, zh_material, sizeof(zh_material));
+	    init_book();
+	  }
+#endif
 	else if (strstr(input, "crazyhouse"))
 	  {
 	    Variant = Crazyhouse;
@@ -891,7 +909,7 @@ int main (int argc, char *argv[]) {
 	printf("feature ping=1 setboard=1 playother=0 san=0 usermove=0 time=1 memory=1\n");
 	printf("feature draw=0 sigint=0 sigterm=0 reuse=1 analyze=1\n");
 	printf("feature myname=\"Sjeng " VERSION "\"\n");
-	printf("feature variants=\"normal,bughouse,crazyhouse,suicide,giveaway,losers\"\n");
+	printf("feature variants=\"normal,bughouse,crazyhouse,loopchess,chessgi,suicide,giveaway,losers\"\n");
 	printf("feature colors=1 ics=0 name=0 pause=0 done=1\n");
 	xb_mode = 2;
       }
@@ -959,7 +977,11 @@ int main (int argc, char *argv[]) {
 	  cfg_scalefac = scalefac;
 	  printf("New king safety factor: %f\n", cfg_scalefac);
 	  initialize_eval();
+#if SCIDB_VERSION
+	  if (Variant & Zhouse)
+#else
 	  if (Variant == Bughouse || Variant == Crazyhouse)
+#endif
 	    clear_tt();
 	}
       }

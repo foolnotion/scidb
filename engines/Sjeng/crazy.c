@@ -228,7 +228,11 @@ int SwitchPromoted(int piece)
 void addHolding(int what, int who)
 {
 
+#if SCIDB_VERSION
+  if (Variant & (Crazyhouse|LoopChess|Chessgi))
+#else
   if (Variant == Crazyhouse)
+#endif
     {
 
       holding[who][what]++;

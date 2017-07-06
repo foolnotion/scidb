@@ -28,6 +28,9 @@ typedef struct
 {
   int piece;
   int square;
+#if SCIDB_VERSION
+  int promoted;
+#endif
 } see_data;
 
 see_data see_attackers[2][16];
@@ -41,6 +44,10 @@ void setup_attackers (int square) {
   static const int bishop_o[4] = {11, -11, 13, -13};
   static const int knight_o[8] = {10, -10, 14, -14, 23, -23, 25, -25};
   register int a_sq, b_sq, i;
+#if SCIDB_VERSION
+  int promoted = 0;
+  see_data* see;
+#endif
   int numw = see_num_attackers[WHITE], numb = see_num_attackers[BLACK];
   
   /* rook-style moves: */
@@ -48,6 +55,10 @@ void setup_attackers (int square) {
     {
       a_sq = square + rook_o[i];
       b_sq = board[a_sq];
+#if SCIDB_VERSION
+      if (Variant & (Crazyhouse|Bughouse))
+	promoted = is_promoted[squares[a_sq]];
+#endif
       
       /* the king can attack from one square away: */
       if (b_sq == wking) 
@@ -71,21 +82,39 @@ void setup_attackers (int square) {
 	    {
 	      if (b_sq == wrook || b_sq == wqueen) 
 		{
+#if SCIDB_VERSION
+		  see = &see_attackers[WHITE][numw];
+		  see->piece = b_sq;
+		  see->square = a_sq;
+		  see->promoted = promoted;
+#else
 		  see_attackers[WHITE][numw].piece = b_sq;
 		  see_attackers[WHITE][numw].square = a_sq;
+#endif
 		  numw++;
 		  break;
 		}
 	      else if (b_sq == brook || b_sq == bqueen)
 		{
+#if SCIDB_VERSION
+		  see = &see_attackers[BLACK][numb];
+		  see->piece = b_sq;
+		  see->square = a_sq;
+		  see->promoted = promoted;
+#else
 		  see_attackers[BLACK][numb].piece = b_sq;
 		  see_attackers[BLACK][numb].square = a_sq;
+#endif
 		  numb++;
 		  break;
 		}
 	      else if (b_sq != npiece) break;
 	      a_sq += rook_o [i];
 	      b_sq = board[a_sq];
+#if SCIDB_VERSION
+	      if (Variant & (Crazyhouse|Bughouse))
+		promoted = is_promoted[squares[a_sq]];
+#endif
 	    }
 	}
     }
@@ -95,6 +124,10 @@ void setup_attackers (int square) {
     {
       a_sq = square + bishop_o[i];
       b_sq = board[a_sq];
+#if SCIDB_VERSION
+      if (Variant & (Crazyhouse|Bughouse))
+	promoted = is_promoted[squares[a_sq]];
+#endif
       /* check for pawn attacks: */
       if (b_sq == wpawn && i%2)
 	{
@@ -130,21 +163,39 @@ void setup_attackers (int square) {
 	  while (b_sq != frame) {
 	    if (b_sq == wbishop || b_sq == wqueen) 
 	      {
+#if SCIDB_VERSION
+		see = &see_attackers[WHITE][numw];
+		see->piece = b_sq;
+		see->square = a_sq;
+		see->promoted = promoted;
+#else
 	        see_attackers[WHITE][numw].piece = b_sq;
 	        see_attackers[WHITE][numw].square = a_sq;
+#endif
 		numw++;
 		break;
 	      }
 	    else if (b_sq == bbishop || b_sq == bqueen)
 	      {
+#if SCIDB_VERSION
+		see = &see_attackers[BLACK][numb];
+		see->piece = b_sq;
+		see->square = a_sq;
+		see->promoted = promoted;
+#else
 	        see_attackers[BLACK][numb].piece = b_sq;
 		see_attackers[BLACK][numb].square = a_sq;
+#endif
 		numb++;
 		break;
 	      }
 	    else if (b_sq != npiece) break;
 	    a_sq += bishop_o [i];
 	    b_sq = board[a_sq];
+#if SCIDB_VERSION
+	    if (Variant & (Crazyhouse|Bughouse))
+	      promoted = is_promoted[squares[a_sq]];
+#endif
 	  }
 	}
     }
@@ -154,16 +205,34 @@ void setup_attackers (int square) {
     {
       a_sq = square + knight_o[i];
       b_sq = board[a_sq];
+#if SCIDB_VERSION
+      if (Variant & (Crazyhouse|Bughouse))
+	promoted = is_promoted[squares[a_sq]];
+#endif
       if (b_sq == wknight)
 	{
+#if SCIDB_VERSION
+	  see = &see_attackers[WHITE][numw];
+	  see->piece = b_sq;
+	  see->square = a_sq;
+	  see->promoted = promoted;
+#else
 	  see_attackers[WHITE][numw].piece = b_sq;
 	  see_attackers[WHITE][numw].square = a_sq;
+#endif
 	  numw++;
 	}
       else if (b_sq == bknight)
 	{
+#if SCIDB_VERSION
+	  see = &see_attackers[BLACK][numb];
+	  see->piece = b_sq;
+	  see->square = a_sq;
+	  see->promoted = promoted;
+#else
 	  see_attackers[BLACK][numb].piece = b_sq;
 	  see_attackers[BLACK][numb].square = a_sq;
+#endif
 	  numb++;
 	}
     }
@@ -178,16 +247,33 @@ void findlowest(int color, int next)
   int lowestv;
   see_data swap;
   int i;
+#if SCIDB_VERSION
+  see_data* see;
+#endif
 
   lowestp = next;
+#if SCIDB_VERSION
+  see = &see_attackers[color][next];
+  lowestv = abs(material[see->piece]);
+  if (Variant & (Crazyhouse|Bughouse))
+    lowestv += abs(material[see->promoted ? wpawn : see->piece]);
+#else
   lowestv = abs(material[see_attackers[color][next].piece]);
+#endif
 
   for (i = next; i < see_num_attackers[color]; i++)
     {
       if (abs(material[see_attackers[color][i].piece]) < lowestv)
 	{
 	  lowestp = i;
+#if SCIDB_VERSION
+	  see = &see_attackers[color][i];
+	  lowestv = abs(material[see->piece]);
+	  if (Variant & (Crazyhouse|Bughouse))
+	    lowestv += abs(material[see->promoted ? wpawn : see->piece]);
+#else
 	  lowestv = abs(material[see_attackers[color][i].piece]);
+#endif
 	}
     } 
 
@@ -206,6 +292,10 @@ int see(int color, int square, int from)
   int origpiece;
   int ourbestvalue;
   int hisbestvalue;
+#if SCIDB_VERSION
+  int piece, v;
+  see_data* see;
+#endif
 
   /* reset data */
   see_num_attackers[WHITE] = 0;
@@ -218,12 +308,25 @@ int see(int color, int square, int from)
   see_num_attackers[color]++;
   see_attackers[color][0].piece = origpiece;
   see_attackers[color][0].square = from;
+#if SCIDB_VERSION
+  if (Variant & (Crazyhouse|Bughouse))
+    see_attackers[color][0].promoted = is_promoted[squares[from]];
+  else
+    see_attackers[color][0].promoted = 0;
+#endif
 
   /* calculate all attackers to square */
   setup_attackers(square);
 
   /* initially we gain the piece we are capturing */
+#if SCIDB_VERSION
+  piece = board[square];
+  value = abs(material[piece]);
+  if (Variant & (Crazyhouse|Bughouse))
+    value += is_promoted[squares[square]] ? material[wpawn] : value;
+#else
   value = abs(material[board[square]]);
+#endif
 
   /* free capture ? */
   if (!see_num_attackers[!color])
@@ -256,7 +359,14 @@ int see(int color, int square, int from)
 	{
 	  /* capturing more */
 	  /* we capture the opponents recapturer */
+#if SCIDB_VERSION
+	  see = &see_attackers[!sside][caps[!sside]-1];
+	  value += (v = abs(material[see->piece]));
+	  if (Variant & (Crazyhouse|Bughouse))
+	    value += see->promoted ? material[wpawn] : v;
+#else
 	  value += abs(material[see_attackers[!sside][caps[!sside]-1].piece]);
+#endif
 
 	  /* if the opp ran out of attackers we can stand pat now! */
 	   if (see_num_attackers[!sside] <= caps[!sside] && value > ourbestvalue)
@@ -269,7 +379,14 @@ int see(int color, int square, int from)
 	{
 	  /* recapture by opp */
 	  /* we lose whatever we captured with in last iteration */
+#if SCIDB_VERSION
+	  see = &see_attackers[!sside][caps[!sside]-1];
+	  value -= (v = abs(material[see->piece]));
+	  if (Variant & (Crazyhouse|Bughouse))
+	    value -= see->promoted ? material[wpawn] : v;
+#else
 	  value -= abs(material[see_attackers[!sside][caps[!sside]-1].piece]);
+#endif
 
 	  /* we can stand pat if we want to now */
 	  /* our best score goes up, opponent is unaffected */

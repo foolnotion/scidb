@@ -51,11 +51,22 @@
 
 #define Hash(x,y) (hash ^= zobrist[(x)][(y)])
 
+#if SCIDB_VERSION
+#define Crazyhouse (1 << 0)
+#define Bughouse (1 << 1)
+#define LoopChess (1 << 2)
+#define Chessgi (1 << 3)
+#define Normal (1 << 4)
+#define Suicide (1 << 5)
+#define Losers (1 << 6)
+#define Zhouse (Crazyhouse|Bughouse|LoopChess|Chessgi)
+#else
 #define Crazyhouse 0
 #define Bughouse 1
 #define Normal 2
 #define Suicide 3
 #define Losers 4
+#endif
 
 #define Opening      0
 #define Middlegame   1

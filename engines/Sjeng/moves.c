@@ -691,7 +691,11 @@ restart:
       }
     }
   }
+#if SCIDB_VERSION
+  if ((Variant & Zhouse) && !captures && !kingcap)
+#else
   if (((Variant == Crazyhouse) || (Variant == Bughouse)) && !captures && !kingcap)
+#endif
     {
       if (white_to_move && 
 	  (holding[WHITE][wpawn] || holding[WHITE][wknight]
@@ -710,7 +714,11 @@ restart:
 		case (npiece):
 		  if(holding[WHITE][wpawn])
 		    {  
+#if SCIDB_VERSION
+		      if (Variant == Chessgi || ((rank(from) != 8) && (rank(from) != 1)))
+#else
 		      if ((rank(from) != 8) && (rank(from) != 1))	
+#endif
 			{
 			  try_drop(wpawn);
 			}
@@ -751,7 +759,11 @@ restart:
 		case (npiece):
 		  if(holding[BLACK][bpawn])
 		    {  
+#if SCIDB_VERSION
+		      if (Variant == Chessgi || ((rank(from) != 8) && (rank(from) != 1)))
+#else
 		      if ((rank(from) != 8) && (rank(from) != 1))	
+#endif
 			{
 			  try_drop(bpawn);
 			}
@@ -1431,7 +1443,7 @@ void make (move_s moves[], int i) {
 	case (npiece): break;
 	default:
 	  
-	  if (Variant == Bughouse || Variant == Crazyhouse)
+	  if ((Variant == Crazyhouse) || (Variant == Bughouse))
 	    {
 	      if (path_x[ply].was_promoted)
 	    	{
@@ -1442,6 +1454,10 @@ void make (move_s moves[], int i) {
 		  addHolding(SwitchColor(board[target]), ToMove);
 	    	}
 	    }
+#if SCIDB_VERSION
+	  else if (Variant & (LoopChess|Chessgi))
+	    addHolding(SwitchColor(board[target]), ToMove);
+#endif
 	  
 	  RemoveMaterial(board[target]);
 	  
@@ -2048,7 +2064,7 @@ void unmake (move_s moves[], int i) {
 	  case (npiece): break;
 	  default:
 	    
-	    if (Variant == Bughouse || Variant == Crazyhouse)
+	    if ((Variant == Crazyhouse) || (Variant == Bughouse))
 	      {
 		if (is_promoted[squares[target]])
 		  {
@@ -2056,9 +2072,13 @@ void unmake (move_s moves[], int i) {
 		  }
 		else
 		  { 
-		removeHolding(SwitchColor(captured), NotToMove);
+		    removeHolding(SwitchColor(captured), NotToMove);
 		  } 
 	      }
+#if SCIDB_VERSION
+	      else if (Variant & (LoopChess|Chessgi))
+		removeHolding(SwitchColor(captured), NotToMove);
+#endif
 	
 	    Hash(captured, target);
 	    
