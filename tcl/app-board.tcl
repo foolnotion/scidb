@@ -178,7 +178,7 @@ proc build {w width height} {
 	::bind $canv <Destroy> [namespace code [list activate $w 0]]
 	::bind $canv <FocusIn> [namespace code { GotFocus %W }]
 	::bind $canv <FocusOut> [namespace code LostFocus]
-	::bind $canv <Any-Button> { ::variation::hide }
+	::bind $canv <Any-Button> { ::variation::hide; ::move::cancelVariation }
 
 	foreach {bind canvas} [list ::bind $canv ::bind $border ::board::diagram::bind $board] {
 		if {[tk windowingsystem] eq "x11"} {
@@ -375,6 +375,7 @@ proc build {w width height} {
 	bind <ButtonPress-3>				[namespace code { PopupMenu %W }]
 	bind <<LanguageChanged>>		[namespace code LanguageChanged]
 	bind <F1>							[list ::help::open .application]
+	bind <F5>							[list ::move::nextVariation]
 
 	set tl [winfo toplevel $w]
 
@@ -506,6 +507,7 @@ proc goto {step} {
 
 	set Vars(select-var-is-pending) 0
 	::variation::hide
+	::move::cancelVariation
 	::scidb::game::go -1 $step
 
 	if {$Vars(autoplay)} {
@@ -553,6 +555,7 @@ proc update {position cmd data promoted} {
 	DrawChecks $Vars(widget:frame)
 	UpdateControls
 	::variation::hide 0
+	::move::cancelVariation
 }
 
 
@@ -650,6 +653,7 @@ proc FilterKey {key state cmd} {
 	switch [::variation::handle $key $state] {
 		0 {
 			::variation::hide
+			::move::cancelVariation
 			if {[llength $cmd]} { {*}$cmd }
 		}
 
@@ -700,6 +704,7 @@ proc Goto {step} {
 			::variation::show $moves
 			return
 		}
+		::move::cancelVariation
 	} else {
 		set Vars(select-var-is-pending) 0
 		goto $step
@@ -905,6 +910,7 @@ proc GotFocus {w} {
 	if {[::application::pgn::empty?]} { focus [::tk_focusNext $w] }
 	set Vars(select-var-is-pending) 0
 	::variation::hide 0
+	::move::cancelVariation
 	::move::enable
 }
 
@@ -914,6 +920,7 @@ proc LostFocus {} {
 
 	set Vars(select-var-is-pending) 0
 	::variation::hide 0
+	::move::cancelVariation
 }
 
 

@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2013 Gregor Cramer
+# Copyright: (C) 2009-2017 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -69,9 +69,10 @@ array set Options {
 	figurineSize			24
 }
 
-variable Disabled	0
-variable Leave		1
-variable Lock		0
+variable Disabled		0
+variable Leave			1
+variable Lock			0
+variable Variation	0
 
 
 proc translate {san} {
@@ -420,14 +421,22 @@ proc dragPiece {x y state} {
 }
 
 
-proc addMove {confirmWindowType san {noMoveCmd {}} {myActions {}} {force no}} {
+proc addMove {confirmWindowType san args} {
 	variable ::application::board::board
+	variable Variation
+
+	array set opts {
+		-nomovecmd	{}
+		-actions		{}
+		-force		no
+	}
+	array set opts $args
 
 	if {[::scidb::game::position atEnd?]} {
 		::application::pgn::ensureScratchGame
 		set action "append"
 	} else {
-		if {!$force} {
+		if {!$opts(-force)} {
 			set moves [::scidb::game::next moves -ascii]
 
 			for {set i 0} {$i < [llength $moves]} {incr i} {
@@ -440,14 +449,19 @@ proc addMove {confirmWindowType san {noMoveCmd {}} {myActions {}} {force no}} {
 		}
 		::board::diagram::finishDrag $board
 		update idletasks
-		set action [ConfirmReplaceMove $confirmWindowType $myActions]
+		if {$Variation} {
+			set action "variation"
+		} else {
+			set action [ConfirmReplaceMove $confirmWindowType $opts(-actions)]
+		}
 	}
 
-	if {![doAction $action $san $noMoveCmd]} {
-		if {$action in $myActions} { return $action }
-		if {[llength $noMoveCmd]} { eval $noMoveCmd }
+	if {![doAction $action $san $opts(-nomovecmd)]} {
+		if {$action in $opts(-actions)} { return $action }
+		if {[llength $opts(-nomovecmd)]} { eval $opts(-nomovecmd) }
 	}
 
+	set Variation 0
 	return ""
 }
 
@@ -634,6 +648,29 @@ proc inHandPieceDrop {w x y state piece} {
 }
 
 
+proc cancelVariation {} {
+	variable Variation
+	set Variation 0
+}
+
+
+proc nextVariation {} {
+	variable Variation
+
+	if {$Variation} {
+		::scidb::game::go 1
+		set Variation 0
+	} elseif {![::scidb::game::position atStart?]} {
+		::scidb::game::go -1
+		while {[::scidb::game::position atStart?] && ![::scidb::game::position isMainline?]} {
+			::scidb::game::variation leave
+			::scidb::game::go -1
+		}
+		set Variation 1
+	}
+}
+
+
 proc EnterVariation {varno} {
 	::scidb::game::go variation $varno
 	::scidb::game::go 1
@@ -647,6 +684,7 @@ proc AddMove {sq1 sq2 allowIllegalMove} {
 
 proc DoAddMove {sq1 sq2 allowIllegalMove} {
 	variable ::application::board::board
+	variable Variation
 	variable Options
 	variable Leave
 	variable Drop
@@ -735,12 +773,9 @@ proc DoAddMove {sq1 sq2 allowIllegalMove} {
 #		}
 	}
 
-	addMove \
-		menu \
-		[::scidb::pos::san $sq1 $sq2 $_promoted] \
-		[namespace code AfterAddMove] \
-		{} \
-		$allowIllegalMove \
+	addMove menu [::scidb::pos::san $sq1 $sq2 $_promoted] \
+		-nomovecmd [namespace code AfterAddMove] \
+		-force [expr {$allowIllegalMove || $Variation}] \
 		;
 
 	return 1

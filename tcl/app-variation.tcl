@@ -549,7 +549,7 @@ proc Activate {table} {
 	
 	if {$Vars(selected) == [::table::selection $table]} {
 		set move [::scidb::vars::move $Vars(selected)]
-		::move::addMove menu $move [list set [namespace current]::Vars(activated)]
+		::move::addMove menu $move -nomovecmd [list set [namespace current]::Vars(activated)]
 	} else {
 		set Vars(activated) 0
 	}

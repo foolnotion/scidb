@@ -1351,7 +1351,10 @@ proc Activate {table} {
 	if {$Vars(selected) == [::table::selection $table]} {
 		set move [::scidb::tree::move $Vars(selected)]
 		if {[string length $move]} {
-			set action [::move::addMove menu $move [list set [namespace current]::Vars(activated) 0] {load}]
+			set action [::move::addMove menu $move \
+				-nomovecmd [list set [namespace current]::Vars(activated) 0] \
+				-actions {load} \
+			]
 			if {$action eq "load"} { LoadFirstGame $table $Vars(selected) $move }
 		}
 	} else {
