@@ -828,8 +828,10 @@ namespace variant
 		MaxCode				= 4095,	// maximal number
 	};
 
+	bool isNormalChess(Type variant);
 	bool isAntichess(Type variant);
 	bool isAntichessExceptLosers(Type variant);
+	bool isDropChess(Type variant);
 	bool isZhouse(Type variant);
 	bool isBughouse(Type variant);
 	bool isThreeCheck(Type variant);

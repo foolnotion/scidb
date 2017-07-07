@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2009-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -440,7 +440,7 @@ db::Guess::preEvaluate()
 	::memset(m_pawnData = m_pawnTable, 0, sizeof(m_pawnTable));
 
 	m_root.m_castle	= m_castle;
-	m_root.m_stm			= m_stm;
+	m_root.m_stm		= m_stm;
 }
 
 
@@ -512,7 +512,8 @@ db::Guess::evaluate(int alpha, int beta)
 		{
 			int material = m_totalPieces[White] - m_totalPieces[Black];
 
-			score += evaluateMate(material > 0 ? White : Black);
+			if (!variant::isZhouse(m_variant))
+				score += evaluateMate(material > 0 ? White : Black);
 
 			if (	(score.endGame >  ::DrawScore && !(canWin & OnlyWhiteCanWin))
 				||	(score.endGame < -::DrawScore && !(canWin & OnlyBlackCanWin)))
@@ -691,6 +692,9 @@ db::Guess::evaluateMaterial()
 // This comes from IM Larry Kaufman's ideas on how piece values change with
 // relation to what other pieces are present to complement or overlap with
 // the specific piece type.
+//
+// In this evaluation we do not take the pieces in holding into account.
+// Pieces in holding do not have the full power.
 int
 db::Guess::evaluateMaterialDynamic(color::ID side)
 {
@@ -952,7 +956,7 @@ db::Guess::evaluateMate(color::ID side)
 	color::ID opponent = opposite(side);
 
 	// If one side has a bishop+knight and the other side has
-	// no pieces or pawns, then use the special bishop_knight
+	// no pieces or pawns, then use the special bishop/knight
 	// scoring board for the losing king to force it to the
 	// right corner for mate.
 	if (m_material[opponent].value == 0 && m_material[side].bishop == 1 && m_material[side].knight == 1)
@@ -2464,6 +2468,7 @@ db::Guess::evaluateZH(int alpha, int beta)
 	TRACE_2("score[pawn storm]                    = %d, %d\n", score.middleGame, score.endGame);
 	TRACE_1("score[pawns]                         = %d, %d\n", score.middleGame, score.endGame);
 
+#if 0
 	// Now evaluate pieces.
 	if (doScorePiecesZH(score, alpha, beta))
 	{
@@ -2486,6 +2491,9 @@ db::Guess::evaluateZH(int alpha, int beta)
 	TRACE("score[pieces]                        = %d, %d\n", score.middleGame, score.endGame);
 
 	return score.weightedScore(m_totalPieces[White], m_totalPieces[Black]);
+#endif
+
+	return score.middleGame;
 }
 
 
@@ -2493,6 +2501,9 @@ db::Guess::Score
 db::Guess::evaluateMaterialZH()
 {
 	Material totalCount[2];
+
+	// NOTE: A piece in holding doesn't have the full value. This will
+	// be regarded when computing the dynamic values of pieces.
 
 	totalCount[White].queen  = m_material[White].queen  + m_holding[White].queen;
 	totalCount[White].rook   = m_material[White].rook   + m_holding[White].rook;
@@ -2520,16 +2531,16 @@ db::Guess::evaluateMaterialZH()
 
 	// We start with the raw Material balance for the current position.
 	int material	=
-			(int(m_material   [White].queen ) - int(m_material   [Black].queen ))*QueenValueZH
-		 + (int(m_material   [White].rook  ) - int(m_material   [Black].rook  ))*RookValueZH
-		 + (int(m_material   [White].bishop) - int(m_material   [Black].bishop))*BishopValueZH
-		 + (int(m_material   [White].knight) - int(m_material   [Black].knight))*KnightValueZH
-		 + (int(m_material   [White].pawn  ) - int(m_material   [Black].pawn  ))*PawnValueZH
-		 + (int(m_holding[White].queen ) - int(m_holding[Black].queen ))*QueenValueInHand
-		 + (int(m_holding[White].rook  ) - int(m_holding[Black].rook  ))*RookValueInHand
-		 + (int(m_holding[White].bishop) - int(m_holding[Black].bishop))*BishopValueInHand
-		 + (int(m_holding[White].knight) - int(m_holding[Black].knight))*KnightValueInHand
-		 + (int(m_holding[White].pawn  ) - int(m_holding[Black].pawn  ))*PawnValueInHand;
+			(int(m_material[White].queen ) - int(m_material[Black].queen ))*QueenValueZH
+		 + (int(m_material[White].rook  ) - int(m_material[Black].rook  ))*RookValueZH
+		 + (int(m_material[White].bishop) - int(m_material[Black].bishop))*BishopValueZH
+		 + (int(m_material[White].knight) - int(m_material[Black].knight))*KnightValueZH
+		 + (int(m_material[White].pawn  ) - int(m_material[Black].pawn  ))*PawnValueZH
+		 + (int(m_holding [White].queen ) - int(m_holding [Black].queen ))*QueenValueInHand
+		 + (int(m_holding [White].rook  ) - int(m_holding [Black].rook  ))*RookValueInHand
+		 + (int(m_holding [White].bishop) - int(m_holding [Black].bishop))*BishopValueInHand
+		 + (int(m_holding [White].knight) - int(m_holding [Black].knight))*KnightValueInHand
+		 + (int(m_holding [White].pawn  ) - int(m_holding [Black].pawn  ))*PawnValueInHand;
 
 	Score score = material + (whiteToMove() ? bonus::WhiteToMove : -bonus::WhiteToMove);
 

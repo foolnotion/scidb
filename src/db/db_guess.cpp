@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2009-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -87,6 +87,12 @@ db::Guess::PieceValues db::Guess::PieceStandard =
 db::Guess::PieceValues db::Guess::PieceZH =
 {
 	0, KingValueZH, QueenValueZH, RookValueZH, BishopValueZH, KnightValueZH, PawnValueZH,
+};
+
+// Bughouse/Crazyhouse piece values
+db::Guess::PieceValues db::Guess::PieceInHand =
+{
+	0, 0, QueenValueInHand, RookValueInHand, BishopValueInHand, KnightValueInHand, PawnValueInHand,
 };
 
 // Suicide Chess piece values
@@ -1077,6 +1083,16 @@ db::Guess::addXrayPiece(unsigned from, unsigned target) const
 }
 
 
+int
+db::Guess::pieceValue(piece::Type piece, Square from) const
+{
+	int value = m_pieceValues[piece];
+	if (variant::isZhouse(m_variant))
+		value += isPromotedPiece(from) ? PieceInHand[piece] : PawnValueInHand;
+	return value;
+}
+
+
 // ------------------------------------------------------------------------
 // adopted from crafty-15.17/swap.c:Swap()
 // ------------------------------------------------------------------------
@@ -1107,14 +1123,16 @@ db::Guess::staticExchangeEvaluator(Move const& move) const
 	if (move.isPromotion())
 	{
 		attackedPiece = m_pieceValues[move.promoted()];
+		if (variant::isZhouse(m_variant))
+			attackedPiece += PawnValueInHand;
 		swapList[0] = attackedPiece - m_pieceValues[piece::Pawn];
 	}
 	else
 	{
-		attackedPiece = m_pieceValues[move.pieceMoved()];
+		attackedPiece = pieceValue(move.pieceMoved(), move.from());
 		swapList[0] = m_pieceValues[move.capturedOrDropped()];
 
-		if (!variant::isAntichess(m_variant) && attackedPiece != m_pieceValues[piece::Rook])
+		if (!variant::isAntichess(m_variant) && attackedPiece != pieceValue(piece::Rook, move.from()))
 		{
 			// Find the estimated result assuming one recapture:
 			int fastResult = swapList[0] - attackedPiece;
@@ -1152,16 +1170,18 @@ db::Guess::staticExchangeEvaluator(Move const& move) const
 		if (pawns & occupied)
 		{
 			int square = lsb(pawns & occupied);
+			int value = m_pieceValues[piece::Pawn];
 			occupied &= ~::set1Bit(square);
 			occupied |= addXrayPiece(square, target);
 			swapList[n] = -swapList[n - 1] + attackedPiece;
-			attackedPiece = m_pieceValues[piece::Pawn];
+			attackedPiece = variant::isZhouse(m_variant) ? value + PawnValueInHand : value;
 		}
 		else if (knights & occupied)
 		{
-			occupied &= ~::set1Bit(lsb(knights & occupied));
+			int square = lsb(knights & occupied);
+			occupied &= ~::set1Bit(square);
 			swapList[n] = -swapList[n - 1] + attackedPiece;
-			attackedPiece = m_pieceValues[piece::Knight];
+			attackedPiece = pieceValue(piece::Knight, square);
 		}
 		else if (bishops & occupied)
 		{
@@ -1169,7 +1189,7 @@ db::Guess::staticExchangeEvaluator(Move const& move) const
 			occupied &= ~::set1Bit(square);
 			occupied |= addXrayPiece(square, target);
 			swapList[n] = -swapList[n - 1] + attackedPiece;
-			attackedPiece = m_pieceValues[piece::Bishop];
+			attackedPiece = pieceValue(piece::Bishop, square);
 		}
 		else if (rooks & occupied)
 		{
@@ -1177,7 +1197,7 @@ db::Guess::staticExchangeEvaluator(Move const& move) const
 			occupied &= ~::set1Bit(square);
 			occupied |= addXrayPiece(square, target);
 			swapList[n] = -swapList[n - 1] + attackedPiece;
-			attackedPiece = m_pieceValues[piece::Rook];
+			attackedPiece = pieceValue(piece::Rook, square);
 		}
 		else if (queens & occupied)
 		{
@@ -1185,7 +1205,7 @@ db::Guess::staticExchangeEvaluator(Move const& move) const
 			occupied &= ~::set1Bit(square);
 			occupied |= addXrayPiece(square, target);
 			swapList[n] = -swapList[n - 1] + attackedPiece;
-			attackedPiece = m_pieceValues[piece::Queen];
+			attackedPiece = pieceValue(piece::Queen, square);
 		}
 		else if (kings & occupied)
 		{

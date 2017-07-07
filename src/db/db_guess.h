@@ -167,6 +167,7 @@ private:
 	int countAllPieces(color::ID side) const;
 	int staticExchangeEvaluator(Move const& move) const;
 	uint64_t addXrayPiece(unsigned from, unsigned target) const;
+	int pieceValue(piece::Type piece, Square from) const;
 
 	// normal chess evaluation
 	void preEvaluate();
@@ -270,6 +271,7 @@ private:
 	static PieceValues PieceSuicide;
 	static PieceValues PieceLosers;
 	static PieceValues PieceZH;
+	static PieceValues PieceInHand;
 
 	variant::Type	m_variant;
 	int				m_idn;
