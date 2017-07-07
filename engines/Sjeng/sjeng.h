@@ -59,7 +59,8 @@
 #define Normal (1 << 4)
 #define Suicide (1 << 5)
 #define Losers (1 << 6)
-#define Zhouse (Crazyhouse|Bughouse|LoopChess|Chessgi)
+#define DropChess (Crazyhouse|Bughouse|LoopChess|Chessgi)
+#define Zhouse (Crazyhouse|Bughouse)
 #else
 #define Crazyhouse 0
 #define Bughouse 1

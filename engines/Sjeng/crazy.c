@@ -229,7 +229,7 @@ void addHolding(int what, int who)
 {
 
 #if SCIDB_VERSION
-  if (Variant & (Crazyhouse|LoopChess|Chessgi))
+  if (Variant & (DropChess & ~Bughouse))
 #else
   if (Variant == Crazyhouse)
 #endif

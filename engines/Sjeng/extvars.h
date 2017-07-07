@@ -85,6 +85,9 @@ extern unsigned long bookpos[400], booktomove[400], bookidx;
 extern int Material;
 extern int material[17];
 extern int zh_material[17];
+#if SCIDB_VERSION
+extern int zh_inhand[17];
+#endif
 extern int std_material[17];
 extern int suicide_material[17];
 extern int losers_material[17];

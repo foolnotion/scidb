@@ -53,7 +53,7 @@ void setup_epd_line(char* inbuff)
   int pc; /* piece count */
   int promoted_board[144];
 
-  if (Variant & (Crazyhouse|Bughouse))
+  if (Variant & Zhouse)
   {
     memset(promoted_board, 0, sizeof(promoted_board));
     memset(is_promoted, 0, sizeof(is_promoted));
@@ -89,7 +89,7 @@ void setup_epd_line(char* inbuff)
 #if SCIDB_VERSION
       else if (stage == 0 && inbuff[i] == '~')
 	{
-	  if (Variant & (Crazyhouse|Bughouse))
+	  if (Variant & Zhouse)
 	    promoted_board[rankoffset + fileoffset - 1] = 1;
 	}
 #endif
@@ -203,7 +203,7 @@ void setup_epd_line(char* inbuff)
 
   reset_piece_square();
 #if SCIDB_VERSION
-  if (Variant & (Crazyhouse|Bughouse))
+  if (Variant & Zhouse)
     {
       for (i = 26, pc = 0; i < 118; i++)
 	{

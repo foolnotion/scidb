@@ -56,7 +56,7 @@ void setup_attackers (int square) {
       a_sq = square + rook_o[i];
       b_sq = board[a_sq];
 #if SCIDB_VERSION
-      if (Variant & (Crazyhouse|Bughouse))
+      if (Variant & Zhouse)
 	promoted = is_promoted[squares[a_sq]];
 #endif
       
@@ -112,7 +112,7 @@ void setup_attackers (int square) {
 	      a_sq += rook_o [i];
 	      b_sq = board[a_sq];
 #if SCIDB_VERSION
-	      if (Variant & (Crazyhouse|Bughouse))
+	      if (Variant & Zhouse)
 		promoted = is_promoted[squares[a_sq]];
 #endif
 	    }
@@ -125,7 +125,7 @@ void setup_attackers (int square) {
       a_sq = square + bishop_o[i];
       b_sq = board[a_sq];
 #if SCIDB_VERSION
-      if (Variant & (Crazyhouse|Bughouse))
+      if (Variant & Zhouse)
 	promoted = is_promoted[squares[a_sq]];
 #endif
       /* check for pawn attacks: */
@@ -193,7 +193,7 @@ void setup_attackers (int square) {
 	    a_sq += bishop_o [i];
 	    b_sq = board[a_sq];
 #if SCIDB_VERSION
-	    if (Variant & (Crazyhouse|Bughouse))
+	    if (Variant & Zhouse)
 	      promoted = is_promoted[squares[a_sq]];
 #endif
 	  }
@@ -206,7 +206,7 @@ void setup_attackers (int square) {
       a_sq = square + knight_o[i];
       b_sq = board[a_sq];
 #if SCIDB_VERSION
-      if (Variant & (Crazyhouse|Bughouse))
+      if (Variant & Zhouse)
 	promoted = is_promoted[squares[a_sq]];
 #endif
       if (b_sq == wknight)
@@ -255,8 +255,8 @@ void findlowest(int color, int next)
 #if SCIDB_VERSION
   see = &see_attackers[color][next];
   lowestv = abs(material[see->piece]);
-  if (Variant & (Crazyhouse|Bughouse))
-    lowestv += abs(material[see->promoted ? wpawn : see->piece]);
+  if (Variant & Zhouse)
+    lowestv += zh_inhand[see->promoted ? wpawn : see->piece];
 #else
   lowestv = abs(material[see_attackers[color][next].piece]);
 #endif
@@ -269,8 +269,8 @@ void findlowest(int color, int next)
 #if SCIDB_VERSION
 	  see = &see_attackers[color][i];
 	  lowestv = abs(material[see->piece]);
-	  if (Variant & (Crazyhouse|Bughouse))
-	    lowestv += abs(material[see->promoted ? wpawn : see->piece]);
+	  if (Variant & Zhouse)
+	    lowestv += zh_inhand[see->promoted ? wpawn : see->piece];
 #else
 	  lowestv = abs(material[see_attackers[color][i].piece]);
 #endif
@@ -293,7 +293,7 @@ int see(int color, int square, int from)
   int ourbestvalue;
   int hisbestvalue;
 #if SCIDB_VERSION
-  int piece, v;
+  int piece;
   see_data* see;
 #endif
 
@@ -309,7 +309,7 @@ int see(int color, int square, int from)
   see_attackers[color][0].piece = origpiece;
   see_attackers[color][0].square = from;
 #if SCIDB_VERSION
-  if (Variant & (Crazyhouse|Bughouse))
+  if (Variant & Zhouse)
     see_attackers[color][0].promoted = is_promoted[squares[from]];
   else
     see_attackers[color][0].promoted = 0;
@@ -322,8 +322,8 @@ int see(int color, int square, int from)
 #if SCIDB_VERSION
   piece = board[square];
   value = abs(material[piece]);
-  if (Variant & (Crazyhouse|Bughouse))
-    value += is_promoted[squares[square]] ? material[wpawn] : value;
+  if (Variant & Zhouse)
+    value += zh_inhand[is_promoted[squares[square]] ? wpawn : piece];
 #else
   value = abs(material[board[square]]);
 #endif
@@ -361,9 +361,9 @@ int see(int color, int square, int from)
 	  /* we capture the opponents recapturer */
 #if SCIDB_VERSION
 	  see = &see_attackers[!sside][caps[!sside]-1];
-	  value += (v = abs(material[see->piece]));
-	  if (Variant & (Crazyhouse|Bughouse))
-	    value += see->promoted ? material[wpawn] : v;
+	  value += abs(material[see->piece]);
+	  if (Variant & Zhouse)
+	    value += zh_inhand[see->promoted ? wpawn : see->piece];
 #else
 	  value += abs(material[see_attackers[!sside][caps[!sside]-1].piece]);
 #endif
@@ -381,9 +381,9 @@ int see(int color, int square, int from)
 	  /* we lose whatever we captured with in last iteration */
 #if SCIDB_VERSION
 	  see = &see_attackers[!sside][caps[!sside]-1];
-	  value -= (v = abs(material[see->piece]));
-	  if (Variant & (Crazyhouse|Bughouse))
-	    value -= see->promoted ? material[wpawn] : v;
+	  value -= abs(material[see->piece]);
+	  if (Variant & Zhouse)
+	    value -= zh_inhand[see->promoted ? wpawn : see->piece];
 #else
 	  value -= abs(material[see_attackers[!sside][caps[!sside]-1].piece]);
 #endif

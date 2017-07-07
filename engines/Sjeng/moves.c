@@ -692,7 +692,7 @@ restart:
     }
   }
 #if SCIDB_VERSION
-  if ((Variant & Zhouse) && !captures && !kingcap)
+  if ((Variant & DropChess) && !captures && !kingcap)
 #else
   if (((Variant == Crazyhouse) || (Variant == Bughouse)) && !captures && !kingcap)
 #endif
@@ -1443,7 +1443,11 @@ void make (move_s moves[], int i) {
 	case (npiece): break;
 	default:
 	  
+#if SCIDB_VERSION
+	  if (Variant & Zhouse)
+#else
 	  if ((Variant == Crazyhouse) || (Variant == Bughouse))
+#endif
 	    {
 	      if (path_x[ply].was_promoted)
 	    	{
@@ -1455,7 +1459,7 @@ void make (move_s moves[], int i) {
 	    	}
 	    }
 #if SCIDB_VERSION
-	  else if (Variant & (LoopChess|Chessgi))
+	  else if (Variant & DropChess)
 	    addHolding(SwitchColor(board[target]), ToMove);
 #endif
 	  
@@ -2064,7 +2068,11 @@ void unmake (move_s moves[], int i) {
 	  case (npiece): break;
 	  default:
 	    
+#if SCIDB_VERSION
+	    if (Variant & Zhouse)
+#else
 	    if ((Variant == Crazyhouse) || (Variant == Bughouse))
+#endif
 	      {
 		if (is_promoted[squares[target]])
 		  {
@@ -2076,8 +2084,8 @@ void unmake (move_s moves[], int i) {
 		  } 
 	      }
 #if SCIDB_VERSION
-	      else if (Variant & (LoopChess|Chessgi))
-		removeHolding(SwitchColor(captured), NotToMove);
+	    else if (Variant & DropChess)
+	      removeHolding(SwitchColor(captured), NotToMove);
 #endif
 	
 	    Hash(captured, target);

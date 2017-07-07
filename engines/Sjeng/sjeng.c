@@ -261,7 +261,7 @@ int main (int argc, char *argv[]) {
 	      ((result != white_is_mated) && (result != black_is_mated)))
 	      || 
 #if SCIDB_VERSION
-	      ((Variant == Normal || (Variant & Zhouse))
+	      ((Variant == Normal || (Variant & DropChess))
 #else
 	      ((Variant == Normal || Variant == Crazyhouse || Variant == Bughouse)
 #endif
@@ -978,7 +978,7 @@ int main (int argc, char *argv[]) {
 	  printf("New king safety factor: %f\n", cfg_scalefac);
 	  initialize_eval();
 #if SCIDB_VERSION
-	  if (Variant & Zhouse)
+	  if (Variant & DropChess)
 #else
 	  if (Variant == Bughouse || Variant == Crazyhouse)
 #endif

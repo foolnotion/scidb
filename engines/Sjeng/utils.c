@@ -1063,7 +1063,7 @@ int interrupt(void)
       ungetc(c, stdin);
 
 #if SCIDB_VERSION
-      if (!is_pondering && (Variant & Zhouse)) return 0; 
+      if (!is_pondering && (Variant & DropChess)) return 0; 
 #else
       if (!is_pondering && (Variant == Bughouse || Variant == Crazyhouse)) return 0; 
 #endif
@@ -1105,7 +1105,7 @@ int interrupt(void)
 	  ungetc(c, stdin);
 	  
 #if SCIDB_VERSION
-	  if (!is_pondering && (Variant & Zhouse)) return 0; 
+	  if (!is_pondering && (Variant & DropChess)) return 0; 
 #else
 	  if (!is_pondering && (Variant == Bughouse || Variant == Crazyhouse)) return 0; 
 #endif
@@ -1130,7 +1130,7 @@ int interrupt(void)
 	  ungetc(c, stdin);
 	  
 #if SCIDB_VERSION
-	  if (!is_pondering && (Variant & Zhouse)) return 0; 
+	  if (!is_pondering && (Variant & DropChess)) return 0; 
 #else
 	  if (!is_pondering && (Variant == Bughouse || Variant == Crazyhouse)) return 0; 
 #endif
@@ -1162,7 +1162,7 @@ int interrupt(void)
 	  ungetc(c, stdin);
 	  
 #if SCIDB_VERSION
-	  if (!is_pondering && (Variant & Zhouse)) return 0; 
+	  if (!is_pondering && (Variant & DropChess)) return 0; 
 #else
 	  if (!is_pondering && (Variant == Bughouse || Variant == Crazyhouse)) return 0; 
 #endif
