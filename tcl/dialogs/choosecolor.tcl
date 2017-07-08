@@ -1633,6 +1633,8 @@ proc MakeFrame {container} {
 
 	set height	[expr {$Priv(notebook-size:y) - 6}]
 	set width	[expr {$Priv(notebook-size:x) - 6}]
+incr width 50 ;# XXX
+puts "---> MakeFrame: $height $width"
 
 	set canvas [tk::canvas $container.list \
 		-yscrollcommand [ list $container.vsb set] \

@@ -154,13 +154,34 @@ array set DefaultColors {
 	foreground:marks		pgn,foreground:marks
 	foreground:empty		pgn,foreground:empty
 	foreground:opening	pgn,foreground:opening
-	foreground:result		pgn,foreground:result
 	background:current	pgn,background:current
 	background:nextmove	pgn,background:nextmove
 	hilite:comment			pgn,hilite:comment
 	hilite:info				pgn,hilite:info
 	hilite:move				pgn,hilite:move
 }
+
+array set AttrToTag {
+	foreground:main		main
+	foreground:variation	variation
+	foreground:bracket	m:bracket
+	foreground:numbering	m:numbering
+	foreground:nag			m:nag
+	foreground:nagtext	m:nagtext
+	foreground:comment	m:comment
+	foreground:info		m:info
+	foreground:result		result
+	foreground:illegal	illegal
+	foreground:marks		m:marks
+	foreground:empty		empty
+	foreground:opening	opening
+	background:current	h:curr
+	background:nextmove	h:next
+	hilite:comment			h:comment
+	hilite:info				h:info
+	hilite:move				h:move
+}
+
 #	foreground:numbering	#68480a
 #	foreground:numbering	#bd1091
 #	foreground:numbering	#ad0f85
@@ -336,23 +357,14 @@ proc configureText {path {fontContext ""}} {
 
 	$w configure -font $::font::text($fontContext:normal)
 
-	if {$context ne "browser"} {
-		$w tag configure main	   -foreground [::colors::lookup $Colors(foreground:main)]
-		$w tag configure variation -foreground [::colors::lookup $Colors(foreground:variation)]
-		$w tag configure opening   -foreground [::colors::lookup $Colors(foreground:opening)]
+	if {$context ni {browser merge}} {
+		$w tag configure main        -foreground [::colors::lookup $Colors(foreground:main)]
+		$w tag configure variation   -foreground [::colors::lookup $Colors(foreground:variation)]
+		$w tag configure opening     -foreground [::colors::lookup $Colors(foreground:opening)]
 
 		$w tag configure italic      -font $::font::text($fontContext:italic)
 		$w tag configure bold        -font $::font::text($fontContext:bold)
 		$w tag configure bold-italic -font $::font::text($fontContext:bold-italic)
-
-		$w tag configure main	   -font $::font::text($fontContext:$bold)
-		$w tag configure opening   -font $::font::text($fontContext:bold)
-		$w tag configure m:comment -font $::font::text($fontContext:normal)
-		$w tag configure figurineb -font $::font::figurine($fontContext:bold) -underline no
-		$w tag configure code      -font $::font::text($fontContext:normal)
-		$w tag configure codeb     -font $::font::text($fontContext:bold)
-		$w tag configure symbol    -font $::font::symbol($fontContext:normal)
-		$w tag configure symbolb   -font $::font::symbol($fontContext:bold)
 
 		$w tag configure m:nag       -foreground [::colors::lookup $Colors(foreground:nag)]
 		$w tag configure m:nagtext   -foreground [::colors::lookup $Colors(foreground:nagtext)]
@@ -362,27 +374,18 @@ proc configureText {path {fontContext ""}} {
 		$w tag configure m:marks     -foreground [::colors::lookup $Colors(foreground:marks)]
 		$w tag configure m:info      -foreground [::colors::lookup $Colors(foreground:info)]
 
-		$w tag configure circled -font [list {Scidb Circled} [::font::currentFontSize $fontContext]]
-		$w tag configure circled -foreground #008b00
+		$w tag configure circled    -font [list {Scidb Circled} [::font::currentFontSize $fontContext]]
+		$w tag configure circled    -foreground #008b00
 
-		for {set k 0} {$k <= 10} {incr k} {
-			set margin [expr {$k*$Options(indent:amount)}]
-#			set indent [expr {$margin + 1.3*$charwidth + $Options(show:varnumbers)*1.5*$charwidth}]
-			set indent $margin
-			$w tag configure indent$k -lmargin1 $margin -lmargin2 $indent
-		}
+		$w tag configure h:next    -indentbackground 1 \
+										   -background [::colors::lookup $Colors(background:nextmove)]
 
-		$w tag configure h:next -indentbackground 1 \
-										-background [::colors::lookup $Colors(background:nextmove)]
+		$w tag configure h:nag     -indentbackground 1 -background [::colors::lookup $Colors(hilite:move)]
+		$w tag configure h:move    -indentbackground 1 -background [::colors::lookup $Colors(hilite:move)]
+		$w tag configure h:mark    -indentbackground 1 -background [::colors::lookup $Colors(hilite:move)]
 
-		$w tag configure h:nag  -indentbackground 1 -background [::colors::lookup $Colors(hilite:move)]
-		$w tag configure h:move -indentbackground 1 -background [::colors::lookup $Colors(hilite:move)]
-		$w tag configure h:mark -indentbackground 1 -background [::colors::lookup $Colors(hilite:move)]
-
-		$w tag configure h:curr -indentbackground 1 \
-										-background [::colors::lookup $Colors(background:current)]
-
-		$w tag configure h:merge -background [::colors::lookup pgn,background:merge]
+		$w tag configure h:curr    -indentbackground 1 \
+										   -background [::colors::lookup $Colors(background:current)]
 
 		$w tag configure h:move    -foreground black
 		$w tag configure h:next    -foreground black
@@ -398,12 +401,40 @@ proc configureText {path {fontContext ""}} {
 	}
 
 	$w tag configure figurine -font $::font::figurine($fontContext:normal) -underline no
-	$w tag configure result   -font $::font::text($fontContext:$bold)
 
-	$w tag configure result  -foreground [::colors::lookup $Colors(foreground:result)]
-	$w tag configure empty   -foreground [::colors::lookup $Colors(foreground:empty)]
-	$w tag configure illegal -foreground [::colors::lookup $Colors(foreground:illegal)]
-	$w tag configure state   -foreground [::colors::lookup $Colors(foreground:illegal)]
+	if {$context ne "browser"} {
+		$w tag configure main	   -font $::font::text($fontContext:$bold)
+		$w tag configure opening   -font $::font::text($fontContext:bold)
+		$w tag configure result    -font $::font::text($fontContext:$bold)
+		$w tag configure m:comment -font $::font::text($fontContext:normal)
+		$w tag configure figurineb -font $::font::figurine($fontContext:bold) -underline no
+		$w tag configure code      -font $::font::text($fontContext:normal)
+		$w tag configure codeb     -font $::font::text($fontContext:bold)
+		$w tag configure symbol    -font $::font::symbol($fontContext:normal)
+		$w tag configure symbolb   -font $::font::symbol($fontContext:bold)
+
+		for {set k 0} {$k <= 10} {incr k} {
+			set margin [expr {$k*$Options(indent:amount)}]
+#			set indent [expr {$margin + 1.3*$charwidth + $Options(show:varnumbers)*1.5*$charwidth}]
+			set indent $margin
+			$w tag configure indent$k -lmargin1 $margin -lmargin2 $indent
+		}
+	}
+
+	if {$context eq "merge"} {
+		$w tag configure h:ins     -background #c0ffc0 -indentbackground 0 ;# TODO use color base
+		$w tag configure h:del     -background #ffc8c8 -indentbackground 0 ;# TODO unused
+		$w tag configure h:chg     -background #c0c0ff -indentbackground 0
+		$w tag configure unchanged -background [::colors::lookup $Colors(background)] -indentbackground 0
+	} else {
+		$w tag configure result    -foreground [::colors::lookup $Colors(foreground:result)]
+		$w tag configure empty     -foreground [::colors::lookup $Colors(foreground:empty)]
+		$w tag configure illegal   -foreground [::colors::lookup $Colors(foreground:illegal)]
+		$w tag configure state     -foreground [::colors::lookup $Colors(foreground:illegal)]
+
+		$w tag raise illegal
+		$w tag raise state
+	}
 
 	if {$Options(style:column)} {
 		set tab1 [expr {round($Options(tabstop:1)*$charwidth)}]
@@ -525,6 +556,7 @@ proc openSetupDialog {parent context position args} {
 	set Priv(dlg) $parent.pgnSetup
 
 	set dlg [tk::toplevel $Priv(dlg) -class Scidb]
+	wm withdraw $dlg
 	set top [::ttk::frame $dlg.top -takefocus 0]
 	pack $top -fill both -expand yes
 
@@ -576,7 +608,8 @@ proc openSetupDialog {parent context position args} {
 
 	$Priv(pgn) configure -font $::font::text(setup:normal)
 	$Priv(pgn) configure -inactiveselectbackground white
-	$Priv(pgn) configure -selectforeground black
+	$Priv(pgn) configure -inactiveselectforeground {}
+	$Priv(pgn) configure -selectforeground {}
 	set Priv(path) $sample.text
 	grid $sample.text -row 1 -column 1 -sticky nsew
 	bind $style <<TreeTableSelection>> \
@@ -607,7 +640,6 @@ proc openSetupDialog {parent context position args} {
 	::tooltip::tooltip $dlg.revert $mc::RevertSettings
 	::tooltip::tooltip $dlg.reset $mc::ResetSettings
 
-	wm withdraw $dlg
 	wm title $dlg "$::scidb::app - $mc::Configure($context)"
 	wm resizable $dlg no no
 	::util::place $dlg -parent $parent -position center
@@ -624,8 +656,7 @@ proc openSetupDialog {parent context position args} {
 	set Options(show:result) 1
 
 	if {[llength $Priv(color:attr)]} {
-		addToList [namespace current]::Recent($Priv(color:attr)) \
-			[::colors::lookup $Priv(color:selected)]
+		addToList [namespace current]::Recent($Priv(color:attr)) [::colors::lookup $Priv(color:selected)]
 	}
 
 	array unset New_Options
@@ -1196,6 +1227,7 @@ proc BuildFrame(Font) {w position context} {
 
 
 proc TakeOver {context position topic} {
+	variable AttrToTag
 	variable Priv
 
 	if {$context eq "editor"} { set other browser } else { set other editor }
@@ -1204,7 +1236,7 @@ proc TakeOver {context position topic} {
 		Fonts {
 			variable New_Fonts
 			foreach attr [array names ::font::Options $context:*] {
-				set tag [lindex [split $attr :] 1]
+				set tag $AttrToTag($attr)
 				set New_Fonts(setup:$tag) $::font::Options($other:$tag)
 			}
 			RefreshFonts $position
@@ -1238,6 +1270,7 @@ proc TakeOver {context position topic} {
 
 
 proc ConfigureTakeOverButton {w topic context} {
+	variable AttrToTag
 	if {![winfo exists $w.takeover]} { return }
 
 	set state disabled
@@ -1255,7 +1288,7 @@ proc ConfigureTakeOverButton {w topic context} {
 		Fonts {
 			if {$context eq "editor"} { set other browser } else { set other editor }
 			foreach attr [array names ::font::Options setup:*] {
-				set tag [lindex [split $attr :] 1]
+				set tag $AttrToTag($attr)
 				if {$::font::Options(setup:$tag) ne $::font::Options($other:$tag)} {
 					set state normal
 				}
@@ -1365,6 +1398,7 @@ proc SetupStyle {style} {
 proc SelectColor {context position color} {
 	variable [namespace parent]::${context}::Colors
 	variable New_Colors
+	variable AttrToTag
 	variable Priv
 
 	set Colors($Priv(color:attr)) $color
@@ -1372,11 +1406,13 @@ proc SelectColor {context position color} {
 	set Priv(color:selected) $color
 
 	if {[llength $Priv(hover:key)] == 0} {
-		configureText $Priv(path) setup
+		set tag $AttrToTag($Priv(color:attr))
+		set what [lindex [split $Priv(color:attr) :] 0]
+		$Priv(pgn) tag configure $tag -$what $color
 	} elseif {$Priv(color:attr) eq "hilite:move"} {
-		$Priv(pgn) tag configure $Priv(hover:key) -background [::colors::lookup $color]
+		$Priv(pgn) tag configure $Priv(hover:key) -background $color
 	} else {
-		$Priv(pgn) tag configure $Priv(hover:key) -foreground [::colors::lookup $color]
+		$Priv(pgn) tag configure $Priv(hover:key) -foreground $color
 	}
 }
 
@@ -1656,7 +1692,7 @@ proc SelectionChanged {mw context position tag {blink yes}} {
 	}
 
 	set w $Priv(pgn)
-	$w tag remove sel 1.0 end
+	$w tag remove sel begin end
 	$mw raise $Priv(pane:$pane)
 
 	setupStyle $context $position
@@ -1665,7 +1701,9 @@ proc SelectionChanged {mw context position tag {blink yes}} {
 	::scidb::game::langSet $position [list {} $langID]
 	if {$pane ne $Priv(previous-pane)} {
 		::pgn::${context}::resetGoto $w $position
-		foreach key [$w tag names] { $w tag configure $key -background {} }
+		foreach key [$w tag names] {
+			if {![string match h:* $key]} { $w tag configure $key -background {} }
+		}
 	}
 	set Priv(current-data) $data
 
@@ -1675,32 +1713,33 @@ proc SelectionChanged {mw context position tag {blink yes}} {
 			set key [::scidb::game::position $position key]
 			::scidb::game::go $position start
 			set hover [string match hover* $tag]
+			$w tag raise h:curr h:move
 
 			if {$hover} { set color $Colors(hilite:move) } else { set color {} }
-			after idle [list $w tag configure $key -background [::colors::lookup $color]]
+			#after idle [list $w tag configure $key -background [::colors::lookup $color]]
 			set hilite(comment) $Colors(foreground:comment)
 			set hilite(info) $Colors(foreground:info)
 
 			if {$hover} {
 				switch -glob $tag {
 					*-move {
-						set Priv(hover:key) $key
+						set Priv(hover:key) h:move
+						$w tag raise h:move h:curr
 					}
 					*-comment {
-						set Priv(hover:key) comment:$key:after:$langID
+						set Priv(hover:key) m:comment
 						set hilite(comment) $Colors(hilite:comment)
 					}
 					*-info {
-						set Priv(hover:key) info:$key
+						set Priv(hover:key) h:info
 						set hilite(info) $Colors(hilite:info)
 					}
 				}
 			}
 
 			if {$context ne "browser"} {
-				after idle [list $w tag configure comment:$key:p:$langID \
-					-foreground [::colors::lookup $hilite(comment)]]
-				after idle [list $w tag configure info:$key -foreground [::colors::lookup $hilite(info)]]
+				after idle [list $w tag configure m:comment -foreground [::colors::lookup $hilite(comment)]]
+				after idle [list $w tag configure m:info -foreground [::colors::lookup $hilite(info)]]
 			}
 		}
 
@@ -1712,6 +1751,11 @@ proc SelectionChanged {mw context position tag {blink yes}} {
 				after idle [list ::pgn::browser::showNext $w $position yes]
 			} else {
 				::pgn::browser::showNext $w $position no
+			}
+		}
+		switch -glob -- $tag {
+			current-* - next-* - hover-move {
+				after idle [namespace code [list UpdatePosition $position]]
 			}
 		}
 		switch $Priv(color:attr) {
@@ -1726,17 +1770,40 @@ proc SelectionChanged {mw context position tag {blink yes}} {
 }
 
 
+proc UpdatePosition {position} {
+	variable [namespace parent]::editor::Colors
+	variable Priv
+
+	set w $Priv(pgn)
+	set key [::scidb::game::position $position key]
+	set range [$w tag nextrange m:move $key]
+	$w tag add h:curr {*}$range
+	$w tag add h:move {*}$range
+	set key [::scidb::game::next keys $position]
+	set range [$w tag nextrange m:move $key]
+	$w tag add h:next {*}$range
+	$w tag remove sel begin end
+
+	set pos begin
+	while {[llength [set range [$w tag nextrange m:info $pos]]] > 0} {
+		lassign $range start pos
+		$w tag add h:info $start $pos
+	}
+}
+
+
 proc HiliteTags {context position} {
+	variable AttrToTag
 	variable Priv
 
 	if {[llength $Priv(color:attr)] == 0} { return }
 
 	set w $Priv(pgn)
-	$w tag remove sel 1.0 end
+	$w tag remove sel begin end
 	$w configure -inactiveselectbackground white
 	$w configure -selectborderwidth 0
 	if {[llength $Priv(hover:key)] == 0} {
-		set tag [lindex [split $Priv(color:attr) :] 1]
+		set tag $AttrToTag($Priv(color:attr))
 		foreach {first last} [$w tag ranges $tag] { $w tag add sel $first $last }
 	}
 
@@ -1761,35 +1828,28 @@ proc HiliteTags {context position} {
 
 proc Blink {context position compl} {
 	variable [namespace parent]::${context}::Colors
+	variable AttrToTag
 	variable Priv
 
 	set w $Priv(pgn)
 	if {![winfo exists $w]} { return }
-	lassign [split $Priv(color:attr) :] attr tag
+	lassign [split $Priv(color:attr) :] attr what
+	set tag $AttrToTag($Priv(color:attr))
 
 	if {$Priv(blink) % 2 == 0} {
 		if {[llength $compl]} {
 			if {$attr eq "hilite"} {
-				if {$tag eq "move"} { set color $Colors(hilite:move) } else { set color $compl }
+				if {$what eq "move"} { set color $Colors(hilite:move) } else { set color $compl }
+				$w tag configure $tag -foreground [::colors::lookup $color]
 				$w tag configure $Priv(hover:key) -foreground [::colors::lookup $color]
 			} else {
-				switch $tag {
+				switch $what {
 					variation - bracket - numbering {
 						$w tag configure $tag -foreground [::colors::lookup $compl]
 					}
-					current {
-						set key [::scidb::game::position $position key]
-						set bg [::colors::lookup $Colors($Priv(color:attr))]
-						$w tag configure $key -foreground $bg
-						$w tag configure $key -background $bg
-					}
-					nextmove {
-						set keys [::scidb::game::next keys $position] 
-						set bg [::colors::lookup $Colors($Priv(color:attr))]
-						foreach key $keys {
-							$w tag configure $key -background $bg
-							$w tag configure $key -foreground $bg
-						}
+					current - nextmove {
+						$w tag configure $tag -background white -foreground white
+						$w tag remove sel begin end
 					}
 					default {
 						$w configure -selectborderwidth 1
@@ -1801,20 +1861,20 @@ proc Blink {context position compl} {
 		set period 500
 	} else {
 		if {$attr eq "hilite"} {
-			if {$tag eq "move"} { set color {} } else { set color $Colors($Priv(color:attr)) }
+			if {$what eq "move"} { set color {} } else { set color $Colors($Priv(color:attr)) }
+			$w tag configure $tag -foreground [::colors::lookup $color]
 			$w tag configure $Priv(hover:key) -foreground [::colors::lookup $color]
 		} else {
-			switch $tag {
+			switch $what {
 				variation - bracket - numbering {
 					$w tag configure $tag -foreground [::colors::lookup $Colors($Priv(color:attr))]
 				}
-				current {
-					set key [::scidb::game::position $position key]
-					$w tag configure $key -foreground black
-				}
-				nextmove {
-					set keys [::scidb::game::next keys $position] 
-					foreach key $keys { $w tag configure $key -foreground black }
+				current - nextmove {
+					$w tag configure $tag \
+						-background [::colors::lookup $Colors($Priv(color:attr))] \
+						-foreground black \
+					;
+					$w tag remove sel begin end
 				}
 				default {
 					$w configure -inactiveselectbackground white
