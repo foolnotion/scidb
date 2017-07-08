@@ -42,8 +42,8 @@ namespace import ::tcl::mathfunc::*
 
 
 proc ComputeWidth {height} {
-	set vbarSize [expr {round(0.067*$height) + 11}]
-	return [expr {round((($height - $vbarSize)*511.0)/443.0) - 16}]
+	set width [expr {$height - round(0.067*($height - 6)) - 11}]
+	return [expr {round(($width*511.0)/443.0) - 16}]
 }
 
 
