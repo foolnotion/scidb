@@ -1690,7 +1690,7 @@ proc PrintMove {context position w level key data annotation} {
 	}
 
 	if {!$legal} {
-		$w insert cur "\u26A1" {m:move illegal} ;# alternatives: u26A0, u2716
+		$w insert cur "\u26A1" illegal ;# alternatives: u26A0, u2716
 	}
 }
 
