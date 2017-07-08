@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2013 Gregor Cramer
+# Copyright: (C) 2009-2017 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -218,11 +218,12 @@ proc open {parent base variant info view index {fen {}}} {
 	grid columnconfigure $controls {12 14} -weight 1
 
 	# PGN side
-	tk::text $rt.header \
+	set w $rt.header
+	tk::text $w \
 		-background [::colors::lookup $Options(background:header)] \
 		-height 3 \
 		-width 0 \
-		-state disabled \
+		-state readonly \
 		-takefocus 0 \
 		-undo 0 \
 		-exportselection 0 \
@@ -231,8 +232,8 @@ proc open {parent base variant info view index {fen {}}} {
 		;
 	::widget::textPreventSelection $rt.header
 	set Vars(pgn) [::pgn::setup::buildText $rt.pgn browser]
-	$rt.header configure -font $::font::text(browser:normal)
-	
+	$w configure -font $::font::text(browser:normal)
+
 	grid $rt.header	-row 1 -column 1 -columnspan 2 -sticky nsew
 	grid $rt.pgn		-row 3 -column 1 -sticky nsew -ipady 1
 	grid rowconfigure $rt {0 2 4} -minsize $::theme::padding
@@ -308,32 +309,32 @@ proc open {parent base variant info view index {fen {}}} {
 	set Vars(modified) 0
 	set Vars(setup) 1
 
-	bind $dlg <Alt-Key>					[list tk::AltKeyInDialog $dlg %A]
-	bind $dlg <Return>					[namespace code [list ::widget::dialogButtonInvoke $buttons]]
-	bind $dlg <Return>					{+ break }
-	bind $dlg <Configure>				[namespace code [list FirstConfigure %W $position]]
-	bind $dlg <Control-a>				[namespace code [list ToggleAutoPlay $position]]
-	bind $dlg <Destroy>					[namespace code [list Destroy $dlg %W $position]]
-	bind $dlg <Left>						[namespace code [list Goto $position -1]]
-	bind $dlg <Right>						[namespace code [list Goto $position +1]]
-	bind $dlg <Prior>						[namespace code [list Goto $position -10]]
-	bind $dlg <Next>						[namespace code [list Goto $position +10]]
-	bind $dlg <Home>						[namespace code [list Goto $position -9999]]
-	bind $dlg <End>						[namespace code [list Goto $position +9999]]
-	bind $dlg <Control-Home>			[namespace code [list GotoGame(first) $board $position]]
-	bind $dlg <Control-End>				[namespace code [list GotoGame(last) $board $position]]
-	bind $dlg <Control-Down>			[namespace code [list GotoGame(next) $board $position]]
-	bind $dlg <Control-Up>				[namespace code [list GotoGame(prev) $board $position]]
-	bind $dlg <ButtonPress-3>			[namespace code [list PopupMenu $dlg $board $position]]
-	bind $dlg <Key-plus>					[namespace code [list ChangeBoardSize $position $lt.board +5]]
-	bind $dlg <Key-KP_Add>				[namespace code [list ChangeBoardSize $position $lt.board +5]]
-	bind $dlg <Key-minus>				[namespace code [list ChangeBoardSize $position $lt.board -5]]
-	bind $dlg <Key-KP_Subtract>		[namespace code [list ChangeBoardSize $position $lt.board -5]]
-	bind $dlg <Alt-plus>					[namespace code [list ChangeBoardSize $position $lt.board max]]
-	bind $dlg <Alt-KP_Add>				[namespace code [list ChangeBoardSize $position $lt.board max]]
-	bind $dlg <Alt-minus>				[namespace code [list ChangeBoardSize $position $lt.board min]]
-	bind $dlg <Alt-KP_Subtract>		[namespace code [list ChangeBoardSize $position $lt.board min]]
-	bind $dlg <F1>							[list ::help::open .application Game-Browser -parent $dlg]
+	bind $dlg <Alt-Key>				[list tk::AltKeyInDialog $dlg %A]
+	bind $dlg <Return>				[namespace code [list ::widget::dialogButtonInvoke $buttons]]
+	bind $dlg <Return>				{+ break }
+	bind $dlg <Configure>			[namespace code [list FirstConfigure %W $position]]
+	bind $dlg <Control-a>			[namespace code [list ToggleAutoPlay $position]]
+	bind $dlg <Destroy>				[namespace code [list Destroy $dlg %W $position]]
+	bind $dlg <Left>					[namespace code [list Goto $position -1]]
+	bind $dlg <Right>					[namespace code [list Goto $position +1]]
+	bind $dlg <Prior>					[namespace code [list Goto $position -10]]
+	bind $dlg <Next>					[namespace code [list Goto $position +10]]
+	bind $dlg <Home>					[namespace code [list Goto $position -9999]]
+	bind $dlg <End>					[namespace code [list Goto $position +9999]]
+	bind $dlg <Control-Home>		[namespace code [list GotoGame(first) $board $position]]
+	bind $dlg <Control-End>			[namespace code [list GotoGame(last) $board $position]]
+	bind $dlg <Control-Down>		[namespace code [list GotoGame(next) $board $position]]
+	bind $dlg <Control-Up>			[namespace code [list GotoGame(prev) $board $position]]
+	bind $dlg <ButtonPress-3>		[namespace code [list PopupMenu $dlg $board $position]]
+	bind $dlg <Key-plus>				[namespace code [list ChangeBoardSize $position $lt.board +5]]
+	bind $dlg <Key-KP_Add>			[namespace code [list ChangeBoardSize $position $lt.board +5]]
+	bind $dlg <Key-minus>			[namespace code [list ChangeBoardSize $position $lt.board -5]]
+	bind $dlg <Key-KP_Subtract>	[namespace code [list ChangeBoardSize $position $lt.board -5]]
+	bind $dlg <Alt-plus>				[namespace code [list ChangeBoardSize $position $lt.board max]]
+	bind $dlg <Alt-KP_Add>			[namespace code [list ChangeBoardSize $position $lt.board max]]
+	bind $dlg <Alt-minus>			[namespace code [list ChangeBoardSize $position $lt.board min]]
+	bind $dlg <Alt-KP_Subtract>	[namespace code [list ChangeBoardSize $position $lt.board min]]
+	bind $dlg <F1>						[list ::help::open .application Game-Browser -parent $dlg]
 
 	::font::addChangeFontSizeBindings browser $dlg
 	SetupControlButtons $position
@@ -496,21 +497,6 @@ proc resetGoto {w position} {
 }
 
 
-proc showNext {w position flag} {
-	variable ${position}::Vars
-	variable ::pgn::browser::Colors
-
-	if {[llength $Vars(next:move)]} {
-		if {$flag} {
-			set range [$w tag nextrange m:move $Vars(next:move)]
-			$w tag add h:next {*}$range
-		} else {
-			$w tag remove h:next begin end
-		}
-	}
-}
-
-
 proc makeResult {result toMove termination reason variant} {
 	set reasonText [::terminationbox::buildText $reason $result $toMove $termination $variant]
 	set result [::util::formatResult $result]
@@ -595,9 +581,12 @@ if {0} {
 }
 
 
-proc ShowPosition {parent position key {state 0}} {
+proc ShowPosition {parent position {state 0}} {
 	variable ${position}::Vars
-	showPosition $parent $position [::board::diagram::rotated? $Vars(board)] $key $state
+
+	if {[string length [set key [FindKey $w move]]]} {
+		showPosition $parent $position [::board::diagram::rotated? $Vars(board)] $key $state
+	}
 }
 
 
@@ -625,6 +614,15 @@ proc SetupStyle {position {refresh yes}} {
 		::pgn::setup::setupStyle browser $pos
 		::pgn::setup::configureText $Vars(frame)
 		if {$refresh} { ::scidb::game::refresh $pos -immediate }
+	}
+
+	if {$position >= 100} {
+		set w $Vars(pgn)
+		$w tag bind m:move <Enter> [namespace code [list EnterMove $w $position]]
+		$w tag bind m:move <Leave> [namespace code [list LeaveMove $w $position]]
+		$w tag bind m:move <ButtonPress-1> [namespace code [list GotoMove $position]]
+		$w tag bind m:move <ButtonPress-2> [namespace code [list ShowPosition $w $position %s]]
+		$w tag bind m:move <ButtonRelease-2> [namespace code [list hidePosition $w]]
 	}
 }
 
@@ -839,10 +837,8 @@ proc LanguageChanged {position} {
 
 	if {[::scidb::game::query $position length] == 0} {
 		set w $Vars(pgn)
-		$w configure -state normal
-		$w delete 1.0 end
+		$w delete begin end
 		PrintResult $w $position
-		$w configure -state disabled
 	}
 
 	SetupControlButtons $position
@@ -888,8 +884,6 @@ proc UpdateHeader {position} {
 	variable ${position}::Vars
 
 	set text $Vars(header)
-	$text configure -state normal
-
 	$text delete 1.0 end
 
 	foreach id {white black event site date annotator} {
@@ -962,7 +956,6 @@ proc UpdateHeader {position} {
 
 	update idletasks ;# makes -displaylines working
 	$text configure -height [$text count -displaylines 1.0 end]
-	$text configure -state disabled
 }
 
 
@@ -1072,13 +1065,16 @@ proc UpdatePGN {position data {w {}}} {
 	variable ::pgn::browser::Colors
 	variable ::pgn::browser::Options
 
-	if {[llength $w] == 0} { set w $Vars(pgn) }
+	if {[llength $w] == 0} {
+		set w $Vars(pgn)
+	} else {
+		set Vars(active) {}
+	}
 
 	foreach node $data {
 		switch [lindex $node 0] {
 			start {
-				$w configure -state normal
-				$w delete 1.0 end
+				$w delete begin end
 				set current $Vars(current)
 				set Vars(current) {}
 				set Vars(active) {}
@@ -1108,8 +1104,7 @@ proc UpdatePGN {position data {w {}}} {
 
 				if {[llength $moves] == 0} {
 					if {![::scidb::game::query $position empty?]} {
-						$w insert end "\u200b" $key
-#						PrintMove $w $position $key "\u27a4 "
+						$w insert end "\u200b"
 					}
 				}
 
@@ -1123,13 +1118,18 @@ proc UpdatePGN {position data {w {}}} {
 						ply {
 							lassign [lindex $move 1] moveNo stm san legal
 							if {$Options(style:column)} { $w insert end "\t" }
+							$w mark set $key insert left
 							if {$moveNo > 0} {
-								$w insert end "$moveNo." $key
-								if {$Options(style:column)} { $w insert end "\t" }
+								if {$Options(style:column)} {
+									$w insert insert "$moveNo.\t"
+								} else {
+									$w insert insert "$moveNo." m:move
+								}
 							}
 							foreach {text tag} [::font::splitMoves $san] {
 								if {!$legal} { lappend tag illegal }
-								PrintMove $w $position $key $text $tag
+								lappend tag m:move
+								$w insert insert $text $tag
 							}
 						}
 					}
@@ -1144,7 +1144,6 @@ proc UpdatePGN {position data {w {}}} {
 				if {[llength $current]} {
 					catch { $w tag configure $current -background [::colors::lookup $Colors(background)] }
 				}
-				$w configure -state disabled
 			}
 
 			action {
@@ -1152,6 +1151,9 @@ proc UpdatePGN {position data {w {}}} {
 
 				if {$cmd eq "goto" } {
 					if {$Vars(current) eq $key} { return }
+					$w tag remove h:curr begin end
+					set range [FindRange $w $key]
+					$w tag add h:curr {*}$range
 					if {[llength $Vars(next)]} {
 						$w tag configure $Vars(next) -background [::colors::lookup $Colors(background)]
 					}
@@ -1203,22 +1205,9 @@ proc PrintResult {w position} {
 			$w insert end $result result
 		}
 		if {[string length $reason]} {
-			if {[string length $result]} { $w insert current " " }
-			$w insert current "($reason)"
+			if {[string length $result]} { $w insert end " " }
+			$w insert end "($reason)"
 		}
-	}
-}
-
-
-proc PrintMove {w position key text {tag ""}} {
-	$w insert end $text [list {*}$tag $key]
-
-	if {$position >= 100} {
-		$w tag bind $key <Any-Enter> [namespace code [list EnterMove $w $position $key]]
-		$w tag bind $key <Any-Leave> [namespace code [list LeaveMove $w $position $key]]
-		$w tag bind $key <ButtonPress-1> [list ::scidb::game::moveto $position $key]
-		$w tag bind $key <ButtonPress-2> [namespace code [list ShowPosition $w $position $key %s]]
-		$w tag bind $key <ButtonRelease-2> [namespace code [list hidePosition $w]]
 	}
 }
 
@@ -1233,34 +1222,57 @@ proc Tooltip {path nag} {
 }
 
 
-proc EnterMove {w position key} {
+proc FindKey {w attr} {
+	if {[catch { set key [$w mark previous m:$attr.current.last {m-*}] }]} {
+		set cx [expr {[winfo pointerx $w] - [winfo rootx $w]}]
+		set cy [expr {[winfo pointery $w] - [winfo rooty $w]}]
+		$w mark set current [$w index @$cx,$cy]
+		set key [$w mark previous m:$attr.current.last {m-*}]
+		puts stderr "Couldn't find tag m:$attr near $key ([$w index current])"
+	}
+	return $key
+}
+
+
+proc FindRange {w key} {
+	if {$key eq "m-0.0"} { return {end end} }
+	return [$w tag nextrange m:move $key]
+}
+
+
+proc GotoMove {position} {
+	variable ${position}::Vars
+
+	if {[string length $Vars(active)]} {
+		::scidb::game::moveto $position $Vars(active)
+	}
+}
+
+
+proc EnterMove {w position {key "current"}} {
 	variable ${position}::Vars
 	variable ::pgn::browser::Colors
 
-	if {$Vars(current) ne $key} {
-		$w tag configure $key -background [::colors::lookup $Colors(hilite:move)]
-		$w configure -cursor hand2
+	if {$key eq "current"} {
+		set key [FindKey $w move]
+		set range {m:move.current.first m:move.current.last}
+	} else {
+		set range [FindRange $w $key]
 	}
 
+	$w tag add h:move {*}$range
+	$w configure -cursor hand2
 	set Vars(active) $key
 }
 
 
-proc LeaveMove {w position key} {
+proc LeaveMove {w position} {
 	variable ${position}::Vars
 	variable ::pgn::browser::Colors
 
 	set Vars(active) {}
-
-	if {$Vars(current) ne $key} {
-		if {$key in $Vars(next)} {
-			set color $Colors(background:nextmove)
-		} else {
-			set color $Colors(background)
-		}
-		$w tag configure $key -background [::colors::lookup $color]
-		$w configure -cursor {}
-	}
+	$w tag remove h:move begin end
+	$w configure -cursor {}
 }
 
 
@@ -1862,7 +1874,7 @@ namespace eval browser {
 
 proc refresh {regardFontSize}					{ ::browser::refresh $regardFontSize }
 proc resetGoto {w position}					{ ::browser::resetGoto $w $position }
-proc showNext {w position flag}				{ ::browser::showNext $w $position $flag }
+proc showNext {w position flag}				{}
 proc doLayout {position data context w}	{ ::browser::UpdatePGN $position $data $w }
 
 } ;# browser

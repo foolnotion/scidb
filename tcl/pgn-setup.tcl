@@ -132,7 +132,7 @@ set StyleLayout {
 		{ 1 0 empty-game }
 	{ 0 0 Highlighting }
 		{ 1 0 current-move }
-		{ 1 0 next-moves }
+		{ 1 1 next-moves }
 	{ 0 0 Hovers }
 		{ 1 0 hover-move }
 		{ 1 1 hover-comment }
@@ -380,16 +380,12 @@ proc configureText {path {fontContext ""}} {
 		$w tag configure h:next    -indentbackground 1 \
 										   -background [::colors::lookup $Colors(background:nextmove)]
 
+		$w tag configure h:move		-indentbackground 1
+		$w tag configure h:curr		-indentbackground 1
 		$w tag configure h:nag     -indentbackground 1 -background [::colors::lookup $Colors(hilite:move)]
-		$w tag configure h:move    -indentbackground 1 -background [::colors::lookup $Colors(hilite:move)]
 		$w tag configure h:mark    -indentbackground 1 -background [::colors::lookup $Colors(hilite:move)]
 
-		$w tag configure h:curr    -indentbackground 1 \
-										   -background [::colors::lookup $Colors(background:current)]
-
-		$w tag configure h:move    -foreground black
 		$w tag configure h:next    -foreground black
-		$w tag configure h:curr    -foreground black
 		$w tag configure h:comment -foreground [::colors::lookup $Colors(hilite:comment)]
 		$w tag configure h:info    -foreground [::colors::lookup $Colors(hilite:info)]
 
@@ -398,6 +394,14 @@ proc configureText {path {fontContext ""}} {
 		$w tag configure m:nagtext -indentbackground 1
 		$w tag configure m:comment -indentbackground 1
 		$w tag configure m:info    -indentbackground 1
+	}
+
+	if {$context ne "merge"} {
+		$w tag configure h:move -foreground black -background [::colors::lookup $Colors(hilite:move)]
+		$w tag configure h:curr \
+			-foreground black \
+			-background [::colors::lookup $Colors(background:current)] \
+			;
 	}
 
 	$w tag configure figurine -font $::font::figurine($fontContext:normal) -underline no
@@ -1743,11 +1747,10 @@ proc SelectionChanged {mw context position tag {blink yes}} {
 			}
 		}
 
-		if {$context eq "editor"} {
-			::scidb::game::go $position 1
-		} else {
+		::scidb::game::go $position 1
+
+		if {$context ne "editor"} {
 			if {$tag in {"current-move" "next-moves"}} {
-				::scidb::game::go $position 1
 				after idle [list ::pgn::browser::showNext $w $position yes]
 			} else {
 				::pgn::browser::showNext $w $position no
