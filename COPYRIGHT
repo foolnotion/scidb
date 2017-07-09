@@ -25,6 +25,10 @@ no copyrights
 ** tk_busy.cpp
 Copyright 1993-1998 Lucent Technologies, Inc.
 
+** tkPanedWindow.cpp
+Copyright (c) 1997 Sun Microsystems, Inc.
+Copyright (c) 2000 Ajuba Solutions.
+
 ** libharu (Scidb version)
 Copyright (C) 2011-2013 Gregor Cramer
 Copyright (C) 2007-2008 Antony Dovgal
