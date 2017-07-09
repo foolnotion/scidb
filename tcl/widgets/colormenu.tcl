@@ -42,8 +42,6 @@ variable baseColors {
 
 variable selection {}
 variable useGrab true
-variable catchEmptyBackgroundError true
-variable bgerrorHandler ::tk::dialog::error::bgerror
 
 namespace import ::dialog::choosecolor::getActualColor
 namespace import ::tcl::mathfunc::min
@@ -55,16 +53,6 @@ proc popup {parent args} {
 	variable selection
 	variable useGrab
 	variable haveTooltips
-	variable catchEmptyBackgroundError
-
-	if {$catchEmptyBackgroundError} {
-		# BUG: sometimes we get an empty background error. I don't know why.
-		# (unluckely it is an error w/o any message; that means the error is a bug).
-		proc ::bgerror {message} {
-			if {[string length $message]} { return [$::colormenu::bgerrorHandler $message] }
-			return 0
-		}
-	}
 
 	if {![winfo exists $parent]} {
 		return -code error "window name \"$parent\" doesn't exist"
@@ -395,10 +383,6 @@ proc popup {parent args} {
 			set selection [::dialog::chooseColor {*}$dlgArgs]
 			if {$disableParent} { $parent configure -state normal }
 		}
-	}
-
-	if {$catchEmptyBackgroundError} {
-		proc ::bgerror {message} { return [$::colormenu::bgerrorHandler $message] }
 	}
 
 	return $selection
