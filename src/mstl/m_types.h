@@ -60,6 +60,11 @@
 # endif
 #endif
 
+#define __m_printf_format__(index, first_to_check) \
+	__attribute__((__format__(__printf__, index, first_to_check)))
+
+#define __m_warn_unused __attribute__((warn_unused_result))
+
 ///////////////////////////////////////////////////////////////////////////////
 // C++Ox standard (reference: http://gcc.gnu.org/projects/cxx0x.html
 //                            http://clang.llvm.org/cxx_status.html)

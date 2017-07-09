@@ -272,6 +272,26 @@ string operator+(char const* lhs, string const& rhs);
 void swap(string& lhs, string& rhs);
 void swap(string::reference lhs, string::reference rhs);
 
+int compare(string const& lhs, string const& rhs);
+int compare(string const& lhs, char const* rhs);
+int compare(char const* lhs, string const& rhs);
+int compare(char const* lhs, char const* rhs);
+
+int compare(string const& lhs, string const& rhs, string::size_type len);
+int compare(string const& lhs, char const* rhs, string::size_type len);
+int compare(char const* lhs, string const& rhs, string::size_type len);
+int compare(char const* lhs, char const* rhs, string::size_type len);
+
+int case_compare(string const& lhs, string const& rhs);
+int case_compare(string const& lhs, char const* rhs);
+int case_compare(char const* lhs, string const& rhs);
+int case_compare(char const* lhs, char const* rhs);
+
+int case_compare(string const& lhs, string const& rhs, string::size_type len);
+int case_compare(string const& lhs, char const* rhs, string::size_type len);
+int case_compare(char const* lhs, string const& rhs, string::size_type len);
+int case_compare(char const* lhs, char const* rhs, string::size_type len);
+
 template <typename T> struct is_pod;
 template <> struct is_pod<string::value_type> { enum { value = 1 }; };
 

@@ -129,10 +129,11 @@ inline
 memblock<T>&
 memblock<T>::operator=(memblock&& mb)
 {
-	mstl::swap(m_start, mb.m_start);
-	m_finish = mb.m_finish;
-	m_end_of_storage = mb.m_end_of_storage;
-
+	if (this != &mb)
+	{
+		memblock::~memblock();
+		new(*this) memblock(mstl::move(mb));
+	}
 	return *this;
 }
 

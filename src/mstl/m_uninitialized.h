@@ -40,22 +40,10 @@ T* uninitialized_move(pointer_iterator<T> first, pointer_iterator<T> last, T* re
 template<typename T>
 T* uninitialized_fill_n(pointer_iterator<T*> first, size_t n, T const& value);
 
-template<typename T, typename U>
-U** uninitialized_copy(pointer_iterator<T*> first, pointer_iterator<T*> last, U** result);
-template<typename T, typename U>
-U** uninitialized_move(pointer_iterator<T*> first, pointer_iterator<T*> last, U** result);
-template<typename T, typename U>
-U** uninitialized_fill_n(pointer_iterator<U**> first, size_t n, T const* value);
-
 template<typename T>
 T* uninitialized_copy(pointer_const_iterator<T> first, pointer_const_iterator<T> last, T* result);
 template<typename T>
 T* uninitialized_move(pointer_const_iterator<T> first, pointer_const_iterator<T> last, T* result);
-
-template<typename T, typename U>
-U** uninitialized_copy(pointer_const_iterator<T*> first, pointer_const_iterator<T*> last, U** result);
-template<typename T, typename U>
-U** uninitialized_move(pointer_const_iterator<T*> first, pointer_const_iterator<T*> last, U** result);
 
 template<typename Iterator, typename T>
 T* uninitialized_copy(Iterator first, Iterator last, T* result);

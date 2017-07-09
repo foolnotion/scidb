@@ -26,7 +26,15 @@ template <typename T> inline pvector<T>::pvector() {}
 template <typename T> inline pvector<T>::pvector(size_type n) { m_vec.resize(n, 0); }
 
 template <typename T> inline bool pvector<T>::empty() const { return m_vec.empty(); }
-template <typename T> inline typename pvector<T>::size_type pvector<T>::size() const { return m_vec.size(); }
+
+
+template <typename T>
+inline
+typename pvector<T>::size_type
+pvector<T>::size() const
+{
+	return m_vec.size();
+}
 
 
 template <typename T>

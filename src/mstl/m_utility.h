@@ -102,6 +102,19 @@ template<typename T> T& forward(typename mstl::remove_reference<T>::type& t);
 
 #endif
 
+template <typename T> int compare(T const& lhs, T const& rhs);
+
+int compare(int8_t lhs, int8_t rhs);
+int compare(int16_t lhs, int16_t rhs);
+int compare(int32_t lhs, int32_t rhs);
+int compare(int64_t lhs, int64_t rhs);
+int compare(uint8_t lhs, uint8_t rhs);
+int compare(uint16_t lhs, uint16_t rhs);
+int compare(uint32_t lhs, uint32_t rhs);
+int compare(uint64_t lhs, uint64_t rhs);
+
+int compare(bool lhs, bool rhs);
+
 } // namespace mstl
 
 #include "m_utility.ipp"

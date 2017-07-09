@@ -17,7 +17,7 @@
 // ======================================================================
 
 #include "m_uninitialized.h"
-#include "m_algobase.h"
+#include "m_algorithm.h"
 #include "m_utility.h"
 #include "m_type_traits.h"
 #include "m_assert.h"
@@ -79,6 +79,36 @@ typename vector<T>::const_reverse_iterator
 vector<T>::rend() const
 {
 	return const_reverse_iterator(begin());
+}
+
+
+template <typename T>
+template <typename U>
+inline
+typename vector<T>::iterator
+vector<T>::find(U const& v)
+{
+	return mstl::find(begin(), end(), v);
+}
+
+
+template <typename T>
+template <typename U>
+inline
+typename vector<T>::const_iterator
+vector<T>::find(U const& v) const
+{
+	return mstl::find(begin(), end(), v);
+}
+
+
+template <typename T>
+template <typename U>
+inline
+bool
+vector<T>::contains(U const& v)
+{
+	return find(v) != end();
 }
 
 
@@ -696,7 +726,7 @@ vector<T>::assign(Iterator first, Iterator last)
 
 template <typename T>
 void
-vector<T>::fill(value_type const& value)
+vector<T>::fill(const_reference value)
 {
 	if (mstl::is_pod<value_type>::value)
 		mstl::uninitialized_fill_n(this->m_start, size(), value);
@@ -715,22 +745,128 @@ vector<T>::operator+=(vector const& v)
 }
 
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
-
 template <typename T>
-inline vector<T>::vector(vector&& v) : memblock<T>(mstl::move(*this)) {}
+template <typename Comparison>
+inline
+void
+vector<T>::qsort(Comparison comparison)
+{
+	::mstl::qsort(this->m_start, this->m_finish - this->m_start, comparison);
+}
 
 
 template <typename T>
 inline
-vector<T>&
-vector<T>::operator=(vector&& v)
+void
+vector<T>::qsort(int (*comparison)(T const* lhs, T const* rhs))
 {
-	static_cast<memblock<T>&>(*this) = mstl::move(*this);
-	return *this;
+	::mstl::qsort(this->m_start, this->m_finish - this->m_start, comparison);
 }
 
-#endif
+
+template <typename T>
+inline
+void
+vector<T>::qsort()
+{
+	qsort(bits::algo::compare<T>::doit);
+}
+
+
+template <typename T>
+void
+vector<T>::qsort(int (*function)(T const&, T const&))
+{
+	::mstl::qsort(this->m_start, this->m_finish - this->m_start, function);
+}
+
+
+template <typename T>
+void
+vector<T>::qsort(int (*function)(T, T))
+{
+	::mstl::qsort(this->m_start, this->m_finish - this->m_start, function);
+}
+
+
+template <typename T>
+template <typename Arg>
+void
+vector<T>::qsort(int (*function)(T const&, T const&, Arg const& arg), Arg const& arg)
+{
+	::mstl::qsort(this->m_start, this->m_finish - this->m_start, function, arg);
+}
+
+
+template <typename T>
+template <typename Arg>
+void
+vector<T>::qsort(int (*function)(T, T, Arg const& arg), Arg const& arg)
+{
+	::mstl::qsort(this->m_start, this->m_finish - this->m_start, function, arg);
+}
+
+
+template <typename T>
+template <typename Less>
+inline
+void
+vector<T>::bubblesort(Less less)
+{
+	::mstl::bubblesort(this->m_start, this->m_finish - this->m_start, less);
+}
+
+
+template <typename T>
+inline
+void
+vector<T>::bubblesort(int (*less)(T const* lhs, T const* rhs))
+{
+	::mstl::bubblesort(this->m_start, this->m_finish - this->m_start, less);
+}
+
+
+template <typename T>
+inline
+void
+vector<T>::bubblesort()
+{
+	::mstl::bubblesort(this->m_start, this->m_finish - this->m_start);
+}
+
+
+template <typename T>
+void
+vector<T>::bubblesort(int (*function)(T const&, T const&))
+{
+	::mstl::bubblesort(this->m_start, this->m_finish - this->m_start, function);
+}
+
+
+template <typename T>
+void
+vector<T>::bubblesort(int (*function)(T, T))
+{
+	::mstl::bubblesort(this->m_start, this->m_finish - this->m_start, function);
+}
+
+
+template <typename T>
+template <typename Arg>
+void
+vector<T>::bubblesort(int (*function)(T const&, T const&, Arg const& arg), Arg const& arg)
+{
+	::mstl::bubblesort(this->m_start, this->m_finish - this->m_start, function, arg);
+}
+
+
+template <typename T>
+template <typename Arg>
+void
+vector<T>::bubblesort(int (*function)(T, T, Arg const& arg), Arg const& arg)
+{
+	::mstl::bubblesort(this->m_start, this->m_finish - this->m_start, function, arg);
+}
 
 } // namespace mstl
 

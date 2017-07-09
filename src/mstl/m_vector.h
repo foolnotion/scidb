@@ -6,7 +6,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2009-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -56,11 +56,6 @@ public:
 	template <typename Iterator> vector(Iterator first, Iterator last);
 	~vector() throw();
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
-	vector(vector&& v);
-	vector& operator=(vector&& v);
-#endif
-
 	vector& operator=(vector const& v);
 
 	bool operator==(vector const& v) const;
@@ -101,6 +96,8 @@ public:
 	void pop_back();
 	void pop_front();
 
+	template <typename U> bool contains(U const& v);
+
 	bool equal(vector_type const& v) const;
 	bool equal(vector_type const& v, size_type n) const;
 
@@ -111,12 +108,15 @@ public:
 	template <typename Iterator>
 	void insert(iterator position, Iterator first, Iterator last);
 
+	template <typename U> iterator find(U const& v);
+	template <typename U> const_iterator find(U const& v) const;
+
 	iterator erase(iterator position);
 	iterator erase(reverse_iterator position);
 	iterator erase(iterator first, iterator last);
 	iterator erase(reverse_iterator first, reverse_iterator last);
 
-	void fill(value_type const& value);
+	void fill(const_reference value);
 
 	void reserve(size_type n);
 	void reserve_exact(size_type n);
@@ -125,6 +125,27 @@ public:
 	void clear();
 	void swap(vector& v);
 	void release();
+
+	void qsort();
+	template <typename Comparison>
+		void qsort(Comparison comparison);
+	void qsort(int (*function)(T const&, T const&));
+	void qsort(int (*function)(T, T));
+	template <typename Arg>
+		void qsort(int (*function)(T const&, T const&, Arg const& arg), Arg const& arg);
+	template <typename Arg>
+		void qsort(int (*function)(T, T, Arg const& arg), Arg const& arg);
+	void qsort(int (*comparison)(T const* lhs, T const* rhs));
+
+	void bubblesort();
+	template <typename Less> void bubblesort(Less less);
+	void bubblesort(int (*function)(T const&, T const&));
+	void bubblesort(int (*function)(T, T));
+	template <typename Arg>
+		void bubblesort(int (*function)(T const&, T const&, Arg const& arg), Arg const& arg);
+	template <typename Arg>
+		void bubblesort(int (*function)(T, T, Arg const& arg), Arg const& arg);
+	void bubblesort(int (*less)(T const* lhs, T const* rhs));
 
 private:
 

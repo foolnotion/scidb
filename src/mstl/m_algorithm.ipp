@@ -667,63 +667,103 @@ qsort(void* base, size_t nmemb, size_t size, Comparison compare, void* arg)
 #endif
 }
 
-template <typename T, typename Comparison>
+template <typename T>
 void
 bubblesort(T* base, size_t nmemb)
 {
-	for (size_t i = 1; i < nmemb; ++i)
+	M_ASSERT(nmemb > 1);
+
+	do
 	{
-		for (size_t j = 0; j < nmemb - i; ++j)
+		size_t newn = 1;
+
+		for (unsigned i = 0; i < nmemb - 1; ++i)
 		{
-			if (base[j + 1] < base[j])
-				::mstl::swap(base[j], base[j + 1]);
+			if (base[i + 1] < base[i])
+			{
+				::mstl::swap(base[i], base[i + 1]);
+				newn = i + 1;
+			}
 		}
+
+		nmemb = newn;
 	}
+	while (nmemb > 1);
 }
 
 
 template <typename T>
 void
-bubblesort(T *base, size_t nmemb, int (*comp)(T lhs, T rhs))
+bubblesort(T *base, size_t nmemb, int (*less)(T lhs, T rhs))
 {
-	for (size_t i = 1; i < nmemb; ++i)
+	M_ASSERT(nmemb > 1);
+
+	do
 	{
-		for (size_t j = 0; j < nmemb - i; ++j)
+		size_t newn = 1;
+
+		for (unsigned i = 0; i < nmemb - 1; ++i)
 		{
-			if (comp(base[j + 1], base[j]))
-				::mstl::swap(base[j], base[j + 1]);
+			if (less(base[i + 1], base[i]))
+			{
+				::mstl::swap(base[i], base[i + 1]);
+				newn = i + 1;
+			}
 		}
+
+		nmemb = newn;
 	}
+	while (nmemb > 1);
 }
 
 
 template <typename T>
 void
-bubblesort(T *base, size_t nmemb, int (*comp)(T const& lhs, T const& rhs))
+bubblesort(T *base, size_t nmemb, int (*less)(T const& lhs, T const& rhs))
 {
-	for (size_t i = 1; i < nmemb; ++i)
+	M_ASSERT(nmemb > 1);
+
+	do
 	{
-		for (size_t j = 0; j < nmemb - i; ++j)
+		size_t newn = 1;
+
+		for (unsigned i = 0; i < nmemb - 1; ++i)
 		{
-			if (comp(base[j + 1], base[j]))
-				::mstl::swap(base[j], base[j + 1]);
+			if (less(base[i + 1], base[i]))
+			{
+				::mstl::swap(base[i], base[i + 1]);
+				newn = i + 1;
+			}
 		}
+
+		nmemb = newn;
 	}
+	while (nmemb > 1);
 }
 
 
 template <typename T>
 void
-bubblesort(T *base, size_t nmemb, int (*comp)(T const* lhs, T const* rhs))
+bubblesort(T *base, size_t nmemb, int (*less)(T const* lhs, T const* rhs))
 {
-	for (size_t i = 1; i < nmemb; ++i)
+	M_ASSERT(nmemb > 1);
+
+	do
 	{
-		for (size_t j = 0; j < nmemb - i; ++j)
+		size_t newn = 1;
+
+		for (unsigned i = 0; i < nmemb - 1; ++i)
 		{
-			if (comp(base + j + 1, base + j))
-				::mstl::swap(base[j], base[j + 1]);
+			if (less(base + i + 1, base + i))
+			{
+				::mstl::swap(base[i], base[i + 1]);
+				newn = i + 1;
+			}
 		}
+
+		nmemb = newn;
 	}
+	while (nmemb > 1);
 }
 
 
@@ -731,47 +771,77 @@ template <typename T, typename Arg>
 void
 bubblesort(	T *base,
 				size_t nmemb,
-				int (*comp)(T const& lhs, T const& rhs, Arg const& arg),
+				int (*less)(T const& lhs, T const& rhs, Arg const& arg),
 				Arg const& arg)
 {
-	for (size_t i = 1; i < nmemb; ++i)
+	M_ASSERT(nmemb > 1);
+
+	do
 	{
-		for (size_t j = 0; j < nmemb - i; ++j)
+		size_t newn = 1;
+
+		for (unsigned i = 0; i < nmemb - 1; ++i)
 		{
-			if (comp(base[j + 1], base[j], arg))
-				::mstl::swap(base[j], base[j + 1]);
+			if (less(base[i + 1], base[i], arg))
+			{
+				::mstl::swap(base[i], base[i + 1]);
+				newn = i + 1;
+			}
 		}
+
+		nmemb = newn;
 	}
+	while (nmemb > 1);
 }
 
 
-template <typename T, typename Comparison>
+template <typename T, typename Less>
 void
-bubblesort(T* base, size_t nmemb, Comparison compare)
+bubblesort(T* base, size_t nmemb, Less less)
 {
-	for (size_t i = 1; i < nmemb; ++i)
+	M_ASSERT(nmemb > 1);
+
+	do
 	{
-		for (size_t j = 0; j < nmemb - i; ++j)
+		size_t newn = 1;
+
+		for (unsigned i = 0; i < nmemb - 1; ++i)
 		{
-			if (compare(base[j + 1], base[j]))
-				::mstl::swap(base[j], base[j + 1]);
+			if (less(base[i + 1], base[i]))
+			{
+				::mstl::swap(base[i], base[i + 1]);
+				newn = i + 1;
+			}
 		}
+
+		nmemb = newn;
 	}
+	while (nmemb > 1);
 }
 
 
-template <typename T, typename Arg, typename Comparison>
+template <typename T, typename Arg, typename Less>
 void
-bubblesort(T* base, size_t nmemb, Comparison compare, Arg const& arg)
+bubblesort(T* base, size_t nmemb, Less less, Arg const& arg)
 {
-	for (size_t i = 1; i < nmemb; ++i)
+	M_ASSERT(nmemb > 1);
+
+	do
 	{
-		for (size_t j = 0; j < nmemb - i; ++j)
+		size_t newn = 1;
+
+		for (unsigned i = 0; i < nmemb - 1; ++i)
 		{
-			if (compare(base[j + 1], base[j], arg))
-				::mstl::swap(base[j], base[j + 1]);
+			if (less(base[i + 1], base[i], arg))
+			{
+				::mstl::swap(base[i], base[i + 1]);
+				newn = i + 1;
+			}
 		}
+
+		nmemb = newn;
 	}
+	while (nmemb > 1);
 }
 
 } // namespace bits
@@ -1185,7 +1255,8 @@ inline
 void
 bubblesort(T (&array)[N])
 {
-	bits::bubblesort(&array[0], N);
+	if (N > 1)
+		bits::bubblesort(&array[0], N);
 }
 
 
@@ -1195,7 +1266,9 @@ void
 bubblesort(T* array, unsigned len)
 {
 	M_REQUIRE(len == 0 || array);
-	bits::bubblesort(array, len);
+
+	if (len > 1)
+		bits::bubblesort(array, len);
 }
 
 
@@ -1204,7 +1277,8 @@ inline
 void
 bubblesort(T (&array)[N], int (*compare)(T const& lhs, T const& rhs))
 {
-	bits::bubblesort(&array[0], N, compare);
+	if (N > 1)
+		bits::bubblesort(&array[0], N, compare);
 }
 
 
@@ -1213,7 +1287,8 @@ inline
 void
 bubblesort(T (&array)[N], int (*compare)(T lhs, T rhs))
 {
-	bits::bubblesort(&array[0], N, compare);
+	if (N > 1)
+		bits::bubblesort(&array[0], N, compare);
 }
 
 
@@ -1222,7 +1297,8 @@ inline
 void
 bubblesort(T (&array)[N], int (*compare)(T const* lhs, T const* rhs))
 {
-	bits::bubblesort(&array[0], N, compare);
+	if (N > 1)
+		bits::bubblesort(&array[0], N, compare);
 }
 
 
@@ -1231,7 +1307,8 @@ inline
 void
 bubblesort(T* array, unsigned len, int (*compare)(T const& lhs, T const& rhs))
 {
-	bits::bubblesort(array, len, compare);
+	if (len > 1)
+		bits::bubblesort(array, len, compare);
 }
 
 
@@ -1240,7 +1317,8 @@ inline
 void
 bubblesort(T* array, unsigned len, int (*compare)(T lhs, T rhs))
 {
-	bits::bubblesort(array, len, compare);
+	if (len > 1)
+		bits::bubblesort(array, len, compare);
 }
 
 
@@ -1249,7 +1327,8 @@ inline
 void
 bubblesort(T* array, unsigned len, int (*compare)(T const* lhs, T const* rhs))
 {
-	bits::bubblesort(array, len, compare);
+	if (len > 1)
+		bits::bubblesort(array, len, compare);
 }
 
 
@@ -1258,7 +1337,8 @@ inline
 void
 bubblesort(T (&array)[N], int (*compare)(T const& lhs, T const& rhs, Arg const& arg), Arg const& arg)
 {
-	bits::bubblesort(&array[0], N, compare, arg);
+	if (N > 1)
+		bits::bubblesort(&array[0], N, compare, arg);
 }
 
 
@@ -1267,7 +1347,8 @@ inline
 void
 bubblesort(T (&array)[N], int (*compare)(T lhs, T rhs, Arg const& arg), Arg const& arg)
 {
-	bits::bubblesort(&array[0], N, compare, arg);
+	if (N > 1)
+		bits::bubblesort(&array[0], N, compare, arg);
 }
 
 
@@ -1279,7 +1360,8 @@ bubblesort(	T* array,
 				int (*compare)(T const& lhs, T const& rhs, Arg const& arg),
 				Arg const& arg)
 {
-	bits::bubblesort(array, len, compare, arg);
+	if (len > 1)
+		bits::bubblesort(array, len, compare, arg);
 }
 
 
@@ -1288,7 +1370,8 @@ inline
 void
 bubblesort(T* array, unsigned len, int (*compare)(T lhs, T rhs, Arg const& arg), Arg const& arg)
 {
-	bits::bubblesort(array, len, compare, arg);
+	if (len > 1)
+		bits::bubblesort(array, len, compare, arg);
 }
 
 
@@ -1297,7 +1380,8 @@ inline
 void
 bubblesort(T (&array)[N], Comparison comparison)
 {
-	bits::bubblesort(&array[0], N, comparison);
+	if (N > 1)
+		bits::bubblesort(&array[0], N, comparison);
 }
 
 
@@ -1308,7 +1392,8 @@ bubblesort(T* array, unsigned len, Comparison comparison)
 {
 	M_REQUIRE(len == 0 || array);
 
-	bits::bubblesort(array, len, comparison);
+	if (len > 1)
+		bits::bubblesort(array, len, comparison);
 }
 
 } // namespace mstl

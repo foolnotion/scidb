@@ -132,6 +132,15 @@ uninitialized_fill_n(T* first, size_t n, T const& value)
 }
 
 
+template<typename T, typename U>
+inline
+U**
+uninitialized_fill_n(pointer_iterator<U**> first, size_t n, T const* value)
+{
+	return bits::uninitialized<1>::fill_n(first.ref(), n, value);
+}
+
+
 template<typename T>
 inline
 T*
@@ -171,42 +180,6 @@ uninitialized_move(pointer_iterator<T> first, pointer_iterator<T> last, T* resul
 template<typename T>
 inline
 T*
-uninitialized_fill_n(pointer_iterator<T*> first, size_t n, T const& value)
-{
-	return bits::uninitialized<is_pod<T>::value>::fill_n(first.ref(), n, value);
-}
-
-
-template<typename T, typename U>
-inline
-U**
-uninitialized_copy(pointer_iterator<T*> first, pointer_iterator<T*> last, U** result)
-{
-	return bits::uninitialized<1>::copy(first.ref(), last.ref(), result);
-}
-
-
-template<typename T, typename U>
-inline
-U**
-uninitialized_move(pointer_iterator<T*> first, pointer_iterator<T*> last, U** result)
-{
-	return bits::uninitialized<1>::copy(first.ref(), last.ref(), result);
-}
-
-
-template<typename T, typename U>
-inline
-U**
-uninitialized_fill_n(pointer_iterator<U**> first, size_t n, T const* value)
-{
-	return bits::uninitialized<1>::fill_n(first.ref(), n, value);
-}
-
-
-template<typename T>
-inline
-T*
 uninitialized_copy(pointer_const_iterator<T> first, pointer_const_iterator<T> last, T* result)
 {
 	return bits::uninitialized<is_pod<T>::value>::copy(first.ref(), last.ref(), result);
@@ -219,24 +192,6 @@ T*
 uninitialized_move(pointer_const_iterator<T> first, pointer_const_iterator<T> last, T* result)
 {
 	return bits::uninitialized<is_movable<T>::value>::copy(first.ref(), last.ref(), result);
-}
-
-
-template<typename T, typename U>
-inline
-U**
-uninitialized_copy(pointer_const_iterator<T*> first, pointer_const_iterator<T*> last, U** result)
-{
-	return bits::uninitialized<1>::copy(first.ref(), last.ref(), result);
-}
-
-
-template<typename T, typename U>
-inline
-U**
-uninitialized_move(pointer_const_iterator<T*> first, pointer_const_iterator<T*> last, U** result)
-{
-	return bits::uninitialized<1>::copy(first.ref(), last.ref(), result);
 }
 
 
