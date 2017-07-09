@@ -207,7 +207,8 @@ proc interruptable? {w} {
 
 
 proc interrupted? {w} {
-	return [set [namespace current]::Priv(interrupted:$w)]
+	variable Priv
+	return ![info exists Priv(interrupted:$w)] || $Priv(interrupted:$w)
 }
 
 
