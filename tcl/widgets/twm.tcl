@@ -114,7 +114,7 @@ proc twm {path args} {
 	#ttk::style map twm.TNotebook.Tab -background [list active $background selected $background]
 
 	ttk::frame $path -class TwmToplevel -takefocus 0
-	bind $path <Destroy> [namespace code { DestroyTWM %W }]
+	bind $path <Destroy> [list [namespace current]::DestroyTWM %W]
 
 	set h [tk::toplevel $path.__highlight__ -borderwidth 0]
 	pack [tk::canvas $h.c -borderwidth 0]
@@ -202,6 +202,7 @@ proc MakeMultiwindow {twm args} {
 
 	set w [tk::multiwindow $twm.__multiwindow__[incr Counter(multiwindow)] -takefocus 0]
 	if {[llength $args] == 1} { set args [lindex $args 0] }
+puts "MakeMultiwindow($w): $args"
 	foreach {name value} $args {
 		catch { $w configure $name $value }
 	}
@@ -214,6 +215,7 @@ proc MakeNotebook {twm args} {
 
 	set w [ttk::notebook $twm.__notebook__[incr Counter(notebook)] -style twm.TNotebook -takefocus 0]
 	if {[llength $args] == 1} { set args [lindex $args 0] }
+puts "MakeNotebook($w): $args"
 	foreach {name value} $args {
 		catch { $w configure $name $value }
 	}
@@ -228,6 +230,7 @@ proc MakePanedWindow {twm args} {
 	set w [tk::panedwindow $twm.__panedwindow__[incr Counter(panedwindow)]]
 	$w configure -sashwidth $Options(sash:size)
 	if {[llength $args] == 1} { set args [lindex $args 0] }
+puts "MakePanedWindow($w): $args"
 	foreach {name value} $args {
 		catch { $w configure $name $value }
 	}
@@ -306,6 +309,7 @@ proc MakeFrame2 {twm frame id} {
 		ttk::button $hdr.close \
 			-style twm.TButton \
 			-image $icon::12x12::close \
+			-command [list [namespace current]::Close $twm $frame] \
 			-state [expr {$closable ? "normal" : "disabled"}] \
 			;
 		tooltip $hdr.close [tr [namespace current]::mc::Close]
@@ -315,7 +319,7 @@ proc MakeFrame2 {twm frame id} {
 		ttk::button $hdr.undock \
 			-style twm.TButton \
 			-image $icon::12x12::undock \
-			-command [namespace code [list Undock $twm $frame]] \
+			-command [list [namespace current]::Undock $twm $frame] \
 			-state [expr {$undockable ? "normal" : "disabled"}] \
 			;
 		tooltip $hdr.undock [tr [namespace current]::mc::Undock]
@@ -348,9 +352,9 @@ proc MakeFrame2 {twm frame id} {
 
 proc HeaderBindings {twm frame w} {
 	if {[$twm get $frame move]} {
-		bind $w <ButtonPress-1>		[namespace code [list HeaderPress $twm $frame %X %Y]]
-		bind $w <Button1-Motion>	[namespace code [list HeaderMotion $twm $frame %X %Y]]
-		bind $w <ButtonRelease-1>	[namespace code [list HeaderRelease $twm $frame]]
+		bind $w <ButtonPress-1>		[list [namespace current]::HeaderPress $twm $frame %X %Y]
+		bind $w <Button1-Motion>	[list [namespace current]::HeaderMotion $twm $frame %X %Y]
+		bind $w <ButtonRelease-1>	[list [namespace current]::HeaderRelease $twm $frame]
 	}
 	MouseWheelBindings $twm $frame $w
 	bind $w <ButtonPress-3> [list event generate $twm <<TwmMenu>> -x %X -y %Y]
@@ -360,15 +364,15 @@ proc HeaderBindings {twm frame w} {
 proc MouseWheelBindings {twm frame w} {
 	switch [tk windowingsystem] {
 		x11 {
-			bind $w <Button-4> [namespace code [list PlaceLabelBar $twm $frame -5]]
-			bind $w <Button-5> [namespace code [list PlaceLabelBar $twm $frame +5]]
+			bind $w <Button-4> [list [namespace current]::PlaceLabelBar $twm $frame -5]
+			bind $w <Button-5> [list [namespace current]::PlaceLabelBar $twm $frame +5]
 		}
 		aqua {
-			bind $w <MouseWheel> [namespace code [list PlaceLabelBar $twm $frame [list expr {-(%D)}]]]
+			bind $w <MouseWheel> [list [namespace current]::PlaceLabelBar $twm $frame [list expr {-(%D)}]]
 		}
 		win32 {
 			bind $w <MouseWheel> \
-				[namespace code [list PlaceLabelBar $twm $frame [list expr {-(%D/120)*5)}]]]
+				[list [namespace current]::PlaceLabelBar $twm $frame [list expr {-(%D/120)*5)}]]
 		}
 	}
 }
@@ -438,7 +442,7 @@ proc UpdateHeader {twm frame panes} {
 					;
 			}
 		} else {
-			bind $lbl <ButtonPress-1> [namespace code [list Select $twm $parent $f]]
+			bind $lbl <ButtonPress-1> [list [namespace current]::Select $twm $parent $f]
 			bind $lbl <Enter> [list $lbl configure -background $lighter]
 			bind $lbl <Leave> [list $lbl configure -background $darker]
 			MouseWheelBindings $twm $frame $lbl
@@ -452,7 +456,7 @@ proc UpdateHeader {twm frame panes} {
 	}
 
 	$twm set $frame maxoffset 0 labels $labels repeat 0 width 0
-	set conf [namespace code [list ConfigureLabelBar $twm $frame %w]]
+	set conf [list [namespace current]::ConfigureLabelBar $twm $frame %w]
 	after idle $conf
 	bind $hdr <Configure> $conf
 	bind $frame <Configure> $conf
@@ -593,9 +597,9 @@ proc MakeArrow {twm frame dir incr} {
 		-style twm.TButton \
 		-takefocus 0 \
 		-image [makeStateSpecificIcons $icon::8x16::arrow($dir)] \
-		-command [namespace code [list PlaceLabelBar $twm $frame $incr]] \
+		-command [list [namespace current]::PlaceLabelBar $twm $frame $incr] \
 		;
-	bind $arrow <ButtonPress-1> [namespace code [list InvokeRepeat $twm $frame $arrow]]
+	bind $arrow <ButtonPress-1> [list [namespace current]::InvokeRepeat $twm $frame $arrow]
 	MouseWheelBindings $twm $frame $arrow
 }
 
@@ -603,7 +607,7 @@ proc MakeArrow {twm frame dir incr} {
 proc InvokeRepeat {twm frame w} {
 	if {![winfo exists $w]} { return }
 	after cancel [$twm get $frame repeat]
-	$twm set $frame repeat [after 300 [namespace code [list Repeat $twm $frame $w]]]
+	$twm set $frame repeat [after 300 [list [namespace current]::Repeat $twm $frame $w]]
 }
 
 
@@ -611,7 +615,7 @@ proc Repeat {twm frame w} {
 	if {![winfo exists $w]} { return }
 	$w instate disabled { $w state !pressed } ;# looks like a Tk bug
 	$w instate !pressed { return }
-	$twm set $frame repeat [after 75 [namespace code [list Repeat $twm $frame $w]]]
+	$twm set $frame repeat [after 75 [list [namespace current]::Repeat $twm $frame $w]]
 	eval [$w cget -command]
 }
 
@@ -635,7 +639,7 @@ proc HeaderPress {twm frame x y} {
 
 	# After 8 seconds without any mouse motion we will dock the window,
 	# because it's too dangerous to keep the global grab.
-	set Vars(afterid:release) [after 8000 [namespace code [list HeaderRelease $twm $frame 1]]]
+	set Vars(afterid:release) [after 8000 [list [namespace current]::HeaderRelease $twm $frame 1]]
 	ttk::globalGrab $frame
 }
 
@@ -658,10 +662,10 @@ proc DoHeaderMotion {twm frame x y} {
 	after cancel $Vars(afterid:release)
 	# After 8 seconds without any mouse motion we will dock the window,
 	# because it's too dangerous to keep the global grab.
-	set Vars(afterid:release) [after 8000 [namespace code [list HeaderRelease $twm $frame 1]]]
+	set Vars(afterid:release) [after 8000 [list [namespace current]::HeaderRelease $twm $frame 1]]
 
 	if {[winfo toplevel $frame] eq $frame} {
-		after idle [namespace code [list ShowDockingPoints $twm $frame $x $y]]
+		after idle [list [namespace current]::ShowDockingPoints $twm $frame $x $y]
 
 		foreach entry $Vars(docking:markers) {
 			lassign $entry canv w x0 y0 x1 y1
@@ -771,7 +775,7 @@ proc HeaderRelease {twm frame {timeout 0}} {
 #
 #	wm title $frame $Vars(frame:name:$frame)
 #	wm state $frame normal
-#	wm protocol $frame WM_DELETE_WINDOW [namespace code [list Dock $twm $frame]]
+#	wm protocol $frame WM_DELETE_WINDOW [list [namespace current]::Dock $twm $frame]
 #}
 
 
@@ -975,7 +979,7 @@ proc DockingMotion {twm frame w canv mode x y} {
 			if {$Vars(docking:position) in {n s w e}} { set w [lindex [$w panes] 0] }
 			set Vars(docking:recipient) $w
 			set Vars(afterid:display) \
-				[after 100 [namespace code [list ShowHighlightRegion $twm $frame $w $canv]]]
+				[after 100 [list [namespace current]::ShowHighlightRegion $twm $frame $w $canv]]
 		}
 
 		leave {
@@ -1077,7 +1081,7 @@ proc ShowHighlightRegion {twm frame w canv} {
 	wm overrideredirect $tl true
 	wm transient $tl $w
 	wm state $tl normal
-	after idle [namespace code [list HeaderMotion $twm $frame {*}[winfo pointerxy $twm]]]
+	after idle [list [namespace current]::HeaderMotion $twm $frame {*}[winfo pointerxy $twm]]
 }
 
 
@@ -1337,7 +1341,7 @@ proc Undock {twm frame} {
  	#wm transient $toplevel $twm
 	wm title $toplevel [$twm get $frame name]
 	wm state $toplevel normal
-	wm protocol $toplevel WM_DELETE_WINDOW [namespace code [list Dock $twm $toplevel]]
+	wm protocol $toplevel WM_DELETE_WINDOW [list [namespace current]::Dock $twm $toplevel]
 }
 
 
@@ -1345,6 +1349,7 @@ proc Dock {twm toplevel} {
 	variable ${twm}::Vars
 	variable Options
 	variable DirMap
+	global errorInfo errorCode
 
 	if {![winfo exists $twm]} { return }
 	if {![winfo exists $toplevel]} { return }
@@ -1356,7 +1361,15 @@ proc Dock {twm toplevel} {
 		lappend options $Vars(docking:recipient) $DirMap($Vars(docking:position))
 	}
 
+	# NOTE: This procedure may be called via WM_DELETE_WINDOW callback, and in this
+	# case the error handling of Tcl is not working (I don't know why), thus we have
+	# to catch errors by hand.
+	set errorInfo {}
 	set frame [$twm dock $toplevel {*}$options]
+	if {[string length $errorInfo]} {
+		return -code 1 -errorcode $errorCode -errorinfo $errorInfo -rethrow 1 $errorInfo
+	}
+
 	$twm set $frame width 0 ;# otherwise ConfigureLabelBar may not work as expected
 
 	set Vars(docking:recipient) ""
@@ -1368,8 +1381,13 @@ proc Dock {twm toplevel} {
 }
 
 
+proc Close {twm frame} {
+	destroy $frame
+}
+
+
 proc DestroyTWM {twm} {
-	after idle [namespace code [list DestroyNamespace $twm]]
+	after idle [list [namespace current]::DestroyNamespace $twm]
 }
 
 
@@ -1399,6 +1417,7 @@ proc PaneConfigure {twm parent child opts} {
 		if {[info exists args(-height)]}    { lappend options -height $args(-height) }
 	}
 
+puts "PaneConfigure($parent): $options"
 	$parent paneconfigure $child {*}$options
 }
 
@@ -1429,6 +1448,7 @@ proc Pack {twm parent child opts} {
 				if {[info exists args(-height)]}    { lappend options -height $args(-height) }
 			}
 
+puts "Pack($parent): $child -- $options"
 			$parent add $child -stretch always {*}$options
 		}
 
@@ -1450,6 +1470,7 @@ proc Pack {twm parent child opts} {
 
 			set leader [$twm leader $child]
 			set name [$twm get $leader name]
+puts "Pack($parent): $child -- $options"
 			$parent insert $pos $child -text [string totitle $name] {*}$options
 		}
 
@@ -1466,6 +1487,7 @@ proc Pack {twm parent child opts} {
 				lappend options -sticky $args(-sticky)
 			}
 
+puts "Pack($parent): $child -- $options"
 			$parent add $child {*}$options
 		}
 
@@ -1489,6 +1511,7 @@ proc Pack {twm parent child opts} {
 				$child configure -height $args(-height)
 			}
 
+puts "Pack($parent): $child -- $options"
 			grid $child -column 1 -row 1 -in $parent {*}$options
 
 			if {$class eq "Frame"} { set args(-expand) both }

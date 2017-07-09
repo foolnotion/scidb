@@ -43,7 +43,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#undef None // defined via tk.h
+#undef None // defined inside tk.h
 
 
 static void
@@ -405,6 +405,7 @@ public:
 	void packChilds();
 	void remove(Node* node);
 	void remove();
+	void eraseChild(Childs::iterator pos);
 	void floating(bool temporary);
 	void unfloat(Node* toplevel);
 	void destroyed(bool finalize);
@@ -412,10 +413,6 @@ public:
 	void dump() const;
 
 	Node* dock(Node*& recv, Position position);
-
-	Tcl_Obj* makeOptions(Node const* before = nullptr) const __m_warn_unused;
-	Tcl_Obj* makeConfigOptions(Tcl_Obj* list = nullptr) const;
-	void parseOptions(Tcl_Obj* opts);
 
 	static bool isRoot(Type type);
 	static bool isMetaFrame(Type type);
@@ -464,6 +461,9 @@ private:
 	void collectContainer(tcl::List& result) const;
 	void collectVisible(tcl::List& result) const;
 	void collectPackedChilds(tcl::List& list);
+
+	Tcl_Obj* makeOptions(Flag flags, Node const* before = nullptr) const __m_warn_unused;
+	void parseOptions(Tcl_Obj* opts);
 
 	void move(Node* node, Node const* before = nullptr);
 	void doMove(Node* node, Node const* before = nullptr);
@@ -930,11 +930,6 @@ Node::unpack()
 	m_state = Withdrawn;
 	m_savedParent = m_parent;
 
-	if (m_parent && m_parent->m_selected == this)
-		m_parent->m_selected = nullptr;
-	
-	tcl::zero(m_headerObj);
-
 	addFlag(F_Unpack);
 	delFlag(F_Pack);
 	delFlag(F_Select);
@@ -944,7 +939,10 @@ Node::unpack()
 void
 Node::selected()
 {
-	if (m_parent && m_parent->isNotebookOrMultiWindow())
+	if (!m_parent || !m_parent->isNotebookOrMultiWindow())
+		return;
+
+	if (!isLocked() || !m_parent->m_selected)
 		m_parent->m_selected = this;
 }
 
@@ -968,11 +966,19 @@ Node::configure()
 void
 Node::select()
 {
+	M_ASSERT(m_parent);
 	M_ASSERT(!testFlags(F_Unpack));
 	M_ASSERT(!testFlags(F_Destroy));
 
-	addFlag(F_Select);
-	selected();
+	if (m_parent->isMetaFrame())
+	{
+		m_parent->select();
+	}
+	else if (m_parent->isNotebookOrMultiWindow())
+	{
+		addFlag(F_Select);
+		selected();
+	}
 }
 
 
@@ -1626,13 +1632,26 @@ Node::destroyed(bool finalize)
 	}
 	else
 	{
-		withdrawn();
 		m_isDestroyed = true;
 
-		if (!isRoot() && !isWithdrawn())
+		if (!isWithdrawn())
 		{
-			toplevel()->adjustDimensions();
-			m_root->perform(toplevel());
+			withdrawn();
+
+			if (!isRoot())
+			{
+				if (m_parent->isMetaFrame())
+				{
+					m_parent->m_state = Withdrawn;
+
+					if (!m_parent->m_isDestroyed)
+						m_parent->addFlag(F_Destroy);
+				}
+
+				toplevel()->adjustDimensions();
+				m_root->perform(toplevel());
+m_root->dump(); // XXX
+			}
 		}
 	}
 }
@@ -1733,12 +1752,11 @@ Node::unframe()
 {
 	M_ASSERT(m_path);
 	M_ASSERT(m_path != m_oldPath);
-	M_ASSERT(numChilds() == 1);
 	//M_ASSERT(isWithdrawn() || isFloating());
 
-	if (!isMetaFrame())
+	if (!isMetaFrame() || numChilds() > 1)
 		return;
-
+	
 	Node* child = this->child();
 	Node* origParent = child->m_origParent;
 	State state = m_state;
@@ -1819,6 +1837,9 @@ Node::unframe()
 				origParent->m_childs[i] = this;
 		}
 	}
+
+	if (m_parent->m_selected == child)
+		m_parent->m_selected = this;
 
 	tk::createEventHandler(tkwin(), StructureNotifyMask, ::WindowEventProc, this);
 	tk::createEventHandler(child->tkwin(), StructureNotifyMask, ::WindowEventProc, child);
@@ -2185,6 +2206,8 @@ Node::prepareDocking(Position& position, Node const*& after)
 	else
 	{
 		// TODO
+		// 1. look for position in default setup
+		// 2. if we cannot find, or if it does not fit, then search for an appropriate place
 		if ((parent = m_parent)->isMetaFrame())
 			parent = parent->child();
 		after = findAfter();
@@ -2209,6 +2232,17 @@ Node::add(Node* node, Node const* before)
 
 
 void
+Node::eraseChild(Childs::iterator pos)
+{
+	M_ASSERT(pos != m_childs.end());
+
+	if (m_selected == *pos)
+		m_selected = nullptr;
+	m_childs.erase(pos);
+}
+
+
+void
 Node::doMove(Node* node, Node const* before)
 {
 	if (contains(node))
@@ -2222,7 +2256,7 @@ Node::doMove(Node* node, Node const* before)
 		}
 		else if (before)
 		{
-			m_childs.erase(find(node));
+			eraseChild(find(node));
 			insertNode(node, before);
 		}
 	}
@@ -2329,7 +2363,7 @@ Node::remove(Childs::iterator pos)
 
 	Node* node = *pos;
 
-	m_childs.erase(pos);
+	eraseChild(pos);
 
 	if (!node->m_isDeleted && !m_root->isUsed(node))
 	{
@@ -2399,93 +2433,103 @@ Node::parseOptions(Tcl_Obj* opts)
 
 
 Tcl_Obj*
-Node::makeConfigOptions(Tcl_Obj* list) const
+Node::makeOptions(Flag flags, Node const* before) const
 {
-	int value;
-
-	if ((value = width<Outer>()) > 0)
-	{
-		tcl::addElement(list, m_objOptWidth);
-		tcl::addElement(list, tcl::newObj(value));
-	}
-	if ((value = height<Outer>()) > 0)
-	{
-		tcl::addElement(list, m_objOptHeight);
-		tcl::addElement(list, tcl::newObj(value));
-	}
-	if ((value = minWidth<Outer>()) > 0)
-	{
-		tcl::addElement(list, m_objOptMinWidth);
-		tcl::addElement(list, tcl::newObj(value));
-	}
-	if ((value = minHeight<Outer>()) > 0)
-	{
-		tcl::addElement(list, m_objOptMinHeight);
-		tcl::addElement(list, tcl::newObj(value));
-	}
-	if ((value = maxWidth<Outer>()) > 0)
-	{
-		tcl::addElement(list, m_objOptMaxWidth);
-		tcl::addElement(list, tcl::newObj(value));
-	}
-	if ((value = maxHeight<Outer>()) > 0)
-	{
-		tcl::addElement(list, m_objOptMaxHeight);
-		tcl::addElement(list, tcl::newObj(value));
-	}
-
-	return list;
-}
-
-
-Tcl_Obj*
-Node::makeOptions(Node const* before) const
-{
+	M_ASSERT(flags & (F_Create|F_Pack|F_Config));
 	M_ASSERT(!before || before->isPacked());
 
 	tcl::List optList;
 	int value;
 
-	if (((value = expand()) & Both) == Both)
+	if (flags & F_Pack)
 	{
-		optList.push_back(m_objOptExpand);
-		optList.push_back(m_objBoth);
-	}
-	else if (value & X)
-	{
-		optList.push_back(m_objOptExpand);
-		optList.push_back(m_objX);
-	}
-	else if (value & Y)
-	{
-		optList.push_back(m_objOptExpand);
-		optList.push_back(m_objY);
-	}
-	if ((value = sticky()))
-	{
-		char buf[4] = { 0, 0, 0, 0 };
-		unsigned n = 0;
+		if (((value = expand()) & Both) == Both)
+		{
+			optList.push_back(m_objOptExpand);
+			optList.push_back(m_objBoth);
+		}
+		else if (value & X)
+		{
+			optList.push_back(m_objOptExpand);
+			optList.push_back(m_objX);
+		}
+		else if (value & Y)
+		{
+			optList.push_back(m_objOptExpand);
+			optList.push_back(m_objY);
+		}
+		if ((value = sticky()))
+		{
+			char buf[4] = { 0, 0, 0, 0 };
+			unsigned n = 0;
 
-		if (value & North) buf[n++] = 'n';
-		if (value & South) buf[n++] = 's';
-		if (value & West)  buf[n++] = 'w';
-		if (value & East)  buf[n++] = 'e';
+			if (value & North) buf[n++] = 'n';
+			if (value & South) buf[n++] = 's';
+			if (value & West)  buf[n++] = 'w';
+			if (value & East)  buf[n++] = 'e';
 
-		optList.push_back(m_objOptSticky);
-		optList.push_back(tcl::newObj(buf, n));
-	}
-	if ((value = m_orientation))
-	{
-		optList.push_back(m_objOptOrient);
-		optList.push_back(value == Horz ? m_objHorizontal : m_objVertical);
-	}
-	if (before)
-	{
-		optList.push_back(m_objOptBefore);
-		optList.push_back(before->pathObj());
+			optList.push_back(m_objOptSticky);
+			optList.push_back(tcl::newObj(buf, n));
+		}
 	}
 
-	return makeConfigOptions(tcl::newObj(optList));
+	if (flags & (F_Pack|F_Config))
+	{
+		if (m_parent && m_parent->isContainer())
+		{
+			if (before)
+			{
+				optList.push_back(m_objOptBefore);
+				optList.push_back(before->pathObj());
+			}
+		}
+
+		if (m_parent && m_parent->isPanedWindow())
+		{
+			if ((value = minWidth<Outer>()) > 0)
+			{
+				optList.push_back(m_objOptMinWidth);
+				optList.push_back(tcl::newObj(value));
+			}
+			if ((value = minHeight<Outer>()) > 0)
+			{
+				optList.push_back(m_objOptMinHeight);
+				optList.push_back(tcl::newObj(value));
+			}
+			if ((value = maxWidth<Outer>()) > 0)
+			{
+				optList.push_back(m_objOptMaxWidth);
+				optList.push_back(tcl::newObj(value));
+			}
+			if ((value = maxHeight<Outer>()) > 0)
+			{
+				optList.push_back(m_objOptMaxHeight);
+				optList.push_back(tcl::newObj(value));
+			}
+		}
+	}
+
+	if (flags & F_Create)
+	{
+		if ((value = m_orientation))
+		{
+			optList.push_back(m_objOptOrient);
+			optList.push_back(value == Horz ? m_objHorizontal : m_objVertical);
+		}
+	}
+
+	if ((value = width<Outer>()) > 0)
+	{
+		optList.push_back(m_objOptWidth);
+		optList.push_back(tcl::newObj(value));
+	}
+	if ((value = height<Outer>()) > 0)
+	{
+		optList.push_back(m_objOptHeight);
+		optList.push_back(tcl::newObj(value));
+	}
+
+	return tcl::newObj(optList);
 }
 
 
@@ -2558,7 +2602,7 @@ Node::flatten()
 
 	if (!(isContainer() || isMetaFrame()))
 		return;
-	
+
 	unsigned count = countPackedChilds();
 
 	if (isWithdrawn())
@@ -2703,6 +2747,7 @@ Node::dock(Node* node, Position position, Node const* before, bool newParent)
 	if (tk::parent(node->tkwin()) != tlw)
 	{
 		node->performUnpackChildsRecursively();
+printf("reparent(%s): %s\n", node->id(), toplevel()->id());
 		tk::reparent(node->tkwin(), tlw);
 		node->reparentChildsRecursively(tlw);
 		node->performPackChildsRecursively();
@@ -2717,8 +2762,7 @@ Node::dock(Node* node, Position position, Node const* before, bool newParent)
 		case Center:
 			if (!isNotebookOrMultiWindow())
 			{
-				Type nbType = MultiWindow; // isPane() || isFrame() ? MultiWindow : Notebook;
-				insertNotebook(node, nbType);
+				insertNotebook(node, MultiWindow); // isPane() || isFrame() ? MultiWindow : Notebook
 			}
 			else if (node->isNotebookOrMultiWindow())
 			{
@@ -2776,6 +2820,7 @@ Node::dock(Node* node, Position position, Node const* before, bool newParent)
 			{
 				insertPanedWindow(position, node);
 			}
+			parent->select();
 			break;
 	}
 
@@ -2854,8 +2899,18 @@ Node::reparentChildsRecursively(Tk_Window topLevel)
 {
 	for (unsigned i = 0; i < numChilds(); ++i)
 	{
-		child(i)->reparentChildsRecursively(topLevel);
-		tk::reparent(child(i)->tkwin(), topLevel);
+		Node* node = child(i);
+
+		if (!node->isFloating())
+		{
+			node->reparentChildsRecursively(topLevel);
+
+			if (node->exists())
+{
+printf("reparent(%s): %s\n", node->id(), tk::name(topLevel));
+				tk::reparent(node->tkwin(), topLevel);
+}
+		}
 	}
 }
 
@@ -3211,10 +3266,13 @@ Node::floating(bool temporary)
 		performCreate();
 
 	performUnpackChildsRecursively();
+printf("release(%s)\n", id());
 	::releaseWindow(path());
 	setState(Floating);
 	reparentChildsRecursively(tkwin());
 	performPackChildsRecursively();
+printf("reparent(%s): %s\n", id(), m_root->id());
+	tk::reparent(tkwin(), m_root->tkwin());
 	addFlag(F_Raise);
 
 	if (!exists)
@@ -3235,6 +3293,7 @@ Node::unfloat(Node* toplevel)
 
 	m_temporary = false;
 	performUnpackChildsRecursively();
+printf("capture(%s): %s\n", id(), toplevel->id());
 	::captureWindow(path(), toplevel->path());
 	setState(Withdrawn);
 	reparentChildsRecursively(toplevel->tkwin());
@@ -3439,6 +3498,7 @@ Node::performUnpackChildsRecursively()
 			{
 				node->performUnpack(this);
 			}
+
 			node->m_state = Withdrawn;
 			node->addFlag(F_Reparent);
 			node->performUnpackChildsRecursively();
@@ -3465,7 +3525,7 @@ Node::performPack()
 					m_objPackCmd,
 					m_parent->pathObj(),
 					pathObj(),
-					makeOptions(findAfter(true)),
+					makeOptions(F_Pack, findAfter(true)),
 					nullptr);
 }
 
@@ -3484,6 +3544,7 @@ Node::performUnpack(Node* parent)
 void
 Node::performCreate()
 {
+printf("performCreate: %s\n", id());
 	M_ASSERT(!exists());
 
 	if (m_path)
@@ -3492,7 +3553,7 @@ Node::performCreate()
 		m_oldPath = m_path;
 	}
 
-	Tcl_Obj* opts = isContainer() ? makeOptions() : (isPane() ? m_uid : nullptr);
+	Tcl_Obj* opts = isContainer() ? makeOptions(F_Create) : (isPane() ? m_uid : nullptr);
 
 	m_root->m_current = this;
 
@@ -3543,7 +3604,7 @@ Node::performConfig()
 	tk::makeExists(tkwin());
 	tk::makeExists(m_parent->tkwin());
 
-	Tcl_Obj* list = makeConfigOptions();
+	Tcl_Obj* list = makeOptions(F_Config);
 
 	if (list)
 	{
@@ -3552,7 +3613,7 @@ Node::performConfig()
 						m_objPaneConfigCmd,
 						m_parent->pathObj(),
 						pathObj(),
-						makeConfigOptions(),
+						list,
 						nullptr);
 	}
 }
@@ -3669,7 +3730,7 @@ Node::clearAllFlags()
 void
 Node::updateHeader()
 {
-	M_ASSERT(isPacked());
+	M_ASSERT(isPacked() || isFloating());
 
 	if (isMultiWindow())
 	{
@@ -3747,7 +3808,7 @@ Node::updateAllHeaders()
 	{
 		Node* node = m_active[i];
 
-		if (node->isPacked())
+		if (node->isPacked() || node->isFloating())
 			node->updateHeader();
 	}
 }
@@ -3794,7 +3855,9 @@ Node::performCreateRecursively()
 
 	if (testFlags(F_Create))
 	{
+printf("performCreateRecursively: %s\n", id());
 		performCreate();
+printf(" --> %s\n", id());
 		if (isFrameOrMetaFrame())
 			performFinalizeCreate();
 	}
@@ -3859,7 +3922,7 @@ Node::performConfigRecursively()
 void
 Node::performUpdateHeaderRecursively()
 {
-	if (isPacked() && isFrameOrMetaFrame())
+	if ((isPacked() || isFloating()) && isFrameOrMetaFrame())
 	{
 		if (!tcl::eqOrNull(m_headerObj, m_oldHeaderObj))
 			performUpdateHeader();
@@ -3888,6 +3951,8 @@ Node::performAllActiveNodes(Flag flag)
 			{
 				case F_Unpack:
 					M_ASSERT(node->m_savedParent);
+					if (node->m_savedParent->m_selected == this)
+						node->m_savedParent->m_selected = nullptr;
 					node->performUnpack(node->m_savedParent);
 					node->m_savedParent = nullptr;
 					break;
@@ -3971,11 +4036,6 @@ Node::perform(Node* toplevel)
 	M_ASSERT(isRoot());
 	M_ASSERT(!toplevel || toplevel->isToplevel());
 
-	unsigned flags = collectFlags();
-
-	if (flags == 0)
-		return;
-	
 	m_isLocked = true;
 
 	if (toplevel == this)
@@ -3983,12 +4043,10 @@ Node::perform(Node* toplevel)
 	
 	try
 	{
-		if ((flags & (F_Pack|F_Unpack)) || toplevel)
-		{
-			performFlattenRecursively();
-			performFlattenRecursively(); // we need a second pass for unframing
-			flags = collectFlags();
-		}
+		performFlattenRecursively();
+		performFlattenRecursively(); // we need a second pass for unframing
+
+		unsigned flags = collectFlags();
 
 		if (flags & F_Unpack)
 			performAllActiveNodes(F_Unpack);
@@ -4077,6 +4135,9 @@ Node::dump(unsigned level, bool parentIsWithdrawn) const
 {
 	M_ASSERT(parentIsWithdrawn || !m_parent || !isPacked() || m_parent->contains(this));
 
+	if (isPacked() && parentIsWithdrawn)
+		return;
+
 	if (level == 0)
 		printf("=================================================\n");
 	for (unsigned i = 1; i < level; ++i)
@@ -4117,7 +4178,7 @@ Node::dump(unsigned level, bool parentIsWithdrawn) const
 	if (isPanedWindow())
 		printf(" [%s]", isHorz() ? "h" : "v");
 	if (isFrameOrMetaFrame())
-		printf(m_headerObj ? " [frame]" : " [pane]");
+		printf(m_headerObj ? " [frame]" : " [meta]");
 	printf(" [%s] (%dx%d)", state, width<Inner>(), height<Inner>());
 	if (minWidth<Inner>() || minHeight<Inner>())
 		printf(" min(%dx%d)", minWidth<Inner>(), minHeight<Inner>());
@@ -4248,7 +4309,7 @@ cmdLoad(Base& base, int objc, Tcl_Obj* const objv[])
 	}
 
 	base.root->perform();
-base.root->dump();
+base.root->dump(); // XXX
 }
 
 
@@ -4537,7 +4598,7 @@ cmdDock(Base& base, int objc, Tcl_Obj* const objv[])
 	node = node->dock(recv, position);
 	recv->root()->perform(recv->toplevel());
 	tcl::setResult(node->pathObj());
-base.root->dump();
+base.root->dump(); // XXX
 }
 
 

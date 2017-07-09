@@ -176,17 +176,19 @@ tk::reparent(Tk_Window child, Tk_Window newParent)
 {
 	M_REQUIRE(child);
 	M_REQUIRE(newParent);
-	M_ASSERT(parent(child) != newParent);
+
+	if (parent(child) == newParent)
+		return;
 
 	TkWindow* childPtr	= reinterpret_cast<TkWindow*>(child);
 	TkWindow* parentPtr	= reinterpret_cast<TkWindow*>(newParent);
 
-	if (parentPtr->window == None)
+	if (!isTopLevel(child) && parentPtr->window == None)
 		unmap(child);
 	
 	::relink(childPtr, parentPtr);
 
-	if (childPtr->window != None && parentPtr->window != None)
+	if (!isTopLevel(child) && childPtr->window != None && parentPtr->window != None)
 		::reparent(childPtr, parentPtr);
 }
 

@@ -90,6 +90,15 @@ tk::isTopLevel(Tk_Window window)
 
 
 inline
+char const*
+tk::name(Tk_Window window)
+{
+	M_REQUIRE(window);
+	return Tk_PathName(window);
+}
+
+
+inline
 void
 tk::unmap(Tk_Window window)
 {

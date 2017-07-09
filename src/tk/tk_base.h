@@ -44,6 +44,8 @@ bool isTopLevel(Tk_Window window);
 int width(Tk_Window window);
 int height(Tk_Window window);
 
+char const* name(Tk_Window window);
+
 void makeExists(Tk_Window window);
 void resize(Tk_Window window, int width, int height);
 void raise(Tk_Window window, Tk_Window aboveThis);
