@@ -687,9 +687,10 @@ main(int argc, char* argv[])
 		printf("Convert '%s' to '%s'\n", cbhPath.c_str(), si4Path.c_str());
 		unsigned numGames = exportGames(src, consumer, progress);
 		dst.save(progress);
-		printf("\n%u game(s) written.\n", numGames);
+		printf("\n%u game(s) written.", numGames);
 		if (rejected > 0)
-			printf("%u game(s) rejected.\n", rejected);
+			printf("\n%u game(s) rejected.", rejected);
+		printf("\n");
 		fflush(stdout);
 		dst.close();
 		src.close();
