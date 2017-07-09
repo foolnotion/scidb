@@ -2,7 +2,7 @@
 # Corporation, and other parties.
 namespace eval ttk::theme::clearlooks {
 
-    package provide ttk::theme::clearlooks 0.1
+    package provide ttk::theme::clearlooks 0.2
 
     variable colors
 
@@ -683,6 +683,54 @@ namespace eval ttk::theme::clearlooks {
             4OCAV6ldm0pF0LXrAQtL0qpdayQIADs=
         }] \
     ]
+#       spinarrowup-d [image create photo -data { \
+#           iVBORw0KGgoAAAANSUhEUgAAAA8AAAAICAMAAAARDVXAAAAAOVBMVEXGtq3////39+/38/f39/f/
+#           8/fn29b38+/v8+/v8+f37+/v7+/v7+e1sq3v6+fv6+/36+/n697v5+fd/CZmAAAAOklEQVQIHQXB
+#           wQGAIAwEsByFh/tvi0hNAAAiANCTJ3qku9NnT+atL1I9DgOrgusOJpUX9EJkAWADAPylEBEeX7C+
+#           XAAAAABJRU5ErkJggg==
+#       }] \
+#       spinarrowup-a [image create photo -data { \
+#           iVBORw0KGgoAAAANSUhEUgAAAA8AAAAICAMAAAARDVXAAAAAQlBMVEV7dWOEdWt7dWv/////+/f/
+#           +//3//fn29b3+/f/9//3++//9/f39/f38/f39+8QEBD38+/v9+/v8+f37+/v8+/v7+eB+1ZZAAAA
+#           PklEQVQIHQXBgQ3CMBAAMV9IQGL/ZSuqPnYCgGoBwLP5Dqt58LsWr9NJ7Y529L6xfGiN0w1mxrTa
+#           ALgKAPgDUCoOOTBnMcQAAAAASUVORK5CYII=
+#       }] \
+#       spinarrowup-p [image create photo -data { \
+#           iVBORw0KGgoAAAANSUhEUgAAAA8AAAAICAMAAAARDVXAAAAAQlBMVEVraVprZWNraWPGtq1zZWPe
+#           29be19bW287e287n29bW187e187e09be087W084AAADW08bWz87O08bOz8bWz8bWy8bd9/yHAAAA
+#           PUlEQVQIHQXBsQ2AMBAEMN99RMH+u6ZABOwIACQNAGT1u4N88Owe6azImKVlxoszLa32gNNomgsA
+#           O+sFAD+WsAs5wPvaCgAAAABJRU5ErkJggg==
+#       }] \
+#       spinarrowup-n [image create photo -data { \
+#           iVBORw0KGgoAAAANSUhEUgAAAA8AAAAICAMAAAARDVXAAAAAP1BMVEV7dWOEdWt7dWv////39+/3
+#           8/f39/f/8/fn29b38+/v8+/v8+f37+/v7+/v7+cQEBDv6+fv6+/36+/n697v5+cMLf7xAAAAQElE
+#           QVQIHQXBwQ3DMBADMOpsP7r/sgGaWiUjAJBkAOBuPtFJ2/R9NvuuX2R1XplwVnDdkd2sfEEPzeQA
+#           4EkAgD/3IxMkVV6ZGwAAAABJRU5ErkJggg==
+#       }] \
+#       spinarrowdown-d [image create photo -data { \
+#           iVBORw0KGgoAAAANSUhEUgAAAA8AAAAICAMAAAARDVXAAAAAP1BMVEXGtq3////39+/38/f39/f/
+#           8/fn29b38+/v8+/v8+f37+/v7+/v7+fv6+e1sq336+/n697v5+fv597n597v4+cnxBvMAAAAOElE
+#           QVQI12XNKxYAIAwDQWpQfJqG+58VCIYH60ZtSm92t11LO/WSZYdoVmUHQgTk4GAskpTz1Xebpl8C
+#           xZjcoHYAAAAASUVORK5CYII=
+#       }] \
+#       spinarrowdown-a [image create photo -data { \
+#           iVBORw0KGgoAAAANSUhEUgAAAA8AAAAICAMAAAARDVXAAAAAS1BMVEV7dWOEdWt7dWv/////+/f/
+#           +//3//fn29b3+/f/9//3++//9/f39/f38/f39+/38+/v9+8QEBDv8+f37+/v8+/v7+fv7+/v6+fv
+#           6+81NFeQAAAAP0lEQVQIHQXBQQ7CQAwEMM80ai/8/6sIhDbYEQBIUgA4wysBftf7O6E5cB7Sdeca
+#           9Nm1XW3dZrYlzQDgkwAAfzQpDURzs85IAAAAAElFTkSuQmCC
+#       }] \
+#       spinarrowdown-p [image create photo -data { \
+#           iVBORw0KGgoAAAANSUhEUgAAAA8AAAAICAMAAAARDVXAAAAAS1BMVEVraVprZWNraWPGtq1zZWPe
+#           29be19bW287e287n29bW187e187e09be087W087W08YAAADWz87O08bOz8bWz8bWy8bWy87Oy8bO
+#           y73IIUV2AAAAQElEQVQIHQXBwQ2DQBAEMM+wIQ/6rxUhcbnYEQBIGgDIcCVAcj/D0d+GNEx3y+Jc
+#           pfMeQ+f5+mxWmhMAd2YBgD+t6w00F+PP4wAAAABJRU5ErkJggg==
+#       }] \
+#       spinarrowdown-n [image create photo -data { \
+#           iVBORw0KGgoAAAANSUhEUgAAAA8AAAAICAMAAAARDVXAAAAARVBMVEV7dWOEdWt7dWv////39+/3
+#           8/f39/f/8/fn29b38+/v8+/v8+f37+/v7+/v7+fv6+cQEBD36+/n697v5+fv597n597v4+ekAoEk
+#           AAAAPUlEQVQIHQXBQRZAQAwFsPxOZ+f+Z8VDJREASFIA8DXHFJD3vir0AvNFaqxorO42PSqZfvYE
+#           UtkAOBMA4AdyuQ42kTaoZgAAAABJRU5ErkJggg==
+#       }] \
 
     ttk::style theme create clearlooks -parent clam -settings {
 
@@ -839,7 +887,8 @@ namespace eval ttk::theme::clearlooks {
 
         ## Combobox.
         #
-        ttk::style configure TCombobox -selectbackground
+        ttk::style configure TCombobox -selectbackground $colors(-selectbg)
+	ttk::style configure TCombobox -arrowsize 16 -padding 0
 
         ttk::style element create Combobox.downarrow image \
             [list $I(comboarrow-n) \
@@ -857,6 +906,14 @@ namespace eval ttk::theme::clearlooks {
                  readonly $I(combo-rn) \
                 ] \
             -border 4 -sticky ew
+
+
+	# Combobox popdown frame
+	ttk::style layout ComboboxPopdownFrame {
+	    ComboboxPopdownFrame.border -sticky nswe
+	}
+ 	ttk::style configure ComboboxPopdownFrame \
+	    -borderwidth 1 -relief solid
 
 
         ## Notebooks.
@@ -951,6 +1008,18 @@ namespace eval ttk::theme::clearlooks {
             -border {2 2 1 1}
 
         ttk::style configure TProgressbar -bordercolor $colors(-troughborder)
+
+
+        ## Spinbox.
+        #
+#       foreach dir {up down} {
+#           ttk::style element create Spinbox.${dir}arrow image \
+#               [list $I(spinarrow${dir}-n) \
+#                    disabled $I(spinarrow${dir}-d) \
+#                    pressed $I(spinarrow${dir}-p) \
+#                    active $I(spinarrow${dir}-a)] \
+#               -border 1 -sticky {}
+#       }
 
 
         ## Statusbar parts.

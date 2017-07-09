@@ -578,6 +578,7 @@ proc WidgetProc {w command args} {
 					elemImg - elemTxt {
 						if {[string length $item]} {
 							set isImage 0
+							# NOTE: the correct expression {$image in [image names]} is too slow!
 							catch { set isImage [expr {[image width $item] != -9999999}] }
 							if {$isImage} {
 								$t item element configure $index $id elemTxt -text "" {*}$textOpts
@@ -710,6 +711,7 @@ proc WidgetProc {w command args} {
 					elemImg - elemTxt {
 						if {[string length $item]} {
 							set isImage 0
+							# NOTE: the correct expression {$image in [image names]} is too slow!
 							catch { set isImage [expr {[image width $item] != -9999999}] }
 							lassign {"" ""} txt img
 							if {$isImage} {
