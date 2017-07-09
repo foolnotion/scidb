@@ -100,7 +100,7 @@ proc treetable {path args} {
 	$t configure -treecolumn item
 	$t element create elemImg image
 	$t element create elemTxt text -lines 1
-	$t element create elemSel rect -fill [list                                  \
+	$t element create elemSel rect -fill [list                         \
 		[::colors::lookup treetable,selected:focus]  {selected focus}   \
 		[::colors::lookup treetable,selected!focus]  {selected !focus}  \
 		[::colors::lookup treetable,active:focus]    {active focus}     \
