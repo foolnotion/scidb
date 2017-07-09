@@ -569,11 +569,9 @@ Key::nextKey(MoveNode const* node) const
 		key.addVariation(0);
 		key.addPly(plyNumber - 1);
 	}
-	else if (node->next()->atLineEnd() && node->next())
+	else if (node->next()->atLineEnd())
 	{
-		unsigned plyNumber = key.plyNumber();
-		key.addVariation(0);
-		key.addPly(plyNumber);
+		key.removePly();
 	}
 	else
 	{
