@@ -67,6 +67,7 @@ tk::init(Tcl_Interp* ti)
 	xcursor_init(ti);
 	busy_init(ti);
 	multiwindow_init(ti);
+	panedwindow_init(ti);
 	notebook_init(ti);
 
 	Tkhtml_Init(ti);
