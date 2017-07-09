@@ -34,6 +34,11 @@ inline KeyNode::KeyNode(Key const& key, char prefix) :m_key(key, prefix) {}
 inline Variation::Variation(Key const& key) :KeyNode(key) {}
 inline Variation::Variation(Key const& key, Key const& succ) :KeyNode(key), m_succ(succ) {}
 inline Move::Move(Key const& key) :KeyNode(key), m_ply(0) {}
+inline MovePart::MovePart() :m_state(Unchanged) {}
+
+
+inline void MovePart::markAsInserted() const	{ m_state = Inserted; }
+inline void MovePart::markAsChanged() const	{ m_state = Changed; }
 
 
 inline

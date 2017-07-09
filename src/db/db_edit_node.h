@@ -79,6 +79,8 @@ public:
 	virtual bool operator==(Node const* node) const;
 	bool operator!=(Node const* node) const;
 
+	virtual bool operator<(Node const* node) const;
+
 	virtual Type type() const = 0;
 
 	virtual void visit(Visitor& visitor) const = 0;
@@ -113,9 +115,6 @@ public:
 	using Node::operator==;
 	bool operator==(KeyNode const* node) const;
 	bool operator!=(KeyNode const* node) const;
-
-	bool operator<(KeyNode const* node) const;
-	bool operator>(KeyNode const* node) const;
 
 	Key const& key() const;
 	virtual Key const& startKey() const;
@@ -234,7 +233,7 @@ public:
 
 	Opening(Board const& startBoard, variant::Type variant, uint16_t idn, Eco eco);
 
-	bool operator==(Node const* node) const;
+	bool operator==(Node const* node) const override;
 
 	Type type() const override;
 
@@ -255,7 +254,7 @@ public:
 
 	Languages(MoveNode const* root = 0);
 
-	bool operator==(Node const* node) const;
+	bool operator==(Node const* node) const override;
 
 	Type type() const override;
 	LanguageSet const& langSet() const;
@@ -307,14 +306,31 @@ private:
 };
 
 
-class Ply : public Node
+class MovePart : public Node
+{
+public:
+
+	MovePart();
+
+	void markAsInserted() const;
+	void markAsChanged() const;
+
+private:
+
+	enum State { Inserted, Changed, Unchanged };
+
+	mutable State m_state;
+};
+
+
+class Ply : public MovePart
 {
 public:
 
 	Ply();
 	Ply(db::MoveNode const* move, unsigned moveno = 0);
 
-	bool operator==(Node const* node) const;
+	bool operator==(Node const* node) const override;
 
 	Type type() const override;
 	unsigned moveNo() const;
@@ -351,6 +367,7 @@ public:
 	Ply const* ply() const;
 
 	void visit(Visitor& visitor) const override;
+	void markDifferences(Move const& move) const;
 
 private:
 
@@ -382,7 +399,7 @@ private:
 };
 
 
-class Comment : public Node
+class Comment : public MovePart
 {
 public:
 
@@ -391,6 +408,7 @@ public:
 	Comment(db::Comment const& comment, move::Position position, VarPos varPos = Inside);
 
 	bool operator==(Node const* node) const override;
+	bool operator< (Node const* node) const override;
 
 	Type type() const override;
 
@@ -404,15 +422,20 @@ private:
 };
 
 
-class Annotation : public Node
+class Annotation : public MovePart
 {
 public:
 
-	enum DisplayType { All, Numerical, Textual };
+	enum DisplayType	{ All, Numerical, Textual };
+	enum Position		{ Prefix, Suffix };
 
-	Annotation(db::Annotation const& annotation, DisplayType type = All, bool skipDiagram = false);
+	Annotation(	Position position,
+					db::Annotation const& annotation,
+					DisplayType displayType = All,
+					bool skipDiagram = false);
 
 	bool operator==(Node const* node) const override;
+	bool operator< (Node const* node) const override;
 
 	bool isEmpty() const;
 
@@ -422,7 +445,8 @@ public:
 
 private:
 
-	DisplayType		m_type;
+	Position			m_position;
+	DisplayType		m_displayType;
 	db::Annotation	m_annotation;
 };
 
@@ -446,7 +470,7 @@ private:
 };
 
 
-class Marks : public Node
+class Marks : public MovePart
 {
 public:
 
@@ -464,7 +488,7 @@ private:
 };
 
 
-class Space : public Node
+class Space : public MovePart
 {
 public:
 

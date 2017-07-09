@@ -383,12 +383,16 @@ void Comment::visit(Visitor& visitor) const		{ visitor.comment(m_position, m_var
 void Marks::visit(Visitor& visitor) const			{ visitor.marks(m_hasMarks); }
 
 
-inline bool KeyNode::operator<(KeyNode const* node) const { return m_key < node->m_key; }
-inline bool KeyNode::operator>(KeyNode const* node) const { return node->m_key < m_key; }
-
-
 Key const& KeyNode::startKey() const	{ return m_key; }
 Key const& KeyNode::endKey() const		{ return m_key; }
+
+
+bool
+Node::operator<(Node const* node) const
+{
+	M_ASSERT(node);
+	return type() < node->type();
+}
 
 
 bool
@@ -457,14 +461,38 @@ Comment::operator==(Node const* node) const
 	M_ASSERT(node);
 
 	Comment const* comment = mstl::safe_cast_ptr<Comment const>(node);
-	return m_position == comment->m_position && m_comment == comment->m_comment;
+
+	return	m_varPos == comment->m_varPos
+			&& m_position == comment->m_position
+			&& m_comment == comment->m_comment;
 }
 
 
-Annotation::Annotation(db::Annotation const& annotation, DisplayType type, bool skipDiagram)
-	:m_type(type)
+bool
+Comment::operator<(Node const* node) const
 {
-	switch (type)
+	M_ASSERT(node);
+
+	if (type() < node->type())	return true;
+	if (type() > node->type())	return false;
+
+	Comment const* comment = static_cast<Comment const*>(node);
+
+	if (m_varPos < comment->m_varPos) return true;
+	if (m_varPos > comment->m_varPos) return false;
+
+	return m_position < comment->m_position;
+}
+
+
+Annotation::Annotation(	Position position,
+								db::Annotation const& annotation,
+								DisplayType displayType,
+								bool skipDiagram)
+	:m_position(position)
+	,m_displayType(displayType)
+{
+	switch (displayType)
 	{
 		case Numerical:	m_annotation.setUsualNags(annotation); break;
 		case Textual:		m_annotation.setUnusualNags(annotation); break;
@@ -482,14 +510,29 @@ Annotation::operator==(Node const* node) const
 	M_ASSERT(node);
 
 	Annotation const* annotation = mstl::safe_cast_ptr<Annotation const>(node);
-	return m_type == annotation->m_type && m_annotation == annotation->m_annotation;
+
+	return	m_position == annotation->m_position
+			&& m_displayType == annotation->m_displayType
+			&& m_annotation == annotation->m_annotation;
+}
+
+
+bool
+Annotation::operator<(Node const* node) const
+{
+	M_ASSERT(node);
+
+	if (type() < node->type())	return true;
+	if (type() > node->type())	return false;
+
+	return m_position < static_cast<Annotation const*>(node)->m_position;
 }
 
 
 void
 Annotation::visit(Visitor& visitor) const
 {
-	visitor.annotation(m_annotation, m_type);
+	visitor.annotation(m_annotation, m_displayType);
 }
 
 
@@ -760,16 +803,8 @@ Variation::difference(Root const* root, Variation const* var, unsigned level, No
 	{
 		KeyNode const* lhs = m_list[i];			// node from current game
 		KeyNode const* rhs = var->m_list[k];	// node from previous game
-		int cmp = 0;
 
-		if (lhs->key() == rhs->key()) {
-			if (lhs->key() < rhs->key())
-				cmp = -1;
-			else if (rhs->key() < lhs->key())
-				cmp = +1;
-		}
-
-		if (cmp < 0)
+		if (lhs->key() < rhs->key())
 		{
 			unsigned ii = i;
 
@@ -782,7 +817,7 @@ Variation::difference(Root const* root, Variation const* var, unsigned level, No
 			nodes.push_back(root->newAction(Action::Finish, level));
 			i = ii;
 		}
-		else if (cmp > 0)
+		else if (rhs->key() < lhs->key())
 		{
 			do
 				++k;
@@ -807,36 +842,73 @@ Variation::difference(Root const* root, Variation const* var, unsigned level, No
 				}
 				else if (*lhs != rhs)
 				{
-					if (	lhsType == TMove
-						&& (	static_cast<Move const*>(lhs)->ply() == 0
-							|| static_cast<Move const*>(rhs)->ply() == 0
-							|| *static_cast<Move const*>(lhs)->ply() != static_cast<Move const*>(rhs)->ply()))
+					bool done = false;
+
+					if (lhsType == TMove)
 					{
-						List::const_iterator lhsIter	= m_list.begin() + i + 1;
-						List::const_iterator rhsIter	= var->m_list.begin() + k + 1;
-						List::const_iterator lhsEnd	= m_list.end();
-						List::const_iterator rhsEnd	= var->m_list.end();
+						const Ply* lhsPly = static_cast<Move const*>(lhs)->ply();
+						const Ply* rhsPly = static_cast<Move const*>(rhs)->ply();
 
-						while	(	lhsIter < lhsEnd
-								&& rhsIter < rhsEnd
-								&& (*lhsIter)->key() == (*rhsIter)->key()
-								&& *static_cast<Node const*>(*lhsIter) != static_cast<Node const*>(*lhsIter))
+						if (lhsPly && rhsPly)
 						{
-							++lhsIter;
-							++rhsIter;
+							List::const_iterator lhsLast	= m_list.begin() + i + 1;
+							List::const_iterator rhsLast	= var->m_list.begin() + k + 1;
+							List::const_iterator lhsEnd	= m_list.end();
+							List::const_iterator rhsEnd	= var->m_list.end();
+
+							while	(	lhsLast < lhsEnd
+									&& rhsLast < rhsEnd
+									&& (*lhsLast)->type() == TMove
+									&& (*rhsLast)->type() == TMove
+									&& **lhsLast != *rhsLast)
+							{
+								M_ASSERT((*lhsLast)->key() == (*rhsLast)->key());
+								++lhsLast; ++rhsLast;
+							}
+
+							List::const_iterator lhsIter = m_list.begin() + i;
+							List::const_iterator rhsIter = var->m_list.begin() + k;
+
+							Key const& before	= rhs->endKey();
+							Key const& after	= rhsLast == var->m_list.end() ? *endKey : (*rhsLast)->startKey();
+
+							nodes.push_back(root->newAction(Action::Replace, level, before, after));
+							nodes.insert(nodes.end(), lhsIter, lhsLast);
+							nodes.push_back(root->newAction(Action::Finish, level));
+
+							for ( ; lhsIter != lhsLast; ++lhsIter, ++rhsIter)
+							{
+								Move const* m1 = static_cast<Move const*>(*lhsIter);
+								Move const* m2 = static_cast<Move const*>(*rhsIter);
+
+								const_cast<Move*>(m1)->markDifferences(*m2);
+							}
+
+							i = lhsLast - m_list.begin() - 1;
+							k = rhsLast - var->m_list.begin() - 1;
+							done = true;
 						}
+						else if (lhsPly == 0)
+						{
+							List::const_iterator rhsIter	= var->m_list.begin() + k;
+							List::const_iterator rhsEnd	= var->m_list.end();
 
-						Key const& before	= rhs->endKey();
-						Key const& after	= rhsIter == var->m_list.end() ? *endKey : (*rhsIter)->startKey();
+							for ( ; rhsIter != rhsEnd; ++rhsIter)
+							{
+								if (	(*rhsIter)->type() == TMove
+									&& static_cast<Move const*>(*rhsIter)->ply() == 0)
+								{
+									Move const* m1 = static_cast<Move const*>(lhs);
+									Move const* m2 = static_cast<Move const*>(*rhsIter);
 
-						nodes.push_back(root->newAction(Action::Replace, level, before, after));
-						nodes.insert(nodes.end(), m_list.begin() + i, lhsIter);
-						nodes.push_back(root->newAction(Action::Finish, level));
-
-						i = lhsIter - m_list.begin() - 1;
-						k = rhsIter - var->m_list.begin() - 1;
+									const_cast<Move*>(m1)->markDifferences(*m2);
+									break;
+								}
+							}
+						}
 					}
-					else
+
+					if (!done)
 					{
 						Key const& before	= rhs->endKey();
 						Key const& after	= (k == n - 1) ? *endKey : var->m_list[k + 1]->startKey();
@@ -964,6 +1036,48 @@ Move::operator==(Node const* node) const
 }
 
 
+void
+Move::markDifferences(Move const& move) const
+{
+	struct Comp { bool operator()(Node const* lhs, Node const* rhs) { return *lhs < rhs; } };
+
+	List thisList(m_list);
+	List thatList(move.m_list);
+
+	thisList.bubblesort(Comp());
+	thatList.bubblesort(Comp());
+
+	List::const_iterator i = thisList.begin();
+	List::const_iterator k = thatList.begin();
+
+	while (i != thisList.end() && k != thatList.end())
+	{
+		MovePart const* lhs = mstl::safe_cast_ptr<MovePart const>(*i);
+		MovePart const* rhs = mstl::safe_cast_ptr<MovePart const>(*k);
+
+		if (lhs->type() < rhs->type())
+		{
+			lhs->markAsInserted();
+			++i;
+		}
+		else
+		{
+			if (lhs->type() == rhs->type())
+			{
+				if (*lhs != rhs)
+					lhs->markAsChanged();
+				++i;
+			}
+
+			++k;
+		}
+	}
+
+	for ( ; i != thisList.end(); ++i)
+		mstl::safe_cast_ptr<MovePart const>(*i)->markAsInserted();
+}
+
+
 Move::Move(Work& work, MoveNode const* move, bool isEmptyGame, unsigned varNo, unsigned varCount)
 	:KeyNode(work.m_key)
 	,m_ply(0)
@@ -1040,7 +1154,7 @@ Move::Move(Work& work, MoveNode const* move, bool isEmptyGame, unsigned varNo, u
 	if (!(work.m_displayStyle & display::ShowDiagrams) && move->hasAnnotation())
 	{
 		work.pop(m_list);
-		m_list.push_back(new Annotation(move->annotation()));
+		m_list.push_back(new Annotation(Annotation::Prefix, move->annotation()));
 		work.m_isVirgin = false;
 		work.pushSpace();
 	}
@@ -1087,7 +1201,8 @@ Move::Move(Work& work, MoveNode const* move)
 
 			if (mostImportant != nag::Null)
 			{
-				m_list.push_back(new Annotation(	::db::Annotation(mostImportant),
+				m_list.push_back(new Annotation(	Annotation::Prefix,
+															::db::Annotation(mostImportant),
 															Annotation::Numerical,
 															true));
 			}
@@ -1097,7 +1212,8 @@ Move::Move(Work& work, MoveNode const* move)
 						|| !(work.m_displayStyle & display::ColumnStyle)
 						|| !move->annotation().containsUnusualNags()))
 		{
-			Annotation annotation(	move->annotation(),
+			Annotation annotation(	Annotation::Prefix,
+											move->annotation(),
 											!work.m_isFolded
 												&& work.m_level == 0
 												&& (work.m_displayStyle & display::ColumnStyle)
@@ -1122,6 +1238,7 @@ Move::Move(Work& work, MoveNode const* move)
 		&& move->annotation().containsUnusualNags())
 	{
 		Annotation* annotation = new Annotation(
+											Annotation::Suffix,
 											move->annotation(),
 											Annotation::Textual,
 											bool(work.m_displayStyle & display::ShowDiagrams));
@@ -1263,7 +1380,7 @@ Move::Move(Spacing& spacing, Key const& key, unsigned moveNumber, MoveNode const
 	spacing.pop(m_list);
 
 	if (move->hasAnnotation())
-		m_list.push_back(new Annotation(move->annotation()));
+		m_list.push_back(new Annotation(Annotation::Prefix, move->annotation()));
 
 	m_ply = color::isWhite(move->move().color()) ? new Ply(move, moveNumber) : new Ply(move);
 

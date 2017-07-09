@@ -1154,6 +1154,7 @@ proc DoLayout {position content {context editor} {w {}}} {
 						$w mark set indent:start $removePos left
 						$w mark set cur $insertMark
 						if {$level == 0} { $w mark set main:start cur left }
+						if {$context eq "merge"} { $w tag add h:chg $insertMark cur }
 					}
 
 					insert {
@@ -1162,6 +1163,7 @@ proc DoLayout {position content {context editor} {w {}}} {
 						$w mark set indent:start $insertMark left
 						$w mark set cur $insertMark
 						if {$level == 0} { $w mark set main:start cur left }
+						if {$context eq "merge"} { $w tag add h:ins $insertMark cur }
 					}
 
 					finish {
@@ -1243,6 +1245,11 @@ proc DoLayout {position content {context editor} {w {}}} {
 			}
 
 			merge {
+				return ;# XXX
+				$w tag configure h:merge \
+					-indentbackground 0 \
+					-background [::colors::lookup pgn,background:merge] \
+					;
 				$w tag remove h:merge begin end
 				set ranges {}
 				foreach {start end} [lindex $node 1] {
@@ -1260,7 +1267,7 @@ proc DoLayout {position content {context editor} {w {}}} {
 							set start [$w index $start+1c]
 						}
 					}
-					while {[$w compare $end > $start] && [$w get $end-1c] eq " "} {
+					while {[$w compare $end > $start] && [string is space [$w get $end-1c]]} {
 						set end [$w index $end-1c]
 					}
 
@@ -1271,7 +1278,7 @@ proc DoLayout {position content {context editor} {w {}}} {
 
 					lappend ranges $start $end
 				}
-				$w tag add merge {*}$ranges
+				$w tag add h:merge {*}$ranges
 			}
 		}
 	}
@@ -1288,7 +1295,7 @@ proc DoLayout {position content {context editor} {w {}}} {
 		if {[info exists env(SCIDB_PGN_INSPECT)]} {
 			puts "==============================================="
 			#foreach item [$w inspect -mark -tag -text] { puts "{$item}" }
-			foreach item [$w inspect -all -bindings] { puts "{$item}" }
+			foreach item [$w inspect -all -mark] { puts "{$item}" }
 			puts "==============================================="
 		}
 		if {[info exists env(SCIDB_PGN_CLOCK)]} {

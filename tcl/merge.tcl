@@ -93,7 +93,7 @@ proc openDialog {parent primary secondary} {
 		tk::toplevel $dlg -class Dialog
 		wm withdraw $dlg
 
-		set pw [panedwindow $dlg.main -orient horizontal -borderwidth 0 -opaqueresize true -sashwidth 6]
+		set pw [tk::panedwindow $dlg.main -orient horizontal -borderwidth 0 -opaqueresize true -sashwidth 6]
 #		$pw configure -background [::theme::getColor background]
 		::theme::configurePanedWindow $pw
 		pack $pw -fill both -expand yes
