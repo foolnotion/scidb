@@ -142,6 +142,7 @@ static char const* XA_NET_WM_ACTION_RESIZE				= "_NET_WM_ACTION_RESIZE";
 static char const* XA_NET_WM_ALLOWED_ACTIONS				= "_NET_WM_ALLOWED_ACTIONS";
 static char const* XA_NET_WM_DESKTOP						= "_NET_WM_DESKTOP";
 static char const* XA_NET_WM_WINDOW_TYPE					= "_NET_WM_WINDOW_TYPE";
+static char const* XA_NET_WM_WINDOW_TYPE_DIALOG			= "_NET_WM_WINDOW_TYPE_DIALOG";
 static char const* XA_NET_WM_WINDOW_TYPE_MENU			= "_NET_WM_WINDOW_TYPE_MENU";
 static char const* XA_NET_WM_WINDOW_TYPE_NORMAL			= "_NET_WM_WINDOW_TYPE_NORMAL";
 static char const* XA_NET_WM_WINDOW_TYPE_SPLASH			= "_NET_WM_WINDOW_TYPE_SPLASH";
@@ -170,6 +171,7 @@ static MyAtom AtomList[] =
 	XA_NET_WM_ALLOWED_ACTIONS,
 	XA_NET_WM_DESKTOP,
 	XA_NET_WM_WINDOW_TYPE,
+	XA_NET_WM_WINDOW_TYPE_DIALOG,
 	XA_NET_WM_WINDOW_TYPE_MENU,
 	XA_NET_WM_WINDOW_TYPE_NORMAL,
 	XA_NET_WM_WINDOW_TYPE_SPLASH,
@@ -269,7 +271,7 @@ getAtom(Display* display, char const* name)
 
 
 static int
-frameless(Tk_Window tkwin, Window window, char const* property)
+changeDecoration(Tk_Window tkwin, Window window, char const* property)
 {
 	M_ASSERT(property);
 
@@ -786,8 +788,11 @@ cmdWM(ClientData, Tcl_Interp *ti, int objc, Tcl_Obj* const objv[])
 	}
 #if !defined(__WIN32__) && !defined(__MacOSX__)
 	else if (	strcasecmp(subcmd, "frameless") == 0
+				|| strcasecmp(subcmd, "dialog") == 0
+				|| strcasecmp(subcmd, "normal") == 0
 				|| strcasecmp(subcmd, "toolbar") == 0
 				|| strcasecmp(subcmd, "splash") == 0
+				|| strcasecmp(subcmd, "notification") == 0
 				|| strcasecmp(subcmd, "menu") == 0)
 	{
 		Window window = Tk_WindowId(tkwin);
@@ -810,13 +815,15 @@ cmdWM(ClientData, Tcl_Interp *ti, int objc, Tcl_Obj* const objv[])
 
 		switch (*subcmd)
 		{
-			case 'f': prop = XA_NET_WM_WINDOW_TYPE_NORMAL; break;
+			case 'd': prop = XA_NET_WM_WINDOW_TYPE_DIALOG; break;
+			case 'f': prop = XA_NET_WM_WINDOW_TYPE_DIALOG; break;
 			case 'm': prop = XA_NET_WM_WINDOW_TYPE_MENU; break;
+			case 'n': prop = XA_NET_WM_WINDOW_TYPE_NORMAL; break;
 			case 't': prop = XA_NET_WM_WINDOW_TYPE_TOOLBAR; break;
 			case 's': prop = XA_NET_WM_WINDOW_TYPE_SPLASH; break;
 		}
 
-		rc = frameless(tkmain, parent, prop);
+		rc = changeDecoration(tkmain, parent, prop);
 	}
 	else if (strcasecmp(subcmd, "setLeader") == 0)
 	{
