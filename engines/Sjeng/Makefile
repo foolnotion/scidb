@@ -6,7 +6,7 @@ include ../../Makefile.in
 
 EXE = sjeng-scidb
 
-CFLAGS = $(SYS_CFLAGS) -O2 -Wall -Wno-uninitialized -fomit-frame-pointer $(NO_UNUSED_RESULT) # -DORIGINAL -DHAVE_GETTIMEOFDAY -DHAVE_SELECT -DHAVE_SYS_TIMEB_H -DHAVE_LIBGDBM -DVERSION=\"11.2\"
+CFLAGS = $(SYS_CFLAGS) -O2 -Wall -Wno-uninitialized -fomit-frame-pointer $(NO_UNUSED_RESULT) -DSCIDB_VERSION=1 # -DHAVE_GETTIMEOFDAY -DHAVE_SELECT -DHAVE_SYS_TIMEB_H -DHAVE_LIBGDBM -DVERSION=\"11.2\"
 LDFLAGS += $(SYS_LDFLAGS)
 
 SRC = attacks.c crazy.c epd.c learn.c partner.c seval.c ttable.c book.c ecache.c eval.c \
