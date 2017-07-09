@@ -559,7 +559,7 @@ proc busyCursor {w {state on}} {
 
 	foreach toplevel {.application .setupEngine .help .playerDict .mergeDialog} {
 		if {[winfo exists $toplevel]} {
-			::scidb::tk::busy $action $toplevel
+			catch { ::scidb::tk::busy $action $toplevel }
 
 			if {[tk windowingsystem] eq "x11"} {
 				foreach tlv [winfo children $toplevel] {
