@@ -322,7 +322,9 @@ proc update {w {board {}} {promoted {}}} {
 		set Board(promoted) {}
 		foreach sq $promoted {
 			DrawPromoted $w $sq
+			raisePiece $w $sq
 		}
+		RaiseAdornment $w
 	}
 
 	return $board
