@@ -381,6 +381,39 @@ is_between(T x, T a, T b)
 	return a <= x && x <= b;
 }
 
+
+template <typename T>
+inline
+int
+compare(T const& lhs, T const& rhs)
+{
+	if (lhs < rhs) return -1;
+	if (rhs < lhs) return +1;
+	return 0;
+}
+
+
+inline int compare(int8_t lhs, int8_t rhs)		{ return lhs - rhs; }
+inline int compare(int16_t lhs, int16_t rhs)		{ return lhs - rhs; }
+inline int compare(int32_t lhs, int32_t rhs)		{ return lhs - rhs; }
+inline int compare(uint8_t lhs, uint8_t rhs)		{ return int(lhs) - int(rhs); }
+inline int compare(uint16_t lhs, uint16_t rhs)	{ return int(lhs) - int(rhs); }
+inline int compare(uint64_t lhs, uint64_t rhs)	{ return lhs < rhs ? -1 : (lhs == rhs ? 0 : +1); }
+
+#if UINTPTR_MAX > UINT_MAX
+inline int compare(uint32_t lhs, uint32_t rhs)	{ return int(lhs) - int(rhs); }
+#else
+inline int compare(uint32_t lhs, uint32_t rhs)	{ return lhs < rhs ? -1 : (lhs == rhs ? 0 : +1); }
+#endif
+
+#if UINTPTR_MAX == UINT_MAX
+inline int compare(int64_t lhs, int64_t rhs)		{ return lhs - rhs; }
+#else
+inline int compare(int64_t lhs, int64_t rhs)		{ return lhs < rhs ? -1 : (lhs == rhs ? 0 : +1); }
+#endif
+
+inline int compare(bool lhs, bool rhs)				{ return int(lhs) - int(rhs); }
+
 } // namespace mstl
 
 // vi:set ts=3 sw=3:
