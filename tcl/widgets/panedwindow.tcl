@@ -38,7 +38,7 @@
 
 package provide panedwindow 1.0
 
-rename panedwindow panedwindow_old
+rename tk::panedwindow tk::panedwindow_old
 
 
 proc panedwindow {args} {
@@ -80,11 +80,10 @@ proc Build {w args} {
 	unset -nocomplain opts(-opaqueresize)
 	unset -nocomplain opts(-sashcmd)
 
-	::panedwindow_old $w {*}[array get opts] -opaqueresize 1
-	if {[string match h* [$w cget -orient]]} {
-		$w configure -cursor sb_h_double_arrow
-	} else {
-		$w configure -cursor sb_v_double_arrow
+	tk::panedwindow_old $w {*}[array get opts] -opaqueresize 1
+	set cursor sb_[string index [$w cget -orient] 0]_double_arrow
+	if {[$w cget -cursor] ne $cursor} {
+		$w configure -cursor $cursor
 	}
 	
 	namespace eval [namespace current]::$w {}
@@ -151,7 +150,7 @@ proc WidgetProc {w command args} {
 
 			set child [lindex $args 0]
 			
-			if {[llength [$child cget -cursor]] == 0} {
+			if {[llength [$child cget -cursor]] == 0 && [$child cget -cursor] ne $Cursor} {
 				$child configure -cursor $Cursor
 			}
 		}
@@ -168,6 +167,14 @@ proc WidgetProc {w command args} {
 						set Cursor $val
 						if {[llength $Cursor] == 0} { set Cursor left_ptr }
 						unset opts($key)
+					}
+
+					-orient {
+						set cursor sb_[string index $val 0]_double_arrow
+						set child $w.__panedwindow__
+						if {[$child cget -cursor] ne $cursor} {
+							$child configure -cursor $cursor
+						}
 					}
 
 					-opaqueresize {
@@ -291,14 +298,8 @@ proc MarkSash {w x y} {
 		$w sash mark $i $sx $sy
 	}
 
-	if {[string match h* [$w cget -orient]]} {
-		set cursor sb_h_double_arrow
-	} else {
-		set cursor sb_v_double_arrow
-	}
-
 	set Priv(cursorList) {}
-	SetCursor [$w panes] $cursor
+	SetCursor [$w panes] sb_[string index [$w cget -orient] 0]_double_arrow
 }
 
 
@@ -323,7 +324,7 @@ proc ReleaseSash {w} {
 	if {[info exists Priv(sash)]} {
 		ResetCursor
 		array unset Priv panesize:*
-		unset Priv(sash) Priv(dx) Priv(dy) Priv(min) Priv(max) Priv(cursorList)
+		unset -nocomplain Priv(sash) Priv(dx) Priv(dy) Priv(min) Priv(max) Priv(cursorList)
 	}
 }
 
@@ -412,7 +413,9 @@ proc SetCursor {childs cursor} {
 		catch {
 			set cur [$child cget -cursor]
 			if {$cur eq "sb_h_double_arrow" || $cur eq "sb_v_double_arrow"} { set cur "" }
-			$child configure -cursor $cursor
+			if {[$child cget -cursor] ne $cursor]} {
+				$child configure -cursor $cursor
+			}
 			lappend Priv(cursorList) $child $cur
 		}
 		SetCursor [winfo children $child] $cursor
@@ -423,9 +426,15 @@ proc SetCursor {childs cursor} {
 proc ResetCursor {} {
 	variable ::tk::Priv
 
+	if {![info exists Priv(cursorList)]} { return }
+
 	foreach {child cursor} $Priv(cursorList) {
 		if {[winfo exists $child]} {
-			catch { $child configure -cursor $cursor }
+			catch {
+				if {[$child cget -cursor] ne $cursor]} {
+					$child configure -cursor $cursor
+				}
+			}
 		}
 	}
 }
