@@ -17,16 +17,13 @@
 // ======================================================================
 
 #include "tcl_exception.h"
+#include "tcl_base.h"
+
+#include <tcl.h>
 
 #include <stdarg.h>
 
 using namespace tcl;
-
-
-Exception::Exception()
-	:util::Exception()
-{
-}
 
 
 Exception::Exception(char const* fmt, ...)
@@ -39,11 +36,18 @@ Exception::Exception(char const* fmt, ...)
 }
 
 
+Exception::Exception(unsigned numArgs, Tcl_Obj* const objv[], char const* usage)
+{
+	Tcl_WrongNumArgs(tcl::interp(), numArgs, objv, usage);
+	assign(tcl::asString(tcl::result()));
+}
+
+
 Exception::Exception(util::Exception& exc) :util::Exception(exc) {}
 Exception::~Exception() throw() {}
 
 
-Error::Error() :util::Exception() {}
+Error::Error() :util::Exception() { assign(tcl::asString(tcl::result())); }
 Error::Error(util::Exception& exc) :util::Exception(exc) {}
 Error::~Error() throw() {}
 

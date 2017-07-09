@@ -23,6 +23,8 @@
 
 #define TCL_RAISE(fmt,args...) M_THROW(::tcl::Exception(fmt,##args))
 
+extern "C" { struct Tcl_Obj; }
+
 namespace tcl {
 
 class Exception : public util::Exception
@@ -30,8 +32,8 @@ class Exception : public util::Exception
 public:
 
 	// structors
-	Exception();
 	explicit Exception(char const* fmt, ...) __attribute__((__format__(__printf__, 2, 3)));
+	Exception(unsigned numArgs, Tcl_Obj* const objv[], char const* usage = nullptr);
 	Exception(util::Exception& exc);
 	~Exception() throw();
 };
