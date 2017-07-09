@@ -656,7 +656,8 @@ MakeWindow(
     TkTextSegment *ewPtr;
     TkTextEmbWindowClient *client;
 
-    ewPtr = memset(malloc(SEG_SIZE(TkTextEmbWindow)), 0, SEG_SIZE(TkTextEmbWindow));
+    ewPtr = calloc(1, SEG_SIZE(TkTextEmbWindow));
+    NEW_SEGMENT(ewPtr);
     ewPtr->typePtr = &tkTextEmbWindowType;
     ewPtr->size = 1;
     ewPtr->refCount = 1;
@@ -666,7 +667,7 @@ MakeWindow(
     ewPtr->body.ew.optionTable = Tk_CreateOptionTable(textPtr->interp, optionSpecs);
     DEBUG_ALLOC(tkTextCountNewSegment++);
 
-    client = memset(malloc(sizeof(TkTextEmbWindowClient)), 0, sizeof(TkTextEmbWindowClient));
+    client = calloc(1, sizeof(TkTextEmbWindowClient));
     client->textPtr = textPtr;
     client->parent = ewPtr;
     ewPtr->body.ew.clients = client;
@@ -834,7 +835,7 @@ EmbWinConfigure(
 	if (ewPtr->body.ew.tkwin) {
 	    Tk_Window ancestor, parent;
 	    bool cantEmbed = false;
-	    bool isNew;
+	    int isNew;
 
 	    /*
 	     * Make sure that the text is either the parent of the embedded
@@ -870,7 +871,7 @@ EmbWinConfigure(
 		 * Have to make the new client.
 		 */
 
-		client = memset(malloc(sizeof(TkTextEmbWindowClient)), 0, sizeof(TkTextEmbWindowClient));
+		client = calloc(1, sizeof(TkTextEmbWindowClient));
 		client->next = ewPtr->body.ew.clients;
 		client->textPtr = textPtr;
 		client->parent = ewPtr;
@@ -897,7 +898,7 @@ EmbWinConfigure(
 	    client->hPtr = Tcl_CreateHashEntry(
 		    &textPtr->sharedTextPtr->windowTable,
 		    Tk_PathName(ewPtr->body.ew.tkwin),
-		    (int *) &isNew);
+		    &isNew);
 	    Tcl_SetHashValue(client->hPtr, ewPtr);
 	    textPtr->sharedTextPtr->numWindows += 1;
 	}
@@ -1315,7 +1316,7 @@ EmbWinRestoreProc(
     TkSharedText *sharedTextPtr,/* Handle to shared text resource. */
     TkTextSegment *ewPtr)	/* Segment to reuse. */
 {
-    bool isNew;
+    int isNew;
 
     if (ewPtr->body.ew.create) {
 	/*
@@ -1330,7 +1331,7 @@ EmbWinRestoreProc(
 		client->hPtr = Tcl_CreateHashEntry(
 			&ewPtr->body.ew.sharedTextPtr->windowTable,
 			Tk_PathName(client->tkwin),
-			(int *) &isNew);
+			&isNew);
 		assert(isNew);
 		Tcl_SetHashValue(client->hPtr, ewPtr);
 		ewPtr->body.ew.sharedTextPtr->numWindows += 1;
@@ -1385,7 +1386,7 @@ EmbWinLayoutProc(
 
     if (!ewPtr->body.ew.tkwin && ewPtr->body.ew.create) {
 	int code;
-	bool isNew;
+	int isNew;
 	Tk_Window ancestor;
 	const char *before, *string;
 	Tcl_DString name, buf, *dsPtr = NULL;
@@ -1486,7 +1487,7 @@ EmbWinLayoutProc(
 	     * now need to add to our client list.
 	     */
 
-	    client = memset(malloc(sizeof(TkTextEmbWindowClient)), 0, sizeof(TkTextEmbWindowClient));
+	    client = calloc(1, sizeof(TkTextEmbWindowClient));
 	    client->next = ewPtr->body.ew.clients;
 	    client->textPtr = textPtr;
 	    client->parent = ewPtr;
@@ -1505,7 +1506,7 @@ EmbWinLayoutProc(
 	 */
 
 	client->hPtr = Tcl_CreateHashEntry(
-		&textPtr->sharedTextPtr->windowTable, Tk_PathName(client->tkwin), (int *) &isNew);
+		&textPtr->sharedTextPtr->windowTable, Tk_PathName(client->tkwin), &isNew);
 	Tcl_SetHashValue(client->hPtr, ewPtr);
 	ewPtr->body.ew.sharedTextPtr->numWindows += 1;
     }

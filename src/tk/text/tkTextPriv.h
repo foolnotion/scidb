@@ -55,6 +55,31 @@ MODULE_SCOPE bool TkpTextGetIndex(Tcl_Interp *interp, TkSharedText *sharedTextPt
 /*
  *----------------------------------------------------------------------
  *
+ * TkTextIsMark --
+ *
+ *	Test whether this is a mark.
+ *
+ * Results:
+ *	Whether this is a mark.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+inline
+bool
+TkTextIsMark(
+    const TkTextSegment *segPtr)
+{
+    assert(segPtr);
+    return segPtr->typePtr == &tkTextLeftMarkType || segPtr->typePtr == &tkTextRightMarkType;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
  * TkTextIsSpecialMark --
  *
  *	Test whether this is a special mark: "insert", or "current".
@@ -663,10 +688,12 @@ TkTextIndexGetShared(
 inline
 TkTextTag *
 TkBTreeGetTags(
-    const TkTextIndex *indexPtr)/* Indicates a particular position in the B-tree. */
+    const TkTextIndex *indexPtr,	/* Indicates a particular position in the B-tree. */
+    TkTextSortMethod sortMeth,		/* Sort tags according to this method. */
+    int *flags)				/* Store flags from TkBTreeGetSegmentTags(), can be NULL. */
 {
-    const TkTextSegment *segPtr = TkTextIndexGetContentSegment(indexPtr, NULL);
-    return TkBTreeGetSegmentTags(TkTextIndexGetShared(indexPtr), segPtr, indexPtr->textPtr, NULL);
+    return TkBTreeGetSegmentTags(TkTextIndexGetShared(indexPtr),
+	    TkTextIndexGetContentSegment(indexPtr, NULL), indexPtr->textPtr, sortMeth, flags);
 }
 
 /*

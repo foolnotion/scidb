@@ -69,11 +69,11 @@ static const char *CONST tabStyleStrings[] = {
 
 static const Tk_OptionSpec tagOptionSpecs[] = {
     {TK_OPTION_BORDER, "-background", NULL, NULL,
-	NULL, -1, Tk_Offset(TkTextTag, border), TK_OPTION_NULL_OK, 0, 0},
+	NULL, -1, Tk_Offset(TkTextTag, attrs.border), TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_BITMAP, "-bgstipple", NULL, NULL,
 	NULL, -1, Tk_Offset(TkTextTag, bgStipple), TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_PIXELS, "-borderwidth", NULL, NULL,
-	"0", Tk_Offset(TkTextTag, borderWidthPtr), Tk_Offset(TkTextTag, borderWidth),
+	"0", Tk_Offset(TkTextTag, attrs.borderWidthPtr), Tk_Offset(TkTextTag, attrs.borderWidth),
 	TK_OPTION_NULL_OK|TK_OPTION_DONT_SET_DEFAULT, 0, 0},
     {TK_OPTION_STRING, "-elide", NULL, NULL,
 	"0", -1, Tk_Offset(TkTextTag, elideString),
@@ -85,11 +85,19 @@ static const Tk_OptionSpec tagOptionSpecs[] = {
     {TK_OPTION_FONT, "-font", NULL, NULL,
 	NULL, -1, Tk_Offset(TkTextTag, tkfont), TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_COLOR, "-foreground", NULL, NULL,
-	NULL, -1, Tk_Offset(TkTextTag, fgColor), TK_OPTION_NULL_OK, 0, 0},
+	NULL, -1, Tk_Offset(TkTextTag, attrs.fgColor), TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_COLOR, "-hyphencolor", NULL, NULL,
 	NULL, -1, Tk_Offset(TkTextTag, hyphenColor), TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_STRING, "-hyphenrules", NULL, NULL,
 	NULL, Tk_Offset(TkTextTag, hyphenRulesPtr), -1, TK_OPTION_NULL_OK, 0, 0},
+    {TK_OPTION_BORDER, "-inactivebackground", NULL, NULL,
+	NULL, -1, Tk_Offset(TkTextTag, attrs.inactiveBorder), TK_OPTION_NULL_OK, 0, 0},
+    {TK_OPTION_COLOR, "-inactiveforeground", NULL, NULL,
+	NULL, -1, Tk_Offset(TkTextTag, attrs.inactiveFgColor), TK_OPTION_NULL_OK, 0, 0},
+    {TK_OPTION_BORDER, "-inactiveselectbackground", NULL, NULL,
+	NULL, -1, Tk_Offset(TkTextTag, inactiveSelBorder), TK_OPTION_NULL_OK, 0, 0},
+    {TK_OPTION_COLOR, "-inactiveselectforeground", NULL, NULL,
+	NULL, -1, Tk_Offset(TkTextTag, inactiveSelFgColor), TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_STRING, "-indentbackground", NULL, NULL,
 	"0", -1, Tk_Offset(TkTextTag, indentBgString),
 	TK_OPTION_DONT_SET_DEFAULT|TK_OPTION_NULL_OK, 0, 0},
@@ -168,6 +176,27 @@ static TkTextTag *	FindTag(Tcl_Interp *interp, const TkText *textPtr, Tcl_Obj *t
 static int		EnumerateTags(Tcl_Interp *interp, TkText *textPtr, int objc,
 			    Tcl_Obj *const *objv);
 static void		GrabSelection(TkText *textPtr, const TkTextTag *tagPtr, bool add, bool changed);
+
+/*
+ * Helper for guarded release of objects.
+ */
+
+static void
+Tcl_GuardedDecrRefCount(Tcl_Obj *objPtr)
+{
+#ifndef NDEBUG
+    /*
+     * Tcl does not provide any function for querying the reference count.
+     * So we need a work-around. Why does Tcl not provide a guarded version
+     * for such a dangerous function?
+     */
+    assert(objPtr);
+    Tcl_IncrRefCount(objPtr);
+    assert(Tcl_IsShared(objPtr));
+    Tcl_DecrRefCount(objPtr);
+#endif
+    Tcl_DecrRefCount(objPtr);
+}
 
 /*
  * We need some private undo/redo stuff.
@@ -347,7 +376,7 @@ TkTextTagCmd(
 		anyChanges = true;
 	    }
 	}
-	if (tagPtr == textPtr->selTagPtr) {
+	if (tagPtr->isSelTag) {
 	    GrabSelection(textPtr, tagPtr, addTag, anyChanges);
 	}
 	if (anyChanges) {
@@ -446,7 +475,7 @@ TkTextTagCmd(
 			tagPtr->epoch = epoch;
 			arrayPtr[countTags++] = tagPtr;
 
-			if (tagPtr == textPtr->selTagPtr) {
+			if (tagPtr->isSelTag) {
 			    GrabSelection(textPtr, tagPtr, false, true);
 			}
 			if (tagPtr->undo) {
@@ -469,7 +498,7 @@ TkTextTagCmd(
 	    Tcl_WrongNumArgs(interp, 3, objv, "tagName ?option? ?value? ?option value ...?");
 	    return TCL_ERROR;
 	}
-	return TkConfigureTag(interp, textPtr, Tcl_GetString(objv[3]), objc - 4, objv + 4);
+	return TkConfigureTag(interp, textPtr, Tcl_GetString(objv[3]), true, objc - 4, objv + 4);
     case TAG_DELETE: {
 	Tcl_HashEntry *hPtr;
 	bool anyChanges = false;
@@ -491,7 +520,7 @@ TkTextTagCmd(
 	    }
 	    tagPtr = Tcl_GetHashValue(hPtr);
 	    undo = tagPtr->undo;
-	    assert(tagPtr != textPtr->selTagPtr);
+	    assert(!tagPtr->isSelTag);
 	    if (TkTextDeleteTag(textPtr, tagPtr, hPtr) && undo) {
 		anyChanges = true;
 	    }
@@ -631,7 +660,7 @@ TkTextTagCmd(
 	     * with actual changes, and not all the ranges of this tag.
 	     */
 
-	    TkTextRedrawTag(tagPtr == textPtr->selTagPtr ? NULL : sharedTextPtr,
+	    TkTextRedrawTag(tagPtr->isSelTag ? NULL : sharedTextPtr,
 		    textPtr, NULL, NULL, tagPtr, false);
 	}
 	break;
@@ -716,7 +745,7 @@ TkTextTagCmd(
 	TkBTreeStartSearchBack(&index1, &index2, tagPtr, &tSearch, SEARCH_EITHER_TAGON_TAGOFF);
 
 	if (TkBTreePrevTag(&tSearch)) {
-	    assert(TkTextIndexCompare(&tSearch.curIndex, &index1) < 0);
+	    assert(TkTextIndexCompare(&tSearch.curIndex, &index1) <= 0);
 	    assert(TkTextIndexCompare(&tSearch.curIndex, &index2) >= 0);
 	    index1 = tSearch.curIndex;
 	    if (tSearch.tagon) {
@@ -797,7 +826,7 @@ TkTextTagCmd(
 	     * with actual changes, and not all the ranges of this tag.
 	     */
 
-	    TkTextRedrawTag(tagPtr == textPtr->selTagPtr ? NULL : sharedTextPtr,
+	    TkTextRedrawTag(tagPtr->isSelTag ? NULL : sharedTextPtr,
 		    textPtr, NULL, NULL, tagPtr, false);
 	}
 	break;
@@ -1024,13 +1053,17 @@ TkTextUpdateTagDisplayFlags(
 	    || tagPtr->wrapMode != TEXT_WRAPMODE_NULL) {
 	tagPtr->affectsDisplay = true;
 	tagPtr->affectsDisplayGeometry = true;
-    } else if (tagPtr->border
+    } else if (tagPtr->attrs.border
+	    || tagPtr->attrs.inactiveBorder
 	    || tagPtr->selBorder
+	    || tagPtr->inactiveSelBorder
 	    || tagPtr->reliefPtr
 	    || tagPtr->bgStipple != None
 	    || tagPtr->indentBgString
-	    || tagPtr->fgColor
+	    || tagPtr->attrs.fgColor
+	    || tagPtr->attrs.inactiveFgColor
 	    || tagPtr->selFgColor
+	    || tagPtr->inactiveSelFgColor
 	    || tagPtr->fgStipple != None
 	    || tagPtr->eolColor
 	    || tagPtr->hyphenColor
@@ -1062,23 +1095,41 @@ TkTextUpdateTagDisplayFlags(
  *----------------------------------------------------------------------
  */
 
+static void
+SetupDefaultRelief(
+    TkText *textPtr,
+    TkTextTag *tagPtr)
+{
+    if (tagPtr->isSelTag) {
+	Tk_GetRelief(textPtr->interp, DEF_TEXT_SELECT_RELIEF, &tagPtr->relief);
+	assert(strcmp(Tk_NameOfRelief(tagPtr->relief), DEF_TEXT_SELECT_RELIEF) == 0);
+	if (tagPtr->reliefPtr) { Tcl_GuardedDecrRefCount(tagPtr->reliefPtr); }
+	Tcl_IncrRefCount(tagPtr->reliefPtr = Tcl_NewStringObj(DEF_TEXT_SELECT_RELIEF, -1));
+    } else {
+	tagPtr->relief = TK_RELIEF_FLAT;
+    }
+}
+
 int
 TkConfigureTag(
     Tcl_Interp *interp,		/* Current interpreter. */
     TkText *textPtr,		/* Info about overall widget. */
     char const *tagName,	/* Name of affected tag. */
+    bool redraw,		/* Redraw the affected text if required? */
     int objc,			/* Number of arguments. */
     Tcl_Obj *const objv[])	/* Remaining argument objects. */
 {
-    int mask = 0;
     bool newTag;
+    int mask = 0;
     TkSharedText *sharedTextPtr = textPtr->sharedTextPtr;
     TkTextTag *tagPtr = TkTextCreateTag(textPtr, tagName, &newTag);
+    Tcl_Obj *reliefPtr = tagPtr->reliefPtr;
     const char *elideString = tagPtr->elideString;
     bool elide = tagPtr->elide;
     bool undo = tagPtr->undo;
     bool affectsDisplay = tagPtr->affectsDisplay;
     bool affectsLineHeight = false;
+    int rc = TCL_OK;
 
     if (objc <= 1) {
 	Tcl_Obj *objPtr = Tk_GetOptionInfo(interp, (char *) tagPtr, tagPtr->optionTable,
@@ -1091,8 +1142,14 @@ TkConfigureTag(
 	return TCL_OK;
     }
 
+    if (tagPtr->isSelTag) {
+	tagPtr->attrs = textPtr->selTagConfigAttrs;
+    }
     if (Tk_SetOptions(interp, (char *) tagPtr, tagPtr->optionTable,
 	    objc, objv, textPtr->tkwin, NULL, &mask) != TCL_OK) {
+	if (tagPtr->isSelTag) {
+	    tagPtr->attrs = textPtr->selAttrs;
+	}
 	return TCL_ERROR;
     }
 
@@ -1126,26 +1183,28 @@ TkConfigureTag(
      * particular value of an option from "unspecified").
      */
 
-    if (tagPtr->borderWidth < 0) {
-	tagPtr->borderWidth = 0;
-    }
+    tagPtr->attrs.borderWidth = MAX(0, tagPtr->attrs.borderWidth);
+
     if (tagPtr->langPtr) {
 	if (!TkTextTestLangCode(interp, tagPtr->langPtr)) {
-	    return TCL_ERROR;
+	    rc = TCL_ERROR;
+	} else {
+	    memcpy(tagPtr->lang, Tcl_GetString(tagPtr->langPtr), 3);
 	}
-	memcpy(tagPtr->lang, Tcl_GetString(tagPtr->langPtr), 3);
     } else {
 	memset(tagPtr->lang, 0, 3);
     }
     if (tagPtr->indentBgString) {
-	if (Tcl_GetBoolean(interp, tagPtr->indentBgString, (int *) &tagPtr->indentBg) != TCL_OK) {
-	    return TCL_ERROR;
+	if (Tcl_GetBoolean(interp, tagPtr->indentBgString, &tagPtr->indentBg) != TCL_OK) {
+	    rc = TCL_ERROR;
 	}
     }
     if (tagPtr->reliefPtr) {
 	if (Tk_GetReliefFromObj(interp, tagPtr->reliefPtr, &tagPtr->relief) != TCL_OK) {
-	    return TCL_ERROR;
+	    rc = TCL_ERROR;
 	}
+    } else if (reliefPtr) {
+	SetupDefaultRelief(textPtr, tagPtr);
     }
     if (tagPtr->justifyString) {
 	const char *identifier = NULL;
@@ -1166,65 +1225,60 @@ TkConfigureTag(
                     "bad justification \"%s\": must be left, right, full, or center",
                     tagPtr->justifyString));
             Tcl_SetErrorCode(interp, "TK", "VALUE", "JUSTIFY", NULL);
-	    return TCL_ERROR;
+	    rc = TCL_ERROR;
+	} else {
+	    tagPtr->justify = j;
 	}
-        tagPtr->justify = j;
     }
     if (tagPtr->lMargin1String) {
 	if (Tk_GetPixels(interp, textPtr->tkwin,
 		tagPtr->lMargin1String, &tagPtr->lMargin1) != TCL_OK) {
-	    return TCL_ERROR;
+	    rc = TCL_ERROR;
 	}
     }
     if (tagPtr->lMargin2String) {
 	if (Tk_GetPixels(interp, textPtr->tkwin,
 		tagPtr->lMargin2String, &tagPtr->lMargin2) != TCL_OK) {
-	    return TCL_ERROR;
+	    rc = TCL_ERROR;
 	}
     }
     if (tagPtr->offsetString) {
 	if (Tk_GetPixels(interp, textPtr->tkwin, tagPtr->offsetString,
 		&tagPtr->offset) != TCL_OK) {
-	    return TCL_ERROR;
+	    rc = TCL_ERROR;
 	}
     }
     if (tagPtr->overstrikeString) {
-	if (Tcl_GetBoolean(interp, tagPtr->overstrikeString, (int *) &tagPtr->overstrike) != TCL_OK) {
-	    return TCL_ERROR;
+	if (Tcl_GetBoolean(interp, tagPtr->overstrikeString, &tagPtr->overstrike) != TCL_OK) {
+	    rc = TCL_ERROR;
 	}
     }
     if (tagPtr->rMarginString) {
 	if (Tk_GetPixels(interp, textPtr->tkwin,
 		tagPtr->rMarginString, &tagPtr->rMargin) != TCL_OK) {
-	    return TCL_ERROR;
+	    rc = TCL_ERROR;
 	}
     }
     if (tagPtr->spacing1String) {
 	if (Tk_GetPixels(interp, textPtr->tkwin,
 		tagPtr->spacing1String, &tagPtr->spacing1) != TCL_OK) {
-	    return TCL_ERROR;
+	    rc = TCL_ERROR;
 	}
-	if (tagPtr->spacing1 < 0) {
-	    tagPtr->spacing1 = 0;
-	}
+	tagPtr->spacing1 = MAX(0, tagPtr->spacing1);
     }
     if (tagPtr->spacing2String) {
 	if (Tk_GetPixels(interp, textPtr->tkwin,
 		tagPtr->spacing2String, &tagPtr->spacing2) != TCL_OK) {
-	    return TCL_ERROR;
+	    rc = TCL_ERROR;
 	}
-	if (tagPtr->spacing2 < 0) {
-	    tagPtr->spacing2 = 0;
-	}
+	tagPtr->spacing2 = MAX(0, tagPtr->spacing2);
     }
     if (tagPtr->spacing3String) {
 	if (Tk_GetPixels(interp, textPtr->tkwin,
 		tagPtr->spacing3String, &tagPtr->spacing3) != TCL_OK) {
-	    return TCL_ERROR;
+	    rc = TCL_ERROR;
 	}
-	if (tagPtr->spacing3 < 0) {
-	    tagPtr->spacing3 = 0;
-	}
+	tagPtr->spacing3 = MAX(0, tagPtr->spacing3);
     }
     if (tagPtr->tabArrayPtr) {
 	free(tagPtr->tabArrayPtr);
@@ -1232,22 +1286,22 @@ TkConfigureTag(
     }
     if (tagPtr->tabStringPtr) {
 	if (!(tagPtr->tabArrayPtr = TkTextGetTabs(interp, textPtr, tagPtr->tabStringPtr))) {
-	    return TCL_ERROR;
+	    rc = TCL_ERROR;
 	}
     }
     if (tagPtr->hyphenRulesPtr) {
 	int oldHyphenRules = tagPtr->hyphenRules;
 
 	if (TkTextParseHyphenRules(textPtr, tagPtr->hyphenRulesPtr, &tagPtr->hyphenRules) != TCL_OK) {
-	    return TCL_ERROR;
+	    rc = TCL_ERROR;
 	}
 	if (oldHyphenRules != tagPtr->hyphenRules && textPtr->hyphenate) {
 	    affectsDisplay = true;
 	}
     }
     if (tagPtr->underlineString) {
-	if (Tcl_GetBoolean(interp, tagPtr->underlineString, (int *) &tagPtr->underline) != TCL_OK) {
-	    return TCL_ERROR;
+	if (Tcl_GetBoolean(interp, tagPtr->underlineString, &tagPtr->underline) != TCL_OK) {
+	    rc = TCL_ERROR;
 	}
     }
     if (tagPtr->elideString) {
@@ -1267,11 +1321,11 @@ TkConfigureTag(
             Tcl_SetObjResult(interp, Tcl_ObjPrintf(
                     "not allowed to set elide option of selection tag \"%s\"", tagPtr->name));
             Tcl_SetErrorCode(interp, "TK", "VALUE", "ELIDE", NULL);
-	    return TCL_ERROR;
+	    rc = TCL_ERROR;
 	}
 
-	if (Tcl_GetBoolean(interp, tagPtr->elideString, (int *) &tagPtr->elide) != TCL_OK) {
-	    return TCL_ERROR;
+	if (Tcl_GetBoolean(interp, tagPtr->elideString, &tagPtr->elide) != TCL_OK) {
+	    rc = TCL_ERROR;
 	}
 
 	/*
@@ -1293,17 +1347,28 @@ TkConfigureTag(
 
     /*
      * If the "sel" tag was changed, be sure to mirror information
-     * from the tag back into the text widget record. NOTE: we don't
-     * have to free up information in the widget record before
-     * overwriting it, because it was mirrored in the tag and hence
-     * freed when the tag field was overwritten.
+     * from the tag back into the text widget record.
      */
 
-    if (tagPtr == textPtr->selTagPtr) {
-	textPtr->selBorder = tagPtr->selBorder ? tagPtr->selBorder : tagPtr->border;
-	textPtr->selBorderWidth = tagPtr->borderWidth;
-	textPtr->selBorderWidthPtr = tagPtr->borderWidthPtr;
-	textPtr->selFgColorPtr = tagPtr->selFgColor ? tagPtr->selFgColor : tagPtr->fgColor;
+    if (tagPtr->isSelTag) {
+	if (tagPtr->attrs.border != textPtr->selTagConfigAttrs.border) {
+	    textPtr->selAttrs.border = tagPtr->attrs.border;
+	}
+	if (tagPtr->attrs.inactiveBorder != textPtr->selTagConfigAttrs.inactiveBorder) {
+	    textPtr->selAttrs.inactiveBorder = tagPtr->attrs.inactiveBorder;
+	}
+	if (tagPtr->attrs.fgColor != textPtr->selTagConfigAttrs.fgColor) {
+	    textPtr->selAttrs.fgColor = tagPtr->attrs.fgColor;
+	}
+	if (tagPtr->attrs.inactiveFgColor != textPtr->selTagConfigAttrs.inactiveFgColor) {
+	    textPtr->selAttrs.inactiveFgColor = tagPtr->attrs.inactiveFgColor;
+	}
+	if (tagPtr->attrs.borderWidthPtr != textPtr->selTagConfigAttrs.borderWidthPtr) {
+	    textPtr->selAttrs.borderWidthPtr = tagPtr->attrs.borderWidthPtr;
+	    textPtr->selAttrs.borderWidth = tagPtr->attrs.borderWidth;
+	}
+	textPtr->selTagConfigAttrs = tagPtr->attrs;
+	tagPtr->attrs = textPtr->selAttrs;
     }
 
     TkTextUpdateTagDisplayFlags(tagPtr);
@@ -1340,7 +1405,7 @@ TkConfigureTag(
 	TkBTreeUpdateElideInfo(textPtr, tagPtr);
     }
 
-    if (!newTag && affectsDisplay) {
+    if (redraw && !newTag && affectsDisplay) {
 	/*
 	 * This line is not necessary if this is a new tag, since it can't possibly have
 	 * been applied to anything yet.
@@ -1352,7 +1417,7 @@ TkConfigureTag(
 	TkTextRedrawTag(sharedTextPtr, NULL, NULL, NULL, tagPtr, false);
     }
 
-    return TCL_OK;
+    return rc;
 }
 
 /*
@@ -1516,8 +1581,7 @@ TkTextReplaceTags(
 	    j = TkTextTagSetFindNext(oldTagInfoPtr, j)) {
 	if (!TkTextTagSetTest(newTagInfoPtr, j)) {
 	    tagPtr = sharedTextPtr->tagLookup[j];
-	    if (tagPtr != textPtr->selTagPtr
-		    && TagAddRemove(textPtr, &index[0], &index[1], tagPtr, false)) {
+	    if (!tagPtr->isSelTag && TagAddRemove(textPtr, &index[0], &index[1], tagPtr, false)) {
 		anyChanges = true;
 		if (tagPtr->undo) {
 		    altered = true;
@@ -1535,8 +1599,7 @@ TkTextReplaceTags(
 	    j = TkTextTagSetFindNext(newTagInfoPtr, j)) {
 	if (!TkTextTagSetTest(segPtr->tagInfoPtr, j)) {
 	    tagPtr = sharedTextPtr->tagLookup[j];
-	    if (tagPtr != textPtr->selTagPtr
-		    && TagAddRemove(textPtr, &index[0], &index[1], tagPtr, true)) {
+	    if (!tagPtr->isSelTag && TagAddRemove(textPtr, &index[0], &index[1], tagPtr, true)) {
 		anyChanges = true;
 		if (tagPtr->undo) {
 		    altered = true;
@@ -1586,22 +1649,21 @@ TkTextFindTags(
     bool discardSelection)	/* "sel" tag will be discarded? */
 {
     TkTextTag *tagPtr;
-    TkTextTag **tagArray;
-    unsigned count;
+    Tcl_Obj *listObj;
 
     assert(segPtr);
 
-    tagArray = malloc(textPtr->sharedTextPtr->numEnabledTags * sizeof(TkTextTag *));
-    tagPtr = TkBTreeGetSegmentTags(textPtr->sharedTextPtr, segPtr, textPtr, NULL);
+    tagPtr = TkBTreeGetSegmentTags(textPtr->sharedTextPtr, segPtr, textPtr,
+	    TK_TEXT_SORT_ASCENDING, NULL);
+    listObj = Tcl_NewObj();
 
-    for (count = 0; tagPtr; tagPtr = tagPtr->nextPtr) {
+    for ( ; tagPtr; tagPtr = tagPtr->nextPtr) {
 	if (!discardSelection || tagPtr != textPtr->selTagPtr) {
-	    tagArray[count++] = tagPtr;
+	    Tcl_ListObjAppendElement(interp, listObj, Tcl_NewStringObj(tagPtr->name, -1));
 	}
     }
 
-    AppendTags(interp, count, tagArray);
-    free(tagArray);
+    Tcl_SetObjResult(interp, listObj);
 }
 
 /*
@@ -1633,8 +1695,7 @@ TkTextTagChangedUndoRedo(
     if (!TkTextRedrawTag(sharedTextPtr, textPtr, indexPtr1, indexPtr2, tagPtr, affectsDisplayGeometry)) {
 	return false;
     }
-    if (tagPtr && tagPtr->textPtr) {
-	assert(tagPtr == textPtr->selTagPtr);
+    if (textPtr && tagPtr == textPtr->selTagPtr) {
 	GrabSelection(tagPtr->textPtr, tagPtr, TkTextTestTag(indexPtr1, tagPtr), true);
     }
     return true;
@@ -1672,6 +1733,7 @@ GrabSelection(
 {
     bool ownSelection = add && textPtr->exportSelection && !(textPtr->flags & GOT_SELECTION);
 
+    assert(textPtr);
     assert(tagPtr == textPtr->selTagPtr);
 
     if (changed || ownSelection) {
@@ -1904,7 +1966,8 @@ TkTextCreateTag(
     TkSharedText *sharedTextPtr = textPtr->sharedTextPtr;
     TkTextTag *tagPtr;
     Tcl_HashEntry *hPtr = NULL;
-    bool isNew, isSelTag;
+    int isNew;
+    bool isSelTag;
     const char *name;
     unsigned index;
 
@@ -1922,7 +1985,7 @@ TkTextCreateTag(
 	}
 	name = "sel";
     } else {
-	hPtr = Tcl_CreateHashEntry(&sharedTextPtr->tagTable, tagName, (int *) &isNew);
+	hPtr = Tcl_CreateHashEntry(&sharedTextPtr->tagTable, tagName, &isNew);
 	if (newTag) {
 	    *newTag = isNew;
 	}
@@ -1961,10 +2024,11 @@ TkTextCreateTag(
      * to it to the hash table entry.
      */
 
-    tagPtr = memset(malloc(sizeof(TkTextTag)), 0, sizeof(TkTextTag));
+    tagPtr = calloc(1, sizeof(TkTextTag));
     tagPtr->name = name;
     tagPtr->index = index;
     tagPtr->priority = textPtr->sharedTextPtr->numEnabledTags;
+    tagPtr->isSelTag = isSelTag;
     tagPtr->bgStipple = None;
     tagPtr->fgStipple = None;
     tagPtr->justify = TK_TEXT_JUSTIFY_LEFT;
@@ -1985,27 +2049,15 @@ TkTextCreateTag(
 
     if (isSelTag) {
 	tagPtr->textPtr = textPtr;
-	Tk_GetRelief(textPtr->interp, DEF_TEXT_SELECT_RELIEF, &tagPtr->relief);
-	/* check validty of default */
-	assert(strcmp(Tk_NameOfRelief(tagPtr->relief), DEF_TEXT_SELECT_RELIEF) == 0);
-	assert(!tagPtr->reliefPtr);
-	Tcl_IncrRefCount(tagPtr->reliefPtr = Tcl_NewStringObj(DEF_TEXT_SELECT_RELIEF, -1));
-#if 0 /* TODO: this default value is not existing, although it should (?) */
-	sscanf(DEF_TEXT_SELECT_BORDER_WIDTH, "%d", &tagPtr->borderWidth);
-	if (tagPtr->borderWidth) {
-	    assert(!tagPtr->borderWidthPtr);
-	    Tcl_IncrRefCount(tagPtr->borderWidthPtr = Tcl_NewIntObj(tagPtr->borderWidth));
-	}
-#endif
 	textPtr->refCount += 1;
 	TkBitSet(sharedTextPtr->selectionTags, index);
 	TkBitSet(sharedTextPtr->dontUndoTags, index);
     } else {
-	tagPtr->relief = TK_RELIEF_FLAT;
 	assert(hPtr);
 	Tcl_SetHashValue(hPtr, tagPtr);
     }
 
+    SetupDefaultRelief(textPtr, tagPtr);
     MarkIndex(sharedTextPtr, tagPtr, true);
     return tagPtr;
 }
@@ -2155,13 +2207,18 @@ TkTextReleaseTag(
     if (hPtr) {
 	Tcl_DeleteHashEntry(hPtr);
     } else {
-	assert(strcmp(tagPtr->name, "sel") == 0);
+	assert(tagPtr->isSelTag);
     }
 
     /*
      * Let Tk do most of the hard work for us.
      */
 
+    if (tagPtr->isSelTag) {
+	assert(tagPtr->textPtr);
+	/* Restore the original values. */
+	tagPtr->attrs = tagPtr->textPtr->selTagConfigAttrs;
+    }
     Tk_FreeConfigOptions((char *) tagPtr, tagPtr->optionTable, sharedTextPtr->peers->tkwin);
 
     /*
@@ -2228,7 +2285,7 @@ TkTextDeleteTag(
 
     assert(!sharedTextPtr->undoStack || !TkTextUndoIsPerformingUndo(sharedTextPtr->undoStack));
     assert(!sharedTextPtr->undoStack || !TkTextUndoIsPerformingRedo(sharedTextPtr->undoStack));
-    assert(hPtr || strcmp(tagPtr->name, "sel") == 0);
+    assert(hPtr || tagPtr->isSelTag);
 
     used = !!tagPtr->rootPtr;
 
@@ -2266,7 +2323,7 @@ TkTextDeleteTag(
 
     assert(!tagPtr->rootPtr);
 
-    if (!(textPtr->flags & DESTROYED) && tagPtr == textPtr->selTagPtr) {
+    if (!(textPtr->flags & DESTROYED) && tagPtr->isSelTag) {
 	/*
 	 * Send an event that the selection changed. This is equivalent to:
 	 *	event generate $textWidget <<Selection>>
@@ -2350,6 +2407,10 @@ TkTextFreeAllTags(
 	 * Let Tk do most of the hard work for us.
 	 */
 
+	if (tagPtr->isSelTag) {
+	    assert(tagPtr->textPtr);
+	    tagPtr->attrs = tagPtr->textPtr->selTagConfigAttrs;
+	}
 	Tk_FreeConfigOptions((char *) tagPtr, tagPtr->optionTable, textPtr->tkwin);
 
 	/*

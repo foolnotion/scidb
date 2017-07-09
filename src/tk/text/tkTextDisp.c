@@ -37,6 +37,13 @@
 # ifndef TK_DO_NOT_DRAW
 #  define TK_DO_NOT_DRAW 0x80
 # endif
+# ifndef DEF_TEXT_INACTIVE_SELECT_COLOR_DISABLED
+#  define DEF_TEXT_INACTIVE_SELECT_COLOR_DISABLED "1"
+# endif
+#else /* for partability to 8.5/6 */
+# ifndef DEF_TEXT_INACTIVE_SELECT_COLOR_DISABLED
+#  define DEF_TEXT_INACTIVE_SELECT_COLOR_DISABLED "0"
+# endif
 #endif
 
 #include <stdlib.h>
@@ -54,6 +61,21 @@
 #else
 # define DEBUG(expr) expr
 #endif
+
+// Portability to 8.5/8.6
+#if TK_MAJOR_VERSION == 8 && TK_MINOR_VERSION < 7
+# ifdef MAC_OSX_TK
+static int
+TkpDrawingIsDisabled(
+   Tk_Window tkwin)
+{
+    MacDrawable *macWin = ((TkWindow *) tkwin)->privatePtr;
+    return macWin && !!(macWin->flags & TK_DO_NOT_DRAW);
+}
+#else
+static int TkpDrawingIsDisabled(Tk_Window tkwin) { return 0; }
+#endif
+#endif /* TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION < 7 */
 
 /*
  * "Calculations of line pixel heights and the size of the vertical
@@ -1511,7 +1533,7 @@ TkTextCreateDInfo(
     XGCValues gcValues;
     bool isMonospaced;
 
-    dInfoPtr = memset(malloc(sizeof(TextDInfo)), 0, sizeof(TextDInfo));
+    dInfoPtr = calloc(1, sizeof(TextDInfo));
     Tcl_InitHashTable(&dInfoPtr->styleTable, sizeof(StyleValues)/sizeof(int));
     gcValues.graphics_exposures = True;
     dInfoPtr->copyGC = None;
@@ -1539,7 +1561,7 @@ TkTextCreateDInfo(
 	    && textPtr->blockCursorType
 	    && textPtr->showInsertFgColor) {
 	XGCValues gcValues;
-	gcValues.foreground = textPtr->insertFgColorPtr->pixel;
+	gcValues.foreground = textPtr->insertFgColor->pixel;
 	dInfoPtr->insertFgGC = Tk_GetGC(textPtr->tkwin, GCForeground, &gcValues);
     }
 
@@ -1804,7 +1826,8 @@ TkTextResetDInfo(
  * GetStyle --
  *
  *	This function creates all the information needed to display text at a
- *	particular location.
+ *	particular location. We know that the given chain of tags is sorted
+ *	in ascending order.
  *
  * Results:
  *	The return value is a pointer to a TextStyle structure that
@@ -1815,6 +1838,96 @@ TkTextResetDInfo(
  *
  *----------------------------------------------------------------------
  */
+
+static int
+FillStyle(
+    const TkTextTag *tagPtr,
+    StyleValues *stylePtr,
+    bool haveFocus,
+    bool containsSelection)
+{
+    int selBorderPrio = -1;
+
+    Tk_3DBorder border = tagPtr->attrs.border;
+    XColor *fgColor    = tagPtr->attrs.fgColor;
+
+    if (!haveFocus) {
+	if (tagPtr->attrs.inactiveBorder)  { border = tagPtr->attrs.inactiveBorder; }
+	if (tagPtr->attrs.inactiveFgColor) { fgColor = tagPtr->attrs.inactiveFgColor; }
+    }
+
+    if (containsSelection) {
+	if (tagPtr->selBorder) {
+	    border = tagPtr->selBorder;
+	    if (haveFocus) {
+		selBorderPrio = tagPtr->priority;
+	    }
+	}
+	if (tagPtr->selFgColor) {
+	    fgColor = tagPtr->selFgColor;
+	}
+	if (!haveFocus) {
+	    if (tagPtr->inactiveSelBorder) {
+		border = tagPtr->inactiveSelBorder;
+		selBorderPrio = tagPtr->priority;
+	    }
+	    if (tagPtr->inactiveSelFgColor) {
+		fgColor = tagPtr->inactiveSelFgColor;
+	    }
+	}
+    }
+
+    if (border)                         { stylePtr->border = border; }
+    if (fgColor != None)                { stylePtr->fgColor = fgColor; }
+    if (tagPtr->reliefPtr)              { stylePtr->relief = tagPtr->relief; }
+    if (tagPtr->bgStipple != None)      { stylePtr->bgStipple = tagPtr->bgStipple; }
+    if (tagPtr->indentBgString != None) { stylePtr->indentBg = tagPtr->indentBg; }
+    if (tagPtr->tkfont != None)         { stylePtr->tkfont = tagPtr->tkfont; }
+    if (tagPtr->fgStipple != None)      { stylePtr->fgStipple = tagPtr->fgStipple; }
+    if (tagPtr->justifyString)          { stylePtr->justify = tagPtr->justify; }
+    if (tagPtr->lMargin1String)         { stylePtr->lMargin1 = tagPtr->lMargin1; }
+    if (tagPtr->lMargin2String)         { stylePtr->lMargin2 = tagPtr->lMargin2; }
+    if (tagPtr->lMarginColor)           { stylePtr->lMarginColor = tagPtr->lMarginColor; }
+    if (tagPtr->offsetString)           { stylePtr->offset = tagPtr->offset; }
+    if (tagPtr->rMarginString)          { stylePtr->rMargin = tagPtr->rMargin; }
+    if (tagPtr->rMarginColor)           { stylePtr->rMarginColor = tagPtr->rMarginColor; }
+    if (tagPtr->spacing1String)         { stylePtr->spacing1 = tagPtr->spacing1; }
+    if (tagPtr->spacing2String)         { stylePtr->spacing2 = tagPtr->spacing2; }
+    if (tagPtr->spacing3String)         { stylePtr->spacing3 = tagPtr->spacing3; }
+    if (tagPtr->tabStringPtr)           { stylePtr->tabArrayPtr = tagPtr->tabArrayPtr; }
+    if (tagPtr->eolColor)               { stylePtr->eolColor = tagPtr->eolColor; }
+    if (tagPtr->hyphenColor)            { stylePtr->hyphenColor = tagPtr->hyphenColor; }
+    if (tagPtr->elideString)            { stylePtr->elide = tagPtr->elide; }
+    if (tagPtr->langPtr)                { stylePtr->lang = tagPtr->lang; }
+    if (tagPtr->hyphenRulesPtr)         { stylePtr->hyphenRules = tagPtr->hyphenRules; }
+
+    if (tagPtr->tabStyle != TK_TEXT_TABSTYLE_NONE) { stylePtr->tabStyle = tagPtr->tabStyle; }
+    if (tagPtr->wrapMode != TEXT_WRAPMODE_NULL)    { stylePtr->wrapMode = tagPtr->wrapMode; }
+
+    if (tagPtr->attrs.borderWidthPtr && Tcl_GetString(tagPtr->attrs.borderWidthPtr)[0] != '\0') {
+	stylePtr->borderWidth = tagPtr->attrs.borderWidth;
+    }
+
+    if (tagPtr->overstrikeString) {
+	stylePtr->overstrike = tagPtr->overstrike;
+	if (tagPtr->overstrikeColor != None) {
+	     stylePtr->overstrikeColor = tagPtr->overstrikeColor;
+	} else if (tagPtr->attrs.fgColor != None) {
+	     stylePtr->overstrikeColor = tagPtr->attrs.fgColor;
+	}
+    }
+
+    if (tagPtr->underlineString) {
+	stylePtr->underline = tagPtr->underline;
+	if (tagPtr->underlineColor != None) {
+	    stylePtr->underlineColor = tagPtr->underlineColor;
+	} else if (tagPtr->attrs.fgColor != None) {
+	    stylePtr->underlineColor = tagPtr->attrs.fgColor;
+	}
+    }
+
+    return selBorderPrio;
+}
 
 static TextStyle *
 MakeStyle(
@@ -1827,29 +1940,9 @@ MakeStyle(
     Tcl_HashEntry *hPtr;
     XGCValues gcValues;
     unsigned long mask;
-    bool isNew;
-
-    /*
-     * The array below keeps track of the highest-priority specification
-     * that has occurred for each of the various fields of the StyleValues.
-     */
-
-    enum {
-	PRIO_BG_STIPPLE, PRIO_BORDER, PRIO_BORDER_WIDTH, PRIO_ELIDE, PRIO_EOL_COLOR, PRIO_FG,
-	PRIO_FG_STIPPLE, PRIO_FONT, PRIO_HYPHEN_COLOR, PRIO_HYPHEN_RULES, PRIO_INDENT_BG,
-	PRIO_JUSTIFY, PRIO_LANG, PRIO_LMARGIN_1, PRIO_LMARGIN_2, PRIO_LMARGIN_COLOR,
-	PRIO_OFFSET, PRIO_OVERSTRIKE, PRIO_RELIEF, PRIO_RMARGIN, PRIO_RMARGIN_COLOR,
-	PRIO_SPACING_1, PRIO_SPACING_2, PRIO_SPACING_3, PRIO_TAB, PRIO_TAB_STYLE,
-	PRIO_UNDERLINE, PRIO_WRAP,
-	PRIO_LAST /* must be last element */
-    };
-
-    int prio[PRIO_LAST] = {
-	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-	-1, -1, -1, -1, -1, -1, -1, -1 };
-
-    assert(prio[PRIO_LAST - 1] == -1);
+    int borderPrio;
+    bool haveFocus;
+    int isNew;
 
     /*
      * Find out what tags are present for the character, then compute a
@@ -1859,12 +1952,12 @@ MakeStyle(
 
     memset(&styleValues, 0, sizeof(StyleValues));
     styleValues.relief = TK_RELIEF_FLAT;
-    styleValues.fgColor = textPtr->fgColor;
+    styleValues.fgColor = None;
+    styleValues.underlineColor = textPtr->fgColor;
+    styleValues.overstrikeColor = textPtr->fgColor;
     styleValues.eolColor = textPtr->eolColor;
     styleValues.eotColor = textPtr->eotColor ? textPtr->eotColor : textPtr->eolColor;
     styleValues.hyphenColor = textPtr->hyphenColor;
-    styleValues.underlineColor = textPtr->fgColor;
-    styleValues.overstrikeColor = textPtr->fgColor;
     styleValues.tkfont = textPtr->tkfont;
     styleValues.justify = textPtr->justify;
     styleValues.spacing1 = textPtr->spacing1;
@@ -1874,184 +1967,78 @@ MakeStyle(
     styleValues.tabStyle = textPtr->tabStyle;
     styleValues.wrapMode = textPtr->wrapMode;
     styleValues.lang = textPtr->lang;
-    styleValues.hyphenRules = textPtr->hyphenRulesPtr ? textPtr->hyphenRules : TK_TEXT_HYPHEN_MASK;
+    styleValues.hyphenRules = textPtr->hyphenRules;
+
+    haveFocus = !!(textPtr->flags & HAVE_FOCUS);
+    borderPrio = -1;
 
     for ( ; tagPtr; tagPtr = tagPtr->nextPtr) {
-	Tk_3DBorder border;
-        XColor *fgColor;
-	int priority;
+	if (!tagPtr->isSelTag) {
+	    borderPrio = MAX(borderPrio, FillStyle(tagPtr, &styleValues, haveFocus, containsSelection));
+	}
+    }
 
-	border = tagPtr->border;
-        fgColor = tagPtr->fgColor;
-	priority = tagPtr->priority;
+    /*
+     * Setup attributes in case of selected text.
+     */
 
-	/*
-	 * If this is the selection tag, and inactiveSelBorder is NULL (the
-	 * default on Windows), then we need to skip it if we don't have the
-	 * focus.
-	 */
+    if (containsSelection) {
+	TkTextTag *tagPtr = textPtr->selTagPtr;
 
-	if (tagPtr == textPtr->selTagPtr && !(textPtr->flags & HAVE_FOCUS)) {
-	    if (!textPtr->inactiveSelBorder) {
-		continue;
+	if ((int) tagPtr->priority > borderPrio
+		&& (haveFocus
+		    /*
+		     * If this is the selection tag, and selAttrs.inactiveBorder is NULL
+		     * (the default on Windows), then we need to skip it if we don't have
+		     * the focus.
+		     */
+		    || (textPtr->selAttrs.inactiveBorder
+		    /*
+		     * Don't show inactive selection in readonly widgets.
+		     */
+		    && !(textPtr->state != TK_TEXT_STATE_NORMAL
+			&& *DEF_TEXT_INACTIVE_SELECT_COLOR_DISABLED == '1')))) {
+	    borderPrio = FillStyle(tagPtr, &styleValues, haveFocus, containsSelection);
+
+	    if (borderPrio == -1) {
+		if (textPtr->selAttrs.border)  { styleValues.border = textPtr->selAttrs.border; }
+		if (textPtr->selAttrs.fgColor) { styleValues.fgColor = textPtr->selAttrs.fgColor; }
+	    
+		if (!haveFocus) {
+		    if (textPtr->selAttrs.inactiveBorder) {
+			styleValues.border = textPtr->selAttrs.inactiveBorder;
+		    }
+		    if (textPtr->selAttrs.inactiveFgColor) {
+			styleValues.fgColor = textPtr->selAttrs.inactiveFgColor;
+		    }
+		}
 	    }
-#ifdef MAC_OSX_TK
-	    /* Don't show inactive selection in disabled widgets. */
-	    if (textPtr->state == TK_TEXT_STATE_DISABLED) {
-		continue;
-	    }
-#endif
-	    border = textPtr->inactiveSelBorder;
-	    fgColor = textPtr->inactiveSelFgColorPtr;
-	}
-	if (containsSelection) {
-	    if (tagPtr->selBorder) {
-		border = tagPtr->selBorder;
-	    }
-	    if (tagPtr->selFgColor != None) {
-		fgColor = tagPtr->selFgColor;
-	    } else if (fgColor == None) {
-		fgColor = textPtr->selFgColorPtr;
+	    
+	    if (!styleValues.fgColor) {
+		styleValues.fgColor = textPtr->selAttrs.fgColor;
+		if (!haveFocus && textPtr->selAttrs.inactiveFgColor) {
+		    styleValues.fgColor = textPtr->selAttrs.inactiveFgColor;
+		}
 	    }
 	}
-	if (border && priority > prio[PRIO_BORDER]) {
-	    styleValues.border = border;
-	    prio[PRIO_BORDER] = priority;
-	}
-	if (tagPtr->borderWidthPtr
-		&& Tcl_GetString(tagPtr->borderWidthPtr)[0] != '\0'
-		&& priority > prio[PRIO_BORDER_WIDTH]) {
-	    styleValues.borderWidth = tagPtr->borderWidth;
-	    prio[PRIO_BORDER_WIDTH] = priority;
-	}
-	if (tagPtr->reliefPtr && priority > prio[PRIO_RELIEF]) {
-	    if (!styleValues.border) {
-		styleValues.border = textPtr->border;
-	    }
-	    assert(tagPtr->relief < 8);
-	    styleValues.relief = tagPtr->relief;
-	    prio[PRIO_RELIEF] = priority;
-	}
-	if (tagPtr->bgStipple != None && priority > prio[PRIO_BG_STIPPLE]) {
-	    styleValues.bgStipple = tagPtr->bgStipple;
-	    prio[PRIO_BG_STIPPLE] = priority;
-	}
-	if (tagPtr->indentBgString != None && priority > prio[PRIO_INDENT_BG]) {
-	    styleValues.indentBg = tagPtr->indentBg;
-	    prio[PRIO_INDENT_BG] = priority;
-	}
-	if (fgColor != None && priority > prio[PRIO_FG]) {
-	    styleValues.fgColor = fgColor;
-	    prio[PRIO_FG] = priority;
-	}
-	if (tagPtr->tkfont != None && priority > prio[PRIO_FONT]) {
-	    styleValues.tkfont = tagPtr->tkfont;
-	    prio[PRIO_FONT] = priority;
-	}
-	if (tagPtr->fgStipple != None && priority > prio[PRIO_FG_STIPPLE]) {
-	    styleValues.fgStipple = tagPtr->fgStipple;
-	    prio[PRIO_FG_STIPPLE] = priority;
-	}
-	if (tagPtr->justifyString && priority > prio[PRIO_JUSTIFY]) {
-	    /* assert(tagPtr->justify < 8); always true due to range */
-	    styleValues.justify = tagPtr->justify;
-	    prio[PRIO_JUSTIFY] = priority;
-	}
-	if (tagPtr->lMargin1String && priority > prio[PRIO_LMARGIN_1]) {
-	    styleValues.lMargin1 = tagPtr->lMargin1;
-	    prio[PRIO_LMARGIN_1] = priority;
-	}
-	if (tagPtr->lMargin2String && priority > prio[PRIO_LMARGIN_2]) {
-	    styleValues.lMargin2 = tagPtr->lMargin2;
-	    prio[PRIO_LMARGIN_2] = priority;
-	}
-	if (tagPtr->lMarginColor && priority > prio[PRIO_LMARGIN_COLOR]) {
-	    styleValues.lMarginColor = tagPtr->lMarginColor;
-	    prio[PRIO_LMARGIN_COLOR] = priority;
-	}
-	if (tagPtr->offsetString && priority > prio[PRIO_OFFSET]) {
-	    styleValues.offset = tagPtr->offset;
-	    prio[PRIO_OFFSET] = priority;
-	}
-	if (tagPtr->overstrikeString && priority > prio[PRIO_OVERSTRIKE]) {
-	    styleValues.overstrike = tagPtr->overstrike;
-	    prio[PRIO_OVERSTRIKE] = priority;
-            if (tagPtr->overstrikeColor != None) {
-                 styleValues.overstrikeColor = tagPtr->overstrikeColor;
-            } else if (fgColor != None) {
-                 styleValues.overstrikeColor = fgColor;
-            }
-	}
-	if (tagPtr->rMarginString && priority > prio[PRIO_RMARGIN]) {
-	    styleValues.rMargin = tagPtr->rMargin;
-	    prio[PRIO_RMARGIN] = priority;
-	}
-	if (tagPtr->rMarginColor && priority > prio[PRIO_RMARGIN_COLOR]) {
-	    styleValues.rMarginColor = tagPtr->rMarginColor;
-	    prio[PRIO_RMARGIN_COLOR] = priority;
-	}
-	if (tagPtr->spacing1String && priority > prio[PRIO_SPACING_1]) {
-	    styleValues.spacing1 = tagPtr->spacing1;
-	    prio[PRIO_SPACING_1] = priority;
-	}
-	if (tagPtr->spacing2String && priority > prio[PRIO_SPACING_2]) {
-	    styleValues.spacing2 = tagPtr->spacing2;
-	    prio[PRIO_SPACING_2] = priority;
-	}
-	if (tagPtr->spacing3String && priority > prio[PRIO_SPACING_3]) {
-	    styleValues.spacing3 = tagPtr->spacing3;
-	    prio[PRIO_SPACING_3] = priority;
-	}
-	if (tagPtr->tabStringPtr && priority > prio[PRIO_TAB]) {
-	    styleValues.tabArrayPtr = tagPtr->tabArrayPtr;
-	    prio[PRIO_TAB] = priority;
-	}
-	if (tagPtr->tabStyle != TK_TEXT_TABSTYLE_NONE && priority > prio[PRIO_TAB_STYLE]) {
-	    assert(tagPtr->tabStyle < 8);
-	    styleValues.tabStyle = tagPtr->tabStyle;
-	    prio[PRIO_TAB_STYLE] = priority;
-	}
-	if (tagPtr->eolColor && priority > prio[PRIO_EOL_COLOR]) {
-	    styleValues.eolColor = tagPtr->eolColor;
-	    prio[PRIO_EOL_COLOR] = priority;
-	}
-	if (tagPtr->hyphenColor && priority > prio[PRIO_HYPHEN_COLOR]) {
-	    styleValues.hyphenColor = tagPtr->hyphenColor;
-	    prio[PRIO_HYPHEN_COLOR] = priority;
-	}
-	if (tagPtr->underlineString && priority > prio[PRIO_UNDERLINE]) {
-	    styleValues.underline = tagPtr->underline;
-	    prio[PRIO_UNDERLINE] = priority;
-            if (tagPtr->underlineColor != None) {
-		styleValues.underlineColor = tagPtr->underlineColor;
-            } else if (fgColor != None) {
-		styleValues.underlineColor = fgColor;
-            }
-	}
-	if (tagPtr->elideString && priority > prio[PRIO_ELIDE]) {
-	    styleValues.elide = tagPtr->elide;
-	    prio[PRIO_ELIDE] = priority;
-	}
-	if (tagPtr->langPtr && priority > prio[PRIO_LANG]) {
-	    styleValues.lang = tagPtr->lang;
-	    prio[PRIO_LANG] = priority;
-	}
-	if (tagPtr->hyphenRulesPtr && priority > prio[PRIO_HYPHEN_RULES]) {
-	    styleValues.hyphenRules = tagPtr->hyphenRules;
-	    prio[PRIO_HYPHEN_RULES] = priority;
-	}
-	if (tagPtr->wrapMode != TEXT_WRAPMODE_NULL && priority > prio[PRIO_WRAP]) {
-	    /* assert(tagPtr->wrapMode < 8); always true due to range */
-	    styleValues.wrapMode = tagPtr->wrapMode;
-	    prio[PRIO_WRAP] = priority;
-	}
+    }
+
+    /*
+     * Setup with fallback values if needed.
+     */
+
+    if (styleValues.fgColor == None) {
+	styleValues.fgColor = textPtr->fgColor;
+    }
+    if (styleValues.relief != TK_RELIEF_FLAT && !styleValues.border) {
+	styleValues.border = textPtr->border;
     }
 
     /*
      * Use an existing style if there's one around that matches.
      */
 
-    hPtr = Tcl_CreateHashEntry(&textPtr->dInfoPtr->styleTable, (char *) &styleValues, (int *) &isNew);
+    hPtr = Tcl_CreateHashEntry(&textPtr->dInfoPtr->styleTable, (char *) &styleValues, &isNew);
     if (!isNew) {
 	return Tcl_GetHashValue(hPtr);
     }
@@ -2121,11 +2108,11 @@ GetStyle(
 {
     TextStyle *stylePtr;
     TkTextTag *tagPtr;
-    bool containsSelection;
+    int flags;
 
     if (segPtr && (tagPtr = TkBTreeGetSegmentTags(
-		    textPtr->sharedTextPtr, segPtr, textPtr, &containsSelection))) {
-	stylePtr = MakeStyle(textPtr, tagPtr, containsSelection);
+		    textPtr->sharedTextPtr, segPtr, textPtr, TK_TEXT_SORT_ASCENDING, &flags))) {
+	stylePtr = MakeStyle(textPtr, tagPtr, !!(flags & TK_TEXT_IS_SELECTED));
     } else {
 	/*
 	 * Take into account that this function can be called before UpdateDefaultStyle
@@ -2398,6 +2385,7 @@ LayoutUpdateLineHeightInformation(
 
     assert(dlPtr->byteCount > 0);
     assert(linePtr->logicalLine);
+    assert(TkTextIndexGetLine(&dlPtr->index));
     assert(linePtr == TkBTreeGetLogicalLine(
 	    textPtr->sharedTextPtr, textPtr, TkTextIndexGetLine(&dlPtr->index)));
 
@@ -3326,21 +3314,7 @@ LayoutChars(
 	 * characters up to (and including) the tab.
 	 */
 
-	if (data->justify == TK_TEXT_JUSTIFY_LEFT) {
-	    const char *p = base;
-	    unsigned i;
-
-	    /* TODO: also TK_TEXT_JUSTIFY_RIGHT should support tabs */
-	    /* TODO: direction of tabs should depend on gravity of insert mark?! */
-
-	    for (i = 0; i < maxBytes; ++i, ++p) {
-		if (*p == '\t') {
-		    maxBytes = i + 1;
-		    gotTab = true;
-		    break;
-		}
-	    }
-	} else if (data->justify == TK_TEXT_JUSTIFY_FULL) {
+	if (data->justify == TK_TEXT_JUSTIFY_FULL) {
 	    const char *p = base;
 	    const char *e = p + maxBytes;
 
@@ -3373,6 +3347,19 @@ LayoutChars(
 		} while (IsExpandableSpace(p));
 
 		maxBytes = p - base;
+	    }
+	} else {
+	    const char *p = base;
+	    unsigned i;
+
+	    /* TODO: direction of tabs should depend on gravity of insert mark?! */
+
+	    for (i = 0; i < maxBytes; ++i, ++p) {
+		if (*p == '\t') {
+		    maxBytes = i + 1;
+		    gotTab = true;
+		    break;
+		}
 	    }
 	}
     }
@@ -4110,6 +4097,8 @@ LayoutDLine(
     assert(displayLineNo >= 0);
     assert((displayLineNo == 0) ==
 	    (IsStartOfNotMergedLine(indexPtr) || TkTextIndexIsStartOfText(indexPtr)));
+    assert(indexPtr);
+    assert(TkTextIndexGetLine(indexPtr));
 
     DEBUG(stats.numLayouted += 1);
 
@@ -4679,6 +4668,7 @@ ComputeDisplayLineInfo(
     unsigned viewHeight;
 
     assert(info);
+    assert(TkTextIndexGetLine(indexPtr));
 
     linePtr = TkTextIndexGetLine(indexPtr);
     logicalLinePtr = TkBTreeGetLogicalLine(textPtr->sharedTextPtr, textPtr, linePtr);
@@ -6539,7 +6529,7 @@ DisplayLineBackground(
  *----------------------------------------------------------------------
  *
  * AsyncUpdateLineMetrics --
- 
+ *
  *	This function is invoked as a background handler to update the pixel-
  *	height calculations of individual lines in an asychronous manner.
  *
@@ -6665,6 +6655,8 @@ UpdateLineMetrics(
 	int lineNum = range->low;
 	int high = range->high;
 
+	assert(lineNum < TkBTreeNumLines(textPtr->sharedTextPtr->tree, textPtr));
+
 	linePtr = TkBTreeFindLine(textPtr->sharedTextPtr->tree, textPtr, lineNum);
 	logicalLinePtr = TkBTreeGetLogicalLine(textPtr->sharedTextPtr, textPtr, linePtr);
 
@@ -6786,6 +6778,7 @@ TkTextUpdateLineMetrics(
 
 	lineNum = range->low;
 	endLine = MIN((int) endLine, TkBTreeNumLines(textPtr->sharedTextPtr->tree, textPtr) - 1);
+	assert((int) lineNum < TkBTreeNumLines(textPtr->sharedTextPtr->tree, textPtr));
 
 	while (true) {
 	    const TkTextPixelInfo *pixelInfo;
@@ -7469,6 +7462,8 @@ TkTextCountDisplayLines(
 
     assert(TkTextIndexCompare(indexFrom, indexTo) <= 0);
     assert(textPtr->sharedTextPtr->allowUpdateLineMetrics);
+    assert(TkTextIndexGetLine(indexFrom));
+    assert(TkTextIndexGetLine(indexTo));
 
     TkTextUpdateLineMetrics(textPtr, TkTextIndexGetLineNumber(indexFrom, textPtr),
 	    TkTextIndexGetLineNumber(indexTo, textPtr));
@@ -7576,6 +7571,10 @@ FindDisplayLineStartEnd(
 	 * We don't want an offset inside a multi-byte sequence, so find the start
 	 * of the current character.
 	 */
+
+#if TCL_UTF_MAX > 4
+# error "The text widget is designed for UTF-8, this applies also to the legacy code. Undocumented pseudo UTF-8 strings cannot be processed with this function, because it relies on the UTF-8 specification."
+#endif
 
 	while (p > segPtr->body.chars && (*p & 0xc0) == 0x80) {
 	    p -= 1;
@@ -7858,6 +7857,8 @@ GetPixelsTo(
     TkTextIndex index;
     unsigned byteOffset;
 
+    assert(TkTextIndexGetLine(indexPtr));
+
     logicalLinePtr = TkBTreeGetLogicalLine(textPtr->sharedTextPtr, textPtr,
 	    TkTextIndexGetLine(indexPtr));
     if (logicalLinePtr == TkBTreeGetLastLine(textPtr)) {
@@ -7979,6 +7980,7 @@ UpdateOneLine(
     unsigned pixelHeight;
 
     assert(linePtr != TkBTreeGetLastLine(textPtr));
+    assert(TkTextIndexGetLine(indexPtr));
 
     if (!indexPtr) {
 	TkTextIndexClear(&index, textPtr);
@@ -8141,13 +8143,14 @@ DisplayText(
     int extent1, extent2;
     Tcl_Interp *interp;
 
-#ifdef MAC_OSX_TK
-    /*
-     * If drawing is disabled, all we need to do is clear the REDRAW_PENDING flag.
-     */
-    TkWindow *winPtr = (TkWindow *)(textPtr->tkwin);
-    MacDrawable *macWin = winPtr->privatePtr;
-    if (macWin && (macWin->flags & TK_DO_NOT_DRAW)) {
+    if (textPtr->flags & DESTROYED) {
+	return; /* the widget has been deleted */
+    }
+
+    if (TkpDrawingIsDisabled(textPtr->tkwin)) {
+	/*
+	 * If drawing is disabled, all we need to do is clear the REDRAW_PENDING flag.
+	 */
 	dInfoPtr->flags &= ~REDRAW_PENDING;
 	if (dInfoPtr->flags & ASYNC_PENDING) {
 	    assert(dInfoPtr->flags & ASYNC_UPDATE);
@@ -8156,11 +8159,6 @@ DisplayText(
 	    InvokeAsyncUpdateLineMetrics(textPtr);
 	}
 	return;
-    }
-#endif /* MAC_OSX_TK */
-
-    if (textPtr->flags & DESTROYED) {
-	return; /* the widget has been deleted */
     }
 
     interp = textPtr->interp;
@@ -8335,11 +8333,7 @@ DisplayText(
 	damageRgn = TkCreateRegion();
 	if (TkScrollWindow(textPtr->tkwin, dInfoPtr->scrollGC, dInfoPtr->x - extent1, oldY,
 		dInfoPtr->maxX - dInfoPtr->x + extent1 + extent2, height, 0, y - oldY, damageRgn)) {
-#ifdef MAC_OSX_TK
-	    /* the processing of the Expose event is damaging the region on Mac */
-#else
 	    TextInvalidateRegion(textPtr, damageRgn);
-#endif
 	}
 	DEBUG(stats.numCopies += 1);
 	TkDestroyRegion(damageRgn);
@@ -8795,6 +8789,8 @@ TextChanged(
     TkTextIndex rounded;
     TkTextLine *linePtr;
 
+    assert(TkTextIndexGetLine(index1Ptr));
+
     /*
      * Find the DLines corresponding to index1Ptr and index2Ptr. There is one
      * tricky thing here, which is that we have to relayout in units of whole
@@ -9079,7 +9075,7 @@ TkTextRedrawTag(
 				 * means process all the characters in the text. Note that either
 				 * both indices are NULL, or both are non-Null. */
     const TkTextTag *tagPtr,	/* Information about tag, can be NULL, but only if the indices are
-    				 * non-NULL. */
+    				 * non-NULL*/
     bool affectsDisplayGeometry)/* Whether the display geometry is affected. If argument tagPtr is
     				 * given, then also this tag will be tested if the display geometry
 				 * is affected. */
@@ -9271,7 +9267,7 @@ TkTextRelayoutWindow(
     if (textPtr->state == TK_TEXT_STATE_NORMAL
 	    && textPtr->blockCursorType
 	    && textPtr->showInsertFgColor) {
-	gcValues.foreground = textPtr->insertFgColorPtr->pixel;
+	gcValues.foreground = textPtr->insertFgColor->pixel;
 	dInfoPtr->insertFgGC = Tk_GetGC(textPtr->tkwin, GCForeground, &gcValues);
     }
 
@@ -9974,7 +9970,9 @@ MeasureUp(
 	return false;
     }
 
-    *dstPtr = *srcPtr;
+    if (dstPtr != srcPtr) {
+	*dstPtr = *srcPtr;
+    }
     startLinePtr = TkBTreeGetStartLine(textPtr);
     linePtr = TkTextIndexGetLine(srcPtr);
 
@@ -10607,6 +10605,7 @@ MakePixelIndex(
 	TkTextIndexSetByteIndex2(indexPtr, linePtr, byteOffset);
     } else {
 	assert(lastLinePtr->prevPtr); /* MakePixelIndex will not be called if peer is empty */
+	assert(linePtr->prevPtr);
 	linePtr = TkBTreeGetLogicalLine(textPtr->sharedTextPtr, textPtr, linePtr->prevPtr);
 	TkTextIndexSetToLastChar2(indexPtr, linePtr);
 	FindDisplayLineStartEnd(textPtr, indexPtr, DISP_LINE_START, DLINE_CACHE);
@@ -12173,7 +12172,7 @@ TkTextGetDLineInfo(
     *heightPtr = dlPtr->height;
 
     if (extents) {
-	*widthPtr = MAX(0, *xPtr + dlPtr->length - dInfoPtr->maxX);
+	*widthPtr = MAX(0, *xPtr + (int) dlPtr->length - dInfoPtr->maxX);
 	*heightPtr = MAX(0, *yPtr + *heightPtr - dInfoPtr->maxY);
 	*xPtr = MAX(0, -*xPtr);
 	*yPtr = MAX(0, -*yPtr);
@@ -13284,12 +13283,13 @@ CheckLineMetricConsistency(
 	    for (k = 0; k < dispLineInfo->numDispLines; ++k) {
 		const TkTextDispLineEntry *entry = dispLineInfo->entry + k;
 
-#if 0 /* not valid if -startindex is set */
-		if (k == 0 && entry->byteOffset != 0) {
+		if (k == 0
+			&& entry->byteOffset != 0
+			/* this check does not work if -startindex is set */
+			&& textPtr->startMarker == textPtr->sharedTextPtr->startMarker) {
 		    Tcl_Panic("CheckLineMetricConsistency: first display line (line %d.%u) should "
 			    "have byte offset zero", logicalLineNum, k);
 		}
-#endif
 		if ((entry + 1)->byteOffset <= entry->byteOffset) {
 		    Tcl_Panic("CheckLineMetricConsistency: display line (line %d.%u) has invalid byte "
 			    "offset %d (previous is %d)", logicalLineNum, k, (entry + 1)->byteOffset,
@@ -13444,12 +13444,12 @@ CharChunkMeasureChars(
 
 #if TK_LAYOUT_WITH_BASE_CHUNKS
 
-    int widthUntilStart = 0;
+    const TkTextDispChunk *baseChunkPtr = chunkPtr->baseChunkPtr;
 
-    assert(chunkPtr->baseChunkPtr);
+    assert(baseChunkPtr);
 
     if (!chars) {
-	const Tcl_DString *baseChars = &chunkPtr->baseChunkPtr->baseChars;
+	const Tcl_DString *baseChars = &baseChunkPtr->baseChars;
 
 	chars = Tcl_DStringValue(baseChars);
 	charsLen = Tcl_DStringLength(baseChars);
@@ -13466,11 +13466,18 @@ CharChunkMeasureChars(
 	}
     }
 
-    if (start != ciPtr->baseOffset) {
+    if (start == ciPtr->baseOffset) {
+	/*
+	 * This is a very frequent case, and MeasureChars() is not needed here.
+	 */
+
+	startX -= chunkPtr->x - baseChunkPtr->x;
+    } else {
+	int widthUntilStart;
 	MeasureChars(tkfont, chars, charsLen, 0, start, 0, -1, 0, &widthUntilStart);
+	startX -= widthUntilStart;
     }
 
-    startX = chunkPtr->baseChunkPtr->x + (startX - widthUntilStart - chunkPtr->x);
     rangeStart = 0;
 
 #else

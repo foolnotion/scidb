@@ -652,7 +652,7 @@ TkTextMarkCmd(
 	    "##ID##0x%016"PRIx64"##0x%016"PRIx64"##%08u##", /* we're on a real 64-bit system */
 	    (uint64_t) textPtr, (uint64_t) textPtr->sharedTextPtr, ++textPtr->uniqueIdCounter
 #else /* if defined(TK_IS_32_BIT_ARCH) */
-	    "##ID##0x%08"PRIx32"##0x%08"PRIx32"##%08u##",   /* we're on a 32-bit system */
+	    "##ID##0x%08"PRIx32"##0x%08"PRIx32"##%08u##",   /* we're most likely on a 32-bit system */
 	    (uint32_t) textPtr, (uint32_t) textPtr->sharedTextPtr, ++textPtr->uniqueIdCounter
 #endif /* TK_IS_64_BIT_ARCH */
 	);
@@ -981,12 +981,12 @@ ReactivateMark(
 {
     Tcl_HashEntry *hPtr;
     char *name;
-    bool isNew;
+    int isNew;
 
     assert(IS_PRESERVED(markPtr));
 
     name = GET_NAME(markPtr);
-    hPtr = Tcl_CreateHashEntry(&sharedTextPtr->markTable, name, (int *) &isNew);
+    hPtr = Tcl_CreateHashEntry(&sharedTextPtr->markTable, name, &isNew);
     assert(isNew);
     free(name);
     Tcl_SetHashValue(hPtr, markPtr);
@@ -1163,7 +1163,8 @@ MakeMark(
 {
     TkTextSegment *markPtr;
 
-    markPtr = memset(malloc(SEG_SIZE(TkTextMark)), 0, SEG_SIZE(TkTextMark));
+    markPtr = calloc(1, SEG_SIZE(TkTextMark));
+    NEW_SEGMENT(markPtr);
     markPtr->typePtr = &tkTextRightMarkType;
     markPtr->refCount = 1;
     markPtr->body.mark.textPtr = textPtr;
@@ -1178,7 +1179,7 @@ TkTextMakeMark(
 {
     TkTextSegment *markPtr;
     Tcl_HashEntry *hPtr;
-    bool isNew;
+    int isNew;
 
     assert(!name || textPtr);
     assert(!name || strcmp(name, "insert") != 0);
@@ -1188,7 +1189,7 @@ TkTextMakeMark(
 	return MakeMark(textPtr);
     }
 
-    hPtr = Tcl_CreateHashEntry(&textPtr->sharedTextPtr->markTable, name, (int *) &isNew);
+    hPtr = Tcl_CreateHashEntry(&textPtr->sharedTextPtr->markTable, name, &isNew);
 
     if (isNew) {
 	markPtr = MakeMark(textPtr);
@@ -1227,11 +1228,11 @@ TkTextMakeNewMark(
 {
     TkTextSegment *markPtr;
     Tcl_HashEntry *hPtr;
-    bool isNew;
+    int isNew;
 
     assert(name);
 
-    hPtr = Tcl_CreateHashEntry(&sharedTextPtr->markTable, name, (int *) &isNew);
+    hPtr = Tcl_CreateHashEntry(&sharedTextPtr->markTable, name, &isNew);
 
     if (!isNew) {
 	return NULL;
@@ -1239,6 +1240,7 @@ TkTextMakeNewMark(
 
     markPtr = MakeMark(NULL);
     markPtr->body.mark.ptr = PTR_TO_INT(hPtr);
+    markPtr->normalMarkFlag = true;
     Tcl_SetHashValue(hPtr, markPtr);
     sharedTextPtr->numMarks += 1;
 
@@ -1301,7 +1303,7 @@ MakeUndoToggleGravity(
 	TkTextMarkChange *changePtr = MakeChangeItem(sharedTextPtr, markPtr);
 	UndoTokenToggleGravity *token;
 
-	token = memset(malloc(sizeof(UndoTokenToggleGravity)), 0, sizeof(UndoTokenToggleGravity));
+	token = calloc(1, sizeof(UndoTokenToggleGravity));
 	token->undoType = &undoTokenToggleGravityType;
 	(token->markPtr = markPtr)->refCount += 1;
 	DEBUG_ALLOC(tkTextCountNewUndoToken++);
@@ -1497,7 +1499,7 @@ TriggerWatchCursor(
     numTags = 0;
     tagArrayPtr = tagArrayBuffer;
     tagArraySize = sizeof(tagArrayBuffer)/sizeof(tagArrayBuffer[0]);
-    tagPtr = TkBTreeGetTags(&index);
+    tagPtr = TkBTreeGetTags(&index, TK_TEXT_SORT_ASCENDING, NULL);
     for ( ; tagPtr; tagPtr = tagPtr->nextPtr) {
 	if (numTags == tagArraySize) {
 	    tagArraySize *= 2;
@@ -1505,7 +1507,6 @@ TriggerWatchCursor(
 	}
 	tagArrayPtr[numTags++] = tagPtr;
     }
-    TkTextSortTags(numTags, tagArrayPtr);
     for (i = 0; i < numTags; ++i) {
 	Tcl_DStringAppendElement(&buf, tagArrayPtr[i]->name);
     }
@@ -2280,6 +2281,7 @@ MarkDeleteProc(
     if (segPtr->body.mark.changePtr) {
 	unsigned index;
 
+	assert(sharedTextPtr->steadyMarks);
 	index = segPtr->body.mark.changePtr - sharedTextPtr->undoMarkList;
 	TkTextReleaseUndoMarkTokens(sharedTextPtr, segPtr->body.mark.changePtr);
 	memmove(sharedTextPtr->undoMarkList + index, sharedTextPtr->undoMarkList + index + 1,
@@ -2289,6 +2291,7 @@ MarkDeleteProc(
 
     if (--segPtr->refCount == 0) {
 	if (IS_PRESERVED(segPtr)) {
+	    assert(sharedTextPtr->steadyMarks);
 	    free(GET_NAME(segPtr));
 	} else {
 	    Tcl_DeleteHashEntry(GET_HPTR(segPtr));
@@ -2298,19 +2301,34 @@ MarkDeleteProc(
 	FREE_SEGMENT(segPtr);
 	DEBUG_ALLOC(tkTextCountDestroySegment++);
     } else if (!IS_PRESERVED(segPtr)) {
-	/*
-	 * This case can only happen if this mark belongs to undo/redo stack.
-	 * We have to preserve the mark if not already preserved.
-	 */
+	if (sharedTextPtr->steadyMarks) {
+	    /*
+	     * This case should only happen if this mark belongs to undo/redo stack.
+	     * We have to preserve the mark if not already preserved.
+	     */
 
-	Tcl_HashEntry *hPtr = GET_HPTR(segPtr);
-	const char *name = Tcl_GetHashKey(&sharedTextPtr->markTable, hPtr);
-	unsigned size = strlen(name) + 1;
+	    Tcl_HashEntry *hPtr = GET_HPTR(segPtr);
+	    const char *name = Tcl_GetHashKey(&sharedTextPtr->markTable, hPtr);
+	    unsigned size = strlen(name) + 1;
 
-	segPtr->body.mark.ptr = PTR_TO_INT(memcpy(malloc(size), name, size));
-	MAKE_PRESERVED(segPtr);
-	Tcl_DeleteHashEntry(hPtr);
-	sharedTextPtr->numMarks -= 1;
+	    assert(sharedTextPtr->steadyMarks);
+	    segPtr->body.mark.ptr = PTR_TO_INT(memcpy(malloc(size), name, size));
+	    MAKE_PRESERVED(segPtr);
+	    Tcl_DeleteHashEntry(hPtr);
+	    sharedTextPtr->numMarks -= 1;
+	} else {
+	    /*
+	     * It seems that we have a bug with reference counting. So print a warning
+	     * and delete it anyway.
+	     */
+
+	    fprintf(stderr, "reference count of mark '%s' is %d (should be zero)\n",
+		    TkTextMarkName(sharedTextPtr, NULL, segPtr), segPtr->refCount);
+	    Tcl_DeleteHashEntry(GET_HPTR(segPtr));
+	    sharedTextPtr->numMarks -= 1;
+	    FREE_SEGMENT(segPtr);
+	    DEBUG_ALLOC(tkTextCountDestroySegment++);
+	}
     }
 
     return true;
@@ -2425,16 +2443,24 @@ MarkCheckProc(
      */
 
     if (markPtr->body.mark.ptr) {
-	void *hPtr;
-
 	if (IS_PRESERVED(markPtr)) {
-	    Tcl_Panic("MarkCheckProc: detected preserved mark outside of the undo chain");
+	    if (!sharedTextPtr->steadyMarks) {
+		Tcl_Panic("MarkCheckProc: preserved mark detected, though we don't have steady marks");
+	    }
+	    else
+	    {
+		Tcl_Panic("MarkCheckProc: detected preserved mark '%s' outside of the undo chain",
+			GET_NAME(markPtr));
+	    }
+	} else {
+	    void *hPtr;
+	    hPtr = Tcl_GetHashKey(&sharedTextPtr->markTable, (Tcl_HashEntry *) markPtr->body.mark.ptr);
+	    if (!hPtr) {
+		Tcl_Panic("MarkCheckProc: couldn't find hash table entry for mark");
+	    }
 	}
-
-	hPtr = Tcl_GetHashKey(&sharedTextPtr->markTable, (Tcl_HashEntry *) markPtr->body.mark.ptr);
-	if (!hPtr) {
-	    Tcl_Panic("MarkCheckProc: couldn't find hash table entry for mark");
-	}
+    } else if (!markPtr->insertMarkFlag && !markPtr->currentMarkFlag && !markPtr->startEndMarkFlag) {
+	Tcl_Panic("MarkCheckProc: mark is not in hash table, though it's not a special mark");
     }
 
     if (markPtr->startEndMarkFlag) {
@@ -2536,7 +2562,7 @@ TkTextDrawBlockCursor(
 {
     if (textPtr->blockCursorType) {
 	if (textPtr->flags & HAVE_FOCUS) {
-	    if ((textPtr->flags & INSERT_ON) || textPtr->selBorder == textPtr->insertBorder) {
+	    if ((textPtr->flags & INSERT_ON) || textPtr->selAttrs.border == textPtr->insertBorder) {
 		return true;
 	    }
 	} else if (textPtr->insertUnfocussed == TK_TEXT_INSERT_NOFOCUS_SOLID) {
@@ -2747,7 +2773,7 @@ TkTextInsertDisplayProc(
 	if (textPtr->flags & INSERT_ON) {
 	    Tk_Fill3DRectangle(textPtr->tkwin, dst, textPtr->insertBorder, x, y,
 		    width, height, textPtr->insertBorderWidth, TK_RELIEF_RAISED);
-	} else if (textPtr->selBorder == textPtr->insertBorder) {
+	} else if (textPtr->selAttrs.border == textPtr->insertBorder) {
 	    Tk_Fill3DRectangle(textPtr->tkwin, dst, textPtr->border, x, y,
 		    width, height, 0, TK_RELIEF_FLAT);
 	}
