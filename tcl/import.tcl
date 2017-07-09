@@ -461,11 +461,17 @@ proc Open {parent file msg encoding type} {
 	set cmd [list ::scidb::db::open $file [namespace current]::Log log]
 	set cmd [list ::progress::start $parent $cmd [list -encoding $encoding -description 1] $options 0]
 
-	if {[catch { ::util::catchException $cmd result } rc opts]} {
+	if {[catch { ::util::catchException $cmd result } rc options]} {
 		::log::error $mc::AbortedDueToInternalError
 		::progress::close
 		::log::close
-		return {*}$opts -rethrow 1 $rc
+		array set opts $options
+		return \
+			-code $opts(-code) \
+			-errorcode $opts(-errorcode) \
+			-errorinfo $opts(-errorinfo) \
+			-rethrow 1 \
+			$rc \
 	}
 
 	if {$rc == 1} {
