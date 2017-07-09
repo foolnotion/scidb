@@ -1358,9 +1358,9 @@ proc PlaceToolbarFrame {tbf dir incr} {
 
 			if {[winfo exists $rarrow]} {
 				if {$width < $rwidth + $offset} { set state normal } else { set state disabled }
-				$rarrow configure -state $state
+				if {$state ne [$rarrow cget -state]} { $rarrow configure -state $state }
 				if {$offset < 0} { set state normal } else { set state disabled }
-				$larrow configure -state $state
+				if {$state ne [$larrow cget -state]} { $larrow configure -state $state }
 			}
 
 			set Specs(offset:$tbf) $offset
@@ -1423,9 +1423,9 @@ proc PlaceToolbarFrame {tbf dir incr} {
 
 			if {[winfo exists $tarrow]} {
 				if {$height < $rheight + $offset} { set state normal } else { set state disabled }
-				$barrow configure -state $state
+				if {$state ne [$barrow cget -state]} { $barrow configure -state $state }
 				if {$offset < 0} { set state normal } else { set state disabled }
-				$tarrow configure -state $state
+				if {$state ne [$tarrow cget -state]} { $tarrow configure -state $state }
 			}
 
 			set Specs(offset:$tbf) $offset
@@ -1482,9 +1482,8 @@ proc MakeArrow {tbf dir incr} {
 	set parent [winfo parent $tbf]
 	set arrow $parent.__tba__$Specs(side:$tbf)_${dir}
 	if {[winfo exists $arrow]} { return }
-	ttk::style configure _toolbar_arrow.TButton -padding 0
 	ttk::button $arrow \
-		-style _toolbar_arrow.TButton \
+		-padding {0 0 0 0} \
 		-takefocus 0 \
 		-image [makeStateSpecificIcons $icon::8x16::arrow($dir)] \
 		-command [namespace code [list PlaceToolbarFrame $tbf $dir $incr]] \
