@@ -507,8 +507,7 @@ proc load {parent position base args} {
 				-parent $parent \
 				-message $::import::mc::AbortedDueToInternalError \
 				;
-			::tk::dialog::error::bgerror $opts(-errorinfo)
-			return 0 
+			return -code error -errorcode $opts(-errorcode) "internal error in ::scidb::game::load"
 		}
 
 		switch $result {
