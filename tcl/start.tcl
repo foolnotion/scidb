@@ -540,6 +540,12 @@ proc altIsHeldDown? {state} {
 }
 
 
+proc controlIsHeldDown? {state} {
+	variable controlMask
+	return [expr {($state & $controlMask) != 0}]
+}
+
+
 proc shiftIsLocked? {state} {
 	variable lockMask
 	return [expr {($state & $lockMask) != 0}]
@@ -688,8 +694,7 @@ proc bgerror {err args} {
 			catch { ttk::releaseGrab [grab current] }
 		}
 		set info ""
-		if {[string length $errmsg] > 0} { append info "\n" }
-		append info $errmsg
+		if {[string length $errmsg] > 0} { append info "\n" $errmsg }
 		append info [expr {[string length $tclStack] > 0 ? $tclStack : $errorInfo }]
 		if {[string length $errresult] > 0} { set err $errresult } else { set err $errorInfo }
 		set errorInfo $info
