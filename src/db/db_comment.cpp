@@ -273,195 +273,127 @@ struct Split : public Comment::Callback
 	typedef mstl::map<mstl::string, mstl::string> LangMap;
 	typedef Comment::LanguageSet LanguageSet;
 
-	Split() :m_current(&m_result[mstl::string::empty_string]) {}
+	Split() :m_current(nullptr) {}
+
+	mstl::string* current()
+	{
+		return m_current ? m_current : (m_current = &m_result[mstl::string::empty_string]);
+	}
 
 	void start()  override {}
 	void finish() override {}
 
-	void startLanguage(mstl::string const& lang) override
-	{
-		m_current = &m_result[lang];
-	}
-
-	void endLanguage(mstl::string const& lang) override
-	{
-		m_current = &m_result[mstl::string::empty_string];
-	}
+	void startLanguage(mstl::string const& lang) override	{ m_current = &m_result[lang]; }
+	void endLanguage(mstl::string const& lang) override	{ m_current = nullptr; }
 
 	void startAttribute(Attribute attr) override
 	{
 		M_ASSERT(size_t(attr) < U_NUMBER_OF(::AttrMap));
 
-		m_current->append('<');
-		m_current->append(::AttrMap[attr]);
-		m_current->append('>');
+		mstl::string* str = current();
+
+		str->append('<');
+		str->append(::AttrMap[attr]);
+		str->append('>');
 	}
 
 	void endAttribute(Attribute attr) override
 	{
 		M_ASSERT(size_t(attr) < U_NUMBER_OF(::AttrMap));
 
-		m_current->append('<');
-		m_current->append('/');
-		m_current->append(::AttrMap[attr]);
-		m_current->append('>');
+		mstl::string* str = current();
+
+		str->append('<');
+		str->append('/');
+		str->append(::AttrMap[attr]);
+		str->append('>');
 	}
 
 	void content(mstl::string const& s) override
 	{
+		mstl::string* str = current();
+
 		if (s.size() == 1)
-			::appendChar(s[0], *m_current);
+			::appendChar(s[0], *str);
 		else
-			m_current->append(s);
+			str->append(s);
 	}
 
 	void symbol(char s) override
 	{
-		m_current->append("<sym>", 5);
-		m_current->append(s);
-		m_current->append("</sym>", 6);
+		mstl::string* str = current();
+
+		str->append("<sym>", 5);
+		str->append(s);
+		str->append("</sym>", 6);
 	}
 
 	void emoticon(mstl::string const& s) override
 	{
-		m_current->append("<emo>", 5);
-		m_current->append(s);
-		m_current->append("</emo>", 6);
+		mstl::string* str = current();
+
+		str->append("<emo>", 5);
+		str->append(s);
+		str->append("</emo>", 6);
 	}
 
 	void nag(mstl::string const& s) override
 	{
-		m_current->append("<nag>", 5);
-		m_current->append(s);
-		m_current->append("</nag>", 6);
+		mstl::string* str = current();
+
+		str->append("<nag>", 5);
+		str->append(s);
+		str->append("</nag>", 6);
 	}
 
 	void invalidXmlContent(mstl::string const& content) override {}
 
 	static void join(mstl::string& result, LangMap const& lhs, LangMap const& rhs, char delim)
 	{
-		LangMap::const_iterator	e = lhs.find(mstl::string::empty_string);
-
 		result.assign(::Prefix);
 
-		if (lhs.size() == 1 && e != lhs.end())
+		for (unsigned i = 0; i < lhs.container().size(); ++i)
 		{
-			LangMap::const_iterator	f = rhs.find(mstl::string::empty_string);
+			mstl::string const& lang = lhs.container()[i].first;
+			mstl::string const& content = lhs.container()[i].second;
+			LangMap::const_iterator	k = rhs.find(lang);
 
-			result.append("<:>", 3);
-			result.append(e->second);
-
-			if (f != rhs.end())
+			if (!content.empty() || (k != rhs.end() && !k->second.empty()))
 			{
-				if (delim && !e->second.empty() && !f->second.empty())
-					result.append(delim);
+				result.append("<:", 2);
+				result.append(lang);
+				result.append(">", 1);
 
-				result.append(f->second);
-			}
-
-			result.append("</:>", 4);
-
-			for (unsigned i = 0; i < rhs.container().size(); ++i)
-			{
-				mstl::string const& lang = rhs.container()[i].first;
-
-				if (!lang.empty())
+				if (!content.empty())
 				{
-					result.append("<:", 2);
-					result.append(lang);
-					result.append('>');
-					result.append(rhs.container()[i].second);
-					result.append("</:", 3);
-					result.append(lang);
-					result.append('>');
+					result.append(content);
+					if (k != rhs.end() && !k->second.empty())
+						result.append(delim);
 				}
+
+				if (k != rhs.end())
+					result.append(k->second);
+
+				result.append("</:", 3);
+				result.append(lang);
+				result.append(">", 1);
 			}
 		}
-		else
+
+		for (unsigned i = 0; i < rhs.container().size(); ++i)
 		{
-			LanguageSet langSet;
+			mstl::string const& lang = rhs.container()[i].first;
+			mstl::string const& content = rhs.container()[i].second;
 
-			for (LangMap::const_iterator i = lhs.begin(); i != lhs.end(); ++i)
-				langSet[i->first] = 1;
-			for (LangMap::const_iterator i = rhs.begin(); i != rhs.end(); ++i)
-				langSet[i->first] = 1;
-
-			LangMap::const_iterator	f = rhs.find(mstl::string::empty_string);
-
-			if (f == rhs.end() || f->second.empty())
+			if (!content.empty() && lhs.find(lang) == lhs.end())
 			{
-				for (unsigned i = 0; i < langSet.container().size(); ++i)
-				{
-					mstl::string const& lang = langSet.container()[i].first;
-
-					LangMap::const_iterator	p = lhs.find(lang);
-					LangMap::const_iterator	q = rhs.find(lang);
-
-					result.append("<:", 2);
-					result.append(lang);
-					result.append('>');
-
-					if (p != lhs.end())
-					{
-						result.append(p->second);
-
-						if (delim && !p->second.empty() && q != rhs.end() && !q->second.empty())
-							result.append(delim);
-					}
-
-					if (q != rhs.end())
-						result.append(q->second);
-
-					result.append("</:", 3);
-					result.append(lang);
-					result.append('>');
-				}
-			}
-			else
-			{
-				if (e != lhs.end() && !e->second.empty())
-				{
-					result.append("<:>", 3);
-					result.append(e->second);
-					result.append("</:>", 4);
-				}
-
-				for (unsigned i = 0; i < langSet.container().size(); ++i)
-				{
-					mstl::string const& lang = langSet.container()[i].first;
-
-					if (!lang.empty())
-					{
-						LangMap::const_iterator	p = lhs.find(lang);
-						LangMap::const_iterator	q = rhs.find(lang);
-
-						result.append("<:", 2);
-						result.append(lang);
-						result.append('>');
-
-						if (p != lhs.end())
-						{
-							result.append(p->second);
-
-							if (delim && !p->second.empty())
-								result.append(delim);
-						}
-
-						result.append(f->second);
-
-						if (q != rhs.end() && !q->second.empty())
-						{
-							if (delim)
-								result.append(delim);
-
-							result.append(q->second);
-						}
-
-						result.append("</:", 3);
-						result.append(lang);
-						result.append('>');
-					}
-				}
+				result.append("<:", 2);
+				result.append(lang);
+				result.append(">", 1);
+				result.append(content);
+				result.append("</:", 3);
+				result.append(lang);
+				result.append(">", 1);
 			}
 		}
 
@@ -475,6 +407,8 @@ struct Split : public Comment::Callback
 			LanguageSet const& leadingLanguageSet)
 	{
 		LanguageSet langSet;
+
+		result.append(::Prefix);
 
 		for (LangMap::const_iterator i = lhs.begin(); i != lhs.end(); ++i)
 			langSet[i->first] = 1;
@@ -604,7 +538,7 @@ struct Normalize : public Comment::Callback
 			delete i->second;
 	}
 
-	void start() override { endLanguage(mstl::string::empty_string); }
+	void start() override {}
 
 	void appendFlag(Attribute attr, char delim = '\0')
 	{
@@ -1884,6 +1818,8 @@ Comment::languageSet() const
 void
 Comment::append(Comment const& comment, char delim)
 {
+	M_REQUIRE(this != &comment);
+
 	if (comment.isEmpty())
 		return;
 
@@ -1966,7 +1902,7 @@ Comment::appendCommonSuffix(mstl::string const& suffix)
 void
 Comment::merge(Comment const& comment, LanguageSet const& leadingLanguageSet)
 {
-	if (comment.isEmpty())
+	if (this == &comment || comment.isEmpty())
 		return;
 
 	bool thisIsXml = isXml();
