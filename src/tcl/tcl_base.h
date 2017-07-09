@@ -57,9 +57,14 @@ Tcl_Obj* newObj();
 Tcl_Obj* newObj(char const* s);
 Tcl_Obj* newObj(char const* s, unsigned len);
 Tcl_Obj* newObj(mstl::string const& s);
+Tcl_Obj* newObj(Tcl_Obj* obj1, Tcl_Obj* obj2);
 Tcl_Obj* newObj(unsigned objc, Tcl_Obj* const objv[]);
 Tcl_Obj* newObj(mstl::vector<Tcl_Obj*> const& list);
 Tcl_Obj* newObj(int value);
+
+Tcl_Obj* newListObj(char const* s);
+Tcl_Obj* newListObj(char const* s, unsigned len);
+Tcl_Obj* newListObj(mstl::string const& s);
 
 bool isInt(Tcl_Obj* obj);
 bool isUnsigned(Tcl_Obj* obj);
@@ -74,6 +79,8 @@ bool equal(char const* lhs, Tcl_Obj* rhs);
 bool equal(Tcl_Obj* lhs, char const* rhs);
 bool equal(Tcl_Obj* lhs, Tcl_Obj* rhs);
 bool equal(char const* lhs, char const* rhs);
+
+bool eqOrNull(Tcl_Obj* lhs, Tcl_Obj* rhs);
 
 void set(Tcl_Obj*& obj, Tcl_Obj* value);
 void zero(Tcl_Obj*& obj);
