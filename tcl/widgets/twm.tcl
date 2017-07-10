@@ -54,6 +54,10 @@ array set Defaults {
 	header:tab:background		#4f94cd
 	header:tab:foreground		#333333
 	frame:borderwidth				1
+	flathandle:size				7
+	flathandle:color:dark		#0e62a8
+	flathandle:color:lite		#a6ceef
+	flathandle:color:gray		#74aedf
 	sash:size						5
 	cross:color:1					black
 	cross:color:2					#24a249
@@ -63,6 +67,9 @@ array set Defaults {
 	highlight:opacity				0.3
 	highlight:minsize				150
 }
+# flathandle:color:dark		#000000
+# flathandle:color:lite		#ffffff
+# flathandle:color:gray		#efefef
 # highlight:opacity 0.4
 
 array set Options [array get Defaults]
@@ -152,12 +159,15 @@ proc WidgetProc {twm command args} {
 		orientation		{ return [::scidb::tk::twm orientation $twm {*}$args] }
 		dock				{ return [::scidb::tk::twm dock $twm {*}$args] }
 		undock			{ return [::scidb::tk::twm undock $twm {*}$args] }
+		togglebar		{ return [ToggleHeader $twm {*}$args] }
+		togglenotebook	{ return [::scidb::tk::twm toggle $twm {*}$args] }
 
 		init				{ ::scidb::tk::twm init $twm {*}$args }
 		load				{ ::scidb::tk::twm load $twm {*}$args }
 		frame				{ return [MakeFrame $twm frame {*}$args] }
 		frame2			{ MakeFrame2 $twm {*}$args }
 		header			{ UpdateHeader $twm {*}$args }
+		title				{ UpdateTitle $twm {*}$args }
 		metaframe		{ return [MakeFrame $twm metaframe {*}$args] }
 		pane				{ return [MakePane $twm {*}$args] }
 		notebook			{ return [MakeNotebook $twm {*}$args] }
@@ -202,7 +212,6 @@ proc MakeMultiwindow {twm args} {
 
 	set w [tk::multiwindow $twm.__multiwindow__[incr Counter(multiwindow)] -takefocus 0]
 	if {[llength $args] == 1} { set args [lindex $args 0] }
-puts "MakeMultiwindow($w): $args"
 	foreach {name value} $args {
 		catch { $w configure $name $value }
 	}
@@ -214,8 +223,8 @@ proc MakeNotebook {twm args} {
 	variable Counter
 
 	set w [ttk::notebook $twm.__notebook__[incr Counter(notebook)] -style twm.TNotebook -takefocus 0]
+	MenuBindings $twm $w $w
 	if {[llength $args] == 1} { set args [lindex $args 0] }
-puts "MakeNotebook($w): $args"
 	foreach {name value} $args {
 		catch { $w configure $name $value }
 	}
@@ -230,7 +239,6 @@ proc MakePanedWindow {twm args} {
 	set w [tk::panedwindow $twm.__panedwindow__[incr Counter(panedwindow)]]
 	$w configure -sashwidth $Options(sash:size)
 	if {[llength $args] == 1} { set args [lindex $args 0] }
-puts "MakePanedWindow($w): $args"
 	foreach {name value} $args {
 		catch { $w configure $name $value }
 	}
@@ -311,6 +319,7 @@ proc MakeFrame2 {twm frame id} {
 			-image $icon::12x12::close \
 			-command [list [namespace current]::Close $twm $frame] \
 			-state [expr {$closable ? "normal" : "disabled"}] \
+			-takefocus 0 \
 			;
 		tooltip $hdr.close [tr [namespace current]::mc::Close]
 		MouseWheelBindings $twm $frame $hdr.close
@@ -321,6 +330,7 @@ proc MakeFrame2 {twm frame id} {
 			-image $icon::12x12::undock \
 			-command [list [namespace current]::Undock $twm $frame] \
 			-state [expr {$undockable ? "normal" : "disabled"}] \
+			-takefocus 0 \
 			;
 		tooltip $hdr.undock [tr [namespace current]::mc::Undock]
 		MouseWheelBindings $twm $frame $hdr.undock
@@ -335,7 +345,25 @@ proc MakeFrame2 {twm frame id} {
 		set text $name
 	}
 
-	$twm set $frame name $text id $id move $moveable close $closable undock $undockable priority $priority
+	$twm set $frame \
+		name $text \
+		id $id \
+		move $moveable \
+		close $closable \
+		undock $undockable \
+		priority $priority \
+		flat 0 \
+		;
+
+	ShowHeaderButtons $twm $frame
+	HeaderBindings $twm $frame $hdr
+}
+
+
+proc ShowHeaderButtons {twm frame} {
+	set hdr $frame.__header__
+	set undockable [$twm get $frame undock]
+	set closable   [$twm get $frame close]
 
 	if {$undockable} { grid $hdr.undock -column 1 -row 0 }
 	if {$closable}   { grid $hdr.close  -column 3 -row 0 }
@@ -345,8 +373,14 @@ proc MakeFrame2 {twm frame id} {
 		grid columnconfigure $hdr 2 -minsize 3
 	}
 	grid columnconfigure $hdr 4 -minsize 2
+}
 
-	HeaderBindings $twm $frame $hdr
+
+proc UnbindHeader {w} {
+	bind $w <Configure> {#}
+	bind $w <ButtonPress-1> {#}
+	bind $w <Button1-Motion> {#}
+	bind $w <ButtonRelease-1> {#}
 }
 
 
@@ -357,7 +391,12 @@ proc HeaderBindings {twm frame w} {
 		bind $w <ButtonRelease-1>	[list [namespace current]::HeaderRelease $twm $frame]
 	}
 	MouseWheelBindings $twm $frame $w
-	bind $w <ButtonPress-3> [list event generate $twm <<TwmMenu>> -x %X -y %Y]
+	MenuBindings $twm $frame $w
+}
+
+
+proc MenuBindings {twm frame w} {
+	bind $w <ButtonPress-3> [list event generate $twm <<TwmMenu>> -x %X -y %Y -data $frame]
 }
 
 
@@ -378,6 +417,70 @@ proc MouseWheelBindings {twm frame w} {
 }
 
 
+proc UpdateTitle {twm frame titlePath} {
+	wm title $frame [$twm get $titlePath name]
+}
+
+
+proc ToggleHeader {twm frame} {
+	variable Options
+
+	if {![winfo exists $frame]} { return }
+
+	set flat [$twm get $frame flat]
+	$twm set $frame flat [expr {!$flat}]
+	set hdr $frame.__header__
+	set decor $hdr.__flat__
+
+	if {$flat} {
+		pack forget $decor
+		ShowHeaderButtons $twm $frame
+		HeaderBindings $twm $frame $frame
+		HeaderBindings $twm $frame $hdr
+		UpdateHeader $twm $frame [$twm get $frame panes]
+	} else {
+		if !{[winfo exists $decor]} {
+			tk::canvas $decor -height $Options(flathandle:size) -background $Options(header:flex:background)
+			MenuBindings $twm $frame $decor
+			bind $decor <Configure> [namespace code [list ConfigureFlatHandle $decor %w %h]]
+		}
+		catch { destroy $hdr.l }
+		catch { destroy $hdr.r }
+		destroy {*}[$twm get $frame labels {}]
+		set slaves [grid slaves $hdr]
+		if {[llength $slaves]} { grid forget {*}$slaves }
+		foreach w [place slaves $hdr] { place forget $w }
+		$twm set $frame labels {}
+		pack $decor -fill x -side top -expand yes
+		bind $decor <ButtonRelease-1> [list [namespace current]::ToggleHeader $twm $frame]
+		UnbindHeader $frame
+		UnbindHeader $hdr
+	}
+}
+
+
+proc ConfigureFlatHandle {canv w h} {
+	variable Options
+
+	if {$w <= 1} { return }
+
+	set n [expr {$w/2}]
+	set x0 [expr {($w - 2*$n)/2}]
+	set y0 1 ;#[expr {($h - 6)/2}]
+	set yi $y0
+
+	for {set i 1} {$i <= $n} {incr i; incr x0 2} {
+		if {[llength [$canv find withtag $i]] == 0} {
+			foreach k {1 2 3} { set x$k [expr {$x0 + $k}]; set y$k [expr {$y0 + $k}] }
+			$canv create rectangle $x0 $y0 $x2 $y2 -fill $Options(flathandle:color:lite) -outline {} -tag $i
+			$canv create rectangle $x1 $y1 $x3 $y3 -fill $Options(flathandle:color:dark) -outline {} -tag $i
+			$canv create rectangle $x1 $y1 $x2 $y2 -fill $Options(flathandle:color:gray) -outline {} -tag $i
+		}
+		if {$y0 == $yi} { incr y0 3 } else { set y0 $yi }
+	}
+}
+
+
 proc UpdateHeader {twm frame panes} {
 	variable ${twm}::Vars
 	variable Options
@@ -387,7 +490,8 @@ proc UpdateHeader {twm frame panes} {
 	destroy {*}[place slaves $hdr]
 	catch { destroy $hdr.l }
 	catch { destroy $hdr.r }
-	$twm set $frame labels {}
+	destroy {*}[$twm get $frame labels {}]
+	$twm set $frame labels {} panes $panes
 
 	if {[llength $panes] == 0} {
 		if {$Vars(docking:current) ne $frame} {
@@ -401,14 +505,14 @@ proc UpdateHeader {twm frame panes} {
 		#update idletasks
 	}
 
+	raise $hdr ;# seems to be a bug in Tk lib that a child must be raised
+	if {[$twm get $frame flat]} { return }
+
 	set fam [font configure $Options(header:font) -family]
 	set headerFont [list $fam $Options(header:fontsize) bold]
-	raise $hdr ;# seems to be a bug in Tk lib that a child must be raised
 
 	set n [llength $panes]
-	set labels [$twm get $frame labels {}]
 	set parent [$twm parent $frame]
-	#destroy {*}$labels
 	set labels {}
 	set type [expr {[$twm get $frame move] ? "flex" : "fix"}]
 	set lighter [ttk::style lookup $::ttk::currentTheme -background]
@@ -418,7 +522,7 @@ proc UpdateHeader {twm frame panes} {
 		set f [lindex $panes $i]
 		set lbl $hdr.$i
 		set name [$twm get [$twm leader $f] name]
-		ttk::label $lbl -style twm.TLabel -text $name
+		ttk::label $lbl -style twm.TLabel -text $name -takefocus 0
 		bind $lbl 
 		place $lbl -x 0 -y 0
 		lappend labels $lbl
@@ -513,6 +617,8 @@ proc ConfigureLabelBar {twm frame width} {
 
 proc PlaceLabelBar {twm frame incr} {
 	variable Options
+
+	if {[$twm get $frame flat]} { return }
 
 	set parent [$twm parent $frame]
 	set maxoffset [$twm get $frame maxoffset 0]
@@ -980,6 +1086,8 @@ proc DockingMotion {twm frame w canv mode x y} {
 			set Vars(docking:recipient) $w
 			set Vars(afterid:display) \
 				[after 100 [list [namespace current]::ShowHighlightRegion $twm $frame $w $canv]]
+			raise [winfo toplevel $w]
+			raise $frame
 		}
 
 		leave {
@@ -1417,7 +1525,6 @@ proc PaneConfigure {twm parent child opts} {
 		if {[info exists args(-height)]}    { lappend options -height $args(-height) }
 	}
 
-puts "PaneConfigure($parent): $options"
 	$parent paneconfigure $child {*}$options
 }
 
@@ -1448,7 +1555,6 @@ proc Pack {twm parent child opts} {
 				if {[info exists args(-height)]}    { lappend options -height $args(-height) }
 			}
 
-puts "Pack($parent): $child -- $options"
 			$parent add $child -stretch always {*}$options
 		}
 
@@ -1470,8 +1576,7 @@ puts "Pack($parent): $child -- $options"
 
 			set leader [$twm leader $child]
 			set name [$twm get $leader name]
-puts "Pack($parent): $child -- $options"
-			$parent insert $pos $child -text [string totitle $name] {*}$options
+			$parent insert $pos $child -text $name {*}$options
 		}
 
 		*Multiwindow {
@@ -1487,8 +1592,11 @@ puts "Pack($parent): $child -- $options"
 				lappend options -sticky $args(-sticky)
 			}
 
-puts "Pack($parent): $child -- $options"
 			$parent add $child {*}$options
+
+			if {[$twm get $child flat 0]} {
+				ToggleHeader $twm $child
+			}
 		}
 
 		TwmMetaframe {
@@ -1511,7 +1619,6 @@ puts "Pack($parent): $child -- $options"
 				$child configure -height $args(-height)
 			}
 
-puts "Pack($parent): $child -- $options"
 			grid $child -column 1 -row 1 -in $parent {*}$options
 
 			if {$class eq "Frame"} { set args(-expand) both }

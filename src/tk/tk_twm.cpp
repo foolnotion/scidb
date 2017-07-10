@@ -107,7 +107,6 @@ static Tcl_Obj* m_objNotebook					= nullptr;
 static Tcl_Obj* m_objNotebookHdrSizeCmd	= nullptr;
 static Tcl_Obj* m_objOptBefore				= nullptr;
 static Tcl_Obj* m_objOptExpand				= nullptr;
-static Tcl_Obj* m_objOptHeader				= nullptr;
 static Tcl_Obj* m_objOptHeight				= nullptr;
 static Tcl_Obj* m_objOptMaxHeight			= nullptr;
 static Tcl_Obj* m_objOptMaxWidth				= nullptr;
@@ -124,6 +123,7 @@ static Tcl_Obj* m_objPane						= nullptr;
 static Tcl_Obj* m_objResizedCmd				= nullptr;
 static Tcl_Obj* m_objSashSizeCmd				= nullptr;
 static Tcl_Obj* m_objSelectCmd				= nullptr;
+static Tcl_Obj* m_objTitleCmd					= nullptr;
 static Tcl_Obj* m_objUnpackCmd				= nullptr;
 static Tcl_Obj* m_objVert						= nullptr;
 static Tcl_Obj* m_objVertical					= nullptr;
@@ -408,8 +408,10 @@ public:
 	void eraseChild(Childs::iterator pos);
 	void floating(bool temporary);
 	void unfloat(Node* toplevel);
+	void toggle();
 	void destroyed(bool finalize);
 	void makeMetaFrame();
+	void setShowBar(bool flag);
 	void dump() const;
 
 	Node* dock(Node*& recv, Position position);
@@ -439,6 +441,7 @@ private:
 		F_Raise		= 1 << 6,
 		F_Config		= 1 << 7,
 		F_Unframe	= 1 << 8,
+		F_Snapshot	= 1 << 9,
 	};
 
 	Node(Tcl_Obj* path, Node const* setup = nullptr);
@@ -532,6 +535,7 @@ private:
 	void performSelect();
 	void performDestroy();
 	void performUpdateHeader();
+	void performUpdateTitle();
 	void performUpdateHeaderRecursively();
 	void performConfigRecursively();
 	void performCreateRecursively();
@@ -581,6 +585,8 @@ private:
 	Tcl_Obj*		m_oldPath;
 	Tcl_Obj*		m_headerObj;
 	Tcl_Obj*		m_oldHeaderObj;
+	Tcl_Obj*		m_titleObj;
+	Tcl_Obj*		m_oldTitleObj;
 	Childs		m_active;
 	Childs		m_deleted;
 	AttrMap		m_attrMap;
@@ -590,7 +596,6 @@ private:
 	bool			m_isDeleted;
 	bool			m_isDestroyed;
 	bool			m_isLocked;
-	bool			m_hideHeader;
 	bool			m_temporary;
 
 	mutable bool m_dumpFlag;
@@ -967,8 +972,9 @@ void
 Node::select()
 {
 	M_ASSERT(m_parent);
-	M_ASSERT(!testFlags(F_Unpack));
-	M_ASSERT(!testFlags(F_Destroy));
+
+	if (testFlags(F_Unpack|F_Destroy))
+		return;
 
 	if (m_parent->isMetaFrame())
 	{
@@ -1017,12 +1023,13 @@ Node::Node(Node& parent, Type type, Tcl_Obj* uid)
 	,m_oldPath(nullptr)
 	,m_headerObj(nullptr)
 	,m_oldHeaderObj(nullptr)
+	,m_titleObj(nullptr)
+	,m_oldTitleObj(nullptr)
 	,m_current(nullptr)
 	,m_flags(0)
 	,m_isDeleted(false)
 	,m_isDestroyed(false)
 	,m_isLocked(false)
-	,m_hideHeader(false)
 	,m_temporary(false)
 	,m_dumpFlag(false)
 {
@@ -1058,7 +1065,6 @@ Node::Node(Tcl_Obj* path, Node const* setup)
 	,m_isDeleted(false)
 	,m_isDestroyed(false)
 	,m_isLocked(false)
-	,m_hideHeader(false)
 	,m_temporary(false)
 	,m_dumpFlag(false)
 {
@@ -1074,9 +1080,7 @@ Node::Node(Tcl_Obj* path, Node const* setup)
 		m_sticky = setup->m_sticky;
 		m_shrink = setup->m_shrink;
 		m_grow = setup->m_grow;
-
-		if ((m_uid = setup->m_uid))
-			tcl::incrRef(m_uid);
+		tcl::incrRef(m_uid = setup->m_uid);
 	}
 }
 
@@ -1105,12 +1109,13 @@ Node::Node(Node const& node)
 	,m_oldPath(nullptr)
 	,m_headerObj(nullptr)
 	,m_oldHeaderObj(nullptr)
+	,m_titleObj(nullptr)
+	,m_oldTitleObj(nullptr)
 	,m_current(nullptr)
 	,m_flags(0)
 	,m_isDeleted(false)
 	,m_isDestroyed(false)
 	,m_isLocked(false)
-	,m_hideHeader(false)
 	,m_temporary(false)
 	,m_dumpFlag(false)
 {
@@ -1143,6 +1148,8 @@ Node::~Node()
 	tcl::decrRef(m_oldPath);
 	tcl::decrRef(m_headerObj);
 	tcl::decrRef(m_oldHeaderObj);
+	tcl::decrRef(m_titleObj);
+	tcl::decrRef(m_oldTitleObj);
 
 	for (AttrMap::iterator i = m_attrMap.begin(); i != m_attrMap.end(); ++i)
 		tcl::decrRef(i->second);
@@ -1216,6 +1223,8 @@ Node::hasAncestor(Node const* parent) const
 	{
 		if (node == parent)
 			return true;
+		if (node->isToplevel())
+			return false;
 		node = node->m_parent;
 	}
 	while (node);
@@ -1748,6 +1757,46 @@ Node::clone(Node* parent) const
 
 
 void
+Node::toggle()
+{
+	M_ASSERT(isNotebookOrMultiWindow());
+	M_ASSERT(isPacked());
+	M_ASSERT(m_parent);
+
+	for (unsigned i = 0; i < numChilds(); ++i)
+	{
+		if (child(i)->isPacked())
+		{
+			child(i)->unpack();
+			child(i)->performUnpack(this);
+		}
+	}
+
+	unpack();
+	performUnpack(m_parent);
+	performDestroy();
+	m_type = isNotebook() ? MultiWindow : Notebook;
+	create();
+	pack();
+	delFlag(F_Unpack);
+
+	for (unsigned i = 0; i < numChilds(); ++i)
+	{
+		Node* node = child(i);
+
+		if (node->testFlags(F_Unpack))
+		{
+			node->m_savedParent = nullptr;
+			node->delFlag(F_Unpack);
+			node->pack();
+		}
+	}
+
+	toplevel()->perform();
+}
+
+
+void
 Node::unframe()
 {
 	M_ASSERT(m_path);
@@ -1789,6 +1838,8 @@ Node::unframe()
 	mstl::swap(m_oldPath, child->m_oldPath);
 	mstl::swap(m_headerObj, child->m_headerObj);
 	mstl::swap(m_oldHeaderObj, child->m_oldHeaderObj);
+	mstl::swap(m_titleObj, child->m_titleObj);
+	mstl::swap(m_oldTitleObj, child->m_oldTitleObj);
 	mstl::swap(m_active, child->m_active);
 	mstl::swap(m_deleted, child->m_deleted);
 	mstl::swap(child->m_attrMap, m_attrMap);
@@ -1798,7 +1849,6 @@ Node::unframe()
 	mstl::swap(m_isDeleted, child->m_isDeleted);
 	// child->m_isDestroyed
 	// child->m_isLocked
-	mstl::swap(m_hideHeader, child->m_hideHeader);
 	// child->m_temporary
 	// child->m_dumpFlag
 
@@ -1895,6 +1945,8 @@ Node::makeMetaFrame()
 	// child->m_oldPath
 	// child->m_headerObj
 	// child->m_oldHeaderObj
+	// child->m_titleObj
+	// child->m_oldTitleObj
 	// child->m_active
 	// child->m_deleted
 	mstl::swap(child->m_attrMap, m_attrMap);
@@ -1904,7 +1956,6 @@ Node::makeMetaFrame()
 	// child->m_isDeleted
 	// child->m_isDestroyed
 	// child->m_isLocked
-	// child->m_hideHeader
 	// child->m_temporary
 	// child->m_dumpFlag
 
@@ -1934,6 +1985,8 @@ Node::makeMetaFrame()
 	tcl::zero(m_oldPath);
 	tcl::zero(m_headerObj);
 	tcl::zero(m_oldHeaderObj);
+	tcl::zero(m_titleObj);
+	tcl::zero(m_oldTitleObj);
 	// m_active
 	// m_deleted
 	// m_attrMap // TODO should we copy?
@@ -1943,7 +1996,6 @@ Node::makeMetaFrame()
 	// m_isDeleted
 	// m_isDestroyed
 	// m_isLocked
-	m_hideHeader = child->m_hideHeader;
 	// m_temporary
 	// m_dumpFlag
 
@@ -1974,75 +2026,6 @@ Node::makeMetaFrame()
 	if (child->exists())
 		tk::createEventHandler(child->tkwin(), StructureNotifyMask, ::WindowEventProc, child);
 }
-
-
-#if 0
-void
-Node::makeMetaFrame()
-{
-	M_ASSERT(!isRoot());
-	M_ASSERT(!isMetaFrame());
-	M_ASSERT(!m_savedParent);
-
-	bool isPacked = this->isPacked();
-
-	if (isPacked)
-		unpack();
-
-	Node* metaFrame = new Node(*this);
-
-	metaFrame->m_type = MetaFrame;
-	metaFrame->m_state = m_state;
-	tcl::zero(metaFrame->m_path);
-	tcl::zero(metaFrame->m_uid);
-	metaFrame->m_priority = 0;
-	metaFrame->m_childs.push_back(child);
-	metaFrame->m_root = m_root;
-	metaFrame->m_parent = m_parent;
-	metaFrame->m_origParent = m_origParent;
-	// metaFrame->m_savedParent
-	// metaFrame->m_selected
-	// metaFrame->m_sashSize
-	// metaFrame->m_frameHeaderSize
-	// metaFrame->m_notebookHeaderSize
-	// metaFrame->m_dimen
-	// metaFrame->m_actual
-	metaFrame->m_orientation = 0;
-	// metaFrame->m_expand
-	// metaFrame->m_sticky
-	// metaFrame->m_shrink
-	// metaFrame->m_grow
-	tcl::zero(metaFrame->m_oldPath);
-	// metaFrame->m_headerObj
-	// metaFrame->m_oldHeaderObj
-	// metaFrame->m_active
-	// metaFrame->m_deleted
-	// metaFrame->m_attrMap // TODO should we copy?
-	// metaFrame->m_current
-	// metaFrame->m_flags
-	// metaFrame->m_snapshotMap
-	// metaFrame->m_isDeleted
-	// metaFrame->m_isDestroyed
-	// metaFrame->m_isLocked
-	metaFrame->m_hideHeader = m_hideHeader;
-	// metaFrame->m_temporary
-	// metaFrame->m_dumpFlag
-
-	if (isPacked)
-		metaFrame->pack();
-
-	m_state = Withdrawn;
-	m_parent = metaFrame;
-	pack();
-
-	Childs& active = m_root->m_active;
-	for (unsigned i = 0; i < active.size(); ++i)
-	{
-		if (active[i] == this)
-			active[i] = metaFrame;
-	}
-}
-#endif
 
 
 Node*
@@ -2289,7 +2272,7 @@ Node::move(Node* node, Node const* before)
 
 			if (child->isFloating() && child->m_origParent->hasAncestor(node->m_origParent))
 			{
-				if (child != node)
+				if (child != node && !m_parent->hasAncestor(child))
 					doMove(child, findAfter(child));
 			}
 		}
@@ -2303,9 +2286,9 @@ void
 Node::removeFromOldParent()
 {
 	M_ASSERT(m_origParent);
-	M_ASSERT(m_origParent->contains(this));
+	M_ASSERT(!m_origParent->isWithdrawn() || m_origParent->contains(this));
 
-	if (m_origParent == m_parent)
+	if (m_origParent == m_parent || !m_origParent->isWithdrawn())
 		return;
 
 	m_origParent->remove(this);
@@ -2421,8 +2404,6 @@ Node::parseOptions(Tcl_Obj* opts)
 			m_grow = ::parseResizeOption(tcl::asString(value));
 		else if (tcl::equal(name, m_objOptOrient))
 			m_orientation = parseOrientOption(tcl::asString(value));
-		else if (tcl::equal(name, m_objOptHeader))
-			m_hideHeader = !tcl::asBoolean(value);
 		else
 			M_THROW(tcl::Exception("invalid option '%s'", name));
 	}
@@ -2564,7 +2545,7 @@ Node::findAfter(Node const* node) const
 
 	for (unsigned i = 0; i < numChilds(); ++i)
 	{
-		unsigned n = descendantOf(child(i));
+		unsigned n = child(i)->descendantOf(node);
 
 		if (n == 0)
 			return i + 1 == numChilds() ? nullptr : child(i + 1);
@@ -2720,6 +2701,8 @@ Node::dock(Node*& recv, Position position)
 	Node const* before = nullptr;
 	bool newParent = bool(recv);
 
+	makeSnapshot();
+
 	if (!recv)
 		recv = prepareDocking(position, before);
 	
@@ -2747,7 +2730,6 @@ Node::dock(Node* node, Position position, Node const* before, bool newParent)
 	if (tk::parent(node->tkwin()) != tlw)
 	{
 		node->performUnpackChildsRecursively();
-printf("reparent(%s): %s\n", node->id(), toplevel()->id());
 		tk::reparent(node->tkwin(), tlw);
 		node->reparentChildsRecursively(tlw);
 		node->performPackChildsRecursively();
@@ -2832,9 +2814,7 @@ printf("reparent(%s): %s\n", node->id(), toplevel()->id());
 	if (!node->m_parent->isVert())
 		node->setHeight(node->m_parent->height<Inner>());
 	
-	while (!parent->applySnapshot() && parent->m_parent)
-		parent = parent->m_parent;
-
+	parent->addFlag(F_Snapshot);
 	return node;
 }
 
@@ -2847,10 +2827,10 @@ Node::applySnapshot()
 	makeSnapshotKey(key);
 	SnapshotMap::iterator i = m_snapshotMap.find(key);
 
+printf("applySnapshot: %s (%d)\n", key.c_str(), i != m_snapshotMap.end());
 	if (i == m_snapshotMap.end())
 		return false;
 
-printf("applySnapshot: %s\n", key.c_str());
 	Snapshot const& snapshot = i->second;
 	
 	double scaleWidth		= double(width<Inner>())/double(snapshot.size.width);
@@ -2906,10 +2886,7 @@ Node::reparentChildsRecursively(Tk_Window topLevel)
 			node->reparentChildsRecursively(topLevel);
 
 			if (node->exists())
-{
-printf("reparent(%s): %s\n", node->id(), tk::name(topLevel));
 				tk::reparent(node->tkwin(), topLevel);
-}
 		}
 	}
 }
@@ -3232,15 +3209,12 @@ Node::makeSnapshot()
 	Snapshot snapshot;
 	Node* node = this;
 
-	for ( ; node; node = node->m_parent)
+	for ( ; node; node = node->isToplevel() ? nullptr : node->m_parent)
 	{
 		snapshot.size = node->m_dimen.actual;
 
 		if (node->makeSnapshot(snapshot.structure, &snapshot.sizeMap))
-		{
-			mstl::swap(node->m_snapshotMap[snapshot.structure], snapshot);
-			return;
-		}
+			return mstl::swap(node->m_snapshotMap[snapshot.structure], snapshot);
 	}
 }
 
@@ -3266,12 +3240,10 @@ Node::floating(bool temporary)
 		performCreate();
 
 	performUnpackChildsRecursively();
-printf("release(%s)\n", id());
 	::releaseWindow(path());
 	setState(Floating);
 	reparentChildsRecursively(tkwin());
 	performPackChildsRecursively();
-printf("reparent(%s): %s\n", id(), m_root->id());
 	tk::reparent(tkwin(), m_root->tkwin());
 	addFlag(F_Raise);
 
@@ -3280,6 +3252,9 @@ printf("reparent(%s): %s\n", id(), m_root->id());
 		performFinalizeCreate();
 		delFlag(F_Create);
 	}
+
+	m_shrink = m_grow = true;
+	addFlag(F_Snapshot);
 }
 
 
@@ -3293,7 +3268,6 @@ Node::unfloat(Node* toplevel)
 
 	m_temporary = false;
 	performUnpackChildsRecursively();
-printf("capture(%s): %s\n", id(), toplevel->id());
 	::captureWindow(path(), toplevel->path());
 	setState(Withdrawn);
 	reparentChildsRecursively(toplevel->tkwin());
@@ -3544,7 +3518,6 @@ Node::performUnpack(Node* parent)
 void
 Node::performCreate()
 {
-printf("performCreate: %s\n", id());
 	M_ASSERT(!exists());
 
 	if (m_path)
@@ -3701,6 +3674,16 @@ Node::performUpdateHeader()
 }
 
 
+void
+Node::performUpdateTitle()
+{
+	M_ASSERT(exists());
+	M_ASSERT(isFloating());
+
+	tcl::invoke(__func__, m_root->pathObj(), m_objTitleCmd, pathObj(), m_titleObj, nullptr);
+}
+
+
 unsigned
 Node::collectFlags() const
 {
@@ -3789,6 +3772,8 @@ Node::updateHeader()
 			M_ASSERT(isFrame());
 			tcl::set(m_headerObj, pathObj());
 		}
+
+		tcl::set(m_titleObj, findLeader()->pathObj());
 	}
 }
 
@@ -3801,7 +3786,9 @@ Node::updateAllHeaders()
 		Node* node = m_active[i];
 
 		tcl::set(node->m_oldHeaderObj, node->m_headerObj);
+		tcl::set(node->m_oldTitleObj, node->m_titleObj);
 		tcl::zero(node->m_headerObj);
+		tcl::zero(node->m_titleObj);
 	}
 
 	for (unsigned i = 0; i < m_active.size(); ++i)
@@ -3855,9 +3842,7 @@ Node::performCreateRecursively()
 
 	if (testFlags(F_Create))
 	{
-printf("performCreateRecursively: %s\n", id());
 		performCreate();
-printf(" --> %s\n", id());
 		if (isFrameOrMetaFrame())
 			performFinalizeCreate();
 	}
@@ -3926,6 +3911,9 @@ Node::performUpdateHeaderRecursively()
 	{
 		if (!tcl::eqOrNull(m_headerObj, m_oldHeaderObj))
 			performUpdateHeader();
+
+		if (isFloating() && m_titleObj && !tcl::eqOrNull(m_titleObj, m_oldTitleObj))
+			performUpdateTitle();
 	}
 
 	for (unsigned i = 0; i < numChilds(); ++i)
@@ -3967,6 +3955,15 @@ Node::performAllActiveNodes(Flag flag)
 						node->performPack();
 					break;
 				}
+
+				case F_Snapshot:
+					for (	Node* n = node;
+							n && !n->applySnapshot();
+							n = n->isToplevel() ? nullptr : n->m_parent)
+					{
+						// empty body
+					}
+					break;
 
 				case F_Destroy:	node->performDestroy(); break;
 
@@ -4033,7 +4030,7 @@ Node::performDeleteInactiveNodes()
 void
 Node::perform(Node* toplevel)
 {
-	M_ASSERT(isRoot());
+	M_ASSERT(isToplevel());
 	M_ASSERT(!toplevel || toplevel->isToplevel());
 
 	m_isLocked = true;
@@ -4047,6 +4044,9 @@ Node::perform(Node* toplevel)
 		performFlattenRecursively(); // we need a second pass for unframing
 
 		unsigned flags = collectFlags();
+
+		if (flags & F_Snapshot)
+			performAllActiveNodes(F_Snapshot);
 
 		if (flags & F_Unpack)
 			performAllActiveNodes(F_Unpack);
@@ -4227,7 +4227,6 @@ Node::initialize()
 	m_objNotebookHdrSizeCmd = tcl::incrRef(tcl::newObj("nbhdrsize"));
 	m_objOptBefore = tcl::incrRef(tcl::newObj("-before"));
 	m_objOptExpand = tcl::incrRef(tcl::newObj("-expand"));
-	m_objOptHeader = tcl::incrRef(tcl::newObj("-header"));
 	m_objOptHeight = tcl::incrRef(tcl::newObj("-height"));
 	m_objOptMaxHeight = tcl::incrRef(tcl::newObj("-maxheight"));
 	m_objOptMaxWidth = tcl::incrRef(tcl::newObj("-maxwidth"));
@@ -4244,6 +4243,7 @@ Node::initialize()
 	m_objResizedCmd = tcl::incrRef(tcl::newObj("resized"));
 	m_objSashSizeCmd = tcl::incrRef(tcl::newObj("sashsize"));
 	m_objSelectCmd = tcl::incrRef(tcl::newObj("select"));
+	m_objTitleCmd = tcl::incrRef(tcl::newObj("title"));
 	m_objUnpackCmd = tcl::incrRef(tcl::newObj("unpack"));
 	m_objVert = tcl::incrRef(tcl::newObj("vert"));
 	m_objVertical = tcl::incrRef(tcl::newObj("vertical"));
@@ -4638,6 +4638,25 @@ base.root->dump();
 
 
 static void
+cmdToggle(Base& base, int objc, Tcl_Obj* const objv[])
+{
+	if (objc != 4)
+		M_THROW(tcl::Exception(3, objv, "window"));
+	
+	char const* path = tcl::asString(objv[3]);
+	Node* node = base.root->findPath(path);
+
+	if (!node)
+		M_THROW(tcl::Exception("cannot find window '%s'", path));
+
+	if (!node->isNotebookOrMultiWindow())
+		M_THROW(tcl::Exception("cannot toggle '%s', it's not a notebook or multiwindow", path));
+
+	node->toggle();
+}
+
+
+static void
 cmdSet(Base& base, int objc, Tcl_Obj* const objv[])
 {
 	if (objc < 4)
@@ -4747,17 +4766,16 @@ cmdTwm(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		"capture",		"close",			"container",	"dock",			"frames",
 		"get",			"id",				"init",			"iscontainer",	"ispacked",
 		"leader",		"load",			"neighbors",	"orientation",	"panes",
-		"parent",		"release",		"set",			"uid",			"undock",
-		"visible",
-		nullptr
+		"parent",		"release",		"set",			"toggle",		"uid",
+		"undock",		"visible",		nullptr
 	};
 	enum
 	{
 		Cmd_Capture,	Cmd_Close,		Cmd_Container,	Cmd_Dock,			Cmd_Frames,
 		Cmd_Get,			Cmd_Id,			Cmd_Init,		Cmd_IsContainer,	Cmd_IsPacked,
 		Cmd_Leader,		Cmd_Load,		Cmd_Neighbors,	Cmd_Orientation,	Cmd_Panes,
-		Cmd_Parent,		Cmd_Release,	Cmd_Set,			Cmd_Uid,				Cmd_Undock,
-		Cmd_Visible,
+		Cmd_Parent,		Cmd_Release,	Cmd_Set,			Cmd_Toggle,			Cmd_Uid,
+		Cmd_Undock,		Cmd_Visible,
 	};
 
 	if (objc <= 2)
@@ -4788,6 +4806,7 @@ cmdTwm(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			case Cmd_Panes:			execute(cmdPanes, false, objc, objv); break;
 			case Cmd_Parent:			execute(cmdParent, false, objc, objv); break;
 			case Cmd_Set:				execute(cmdSet, false, objc, objv); break;
+			case Cmd_Toggle:			execute(cmdToggle, false, objc, objv); break;
 			case Cmd_Undock:			execute(cmdUndock, false, objc, objv); break;
 			case Cmd_Uid:				execute(cmdUid, false, objc, objv); break;
 			case Cmd_Visible:			execute(cmdVisible, false, objc, objv); break;
