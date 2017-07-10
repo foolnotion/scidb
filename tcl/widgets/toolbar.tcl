@@ -742,7 +742,7 @@ proc lookupClone {toolbar w} {
 }
 
 
-proc requestetHeight {parent} {
+proc requestedHeight {parent} {
 	set slaves [pack slaves $parent]
 	set height 0
 

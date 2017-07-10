@@ -3480,7 +3480,7 @@ proc Build {w path args} {
 
 	if {[info exists Vars(rows)]} {
 		update idletasks
-		set minh [expr {[::toolbar::requestetHeight $path] - [$t headerheight]}]
+		set minh [expr {[::toolbar::requestedHeight $path] - [$t headerheight]}]
 		set Vars(rows:computed) [expr {max($Vars(rows), ($minh + $linespace - 1)/$linespace)}]
 		set h [expr {[$t headerheight] + max($Vars(rows:computed), 1)*$linespace}]
 		$t configure -height $h
