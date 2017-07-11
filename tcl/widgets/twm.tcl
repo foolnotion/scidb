@@ -100,11 +100,15 @@ proc twm {path args} {
 	namespace eval [namespace current]::$path {}
 	variable ${path}::Vars
 	variable ${path}::MakePane
+	variable ${path}::BuildPane
+	variable ${path}::WorkArea
 	variable Options
 
-	array set opts { -makepane {} }
+	array set opts { -makepane {} -buildpane {} -workarea {} }
 	array set opts $args
 	set MakePane $opts(-makepane)
+	set BuildPane $opts(-buildpane)
+	set WorkArea $opts(-workarea)
 	set Vars(docking:recipient) ""
 	set Vars(docking:position) ""
 	set Vars(docking:current) ""
@@ -150,6 +154,7 @@ proc WidgetProc {twm command args} {
 		ispanedwindow	{ return [string match {*Panedwindow} [winfo class {*}$args]] }
 		isframe			{ return [string match {Twm*Frame} [winfo class {*}$args]] }
 		ismetaframe		{ return [string equal "TwmMetaframe" [winfo class {*}$args]] }
+		ispane			{ return [::scidb::tk::twm ispane $twm {*}$args] }
 		container		{ return [::scidb::tk::twm container $twm {*}$args] }
 		visible			{ return [::scidb::tk::twm visible $twm {*}$args] }
 		parent			{ return [::scidb::tk::twm parent $twm {*}$args] }
@@ -169,12 +174,15 @@ proc WidgetProc {twm command args} {
 		header			{ UpdateHeader $twm {*}$args }
 		title				{ UpdateTitle $twm {*}$args }
 		metaframe		{ return [MakeFrame $twm metaframe {*}$args] }
+		build				{ return [BuildPane $twm {*}$args] }
 		pane				{ return [MakePane $twm {*}$args] }
 		notebook			{ return [MakeNotebook $twm {*}$args] }
 		multiwindow		{ return [MakeMultiwindow $twm {*}$args] }
 		panedwindow		{ return [MakePanedWindow $twm {*}$args] }
 		paneconfigure	{ return [PaneConfigure $twm {*}$args] }
 		resized			{ return [ResizeToplevel $twm {*}$args] }
+		dimensions		{ return [Dimensions $twm {*}$args] }
+		ready				{ event generate $twm <<TwmReady>> -data $args }
 		pack				{ return [Pack $twm {*}$args] }
 		unpack			{ return [Unpack $twm {*}$args] }
 		select			{ return [Select $twm {*}$args] }
@@ -182,6 +190,7 @@ proc WidgetProc {twm command args} {
 		sashsize			{ return $Options(sash:size) }
 		framehdrsize	{ return [FrameHeaderSize $twm {*}$args] }
 		nbhdrsize		{ return [NotebookHeaderSize $twm {*}$args] }
+		workarea			{ return [WorkArea $twm {*}$args] }
 
 		default			{ return -code error "unknown command '$command'" }
 	}
@@ -195,15 +204,41 @@ proc DestroyPane {twm pane} {
 }
 
 
+proc BuildPane {twm frame id width height} {
+	variable ${twm}::BuildPane
+
+	set pane $frame
+	if {![$twm ispane $pane]} {
+		set pane [lindex [pack slaves $frame] end]
+	}
+	$BuildPane $twm $pane $id $width $height
+	$frame configure -background [$pane cget -background]
+}
+
+
 proc FrameHeaderSize {twm frame} {
-	update idletasks
-	return [winfo height $frame.__header__]
+	variable Options
+	if {[$twm get $frame flat]} {
+		set size [expr {$Options(flathandle:size) + 2}]
+	} else {
+		set size 4 ;# padding=2 + borderwidth=2
+		incr size [font metrics [ttk::style lookup twm.TLabel -font] -linespace]
+		incr size [expr {$size % 2}]
+	}
+	return $size
 }
 
 
 proc NotebookHeaderSize {twm nb} {
-	update idletasks
-	return [expr {[winfo height $nb] - [winfo height [$nb select]]}]
+	set padding [ttk::style lookup twm.TNotebook.Tab -padding]
+	set size 1 ;# borderwidth=2 - one overlapping pixel
+	switch [llength $padding] {
+		2 { incr size [expr {2*[lindex $padding 1]}] }
+		3 { incr size [lindex $padding 1] }
+		4 { incr size [lindex $padding 1]; incr size [lindex $padding 3] }
+	}
+	incr size [font metrics [ttk::style lookup twm.TNotebook.Tab -font] -linespace]
+	return $size
 }
 
 
@@ -308,7 +343,6 @@ proc MakeFrame2 {twm frame id} {
 		set bg [ttk::style lookup $::ttk::currentTheme -background]
 	}
 	$hdr configure -background $bg
-	$frame configure -background [$child cget -background]
 
 	#pack $hdr -side top -fill x -expand no
 	pack $child -side top -fill both -expand yes -in $frame
@@ -336,17 +370,8 @@ proc MakeFrame2 {twm frame id} {
 		MouseWheelBindings $twm $frame $hdr.undock
 	}
 
-	set opts {}
-	if {[info exists $name]} {
-		lappend opts -textvar $name
-		set text [set $name]
-	} else {
-		lappend opts -text $name
-		set text $name
-	}
-
 	$twm set $frame \
-		name $text \
+		name $name \
 		id $id \
 		move $moveable \
 		close $closable \
@@ -417,8 +442,26 @@ proc MouseWheelBindings {twm frame w} {
 }
 
 
-proc UpdateTitle {twm frame titlePath} {
-	wm title $frame [$twm get $titlePath name]
+proc UpdateTitle {twm frame {titlePath ""}} {
+	if {![winfo exists $frame]} { return }
+	if {[string length $titlePath] == 0} {
+		set title [$twm get $frame title]
+	} else {
+		set leader [$twm leader $frame]
+		set name [$twm get $leader name]
+		set title [$twm get $titlePath title $name]
+		if {[info exists $title]} {
+			trace add variable $title write [list [namespace current]::UpdateTitle $twm $frame]
+		}
+	}
+	SetTitle $twm $frame $title
+}
+
+
+proc SetTitle {twm frame title} {
+	$twm set $frame title $title
+	if {[info exists $title]} { set title [set $title] }
+	wm title $frame $title
 }
 
 
@@ -522,7 +565,8 @@ proc UpdateHeader {twm frame panes} {
 		set f [lindex $panes $i]
 		set lbl $hdr.$i
 		set name [$twm get [$twm leader $f] name]
-		ttk::label $lbl -style twm.TLabel -text $name -takefocus 0
+		if {[info exists $name]} { set var var } else { set var "" }
+		ttk::label $lbl -style twm.TLabel -text$var $name -takefocus 0
 		bind $lbl 
 		place $lbl -x 0 -y 0
 		lappend labels $lbl
@@ -1447,7 +1491,7 @@ proc Undock {twm frame} {
 	::update idletasks ;# is reducing flickering
 	wm geometry $toplevel ${wd}x${ht}+${x}+${y}
  	#wm transient $toplevel $twm
-	wm title $toplevel [$twm get $frame name]
+	SetTitle $twm $toplevel [$twm get $frame name]
 	wm state $toplevel normal
 	wm protocol $toplevel WM_DELETE_WINDOW [list [namespace current]::Dock $twm $toplevel]
 }
@@ -1507,8 +1551,48 @@ proc DestroyNamespace {twm} {
 
 
 proc ResizeToplevel {twm toplevel width height} {
-	if {$twm eq $toplevel} { set toplevel .application }
-	wm geometry $toplevel ${width}x${height} ;# XXX
+	if {[winfo toplevel $toplevel] eq $toplevel} {
+		wm geometry $toplevel ${width}x${height}
+	} else {
+		event generate $twm <<TwmResized>> -data [list $width $height]
+	}
+}
+
+
+proc Dimensions {twm toplevel minWidth minHeight maxWidth maxHeight} {
+	if {$minWidth || $minHeight} {
+		set minWidth  [expr {max(1,$minWidth)}]
+		set minHeight [expr {max(1,$minHeight)}]
+	}
+	if {$maxWidth || $maxHeight} {
+		lassign [WorkArea $twm] width height
+		if {$maxWidth == 0} { set maxWidth $width }
+		if {$maxHeight == 0} { set maxHeight $height }
+		set maxWidth  [expr {max(1,$maxWidth)}]
+		set maxHeight [expr {max(1,$maxHeight)}]
+	}
+	if {[winfo toplevel $toplevel] eq $toplevel} {
+		if {$minWidth || $minHeight} {
+			wm minsize $toplevel $minWidth $minHeight
+		}
+		if {$maxWidth || $maxHeight} {
+			wm maxsize $toplevel $maxWidth $maxHeight
+		}
+	} else {
+		if {$minWidth || $minHeight} {
+			event generate $twm <<TwmMinSize>> -data [list $minWidth $minHeight]
+		}
+		if {$maxWidth || $maxHeight} {
+			event generate $twm <<TwmMaxSize>> -data [list $maxWidth $maxHeight]
+		}
+	}
+}
+
+
+proc WorkArea {twm} {
+	variable ${twm}::WorkArea
+	if {[llength $WorkArea]} { return [$WorkArea $twm] }
+	return [list [winfo screenwidth $twm] [winfo screenheight $twm]]
 }
 
 
@@ -1576,7 +1660,12 @@ proc Pack {twm parent child opts} {
 
 			set leader [$twm leader $child]
 			set name [$twm get $leader name]
-			$parent insert $pos $child -text $name {*}$options
+			if {[info exists $name]} {
+				$parent insert $pos $child -text [set $name] {*}$options
+				trace add variable $name write [namespace code [list UpdateTab $twm $parent $child $name]]
+			} else {
+				$parent insert $pos $child -text $name {*}$options
+			}
 		}
 
 		*Multiwindow {
@@ -1646,6 +1735,20 @@ proc Pack {twm parent child opts} {
 #update idletasks
 #TraverseChilds $twm .application
 #puts "==================================="
+}
+
+
+proc UpdateTab {twm notebook pane nameVar} {
+	if {![winfo exists $child] || ![winfo exists $notebook] || $pane ni [$notebook tabs]} { return }
+
+	set leader [$twm leader $child]
+	set name [$twm get $leader name]
+
+	if {$name ne $nameVar} {
+		trace remove variable write $name [namespace code [list UpdateTab $twm $parent $child $name]]
+	} else {
+		$notebook tab $pane -text [set $name]
+	}
 }
 
 

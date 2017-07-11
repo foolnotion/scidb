@@ -672,6 +672,16 @@ proc bgerror {err args} {
 	variable intern::errmsg
 	variable intern::tclStack
 
+	array set opts [lindex $args 0]
+	set errorStack ""
+	if {[info exists opts(-errorstack)]} {
+		foreach {name value} $opts(-errorstack) {
+			if {$name eq "INNER" && [string match {invokeStk1*} $value]} {
+				set value [lrange $value 1 end]
+			}
+			append errorStack $value "\n"
+		}
+	}
 	if {[string length $err] == 0} { set err $errmsg }
 
 	if {$err eq "selection owner didn't respond"} {
@@ -695,8 +705,18 @@ proc bgerror {err args} {
 		}
 		set info ""
 		if {[string length $errmsg] > 0} { append info "\n" $errmsg }
-		append info [expr {[string length $tclStack] > 0 ? $tclStack : $errorInfo }]
-		if {[string length $errresult] > 0} { set err $errresult } else { set err $errorInfo }
+		if {[string length $tclStack] > 0} {
+			append info $tclStack
+		} elseif {[string length $errorStack] > 0} {
+			append info $errorStack
+		} elseif {[string length $err] > 0} {
+			append info $errorInfo
+		}
+		if {[string length $errresult] > 0} {
+			set err $errresult
+		} elseif {[string length $err] == 0} {
+			set err $errorInfo
+		}
 		set errorInfo $info
 		set errmsg ""
 		set errresult ""
