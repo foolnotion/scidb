@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2009-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -30,20 +30,37 @@
 #include <stdint.h>
 #include <stdarg.h>
 
-extern "C"
-{
-	struct Tcl_Interp;
-	struct Tcl_Obj;
-	struct Tcl_Command_;
-
-	typedef int Tcl_ObjCmdProc(void*, Tcl_Interp*, int, Tcl_Obj *const []);
-}
+#include <tcl.h>
 
 namespace mstl { class string; }
 namespace mstl { template <typename T> class vector; }
 namespace mstl { template <typename T> class carray; }
 
 namespace tcl {
+
+class DString
+{
+public:
+
+	DString();
+	~DString();
+
+	Tcl_Obj* toObj() const;
+
+	DString& startList();
+	DString& endList();
+
+	DString& append(char const* str);
+	DString& append(mstl::string const& str);
+	DString& append(Tcl_Obj* obj);
+	DString& append(int value);
+	DString& append(unsigned value);
+
+private:
+
+	Tcl_DString m_str;
+};
+
 
 typedef mstl::carray<Tcl_Obj*> Array;
 typedef mstl::vector<Tcl_Obj*> List;
@@ -168,7 +185,7 @@ Tcl_Obj* call(	char const* callee,
 					Tcl_Obj* cmd, Tcl_Obj* arg1, Tcl_Obj* arg2, Tcl_Obj* arg3, Tcl_Obj* arg4,
 					int objc, Tcl_Obj* const objv[]);
 
-Tcl_Command_* createCommand(Tcl_Interp* ti, char const* cmdName, Tcl_ObjCmdProc* proc);
+Tcl_Command createCommand(Tcl_Interp* ti, char const* cmdName, Tcl_ObjCmdProc* proc);
 
 char const* stringFromObj(unsigned objc, Tcl_Obj* const objv[], unsigned index);
 int intFromObj(unsigned objc, Tcl_Obj* const objv[], unsigned index);

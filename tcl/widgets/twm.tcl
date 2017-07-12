@@ -144,7 +144,9 @@ proc WidgetProc {twm command args} {
 
 	switch -- $command {
 		set				{ ::scidb::tk::twm set $twm {*}$args }
+		set!				{ ::scidb::tk::twm set! $twm {*}$args }
 		get				{ return [::scidb::tk::twm get $twm {*}$args] }
+		get!				{ return [::scidb::tk::twm get! $twm {*}$args] }
 		uid				{ return [::scidb::tk::twm uid $twm {*}$args] }
 		id					{ return [::scidb::tk::twm id $twm {*}$args] }
 		leader			{ return [::scidb::tk::twm leader $twm {*}$args] }
@@ -166,6 +168,8 @@ proc WidgetProc {twm command args} {
 		undock			{ return [::scidb::tk::twm undock $twm {*}$args] }
 		togglebar		{ return [ToggleHeader $twm {*}$args] }
 		togglenotebook	{ return [::scidb::tk::twm toggle $twm {*}$args] }
+		floats			{ return [::scidb::tk::twm floats $twm] }
+		inspect			{ return [::scidb::tk::twm inspect $twm flat {*}$args] }
 
 		init				{ ::scidb::tk::twm init $twm {*}$args }
 		load				{ ::scidb::tk::twm load $twm {*}$args }
@@ -218,7 +222,7 @@ proc BuildPane {twm frame id width height} {
 
 proc FrameHeaderSize {twm frame} {
 	variable Options
-	if {[$twm get $frame flat]} {
+	if {[$twm get! $frame flat]} {
 		set size [expr {$Options(flathandle:size) + 2}]
 	} else {
 		set size 4 ;# padding=2 + borderwidth=2
@@ -377,8 +381,8 @@ proc MakeFrame2 {twm frame id} {
 		close $closable \
 		undock $undockable \
 		priority $priority \
-		flat 0 \
 		;
+	$twm set! $frame flat 0
 
 	ShowHeaderButtons $twm $frame
 	HeaderBindings $twm $frame $hdr
@@ -470,8 +474,8 @@ proc ToggleHeader {twm frame} {
 
 	if {![winfo exists $frame]} { return }
 
-	set flat [$twm get $frame flat]
-	$twm set $frame flat [expr {!$flat}]
+	set flat [$twm get! $frame flat]
+	$twm set! $frame flat [expr {!$flat}]
 	set hdr $frame.__header__
 	set decor $hdr.__flat__
 
@@ -549,7 +553,7 @@ proc UpdateHeader {twm frame panes} {
 	}
 
 	raise $hdr ;# seems to be a bug in Tk lib that a child must be raised
-	if {[$twm get $frame flat]} { return }
+	if {[$twm get! $frame flat]} { return }
 
 	set fam [font configure $Options(header:font) -family]
 	set headerFont [list $fam $Options(header:fontsize) bold]
@@ -575,6 +579,7 @@ proc UpdateHeader {twm frame panes} {
 			$twm set $frame mine $lbl
 			set index $i
 			if {[$twm get $frame move]} {
+puts "UpdateHeader([$twm id $frame]): mine, move=yes"
 				$lbl configure \
 					-relief flat \
 					-padding {4 2 4 0} \
@@ -582,6 +587,7 @@ proc UpdateHeader {twm frame panes} {
 					-foreground $Options(header:$type:foreground) \
 					;
 			} else {
+puts "UpdateHeader([$twm id $frame]): mine, move=no"
 				$lbl configure \
 					-relief raised \
 					-padding {4 1 4 1} \
@@ -662,7 +668,7 @@ proc ConfigureLabelBar {twm frame width} {
 proc PlaceLabelBar {twm frame incr} {
 	variable Options
 
-	if {[$twm get $frame flat]} { return }
+	if {[$twm get! $frame flat]} { return }
 
 	set parent [$twm parent $frame]
 	set maxoffset [$twm get $frame maxoffset 0]
@@ -1488,9 +1494,13 @@ proc Undock {twm frame} {
 	set y [winfo rooty $frame]
 	$child configure -width $wd -height $ht
 	set toplevel [$twm undock $frame]
+	if {[$twm get $frame stayontop 0]} {
+		wm transient $toplevel [winfo toplevel $twm]
+		# NOTE: not every window manager is re-decorating the window.
+		catch { wm attributes $toplevel -type dialog }
+	}
 	::update idletasks ;# is reducing flickering
 	wm geometry $toplevel ${wd}x${ht}+${x}+${y}
- 	#wm transient $toplevel $twm
 	SetTitle $twm $toplevel [$twm get $frame name]
 	wm state $toplevel normal
 	wm protocol $toplevel WM_DELETE_WINDOW [list [namespace current]::Dock $twm $toplevel]
@@ -1683,7 +1693,7 @@ proc Pack {twm parent child opts} {
 
 			$parent add $child {*}$options
 
-			if {[$twm get $child flat 0]} {
+			if {[$twm get! $child flat 0]} {
 				ToggleHeader $twm $child
 			}
 		}

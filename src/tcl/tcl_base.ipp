@@ -21,7 +21,6 @@
 #include "m_assert.h"
 
 #include <string.h>
-#include <tcl.h>
 
 namespace tcl { namespace bits { extern Tcl_Interp* interp; } }
 
@@ -188,5 +187,45 @@ tcl::result()
 {
 	return Tcl_GetObjResult(interp());
 }
+
+
+namespace tcl {
+
+inline DString::DString()	{ Tcl_DStringInit(&m_str); }
+inline DString::~DString()	{ Tcl_DStringFree(&m_str); }
+
+inline DString& DString::startList()	{ Tcl_DStringStartSublist(&m_str); return *this; }
+inline DString& DString::endList()		{ Tcl_DStringEndSublist(&m_str); return *this; }
+
+
+inline
+Tcl_Obj*
+DString::toObj() const
+{
+	return newObj(Tcl_DStringValue(&m_str), Tcl_DStringLength(&m_str));
+}
+
+
+inline
+DString&
+DString::append(char const* str)
+{
+	M_REQUIRE(str);
+	Tcl_DStringAppendElement(&m_str, str);
+	return *this;
+}
+
+
+inline
+DString& DString::append(Tcl_Obj* obj)
+{
+	M_REQUIRE(obj);
+	return append(asString(obj));
+}
+
+
+inline DString& DString::append(mstl::string const& str) { return append(str.c_str()); }
+
+} // namespace tcl
 
 // vi:set ts=3 sw=3:

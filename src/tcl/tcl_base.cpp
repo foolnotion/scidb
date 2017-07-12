@@ -83,6 +83,28 @@ union Cast
 bool tcl::updateTreeIsBlocked() { return m_level > 1; }
 
 
+namespace tcl {
+
+DString&
+DString::append(int value)
+{
+	char buf[100];
+	::snprintf(buf, sizeof(buf), "%d", value);
+	return append(buf);
+}
+
+
+DString&
+DString::append(unsigned value)
+{
+	char buf[100];
+	::snprintf(buf, sizeof(buf), "%u", value);
+	return append(buf);
+}
+
+} // namespace tcl
+
+
 Tcl_Obj*
 tcl::newObj(Tcl_Obj* obj1, Tcl_Obj* obj2)
 {

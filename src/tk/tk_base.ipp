@@ -43,6 +43,24 @@ tk::parent(Tk_Window window)
 
 inline
 int
+tk::x(Tk_Window window)
+{
+	M_REQUIRE(window);
+	return Tk_X(window);
+}
+
+
+inline
+int
+tk::y(Tk_Window window)
+{
+	M_REQUIRE(window);
+	return Tk_Y(window);
+}
+
+
+inline
+int
 tk::width(Tk_Window window)
 {
 	M_REQUIRE(window);
@@ -82,7 +100,7 @@ inline bool tk::exists(Tcl_Obj* obj) { return exists(tcl::asString(obj)); }
 
 inline
 bool
-tk::isTopLevel(Tk_Window window)
+tk::isToplevel(Tk_Window window)
 {
 	M_REQUIRE(window);
 	return Tk_IsTopLevel(window);

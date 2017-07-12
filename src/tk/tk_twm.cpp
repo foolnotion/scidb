@@ -96,43 +96,55 @@ static Tcl_Obj* m_objDirsTBLR					= nullptr;
 static Tcl_Obj* m_objDirsTBLREW				= nullptr;
 static Tcl_Obj* m_objDirsTBLRNS				= nullptr;
 static Tcl_Obj* m_objDirsTBLRNSEW			= nullptr;
+static Tcl_Obj* m_objFloating					= nullptr;
 static Tcl_Obj* m_objFrame						= nullptr;
 static Tcl_Obj* m_objFrame2Cmd				= nullptr;
 static Tcl_Obj* m_objFrameHdrSizeCmd		= nullptr;
-static Tcl_Obj* m_objOptGrow					= nullptr;
 static Tcl_Obj* m_objHeaderCmd				= nullptr;
 static Tcl_Obj* m_objHorizontal				= nullptr;
 static Tcl_Obj* m_objHorz						= nullptr;
 static Tcl_Obj* m_objMetaFrame				= nullptr;
 static Tcl_Obj* m_objMultiWindow				= nullptr;
+static Tcl_Obj* m_objNone						= nullptr;
+static Tcl_Obj* m_objNormal					= nullptr;
 static Tcl_Obj* m_objNotebook					= nullptr;
 static Tcl_Obj* m_objNotebookHdrSizeCmd	= nullptr;
+static Tcl_Obj* m_objOptAttrs					= nullptr;
 static Tcl_Obj* m_objOptBefore				= nullptr;
 static Tcl_Obj* m_objOptExpand				= nullptr;
+static Tcl_Obj* m_objOptGrow					= nullptr;
 static Tcl_Obj* m_objOptHeight				= nullptr;
 static Tcl_Obj* m_objOptMaxHeight			= nullptr;
 static Tcl_Obj* m_objOptMaxWidth				= nullptr;
 static Tcl_Obj* m_objOptMinHeight			= nullptr;
 static Tcl_Obj* m_objOptMinWidth				= nullptr;
 static Tcl_Obj* m_objOptOrient				= nullptr;
+static Tcl_Obj* m_objOptRecover				= nullptr;
 static Tcl_Obj* m_objOptShrink				= nullptr;
+static Tcl_Obj* m_objOptSnapshots			= nullptr;
+static Tcl_Obj* m_objOptState					= nullptr;
 static Tcl_Obj* m_objOptSticky				= nullptr;
 static Tcl_Obj* m_objOptWidth					= nullptr;
+static Tcl_Obj* m_objOptX						= nullptr;
+static Tcl_Obj* m_objOptY						= nullptr;
 static Tcl_Obj* m_objPackCmd					= nullptr;
 static Tcl_Obj* m_objPaneConfigCmd			= nullptr;
 static Tcl_Obj* m_objPanedWindow				= nullptr;
 static Tcl_Obj* m_objPane						= nullptr;
 static Tcl_Obj* m_objReadyCmd					= nullptr;
 static Tcl_Obj* m_objResizedCmd				= nullptr;
+static Tcl_Obj* m_objRoot						= nullptr;
 static Tcl_Obj* m_objSashSizeCmd				= nullptr;
 static Tcl_Obj* m_objSelectCmd				= nullptr;
 static Tcl_Obj* m_objTitleCmd					= nullptr;
 static Tcl_Obj* m_objUnpackCmd				= nullptr;
 static Tcl_Obj* m_objVert						= nullptr;
 static Tcl_Obj* m_objVertical					= nullptr;
+static Tcl_Obj* m_objWithdrawn				= nullptr;
 static Tcl_Obj* m_objWorkAreaCmd				= nullptr;
 static Tcl_Obj* m_objX							= nullptr;
 static Tcl_Obj* m_objY							= nullptr;
+
 
 class Node;
 typedef mstl::vector<Node*> Childs;
@@ -162,21 +174,34 @@ parsePositionOption(const char* s)
 }
 
 
-static int
-parseExpandOption(const char* s)
+static State
+parseStateOption(Tcl_Obj* obj)
 {
-	M_ASSERT(s);
+	M_ASSERT(obj);
 
-	if (tcl::equal(s, "both"))	return X | Y;
-	if (tcl::equal(s, "x"))		return X;
-	if (tcl::equal(s, "y"))		return Y;
-	if (tcl::equal(s, "none"))	return 0;
+	if (tcl::equal(obj, m_objNormal))		return Packed;
+	if (tcl::equal(obj, m_objFloating))		return Floating;
+	if (tcl::equal(obj, m_objWithdrawn))	return Withdrawn;
 
-	M_THROW(tcl::Exception("invalid expand option '%s'", s));
+	M_THROW(tcl::Exception("invalid state '%s'", tcl::asString(obj)));
 }
 
 
-static int parseResizeOption(const char* s) { return parseExpandOption(s); }
+static int
+parseExpandOption(Tcl_Obj* obj)
+{
+	M_ASSERT(obj);
+
+	if (tcl::equal(obj, m_objBoth))	return X | Y;
+	if (tcl::equal(obj, m_objX))		return X;
+	if (tcl::equal(obj, m_objY))		return Y;
+	if (tcl::equal(obj, m_objNone))	return 0;
+
+	M_THROW(tcl::Exception("invalid expand option '%s'", tcl::asString(obj)));
+}
+
+
+static int parseResizeOption(Tcl_Obj* obj) { return parseExpandOption(obj); }
 
 
 static int
@@ -207,18 +232,88 @@ parseStickyOption(const char* s)
 
 
 static Orient
-parseOrientOption(const char* s)
+parseOrientOption(Tcl_Obj* obj)
 {
-	M_ASSERT(s);
+	M_ASSERT(obj);
 
-	if (tcl::equal(s, m_objHorz) || tcl::equal(s, m_objHorizontal))	return Horz;
-	if (tcl::equal(s, m_objVert) || tcl::equal(s, m_objVertical))		return Vert;
+	if (tcl::equal(obj, m_objHorz) || tcl::equal(obj, m_objHorizontal))	return Horz;
+	if (tcl::equal(obj, m_objVert) || tcl::equal(obj, m_objVertical))		return Vert;
 
-	M_THROW(tcl::Exception("invalid orientation '%s'", s));
+	M_THROW(tcl::Exception("invalid orientation '%s'", tcl::asString(obj)));
 }
 
 
+static char const*
+makeTypeID(Type type)
+{
+	switch (type)
+	{
+		case Root:			return tcl::asString(m_objRoot);
+		case Pane:			return tcl::asString(m_objPane);
+		case Frame:			return tcl::asString(m_objFrame);
+		case MetaFrame:	return tcl::asString(m_objMetaFrame);
+		case MultiWindow:	return tcl::asString(m_objMultiWindow);
+		case Notebook:		return tcl::asString(m_objNotebook);
+		case PanedWindow:	return tcl::asString(m_objPanedWindow);
+	}
+	return nullptr; // never reached
+}
+
+
+static char const*
+makeStateOptionValue(State state)
+{
+	switch (state)
+	{
+		case Packed:		return tcl::asString(m_objNormal);
+		case Floating:		return tcl::asString(m_objFloating);
+		case Withdrawn:	return tcl::asString(m_objWithdrawn);
+	}
+	return nullptr; // never reached
+}
+
+
+static char const*
+makeStickyOptionValue(int sticky, mstl::string& buf)
+{
+	if (sticky & North) buf.append('n');
+	if (sticky & South) buf.append('s');
+	if (sticky & East)  buf.append('e');
+	if (sticky & West)  buf.append('w');
+	return buf.c_str();
+}
+
+
+static char const*
+makeOrientationOptionValue(int orientation)
+{
+	M_ASSERT(orientation);
+	return tcl::asString(orientation & Horz ? m_objHorizontal : m_objVertical);
+}
+
+
+static char const*
+makeExpandOptionValue(int expand)
+{
+	if ((expand & (X|Y)) == (X|Y)) return tcl::asString(m_objBoth);
+	if (expand & X) return tcl::asString(m_objX);
+	if (expand & Y) return tcl::asString(m_objY);
+	return tcl::asString(m_objNone);
+}
+
+static char const* makeResizeOptionValue(int resize) { return makeExpandOptionValue(resize); }
+
+
 struct Terminated {};
+
+
+struct Coord
+{
+	Coord() :x(0), y(0) {}
+
+	int x;
+	int y;
+};
 
 
 struct Size
@@ -247,9 +342,8 @@ typedef mstl::map<mstl::string,Size> SizeMap;
 
 struct Snapshot
 {
-	Size				size;
-	mstl::string	structure;
-	SizeMap			sizeMap;
+	Size		size;
+	SizeMap	sizeMap;
 };
 
 
@@ -310,6 +404,8 @@ class Node
 {
 public:
 
+	typedef mstl::vector<mstl::string> AttrSet;
+
 	~Node();
 
 	bool isEmpty() const;
@@ -321,6 +417,7 @@ public:
 	bool isNotebookOrMultiWindow() const;
 	bool isFrame() const;
 	bool isMetaFrame() const;
+	bool isWrapper() const;
 	bool isFrameOrMetaFrame() const;
 	bool isPane() const;
 	bool isPaneOrFrame() const;
@@ -358,6 +455,8 @@ public:
 	Tcl_Obj* typeObj() const;
 	int expand() const;
 	int sticky() const;
+	int x() const;
+	int y() const;
 	template <Enclosure Enc> int width() const;
 	template <Enclosure Enc> int height() const;
 	template <Enclosure Enc> int minWidth() const;
@@ -376,7 +475,11 @@ public:
 	tcl::List collectFrames() const;
 	tcl::List collectPanes() const;
 	tcl::List collectContainer() const;
+	tcl::List collectFloats() const;
 	tcl::List collectVisible() const;
+
+	Tcl_Obj* inspect() const;
+	Tcl_Obj* inspect(AttrSet const& exportList) const;
 
 	Node const* child(unsigned i) const;
 	Node* child(unsigned i);
@@ -396,8 +499,8 @@ public:
 	Node const* rightNeighbor(Node const* neighbor) const;
 	Node const* findLeader() const;
 
-	void set(char const* attribute, Tcl_Obj* value);
-	Tcl_Obj* get(char const* attribute) const;
+	void set(char const* attribute, Tcl_Obj* value, bool ignoreMeta);
+	Tcl_Obj* get(char const* attribute, bool ignoreMeta) const;
 
 	void load(Tcl_Obj* list);
 	void create();
@@ -468,11 +571,18 @@ private:
 	void collectFrames(tcl::List& result) const;
 	void collectPanes(tcl::List& result) const;
 	void collectContainer(tcl::List& result) const;
+	void collectFloats(tcl::List& result) const;
 	void collectVisible(tcl::List& result) const;
 	void collectPackedChilds(tcl::List& list);
+	void inspect(AttrSet const& exportList, tcl::DString& str) const;
+	void inspectAttrs(AttrSet const& exportList, tcl::DString& str) const;
+	void inspectStructure(tcl::DString& str) const;
+	static void inspect(tcl::DString& str, SnapshotMap const& snapshots);
 
 	Tcl_Obj* makeOptions(Flag flags, Node const* before = nullptr) const __m_warn_unused;
 	void parseOptions(Tcl_Obj* opts);
+	void parseSnapshot(Tcl_Obj* obj);
+	void parseAttributes(Tcl_Obj* obj);
 
 	void move(Node* node, Node const* before = nullptr);
 	void doMove(Node* node, Node const* before = nullptr);
@@ -483,6 +593,7 @@ private:
 	void unframe();
 	void flatten();
 	void withdrawn();
+	void renumber(unsigned& number) const;
 
 	void setWidth(int width);
 	void setHeight(int height);
@@ -527,8 +638,8 @@ private:
 	bool testFlags(unsigned flag) const;
 
 	void makeSnapshot();
-	bool makeSnapshot(mstl::string& structure, SizeMap* sizeMap);
-	void makeSnapshotKey(mstl::string& structure);
+	bool makeSnapshot(mstl::string& structure, SizeMap* sizeMap) const;
+	void makeSnapshotKey(mstl::string& structure) const;
 	bool applySnapshot();
 	void applySnapshot(double scaleWidth, double scaleHeight, SizeMap const& sizeMap);
 
@@ -586,6 +697,7 @@ private:
 	mutable int	m_notebookHeaderSize;
 	Dimension	m_dimen;
 	Dimension	m_actual;
+	Coord			m_coord;
 	Size			m_workArea;
 	int			m_orientation;
 	int			m_expand;
@@ -609,6 +721,7 @@ private:
 	bool			m_temporary;
 
 	mutable bool m_dumpFlag;
+	mutable unsigned m_number;
 
 	typedef mstl::map<mstl::string,Base> Lookup;
 	static Lookup m_lookup;
@@ -625,13 +738,8 @@ WindowEventProc(ClientData clientData, XEvent* event)
 	switch (event->type)
 	{
 		case ConfigureNotify:
-		{
-			Node* node = static_cast<Node*>(clientData);
-
-			if (!node->isDeleted())
-				node->updateDimen(event->xconfigure.width, event->xconfigure.height);
+			static_cast<Node*>(clientData)->updateDimen(event->xconfigure.width, event->xconfigure.height);
 			break;
-		}
 
 		case DestroyNotify:
 			static_cast<Node*>(clientData)->destroyed(false);
@@ -656,6 +764,10 @@ Node* Node::clone() const						{ return clone(nullptr); }
 Node const* Node::child(unsigned i) const { return m_childs[i]; }
 Node* Node::child(unsigned i)					{ return m_childs[i]; }
 
+unsigned Node::numChilds() const	{ return m_childs.size(); }
+Tk_Window Node::tkwin() const		{ return tk::window(m_path); }
+bool Node::exists() const			{ return m_path && tk::exists(m_path); }
+
 bool Node::isContainer(Type type)
 { return type == MultiWindow || type == Notebook || type == PanedWindow; }
 
@@ -667,6 +779,7 @@ bool Node::isMultiWindow() const					{ return m_type == MultiWindow; }
 bool Node::isNotebook() const						{ return m_type == Notebook; }
 bool Node::isFrame() const							{ return m_type == Frame; }
 bool Node::isMetaFrame() const					{ return isMetaFrame(m_type); }
+bool Node::isWrapper() const						{ return isMetaFrame(m_type) && numChilds() == 1; }
 bool Node::isPane() const							{ return m_type == Pane; }
 bool Node::isPaneOrFrame() const					{ return m_type == Pane || m_type == Frame; }
 bool Node::isFrameOrMetaFrame() const			{ return isFrame() || isMetaFrame(); }
@@ -703,10 +816,7 @@ char const* Node::oldPath() const		{ return tcl::asString(m_oldPath); }
 char const* Node::id() const				{ return m_uid ? uid() : (m_path ? path() : "null"); }
 
 Tcl_Obj* Node::uidObj() const				{ return m_uid; }
-
-unsigned Node::numChilds() const			{ return m_childs.size(); }
-Tk_Window Node::tkwin() const				{ return tk::window(m_path); }
-bool Node::exists() const					{ return m_path && tk::exists(m_path); }
+Tcl_Obj* Node::inspect() const			{ return inspect(AttrSet()); }
 
 void Node::remove(Node* node)				{ remove(find(node)); }
 void Node::setWidth(int width)			{ m_dimen.set<Horz>(width); }
@@ -720,7 +830,33 @@ bool Node::testFlags(unsigned flag) const { return m_flags & flag; }
 
 unsigned Node::descendantOf(Node const* child) const { return descendantOf(child, 1); }
 
-void Node::makeSnapshotKey(mstl::string& key) { makeSnapshot(key, nullptr); }
+void Node::makeSnapshotKey(mstl::string& key) const { makeSnapshot(key, nullptr); }
+
+
+int
+Node::x() const
+{
+	Tk_Window window = tkwin();
+	int x = tk::x(window);
+
+	if (isRoot() && !tk::isToplevel(window))
+		x += tk::x(tk::toplevel(window));
+
+	return x;
+}
+
+
+int
+Node::y() const
+{
+	Tk_Window window = tkwin();
+	int y = tk::y(window);
+
+	if (isRoot() && !tk::isToplevel(window))
+		y += tk::y(tk::toplevel(window));
+	
+	return y;
+}
 
 
 int
@@ -1091,6 +1227,7 @@ Node::Node(Node& parent, Type type, Tcl_Obj* uid)
 	,m_isLocked(false)
 	,m_temporary(false)
 	,m_dumpFlag(false)
+	,m_number(0)
 {
 	M_ASSERT(type != Root);
 	tcl::incrRef(m_uid);
@@ -1126,6 +1263,7 @@ Node::Node(Tcl_Obj* path, Node const* setup)
 	,m_isLocked(false)
 	,m_temporary(false)
 	,m_dumpFlag(false)
+	,m_number(0)
 {
 	M_ASSERT(path);
 
@@ -1177,6 +1315,7 @@ Node::Node(Node const& node)
 	,m_isLocked(false)
 	,m_temporary(false)
 	,m_dumpFlag(false)
+	,m_number(0)
 {
 	tcl::incrRef(m_path);
 	tcl::incrRef(m_uid);
@@ -1232,12 +1371,13 @@ Node::getCurrent() const
 
 
 void
-Node::set(char const* attribute, Tcl_Obj* value)
+Node::set(char const* attribute, Tcl_Obj* value, bool ignoreMeta)
 {
 	M_ASSERT(attribute);
 	M_ASSERT(value);
 
-	Tcl_Obj*& obj = m_attrMap[attribute];
+	AttrMap& attrs = isMetaFrame() && ignoreMeta ? child()->m_attrMap : m_attrMap;
+	Tcl_Obj*& obj = attrs[attribute];
 
 	if (tcl::equal(attribute, "priority") && tcl::isInt(value))
 		m_priority = tcl::asInt(value);
@@ -1248,12 +1388,13 @@ Node::set(char const* attribute, Tcl_Obj* value)
 
 
 Tcl_Obj*
-Node::get(char const* attribute) const
+Node::get(char const* attribute, bool ignoreMeta) const
 {
 	M_ASSERT(attribute);
 
-	AttrMap::const_iterator i = m_attrMap.find(attribute);
-	return i == m_attrMap.end() ? nullptr : i->second;
+	AttrMap const& attrs = isMetaFrame() && ignoreMeta ? child()->m_attrMap : m_attrMap;
+	AttrMap::const_iterator i = attrs.find(attribute);
+	return i == attrs.end() ? nullptr : i->second;
 }
 
 
@@ -1343,6 +1484,20 @@ Node::collectContainer(tcl::List& result) const
 
 
 void
+Node::collectFloats(tcl::List& result) const
+{
+	if (isFloating())
+		result.push_back(m_path);
+
+	for (unsigned i = 0; i < numChilds(); ++i)
+	{
+		if (child(i)->isPacked() || child(i)->isFloating())
+			child(i)->collectFloats(result);
+	}
+}
+
+
+void
 Node::collectVisible(tcl::List& result) const
 {
 	if (m_temporary || !(isPacked() || isToplevel()) || (isToplevel() && isFrame()))
@@ -1407,6 +1562,15 @@ Node::collectContainer() const
 {
 	tcl::List result;
 	collectContainer(result);
+	return result;
+}
+
+
+tcl::List
+Node::collectFloats() const
+{
+	tcl::List result;
+	collectFloats(result);
 	return result;
 }
 
@@ -1889,6 +2053,8 @@ Node::unframe()
 	// child->m_notebookHeaderSize
 	mstl::swap(m_dimen, child->m_dimen);
 	mstl::swap(m_actual, child->m_actual);
+	// child->m_coord
+	// child->m_workArea
 	mstl::swap(m_orientation, child->m_orientation);
 	mstl::swap(m_expand, child->m_expand);
 	mstl::swap(m_sticky, child->m_sticky);
@@ -1910,6 +2076,7 @@ Node::unframe()
 	// child->m_isLocked
 	// child->m_temporary
 	// child->m_dumpFlag
+	// child->m_number
 
 	for (unsigned i = 0; i < numChilds(); ++i)
 	{
@@ -1996,6 +2163,8 @@ Node::makeMetaFrame()
 	// child->m_notebookHeaderSize
 	// child->m_dimen
 	// child->m_actual
+	// child->m_coord
+	// child->m_workArea
 	// child->m_orientation
 	// child->m_expand
 	// child->m_sticky
@@ -2017,6 +2186,7 @@ Node::makeMetaFrame()
 	// child->m_isLocked
 	// child->m_temporary
 	// child->m_dumpFlag
+	// child->m_number
 
 	// Change this node to a MetaFrame
 
@@ -2036,6 +2206,8 @@ Node::makeMetaFrame()
 	// m_notebookHeaderSize
 	// m_dimen
 	// m_actual
+	// m_coord
+	// m_workArea
 	m_orientation = 0;
 	// m_expand
 	// m_sticky
@@ -2057,6 +2229,7 @@ Node::makeMetaFrame()
 	// m_isLocked
 	// m_temporary
 	// m_dumpFlag
+	// m_number
 
 	if (child->exists())
 	{
@@ -2427,6 +2600,54 @@ Node::remove(Childs::iterator pos)
 
 
 void
+Node::parseAttributes(Tcl_Obj* obj)
+{
+	M_ASSERT(obj);
+
+	tcl::Array elems = tcl::getElements(obj);
+
+	if (elems.size() % 2)
+		M_THROW(tcl::Exception("odd attribute list '%s'", tcl::asString(obj)));
+
+	for (unsigned i = 0; i < elems.size(); i += 2)
+		tcl::incrRef(m_attrMap[tcl::asString(elems[i])] = elems[i + 1]);
+}
+
+
+void
+Node::parseSnapshot(Tcl_Obj* obj)
+{
+	M_ASSERT(obj);
+
+	tcl::Array elems = tcl::getElements(obj);
+
+	if (elems.size() == 0 || elems.size() % 2)
+		M_THROW(tcl::Exception("odd snapshot list '%s'", tcl::asString(obj)));
+	
+	for (unsigned i = 0; i < elems.size(); i += 2)
+	{
+		Tcl_Obj* structure	= elems[i];
+		tcl::Array sizeList	= tcl::getElements(elems[i + 1]);
+
+		if ((sizeList.size() - 2) % 3)
+			M_THROW(tcl::Exception("odd snapshot list '%s'", tcl::asString(obj)));
+
+		Snapshot& snapshot = m_snapshotMap[tcl::asString(structure)];
+
+		snapshot.size.width = tcl::asUnsigned(sizeList[0]);
+		snapshot.size.height = tcl::asUnsigned(sizeList[1]);
+
+		for (unsigned k = 2; k < sizeList.size(); k += 3)
+		{
+			Size& size = snapshot.sizeMap[tcl::asString(sizeList[k])];
+			size.width = tcl::asUnsigned(sizeList[k + 1]);
+			size.height = tcl::asUnsigned(sizeList[k + 2]);
+		}
+	}
+}
+
+
+void
 Node::parseOptions(Tcl_Obj* opts)
 {
 	M_ASSERT(opts);
@@ -2441,7 +2662,13 @@ Node::parseOptions(Tcl_Obj* opts)
 		char const* name = tcl::asString(elems[i]);
 		Tcl_Obj* value = elems[i + 1];
 
-		if (tcl::equal(name, m_objOptWidth))
+		if (tcl::equal(name, m_objOptState))
+			m_state = ::parseStateOption(value);
+		else if (tcl::equal(name, m_objOptX))
+			m_coord.x = tcl::asUnsigned(value);
+		else if (tcl::equal(name, m_objOptY))
+			m_coord.y = tcl::asUnsigned(value);
+		else if (tcl::equal(name, m_objOptWidth))
 			m_dimen.actual.width = tcl::asUnsigned(value);
 		else if (tcl::equal(name, m_objOptHeight))
 			m_dimen.actual.height = tcl::asUnsigned(value);
@@ -2454,15 +2681,19 @@ Node::parseOptions(Tcl_Obj* opts)
 		else if (tcl::equal(name, m_objOptMaxHeight))
 			m_dimen.max.height = tcl::asUnsigned(value);
 		else if (tcl::equal(name, m_objOptExpand))
-			m_expand = ::parseExpandOption(tcl::asString(value));
+			m_expand = ::parseExpandOption(value);
 		else if (tcl::equal(name, m_objOptSticky))
 			m_sticky = ::parseStickyOption(tcl::asString(value));
 		else if (tcl::equal(name, m_objOptShrink))
-			m_shrink = ::parseResizeOption(tcl::asString(value));
+			m_shrink = ::parseResizeOption(value);
 		else if (tcl::equal(name, m_objOptGrow))
-			m_grow = ::parseResizeOption(tcl::asString(value));
+			m_grow = ::parseResizeOption(value);
 		else if (tcl::equal(name, m_objOptOrient))
-			m_orientation = parseOrientOption(tcl::asString(value));
+			m_orientation = parseOrientOption(value);
+		else if (tcl::equal(name, m_objOptSnapshots))
+			parseSnapshot(value);
+		else if (tcl::equal(name, m_objOptAttrs))
+			parseAttributes(value);
 		else
 			M_THROW(tcl::Exception("invalid option '%s'", name));
 	}
@@ -3213,11 +3444,14 @@ Node::withdraw()
 
 
 bool
-Node::makeSnapshot(mstl::string& structure, SizeMap* sizeMap)
+Node::makeSnapshot(mstl::string& structure, SizeMap* sizeMap) const
 {
+	if (isMetaFrame())
+		return child()->makeSnapshot(structure, sizeMap);
+
 	if (m_priority < 0)
 		return false;
-
+	
 	if (sizeMap && isPaneOrFrame())
 		sizeMap->insert(SizeMap::value_type(tcl::asString(m_uid), m_dimen.actual));
 
@@ -3236,7 +3470,7 @@ Node::makeSnapshot(mstl::string& structure, SizeMap* sizeMap)
 
 	for (unsigned i = 0; i < numChilds(); ++i)
 	{
-		if (child(i)->isPacked())
+		if (child(i)->isPacked() && child(i)->m_parent == this)
 		{
 			keyList.push_back();
 
@@ -3265,14 +3499,16 @@ void
 Node::makeSnapshot()
 {
 	Snapshot snapshot;
+	mstl::string structure;
 	Node* node = this;
 
 	for ( ; node; node = node->isToplevel() ? nullptr : node->m_parent)
 	{
 		snapshot.size = node->m_dimen.actual;
+		structure.clear();
 
-		if (node->makeSnapshot(snapshot.structure, &snapshot.sizeMap))
-			return mstl::swap(node->m_snapshotMap[snapshot.structure], snapshot);
+		if (node->makeSnapshot(structure, &snapshot.sizeMap))
+			return mstl::swap(node->m_snapshotMap[structure], snapshot);
 	}
 }
 
@@ -3383,6 +3619,236 @@ Node::performQueryNotebookHeaderSize() const
 
 
 void
+Node::renumber(unsigned& number) const
+{
+	if (!m_uid && !isWrapper())
+		m_number = number++;
+	
+	for (unsigned i = 0; i < numChilds(); ++i)
+	{
+		if (child(i)->m_parent == this)
+			child(i)->renumber(number);
+	}
+}
+
+
+Tcl_Obj*
+Node::inspect(AttrSet const& exportList) const
+{
+	M_ASSERT(isRoot());
+
+	tcl::DString str;
+	unsigned number = 0;
+
+	renumber(number);
+	inspect(exportList, str);
+	return str.toObj();
+}
+
+
+void
+Node::inspect(tcl::DString& str, SnapshotMap const& snapshots)
+{
+	SnapshotMap::const_iterator i;
+
+	str.startList();
+
+	for (i = snapshots.begin(); i != snapshots.end(); ++i)
+	{
+		SizeMap::const_iterator k;
+
+		str.append(i->first);
+		str.startList();
+		str.append(i->second.size.width);
+		str.append(i->second.size.height);
+		for (k = i->second.sizeMap.begin(); k != i->second.sizeMap.end(); ++k)
+		{
+			str.append(k->first);
+			str.append(k->second.width);
+			str.append(k->second.height);
+		}
+		str.endList();
+	}
+
+	str.endList();
+}
+
+
+void
+Node::inspectAttrs(AttrSet const& exportList, tcl::DString& str) const
+{
+	str.startList();
+
+	for (unsigned i = 0; i < exportList.size(); ++i)
+	{
+		AttrMap::const_iterator k = m_attrMap.find(exportList[i]);
+
+		if (k != m_attrMap.end())
+		{
+			str.append(k->first);
+			str.append(k->second);
+		}
+	}
+
+	str.endList();
+}
+
+
+void
+Node::inspectStructure(tcl::DString& str) const
+{
+	M_ASSERT(isWithdrawn());
+
+	for (unsigned i = 0; i < numChilds(); ++i)
+	{
+		Node const* node = child(i);
+
+		if (node->m_uid)
+		{
+			str.append(node->uidObj());
+		}
+		else if (node->isWrapper())
+		{
+			if (node->child()->m_uid)
+				str.append(node->child()->uidObj());
+			else
+				str.append(node->child()->m_number);
+		}
+		else if (node->m_parent == this)
+		{
+			str.startList();
+			str.append(::makeTypeID(node->m_type));
+			node->inspectStructure(str);
+			str.endList();
+		}
+		else
+		{
+			str.append(node->m_number);
+		}
+	}
+}
+
+
+void
+Node::inspect(AttrSet const& exportList, tcl::DString& str) const
+{
+	if (isWrapper())
+		return child()->inspect(exportList, str);
+
+	str.append(::makeTypeID(m_type));
+	if (isPaneOrFrame())
+		str.append(uidObj());
+
+	str.startList();
+
+	if (!isRoot())
+	{
+		if (!isPacked() || m_parent->isWrapper())
+		{
+			str.append(m_objOptState);
+			str.append(::makeStateOptionValue(m_parent->isWrapper() ? m_parent->m_state : m_state));
+
+			if (isWithdrawn())
+			{
+				str.endList();
+				str.startList();
+				inspectStructure(str);
+				str.endList();
+				return;
+			}
+		}
+
+		if (m_parent->isMetaFrame() && m_parent->isFloating())
+		{
+			str.append(m_objOptX);
+			str.append(m_parent->x());
+			str.append(m_objOptY);
+			str.append(m_parent->y());
+		}
+	}
+
+	switch (m_type)
+	{
+		case Root:
+			str.append(m_objOptX);
+			str.append(x());
+			str.append(m_objOptY);
+			str.append(y());
+			str.append(m_objOptShrink);
+			str.append(::makeResizeOptionValue(m_shrink));
+			str.append(m_objOptGrow);
+			str.append(::makeResizeOptionValue(m_grow));
+			break;
+
+		case Pane:
+		case Frame:
+			str.append(m_objOptWidth);
+			str.append(width<Inner>());
+			str.append(m_objOptHeight);
+			str.append(height<Inner>());
+			if (minWidth<Inner>())
+			{
+				str.append(m_objOptMinWidth);
+				str.append(minWidth<Inner>());
+			}
+			if (maxWidth<Inner>())
+			{
+				str.append(m_objOptMaxWidth);
+				str.append(maxWidth<Inner>());
+			}
+			str.append(m_objOptExpand);
+			str.append(::makeExpandOptionValue(m_expand));
+			str.append(m_objOptAttrs);
+			inspectAttrs(exportList, str);
+			break;
+
+		case PanedWindow:
+			str.append(m_objOptOrient);
+			str.append(::makeOrientationOptionValue(m_orientation));
+			// fallthru
+
+		case MultiWindow:
+		case Notebook:
+			if (m_sticky)
+			{
+				mstl::string buf(4);
+				str.append(m_objOptSticky);
+				str.append(::makeStickyOptionValue(m_sticky, buf));
+			}
+			break;
+
+		case MetaFrame:
+			if (isFloating())
+			{
+				str.append(m_objOptX);
+				str.append(x());
+				str.append(m_objOptY);
+				str.append(y());
+			}
+			break;
+	}
+
+	if (!m_snapshotMap.empty())
+	{
+		str.append(m_objOptSnapshots);
+		inspect(str, m_snapshotMap);
+	}
+
+	str.endList();
+
+	if (!isPaneOrFrame())
+	{
+		str.startList();
+
+		for (unsigned i = 0; i < numChilds(); ++i)
+			child(i)->inspect(exportList, str);
+
+		str.endList();
+	}
+}
+
+
+void
 Node::load(Tcl_Obj* list)
 {
 	M_ASSERT(list);
@@ -3410,39 +3876,39 @@ Node::load(Tcl_Obj* list)
 		Tcl_Obj*	opts = nullptr;
 		Type		type;
 
-		if (tcl::equal(what, "root"))
+		if (tcl::equal(what, m_objRoot))
 		{
 			opts = objv[i + 1];
 			type = Root;
 		}
-		else if (tcl::equal(what, "pane"))
+		else if (tcl::equal(what, m_objPane))
 		{
 			uid = objv[i + 1];
 			opts = objv[i + 2];
 			type = Pane;
 		}
-		else if (tcl::equal(what, "frame"))
+		else if (tcl::equal(what, m_objFrame))
 		{
 			uid = objv[i + 1];
 			opts = objv[i + 2];
 			type = Frame;
 		}
-		else if (tcl::equal(what, "metaframe"))
+		else if (tcl::equal(what, m_objMetaFrame))
 		{
 			opts = objv[i + 1];
 			type = MetaFrame;
 		}
-		else if (tcl::equal(what, "panedwindow"))
+		else if (tcl::equal(what, m_objPanedWindow))
 		{
 			opts = objv[i + 1];
 			type = PanedWindow;
 		}
-		else if (tcl::equal(what, "multiwindow"))
+		else if (tcl::equal(what, m_objMultiWindow))
 		{
 			opts = objv[i + 1];
 			type = MultiWindow;
 		}
-		else if (tcl::equal(what, "notebook"))
+		else if (tcl::equal(what, m_objNotebook))
 		{
 			opts = objv[i + 1];
 			type = Notebook;
@@ -4131,6 +4597,9 @@ Node::performDeleteInactiveNodes()
 {
 	M_ASSERT(isRoot());
 
+	// IMPORTANT NOTE: Do not destroy the node immediately, because still
+	// some events may arrive. The deleted nodes will be destroyed later.
+
 	Childs::iterator i = m_active.begin();
 
 	while (i != m_active.end())
@@ -4358,40 +4827,51 @@ Node::initialize()
 	m_objDirsTBLREW = tcl::incrRef(tcl::newListObj("t b l r e w"));
 	m_objDirsTBLRNS = tcl::incrRef(tcl::newListObj("t b l r n s"));
 	m_objDirsTBLRNSEW = tcl::incrRef(tcl::newListObj("t b l r n s e w"));
+	m_objFloating = tcl::incrRef(tcl::newObj("floating"));
 	m_objFrame = tcl::incrRef(tcl::newObj("frame"));
 	m_objFrame2Cmd = tcl::incrRef(tcl::newObj("frame2"));
 	m_objFrameHdrSizeCmd = tcl::incrRef(tcl::newObj("framehdrsize"));
-	m_objOptGrow = tcl::incrRef(tcl::newObj("-grow"));
 	m_objHeaderCmd = tcl::incrRef(tcl::newObj("header"));
 	m_objHorizontal = tcl::incrRef(tcl::newObj("horizontal"));
 	m_objHorz = tcl::incrRef(tcl::newObj("horz"));
 	m_objMetaFrame = tcl::incrRef(tcl::newObj("metaframe"));
 	m_objMultiWindow = tcl::incrRef(tcl::newObj("multiwindow"));
+	m_objNone = tcl::incrRef(tcl::newObj("none"));
+	m_objNormal = tcl::incrRef(tcl::newObj("normal"));
 	m_objNotebook = tcl::incrRef(tcl::newObj("notebook"));
 	m_objNotebookHdrSizeCmd = tcl::incrRef(tcl::newObj("nbhdrsize"));
+	m_objOptAttrs = tcl::incrRef(tcl::newObj("-attrs"));
 	m_objOptBefore = tcl::incrRef(tcl::newObj("-before"));
 	m_objOptExpand = tcl::incrRef(tcl::newObj("-expand"));
+	m_objOptGrow = tcl::incrRef(tcl::newObj("-grow"));
 	m_objOptHeight = tcl::incrRef(tcl::newObj("-height"));
 	m_objOptMaxHeight = tcl::incrRef(tcl::newObj("-maxheight"));
 	m_objOptMaxWidth = tcl::incrRef(tcl::newObj("-maxwidth"));
 	m_objOptMinHeight = tcl::incrRef(tcl::newObj("-minheight"));
 	m_objOptMinWidth = tcl::incrRef(tcl::newObj("-minwidth"));
 	m_objOptOrient = tcl::incrRef(tcl::newObj("-orient"));
+	m_objOptRecover = tcl::incrRef(tcl::newObj("-recover"));
 	m_objOptShrink = tcl::incrRef(tcl::newObj("-shrink"));
+	m_objOptSnapshots = tcl::incrRef(tcl::newObj("-snapshots"));
+	m_objOptState = tcl::incrRef(tcl::newObj("-state"));
 	m_objOptSticky = tcl::incrRef(tcl::newObj("-sticky"));
 	m_objOptWidth = tcl::incrRef(tcl::newObj("-width"));
+	m_objOptX = tcl::incrRef(tcl::newObj("-x"));
+	m_objOptY = tcl::incrRef(tcl::newObj("-y"));
 	m_objPackCmd = tcl::incrRef(tcl::newObj("pack"));
 	m_objPaneConfigCmd = tcl::incrRef(tcl::newObj("paneconfigure"));
 	m_objPanedWindow = tcl::incrRef(tcl::newObj("panedwindow"));
 	m_objPane = tcl::incrRef(tcl::newObj("pane"));
 	m_objReadyCmd = tcl::incrRef(tcl::newObj("ready"));
 	m_objResizedCmd = tcl::incrRef(tcl::newObj("resized"));
+	m_objRoot = tcl::incrRef(tcl::newObj("root"));
 	m_objSashSizeCmd = tcl::incrRef(tcl::newObj("sashsize"));
 	m_objSelectCmd = tcl::incrRef(tcl::newObj("select"));
 	m_objTitleCmd = tcl::incrRef(tcl::newObj("title"));
 	m_objUnpackCmd = tcl::incrRef(tcl::newObj("unpack"));
 	m_objVert = tcl::incrRef(tcl::newObj("vert"));
 	m_objVertical = tcl::incrRef(tcl::newObj("vertical"));
+	m_objWithdrawn = tcl::incrRef(tcl::newObj("withdrawn"));
 	m_objWorkAreaCmd = tcl::incrRef(tcl::newObj("workarea"));
 	m_objX = tcl::incrRef(tcl::newObj("x"));
 	m_objY = tcl::incrRef(tcl::newObj("y"));
@@ -4543,6 +5023,16 @@ cmdContainer(Base& base, int objc, Tcl_Obj* const objv[])
 	{
 		tcl::setResult(base.root->collectContainer());
 	}
+}
+
+
+static void
+cmdFloats(Base& base, int objc, Tcl_Obj* const objv[])
+{
+	if (objc != 3)
+		M_THROW(tcl::Exception(2, objv));
+
+	tcl::setResult(base.root->collectFloats());
 }
 
 
@@ -4728,6 +5218,18 @@ cmdId(Base& base, int objc, Tcl_Obj* const objv[])
 
 
 static void
+cmdInspect(Base& base, int objc, Tcl_Obj* const objv[])
+{
+	Node::AttrSet attrSet;
+
+	for (int i = 3; i < objc; ++i)
+		attrSet.push_back(tcl::asString(objv[i]));
+	
+	tcl::setResult(base.root->inspect(attrSet));
+}
+
+	
+static void
 cmdDock(Base& base, int objc, Tcl_Obj* const objv[])
 {
 	if (objc != 4 && objc != 6)
@@ -4761,6 +5263,7 @@ cmdDock(Base& base, int objc, Tcl_Obj* const objv[])
 	node = node->dock(recv, position);
 	recv->root()->perform(recv->toplevel());
 	tcl::setResult(node->pathObj());
+base.root->dump();
 }
 
 
@@ -4795,6 +5298,7 @@ cmdUndock(Base& base, int objc, Tcl_Obj* const objv[])
 	node->floating(temporary);
 	node->root()->perform(node->toplevel());
 	tcl::setResult(node->pathObj());
+base.root->dump();
 }
 
 
@@ -4826,6 +5330,7 @@ cmdSet(Base& base, int objc, Tcl_Obj* const objv[])
 	if (objc % 2 == 1)
 		M_THROW(tcl::Exception("odd number of arguments"));
 
+	char const* cmd = tcl::asString(objv[1]);
 	char const* path = tcl::asString(objv[3]);
 	Node* node = base.root->findPath(path);
 
@@ -4837,8 +5342,10 @@ cmdSet(Base& base, int objc, Tcl_Obj* const objv[])
 			M_THROW(tcl::Exception("cannot find window '%s'", path));
 	}
 
+	bool ignoreMeta = cmd[::strlen(cmd) - 1] == '!';
+
 	for (int i = 4; i < objc; i += 2)
-		node->set(tcl::asString(objv[i]), objv[i + 1]);
+		node->set(tcl::asString(objv[i]), objv[i + 1], ignoreMeta);
 }
 
 
@@ -4848,6 +5355,7 @@ cmdGet(Base& base, int objc, Tcl_Obj* const objv[])
 	if (objc != 5 && objc != 6)
 		M_THROW(tcl::Exception(3, objv, "window attribute ?default?"));
 	
+	char const* cmd = tcl::asString(objv[1]);
 	char const* path = tcl::asString(objv[3]);
 	Node* node = base.root->findPath(path);
 
@@ -4859,7 +5367,7 @@ cmdGet(Base& base, int objc, Tcl_Obj* const objv[])
 			M_THROW(tcl::Exception("cannot find window '%s'", path));
 	}
 
-	Tcl_Obj* value = node->get(tcl::asString(objv[4]));
+	Tcl_Obj* value = node->get(tcl::asString(objv[4]), cmd[::strlen(cmd) - 1] == '!');
 
 	if (!value)
 	{
@@ -4924,20 +5432,25 @@ cmdTwm(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	static char const* subcommands[] =
 	{
-		"capture",		"close",			"container",	"dock",			"frames",
-		"get",			"id",				"init",			"iscontainer",	"ispacked",
-		"ispane",		"leader",		"load",			"neighbors",	"orientation",
-		"panes",			"parent",		"release",		"set",			"toggle",
-		"uid",			"undock",		"visible",		nullptr
+		"capture",		"close",			"container",	"dock",			"floats",
+		"frames",		"get",			"get!",			"id",				"init",
+		"inspect",		"iscontainer",	"ispacked",		"ispane",		"leader",
+		"load",			"neighbors",	"orientation",	"panes",			"parent",
+		"release",		"set",			"set!",			"toggle",		"uid",
+		"undock",		"visible",
+		nullptr
 	};
 	enum
 	{
-		Cmd_Capture,	Cmd_Close,		Cmd_Container,	Cmd_Dock,			Cmd_Frames,
-		Cmd_Get,			Cmd_Id,			Cmd_Init,		Cmd_IsContainer,	Cmd_IsPacked,
-		Cmd_IsPane,		Cmd_Leader,		Cmd_Load,		Cmd_Neighbors,		Cmd_Orientation,
-		Cmd_Panes,		Cmd_Parent,		Cmd_Release,	Cmd_Set,				Cmd_Toggle,
-		Cmd_Uid,			Cmd_Undock,		Cmd_Visible,
+		Cmd_Capture,	Cmd_Close,			Cmd_Container,		Cmd_Dock,		Cmd_Floats,
+		Cmd_Frames,		Cmd_Get,				Cmd_Get_,			Cmd_Id,			Cmd_Init,
+		Cmd_Inspect,	Cmd_IsContainer,	Cmd_IsPacked,		Cmd_IsPane,		Cmd_Leader,	
+		Cmd_Load,		Cmd_Neighbors,		Cmd_Orientation,	Cmd_Panes,		Cmd_Parent,
+		Cmd_Release,	Cmd_Set,				Cmd_Set_,			Cmd_Toggle,		Cmd_Uid,
+		Cmd_Undock,		Cmd_Visible,		Cmd_LAST
 	};
+
+	static_assert(sizeof(subcommands)/sizeof(subcommands[0]) == Cmd_LAST + 1, "initialization failed");
 
 	if (objc <= 2)
 		return tcl::wrongNumArgs(objc, objv, objc == 1 ? "command path ?args?" : "command ?args?");
@@ -4954,10 +5467,13 @@ cmdTwm(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			case Cmd_Close:			execute(cmdClose, false, objc, objv); break;
 			case Cmd_Container:		execute(cmdContainer, false, objc, objv); break;
 			case Cmd_Dock:				execute(cmdDock, false, objc, objv); break;
+			case Cmd_Floats:			execute(cmdFloats, false, objc, objv); break;
 			case Cmd_Frames:			execute(cmdFrames, false, objc, objv); break;
-			case Cmd_Get:				execute(cmdGet, false, objc, objv); break;
+			case Cmd_Get:				// fallthru
+			case Cmd_Get_:				execute(cmdGet, false, objc, objv); break;
 			case Cmd_Id:				execute(cmdId, false, objc, objv); break;
 			case Cmd_Init:				cmdInit(initBase(objv[2]), objc, objv); break;
+			case Cmd_Inspect:			execute(cmdInspect, false, objc, objv); break;
 			case Cmd_IsContainer:	execute(cmdIsContainer, false, objc, objv); break;
 			case Cmd_IsPane:			execute(cmdIsPane, false, objc, objv); break;
 			case Cmd_IsPacked:		execute(cmdIsPacked, false, objc, objv); break;
@@ -4967,7 +5483,8 @@ cmdTwm(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			case Cmd_Orientation:	execute(cmdOrientation, false, objc, objv); break;
 			case Cmd_Panes:			execute(cmdPanes, false, objc, objv); break;
 			case Cmd_Parent:			execute(cmdParent, false, objc, objv); break;
-			case Cmd_Set:				execute(cmdSet, false, objc, objv); break;
+			case Cmd_Set:				// fallthru
+			case Cmd_Set_:				execute(cmdSet, false, objc, objv); break;
 			case Cmd_Toggle:			execute(cmdToggle, false, objc, objv); break;
 			case Cmd_Undock:			execute(cmdUndock, false, objc, objv); break;
 			case Cmd_Uid:				execute(cmdUid, false, objc, objv); break;
@@ -4975,6 +5492,8 @@ cmdTwm(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 			case Cmd_Capture:			cmdCapture(objc, objv); break;
 			case Cmd_Release:			cmdRelease(objc, objv); break;
+
+			case Cmd_LAST:				break; // never reached
 		}
 	}
 	catch (Terminated const& exc)

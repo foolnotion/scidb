@@ -36,11 +36,14 @@ Tk_Window mainWindow();
 Tk_Window window(char const* path);
 Tk_Window window(Tcl_Obj* path);
 Tk_Window parent(Tk_Window window);
+Tk_Window toplevel(Tk_Window window);
 
 bool exists(char const* path);
 bool exists(Tcl_Obj* obj);
-bool isTopLevel(Tk_Window window);
+bool isToplevel(Tk_Window window);
 
+int x(Tk_Window window);
+int y(Tk_Window window);
 int width(Tk_Window window);
 int height(Tk_Window window);
 

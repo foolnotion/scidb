@@ -155,6 +155,18 @@ tk::window(char const* path)
 }
 
 
+Tk_Window
+tk::toplevel(Tk_Window window)
+{
+	M_ASSERT(window);
+
+	while (!isToplevel(window))
+		window = parent(window);
+
+	return window;
+}
+
+
 void
 tk::raise(Tk_Window window, Tk_Window aboveThis)
 {
@@ -183,12 +195,12 @@ tk::reparent(Tk_Window child, Tk_Window newParent)
 	TkWindow* childPtr	= reinterpret_cast<TkWindow*>(child);
 	TkWindow* parentPtr	= reinterpret_cast<TkWindow*>(newParent);
 
-	if (!isTopLevel(child) && parentPtr->window == None)
+	if (!isToplevel(child) && parentPtr->window == None)
 		unmap(child);
 	
 	::relink(childPtr, parentPtr);
 
-	if (!isTopLevel(child) && childPtr->window != None && parentPtr->window != None)
+	if (!isToplevel(child) && childPtr->window != None && parentPtr->window != None)
 		::reparent(childPtr, parentPtr);
 }
 
@@ -198,7 +210,7 @@ tk::release(Tk_Window window)
 {
 	M_REQUIRE(window);
 
-	if (isTopLevel(window))
+	if (isToplevel(window))
 		return false;
 
 	// detach the window from its gemoetry manager, if any
