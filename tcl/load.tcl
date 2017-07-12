@@ -37,6 +37,7 @@ set EngineSetupFailed		"Loading engine configuration failed"
 set Loading						"Loading %s"
 set StartupFinished			"Startup finished"
 set SystemEncoding			"System encoding is '%s'"
+set Startup						"Startup"
 
 set ReadingFile(options)	"Reading options file"
 set ReadingFile(engines)	"Reading engines file"

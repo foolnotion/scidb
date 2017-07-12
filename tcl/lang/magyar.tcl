@@ -294,29 +294,30 @@
 ::menu::mc::CommandFailed		"Command '%s' failed." ;# NEW
 
 ### load ###############################################################
-::load::mc::SevereError				"Az ECO fájl beolvasása közben súlyos hiba történt"
-::load::mc::FileIsCorrupt			"A %s fájl sérült:"
+::load::mc::SevereError			"Az ECO fájl beolvasása közben súlyos hiba történt"
+::load::mc::FileIsCorrupt		"A %s fájl sérült:"
 ::load::mc::ProgramAborting		"A program kilép (aborting)."
 ::load::mc::EngineSetupFailed		"Elemző modul konfigurációs fájljának betöltése meghiúsult"
 
-::load::mc::Loading					"%s betöltése"
+::load::mc::Loading			"%s betöltése"
 ::load::mc::StartupFinished		"A betöltés befejeződött"
-::load::mc::SystemEncoding	"A rendszer által használt kódolás: '%s'"
+::load::mc::SystemEncoding		"A rendszer által használt kódolás: '%s'"
+::load::mc::Startup			"Startup" ;# NEW
 
 ::load::mc::ReadingFile(options)	"beállítások beolvasása"
 ::load::mc::ReadingFile(engines)	"Elemző modul fájljainak beolvasása"
 
-::load::mc::ECOFile					"ECO adatbázis"
-::load::mc::EngineFile				"Elemző modul"
-::load::mc::SpellcheckFile			"Játékos-adatbázis"  ;#"Játékos-adatbázis fájl"
+::load::mc::ECOFile			"ECO adatbázis"
+::load::mc::EngineFile			"Elemző modul"
+::load::mc::SpellcheckFile		"Játékos-adatbázis"  ;#"Játékos-adatbázis fájl"
 ::load::mc::LocalizationFile		"Lokalizációs fájl"
-::load::mc::RatingList				"%s erősorrend lista"
-::load::mc::WikipediaLinks			"Wikipedia linkek"
-::load::mc::ChessgamesComLinks	"chessgames.com linkek"
-::load::mc::Cities					"Városok"
-::load::mc::PieceSet					"Bábukészlet"
-::load::mc::Theme						"Téma"
-::load::mc::Icons						"Ikonok"
+::load::mc::RatingList			"%s erősorrend lista"
+::load::mc::WikipediaLinks		"Wikipedia linkek"
+::load::mc::ChessgamesComLinks		"chessgames.com linkek"
+::load::mc::Cities			"Városok"
+::load::mc::PieceSet			"Bábukészlet"
+::load::mc::Theme			"Téma"
+::load::mc::Icons			"Ikonok"
 
 ### archive ############################################################
 ::archive::mc::CorruptedArchive			"'%s' archívum hibás."
@@ -397,8 +398,6 @@
 ::application::mc::Board			"&Tábla"
 ::application::mc::MainMenu			"Fő&menü"
 
-::application::mc::DockWindow			"Ablak dokkolása"
-::application::mc::UndockWindow			"Dokkolás visszavonása"
 ::application::mc::ChessInfoDatabase		"Chess Information Data Base"
 ::application::mc::Shutdown			"Kilépés..."
 ::application::mc::QuitAnyway			"Biztos ki akar lépni?"

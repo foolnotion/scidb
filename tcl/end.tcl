@@ -359,6 +359,7 @@ set ::scidb::revision [::scidb::misc::revision]
 
 # --- Initalization ----------------------------------------------------
 
+::splash::print "$load::mc::Startup..."
 ::mc::setup
 ::font::useLanguage $mc::langID
 ::theme::setTheme $menu::Theme

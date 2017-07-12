@@ -302,6 +302,7 @@
 ::load::mc::Loading					"Laddar %s"
 ::load::mc::StartupFinished		"Inläsning klar"
 ::load::mc::SystemEncoding			"Systemkodning är '%s'"
+::load::mc::Startup					"Startup" ;# NEW
 
 ::load::mc::ReadingFile(options)	"Läser alternativ"
 ::load::mc::ReadingFile(engines)	"Läser schackmotor"
@@ -396,8 +397,6 @@
 ::application::mc::Board						"&Bräde"
 ::application::mc::MainMenu					"&Huvudmeny"
 
-::application::mc::DockWindow					"Docka fönster"
-::application::mc::UndockWindow				"Avdocka fönster"
 ::application::mc::ChessInfoDatabase		"Chess Information Data Base"
 ::application::mc::Shutdown					"Avstängning..."
 ::application::mc::QuitAnyway					"Vill du avsluta?"

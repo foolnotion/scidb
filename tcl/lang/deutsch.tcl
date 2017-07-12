@@ -301,6 +301,7 @@
 ::load::mc::Loading					"Lade %s"
 ::load::mc::StartupFinished		"Programmstart beendet"
 ::load::mc::SystemEncoding			"Die Systemenkodierung ist '%s'"
+::load::mc::Startup					"Startvorgang"
 
 ::load::mc::ReadingFile(options)	"Lese Optionendatei"
 ::load::mc::ReadingFile(engines)	"Lese Motorendatei"
@@ -396,8 +397,6 @@
 ::application::mc::Board						"&Brett"
 ::application::mc::MainMenu					"&Hauptmenü"
 
-::application::mc::DockWindow					"Fenster einkoppeln"
-::application::mc::UndockWindow				"Fenster abkoppeln"
 ::application::mc::ChessInfoDatabase		"Schach-Informations-Datenbank"
 ::application::mc::Shutdown					"Schließung..."
 ::application::mc::QuitAnyway					"Trotzdem schliessen?"

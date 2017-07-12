@@ -303,6 +303,7 @@
 ::load::mc::Loading					"Carico %s"
 ::load::mc::StartupFinished		"Startup completato"
 ::load::mc::SystemEncoding			"La codifica di sistema è '%s'"
+::load::mc::Startup					"Startup" ;# NEW
 
 ::load::mc::ReadingFile(options)	"Permessi di lettura del file"
 ::load::mc::ReadingFile(engines)	"Lettura file dei motori"
@@ -397,8 +398,6 @@
 ::application::mc::Board						"&Scacchiera"
 ::application::mc::MainMenu					"&Menù principale"
 
-::application::mc::DockWindow					"Blocca Finestra"
-::application::mc::UndockWindow				"Sblocca Finestra"
 ::application::mc::ChessInfoDatabase		"Chess Information Data Base"
 ::application::mc::Shutdown					"Spegni..."
 ::application::mc::QuitAnyway					"Uscire comunque?"
