@@ -596,9 +596,7 @@ proc buildBrowser {w recv which nrows ncols currentTexture {otherTexture {}}} {
 proc forgetTextures {} {
 	variable Cache
 
-	foreach entry [array names Cache] {
-		image delete [lindex [split $entry ,] 1]
-	}
+	foreach entry [array names Cache] { image delete $Cache($entry) }
 	array unset Cache
 }
 
