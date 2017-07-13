@@ -140,11 +140,9 @@ proc setPromoSign {w method} {
 		set oldMethod $Board(mark:promoted)
 		MakePromoImage $w $method
 		set Board(mark:promoted) $method
-		if {$oldMethod eq "none"} {
-			foreach sq $Board(promoted) {
-				$w.c delete promoted:$sq
-				drawPromoted $w $sq
-			}
+		foreach sq $Board(promoted) {
+			$w.c delete promoted:$sq
+			drawPromoted $w $sq
 		}
 	}
 }
@@ -324,7 +322,7 @@ proc update {w {board {}} {promoted {}}} {
 			DrawPromoted $w $sq
 			raisePiece $w $sq
 		}
-		RaiseAdornment $w
+		RaiseInput $w
 	}
 
 	return $board
@@ -347,7 +345,7 @@ proc move {w list} {
 		pieceFrom pieceTo pieceCaptured pieceHolding rookFrom rookTo forward
 
 	if {$pieceTo eq " "} {
-		if {$pieceFrom eq " "} { return }  ;# null move
+		if {$pieceFrom eq " "} { return } ;# null move
 		set pieceTo "."
 	}
 
@@ -489,7 +487,7 @@ proc hilite {w i which} {
 		$w.c raise $which:$i
 		$w.c raise suggested:$i
 		raisePiece $w
-		RaiseAdornment $w
+		RaiseInput $w
 	}
 }
 
@@ -530,7 +528,7 @@ proc updateMarks {w marks} {
 proc drawPromoted {w square} {
 	DrawPromoted $w $square
 	raisePiece $w $square
-	RaiseAdornment $w
+	RaiseInput $w
 }
 
 
@@ -751,7 +749,7 @@ proc setSign {w square} {
 
 	RaiseSign $w
 	raisePiece $w
-	RaiseAdornment $w
+	RaiseInput $w
 }
 
 
@@ -908,7 +906,7 @@ proc drawAlternative {w from to color cmd} {
 }
 
 
-proc RaiseAdornment {w} {
+proc RaiseInput {w} {
 	$w.c raise text
 	$w.c raise arrow
 	$w.c raise alternative
@@ -961,7 +959,7 @@ proc DrawPiece {w sq piece} {
 			-tags [list piece piece:$sq] \
 			;
 		if {[string length $promoted]} { DrawPromoted $w $sq }
-		RaiseAdornment $w
+		RaiseInput $w
 	}
 }
 
@@ -1101,7 +1099,7 @@ proc DoMove {w list} {
 		}
 	}
 
-	RaiseAdornment $w
+	RaiseInput $w
 }
 
 
@@ -1133,7 +1131,7 @@ proc DrawFadingPiece {w sq piece dir} {
 			$w.c create image {*}[$w.c coords square:$sq] \
 				-image $Board(animate,piece) -anchor nw -tag piece:$sq
 			raisePiece $w $sq
-			RaiseAdornment $w
+			RaiseInput $w
 		}
 
 		::scidb::tk::image disable \
@@ -1238,7 +1236,7 @@ proc DrawAllMarks {w} {
 
 	RaiseSign $w
 	raisePiece $w
-	RaiseAdornment $w
+	RaiseInput $w
 }
 
 
