@@ -629,9 +629,11 @@ winboard::Engine::stopAnalysis(bool restartIsPending)
 
 	if (!m_stopAnalyzeIsPending)
 	{
-		sendStopAnalysis();
 		if (oldState != Pause)
+		{
+			sendStopAnalysis();
 			m_stopAnalyzeIsPending = true;
+		}
 		reset();
 
 		if (!restartIsPending)
