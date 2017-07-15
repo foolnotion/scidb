@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2012-2013 Gregor Cramer
+# Copyright: (C) 2012-2017 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -301,6 +301,7 @@ proc buildText {path context {forceSbSet 0}} {
 		set yscrollcmd [list ::scrolledframe::sbset $f.sb]
 	}
 
+	set bd [expr {$context eq "editor" ? 0 : 1}]
 	set pgn [tk::text $f.pgn \
 		-foreground black \
 		-yscrollcommand $yscrollcmd \
@@ -310,7 +311,7 @@ proc buildText {path context {forceSbSet 0}} {
 		-width 0 \
 		-height 0 \
 		-relief sunken \
-		-borderwidth 1 \
+		-borderwidth $bd \
 		-state disabled \
 		-wrap word \
 		-font $::font::text($context:normal) \
@@ -1735,7 +1736,7 @@ proc SelectionChanged {mw context position tag {blink yes}} {
 						set hilite(comment) $Colors(hilite:comment)
 					}
 					*-info {
-						set Priv(hover:key) h:info
+						set Priv(hover:key) m:info
 						set hilite(info) $Colors(hilite:info)
 					}
 				}

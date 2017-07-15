@@ -114,10 +114,9 @@ array set MoveInfoPGN {
 }
 
 
-proc build {parent width height} {
+proc build {top width height} {
 	variable Vars
 
-	set top   [::tk::frame $parent.top -borderwidth 0 -background white]
 	set main  [::tk::multiwindow $top.main -borderwidth 0 -background white]
 	set games [::tk::multiwindow $main.games -borderwidth 0 -background white]
 	set logo  [::tk::frame $main.logo -borderwidth 0 -background white -cursor left_ptr]
@@ -372,13 +371,20 @@ proc setActiveLang {code flag} {
 proc activate {w flag} {
 	variable Vars
 
-	::toolbar::activate [winfo parent [lindex $Vars(toolbars) 0]] $flag
+	if {[winfo exists $Vars(main)]} {
+		::toolbar::activate [winfo parent [lindex $Vars(toolbars) 0]] $flag
+	}
+}
+
+
+proc closed {w} {
+	::scidb::db::unsubscribe gameSwitch [namespace current]::GameSwitched
 }
 
 
 proc empty? {} {
 	variable Vars
-	return [expr {[::gamebar::size $Vars(gamebar)] == 0}]
+	return [expr {![[namespace parent]::exists? editor] || [::gamebar::size $Vars(gamebar)] == 0}]
 }
 
 
@@ -390,6 +396,7 @@ proc gamebar {} {
 proc add {position base variant tags {at -1}} {
 	variable Vars
 
+	if {![[namespace parent]::exists? editor]} { return }
 	if {$at >= 0} {
 		::gamebar::insert $Vars(gamebar) $at $position $tags
 	} else {
@@ -693,14 +700,14 @@ proc ensureScratchGame {} {
 	if {![::gamebar::empty? $Vars(gamebar)]} { return 0 }
 
 	::scidb::game::switch 9
-	set fen [::scidb::pos::fen]
 	::scidb::game::new 0
 	::scidb::game::switch 0
-	::scidb::pos::setup $fen
+	::scidb::pos::setup [::scidb::pos::fen]
 	set tags [::scidb::game::tags 0]
 	::game::setFirst $scratchbaseName Normal $tags utf-8
 	add 0 $scratchbaseName Normal $tags
 	select 0
+
 	return 1
 }
 
@@ -1019,11 +1026,15 @@ proc UpdateLanguages {position languageSet} {
 proc GameSwitched {position} {
 	variable Vars
 
+	if {![info exists Vars(virgin:$position)]} { return }
+
 	if {[info exists Vars(lang:set:$position)]} {
 		UpdateLanguages $position $Vars(lang:set:$position)
 	}
-	if {[info exists Vars(successor:$position)]} {
+	if {$position < 9 && $Vars(setup:$position)} {
+		::widget::textLineScroll $Vars(pgn:$position) moveto 0
 		ProcessGoto $position [::scidb::game::position key] $Vars(successor:$position)
+		set Vars(setup:$position) 0
 	}
 }
 
@@ -1063,6 +1074,7 @@ proc ConfigureEditor {} {
 	set Vars(header:10) ""
 	set Vars(tags:10) {}
 	set Vars(after:10) {}
+	set Vars(setup:10) 1
 	set Vars(position) 10
 	::scidb::game::switch 10
 	::pgn::setup::openSetupDialog [winfo toplevel $Vars(main)] editor 10
@@ -1236,8 +1248,8 @@ proc DoLayout {position content {context editor} {w {}}} {
 					$w mark gravity m-0 right
 					$w mark set cur m-0
 					set Vars(lastrow:$position) [$w lineno end]
-				} elseif {[$w get cur-1c] eq "\n"} {
-					$w delete cur-1c end
+				} elseif {[$w get cur-1i] eq "\n"} {
+					$w delete cur-1i end
 				}
 
 				# delete all the temporary marks
@@ -1346,11 +1358,9 @@ proc ProcessGoto {position key succKey} {
 			}
 		}
 		set Vars(previous:$position) $key
-		if {[llength [set nextKeys [::scidb::game::next keys $position]]] > 1} {
-			foreach k [::scidb::game::next keys $position] {
-				if {[llength [set range [FindRange $w $k]]]} {
-					$w tag add h:next {*}$range
-				}
+		foreach k [::scidb::game::next keys $position] {
+			if {[llength [set range [FindRange $w $k]]]} {
+				$w tag add h:next {*}$range
 			}
 		}
 		[namespace parent]::board::updateMarks [::scidb::game::query marks]
@@ -1633,14 +1643,16 @@ proc InsertDiagram {context position w level key data} {
 				}
 				if {$color eq "black"} { ::board::diagram::rotate $emb }
 				::board::diagram::update $emb $board
-				::board::diagram::bind $emb <Button-1> [namespace code [list EditAnnotation nag]]
-				::board::diagram::bind $emb <Double-1> {#} ;# catch double clicks
-				::board::diagram::bind $emb <Button-3> [namespace code [list PopupMenu $w $position]]
-				::board::diagram::bind $emb <Double-3> {#} ;# catch double clicks
-				::board::diagram::bind $emb <Button-4> [string map [list %W $w] [bind $w <Button-4>]]
-				::board::diagram::bind $emb <Button-4> {+ break }
-				::board::diagram::bind $emb <Button-5> [string map [list %W $w] [bind $w <Button-5>]]
-				::board::diagram::bind $emb <Button-5> {+ break }
+				if {$position < 9} {
+					::board::diagram::bind $emb <Button-1> [namespace code [list EditAnnotation nag]]
+					::board::diagram::bind $emb <Double-1> {#} ;# catch double clicks
+					::board::diagram::bind $emb <Button-3> [namespace code [list PopupMenu $w $position]]
+					::board::diagram::bind $emb <Double-3> {#} ;# catch double clicks
+					::board::diagram::bind $emb <Button-4> [string map [list %W $w] [bind $w <Button-4>]]
+					::board::diagram::bind $emb <Button-4> {+ break }
+					::board::diagram::bind $emb <Button-5> [string map [list %W $w] [bind $w <Button-5>]]
+					::board::diagram::bind $emb <Button-5> {+ break }
+				}
 				$w window create cur \
 					-align center \
 					-window $emb \
@@ -2205,6 +2217,7 @@ proc ResetGame {w position {tags {}}} {
 	set Vars(comment:$position) ""
 	set Vars(result:$position) ""
 	set Vars(virgin:$position) 1
+	set Vars(setup:$position) 1
 	set Vars(header:$position) ""
 	set Vars(last:$position) ""
 	set Vars(tags:$position) $tags
@@ -2225,6 +2238,14 @@ proc ResetGame {w position {tags {}}} {
 
 proc ForgetGame {position} {
 	variable Vars
+
+	if {[::scidb::game::query $position open]} {
+		if {$position < 9} {
+			::game::release $position
+		} else {
+			::scidb::game::release $position
+		}
+	}
 	array unset Vars *:$position
 }
 
