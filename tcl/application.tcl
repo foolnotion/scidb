@@ -367,6 +367,11 @@ if {[::process::testOption use-clock]} {
 }
 
 
+proc exists? {uid} {
+	return true;
+}
+
+
 proc shutdown {} {
 	variable icon::32x32::shutdown
 	variable ::scidb::mergebaseName
