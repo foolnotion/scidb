@@ -851,7 +851,7 @@ proc Tooltip {path sym} {
 		default {
 			if {[info exists Nag($sym)]} {
 				::tooltip::show $path $Nag($sym)
-			} else if {[info exists ::emoticons::mc::Tooltip($sym)]} {
+			} elseif {[info exists ::emoticons::mc::Tooltip($sym)]} {
 				::tooltip::show $path $::emoticons::mc::Tooltip($sym)
 			}
 		}
