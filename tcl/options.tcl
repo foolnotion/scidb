@@ -90,6 +90,11 @@ proc write {} {
 }
 
 
+proc writeEvalNS {chan namespace} {
+	puts $chan "namespace eval $namespace {}"
+}
+
+
 proc writeItem {chan var {lowercaseOnly 1}} {
 	if {[array exists $var]} {
 		puts $chan "array set $var {"

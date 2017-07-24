@@ -30,6 +30,7 @@ namespace eval application {
 namespace eval tree {
 namespace eval games {
 
+
 proc build {parent width height} {
 	variable Vars
 
@@ -51,9 +52,13 @@ proc build {parent width height} {
 	::gametable::bind $table <ButtonRelease-2>	+[namespace code [list ReleaseButton $table]]
 	::gametable::bind $table <ButtonPress-3>		+[list set [namespace current]::Vars(button) 3]
 
-	set Vars(after) {}
+	set Vars(after)  {}
 	set Vars(button) 0
 	set Vars(start) -1
+	set Vars(hidden) 1
+	set Vars(update) {}
+	set Vars(parent) $parent
+	set Vars(table)  $table
 
 	::scidb::db::subscribe gameList \
 		[namespace current]::TableUpdate \
@@ -61,13 +66,48 @@ proc build {parent width height} {
 		$table \
 		;
 	bind $table <<TableMinSize>> [namespace code [list TableMinSize $table %d]]
+	after idle [namespace parent]::startSearch
 	return $table
 }
 
 
-proc clear {parent} {
-	::gametable::clear $parent.treeGames
+proc activate {w flag} {
+	variable Vars
+
+	set Vars(hidden) [expr {!$flag}]
+
+	if {$flag && [llength $Vars(update)]} {
+		TableUpdate {*}$Vars(update)
+		set $Vars(update) {}
+	}
 }
+
+
+proc closed {w} {
+	variable Vars
+
+	::scidb::db::unsubscribe gameList \
+		[namespace current]::TableUpdate \
+		[namespace current]::Close \
+		$Vars(table) \
+		;
+	catch { after cancel $Vars(after) }
+	catch { after cancel $Vars(timer) }
+	catch { after cancel $Vars(interval) }
+}
+
+
+proc clear {{parent ""}} {
+	variable Vars
+
+	if {[string length $parent] == 0} { set parent $Vars(parent) }
+	::gametable::clear $parent.treeGames
+	set Vars(update) {}
+}
+
+
+proc parent {} { return [set [namespace current]::Vars(parent)] }
+proc table {}  { return [set [namespace current]::Vars(table)] }
 
 
 proc ReleaseButton {table} {
@@ -141,7 +181,7 @@ proc Release1 {table} {
 	set Vars(start) -1
 
 	if {[info exists Vars(dir)]} {
-		catch { after kill $Vars(timer) }
+		catch { after cancel $Vars(timer) }
 		unset -nocomplain Vars(dir)
 		unset -nocomplain Vars(timer)
 		unset -nocomplain Vars(interval)
@@ -178,12 +218,17 @@ proc TableUpdate {table id base variant {view -1} {index -1}} {
 	variable Vars
 
 	if {[::scidb::tree::isRefBase? $base] && $view == [::scidb::tree::view]} {
-		after cancel $Vars(after)
-
-		if {$index == -1} {
-			set Vars(after) [after idle [namespace code [list UpdateTable $table $base $variant]]]
+		if {$Vars(hidden)} {
+			set Vars(update) [list $table $id $base $variant $view $index]
 		} else {
-			set Vars(after) [after idle [list ::gametable::fill $table $index [expr {$index + 1}]]]
+			after cancel $Vars(after)
+
+			if {$index == -1} {
+				set Vars(after) [after idle [namespace code [list UpdateTable $table $base $variant]]]
+			} else {
+				set Vars(after) [after idle [list ::gametable::fill $table $index [expr {$index + 1}]]]
+			}
+			set Vars(update) {}
 		}
 	}
 }

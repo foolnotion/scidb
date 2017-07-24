@@ -260,6 +260,7 @@
 ::menu::mc::Tools								"&Tools"
 ::menu::mc::Extras							"E&xtras"
 ::menu::mc::Setup								"Setu&p"
+::menu::mc::Layout							"La&yout"
 
 # Contact
 ::menu::mc::ContactBugReport				"&Bug Report"
@@ -390,17 +391,56 @@
 ::util::photos::mc::Log(updated:1)				"%s file updated."
 ::util::photos::mc::Log(updated:N)				"%s files updated."
 
+### twm ################################################################
+::twm::mc::Close				"Close"
+::twm::mc::Undock				"Undock"
+
+::twm::mc::Timeout			"Timeout after eight seconds without mouse motions, the frame has been re-docked to old place."
+::twm::mc::TimeoutDetail	"This safety handling is required to avoid frozen screens, as long as the tiling window management is in an experimental stage."
+
+### application::layout ################################################
+::application::layout::mc::Rename					"Rename"
+::application::layout::mc::Delete					"Delete"
+::application::layout::mc::Load						"Load"
+::application::layout::mc::CannotOpenFile			"Cannot read file '%s'."
+::application::layout::mc::RestoreToOldLayout	"Restore to old layout"
+
 ### application ########################################################
 ::application::mc::Information				"&Information"
 ::application::mc::Database					"&Database"
 ::application::mc::Board						"&Board"
 ::application::mc::MainMenu					"&Main Menu"
 
+::application::mc::Notebook					"Notebook"
+::application::mc::Multiwindow				"Stack"
+::application::mc::FoldTitleBar				"Fold Titlebar"
+::application::mc::FoldAllTitleBars			"Fold all Titlebars"
+::application::mc::UnfoldAllTitleBars		"Unfold all Titlebars"
+::application::mc::MoveWindow					"Move Window"
+::application::mc::StayOnTop					"Stay on Top"
+::application::mc::HideWhenLeavingTab		"Hide When Leaving Tab"
+::application::mc::SaveLayout					"Save Layout"
+::application::mc::RenameLayout				"Rename Layout"
+::application::mc::LoadLayout					"Load Layout"
+::application::mc::NewLayout					"New Layout"
+::application::mc::ManageLayouts				"Manage Layouts"
+::application::mc::ShowAllDockingPoints	"Show all Docking Points"
+::application::mc::DockingArrowSize			"Docking Arrow Size"
+::application::mc::Windows						"Windows"
+
+::application::mc::Pane(analysis)			"Analysis"
+::application::mc::Pane(board)				"Board"
+::application::mc::Pane(editor)				"Notation"
+::application::mc::Pane(tree)					"Tree"
+::application::mc::Pane(games)				"Games"
+
 ::application::mc::ChessInfoDatabase		"Chess Information Data Base"
 ::application::mc::Shutdown					"Shutdown..."
 ::application::mc::QuitAnyway					"Quit anyway?"
 ::application::mc::CancelLogout				"Cancel Logout"
 ::application::mc::AbortWriteOperation		"Abort write operation"
+::application::mc::ConfirmOverwrite			"Overwrite existing layout '%s'?"
+::application::mc::ConfirmDelete				"Really delete layout '%s'?"
 
 ::application::mc::UpdatesAvailable			"Updates available"
 
@@ -417,8 +457,7 @@
 
 ### application::board #################################################
 ::application::board::mc::ShowCrosstable				"Show tournament table for this game"
-::application::board::mc::StartEngine					"Start chess analysis engine"
-::application::board::mc::StopEngine					"Stop chess analysis engine"
+::application::board::mc::StartEngine					"Start chess analysis engine in new window"
 ::application::board::mc::InsertNullMove				"Insert null move"
 ::application::board::mc::SelectStartPosition		"Select Start Position"
 ::application::board::mc::LoadRandomGame				"Load random game"

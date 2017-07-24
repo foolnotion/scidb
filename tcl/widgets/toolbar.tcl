@@ -965,7 +965,7 @@ proc Add {toolbar widgetCommand args} {
 
 	set parent [winfo parent $toolbar]
 	if {![info exists Specs(configure:$parent)]} {
-		bind $parent <Map> [namespace code { Finish %W }]
+		bind $w <Map> [namespace code [list Finish $parent $w]]
 		set Specs(configure:$parent) 1
 	}
 
@@ -1511,12 +1511,11 @@ proc Repeat {w} {
 }
 
 
-proc Finish {parent} {
+proc Finish {parent w} {
 	variable Specs
 
+	bind $w <Map> {}
 	if {![info exists Specs(configure:$parent)]} { return }
-
-	bind $parent <Map> {}
 	unset Specs(configure:$parent)
 
 	foreach toolbar $Specs(count:$parent) {

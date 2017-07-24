@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2013 Gregor Cramer
+# Copyright: (C) 2009-2017 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -144,7 +144,9 @@ proc gamebar {path} {
 }
 
 
-proc add {gamebar id tags} { insert $gamebar end $id $tags }
+proc add {gamebar id tags} {
+	if {[winfo exists $gamebar]} { insert $gamebar end $id $tags }
+}
 
 
 proc insert {gamebar at id tags} {
@@ -245,7 +247,7 @@ proc insert {gamebar at id tags} {
 	$gamebar create rectangle 0 0 0 0 \
 		-fill $normal \
 		-outline $normal \
-		-tags [list whitebg$id all$id] \
+		-tags [list whitebg$id bg$id all$id] \
 		-state $state \
 		;
 	$gamebar create text 0 0 -anchor nw \
@@ -264,7 +266,7 @@ proc insert {gamebar at id tags} {
 	$gamebar create rectangle 0 0 0 0 \
 		-fill $normal \
 		-outline $normal \
-		-tags [list blackbg$id all$id] \
+		-tags [list blackbg$id bg$id all$id] \
 		-state $state \
 		;
 	$gamebar create text 0 0 \
@@ -300,7 +302,7 @@ proc insert {gamebar at id tags} {
 	$gamebar create rectangle 0 0 0 0 \
 		-fill {} \
 		-outline {} \
-		-tags [list line1bg$id all$id] \
+		-tags [list line1bg$id bg$id all$id] \
 		-state $state \
 		;
 	$gamebar create rectangle 0 0 0 0 \
@@ -615,7 +617,8 @@ proc unlocked? {gamebar id} {
 
 
 proc empty? {gamebar} {
-	return [expr {[set [namespace current]::Specs(size:$gamebar)] == 0}]
+	variable Specs
+	return [expr {![winfo exists $gamebar] || $Specs(size:$gamebar) == 0}]
 }
 
 
@@ -1092,7 +1095,6 @@ proc Setup {gamebar at id tags data} {
 		if {$Options(separateColumn) && $Specs(size:$gamebar) == 2} {
 			SetSelected $gamebar $id
 		} else {
-#			PrepareAsHeader $gamebar $Specs(selected:$gamebar)
 			Update $gamebar $id no
 		}
 	}

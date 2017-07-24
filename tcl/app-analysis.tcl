@@ -92,22 +92,11 @@ array set Defaults {
 	best:foreground	analysis,best:foreground
 	error:foreground	analysis,error:foreground
 	active:background	analysis,active:background
-}
-
-array set Options {
-	font					TkTextFont
-	engine:bestFirst	1
-	engine:nlines		2
-	engine:multiPV		4
-	engine:singlePV	0
+	engine:font			TkTextFont
 	engine:delay		250
 }
 
-array set Vars {
-	engine:id		-1
-	engine:locked	0
-	engine:pause	0
-}
+array set EngineMap {}
 
 # from Scid
 # array set Informant { !? 0.5 ? 1.5 ?? 3.0 ?! 0.5 }
@@ -118,10 +107,31 @@ variable ScoreToEval {	45 10		75 14		175 16	400 18 }
 # Values from CB:			35			70			160
 
 
-proc build {parent width height} {
-	variable Options
+proc build {parent number {patternNumber 0}} {
 	variable Defaults
-	variable Vars
+	variable EngineMap
+
+	namespace eval ${number} {}
+	variable ${number}::Options
+
+	set mw $parent.mw
+	set main $mw.main
+	set mesg $mw.mesg
+	set tree $main.tree
+
+	namespace eval $tree {}
+	variable ${tree}::Vars
+
+	array set Vars { engine:locked 0 engine:pause 0 }
+
+	if {$patternNumber > 0} {
+		array set Options [array get ${patternNumber}::Options]
+	} elseif {![info exists Options]} {
+		array set Options { engine:bestFirst 1 engine:nlines 2 engine:multiPV 4 engine:singlePV 0 }
+	}
+
+	set bg [::colors::lookup $Defaults(info:background)]
+	set mw [tk::multiwindow $mw -borderwidth 0 -background $bg]
 
 	set Vars(best:0) black
 	if {$Options(engine:bestFirst) || $Options(engine:singlePV)} {
@@ -135,20 +145,21 @@ proc build {parent width height} {
 	set Vars(state) normal
 	set Vars(mode) normal
 	set Vars(message) {}
-	array set fopt [font configure $Options(font)]
+	set Vars(title) ""
+	set Vars(number) $number
+	array set fopt [font configure $Defaults(engine:font)]
 #	set Vars(font:bold) [list $fopt(-family) $fopt(-size) bold]
-	set Vars(linespace) [font metrics $Options(font) -linespace]
+	set Vars(linespace) [font metrics $Defaults(engine:font) -linespace]
 	set Vars(keepActive) 0
 	set Vars(current:item) 0
+	set Vars(main) $main
+	set Vars(mesg) $mesg
+	set Vars(mw) $mw
 
-	set charwidth [font measure $Options(font) "0"]
+	set charwidth [font measure $Defaults(engine:font) "0"]
 	set minsize [expr {12*$charwidth}]
 
-	set mw   [tk::multiwindow $parent.mw \
-					-borderwidth 0 \
-					-background [::colors::lookup $Defaults(info:background)] \
-				]
-	set main [tk::frame $mw.main \
+	set main [tk::frame $main \
 		-borderwidth 0 \
 		-background [::colors::lookup $Defaults(info:background)] \
 	]
@@ -156,16 +167,10 @@ proc build {parent width height} {
 		-borderwidth 0 \
 		-background [::colors::lookup $Defaults(background)] \
 	]
-
 	bind $mesg <<LanguageChanged>> [namespace code LanguageChanged]
-
-	set Vars(mw) $mw
-	set Vars(mesg) $mesg
-	set Vars(main) $main
 
 	$mw add $main -sticky nsew
 	$mw add $mesg
-	set tree $main.tree
 
 	set info [tk::frame $main.info \
 		-background [::colors::lookup $Defaults(background)] \
@@ -189,6 +194,7 @@ proc build {parent width height} {
 	$tscore tag configure center -justify center
 	$tscore tag configure symbol -font $::font::symbol(text:normal)
 	pack $tscore -padx 2 -pady 2
+	set Vars(info) $main.info
 
 	set move [tk::frame $info.move \
 		-background [::colors::lookup $Defaults(info:background)] \
@@ -244,8 +250,8 @@ proc build {parent width height} {
 		grid columnconfigure [set $type] 0 -weight 1
 		grid [set t$type] -column 0 -row 1 -padx 2 -sticky ew
 		incr col 2
-		bind [set  $type] <ButtonPress-3> [namespace code [list PopupMenu $tree]]
-		bind [set t$type] <ButtonPress-3> [namespace code [list PopupMenu $tree]]
+		bind [set  $type] <ButtonPress-3> [namespace code [list PopupMenu $tree $number]]
+		bind [set t$type] <ButtonPress-3> [namespace code [list PopupMenu $tree $number]]
 	}
 
 	::tooltip::tooltip $score  [namespace current]::mc::BestScore
@@ -272,9 +278,9 @@ proc build {parent width height} {
 		-showlines no \
 		-showrootlines no \
 		-background [::colors::lookup $Defaults(background)] \
-		-font $Options(font) \
+		-font $Defaults(engine:font) \
 		;
-	bind $tree <ButtonPress-3> [namespace code [list PopupMenu $tree %x %y]]
+	bind $tree <ButtonPress-3> [namespace code [list PopupMenu $tree $number %x %y]]
 	bind $tree <ButtonPress-1> [namespace code [list AddMoves $tree %x %y]]
 
 	$tree notify install <Item-enter>
@@ -326,20 +332,20 @@ proc build {parent width height} {
 	grid $tree -column 0 -row 1 -sticky ewns
 
 	grid columnconfigure $info {1 3 5 7} -weight 1
-	grid columnconfigure $info {0 2 4 6} -minsize 2
+	grid columnconfigure $info {2 4 6} -minsize 2
 
 	grid columnconfigure $main 0 -weight 1
 	grid rowconfigure $main 1 -weight 1
 
 	pack $mw -fill both -expand yes
-	bind $tmove <Destroy> [namespace code Destroy]
 
-	set Vars(tree) $tree
 	set Vars(score) $info.score.t
 	set Vars(move) $info.move.t
 	set Vars(time) $info.time.t
 	set Vars(depth) $info.depth.t
 	set Vars(toolbar:childs) {}
+	set Vars(toolbar:height) 0
+	set Vars(info:height) 0
 
 	set tbControl [::toolbar::toolbar $parent \
 		-id analysis-control \
@@ -354,23 +360,25 @@ proc build {parent width height} {
 		-tooltipvar [namespace current]::mc::Pause \
 		-command [namespace code [list Pause $tree]] \
 	]
+	trace add variable [namespace current]::${tree}::Vars(engine:pause) write \
+		[namespace code [list ConfigurePause $tree]]
 	lappend Vars(toolbar:childs) $Vars(button:pause)
 	set Vars(button:lock) [::toolbar::add $tbControl checkbutton \
 		-image $::icon::toolbarLock \
-		-variable [namespace current]::Vars(engine:locked) \
+		-variable [namespace current]::${tree}::Vars(engine:locked) \
 		-tooltipvar [namespace current]::mc::LockEngine \
-		-command [namespace code EngineLock] \
+		-command [namespace code [list EngineLock $tree]] \
 	]
 	lappend Vars(toolbar:childs) $Vars(button:lock)
 	::toolbar::add $tbControl button \
 		-image $::icon::toolbarSetup \
-		-command [namespace code Setup] \
+		-command [namespace code [list Setup $number]] \
 		-tooltipvar [::mc::var [namespace current]::mc::Setup "..."] \
 		;
 	::toolbar::addSeparator $tbControl
 	set tbw [::toolbar::add $tbControl checkbutton \
 		-image $::icon::toolbarLines \
-		-variable [namespace current]::Options(engine:singlePV) \
+		-variable [namespace current]::${number}::Options(engine:singlePV) \
 		-onvalue 0 \
 		-offvalue 1 \
 		-tooltipvar [namespace current]::mc::MultipleVariations \
@@ -379,7 +387,7 @@ proc build {parent width height} {
 	lappend Vars(toolbar:childs) $tbw
 	set Vars(widget:ordering) [::toolbar::add $tbControl checkbutton \
 		-image $::icon::toolbarSort(descending) \
-		-variable [namespace current]::Options(engine:bestFirst) \
+		-variable [namespace current]::${number}::Options(engine:bestFirst) \
 		-tooltipvar [namespace current]::mc::BestFirstOrder \
 		-command [namespace code [list SetOrdering $tree]] \
 	]
@@ -395,7 +403,7 @@ proc build {parent width height} {
 		-state readonly \
 		-cursor {} \
 		-takefocus 0 \
-		-textvar [namespace current]::Options(engine:nlines) \
+		-textvar [namespace current]::${number}::Options(engine:nlines) \
 		-exportselection no \
 		-command [namespace code [list SetLinesPerPV $tree]] \
 	]
@@ -404,6 +412,7 @@ proc build {parent width height} {
 	set Vars(widget:linesPerPV) $lpv
 	::toolbar::add $tbControl frame -width 3
 	set Vars(toolbar:control) $tbControl
+	bind $tbControl <Configure> [list set [namespace current]::${tree}::Vars(toolbar:height) %h]
 
 	set tbInfo [::toolbar::toolbar $parent \
 		-id analysis-info \
@@ -423,67 +432,93 @@ proc build {parent width height} {
 		-tooltipvar [namespace current]::mc::HashFullness \
 	]
 
-	SetState disabled
+	set EngineMap($number) $tree
+	SetState $tree disabled
 	Layout $tree
 }
 
 
+proc newNumber {} {
+	variable EngineMap
+
+	set i 1
+	set numbers [array names EngineMap]
+	while {$i in $numbers} { incr i }
+	return $i
+}
+
+
+proc highestNumber {} {
+	variable EngineMap
+
+	set numbers [lsort -decreasing [array names EngineMap]]
+	return [expr {[llength $numbers] ? [lindex $numbers 0] : 0}]
+}
+
+
+proc exists? {number} {
+	variable EngineMap
+	return [info exists EngineMap($number)]
+}
+
+
+proc active? {number} {
+	return [::engine::active? $number]
+}
+
+
 proc update {args} {
-	variable Options
-	variable Vars
+	variable Defaults
+	variable EngineMap
 
-	if {[info exists Vars(after)]} {
-		after cancel $Vars(after)
-	}
+	foreach number [array names EngineMap] {
+		variable [set [namespace current]::EngineMap($number)]::Vars
 
-	if {$Vars(engine:id) != -1 && !$Vars(engine:locked)} {
-		set Vars(after) [after $Options(engine:delay) [list ::engine::startAnalysis $Vars(engine:id)]]
+		if {[info exists Vars(after)]} {
+			after cancel $Vars(after)
+		}
+		if {[::engine::active? $number] && !$Vars(engine:locked)} {
+			set Vars(after) [after $Defaults(engine:delay) [list ::engine::startAnalysis $number]]
+		}
 	}
 }
 
 
-proc startAnalysis {dialog} {
-	variable Vars
-	variable Options
+proc startAnalysis {number} {
+	set tree [set [namespace current]::EngineMap($number)]
+	variable ${tree}::Vars
+	variable $Vars(number)::Options
 
 	set Vars(message) {}
 	$Vars(mesg) configure -text ""
-	::engine::kill $Vars(engine:id)
+	::engine::kill $number
 	after cancel $Vars(after)
 
 	set isReadyCmd [namespace current]::IsReady
 	set signalCmd [namespace current]::Signal
 	set updateCmd [namespace current]::UpdateInfo
 
-	set Vars(engine:id) [::engine::startEngine $isReadyCmd $signalCmd $updateCmd]
-	wm title $dialog [::engine::engineName $Vars(engine:id)]
-	set Vars(dialog) $dialog
+	::engine::startEngine $number $isReadyCmd $signalCmd $updateCmd $tree
+	::application::setAnalysisTitle $number [set Vars(title) [::engine::engineName $number]]
+	set Vars(engine:pause) [expr {![engine::active? $number]}]
 
-	if {$Vars(engine:id) >= 0} {
+	if {!$Vars(engine:pause)} {
 		if {$Options(engine:bestFirst)} { set order bestFirst } else { set order unordered }
-		::scidb::engine::ordering $Vars(engine:id) $order
+		::scidb::engine::ordering [::engine::id $number] $order
 		if {$Options(engine:singlePV)} { set multiPV 1 } else { set multiPV $Options(engine:multiPV) }
-		::engine::activateEngine $Vars(engine:id) [list multiPV $multiPV]
+		::engine::activateEngine $number [list multiPV $multiPV]
 	}
 }
 
 
-proc restartAnalysis {} {
-	variable Options
-	variable Vars
+proc restartAnalysis {number} {
+	variable $Vars(number)::Options
+	variable ${tree}::Vars
 	
 	after cancel $Vars(after)
 	if {$Options(engine:singlePV)} { set multiPV 1 } else { set multiPV $Options(engine:multiPV) }
-	::engine::restartAnalysis $Vars(engine:id) [list multiPV $multiPV]
-}
-
-
-proc stopAnalysis {} {
-	variable Vars
-
-	after cancel $Vars(after)
-	::engine::stopAnalysis $Vars(engine:id)
-	set Vars(engine:id) -1
+	::engine::restartAnalysis $number [list multiPV $multiPV]
+	::application::setAnalysisTitle $number [set Vars(title) [::engine::engineName $number]]
 }
 
 
@@ -492,42 +527,62 @@ proc activate {w flag} {
 }
 
 
-proc clearHash {} {
-	Display(hash) 0
+proc closed {w} {
+	variable EngineMap
+
+	set tree ${w}.mw.main.tree
+	variable ${tree}::Vars
+
+	after cancel $Vars(after)
+	after cancel $Vars(after2)
+	array unset EngineMap $Vars(number)
+	::engine::kill $Vars(number)
+}
+
+
+proc clearHash {number} {
+	Display(hash) [set [namespace current]::EngineMap($number)] 0
 }
 
 
 proc Pause {tree} {
-	variable Vars
+	variable ${tree}::Vars
 
 	set Vars(engine:pause) [expr {!$Vars(engine:pause)}]
 
 	if {$Vars(engine:pause)} {
 		after cancel $Vars(after)
-		::engine::pause $Vars(engine:id)
-		::toolbar::childconfigure $Vars(button:pause) \
-			-image $::icon::toolbarStart \
-			-tooltipvar [namespace current]::mc::Resume \
-			;
+		::engine::pause $Vars(number)
 	} else {
-		::engine::resume $Vars(engine:id)
-		::toolbar::childconfigure $Vars(button:pause) \
-			-image $::icon::toolbarPause \
-			-tooltipvar [namespace current]::mc::Pause \
-			;
+		::engine::resume $Vars(number)
 	}
 }
 
 
-proc Setup {} {
-	::engine::openSetup .application
+proc ConfigurePause {tree args} {
+	if {![winfo exists $tree]} { return }
+	variable ${tree}::Vars
+
+	if {$Vars(engine:pause)} {
+		set icon $::icon::toolbarStart
+		set tip [namespace current]::mc::Resume
+	} else {
+		set icon $::icon::toolbarPause
+		set tip [namespace current]::mc::Pause
+	}
+	::toolbar::childconfigure $Vars(button:pause) -image $icon -tooltipvar $tip
+}
+
+
+proc Setup {number} {
+	::engine::openSetup .application $number
 }
 
 
 proc SetOrdering {tree} {
-	variable Vars
+	variable ${tree}::Vars
+	variable $Vars(number)::Options
 	variable Defaults
-	variable Options
 
 	if {$Options(engine:bestFirst) || $Options(engine:singlePV)} {
 		set Vars(best:1) black
@@ -541,40 +596,40 @@ proc SetOrdering {tree} {
 		set order unordered
 	}
 
-	::scidb::engine::ordering $Vars(engine:id) $order
+	::scidb::engine::ordering [::engine::id $Vars(number)] $order
 
 	if {$Options(engine:bestFirst)} {
 		foreach i {0 1 2 3 4 5 6 7} {
-			$Vars(tree) item element configure Line$i Eval  elemTextSym -fill black
-			$Vars(tree) item element configure Line$i Value elemTextFig -fill black
+			$tree item element configure Line$i Eval  elemTextSym -fill black
+			$tree item element configure Line$i Value elemTextFig -fill black
 		}
 	}
 }
 
 
-proc EngineLock {args} {
-	variable Vars
+proc EngineLock {tree} {
+	variable ${tree}::Vars
 
-	if {$Vars(engine:id) != -1 && !$Vars(engine:locked)} {
+	if {[::engine::active? $Vars(number)] && !$Vars(engine:locked)} {
 		after cancel $Vars(after)
-		after idle [list :::engine::startAnalysis $Vars(engine:id)]
+		after idle [list :::engine::startAnalysis $Vars(number)]
 	}
 }
 
 
-proc ClearLines {w args} {
+proc ClearLines {tree args} {
 	foreach i $args {
-		$w item element configure Line$i Eval  elemTextSym -text "" -fill black
-		$w item element configure Line$i Value elemTextFig -text "" -fill black
-		$w item element configure Line$i Moves elemTextFig -text "" -fill black
+		$tree item element configure Line$i Eval  elemTextSym -text "" -fill black
+		$tree item element configure Line$i Value elemTextFig -text "" -fill black
+		$tree item element configure Line$i Moves elemTextFig -text "" -fill black
 	}
 }
 
 
 proc SetMultiPV {tree {number 0}} {
-	variable Vars
+	variable ${tree}::Vars
+	variable $Vars(number)::Options
 	variable Defaults
-	variable Options
 
 	if {$number} {
 		if {$number == 1} {
@@ -586,7 +641,7 @@ proc SetMultiPV {tree {number 0}} {
 	}
 
 	if {$Options(engine:singlePV)} { set multiPV 1 } else { set multiPV $Options(engine:multiPV) }
-	::scidb::engine::multiPV $Vars(engine:id) $multiPV
+	::scidb::engine::multiPV [::engine::id $Vars(number)] $multiPV
 	if {$Options(engine:bestFirst) || $Options(engine:singlePV)} {
 		set Vars(best:1) black
 	} else {
@@ -597,8 +652,8 @@ proc SetMultiPV {tree {number 0}} {
 
 
 proc SetLinesPerPV {tree} {
-	variable Vars
-	variable Options
+	variable ${tree}::Vars
+	variable $Vars(number)::Options
 
 	set Options(engine:nlines) [$Vars(widget:linesPerPV) get]
 	Layout $tree
@@ -606,8 +661,8 @@ proc SetLinesPerPV {tree} {
 
 
 proc Layout {tree} {
-	variable Options
-	variable Vars
+	variable ${tree}::Vars
+	variable $Vars(number)::Options
 
 	if {$Options(engine:singlePV)} {
 		set pvcount 1
@@ -635,7 +690,7 @@ proc Layout {tree} {
 	for {} {$i < 8} {incr i} {
 		$tree item configure Line$i -visible 0
 		$tree item element configure Line$i Moves elemTextFig -lines $lines -wrap $wrap
-		ClearLines $Vars(tree) $i
+		ClearLines $tree $i
 	}
 
 	set theight [expr {$nlines*$pvcount*$Vars(linespace) + $pvcount*4}]
@@ -646,16 +701,28 @@ proc Layout {tree} {
 	$tree style layout styleSym elemTextSym -minheight $lheight
 	::toolbar::childconfigure $Vars(widget:linesPerPV) -state $state
 #	::toolbar::childconfigure $Vars(widget:ordering) -state $state
+	after idle [namespace code [list ResizePane $tree $theight]]
 }
 
 
-proc SetState {state} {
-	variable Vars
+proc ResizePane {tree height} {
+	variable ${tree}::Vars
+
+	if {$height <= 1 || $Vars(toolbar:height) <= 1} { return }
+	incr height $Vars(toolbar:height)
+	incr height [winfo height $Vars(info)]
+	incr height 8 ;# borders
+	[namespace parent]::resizePaneHeight analysis:$Vars(number) $height
+}
+
+
+proc SetState {tree state} {
+	variable ${tree}::Vars
 
 	after cancel $Vars(after2)
 	set Vars(after2) ""
 
-	if {![winfo exists $Vars(tree)]} { return }
+	if {![winfo exists $tree]} { return }
 	if {$Vars(state) eq $state} { return }
 	set Vars(state) $state
 
@@ -709,9 +776,9 @@ proc FormatScore {score} {
 }
 
 
-proc ShowMessage {type txt} {
+proc ShowMessage {tree type txt} {
 	variable Defaults
-	variable Vars
+	variable ${tree}::Vars
 
 	set width [expr {[winfo width $Vars(mw)] - 50}]
 	$Vars(mesg) configure \
@@ -723,15 +790,15 @@ proc ShowMessage {type txt} {
 }
 
 
-proc Display(state) {state} {
-	variable Vars
+proc Display(state) {tree state} {
+	variable ${tree}::Vars
 
 	after cancel $Vars(after2)
 	set Vars(after2) ""
 
 	switch $state {
-		stop	{ set Vars(after2) { after idle [namespace code [list SetState disabled]] } }
-		start	{ SetState normal }
+		stop	{ set Vars(after2) { after idle [namespace code [list SetState $tree disabled]] } }
+		start	{ SetState $tree normal }
 
 		pause - resume {
 			$Vars(move) configure -state normal
@@ -739,7 +806,7 @@ proc Display(state) {state} {
 			if {$state eq "pause"} {
 				$Vars(move) insert end $mc::Stopped {stopped center}
 			} else {
-				SetState normal
+				SetState $tree normal
 			}
 			$Vars(move) configure -state disabled
 		}
@@ -747,9 +814,9 @@ proc Display(state) {state} {
 }
 
 
-proc Display(clear) {} {
+proc Display(clear) {tree} {
 	variable Defaults
-	variable Vars
+	variable ${tree}::Vars
 
 	set Vars(message) {}
 	$Vars(mesg) configure -text ""
@@ -769,40 +836,40 @@ proc Display(clear) {} {
 	$Vars(widget:hashfullness) configure -text ""
 	set Vars(maxMoves) 0
 
-	ClearLines $Vars(tree) 0 1 2 3 4 5 6 7
-	$Vars(tree) activate 0
+	ClearLines $tree 0 1 2 3 4 5 6 7
+	$tree activate 0
 }
 
 
-proc Display(pv) {score mate depth seldepth time nodes nps tbhits line pv} {
-	variable Options
-	variable Vars
+proc Display(pv) {tree score mate depth seldepth time nodes nps tbhits line pv} {
+	variable ${tree}::Vars
+	variable $Vars(number)::Options
 
-	Display(time) $time $depth $seldepth $nodes $nps $tbhits
+	Display(time) $tree $time $depth $seldepth $nodes $nps $tbhits
 
 	set evalTxt [::font::mapNagToSymbol [EvalText $score $mate]]
 	set scoreTxt [ScoreText $score $mate]
 
-	$Vars(tree) item element configure Line$line Eval  elemTextSym -text $evalTxt
-	$Vars(tree) item element configure Line$line Value elemTextFig -text $scoreTxt
-	$Vars(tree) item element configure Line$line Moves elemTextFig -text [::font::translate $pv]
+	$tree item element configure Line$line Eval  elemTextSym -text $evalTxt
+	$tree item element configure Line$line Value elemTextFig -text $scoreTxt
+	$tree item element configure Line$line Moves elemTextFig -text [::font::translate $pv]
 
 	if {$line + 1 == $Vars(current:item)} {
-		$Vars(tree) activate $Vars(current:item)
+		$tree activate $Vars(current:item)
 	}
 }
 
 
-proc Display(suspended) {args} {
-	variable Vars
+proc Display(suspended) {tree args} {
+	variable ${tree}::Vars
 
 	set line [lindex $args 6]
 	set Vars(suspended,$line) $args
 }
 
 
-proc Display(bestscore) {score mate bestLines} {
-	variable Vars
+proc Display(bestscore) {tree score mate bestLines} {
+	variable ${tree}::Vars
 
 	$Vars(score) configure -state normal
 	$Vars(score) delete 1.0 end
@@ -823,29 +890,29 @@ proc Display(bestscore) {score mate bestLines} {
 	set line 0
 	foreach best $bestLines {
 		set color [::colors::lookup $Vars(best:$best)]
-		$Vars(tree) item element configure Line$line Eval  elemTextSym -fill $color
-		$Vars(tree) item element configure Line$line Value elemTextFig -fill $color
+		$tree item element configure Line$line Eval  elemTextSym -fill $color
+		$tree item element configure Line$line Value elemTextFig -fill $color
 		if {$best} {
 			set evalTxt [::font::mapNagToSymbol [EvalText $score $mate]]
 			set scoreTxt [ScoreText $score $mate]
-			$Vars(tree) item element configure Line$line Eval  elemTextSym -text $evalTxt
-			$Vars(tree) item element configure Line$line Value elemTextFig -text $scoreTxt
+			$tree item element configure Line$line Eval  elemTextSym -text $evalTxt
+			$tree item element configure Line$line Value elemTextFig -text $scoreTxt
 		}
 		incr line
 	}
 }
 
 
-proc Display(over) {state color} {
-	variable Vars
+proc Display(over) {tree state color} {
+	variable ${tree}::Vars
 
-	set Vars(message) [list Display(over) $state $color]
-	ShowMessage info [format $mc::Status($state) [set ::mc::[string toupper $color 0 0]]]
+	set Vars(message) [list Display(over) $tree $state $color]
+	ShowMessage $tree info [format $mc::Status($state) [set ::mc::[string toupper $color 0 0]]]
 }
 
 
-proc Display(move) {number count move} {
-	variable Vars
+proc Display(move) {tree number count move} {
+	variable ${tree}::Vars
 
 	if {$count > 0} {
 		set Vars(maxMoves) $count
@@ -863,8 +930,8 @@ proc Display(move) {number count move} {
 }
 
 
-proc Display(time) {time depth seldepth nodes nps tbhits} {
-	variable Vars
+proc Display(time) {tree time depth seldepth nodes nps tbhits} {
+	variable ${tree}::Vars
 
 	# TODO: show nps, tbhits
 
@@ -892,24 +959,26 @@ proc Display(time) {time depth seldepth nodes nps tbhits} {
 }
 
 
-proc Display(bestmove) {move} {
+proc Display(bestmove) {tree move} {
+# TODO
 }
 
 
-proc Display(hash) {fullness} {
-	variable Vars
+proc Display(hash) {tree fullness} {
+	variable ${tree}::Vars
 	$Vars(widget:hashfullness) configure -text "[expr {int($fullness/10.0 + 0.5)}]%"
 }
 
 
-proc Display(cpuload) {load} {
-#	variable Vars
+proc Display(cpuload) {tree load} {
+#	TODO
+#	variable ${tree}::Vars
 #	$Vars(widget:cpuload) configure -text "[expr {int($load/10.0 + 0.5)}]%"
 }
 
 
-proc Display(error) {code} {
-	variable Vars
+proc Display(error) {tree code} {
+	variable ${tree}::Vars
 
 	switch $code {
 		registration - copyprotection	{ set msg $::engine::mc::ProbeError($code) }
@@ -920,41 +989,36 @@ proc Display(error) {code} {
 		searchMate							{ set msg $mc::SearchMateNotSupported }
 
 		variant {
-			set variant [::scidb::engine::variant $Vars(engine:id)]
+			set variant [::scidb::engine::variant [::engine::id $Vars(number)]]
 			set msg [format $mc::NotSupported($code) $::mc::VariantName($variant)]
 		}
 	}
 
-	set Vars(message) [list Display(error) $code]
-	ShowMessage error $msg
+	set Vars(message) [list Display(error) $tree $code]
+	ShowMessage $tree error $msg
 }
 
 
-proc UpdateInfo {id type info} {
-	Display($type) {*}$info
+proc UpdateInfo {tree id type info} {
+	if {![winfo exists $tree]} { return }
+	Display($type) $tree {*}$info
 }
 
 
-proc Destroy {} {
-	variable Vars
+proc IsReady {tree id} {
+	if {![winfo exists $tree]} { return }
+	variable ${tree}::Vars
+	after idle [list :::engine::startAnalysis $Vars(number)]
+}
+
+
+proc Signal {tree id code} {
+	if {![winfo exists $tree]} { return }
+	variable ${tree}::Vars
 
 	after cancel $Vars(after)
-	::engine::kill $Vars(engine:id)
-	set Vars(engine:id) -1
-}
-
-
-proc IsReady {id} {
-	after idle [list :::engine::startAnalysis $id]
-}
-
-
-proc Signal {id code} {
-	variable Vars
-
-	after cancel $Vars(after)
-	set parent [winfo toplevel $Vars(tree)]
-	SetState disabled
+	set parent [winfo toplevel $tree]
+	SetState $tree disabled
 
 	if {[string is integer $code]} {
 		set msg [format $mc::Signal(terminated) $code]
@@ -968,82 +1032,86 @@ proc Signal {id code} {
 		}
 		default {
 			after idle [list ::dialog::error -parent $parent -message $msg]
-			after idle [list ::engine::kill $Vars(engine:id)]
+			after idle [list ::engine::kill $Vars(number)]
 		}
 	}
-
-	set Vars(engine:id) -1
 }
 
 
-proc VisitItem {w mode column item {x {}} {y {}}} {
-	variable Vars
+proc VisitItem {tree mode column item {x {}} {y {}}} {
+	variable ${tree}::Vars
 
 	if {$Vars(keepActive)} { return }
 	if {[string length $column] == 0} { return }
-	if {$Vars(engine:id) < 0} { return }
+	if {![::engine::active? $Vars(number)]} { return }
 
 	if {$mode eq "leave"} {
-		$w activate root
+		$tree activate root
 		set Vars(current:item) 0
 	} else {
-		if {$item <= [::scidb::engine::countLines $Vars(engine:id)]} {
-			$w activate $item
+		if {$item <= [::scidb::engine::countLines [::engine::id $Vars(number)]]} {
+			$tree activate $item
 		}
 		set Vars(current:item) $item
 	}
 }
 
 
-proc AddMoves {w x y} {
-	variable Options
-	variable Vars
+proc AddMoves {tree x y} {
+	variable ${tree}::Vars
+	variable $Vars(number)::Options
 
-	set id [$w identify $x $y]
+	set id [$tree identify $x $y]
 	if {[lindex $id 0] ne "item"} { return }
-	set line [$w item order [lindex $id 1] -visible]
-	if {[::scidb::engine::empty? $Vars(engine:id) $line]} { return }
-	if {[::scidb::engine::snapshot $Vars(engine:id)]} { set arg line } else { set arg move }
-	InsertMoves $w add $line $mc::Add($arg)
+	set line [$tree item order [lindex $id 1] -visible]
+	set id [::engine::id $Vars(number)]
+	if {[::scidb::engine::empty? $id $line]} { return }
+	if {[::scidb::engine::snapshot $id]} { set arg line } else { set arg move }
+	InsertMoves $tree add $line $mc::Add($arg)
 }
 
 
-proc InsertMoves {parent what line operation} {
-	variable Vars
+proc InsertMoves {tree what line operation} {
+	variable ${tree}::Vars
+
+	set id [::engine::id $Vars(number)]
 
 	if {[application::pgn::ensureScratchGame]} {
-		::scidb::engine::bind $Vars(engine:id)
+		::scidb::engine::bind $id
 	}
 
 	# don't care about errors, may happen if the user is
 	# double clicking or in seldom cases due to raise conditions
-	::scidb::engine::snapshot $Vars(engine:id) $what $line
+	::scidb::engine::snapshot $id $what $line
 }
 
 
 proc LanguageChanged {} {
-	variable Vars
-	if {[llength $Vars(message)]} { {*}$Vars(message) }
+	foreach number [array names EngineMap] {
+		variable [set [namespace current]::EngineMap($number)]::Vars
+		if {[llength $Vars(message)]} { {*}$Vars(message) }
+	}
 }
 
 
-proc PopupMenu {parent args} {
-	variable Options
-	variable Vars
+proc PopupMenu {tree number args} {
+	variable ${tree}::Vars
+	variable $Vars(number)::Options
 
-	set menu $parent.__menu__
+	set menu $tree.__menu__
 	catch { destroy $menu }
 	menu $menu -tearoff no
 	catch { wm attributes $menu -type popup_menu }
 
 	if {[llength $args]} {
-		set id [$parent identify {*}$args]
+		set id [$tree identify {*}$args]
 
 		if {[lindex $id 0] eq "item"} {
-			set line [$parent item order [lindex $id 1] -visible]
-			if {![::scidb::engine::empty? $Vars(engine:id) $line]} {
-				$Vars(tree) activate [set Vars(current:item) [expr {$line + 1}]]
-				if {[::scidb::engine::snapshot $Vars(engine:id)]} {
+			set line [$tree item order [lindex $id 1] -visible]
+			set id [::engine::id $Vars(number)]
+			if {![::scidb::engine::empty? $id $line]} {
+				$tree activate [set Vars(current:item) [expr {$line + 1}]]
+				if {[::scidb::engine::snapshot $id]} {
 					set state normal
 					set lbl $mc::Add(var)
 				} else {
@@ -1054,13 +1122,13 @@ proc PopupMenu {parent args} {
 					-label " $lbl" \
 					-image $::icon::16x16::plus \
 					-compound left \
-					-command [namespace code [list InsertMoves $parent move $line $lbl]] \
+					-command [namespace code [list InsertMoves $tree move $line $lbl]] \
 					;
 				$menu add command \
 					-label " $mc::Add(line)" \
 					-image $::icon::16x16::plus \
 					-compound left \
-					-command [namespace code [list InsertMoves $parent line $line $mc::Add(line)]] \
+					-command [namespace code [list InsertMoves $tree line $line $mc::Add(line)]] \
 					-state $state \
 					;
 				if {$Options(engine:singlePV)} { set state disabled }
@@ -1068,7 +1136,7 @@ proc PopupMenu {parent args} {
 					-label " $mc::Add(all)" \
 					-image $::icon::16x16::plus \
 					-compound left \
-					-command [namespace code [list InsertMoves $parent all $line $mc::Add(all)]] \
+					-command [namespace code [list InsertMoves $tree all $line $mc::Add(all)]] \
 					-state $state \
 					;
 				$menu add separator
@@ -1080,7 +1148,7 @@ proc PopupMenu {parent args} {
 		-label " $mc::Setup..." \
 		-image $::icon::16x16::setup \
 		-compound left \
-		-command [namespace code Setup] \
+		-command [namespace code [list Setup $number]] \
 		;
 	if {$Vars(engine:pause)} {
 		set txt $mc::Resume
@@ -1093,23 +1161,23 @@ proc PopupMenu {parent args} {
 		-label " $txt" \
 		-image $img \
 		-compound left \
-		-command [namespace code [list Pause $parent]] \
+		-command [namespace code [list Pause $tree]] \
 		;
 	$menu add separator
 	$menu add checkbutton \
 		-label " $mc::LockEngine" \
 		-image $::icon::16x16::lock \
 		-compound left \
-		-command [namespace code EngineLock] \
-		-variable [namespace current]::Vars(engine:locked) \
+		-command [namespace code [list EngineLock $tree]] \
+		-variable [namespace current]::${tree}::Vars(engine:locked) \
 		;
 	::theme::configureCheckEntry $menu
 	$menu add checkbutton \
 		-label " $mc::BestFirstOrder" \
 		-image $::icon::16x16::sort(descending) \
 		-compound left \
-		-command [namespace code [list SetOrdering $parent]] \
-		-variable [namespace current]::Options(engine:bestFirst) \
+		-command [namespace code [list SetOrdering $tree]] \
+		-variable [namespace current]::${number}::Options(engine:bestFirst) \
 		;
 	::theme::configureCheckEntry $menu
 	$menu add separator
@@ -1124,8 +1192,8 @@ proc PopupMenu {parent args} {
 		$sub add radiobutton \
 			-label $n \
 			-value $n \
-			-variable [namespace current]::Options(engine:multiPV) \
-			-command [namespace code [list SetMultiPV $parent $n]] \
+			-variable [namespace current]::${number}::Options(engine:multiPV) \
+			-command [namespace code [list SetMultiPV $tree $n]] \
 			;
 		::theme::configureRadioEntry $sub
 	}
@@ -1141,8 +1209,8 @@ proc PopupMenu {parent args} {
 			$sub add radiobutton \
 				-label $i \
 				-value $i \
-				-variable [namespace current]::Options(engine:nlines) \
-				-command [namespace code [list SetLinesPerPV $parent]] \
+				-variable [namespace current]::${number}::Options(engine:nlines) \
+				-command [namespace code [list SetLinesPerPV $tree]] \
 				;
 			::theme::configureRadioEntry $sub
 		}
@@ -1151,45 +1219,51 @@ proc PopupMenu {parent args} {
 	set Vars(keepActive) 1
 	rename [namespace current]::Display(pv) [namespace current]::Display_
 	rename [namespace current]::Display(suspended) [namespace current]::Display(pv)
-	::bind $menu <<MenuUnpost>> [namespace code [list RevertDisplay $parent]]
-	tk_popup $menu {*}[winfo pointerxy $parent]
+	::bind $menu <<MenuUnpost>> [namespace code [list RevertDisplay $tree]]
+	tk_popup $menu {*}[winfo pointerxy $tree]
 }
 
 
-proc RevertDisplay {w} {
-	variable Vars
+proc RevertDisplay {tree} {
+	variable ${tree}::Vars
 
 	rename [namespace current]::Display(pv) [namespace current]::Display(suspended)
 	rename [namespace current]::Display_ [namespace current]::Display(pv)
 
 	foreach line [array names Vars suspended,*] {
-		Display(pv) {*}$Vars($line)
+		Display(pv) $tree {*}$Vars($line)
 	}
 
 	array unset Vars suspended,*
 	set Vars(keepActive) 0
-	after idle [namespace code [list ActivateCurrent $w]]
+	after idle [namespace code [list ActivateCurrent $tree]]
 }
 
 
-proc ActivateCurrent {w} {
-	variable Vars
+proc ActivateCurrent {tree} {
+	variable ${tree}::Vars
 
-	if {![winfo exists $w]} { return }
-	lassign [winfo pointerxy $w] x y
-	set x [expr {$x - [winfo rootx $w]}]
-	set y [expr {$y - [winfo rooty $w]}]
-	set id [$w identify $x $y]
+	if {![winfo exists $tree]} { return }
+	lassign [winfo pointerxy $tree] x y
+	set x [expr {$x - [winfo rootx $tree]}]
+	set y [expr {$y - [winfo rooty $tree]}]
+	set id [$tree identify $x $y]
 	if {[lindex $id 0] eq "item"} { set item [lindex $id 1] } else { set item 0 }
-	$w activate $item
+	$tree activate $item
 	set Vars(current:item) $item
 }
 
 
 proc WriteOptions {chan} {
-	::options::writeItem $chan [namespace current]::Options
-}
+	variable EngineMap
 
+	foreach ns [namespace children [namespace current]] {
+		if {[string match {*[0-9]} $ns]} {
+			::options::writeEvalNS $chan $ns
+			::options::writeItem $chan ${ns}::Options
+		}
+	}
+}
 
 ::options::hookWriter [namespace current]::WriteOptions
 

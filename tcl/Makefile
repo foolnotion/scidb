@@ -129,6 +129,7 @@ SOURCES = \
 	app-tree-games.tcl \
 	app-variation.tcl \
 	app-analysis.tcl \
+	manage-layouts.tcl \
 	pgn-setup.tcl \
 	save-replace.tcl \
 	export.tcl \

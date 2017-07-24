@@ -261,6 +261,7 @@
 ::menu::mc::Tools							"&Verktyg"
 ::menu::mc::Extras						"&Tillägg"
 ::menu::mc::Setup							"&Inställningar"
+::menu::mc::Layout						"La&yout" ;# NEW
 
 # Contact
 ::menu::mc::ContactBugReport				"&Felrapport"
@@ -391,17 +392,56 @@
 ::util::photos::mc::Log(updated:1)				"%s fil updaterad."
 ::util::photos::mc::Log(updated:N)				"%s fil(er) updaterad."
 
+### twm ################################################################
+::twm::mc::Close				"Close" ;# NEW
+::twm::mc::Undock				"Undock" ;# NEW
+
+::twm::mc::Timeout			"Timeout after eight seconds without mouse motions, the frame has been re-docked to old place." ;# NEW
+::twm::mc::TimeoutDetail	"This safety handling is required to avoid frozen screens, as long as the tiling window management is in an experimental stage." ;# NEW
+
+### application::layout ################################################
+::application::layout::mc::Rename					"Rename" ;# NEW
+::application::layout::mc::Delete					"Delete" ;# NEW
+::application::layout::mc::Load						"Load" ;# NEW
+::application::layout::mc::CannotOpenFile			"Cannot read file '%s'." ;# NEW
+::application::layout::mc::RestoreToOldLayout	"Restore to old layout" ;# NEW
+
 ### application ########################################################
 ::application::mc::Information				"&Information" ;# NEW
 ::application::mc::Database					"&Databas"
 ::application::mc::Board						"&Bräde"
 ::application::mc::MainMenu					"&Huvudmeny"
 
+::application::mc::Notebook					"Notebook" ;# NEW
+::application::mc::Multiwindow				"Stack" ;# NEW
+::application::mc::FoldTitleBar				"Fold Titlebar" ;# NEW
+::application::mc::FoldAllTitleBars			"Fold all Titlebars" ;# NEW
+::application::mc::UnfoldAllTitleBars		"Unfold all Titlebars" ;# NEW
+::application::mc::MoveWindow					"Move Window" ;# NEW
+::application::mc::StayOnTop					"Stay on Top" ;# NEW
+::application::mc::HideWhenLeavingTab     "Hide When Leaving Tab" ;# NEW
+::application::mc::SaveLayout					"Save Layout" ;# NEW
+::application::mc::RenameLayout				"Rename Layout" ;# NEW
+::application::mc::LoadLayout					"Load Layout" ;# NEW
+::application::mc::NewLayout					"New Layout" ;# NEW
+::application::mc::ManageLayouts				"Manage Layouts" ;# NEW
+::application::mc::ShowAllDockingPoints	"Show all Docking Points" ;# NEW
+::application::mc::DockingArrowSize       "Docking Arrow Size" ;# NEW
+::application::mc::Windows						"Windows" ;# NEW
+
+::application::mc::Pane(analysis)			"Analysis" ;# NEW
+::application::mc::Pane(board)				"Board" ;# NEW
+::application::mc::Pane(editor)				"Notation" ;# NEW
+::application::mc::Pane(tree)					"Tree" ;# NEW
+::application::mc::Pane(games)				"Games" ;# NEW
+
 ::application::mc::ChessInfoDatabase		"Chess Information Data Base"
 ::application::mc::Shutdown					"Avstängning..."
 ::application::mc::QuitAnyway					"Vill du avsluta?"
 ::application::mc::CancelLogout				"Avbryt utloggning"
 ::application::mc::AbortWriteOperation		"Avbryt skrivningar"
+::application::mc::ConfirmOverwrite			"Overwrite existing layout '%s'?" ;# NEW
+::application::mc::ConfirmDelete				"Really delete layout '%s'?" ;# NEW
 
 ::application::mc::UpdatesAvailable			"Uppdateringar tillgängliga"
 
@@ -418,8 +458,7 @@
 
 ### application::board #################################################
 ::application::board::mc::ShowCrosstable				"Visa turneringstabell för partiet"
-::application::board::mc::StartEngine					"Starta analysmotor"
-::application::board::mc::StopEngine					"Stoppa analysmotor"
+::application::board::mc::StartEngine					"Starta analysmotor" ;# NEW content: Start chess analysis engine in new window
 ::application::board::mc::InsertNullMove				"Infoga nolldrag"
 ::application::board::mc::SelectStartPosition		"Välj startposition"
 ::application::board::mc::LoadRandomGame				"Ladda slumpvis parti"

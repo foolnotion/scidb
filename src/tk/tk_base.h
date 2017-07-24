@@ -40,12 +40,16 @@ Tk_Window toplevel(Tk_Window window);
 
 bool exists(char const* path);
 bool exists(Tcl_Obj* obj);
+bool isAlreadyDead(Tcl_Obj* obj);
 bool isToplevel(Tk_Window window);
+bool isMapped(Tk_Window window);
 
 int x(Tk_Window window);
 int y(Tk_Window window);
 int width(Tk_Window window);
 int height(Tk_Window window);
+int rootx(Tk_Window window);
+int rooty(Tk_Window window);
 
 char const* name(Tk_Window window);
 

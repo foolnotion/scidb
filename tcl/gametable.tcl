@@ -281,9 +281,9 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	variable Defaults
 	variable ratings
 
-	namespace eval [namespace current]::$path {}
-	variable [namespace current]::${path}::Vars
-	variable [namespace current]::${path}::Options
+	namespace eval $path {}
+	variable ${path}::Vars
+	variable ${path}::Options
 
 	array set Vars {
 		deleted		1

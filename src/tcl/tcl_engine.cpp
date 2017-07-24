@@ -162,11 +162,13 @@ public:
 				mstl::string const& directory,
 				Tcl_Obj* isReadyCmd,
 				Tcl_Obj* signalCmd,
-				Tcl_Obj* updateInfoCmd)
+				Tcl_Obj* updateInfoCmd,
+				Tcl_Obj* clientData)
 		: ::app::Engine(protocol, command, directory)
 		,m_isReadyCmd(isReadyCmd)
 		,m_signalCmd(signalCmd)
 		,m_updateInfoCmd(updateInfoCmd)
+		,m_clientData(clientData)
 		,m_id(0)
 	{
 		M_ASSERT(isReadyCmd);
@@ -176,6 +178,7 @@ public:
 		Tcl_IncrRefCount(m_isReadyCmd);
 		Tcl_IncrRefCount(m_signalCmd);
 		Tcl_IncrRefCount(m_updateInfoCmd);
+		Tcl_IncrRefCount(m_clientData);
 
 		if (m_pv == 0)
 		{
@@ -207,6 +210,7 @@ public:
 		Tcl_DecrRefCount(m_isReadyCmd);
 		Tcl_DecrRefCount(m_signalCmd);
 		Tcl_DecrRefCount(m_updateInfoCmd);
+		Tcl_DecrRefCount(m_clientData);
 
 		if (m_id)
 			Tcl_DecrRefCount(m_id);
@@ -215,7 +219,7 @@ public:
 	void sendInfo(Tcl_Obj* cmd, Tcl_Obj* args)
 	{
 		Tcl_IncrRefCount(args);
-		tcl::invoke(__func__, m_updateInfoCmd, m_id, cmd, args, nullptr);
+		tcl::invoke(__func__, m_updateInfoCmd, m_clientData, m_id, cmd, args, nullptr);
 		Tcl_DecrRefCount(args);
 	}
 
@@ -391,7 +395,7 @@ public:
 
 	void engineIsReady() override
 	{
-		tcl::invoke(__func__, m_isReadyCmd, m_id, nullptr);
+		tcl::invoke(__func__, m_isReadyCmd, m_clientData, m_id, nullptr);
 	}
 
 	void engineSignal(Signal signal) override
@@ -413,7 +417,7 @@ public:
 				break;
 		}
 
-		tcl::invoke(__func__, m_signalCmd, m_id, Tcl_NewStringObj(msg, -1), nullptr);
+		tcl::invoke(__func__, m_signalCmd, m_clientData, m_id, Tcl_NewStringObj(msg, -1), nullptr);
 	}
 
 	void setId(unsigned id)
@@ -426,6 +430,7 @@ private:
 	Tcl_Obj* m_isReadyCmd;
 	Tcl_Obj* m_signalCmd;
 	Tcl_Obj* m_updateInfoCmd;
+	Tcl_Obj* m_clientData;
 	Tcl_Obj* m_id;
 
 	static Tcl_Obj* m_error;
@@ -803,6 +808,7 @@ cmdStart(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	Tcl_Obj*		isReadyCmd	= objectFromObj(objc, objv, 4);
 	Tcl_Obj*		signalCmd	= objectFromObj(objc, objv, 5);
 	Tcl_Obj*		updateCmd	= objectFromObj(objc, objv, 6);
+	Tcl_Obj*		clientData	= objectFromObj(objc, objv, 7);
 
 	Engine::Protocol prot;
 
@@ -813,7 +819,7 @@ cmdStart(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	else
 		return error(CmdProbe, 0, 0, "unknown protocol '%s'", protocol);
 
-	Engine* engine = new Engine(prot, command, directory, isReadyCmd, signalCmd, updateCmd);
+	Engine* engine = new Engine(prot, command, directory, isReadyCmd, signalCmd, updateCmd, clientData);
 	unsigned id = tcl::app::scidb->addEngine(engine);
 
 	engine->setId(id);

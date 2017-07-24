@@ -1859,7 +1859,7 @@ Application::switchGame(unsigned position, ReferenceGames updateReferenceGames)
 	}
 	else
 	{
-		game.data.game->updateSubscriber(Game::UpdateNewPosition);
+		//game.data.game->updateSubscriber(Game::UpdateNewPosition);
 	}
 
 	if (m_subscriber)

@@ -28,7 +28,7 @@
 #! The "\" at the end of the comment line below is necessary! It means
 #! that the "exec" line is a comment to Tcl/Tk, but not to /bin/sh.
 #! The next line restarts using tkscidb: \
-exec `dirname $0`/tk`basename $0` "$0" ${1+"$@"}
+exec "`dirname "$0"`"/tk`basename $0` "$0" ${1+"$@"}
 
 package require Tcl 8.5
 package require Tk  8.5
@@ -93,6 +93,7 @@ set ProgramOptions [list                                                        
 	[list "--help"                  "Print help (this message) and exit"]                     \
 	[list "--version"               "Print version information and exit"]                     \
 	[list "--full-screen"           "Start program with full-screen modus"]                   \
+	[list "--initial-layout"        "Start program with intitial layout"]                     \
 	[list "--show-board"            "Switch to board tab immediately after startup"]          \
 	[list "--re-open"               "Re-open databases from last session"]                    \
 	[list "--fast-load"             "Do only load the mandatory files at startup"]            \

@@ -136,6 +136,16 @@ inline bool tcl::eqOrNull(Tcl_Obj* lhs, Tcl_Obj* rhs)
 
 
 inline
+int
+tcl::countElements(Tcl_Obj* obj)
+{
+	int count = -1;
+	Tcl_ListObjLength(nullptr, obj, &count);
+	return count;
+}
+
+
+inline
 mstl::carray<Tcl_Obj*>
 tcl::getElements(Tcl_Obj* obj)
 {

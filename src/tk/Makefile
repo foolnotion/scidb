@@ -338,6 +338,10 @@ tk_misc.o: ../mstl/m_algorithm.ipp
 tk_misc.o: ../mstl/m_string.h
 tk_misc.o: ../mstl/m_string.ipp
 tk_multiwindow.o: tk_init.h
+tk_multiwindow.o: tk8.6/tkInt.h
+tk_multiwindow.o: tk8.6/tkPort.h
+tk_multiwindow.o: tk8.6/tkUnixPort.h
+tk_multiwindow.o: tk8.6/tkIntDecls.h
 tk_multiwindow.o: ../tcl/tcl_base.h
 tk_multiwindow.o: ../tcl/tcl_base.ipp
 tk_multiwindow.o: ../mstl/m_carray.h
@@ -366,10 +370,6 @@ tk_multiwindow.o: ../mstl/m_algobase.ipp
 tk_multiwindow.o: ../mstl/m_algorithm.ipp
 tk_multiwindow.o: ../mstl/m_string.h
 tk_multiwindow.o: ../mstl/m_string.ipp
-tk_multiwindow.o: tk8.6/tkInt.h
-tk_multiwindow.o: tk8.6/tkPort.h
-tk_multiwindow.o: tk8.6/tkUnixPort.h
-tk_multiwindow.o: tk8.6/tkIntDecls.h
 tk_notebook.o: tk_init.h
 tk_notebook.o: ../tcl/tcl_base.h
 tk_notebook.o: ../tcl/tcl_base.ipp
@@ -502,6 +502,10 @@ tk_twm.o: ../mstl/m_map.h
 tk_twm.o: ../mstl/m_pair.h
 tk_twm.o: ../mstl/m_pair.ipp
 tk_twm.o: ../mstl/m_map.ipp
+tk_twm.o: ../mstl/m_list.h
+tk_twm.o: ../mstl/m_list_node.h
+tk_twm.o: ../mstl/m_list_node.ipp
+tk_twm.o: ../mstl/m_list.ipp
 tk_window_manager.o: tk_init.h
 tk_window_manager.o: ../util/u_base.h
 tk_window_manager.o: ../mstl/m_types.h

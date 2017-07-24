@@ -6,7 +6,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2010-2013 Gregor Cramer
+# Copyright: (C) 2010-2017 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -73,23 +73,29 @@ proc Build {w args} {
 		-borderwidth	0
 		-cursor			{}
 		-sashcmd			{}
+		-state			"normal"
 	}
 
 	array set opts $args
 	set sashcmd $opts(-sashcmd)
 	unset -nocomplain opts(-opaqueresize)
 	unset -nocomplain opts(-sashcmd)
+	set state $opts(-state)
+	array unset opts -state
 
 	tk::panedwindow_old $w {*}[array get opts] -opaqueresize 1
-	set cursor sb_[string index [$w cget -orient] 0]_double_arrow
-	if {[$w cget -cursor] ne $cursor} {
-		$w configure -cursor $cursor
+	if {$state ne "disabled"} {
+		set cursor sb_[string index [$w cget -orient] 0]_double_arrow
+		if {[$w cget -cursor] ne $cursor} {
+			$w configure -cursor $cursor
+		}
 	}
 	
 	namespace eval [namespace current]::$w {}
 	variable [namespace current]::${w}::MaxSize
 	variable [namespace current]::${w}::SashCmd $sashcmd
 	variable [namespace current]::${w}::Cursor left_ptr
+	variable [namespace current]::${w}::State $state
 
 	rename ::$w $w.__panedwindow__
 	proc ::$w {command args} "[namespace current]::WidgetProc $w \$command {*}\$args"
@@ -147,10 +153,13 @@ proc WidgetProc {w command args} {
 		add {
 			variable ${w}::Cursor
 			variable ${w}::Parent
+			variable ${w}::State
 
 			set child [lindex $args 0]
 			
-			if {[llength [$child cget -cursor]] == 0 && [$child cget -cursor] ne $Cursor} {
+			if {	$State ne "disabled"
+				&& [llength [$child cget -cursor]] == 0
+				&& [$child cget -cursor] ne $Cursor} {
 				$child configure -cursor $Cursor
 			}
 		}
@@ -230,6 +239,9 @@ namespace eval panedwindow {
 
 proc MarkSash {w x y} {
 	variable ::tk::Priv
+	variable ::panedwindow::${w}::State
+
+	if {$State eq "disabled"} { return }
 
 	set what [$w identify $x $y]
 	if {[llength $what] != 2} { return }
@@ -278,8 +290,8 @@ proc MarkSash {w x y} {
 
 	set Priv(sash) $index
 	lassign [$w sash coord $index] sx sy
-	set Priv(dx) [expr {$sx-$x}]
-	set Priv(dy) [expr {$sy-$y}]
+	set Priv(dx) [expr {$sx - $x}]
+	set Priv(dy) [expr {$sy - $y}]
 
 	if {[string match h* [$w cget -orient]]} {
 		set Priv(min) [expr {max($lhsMin, $sx - $rhsMax)}]
@@ -289,6 +301,7 @@ proc MarkSash {w x y} {
 		set Priv(max) [expr {min([winfo height $w] - $rhsMin, $sy + $lhsMax)}]
 	}
 
+	set Priv(min) [expr {$Priv(min) + $sashwidth}]
 	if {$Priv(min) >= $Priv(max)} { return }
 
 	if {[llength $SashCmd]} {
@@ -305,6 +318,9 @@ proc MarkSash {w x y} {
 
 proc DragSash {w x y} {
 	variable ::tk::Priv
+	variable ::panedwindow::${w}::State
+
+	if {$State eq "disabled"} { return }
 
 	if {[info exists Priv(sash)]} {
 		incr x $Priv(dx)

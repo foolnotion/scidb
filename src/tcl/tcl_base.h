@@ -105,6 +105,7 @@ void zero(Tcl_Obj*& obj);
 Tcl_Obj* getGlobalVar(Tcl_Obj* var);
 void setGlobalVar(Tcl_Obj* var, Tcl_Obj* value);
 
+int countElements(Tcl_Obj* obj);
 unsigned getElements(Tcl_Obj* obj, Tcl_Obj**& objv);
 Array getElements(Tcl_Obj* obj);
 Tcl_Obj* addElement(Tcl_Obj*& list, Tcl_Obj* elem);
@@ -112,6 +113,7 @@ Tcl_Obj* addElement(Tcl_Obj*& list, Tcl_Obj* elem);
 Tcl_Obj* result();
 
 } // namespace tcl
+
 
 namespace tcl {
 

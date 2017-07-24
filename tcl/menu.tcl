@@ -63,6 +63,7 @@ set Quit								"&Quit"
 set Tools							"&Tools"
 set Extras							"&Extras"
 set Setup							"Setu&p"
+set Layout							"La&yout"
 
 # Contact
 set ContactBugReport				"&Bug Report"
@@ -257,6 +258,20 @@ proc build {menu} {
 	foreach parent $activeParents {
 		::toolbar::addToolbarMenu $m $parent none
 	}
+
+	### layout ###############################################################
+	set tab [::application::activeTab]
+	menu $menu.layout
+	lassign [::tk::UnderlineAmpersand $mc::Layout] text ul
+	$menu add cascade \
+		-menu $menu.layout \
+		-label " $text" \
+		-underline [IncrUL $ul] \
+		-image $::icon::16x16::layout \
+		-compound left \
+		-state [expr {$tab eq "board" ? "normal" : "disabled"}] \
+		;
+	if {$tab eq "board"} { ::application::makeLayoutMenu $menu.layout }
 
 	### setup ################################################################
 	$menu add separator

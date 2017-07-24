@@ -69,6 +69,7 @@ set images	[file join $share images]
 set log		[file join $user log]
 set backup	[file join $user backup]
 set config	[file join $user config]
+set layout	[file join $user layout]
 
 if {![file isdirectory $user]} {
 	set setup 1

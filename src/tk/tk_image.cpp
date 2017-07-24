@@ -149,6 +149,10 @@ inline
 unsigned char
 mulChan(unsigned char v, unsigned char f)	{ return (v*f + v) >> 8; }
 
+inline
+unsigned char
+divChan(unsigned char v, unsigned char f)	{ return mstl::min(255, (v*255)/f); }
+
 
 inline
 int
@@ -388,6 +392,24 @@ struct pixbuf
 				p[R] = ::mulChan(p[R], opacity);
 				p[G] = ::mulChan(p[G], opacity);
 				p[B] = ::mulChan(p[B], opacity);
+			}
+		}
+	}
+
+	void lighten(double alpha)
+	{
+		unsigned char opacity = unsigned((255.0 - alpha*255.0) + 0.5);
+
+		for (int r = 0; r < m_rows; ++r)
+		{
+			unsigned char* p = scanline(r);
+			unsigned char* e = p + N*m_cols;
+
+			for ( ; p < e; p += N)
+			{
+				p[R] = ::divChan(p[R], opacity);
+				p[G] = ::divChan(p[G], opacity);
+				p[B] = ::divChan(p[B], opacity);
 			}
 		}
 	}
@@ -947,6 +969,16 @@ struct Darken
 
 	template <typename PixBuf>
 	void operator()(PixBuf& pixbuf) { pixbuf.darken(m_alpha); }
+};
+
+
+struct Lighten
+{
+	Lighten(double alpha) :m_alpha(alpha) {}
+	double m_alpha;
+
+	template <typename PixBuf>
+	void operator()(PixBuf& pixbuf) { pixbuf.lighten(m_alpha); }
 };
 
 
@@ -1681,14 +1713,17 @@ tk_make_border(char const* subcmd,
 					char const* dstName,
 					int objc, Tcl_Obj* const objv[])
 {
-	enum { Opt_Gap, Opt_BorderColor, Opt_Width, Opt_Opacity, Opt_Type };
-	static char const* options[] = { "-gap", "-bordercolor", "-width", "-opacity", "-type", 0 };
-	static char const* args[] = { "<integer>", "<integer>", "<double>", "lite|dark" };
+	enum { Opt_Gap, Opt_BorderColor, Opt_Width, Opt_Opacity, Opt_Type, Opt_Composite };
+	static char const* options[] =
+		{ "-gap", "-bordercolor", "-width", "-opacity", "-type", "-composite", 0 };
+	static char const* args[] =
+		{ "<integer>", "<color>", "<integer>", "<double>", "lite|dark", "set|overlay" };
 
 	double		opacity			= 1.0;
 	int			borderWidth		= 2;
 	int			gap				= 0;
 	char const*	type				= "lite";
+	char const*	composite		= "set";
 	agg::rgba8	borderColor(0, 0, 0);
 
 	for (int i = 0; i < objc; i++)
@@ -1733,6 +1768,14 @@ tk_make_border(char const* subcmd,
 					return tcl_error(subcmd, "invalid argument: type should be either 'lite' or 'dark'");
 				break;
 
+			case Opt_Composite:
+				if (++i == objc)
+					return tcl_usage(subcmd, options, args);
+				composite = Tcl_GetString(objv[i]);
+				if (strcmp(composite, "set") != 0 && strcmp(composite, "overlay") != 0)
+					return tcl_usage(subcmd, options, args);
+				break;
+
 			default:
 				return tcl_usage(subcmd, options, args);
 		}
@@ -1766,7 +1809,13 @@ tk_make_border(char const* subcmd,
 
 	pixbuf<RGBA> pixbuf(block);
 	make_border(pixbuf, gap, borderColor, borderWidth, opacity, strcmp(type, "lite") == 0);
-	Tk_PhotoPutBlock(ti, handle, &block, 0, 0, width, height, TK_PHOTO_COMPOSITE_SET);
+	Tk_PhotoPutBlock(
+		ti,
+		handle,
+		&block,
+		0, 0,
+		width, height,
+		strcmp(composite, "overlay") == 0 ? TK_PHOTO_COMPOSITE_OVERLAY : TK_PHOTO_COMPOSITE_SET);
 	delete [] block.pixelPtr;
 
 	return TCL_OK;
@@ -2650,6 +2699,35 @@ tk_darken_image(	char const* subcmd,
 
 
 static int
+tk_lighten_image(	char const* subcmd,
+						Tcl_Interp* ti,
+						char const* value,
+						char const* photo,
+						int objc, Tcl_Obj* const objv[])
+{
+	double alpha = ::strtod(value, 0);
+
+	if (0.0 > alpha || alpha > 1.0)
+		return tcl_error(subcmd, "invalid alpha value: '%s'", value);
+
+	Tk_PhotoHandle handle = Tk_FindPhoto(ti, photo);
+
+	if (!handle)
+		return tcl_error(subcmd, "invalid argument: '%s' is not a photo image", photo);
+
+	Tk_PhotoImageBlock block;
+	Tk_PhotoGetImage(handle, &block);
+
+	int rc = check_image_format(subcmd, ti, block);
+	if (rc != TCL_OK)
+		return rc;
+
+	processImage(block, Lighten(alpha));
+	return Tk_PhotoPutBlock(ti, handle, &block, 0, 0, block.width, block.height, TK_PHOTO_COMPOSITE_SET);
+}
+
+
+static int
 tk_recolor_image(	char const* subcmd,
 						Tcl_Interp* ti,
 						char const* color,
@@ -2764,7 +2842,8 @@ tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		"border", "copy", "create", "recolor", "disable",
 		"alpha", "diffuse", "boost", "colorize", "paintover",
-		"grayscale", "blur", "shadow", "darken", "colorcube", 0,
+		"grayscale", "blur", "shadow", "darken", "lighten",
+		"colorcube", 0,
 	};
 	struct { char const* usage; int min_args; } const Definitions[] =
 	{
@@ -2782,13 +2861,15 @@ tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		{ "blur <radius> <photo> <out-photo>", 4 },
 		{ "shadow <opacity> <direction> <out-photo>", 4 },
 		{ "darken <alpha> <photo>", 3 },
+		{ "lighten <alpha> <photo>", 3 },
 		{ "colorcube <photo> <sectors> <rings>", 4 },
 	};
 	enum
 	{
 		Cmd_Border, Cmd_Copy, Cmd_Create, Cmd_Recolor, Cmd_Disable,
 		Cmd_Alpha, Cmd_Diffuse, Cmd_Boost, Cmd_Colorize, Cmd_PaintOver,
-		Cmd_GrayScale, Cmd_Blur, Cmd_Shadow, Cmd_Darken, Cmd_ColorCube,
+		Cmd_GrayScale, Cmd_Blur, Cmd_Shadow, Cmd_Darken, Cmd_Lighten,
+		Cmd_ColorCube,
 	};
 
 	if (objc < 2)
@@ -2855,6 +2936,13 @@ tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			char const* str0 = Tcl_GetString(objv[0]);
 			char const* str1 = Tcl_GetString(objv[1]);
 			return tk_darken_image(Subcommands[index], ti, str0, str1, objc - 2, objv + 2);
+		}
+
+		case Cmd_Lighten:
+		{
+			char const* str0 = Tcl_GetString(objv[0]);
+			char const* str1 = Tcl_GetString(objv[1]);
+			return tk_lighten_image(Subcommands[index], ti, str0, str1, objc - 2, objv + 2);
 		}
 
 		case Cmd_Recolor:

@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2013 Gregor Cramer
+# Copyright: (C) 2009-2017 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -34,14 +34,36 @@ set Database					"&Database"
 set Board						"&Board"
 set MainMenu					"&Main Menu"
 
-set DockWindow					"Dock Window"
-set UndockWindow				"Undock Window"
+set Notebook					"Notebook"
+set Multiwindow				"Multiwindow"
+set FoldTitleBar				"Fold Titlebar"
+set FoldAllTitleBars			"Fold all Titlebars"
+set UnfoldAllTitleBars		"Unfold all Titlebars"
+set MoveWindow					"Move Window"
+set StayOnTop					"Stay on Top"
+set HideWhenLeavingTab		"Hide When Leaving Tab"
+set SaveLayout					"Save Layout"
+set RenameLayout				"Rename Layout"
+set LoadLayout					"Restore Layout"
+set NewLayout					"New Layout"
+set ManageLayouts				"Manage Layouts"
+set ShowAllDockingPoints	"Show all Docking Points"
+set DockingArrowSize			"Docking Arrow Size"
+set Windows						"Windows"
+
+set Pane(analysis)			"Analysis"
+set Pane(board)				"Board"
+set Pane(editor)				"Notation"
+set Pane(tree)					"Tree"
+set Pane(games)				"Games"
+
 set ChessInfoDatabase		"Chess Information Data Base"
 set Shutdown					"Shutdown..."
 set QuitAnyway					"Quit anyway?"
 set CancelLogout				"Cancel Logout"
 set AbortWriteOperation		"Abort write operation"
-
+set ConfirmOverwrite			"Overwrite existing layout '%s'?"
+set ConfirmDelete				"Really delete layout '%s'?"
 set UpdatesAvailable			"Updates available"
 
 set WriteOperationInProgress "Write operation in progress: currently Scidb is modifying/writing database '%s'."
@@ -60,103 +82,49 @@ set DescriptionHasChanged	"Description has changed"
 namespace import ::tcl::mathfunc::abs
 namespace import ::tcl::mathfunc::max
 
-array set Attr {
-	top,width				900
-	top,height				520
-	top,minWidth			400
-	top,minHeight			300
-	top,stretch				always
-	top,float				0
-	top,before				{}
-	top,after				{}
-	top,type					panedwindow
-
-	board,width				580
-	board,height			520
-	board,minWidth			200
-	board,minHeight		200
-	board,stretch			always
-	board,float				0
-	board,before			{}
-	board,after				{}
-	board,type				frame
-
-	right,width				320
-	right,height			520
-	right,minWidth			280
-	right,minHeight		200
-	right,stretch			never
-	right,float				0
-	right,before			{}
-	right,after				board
-	right,type				frame
-
-	pgn,width				320
-	pgn,height				350
-	pgn,minWidth			200
-	pgn,minHeight			200
-	pgn,stretch				always
-	pgn,float				1
-	pgn,before				{}
-	pgn,after				{}
-	pgn,type					frame
-
-	bottom,width			900
-	bottom,height			200
-	bottom,minWidth		400
-	bottom,minHeight		150
-	bottom,stretch			never
-	bottom,float			0
-	bottom,before			{}
-	bottom,after			top
-	bottom,type				panedwindow
-
-	tree,width				400
-	tree,height				200
-	tree,minWidth			200
-	tree,minHeight			150
-	tree,stretch			never
-	tree,float				1
-	tree,before				{}
-	tree,after				{}
-	tree,type				frame
-
-	games,width				450
-	games,height			200
-	games,minWidth			200
-	games,minHeight		150
-	games,stretch			always
-	games,float				1
-	games,before			{}
-	games,after				tree
-	games,type				frame
-
-	clock,width				320
-	clock,height			150
-	clock,minWidth			280
-	clock,minHeight		100
-	clock,stretch			never
-	clock,float				1
-	clock,before			{}
-	clock,after				pgn
-	clock,type				frame
+array set PaneOptions {
+	board		{ -width 500 -height 540 -minwidth 300 -minheight 300 -expand both }
+	tree		{ -width 500 -height 120 -minwidth 250 -minheight 120 -expand y }
+	editor	{ -width 500 -height 520 -minwidth 150 -minheight 150 -expand y }
+	games		{ -width 500 -height 520 -minwidth 300 -minheight 150 -expand both }
+	analysis	{ -width 500 -height 120 -minwidth 300 -minheight 120 -expand x }
 }
 
+set BoardLayout {
+	root { -shrink none -grow none } {
+		panedwindow { -orient vert } {
+			panedwindow { -orient horz } {
+				pane board %board%
+				multiwindow {} {
+					frame editor %editor%
+					frame games %games%
+				}
+			}
+			panedwindow { -orient horz } {
+				frame tree %tree%
+				frame analysis:1 %analysis%
+			}
+		}
+	}
+}
+
+array set Prios { analysis 20 board 50 editor 40 games 10 tree 30 }
+array set Defaults { menu:background #c3c3c3 }
+array set Options { docking:showall no layout:name "" layout:list {} }
+
 array set Vars {
+	menu:locked		0
+	menu:state		normal
 	tabs:changed	0
 	exit:save		1
 	active			1
-
-	menu:locked			0
-	menu:state			normal
-	menu:background	#c3c3c3
-
-	updates {}
+	updates			{}
 }
 
 
 proc open {} {
-	variable Attr
+	variable Defaults
+	variable Options
 	variable Vars
 
 	# setup
@@ -165,6 +133,7 @@ proc open {} {
 	set app .application
 	::widget::dialogWatch $app
 	set ::util::place::mainWindow $app
+	::widget::dialogSetTitle $app [namespace code Title]
 	wm protocol $app WM_DELETE_WINDOW [namespace code shutdown]
 	set nb [::ttk::notebook $app.nb -takefocus 0] ;# otherwise board does not have focus
 	set Vars(control) [::widget::dialogFullscreenButtons $nb]
@@ -182,7 +151,7 @@ proc open {} {
 		-relief raised \
 		-padx 2 \
 		-pady 2 \
-		-background $Vars(menu:background) \
+		-background $Defaults(menu:background) \
 		-activebackground [::dropdownbutton::activebackground] \
 		-activeforeground [::dropdownbutton::activeforeground] \
 		-foreground black \
@@ -190,8 +159,8 @@ proc open {} {
 		-image $icon::16x12::downArrow(black) \
 		-compound right \
 	]
-	SetSettingsText $m
-	bind $m <<LanguageChanged>> [namespace code [list SetSettingsText $m]]
+	UpdateSettingsText $m
+	bind $m <<LanguageChanged>> [namespace code [list UpdateSettingsText $m]]
 	bind $m <Enter> [namespace code [list EnterSettings $m]]
 	bind $m <Leave> [namespace code [list LeaveSettings $m]]
 	bind $m <<MenuWillPost>> [namespace code [list BuildSettingsMenu $m]]
@@ -201,9 +170,18 @@ proc open {} {
 	set Vars(menu:updates) $nb.menu_updates
 
 	::ttk::notebook::enableTraversal $nb
+	bind $nb <<NotebookTabChanged>> [namespace code [list TabChanged $nb]]
 	set info [::ttk::frame $nb.information]
 	set db [::ttk::frame $nb.database]
-	set main [tk::panedwindow $nb.board -orient vertical -opaqueresize true]
+	set main [twm::twm $nb.board \
+		-makepane  [namespace current]::MakePane \
+		-buildpane [namespace current]::BuildPane \
+		-workarea  [namespace current]::workArea \
+	]
+	$main showall $Options(docking:showall)
+	set Vars(frame:information) $info
+	set Vars(frame:database) $db
+	set Vars(frame:main) $main
 	$nb add $info -sticky nsew
 	$nb add $db   -sticky nsew
 	$nb add $main -sticky nsew
@@ -211,121 +189,17 @@ proc open {} {
 	::widget::notebookTextvarHook $nb $db   [namespace current]::mc::Database
 	::widget::notebookTextvarHook $nb $main [namespace current]::mc::Board
 
-	bind $main <Configure> [namespace code [list ConfigureEvent main $main %W %w %h]]
 #	bind $app <Tab> [namespace code [list SwitchTab $nb +1]]
 #	bind $app <Shift-Tab> [namespace code [list SwitchTab $nb -1]]
 #	bind $app <ISO_Left_Tab> [namespace code [list SwitchTab $nb -1]]
 	pack $nb -fill both -expand yes
 
-	if {[::process::testOption show-board]} {
-		set tab board
-	} elseif {[::process::testOption re-open] || [llength [::process::arguments]]} {
-		set tab database
-	} else {
-		set tab information
-	}
-	$nb select .application.nb.$tab
-
-	foreach {sub} {top bottom} {
-		set $sub [tk::panedwindow $main.$sub -orient horizontal -opaqueresize true]
-		$main paneconfigure $main.$sub \
-			-sticky nswe \
-			-minsize $Attr($sub,minHeight) \
-			-stretch $Attr($sub,stretch) \
-			;
-		bind $main.$sub <Configure> [namespace code [list ConfigureEvent $sub $main.$sub %W %w %h]]
-		$main add $main.$sub
-	}
-
-	foreach {sub class} {board Board right Frame} {
-		set $sub [tk::frame $top.$sub \
-						-class $class \
-						-width $Attr($sub,width) \
-						-height $Attr($sub,height)]
-		$top paneconfigure $top.$sub \
-			-sticky nswe \
-			-minsize $Attr($sub,minWidth) \
-			-stretch $Attr($sub,stretch) \
-			;
-		bind $top.$sub <Configure> [namespace code [list ConfigureEvent $sub $top.$sub %W %w %h]]
-		$top add $top.$sub
-
-#		if {$Attr($sub,float)} {
-			set m [menu $top.$sub.popup -tearoff false]
-#			$m add command -command [namespace code [list Undock $top.$sub $sub]]
-#			::widget::menuTextvarHook $m 0 [namespace current]::mc::UndockWindow
-#			bind $top.$sub <ButtonPress-3> [list tk_popup $m %X %Y 0]
-#		}
-	}
-
-#	set right [tk::panedwindow $right.pw -orient vertical -opaqueresize true]
-#	pack $right -fill both -expand yes
-
-#	foreach {sub class} {pgn Frame clock Frame} {
-#		set $sub [tk::frame $right.$sub \
-#						-class $class \
-#						-width $Attr($sub,width) \
-#						-height $Attr($sub,height)]
-#		pack [set $sub] -side top -fill both -expand yes
-#
-#		if {$Attr($sub,float)} {
-#			set m [menu $right.$sub.popup -tearoff false]
-#			$m add command -command [namespace code [list Undock $right.$sub $sub]]
-#			::widget::menuTextvarHook $m 0 [namespace current]::mc::UndockWindow
-#			bind $right.$sub <ButtonPress-3> [list tk_popup $m %X %Y 0]
-#		}
-#	}
-
-	set pgn [tk::frame $right.pgn -class Frame -width $Attr(pgn,width)]
-
-if {[::process::testOption use-clock]} {
-	set clock [tk::frame $right.clock -class Frame -width $Attr(clock,width)]
-	grid $clock -row 0 -column 0 -sticky nsew
-}
-
-	grid $pgn -row 1 -column 0 -sticky nsew
-
-	grid rowconfigure $right 1 -weight 1
-	grid columnconfigure $right 0 -weight 1
-
-	foreach {sub class} {tree Frame games Frame} {
-		set $sub [tk::frame $bottom.$sub \
-						-class $class \
-						-width $Attr($sub,width) \
-						-height $Attr($sub,height)]
-		$bottom paneconfigure $bottom.$sub \
-			-sticky nswe \
-			-minsize $Attr($sub,minWidth) \
-			-stretch $Attr($sub,stretch) \
-			;
-		if {$sub eq "tree"} { $bottom paneconfigure $bottom.$sub -width 400 }
-		bind $bottom.$sub <Configure> [namespace code [list ConfigureEvent $sub $bottom.$sub %W %w %h]]
-		$bottom add $bottom.$sub
-
-#		if {$Attr($sub,float)} {
-#			set m [menu $bottom.$sub.popup -tearoff false]
-#			$m add command -command [namespace code [list Undock $bottom.$sub $sub]]
-#			::widget::menuTextvarHook $m 0 [namespace current]::mc::UndockWindow
-#			bind $bottom.$sub <ButtonPress-3> [list tk_popup $m %X %Y 0]
-#		}
-	}
-
-	information::build $info $Attr(board,width) $Attr(board,height)
-	database::build $db $Attr(board,width) $Attr(board,height)
-	board::build $top.board $Attr(board,width) $Attr(board,height)
-	pgn::build $right.pgn $Attr(pgn,width) $Attr(pgn,height)
-	tree::build $bottom.tree $Attr(tree,width) $Attr(tree,height) $bottom.games
-	tree::games::build $bottom.games $Attr(games,width) $Attr(games,height)
-
-if {[::process::testOption use-clock]} {
-	clock::build $right.clock $Attr(clock,width) $Attr(clock,height)
-}
-
-	bind $nb <<NotebookTabChanged>> [namespace code [list TabChanged $nb $app]]
 	bind $app <Destroy> [namespace code { Exit %W }]
-	bind $app <FocusIn> [namespace code [list Activate $nb]]
-	bind $app <FocusOut> [namespace code [list Deactivate $nb]]
-	ComputeMinSize $main
+
+#	bind $app <FocusIn> [namespace code [list Activate $nb]]
+#	# Will never be triggered. For any reason Tk does not send <FocusOut>
+#	# events anymore to toplevels?!
+#	bind $app <FocusOut> [namespace code [list Deactivate $nb]]
 
 	if {[tk windowingsystem] eq "x11"} {
 		wm client $app [lindex [split [info hostname] .] 0]
@@ -339,42 +213,205 @@ if {[::process::testOption use-clock]} {
 			;
 	}
 
-	::util::place $app -position center
-	::widget::dialogSetTitle $app [namespace code Title]
-	wm deiconify $app
-	database::finish $app
-	::splash::close
-	ChooseLanguage $app
-	TabChanged $nb $app
-	::load::writeLog
-	update idletasks
-	set ::scidb::intern::blocked 0
+	bind $main <<TwmReady>>   [namespace code [list Startup $main %d]]
+	bind $main <<TwmMinSize>> [namespace code [list SetDimensions min %d]]
+	bind $main <<TwmMaxSize>> [namespace code [list SetDimensions max %d]]
+	bind $main <<TwmResized>> [namespace code [list SetDimensions actual %d]]
+	bind $main <<TwmMenu>>    [namespace code [list TwmMenu %d %x %y]]
+	bind $main <<TwmAfter>>   [namespace code board::afterTWM]
 
-	database::preOpen $app
+	set Vars(ready) 0
+	set Vars(analysis:template) 0
 
-	foreach file [::process::arguments] {
-		database::openBase .application [::util::databasePath $file] yes \
-			-encoding $::encoding::autoEncoding
+	if {[::process::testOption initial-layout]} {
+		set Options(layout:name) ""
+		set Options(layout:list) {}
+		set Vars(layout) ""
+	} else {
+		if {	[string length $Options(layout:name)]
+			&& ![file exists [file join $::scidb::dir::layout "$Options(layout:name).layout"]]} {
+			set Options(layout:name) ""
+		}
+		set Vars(layout) $Options(layout:name)
 	}
- 
-	if {[::game::recover $app] + [::game::reopenLockedGames $app] > 0} {
-		set tab board
-	}
 
-	after idle [namespace code [list switchTab $tab]]
-	after idle [list ::beta::welcomeToScidb $app]
-	::util::photos::checkForUpdate [namespace current]::InformAboutUpdates
+	loadInitialLayout $main
+	$main load $Options(layout:list)
+}
+
+
+proc loadInitialLayout {main} {
+	variable BoardLayout
+	variable PaneOptions
+
+	set layout $BoardLayout
+	foreach name [array names PaneOptions] {
+		set layout [string map [list %${name}% [list $PaneOptions($name)]] $layout]
+	}
+	$main init $layout
+}
+
+
+proc nameVarFromUid {uid} {
+	set name [nameFromUid $uid]
+	if {$name eq "analysis"} {
+		variable NameVar
+		set number [numberFromUid $uid]
+		set nameVar [namespace current]::NameVar($number)
+		trace add variable [namespace current]::mc::Pane($name) write \
+			[namespace code [list UpdateNameVar $number]]
+		UpdateNameVar $number
+	} else {
+		set nameVar [namespace current]::mc::Pane($name)
+	}
+	return $nameVar
+}
+
+
+proc nameFromUid {uid}   { return [lindex [split $uid :] 0] }
+proc numberFromUid {uid} { return [lindex [split $uid :] 1] }
+
+
+proc TabChanged {nb} {
+	variable Vars
+
+	set main $Vars(frame:main)
+	if {[string match {*.board} [$nb select]]} { set cmd show } else { set cmd hide }
+
+	foreach w [$main floats] {
+		if {[$main get! $w hide 0]} {
+			$main $cmd $w
+		}
+	}
+}
+
+
+proc MakePane {main parent type uid} {
+	variable Vars
+	variable Prios
+
+	set name [nameFromUid $uid]
+	set nameVar [nameVarFromUid $uid]
+	set frame [tk::frame $parent.$uid -borderwidth 0 -takefocus 0]
+	set result [list $frame $nameVar $Prios($name)]
+	if {$type ne "pane"} { lappend result [expr {$uid ne "editor"}] yes yes }
+	switch $name { games { set ns tree::games } editor { set ns pgn } default { set ns $name } }
+	bind $frame <Map> [list [namespace current]::${ns}::activate $frame 1]
+	bind $frame <Unmap> [list [namespace current]::${ns}::activate $frame 0]
+	bind $frame <Destroy> [list [namespace current]::${ns}::closed $frame]
+	set Vars(frame:$uid) $frame
+	return $result
+}
+
+
+proc BuildPane {main frame uid width height} {
+	variable Vars
+
+	switch [nameFromUid $uid] {
+		analysis	{
+			analysis::build $frame [numberFromUid $uid] $Vars(analysis:template)
+			set Vars(analysis:template) 0
+		}
+		board		{ board::build $frame $width $height }
+		editor	{ pgn::build $frame $width $height }
+		games		{ tree::games::build $frame $width $height }
+		tree		{ tree::build $frame $width $height $Vars(frame:games) }
+	}
+}
+
+
+proc UpdateNameVar {number args} {
+	variable NameVar
+
+	if {![analysis::active? $number]} {
+		set NameVar($number) $mc::Pane(analysis)
+		if {$number > 1} { append NameVar($number) " ($number)" }
+	}
+}
+
+
+proc newAnalysisPane {number} {
+	variable PaneOptions
+	variable Vars
+
+	set highest [analysis::highestNumber]
+	set uid analysis:$number
+	set main $Vars(frame:main)
+
+	if {$highest > 0} {
+		set Vars(analysis:template) $highest
+		$main clone analysis:$highest $uid
+	} else {
+		$main new frame analysis:1 $PaneOptions(analysis)
+	}
+}
+
+
+proc setAnalysisTitle {number title} {
+	variable NameVar
+	set NameVar($number) $title
+}
+
+
+proc resizePaneHeight {uid height} {
+	variable Vars
+
+	set main $Vars(frame:main)
+	set pane [$main leaf $uid]
+
+	if {[$main toplevel $pane] eq $main} {
+		$main resize $pane 0 $height 0 $height 0 0
+	}
+}
+
+
+proc restoreLayout {name list} {
+	variable Options
+	variable Vars
+
+	$Vars(frame:main) load $list
+	set Vars(layout) $name
+	set Options(layout:name) $name
+	set Options(layout:list) $list
+}
+
+
+proc loadLayout {name} {
+	variable Vars
+
+	set fh [::open [file join $::scidb::dir::layout "$name.layout"] "r"]
+	set list [read $fh]
+	::close $fh
+	restoreLayout $name $list
+}
+
+
+proc inspectLayout {} {
+	variable Vars
+	return [$Vars(frame:main) inspect {Extent}]
+}
+
+
+proc currentLayout {} {
+	return [set [namespace current]::Vars(layout)]
+}
+
+
+proc activeTab {} {
+	return [lindex [split [.application.nb select] .] end]
 }
 
 
 proc exists? {uid} {
-	return true;
+	variable Vars
+	return [winfo exists $Vars(frame:$uid)]
 }
 
 
 proc shutdown {} {
 	variable icon::32x32::shutdown
 	variable ::scidb::mergebaseName
+	variable Options
 	variable Vars
 
 	set dlg .application.shutdown
@@ -383,7 +420,8 @@ proc shutdown {} {
 	if {[::dialog::messagebox::open?] eq "question"} { bell; return }
 	if {[string match .application* [grab current]]} { bell; return }
 
-	::widget::dialogRaise .application
+	#::widget::dialogRaise .application
+	raise .application
 
 	if {[::util::photos::busy?]} {
 		append msg $::util::photos::mc::DownloadStillInProgress "\n\n"
@@ -393,8 +431,8 @@ proc shutdown {} {
 		::util::photos::terminateUpdate
 	}
 
-	set unsavedFiles [::scidb::app::get unsavedFiles]
 	set n 0
+	set unsavedFiles [::scidb::app::get unsavedFiles]
 	if {$mergebaseName in $unsavedFiles} { incr n }
 
 	if {[llength $unsavedFiles] > $n} {
@@ -436,6 +474,7 @@ proc shutdown {} {
 
 	prepareExit $backup
 	if {[tk windowingsystem] eq "x11"} { ::scidb::tk::sm disconnect }
+	set Options(layout:list) [inspectLayout]
 
 	::widget::busyCursor off
 	::ttk::releaseGrab $dlg
@@ -462,6 +501,12 @@ proc switchTab {which} {
 	.application.nb select .application.nb.$which
 	update idletasks
 	${which}::setFocus
+}
+
+
+proc ready? {} {
+	variable Vars
+	return $Vars(ready)
 }
 
 
@@ -551,6 +596,7 @@ proc InformAboutUpdates {item} {
 }
 
 
+# TODO: unused
 proc Activate {nb} {
 	variable Vars
 
@@ -562,6 +608,7 @@ proc Activate {nb} {
 }	
 
 
+# TODO: unused
 proc Deactivate {nb} {
 	variable Vars
 
@@ -616,10 +663,11 @@ proc BuildSettingsMenu {m} {
 
 
 proc FinishSettings {m} {
+	variable Defaults
 	variable Vars
 
 	$m configure \
-		-background $Vars(menu:background) \
+		-background $Defaults(menu:background) \
 		-activebackground [::dropdownbutton::activebackground] \
 		-foreground black \
 		-activeforeground white \
@@ -650,6 +698,7 @@ proc MakeUpdateInfo {} {
 
 
 proc BuildUpdatesButton {} {
+	variable Defaults
 	variable Vars
 
 	set m $Vars(menu:updates)
@@ -660,7 +709,7 @@ proc BuildUpdatesButton {} {
 		-relief raised \
 		-padx 2 \
 		-pady 2 \
-		-background $Vars(menu:background) \
+		-background $Defaults(menu:background) \
 		-activebackground [::dropdownbutton::activebackground] \
 		-foreground black \
 		-activeforeground white \
@@ -705,10 +754,11 @@ proc BuildUpdatesMenu {m} {
 
 
 proc FinishUpdates {m} {
+	variable Defaults
 	variable Vars
 
 	$m configure \
-		-background $Vars(menu:background) \
+		-background $Defaults(menu:background) \
 		-activebackground [::dropdownbutton::activebackground] \
 		-foreground black \
 		-activeforeground white \
@@ -845,7 +895,7 @@ proc PlaceMenues {} {
 }
 
 
-proc SetSettingsText {w} {
+proc UpdateSettingsText {w} {
 	variable Vars
 
 	lassign [::tk::UnderlineAmpersand $mc::MainMenu] text ul
@@ -924,119 +974,558 @@ proc Exit {w} {
 }
 
 
-proc TabChanged {nb app} {
+# proc SwitchTab {nb dir} {
+# 	set index [expr {[$nb index [$nb select]] + $dir}]
+# 	set num [llength [$nb tabs]]
+# 	if {$index == -1} { set index [expr {$num - 1}] }
+# 	if {$index == $num} { set index 0 }
+# 	$nb select $index
+# }
+
+
+proc Startup {main args} {
 	variable Vars
 
-	set current [lindex [split [$nb select] .] end]
+	if {$Vars(ready)} { return }
 
-	switch $current {
-		information	{
-			information::activate $nb.information 1
-			database::activate $nb.database 0
-			board::activate $nb.board.top.board 0
-			tree::activate $nb.board.bottom.tree 0
-#			clock::activate $nb.board.top.right.clock 0
+	lassign $args width height
+	set app .application
+	set nb $app.nb
+
+	information::build $Vars(frame:information) $width $height
+	database::build $Vars(frame:database) $width $height
+
+	foreach tab {information database board} {
+		bind $Vars(frame:$tab) <FocusIn>  [namespace code [list ${tab}::setActive yes]]
+		bind $Vars(frame:$tab) <FocusOut> [namespace code [list ${tab}::setActive no]]
+	}
+
+	foreach pane {information database} {
+		set frame $Vars(frame:$pane)
+		bind $frame <Map> [list [namespace current]::${pane}::activate $frame 1]
+		bind $frame <Unmap> [list [namespace current]::${pane}::activate $frame 0]
+	}
+
+	if {[::process::testOption show-board]} {
+		set tab board
+	} elseif {[::process::testOption re-open] || [llength [::process::arguments]]} {
+		set tab database
+	} else {
+		set tab information
+	}
+
+	::util::place $app -position center
+	wm deiconify $app
+	database::finish $app
+	::splash::close
+	ChooseLanguage $app
+	::load::writeLog
+	update idletasks
+	set ::scidb::intern::blocked 0
+	set Vars(ready) 1
+
+	database::preOpen $app
+
+	foreach file [::process::arguments] {
+		database::openBase .application [::util::databasePath $file] yes \
+			-encoding $::encoding::autoEncoding
+	}
+ 
+	if {[::game::recover $app] + [::game::reopenLockedGames $app] > 0} {
+		set tab board
+	}
+	$nb select .application.nb.$tab
+
+	after idle [namespace code [list switchTab $tab]]
+	after idle [list ::beta::welcomeToScidb $app]
+	::util::photos::checkForUpdate [namespace current]::InformAboutUpdates
+}
+
+
+proc SetDimensions {dim args} {
+	lassign [lindex $args 0] width height
+
+	incr height [::theme::notebookTabPaneSize .application.nb]
+	incr height 2 ;# borders
+	incr width  2 ;# borders
+
+	if {$dim eq "actual"} {
+		# XXX Big problem:
+		# If the applications is starting with full width/height, then
+		# reszing will not work anymore. Is this behavior KDE specific?
+		wm geometry .application ${width}x${height}
+		update idletasks
+	} else {
+		wm ${dim}size .application $width $height
+	}
+}
+
+
+proc workArea {main} {
+	lassign [scidb::tk::wm workarea] _ _ ww wh
+	lassign [scidb::tk::wm extents] _ _ ew eh
+	set width [expr {$ww - $ew}]
+	set height [expr {$wh - $eh - [::theme::notebookTabPaneSize .application.nb]}]
+	return [list $width $height]
+}
+
+
+proc TwmMenu {w x y} {
+	set menu .application.nb.board.__menu__
+	# Try to catch accidental double clicks.
+	if {[winfo exists $menu]} { return }
+	menu $menu
+	catch { wm attributes $menu -type popup_menu }
+	makeLayoutMenu $menu $w
+	bind $menu <<MenuUnpost>> [list after idle [list catch [list destroy $menu]]]
+	tk_popup $menu $x $y
+}
+
+
+proc LayoutHasChanged {} {
+	variable Options
+	variable Vars
+
+	set layout [inspectLayout]
+	set lhs [regsub -all {[-][xy]\s\s*[0-9]*} $layout ""]
+	set rhs [regsub -all {[-][xy]\s\s*[0-9]*} $Options(layout:list) ""]
+	set lhs [string map {"  " " "} [string trim $lhs]]
+	set rhs [string map {"  " " "} [string trim $rhs]]
+	return [expr {$lhs ne $rhs}]
+}
+
+
+proc renameLayout {parent name} {
+	variable layout_
+
+	SaveLayout $parent [list [namespace current]::RenameLayout $name] $name $mc::RenameLayout
+	return $layout_
+}
+
+
+proc deleteLayout {parent name} {
+	variable Vars
+	variable Options
+
+	if {[::dialog::question \
+			-parent $parent \
+			-message [format $mc::ConfirmDelete $name] \
+			-default no \
+		] eq "yes"} {
+		set filename [file join $::scidb::dir::layout "$name.layout"]
+		file delete -force -- $filename
+		if {$Vars(layout) eq $name} { set Vars(layout) "" }
+		if {$Options(layout:name) eq $name} { set Options(layout:name) "" }
+	}
+}
+
+
+proc makeLayoutMenu {menu {w ""}} {
+	variable flat_
+	variable ismultiwindow_
+	variable stayontop_
+	variable hide_
+	variable layout_
+	variable PaneOptions
+	variable Options
+	variable Vars
+
+	set main $Vars(frame:main)
+	set count 0
+
+	if {[string length $w]} {
+		set flat_ [$main get! $w flat -1]
+
+		if {$flat_ != -1 && ![$main ismetachild $w]} {
+			$menu add checkbutton \
+				-label " $mc::FoldTitleBar" \
+				-variable [namespace current]::flat_ \
+				-command [list $main togglebar $w] \
+				;
+			::theme::configureCheckEntry $menu
+			incr count
 		}
 
-		database	{
-			database::activate $nb.database 1
-			information::activate $nb.information 0
-			board::activate $nb.board.top.board 0
-			tree::activate $nb.board.bottom.tree 0
-#			clock::activate $nb.board.top.right.clock 0
-		}
-
-		board {
-			database::activate $nb.database 0
-			information::activate $nb.information 0
-			board::activate $nb.board.top.board 1
-			tree::activate $nb.board.bottom.tree 1
-#			clock::activate $nb.board.top.right.clock 1
+		set v $w
+		if {!([$main ismultiwindow $w] || [$main isnotebook $w])} { set v [$main parent $w] }
+		if {[$main ismultiwindow $v] || [$main isnotebook $v]} {
+			if {$count} { $menu add separator }
+			set ismultiwindow_ [$main ismultiwindow $v]
+			$menu add radiobutton \
+				-label " $mc::Multiwindow" \
+				-variable [namespace current]::ismultiwindow_ \
+				-value 1 \
+				-command [list $main togglenotebook $v] \
+				;
+			::theme::configureRadioEntry $menu
+			$menu add radiobutton \
+				-label " $mc::Notebook" \
+				-variable [namespace current]::ismultiwindow_ \
+				-value 0 \
+				-command [list $main togglenotebook $v] \
+				;
+			::theme::configureRadioEntry $menu
+			incr count
 		}
 	}
 
-	if {$Vars(tabs:changed) > 0} {
-		# avoid resizing (multicolumn problem)
-		wm geometry $app [wm geometry $app]
-	}
-	incr Vars(tabs:changed)
-}
-
-
-proc SwitchTab {nb dir} {
-	set index [expr {[$nb index [$nb select]] + $dir}]
-	set num [llength [$nb tabs]]
-	if {$index == -1} { set index [expr {$num - 1}] }
-	if {$index == $num} { set index 0 }
-	$nb select $index
-}
-
-
-proc ComputeMinSize {main} {
-	variable Attr
-
-	set sash [$main cget -sashwidth]
-	if {[$main cget -showhandle]} { set sash [max $sash [$main cget -handlesize]] }
-	set sash [expr {$sash + 2*[$main cget -sashpad]}]
-	set minW [expr {2*[$main cget -borderwidth] - ([llength [$main panes]] > 1 ? $sash : 0)}]
-	set minH 0
-
-	foreach sub [$main panes] {
-		set which [lindex [split $sub "."] end]
-		set minH [max $minH $Attr($which,minHeight)]
-		incr minW $Attr($which,minWidth)
-		incr minW $sash
+	set unfolded [lmap v [$main find flat 0] { expr {[$main ismetachild $v] ? [continue] : $v}}]
+	set folded [lmap v [$main find flat 1] { expr {[$main ismetachild $v] ? [continue] : $v}}]
+	if {[llength $unfolded] || [llength $folded]} {
+		if {$count} { $menu add separator }
+		$menu add command \
+			-label " $mc::FoldAllTitleBars" \
+			-image $::icon::16x16::none \
+			-compound left \
+			-command [list [namespace current]::ToggleTitlebars $main $unfolded] \
+			-state [expr {[llength $unfolded] ? "normal" : "disabled"}] \
+			;
+		$menu add command \
+			-label " $mc::UnfoldAllTitleBars" \
+			-image $::icon::16x16::none \
+			-compound left \
+			-command [list [namespace current]::ToggleTitlebars $main $folded] \
+			-state [expr {[llength $folded] ? "normal" : "disabled"}] \
+			;
+		incr count
 	}
 
-	wm minsize [winfo toplevel $main] $minW $minH
+	if {[llength [set floats [$main floats]]]} {
+		if {$count} { $menu add separator }
+		menu $menu.stayontop
+		$menu add cascade \
+			-menu $menu.stayontop \
+			-label " $mc::StayOnTop" \
+			-image $::icon::16x16::none \
+			-compound left \
+			;
+		foreach v $floats {
+			set stayontop_($v) [$main get! $v stayontop 0]
+			$menu.stayontop add checkbutton \
+				-label [set [$main get [$main leader $v] name]] \
+				-variable [namespace current]::stayontop_($v) \
+				-command [namespace code [list StayOnTop $main $v]] \
+				;
+			::theme::configureCheckEntry $menu.stayontop
+		}
+		menu $menu.hide
+		$menu add cascade \
+			-menu $menu.hide \
+			-label " $mc::HideWhenLeavingTab" \
+			-image $::icon::16x16::none \
+			-compound left \
+			;
+		foreach v $floats {
+			set hide_($v) [$main get! $v hide 0]
+			$menu.hide add checkbutton \
+				-label [set [$main get [$main leader $v] name]] \
+				-variable [namespace current]::hide_($v) \
+				-command [namespace code [list HideWhenLeavingTab $main $v]] \
+				;
+			::theme::configureCheckEntry $menu.hide
+		}
+		set editor [$main leaf editor]
+		if {[$main ismetachild $editor]} { set editor [$main parent $editor] }
+		set i [lsearch $floats $editor]
+		if {$i >= 0} { set floats [lreplace $floats $i $i] }
+		if {[llength $floats] > 0} {
+			menu $menu.close
+			$menu add cascade \
+				-menu $menu.close \
+				-label " $::mc::Close" \
+				-image $::icon::16x16::close \
+				-compound left \
+				;
+			foreach v $floats {
+				$menu.close add command \
+					-label [set [$main get [$main leader $v] name]] \
+					-image $::icon::16x16::none \
+					-compound left \
+					-command [list $main close $v] \
+					;
+			}
+		}
+		incr count
+	}
+
+	if {$count} { $menu add separator }
+	menu $menu.windows
+	$menu add cascade \
+		-menu $menu.windows \
+		-label " $mc::Windows" \
+		-image $::icon::16x16::none \
+		-compound left \
+		;
+	foreach name [array names PaneOptions] {
+		if {$name ni {board analysis editor}} {
+			variable vis_${name}_ [$main isdocked $name]
+			$menu.windows add checkbutton \
+				-label $mc::Pane($name) \
+				-variable [namespace current]::vis_${name}_ \
+				-command [namespace code [list ChangeState $main $name]] \
+				;
+			::theme::configureCheckEntry $menu.windows
+		}
+	}
+	foreach uid [$main leaves] {
+		if {[string match {analysis:*} $uid] && [$main isdocked $uid]} {
+			variable NameVar
+			variable vis_${uid}_ 1
+			$menu.windows add checkbutton \
+				-label $NameVar([numberFromUid $uid]) \
+				-variable [namespace current]::vis_${uid}_ \
+				-command [namespace code [list ChangeState $main $uid]] \
+				;
+			::theme::configureCheckEntry $menu.windows
+		}
+	}
+	incr count
+
+#	if {[string length $w] && [$main get $w move 0]} {
+#		set hidden [$main hidden $w]
+#		if {[llength $hidden]} {
+#			menu $menu.move
+#			$menu add cascade -menu $menu.move -label $mc::MoveWindow
+#			foreach v $hidden {
+#				$menu.move add command \
+#					-label [set [$main get [$main leader $v] name]] \
+#					-command [namespace code [list MoveWindow $main $w $v]] \
+#					;
+#			}
+#		}
+#		incr count
+#	}
+
+	if {$count} { $menu add separator }
+	set names [lmap f [glob -nocomplain -directory $::scidb::dir::layout *.layout] {
+		file tail [file rootname $f]}]
+	if {[llength $names]} {
+		menu $menu.load
+		$menu add cascade \
+			-menu $menu.load \
+			-label " $mc::LoadLayout" \
+			-image $::icon::16x16::layout \
+			-compound left \
+			;
+		foreach name $names {
+			$menu.load add command \
+				-label $name \
+				-image $::icon::16x16::none \
+				-compound left \
+				-command [namespace code [list loadLayout $name]] \
+				;
+		}
+	}
+	set labelName " $mc::SaveLayout"
+	set state "disabled"
+	if {[string length $Vars(layout)]} {
+		if {$Vars(layout) ni $names} {
+			set Vars(layout) ""
+			set Options(layout:name) ""
+		} else {
+			append labelName " \"$Vars(layout)\""
+			if {[LayoutHasChanged]} { set state "normal" }
+		}
+	}
+	set layout_ $Vars(layout)
+	if {[string length $Vars(layout)]} {
+		$menu add command \
+			-label $labelName \
+			-image $::icon::16x16::save \
+			-compound left \
+			-command [namespace code [list DoSaveLayout $main $names]] \
+			-state $state \
+			;
+	}
+	$menu add command \
+		-label " $mc::SaveLayout..." \
+		-image $::icon::16x16::saveAs \
+		-compound left \
+		-command [namespace code [list SaveLayout \
+				$main [namespace current]::DoSaveLayout "" $mc::SaveLayout]]
+		;
+	$menu add command \
+		-label " $mc::ManageLayouts..." \
+		-image $::icon::16x16::setup \
+		-compound left \
+		-command [list [namespace current]::layout::open $main $Vars(layout)] \
+		-state [expr {[llength $names] ? "normal" : "disabled"}] \
+		;
+
+	$menu add separator
+	$menu add checkbutton \
+		-label " $mc::ShowAllDockingPoints" \
+		-variable [namespace current]::Options(docking:showall) \
+		-command [namespace code [list ShowAllDockingPoints $main]] \
+		;
+	::theme::configureCheckEntry $menu
+
+	$menu add separator
+	menu $menu.size
+	$menu add cascade \
+		-menu $menu.size \
+		-label " $mc::DockingArrowSize" \
+		-image $::icon::16x16::none \
+		-compound left \
+		;
+	foreach {size pixels} {Small 16 Medium 24 Large 32} {
+		$menu.size add radiobutton \
+			-label " [set ::toolbar::mc::$size]" \
+			-variable ::twm::Defaults(cross:size) \
+			-value $pixels \
+			;
+	}
 }
 
 
-proc ConfigureEvent {name pane w width height} {
-	variable Attr
-
-	if {$pane ne $w || $width <= 1} { return }
-
-	set Attr($name,width) $width
-	set Attr($name,height) $height
+proc ShowAllDockingPoints {main} {
+	variable Options
+	$main showall $Options(docking:showall)
 }
 
 
-proc Undock {w name} {
-	variable Attr
-
-	set x [winfo rootx $w]
-	set y [winfo rooty $w]
-	set main [winfo parent $w]
-	$main forget $w
-	$w.popup delete 0
-	$w.popup add command -command [namespace code [list Dock $w $name]]
-	::widget::menuTextvarHook $w.popup 0 [namespace current]::mc::DockWindow
-	$w configure -width $Attr($name,width) -height $Attr($name,height)
-	wm manage $w ;# -iconic
-	::util::place $w -x $x -y [expr {$y - 22}]
-	wm protocol $w WM_DELETE_WINDOW [namespace code [list Dock $w $name]]
-#	wm iconphoto $w -default $::icon::64x64::logo $::icon::16x16::logo
-	ComputeMinSize $main
+proc MoveWindow {main w recv} {
+	$main undock -temporary $w
+	$main dock $w $recv left
 }
 
 
-proc Dock {w name} {
-	variable Attr
+proc ChangeState {main uid} {
+	variable PaneOptions
 
-	set main [winfo parent $w]
-	wm forget $w
-	$main add $w -minsize $Attr($name,minWidth) -stretch $Attr($name,stretch)
-	$w.popup delete 0
-	$w.popup add command \
-		-label [::mc::translate [namespace current]::mc::UndockWindow] \
-		-command [namespace code [list Undock $w $name]]
-
-	if {[llength $Attr($name,before)]} { $main paneconfigure $w -before $main.$Attr($name,before) }
-	if {[llength $Attr($name,after)]} { $main paneconfigure $w -after $main.$Attr($name,after) }
-
-	ComputeMinSize $main
+	if {[$main isdocked $uid]} {
+		destroy [$main leaf $uid]
+	} else {
+		$main new frame $uid $PaneOptions($uid)
+	}
 }
+
+
+proc SaveLayout {parent cmd name title} {
+	variable layout_
+
+	if {[string length $name] == 0} { set name $mc::NewLayout }
+	set layout_ $name
+	set names [lmap f [glob -nocomplain -directory $::scidb::dir::layout *.layout] {
+		file tail [file rootname $f]}]
+	set dlg [tk::toplevel $parent.save -class Scidb]
+	pack [set top [ttk::frame $dlg.top -borderwidth 0 -takefocus 0]]
+	set cb [ttk::combobox $top.input \
+		-height 10 \
+		-width 40 \
+		-textvariable [namespace current]::layout_ \
+		-values $names \
+	]
+	$cb selection range 0 end
+
+	grid $cb -row 1 -column 1 -sticky nsew
+	grid columnconfigure $top {0 2} -minsize $::theme::padX
+	grid rowconfigure $top {0 2} -minsize $::theme::padY
+
+	::widget::dialogButtons $dlg {ok cancel} -default ok
+	$dlg.cancel configure -command [list destroy $dlg]
+	$dlg.ok configure -command [namespace code [list Execute \
+		[list {*}$cmd $parent $names] \
+		[list destroy $dlg] \
+	]]
+
+	wm withdraw $dlg
+	wm resizable $dlg no no
+	wm transient $dlg .application
+	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
+	::util::place $dlg -parent .application -position center
+	wm deiconify $dlg
+	focus $cb
+	::ttk::grabWindow $dlg
+	tkwait window $dlg
+	::ttk::releaseGrab $dlg
+}
+
+
+proc Execute {args} { foreach cmd $args { {*}$cmd } }
+
+
+proc RenameLayout {oldName parent names} {
+	variable Options
+	variable Vars
+	variable layout_
+
+	if {$layout_ eq $oldName} { return }
+	set newName $layout_
+	
+	if {$newName in $names} {
+		if {[::dialog::question \
+				-parent $parent \
+				-message [format $mc::ConfirmOverwrite $newName] \
+				-default no \
+			] ne "yes"} {
+			set layout_ ""
+			return
+		}
+	}
+	set source [file join $::scidb::dir::layout "$oldName.layout"]
+	set target [file join $::scidb::dir::layout "$newName.layout"]
+	file rename -force -- $source $target
+	if {$Vars(layout) eq $oldName} { set Vars(layout) $oldName }
+	if {$Options(layout:name) eq $oldName} { set Options(layout:name) $newName }
+}
+
+
+proc DoSaveLayout {parent names} {
+	variable layout_
+	variable Options
+	variable Vars
+
+	if {$layout_ in $names} {
+		if {[::dialog::question \
+				-parent $parent \
+				-message [format $mc::ConfirmOverwrite $layout_] \
+				-default no \
+			] ne "yes"} {
+			set layout_ ""
+			return
+		}
+	}
+	set fh [::open [file join $::scidb::dir::layout "$layout_.layout"] "w"]
+	puts $fh [inspectLayout]
+	close $fh
+	set Vars(layout) $layout_
+	set Options(layout:name) $layout_
+}
+
+
+proc ToggleTitlebars {main windows} {
+	$main togglebar {*}$windows
+}
+
+
+proc HideWhenLeavingTab {main w} {
+	variable hide_
+	$main set! $w hide $hide_($w)
+}
+
+
+proc StayOnTop {main w} {
+	variable stayontop_
+
+	$main set! $w stayontop $stayontop_($w)
+	if {$stayontop_($w)} {
+		set master [winfo toplevel $main]
+		wm transient $w $master
+		raise $w $master
+		# NOTE: not every window manager is re-decorating the window.
+		catch { wm attributes $w -type dialog }
+	} else {
+		wm transient $w ""
+	}
+}
+
+
+proc WriteOptions {chan} {
+	options::writeItem $chan [namespace current]::Options
+}
+
+::options::hookWriter [namespace current]::WriteOptions
 
 
 wm iconphoto .application -default $::icon::64x64::logo $::icon::16x16::logo

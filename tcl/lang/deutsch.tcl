@@ -260,6 +260,7 @@
 ::menu::mc::Tools								"&Werkzeuge"
 ::menu::mc::Extras							"E&xtras"
 ::menu::mc::Setup								"&Einstellungen"
+::menu::mc::Layout							"La&yout"
 
 # Contact
 ::menu::mc::ContactBugReport				"&Fehlerbericht"
@@ -391,17 +392,56 @@
 ::util::photos::mc::Log(updated:1)				"%s Datei wurde erneuert."
 ::util::photos::mc::Log(updated:N)				"%s Dateien wurden erneuert."
 
+### twm ################################################################
+::twm::mc::Close				"Schliessen"
+::twm::mc::Undock				"Abkopplen"
+
+::twm::mc::Timeout			"Zeitüberschreitung nach acht Sekunden ohne Mausbewegung, dieser Rahmen wurde an den alten Platz gedockt."
+::twm::mc::TimeoutDetail	"Diese Sicherheitsmaßnahme is erforderlich um einen eingeforenen Bidschirm zu vermeiden, solange sich das flexible Fenstermanagement im Experimentierstadium befindet."
+
+### application::layout ################################################
+::application::layout::mc::Rename					"Umbenennen"
+::application::layout::mc::Delete					"Löschen"
+::application::layout::mc::Load						"Laden"
+::application::layout::mc::CannotOpenFile			"Die Datei '%s' konnte nicht gelesen werden."
+::application::layout::mc::RestoreToOldLayout	"Das alte Layout wiederherstellen"
+
 ### application ########################################################
 ::application::mc::Information				"&Information"
 ::application::mc::Database					"Datenba&nk"
 ::application::mc::Board						"&Brett"
 ::application::mc::MainMenu					"&Hauptmenü"
 
+::application::mc::Notebook					"Kartei"
+::application::mc::Multiwindow				"Stapel"
+::application::mc::FoldTitleBar				"Titelleiste eingeklappt"
+::application::mc::FoldAllTitleBars			"Alle Titelleisten einklappen"
+::application::mc::UnfoldAllTitleBars		"Alle Titelleisten ausklappen"
+::application::mc::MoveWindow					"Fenster verschieben"
+::application::mc::StayOnTop					"Stets im Vordergrund"
+::application::mc::HideWhenLeavingTab		"Verstecken beim Verlassen des Reiters"
+::application::mc::SaveLayout					"Layout speichern"
+::application::mc::RenameLayout				"Layout umbenennen"
+::application::mc::LoadLayout					"Layout wiederherstellen"
+::application::mc::NewLayout					"Neues Layout"
+::application::mc::ManageLayouts				"Layouts verwalten"
+::application::mc::ShowAllDockingPoints	"Alle Andockpunkte zeigen"
+::application::mc::DockingArrowSize			"Andockpfeilgröße"
+::application::mc::Windows						"Fenster"
+
+::application::mc::Pane(analysis)			"Analyse"
+::application::mc::Pane(board)				"Brett"
+::application::mc::Pane(editor)				"Notation"
+::application::mc::Pane(tree)					"Struktur"
+::application::mc::Pane(games)				"Partien"
+
 ::application::mc::ChessInfoDatabase		"Schach-Informations-Datenbank"
 ::application::mc::Shutdown					"Schließung..."
 ::application::mc::QuitAnyway					"Trotzdem schliessen?"
 ::application::mc::CancelLogout				"Logout beenden"
 ::application::mc::AbortWriteOperation		"Schreiboperation abbrechen"
+::application::mc::ConfirmOverwrite			"Existierendes Layout '%s' ersetzen?"
+::application::mc::ConfirmDelete				"Wirklich das Layout '%s' löschen?"
 
 ::application::mc::UpdatesAvailable			"Updates verfügbar"
 
@@ -418,8 +458,7 @@
 
 ### application::board #################################################
 ::application::board::mc::ShowCrosstable				"Zeige Turniertabelle zur aktuellen Partie"
-::application::board::mc::StartEngine					"Schachanalyse-Motor starten"
-::application::board::mc::StopEngine					"Schachanalyse-Motor beenden"
+::application::board::mc::StartEngine					"Schachanalyse-Motor in neuem Fenster starten"
 ::application::board::mc::InsertNullMove				"Nullzug einfügen"
 ::application::board::mc::SelectStartPosition		"Startposition wählen"
 ::application::board::mc::LoadRandomGame				"Zufällige Partie laden"

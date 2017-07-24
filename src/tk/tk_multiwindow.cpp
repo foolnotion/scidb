@@ -661,12 +661,12 @@ ArrangePane(ClientData clientData)	// Structure describing parent whose slaves a
 //----------------------------------------------------------------------
 static void
 RaiseSlave(	MultiWindow* mw,	// Information about multi window
-				Slave* slave)		// New top slave, use first unhidden slave if zero
+				Slave* slave)		// New top slave, use first unhidden slave if null
 {
 	int index = 0;
 	Slave** slaves;
 
-	if (slave == 0)
+	if (slave == NULL)
 	{
 		while (index < mw->numSlaves && mw->slaves[index]->hide)
 			index++;
@@ -1424,13 +1424,13 @@ MultiWindowWidgetObjCmd(ClientData clientData,	// Information about square widge
 {
 	static const char *optionStrings[] =
 	{
-		"add", "cget", "configure", "forget", "panecget",
-		"paneconfigure", "panes", "raise", "unmap", nullptr,
+		"add", "cget", "configure", "forget", "next", "panecget",
+		"paneconfigure", "panes", "previous", "raise", "unmap", nullptr,
 	};
 	enum options
 	{
-		MW_ADD, MW_CGET, MW_CONFIGURE, MW_FORGET, MW_PANECGET,
-		MW_PANECONFIGURE, MW_PANES, MW_RAISE, MW_UNMAP,
+		MW_ADD, MW_CGET, MW_CONFIGURE, MW_FORGET, MW_NEXT, MW_PANECGET,
+		MW_PANECONFIGURE, MW_PANES, MW_PREVIOUS, MW_RAISE, MW_UNMAP,
 	};
 
 	MultiWindow*	mw				= (MultiWindow*)clientData;
@@ -1567,47 +1567,71 @@ MultiWindowWidgetObjCmd(ClientData clientData,	// Information about square widge
 				}
 			}
 			break;
+			
+		case MW_NEXT:
+			if (mw->numSlaves > 1)
+			{
+				int index = 1;
 
-			case MW_PANECGET:
-				if (objc != 4)
+				while (mw->slaves[index]->hide)
+					index++;
+
+				if (index < mw->numSlaves)
 				{
-					Tcl_WrongNumArgs(interp, 2, objv, "pane option");
+					Slave* slave	= mw->slaves[0];
+					Slave* visible = mw->slaves[index];
+
+					if (visible)
+					{
+						RaiseSlave(mw, visible);
+						PlaceSlave(mw, visible);
+						UnmapSlave(mw, slave);
+						SendVirtualEvent(mw->tkwin, "MultiwindowPaneRaised");
+					}
+				}
+			}
+			break;
+
+		case MW_PANECGET:
+			if (objc != 4)
+			{
+				Tcl_WrongNumArgs(interp, 2, objv, "pane option");
+				result = TCL_ERROR;
+			}
+			else
+			{
+				Tk_Window tkwin = Tk_NameToWindow(interp, Tcl_GetString(objv[2]), mw->tkwin);
+
+				if (tkwin == nullptr)
+				{
 					result = TCL_ERROR;
 				}
 				else
 				{
-					Tk_Window tkwin = Tk_NameToWindow(interp, Tcl_GetString(objv[2]), mw->tkwin);
+					resultObj = nullptr;
 
-					if (tkwin == nullptr)
+					for (i = 0; i < mw->numSlaves; i++)
 					{
-						result = TCL_ERROR;
-					}
-					else
-					{
-						resultObj = nullptr;
-
-						for (i = 0; i < mw->numSlaves; i++)
+						if (mw->slaves[i]->tkwin == tkwin)
 						{
-							if (mw->slaves[i]->tkwin == tkwin)
-							{
-								resultObj = Tk_GetOptionValue(interp,
-																		(char*)mw->slaves[i],
-																		mw->slaveOpts,
-																		objv[3],
-																		tkwin);
-							}
+							resultObj = Tk_GetOptionValue(interp,
+																	(char*)mw->slaves[i],
+																	mw->slaveOpts,
+																	objv[3],
+																	tkwin);
 						}
-
-						if (i == mw->numSlaves)
-							Tcl_SetResult(interp, const_cast<char*>("not managed by this window"), TCL_STATIC);
-
-						if (resultObj == nullptr)
-							result = TCL_ERROR;
-						else
-							Tcl_SetObjResult(interp, resultObj);
 					}
+
+					if (i == mw->numSlaves)
+						Tcl_SetResult(interp, const_cast<char*>("not managed by this window"), TCL_STATIC);
+
+					if (resultObj == nullptr)
+						result = TCL_ERROR;
+					else
+						Tcl_SetObjResult(interp, resultObj);
 				}
-				break;
+			}
+			break;
 
 		case MW_PANECONFIGURE:
 			if (objc < 3)
@@ -1660,6 +1684,30 @@ MultiWindowWidgetObjCmd(ClientData clientData,	// Information about square widge
 
 			Tcl_SetObjResult(interp, resultObj);
 			Tcl_DecrRefCount(resultObj);
+			break;
+
+		case MW_PREVIOUS:
+			if (mw->numSlaves > 1)
+			{
+				int index = mw->numSlaves - 1;
+
+				while (index > 0 && mw->slaves[index]->hide)
+					index--;
+
+				if (index > 0)
+				{
+					Slave* slave	= mw->slaves[0];
+					Slave* visible = mw->slaves[index];
+
+					if (visible)
+					{
+						RaiseSlave(mw, visible);
+						PlaceSlave(mw, visible);
+						UnmapSlave(mw, slave);
+						SendVirtualEvent(mw->tkwin, "MultiwindowPaneRaised");
+					}
+				}
+			}
 			break;
 
 		case MW_RAISE:
@@ -1826,12 +1874,12 @@ MultiWindowEventProc(ClientData clientData,	// Information about window
 			break;
 
 		case MapNotify:
-			RaiseSlave(mw, 0);
-			PlaceSlave(mw, 0);
+			RaiseSlave(mw, NULL);
+			PlaceSlave(mw, NULL);
 			break;
 
 		case UnmapNotify:
-			UnmapSlave(mw, 0);
+			UnmapSlave(mw, NULL);
 			break;
 	}
 }

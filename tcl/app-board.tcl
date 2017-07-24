@@ -31,8 +31,7 @@ namespace eval board {
 namespace eval mc {
 
 set ShowCrosstable			"Show tournament table for this game"
-set StartEngine				"Start chess analysis engine"
-set StopEngine					"Stop chess analysis engine"
+set StartEngine				"Start chess analysis engine in new window"
 set InsertNullMove			"Insert null move"
 set SelectStartPosition		"Select Start Position"
 set LoadRandomGame			"Load random game"
@@ -107,17 +106,17 @@ proc build {w width height} {
 
 	set Vars(variant) Normal
 	set Vars(layout) Normal
-	Preload $width $height
+	set Vars(initialized) 0
 
-	set canv [tk::canvas $w.c -width $width -height $height -takefocus 1 -borderwidth 0]
-	pack $canv -fill both -expand yes
+	pack [set canv [tk::canvas $w.c -takefocus 1 -borderwidth 0]] -fill both -expand yes
 	$canv xview moveto 0
 	$canv yview moveto 0
 	SetBackground $canv window $width $height
 	set border [tk::canvas $canv.border -takefocus 0 -borderwidth 0]
 	$border xview moveto 0
 	$border yview moveto 0
-	set board [::board::diagram::new $border.board $Dim(squaresize) \
+	Preload $width [expr {$height - [[winfo parent $w] get $w Extent 74]}]
+	set board [::board::diagram::new $border.diagram $Dim(squaresize) \
 		-bordersize $Dim(edgethickness) \
 		-bordertype lines \
 		-promosign $Options(promoted:mark) \
@@ -156,7 +155,6 @@ proc build {w width height} {
 	$border create window 0 0 -window $board -anchor nw -tag board
 	set Vars(widget:border) $border
 	set Vars(widget:frame) $canv
-	set Vars(widget:parent) $w
 	set Vars(autoplay) 0
 	set Vars(active) 0
 	set Vars(material) {}
@@ -167,6 +165,9 @@ proc build {w width height} {
 	set Vars(current:game) {}
 	set Vars(load:method) base
 	set Vars(select-var-is-pending) 0
+	set Vars(width) $width
+	set Vars(height) $height
+	set Vars(dimensions) ${width}x${height}
 	foreach layout $Layouts {
 		set Vars(inuse:$layout) {}
 		set Vars(registered:$layout) 0
@@ -234,8 +235,6 @@ proc build {w width height} {
 							-side top \
 						]
 
-	set main [winfo parent $w]
-
 #	::toolbar::add $tbTools button -image $::icon::toolbarGameList			-command {}
 #	::toolbar::add $tbTools button -image $::icon::toolbarGameNotation	-command {}
 #	::toolbar::add $tbTools button -image $::icon::toolbarMaintenance		-command {}
@@ -249,7 +248,7 @@ proc build {w width height} {
 	]
 	::toolbar::add $tbTools button \
 		-image $::icon::toolbarEngine \
-		-command [namespace code [list ::engine::openSetup .application]] \
+		-command [list ::engine::openSetup .application] \
 		-tooltipvar [namespace current]::mc::StartEngine \
 		;
 
@@ -438,6 +437,8 @@ proc build {w width height} {
 proc activate {w flag} {
 	variable Vars
 
+	if {![winfo exists $w]} { return }
+
 	set Vars(active) $flag
 	::toolbar::activate $w $flag
 
@@ -446,6 +447,12 @@ proc activate {w flag} {
 	}
 
 	[namespace parent]::pgn::activate $w $flag
+	set Vars(initialized) 1
+}
+
+
+proc closed {w} {
+	# should only happen after shutdown
 }
 
 
@@ -455,9 +462,9 @@ proc setActive {flag} {
 	::move::enable ;# required here because <<ControlOff>> might fail
 	::marks::releaseSquare
 
-	if {$flag && $Vars(active)} {
-		focus $Vars(widget:frame)
-	}
+#	if {$flag && $Vars(active) && [focus] ne $Vars(widget:frame)} {
+#		setFocus
+#	}
 }
 
 
@@ -471,34 +478,10 @@ proc active? {} {
 }
 
 
-proc anaylsisWindow {} {
-	return .application.analysis
-}
-
-
-proc openAnalysis {{force {}}} {
-	set dlg .application.analysis
-	if {[winfo exists $dlg]} {
-		if {[llength $force] == 0} { closeAnalysis }
-		return
+proc openAnalysis {number} {
+	if {![::application::analysis::exists? $number]} {
+		::application::newAnalysisPane $number
 	}
-	tk::toplevel $dlg -class Scidb
-	wm withdraw $dlg
-	set top [ttk::frame $dlg.top -width 350 -borderwidth 0]
-	::application::analysis::build $dlg.top 350 0
-	pack $top -fill both
-	wm protocol $dlg WM_DELETE_WINDOW [namespace code closeAnalysis]
-	wm resizable $dlg true false
-	wm transient $dlg .application
-	wm minsize $dlg 350 100
-	wm title $dlg $::application::database::mc::T_Analysis
-	::util::place $dlg -parent .application -position center
-	wm deiconify $dlg
-}
-
-
-proc closeAnalysis {} {
-	catch { destroy .application.analysis }
 }
 
 
@@ -944,10 +927,36 @@ proc Preload {width height} {
 proc ConfigureWindow {w width height} {
 	variable Vars
 
+	if {$width <= 1 || $height <= 1} { return }
+
 	set Vars(width) $width
 	set Vars(height) $height
-	after cancel $Vars(after)
-	set Vars(after) [after 100 [namespace code [list RebuildBoard $w $width $height]]]
+
+	if {[::twm::frozen?]} {
+		if {$Vars(initialized)} { SetBackground $Vars(widget:frame) window $width $height }
+		return
+	}
+
+	if {$Vars(initialized)} {
+		set parent [winfo parent $w]
+		[winfo parent $parent] set $parent Extent [expr {[winfo height $parent] - $height}]
+		after cancel $Vars(after)
+		if {$Vars(initialized) == 1} {
+			set timeout 300
+			set Vars(initialized) 2
+		} else {
+			set timeout 100
+		}
+		set Vars(after) [after $timeout [namespace code [list RebuildBoard $w $width $height]]]
+	}
+}
+
+
+proc afterTWM {} {
+	variable Vars
+
+	if !{[winfo exists $Vars(widget:frame)]} { return }
+	ConfigureWindow $Vars(widget:frame) $Vars(width) $Vars(height)
 }
 
 
@@ -959,7 +968,6 @@ proc SetBackground {canv which {width 0} {height 0}} {
 	} else {
 		::theme::configureBackground $canv
 	}
-
 	::board::setBackground $canv window $width $height
 }
 
@@ -1151,7 +1159,7 @@ proc InsertNullMove {} {
 proc Apply {} {
 	variable Vars
 
-	if {[info exists Vars(width)]} {
+	if {[[namespace parent]::ready?]} {
 		RebuildBoard $Vars(widget:frame) $Vars(width) $Vars(height)
 	}
 }
@@ -1189,6 +1197,10 @@ proc RebuildBoard {canv width height} {
 	variable Dim
 	variable Vars
 	variable board
+
+	set dimensions ${width}x${height}
+	if {$dimensions eq $Vars(dimensions)} { return }
+	set Vars(dimensions) $dimensions
 
 	set squareSize $Dim(squaresize)
 	set edgeThickness $Dim(edgethickness)

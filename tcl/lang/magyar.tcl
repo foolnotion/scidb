@@ -259,8 +259,9 @@
 ::menu::mc::Contact			"&Elérhetőség (Web böngésző)"
 ::menu::mc::Quit			"&Kilépés"
 ::menu::mc::Tools			"&Tools" ;# NEW
-::menu::mc::Extras						"E&xtras" ;# NEW
-::menu::mc::Setup						"&Beállítások"
+::menu::mc::Extras			"E&xtras" ;# NEW
+::menu::mc::Setup			"&Beállítások"
+::menu::mc::Layout			"La&yout" ;# NEW
 
 # Contact
 ::menu::mc::ContactBugReport		"&Hiba jelentés"
@@ -392,17 +393,56 @@
 ::util::photos::mc::Log(updated:1)		"%s fájl frissítve."
 ::util::photos::mc::Log(updated:N)		"%s fájlok frissítve."
 
+### twm ################################################################
+::twm::mc::Close		"Close" ;# NEW
+::twm::mc::Undock		"Undock" ;# NEW
+
+::twm::mc::Timeout		"Timeout after eight seconds without mouse motions, the frame has been re-docked to old place." ;# NEW
+::twm::mc::TimeoutDetail	"This safety handling is required to avoid frozen screens, as long as the tiling window management is in an experimental stage." ;# NEW
+
+### application::layout ################################################
+::application::layout::mc::Rename		"Rename" ;# NEW
+::application::layout::mc::Delete		"Delete" ;# NEW
+::application::layout::mc::Load			"Load" ;# NEW
+::application::layout::mc::CannotOpenFile	"Cannot read file '%s'." ;# NEW
+::application::layout::mc::RestoreToOldLayout	"Restore to old layout" ;# NEW
+
 ### application ########################################################
 ::application::mc::Information			"&Information" ;# NEW
 ::application::mc::Database			"&Adatbázis"
 ::application::mc::Board			"&Tábla"
 ::application::mc::MainMenu			"Fő&menü"
 
+::application::mc::Notebook			"Notebook" ;# NEW
+::application::mc::Multiwindow			"Stack" ;# NEW
+::application::mc::FoldTitleBar			"Fold Titlebar" ;# NEW
+::application::mc::FoldAllTitleBars		"Fold all Titlebars" ;# NEW
+::application::mc::UnfoldAllTitleBars		"Unfold all Titlebars" ;# NEW
+::application::mc::MoveWindow			"Move Window" ;# NEW
+::application::mc::StayOnTop			"Stay on Top" ;# NEW
+::application::mc::HideWhenLeavingTab		"Hide When Leaving Tab" ;# NEW
+::application::mc::SaveLayout			"Save Layout" ;# NEW
+::application::mc::RenameLayout			"Rename Layout" ;# NEW
+::application::mc::LoadLayout			"Load Layout" ;# NEW
+::application::mc::NewLayout			"New Layout" ;# NEW
+::application::mc::ManageLayouts		"Manage Layouts" ;# NEW
+::application::mc::ShowAllDockingPoints		"Show all Docking Points" ;# NEW
+::application::mc::DockingArrowSize		"Docking Arrow Size" ;# NEW
+::application::mc::Windows			"Windows" ;# NEW
+
+::application::mc::Pane(analysis)		"Analysis" ;# NEW
+::application::mc::Pane(board)			"Board" ;# NEW
+::application::mc::Pane(editor)			"Notation" ;# NEW
+::application::mc::Pane(tree)			"Tree" ;# NEW
+::application::mc::Pane(games)			"Games" ;# NEW
+
 ::application::mc::ChessInfoDatabase		"Chess Information Data Base"
 ::application::mc::Shutdown			"Kilépés..."
 ::application::mc::QuitAnyway			"Biztos ki akar lépni?"
 ::application::mc::CancelLogout			"Cancel Logout" ;# NEW
 ::application::mc::AbortWriteOperation		"Abort write operation" ;# NEW
+::application::mc::ConfirmOverwrite		"Overwrite existing layout '%s'?" ;# NEW
+::application::mc::ConfirmDelete		"Really delete layout '%s'?" ;# NEW
 
 ::application::mc::UpdatesAvailable		"Új frissítés érhető el"
 
@@ -419,8 +459,7 @@
 
 ### application::board #################################################
 ::application::board::mc::ShowCrosstable		"Mutasd a verseny kereszttábláját"
-::application::board::mc::StartEngine			"Elemzőmodul indítása"
-::application::board::mc::StopEngine			"Elemzőmodul leállítása"
+::application::board::mc::StartEngine			"Elemzőmodul indítása" ;# NEW content: Start chess analysis engine in new window
 ::application::board::mc::InsertNullMove		"Insert null move" ;# NEW
 ::application::board::mc::SelectStartPosition		"Select Start Position" ;# NEW
 ::application::board::mc::LoadRandomGame		"Load random game" ;# NEW

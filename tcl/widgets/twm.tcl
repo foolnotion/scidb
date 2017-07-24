@@ -63,9 +63,14 @@ array set Defaults {
 	cross:color:2					#24a249
 	cross:active					yellow
 	cross:size						24
+	cross:showall					0
 	highlight:color				#3778ed
+	highlight:border				#0849c0
 	highlight:opacity				0.3
 	highlight:minsize				150
+	motion:busy						0
+	motion:overrideredirect		1
+	deiconify:timeout				50
 }
 # flathandle:color:dark		#000000
 # flathandle:color:lite		#ffffff
@@ -74,7 +79,6 @@ array set Defaults {
 
 array set Options [array get Defaults]
 
-
 array set DirMap {
 	m center
 	t top    n top
@@ -82,6 +86,8 @@ array set DirMap {
 	l left   w left
 	r right  e right
 }
+
+set Frozen ""
 
 
 proc tr {tok} { return [::tk::msgcat::mc [set $tok]] }
@@ -99,20 +105,29 @@ if {![catch {package require tooltip}]} {
 proc twm {path args} {
 	namespace eval [namespace current]::$path {}
 	variable ${path}::Vars
-	variable ${path}::MakePane
-	variable ${path}::BuildPane
-	variable ${path}::WorkArea
 	variable Options
 
-	array set opts { -makepane {} -buildpane {} -workarea {} }
+	array set opts {
+		-makepane {}
+		-buildpane {}
+		-workarea {}
+		-resizing {}
+		-borderwidth 0
+		-allowempty 0
+		-state "normal"
+	}
 	array set opts $args
-	set MakePane $opts(-makepane)
-	set BuildPane $opts(-buildpane)
-	set WorkArea $opts(-workarea)
+	set Vars(cmd:makepane) $opts(-makepane)
+	set Vars(cmd:buildpane) $opts(-buildpane)
+	set Vars(cmd:workarea) $opts(-workarea)
+	set Vars(cmd:resizing) $opts(-resizing)
+	set Vars(allow:empty) $opts(-allowempty)
+	set Vars(state) $opts(-state)
 	set Vars(docking:recipient) ""
 	set Vars(docking:position) ""
 	set Vars(docking:current) ""
 	set Vars(afterid:release) {}
+	set Vars(cross:showall) $Options(cross:showall)
 
 	set fam [font configure $Options(header:font) -family]
 	set headerFont [list $fam $Options(header:fontsize) bold]
@@ -124,7 +139,7 @@ proc twm {path args} {
 	ttk::style configure twm.TLabel -font $headerFont -background $tabbg
 	#ttk::style map twm.TNotebook.Tab -background [list active $background selected $background]
 
-	ttk::frame $path -class TwmToplevel -takefocus 0
+	ttk::frame $path -class TwmToplevel -borderwidth $opts(-borderwidth) -takefocus 0
 	bind $path <Destroy> [list [namespace current]::DestroyTWM %W]
 
 	set h [tk::toplevel $path.__highlight__ -borderwidth 0]
@@ -139,61 +154,97 @@ proc twm {path args} {
 }
 
 
+proc frozen {} {
+	return [set [namespace current]::Frozen]
+}
+
+
+proc frozen? {{twm ""}} {
+	variable Frozen
+	return [expr {[string length $twm] == 0 ? [string length $Frozen] > 0 : $frozen eq $twm}]
+}
+
+
 proc WidgetProc {twm command args} {
 	variable Options
+	variable ${twm}::Vars
 
 	switch -- $command {
-		set				{ ::scidb::tk::twm set $twm {*}$args }
-		set!				{ ::scidb::tk::twm set! $twm {*}$args }
-		get				{ return [::scidb::tk::twm get $twm {*}$args] }
-		get!				{ return [::scidb::tk::twm get! $twm {*}$args] }
-		uid				{ return [::scidb::tk::twm uid $twm {*}$args] }
-		id					{ return [::scidb::tk::twm id $twm {*}$args] }
-		leader			{ return [::scidb::tk::twm leader $twm {*}$args] }
-		iscontainer		{ return [::scidb::tk::twm iscontainer $twm {*}$args] }
-		isnotebook		{ return [string match {*Notebook} [winfo class {*}$args]] }
-		ismultiwindow	{ return [string match {*Multiwindow} [winfo class {*}$args]] }
-		ispanedwindow	{ return [string match {*Panedwindow} [winfo class {*}$args]] }
-		isframe			{ return [string match {Twm*Frame} [winfo class {*}$args]] }
-		ismetaframe		{ return [string equal "TwmMetaframe" [winfo class {*}$args]] }
-		ispane			{ return [::scidb::tk::twm ispane $twm {*}$args] }
+		adjacent			{ return [::scidb::tk::twm adjacent $twm {*}$args] }
+		build				{ return [BuildPane $twm {*}$args] }
+		clone				{ return [::scidb::tk::twm clone $twm {*}$args] }
+		close				{ return [Close $twm {*}$args] }
+		configure		{ $twm.__twm_frame__ configure {*}$args }
 		container		{ return [::scidb::tk::twm container $twm {*}$args] }
-		visible			{ return [::scidb::tk::twm visible $twm {*}$args] }
-		parent			{ return [::scidb::tk::twm parent $twm {*}$args] }
-		frames			{ return [::scidb::tk::twm frames $twm {*}$args] }
-		panes				{ return [::scidb::tk::twm panes $twm {*}$args] }
-		neighbors		{ return [::scidb::tk::twm neighbors $twm {*}$args] }
-		orientation		{ return [::scidb::tk::twm orientation $twm {*}$args] }
+		deiconify		{ return [Deiconify $twm {*}$args] }
+		destroy			{ DestroyPane $twm {*}$args }
+		dimensions		{ return [Dimensions $twm {*}$args] }
 		dock				{ return [::scidb::tk::twm dock $twm {*}$args] }
-		undock			{ return [::scidb::tk::twm undock $twm {*}$args] }
-		togglebar		{ return [ToggleHeader $twm {*}$args] }
-		togglenotebook	{ return [::scidb::tk::twm toggle $twm {*}$args] }
+		exists			{ return [::scidb::tk::twm exists $twm {*}$args] }
+		find				{ return [::scidb::tk::twm find $twm {*}$args] }
 		floats			{ return [::scidb::tk::twm floats $twm] }
-		inspect			{ return [::scidb::tk::twm inspect $twm flat {*}$args] }
-
-		init				{ ::scidb::tk::twm init $twm {*}$args }
-		load				{ ::scidb::tk::twm load $twm {*}$args }
 		frame				{ return [MakeFrame $twm frame {*}$args] }
 		frame2			{ MakeFrame2 $twm {*}$args }
-		header			{ UpdateHeader $twm {*}$args }
-		title				{ UpdateTitle $twm {*}$args }
-		metaframe		{ return [MakeFrame $twm metaframe {*}$args] }
-		build				{ return [BuildPane $twm {*}$args] }
-		pane				{ return [MakePane $twm {*}$args] }
-		notebook			{ return [MakeNotebook $twm {*}$args] }
-		multiwindow		{ return [MakeMultiwindow $twm {*}$args] }
-		panedwindow		{ return [MakePanedWindow $twm {*}$args] }
-		paneconfigure	{ return [PaneConfigure $twm {*}$args] }
-		resized			{ return [ResizeToplevel $twm {*}$args] }
-		dimensions		{ return [Dimensions $twm {*}$args] }
-		ready				{ event generate $twm <<TwmReady>> -data $args }
-		pack				{ return [Pack $twm {*}$args] }
-		unpack			{ return [Unpack $twm {*}$args] }
-		select			{ return [Select $twm {*}$args] }
-		destroy			{ DestroyPane $twm {*}$args }
-		sashsize			{ return $Options(sash:size) }
 		framehdrsize	{ return [FrameHeaderSize $twm {*}$args] }
+		frames			{ return [::scidb::tk::twm frames $twm {*}$args] }
+		frozen?			{ return [expr {[set [namespace current]::Frozen] eq $twm}] }
+		get				{ return [::scidb::tk::twm get $twm {*}$args] }
+		get!				{ return [::scidb::tk::twm get! $twm {*}$args] }
+		header			{ UpdateHeader $twm {*}$args }
+		hidden			{ return [::scidb::tk::twm hidden $twm {*}$args] }
+		hide				{ Hide $twm {*}$args }
+		id					{ return [::scidb::tk::twm id $twm {*}$args] }
+		init				{ ::scidb::tk::twm init $twm {*}$args }
+		inspect			{ return [::scidb::tk::twm inspect $twm flat hide stayontop {*}$args] }
+		iscontainer		{ return [::scidb::tk::twm iscontainer $twm {*}$args] }
+		isdocked			{ return [::scidb::tk::twm isdocked $twm {*}$args] }
+		isframe			{ return [string match "TwmFrame" [winfo class {*}$args]] }
+		isheaderframe	{ return [string match {Twm*rame} [winfo class {*}$args]] }
+		ismetachild		{ return [::scidb::tk::twm ismetachild $twm {*}$args] }
+		ismetaframe		{ return [string equal "TwmMetaframe" [winfo class {*}$args]] }
+		ismultiwindow	{ return [string match {*Multiwindow} [winfo class {*}$args]] }
+		isnotebook		{ return [string match {*Notebook} [winfo class {*}$args]] }
+		ispanedwindow	{ return [string match {*Panedwindow} [winfo class {*}$args]] }
+		ispane			{ return [::scidb::tk::twm ispane $twm {*}$args] }
+		isroot			{ return [string match $twm {*}$args] }
+		istoplevel		{ return [expr {[::scidb::tk::twm toplevel $twm {*}$args] eq $args}] }
+		leader			{ return [::scidb::tk::twm leader $twm {*}$args] }
+		leaf				{ return [::scidb::tk::twm leaf $twm {*}$args] }
+		leaves			{ return [::scidb::tk::twm leaves $twm {*}$args] }
+		load				{ ::scidb::tk::twm load $twm {*}$args }
+		metaframe		{ return [MakeFrame $twm metaframe {*}$args] }
+		multiwindow		{ return [MakeMultiwindow $twm {*}$args] }
 		nbhdrsize		{ return [NotebookHeaderSize $twm {*}$args] }
+		neighbors		{ return [::scidb::tk::twm neighbors $twm {*}$args] }
+		new				{ return [::scidb::tk::twm new $twm {*}$args] }
+		notebook			{ return [MakeNotebook $twm {*}$args] }
+		orientation		{ return [::scidb::tk::twm orientation $twm {*}$args] }
+		pack				{ return [Pack $twm {*}$args] }
+		paneconfigure	{ return [PaneConfigure $twm {*}$args] }
+		panedwindow		{ return [MakePanedWindow $twm {*}$args] }
+		pane				{ return [MakePane $twm {*}$args] }
+		panes				{ return [::scidb::tk::twm panes $twm {*}$args] }
+		parent			{ return [::scidb::tk::twm parent $twm {*}$args] }
+		ready				{ event generate $twm <<TwmReady>> -data $args }
+		refresh			{ return [::scidb::tk::twm refresh $twm {*}$args] }
+		resize			{ return [Resize $twm {*}$args] }
+		resized			{ return [ResizeToplevel $twm {*}$args] }
+		resizing			{ return [Resizing $twm {*}$args] }
+		sashsize			{ return $Options(sash:size) }
+		selected			{ return [::scidb::tk::twm selected $twm {*}$args] }
+		select			{ return [Select $twm {*}$args] }
+		set				{ ::scidb::tk::twm set $twm {*}$args }
+		set!				{ ::scidb::tk::twm set! $twm {*}$args }
+		show				{ ::scidb::tk::twm show $twm {*}$args }
+		showall			{ return [ShowAll $twm {*}$args] }
+		title				{ UpdateTitle $twm {*}$args }
+		togglebar		{ return [ToggleHeaders $twm {*}$args] }
+		togglenotebook	{ return [::scidb::tk::twm toggle $twm {*}$args] }
+		toplevel			{ return [::scidb::tk::twm toplevel $twm {*}$args] }
+		uid				{ return [::scidb::tk::twm uid $twm {*}$args] }
+		undock			{ return [::scidb::tk::twm undock $twm {*}$args] }
+		unpack			{ return [Unpack $twm {*}$args] }
+		visible			{ return [::scidb::tk::twm visible $twm {*}$args] }
 		workarea			{ return [WorkArea $twm {*}$args] }
 
 		default			{ return -code error "unknown command '$command'" }
@@ -203,27 +254,31 @@ proc WidgetProc {twm command args} {
 }
 
 
+proc ShowAll {twm flag} {
+	variable ${twm}::Vars
+	set Vars(cross:showall) $flag
+}
+
+
 proc DestroyPane {twm pane} {
 	catch { destroy $pane }
 }
 
 
 proc BuildPane {twm frame id width height} {
-	variable ${twm}::BuildPane
+	variable ${twm}::Vars
 
 	set pane $frame
-	if {![$twm ispane $pane]} {
-		set pane [lindex [pack slaves $frame] end]
-	}
-	$BuildPane $twm $pane $id $width $height
+	if {![$twm ispane $pane]} { set pane [lindex [pack slaves $frame] end] }
+	$Vars(cmd:buildpane) $twm $pane $id $width $height
 	$frame configure -background [$pane cget -background]
 }
 
 
 proc FrameHeaderSize {twm frame} {
 	variable Options
-	if {[$twm get! $frame flat]} {
-		set size [expr {$Options(flathandle:size) + 2}]
+	if {[$twm get! $frame flat 0]} {
+		set size [expr {$Options(flathandle:size) + 2}] ;# borderwidth=2
 	} else {
 		set size 4 ;# padding=2 + borderwidth=2
 		incr size [font metrics [ttk::style lookup twm.TLabel -font] -linespace]
@@ -235,7 +290,7 @@ proc FrameHeaderSize {twm frame} {
 
 proc NotebookHeaderSize {twm nb} {
 	set padding [ttk::style lookup twm.TNotebook.Tab -padding]
-	set size 1 ;# borderwidth=2 - one overlapping pixel
+	set size 3 ;# borderwidth=2 + one overlapping pixel
 	switch [llength $padding] {
 		2 { incr size [expr {2*[lindex $padding 1]}] }
 		3 { incr size [lindex $padding 1] }
@@ -259,9 +314,11 @@ proc MakeMultiwindow {twm args} {
 
 
 proc MakeNotebook {twm args} {
+	variable ${twm}::Vars
 	variable Counter
 
 	set w [ttk::notebook $twm.__notebook__[incr Counter(notebook)] -style twm.TNotebook -takefocus 0]
+	if {$Vars(state) eq "disabled"} { $w configure -state "disabled" }
 	MenuBindings $twm $w $w
 	if {[llength $args] == 1} { set args [lindex $args 0] }
 	foreach {name value} $args {
@@ -275,6 +332,7 @@ proc MakePanedWindow {twm args} {
 	variable Counter
 	variable Options
 
+	# TODO: how to build disabled panedwindows?
 	set w [tk::panedwindow $twm.__panedwindow__[incr Counter(panedwindow)]]
 	$w configure -sashwidth $Options(sash:size)
 	if {[llength $args] == 1} { set args [lindex $args 0] }
@@ -286,20 +344,21 @@ proc MakePanedWindow {twm args} {
 
 
 proc MakePane {twm id} {
-	variable ${twm}::MakePane
+	variable ${twm}::Vars
 	variable Options
 
-	lassign [$MakePane $twm $twm pane $id] w name priority
+	lassign [$Vars(cmd:makepane) $twm $twm pane $id] w name priority
 	$w configure -borderwidth $Options(frame:borderwidth) -relief raised
 	$twm set $w name $name priority $priority
 	return $w
 }
 
 
-proc MakeFrame {twm type} {
+proc MakeFrame {twm type {id ""}} {
 	variable Counter
 
-	set frame $twm.__${type}__[incr Counter($type)]
+	if {[string length $id] == 0} { set id [incr Counter($type)] }
+	set frame $twm.__${type}__${id}
 	set class Twm[string toupper $type 0 0]
 	return [tk::frame $frame -class $class -borderwidth 0 -takefocus 0]
 }
@@ -307,36 +366,37 @@ proc MakeFrame {twm type} {
 
 proc MakeFrame2 {twm frame id} {
 	variable Options
-	variable ${twm}::MakePane
+	variable ${twm}::Vars
 
-	if {[winfo class $frame] eq "TwmFrame"} {
-		lassign [$MakePane $twm $frame frame $id] child name priority closable undockable moveable
+	if {[$twm isframe $frame]} {
+		lassign [$Vars(cmd:makepane) $twm $frame frame $id] \
+			child name priority closable undockable moveable
 		$child configure -borderwidth $Options(frame:borderwidth) -relief raised
 	} elseif {[$twm iscontainer $id]} {
 		set child $id
 		set leader [$twm leader $id]
 		set name [$twm get $leader name]
 		set priority [$twm get $leader priority]
-		if {[llength [$twm panes $child]] > 0} {
+		set panes [lmap w [$twm panes $child] {expr {[$twm ispane $w] ? $w : [continue]}}]
+		if {[llength $panes] > 0} {
 			lassign {0 0 0} closable undockable moveable
 		} else {
 			lassign {1 1 1} closable undockable moveable
-			set frames [$twm frames $child]
-			foreach f $frames {
+			foreach f [$twm frames $child] {
 				if {![$twm get $f move]} { set moveable 0 }
 				if {![$twm get $f close]} { set closable 0 }
 				if {![$twm get $f undock]} { set undockable 0 }
 			}
 		}
-		raise $child $frame
 	} else {
 		set child $id
 		lassign {0 0 0} closable undockable moveable
 		set priority [$twm get $id priority]
 		set name [$twm get $id name]
-		if {[winfo toplevel $frame] ne $frame} {
-			raise $child $frame
-		}
+	}
+
+	if {![$twm isframe $frame] && ![$twm istoplevel $frame]} {
+		raise $child $frame
 	}
 
 	set hdr [tk::frame $frame.__header__ -borderwidth 1 -relief raised -takefocus 0]
@@ -347,31 +407,39 @@ proc MakeFrame2 {twm frame id} {
 		set bg [ttk::style lookup $::ttk::currentTheme -background]
 	}
 	$hdr configure -background $bg
+	if {![$twm ismetachild $frame] && $Vars(state) ne "disabled"} {
+		bind $hdr <Double-Button-1> [list [namespace current]::ToggleHeaders $twm $frame]
+	}
 
-	#pack $hdr -side top -fill x -expand no
 	pack $child -side top -fill both -expand yes -in $frame
 
 	if {$closable} {
 		ttk::button $hdr.close \
 			-style twm.TButton \
 			-image $icon::12x12::close \
-			-command [list [namespace current]::Close $twm $frame] \
 			-state [expr {$closable ? "normal" : "disabled"}] \
 			-takefocus 0 \
 			;
-		tooltip $hdr.close [tr [namespace current]::mc::Close]
 		MouseWheelBindings $twm $frame $hdr.close
+		MenuBindings $twm $frame $hdr.close
+		if {$Vars(state) eq "normal"} {
+			$hdr.close configure -command [list $twm close $frame]
+			tooltip $hdr.close [tr [namespace current]::mc::Close]
+		}
 	}
 	if {$undockable} {
 		ttk::button $hdr.undock \
 			-style twm.TButton \
 			-image $icon::12x12::undock \
-			-command [list [namespace current]::Undock $twm $frame] \
 			-state [expr {$undockable ? "normal" : "disabled"}] \
 			-takefocus 0 \
 			;
-		tooltip $hdr.undock [tr [namespace current]::mc::Undock]
 		MouseWheelBindings $twm $frame $hdr.undock
+		MenuBindings $twm $frame $hdr.undock
+		if {$Vars(state) eq "normal"} {
+			$hdr.undock configure -command [list [namespace current]::Undock $twm $frame]
+			tooltip $hdr.undock [tr [namespace current]::mc::Undock]
+		}
 	}
 
 	$twm set $frame \
@@ -382,7 +450,9 @@ proc MakeFrame2 {twm frame id} {
 		undock $undockable \
 		priority $priority \
 		;
-	$twm set! $frame flat 0
+
+	# ensure existence of this attribute
+	$twm set! $frame flat [$twm get! $frame flat 0]
 
 	ShowHeaderButtons $twm $frame
 	HeaderBindings $twm $frame $hdr
@@ -390,18 +460,26 @@ proc MakeFrame2 {twm frame id} {
 
 
 proc ShowHeaderButtons {twm frame} {
+	variable ${twm}::Vars
+
 	set hdr $frame.__header__
-	set undockable [$twm get $frame undock]
-	set closable   [$twm get $frame close]
 
-	if {$undockable} { grid $hdr.undock -column 1 -row 0 }
-	if {$closable}   { grid $hdr.close  -column 3 -row 0 }
+	if {[$twm isframe $frame] && [llength [$twm panes $twm]] == 1} {
+		grid forget $hdr.close
+		grid forget $hdr.undock
+	} else {
+		set undockable [$twm get $frame undock]
+		set closable   [$twm get $frame close]
 
-	grid columnconfigure $hdr 0 -weight 1 -minsize 5
-	if {$closable && $undockable} {
-		grid columnconfigure $hdr 2 -minsize 3
+		if {$undockable} { grid $hdr.undock -column 1 -row 0 }
+		if {$closable}   { grid $hdr.close  -column 3 -row 0 }
+
+		grid columnconfigure $hdr 0 -weight 1 -minsize 5
+		if {$closable && $undockable} {
+			grid columnconfigure $hdr 2 -minsize 3
+		}
+		grid columnconfigure $hdr 4 -minsize 2
 	}
-	grid columnconfigure $hdr 4 -minsize 2
 }
 
 
@@ -414,10 +492,17 @@ proc UnbindHeader {w} {
 
 
 proc HeaderBindings {twm frame w} {
-	if {[$twm get $frame move]} {
-		bind $w <ButtonPress-1>		[list [namespace current]::HeaderPress $twm $frame %X %Y]
-		bind $w <Button1-Motion>	[list [namespace current]::HeaderMotion $twm $frame %X %Y]
-		bind $w <ButtonRelease-1>	[list [namespace current]::HeaderRelease $twm $frame]
+	variable ${twm}::Vars
+
+	if {$Vars(state) eq "normal"} {
+		if {[$twm get $frame move]} {
+			bind $w <ButtonPress-1>		[list [namespace current]::HeaderPress $twm $frame %X %Y]
+			bind $w <Button1-Motion>	[list [namespace current]::HeaderMotion $twm $frame %X %Y]
+			bind $w <ButtonRelease-1>	[list [namespace current]::HeaderRelease $twm $frame]
+			bind $w <ButtonPress-1>		{+ break }
+			bind $w <ButtonRelease-1>	{+ break }
+			bind $w <Button1-Motion>	{+ break }
+		}
 	}
 	MouseWheelBindings $twm $frame $w
 	MenuBindings $twm $frame $w
@@ -425,11 +510,19 @@ proc HeaderBindings {twm frame w} {
 
 
 proc MenuBindings {twm frame w} {
-	bind $w <ButtonPress-3> [list event generate $twm <<TwmMenu>> -x %X -y %Y -data $frame]
+	variable ${twm}::Vars
+
+	if {$Vars(state) eq "normal"} {
+		bind $w <ButtonPress-3> [list event generate $twm <<TwmMenu>> -x %X -y %Y -data $frame]
+	}
 }
 
 
 proc MouseWheelBindings {twm frame w} {
+	variable ${twm}::Vars
+	
+	if {$Vars(state) eq "disabled"} { return }
+
 	switch [tk windowingsystem] {
 		x11 {
 			bind $w <Button-4> [list [namespace current]::PlaceLabelBar $twm $frame -5]
@@ -446,16 +539,32 @@ proc MouseWheelBindings {twm frame w} {
 }
 
 
-proc UpdateTitle {twm frame {titlePath ""}} {
+proc Resize {twm pane width height minWidth minHeight maxWidth maxHeight} {
+	variable Defaults
+
+	set bd [expr {2*$Defaults(frame:borderwidth)}]
+	if {$width > 0} { set width [expr {$width + $bd}] }
+	if {$height > 0} { set height [expr {$height + $bd}] }
+	if {$minWidth > 0} { set minWidth [expr {$minWidth + $bd}] }
+	if {$minHeight > 0} { set minHeight [expr {$minHeight + $bd}] }
+	if {$maxWidth > 0} { set maxWidth [expr {$maxWidth + $bd}] }
+	if {$maxHeight > 0} { set maxHeight [expr {$maxHeight + $bd}] }
+
+	::scidb::tk::twm resize $twm $pane $width $height $minWidth $minHeight $maxWidth $maxHeight
+}
+
+
+proc UpdateTitle {twm frame titlePath args} {
 	if {![winfo exists $frame]} { return }
 	if {[string length $titlePath] == 0} {
-		set title [$twm get $frame title]
+		set title [$twm get $frame title ""]
+		if {[string length $title] == 0} { return }
 	} else {
 		set leader [$twm leader $frame]
 		set name [$twm get $leader name]
 		set title [$twm get $titlePath title $name]
 		if {[info exists $title]} {
-			trace add variable $title write [list [namespace current]::UpdateTitle $twm $frame]
+			trace add variable $title write [list [namespace current]::UpdateTitle $twm $frame ""]
 		}
 	}
 	SetTitle $twm $frame $title
@@ -465,7 +574,17 @@ proc UpdateTitle {twm frame {titlePath ""}} {
 proc SetTitle {twm frame title} {
 	$twm set $frame title $title
 	if {[info exists $title]} { set title [set $title] }
-	wm title $frame $title
+	if {[winfo toplevel $frame] eq $frame} {
+		wm title $frame $title
+	}
+}
+
+
+proc ToggleHeaders {twm args} {
+	foreach frame $args {
+		ToggleHeader $twm $frame
+	}
+	after idle [list $twm refresh]
 }
 
 
@@ -477,32 +596,48 @@ proc ToggleHeader {twm frame} {
 	set flat [$twm get! $frame flat]
 	$twm set! $frame flat [expr {!$flat}]
 	set hdr $frame.__header__
-	set decor $hdr.__flat__
 
 	if {$flat} {
-		pack forget $decor
+		pack forget $hdr.__flat__
 		ShowHeaderButtons $twm $frame
 		HeaderBindings $twm $frame $frame
 		HeaderBindings $twm $frame $hdr
 		UpdateHeader $twm $frame [$twm get $frame panes]
+		bind $hdr <Double-Button-1> [list [namespace current]::ToggleHeaders $twm $frame]
 	} else {
-		if !{[winfo exists $decor]} {
-			tk::canvas $decor -height $Options(flathandle:size) -background $Options(header:flex:background)
-			MenuBindings $twm $frame $decor
+		MakeFlatHeader $twm $frame
+	}
+}
+
+
+proc MakeFlatHeader {twm frame} {
+	variable ${twm}::Vars
+	variable Options
+
+	set hdr $frame.__header__
+	set decor $hdr.__flat__
+	if !{[winfo exists $decor]} {
+		tk::canvas $decor -height $Options(flathandle:size) -background $Options(header:flex:background)
+		if {$Vars(state) ne "disabled"} {
 			bind $decor <Configure> [namespace code [list ConfigureFlatHandle $decor %w %h]]
 		}
-		catch { destroy $hdr.l }
-		catch { destroy $hdr.r }
-		destroy {*}[$twm get $frame labels {}]
-		set slaves [grid slaves $hdr]
-		if {[llength $slaves]} { grid forget {*}$slaves }
-		foreach w [place slaves $hdr] { place forget $w }
-		$twm set $frame labels {}
-		pack $decor -fill x -side top -expand yes
-		bind $decor <ButtonRelease-1> [list [namespace current]::ToggleHeader $twm $frame]
-		UnbindHeader $frame
-		UnbindHeader $hdr
+		MenuBindings $twm $frame $decor
 	}
+	catch { destroy $hdr.l }
+	catch { destroy $hdr.r }
+	destroy {*}[$twm get $frame labels {}]
+	set slaves [grid slaves $hdr]
+	if {[llength $slaves]} { grid forget {*}$slaves }
+	foreach w [place slaves $hdr] { place forget $w }
+	$twm set $frame labels {}
+	pack $decor -fill x -side top -expand yes
+	if {$Vars(state) ne "disabled"} {
+		bind $decor <ButtonRelease-1> [list [namespace current]::ToggleHeaders $twm $frame]
+		bind $decor <ButtonRelease-1> {+ break }
+		bind $hdr <Double-Button-1> {#}
+	}
+	UnbindHeader $frame
+	UnbindHeader $hdr
 }
 
 
@@ -513,7 +648,7 @@ proc ConfigureFlatHandle {canv w h} {
 
 	set n [expr {$w/2}]
 	set x0 [expr {($w - 2*$n)/2}]
-	set y0 1 ;#[expr {($h - 6)/2}]
+	set y0 1
 	set yi $y0
 
 	for {set i 1} {$i <= $n} {incr i; incr x0 2} {
@@ -537,7 +672,9 @@ proc UpdateHeader {twm frame panes} {
 	destroy {*}[place slaves $hdr]
 	catch { destroy $hdr.l }
 	catch { destroy $hdr.r }
-	destroy {*}[$twm get $frame labels {}]
+	foreach w [winfo children $hdr] {
+		if {[string match {*:label} $w]} { destroy $w }
+	}
 	$twm set $frame labels {} panes $panes
 
 	if {[llength $panes] == 0} {
@@ -549,11 +686,24 @@ proc UpdateHeader {twm frame panes} {
 
 	if {"$frame.__header__" ni [pack slaves $frame]} {
 		pack $frame.__header__ -side top -fill x -expand no -before [lindex [pack slaves $frame] 0]
-		#update idletasks
 	}
 
 	raise $hdr ;# seems to be a bug in Tk lib that a child must be raised
-	if {[$twm get! $frame flat]} { return }
+
+	set flat [expr {[llength [pack slaves $hdr]] > 0}]
+	if {$flat != [$twm get! $frame flat 0]} {
+		if {$flat} {
+			pack forget {*}[pack slaves $hdr]
+			if {$Vars(state) ne "disabled"} {
+				bind $hdr <Double-Button-1> [list [namespace current]::ToggleHeaders $twm $frame]
+			}
+		} else {
+			MakeFlatHeader $twm $frame
+		}
+	}
+
+	if {[$twm get! $frame flat 0]} { return }
+	ShowHeaderButtons $twm $frame
 
 	set fam [font configure $Options(header:font) -family]
 	set headerFont [list $fam $Options(header:fontsize) bold]
@@ -564,14 +714,20 @@ proc UpdateHeader {twm frame panes} {
 	set type [expr {[$twm get $frame move] ? "flex" : "fix"}]
 	set lighter [ttk::style lookup $::ttk::currentTheme -background]
 	set darker [ttk::style lookup TNotebook.Tab -background]
+	set confCmd [list [namespace current]::ConfigureLabelBar trace $twm $frame 0]
 
 	for {set i 0} {$i < $n} {incr i} {
 		set f [lindex $panes $i]
-		set lbl $hdr.$i
+		set lbl $hdr.$i:label
 		set name [$twm get [$twm leader $f] name]
-		if {[info exists $name]} { set var var } else { set var "" }
+		if {[info exists $name]} {
+			trace add variable $name write $confCmd
+			set var var
+		} else {
+			set var ""
+		}
 		ttk::label $lbl -style twm.TLabel -text$var $name -takefocus 0
-		bind $lbl 
+		if {$var eq "var"} { bind $lbl <Destroy> [list trace remove variable $name write $confCmd] }
 		place $lbl -x 0 -y 0
 		lappend labels $lbl
 		if {$f eq $frame} {
@@ -579,7 +735,6 @@ proc UpdateHeader {twm frame panes} {
 			$twm set $frame mine $lbl
 			set index $i
 			if {[$twm get $frame move]} {
-puts "UpdateHeader([$twm id $frame]): mine, move=yes"
 				$lbl configure \
 					-relief flat \
 					-padding {4 2 4 0} \
@@ -587,7 +742,6 @@ puts "UpdateHeader([$twm id $frame]): mine, move=yes"
 					-foreground $Options(header:$type:foreground) \
 					;
 			} else {
-puts "UpdateHeader([$twm id $frame]): mine, move=no"
 				$lbl configure \
 					-relief raised \
 					-padding {4 1 4 1} \
@@ -596,10 +750,14 @@ puts "UpdateHeader([$twm id $frame]): mine, move=no"
 					;
 			}
 		} else {
-			bind $lbl <ButtonPress-1> [list [namespace current]::Select $twm $parent $f]
-			bind $lbl <Enter> [list $lbl configure -background $lighter]
-			bind $lbl <Leave> [list $lbl configure -background $darker]
-			MouseWheelBindings $twm $frame $lbl
+			if {$Vars(state) ne "disabled"} {
+				bind $lbl <ButtonPress-1> [list [namespace current]::Select $twm $parent $f]
+				bind $lbl <ButtonPress-1> {+ break }
+				bind $lbl <Enter> [list $lbl configure -background $lighter]
+				bind $lbl <Leave> [list $lbl configure -background $darker]
+				MouseWheelBindings $twm $frame $lbl
+				MenuBindings $twm $frame $lbl
+			}
 			$lbl configure \
 				-relief raised \
 				-padding {4 0 4 2} \
@@ -610,17 +768,19 @@ puts "UpdateHeader([$twm id $frame]): mine, move=no"
 	}
 
 	$twm set $frame maxoffset 0 labels $labels repeat 0 width 0
-	set conf [list [namespace current]::ConfigureLabelBar $twm $frame %w]
-	after idle $conf
-	bind $hdr <Configure> $conf
-	bind $frame <Configure> $conf
+	after idle [list [namespace current]::ConfigureLabelBar init $twm $frame 0]
+	bind $hdr <Configure> [list [namespace current]::ConfigureLabelBar hdr $twm $frame %w]
+	bind $frame <Configure> [list [namespace current]::ConfigureLabelBar frame $twm $frame %w]
 }
 
 
-proc ConfigureLabelBar {twm frame width} {
+proc ConfigureLabelBar {source twm frame width args} {
 	variable Options
 
+	if {![winfo exists $frame]} { return }
+
 	set hdr $frame.__header__
+	if {$hdr ni [pack slaves $frame]} { return }
 	set bd [expr {2*$Options(frame:borderwidth)}]
 	set see [expr {$width < 0}]
 	set force [expr {$width <= 0}]
@@ -635,10 +795,12 @@ proc ConfigureLabelBar {twm frame width} {
 	set offset [$twm get $parent offset 0]
 	set h [winfo reqheight [lindex $labels 0]]
 	if {$h % 2 == 1} { incr h }
-	if {[winfo exists $hdr.close]} { incr width -[winfo width $hdr.close] }
-	if {[winfo exists $hdr.undock]} { incr width -[winfo width $hdr.undock] }
-	if {[winfo exists $hdr.close] || [winfo exists $hdr.undock]} { incr width -8 }
-	if {[winfo exists $hdr.close] && [winfo exists $hdr.undock]} { incr width -3 }
+	set haveClose [expr {[winfo exists $hdr.close] && [winfo ismapped $hdr.close]}]
+	set haveUndock [expr {[winfo exists $hdr.undock] && [winfo ismapped $hdr.undock]}]
+	if {$haveClose} { incr width -[winfo width $hdr.close] }
+	if {$haveUndock} { incr width -[winfo width $hdr.undock] }
+	if {$haveClose || $haveUndock} { incr width -8 }
+	if {$haveClose && $haveUndock} { incr width -3 }
 	incr width -$bd
 
 	foreach w $labels { incr totalWidth [winfo reqwidth $w] }
@@ -668,7 +830,7 @@ proc ConfigureLabelBar {twm frame width} {
 proc PlaceLabelBar {twm frame incr} {
 	variable Options
 
-	if {[$twm get! $frame flat]} { return }
+	if {[$twm get! $frame flat 0]} { return }
 
 	set parent [$twm parent $frame]
 	set maxoffset [$twm get $frame maxoffset 0]
@@ -687,7 +849,7 @@ proc PlaceLabelBar {twm frame incr} {
 		} else {
 			set visible [$twm get $parent visible ""]
 		}
-		set offset [expr {max(0, min($maxoffset, [$twm get $parent offset] + $incr))}]
+		set offset [expr {max(0, min($maxoffset, [$twm get $parent offset 0] + $incr))}]
 		if {$maxoffset > 0} {
 			if {$incr == 0} {
 				if {[string length $visible] > 0} {
@@ -741,28 +903,34 @@ proc PlaceLabelBar {twm frame incr} {
 		place $hdr.r -x $x -y 3 -height $ht
 		if {$offset == $maxoffset} { set state disabled } else { set state normal }
 		if {$state ne [$hdr.r cget -state]} { $hdr.r configure -state $state }
-		raise $hdr.l; raise $hdr.r
+		raise $hdr.l; raise $hdr.r ;# seems to be a bug in Tk lib that a child must be raised
 	}
 }
 
 
 proc MakeArrow {twm frame dir incr} {
+	variable ${twm}::Vars
+
 	set arrow $frame.__header__.$dir
 	if {[winfo exists $arrow]} { return }
 	ttk::button $arrow \
 		-style twm.TButton \
 		-takefocus 0 \
 		-image [makeStateSpecificIcons $icon::8x16::arrow($dir)] \
-		-command [list [namespace current]::PlaceLabelBar $twm $frame $incr] \
 		;
-	bind $arrow <ButtonPress-1> [list [namespace current]::InvokeRepeat $twm $frame $arrow]
-	MouseWheelBindings $twm $frame $arrow
+	$arrow configure -command [list [namespace current]::PlaceLabelBar $twm $frame $incr]
+	if {$Vars(state) ne "disabled"} {
+		bind $arrow <ButtonPress-1> [list [namespace current]::InvokeRepeat $twm $frame $arrow]
+		bind $arrow <ButtonPress-1> {+ break }
+		MouseWheelBindings $twm $frame $arrow
+		MenuBindings $twm $frame $arrow
+	}
 }
 
 
 proc InvokeRepeat {twm frame w} {
 	if {![winfo exists $w]} { return }
-	after cancel [$twm get $frame repeat]
+	catch { after cancel [$twm get $frame repeat] }
 	$twm set $frame repeat [after 300 [list [namespace current]::Repeat $twm $frame $w]]
 }
 
@@ -779,7 +947,7 @@ proc Repeat {twm frame w} {
 proc HeaderPress {twm frame x y} {
 	variable ${twm}::Vars
 
-	after cancel $Vars(afterid:release)
+	catch { after cancel $Vars(afterid:release) }
 	ttk::setCursor $frame.__header__ link
 	set Vars(init:x) $x
 	set Vars(init:y) $y
@@ -787,6 +955,9 @@ proc HeaderPress {twm frame x y} {
 	set Vars(delta:y) [expr {$y - [winfo rooty $frame]}]
 	set Vars(docking:markers) {}
 	set Vars(docking:marker) {}
+	set Vars(docking:arrow) ""
+	set Vars(docking:arrows) {}
+	set Vars(docking:container) {}
 	set Vars(docking:recipient) ""
 	set Vars(docking:position) ""
 	set Vars(docking:outside) 0
@@ -815,7 +986,7 @@ proc DoHeaderMotion {twm frame x y} {
 	if {![namespace exists [namespace current]::${twm}]} { return }
 	variable ${twm}::Vars
 
-	after cancel $Vars(afterid:release)
+	catch { after cancel $Vars(afterid:release) }
 	# After 8 seconds without any mouse motion we will dock the window,
 	# because it's too dangerous to keep the global grab.
 	set Vars(afterid:release) [after 8000 [list [namespace current]::HeaderRelease $twm $frame 1]]
@@ -841,10 +1012,45 @@ proc DoHeaderMotion {twm frame x y} {
 			}
 		}
 
+		foreach entry $Vars(docking:arrows) {
+			lassign $entry w size xl yl xr yr
+			set lt $w.__left__; set rt $w.__right__
+			if {$xl <= $x && $x <= [expr {$xl + $size}] && $yl <= $y && $y <= [expr {$yl + $size}]} {
+				if {$Vars(docking:arrow) ne $lt} {
+					set Vars(docking:arrow) $lt
+					$w previous
+					HideDockingPoints $twm
+					ComputeDockingPoints $twm $frame
+					return
+				}
+			} elseif {$Vars(docking:arrow) eq $lt} {
+				set Vars(docking:arrow) ""
+			}
+			if {$xr <= $x && $x <= [expr {$xr + $size}] && $yr <= $y && $y <= [expr {$yr + $size}]} {
+				if {$Vars(docking:arrow) ne $rt} {
+					set Vars(docking:arrow) $rt
+					$w next
+					HideDockingPoints $twm
+					ComputeDockingPoints $twm $frame
+					return
+				}
+			} elseif {$Vars(docking:arrow) eq $rt} {
+				set Vars(docking:arrow) ""
+			}
+		}
+
 		WithdrawHiliteFrame $twm
 		wm geometry $frame +[expr {$x - $Vars(delta:x)}]+[expr {$y - $Vars(delta:y)}]
-	} elseif {abs($x - $Vars(init:x)) >= 3 || abs($y - $Vars(init:y)) >= 3} {
+	} elseif {abs($x - $Vars(init:x)) >= 5 || abs($y - $Vars(init:y)) >= 5} {
+		variable Options
+
+		set [namespace current]::Frozen $twm
 		set child [lindex [pack slaves $frame] end]
+		if {$Options(motion:busy)} {
+			::scidb::tk::busy hold $child
+			::scidb::tk::busy configure $child -cursor hand2
+		}
+		set Vars(docking:container) [FindNotebooks $twm $frame]
 		bind $frame <Button1-Motion> {#}
 		bind $frame <ButtonRelease-1> {#}
 		set wd [winfo width $frame]
@@ -858,12 +1064,14 @@ proc DoHeaderMotion {twm frame x y} {
 		set bd [expr {1 - $bd}]
 		incr wd $bd; incr ht $bd
 		wm geometry $frame ${wd}x${ht}+${x}+${y}
+		if {$Options(motion:overrideredirect)} { wm overrideredirect $frame 1 }
 		::scidb::tk::wm dialog $frame
 		wm state $frame normal
 		ttk::globalGrab $frame
 		bind $frame <Button1-Motion> [bind $frame.__header__ <Button1-Motion>]
 		bind $frame <ButtonRelease-1> [bind $frame.__header__ <ButtonRelease-1>]
 		ComputeDockingPoints $twm $frame
+		ComputeArrowPoints $twm $frame
 	}
 }
 
@@ -872,8 +1080,11 @@ proc HeaderRelease {twm frame {timeout 0}} {
 	if {![winfo exists $frame]} { return }
 	if {[grab status $frame] eq "none"} { return }
 
+	variable Options
+
 	# Must be at start of this function (for safety).
 	ttk::releaseGrab $frame
+	if {$Options(motion:busy)} { ::scidb::tk::busy forget [lindex [pack slaves $frame] end] }
 
 	bind $frame <Button1-Motion> {#}
 	bind $frame <ButtonRelease-1> {#}
@@ -882,10 +1093,16 @@ proc HeaderRelease {twm frame {timeout 0}} {
 	if {![namespace exists [namespace current]::${twm}]} { return }
 	variable ${twm}::Vars
 
+	HideDockingPoints $twm
+	set [namespace current]::Frozen ""
+
+	if {![info exists Vars(docking:markers)]} {
+		return ;# Oops, ButtonRelease event w/o ButtonPress event, Tk is sometimes strange.
+	}
+
 	set Vars(docking:current) ""
-	after cancel $Vars(afterid:release)
-	after cancel $Vars(afterid:display)
-	HideDockingPoints $twm $frame
+	catch { after cancel $Vars(afterid:release) }
+	catch { after cancel $Vars(afterid:display) }
 
 	foreach entry $Vars(docking:markers) {
 		set w [lindex $entry 0]
@@ -910,7 +1127,10 @@ proc HeaderRelease {twm frame {timeout 0}} {
 				;
 		}
 	}
+
+	event generate $twm <<TwmAfter>>
 }
+
 
 #proc ReleaseAfterTimeout {twm frame} {
 #	# After 8 seconds without any mouse motion we will make a floating window,
@@ -935,6 +1155,20 @@ proc HeaderRelease {twm frame {timeout 0}} {
 #}
 
 
+proc FindNotebooks {twm w} {
+	variable ${twm}::Vars
+
+	set container {}
+	while {![$twm isroot $w]} {
+		if {[$twm ismultiwindow $w] || [$twm isnotebook $w]} {
+			lappend container $w
+		}
+		set w [$twm parent $w]
+	}
+	return $container
+}
+
+
 proc WithdrawHiliteFrame {twm} {
 	set w $twm.__highlight__
 	if {[winfo exists $w]} {
@@ -953,10 +1187,15 @@ proc ShowDockingPoints {twm frame x y} {
 		lassign $entry pane x0 y0 x1 y1 size
 
 		if {!$Vars(docking:outside) && !($x0 <= $x && $x < $x1 && $y0 <= $y && $y < $y1)} {
-			HideDockingPoint $twm $frame $pane
+			HideDockingPoint $twm $pane
 		} elseif {[info exists Vars(docking:hover:$pane)]} {
 			ShowDockingPoint $twm $frame $pane $x $y $size
 		}
+	}
+
+	foreach entry $Vars(docking:arrows) {
+		lassign $entry pane size xl yl xr yr
+		ShowArrows $twm $frame $pane $size $xl $yl $xr $yr
 	}
 }
 
@@ -1112,10 +1351,32 @@ proc ShowDockingPoint {twm frame w x y cs} { # cs is cross size
 		wm geometry $tl ${wd}x${ht}+${x0}+${y0}
 		wm state $tl normal
 		raise $tl $twm.__highlight__
+		if {$Options(motion:overrideredirect)} { raise $tl $frame }
 
 		if {$tl ni $Vars(docking:markers)} {
 			lappend Vars(docking:markers) [list $c $w $x0 $y0 [expr {$x0 + $wd}] [expr {$y0 + $ht}]]
 		}
+	}
+}
+
+
+proc ShowArrows {twm frame w size xl yl xr yr} {
+	variable Options
+
+	foreach {dir tag} {l left r right} {
+		if {[winfo exists $w.__${tag}__]} { return }
+		set tl [tk::toplevel $w.__${tag}__ -width $size -height $size -borderwidth 0]
+		wm withdraw $tl
+		pack [set c [tk::canvas $tl.__tab__ -borderwidth 0 -width $size -height $size]]
+		$c create rectangle 0 0 $size $size -width 0
+		$c create image 0 0 -anchor nw -image [set icon::${size}x${size}::arrow($dir)] -tags image
+		wm transient $tl $twm
+		wm overrideredirect $tl true
+		wm attributes $tl -topmost true
+		wm geometry $tl ${size}x${size}+[set x$dir]+[set y$dir]
+		wm state $tl normal
+		raise $tl $twm.__highlight__
+		if {$Options(motion:overrideredirect)} { raise $tl $frame }
 	}
 }
 
@@ -1131,20 +1392,30 @@ proc DockingMotion {twm frame w canv mode x y} {
 			regexp {.*\.__([tbrlmnswe])__\.__docking__} $canv -> Vars(docking:position)
 			$canv itemconfigure background -fill $Options(cross:active)
 			$w.__m__.__docking__ itemconfigure border:$Vars(docking:position) -fill white
-			after cancel $Vars(afterid:display)
-			if {$Vars(docking:position) in {n s w e}} { set w [lindex [$w panes] 0] }
+			catch { after cancel $Vars(afterid:display) }
+			if {$Vars(docking:position) in {n s w e}} { set w [$twm selected $w] }
 			set Vars(docking:recipient) $w
 			set Vars(afterid:display) \
 				[after 100 [list [namespace current]::ShowHighlightRegion $twm $frame $w $canv]]
 			raise [winfo toplevel $w]
 			raise $frame
+			if {$Options(motion:overrideredirect)} {
+				foreach entry $Vars(docking:markers) {
+					catch { raise [winfo toplevel [lindex $entry 0]] }
+				}
+				foreach entry $Vars(docking:arrows) {
+					set w [lindex $entry 0]
+					catch { raise $w.__left__ }
+					catch { raise $w.__right__ }
+				}
+			}
 		}
 
 		leave {
 			if {$Vars(docking:position) in {n s e w}} { set i 2 } else { set i 1 }
 			$canv itemconfigure background -fill $Options(cross:color:$i)
 			$w.__m__.__docking__ itemconfigure border:$Vars(docking:position) -fill black
-			after cancel $Vars(afterid:display)
+			catch { after cancel $Vars(afterid:display) }
 			set Vars(docking:recipient) ""
 			set Vars(docking:position) ""
 			wm geometry $frame +[expr {$x - $Vars(delta:x)}]+[expr {$y - $Vars(delta:y)}]
@@ -1177,7 +1448,7 @@ proc ShowHighlightRegion {twm frame w canv} {
 	set position $Vars(docking:position)
 
 	if {$position in {n s w e}} {
-		set w [lindex [pack slaves $w] 1]
+		if {![$twm ispane $w]} { set w [lindex [pack slaves $w] end] }
 		set dividend 3
 		set minSize [expr {($minSize*2)/3}]
 	} else {
@@ -1234,28 +1505,47 @@ proc ShowHighlightRegion {twm frame w canv} {
 	set img [image create photo -width $wd -height $ht]
 	::scidb::tk::x11 region $x $y $img
 	::scidb::tk::image paintover $Options(highlight:color) $Options(highlight:opacity) $img
+	::scidb::tk::image border $img \
+		-width 1 \
+		-type dark \
+		-composite overlay \
+		-bordercolor $Options(highlight:border) \
+		;
 	$tl.c itemconfigure image -image $img
 	wm geometry $tl ${wd}x${ht}+${x}+${y}
 	wm overrideredirect $tl true
 	wm transient $tl $w
 	wm state $tl normal
+	if {$Options(motion:overrideredirect)} { raise $tl $frame }
+	catch { raise $tl $w.__right__ }
+	catch { raise $tl $w.__left__ }
+	# due to a Tk bug we have to raise a second time
+	if {$Options(motion:overrideredirect)} { catch { raise $tl $w.__right__ } }
 	after idle [list [namespace current]::HeaderMotion $twm $frame {*}[winfo pointerxy $twm]]
 }
 
 
-proc HideDockingPoints {twm frame} {
+proc HideDockingPoints {twm} {
 	variable ${twm}::Vars
 
 	foreach name [array names Vars docking:hover:*] {
-		set w [lindex [split $name :] 2]
-		HideDockingPoint $twm $frame $w
+		HideDockingPoint $twm [lindex [split $name :] 2]
+	}
+	if {[info exists Vars(docking:arrows)]} {
+		foreach entry $Vars(docking:arrows) {
+			set w [lindex $entry 0]
+			# NOTE: do not destroy immediately, because of a Tk bug
+			after idle [list catch [list destroy $w.__left__]]
+			after idle [list catch [list destroy $w.__right__]]
+		}
 	}
 }
 
 
-proc HideDockingPoint {twm frame w} {
+proc HideDockingPoint {twm w} {
 	foreach dir {l r t b m n s e w} {
-		catch { destroy $w.__${dir}__ }
+		# NOTE: do not destroy immediately, because of a Tk bug
+		after idle [list catch [list destroy $w.__${dir}__]]
 	}
 }
 
@@ -1272,6 +1562,7 @@ proc ComputeDockingPoints {twm frame} {
 	array unset Vars docking:shift:x:*
 	array unset Vars docking:shift:y:*
 	set Vars(docking:panes) {}
+	set Vars(docking:outside) $Vars(cross:showall)
 	array set bounds { l 0 r 0 t 0 b 0 }
 
 	foreach entry [$twm visible] { ComputePoints $twm $entry }
@@ -1484,31 +1775,103 @@ proc ComputePoints {twm entry} {
 }
 
 
-proc Undock {twm frame} {
-	pack forget $frame.__header__
-	[pack slaves $frame] configure -borderwidth 0
-	set child [lindex [pack slaves $frame] end]
-	set wd [winfo width $child]
-	set ht [winfo height $child]
-	set x [winfo rootx $frame]
-	set y [winfo rooty $frame]
-	$child configure -width $wd -height $ht
-	set toplevel [$twm undock $frame]
-	if {[$twm get $frame stayontop 0]} {
+proc ComputeArrowPoints {twm frame} {
+	variable ${twm}::Vars
+	variable Options
+
+	set size [expr {min(24, $Options(cross:size))}]
+	set Vars(docking:arrows) {}
+
+	foreach w $Vars(docking:container) {
+		if {![winfo exists $w]} { continue }
+
+		set x  [winfo rootx $w]
+		set y  [winfo rooty $w]
+		set wd [winfo width $w]
+
+		if {[$twm isnotebook $w]} {
+			set h [NotebookHeaderSize $twm $w]
+		} else {
+			set h [FrameHeaderSize $twm [lindex [$w panes] 0]]
+		}
+
+		set y [expr {max(0, $y + $h - $size)}]
+		if {$size > $h} { set y [expr {max(0, $y + ($size - $h)/2)}] }
+		set x0 [expr {$x + 1}]
+		set x1 [expr {$x + $wd - $size - 2}]
+		lappend Vars(docking:arrows) [list $w $size $x0 $y $x1 $y]
+	}
+}
+
+
+proc Hide {twm toplevel} {
+	if {[wm state $toplevel] eq "normal"} {
+		wm state $toplevel withdraw
+	}
+}
+
+
+proc Deiconify {twm toplevel width height x y force} {
+	variable Defaults
+
+	if {[wm state $toplevel] eq "withdrawn" && ($force || ![$twm get! $toplevel hide])} {
+		after $Defaults(deiconify:timeout) \
+			[list [namespace current]::DoDeiconify $twm $toplevel $width $height $x $y $force]
+	}
+}
+
+
+proc DoDeiconify {twm toplevel width height x y force} {
+	set x [expr {$x + [winfo rootx $twm]}]
+	set y [expr {$y + [winfo rooty $twm]}]
+	incr x -4	;# magic values, this works under KDE
+	incr y -18	;# magic values, this works under KDE
+	if {[$twm get! $toplevel stayontop 0]} {
 		wm transient $toplevel [winfo toplevel $twm]
 		# NOTE: not every window manager is re-decorating the window.
 		catch { wm attributes $toplevel -type dialog }
 	}
-	::update idletasks ;# is reducing flickering
-	wm geometry $toplevel ${wd}x${ht}+${x}+${y}
-	SetTitle $twm $toplevel [$twm get $frame name]
+	wm geometry $toplevel ${width}x${height}+${x}+${y}
+	SetTitle $twm $toplevel [$twm get $toplevel name]
 	wm state $toplevel normal
 	wm protocol $toplevel WM_DELETE_WINDOW [list [namespace current]::Dock $twm $toplevel]
 }
 
 
+proc Undock {twm frame} {
+	variable ${twm}::Vars
+	variable Options
+
+	set x [winfo rootx $frame]
+	set y [winfo rooty $frame]
+	set child [lindex [pack slaves $frame] end]
+	set wd [winfo width $child]
+	set ht [winfo height $child]
+	pack forget $frame.__header__
+	$child configure -borderwidth 0
+	$child configure -width $wd -height $ht
+	set toplevel [$twm undock $frame]
+	# ensure existence of these attributes
+	$twm set! $toplevel stayontop [$twm get! $toplevel stayontop 0]
+	$twm set! $toplevel hide [$twm get! $toplevel hide 0]
+	if {[$twm get $frame stayontop]} {
+		wm transient $toplevel [winfo toplevel $twm]
+		# NOTE: not every window manager is re-decorating the window.
+		catch { wm attributes $toplevel -type dialog }
+	}
+	::update idletasks ;# is reducing flickering
+	#wm geometry $toplevel ${wd}x${ht}+${x}+${y}
+	wm geometry $toplevel +${x}+${y}
+	SetTitle $twm $toplevel [$twm get $frame name]
+	wm state $toplevel normal
+	wm protocol $toplevel WM_DELETE_WINDOW [list [namespace current]::Dock $twm $toplevel]
+	event generate $twm <<TwmUndocked>> -data $frame
+}
+
+
 proc Dock {twm toplevel} {
 	variable ${twm}::Vars
+	variable ${twm}::Update
 	variable Options
 	variable DirMap
 	global errorInfo errorCode
@@ -1518,9 +1881,12 @@ proc Dock {twm toplevel} {
 	wm protocol $toplevel WM_DELETE_WINDOW {}
 
 	set options {}
+	set args {}
+	set window ""
 
 	if {[string length $Vars(docking:recipient)]} {
 		lappend options $Vars(docking:recipient) $DirMap($Vars(docking:position))
+		set args [list dock $Vars(docking:recipient)]
 	}
 
 	# NOTE: This procedure may be called via WM_DELETE_WINDOW callback, and in this
@@ -1540,15 +1906,22 @@ proc Dock {twm toplevel} {
 	if {[llength [set slaves [pack slaves $frame]]] > 0} {
 		[lindex $slaves end] configure -borderwidth $Options(frame:borderwidth)
 	}
+
+	event generate $twm <<TwmDocked>> -data $frame
 }
 
 
-proc Close {twm frame} {
-	destroy $frame
+proc Close {twm {frame ""}} {
+	if {[string length $frame] == 0} {
+		destroy $twm
+	} else {
+		destroy $frame
+	}
 }
 
 
 proc DestroyTWM {twm} {
+	::scidb::tk::twm close $twm
 	after idle [list [namespace current]::DestroyNamespace $twm]
 }
 
@@ -1569,7 +1942,16 @@ proc ResizeToplevel {twm toplevel width height} {
 }
 
 
-proc Dimensions {twm toplevel minWidth minHeight maxWidth maxHeight} {
+proc Resizing {twm toplevel width height} {
+	variable ${twm}::Vars
+
+	if {[llength $Vars(cmd:resizing)]} {
+		{*}$Vars(cmd:resizing) $twm $toplevel $width $height
+	}
+}
+
+
+proc Dimensions {twm toplevel minWidth minHeight maxWidth maxHeight expand} {
 	if {$minWidth || $minHeight} {
 		set minWidth  [expr {max(1,$minWidth)}]
 		set minHeight [expr {max(1,$minHeight)}]
@@ -1581,27 +1963,30 @@ proc Dimensions {twm toplevel minWidth minHeight maxWidth maxHeight} {
 		set maxWidth  [expr {max(1,$maxWidth)}]
 		set maxHeight [expr {max(1,$maxHeight)}]
 	}
-	if {[winfo toplevel $toplevel] eq $toplevel} {
-		if {$minWidth || $minHeight} {
-			wm minsize $toplevel $minWidth $minHeight
-		}
-		if {$maxWidth || $maxHeight} {
-			wm maxsize $toplevel $maxWidth $maxHeight
-		}
-	} else {
+	if {$toplevel eq $twm} {
 		if {$minWidth || $minHeight} {
 			event generate $twm <<TwmMinSize>> -data [list $minWidth $minHeight]
 		}
 		if {$maxWidth || $maxHeight} {
 			event generate $twm <<TwmMaxSize>> -data [list $maxWidth $maxHeight]
 		}
+	} else {
+		if {$minWidth || $minHeight} {
+			wm minsize $toplevel $minWidth $minHeight
+		}
+		if {$maxWidth || $maxHeight} {
+			wm maxsize $toplevel $maxWidth $maxHeight
+		}
+		set resizeW [expr {$expand in {both x} && ($minWidth == 0 || $minWidth != $maxWidth)}]
+		set resizeH [expr {$expand in {both y} && ($minHeight == 0 || $minHeight != $maxHeight)}]
+		wm resizable $toplevel $resizeW $resizeH
 	}
 }
 
 
 proc WorkArea {twm} {
-	variable ${twm}::WorkArea
-	if {[llength $WorkArea]} { return [$WorkArea $twm] }
+	variable ${twm}::Vars
+	if {[llength $Vars(cmd:workarea)]} { return [$Vars(cmd:workarea) $twm] }
 	return [list [winfo screenwidth $twm] [winfo screenheight $twm]]
 }
 
@@ -1719,32 +2104,16 @@ proc Pack {twm parent child opts} {
 			}
 
 			grid $child -column 1 -row 1 -in $parent {*}$options
-
-			if {$class eq "Frame"} { set args(-expand) both }
-			if {[info exists args(-expand)]} {
-				switch -- $args(-expand) {
-					both {
-						grid rowconfigure $parent 1 -weight 1
-						grid columnconfigure $parent 1 -weight 1
-					}
-					x { grid columnconfigure $parent 1 -weight 1 }
-					y { grid rowconfigure $parent 1 -weight 1 }
-				}
+			grid rowconfigure $parent 1 -weight 1
+			grid columnconfigure $parent 1 -weight 1
+			if {[info exists args(-minwidth)]} {
+				grid columnconfigure $parent 1 -minsize $args(-minwidth)
+			}
+			if {[info exists args(-minheight)]} {
+				grid rowconfigure $parent 1 -minsize $args(-minheight)
 			}
 		}
 	}
-
-#	if {$class ne "Frame"} {
-#		# Without this little work-around it may happen that the
-#		# packed child will not be displayed immediately (obviously
-#		# a bug in Tk library).
-#		$child configure -width [winfo width $child] -height [winfo height $child]
-#	}
-
-#puts "==================================="
-#update idletasks
-#TraverseChilds $twm .application
-#puts "==================================="
 }
 
 
@@ -1768,10 +2137,6 @@ proc Unpack {twm parent child} {
 	} else {
 		pack forget $child
 	}
-#puts "==================================="
-#update idletasks
-#TraverseChilds $twm .application
-#puts "==================================="
 }
 
 
@@ -1780,34 +2145,6 @@ proc Select {twm parent frame} {
 		$parent select $frame
 	} else {
 		$parent raise $frame
-	}
-}
-
-
-proc TraverseChilds {twm w {indent ""}} {
-	variable visited
-	if {[string length $indent] == 0} { set visited {} }
-	if {[string match {*__header__*} $w]} { return }
-	if {[string match {*__highlight__*} $w]} { return }
-	#if {[winfo class $w] eq "TwmToplevel"} { return }
-	puts ${indent}$w
-	#puts "${indent}$w ([winfo width $w]x[winfo height $w])"
-	append indent "  "
-	lappend visited $w
-	switch -glob -- [winfo class $w] {
-		*Panedwindow - *Multiwindow {
-			foreach child [$w panes] { TraverseChilds $twm $child $indent }
-		}
-		*Notebook {
-			foreach child [$w tabs] { TraverseChilds $twm $child $indent }
-		}
-		TwmToplevel - Toplevel {
-			foreach child [winfo children $w] {
-				if {$child ni $visited} {
-					TraverseChilds $twm $child $indent
-				}
-			}
-		}
 	}
 }
 
@@ -1855,6 +2192,27 @@ set undock [image create photo -data {
 } ;# namespace 12x12
 
 namespace eval 16x16 {
+
+set arrow(l) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAQlBMVEXvSXTvSXTtR27tR27vSXDv
+	S3bwUHrwUnvyaorybIzybI/ybo3ycJL0iKL1iaX5vcv5v8771d/96e796+/+8vX///8PFoAWAAAA
+	BHRSTlPj5vz9oTMETgAAAERJREFUGNNjEEUDDKIsKIBYAWY0AUYgg50HRQsrn7AANzcXXIBbEGyj
+	CG4BFlZeIX4uLg6YAAOQwcaJbCgT6S5FFUADAP7zCWQpV9LdAAAAAElFTkSuQmCC
+}]
+
+set arrow(r) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAABGdBTUEAALGPC/xhBQAAAAFzUkdC
+	AK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAEJQTFRF
+	7Udu70l070l07Udu////70lw8nCS8FJ78myP8m6N+b/O/evv9Yml70t2/vL1+9Xf8mqK+b3L/enu
+	9Iii8myM8FB6/dB/5QAAAAR0Uk5T/ebj/KuoGuoAAAABYktHRASPaNlRAAAACXBIWXMAAABIAAAA
+	SABGyWs+AAAAQ0lEQVQY02NgQQMMLKwogEQBBmQBNnYgwQgT4ODk5OLm4UVo4QNbyM+JW0CAg0NQ
+	SJgXxRYRUSDBhGYtM+kuhQqgAQDUqgViJrvpigAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNy0wNy0y
+	MFQxMjozMToyMiswMjowMHVi/d4AAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTctMDctMjBUMTI6MzE6
+	MjIrMDI6MDAEP0ViAAAAAElFTkSuQmCC
+}]
+
+set arrow(hl) [image create photo -width 16 -height 16]
+set arrow(hr) [image create photo -width 16 -height 16]
 
 set shape(t) [image create photo -data {
 	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAABGdBTUEAALGPC/xhBQAAAAFzUkdC
@@ -1956,6 +2314,28 @@ foreach {dir pt} {t n b s l w r e} {
 } ;# namespace 16x16
 
 namespace eval 24x24 {
+
+set arrow(l) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAAATlBMVEXvSXTvSXTvSXDvS3bvTXPw
+	WHzxW4LxZYnxaYz0gJ72mK72mrL2nLH2nrX6ytX6zNf7zdn7z9v82OL83uX95ev97fH+9Pb+9vj+
+	+vv////1f8rWAAAAAnRSTlPi5lOyGxsAAABSSURBVCjPY5DEARgkmbCCwSDBiF8HGy9WCRYecWFs
+	EpwikpISwkAgiCLBzg8PC1EUCQ4BHBJMzGCjhICAD8NybjFhHM5l5cKQYBiUwY5VAgcAAFuQEIIc
+	Qv9SAAAAAElFTkSuQmCC
+}]
+
+set arrow(r) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAAABGdBTUEAALGPC/xhBQAAAAFzUkdC
+	AK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAE5QTFRF
+	70l070l0////70lw9p618VuC/N7l/vb49pyx701z+8/b/vr7/eXr9ICe/e3x+szX8WWJ+83Z8WmM
+	+srV/Nji70t2/vT29pqy9piu8Fh8Bd/M5AAAAAJ0Uk5T5uIwsxoGAAAAAWJLR0QCZgt8ZAAAAAlw
+	SFlzAAAASAAAAEgARslrPgAAAFFJREFUKM9jYMIBGJiYsYJBJ8GAIcHCikMHGzsHJ7oEFxsQcDMx
+	8fCiSfDBg4JfAIeEoBCKhLAIEICNEsVmuZg4J1ZXSUji9yDjoAx2mAQOAADn4Qe1BnqhQQAAACV0
+	RVh0ZGF0ZTpjcmVhdGUAMjAxNy0wNy0yMFQxMjozMToyMyswMjowMNMV9moAAAAldEVYdGRhdGU6
+	bW9kaWZ5ADIwMTctMDctMjBUMTI6MzE6MjMrMDI6MDCiSE7WAAAAAElFTkSuQmCC
+}]
+
+set arrow(hl) [image create photo -width 24 -height 24]
+set arrow(hr) [image create photo -width 24 -height 24]
 
 set shape(t) [image create photo -data {
 	iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAAABGdBTUEAALGPC/xhBQAAAAFzUkdC

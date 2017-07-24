@@ -147,11 +147,10 @@ proc build {parent width height gameTable} {
 	variable Vars
 
 	set bg [::colors::lookup $Options(-background)]
-	set mw [tk::multiwindow $parent.mw -borderwidth 0 -background $bg -borderwidth 0]
-	pack $mw -fill both -expand yes
-
+	set mw [tk::multiwindow $parent.mw -borderwidth 0 -background $bg]
 	set info [tk::frame $mw.info -background $bg -borderwidth 0 -takefocus 0]
 	set mesg [tk::label $mw.mesg -borderwidth 0 -background $bg]
+	pack $mw -fill both -expand yes
 
 	bind $mesg <<LanguageChanged>> [namespace code SetMessage]
 
@@ -378,7 +377,6 @@ proc build {parent width height gameTable} {
 	bind $tb <<TableMenu>>			 [namespace code [list PopupMenu $tb %X %Y]]
 	bind $tb <<LanguageChanged>>	 [namespace code [list FillTable $tb]]
 	bind $tb <<LanguageChanged>>	+[namespace code [list RefreshHeader $tb]]
-	bind $tb <Destroy>				 [namespace code [list Destroy $tb]]
 
 	TreeCtrl::finishBindings $tb
 
@@ -411,7 +409,7 @@ proc build {parent width height gameTable} {
 	set search [::toolbar::add $tbControl button \
 		-image $::icon::toolbarStart \
 		-tooltipvar [namespace current]::mc::StartSearch \
-		-command [namespace code [list StartSearch $tb]] \
+		-command [namespace code startSearch] \
 	]
 	::toolbar::addSeparator $tbControl
 	::toolbar::add $tbSwitcher checkbutton \
@@ -479,12 +477,12 @@ set Vars(switcher) $switcher
 #################################################
 
 	set Vars(subscribe) [list tree [namespace current]::Update [namespace current]::Close $tb]
-	::scidb::db::subscribe {*}$Vars(subscribe)
+	after idle [list ::scidb::db::subscribe {*}$Vars(subscribe)]
 	::scidb::tree::init [namespace current]::Tick $tb
 	::scidb::tree::switch [expr {!$Options(base:lock)}]
 
 	bind $mw <Configure> [namespace code PlaceMessage]
-	ShowMessage NoGamesAvailable
+	after idle [namespace code startSearch]
 	SetSwitcher [::scidb::tree::get] [::scidb::app::variant]
 }
 
@@ -494,6 +492,14 @@ proc activate {w flag} {
 
 	::toolbar::activate $w $flag
 	set Vars(hidden) [expr {!$flag}]
+}
+
+
+proc closed {w} {
+	variable Vars
+
+	catch { after cancel $Vars(after) }
+	::scidb::db::unsubscribe {*}$Vars(subscribe)
 }
 
 
@@ -510,9 +516,42 @@ proc columnIndex {name} {
 }
 
 
+proc startSearch {} {
+	variable Vars
+
+	if {![winfo exists $Vars(table)]} { return }
+
+### VARIANTS ####################################
+if {[::scidb::game::query mainvariant?] ne "Normal"} { return }
+#################################################
+
+	if {[llength [::scidb::tree::get]] == 0} {
+		return [ShowMessage NoGamesAvailable]
+	}
+
+	if {$Vars(searching)} {
+		set Vars(searching) 0
+		::scidb::tree::stop
+		place forget $Vars(progress)
+		ConfigSearchButton $Vars(table) Start
+		# show "interrupted by user"
+	} else {
+		set variant [::scidb::game::query mainvariant?]
+		set n [::scidb::db::count games [::scidb::tree::get] $variant]
+		if {$n == 0} {
+			ShowMessage NoGamesAvailable
+		} else {
+			DoSearch $Vars(table)
+		}
+	}
+}
+
+
 proc update {position} {
 	variable Vars
 	variable Options
+
+	if {![[namespace parent]::exists? tree]} { return }
 
 	if {[::scidb::tree::isUpToDate?]} {
 		Enabled true
@@ -535,7 +574,7 @@ if {$variant eq "Normal"} {
 ### VARIANTS ####################################
 } else {
 	ShowMessage VariantsNotYetSupported
-	games::clear [winfo parent [winfo parent $Vars(mw)]].games
+	games::clear
 	set Vars(force) 1
 	::toolbar::childconfigure $Vars(switcher) -state disabled
 }
@@ -578,12 +617,6 @@ proc Enabled {flag} {
 		set Vars(selected) -1
 		set Vars(active) -1
 	}
-}
-
-
-proc Destroy {tb} {
-	variable Vars
-	::scidb::db::unsubscribe {*}$Vars(subscribe)
 }
 
 
@@ -631,7 +664,7 @@ if {[::scidb::game::query mainvariant?] eq "Normal"} {
 ### VARIANTS ####################################
 } else {
 ShowMessage VariantsNotYetSupported
-games::clear [winfo parent [winfo parent $Vars(mw)]].games
+games::clear
 set Vars(force) 1
 ::toolbar::childconfigure $Vars(switcher) -state disabled
 }
@@ -661,35 +694,6 @@ if {[::scidb::game::query mainvariant?] ne "Normal"} { return }
 		ConfigSearchButton $table Stop
 		$Vars(progress) configure -background [::colors::lookup $Priv(progress:color)]
 		place forget $Vars(progress)
-	}
-}
-
-
-proc StartSearch {table} {
-	variable Vars
-
-### VARIANTS ####################################
-if {[::scidb::game::query mainvariant?] ne "Normal"} { return }
-#################################################
-
-	if {[llength [::scidb::tree::get]] == 0} {
-		return [ShowMessage NoGamesAvailable]
-	}
-
-	if {$Vars(searching)} {
-		set Vars(searching) 0
-		::scidb::tree::stop
-		place forget $Vars(progress)
-		ConfigSearchButton $table Start
-		# show "interrupted by user"
-	} else {
-		set variant [::scidb::game::query mainvariant?]
-		set n [::scidb::db::count games [::scidb::tree::get] $variant]
-		if {$n == 0} {
-			ShowMessage NoGamesAvailable
-		} else {
-			DoSearch $table
-		}
 	}
 }
 
@@ -984,7 +988,7 @@ if {$Vars(force)} { set force true }
 
 ### VARIANTS ####################################
 if {$Vars(force)} {
-	games::UpdateTable [winfo parent [winfo parent $Vars(mw)]].games.treeGames $Vars(current:base) Normal
+	games::UpdateTable [games::table] $Vars(current:base) Normal
 	set Vars(force) 0
 }
 #################################################
@@ -1018,7 +1022,7 @@ proc SetItemStyle {table item row} {
 proc PlaceMessage {} {
 	variable Vars
 
-	set width [expr {[winfo width $Vars(mw)] - 50}]
+	set width [expr {max(1, [winfo width $Vars(mw)] - 50)}]
 	$Vars(mesg) configure -wraplength $width
 }
 
@@ -1492,7 +1496,7 @@ proc ToggleView {table} {
 		::toolbar::childconfigure $Vars(widget:fast) -state disabled
 	}
 
-	games::clear [winfo parent [winfo parent $Vars(mw)]].games
+	games::clear
 	set Vars(show:tree) $Options(show:tree)
 }
 
@@ -1537,7 +1541,7 @@ proc PopupMenu {table x y} {
 #	$m add separator
 	$m add command \
 		-label " $mc::StartSearch" \
-		-command [namespace code [list StartSearch $table]] \
+		-command [namespace code startSearch] \
 		-image $::icon::16x16::start \
 		-compound left \
 		;

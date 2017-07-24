@@ -129,6 +129,14 @@ relink(TkWindow* childPtr, TkWindow* newParentPtr)
 }
 
 
+bool
+tk::isAlreadyDead(Tcl_Obj* obj)
+{
+	M_ASSERT(obj);
+	return exists(obj) && bool(reinterpret_cast<TkWindow*>(window(obj))->flags & TK_ALREADY_DEAD);
+}
+
+
 Tk_Window
 tk::mainWindow()
 {

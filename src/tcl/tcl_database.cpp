@@ -380,7 +380,7 @@ struct Subscriber : public Application::Subscriber
 						"Warning: database::unsubscribe failed (%s, %s, %s)\n",
 						Tcl_GetString(updateCmd),
 						closeCmd ? Tcl_GetString(closeCmd) : "",
-						Tcl_GetString(arg));
+						arg ? Tcl_GetString(arg) : "");
 		}
 		else
 		{
@@ -418,6 +418,11 @@ struct Subscriber : public Application::Subscriber
 	void unsetTreeCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
 	{
 		unsetCmd(Tree, updateCmd, closeCmd, arg);
+	}
+
+	void unsetGameSwitchedCmd(Tcl_Obj* updateCmd)
+	{
+		unsetCmd(GameSwitched, updateCmd, 0, 0);
 	}
 
 	void closeDatabase(mstl::string const& name, variant::Type variant) override
@@ -3526,7 +3531,7 @@ cmdUnsubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		Tcl_WrongNumArgs(
 			ti, 1, objv,
 			"dbInfo|gameList|playerList|annotatorList|eventList|"
-			"siteList|gameInfo|gameData|gameHistory|tree "
+			"siteList|gameInfo|gameData|gameHistory|gameSwitch|tree "
 			"<update-cmd> ??" "<close-cmd>? <arg>?");
 		return TCL_ERROR;
 	}
@@ -3534,12 +3539,12 @@ cmdUnsubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	static char const* subcommands[] =
 	{
 		"dbInfo", "gameList", "playerList", "eventList", "siteList",
-		"annotatorList", "gameInfo", "gameData", "gameHistory", "tree", 0
+		"annotatorList", "gameInfo", "gameData", "gameHistory", "gameSwitch", "tree", 0
 	};
 	enum
 	{
 		Cmd_DbInfo, Cmd_GameList, Cmd_PlayerList, Cmd_EventList, Cmd_SiteList,
-		Cmd_AnnotatorList, Cmd_GameInfo, Cmd_GameData, Cmd_GameHistory, Cmd_Tree
+		Cmd_AnnotatorList, Cmd_GameInfo, Cmd_GameData, Cmd_GameHistory, Cmd_GameSwitch, Cmd_Tree
 	};
 
 	Subscriber* subscriber = static_cast<Subscriber*>(scidb->subscriber());
@@ -3589,6 +3594,10 @@ cmdUnsubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		case Cmd_GameHistory:
 			subscriber->unsetCmd(Subscriber::GameHistory, updateCmd, closeCmd, arg);
+			break;
+
+		case Cmd_GameSwitch:
+			subscriber->unsetGameSwitchedCmd(updateCmd);
 			break;
 
 		case Cmd_Tree:

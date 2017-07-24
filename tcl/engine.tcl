@@ -211,18 +211,12 @@ array set Logo { width 100 height 54 }
 
 
 proc openAdmininstration {parent} {
-	if {	$parent ne ".setupEngine"
-		&& [winfo exists .setupEngine]
-		&& [wm state .setupEngine] ne "withdrawn"} {
-		return [OpenAdministration .setupEngine]
-	}
-
 	variable Engines
 	variable Priv
-	variable Option
-	variable Option_
-	variable Var
-	variable Var_
+	variable Opt
+	variable Opt_
+	variable Data
+	variable Data_
 
 	set dlg $parent.adminEngines
 	tk::toplevel $dlg -class Scidb
@@ -237,10 +231,10 @@ proc openAdmininstration {parent} {
 	set Priv(uniform) {1}
 	set Priv(html) ""
 
-	array set Var {}
-	array set Var_ {}
-	array set Option {}
-	array set Option_ {}
+	array set Data {}
+	array set Data_ {}
+	array set Opt {}
+	array set Opt_ {}
 
 	### left frame ########################################################
 	set list [MakeEngineList $top.list 6]
@@ -257,18 +251,18 @@ proc openAdmininstration {parent} {
 	lappend labelOptions -borderwidth 1 -relief raised -background #f2f2f2
 
 	ttk::label			$setup.lname -text $mc::Name
-	ttk::entry			$setup.ename -textvar [namespace current]::Var(Name)
+	ttk::entry			$setup.ename -textvar [namespace current]::Data(Name)
 	ttk::label			$setup.lauthor -text $mc::Author
-	ttk::entry			$setup.eauthor -textvar [namespace current]::Var(Author)
+	ttk::entry			$setup.eauthor -textvar [namespace current]::Data(Author)
 	ttk::label			$setup.lemail -text $mc::Email
-	ttk::entry			$setup.eemail -textvar [namespace current]::Var(Email)
+	ttk::entry			$setup.eemail -textvar [namespace current]::Data(Email)
 
 	ttk::label			$setup.lidentifier -text $mc::Identifier
-	ttk::label			$setup.tidentifier -textvar [namespace current]::Var(Identifier) {*}$labelOptions
+	ttk::label			$setup.tidentifier -textvar [namespace current]::Data(Identifier) {*}$labelOptions
 	ttk::label			$setup.lvariants -text $mc::Variants
-	ttk::label			$setup.tvariants -textvar [namespace current]::Var(variants) {*}$labelOptions
+	ttk::label			$setup.tvariants -textvar [namespace current]::Data(variants) {*}$labelOptions
 	ttk::label			$setup.llastused -text $mc::LastUsed
-	ttk::label			$setup.tlastused -textvar [namespace current]::Var(lastused) {*}$labelOptions
+	ttk::label			$setup.tlastused -textvar [namespace current]::Data(lastused) {*}$labelOptions
 	ttk::button			$setup.blastused \
 								-style icon.TButton \
 								-image $::icon::12x12::eraser \
@@ -276,7 +270,7 @@ proc openAdmininstration {parent} {
 								;
 
 	ttk::label			$setup.lcountry -text $mc::Country
-	::countrybox		$setup.ccountry -textvar [namespace current]::Var(Country)
+	::countrybox		$setup.ccountry -textvar [namespace current]::Data(Country)
 	ttk::label			$setup.lrating -text $mc::Rating
 	ttk::frame			$setup.frating -takefocus 0 -borderwidth 0
 	ttk::label			$setup.frating.lelo -text "Elo"
@@ -285,7 +279,7 @@ proc openAdmininstration {parent} {
 								-from 0 \
 								-to 4000 \
 								-exportselection no \
-								-textvar [namespace current]::Var(Elo) \
+								-textvar [namespace current]::Data(Elo) \
 								;
 	ttk::label			$setup.frating.lccrl -text "CCRL"
 	ttk::spinbox		$setup.frating.sccrl \
@@ -293,18 +287,18 @@ proc openAdmininstration {parent} {
 								-from 0 \
 								-to 4000 \
 								-exportselection no \
-								-textvar [namespace current]::Var(CCRL) \
+								-textvar [namespace current]::Data(CCRL) \
 								;
 
 	ttk::label			$setup.lurl -text $mc::Webpage
-	ttk::entry			$setup.eurl -textvar [namespace current]::Var(Url)
+	ttk::entry			$setup.eurl -textvar [namespace current]::Data(Url)
 	ttk::button			$setup.burl \
 								-style icon.TButton \
 								-image $::icon::16x16::internet \
 								-command [namespace code [list WebOpen $dlg]] \
 								;
 	ttk::label			$setup.llogo -text $mc::Logo
-	ttk::entry			$setup.elogo -textvar [namespace current]::Var(Logo)
+	ttk::entry			$setup.elogo -textvar [namespace current]::Data(Logo)
 	ttk::button			$setup.blogo \
 								-style icon.TButton \
 								-image $::fsbox::icon::16x16::folder \
@@ -312,18 +306,18 @@ proc openAdmininstration {parent} {
 								;
 
 	ttk::label			$setup.lcommand -text $mc::Command
-	ttk::label			$setup.tcommand -textvar [namespace current]::Var(Command) {*}$labelOptions
+	ttk::label			$setup.tcommand -textvar [namespace current]::Data(Command) {*}$labelOptions
 	ttk::label			$setup.lprotocol -text $mc::Protocol
-	ttk::label			$setup.tprotocol -textvar [namespace current]::Var(protocol) {*}$labelOptions
+	ttk::label			$setup.tprotocol -textvar [namespace current]::Data(protocol) {*}$labelOptions
 	ttk::label			$setup.ldirectory -text $mc::Directory
-	ttk::entry			$setup.edirectory -textvar [namespace current]::Var(Directory)
+	ttk::entry			$setup.edirectory -textvar [namespace current]::Data(Directory)
 	ttk::button			$setup.bdirectory \
 								-style icon.TButton \
 								-image $::fsbox::icon::16x16::folder \
 								-command [namespace code [list GetDirectory $dlg $list]] \
 								;
 	ttk::label			$setup.lparams -text $mc::Parameters
-	ttk::entry			$setup.eparams -textvar [namespace current]::Var(Parameters)
+	ttk::entry			$setup.eparams -textvar [namespace current]::Data(Parameters)
 
 	::tooltip::tooltip $setup.burl ::playercard::mc::OpenInWebBrowser
 	::tooltip::tooltip $setup.blastused $::mc::Clear
@@ -454,19 +448,23 @@ proc openAdmininstration {parent} {
 }
 
 
-proc openSetup {parent} {
+proc openSetup {parent {number -1}} {
 	variable Engines
 	variable Options
-	variable Vars
 
 	if {[llength $Engines] == 0} {
 		return [::dialog::info -parent $parent -message $mc::NoEngineAvailable]
 	}
 
-	set dlg .setupEngine
+	if {$number == -1} { set number [::application::analysis::newNumber] }
+
+	namespace eval $number {}
+	variable ${number}::Vars
+
+	set dlg .setupEngine$number
 
 	if {[winfo exists $dlg]} {
-		SetupClearHash $Vars(active:name)
+		SetupClearHash $number $Vars(engine:name)
 		::widget::dialogRaise $dlg
 		return
 	}
@@ -486,7 +484,7 @@ proc openSetup {parent} {
 	}
 
 	set Vars(selection) -1
-	set Vars(priority) $mc::Normal
+	set Vars(priority) $::mc::Normal
 	set Vars(list:profiles) $rf.profiles
 	set Vars(list:engines) $lf.list
 
@@ -494,24 +492,24 @@ proc openSetup {parent} {
 	set Vars(current:protocol) UCI
 	set Vars(current:memory) $memory
 	set Vars(current:cores) [expr {[::scidb::misc::numberOfProcessors] - 1}]
-	set Vars(current:priority) normal
+	set Vars(current:priority) $::mc::Normal
 	set Vars(current:profile) Default
 
-	set Vars(active:name) ""
-	set Vars(active:protocol) UCI
-	set Vars(active:memory) 0
-	set Vars(active:cores) 1
-	set Vars(active:priority) normal
-	set Vars(active:profile) Default
-	set Vars(active:id) -1
+	set Vars(engine:name) ""
+	set Vars(engine:protocol) UCI
+	set Vars(engine:memory) 0
+	set Vars(engine:cores) 1
+	set Vars(engine:priority) $::mc::Normal
+	set Vars(engine:profile) Default
+	set Vars(engine:id) -1
 
 	set listheight 7
 
 	### fst panel  ########################################################
 	set list [::tlistbox $lf.list -usescroll yes -height $listheight -minwidth 70 -sortable 1]
- 	bind $list <<ListboxSelect>> [namespace code [list UseEngine $list %d $Vars(list:profiles)]]
+ 	bind $list <<ListboxSelect>> [namespace code [list UseEngine $number $list %d $Vars(list:profiles)]]
 	bind $list <<ListboxDropRow>> [namespace code { UserSortEngines %W {*}%d }]
-	SetupEngineList
+	SetupEngineList $number
 
 	### snd panel #########################################################
 	set lt [::ttk::frame $lf.lt -takefocus 0]
@@ -524,40 +522,40 @@ proc openSetup {parent} {
 		-width 7 \
 		-state readonly \
 		-values [list $::mc::Normal $::mc::Low] \
-		-textvariable [namespace current]::Vars(priority) \
+		-textvariable [namespace current]::${number}::Vars(priority) \
 		;
 	ttk::tcombobox $lt.memory \
 		-width 7 \
 		-height 12 \
 		-listjustify right \
 		-state readonly \
-		-textvariable [namespace current]::Vars(current:memory) \
+		-textvariable [namespace current]::${number}::Vars(current:memory) \
 		;
 	$lt.memory addcol text -d mb -justify right
-	bind $lt.memory <<ComboboxSelected>> [namespace code SetMemory]
+	bind $lt.memory <<ComboboxSelected>> [namespace code [list SetMemory $number]]
 	ttk::spinbox $lt.cores \
 		-width 7 \
 		-state readonly \
-		-textvariable [namespace current]::Vars(current:cores) \
-		-command [namespace code SetCores] \
+		-textvariable [namespace current]::${number}::Vars(current:cores) \
+		-command [namespace code [list SetCores $number]] \
 		;
 	ttk::frame $lt.protocol -takefocus 0 -borderwidth 0
 	ttk::radiobutton $lt.protocol.buci \
 								-text "UCI" \
 								-value "UCI" \
-								-variable [namespace current]::Vars(current:protocol) \
-								-command [namespace code SetupProfiles] \
+								-variable [namespace current]::${number}::Vars(current:protocol) \
+								-command [namespace code [list SetupProfiles $number]] \
 								;
 	if {[tk windowingsystem] eq "x11"} { set prot XBoard } else { set prot WinBoard }
 	ttk::radiobutton $lt.protocol.bwb \
 								-text $prot \
 								-value "WB" \
-								-variable [namespace current]::Vars(current:protocol) \
-								-command [namespace code SetupProfiles] \
+								-variable [namespace current]::${number}::Vars(current:protocol) \
+								-command [namespace code [list SetupProfiles $number]] \
 								;
 	ttk::button $lt.clearHash \
 		-textvar [namespace current]::mc::ClearHash \
-		-command [namespace code ClearHash] \
+		-command [namespace code [list ClearHash $number]] \
 		-state disabled \
 		;
 
@@ -572,8 +570,8 @@ proc openSetup {parent} {
 	set Vars(widget:uci) $lt.protocol.buci
 	set Vars(widget:wb) $lt.protocol.bwb
 
-	bind $lt.priority <<LanguageChanged>> [namespace code [list LanguageChanged $list]]
-	bind $lt.priority <<ComboboxSelected>> [namespace code SetPriority]
+	bind $lt.priority <<LanguageChanged>> [namespace code [list LanguageChanged $number $list]]
+	bind $lt.priority <<ComboboxSelected>> [namespace code [list SetPriority $number]]
 
 	### thd panel #########################################################
 	set prof [::tlistbox $rf.profiles \
@@ -583,8 +581,8 @@ proc openSetup {parent} {
 		-sortable 1 \
 		-dontsort {0} \
 	]
-	bind $prof <<ListboxSelect>> [namespace code { UseProfile %d }]
-	bind $prof <<ListboxDropRow>> [namespace code { UserSortProfiles %W {*}%d }]
+	bind $prof <<ListboxSelect>> [namespace code [list UseProfile $number %d]]
+	bind $prof <<ListboxDropRow>> [namespace code [list UserSortProfiles $number %W %d]]
 
 	### fth panel #########################################################
 	set rt [::ttk::frame $rf.rt -takefocus 0]
@@ -593,28 +591,28 @@ proc openSetup {parent} {
 		-text " $mc::Edit" \
 		-image $::icon::16x16::edit \
 		-compound left \
-		-command [namespace code [list OpenSetupEngineDialog $dlg]] \
+		-command [namespace code [list OpenSetupEngineDialog $number $dlg]] \
 		;
 	ttk::button $rt.rename \
 		-style aligned.TButton \
 		-text " $mc::Rename" \
 		-image $::fsbox::bookmarks::icon::16x16::modify \
 		-compound left \
-		-command [namespace code [list RenameProfile $dlg]] \
+		-command [namespace code [list RenameProfile $number $dlg]] \
 		;
 	ttk::button $rt.new \
 		-style aligned.TButton \
 		-text " $mc::New" \
 		-image $::icon::16x16::plus \
 		-compound left \
-		-command [namespace code [list NewProfile $dlg]] \
+		-command [namespace code [list NewProfile $number $dlg]] \
 		;
 	ttk::button $rt.delete \
 		-style aligned.TButton \
 		-text " $mc::Delete" \
 		-image $::fsbox::filelist::icon::16x16::delete \
 		-compound left \
-		-command [namespace code [list DeleteProfile $dlg]] \
+		-command [namespace code [list DeleteProfile $number $dlg]] \
 		;
 
 	set Vars(widget:edit) $rt.edit
@@ -663,21 +661,24 @@ proc openSetup {parent} {
 	set var [namespace current]::mc::AdminEngines
 	::widget::dialogButtons $dlg {start close} -default start
 	::widget::dialogButtonAdd $dlg admin $var $::icon::16x16::setup -position end
-	$dlg.start configure -command [namespace code [list StartEngine $list]]
+	$dlg.start configure -command [namespace code [list StartEngine $number $list]]
 	$dlg.close configure -command [list wm withdraw $dlg]
-	$dlg.admin configure -command [namespace code [list OpenAdministration $dlg]]
+	$dlg.admin configure -command [namespace code [list OpenAdministration $number $dlg]]
 
 	set i [FindIndexInList $Options(engine)]
 	if {$i == -1} { set i 0 }
 	$list select $i
-	LanguageChanged $list
+	LanguageChanged $number $list
 
 	wm protocol $dlg WM_DELETE_WINDOW [$dlg.close cget -command]
 	wm resizable $dlg false false
 	wm transient $dlg [winfo toplevel $parent]
 	::util::place $dlg -parent $parent -position center
+	::ttk::grabWindow $dlg
 	wm deiconify $dlg
 	focus $list
+	tkwait window $dlg
+	::ttk::releaseGrab $dlg
 }
 
 
@@ -914,10 +915,10 @@ proc setup {} {
 }
 
 
-proc startEngine {isReadyCmd signalCmd updateCmd} {
+proc startEngine {number isReadyCmd signalCmd updateCmd clientData} {
 	variable EmptyEngine
 	variable Engines
-	variable Vars
+	variable ${number}::Vars
 
 	set index [FindIndex $Vars(current:name)]
 	if {$index == -1} { return -1 }
@@ -945,21 +946,23 @@ proc startEngine {isReadyCmd signalCmd updateCmd} {
 		$isReadyCmd \
 		$signalCmd \
 		$updateCmd \
+		$clientData \
 	]
+	set Vars(engine:id) $id
 	return $id
 }
 
 
-proc activateEngine {engineId features} {
+proc activateEngine {number features} {
 	variable Engines
-	variable Vars
+	variable ${number}::Vars
 
+	set engineId $Vars(engine:id)
 	if {$engineId == -1} { return }
-	set Vars(active:name) $Vars(current:name)
-	set Vars(active:id) $engineId
-	set Vars(active:priority) $Vars(current:priority)
-	sendOptions $engineId
-	sendFeatures $engineId $features
+	set Vars(engine:name) $Vars(current:name)
+	set Vars(engine:priority) $Vars(current:priority)
+	sendOptions $number $engineId
+	sendFeatures $number $engineId $features
 	::scidb::engine::activate $engineId
 	if {$Vars(current:priority) ne "normal"} {
 		::scidb::engine::priority $engineId $Vars(current:priority)
@@ -967,14 +970,14 @@ proc activateEngine {engineId features} {
 }
 
 
-proc sendFeatures {engineId features} {
+proc sendFeatures {number engineId features} {
 	variable EmptyEngine
 	variable Engines
-	variable Vars
+	variable ${number}::Vars
 
 	if {$engineId == -1} { return }
-	set Vars(active:cores) $Vars(current:cores)
-	set Vars(active:memory) $Vars(current:memory)
+	set Vars(engine:cores) $Vars(current:cores)
+	set Vars(engine:memory) $Vars(current:memory)
 	set index [FindIndex $Vars(current:name)]
 	if {$index == -1} { return }
 	array set engine $EmptyEngine
@@ -991,10 +994,10 @@ proc sendFeatures {engineId features} {
 }
 
 
-proc sendOptions {engineId} {
+proc sendOptions {number engineId} {
 	variable EmptyEngine
 	variable Engines
-	variable Vars
+	variable ${number}::Vars
 
 	if {$engineId == -1} { return }
 	set index [FindIndex $Vars(current:name)]
@@ -1004,7 +1007,7 @@ proc sendOptions {engineId} {
 	set protocol $Vars(current:protocol)
 	array set profiles $engine(Profiles:$protocol)
 	if {[llength profiles($Vars(current:profile))]} {
-		set Vars(active:profile) $Vars(current:profile)
+		set Vars(engine:profile) $Vars(current:profile)
 		switch $engine(ProfileType) {
 			Options {
 				set pairs {}
@@ -1031,64 +1034,91 @@ proc sendOptions {engineId} {
 }
 
 
-proc restartAnalysis {engineId features} {
-	variable Vars
+proc restartAnalysis {number features} {
+	variable ${number}::Vars
+
+	set engineId $Vars(engine:id)
 
 	if {$engineId != -1} {
 		::scidb::engine::analyze stop $engineId
-		if {$Vars(current:profile) ne $Vars(active:profile)} {
-			sendOptions $engineId
+		if {$Vars(current:profile) ne $Vars(engine:profile)} {
+			sendOptions $number $engineId
 		}
-		if {$Vars(current:cores) != $Vars(active:cores) || $Vars(current:memory) != $Vars(active:memory)} {
-			sendFeatures $engineId $features
+		if {$Vars(current:cores) != $Vars(engine:cores) || $Vars(current:memory) != $Vars(engine:memory)} {
+			sendFeatures $number $engineId $features
 		}
 		::scidb::engine::analyze start $engineId
 	}
 }
 
 
-proc startAnalysis {engineId} {
-	if {$engineId != -1} {
-		::scidb::engine::analyze start $engineId
+proc startAnalysis {number} {
+	variable ${number}::Vars
+
+	if {$Vars(engine:id) != -1} {
+		::scidb::engine::analyze start $Vars(engine:id)
 	}
 }
 
 
-proc stopAnaylsis {engineId} {
-	if {$engineId != -1} {
-		::scidb::engine::analyze stop $engineId
+proc stopAnalysis {number} {
+	variable ${number}::Vars
+
+	if {$Vars(engine:id) != -1} {
+		::scidb::engine::analyze stop $Vars(engine:id)
 	}
 }
 
 
-proc pause {engineId} {
-	if {$engineId != -1} {
-		::scidb::engine::pause $engineId
+proc pause {number} {
+	variable ${number}::Vars
+
+	if {$Vars(engine:id) != -1} {
+		::scidb::engine::pause $Vars(engine:id)
 	}
 }
 
 
-proc resume {engineId} {
-	if {$engineId != -1} {
-		::scidb::engine::resume $engineId
+proc resume {number} {
+	variable ${number}::Vars
+
+	if {$Vars(engine:id) != -1} {
+		::scidb::engine::resume $Vars(engine:id)
 	}
 }
 
 
-proc kill {engineId} {
-	variable Vars
+proc kill {number} {
+	if {![info exists ${number}::Vars(engine:id)]} { return }
+	variable ${number}::Vars
+
+	set engineId $Vars(engine:id)
 
 	if {$engineId != -1} {
 		::scidb::engine::kill $engineId
-		set Vars(active:name) ""
-		set Vars(active:profile) ""
-		set Vars(active:id) -1
+		set Vars(engine:name) ""
+		set Vars(engine:profile) ""
+		set Vars(engine:id) -1
 	}
 }
 
 
-proc engineName {engineId} {
-	return [set [namespace current]::Vars(current:name)]
+proc active? {number} {
+	if {![info exists ${number}::Vars(engine:id)]} { return 0 }
+	variable ${number}::Vars
+	return [expr {$Vars(engine:id) != -1}]
+}
+
+
+proc id {number} {
+	variable ${number}::Vars
+	return $Vars(engine:id)
+}
+
+
+proc engineName {number} {
+	variable ${number}::Vars
+	return $Vars(current:name)
 }
 
 
@@ -1449,68 +1479,68 @@ proc CloseSetup {list} {
 }
 
 
-proc StartEngine {list} {
+proc StartEngine {number list} {
 	variable Engines
-	variable Vars
+	variable ${number}::Vars
 
 	wm withdraw [winfo toplevel $list]
 	update idletasks
 
-	if {$Vars(active:id) >= 0 && [::scidb::engine::active? $Vars(active:id)]} {
-		if {$Vars(current:protocol) ne $Vars(active:protocol)} {
-			::application::analysis::startAnalysis [::application::board::anaylsisWindow]
+	if {$Vars(engine:id) >= 0 && [::scidb::engine::active? $Vars(engine:id)]} {
+		if {$Vars(current:protocol) ne $Vars(engine:protocol)} {
+			::application::analysis::startAnalysis $number
 		} else {
-			if {$Vars(current:name) ne $Vars(active:name)} {
-				::application::analysis::startAnalysis [::application::board::anaylsisWindow]
-			} elseif {$Vars(current:profile) ne $Vars(active:profile)} {
-				::application::analysis::restartAnalysis
+			if {$Vars(current:name) ne $Vars(engine:name)} {
+				::application::analysis::startAnalysis $number
+			} elseif {$Vars(current:profile) ne $Vars(engine:profile)} {
+				::application::analysis::restartAnalysis $number
 			} else {
-				::application::analysis::restartAnalysis
+				::application::analysis::restartAnalysis $number
 			}
-			if {$Vars(current:priority) ne $Vars(active:priority)} {
-				set Vars(active:priority) $Vars(current:priority)
+			if {$Vars(current:priority) ne $Vars(engine:priority)} {
+				set Vars(engine:priority) $Vars(current:priority)
 				::scidb::engine::priority $engineId $Vars(current:priority)
 			}
 		}
 	} else {
-		::application::board::openAnalysis force
-		::application::analysis::startAnalysis [::application::board::anaylsisWindow]
+		::application::board::openAnalysis $number
+		::application::analysis::startAnalysis $number
 	}
 
-	set Vars(active:protocol) $Vars(current:protocol)
+	set Vars(engine:protocol) $Vars(current:protocol)
 }
 
 
-proc LanguageChanged {list} {
-	variable Vars
+proc LanguageChanged {number list} {
+	variable ${number}::Vars
 
 	set w $Vars(widget:priority)
 	set current [$w current]
 	$w configure -values [list $::mc::Normal $::mc::Low]
 	$w current $current
 
-	SetTitle $list
+	SetTitle $number $list
 }
 
 
 proc SetMemory {} {
 	variable Options
-	variable Vars
+	variable ${number}::Vars
 
 	set Options($Vars(current:name):memory) $Vars(current:memory)
 }
 
 
-proc SetCores {} {
+proc SetCores {number} {
 	variable Options
-	variable Vars
+	variable ${number}::Vars
 
 	set Options($Vars(current:name):cores) $Vars(current:cores)
 }
 
 
-proc SetPriority {} {
-	variable Vars
+proc SetPriority {number} {
+	variable ${number}::Vars
 
 	if {[$Vars(widget:priority) current] == 0} {
 		set Vars(current:priority) normal
@@ -1542,13 +1572,13 @@ proc MemTotal {} {
 }
 
 
-proc UseEngine {list item profileList} {
+proc UseEngine {number list item profileList} {
 	variable EmptyEngine
 	variable Engines
 	variable Options
-	variable Vars
+	variable ${number}::Vars
 
-	if {[llength $item] == 0} { return [StartEngine $list] }
+	if {[llength $item] == 0} { return [StartEngine $number $list] }
 
 	set Vars(selection) $item
 	set name [$list get name]
@@ -1639,18 +1669,18 @@ proc UseEngine {list item profileList} {
 		$Vars(widget:cores) configure -state disabled
 	}
 
-	SetTitle $list
-	SetupClearHash $Vars(current:name)
-	SetupProfiles
+	SetTitle $number $list
+	SetupClearHash $number $Vars(current:name)
+	SetupProfiles $number
 }
 
 
-proc SetupClearHash {engineName} {
+proc SetupClearHash {number engineName} {
 	variable EmptyEngine
 	variable Engines
-	variable Vars
+	variable ${number}::Vars
 
-	if {$Vars(current:name) ne $Vars(active:name)} {
+	if {$Vars(current:name) ne $Vars(engine:name)} {
 		set state disabled
 	} else {
 		set i [FindIndex $engineName]
@@ -1659,7 +1689,7 @@ proc SetupClearHash {engineName} {
 		set protocol $Vars(current:protocol)
 		array set features $engine(Features:$protocol)
 
-		if {$Vars(active:id) == -1 || ![::scidb::engine::active? $Vars(active:id)]} {
+		if {$Vars(engine:id) == -1 || ![::scidb::engine::active? $Vars(engine:id)]} {
 			set state disabled
 		} elseif {[info exists features(clearHash)]} {
 			set state normal
@@ -1671,9 +1701,9 @@ proc SetupClearHash {engineName} {
 }
 
 
-proc SetTitle {list} {
+proc SetTitle {number list} {
 	variable Engines
-	variable Vars
+	variable ${number}::Vars
 
 	set index [FindIndex $Vars(current:name)]
 	array set engine [lindex $Engines $index]
@@ -1739,13 +1769,13 @@ proc Select {list item} {
 	variable EmptyEngine
 	variable Priv
 	variable Photo
-	variable Var
+	variable Data
 
 	if {[llength $item] == 0} { return }
 
 	if {$Priv(selection) >= 0} {
 		array set engine [lindex $Engines $item]
-		if {$Var(Name) eq $engine(Name)} { return }
+		if {$Data(Name) eq $engine(Name)} { return }
 
 		if {![DiscardChanges $list]} {
 			$list select $Priv(selection)
@@ -1755,7 +1785,7 @@ proc Select {list item} {
 		array unset engine
 		array set engine $EmptyEngine
 		array set engine [lindex $Engines $Priv(selection)]
-		set Var(Logo) $engine(Logo)
+		set Data(Logo) $engine(Logo)
 		SetLogo
 	}
 
@@ -1780,14 +1810,14 @@ proc Select {list item} {
 
 
 proc DiscardChanges {list} {
-	variable Var
-	variable Var_
+	variable Data
+	variable Data_
 	variable Engines
 	variable Priv
 
 	if {[llength $Engines] == 0} { return 1 }
 
-	if {![arrayEqual Var Var_]} {
+	if {![arrayEqual Data Data_]} {
 		set rc [::dialog::question -parent [winfo toplevel $list] -message $mc::DiscardChanges]
 		if {$rc eq "no"} { return 0 }
 	}
@@ -1894,7 +1924,7 @@ proc FillInfo {list entry} {
 	variable EmptyEngine
 	variable Photo
 	variable Priv
-	variable Var
+	variable Data
 
 	array set engine $EmptyEngine
 	array set engine $entry
@@ -1904,11 +1934,11 @@ proc FillInfo {list entry} {
 			Protocol {
 				if {[tk windowingsystem] eq "x11"} { set prot XBoard } else { set prot WinBoard }
 				if {[llength $engine(Protocol)] == 2} {
-					set Var(protocol) "UCI, $prot"
+					set Data(protocol) "UCI, $prot"
 				} elseif {"UCI" in $engine(Protocol) } {
-					set Var(protocol) "Universal Chess Interface (UCI)"
+					set Data(protocol) "Universal Chess Interface (UCI)"
 				} else {
-					set Var(protocol) "Chess Engine Communication Protocol ($prot)"
+					set Data(protocol) "Chess Engine Communication Protocol ($prot)"
 				}
 			}
 			LastUsed {
@@ -1922,7 +1952,7 @@ proc FillInfo {list entry} {
 				if {$freq > 1} {
 					append str " (" [format $mc::TotalUsage $freq] ")"
 				}
-				set Var(lastused) $str
+				set Data(lastused) $str
 			}
 			Country {
 				$Priv(countrybox) set $engine(Country)
@@ -1947,13 +1977,13 @@ proc FillInfo {list entry} {
 						}
 					}
 				}
-				set Var(variants) [join $variants  ", "]
+				set Data(variants) [join $variants  ", "]
 			}
 			Profiles:UCI - Profiles:WB {
 				;# skip
 			}
 			default {
-				set Var($attr) $engine($attr)
+				set Data($attr) $engine($attr)
 			}
 		}
 	}
@@ -1967,8 +1997,8 @@ proc FillInfo {list entry} {
 	}
 
 	if {$Priv(initialise)} {
-		foreach attr [array names Var] {
-			set args [list variable [namespace current]::Var($attr) write [namespace code VarChanged]]
+		foreach attr [array names Data] {
+			set args [list variable [namespace current]::Data($attr) write [namespace code VarChanged]]
 			trace add {*}$args
 			bind $list <Destroy> +[list trace remove {*}$args]
 		}
@@ -1978,11 +2008,11 @@ proc FillInfo {list entry} {
 
 
 proc VarChanged {args} {
-	variable Var
-	variable Var_
+	variable Data
+	variable Data_
 	variable Priv
 
-	if {[arrayEqual Var Var_]} { set state disabled } else { set state normal }
+	if {[arrayEqual Data Data_]} { set state disabled } else { set state normal }
 	$Priv(button:save) configure -state $state
 }
 
@@ -2024,20 +2054,20 @@ proc FilterOptions {protocol options} {
 }
 
 
-proc OpenAdministration {dlg} {
-	variable Vars
+proc OpenAdministration {number dlg} {
+	variable ${number}::Vars
 
 	openAdmininstration $dlg
-	SetupEngineList
+	SetupEngineList $number
 	set i [FindIndexInList $Vars(current:name)]
 	if {$i == -1} { set i 0 }
 	$Vars(list:engines) select $i
 }
 
 
-proc DeleteProfile {parent} {
+proc DeleteProfile {number parent} {
 	variable Engines
-	variable Vars
+	variable ${number}::Vars
 
 	set msg [format $mc::ReallyDeleteProfile $Vars(current:profile)]
 	set reply [::dialog::question -parent $parent -message $msg]
@@ -2047,21 +2077,21 @@ proc DeleteProfile {parent} {
 	array set engine [lindex $Engines $i]
 	set protocol $Vars(current:protocol)
 	set profiles $engine(Profiles:$protocol)
-	set k [FindProfileIndex $profiles]
+	set k [FindProfileIndex $number $profiles]
 	set profiles [lreplace $profiles $k [expr {$k + 1}]]
 	set engine(Profiles:$protocol) $profiles
 	lset Engines $i [array get engine]
 	set Vars(current:profile) Default
 	SaveEngineList
-	SetupProfiles
+	SetupProfiles $number
 	$Vars(list:profiles) select 0
 }
 
 
-proc RenameProfile {parent} {
+proc RenameProfile {number parent} {
 	variable NewProfile_ ""
 	variable OldProfile_
-	variable Vars
+	variable ${number}::Vars
 
 	set profileName $Vars(current:profile)
 	if {$profileName eq "Default"} { set profileName $::mc::Default }
@@ -2083,7 +2113,7 @@ proc RenameProfile {parent} {
 	grid rowconfigure $top {0 2 4} -minsize $::theme::pady
 	set Vars(entry:name) $top.newEntry
 	::widget::dialogButtons $dlg {ok cancel} -default ok
-	$dlg.ok configure -command [namespace code [list DoRenameProfile $dlg]]
+	$dlg.ok configure -command [namespace code [list DoRenameProfile $number $dlg]]
 	$dlg.cancel configure -command [list destroy $dlg]
 	::util::place $dlg -parent $parent -position center
 	wm resizable $dlg no no
@@ -2101,11 +2131,11 @@ proc DoRenameProfile {dlg} {
 	variable NewProfile_
 	variable OldProfile_
 	variable Engines
-	variable Vars
+	variable ${number}::Vars
 
 	set NewProfile_ [string trim $NewProfile_]
 	if {[string length $NewProfile_] == 0} { return }
-	if {![CheckProfileName $dlg $NewProfile_]} { return }
+	if {![CheckProfileName $number $dlg $NewProfile_]} { return }
 	if {$NewProfile_ eq $OldProfile_} { return }
 
 	lappend Vars(profiles) $NewProfile_
@@ -2113,12 +2143,12 @@ proc DoRenameProfile {dlg} {
 	array set engine [lindex $Engines $i]
 	set protocol $Vars(current:protocol)
 	set profiles $engine(Profiles:$protocol)
-	set k [FindProfileIndex $profiles]
+	set k [FindProfileIndex $number $profiles]
 	set profiles [lreplace $profiles $k $k $NewProfile_]
 	set engine(Profiles:$protocol) $profiles
 	lset Engines $i [array get engine]
 	SaveEngineList
-	SetupProfiles
+	SetupProfiles $number
 	set Vars(current:profile) $NewProfile_
 	set k [lsearch -exact $Vars(profiles) $NewProfile_]
 	$Vars(list:profiles) select $k
@@ -2126,10 +2156,10 @@ proc DoRenameProfile {dlg} {
 }
 
 
-proc NewProfile {parent} {
+proc NewProfile {number parent} {
 	variable NewProfile_ ""
 	variable CopyFrom_ ""
-	variable Vars
+	variable ${number}::Vars
 
 	set dlg [tk::toplevel $parent.newProfile -class Scidb]
 	pack [set top [ttk::frame $dlg.top -takefocus 0]]
@@ -2157,7 +2187,7 @@ proc NewProfile {parent} {
 	}
 
 	::widget::dialogButtons $dlg {ok cancel} -default ok
-	$dlg.ok configure -command [namespace code [list MakeProfile $dlg]]
+	$dlg.ok configure -command [namespace code [list MakeProfile $number $dlg]]
 	$dlg.cancel configure -command [list destroy $dlg]
 
 	::util::place $dlg -parent $parent -position center
@@ -2172,15 +2202,15 @@ proc NewProfile {parent} {
 }
 
 
-proc MakeProfile {dlg} {
+proc MakeProfile {number dlg} {
 	variable NewProfile_
 	variable CopyFrom_
 	variable Engines
-	variable Vars
+	variable ${number}::Vars
 
 	set NewProfile_ [string trim $NewProfile_]
 	if {[string length $NewProfile_] == 0} { return }
-	if {![CheckProfileName $dlg $NewProfile_]} { return }
+	if {![CheckProfileName $number $dlg $NewProfile_]} { return }
 
 	set copy $CopyFrom_
 	if {$copy eq $::mc::Default} { set copy Default }
@@ -2197,14 +2227,14 @@ proc MakeProfile {dlg} {
 	lset Engines $i [array get engine]
 	set Vars(current:profile) $NewProfile_
 	SaveEngineList
-	SetupProfiles
+	SetupProfiles $number
 	$Vars(list:profiles) select end
 	destroy $dlg
 }
 
 
-proc CheckProfileName {parent name} {
-	variable Vars
+proc CheckProfileName {number parent name} {
+	variable ${number}::Vars
 
 	if {$name in $Vars(profiles)} {
 		set msg [format $mc::ProfileAlreadyExists $name]
@@ -2225,24 +2255,24 @@ proc CheckProfileName {parent name} {
 }
 
 
-proc OpenSetupEngineDialog {parent} {
+proc OpenSetupEngineDialog {number parent} {
 	variable EmptyEngine
 	variable Engines
-	variable Vars
+	variable ${number}::Vars
 
 	set i [FindIndex $Vars(current:name)]
 	array set engine $EmptyEngine
 	array set engine [lindex $Engines $i]
 	set protocol $Vars(current:protocol)
-	OpenSetupDialog($engine(ProfileType)) $parent
+	OpenSetupDialog($engine(ProfileType)) $number $parent
 }
 
 
-proc OpenSetupDialog(Script) {parent} {
+proc OpenSetupDialog(Script) {number parent} {
 	variable EmptyEngine
 	variable Engines
-	variable Vars
 	variable Colors
+	variable ${number}::Vars
 
 	set i [FindIndex $Vars(current:name)]
 	array set engine $EmptyEngine
@@ -2296,7 +2326,7 @@ proc OpenSetupDialog(Script) {parent} {
 	$edit.txt mark set insert 1.0
 	set Vars(script:content) [split [$edit.txt get 1.0 end] \n]
 	set Vars(script:original) $Vars(script:content)
-	bind $edit.txt <<Modified>> [namespace code [list ScriptUpdate $edit.txt]]
+	bind $edit.txt <<Modified>> [namespace code [list ScriptUpdate $number $edit.txt]]
 
 	### log pane ############################################################
 	set log [ttk::frame $main.log]
@@ -2326,8 +2356,11 @@ proc OpenSetupDialog(Script) {parent} {
 	### buttons ##############################################################
 	::widget::dialogButtons $dlg {save cancel reset help} -default save
 	$dlg.cancel configure -command [namespace code [list AskCloseSetup $dlg.save]]
-	$dlg.save configure -state disabled -command [namespace code [list SaveScript $edit.txt $log.txt]]
-	$dlg.reset configure -state disabled -command [namespace code [list ResetScript $edit.txt]]
+	$dlg.save configure \
+		-state disabled \
+		-command [namespace code [list SaveScript $number $edit.txt $log.txt]] \
+		;
+	$dlg.reset configure -state disabled -command [namespace code [list ResetScript $number $edit.txt]]
 	::tooltip::tooltip $dlg.reset [namespace current]::mc::ResetToDefaultContent
 
 	### popup ################################################################
@@ -2365,9 +2398,9 @@ proc AskCloseSetup {saveBtn} {
 }
 
 
-proc ResetScript {txt} {
+proc ResetScript {number txt} {
 	variable Engines
-	variable Vars
+	variable ${number}::Vars
 
 	set i [FindIndex $Vars(current:name)]
 	array set engine [lindex $Engines $i]
@@ -2393,10 +2426,10 @@ proc ResetScript {txt} {
 }
 
 
-proc SaveScript {txt log} {
+proc SaveScript {number txt log} {
 	variable Engines
-	variable Option
-	variable Vars
+	variable Opt
+	variable ${number}::Vars
 
 	set i [FindIndex $Vars(current:name)]
 	array set engine [lindex $Engines $i]
@@ -2431,7 +2464,7 @@ proc SaveScript {txt log} {
 	$log configure -state disabled
 
 	if {$errCount == 0} {
-		set k [expr {[FindProfileIndex $profiles] + 1}]
+		set k [expr {[FindProfileIndex $number $profiles] + 1}]
 		lset profiles $k $script
 		set engine(Profiles:$protocol) $profiles
 		lset Engines $i [array get engine]
@@ -2442,8 +2475,8 @@ proc SaveScript {txt log} {
 }
 
 
-proc ScriptUpdate {txt} {
-	variable Vars
+proc ScriptUpdate {number txt} {
+	variable ${number}::Vars
 
 	set content [split [$txt get 1.0 end] \n]
 
@@ -2488,12 +2521,12 @@ proc ScriptSetTags {txt} {
 }
 
 
-proc OpenSetupDialog(Options) {parent} {
+proc OpenSetupDialog(Options) {number parent} {
 	variable EmptyEngine
 	variable Engines
-	variable Option
-	variable Option_
-	variable Vars
+	variable Opt
+	variable Opt_
+	variable ${number}::Vars
 
 	if {[winfo workareawidth $parent] >= 1500} { set vertical 0 } else { set vertical 1 }
 
@@ -2515,10 +2548,10 @@ proc OpenSetupDialog(Options) {parent} {
 	array set profiles $engine(Profiles:$protocol)
 	set options [FilterOptions $protocol $profiles($Vars(current:profile))]
 
-	array unset Option
-	array unset Option_
-	array set Option {}
-	array set Option_ {}
+	array unset Opt
+	array unset Opt_
+	array set Opt {}
+	array set Opt_ {}
 	set n [llength $options]
 
 	if {$vertical} {
@@ -2574,7 +2607,7 @@ proc OpenSetupDialog(Options) {parent} {
 				set width [expr {int(log10($n)) + 2}]
 				ttk::frame $val -borderwidth 0 -takefocus 0
 				set see [ttk::spinbox $val.s -from $var -to $max -width $width -takefocus 1]
-				$val.s configure -textvar [namespace current]::Option($name)
+				$val.s configure -textvar [namespace current]::Opt($name)
 				::validate::spinboxInt $val.s
 				ttk::label $val.r -text "($var..$max)"
 				grid $val.s -column 0 -row 0
@@ -2590,7 +2623,7 @@ proc OpenSetupDialog(Options) {parent} {
 					-showvalue yes \
 					-takefocus 1 \
 					-width 10 \
-					-variable [namespace current]::Option($name) \
+					-variable [namespace current]::Opt($name) \
 					-font TkTooltipFont \
 					;
 				set see $val
@@ -2605,7 +2638,7 @@ proc OpenSetupDialog(Options) {parent} {
 				ttk::label $lbl -text $text
 				ttk::checkbutton $val \
 					-takefocus 1 \
-					-variable [namespace current]::Option($name) \
+					-variable [namespace current]::Opt($name) \
 					-offvalue false \
 					-onvalue true \
 					;
@@ -2616,18 +2649,18 @@ proc OpenSetupDialog(Options) {parent} {
 					-values [SplitComboEntries $var] \
 					-state readonly \
 					-takefocus 1 \
-					-textvar [namespace current]::Option($name)
+					-textvar [namespace current]::Opt($name)
 					;
 			}
 			string {
 				ttk::label $lbl -text $text
-				ttk::entry $val -textvar [namespace current]::Option($name) -takefocus 1
+				ttk::entry $val -textvar [namespace current]::Opt($name) -takefocus 1
 				set sticky ew
 			}
 			file - path {
 				ttk::label $lbl -text $text
 				ttk::frame $val -borderwidth 0 -takefocus 0
-				set see [ttk::entry $val.e -textvar [namespace current]::Option($name) -takefocus 1]
+				set see [ttk::entry $val.e -textvar [namespace current]::Opt($name) -takefocus 1]
 				ttk::button $val.b \
 					-style icon.TButton \
 					-image $::fsbox::icon::16x16::folder \
@@ -2645,11 +2678,11 @@ proc OpenSetupDialog(Options) {parent} {
 				ttk::button $val \
 					-text $text \
 					-takefocus 1 \
-					-command [namespace code [list InvokeButton $name]] \
+					-command [namespace code [list InvokeButton $number $name]] \
 					;
-				if {	$Vars(active:name) ne $Vars(current:name)
-					|| $Vars(active:id) == -1
-					|| ![::scidb::engine::active? $Vars(active:id)]} {
+				if {	$Vars(engine:name) ne $Vars(current:name)
+					|| $Vars(engine:id) == -1
+					|| ![::scidb::engine::active? $Vars(engine:id)]} {
 					$val configure -state disabled
 				}
 			}
@@ -2659,11 +2692,11 @@ proc OpenSetupDialog(Options) {parent} {
 			set btn $pane.btn_$row
 			ttk::button $btn \
 				-image [::icon::makeStateSpecificIcons $::icon::12x12::reset] \
-				-command [list set [namespace current]::Option($name) $dflt] \
+				-command [list set [namespace current]::Opt($name) $dflt] \
 				;
 			::tooltip::tooltip $btn "$mc::ResetToDefault: $dflt"
 			grid $btn -row $row -column 1
-			set args [list variable [namespace current]::Option($name) write \
+			set args [list variable [namespace current]::Opt($name) write \
 							[namespace code [list SetOptionState $dlg $val $name $dflt $btn]]]
 			trace add {*}$args
 			bind $btn <Destroy> [list trace remove {*}$args]
@@ -2694,8 +2727,8 @@ proc OpenSetupDialog(Options) {parent} {
 			set row 1
 		}
 
-		set Option($name) $value
-		set Option_($name) $value
+		set Opt($name) $value
+		set Opt_($name) $value
 	}
 
 	if {[winfo exists $pane]} {
@@ -2705,7 +2738,7 @@ proc OpenSetupDialog(Options) {parent} {
 
 	::widget::dialogButtons $dlg {save cancel} -default save
 	$dlg.cancel configure -command [namespace code [list AskCloseSetup $dlg.save]]
-	$dlg.save configure -state disabled -command [namespace code [list SaveOptions $dlg]]
+	$dlg.save configure -state disabled -command [namespace code [list SaveOptions $number $dlg]]
 
 	update idletasks
 	$scrolled configure -height [expr {min([winfo reqheight $top], [winfo workareaheight $top] - 120)}]
@@ -2727,14 +2760,14 @@ proc OpenSetupDialog(Options) {parent} {
 }
 
 
-proc InvokeButton {name} {
-	variable Vars
-	::scidb::engine::invoke $Vars(active:id) $name
+proc InvokeButton {number name} {
+	variable ${number}::Vars
+	::scidb::engine::invoke $Vars(engine:id) $name
 }
 
 
-proc FindProfileIndex {profileList} {
-	variable Vars
+proc FindProfileIndex {number profileList} {
+	variable ${number}::Vars
 
 	set k 0
 	foreach {profile _} $profileList {
@@ -2745,22 +2778,22 @@ proc FindProfileIndex {profileList} {
 }
 
 
-proc SaveOptions {dlg} {
+proc SaveOptions {number dlg} {
 	variable Engines
-	variable Option
-	variable Vars
+	variable Opt
+	variable ${number}::Vars
 
 	set i [FindIndex $Vars(current:name)]
 	array set engine [lindex $Engines $i]
 	set protocol $Vars(current:protocol)
 	set profiles $engine(Profiles:$protocol)
-	set k [expr {[FindProfileIndex $profiles] + 1}]
+	set k [expr {[FindProfileIndex $number $profiles] + 1}]
 	set options [lindex $profiles $k]
 	set newOptions {}
 
 	foreach opt $options {
 		lassign $opt name type value dflt var max
-		if {[info exists Option($name)]} { lset opt 2 $Option($name) }
+		if {[info exists Opt($name)]} { lset opt 2 $Opt($name) }
 		lappend newOptions $opt
 	}
 
@@ -2774,18 +2807,18 @@ proc SaveOptions {dlg} {
 }
 
 
-proc ClearHash {} {
-	variable Vars
+proc ClearHash {number} {
+	variable ${number}::Vars
 
-	if {$Vars(active:id) == -1} { return }
-	if {![::scidb::engine::active? $Vars(active:id)]} { return }
-	::scidb::engine::clearHash $Vars(active:id)
-	::application::analysis::clearHash
+	if {$Vars(engine:id) == -1} { return }
+	if {![::scidb::engine::active? $Vars(engine:id)]} { return }
+	::scidb::engine::clearHash $Vars(engine:id)
+	::application::analysis::clearHash $number
 }
 
 
 proc GetPath(file) {parent key dflt dir} {
-	variable Option
+	variable Opt
 	variable Priv
 
 	set ext [file extension $dflt]
@@ -2827,13 +2860,13 @@ proc GetPath(file) {parent key dflt dir} {
 				}
 			}
 		}
-		set Option($key) $file
+		set Opt($key) $file
 	}
 }
 
 
 proc GetPath(path) {parent key dflt dir} {
-	variable Option
+	variable Opt
 	variable Priv
 
 	if {[string length $dflt] > 0 && [file isdirectory $dflt]} {
@@ -2859,23 +2892,23 @@ proc GetPath(path) {parent key dflt dir} {
 				set path [string range $path 1 end]
 			}
 		}
-		set Option($key) $path
+		set Opt($key) $path
 	}
 }
 
 
 proc SetOptionState {dlg val key dflt btn args} {
-	variable Option
-	variable Option_
+	variable Opt
+	variable Opt_
 
 	if {[winfo exists $dlg.save]} {
-		if {[arrayEqual Option Option_]} { set state disabled } else { set state normal }
+		if {[arrayEqual Opt Opt_]} { set state disabled } else { set state normal }
 		$dlg.save configure -state $state
 	}
-	if {$Option($key) eq $dflt} { set state disabled } else { set state normal }
+	if {$Opt($key) eq $dflt} { set state disabled } else { set state normal }
 	$btn configure -state $state
 	if {[winfo class $val] eq "TCheckbutton"} {
-		$val configure -text [expr {$Option($key) ? "true" : "false"}]
+		$val configure -text [expr {$Opt($key) ? "true" : "false"}]
 	}
 }
 
@@ -2894,9 +2927,9 @@ proc SplitComboEntries {s} {
 }
 
 
-proc UseProfile {item} {
+proc UseProfile {number item} {
 	variable Options
-	variable Vars
+	variable ${number}::Vars
 
 	if {[llength $item] == 0} { return }
 	set Vars(selection) $item
@@ -2921,15 +2954,16 @@ proc UseProfile {item} {
 }
 
 
-proc UserSortProfiles {list from to} {
+proc UserSortProfiles {number list args} {
 	variable Engines
-	variable Vars
+	variable ${number}::Vars
 
 	$list select none
 	set i [FindIndex $Vars(current:name)]
 	array set engine [lindex $Engines $i]
 	set protocol $Vars(current:protocol)
 	set profiles $engine(Profiles:$protocol)
+	lassign $args from to
 	set from [expr {2*$from}]
 	set to [expr {2*$to}]
 	set from1 [expr {$from + 1}]
@@ -2940,7 +2974,7 @@ proc UserSortProfiles {list from to} {
 	set profiles [linsert $profiles $to $name $entry]
 	set engine(Profiles:$protocol) $profiles
 	lset Engines $i [array get engine]
-	SetupProfiles
+	SetupProfiles $number
 	$list select $to
 	::options::hookWriter [namespace current]::WriteEngineOptions engines
 }
@@ -2957,17 +2991,17 @@ proc UserSortEngines {list from to} {
 	set Engines [lreplace $Engines $fromIndex $fromIndex]
 	if {$toIndex > $fromIndex} { incr toIndex -1 }
 	set Engines [linsert $Engines $toIndex $entry]
-	SetupEngineList
+	SetupEngineList $number
 	$list select $to
 	::options::hookWriter [namespace current]::WriteEngineOptions engines
 }
 
 
-proc SetupProfiles {} {
+proc SetupProfiles {number} {
 	variable EmptyEngine
 	variable Engines
 	variable Options
-	variable Vars
+	variable ${number}::Vars
 
 	set w $Vars(list:profiles)
 	set i [FindIndex $Vars(current:name)]
@@ -3009,10 +3043,10 @@ proc SetupProfiles {} {
 }
 
 
-proc SetupEngineList {} {
+proc SetupEngineList {number} {
 	variable EmptyEngine
 	variable Engines
-	variable Vars
+	variable ${number}::Vars
 
 	set w $Vars(list:engines)
 
@@ -3272,8 +3306,8 @@ proc ProbeEngine {parent entry} {
 
 proc SaveEngine {list} {
 	variable Engines
-	variable Option
-	variable Var
+	variable Opt
+	variable Data
 	variable Priv
 
 	set sel [$list curselection]
@@ -3284,8 +3318,8 @@ proc SaveEngine {list} {
 		foreach entry $Engines {
 			if {$i ne $sel} {
 				array set engine $entry
-				if {$Var(Name) eq $engine(Name)} {
-					set msg [format $mc::EntryAlreadyExists $Var(Name)]
+				if {$Data(Name) eq $engine(Name)} {
+					set msg [format $mc::EntryAlreadyExists $Data(Name)]
 					::dialog::error -parent [winfo toplevel $list] -message $msg
 					return
 				}
@@ -3305,31 +3339,31 @@ proc SaveEngine {list} {
 					;# alreay set
 				}
 				Directory {
-					if {[info exists Var(Directory)] && [string length $Var(Directory)] > 0} {
+					if {[info exists Data(Directory)] && [string length $Data(Directory)] > 0} {
 						set failed 0
-						set Var(Directory) [file normalize $Var(Directory)]
+						set Data(Directory) [file normalize $Data(Directory)]
 						if {	[string length $engine(Directory)] > 0
 							&& [file isdirectory $engine(Directory)]
-							&& ![file isdirectory $Var(Directory)]} {
-							if {[catch { file rename $engine(Directory) $Var(Directory) }]} {
+							&& ![file isdirectory $Data(Directory)]} {
+							if {[catch { file rename $engine(Directory) $Data(Directory) }]} {
 								set failed 1
 							}
 						}
-						if {![file isdirectory $Var(Directory)]} {
-							if {[catch { file mkdir $Var(Directory) }]} {
+						if {![file isdirectory $Data(Directory)]} {
+							if {[catch { file mkdir $Data(Directory) }]} {
 								set failed 1
 							}
 						}
 					}
 					if {$failed} {
-						set msg [format $mc::FailedToCreateDir $Var(Directory)]
+						set msg [format $mc::FailedToCreateDir $Data(Directory)]
 						return [::dialog::error -parent [winfo toplevel $list] -message $msg]
 					}
-					set engine(Directory) $Var(Directory)
+					set engine(Directory) $Data(Directory)
 				}
 				default {
-					if {[info exists Var($attr)]} {
-						set engine($attr) $Var($attr)
+					if {[info exists Data($attr)]} {
+						set engine($attr) $Data($attr)
 					}
 				}
 			}
@@ -3373,11 +3407,11 @@ proc SaveEngineList {} {
 
 
 proc UpdateVars {} {
-	variable Var
-	variable Var_
+	variable Data
+	variable Data_
 	variable Priv
 
-	array set Var_ [array get Var]
+	array set Data_ [array get Data]
 	$Priv(button:save) configure -state disabled
 }
 
@@ -3385,12 +3419,12 @@ proc UpdateVars {} {
 proc DeleteEngine {list} {
 	variable Engines
 	variable Priv
-	variable Var
+	variable Data
 
 	set sel [$list curselection]
 	if {$sel < 0} { return 0 }
 
-	set msg [format $mc::ReallyDelete $Var(Name)]
+	set msg [format $mc::ReallyDelete $Data(Name)]
 	set rc [::dialog::question -parent [winfo toplevel $list] -message $msg]
 	if {$rc eq "no"} { return 0 }
 	set Engines [lreplace $Engines $sel $sel]
@@ -3398,11 +3432,11 @@ proc DeleteEngine {list} {
 	if {[llength $Engines]} {
 		$list select 0
 	} else {
-		foreach attr [array names Var] {
-			if {[string is integer -strict $Var($attr)]} {
-				set Var($attr) 0
+		foreach attr [array names Data] {
+			if {[string is integer -strict $Data($attr)]} {
+				set Data($attr) 0
 			} else {
-				set Var($attr) {}
+				set Data($attr) {}
 			}
 		}
 		$Priv(button:delete) configure -state disabled
@@ -3608,23 +3642,23 @@ proc MakePhotos {logo file} {
 
 
 proc WebOpen {parent} {
-	variable Var
+	variable Data
 
-	if {[string length $Var(Url)]} {
-		::web::open $parent $Var(Url)
+	if {[string length $Data(Url)]} {
+		::web::open $parent $Data(Url)
 	}
 }
 
 
 proc ClearLastUsed {list} {
 	variable Engines
-	variable Var
+	variable Data
 
 	array set engine [lindex $Engines [$list curselection]]
 	set engine(LastUsed) 0
 	set engine(Frequency) 0
-	set Var(LastUsed) 0
-	set Var(Frequency) 0
+	set Data(LastUsed) 0
+	set Data(Frequency) 0
 	FillInfo $list [array get engine]
 }
 
@@ -3634,15 +3668,15 @@ proc SetLogo {} {
 	variable EmptyEngine
 	variable Photo
 	variable Priv
-	variable Var
+	variable Data
 
 	array set engine $EmptyEngine
 	array set engine [lindex $Engines $Priv(selection)]
 	set logo $engine(ShortId)
-	set file $Var(Logo)
+	set file $Data(Logo)
 
 	if {[file readable $file]} {
-		set Var(Logo) $file
+		set Data(Logo) $file
 	} else {
 		set file [::util::photos::findPhotoFile $logo]
 		if {[string length $file] == 0} {
@@ -3661,14 +3695,14 @@ proc SetLogo {} {
 		set content [list $logo]
 	}
 
-	set engine(Logo) $Var(Logo)
+	set engine(Logo) $Data(Logo)
 	$Priv(list) set $Priv(selection) $content
 	$Priv(list) resize -width
 }
 
 
 proc GetDirectory {parent list} {
-	variable Var
+	variable Data
 
 	set result [::dialog::chooseDir \
 		-parent $parent \
@@ -3678,13 +3712,13 @@ proc GetDirectory {parent list} {
 	]
 
 	if {[llength $result]} {
-		set Var(Directory) [lindex $result 0]
+		set Data(Directory) [lindex $result 0]
 	}
 }
 
 
 proc GetLogo {parent list} {
-	variable Var
+	variable Data
 
 	set result [::dialog::openFile \
 		-parent $parent \
@@ -3695,7 +3729,7 @@ proc GetLogo {parent list} {
 	]
 
 	if {[llength $result]} {
-		set Var(Logo) [lindex $result 0]
+		set Data(Logo) [lindex $result 0]
 		SetLogo
 	}
 }

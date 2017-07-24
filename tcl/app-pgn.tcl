@@ -131,6 +131,7 @@ proc build {top width height} {
 	$hist bind <Button-3> [namespace code [list PopupHistoryMenu $hist]]
 	$hist bind <Double-3> {#} ;# catch double clicks
 	bind $hist <<GameHistorySelection>> [namespace code HistorySelectionChanged]
+	bind $hist <Unmap> [list after idle [namespace parent]::board::setFocus]
 
 	# logo pane --------------------------------------------------------------------------------
 	$main paneconfigure $logo -sticky ""
@@ -412,12 +413,6 @@ proc replace {position base variant tags} {
 
 	::gamebar::replace $Vars(gamebar) $position $tags
 	ResetGame $Vars(pgn:$position) $position $tags
-}
-
-
-proc release {position} {
-	variable Vars
-	::gamebar::remove $Vars(gamebar) $position
 }
 
 
@@ -927,6 +922,7 @@ proc GameBarEvent {action position} {
 			if {[::gamebar::empty? $Vars(gamebar)]} {
 				::widget::busyCursor on
 				::scidb::game::switch 9
+				::scidb::game::refresh 9 -immediate
 				Raise history
 				::widget::busyCursor off
 				::annotation::deactivate

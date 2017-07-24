@@ -78,6 +78,30 @@ tk::height(Tk_Window window)
 
 
 inline
+int
+tk::rootx(Tk_Window window)
+{
+	M_REQUIRE(window);
+
+	int x, y;
+	Tk_GetRootCoords(window, &x, &y);
+	return x;
+}
+
+
+inline
+int
+tk::rooty(Tk_Window window)
+{
+	M_REQUIRE(window);
+
+	int x, y;
+	Tk_GetRootCoords(window, &x, &y);
+	return y;
+}
+
+
+inline
 void
 tk::makeExists(Tk_Window window)
 {
@@ -104,6 +128,15 @@ tk::isToplevel(Tk_Window window)
 {
 	M_REQUIRE(window);
 	return Tk_IsTopLevel(window);
+}
+
+
+inline
+bool
+tk::isMapped(Tk_Window window)
+{
+	M_REQUIRE(window);
+	return Tk_IsMapped(window);
 }
 
 
