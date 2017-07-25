@@ -685,6 +685,7 @@ struct Coord
 struct Size
 {
 	Size() :width(0), height(0) {}
+	Size(int w, int h) :width(w), height(h) {}
 
 	int width;
 	int height;
@@ -732,12 +733,29 @@ struct Dimension
 	Size max;
 	Size actual;
 
+	Dimension() {}
+	Dimension(
+		int width,int height,
+		int minWidth, int minHeight,
+		int maxWidth, int maxHeight);
+
 	template <Orient D,Quantity Q = Actual> int dimen() const;
 	template <Orient D,Quantity Q = Actual> void set(int size) __m_warn_unused;
 
 	void setActual(int width, int height);
 	void zero();
 };
+
+Dimension::Dimension(
+	int width,int height,
+	int minWidth, int minHeight,
+	int maxWidth, int maxHeight)
+	:min(minWidth, minHeight)
+	,max(maxWidth, maxHeight)
+	,actual(width, height)
+{
+}
+
 
 template <> int Dimension::dimen<Horz,Actual>() const		{ return actual.dimen<Horz>(); }
 template <> int Dimension::dimen<Vert,Actual>() const		{ return actual.dimen<Vert>(); }
@@ -801,6 +819,7 @@ class Node
 public:
 
 	typedef mstl::vector<mstl::string> AttrSet;
+	typedef mstl::vector<Dimension*> DimList;
 	typedef mstl::map<mstl::string,Node*> LeafMap;
 
 	~Node();
@@ -889,7 +908,7 @@ public:
 	Node* child();
 
 	void refresh();
-	void resize(int width, int height, int minWidth, int minHeight, int maxWidth, int maxHeight);
+	void resize(Dimension const& maxHeight, bool perform = true);
 	void setState(State state);
 	void updateDimen(int x, int y, int width, int height);
 	void perform(Node* toplevel = nullptr);
@@ -1091,6 +1110,7 @@ private:
 	void performDeiconify(bool force = false);
 	void performUpdateDimensions();
 	void performRaiseRecursively(bool needed = false);
+	void performSelectRecursively(bool needed = false);
 	int performQuerySashSize() const;
 	int performQueryFrameHeaderSize() const;
 	int performQueryNotebookHeaderSize() const;
@@ -1131,6 +1151,7 @@ private:
 	Childs		m_toplevel;
 	Childs		m_deleted;
 	AttrMap		m_attrMap;
+	DimList		m_afterPerform;
 	Node*			m_current;
 	unsigned		m_flags;
 	SnapshotMap	m_snapshotMap;
@@ -1539,12 +1560,10 @@ Node::select()
 
 	if (m_parent->isNotebookOrMultiWindow())
 	{
-		addFlag(F_Select);
+printf("select: %s\n", id());
+		m_parent->addFlag(F_Select);
 		isSelected();
 	}
-
-	if (m_parent->m_parent)
-		m_parent->select();
 }
 
 
@@ -1754,59 +1773,66 @@ Node::get(char const* attribute, bool ignoreMeta) const
 
 
 void
-Node::resize(int width, int height, int minWidth, int minHeight, int maxWidth, int maxHeight)
+Node::resize(Dimension const& dim, bool perform)
 {
-	if (width > 0)
+	if (isLocked())
 	{
-		if (m_dimen.actual.width != width)
-		{
-			m_dimen.actual.width = width;
-			addFlag(F_Config);
-		}
+		m_afterPerform.push_back(new Dimension(dim));
 	}
-	if (height > 0)
+	else
 	{
-		if (m_dimen.actual.height != height)
+		if (dim.actual.width > 0)
 		{
-			m_dimen.actual.height = height;
-			addFlag(F_Config);
+			if (m_dimen.actual.width != dim.actual.width)
+			{
+				m_dimen.actual.width = dim.actual.width;
+				addFlag(F_Config);
+			}
 		}
-	}
-	if (minWidth > 0)
-	{
-		if (m_dimen.min.width != minWidth)
+		if (dim.actual.height > 0)
 		{
-			m_dimen.min.width = minWidth;
-			addFlag(F_Config);
+			if (m_dimen.actual.height != dim.actual.height)
+			{
+				m_dimen.actual.height = dim.actual.height;
+				addFlag(F_Config);
+			}
 		}
-	}
-	if (minHeight > 0)
-	{
-		if (m_dimen.min.height != minHeight)
+		if (dim.min.width > 0)
 		{
-			m_dimen.min.height = minHeight;
-			addFlag(F_Config);
+			if (m_dimen.min.width != dim.min.width)
+			{
+				m_dimen.min.width = dim.min.width;
+				addFlag(F_Config);
+			}
 		}
-	}
-	if (maxWidth > 0)
-	{
-		if (m_dimen.max.width != maxWidth)
+		if (dim.min.height > 0)
 		{
-			m_dimen.max.width = maxWidth;
-			addFlag(F_Config);
+			if (m_dimen.min.height != dim.min.height)
+			{
+				m_dimen.min.height = dim.min.height;
+				addFlag(F_Config);
+			}
 		}
-	}
-	if (maxHeight > 0)
-	{
-		if (m_dimen.max.height != maxHeight)
+		if (dim.max.width > 0)
 		{
-			m_dimen.max.height = maxHeight;
-			addFlag(F_Config);
+			if (m_dimen.max.width != dim.max.width)
+			{
+				m_dimen.max.width = dim.max.width;
+				addFlag(F_Config);
+			}
 		}
-	}
+		if (dim.max.height > 0)
+		{
+			if (m_dimen.max.height != dim.max.height)
+			{
+				m_dimen.max.height = dim.max.height;
+				addFlag(F_Config);
+			}
+		}
 
-	if (testFlags(F_Config))
-		m_root->perform();
+		if (perform && testFlags(F_Config))
+			m_root->perform();
+	}
 }
 
 
@@ -2911,6 +2937,7 @@ Node::makeMetaFrame()
 	}
 	else
 	{
+		M_ASSERT(!exists());
 		addFlag(F_Create);
 		child->addFlag(F_Create);
 	}
@@ -3771,11 +3798,11 @@ Node::dock(Node* node, Position position, Node const* before, bool newParent)
 			{
 				insertPanedWindow(position, node, before);
 			}
-			parent->select();
 			node->resizeToParent((position & (Left|Right)) ? Y : X);
 			break;
 	}
 
+	parent->select();
 	node->select();
 	parent->addFlag(F_Docked);
 
@@ -5308,18 +5335,27 @@ Node::performRaiseRecursively(bool needed)
 		bool doIt = needed || child->testFlags(F_Raise);
 
 		if (doIt && !isToplevel())
-		{
-			M_ASSERT(!m_selected || m_selected->isPacked());
-
-			if (m_selected)
-				m_selected->performSelect();
-			if (testFlags(F_Select))
-				performSelect();
 			tk::raise(child->tkwin(), tkwin());
-		}
 
 		child->performRaiseRecursively(doIt);
 	}
+}
+
+
+void
+Node::performSelectRecursively(bool needed)
+{
+	M_ASSERT(!isWithdrawn());
+
+	if (testFlags(F_Select) || (needed && isNotebookOrMultiWindow()))
+	{
+		M_ASSERT(m_selected && m_selected->isPacked());
+		m_selected->performSelect();
+		needed = true;
+	}
+
+	for (unsigned i = 0; i < numChilds(); ++i)
+		child(i)->performSelectRecursively(needed);
 }
 
 
@@ -5518,6 +5554,31 @@ Node::performUpdateDimensions()
 			node->m_actual.actual.zero();
 		}
 	}
+
+	if (!isLocked())
+	{
+		bool needPerform = false;
+
+		for (unsigned i = 0; i < m_active.size(); ++i)
+		{
+			Node* node = m_active[i];
+			DimList& afterPerformList = node->m_afterPerform;
+
+			if (!afterPerformList.empty())
+			{
+				for (unsigned k = 0; k < afterPerformList.size(); ++k)
+				{
+					node->resize(*afterPerformList[k], false);
+					delete afterPerformList[k];
+					needPerform = true;
+				}
+				afterPerformList.clear();
+			}
+		}
+
+		if (needPerform)
+			perform();
+	}
 }
 
 
@@ -5596,6 +5657,7 @@ Node::performDeiconifyFloats()
 			toplevel->setState(Withdrawn);
 			toplevel->floating(false);
 			toplevel->performRaiseRecursively();
+			toplevel->performSelectRecursively();
 			toplevel->performBuildRecursively();
 			toplevel->performDeiconify();
 		}
@@ -5706,6 +5768,13 @@ Node::perform(Node* toplevel)
 					toplevel->performRaiseRecursively(toplevel->testFlags(F_Raise));
 			}
 
+			if (flags & (F_Pack|F_Unpack|F_Create))
+			{
+				performSelectRecursively();
+				if (toplevel)
+					toplevel->performSelectRecursively();
+			}
+
 			if (flags & (F_Pack|F_Unpack|F_Raise|F_Header))
 			{
 				performUpdateHeaderRecursively();
@@ -5729,6 +5798,8 @@ Node::perform(Node* toplevel)
 			if (flags & F_Deiconify)
 				m_root->performDeiconifyFloats();
 
+			m_root->m_isLocked = false;
+			m_root->clearAllFlags();
 			m_root->performUpdateDimensions();
 		}
 	}
@@ -5742,9 +5813,6 @@ Node::perform(Node* toplevel)
 		m_root->clearAllFlags();
 		throw;
 	}
-
-	m_root->m_isLocked = false;
-	m_root->clearAllFlags();
 }
 
 #ifndef NDEBUG
@@ -6525,10 +6593,11 @@ cmdResize(Base& base, int objc, Tcl_Obj* const objv[])
 	if (!node)
 		M_THROW(tcl::Exception("cannot find window '%s'", path));
 
-	node->resize(
+	Dimension dim(
 		tcl::asInt(objv[4]), tcl::asInt(objv[5]),
 		tcl::asInt(objv[6]), tcl::asInt(objv[7]),
 		tcl::asInt(objv[8]), tcl::asInt(objv[9]));
+	node->resize(dim);
 }
 
 

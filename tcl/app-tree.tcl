@@ -520,6 +520,7 @@ proc startSearch {} {
 	variable Vars
 
 	if {![winfo exists $Vars(table)]} { return }
+	if {![::scidb::game::query open?]} { return }
 
 ### VARIANTS ####################################
 if {[::scidb::game::query mainvariant?] ne "Normal"} { return }
