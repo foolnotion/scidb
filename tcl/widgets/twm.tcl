@@ -710,7 +710,7 @@ proc UpdateHeader {twm frame panes} {
 	if {$flat != [$twm get! $frame flat 0]} {
 		if {$flat} {
 			pack forget {*}[pack slaves $hdr]
-			if {$Vars(state) ne "disabled"} {
+			if {![$twm ismetachild $frame] && $Vars(state) ne "disabled"} {
 				bind $hdr <Double-Button-1> [list [namespace current]::ToggleHeaders $twm $frame]
 			}
 		} else {
