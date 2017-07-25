@@ -119,7 +119,8 @@ array set Vars {
 	exit:save		1
 	active			1
 	updates			{}
-	after				{}
+	geometry			{}
+	need:maxsize	0
 }
 
 
@@ -177,6 +178,7 @@ proc open {} {
 	set main [twm::twm $nb.board \
 		-makepane  [namespace current]::MakePane \
 		-buildpane [namespace current]::BuildPane \
+		-resizing  [namespace current]::Resizing \
 		-workarea  [namespace current]::workArea \
 	]
 	$main showall $Options(docking:showall)
@@ -214,12 +216,12 @@ proc open {} {
 			;
 	}
 
-	bind $main <<TwmReady>>   [namespace code [list Startup $main %d]]
-	bind $main <<TwmMinSize>> [namespace code [list SetDimensions min %d]]
-	bind $main <<TwmMaxSize>> [namespace code [list SetDimensions max %d]]
-	bind $main <<TwmResized>> [namespace code [list SetDimensions actual %d]]
-	bind $main <<TwmMenu>>    [namespace code [list TwmMenu %d %x %y]]
-	bind $main <<TwmAfter>>   [namespace code board::afterTWM]
+	bind $main <<TwmReady>>    [namespace code [list Startup $main %d]]
+	bind $main <<TwmGeometry>> [namespace code [list Geometry %d]]
+	bind $main <<TwmMenu>>     [namespace code [list TwmMenu %d %x %y]]
+	bind $main <<TwmAfter>>    [namespace code board::afterTWM]
+
+	bind .application <<Fullscreen>> [namespace code { Fullscreen %d }]
 
 	set Vars(ready) 0
 	set Vars(analysis:template) 0
@@ -1043,38 +1045,74 @@ proc Startup {main args} {
 }
 
 
-proc SetDimensions {dim args} {
-	lassign [lindex $args 0] width height
-
-	incr height [::theme::notebookTabPaneSize .application.nb]
-	incr height 2 ;# borders
-	incr width  2 ;# borders
-
-	if {$dim eq "actual"} {
-		# IMPORTANT NOTE:
-		# Without temporarily setting the maximal size to desired size
-		# some window managers like KDE will not shrink the window.
-		wm maxsize .application $width $height
-		wm geometry .application ${width}x${height}
-		set Vars(after) [after 50 [namespace code UnsetMaxSize]]
-	} else {
-		if {$dim eq "max"} { after cancel $Vars(after) }
-		wm ${dim}size .application $width $height
-	}
+proc Fullscreen {flag} {
+#	variable Vars
+#	if {!$flag && [llength $Vars(geometry)} { Geometry $Vars(geometry) }
 }
 
 
-proc UnsetMaxSize {} {
-	# TODO: does this work with multi-screens?
-	wm maxsize .application [winfo screenwidth .application] [winfo screenheight .application]
+proc Geometry {data} {
+	variable Vars
+
+	set Vars(geometry) $data
+	if {[::menu::fullscreen?]} { return }
+
+	lassign $data width height minwidth minheight maxwidth maxheight expand
+
+	set incrH 2 ;# regard borders
+	set incrV [expr {[::theme::notebookTabPaneSize .application.nb] + 2}] ;# regard borders
+
+	incr width $incrH
+	incr height $incrV
+
+	if {$minwidth}  { incr minwidth $incrH }
+	if {$maxwidth}  { incr maxwidth $incrH }
+	if {$minheight} { incr minheight $incrV }
+	if {$maxheight} { incr maxheight $incrV }
+
+	# IMPORTANT NOTE:
+	# Without temporarily disabling the resize behavior some window
+	# managers like KDE will not shrink the window in any case.
+	wm resizable .application false false
+
+	if {$minwidth || $minheight} {
+		wm minsize .application $minwidth $minheight
+	}
+	if {$maxwidth || $maxheight || $Vars(need:maxsize)} {
+		# TODO: does this work with multi-screens?
+		if {$maxwidth == 0} { set maxwidth [winfo screenwidth $twm] }
+		if {$maxheight == 0} { set maxheight [winfo screenheight $twm] }
+		wm maxsize .application $maxwidth $maxheight
+		set Vars(need:maxsize) 1
+	}
+	wm geometry .application ${width}x${height}
+
+	set resizeW [expr {$minwidth == 0 || $minwidth != $maxwidth}]
+	set resizeH [expr {$minheight == 0 || $minheight != $maxheight}]
+	# We need a delay, otherwise resizing may not work, see above.
+	after 50 [list wm resizable .application $resizeW $resizeH]
+}
+
+
+proc Resizing {twm toplevel width height} {
+	if {[::menu::fullscreen?]} {
+		set width [winfo screenwidth .application]
+		set height [winfo screenheight .application]
+	}
+	return [list $width $height]
 }
 
 
 proc workArea {main} {
-	lassign [scidb::tk::wm workarea] _ _ ww wh
-	lassign [scidb::tk::wm extents] _ _ ew eh
-	set width [expr {$ww - $ew}]
-	set height [expr {$wh - $eh - [::theme::notebookTabPaneSize .application.nb]}]
+	if {[::menu::fullscreen?]} {
+		set width [winfo screenwidth .application]
+		set height [winfo screenheight .application]
+	} else {
+		lassign [scidb::tk::wm workarea] _ _ ww wh
+		lassign [scidb::tk::wm extents] _ _ ew eh
+		set width [expr {$ww - $ew}]
+		set height [expr {$wh - $eh - [::theme::notebookTabPaneSize .application.nb]}]
+	}
 	return [list $width $height]
 }
 

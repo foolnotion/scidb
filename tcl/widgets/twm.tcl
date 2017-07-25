@@ -43,6 +43,11 @@ set TimeoutDetail	"This safety handling is required to avoid frozen screens, as 
 
 } ;# namespace mc
 
+# TEMPORARILY:
+# After 8 seconds without any mouse motion we will dock the window,
+# because it's too dangerous to keep the global grab. Change
+# globalgrab:timeout to zero when this is not needed anymore.
+
 array set Defaults {
 	header:fix:foreground		white
 	header:flex:background		#4f94cd
@@ -53,7 +58,9 @@ array set Defaults {
 	header:button:background	#d7d7d7
 	header:tab:background		#4f94cd
 	header:tab:foreground		#333333
+	header:borderwidth			1
 	frame:borderwidth				1
+	float:borderwidth				1
 	flathandle:size				7
 	flathandle:color:dark		#0e62a8
 	flathandle:color:lite		#a6ceef
@@ -71,6 +78,12 @@ array set Defaults {
 	motion:busy						0
 	motion:overrideredirect		1
 	deiconify:timeout				50
+	mtab:padding:selected		{4 2 4 0}
+	mtab:padding:hidden			{4 0 4 2}
+	mtab:padding:fixed			{4 1 4 1}
+	repeat:delay					300
+	repeat:interval				75
+	globalgrab:timeout			8000
 }
 # flathandle:color:dark		#000000
 # flathandle:color:lite		#ffffff
@@ -174,11 +187,12 @@ proc WidgetProc {twm command args} {
 		build				{ return [BuildPane $twm {*}$args] }
 		clone				{ return [::scidb::tk::twm clone $twm {*}$args] }
 		close				{ return [Close $twm {*}$args] }
+		cget				{ return [$twm.__twm_frame__ cget {*}$args] }
 		configure		{ $twm.__twm_frame__ configure {*}$args }
 		container		{ return [::scidb::tk::twm container $twm {*}$args] }
 		deiconify		{ return [Deiconify $twm {*}$args] }
 		destroy			{ DestroyPane $twm {*}$args }
-		dimensions		{ return [Dimensions $twm {*}$args] }
+		geometry			{ return [Geometry $twm {*}$args] }
 		dock				{ return [::scidb::tk::twm dock $twm {*}$args] }
 		exists			{ return [::scidb::tk::twm exists $twm {*}$args] }
 		find				{ return [::scidb::tk::twm find $twm {*}$args] }
@@ -228,7 +242,6 @@ proc WidgetProc {twm command args} {
 		ready				{ event generate $twm <<TwmReady>> -data $args }
 		refresh			{ return [::scidb::tk::twm refresh $twm {*}$args] }
 		resize			{ return [Resize $twm {*}$args] }
-		resized			{ return [ResizeToplevel $twm {*}$args] }
 		resizing			{ return [Resizing $twm {*}$args] }
 		sashsize			{ return $Options(sash:size) }
 		selected			{ return [::scidb::tk::twm selected $twm {*}$args] }
@@ -332,7 +345,6 @@ proc MakePanedWindow {twm args} {
 	variable Counter
 	variable Options
 
-	# TODO: how to build disabled panedwindows?
 	set w [tk::panedwindow $twm.__panedwindow__[incr Counter(panedwindow)]]
 	$w configure -sashwidth $Options(sash:size)
 	if {[llength $args] == 1} { set args [lindex $args 0] }
@@ -399,7 +411,11 @@ proc MakeFrame2 {twm frame id} {
 		raise $child $frame
 	}
 
-	set hdr [tk::frame $frame.__header__ -borderwidth 1 -relief raised -takefocus 0]
+	set hdr [tk::frame $frame.__header__ \
+		-borderwidth $Options(header:borderwidth) \
+		-relief raised \
+		-takefocus 0 \
+	]
 
 	if {$moveable} {
 		set bg $Options(header:flex:background)
@@ -593,7 +609,7 @@ proc ToggleHeader {twm frame} {
 
 	if {![winfo exists $frame]} { return }
 
-	set flat [$twm get! $frame flat]
+	set flat [$twm get! $frame flat 0]
 	$twm set! $frame flat [expr {!$flat}]
 	set hdr $frame.__header__
 
@@ -619,7 +635,7 @@ proc MakeFlatHeader {twm frame} {
 	if !{[winfo exists $decor]} {
 		tk::canvas $decor -height $Options(flathandle:size) -background $Options(header:flex:background)
 		if {$Vars(state) ne "disabled"} {
-			bind $decor <Configure> [namespace code [list ConfigureFlatHandle $decor %w %h]]
+			bind $decor <Configure> [list [namespace current]::ConfigureFlatHandle $decor %w %h]
 		}
 		MenuBindings $twm $frame $decor
 	}
@@ -737,14 +753,14 @@ proc UpdateHeader {twm frame panes} {
 			if {[$twm get $frame move]} {
 				$lbl configure \
 					-relief flat \
-					-padding {4 2 4 0} \
+					-padding $Options(mtab:padding:selected) \
 					-background $Options(header:$type:background) \
 					-foreground $Options(header:$type:foreground) \
 					;
 			} else {
 				$lbl configure \
 					-relief raised \
-					-padding {4 1 4 1} \
+					-padding $Options(mtab:padding:fixed) \
 					-background $Options(header:tab:background) \
 					-foreground $Options(header:$type:foreground) \
 					;
@@ -760,7 +776,7 @@ proc UpdateHeader {twm frame panes} {
 			}
 			$lbl configure \
 				-relief raised \
-				-padding {4 0 4 2} \
+				-padding $Options(mtab:padding:hidden) \
 				-foreground $Options(header:tab:foreground) \
 				-background $darker \
 				;
@@ -903,7 +919,7 @@ proc PlaceLabelBar {twm frame incr} {
 		place $hdr.r -x $x -y 3 -height $ht
 		if {$offset == $maxoffset} { set state disabled } else { set state normal }
 		if {$state ne [$hdr.r cget -state]} { $hdr.r configure -state $state }
-		raise $hdr.l; raise $hdr.r ;# seems to be a bug in Tk lib that a child must be raised
+		raise $hdr.l; raise $hdr.r
 	}
 }
 
@@ -929,23 +945,30 @@ proc MakeArrow {twm frame dir incr} {
 
 
 proc InvokeRepeat {twm frame w} {
+	variable Options
+
 	if {![winfo exists $w]} { return }
 	catch { after cancel [$twm get $frame repeat] }
-	$twm set $frame repeat [after 300 [list [namespace current]::Repeat $twm $frame $w]]
+	$twm set $frame repeat [after $Options(repeat:delay) \
+		[list [namespace current]::Repeat $twm $frame $w]]
 }
 
 
 proc Repeat {twm frame w} {
+	variable Options
+
 	if {![winfo exists $w]} { return }
-	$w instate disabled { $w state !pressed } ;# looks like a Tk bug
+	$w instate disabled { $w state !pressed } ;# required because of a Tk bug
 	$w instate !pressed { return }
-	$twm set $frame repeat [after 75 [list [namespace current]::Repeat $twm $frame $w]]
+	$twm set $frame repeat [after $Options(repeat:interval) \
+		[list [namespace current]::Repeat $twm $frame $w]]
 	eval [$w cget -command]
 }
 
 
 proc HeaderPress {twm frame x y} {
 	variable ${twm}::Vars
+	variable Options
 
 	catch { after cancel $Vars(afterid:release) }
 	ttk::setCursor $frame.__header__ link
@@ -964,9 +987,10 @@ proc HeaderPress {twm frame x y} {
 	set Vars(docking:current) $frame
 	set Vars(afterid:display) {}
 
-	# After 8 seconds without any mouse motion we will dock the window,
-	# because it's too dangerous to keep the global grab.
-	set Vars(afterid:release) [after 8000 [list [namespace current]::HeaderRelease $twm $frame 1]]
+	if {$Options(globalgrab:timeout) > 0} {
+		set Vars(afterid:release) [after $Options(globalgrab:timeout) \
+			[list [namespace current]::HeaderRelease $twm $frame 1]]
+	}
 	ttk::globalGrab $frame
 }
 
@@ -984,12 +1008,15 @@ proc HeaderMotion {twm frame x y} {
 
 proc DoHeaderMotion {twm frame x y} {
 	if {![namespace exists [namespace current]::${twm}]} { return }
-	variable ${twm}::Vars
 
-	catch { after cancel $Vars(afterid:release) }
-	# After 8 seconds without any mouse motion we will dock the window,
-	# because it's too dangerous to keep the global grab.
-	set Vars(afterid:release) [after 8000 [list [namespace current]::HeaderRelease $twm $frame 1]]
+	variable ${twm}::Vars
+	variable Options
+
+	if {$Options(globalgrab:timeout) > 0} {
+		catch { after cancel $Vars(afterid:release) }
+		set Vars(afterid:release) [after $Options(globalgrab:timeout) \
+			[list [namespace current]::HeaderRelease $twm $frame 1]]
+	}
 
 	if {[winfo toplevel $frame] eq $frame} {
 		after idle [list [namespace current]::ShowDockingPoints $twm $frame $x $y]
@@ -1018,7 +1045,12 @@ proc DoHeaderMotion {twm frame x y} {
 			if {$xl <= $x && $x <= [expr {$xl + $size}] && $yl <= $y && $y <= [expr {$yl + $size}]} {
 				if {$Vars(docking:arrow) ne $lt} {
 					set Vars(docking:arrow) $lt
-					$w previous
+					if {[$twm ismultiwindow $w]} {
+						$w previous
+					} else { ;# [$twm isnotebook $w]
+						if {[set curr [$w index [$w select]]] == 0} { set curr [llength [$w tabs]] }
+						$w select [expr {$curr - 1}]
+					}
 					HideDockingPoints $twm
 					ComputeDockingPoints $twm $frame
 					return
@@ -1029,7 +1061,11 @@ proc DoHeaderMotion {twm frame x y} {
 			if {$xr <= $x && $x <= [expr {$xr + $size}] && $yr <= $y && $y <= [expr {$yr + $size}]} {
 				if {$Vars(docking:arrow) ne $rt} {
 					set Vars(docking:arrow) $rt
-					$w next
+					if {[$twm ismultiwindow $w]} {
+						$w next
+					} else { ;# [$twm isnotebook $w]
+						$w select [expr {([$w index [$w select]] + 1) % [llength [$w tabs]]}]
+					}
 					HideDockingPoints $twm
 					ComputeDockingPoints $twm $frame
 					return
@@ -1043,8 +1079,9 @@ proc DoHeaderMotion {twm frame x y} {
 		wm geometry $frame +[expr {$x - $Vars(delta:x)}]+[expr {$y - $Vars(delta:y)}]
 	} elseif {abs($x - $Vars(init:x)) >= 5 || abs($y - $Vars(init:y)) >= 5} {
 		variable Options
+		variable Frozen
 
-		set [namespace current]::Frozen $twm
+		set Frozen $twm
 		set child [lindex [pack slaves $frame] end]
 		if {$Options(motion:busy)} {
 			::scidb::tk::busy hold $child
@@ -1060,12 +1097,12 @@ proc DoHeaderMotion {twm frame x y} {
 		$frame configure -width $wd -height $ht
 		ttk::releaseGrab $frame
 		$twm undock -temporary $frame
-		$child configure -borderwidth 1
-		set bd [expr {1 - $bd}]
+		$child configure -borderwidth $Options(float:borderwidth)
+		set bd [expr {$Options(float:borderwidth) - $bd}]
 		incr wd $bd; incr ht $bd
 		wm geometry $frame ${wd}x${ht}+${x}+${y}
-		if {$Options(motion:overrideredirect)} { wm overrideredirect $frame 1 }
-		::scidb::tk::wm dialog $frame
+		wm overrideredirect $frame $Options(motion:overrideredirect)
+		::scidb::tk::wm dialog $frame ;# wm attributes $frame -type dnd
 		wm state $frame normal
 		ttk::globalGrab $frame
 		bind $frame <Button1-Motion> [bind $frame.__header__ <Button1-Motion>]
@@ -1077,6 +1114,7 @@ proc DoHeaderMotion {twm frame x y} {
 
 
 proc HeaderRelease {twm frame {timeout 0}} {
+	set [namespace current]::Frozen ""
 	if {![winfo exists $frame]} { return }
 	if {[grab status $frame] eq "none"} { return }
 
@@ -1084,6 +1122,7 @@ proc HeaderRelease {twm frame {timeout 0}} {
 
 	# Must be at start of this function (for safety).
 	ttk::releaseGrab $frame
+
 	if {$Options(motion:busy)} { ::scidb::tk::busy forget [lindex [pack slaves $frame] end] }
 
 	bind $frame <Button1-Motion> {#}
@@ -1094,7 +1133,6 @@ proc HeaderRelease {twm frame {timeout 0}} {
 	variable ${twm}::Vars
 
 	HideDockingPoints $twm
-	set [namespace current]::Frozen ""
 
 	if {![info exists Vars(docking:markers)]} {
 		return ;# Oops, ButtonRelease event w/o ButtonPress event, Tk is sometimes strange.
@@ -1130,29 +1168,6 @@ proc HeaderRelease {twm frame {timeout 0}} {
 
 	event generate $twm <<TwmAfter>>
 }
-
-
-#proc ReleaseAfterTimeout {twm frame} {
-#	# After 8 seconds without any mouse motion we will make a floating window,
-#	# because it's too dangerous to keep the global grab.
-#
-#	Undock $twm $frame true
-#
-#	# the following does not work...
-#	::scidb::tk::wm normal $frame
-#
-#	# ... so we need a work-around
-#	set x [winfo rootx $frame]
-#	set y [winfo rooty $frame]
-#	wm forget $frame
-#	wm manage $frame ;# ::scidb::tk::twm release $frame
-#	wm state $frame normal
-#	wm geometry $frame +${x}+${y}
-#
-#	wm title $frame $Vars(frame:name:$frame)
-#	wm state $frame normal
-#	wm protocol $frame WM_DELETE_WINDOW [list [namespace current]::Dock $twm $frame]
-#}
 
 
 proc FindNotebooks {twm w} {
@@ -1519,7 +1534,7 @@ proc ShowHighlightRegion {twm frame w canv} {
 	if {$Options(motion:overrideredirect)} { raise $tl $frame }
 	catch { raise $tl $w.__right__ }
 	catch { raise $tl $w.__left__ }
-	# due to a Tk bug we have to raise a second time
+	# due to a Tk bug (?) we have to raise a second time
 	if {$Options(motion:overrideredirect)} { catch { raise $tl $w.__right__ } }
 	after idle [list [namespace current]::HeaderMotion $twm $frame {*}[winfo pointerxy $twm]]
 }
@@ -1747,7 +1762,7 @@ proc ComputePoints {twm entry} {
 	set ht [winfo height $w]
 
 	set s $Options(cross:size)
-	if {$wd < 5*$s && $ht < 5*$s} { set s 16; }
+	if {$wd < 5*$s && $ht < 5*$s} { set s 16 }
 
 	set mx [expr {$x + $wd/2 - ($s + 4)/2}]
 	set my [expr {$y + $ht/2 - ($s + 4)/2}]
@@ -1790,9 +1805,9 @@ proc ComputeArrowPoints {twm frame} {
 		set wd [winfo width $w]
 
 		if {[$twm isnotebook $w]} {
-			set h [NotebookHeaderSize $twm $w]
-		} else {
-			set h [FrameHeaderSize $twm [lindex [$w panes] 0]]
+			set h [$twm nbhdrsize $w]
+		} else { ;# if [$twm ismultiwindow $w]
+			set h [$twm framehdrsize [$twm selected $w]]
 		}
 
 		set y [expr {max(0, $y + $h - $size)}]
@@ -1814,7 +1829,7 @@ proc Hide {twm toplevel} {
 proc Deiconify {twm toplevel width height x y force} {
 	variable Defaults
 
-	if {[wm state $toplevel] eq "withdrawn" && ($force || ![$twm get! $toplevel hide])} {
+	if {[wm state $toplevel] eq "withdrawn" && ($force || ![$twm get! $toplevel hide 0])} {
 		after $Defaults(deiconify:timeout) \
 			[list [namespace current]::DoDeiconify $twm $toplevel $width $height $x $y $force]
 	}
@@ -1824,8 +1839,8 @@ proc Deiconify {twm toplevel width height x y force} {
 proc DoDeiconify {twm toplevel width height x y force} {
 	set x [expr {$x + [winfo rootx $twm]}]
 	set y [expr {$y + [winfo rooty $twm]}]
-	incr x -4	;# magic values, this works under KDE
-	incr y -18	;# magic values, this works under KDE
+	incr x -4	;# magic value, this works under KDE (TODO: find the reason)
+	incr y -18	;# magic value, this works under KDE (TODO: find the reason)
 	if {[$twm get! $toplevel stayontop 0]} {
 		wm transient $toplevel [winfo toplevel $twm]
 		# NOTE: not every window manager is re-decorating the window.
@@ -1894,7 +1909,8 @@ proc Dock {twm toplevel} {
 	# to catch errors by hand.
 	set errorInfo {}
 	set frame [$twm dock $toplevel {*}$options]
-	if {[string length $errorInfo]} {
+	if {[llength $errorInfo]} {
+		# Note that this cannot be reached if the error handling is working.
 		return -code 1 -errorcode $errorCode -errorinfo $errorInfo -rethrow 1 $errorInfo
 	}
 
@@ -1927,18 +1943,7 @@ proc DestroyTWM {twm} {
 
 
 proc DestroyNamespace {twm} {
-	if {[namespace exists $twm]} {
-		namespace delete $twm
-	}
-}
-
-
-proc ResizeToplevel {twm toplevel width height} {
-	if {[winfo toplevel $toplevel] eq $toplevel} {
-		wm geometry $toplevel ${width}x${height}
-	} else {
-		event generate $twm <<TwmResized>> -data [list $width $height]
-	}
+	if {[namespace exists $twm]} { namespace delete $twm }
 }
 
 
@@ -1951,32 +1956,28 @@ proc Resizing {twm toplevel width height} {
 }
 
 
-proc Dimensions {twm toplevel minWidth minHeight maxWidth maxHeight expand} {
-	if {$minWidth || $minHeight} {
-		set minWidth  [expr {max(1,$minWidth)}]
-		set minHeight [expr {max(1,$minHeight)}]
-	}
-	if {$maxWidth || $maxHeight} {
-		lassign [WorkArea $twm] width height
-		if {$maxWidth == 0} { set maxWidth $width }
-		if {$maxHeight == 0} { set maxHeight $height }
-		set maxWidth  [expr {max(1,$maxWidth)}]
-		set maxHeight [expr {max(1,$maxHeight)}]
-	}
+proc Geometry {twm toplevel width height minWidth minHeight maxWidth maxHeight expand} {
 	if {$toplevel eq $twm} {
+		event generate $twm <<TwmGeometry>> -data \
+			[list $width $height $minWidth $minHeight $maxWidth $maxHeight $expand]
+	} else {
 		if {$minWidth || $minHeight} {
-			event generate $twm <<TwmMinSize>> -data [list $minWidth $minHeight]
+			set minWidth  [expr {max(1,$minWidth)}]
+			set minHeight [expr {max(1,$minHeight)}]
 		}
 		if {$maxWidth || $maxHeight} {
-			event generate $twm <<TwmMaxSize>> -data [list $maxWidth $maxHeight]
+			if {$maxWidth == 0} { set maxWidth [winfo screenwidth $twm] }
+			if {$maxHeight == 0} { set maxHeight [winfo screenheight $twm] }
+			set maxWidth  [expr {max(1,$maxWidth)}]
+			set maxHeight [expr {max(1,$maxHeight)}]
 		}
-	} else {
 		if {$minWidth || $minHeight} {
 			wm minsize $toplevel $minWidth $minHeight
 		}
 		if {$maxWidth || $maxHeight} {
 			wm maxsize $toplevel $maxWidth $maxHeight
 		}
+		wm geometry $toplevel ${width}x${height}
 		set resizeW [expr {$expand in {both x} && ($minWidth == 0 || $minWidth != $maxWidth)}]
 		set resizeH [expr {$expand in {both y} && ($minHeight == 0 || $minHeight != $maxHeight)}]
 		wm resizable $toplevel $resizeW $resizeH
@@ -2057,7 +2058,8 @@ proc Pack {twm parent child opts} {
 			set name [$twm get $leader name]
 			if {[info exists $name]} {
 				$parent insert $pos $child -text [set $name] {*}$options
-				trace add variable $name write [namespace code [list UpdateTab $twm $parent $child $name]]
+				trace add variable $name write \
+					[list [namespace current]::UpdateTab $twm $parent $child $name]
 			} else {
 				$parent insert $pos $child -text $name {*}$options
 			}
@@ -2124,7 +2126,7 @@ proc UpdateTab {twm notebook pane nameVar} {
 	set name [$twm get $leader name]
 
 	if {$name ne $nameVar} {
-		trace remove variable write $name [namespace code [list UpdateTab $twm $parent $child $name]]
+		trace remove variable write $name [list [namespace current]UpdateTab $twm $parent $child $name]
 	} else {
 		$notebook tab $pane -text [set $name]
 	}

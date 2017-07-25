@@ -755,6 +755,7 @@ proc viewFullscreen {{toggle {}}} {
 
 	if {[llength $toggle]} { set Fullscreen [expr {!$Fullscreen}] }
 	wm attributes .application -fullscreen $Fullscreen
+	event generate .application <<Fullscreen>> -data $Fullscreen
 }
 
 

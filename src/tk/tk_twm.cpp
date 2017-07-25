@@ -119,7 +119,6 @@ static Tcl_Obj* m_objBoth						= nullptr;
 static Tcl_Obj* m_objBuildCmd					= nullptr;
 static Tcl_Obj* m_objDeiconifyCmd			= nullptr;
 static Tcl_Obj* m_objDestroyCmd				= nullptr;
-static Tcl_Obj* m_objDimensionsCmd			= nullptr;
 static Tcl_Obj* m_objDirsLR					= nullptr;
 static Tcl_Obj* m_objDirsTB					= nullptr;
 static Tcl_Obj* m_objDirsTBLR					= nullptr;
@@ -130,6 +129,7 @@ static Tcl_Obj* m_objFloating					= nullptr;
 static Tcl_Obj* m_objFrame						= nullptr;
 static Tcl_Obj* m_objFrame2Cmd				= nullptr;
 static Tcl_Obj* m_objFrameHdrSizeCmd		= nullptr;
+static Tcl_Obj* m_objGeometryCmd				= nullptr;
 static Tcl_Obj* m_objHeaderCmd				= nullptr;
 static Tcl_Obj* m_objHorizontal				= nullptr;
 static Tcl_Obj* m_objHorz						= nullptr;
@@ -163,7 +163,6 @@ static Tcl_Obj* m_objPaneConfigCmd			= nullptr;
 static Tcl_Obj* m_objPanedWindow				= nullptr;
 static Tcl_Obj* m_objPane						= nullptr;
 static Tcl_Obj* m_objReadyCmd					= nullptr;
-static Tcl_Obj* m_objResizedCmd				= nullptr;
 static Tcl_Obj* m_objResizingCmd				= nullptr;
 static Tcl_Obj* m_objRoot						= nullptr;
 static Tcl_Obj* m_objSashSizeCmd				= nullptr;
@@ -755,6 +754,13 @@ template <> void Dimension::set<Horz,Max>(int size)		{ max.width = size; }
 template <> void Dimension::set<Vert,Max>(int size)		{ max.height = size; }
 
 
+bool operator==(Dimension const& lhs, Dimension const& rhs)
+{ return lhs.actual == rhs.actual && lhs.min == rhs.min && lhs.max == rhs.max; }
+
+bool operator!=(Dimension const& lhs, Dimension const& rhs)
+{ return !operator==(lhs, rhs); }
+
+
 void
 Dimension::setActual(int width, int height)
 {
@@ -1062,7 +1068,7 @@ private:
 	void performPack();
 	void performUnpack(Node* parent);
 	void performConfig();
-	void performResized();
+	void performGeometry();
 	void performSelect();
 	void performDestroy();
 	void performUpdateHeader();
@@ -5063,7 +5069,7 @@ Node::performConfig()
 
 
 void
-Node::performResized()
+Node::performGeometry()
 {
 	M_ASSERT(isToplevel());
 
@@ -5072,33 +5078,28 @@ Node::performResized()
 		int newWidth	= width<Outer>();
 		int newHeight	= height<Outer>();
 
-		if ((m_flags & F_Undocked) || newWidth != tk::width(tkwin()) || newHeight != tk::height(tkwin()))
+		if (	(m_flags & F_Undocked)
+			|| m_dimen != m_actual
+			|| newWidth != tk::width(tkwin())
+			|| newHeight != tk::height(tkwin()))
 		{
-			if ((m_flags & F_Undocked) || m_dimen.min != m_actual.min || m_dimen.max != m_actual.max)
-			{
-				bool h = isExpandable<Horz>();
-				bool v = isExpandable<Vert>();
+			bool h = isExpandable<Horz>();
+			bool v = isExpandable<Vert>();
 
-				m_actual.min = m_dimen.min;
-				m_actual.max = m_dimen.max;
+			m_actual.min = m_dimen.min;
+			m_actual.max = m_dimen.max;
 
-				tcl::invoke(__func__,
-								m_root->pathObj(),
-								m_objDimensionsCmd,
-								pathObj(),
-								tcl::newObj(m_actual.min.width),
-								tcl::newObj(m_actual.min.height),
-								tcl::newObj(m_actual.max.width),
-								tcl::newObj(m_actual.max.height),
-								(h && v) ? m_objBoth : (h ? m_objX : (v ? m_objY : m_objNone)),
-								nullptr);
-			}
 			tcl::invoke(__func__,
 							m_root->pathObj(),
-							m_objResizedCmd,
+							m_objGeometryCmd,
 							pathObj(),
 							tcl::newObj(newWidth),
 							tcl::newObj(newHeight),
+							tcl::newObj(m_actual.min.width),
+							tcl::newObj(m_actual.min.height),
+							tcl::newObj(m_actual.max.width),
+							tcl::newObj(m_actual.max.height),
+							(h && v) ? m_objBoth : (h ? m_objX : (v ? m_objY : m_objNone)),
 							nullptr);
 		}
 	}
@@ -5682,9 +5683,9 @@ Node::perform(Node* toplevel)
 					toplevel->adjustDimensions();
 			}
 
-			performResized();
+			performGeometry();
 			if (toplevel)
-				toplevel->performResized();
+				toplevel->performGeometry();
 
 			if (flags & F_Pack)
 			{
@@ -5834,7 +5835,6 @@ Node::initialize()
 	m_objBuildCmd = tcl::incrRef(tcl::newObj("build"));
 	m_objDeiconifyCmd = tcl::incrRef(tcl::newObj("deiconify"));
 	m_objDestroyCmd = tcl::incrRef(tcl::newObj("destroy"));
-	m_objDimensionsCmd = tcl::incrRef(tcl::newObj("dimensions"));
 	m_objDirsLR = tcl::incrRef(tcl::newListObj("l r"));
 	m_objDirsTB = tcl::incrRef(tcl::newListObj("t b"));
 	m_objDirsTBLR = tcl::incrRef(tcl::newListObj("t b l r"));
@@ -5845,6 +5845,7 @@ Node::initialize()
 	m_objFrame = tcl::incrRef(tcl::newObj("frame"));
 	m_objFrame2Cmd = tcl::incrRef(tcl::newObj("frame2"));
 	m_objFrameHdrSizeCmd = tcl::incrRef(tcl::newObj("framehdrsize"));
+	m_objGeometryCmd = tcl::incrRef(tcl::newObj("geometry"));
 	m_objHeaderCmd = tcl::incrRef(tcl::newObj("header"));
 	m_objHorizontal = tcl::incrRef(tcl::newObj("horizontal"));
 	m_objHorz = tcl::incrRef(tcl::newObj("horz"));
@@ -5878,7 +5879,6 @@ Node::initialize()
 	m_objPanedWindow = tcl::incrRef(tcl::newObj("panedwindow"));
 	m_objPane = tcl::incrRef(tcl::newObj("pane"));
 	m_objReadyCmd = tcl::incrRef(tcl::newObj("ready"));
-	m_objResizedCmd = tcl::incrRef(tcl::newObj("resized"));
 	m_objResizingCmd = tcl::incrRef(tcl::newObj("resizing"));
 	m_objRoot = tcl::incrRef(tcl::newObj("root"));
 	m_objSashSizeCmd = tcl::incrRef(tcl::newObj("sashsize"));
