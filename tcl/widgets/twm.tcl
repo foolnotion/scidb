@@ -2126,7 +2126,7 @@ proc UpdateTab {twm notebook pane nameVar} {
 	set name [$twm get $leader name]
 
 	if {$name ne $nameVar} {
-		trace remove variable write $name [list [namespace current]UpdateTab $twm $parent $child $name]
+		trace remove variable write $name [list [namespace current]::UpdateTab $twm $parent $child $name]
 	} else {
 		$notebook tab $pane -text [set $name]
 	}
