@@ -4669,7 +4669,8 @@ Node::load(Tcl_Obj* list, LeafMap const* leaves)
 					m_root->m_toplevel.push_back(node);
 					break;
 
-				case Withdrawn:	M_THROW(tcl::Exception("withdrawn window '%s'", tcl::asString(uid)));
+				case Withdrawn:
+					M_THROW(tcl::Exception("withdrawn window '%s'", tcl::asString(uid)));
 			}
 
 			if (isContainer(type) || isMetaFrame(type))
@@ -5958,7 +5959,6 @@ cmdLoad(Base& base, int objc, Tcl_Obj* const objv[])
 
 	base.root->perform(nullptr);
 	base.root->ready();
-base.root->dump();
 }
 
 
