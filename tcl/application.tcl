@@ -119,6 +119,7 @@ array set Vars {
 	exit:save		1
 	active			1
 	updates			{}
+	after				{}
 }
 
 
@@ -1050,14 +1051,22 @@ proc SetDimensions {dim args} {
 	incr width  2 ;# borders
 
 	if {$dim eq "actual"} {
-		# XXX Big problem:
-		# If the applications is starting with full width/height, then
-		# reszing will not work anymore. Is this behavior KDE specific?
+		# IMPORTANT NOTE:
+		# Without temporarily setting the maximal size to desired size
+		# some window managers like KDE will not shrink the window.
+		wm maxsize .application $width $height
 		wm geometry .application ${width}x${height}
-		update idletasks
+		set Vars(after) [after 50 [namespace code UnsetMaxSize]]
 	} else {
+		if {$dim eq "max"} { after cancel $Vars(after) }
 		wm ${dim}size .application $width $height
 	}
+}
+
+
+proc UnsetMaxSize {} {
+	# TODO: does this work with multi-screens?
+	wm maxsize .application [winfo screenwidth .application] [winfo screenheight .application]
 }
 
 
