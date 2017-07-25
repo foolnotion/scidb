@@ -192,6 +192,7 @@ proc WidgetProc {twm command args} {
 		container		{ return [::scidb::tk::twm container $twm {*}$args] }
 		deiconify		{ return [Deiconify $twm {*}$args] }
 		destroy			{ DestroyPane $twm {*}$args }
+		dimension		{ return [::scidb::tk::twm dimension $twm {*}$args] }
 		geometry			{ return [Geometry $twm {*}$args] }
 		dock				{ return [::scidb::tk::twm dock $twm {*}$args] }
 		exists			{ return [::scidb::tk::twm exists $twm {*}$args] }
@@ -280,9 +281,13 @@ proc DestroyPane {twm pane} {
 
 proc BuildPane {twm frame id width height} {
 	variable ${twm}::Vars
+	variable Options
 
 	set pane $frame
 	if {![$twm ispane $pane]} { set pane [lindex [pack slaves $frame] end] }
+	set bd [expr {-2*$Options(frame:borderwidth)}]
+	incr width $bd
+	incr height $bd
 	$Vars(cmd:buildpane) $twm $pane $id $width $height
 	$frame configure -background [$pane cget -background]
 }
@@ -291,12 +296,17 @@ proc BuildPane {twm frame id width height} {
 proc FrameHeaderSize {twm frame} {
 	variable Options
 	if {[$twm get! $frame flat 0]} {
-		set size [expr {$Options(flathandle:size) + 2}] ;# borderwidth=2
+		set size $Options(flathandle:size)
 	} else {
-		set size 4 ;# padding=2 + borderwidth=2
+		lassign $Options(mtab:padding:selected) l t r b
+		set size  [expr {$t + $b + 2}] ;# 2 additional pixels (TODO: what's the reason?)
 		incr size [font metrics [ttk::style lookup twm.TLabel -font] -linespace]
-		incr size [expr {$size % 2}]
+		incr size [expr {$size % 2}] ;# we have even sized headers
 	}
+	incr size [expr {2*$Options(header:borderwidth)}]
+#	if {[set ht [winfo height $frame.__header__]] > 1 && $ht != $size} {
+#		puts stderr "FrameHeaderSize: computed=$size, but measured=$ht"
+#	}
 	return $size
 }
 
@@ -310,6 +320,9 @@ proc NotebookHeaderSize {twm nb} {
 		4 { incr size [lindex $padding 1]; incr size [lindex $padding 3] }
 	}
 	incr size [font metrics [ttk::style lookup twm.TNotebook.Tab -font] -linespace]
+#	if {	[string length [$nb select]]
+#		&& [set ht [expr {[winfo height $nb] - [winfo height [$nb select]]}]] > 1
+#		&& $ht != $size} { puts stderr "NotebookHeaderSize: computed=$size, but measured=$ht" }
 	return $size
 }
 
@@ -558,7 +571,7 @@ proc MouseWheelBindings {twm frame w} {
 proc Resize {twm pane width height minWidth minHeight maxWidth maxHeight} {
 	variable Defaults
 
-	set bd [expr {2*$Defaults(frame:borderwidth)}]
+	set bd [expr {2*[$pane cget -borderwidth]}]
 	if {$width > 0} { set width [expr {$width + $bd}] }
 	if {$height > 0} { set height [expr {$height + $bd}] }
 	if {$minWidth > 0} { set minWidth [expr {$minWidth + $bd}] }
@@ -797,7 +810,7 @@ proc ConfigureLabelBar {source twm frame width args} {
 
 	set hdr $frame.__header__
 	if {$hdr ni [pack slaves $frame]} { return }
-	set bd [expr {2*$Options(frame:borderwidth)}]
+	set bd [expr {2*$Options(header:borderwidth)}]
 	set see [expr {$width < 0}]
 	set force [expr {$width <= 0}]
 	set current [expr {$width > 1}]
@@ -852,7 +865,7 @@ proc PlaceLabelBar {twm frame incr} {
 	set maxoffset [$twm get $frame maxoffset 0]
 	set labels [$twm get $frame labels]
 	set width [$twm get $frame labelbarwidth]
-	set bd [expr {2*$Options(frame:borderwidth)}]
+	set bd [expr {2*$Options(header:borderwidth)}]
 	set hdr $frame.__header__
 
 	if {$incr eq "setup"} {
@@ -1920,7 +1933,9 @@ proc Dock {twm toplevel} {
 	set Vars(docking:position) ""
 
 	if {[llength [set slaves [pack slaves $frame]]] > 0} {
-		[lindex $slaves end] configure -borderwidth $Options(frame:borderwidth)
+		set bd 0
+		if {[$twm isframe $frame] || [$twm ispane $frame]} { set bd $Options(frame:borderwidth) }
+		[lindex $slaves end] configure -borderwidth $bd
 	}
 
 	event generate $twm <<TwmDocked>> -data $frame

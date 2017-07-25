@@ -873,6 +873,7 @@ public:
 	int sticky() const;
 	int x() const;
 	int y() const;
+	Dimension const& dimension() const;
 	template <Enclosure Enc> int width() const;
 	template <Enclosure Enc> int height() const;
 	template <Enclosure Enc> int minWidth() const;
@@ -1274,6 +1275,8 @@ bool Node::testFlags(unsigned flag) const { return m_flags & flag; }
 
 unsigned Node::descendantOf(Node const* child) const { return descendantOf(child, 1); }
 
+Dimension const& Node::dimension() const { return m_dimen; }
+
 void Node::makeSnapshotKey(mstl::string& key) const { makeSnapshot(key, nullptr); }
 
 
@@ -1558,11 +1561,17 @@ Node::select()
 	if (testFlags(F_Unpack|F_Destroy))
 		return;
 
-	if (m_parent->isNotebookOrMultiWindow())
+	Node* node = this;
+	Node* parent = m_parent;
+
+	for ( ; parent; node = parent, parent = parent->m_parent)
 	{
-printf("select: %s\n", id());
-		m_parent->addFlag(F_Select);
-		isSelected();
+		if (parent->isNotebookOrMultiWindow())
+		{
+			parent->addFlag(F_Select);
+			node->isSelected();
+			return;
+		}
 	}
 }
 
@@ -2399,10 +2408,11 @@ Node::addDimen(Node const* node)
 	if (Q == Actual || node->dimen<Inner,D,Q>())
 	{
 		int nodeSize = node->dimen<Outer,D,Q>();
+		int mySize = dimen<Inner,D,Q>();
 
 		m_dimen.set<D,Q>(orientation<D>()
-			? dimen<Inner,D,Q>() + nodeSize + (dimen<Inner,D,Q>() ? sashSize() : 0)
-			: mstl::max(dimen<Inner,D,Q>(), nodeSize));
+			? mySize + nodeSize + (mySize ? sashSize() : 0)
+			: mstl::max(mySize, nodeSize));
 	}
 }
 
@@ -3566,12 +3576,12 @@ Node::makeOptions(Flag flags, Node const* before) const
 		}
 	}
 
-	if ((value = width<Inner>()) > 0)
+	if ((value = width<Outer>()) > 0)
 	{
 		optList.push_back(m_objOptWidth);
 		optList.push_back(tcl::newObj(value));
 	}
-	if ((value = height<Inner>()) > 0)
+	if ((value = height<Outer>()) > 0)
 	{
 		optList.push_back(m_objOptHeight);
 		optList.push_back(tcl::newObj(value));
@@ -3802,7 +3812,6 @@ Node::dock(Node* node, Position position, Node const* before, bool newParent)
 			break;
 	}
 
-	parent->select();
 	node->select();
 	parent->addFlag(F_Docked);
 
@@ -4060,7 +4069,7 @@ Node::resizeFrame(int reqSize)
 	M_ASSERT(reqSize >= 0);
 
 	if (!isToplevel())
-		m_dimen.set<D>(reqSize);
+		m_dimen.set<D>(contentSize<D>(reqSize));
 
 	int size = actualSize<Inner,D>();
 	
@@ -4105,6 +4114,14 @@ Node::doAdjustment(int size)
 			if (child(i)->isPacked())
 				child(i)->doAdjustment<D>(child(i)->contentSize<D>(size));
 		}
+	}
+	else if (D == Vert)
+	{
+		resizeFrame<Horz>(dimen<Inner,Horz>());
+	}
+	else // if (D == Horz)
+	{
+		resizeFrame<Vert>(dimen<Inner,Vert>());
 	}
 }
 
@@ -6170,6 +6187,30 @@ cmdFloats(Base& base, int objc, Tcl_Obj* const objv[])
 
 
 static void
+cmdDimension(Base& base, int objc, Tcl_Obj* const objv[])
+{
+	if (objc != 4)
+		M_THROW(tcl::Exception(3, objv, "window"));
+
+	char const* path = tcl::asString(objv[3]);
+	Node* node = base.root->findPath(path);
+
+	if (!node)
+		M_THROW(tcl::Exception("cannot find window '%s'", path));
+
+	Dimension const& dim = node->dimension();
+	tcl::List result(6);
+	result[0] = tcl::newObj(dim.actual.width);
+	result[1] = tcl::newObj(dim.actual.height);
+	result[2] = tcl::newObj(dim.min.width);
+	result[3] = tcl::newObj(dim.min.height);
+	result[4] = tcl::newObj(dim.max.width);
+	result[5] = tcl::newObj(dim.max.height);
+	tcl::setResult(result);
+}
+
+
+static void
 cmdSelected(Base& base, int objc, Tcl_Obj* const objv[])
 {
 	if (objc != 4)
@@ -6712,25 +6753,27 @@ cmdTwm(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	static char const* subcommands[] =
 	{
-		"clone",			"capture",		"close",			"container",	"dock",
-		"find",			"floats",		"frames",		"get",			"get!",
-		"hidden",		"id",				"init",			"inspect",		"iscontainer",
-		"isdocked",		"ismetachild",	"ispane",		"leaf",			"leader",
-		"leaves",		"load",			"neighbors",	"new",			"orientation",
-		"panes",			"parent",		"refresh",		"release",		"resize",
-		"selected",		"set",			"set!",			"show",			"toggle",
-		"toplevel",		"uid",			"undock",		"visible",		nullptr
+		"clone",			"capture",		"close",			"container",	"dimension",
+		"dock",			"find",			"floats",		"frames",		"get",
+		"get!",			"hidden",		"id",				"init",			"inspect",
+		"iscontainer",	"isdocked",		"ismetachild",	"ispane",		"leaf",
+		"leader",		"leaves",		"load",			"neighbors",	"new",
+		"orientation",	"panes",			"parent",		"refresh",		"release",
+		"resize",		"selected",		"set",			"set!",			"show",
+		"toggle",		"toplevel",		"uid",			"undock",		"visible",
+		nullptr
 	};
 	enum
 	{
-		Cmd_Clone,		Cmd_Capture,		Cmd_Close,		Cmd_Container,	Cmd_Dock,
-		Cmd_Find,		Cmd_Floats,			Cmd_Frames,		Cmd_Get,			Cmd_Get_,
-		Cmd_Hidden,		Cmd_Id,				Cmd_Init,		Cmd_Inspect,	Cmd_IsContainer,
-		Cmd_IsDocked,	Cmd_IsMetaChild,	Cmd_IsPane,		Cmd_Leaf,		Cmd_Leader,
-		Cmd_Leaves,		Cmd_Load,			Cmd_Neighbors,	Cmd_New,			Cmd_Orientation,
-		Cmd_Panes,		Cmd_Parent,			Cmd_Refresh,	Cmd_Release,	Cmd_Resize,
-		Cmd_Selected,	Cmd_Set,				Cmd_Set_,		Cmd_Show,		Cmd_Toggle,
-		Cmd_Toplevel,	Cmd_Uid,				Cmd_Undock,		Cmd_Visible,	Cmd_NULL
+		Cmd_Clone,			Cmd_Capture,	Cmd_Close,			Cmd_Container,	Cmd_Dimension,
+		Cmd_Dock,			Cmd_Find,		Cmd_Floats,			Cmd_Frames,		Cmd_Get,
+		Cmd_Get_,			Cmd_Hidden,		Cmd_Id,				Cmd_Init,		Cmd_Inspect,
+		Cmd_IsContainer,	Cmd_IsDocked,	Cmd_IsMetaChild,	Cmd_IsPane,		Cmd_Leaf,
+		Cmd_Leader,			Cmd_Leaves,		Cmd_Load,			Cmd_Neighbors,	Cmd_New,
+		Cmd_Orientation,	Cmd_Panes,		Cmd_Parent,			Cmd_Refresh,	Cmd_Release,
+		Cmd_Resize,			Cmd_Selected,	Cmd_Set,				Cmd_Set_,		Cmd_Show,
+		Cmd_Toggle,			Cmd_Toplevel,	Cmd_Uid,				Cmd_Undock,		Cmd_Visible,
+		Cmd_NULL
 	};
 
 	static_assert(sizeof(subcommands)/sizeof(subcommands[0]) == Cmd_NULL + 1, "initialization failed");
@@ -6750,6 +6793,7 @@ cmdTwm(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			case Cmd_Clone:			execute(cmdClone, false, objc, objv); break;
 			case Cmd_Close:			execute(cmdClose, true, objc, objv); break;
 			case Cmd_Container:		execute(cmdContainer, false, objc, objv); break;
+			case Cmd_Dimension:		execute(cmdDimension, false, objc, objv); break;
 			case Cmd_Dock:				execute(cmdDock, false, objc, objv); break;
 			case Cmd_Find:				execute(cmdFind, false, objc, objv); break;
 			case Cmd_Floats:			execute(cmdFloats, false, objc, objv); break;
