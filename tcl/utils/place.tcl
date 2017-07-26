@@ -261,7 +261,9 @@ proc winfo {args} {
 			if {[llength $args] < 2} {
 				return -code error "wrong # args: should be \"winfo extents window\""
 			}
-			return [::util::place::getWmFrameExtents [lindex $args 1]]
+			set extents [::util::place::getWmFrameExtents [lindex $args 1]]
+			if {[llength $extents] == 0} { set extents {6 6 30 6} }
+			return $extents
 		} elseif {[string match workarea* $cmd]} {
 			variable util::place::mainWindow
 			set window .

@@ -295,7 +295,8 @@ proc MakePane {main parent type uid} {
 
 	set name [nameFromUid $uid]
 	set nameVar [nameVarFromUid $uid]
-	set frame [tk::frame $parent.$uid -borderwidth 0 -takefocus 0]
+	set takefocus [expr {$uid eq "board"}]
+	set frame [tk::frame $parent.$uid -borderwidth 0 -takefocus $takefocus]
 	set result [list $frame $nameVar $Prios($name)]
 	if {$type ne "pane"} { lappend result [expr {$uid ne "editor"}] yes yes }
 	switch $name { games { set ns tree::games } editor { set ns pgn } default { set ns $name } }

@@ -1111,6 +1111,7 @@ proc active? {number} {
 
 
 proc id {number} {
+	if {![namespace exists ${number}]} { return -1 }
 	variable ${number}::Vars
 	return $Vars(engine:id)
 }

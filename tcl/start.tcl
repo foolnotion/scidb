@@ -327,6 +327,7 @@ if {[::process::testOption delete-recovery-files]} {
 if {[::process::testOption first-time]} {
 	file delete $::scidb::file::options
 	::process::setOption dont-recover
+	::process::setOption initial-layout
 	set ::scidb::dir::setup 1
 }
 

@@ -131,7 +131,7 @@ proc build {parent number {patternNumber 0}} {
 	}
 
 	set bg [::colors::lookup $Defaults(info:background)]
-	set mw [tk::multiwindow $mw -borderwidth 0 -background $bg]
+	set mw [tk::multiwindow $mw -borderwidth 0 -background $bg -takefocus 0]
 
 	set Vars(best:0) black
 	if {$Options(engine:bestFirst) || $Options(engine:singlePV)} {
@@ -160,10 +160,12 @@ proc build {parent number {patternNumber 0}} {
 	set minsize [expr {12*$charwidth}]
 
 	set main [tk::frame $main \
+		-takefocus 0 \
 		-borderwidth 0 \
 		-background [::colors::lookup $Defaults(info:background)] \
 	]
 	set mesg [tk::label $mw.mesg \
+		-takefocus 0 \
 		-borderwidth 0 \
 		-background [::colors::lookup $Defaults(background)] \
 	]
@@ -175,11 +177,13 @@ proc build {parent number {patternNumber 0}} {
 	set info [tk::frame $main.info \
 		-background [::colors::lookup $Defaults(background)] \
 		-borderwidth 0 \
+		-takefocus 0 \
 	]
 	set score [tk::frame $info.score \
 		-background [::colors::lookup $Defaults(info:background)] \
 		-borderwidth 1 \
 		-relief raised \
+		-takefocus 0 \
 	]
 	set tscore [tk::text $info.score.t \
 		-font $::font::text(text:normal) \
@@ -190,6 +194,7 @@ proc build {parent number {patternNumber 0}} {
 		-width 0 \
 		-height 1 \
 		-cursor {} \
+		-takefocus 0 \
 	]
 	$tscore tag configure center -justify center
 	$tscore tag configure symbol -font $::font::symbol(text:normal)
@@ -200,6 +205,7 @@ proc build {parent number {patternNumber 0}} {
 		-background [::colors::lookup $Defaults(info:background)] \
 		-borderwidth 1 \
 		-relief raised \
+		-takefocus 0 \
 	]
 	set tmove [tk::text $info.move.t \
 		-font $::font::text(text:normal) \
@@ -210,6 +216,7 @@ proc build {parent number {patternNumber 0}} {
 		-width 0 \
 		-height 1 \
 		-cursor {} \
+		-takefocus 0 \
 	]
 	$tmove tag configure figurine -font $::font::figurine(text:normal)
 	$tmove tag configure center -justify center
@@ -220,6 +227,7 @@ proc build {parent number {patternNumber 0}} {
 		-background [::colors::lookup $Defaults(info:background)] \
 		-borderwidth 1 \
 		-relief raised \
+		-takefocus 0 \
 	]
 	set ttime [tk::label $info.time.t \
 		-font $::font::text(text:normal) \
@@ -227,6 +235,7 @@ proc build {parent number {patternNumber 0}} {
 		-foreground [::colors::lookup $Defaults(info:foreground)] \
 		-borderwidth 0 \
 		-width 0 \
+		-takefocus 0 \
 	]
 	pack $ttime -padx 2 -pady 2
 
@@ -234,12 +243,14 @@ proc build {parent number {patternNumber 0}} {
 		-background [::colors::lookup $Defaults(info:background)] \
 		-borderwidth 1 \
 		-relief raised \
+		-takefocus 0 \
 	]
 	set tdepth [tk::label $info.depth.t \
 		-font $::font::text(text:normal) \
 		-background [::colors::lookup $Defaults(info:background)] \
 		-foreground [::colors::lookup $Defaults(info:foreground)] \
 		-borderwidth 0 \
+		-takefocus 0 \
 		-width 0 \
 	]
 	pack $tdepth -padx 2 -pady 2

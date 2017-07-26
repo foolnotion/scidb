@@ -1043,13 +1043,15 @@ private:
 	template <Orient D,Enclosure Enc = Outer> int frameSize(int size) const;
 
 	template <Orient D> void adjustToplevel();
-	template <Orient D> void doAdjustment(int size);
-	template <Orient D> void resizeFrame(int reqSize);
-	template <Orient D> void expandPanes(int computedSize, int space);
-	template <Orient D> void shrinkPanes(int computedSize, int space);
+	template <Orient D> void doAdjustment(int size, int pass);
+	template <Orient D> void resizeFrame(int reqSize, int pass);
+	template <Orient D> void expandPanes(int computedSize, int space, int pass);
+	template <Orient D> void shrinkPanes(int computedSize, int space, int pass);
 
-	template <Orient D> int doExpandPanes(int space, bool expandable, int stage) __m_warn_unused;
-	template <Orient D> int doShrinkPanes(int space, bool expandable, int stage) __m_warn_unused;
+	template <Orient D>
+	int doExpandPanes(int space, bool expandable, int stage, int pass) __m_warn_unused;
+	template <Orient D>
+	int doShrinkPanes(int space, bool expandable, int stage, int pass) __m_warn_unused;
 	template <Orient D> int computeExpand(int stage) const __m_warn_unused;
 	template <Orient D> int computeShrink(int stage) const __m_warn_unused;
 	template <Orient D> int computeUnderflow() const __m_warn_unused;
@@ -2279,6 +2281,7 @@ Node::updateDimen(int x, int y, int width, int height)
 			m_coord.x -= m_root->x();
 			m_coord.y -= m_root->y();
 		}
+if (m_dimen.actual.width != contentSize<Horz>(width) || m_dimen.actual.height != contentSize<Vert>(height)) printf("updateDimen(%s): %d %d\n", id(), width, height);
 		width = contentSize<Horz>(width);
 		height = contentSize<Vert>(height);
 
@@ -2294,14 +2297,19 @@ Node::updateDimen(int x, int y, int width, int height)
 
 			if (m_parent && m_parent->isNotebookOrMultiWindow())
 			{
+				width = this->width<Outer>();
+				height = this->height<Outer>();
+
 				for (unsigned i = 0; i < m_parent->numChilds(); ++i)
 				{
 					Node* node = m_parent->child(i);
 
 					if (node != this)
 					{
-						node->resizeFrame<Horz>(width);
-						node->resizeFrame<Vert>(height);
+						node->resizeFrame<Horz>(width, 1);
+						node->resizeFrame<Vert>(height, 1);
+						node->resizeFrame<Horz>(width, 2);
+						node->resizeFrame<Vert>(height, 2);
 					}
 				}
 			}
@@ -3905,7 +3913,7 @@ Node::reparentChildsRecursively(Tk_Window topLevel)
 
 template <Orient D>
 int
-Node::doExpandPanes(int space, bool expandable, int stage)
+Node::doExpandPanes(int space, bool expandable, int stage, int pass)
 {
 	M_ASSERT(space > 0);
 
@@ -3942,7 +3950,7 @@ Node::doExpandPanes(int space, bool expandable, int stage)
 					remaining -= share;
 					M_ASSERT(remaining >= 0);
 					M_ASSERT(spread <= space);
-					child->doAdjustment<D>(child->actualSize<Inner,D>() + share);
+					child->doAdjustment<D>(child->actualSize<Inner,D>() + share, pass);
 				}
 			}
 		}
@@ -3954,7 +3962,7 @@ Node::doExpandPanes(int space, bool expandable, int stage)
 
 template <Orient D>
 void
-Node::expandPanes(int computedSize, int space)
+Node::expandPanes(int computedSize, int space, int pass)
 {
 	M_ASSERT(computedSize >= 0);
 	M_ASSERT(space > 0);
@@ -3987,20 +3995,20 @@ Node::expandPanes(int computedSize, int space)
 					spread += share;
 					M_ASSERT(spread <= space);
 					M_ASSERT(remaining >= 0);
-					child->doAdjustment<D>(child->actualSize<Inner,D>() + share);
+					child->doAdjustment<D>(child->actualSize<Inner,D>() + share, pass);
 				}
 			}
 		}
 	}
 
 	if (space - spread > 0)
-		spread += doExpandPanes<D>(space - spread, true, 1);
+		spread += doExpandPanes<D>(space - spread, true, 1, pass);
 	if (space - spread > 0)
-		spread += doExpandPanes<D>(space - spread, true, 2);
+		spread += doExpandPanes<D>(space - spread, true, 2, pass);
 	if (space - spread > 0)
-		spread += doExpandPanes<D>(space - spread, false, 1);
+		spread += doExpandPanes<D>(space - spread, false, 1, pass);
 	if (space - spread > 0)
-		spread += doExpandPanes<D>(space - spread, false, 2);
+		spread += doExpandPanes<D>(space - spread, false, 2, pass);
 
 	m_dimen.set<D>(computedSize + spread);
 }
@@ -4008,7 +4016,7 @@ Node::expandPanes(int computedSize, int space)
 
 template <Orient D>
 int
-Node::doShrinkPanes(int space, bool expandable, int stage)
+Node::doShrinkPanes(int space, bool expandable, int stage, int pass)
 {
 	int available = 0;
 	int spread = 0;
@@ -4043,7 +4051,7 @@ Node::doShrinkPanes(int space, bool expandable, int stage)
 					remaining -= share;
 					M_ASSERT(remaining >= 0);
 					M_ASSERT(spread <= space);
-					child->doAdjustment<D>(child->actualSize<Inner,D>() - share);
+					child->doAdjustment<D>(child->actualSize<Inner,D>() - share, pass);
 				}
 			}
 		}
@@ -4055,18 +4063,18 @@ Node::doShrinkPanes(int space, bool expandable, int stage)
 
 template <Orient D>
 void
-Node::shrinkPanes(int computedSize, int space)
+Node::shrinkPanes(int computedSize, int space, int pass)
 {
 	M_ASSERT(computedSize >= 0);
 	M_ASSERT(space > 0);
 
-	int spread = doShrinkPanes<D>(space, true, 1);
+	int spread = doShrinkPanes<D>(space, true, 1, pass);
 	if (space - spread > 0)
-		spread += doShrinkPanes<D>(space - spread, true, 2);
+		spread += doShrinkPanes<D>(space - spread, true, 2, pass);
 	if (space - spread > 0)
-		spread += doShrinkPanes<D>(space - spread, false, 1);
+		spread += doShrinkPanes<D>(space - spread, false, 1, pass);
 	if (space - spread > 0)
-		spread += doShrinkPanes<D>(space - spread, false, 2);
+		spread += doShrinkPanes<D>(space - spread, false, 2, pass);
 
 	m_dimen.set<D>(computedSize - spread);
 }
@@ -4074,7 +4082,7 @@ Node::shrinkPanes(int computedSize, int space)
 
 template <Orient D>
 void
-Node::resizeFrame(int reqSize)
+Node::resizeFrame(int reqSize, int pass)
 {
 	M_ASSERT(reqSize >= 0);
 
@@ -4084,13 +4092,13 @@ Node::resizeFrame(int reqSize)
 	int size = actualSize<Inner,D>();
 	
 	for (unsigned i = 0; i < numChilds(); ++i)
-		child(i)->doAdjustment<D>(size);
+		child(i)->doAdjustment<D>(size, pass);
 }
 
 
 template <Orient D>
 void
-Node::doAdjustment(int size)
+Node::doAdjustment(int size, int pass)
 {
 	if (orientation<D>())
 	{
@@ -4108,13 +4116,13 @@ Node::doAdjustment(int size)
 			addFlag(F_Config);
 
 			if (space > 0)
-				expandPanes<D>(computedSize, space);
+				expandPanes<D>(computedSize, space, pass);
 			else
-				shrinkPanes<D>(computedSize, -space);
+				shrinkPanes<D>(computedSize, -space, pass);
 		}
 		else
 		{
-			resizeFrame<D>(size);
+			resizeFrame<D>(size, pass);
 		}
 	}
 	else if (!orientation<D>())
@@ -4122,16 +4130,15 @@ Node::doAdjustment(int size)
 		for (unsigned i = 0; i < numChilds(); ++i)
 		{
 			if (child(i)->isPacked())
-				child(i)->doAdjustment<D>(child(i)->contentSize<D>(size));
+				child(i)->doAdjustment<D>(child(i)->contentSize<D>(size), pass);
 		}
 	}
-	else if (D == Vert)
+	else if (pass == 2)
 	{
-		resizeFrame<Horz>(dimen<Inner,Horz>());
-	}
-	else // if (D == Horz)
-	{
-		resizeFrame<Vert>(dimen<Inner,Vert>());
+		if (D == Vert)
+			resizeFrame<Horz>(dimen<Inner,Horz>(), pass);
+		else // if (D == Horz)
+			resizeFrame<Vert>(dimen<Inner,Vert>(), pass);
 	}
 }
 
@@ -4155,8 +4162,10 @@ Node::adjustDimensions()
 	adjustToplevel<Horz>();
 	adjustToplevel<Vert>();
 
-	doAdjustment<Horz>(actualSize<Inner,Horz>());
-	doAdjustment<Vert>(actualSize<Inner,Vert>());
+	doAdjustment<Horz>(actualSize<Inner,Horz>(), 1);
+	doAdjustment<Vert>(actualSize<Inner,Vert>(), 1);
+	doAdjustment<Horz>(actualSize<Inner,Horz>(), 2);
+	doAdjustment<Vert>(actualSize<Inner,Vert>(), 2);
 }
 
 
@@ -4856,8 +4865,6 @@ Node::performQueryFrameHeaderSize() const
 int
 Node::performQueryNotebookHeaderSize() const
 {
-	M_ASSERT(exists());
-
 	Tcl_Obj*	result;
 	
 	result = tcl::call(__func__, m_root->pathObj(), m_objNotebookHdrSizeCmd, pathObj(), nullptr);
@@ -5299,20 +5306,15 @@ Node::updateHeader()
 	}
 	else if (isFloating())
 	{
-		if (isFrame() && !m_temporary)
-		{
-			tcl::zero(m_headerObj);
-		}
-		else if (isMetaFrame())
+		if (isMetaFrame())
 		{
 			tcl::zero(m_headerObj);
 
 			if (child()->isFrame())
 				tcl::zero(child()->m_headerObj);
 		}
-		else
+		else if (isFrame())
 		{
-			M_ASSERT(isFrame());
 			tcl::set(m_headerObj, pathObj());
 		}
 
@@ -5760,6 +5762,8 @@ Node::perform(Node* toplevel)
 				computeDimensionsRecursively();
 				if (toplevel)
 					toplevel->computeDimensionsRecursively();
+printf("****** computeDimensionsRecursively *****************\n");
+m_root->dump();
 			}
 
 			m_root->resizeDimensions();
@@ -5771,6 +5775,8 @@ Node::perform(Node* toplevel)
 				adjustDimensions();
 				if (toplevel)
 					toplevel->adjustDimensions();
+printf("****** adjustDimensions *****************************\n");
+m_root->dump();
 			}
 
 			performGeometry();

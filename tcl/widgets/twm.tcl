@@ -311,7 +311,7 @@ proc FrameHeaderSize {twm frame} {
 }
 
 
-proc NotebookHeaderSize {twm nb} {
+proc NotebookHeaderSize {twm {nb}} {
 	set padding [ttk::style lookup twm.TNotebook.Tab -padding]
 	set size 3 ;# borderwidth=2 + one overlapping pixel
 	switch [llength $padding] {
