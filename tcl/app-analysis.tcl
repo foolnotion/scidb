@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2010-2013 Gregor Cramer
+# Copyright: (C) 2010-2017 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -1064,7 +1064,7 @@ proc AddMoves {tree x y} {
 	set id [$tree identify $x $y]
 	if {[lindex $id 0] ne "item"} { return }
 	set line [$tree item order [lindex $id 1] -visible]
-	set id [::engine::id $Vars(number)]
+	if {[set id [::engine::id $Vars(number)]] == -1} { return }
 	if {[::scidb::engine::empty? $id $line]} { return }
 	if {[::scidb::engine::snapshot $id]} { set arg line } else { set arg move }
 	InsertMoves $tree add $line $mc::Add($arg)
@@ -1103,7 +1103,7 @@ proc PopupMenu {tree number args} {
 	menu $menu -tearoff no
 	catch { wm attributes $menu -type popup_menu }
 
-	if {[llength $args]} {
+	if {[llength $args] && [::engine::id $Vars(number)] >= 0} {
 		set id [$tree identify {*}$args]
 
 		if {[lindex $id 0] eq "item"} {
@@ -1150,76 +1150,80 @@ proc PopupMenu {tree number args} {
 		-compound left \
 		-command [namespace code [list Setup $number]] \
 		;
-	if {$Vars(engine:pause)} {
-		set txt $mc::Resume
-		set img $::icon::16x16::start
-	} else {
-		set txt $mc::Pause
-		set img $::icon::16x16::pause
-	}
-	$menu add command \
-		-label " $txt" \
-		-image $img \
-		-compound left \
-		-command [namespace code [list Pause $tree]] \
-		;
-	$menu add separator
-	$menu add checkbutton \
-		-label " $mc::LockEngine" \
-		-image $::icon::16x16::lock \
-		-compound left \
-		-command [namespace code [list EngineLock $tree]] \
-		-variable [namespace current]::${tree}::Vars(engine:locked) \
-		;
-	::theme::configureCheckEntry $menu
-	$menu add checkbutton \
-		-label " $mc::BestFirstOrder" \
-		-image $::icon::16x16::sort(descending) \
-		-compound left \
-		-command [namespace code [list SetOrdering $tree]] \
-		-variable [namespace current]::${number}::Options(engine:bestFirst) \
-		;
-	::theme::configureCheckEntry $menu
-	$menu add separator
-	set sub [menu $menu.multiPV -tearoff 0]
-	$menu add cascade \
-		-menu $sub \
-		-label " $mc::MultipleVariations"  \
-		-image $::icon::16x16::lines \
-		-compound left \
-		;
-	foreach n {1 2 4 8} {
-		$sub add radiobutton \
-			-label $n \
-			-value $n \
-			-variable [namespace current]::${number}::Options(engine:multiPV) \
-			-command [namespace code [list SetMultiPV $tree $n]] \
+
+	if {[::engine::id $Vars(number)] >= 0} {
+		if {$Vars(engine:pause)} {
+			set txt $mc::Resume
+			set img $::icon::16x16::start
+		} else {
+			set txt $mc::Pause
+			set img $::icon::16x16::pause
+		}
+		$menu add command \
+			-label " $txt" \
+			-image $img \
+			-compound left \
+			-command [namespace code [list Pause $tree]] \
 			;
-		::theme::configureRadioEntry $sub
-	}
-	if {!$Options(engine:singlePV)} {
-		set sub [menu $menu.lines -tearoff 0]
+		$menu add separator
+		$menu add checkbutton \
+			-label " $mc::LockEngine" \
+			-image $::icon::16x16::lock \
+			-compound left \
+			-command [namespace code [list EngineLock $tree]] \
+			-variable [namespace current]::${tree}::Vars(engine:locked) \
+			;
+		::theme::configureCheckEntry $menu
+		$menu add checkbutton \
+			-label " $mc::BestFirstOrder" \
+			-image $::icon::16x16::sort(descending) \
+			-compound left \
+			-command [namespace code [list SetOrdering $tree]] \
+			-variable [namespace current]::${number}::Options(engine:bestFirst) \
+			;
+		::theme::configureCheckEntry $menu
+		$menu add separator
+		set sub [menu $menu.multiPV -tearoff 0]
 		$menu add cascade \
 			-menu $sub \
-			-label " $mc::LinesPerVariation" \
-			-image $::icon::16x16::none \
+			-label " $mc::MultipleVariations"  \
+			-image $::icon::16x16::lines \
 			-compound left \
 			;
-		foreach i {1 2 3 4} {
+		foreach n {1 2 4 8} {
 			$sub add radiobutton \
-				-label $i \
-				-value $i \
-				-variable [namespace current]::${number}::Options(engine:nlines) \
-				-command [namespace code [list SetLinesPerPV $tree]] \
+				-label $n \
+				-value $n \
+				-variable [namespace current]::${number}::Options(engine:multiPV) \
+				-command [namespace code [list SetMultiPV $tree $n]] \
 				;
 			::theme::configureRadioEntry $sub
 		}
+		if {!$Options(engine:singlePV)} {
+			set sub [menu $menu.lines -tearoff 0]
+			$menu add cascade \
+				-menu $sub \
+				-label " $mc::LinesPerVariation" \
+				-image $::icon::16x16::none \
+				-compound left \
+				;
+			foreach i {1 2 3 4} {
+				$sub add radiobutton \
+					-label $i \
+					-value $i \
+					-variable [namespace current]::${number}::Options(engine:nlines) \
+					-command [namespace code [list SetLinesPerPV $tree]] \
+					;
+				::theme::configureRadioEntry $sub
+			}
+		}
+
+		set Vars(keepActive) 1
+		rename [namespace current]::Display(pv) [namespace current]::Display_
+		rename [namespace current]::Display(suspended) [namespace current]::Display(pv)
+		::bind $menu <<MenuUnpost>> [namespace code [list RevertDisplay $tree]]
 	}
 
-	set Vars(keepActive) 1
-	rename [namespace current]::Display(pv) [namespace current]::Display_
-	rename [namespace current]::Display(suspended) [namespace current]::Display(pv)
-	::bind $menu <<MenuUnpost>> [namespace code [list RevertDisplay $tree]]
 	tk_popup $menu {*}[winfo pointerxy $tree]
 }
 
