@@ -216,7 +216,7 @@ proc dialogRaise {dlg} {
 		}
 
 		default {
-			if {[CheckIsKDE]} {
+			if {[checkIsKDE]} {
 				if {	![info exists Priv(visibility:$dlg)]
 					|| $Priv(visibility:$dlg) ne "VisibilityUnobscured"} {
 					# stupid handling of KDE: without withdrawing
@@ -755,7 +755,7 @@ proc SetDialogTitle {dlg cmd} {
 }
 
 
-proc CheckIsKDE {} {
+proc checkIsKDE {} {
 	variable IsKde_
 
 	if {![info exists IsKde_]} {
