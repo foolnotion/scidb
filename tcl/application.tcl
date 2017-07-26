@@ -1110,6 +1110,9 @@ proc workArea {main} {
 		set width [winfo screenwidth .application]
 		set height [winfo screenheight .application]
 	} else {
+		set workArea [scidb::tk::wm workarea]
+		set extents [scidb::tk::wm extents]
+		if {[llength $extents] == 0} { set extents {6 6 30 6} }
 		lassign [scidb::tk::wm workarea] _ _ ww wh
 		lassign [scidb::tk::wm extents] _ _ ew eh
 		set width [expr {$ww - $ew}]
