@@ -1061,8 +1061,12 @@ proc Geometry {data} {
 
 	lassign $data width height minwidth minheight maxwidth maxheight expand
 
-	set incrV [::theme::notebookTabPaneSize .application.nb]
+	set incrH 2
+	set incrV [expr {[::theme::notebookTabPaneSize .application.nb] + 2}]
+	incr width  $incrH
 	incr height $incrV
+	if {$minwidth} { incr minwidth $incrH }
+	if {$maxwidth} { incr maxwidth $incrH }
 	if {$minheight} { incr minheight $incrV }
 	if {$maxheight} { incr maxheight $incrV }
 
@@ -1076,11 +1080,16 @@ proc Geometry {data} {
 	}
 	if {$maxwidth || $maxheight || $Vars(need:maxsize)} {
 		# TODO: does this work with multi-screens?
-		if {$maxwidth == 0} { set maxwidth [winfo screenwidth $twm] }
-		if {$maxheight == 0} { set maxheight [winfo screenheight $twm] }
+		if {$maxwidth == 0} {
+			set maxwidth [winfo screenwidth .application]
+		}
+		if {$maxheight == 0} {
+			set maxwidth [winfo screenheight .application]
+		}
 		wm maxsize .application $maxwidth $maxheight
 		set Vars(need:maxsize) 1
 	}
+puts "geometry($data) -> ${width}x${height}"
 	wm geometry .application ${width}x${height}
 
 	set resizeW [expr {$minwidth == 0 || $minwidth != $maxwidth}]
@@ -1094,14 +1103,14 @@ proc Resizing {twm toplevel width height} {
 	if {[::menu::fullscreen?]} {
 		set width [winfo screenwidth .application]
 		set height [winfo screenheight .application]
+		incr width -2	;# borders
+		incr height -2	;# borders
 	} else {
 		lassign [winfo workarea .application] _ _ ww wh
 		lassign [winfo extents .application] ew1 ew2 eh1 eh2
-		set width [expr {min($width, $ww - $ew1 - $ew2)}]
-		set height [expr {min($height, $wh - $eh1 - $eh2)}]
+		set width [expr {min($width, $ww - $ew1 - $ew2 - 2)}]	   ;# regard borders
+		set height [expr {min($height, $wh - $eh1 - $eh2 - 2)}]	;# regard borders
 	}
-	incr width -4	;# borders
-	incr height -4	;# borders
 	return [list $width $height]
 }
 
@@ -1116,8 +1125,8 @@ proc workArea {main} {
 		set width [expr {$ww - $ew1 - $ew2}]
 		set height [expr {$wh - $eh1 - $eh2 - [::theme::notebookTabPaneSize .application.nb]}]
 	}
-	incr width -4	;# borders
-	incr height -4	;# borders
+	incr width -2	;# borders
+	incr height -2	;# borders
 	return [list $width $height]
 }
 
