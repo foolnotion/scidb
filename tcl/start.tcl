@@ -78,6 +78,7 @@ if {![file isdirectory $user]} {
 	file mkdir [file join $user photos]
 	file mkdir [file join $user backup]
 	file mkdir [file join $user engines]
+	file mkdir [file join $user layout]
 	file mkdir [file join $user textures tile marble]
 	file mkdir [file join $user textures tile wood]
 	file mkdir [file join $user textures tile misc]
