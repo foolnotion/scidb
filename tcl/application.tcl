@@ -1061,14 +1061,8 @@ proc Geometry {data} {
 
 	lassign $data width height minwidth minheight maxwidth maxheight expand
 
-	set incrH 2 ;# regard borders
-	set incrV [expr {[::theme::notebookTabPaneSize .application.nb] + 2}] ;# regard borders
-
-	incr width $incrH
+	set incrV [::theme::notebookTabPaneSize .application.nb]
 	incr height $incrV
-
-	if {$minwidth}  { incr minwidth $incrH }
-	if {$maxwidth}  { incr maxwidth $incrH }
 	if {$minheight} { incr minheight $incrV }
 	if {$maxheight} { incr maxheight $incrV }
 
@@ -1100,6 +1094,11 @@ proc Resizing {twm toplevel width height} {
 	if {[::menu::fullscreen?]} {
 		set width [winfo screenwidth .application]
 		set height [winfo screenheight .application]
+	} else {
+		lassign [winfo workarea .application] _ _ ww wh
+		lassign [winfo extents .application] ew1 ew2 eh1 eh2
+		set width [expr {min($width, $ww - $ew1 - $ew2 - 4)}]		;# regard borders
+		set height [expr {min($height, $wh - $eh1 - $eh2 - 4)}]	;# regard borders
 	}
 	return [list $width $height]
 }
@@ -1110,18 +1109,13 @@ proc workArea {main} {
 		set width [winfo screenwidth .application]
 		set height [winfo screenheight .application]
 	} else {
-		set workArea [scidb::tk::wm workarea]
-		set extents [scidb::tk::wm extents]
-		if {[llength $extents] == 0} { set extents {6 6 30 6} }
-		lassign [scidb::tk::wm workarea] _ _ ww wh
-		lassign [scidb::tk::wm extents] _ _ ew eh
-if {[catch {
-		set width [expr {$ww - $ew}]
-		set height [expr {$wh - $eh - [::theme::notebookTabPaneSize .application.nb]}]
-}]} {
-return -code error "workArea: '[scidb::tk::wm workarea]' -- '[scidb::tk::wm extents]'"
-}
+		lassign [winfo workarea .application] _ _ ww wh
+		lassign [winfo extents .application] ew1 ew2 eh1 eh2
+		set width [expr {$ww - $ew1 - $ew2}]
+		set height [expr {$wh - $eh1 - $eh2 - [::theme::notebookTabPaneSize .application.nb]}]
 	}
+	incr width -4	;# borders
+	incr height -4	;# borders
 	return [list $width $height]
 }
 
