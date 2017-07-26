@@ -1097,9 +1097,11 @@ proc Resizing {twm toplevel width height} {
 	} else {
 		lassign [winfo workarea .application] _ _ ww wh
 		lassign [winfo extents .application] ew1 ew2 eh1 eh2
-		set width [expr {min($width, $ww - $ew1 - $ew2 - 4)}]		;# regard borders
-		set height [expr {min($height, $wh - $eh1 - $eh2 - 4)}]	;# regard borders
+		set width [expr {min($width, $ww - $ew1 - $ew2)}]
+		set height [expr {min($height, $wh - $eh1 - $eh2)}]
 	}
+	incr width -4	;# borders
+	incr height -4	;# borders
 	return [list $width $height]
 }
 
