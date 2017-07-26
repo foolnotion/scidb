@@ -1115,8 +1115,12 @@ proc workArea {main} {
 		if {[llength $extents] == 0} { set extents {6 6 30 6} }
 		lassign [scidb::tk::wm workarea] _ _ ww wh
 		lassign [scidb::tk::wm extents] _ _ ew eh
+if {[catch {
 		set width [expr {$ww - $ew}]
 		set height [expr {$wh - $eh - [::theme::notebookTabPaneSize .application.nb]}]
+}]} {
+return -code error "workArea: '[scidb::tk::wm workarea]' -- '[scidb::tk::wm extents]'"
+}
 	}
 	return [list $width $height]
 }
