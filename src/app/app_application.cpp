@@ -1859,7 +1859,6 @@ Application::switchGame(unsigned position, ReferenceGames updateReferenceGames)
 	}
 	else
 	{
-printf("UpdateNewPosition\n");
 		game.data.game->updateSubscriber(Game::UpdateNewPosition);
 	}
 
