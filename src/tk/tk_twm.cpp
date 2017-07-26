@@ -740,7 +740,7 @@ struct Dimension
 		int maxWidth, int maxHeight);
 
 	template <Orient D,Quantity Q = Actual> int dimen() const;
-	template <Orient D,Quantity Q = Actual> void set(int size) __m_warn_unused;
+	template <Orient D,Quantity Q = Actual> void set(int size);
 
 	void setActual(int width, int height);
 	void zero();
@@ -2975,7 +2975,8 @@ Node::insertNotebook(Node* newChild, Type type, Node const* beforeChild)
 
 	m_root->m_active.push_back(nb);
 	nb->m_parent->add(nb, before);
-	nb->m_dimen.actual = m_dimen.actual;
+	nb->m_dimen.actual.width = width<Outer>();
+	nb->m_dimen.actual.height = height<Outer>();
 	nb->create();
 	if (isPacked)
 		unpack();
@@ -3000,7 +3001,16 @@ Node::insertPanedWindow(Position position, Node* newChild, Node const* beforeChi
 	m_root->m_active.push_back(pw);
 	m_parent->add(pw, before);
 	pw->m_orientation = (position == Left || position == Right) ? Horz : Vert;
-	pw->m_dimen.actual = m_dimen.actual;
+	if (position & Horz)
+	{
+		pw->m_dimen.actual.height = height<Outer>();
+		pw->m_dimen.actual.width = width<Inner>();
+	}
+	else
+	{
+		pw->m_dimen.actual.height = height<Inner>();
+		pw->m_dimen.actual.width = width<Outer>();
+	}
 	pw->create();
 	unpack();
 	if (beforeChild || position == Right || position == Bottom)
@@ -5289,7 +5299,7 @@ Node::updateHeader()
 	}
 	else if (isFloating())
 	{
-		if (isFrame())
+		if (isFrame() && !m_temporary)
 		{
 			tcl::zero(m_headerObj);
 		}
