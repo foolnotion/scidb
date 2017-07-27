@@ -434,6 +434,12 @@ proc hasPTraceProblem {} {
 }
 
 
+proc isKnoppix {} {
+    variable distribution
+    return [string match $distribution(distributor) "Knoppix"]
+}
+
+
 proc isInsaneUnixRelease {} {
     global insaneRelease
     variable distribution
@@ -2359,6 +2365,16 @@ if {[string length $gxxVer]} {
         puts "is broken and distorted due to the \"kernel hardening\" paranoia, which assumes"
         puts "that every software is an attacker. But Scidb is definitively not an attacker"
         puts "and requires a sane system."
+    }
+
+    if {[isKnoppix]} {
+        puts ""
+        puts "IMPORTANT NOTE:"
+        puts "-------------------------------------------------------------------------------"
+        puts "Knoppix is a Live Linux system and not suitable for Tcl/Tk applications."
+        puts "Scidb will run, but it is very slow under Knoppix, and you will get some"
+        puts "nasty Tk errors. It is recommended to install a different Linux distribution"
+        puts "if you want to work with Scidb."
     }
 
     exit 0
