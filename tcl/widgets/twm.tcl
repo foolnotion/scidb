@@ -123,6 +123,7 @@ proc twm {path args} {
 	array set opts {
 		-makepane {}
 		-buildpane {}
+		-destroypane {}
 		-workarea {}
 		-resizing {}
 		-borderwidth 0
@@ -132,6 +133,7 @@ proc twm {path args} {
 	array set opts $args
 	set Vars(cmd:makepane) $opts(-makepane)
 	set Vars(cmd:buildpane) $opts(-buildpane)
+	set Vars(cmd:destroypane) $opts(-destroypane)
 	set Vars(cmd:workarea) $opts(-workarea)
 	set Vars(cmd:resizing) $opts(-resizing)
 	set Vars(allow:empty) $opts(-allowempty)
@@ -275,7 +277,10 @@ proc ShowAll {twm flag} {
 
 
 proc DestroyPane {twm pane} {
+	variable ${twm}::Vars
+
 	catch { destroy $pane }
+	if {[llength $Vars(cmd:destroypane)]} { {*}$Vars(cmd:destroypane) $twm $pane }
 }
 
 
