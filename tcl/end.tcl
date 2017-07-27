@@ -227,6 +227,8 @@ if {[file readable $::scidb::file::options]} {
 }
 
 if {[catch {
+	file mkdir [file join $::scidb::dir::user layout] ;# this is new
+
 	if {![array exists ::setup::board::History]} {
 		set history_ $::setup::board::History
 		unset ::setup::board::History
