@@ -139,7 +139,7 @@ array set Vars {
 array set Bars {}
 
 
-proc build {parent width height gameTable} {
+proc build {parent width height} {
 	variable ::ratingbox::ratings
 	variable Columns
 	variable Options
@@ -453,7 +453,6 @@ proc build {parent width height gameTable} {
 	bind $switcher <<ComboboxCurrent>> [namespace code [list SetReferenceBase $switcher]]
 
 	set Vars(progress) $progress.bar
-	set Vars(gameTable) $gameTable
 	set Vars(search) $search
 	set Vars(searching) 0
 	set Vars(data) {}
