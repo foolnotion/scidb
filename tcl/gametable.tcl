@@ -871,6 +871,8 @@ proc addGameFlagsMenuEntry {menu base variant view index} {
 proc TableSelected {path index} {
 	variable ${path}::Vars
 
+	if {$index < 0} { return }
+
 	set base [::scrolledtable::base $path]
 	set variant [::scrolledtable::variant $path]
 	set view [{*}$Vars(viewcmd) $base $variant]
