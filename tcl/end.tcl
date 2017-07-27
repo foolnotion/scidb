@@ -206,8 +206,8 @@ proc archive::tick {progress n} {
 proc scrolledframe::MapWindow {w} { ::scidb::misc::mapWindow $w }
 
 proc twm::tr {tok} { return [set $tok] }
-proc tooltip {args} { ::tooltip::tooltip {*}$args }
-proc makeStateSpecificIcons {icon} { return [::icon::makeStateSpecificIcons $img] }
+proc twm::tooltip {args} { ::tooltip::tooltip {*}$args }
+proc twm::makeStateSpecificIcons {icon} { return [::icon::makeStateSpecificIcons $icon] }
 
 log::finishLayout
 

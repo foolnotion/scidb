@@ -121,7 +121,10 @@ array set Vars {
 	updates			{}
 	geometry			{}
 	need:maxsize	0
+	shutdown			0
 }
+
+array set MapAnalysisNumber {}
 
 
 proc open {} {
@@ -176,11 +179,10 @@ proc open {} {
 	set info [::ttk::frame $nb.information]
 	set db [::ttk::frame $nb.database]
 	set main [twm::twm $nb.board \
-		-makepane    [namespace current]::MakePane \
-		-buildpane   [namespace current]::BuildPane \
-		-destroypane [namespace current]::DestroyPane \
-		-resizing    [namespace current]::Resizing \
-		-workarea    [namespace current]::workArea \
+		-makepane  [namespace current]::MakePane \
+		-buildpane [namespace current]::BuildPane \
+		-resizing  [namespace current]::Resizing \
+		-workarea  [namespace current]::workArea \
 	]
 	$main showall $Options(docking:showall)
 	set Vars(frame:information) $info
@@ -225,7 +227,6 @@ proc open {} {
 	bind .application <<Fullscreen>> [namespace code { Fullscreen %d }]
 
 	set Vars(ready) 0
-	set Vars(analysis:template) 0
 
 	if {[::process::testOption initial-layout]} {
 		set Options(layout:name) ""
@@ -291,19 +292,30 @@ proc TabChanged {nb} {
 
 
 proc MakePane {main parent type uid} {
-	variable Vars
 	variable Prios
+	variable Vars
 
 	set name [nameFromUid $uid]
+	set prio $Prios($name)
+
+	if {[string match {analysis:*} $uid]} {
+		variable MapAnalysisNumber
+
+		incr prio [array size MapAnalysisNumber]
+		set number [numberFromUid $uid]
+		set MapAnalysisNumber($number) [expr {[array size MapAnalysisNumber] + 1}]
+	}
+
 	set nameVar [nameVarFromUid $uid]
 	set takefocus [expr {$uid eq "board"}]
 	set frame [tk::frame $parent.$uid -borderwidth 0 -takefocus $takefocus]
-	set result [list $frame $nameVar $Prios($name)]
+	set result [list $frame $nameVar $prio]
 	if {$type ne "pane"} { lappend result [expr {$uid ne "editor"}] yes yes }
 	switch $name { games { set ns tree::games } editor { set ns pgn } default { set ns $name } }
 	bind $frame <Map> [list [namespace current]::${ns}::activate $frame 1]
 	bind $frame <Unmap> [list [namespace current]::${ns}::activate $frame 0]
 	bind $frame <Destroy> [list [namespace current]::${ns}::closed $frame]
+	bind $frame <Destroy> +[namespace code [list DestroyPane $main $uid]]
 	set Vars(frame:$uid) $frame
 	return $result
 }
@@ -314,8 +326,9 @@ proc BuildPane {main frame uid width height} {
 
 	switch [nameFromUid $uid] {
 		analysis	{
-			analysis::build $frame [numberFromUid $uid] $Vars(analysis:template)
-			set Vars(analysis:template) 0
+			variable MapAnalysisNumber
+			set number [numberFromUid $uid]
+			analysis::build $frame $number [expr {[array size MapAnalysisNumber] - 1}]
 		}
 		board		{ board::build $frame $width $height }
 		editor	{ pgn::build $frame $width $height }
@@ -325,33 +338,56 @@ proc BuildPane {main frame uid width height} {
 }
 
 
-proc DestroyPane {main pane} {
+proc DestroyPane {main uid} {
 	variable Vars
-	array unset Vars frame:[$main uid $pane]
+
+	if {$Vars(shutdown)} { return }
+
+	array unset Vars frame:$uid
+
+	if {[string match {analysis:*} $uid]} {
+		variable MapAnalysisNumber
+
+		set number [numberFromUid $uid]
+		set uidNumber $MapAnalysisNumber($number)
+		array unset MapAnalysisNumber $number
+
+		foreach myNumber [lsort -integer -increasing [array names MapAnalysisNumber]] {
+			set myUidNumber $MapAnalysisNumber($myNumber)
+			if {$myUidNumber > $uidNumber} {
+				set newUidNumber [expr {$myUidNumber - 1}]
+				$main changeuid analysis:$myUidNumber analysis:$newUidNumber
+				set MapAnalysisNumber($myNumber) $newUidNumber
+				UpdateNameVar $myNumber
+			}
+		}
+	}
 }
 
 
 proc UpdateNameVar {number args} {
-	variable NameVar
-
 	if {![analysis::active? $number]} {
+		variable MapAnalysisNumber
+		variable NameVar
+
 		set NameVar($number) $mc::Pane(analysis)
-		if {$number > 1} { append NameVar($number) " ($number)" }
+		set uidNumber $MapAnalysisNumber($number)
+		if {$uidNumber > 1} { append NameVar($number) " ($uidNumber)" }
 	}
 }
 
 
 proc newAnalysisPane {number} {
+	variable MapAnalysisNumber
 	variable PaneOptions
 	variable Vars
 
-	set highest [analysis::highestNumber]
-	set uid analysis:$number
+	set highest [array size MapAnalysisNumber]
+	set uid analysis:[expr {$highest + 1}]
 	set main $Vars(frame:main)
 
 	if {$highest > 0} {
-		set Vars(analysis:template) $highest
-		$main clone analysis:$highest $uid
+		$main clone analysis:$MapAnalysisNumber($highest) $uid
 	} else {
 		$main new frame analysis:1 $PaneOptions(analysis)
 	}
@@ -491,6 +527,7 @@ proc shutdown {} {
 
 	::widget::busyCursor off
 	::ttk::releaseGrab $dlg
+	set Vars(shutdown) 1
 	destroy .application
 }
 
@@ -1343,9 +1380,10 @@ proc makeLayoutMenu {menu {w ""}} {
 	foreach uid [$main leaves] {
 		if {[string match {analysis:*} $uid] && [$main isdocked $uid]} {
 			variable NameVar
+			variable MapAnalysisNumber
 			variable vis_${uid}_ 1
 			$menu.windows add checkbutton \
-				-label $NameVar([numberFromUid $uid]) \
+				-label $NameVar($MapAnalysisNumber([numberFromUid $uid])) \
 				-variable [namespace current]::vis_${uid}_ \
 				-command [namespace code [list ChangeState $main $uid]] \
 				;

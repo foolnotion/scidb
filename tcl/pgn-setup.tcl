@@ -398,6 +398,10 @@ proc configureText {path {fontContext ""}} {
 	}
 
 	if {$context ne "merge"} {
+		$w tag configure h:next \
+			-indentbackground 1 \
+			-background [::colors::lookup $Colors(background:nextmove)] \
+			;
 		$w tag configure h:move -foreground black -background [::colors::lookup $Colors(hilite:move)]
 		$w tag configure h:curr \
 			-foreground black \

@@ -1504,7 +1504,6 @@ proc StartEngine {number list} {
 			}
 		}
 	} else {
-		::application::board::openAnalysis $number
 		::application::analysis::startAnalysis $number
 	}
 

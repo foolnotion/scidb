@@ -123,7 +123,6 @@ proc twm {path args} {
 	array set opts {
 		-makepane {}
 		-buildpane {}
-		-destroypane {}
 		-workarea {}
 		-resizing {}
 		-borderwidth 0
@@ -133,7 +132,6 @@ proc twm {path args} {
 	array set opts $args
 	set Vars(cmd:makepane) $opts(-makepane)
 	set Vars(cmd:buildpane) $opts(-buildpane)
-	set Vars(cmd:destroypane) $opts(-destroypane)
 	set Vars(cmd:workarea) $opts(-workarea)
 	set Vars(cmd:resizing) $opts(-resizing)
 	set Vars(allow:empty) $opts(-allowempty)
@@ -187,6 +185,7 @@ proc WidgetProc {twm command args} {
 	switch -- $command {
 		adjacent			{ return [::scidb::tk::twm adjacent $twm {*}$args] }
 		build				{ return [BuildPane $twm {*}$args] }
+		changeuid		{ return [::scidb::tk::twm changeuid $twm {*}$args] }
 		clone				{ return [::scidb::tk::twm clone $twm {*}$args] }
 		close				{ return [Close $twm {*}$args] }
 		cget				{ return [$twm.__twm_frame__ cget {*}$args] }
@@ -277,10 +276,7 @@ proc ShowAll {twm flag} {
 
 
 proc DestroyPane {twm pane} {
-	variable ${twm}::Vars
-
 	catch { destroy $pane }
-	if {[llength $Vars(cmd:destroypane)]} { {*}$Vars(cmd:destroypane) $twm $pane }
 }
 
 
@@ -829,8 +825,9 @@ proc ConfigureLabelBar {source twm frame width args} {
 	set offset [$twm get $parent offset 0]
 	set h [winfo reqheight [lindex $labels 0]]
 	if {$h % 2 == 1} { incr h }
-	set haveClose [expr {[winfo exists $hdr.close] && [winfo ismapped $hdr.close]}]
-	set haveUndock [expr {[winfo exists $hdr.undock] && [winfo ismapped $hdr.undock]}]
+	set showButtons [expr {!([$twm isframe $frame] && [llength [$twm panes $twm]] == 1)}]
+	set haveClose [expr {$showButtons && [winfo exists $hdr.close]}]
+	set haveUndock [expr {$showButtons && [winfo exists $hdr.undock]}]
 	if {$haveClose} { incr width -[winfo width $hdr.close] }
 	if {$haveUndock} { incr width -[winfo width $hdr.undock] }
 	if {$haveClose || $haveUndock} { incr width -8 }
@@ -947,11 +944,12 @@ proc MakeArrow {twm frame dir incr} {
 
 	set arrow $frame.__header__.$dir
 	if {[winfo exists $arrow]} { return }
-	ttk::button $arrow \
-		-style twm.TButton \
+	# TODO XXX: cannot press this button, why?
+	ttk::button $arrow -style twm.TButton \
 		-takefocus 0 \
 		-image [makeStateSpecificIcons $icon::8x16::arrow($dir)] \
 		;
+	raise $arrow
 	$arrow configure -command [list [namespace current]::PlaceLabelBar $twm $frame $incr]
 	if {$Vars(state) ne "disabled"} {
 		bind $arrow <ButtonPress-1> [list [namespace current]::InvokeRepeat $twm $frame $arrow]

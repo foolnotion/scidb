@@ -416,6 +416,12 @@ proc replace {position base variant tags} {
 }
 
 
+proc release {position} {
+	variable Vars
+	::gamebar::remove $Vars(gamebar) $position
+}
+
+
 proc getTags {position} {
 	return [set [namespace current]::Vars(tags:$position)]
 }
@@ -563,9 +569,14 @@ proc FindKey {w attr} {
 }
 
 
-proc FindRange {w key} {
-	if {$key eq "m-0.0"} { return {end end} }
-	return [$w tag nextrange m:move $key]
+proc FindRange {w key position} {
+	if {[::scidb::game::position $position startKey] eq $key} { return {end end} }
+	set range [$w tag nextrange m:move $key]
+	if {[llength $range] == 0} {
+		# TODO: How can this happen? But in fact it happens sometimes.
+		set range {end end}
+	}
+	return $range
 }
 
 
@@ -1337,13 +1348,10 @@ proc ProcessGoto {position key succKey} {
 
 	if {$Vars(current:$position) ne $key} {
 		::scidb::game::variation unfold
-		if {[llength [set range [FindRange $w $key]]] == 0} {
-			return ;# TODO: How can this happen? We know that it happens sporadically.
-		}
 		$w tag remove h:curr begin end
 		$w tag remove h:move begin end
 		$w tag remove h:next begin end
-		$w tag add h:curr {*}$range
+		$w tag add h:curr {*}[FindRange $w $key $position]
 		if {$Vars(active:$position) eq $key} { $w configure -cursor {} }
 		set Vars(current:$position) $key
 		set Vars(successor:$position) $succKey
@@ -1355,9 +1363,7 @@ proc ProcessGoto {position key succKey} {
 		}
 		set Vars(previous:$position) $key
 		foreach k [::scidb::game::next keys $position] {
-			if {[llength [set range [FindRange $w $k]]]} {
-				$w tag add h:next {*}$range
-			}
+			$w tag add h:next {*}[FindRange $w $k $position]
 		}
 		[namespace parent]::board::updateMarks [::scidb::game::query marks]
 		if {$position < 9} { ::annotation::update $key }
@@ -1954,16 +1960,16 @@ proc EnterMove {w key {state 0}} {
 	variable ::util::lockMask
 	variable Vars
 
+	set position $Vars(position)
+
 	if {$key eq "current"} {
 		set range {m:move.current.first m:move.current.last}
 		set key [FindKey $w move]
 	} else {
-		set range [FindRange $w $key]
+		set range [FindRange $w $key $position]
 	}
-	if {[llength $range] == 0} { return } ;# should not happen
 	$w tag add h:move {*}$range
 
-	set position $Vars(position)
 	set Vars(active:$position) $key
 
    # this seems to be a performance problem

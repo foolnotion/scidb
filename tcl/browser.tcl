@@ -305,6 +305,7 @@ proc open {parent base variant info view index {fen {}}} {
 	set Vars(info) $info
 	set Vars(fullscreen) 0
 	set Vars(next) {}
+	set Vars(previous) {}
 	set Vars(next:move) {}
 	set Vars(modified) 0
 	set Vars(setup) 1
@@ -1064,6 +1065,7 @@ proc UpdatePGN {position data {w {}}} {
 	variable ${position}::Vars
 	variable ::pgn::browser::Colors
 	variable ::pgn::browser::Options
+	global env
 
 	if {[llength $w] == 0} {
 		set w $Vars(pgn)
@@ -1071,7 +1073,16 @@ proc UpdatePGN {position data {w {}}} {
 		set Vars(active) {}
 	}
 
+	if {[info exists env(SCIDB_PGN_TRACE)]} {
+		puts "============================================================="
+		set trace 1
+	} else {
+		set trace 0
+	}
+
 	foreach node $data {
+		if {$trace} { puts $node }
+
 		switch [lindex $node 0] {
 			start {
 				$w delete begin end
@@ -1104,32 +1115,33 @@ proc UpdatePGN {position data {w {}}} {
 
 				if {[llength $moves] == 0} {
 					if {![::scidb::game::query $position empty?]} {
-						$w insert end "\u200b"
+						$w mark set $key insert left
+						$w insert insert "\u200b" m:move
 					}
-				}
+				} else {
+					foreach move $moves {
+						switch [lindex $move 0] {
+							annotation - marks { ;# skip }
 
-				foreach move $moves {
-					switch [lindex $move 0] {
-						annotation - marks { ;# skip }
+							space { $w insert end " " }
+							break { $w insert end "\n" }
 
-						space { $w insert end " " }
-						break { $w insert end "\n" }
-
-						ply {
-							lassign [lindex $move 1] moveNo stm san legal
-							if {$Options(style:column)} { $w insert end "\t" }
-							$w mark set $key insert left
-							if {$moveNo > 0} {
-								if {$Options(style:column)} {
-									$w insert insert "$moveNo.\t"
-								} else {
-									$w insert insert "$moveNo." m:move
+							ply {
+								lassign [lindex $move 1] moveNo stm san legal
+								if {$Options(style:column)} { $w insert end "\t" }
+								$w mark set $key insert left
+								if {$moveNo > 0} {
+									if {$Options(style:column)} {
+										$w insert insert "$moveNo.\t"
+									} else {
+										$w insert insert "$moveNo." m:move
+									}
 								}
-							}
-							foreach {text tag} [::font::splitMoves $san] {
-								if {!$legal} { lappend tag illegal }
-								lappend tag m:move
-								$w insert insert $text $tag
+								foreach {text tag} [::font::splitMoves $san] {
+									if {!$legal} { lappend tag illegal }
+									lappend tag m:move
+									$w insert insert $text $tag
+								}
 							}
 						}
 					}
@@ -1150,34 +1162,23 @@ proc UpdatePGN {position data {w {}}} {
 				lassign [lindex $node 1] cmd key
 
 				if {$cmd eq "goto" } {
-					if {$Vars(current) eq $key} { return }
 					$w tag remove h:curr begin end
-					set range [FindRange $w $key]
-					$w tag add h:curr {*}$range
-					if {[llength $Vars(next)]} {
-						$w tag configure $Vars(next) -background [::colors::lookup $Colors(background)]
-					}
-					set Vars(next:move) [::scidb::game::next keys $position]
-					if {$Options(style:column)} {
-						set Vars(next) $Vars(next:move)
-					}
+					$w tag remove h:move begin end
+					$w tag remove h:next begin end
+					$w tag add h:curr {*}[FindRange $w $key $position]
 					if {$Vars(active) eq $key} { $w configure -cursor {} }
-					set previous $Vars(current)
-					if {[llength $previous]} {
-						$w tag configure $previous -background  [::colors::lookup $Colors(background)]
-					}
-					$w tag configure $key -background [::colors::lookup $Colors(background:current)]
-					if {[llength $Vars(next)]} {
-						$w tag configure $Vars(next) \
-							-background [::colors::lookup $Colors(background:nextmove)]
-					}
-					if {[llength $previous]} {
-						set nextkey [$w tag nextrange $key 1.0]
-						if {[llength $nextkey]} { $w see [lindex $nextkey 0] }
-					}
 					set Vars(current) $key
-					if {[llength $previous] && $Vars(active) eq $previous} {
-						EnterMove $w $position $previous
+					if {[string length $Vars(previous)]} {
+						if {$Vars(active) eq $Vars(previous)} {
+							EnterMove $w $Vars(previous)
+						}
+					}
+					set Vars(previous) $key
+					set nextkey [$w tag nextrange $key 1.0]
+					if {[llength $nextkey]} { $w see [lindex $nextkey 0] }
+					set Vars(next:move) [::scidb::game::next keys $position]
+					if {[llength $Vars(next:move)]} {
+						$w tag add h:next {*}[FindRange $w [lindex $Vars(next:move) 0] $position]
 					}
 					if {[info exists Vars(holding:w)]} {
 						lassign [::scidb::pos::inHand? $position] matw matb
@@ -1234,9 +1235,17 @@ proc FindKey {w attr} {
 }
 
 
-proc FindRange {w key} {
-	if {$key eq "m-0.0"} { return {end end} }
-	return [$w tag nextrange m:move $key]
+proc FindRange {w key position} {
+	if {[::scidb::game::position $position startKey] eq $key} { return {end end} }
+	# XXX [$w tag nextrange m:move "m-0.56"] == [$w tag nextrange m:move "m-0.57"]
+#puts "*** [$w tag nextrange m:move m-0.56] == [$w tag nextrange m:move m-0.57]"
+#puts "$key --> [$w tag nextrange m:move $key]"
+	set range [$w tag nextrange m:move $key]
+	if {[llength $range] == 0} {
+		# TODO: How can this happen? But in fact it happens sometimes.
+		set range {end end}
+	}
+	return $range
 }
 
 
@@ -1257,7 +1266,7 @@ proc EnterMove {w position {key "current"}} {
 		set key [FindKey $w move]
 		set range {m:move.current.first m:move.current.last}
 	} else {
-		set range [FindRange $w $key]
+		set range [FindRange $w $key $position]
 	}
 
 	$w tag add h:move {*}$range

@@ -459,14 +459,6 @@ proc newNumber {} {
 }
 
 
-proc highestNumber {} {
-	variable EngineMap
-
-	set numbers [lsort -decreasing [array names EngineMap]]
-	return [expr {[llength $numbers] ? [lindex $numbers 0] : 0}]
-}
-
-
 proc exists? {number} {
 	variable EngineMap
 	return [info exists EngineMap($number)]
@@ -496,7 +488,13 @@ proc update {args} {
 
 
 proc startAnalysis {number} {
-	set tree [set [namespace current]::EngineMap($number)]
+	variable EngineMap
+
+	if {![info exists EngineMap($number)]} {
+		::application::board::openAnalysis $number
+	}
+
+	set tree [set EngineMap($number)]
 	variable ${tree}::Vars
 	variable $Vars(number)::Options
 
