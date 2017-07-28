@@ -207,7 +207,7 @@ proc resize {w size args} {
 
 	rebuild $w
 
-	if {$size != $Board(size)} {
+	if {$oldSize != $Board(size)} {
 		::board::unregisterSize $oldSize
 	}
 }
