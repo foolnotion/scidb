@@ -49,6 +49,7 @@ set IllegalPosition			"Illegal position - Cannot analyze"
 set IllegalMoves				"Illegal moves in game - Cannot analyze"
 set DidNotReceivePong		"Engine is not responding to \"ping\" command - Engine aborted"
 set SearchMateNotSupported	"This engine is not supporting search for mate."
+set EngineIsPausing			"This engine is currently pausing."
 set Stopped						"stopped"
 
 set LinesPerVariation		"Lines per variation"
@@ -147,6 +148,7 @@ proc build {parent number {patternNumber 0}} {
 	set Vars(mode) normal
 	set Vars(message) {}
 	set Vars(title) ""
+	set Vars(paused) 0
 	set Vars(number) $number
 	array set fopt [font configure $Defaults(engine:font)]
 #	set Vars(font:bold) [list $fopt(-family) $fopt(-size) bold]
@@ -741,9 +743,11 @@ proc SetState {tree state} {
 
 	after cancel $Vars(after2)
 	set Vars(after2) ""
+	set Vars(paused) 0
 
 	if {![winfo exists $tree]} { return }
 	if {$Vars(state) eq $state} { return }
+
 	set Vars(state) $state
 
 	foreach child $Vars(toolbar:childs) {
@@ -818,16 +822,27 @@ proc Display(state) {tree state} {
 
 	switch $state {
 		stop	{ set Vars(after2) { after idle [namespace code [list SetState $tree disabled]] } }
+
 		start	{ SetState $tree normal }
 
-		pause - resume {
+		pause {
+			if {!$Vars(paused)} {
+				$Vars(move) configure -state normal
+				$Vars(move) delete 1.0 end
+				if {[$Vars(mw) raise] eq $Vars(mesg)} {
+					ShowMessage $tree info $mc::EngineIsPausing
+				} else {
+					$Vars(move) insert end $mc::Stopped {stopped center}
+				}
+				$Vars(move) configure -state disabled
+				set Vars(paused) 1
+			}
+		}
+
+		resume {
 			$Vars(move) configure -state normal
 			$Vars(move) delete 1.0 end
-			if {$state eq "pause"} {
-				$Vars(move) insert end $mc::Stopped {stopped center}
-			} else {
-				SetState $tree normal
-			}
+			SetState $tree normal
 			$Vars(move) configure -state disabled
 		}
 	}
