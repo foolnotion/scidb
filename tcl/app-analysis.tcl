@@ -529,8 +529,10 @@ proc startAnalysis {number} {
 
 
 proc restartAnalysis {number} {
-	variable ${Vars(number)}::Options
+	variable NumberToTree
+	set tree [set NumberToTree($number)]
 	variable ${tree}::Vars
+	variable ${Vars(number)}::Options
 	
 	after cancel $Vars(after)
 	if {$Options(engine:singlePV)} { set multiPV 1 } else { set multiPV $Options(engine:multiPV) }
