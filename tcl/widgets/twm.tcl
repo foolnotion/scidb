@@ -1120,6 +1120,7 @@ proc DoHeaderMotion {twm frame x y} {
 		wm overrideredirect $frame $Options(motion:overrideredirect)
 		::scidb::tk::wm dialog $frame ;# wm attributes $frame -type dnd
 		wm state $frame normal
+		tkwait visibility $frame
 		ttk::globalGrab $frame
 		bind $frame <Button1-Motion> [bind $frame.__header__ <Button1-Motion>]
 		bind $frame <ButtonRelease-1> [bind $frame.__header__ <ButtonRelease-1>]
