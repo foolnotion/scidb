@@ -79,12 +79,14 @@ proc new {w size args} {
 		-rotate		0
 		-promosign	0
 		-targets		{}
+		-empty		0
 	}
 	array set opts $args
 
 	set Board(flip) $opts(-rotate)
 	set Board(mark:promoted) $opts(-promosign)
 	set Board(show:promoted) 0
+	set Board(empty) $opts(-empty)
 	set Board(marks) {}
 	set Board(alternatives) {}
 	set Board(size) $size
@@ -96,14 +98,17 @@ proc new {w size args} {
 	set Board(drag:y) -1
 	set Board(pointer:x) -1
 	set Board(pointer:y) -1
-	set Board(afterid) [after 50 [namespace code [list [namespace parent]::setupPieces $size]]]
 	set Board(animate) 1
 	set Board(animate,piece) ""
 	set Board(targets) $opts(-targets)
 	set Board(bordersize) $opts(-bordersize)
 	set Board(bordertype) $opts(-bordertype)
+	set Board(afterid) ""
    set boardSize [expr {8*$size}]
 	set borderSize $Board(bordersize)
+	if {!$opts(-empty)} {
+		set Board(afterid) [after 50 [namespace code [list [namespace parent]::setupPieces $size]]]
+	}
 
 	if {$Board(bordertype) == "lines"} {
 		set boardSize [expr {$boardSize + 2*$borderSize}]
@@ -172,47 +177,38 @@ proc resize {w size args} {
 	array set opts [list -bordersize $Board(bordersize)]
 	array set opts $args
 
-   if {$size != $Board(size)} {
+	after cancel $Board(afterid)
+
+	set oldSize $Board(size)
+	set boardSize [expr {8*$size}]
+	set borderSize $opts(-bordersize)
+
+	if {$Board(bordertype) == "lines"} {
+		set boardSize [expr {$boardSize + 2*$borderSize}]
+		set borderSize 0
+	}
+
+	set Board(bordersize) $opts(-bordersize)
+
+	$w.c configure -width $boardSize -height $boardSize -borderwidth $borderSize
+	$w.c xview moveto 0
+	$w.c yview moveto 0
+
+	if {$size != $Board(size)} {
 		DeleteImages $w
-		after cancel $Board(afterid)
-
-		set oldSize $Board(size)
-		set boardSize [expr {8*$size}]
-		set borderSize $opts(-bordersize)
-
-		if {$Board(bordertype) == "lines"} {
-			set boardSize [expr {$boardSize + 2*$borderSize}]
-			set borderSize 0
-		}
-
-		$w.c configure -width $boardSize -height $boardSize -borderwidth $borderSize
-		$w.c xview moveto 0
-		$w.c yview moveto 0
-
 		::board::registerSize $size
 		::board::setupSquares $size
 
-		set Board(size) $size
-		set Board(afterid) [after 50 [namespace code [list [namespace parent]::setupPieces $size]]]
-		set Board(bordersize) $opts(-bordersize)
-
-		rebuild $w
-		::board::unregisterSize $oldSize
-	} elseif {$Board(bordersize) != $opts(-bordersize)} {
-		set Board(bordersize) $opts(-bordersize)
-		set boardSize [expr {8*$size}]
-		set borderSize $opts(-bordersize)
-
-		if {$Board(bordertype) == "lines"} {
-			set boardSize [expr {$boardSize + 2*$borderSize}]
-			set borderSize 0
+		if {!$Board(empty)} {
+			set Board(afterid) [after 50 [namespace code [list [namespace parent]::setupPieces $size]]]
 		}
+		set Board(size) $size
+	}
 
-		$w.c configure -width $boardSize -height $boardSize -borderwidth $borderSize
-		$w.c xview moveto 0
-		$w.c yview moveto 0
+	rebuild $w
 
-		SetupBorders $w
+	if {$size != $Board(size)} {
+		::board::unregisterSize $oldSize
 	}
 }
 
