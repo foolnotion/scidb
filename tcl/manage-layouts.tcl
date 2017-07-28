@@ -146,13 +146,29 @@ proc open {parent currentLayout} {
 }
 
 
+proc NameFromUid {uid}		{ return [lindex [split $uid :] 0] }
+proc NumberFromUid {uid}	{ return [lindex [split $uid :] 1] }
+
+
+proc TitleFromUid {uid} {
+	set name [NameFromUid $uid]
+	if {$name eq "analysis"} {
+		set title [set [namespace parent]::mc::Pane($name)]
+		if {[set number [NumberFromUid $uid]] > 1} { append title " ($number)" }
+	} else {
+		set title [set [namespace parent]::mc::Pane($name)]
+	}
+	return $title
+}
+
+
 proc MakePane {twm parent type uid} {
 	variable [namespace parent]::Prios
 	variable Vars
 
-	set name [set [[namespace parent]::nameVarFromUid $uid]]
+	set name [TitleFromUid $uid]
 	set frame [tk::frame $parent.$uid -borderwidth 0 -takefocus 0]
-	set result [list $frame $name $Prios([[namespace parent]::nameFromUid $uid])]
+	set result [list $frame $name $Prios([NameFromUid $uid])]
 	if {$type ne "pane"} { lappend result [expr {$uid ne "editor"}] yes yes }
 	return $result
 }
@@ -161,7 +177,7 @@ proc MakePane {twm parent type uid} {
 proc BuildPane {twm frame uid width height} {
 	variable Vars
 
-	switch [[namespace parent]::nameFromUid $uid] {
+	switch [NameFromUid $uid] {
 		analysis	{ $frame configure -background [::colors::lookup #ffee75] }
 		editor	{ $frame configure -background [::colors::lookup pgn,background] }
 		games		{ $frame configure -background [::colors::lookup scrolledtable,stripes] }
@@ -177,10 +193,27 @@ proc BuildPane {twm frame uid width height} {
 				::theme::configureBackground $w
 			}
 			bind $w <Configure> [list ::board::setBackground $w window %w %h]
+			bind $w <Configure> +[namespace code [list ResizeBoard $w %w %h]]
+			$w xview moveto 0
+			$w yview moveto 0
+			set size [expr {max(1, (min($width,$height) - 20)/8)}]
+			board::diagram::new $w.diagram $size -empty 1 -bordersize 2 -bordertype lines
+			set x [expr {($width - ($size*8 + 2))/2}]
+			set y [expr {($height - ($size*8 + 2))/2}]
+			$w create window $x $y -anchor nw -window $w.diagram -tags board
 		}
 	}
 
-	::tooltip::tooltip $frame [[namespace parent]::nameVarFromUid $uid]
+	::tooltip::tooltip $frame [namespace parent]::mc::Pane([NameFromUid $uid])
+}
+
+
+proc ResizeBoard {w width height} {
+	set size [expr {max(1, (min($width,$height) - 20)/8)}]
+	board::diagram::resize $w.diagram $size
+	set x [expr {($width - ($size*8 + 2))/2}]
+	set y [expr {($height - ($size*8 + 2))/2}]
+	$w coords board $x $y
 }
 
 

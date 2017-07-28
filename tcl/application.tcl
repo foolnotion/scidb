@@ -124,7 +124,8 @@ array set Vars {
 	shutdown			0
 }
 
-array set MapAnalysisNumber {}
+array set MapTerminalToAnalysis {}
+array set MapAnalysisToTerminal {}
 
 
 proc open {} {
@@ -227,6 +228,7 @@ proc open {} {
 	bind .application <<Fullscreen>> [namespace code { Fullscreen %d }]
 
 	set Vars(ready) 0
+	set Vars(terminal:number) 0
 
 	if {[::process::testOption initial-layout]} {
 		set Options(layout:name) ""
@@ -258,14 +260,18 @@ proc loadInitialLayout {main} {
 
 
 proc nameVarFromUid {uid} {
-	set name [nameFromUid $uid]
+	set name [NameFromUid $uid]
 	if {$name eq "analysis"} {
+		variable MapTerminalToAnalysis
 		variable NameVar
-		set number [numberFromUid $uid]
-		set nameVar [namespace current]::NameVar($number)
+		variable Vars
+
+		set terminalNumber [NumberFromUid $uid]
+		set analysisNumber $MapTerminalToAnalysis($terminalNumber)
+		set nameVar [namespace current]::NameVar($analysisNumber)
 		trace add variable [namespace current]::mc::Pane($name) write \
-			[namespace code [list UpdateNameVar $number]]
-		UpdateNameVar $number
+			[namespace code [list UpdateNameVar $analysisNumber]]
+		UpdateNameVar $analysisNumber
 	} else {
 		set nameVar [namespace current]::mc::Pane($name)
 	}
@@ -273,8 +279,8 @@ proc nameVarFromUid {uid} {
 }
 
 
-proc nameFromUid {uid}   { return [lindex [split $uid :] 0] }
-proc numberFromUid {uid} { return [lindex [split $uid :] 1] }
+proc NameFromUid {uid}   { return [lindex [split $uid :] 0] }
+proc NumberFromUid {uid} { return [lindex [split $uid :] 1] }
 
 
 proc TabChanged {nb} {
@@ -295,15 +301,24 @@ proc MakePane {main parent type uid} {
 	variable Prios
 	variable Vars
 
-	set name [nameFromUid $uid]
+	set name [NameFromUid $uid]
 	set prio $Prios($name)
+	set analysisNumber 0
 
 	if {[string match {analysis:*} $uid]} {
-		variable MapAnalysisNumber
+		variable MapTerminalToAnalysis
+		variable MapAnalysisToTerminal
 
-		incr prio [array size MapAnalysisNumber]
-		set number [numberFromUid $uid]
-		set MapAnalysisNumber($number) [expr {[array size MapAnalysisNumber] + 1}]
+		set number [NumberFromUid $uid]
+		incr prio [expr {$number - 1}]
+		incr Vars(terminal:number)
+
+		if {![info exists MapTerminalToAnalysis($number)]} {
+			set MapTerminalToAnalysis($number) $number
+			set MapAnalysisToTerminal($number) $number
+		}
+
+		set analysisNumber $MapTerminalToAnalysis($number)
 	}
 
 	set nameVar [nameVarFromUid $uid]
@@ -315,7 +330,7 @@ proc MakePane {main parent type uid} {
 	bind $frame <Map> [list [namespace current]::${ns}::activate $frame 1]
 	bind $frame <Unmap> [list [namespace current]::${ns}::activate $frame 0]
 	bind $frame <Destroy> [list [namespace current]::${ns}::closed $frame]
-	bind $frame <Destroy> +[namespace code [list DestroyPane $main $uid]]
+	bind $frame <Destroy> +[namespace code [list DestroyPane $main $uid $analysisNumber]]
 	set Vars(frame:$uid) $frame
 	return $result
 }
@@ -324,11 +339,14 @@ proc MakePane {main parent type uid} {
 proc BuildPane {main frame uid width height} {
 	variable Vars
 
-	switch [nameFromUid $uid] {
+	switch [NameFromUid $uid] {
 		analysis	{
-			variable MapAnalysisNumber
-			set number [numberFromUid $uid]
-			analysis::build $frame $number [expr {[array size MapAnalysisNumber] - 1}]
+			variable MapTerminalToAnalysis
+			set analysisNumber $MapTerminalToAnalysis([NumberFromUid $uid])
+			if {[set patterNumber [expr {$Vars(terminal:number) - 1}]] > 0} {
+				set patterNumber $MapTerminalToAnalysis($patterNumber)
+			}
+			analysis::build $frame $analysisNumber $patterNumber
 		}
 		board		{ board::build $frame $width $height }
 		editor	{ pgn::build $frame $width $height }
@@ -338,72 +356,82 @@ proc BuildPane {main frame uid width height} {
 }
 
 
-proc DestroyPane {main uid} {
+proc DestroyPane {main uid analysisNumber} {
 	variable Vars
 
 	if {$Vars(shutdown)} { return }
 
-	array unset Vars frame:$uid
-
 	if {[string match {analysis:*} $uid]} {
-		variable MapAnalysisNumber
+		variable MapTerminalToAnalysis
+		variable MapAnalysisToTerminal
 
-		set number [numberFromUid $uid]
-		set uidNumber $MapAnalysisNumber($number)
-		array unset MapAnalysisNumber $number
+		set terminalNumber $MapAnalysisToTerminal($analysisNumber)
+		array unset MapAnalysisToTerminal $analysisNumber
+		array set vars [array get Vars frame:*]
 
-		foreach myNumber [lsort -integer -increasing [array names MapAnalysisNumber]] {
-			set myUidNumber $MapAnalysisNumber($myNumber)
-			if {$myUidNumber > $uidNumber} {
-				set newUidNumber [expr {$myUidNumber - 1}]
-				$main changeuid analysis:$myUidNumber analysis:$newUidNumber
-				set MapAnalysisNumber($myNumber) $newUidNumber
-				UpdateNameVar $myNumber
-			}
+		for {set i [expr {$terminalNumber + 1}]} {$i <= $Vars(terminal:number)} {incr i} {
+			set newTerminalNumber [expr {$i - 1}]
+			set analysisNumber $MapTerminalToAnalysis($i)
+			$main changeuid analysis:$i analysis:$newTerminalNumber
+			set MapTerminalToAnalysis($newTerminalNumber) $analysisNumber
+			set MapAnalysisToTerminal($analysisNumber) $newTerminalNumber
+			set Vars(frame:analysis:$newTerminalNumber) $vars(frame:analysis:$i)
+			UpdateNameVar $analysisNumber
 		}
+
+		array unset Vars frame:analysis:$Vars(terminal:number)
+		array unset MapTerminalToAnalysis $Vars(terminal:number)
+		incr Vars(terminal:number) -1
+	} else {
+		array unset Vars frame:$uid
 	}
 }
 
 
-proc UpdateNameVar {number args} {
-	if {![analysis::active? $number]} {
-		variable MapAnalysisNumber
+proc UpdateNameVar {analysisNumber args} {
+	if {![analysis::active? $analysisNumber]} {
+		variable MapAnalysisToTerminal
 		variable NameVar
 
-		set NameVar($number) $mc::Pane(analysis)
-		set uidNumber $MapAnalysisNumber($number)
-		if {$uidNumber > 1} { append NameVar($number) " ($uidNumber)" }
+		set terminalNumber $MapAnalysisToTerminal($analysisNumber)
+		set NameVar($analysisNumber) $mc::Pane(analysis)
+		if {$terminalNumber > 1} { append NameVar($analysisNumber) " ($terminalNumber)" }
 	}
 }
 
 
-proc newAnalysisPane {number} {
-	variable MapAnalysisNumber
+proc newAnalysisPane {analysisNumber} {
+	variable MapTerminalToAnalysis
+	variable MapAnalysisToTerminal
 	variable PaneOptions
 	variable Vars
 
-	set highest [array size MapAnalysisNumber]
-	set uid analysis:[expr {$highest + 1}]
+	set highest $Vars(terminal:number)
+	set terminalNumber [expr {$highest + 1}]
+	set uid analysis:$terminalNumber
 	set main $Vars(frame:main)
+	set MapTerminalToAnalysis($terminalNumber) $analysisNumber
+	set MapAnalysisToTerminal($analysisNumber) $terminalNumber
 
 	if {$highest > 0} {
-		$main clone analysis:$MapAnalysisNumber($highest) $uid
+		$main clone analysis:$highest $uid
 	} else {
 		$main new frame analysis:1 $PaneOptions(analysis)
 	}
 }
 
 
-proc setAnalysisTitle {number title} {
-	variable NameVar
-	set NameVar($number) $title
+proc setAnalysisTitle {analysisNumber title} {
+	set [namespace current]::NameVar($analysisNumber) $title
 }
 
 
-proc resizePaneHeight {uid minHeight} {
+proc resizePaneHeight {analysisNumber minHeight} {
+	variable MapAnalysisToTerminal
 	variable Vars
 
 	set main $Vars(frame:main)
+	set uid analysis:$MapAnalysisToTerminal($analysisNumber)
 	set pane [$main leaf $uid]
 
 	if {[$main toplevel $pane] eq $main} {
@@ -1379,11 +1407,11 @@ proc makeLayoutMenu {menu {w ""}} {
 	}
 	foreach uid [$main leaves] {
 		if {[string match {analysis:*} $uid] && [$main isdocked $uid]} {
+			variable MapTerminalToAnalysis
 			variable NameVar
-			variable MapAnalysisNumber
 			variable vis_${uid}_ 1
 			$menu.windows add checkbutton \
-				-label $NameVar($MapAnalysisNumber([numberFromUid $uid])) \
+				-label $NameVar($MapTerminalToAnalysis([NumberFromUid $uid])) \
 				-variable [namespace current]::vis_${uid}_ \
 				-command [namespace code [list ChangeState $main $uid]] \
 				;

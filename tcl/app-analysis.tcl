@@ -96,7 +96,8 @@ array set Defaults {
 	engine:delay		250
 }
 
-array set EngineMap {}
+array set NumberToTree {}
+set FreeNumbers {}
 
 # from Scid
 # array set Informant { !? 0.5 ? 1.5 ?? 3.0 ?! 0.5 }
@@ -109,7 +110,7 @@ variable ScoreToEval {	45 10		75 14		175 16	400 18 }
 
 proc build {parent number {patternNumber 0}} {
 	variable Defaults
-	variable EngineMap
+	variable NumberToTree
 
 	namespace eval ${number} {}
 	variable ${number}::Options
@@ -443,39 +444,47 @@ proc build {parent number {patternNumber 0}} {
 		-tooltipvar [namespace current]::mc::HashFullness \
 	]
 
-	set EngineMap($number) $tree
+	set NumberToTree($number) $tree
 	SetState $tree disabled
 	Layout $tree
 }
 
 
-proc newNumber {} {
-	variable EngineMap
-
-	set i 1
-	set numbers [array names EngineMap]
-	while {$i in $numbers} { incr i }
-	return $i
-}
-
-
 proc exists? {number} {
-	variable EngineMap
-	return [info exists EngineMap($number)]
+	variable NumberToTree
+	return [info exists NumberToTree($number)]
 }
 
 
 proc active? {number} {
-	return [::engine::active? $number]
+	if {![exists? $number]} { return false }
+	variable NumberToTree
+	set tree $NumberToTree($number)
+	return [::engine::active? [set ${tree}::Vars(number)]]
+}
+
+
+proc newNumber {} {
+	variable NumberToTree
+	variable FreeNumbers
+	
+	if {[llength $FreeNumbers]} {
+		set n [lindex $FreeNumbers 0]
+		set FreeNumbers [lrange $FreeNumbers 1 end]
+		return $n
+	}
+
+	if {[array size NumberToTree] == 0} { return 1 }
+	return [expr {[lindex [lsort -integer -decreasing [array names NumberToTree]] 0] + 1}]
 }
 
 
 proc update {args} {
 	variable Defaults
-	variable EngineMap
+	variable NumberToTree
 
-	foreach number [array names EngineMap] {
-		variable [set [namespace current]::EngineMap($number)]::Vars
+	foreach number [array names NumberToTree] {
+		variable [set [namespace current]::NumberToTree($number)]::Vars
 
 		if {[info exists Vars(after)]} {
 			after cancel $Vars(after)
@@ -488,15 +497,14 @@ proc update {args} {
 
 
 proc startAnalysis {number} {
-	variable EngineMap
+	variable NumberToTree
 
-	if {![info exists EngineMap($number)]} {
-		::application::board::openAnalysis $number
+	if {![exists? $number]} {
+		::application::newAnalysisPane $number
 	}
-
-	set tree [set EngineMap($number)]
+	set tree [set NumberToTree($number)]
 	variable ${tree}::Vars
-	variable $Vars(number)::Options
+	variable ${Vars(number)}::Options
 
 	set Vars(message) {}
 	$Vars(mesg) configure -text ""
@@ -521,7 +529,7 @@ proc startAnalysis {number} {
 
 
 proc restartAnalysis {number} {
-	variable $Vars(number)::Options
+	variable ${Vars(number)}::Options
 	variable ${tree}::Vars
 	
 	after cancel $Vars(after)
@@ -537,20 +545,21 @@ proc activate {w flag} {
 
 
 proc closed {w} {
-	variable EngineMap
+	variable NumberToTree
+	variable FreeNumbers
 
-	set tree ${w}.mw.main.tree
-	variable ${tree}::Vars
+	variable ${w}.mw.main.tree::Vars
 
 	after cancel $Vars(after)
 	after cancel $Vars(after2)
-	array unset EngineMap $Vars(number)
-	::engine::kill $Vars(number)
+	array unset NumberToTree $Vars(number)
+	lappend FreeNumbers $Vars(number)
+	::engine::forget $Vars(number)
 }
 
 
 proc clearHash {number} {
-	Display(hash) [set [namespace current]::EngineMap($number)] 0
+	Display(hash) [set [namespace current]::NumberToTree($number)] 0
 }
 
 
@@ -590,7 +599,7 @@ proc Setup {number} {
 
 proc SetOrdering {tree} {
 	variable ${tree}::Vars
-	variable $Vars(number)::Options
+	variable ${Vars(number)}::Options
 	variable Defaults
 
 	if {$Options(engine:bestFirst) || $Options(engine:singlePV)} {
@@ -637,7 +646,7 @@ proc ClearLines {tree args} {
 
 proc SetMultiPV {tree {number 0}} {
 	variable ${tree}::Vars
-	variable $Vars(number)::Options
+	variable ${Vars(number)}::Options
 	variable Defaults
 
 	if {$number} {
@@ -662,7 +671,7 @@ proc SetMultiPV {tree {number 0}} {
 
 proc SetLinesPerPV {tree} {
 	variable ${tree}::Vars
-	variable $Vars(number)::Options
+	variable ${Vars(number)}::Options
 
 	set Options(engine:nlines) [$Vars(widget:linesPerPV) get]
 	Layout $tree
@@ -671,7 +680,7 @@ proc SetLinesPerPV {tree} {
 
 proc Layout {tree} {
 	variable ${tree}::Vars
-	variable $Vars(number)::Options
+	variable ${Vars(number)}::Options
 
 	if {$Options(engine:singlePV)} {
 		set pvcount 1
@@ -721,7 +730,7 @@ proc ResizePane {tree height} {
 	incr height $Vars(toolbar:height)
 	incr height [winfo height $Vars(info)]
 	incr height 8 ;# borders
-	[namespace parent]::resizePaneHeight analysis:$Vars(number) $height
+	[namespace parent]::resizePaneHeight $Vars(number) $height
 }
 
 
@@ -852,7 +861,7 @@ proc Display(clear) {tree} {
 
 proc Display(pv) {tree score mate depth seldepth time nodes nps tbhits line pv} {
 	variable ${tree}::Vars
-	variable $Vars(number)::Options
+	variable ${Vars(number)}::Options
 
 	Display(time) $tree $time $depth $seldepth $nodes $nps $tbhits
 
@@ -1068,7 +1077,7 @@ proc VisitItem {tree mode column item {x {}} {y {}}} {
 
 proc AddMoves {tree x y} {
 	variable ${tree}::Vars
-	variable $Vars(number)::Options
+	variable ${Vars(number)}::Options
 
 	set id [$tree identify $x $y]
 	if {[lindex $id 0] ne "item"} { return }
@@ -1096,8 +1105,8 @@ proc InsertMoves {tree what line operation} {
 
 
 proc LanguageChanged {} {
-	foreach number [array names EngineMap] {
-		variable [set [namespace current]::EngineMap($number)]::Vars
+	foreach number [array names NumberToTree] {
+		variable [set [namespace current]::NumberToTree($number)]::Vars
 		if {[llength $Vars(message)]} { {*}$Vars(message) }
 	}
 }
@@ -1105,7 +1114,7 @@ proc LanguageChanged {} {
 
 proc PopupMenu {tree number args} {
 	variable ${tree}::Vars
-	variable $Vars(number)::Options
+	variable ${Vars(number)}::Options
 
 	set menu $tree.__menu__
 	catch { destroy $menu }
@@ -1268,7 +1277,7 @@ proc ActivateCurrent {tree} {
 
 
 proc WriteOptions {chan} {
-	variable EngineMap
+	variable NumberToTree
 
 	foreach ns [namespace children [namespace current]] {
 		if {[string match {*[0-9]} $ns]} {

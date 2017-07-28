@@ -347,34 +347,34 @@ proc build {w width height} {
 		::font::addChangeFontSizeBindings editor $w ::application::pgn::fontSizeChanged
 	}
 	
-	bind <Key-space>					::move::nextGuess
-	bind <Left>							[namespace code { Goto -1 }]
-	bind <Right>						[namespace code { Goto +1 }]
-	bind <Prior>						[namespace code { Goto -10 }]
-	bind <Next>							[namespace code { Goto +10 }]
-	bind <Home>							[namespace code { Goto start }]
-	bind <End>							[namespace code { Goto end }]
-	bind <Down>							[namespace code { Goto down }]
-	bind <Up>							[namespace code { Goto up }]
-	bind <Control-Down>				[namespace code [list LoadGame(any) $w next]]
-	bind <Control-Up>					[namespace code [list LoadGame(any) $w prev]]
-	bind <Control-Home>				[namespace code [list LoadGame(any) $w first]]
-	bind <Control-End>				[namespace code [list LoadGame(any) $w last]]
-	bind <Shift-Up>					[list [namespace parent]::pgn::scroll -1 units]
-	bind <Shift-Down>					[list [namespace parent]::pgn::scroll +1 units]
-	bind <Shift-Prior>				[list [namespace parent]::pgn::scroll -1 pages]
-	bind <Shift-Next>					[list [namespace parent]::pgn::scroll +1 pages]
-	bind <Shift-Home>					[list [namespace parent]::pgn::scroll -9999 pages]
-	bind <Shift-End>					[list [namespace parent]::pgn::scroll +9999 pages]
-	bind <Control-0>					[namespace code InsertNullMove]
-	bind <<Undo>>						[namespace parent]::pgn::undo
-	bind <<Redo>>						[namespace parent]::pgn::redo
-	bind <BackSpace>					[namespace parent]::pgn::undoLastMove
-	bind <Delete>						[list ::scidb::game::strip truncate]
-	bind <ButtonPress-3>				[namespace code { PopupMenu %W }]
-	bind <<LanguageChanged>>		[namespace code LanguageChanged]
-	bind <F1>							[list ::help::open .application]
-	bind <F5>							[list ::move::nextVariation]
+	bind <Key-space>				::move::nextGuess
+	bind <Left>						[namespace code { Goto -1 }]
+	bind <Right>					[namespace code { Goto +1 }]
+	bind <Prior>					[namespace code { Goto -10 }]
+	bind <Next>						[namespace code { Goto +10 }]
+	bind <Home>						[namespace code { Goto start }]
+	bind <End>						[namespace code { Goto end }]
+	bind <Down>						[namespace code { Goto down }]
+	bind <Up>						[namespace code { Goto up }]
+	bind <Control-Down>			[namespace code [list LoadGame(any) $w next]]
+	bind <Control-Up>				[namespace code [list LoadGame(any) $w prev]]
+	bind <Control-Home>			[namespace code [list LoadGame(any) $w first]]
+	bind <Control-End>			[namespace code [list LoadGame(any) $w last]]
+	bind <Shift-Up>				[list [namespace parent]::pgn::scroll -1 units]
+	bind <Shift-Down>				[list [namespace parent]::pgn::scroll +1 units]
+	bind <Shift-Prior>			[list [namespace parent]::pgn::scroll -1 pages]
+	bind <Shift-Next>				[list [namespace parent]::pgn::scroll +1 pages]
+	bind <Shift-Home>				[list [namespace parent]::pgn::scroll -9999 pages]
+	bind <Shift-End>				[list [namespace parent]::pgn::scroll +9999 pages]
+	bind <Control-0>				[namespace code InsertNullMove]
+	bind <<Undo>>					[namespace parent]::pgn::undo
+	bind <<Redo>>					[namespace parent]::pgn::redo
+	bind <BackSpace>				[namespace parent]::pgn::undoLastMove
+	bind <Delete>					[list ::scidb::game::strip truncate]
+	bind <ButtonPress-3>			[namespace code { PopupMenu %W }]
+	bind <<LanguageChanged>>	[namespace code LanguageChanged]
+	bind <F1>						[list ::help::open .application]
+	bind <F5>						[list ::move::nextVariation]
 
 	set tl [winfo toplevel $w]
 
@@ -475,13 +475,6 @@ proc setFocus {} {
 
 proc active? {} {
 	return [set [namespace current]::Vars(active)]
-}
-
-
-proc openAnalysis {number} {
-	if {![::application::analysis::exists? $number]} {
-		::application::newAnalysisPane $number
-	}
 }
 
 
@@ -1160,7 +1153,7 @@ proc Apply {} {
 	variable Vars
 
 	if {[[namespace parent]::ready?]} {
-		RebuildBoard $Vars(widget:frame) $Vars(width) $Vars(height)
+		RebuildBoard $Vars(widget:frame) $Vars(width) $Vars(height) true
 	}
 }
 
@@ -1191,7 +1184,7 @@ proc RedrawCoordinates {} {
 }
 
 
-proc RebuildBoard {canv width height} {
+proc RebuildBoard {canv width height {force false}} {
 	variable ::board::layout
 	variable Layouts
 	variable Dim
@@ -1199,7 +1192,7 @@ proc RebuildBoard {canv width height} {
 	variable board
 
 	set dimensions ${width}x${height}
-	if {$dimensions eq $Vars(dimensions)} { return }
+	if {!$force && $dimensions eq $Vars(dimensions)} { return }
 	set Vars(dimensions) $dimensions
 
 	set squareSize $Dim(squaresize)

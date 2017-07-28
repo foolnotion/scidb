@@ -483,25 +483,30 @@ proc openSetup {parent {number -1}} {
 		set memory [expr {min(256, [::scidb::misc::predPow2 [expr {$memory/1048576}]])}]
 	}
 
-	set Vars(selection) -1
-	set Vars(priority) $::mc::Normal
-	set Vars(list:profiles) $rf.profiles
-	set Vars(list:engines) $lf.list
-
-	set Vars(current:name) ""
-	set Vars(current:protocol) UCI
-	set Vars(current:memory) $memory
-	set Vars(current:cores) [expr {[::scidb::misc::numberOfProcessors] - 1}]
-	set Vars(current:priority) $::mc::Normal
-	set Vars(current:profile) Default
-
-	set Vars(engine:name) ""
-	set Vars(engine:protocol) UCI
-	set Vars(engine:memory) 0
-	set Vars(engine:cores) 1
-	set Vars(engine:priority) $::mc::Normal
-	set Vars(engine:profile) Default
-	set Vars(engine:id) -1
+	foreach {attr value} [list \
+		selection -1 \
+		priority $::mc::Normal \
+		list:profiles $rf.profiles \
+		list:engines $lf.list \
+		current:name "" \
+		current:protocol UCI \
+		current:memory $memory \
+		current:cores [expr {[::scidb::misc::numberOfProcessors] - 1}] \
+		current:priority $::mc::Normal \
+		current:profile Default \
+		engine:name "" \
+		engine:protocol UCI \
+		engine:memory 0 \
+		engine:cores 1 \
+		engine:priority $::mc::Normal \
+		engine:profile Default \
+		engine:id -1 \
+		selection -1 \
+		priority $::mc::Normal \
+		list:profiles $rf.profiles \
+		list:engines $lf.list] {
+		if {![info exists Vars($attr)]} { set Vars($attr) $value }
+	}
 
 	set listheight 7
 
@@ -1088,7 +1093,14 @@ proc resume {number} {
 }
 
 
+proc forget {number} {
+	catch { destroy .setupEngine$number }
+	kill $number
+}
+
+
 proc kill {number} {
+
 	if {![info exists ${number}::Vars(engine:id)]} { return }
 	variable ${number}::Vars
 

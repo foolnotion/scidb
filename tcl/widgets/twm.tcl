@@ -383,8 +383,7 @@ proc MakePane {twm id} {
 proc MakeFrame {twm type {id ""}} {
 	variable Counter
 
-	if {[string length $id] == 0} { set id [incr Counter($type)] }
-	set frame $twm.__${type}__${id}
+	set frame $twm.__${type}__${id}__[incr Counter($type)]
 	set class Twm[string toupper $type 0 0]
 	return [tk::frame $frame -class $class -borderwidth 0 -takefocus 0]
 }
@@ -798,8 +797,9 @@ proc UpdateHeader {twm frame panes} {
 	}
 
 	$twm set $frame maxoffset 0 labels $labels repeat 0 width 0
-	after idle [list [namespace current]::ConfigureLabelBar init $twm $frame 0]
+	after idle [list [namespace current]::ConfigureLabelBar init $twm $frame -1]
 	bind $hdr <Configure> [list [namespace current]::ConfigureLabelBar hdr $twm $frame %w]
+	bind $hdr <Map> [list [namespace current]::ConfigureLabelBar hdr $twm $frame -1]
 	bind $frame <Configure> [list [namespace current]::ConfigureLabelBar frame $twm $frame %w]
 }
 
@@ -814,7 +814,7 @@ proc ConfigureLabelBar {source twm frame width args} {
 	set bd [expr {2*$Options(header:borderwidth)}]
 	set see [expr {$width < 0}]
 	set force [expr {$width <= 0}]
-	set current [expr {$width > 1}]
+	set current [expr {$width >= 0}]
 	if {$width <= 1} { set width [winfo width $frame] }
 	if {$width <= 1} { return }
 	if {!$force && [$twm get $frame width 0] == $width} { return }
