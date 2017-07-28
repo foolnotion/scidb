@@ -3487,6 +3487,12 @@ PgnReader::stripDiagram(mstl::string& comment)
 		m_annotation.add(nag::Diagram);
 		m_hasNote = true;
 	}
+	else if (s[0] == '[' && s[1] == '#' && s[2] == ']')
+	{
+		comment.erase(comment.begin(), ::skipSpaces(s + 3));
+		m_annotation.add(nag::Diagram);
+		m_hasNote = true;
+	}
 	else if (m_sourceIsPossiblyChessBase)
 	{
 		// ChessBase does not have any convention for diagram notation. Therefore we look for
