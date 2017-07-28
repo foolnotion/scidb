@@ -1378,7 +1378,10 @@ proc UpdateHeader {context position w data} {
 	variable ::pgn::${context}::Options
 	variable Vars
 
-	if {!$Vars(virgin:$position)} {
+	if {$Vars(virgin:$position)} {
+		# try to ensure correct adjustment after load
+		after idle [list $w yview moveto 0]
+	} else {
 		$w delete begin m-start
 	}
 
