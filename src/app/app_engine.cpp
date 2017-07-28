@@ -383,6 +383,7 @@ Engine::Process::resumed()
 }
 
 
+Engine::Concrete::Concrete()  { m_board.clear(); }
 Engine::Concrete::~Concrete() {}
 
 
@@ -1190,7 +1191,7 @@ Engine::startAnalysis(Game* game)
 
 	if (m_pause)
 	{
-updateState(Pause); // XXX
+		updateState(Pause);
 		m_restart = true;
 		return true;
 	}
@@ -1236,7 +1237,7 @@ updateState(Pause); // XXX
 	}
 	else if (isAnalyzing())
 	{
-		if (m_engine->m_board.isEqualZHPosition(game->currentBoard()))
+		if (currentBoard().isEqualZHPosition(game->currentBoard()))
 		{
 			m_engine->continueAnalysis();
 			return true;

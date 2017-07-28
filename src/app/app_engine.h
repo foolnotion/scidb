@@ -133,6 +133,7 @@ public:
 
 		typedef app::Engine::Result Result;
 
+		Concrete();
 		virtual ~Concrete();
 
 		virtual bool isReady() const = 0;
