@@ -197,7 +197,7 @@ proc BuildPane {twm frame uid width height} {
 			$w xview moveto 0
 			$w yview moveto 0
 			set size [expr {max(1, (min($width,$height) - 20)/8)}]
-			board::diagram::new $w.diagram $size -empty 1 -bordersize 2 -bordertype lines
+			board::diagram::new $w.diagram $size -empty 1 -bordersize 2 -bordertype lines -bordercolor white
 			set x [expr {($width - ($size*8 + 2))/2}]
 			set y [expr {($height - ($size*8 + 2))/2}]
 			$w create window $x $y -anchor nw -window $w.diagram -tags board

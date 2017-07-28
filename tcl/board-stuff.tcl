@@ -73,13 +73,14 @@ proc new {w size args} {
 	variable ${w}::Board
 
 	array set opts {
-		-relief		raised
-		-bordertype	normal
-		-bordersize	0
-		-rotate		0
-		-promosign	0
-		-targets		{}
-		-empty		0
+		-relief			raised
+		-bordertype		normal
+		-bordercolor	{}
+		-bordersize		0
+		-rotate			0
+		-promosign		0
+		-targets			{}
+		-empty			0
 	}
 	array set opts $args
 
@@ -103,13 +104,14 @@ proc new {w size args} {
 	set Board(targets) $opts(-targets)
 	set Board(bordersize) $opts(-bordersize)
 	set Board(bordertype) $opts(-bordertype)
+	set Board(bordercolor) $opts(-bordercolor)
 	set Board(afterid) ""
    set boardSize [expr {8*$size}]
-	set borderSize $Board(bordersize)
 	if {!$opts(-empty)} {
 		set Board(afterid) [after 50 [namespace code [list [namespace parent]::setupPieces $size]]]
 	}
 
+	set borderSize $Board(bordersize)
 	if {$Board(bordertype) == "lines"} {
 		set boardSize [expr {$boardSize + 2*$borderSize}]
 		set borderSize 0
@@ -1010,10 +1012,12 @@ proc SetupBorders {w} {
 	if {$Board(bordertype) ne "lines"} { return }
 	set borderSize $Board(bordersize)
 	set boardSize [expr {8*$Board(size) + 2*$borderSize}]
+	set bordercolor $Board(bordercolor)
+	if {[string length $bordercolor] == 0} { set bordercolor #4f4f4f }
 
 	for {set i 0; set bs [expr {$boardSize - 1}]} {$i < $borderSize} {incr i; decr bs} {
-		$w.c create line $i $bs $boardSize $bs -width 1 -fill #4f4f4f -tag borderline
-		$w.c create line $bs [expr {$i + 1}] $bs $boardSize -width 1 -fill #4f4f4f -tag borderline
+		$w.c create line $i $bs $boardSize $bs -width 1 -fill $bordercolor -tag borderline
+		$w.c create line $bs [expr {$i + 1}] $bs $boardSize -width 1 -fill $bordercolor -tag borderline
 	}
 }
 
