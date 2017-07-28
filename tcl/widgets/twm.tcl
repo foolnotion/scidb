@@ -1007,7 +1007,7 @@ proc HeaderPress {twm frame x y} {
 		set Vars(afterid:release) [after $Options(globalgrab:timeout) \
 			[list [namespace current]::HeaderRelease $twm $frame 1]]
 	}
-	ttk::globalGrab $frame
+	ttk::grabWindow $frame
 }
 
 
