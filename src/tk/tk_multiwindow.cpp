@@ -1713,8 +1713,8 @@ MultiWindowWidgetObjCmd(ClientData clientData,	// Information about square widge
 		case MW_RAISE:
 			if (objc != 3)
 			{
-				Tcl_WrongNumArgs(interp, 2, objv, "widget");
-				result = TCL_ERROR;
+				if (mw->numSlaves)
+					Tcl_SetObjResult(interp, Tcl_NewStringObj(Tk_PathName(mw->slaves[0]->tkwin), -1));
 			}
 			else
 			{

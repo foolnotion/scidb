@@ -339,6 +339,8 @@ tk appname $scidb::app
 tk::toplevel .application -class $::scidb::app
 ::scidb::tk::wm startup .
 wm withdraw .application
+# TODO: does this emergency handling work?
+bind .application <Alt-F11> { catch {ttk::releaseGrab [grab current]} }
 
 if {[::scidb::misc::debug?]} {
 	::process::setOption single-process

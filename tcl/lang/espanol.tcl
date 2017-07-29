@@ -1152,6 +1152,7 @@
 ::application::analysis::mc::IllegalMoves					"Illegal moves in game - Cannot analyze" ;# NEW
 ::application::analysis::mc::DidNotReceivePong			"Engine is not responding to \"ping\" command - Engine aborted" ;# NEW
 ::application::analysis::mc::SearchMateNotSupported	"This engine is not supporting search for mate." ;# NEW
+::application::analysis::mc::EngineIsPausing				"This engine is currently pausing." ;# NEW
 ::application::analysis::mc::Stopped						"stopped" ;# NEW
 
 ::application::analysis::mc::LinesPerVariation			"Líneas por variación"

@@ -55,6 +55,8 @@ proc open {parent currentLayout} {
 
 	set OldList [[namespace parent]::inspectLayout]
 	set OldLayout [[namespace parent]::currentLayout]
+	set force $::twm::Options(deiconify:force)
+	set ::twm::Options(deiconify:force) 1
 
 	set dlg $parent.layout
 	tk::toplevel $dlg -class Scidb
@@ -82,7 +84,7 @@ proc open {parent currentLayout} {
 	$list activate $index
 	if {$index >= 0} {
 		$list selection set $index
-		after idle [namespace code [list LoadLayout $twm $list $lt.res ""]]
+		after idle [namespace code [list LoadLayout $twm $list $lt.res]]
 	}
 	$list see [expr {max(0,$index)}]
 
@@ -105,10 +107,10 @@ proc open {parent currentLayout} {
 		-text $mc::Load \
 		-image $::icon::16x16::refresh \
 		-compound left \
-		-command [namespace code [list Load $twm $list]] \
+		-command [namespace code [list Load $twm $list $dlg.revert]] \
 	]
 
-	bind $list <<ListboxSelect>> [namespace code [list LoadLayout $twm $list $res $dlg.revert]]
+	bind $list <<ListboxSelect>> [namespace code [list LoadLayout $twm $list $res]]
 
 	lassign [[namespace parent]::workArea $parent] Width Height
 	set Width [expr {($Width*4)/9}]
@@ -137,12 +139,14 @@ proc open {parent currentLayout} {
 	wm resizable $dlg no no
 	wm transient $dlg .application
 	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
+	wm title $dlg [set [namespace parent]::mc::ManageLayouts]
 	::util::place $dlg -parent $parent -position center
 	wm deiconify $dlg
 	focus $list
 	::ttk::grabWindow $dlg
 	tkwait window $dlg
 	::ttk::releaseGrab $dlg
+	set ::twm::Options(deiconify:force) $force
 }
 
 
@@ -236,7 +240,7 @@ proc Resizing {twm toplevel width height} {
 }
 
 
-proc LoadLayout {twm list loadBtn revertBtn} {
+proc LoadLayout {twm list loadBtn} {
 	if {[llength [$list curselection]] == 0} { return }
 
 	set name [$list get [$list curselection]]
@@ -251,9 +255,6 @@ proc LoadLayout {twm list loadBtn revertBtn} {
 
 	if {[[namespace parent]::currentLayout] eq $name} { set state disabled } else { set state normal }
 	$loadBtn configure -state $state
-	if {[string length $revertBtn]} {
-		$revertBtn configure -state normal
-	}
 }
 
 
@@ -283,8 +284,11 @@ proc Rename {twm list} {
 }
 
 
-proc Load {twm list} {
+proc Load {twm list revertBtn} {
+	variable OldList
 	[namespace parent]::loadLayout [$list get [$list curselection]]
+	set eq [[namespace parent]::currentLayoutIsEqTo $OldList]
+	$revertBtn configure -state [expr {$eq ? "disabled" : "normal"}]
 }
 
 

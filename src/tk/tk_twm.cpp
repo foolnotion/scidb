@@ -91,6 +91,9 @@ isSubset(mstl::vector<mstl::string> const& lhs, mstl::vector<mstl::string> const
 
 	// test whether lhs is subset of rhs, both sets must be sorted
 
+	if (lhs.size() > rhs.size())
+		return false;
+
 	while (i < lhs.size() && k < rhs.size())
 	{
 		if (lhs[i] == rhs[k])
@@ -1852,7 +1855,7 @@ Node::resize(Dimension const& dim, bool perform)
 		}
 
 		if (perform && testFlags(F_Config))
-			m_root->perform();
+			m_root->perform(toplevel());
 	}
 }
 
@@ -2208,14 +2211,7 @@ Node::makeStructure(structure::Node* parent) const
 	M_ASSERT(isNotebookOrMultiWindow() || isPanedWindow());
 
 	structure::Type type;
-	
-	if (isNotebookOrMultiWindow())
-		type = structure::Multi;
-	else if (isHorz())
-		type = structure::Horz;
-	else
-		type = structure::Vert;
-
+	type = isNotebookOrMultiWindow() ? structure::Multi : (isHorz() ? structure::Horz : structure::Vert);
 	structure::Node* node = new structure::Node(parent, type);
 
 	for (unsigned i = 0; i < numChilds(); ++i)
@@ -2284,15 +2280,11 @@ Node::updateDimen(int x, int y, int width, int height)
 
 	if (width > 1 && height > 1 && exists())
 	{
-		m_coord.x = x;
-		m_coord.y = y;
-		if (!isRoot())
-		{
-			m_coord.x -= m_root->x();
-			m_coord.y -= m_root->y();
-		}
+#if 0
 if (m_dimen.actual.width != contentSize<Horz>(width) || m_dimen.actual.height != contentSize<Vert>(height))
 printf("updateDimen(%s): %d %d\n", id(), width, height);
+#endif
+
 		width = contentSize<Horz>(width);
 		height = contentSize<Vert>(height);
 
@@ -2303,6 +2295,18 @@ printf("updateDimen(%s): %d %d\n", id(), width, height);
 		}
 		else
 		{
+			if (tk::isMapped(tkwin()))
+			{
+				m_coord.x = x;
+				m_coord.y = y;
+
+				if (!isRoot())
+				{
+					m_coord.x -= m_root->x();
+					m_coord.y -= m_root->y();
+				}
+			}
+
 			m_dimen.set<Horz>(width);
 			m_dimen.set<Vert>(height);
 
@@ -5160,7 +5164,7 @@ Node::performGeometry()
 		int newWidth	= width<Outer>();
 		int newHeight	= height<Outer>();
 
-		if (	(m_flags & F_Undocked)
+		if (	(m_flags & (F_Undocked|F_Deiconify))
 			|| m_dimen != m_actual
 			|| newWidth != tk::width(tkwin())
 			|| newHeight != tk::height(tkwin()))
@@ -5326,18 +5330,10 @@ Node::updateHeader()
 	}
 	else if (isFloating())
 	{
-		if (isMetaFrame())
-		{
-			tcl::zero(m_headerObj);
+		if (isMetaFrame() && child()->isFrame())
+			tcl::zero(child()->m_headerObj);
 
-			if (child()->isFrame())
-				tcl::zero(child()->m_headerObj);
-		}
-		else if (isFrame())
-		{
-			tcl::set(m_headerObj, pathObj());
-		}
-
+		tcl::zero(m_headerObj);
 		tcl::set(m_titleObj, findLeader()->pathObj());
 	}
 	else if (isFrame() && m_parent->isRoot())
@@ -5512,8 +5508,12 @@ Node::performUpdateHeaderRecursively(bool force)
 
 	if (isFrameOrMetaFrame())
 	{
-		if (force || testFlags(F_Create|F_Pack|F_Header) || !tcl::eqOrNull(m_headerObj, m_oldHeaderObj))
+		if (	force
+			|| testFlags(F_Create|F_Pack|F_Header|F_Deiconify)
+			|| !tcl::eqOrNull(m_headerObj, m_oldHeaderObj))
+		{
 			performUpdateHeader();
+		}
 
 		if (isFloating() && m_titleObj && !tcl::eqOrNull(m_titleObj, m_oldTitleObj))
 			performUpdateTitle();
@@ -5528,6 +5528,7 @@ void
 Node::performAllActiveNodes(Flag flag)
 {
 	M_ASSERT(isRoot());
+	M_ASSERT((flag & (F_Unpack|F_Unframe|F_Docked|F_Destroy)) == flag);
 
 	for (unsigned i = 0; i < m_active.size(); ++i)
 	{
@@ -5535,7 +5536,7 @@ Node::performAllActiveNodes(Flag flag)
 
 		if (node->testFlags(flag))
 		{
-			switch (flag)
+			switch (int(flag))
 			{
 				case F_Unpack:
 					M_ASSERT(node->m_savedParent);
@@ -5565,17 +5566,6 @@ Node::performAllActiveNodes(Flag flag)
 					node->performDestroy();
 					node->m_isDeleted = true;
 					break;
-
-				case F_Build:		// fallthru
-				case F_Pack:		// fallthru
-				case F_Create:		// fallthru
-				case F_Config:		// fallthru
-				case F_Raise:		// fallthru
-				case F_Select:		// fallthru
-				case F_Header:		// fallthru
-				case F_Undocked:	// fallthru
-				case F_Reparent:	// fallthru
-				case F_Deiconify:	M_ASSERT(!"unexpected"); break;
 			}
 		}
 	}
@@ -5709,6 +5699,7 @@ Node::performDeiconifyFloats()
 			toplevel->performSelectRecursively();
 			toplevel->performBuildRecursively();
 			toplevel->performDeiconify();
+			toplevel->performGeometry();
 		}
 	}
 }
@@ -5769,7 +5760,7 @@ Node::perform(Node* toplevel)
 					toplevel->performFinalizeCreateRecursively();
 			}
 
-			if (flags & (F_Pack|F_Unpack|F_Header))
+			if (flags & (F_Pack|F_Unpack|F_Header|F_Deiconify))
 				m_root->updateAllHeaders();
 
 			m_root->performGetWorkArea();

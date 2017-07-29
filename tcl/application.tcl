@@ -108,9 +108,9 @@ set BoardLayout {
 	}
 }
 
-array set Prios { analysis 20 board 50 editor 40 games 10 tree 30 }
-array set Defaults { menu:background #c3c3c3 }
-array set Options { docking:showall no layout:name "" layout:list {} }
+array set Prios		{ analysis 200 board 500 editor 400 games 100 tree 300 }
+array set Options		{ docking:showall no layout:name "" layout:list {} }
+array set Defaults	{ menu:background #c3c3c3 }
 
 array set Vars {
 	menu:locked		0
@@ -434,11 +434,9 @@ proc resizePaneHeight {analysisNumber minHeight} {
 	set uid analysis:$MapAnalysisToTerminal($analysisNumber)
 	set pane [$main leaf $uid]
 
-	if {[$main toplevel $pane] eq $main} {
-		lassign [$main dimension $pane] _ height _ _ _ _
-		set height [expr {max($height,$minHeight)}]
-		$main resize $pane 0 $height 0 $minHeight 0 0
-	}
+	lassign [$main dimension $pane] _ height _ _ _ _
+	set height [expr {max($height,$minHeight)}]
+	$main resize $pane 0 $height 0 $minHeight 0 0
 }
 
 
@@ -1220,16 +1218,17 @@ proc TwmMenu {w x y} {
 }
 
 
-proc LayoutHasChanged {} {
+proc currentLayoutIsEqTo {layout {ignoreFloatPositions false}} {
 	variable Options
 	variable Vars
 
-	set layout [inspectLayout]
-	set lhs [regsub -all {[-][xy]\s\s*[0-9]*} $layout ""]
-	set rhs [regsub -all {[-][xy]\s\s*[0-9]*} $Options(layout:list) ""]
+	set currentLayout [inspectLayout]
+	if {$ignoreFloatPositions} { set opts -all } else { set opts {} }
+	set lhs [regsub {*}$opts -- {[-][xy]\s\s*[0-9]*} $currentLayout ""]
+	set rhs [regsub {*}$opts -- {[-][xy]\s\s*[0-9]*} $layout ""]
 	set lhs [string map {"  " " "} [string trim $lhs]]
 	set rhs [string map {"  " " "} [string trim $rhs]]
-	return [expr {$lhs ne $rhs}]
+	return [expr {$lhs eq $rhs}]
 }
 
 
@@ -1463,7 +1462,7 @@ proc makeLayoutMenu {menu {w ""}} {
 			set Options(layout:name) ""
 		} else {
 			append labelName " \"$Vars(layout)\""
-			if {[LayoutHasChanged]} { set state "normal" }
+			if {![currentLayoutIsEqTo $Options(layout:list) false]} { set state "normal" }
 		}
 	}
 	set layout_ $Vars(layout)

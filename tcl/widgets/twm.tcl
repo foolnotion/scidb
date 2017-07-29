@@ -78,6 +78,7 @@ array set Defaults {
 	motion:busy						0
 	motion:overrideredirect		1
 	deiconify:timeout				50
+	deiconify:force				0
 	mtab:padding:selected		{4 2 4 0}
 	mtab:padding:hidden			{4 0 4 2}
 	mtab:padding:fixed			{4 1 4 1}
@@ -569,8 +570,6 @@ proc MouseWheelBindings {twm frame w} {
 
 
 proc Resize {twm pane width height minWidth minHeight maxWidth maxHeight} {
-	variable Defaults
-
 	set bd [expr {2*[$pane cget -borderwidth]}]
 	if {$width > 0} { set width [expr {$width + $bd}] }
 	if {$height > 0} { set height [expr {$height + $bd}] }
@@ -944,16 +943,15 @@ proc MakeArrow {twm frame dir incr} {
 
 	set arrow $frame.__header__.$dir
 	if {[winfo exists $arrow]} { return }
-	# TODO XXX: cannot press this button, why?
-	ttk::button $arrow -style twm.TButton \
+	ttk::button $arrow \
+		-style twm.TButton \
 		-takefocus 0 \
 		-image [makeStateSpecificIcons $icon::8x16::arrow($dir)] \
+		-command [list [namespace current]::PlaceLabelBar $twm $frame $incr] \
 		;
 	raise $arrow
-	$arrow configure -command [list [namespace current]::PlaceLabelBar $twm $frame $incr]
 	if {$Vars(state) ne "disabled"} {
 		bind $arrow <ButtonPress-1> [list [namespace current]::InvokeRepeat $twm $frame $arrow]
-		bind $arrow <ButtonPress-1> {+ break }
 		MouseWheelBindings $twm $frame $arrow
 		MenuBindings $twm $frame $arrow
 	}
@@ -1844,10 +1842,11 @@ proc Hide {twm toplevel} {
 
 
 proc Deiconify {twm toplevel width height x y force} {
-	variable Defaults
+	variable Options
 
-	if {[wm state $toplevel] eq "withdrawn" && ($force || ![$twm get! $toplevel hide 0])} {
-		after $Defaults(deiconify:timeout) \
+	if {	[wm state $toplevel] eq "withdrawn"
+		&& ($force || $Options(deiconify:force) || ![$twm get! $toplevel hide 0])} {
+		after $Options(deiconify:timeout) \
 			[list [namespace current]::DoDeiconify $twm $toplevel $width $height $x $y $force]
 	}
 }
@@ -1997,8 +1996,8 @@ proc Geometry {twm toplevel width height minWidth minHeight maxWidth maxHeight e
 			wm maxsize $toplevel $maxWidth $maxHeight
 		}
 		wm geometry $toplevel ${width}x${height}
-		set resizeW [expr {$expand in {both x} && ($minWidth == 0 || $minWidth != $maxWidth)}]
-		set resizeH [expr {$expand in {both y} && ($minHeight == 0 || $minHeight != $maxHeight)}]
+		set resizeW [expr {$minWidth == 0 || $minWidth != $maxWidth}]
+		set resizeH [expr {$minHeight == 0 || $minHeight != $maxHeight}]
 		wm resizable $toplevel $resizeW $resizeH
 	}
 }
