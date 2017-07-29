@@ -128,8 +128,9 @@ proc build {parent number {patternNumber 0}} {
 
 	if {$patternNumber > 0} {
 		array set Options [array get ${patternNumber}::Options]
-	} elseif {![info exists Options]} {
-		array set Options { engine:bestFirst 1 engine:nlines 2 engine:multiPV 4 engine:singlePV 0 }
+	}
+	foreach {name value} { engine:bestFirst 1 engine:nlines 2 engine:multiPV 4 engine:singlePV 0 } {
+		if {![info exists Options($name)]} { set Options($name) $value }
 	}
 
 	set bg [::colors::lookup $Defaults(info:background)]
@@ -1293,8 +1294,19 @@ proc ActivateCurrent {tree} {
 
 
 proc WriteOptions {chan} {
-	variable NumberToTree
-
+	foreach ns [namespace children [namespace current]] {
+		if {[string match {*[0-9]} $ns]} {
+			if {[set number [[namespace parent]::mapToTerminalNumber $ns]] >= 0} {
+				namespace eval ${number} {}
+				array set ${number}::Options_ [array get ${ns}::Options]
+			}
+		}
+	}
+	foreach ns [namespace children [namespace current]] {
+		if {[array exists ${ns}::Options_]} {
+			array set ${ns}::Options [array get ${ns}::Options_]
+		}
+	}
 	foreach ns [namespace children [namespace current]] {
 		if {[string match {*[0-9]} $ns]} {
 			::options::writeEvalNS $chan $ns

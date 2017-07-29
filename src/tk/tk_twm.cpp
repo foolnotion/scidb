@@ -1046,6 +1046,7 @@ private:
 	template <Orient D> int contentSize(int size) const;
 	template <Orient D,Enclosure Enc = Outer> int frameSize(int size) const;
 
+	template <Orient D> void adjustRoot();
 	template <Orient D> void adjustToplevel();
 	template <Orient D> void doAdjustment(int size);
 	template <Orient D> void resizeFrame(int reqSize);
@@ -2275,9 +2276,6 @@ Node::expand() const
 void
 Node::updateDimen(int x, int y, int width, int height)
 {
-	// NOTE: Don't use tk::isMapped(), this function seems to return false
-	// if a window is hidden.
-
 	if (width > 1 && height > 1 && exists())
 	{
 #if 0
@@ -4151,7 +4149,7 @@ Node::doAdjustment(int size)
 
 template <Orient D>
 void
-Node::adjustToplevel()
+Node::adjustRoot()
 {
 	if (grow<D>() && actualSize<Inner,D>() < minSize<Inner,D>())
 		m_dimen.set<D>(mstl::min(minSize<Inner,D>(), m_actual.min.dimen<D>()));
@@ -4160,13 +4158,35 @@ Node::adjustToplevel()
 }
 
 
+template <Orient D>
+void
+Node::adjustToplevel()
+{
+	if (!(expand() & D))
+	{
+		if (actualSize<Inner,D>() < minSize<Inner,D>())
+			m_dimen.set<D>(minSize<Inner,D>());
+		else if (maxSize<Inner,D>() > 0 && actualSize<Inner,D>() < maxSize<Inner,D>())
+			m_dimen.set<D>(maxSize<Inner,D>());
+	}
+}
+
+
 void
 Node::adjustDimensions()
 {
 	M_ASSERT(isToplevel());
 
-	adjustToplevel<Horz>();
-	adjustToplevel<Vert>();
+	if (isRoot())
+	{
+		adjustRoot<Horz>();
+		adjustRoot<Vert>();
+	}
+	else
+	{
+		adjustToplevel<Horz>();
+		adjustToplevel<Vert>();
+	}
 
 	doAdjustment<Horz>(actualSize<Inner,Horz>());
 	doAdjustment<Vert>(actualSize<Inner,Vert>());

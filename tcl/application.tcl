@@ -242,8 +242,10 @@ proc open {} {
 		set Vars(layout) $Options(layout:name)
 	}
 
+	set Vars(loading) 1
 	loadInitialLayout $main
 	$main load $Options(layout:list)
+	set Vars(loading) 0
 }
 
 
@@ -343,7 +345,8 @@ proc BuildPane {main frame uid width height} {
 		analysis	{
 			variable MapTerminalToAnalysis
 			set analysisNumber $MapTerminalToAnalysis([NumberFromUid $uid])
-			if {[set patterNumber [expr {$Vars(terminal:number) - 1}]] > 0} {
+			set patterNumber 0
+			if {!$Vars(loading) && [set patterNumber [expr {$Vars(terminal:number) - 1}]] > 0} {
 				set patterNumber $MapTerminalToAnalysis($patterNumber)
 			}
 			analysis::build $frame $analysisNumber $patterNumber
@@ -436,7 +439,22 @@ proc resizePaneHeight {analysisNumber minHeight} {
 
 	lassign [$main dimension $pane] _ height _ _ _ _
 	set height [expr {max($height,$minHeight)}]
-	$main resize $pane 0 $height 0 $minHeight 0 0
+
+	if {[$main isfloat [$main toplevel $pane]]} {
+		set height $minHeight
+		set maxHeight $minHeight
+	} else {
+		set maxHeight 0
+	}
+	$main resize $pane 0 $height 0 $minHeight 0 $maxHeight
+}
+
+
+proc mapToTerminalNumber {analysisNumber} {
+	variable MapAnalysisToTerminal
+
+	if {![info exists MapAnalysisToTerminal($analysisNumber)]} { return -1 }
+	return $MapAnalysisToTerminal($analysisNumber)
 }
 
 
@@ -444,7 +462,9 @@ proc restoreLayout {name list} {
 	variable Options
 	variable Vars
 
+	set Vars(loading) 1
 	$Vars(frame:main) load $list
+	set Vars(loading) 0
 	set Vars(layout) $name
 	set Options(layout:name) $name
 	set Options(layout:list) $list
