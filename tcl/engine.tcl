@@ -667,7 +667,7 @@ proc openSetup {parent {number -1}} {
 	::widget::dialogButtons $dlg {start close} -default start
 	::widget::dialogButtonAdd $dlg admin $var $::icon::16x16::setup -position end
 	$dlg.start configure -command [namespace code [list StartEngine $number $list]]
-	$dlg.close configure -command [list wm withdraw $dlg]
+	$dlg.close configure -command [namespace code [list CloseDialog $dlg]]
 	$dlg.admin configure -command [namespace code [list OpenAdministration $number $dlg]]
 
 	set i [FindIndexInList $Options(engine)]
@@ -682,7 +682,7 @@ proc openSetup {parent {number -1}} {
 	::ttk::grabWindow $dlg
 	wm deiconify $dlg
 	focus $list
-	tkwait window $dlg
+	tkwait variable [namespace current]::openSetup_
 	::ttk::releaseGrab $dlg
 }
 
@@ -1492,10 +1492,19 @@ proc CloseSetup {list} {
 }
 
 
+proc CloseDialog {dlg} {
+	variable openSetup_
+	wm withdraw $dlg
+	set openSetup_ 1
+}
+
+
 proc StartEngine {number list} {
 	variable Engines
 	variable ${number}::Vars
+	variable openSetup_
 
+	set openSetup_ 1
 	wm withdraw [winfo toplevel $list]
 	update idletasks
 
