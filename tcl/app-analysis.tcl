@@ -151,7 +151,6 @@ proc build {parent number {patternNumber 0}} {
 	set Vars(title) ""
 	set Vars(paused) 0
 	set Vars(number) $number
-	array set fopt [font configure $Defaults(engine:font)]
 	set Vars(linespace) [font metrics $Defaults(engine:font) -linespace]
 	set Vars(keepActive) 0
 	set Vars(current:item) 0

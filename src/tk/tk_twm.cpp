@@ -2282,7 +2282,6 @@ Node::updateDimen(int x, int y, int width, int height)
 if (m_dimen.actual.width != contentSize<Horz>(width) || m_dimen.actual.height != contentSize<Vert>(height))
 printf("updateDimen(%s): %d %d\n", id(), width, height);
 #endif
-
 		width = contentSize<Horz>(width);
 		height = contentSize<Vert>(height);
 
