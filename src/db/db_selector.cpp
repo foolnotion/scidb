@@ -322,24 +322,6 @@ compUserEco(unsigned const* lhs, unsigned const* rhs)
 
 
 static int
-compOverview(unsigned const* lhs, unsigned const* rhs)
-{
-	GameInfo const& il = database->gameInfo(*lhs);
-	GameInfo const& ir = database->gameInfo(*rhs);
-
-	int rc = int(il.idn()) - int(ir.idn());
-
-	if (rc)
-		return rc;
-
-	if (il.idn() != variant::Standard)
-		return 0;
-
-	return int(il.ecoKey()) - int(ir.ecoKey());
-}
-
-
-static int
 compFlags(unsigned const* lhs, unsigned const* rhs)
 {
 	uint32_t fl = database->gameInfo(*lhs).flags();
@@ -668,6 +650,7 @@ Selector::sort(Database const& db, attribute::game::ID attr, order::ID order, ra
 		case attribute::game::Material:					func = game::compMaterial; break;
 		case attribute::game::Idn:							func = game::compIdn; break;
 		case attribute::game::Position:					func = game::compPosition; break;
+		case attribute::game::MoveList:					func = game::compPosition; break; // TODO should be classification
 		case attribute::game::Acv:							func = game::compAcv; break;
 		case attribute::game::CommentEngFlag:			func = game::compEngFlag; break;
 		case attribute::game::CommentOthFlag:			func = game::compOthFlag; break;
@@ -680,7 +663,6 @@ Selector::sort(Database const& db, attribute::game::ID attr, order::ID order, ra
 		case attribute::game::Chess960Position:		func = game::compChess960Position; break;
 		case attribute::game::Promotion:					func = game::compPromotion; break;
 		case attribute::game::UnderPromotion:			func = game::compUnderPromotion; break;
-		case attribute::game::Overview:					func = game::compOverview; break;
 
 		case attribute::game::Added:
 			if (!m_map.empty() && db.countGames() > db.countInitialGames())

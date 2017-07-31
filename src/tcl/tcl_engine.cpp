@@ -342,7 +342,7 @@ public:
 		Tcl_Obj* objs[3];
 		mstl::string move;
 
-		currentMove().printSan(move, protocol::Scidb, encoding::Utf8);
+		currentMove().printSAN(move, protocol::Scidb, encoding::Utf8);
 		objs[0] = Tcl_NewIntObj(currentMoveNumber());
 		objs[1] = Tcl_NewIntObj(currentMoveCount());
 		objs[2] = Tcl_NewStringObj(move, move.size());
@@ -356,7 +356,7 @@ public:
 	void updateBestMove() override
 	{
 		mstl::string move;
-		bestMove().printSan(move, protocol::Scidb, encoding::Utf8);
+		bestMove().printSAN(move, protocol::Scidb, encoding::Utf8);
 		sendInfo(m_bestmove, Tcl_NewStringObj(move, move.size()));
 	}
 

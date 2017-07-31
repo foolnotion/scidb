@@ -128,6 +128,7 @@ proc openDialog {parent primary secondary} {
 		set table [::gametable::build $tb       \
 			[namespace code View]                \
 			$columns                             \
+			-id game:merge                       \
 			-mode merge                          \
 			-sortable 0                          \
 			-useScale 0                          \

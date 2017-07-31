@@ -1919,7 +1919,6 @@ getGameInfo(int index, int view, char const* database, variant::Type variant, un
 			break;
 
 		case attribute::game::Eco:
-		case attribute::game::Overview:
 		case attribute::game::Opening:
 		case attribute::game::InternalEco:
 			{
@@ -2025,8 +2024,9 @@ getGameInfo(int index, int view, char const* database, variant::Type variant, un
 }
 
 
+// TODO: notation is unused
 int
-tcl::db::getGameInfo(Database const& db, unsigned index, Ratings const& ratings)
+tcl::db::getGameInfo(Database const& db, unsigned index, Ratings const& ratings, move::Notation notation)
 {
 	GameInfo const& info = db.gameInfo(index);
 
@@ -2078,22 +2078,10 @@ tcl::db::getGameInfo(Database const& db, unsigned index, Ratings const& ratings)
 	}
 
 	mstl::string flags;
-	mstl::string overview;
-
 	flagsToString(info.flags(), flags);
 
 	if (db.format() == format::Scid4)
 		::mapScid4Flags(flags);
-
-	if (info.idn() == variant::Standard)
-	{
-		if (eop)
-			ecoTable.getLine(eop).print(overview, variant::Normal, protocol::Scidb, encoding::Utf8);
-	}
-	else if (variant::isShuffleChess(info.idn()))
-	{
-		overview = startPosition;
-	}
 
 	Tcl_Obj* openingVar[2] =
 	{
@@ -2147,6 +2135,7 @@ tcl::db::getGameInfo(Database const& db, unsigned index, Ratings const& ratings)
 	SET(Annotator,            Tcl_NewStringObj(info.annotator(), info.annotator().size()));
 	SET(Idn,                  Tcl_NewIntObj(idn));
 	SET(Position,             Tcl_NewStringObj(startPosition, -1));
+	SET(MoveList,             Tcl_NewStringObj(mstl::string::empty_string, 0)),
 	SET(Length,               Tcl_NewIntObj(mstl::div2(info.plyCount() + 1)));
 	SET(Eco,                  Tcl_NewStringObj(eco.asShortString(), -1));
 	SET(Flags,                Tcl_NewStringObj(flags, flags.size()));
@@ -2164,7 +2153,6 @@ tcl::db::getGameInfo(Database const& db, unsigned index, Ratings const& ratings)
 	SET(Termination,          Tcl_NewStringObj(termination::toString(info.terminationReason()), -1));
 	SET(Mode,                 Tcl_NewStringObj(event::toString(info.eventMode()), -1));
 	SET(TimeMode,             Tcl_NewStringObj(::db::time::toString(info.timeMode()), -1));
-	SET(Overview,             Tcl_NewStringObj(overview, overview.size()));
 	SET(Opening,              Tcl_NewListObj(2, openingVar));
 	SET(Variation,            Tcl_NewStringObj(opening->part[2], opening->part[2].size()));
 	SET(SubVariation,         Tcl_NewStringObj(opening->part[3], opening->part[3].size()));
@@ -2180,26 +2168,31 @@ tcl::db::getGameInfo(Database const& db, unsigned index, Ratings const& ratings)
 
 
 static int
-getGameInfo(int index, int view, char const* database, variant::Type variant)
+getGameInfo(int index, int view, char const* database, variant::Type variant, move::Notation notation)
 {
 	Cursor const& cursor = Scidb->cursor(database, variant);
 
 	if (view >= 0)
 		index = cursor.index(table::Games, index, view);
 
-	return getGameInfo(cursor.database(), index, Ratings(rating::Elo, rating::DWZ));
+	return getGameInfo(cursor.database(), index, Ratings(rating::Elo, rating::DWZ), notation);
 }
 
 
 static int
-getGameInfo(int index, int view, char const* database, variant::Type variant, Ratings const& ratings)
+getGameInfo(int index,
+				int view,
+				char const* database,
+				variant::Type variant,
+				Ratings const& ratings,
+				move::Notation notation)
 {
 	Cursor const& cursor = Scidb->cursor(database, variant);
 
 	if (view >= 0)
 		index = cursor.index(table::Games, index, view);
 
-	return getGameInfo(cursor.database(), index, ratings);
+	return getGameInfo(cursor.database(), index, ratings, notation);
 }
 
 
@@ -2830,7 +2823,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		/* encoding			*/ "?<database>?",
 		/* created?			*/ "?<database>?",
 		/* modified?		*/ "?<database>?",
-		/* gameInfo			*/ "<index> <view> <database> ?<variant>?",
+		/* gameInfo			*/ "<index> <view> <database> ?<variant>? ?-ratings <ratings>? ?-notation <notation>?",
 		/* playerInfo		*/ "<index> <view> <database> <variant> ?<which>?",
 		/* eventInfo		*/ "<index> <view> <database> <variant> ?<which>?",
 		/* siteInfo			*/ "<index> <view> <database> <variant> ?<which>?",
@@ -2946,12 +2939,26 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case Cmd_GameInfo:
 		{
 			Ratings ratings(rating::Any, rating::Any);
-			bool parseRatings = ::strcmp(stringFromObj(objc, objv, objc - 2), "-ratings") == 0;
+			move::Notation notation = move::SAN;
+			bool haveRatings = false;
 
-			if (parseRatings)
+			for ( ; objc > 7; objc -= 2)
 			{
-				ratings = ::convRatings(stringFromObj(objc, objv, objc - 1));
-				objc -= 2;
+				char const* option = stringFromObj(objc, objv, objc - 2);
+
+				if (strcmp(option, "-ratings") == 0)
+				{
+					ratings = ::convRatings(stringFromObj(objc, objv, objc - 1));
+					haveRatings = true;
+				}
+				else if (strcmp(option, "-notation") == 0)
+				{
+					notation = tcl::game::notationFromObj(objv[objc - 1]);
+				}
+				else
+				{
+					return error(CmdGet, "gameInfo", nullptr, "unknown option %s", option);
+				}
 			}
 
 			index = unsignedFromObj(objc, objv, 2);
@@ -2959,11 +2966,11 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			char const* database = stringFromObj(objc, objv, 4);
 			variant::Type variant = tcl::game::variantFromObj(objc, objv, 5);
 
-			if (parseRatings)
-				return getGameInfo(index, view, database, variant, ratings);
+			if (haveRatings)
+				return getGameInfo(index, view, database, variant, ratings, notation);
 
 			if (objc <= 6)
-				return getGameInfo(index, view, database, variant);
+				return getGameInfo(index, view, database, variant, notation);
 
 			return getGameInfo(index, view, database, variant, unsignedFromObj(objc, objv, 6));
 		}
@@ -4441,7 +4448,7 @@ tcl::db::getPlayerStats(Database const& database, NamebasePlayer const& player)
 		mstl::string line;
 
 		ecoTable.getLine(stats.ecoLine(color::White, i)).
-			print(line, variant::Normal, protocol::Scidb, encoding::Utf8);
+			print(line, variant::Normal, move::SAN, protocol::Scidb, encoding::Utf8);
 		argv[0] = Tcl_NewIntObj(stats.ecoCount(color::White, i));
 		argv[1] = Tcl_NewStringObj(line, line.size());
 		Tcl_ListObjAppendElement(0, objs[0], Tcl_NewListObj(2, argv));
@@ -4453,7 +4460,7 @@ tcl::db::getPlayerStats(Database const& database, NamebasePlayer const& player)
 		mstl::string line;
 
 		ecoTable.getLine(stats.ecoLine(color::Black, i)).
-			print(line, variant::Normal, protocol::Scidb, encoding::Utf8);
+			print(line, variant::Normal, move::SAN, protocol::Scidb, encoding::Utf8);
 		argv[0] = Tcl_NewIntObj(stats.ecoCount(color::Black, i));
 		argv[1] = Tcl_NewStringObj(line, line.size());
 		Tcl_ListObjAppendElement(0, objs[1], Tcl_NewListObj(2, argv));

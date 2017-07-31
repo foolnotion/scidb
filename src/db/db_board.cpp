@@ -1333,6 +1333,8 @@ Board::prepareForPrint(Move& move, variant::Type variant, Representation represe
 
 	if (!move.isPrintable())
 	{
+		move.clearInfoStatus();
+
 		if (!move.isNull())
 		{
 			unsigned state = NoCheck;
@@ -1378,6 +1380,8 @@ Board::prepareForPrint(Move& move, variant::Type variant, Representation represe
 					others ^= set1Bit(from);
 					others &= m_occupiedBy[m_stm];
 
+					uint64_t others2 = others;
+
 					if (others && representation == InternalRepresentation)
 					{
 						if (!variant::isAntichessExceptLosers(variant))
@@ -1407,11 +1411,12 @@ Board::prepareForPrint(Move& move, variant::Type variant, Representation represe
 
 								if (others && count(movers & m_occupiedBy[m_stm]) == 1)
 								{
-									// this is confusing if more than one moving piece exists
-									if (state & Checkmate)
-										filterCheckmateMoves(move, others, variant);
-									else
-										filterCheckMoves(move, others, variant);
+									// this is confusing if more than one moving piece exists,
+									// but required for descriptive notation
+									filterCheckMoves(move, others2, variant, state);
+
+									if (bf::exactly_one(others2 & m_occupiedBy[m_stm]))
+										others = others2;
 								}
 							}
 						}
@@ -1426,6 +1431,9 @@ Board::prepareForPrint(Move& move, variant::Type variant, Representation represe
 							move.setNeedsRank();
 						else
 							move.setNeedsFyle();
+
+						if (bf::exactly_one(others2))
+							move.setDisambiguated();
 					}
 
 					// we may need disambiguation of destination square
@@ -1492,7 +1500,7 @@ Board::prepareForPrint(Move& move, variant::Type variant, Representation represe
 
 							// this may be confusing if more than one of captured piece exists
 							if (others[0] && (state & (Check | Checkmate)))
-								filterCheckmateMoves(move, others[0], variant);
+								filterCheckMoves(move, others[0], variant, state);
 						}
 
 						if (others[0] | others[1])
@@ -1504,6 +1512,43 @@ Board::prepareForPrint(Move& move, variant::Type variant, Representation represe
 					// we may need disambiguation of pawn captures
 					if (pawnCapturesTo(to) ^ set1Bit(from))
 						move.setNeedsFyle();
+
+					if (move.isEnPassant())
+					{
+						uint64_t movers = PawnAttacks[m_stm ^ 1][move.enPassantSquare()]
+											 & m_pawns
+											 & m_occupiedBy[m_stm]
+											 & set1Bit(from);
+
+						filterCheckMoves(move, movers, variant, state);
+
+						if (movers == 0)
+							move.setDisambiguated();
+					}
+					else
+					{
+						MoveList moves;
+						generateCapturingPawnMoves(variant, moves);
+
+						unsigned count = 0;
+
+						for (unsigned i = 0; i < moves.size(); ++i)
+						{
+							Move m = moves[i];
+
+							if (move.to() == m.to() && move.from() != m.from())
+							{
+								Board peek(*this);
+								peek.doMove(moves[i], variant);
+
+								if (!peek.sideNotToMoveInCheck())
+									++count;
+							}
+						}
+
+						if (count == 0)
+							move.setDisambiguated();
+					}
 				}
 			}
 		}
@@ -6111,7 +6156,7 @@ Board::checkMove(Move const& move, variant::Type variant, move::Constraint flag)
 
 	if (from == Null)
 		return false;
-	if (piece(from) != move.pieceMoved())
+	if (piece(from) != move.moved())
 		return false;
 
 	uint64_t src = set1Bit(from);
@@ -7204,7 +7249,7 @@ Board::staticExchangeEvaluator(Move const& move, int const* pieceValues) const
 	}
 	else
 	{
-		attackedPiece = pieceValues[move.pieceMoved()];
+		attackedPiece = pieceValues[move.moved()];
 		swapList[0] = pieceValues[move.capturedOrDropped()];
 	}
 

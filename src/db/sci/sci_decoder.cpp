@@ -989,6 +989,93 @@ Decoder::decodeEngines(ByteStream& strm, EngineList& engines)
 }
 
 
+unsigned
+Decoder::doDecoding(uint16_t* line, unsigned length, Board& startBoard, bool useStartBoard)
+{
+	uint16_t idn = m_strm.uint16() & 0x0fff;
+
+	if (idn)
+	{
+		m_position.setup(idn, m_variant);
+	}
+	else
+	{
+		mstl::string fen;
+		m_strm.get(fen);
+		m_position.setup(fen, m_variant);
+	}
+
+	if (!useStartBoard)
+		startBoard = m_position.board();
+	else if (startBoard.isEqualZHPosition(m_position.board()))
+		useStartBoard = false;
+
+	m_strm.skip(3); // skip offset to text section
+
+	//M_ASSERT(m_position.board().variant() == m_variant);
+
+	unsigned	runLength = mstl::min(length, unsigned(m_strm.uint16()));
+	unsigned	index = 0;
+	unsigned	i;
+	Move		move;
+
+	for (i = 0; i < runLength; ++i)
+	{
+		static_assert(((1 << 16) - 2)/* Maximal Run Size */ <= Block_Size, "unsafeGet() is unsafe");
+
+		// unsafeGet() is ok because the block file is buffered with doubled size
+		m_position.doMove(move, decodeMove(m_strm.unsafeGet(), move));
+
+		if (!useStartBoard)
+		{
+			line[index++] = move.index();
+		}
+		else if (startBoard.isEqualZHPosition(m_position.board()))
+		{
+			startBoard.setPlyNumber(m_position.board().plyNumber());
+			useStartBoard = false;
+		}
+	}
+
+	if (index == length)
+		return index;
+
+	while (true)
+	{
+		Byte b;
+
+		while ((b = m_strm.get()) >= token::Special_Move)
+		{
+			m_position.doMove(move, decodeMove(b, move));
+
+			if (!useStartBoard)
+			{
+				line[index] = move.index();
+				if (++index == length)
+					return index;
+			}
+			else if (startBoard.isEqualZHPosition(m_position.board()))
+			{
+				startBoard.setPlyNumber(m_position.board().plyNumber());
+				useStartBoard = false;
+			}
+		}
+
+		switch (b)
+		{
+			case token::Start_Marker:
+				skipVariations();
+				break;
+
+			case token::End_Marker:
+				return index;
+		}
+	}
+
+	return index; // never reached
+}
+
+
 save::State
 Decoder::doDecoding(db::Consumer& consumer, TagSet& tags)
 {

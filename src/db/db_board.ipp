@@ -97,6 +97,14 @@ inline void Board::setHalfMoveClock(unsigned number)	{ m_halfMoveClock = number;
 
 inline
 uint64_t
+Board::pieces(color::ID color, piece::Type pt) const
+{
+	return m_pieces[pt] & m_occupiedBy[color];
+}
+
+
+inline
+uint64_t
 Board::promoted() const
 {
 	return m_promotedPieces[color::White] | m_promotedPieces[color::Black];
@@ -146,6 +154,32 @@ Board::color(Square s) const
 
 
 inline
+bool
+Board::kingOnBoard() const
+{
+	return kingOnBoard(color::White) && kingOnBoard(color::Black);
+}
+
+
+inline
+uint64_t
+Board::checkers(color::ID color) const
+{
+	M_ASSERT(m_ksq[color] != sq::Null);
+	return isAttackedBy(~color, m_ksq[color]);
+}
+
+
+inline
+uint64_t
+Board::checkers() const
+{
+	M_REQUIRE(kingOnBoard());
+	return checkers(sideToMove());
+}
+
+
+inline
 sq::ID
 Board::kingSq(color::ID side) const
 {
@@ -183,14 +217,6 @@ Board::kingSquare() const
 
 inline
 bool
-Board::kingOnBoard() const
-{
-	return kingOnBoard(color::White) && kingOnBoard(color::Black);
-}
-
-
-inline
-bool
 Board::isInCheck(color::ID color) const
 {
 	M_REQUIRE(kingOnBoard(color));
@@ -204,6 +230,15 @@ Board::isInCheck() const
 {
 	M_REQUIRE(kingOnBoard());
 	return isAttackedBy(m_stm ^ 1, m_ksq[m_stm]);
+}
+
+
+inline
+bool
+Board::sideNotToMoveInCheck() const
+{
+	M_REQUIRE(kingOnBoard(notToMove()));
+	return checkers(notToMove());
 }
 
 
@@ -466,6 +501,17 @@ bool
 Board::gameIsOver(variant::Type variant) const
 {
 	return bool(checkState(variant) & (Checkmate | ThreeChecks | Stalemate | Losing));
+}
+
+
+inline
+void
+Board::filterCheckMoves(Move move, uint64_t& movers, variant::Type variant, unsigned state) const
+{
+	if (state & Checkmate)
+		filterCheckmateMoves(move, movers, variant);
+	else
+		filterCheckMoves(move, movers, variant);
 }
 
 } // namespace db

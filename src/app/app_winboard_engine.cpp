@@ -391,9 +391,9 @@ winboard::Engine::doMove(Move const& move)
 	if (move.isNull())
 		s.append("@@@@", 4);	// alternatives: "pass", "null", "--"
 	else if (/*m_featureSan || */move.isPieceDrop() || (move.isCastling() && m_mustUseChess960))
-		move.printSan(s, protocol::Standard, encoding::Latin1);
+		move.printSAN(s, protocol::Standard, encoding::Latin1);
 	else
-		move.printAlgebraic(s, protocol::Standard, encoding::Latin1);
+		move.printCAN(s, protocol::Standard, encoding::Latin1);
 
 	send(s);
 }

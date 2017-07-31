@@ -60,28 +60,39 @@ public:
 	public:
 
 		Key();
-		Key(uint64_t hash, Position const& position, tree::Mode mode, rating::Type ratingType);
+		Key(	uint64_t hash,
+				Position const& position,
+				tree::Method method,
+				tree::Mode mode,
+				rating::Type ratingType);
 
 		bool operator==(Key const& key) const;
 		bool operator!=(Key const& key) const;
 
-		bool match(	tree::Mode mode,
+		bool match(	tree::Method method,
+						tree::Mode mode,
 						rating::Type ratingType,
 						uint64_t hash,
 						Position const& position) const;
 
 		uint64_t hash() const;
 		Position const& position() const;
+		tree::Method method() const;
 		tree::Mode mode() const;
 		rating::Type ratingType() const;
 
-		void set(tree::Mode mode, rating::Type ratingType, uint64_t hash, Position const& position);
+		void set(tree::Method method,
+					tree::Mode mode,
+					rating::Type ratingType,
+					uint64_t hash,
+					Position const& position);
 		void clear();
 
 	private:
 
 		uint64_t			m_hash;
 		Position			m_position;
+		tree::Method	m_method;
 		tree::Mode		m_mode;
 		rating::Type	m_ratingType;
 	};
@@ -93,9 +104,14 @@ public:
 	bool isTreeFor(Database const& base, Board const& position) const;
 	bool isTreeFor(Database const& base,
 						Board const& position,
+						tree::Method method,
 						tree::Mode mode,
 						rating::Type ratingType) const;
-	bool match(tree::Mode mode, rating::Type ratingType, uint64_t hash, Position const& position) const;
+	bool match(	tree::Method method,
+					tree::Mode mode,
+					rating::Type ratingType,
+					uint64_t hash,
+					Position const& position) const;
 
 	unsigned size() const;
 	TreeInfo const& info(unsigned n) const;
@@ -111,11 +127,12 @@ public:
 	Key const& key() const;
 	uint64_t hash() const;
 	Position const& position() const;
+	tree::Method method() const;
 	tree::Mode mode() const;
 	rating::Type ratingType() const;
 
 	void sort(attribute::tree::ID column);
-	void setIncomplete(unsigned index);
+	void setIncomplete(unsigned firstIndex, unsigned lastIndex);
 	void setIncomplete();
 
 	void compressFilter();
@@ -128,22 +145,24 @@ public:
 									Line myLine,
 									uint16_t hpsig,
 									Database& base,
+									tree::Method method,
 									tree::Mode mode,
 									rating::Type ratingType,
 									util::Progress& progress);
 
 	static bool isCached(Database const& base,
 								Board const& position,
+								tree::Method method,
 								tree::Mode mode,
 								rating::Type ratingType);
 	static Tree* lookup(	Database const& base,
 								Board const& position,
+								tree::Method method,
 								tree::Mode mode,
 								rating::Type ratingType);
 	static void addToCache(Tree* tree);
 	static void clearCache(Database& base);
-	static void invalidateCache(Database& base);
-	static void invalidateCache(Database& base, unsigned gameIndex);
+	static void invalidateCache(Database& base, unsigned firstGameIndex, unsigned lastGameIndex);
 
 private:
 
@@ -156,6 +175,7 @@ private:
 									Line const& myLine,
 									uint16_t hpsig,
 									Database const& base,
+									tree::Method method,
 									tree::Mode mode,
 									ReachableFunc reachableFunc,
 									util::Progress& progress,
@@ -167,6 +187,7 @@ private:
 									Line const& myLine,
 									uint16_t hpsig,
 									Database const& base,
+									tree::Method method,
 									tree::Mode mode,
 									ReachableFunc reachableFunc,
 									util::Progress& progress,
@@ -178,6 +199,7 @@ private:
 									Line const& myLine,
 									uint16_t hpsig,
 									Database const& base,
+									tree::Method method,
 									tree::Mode mode,
 									ReachableFunc reachableFunc,
 									util::Progress& progress,
@@ -189,6 +211,7 @@ private:
 									Line const& myLine,
 									uint16_t hpsig,
 									Database const& base,
+									tree::Method method,
 									tree::Mode mode,
 									ReachableFunc reachableFunc,
 									util::Progress& progress,
@@ -200,6 +223,7 @@ private:
 									Line const& myLine,
 									uint16_t hpsig,
 									Database const& base,
+									tree::Method method,
 									tree::Mode mode,
 									ReachableFunc reachableFunc,
 									util::Progress& progress,
@@ -208,6 +232,7 @@ private:
 
 	void possiblyAdd(	Database const& base,
 							GameInfo const& info,
+							tree::Mode mode,
 							Eco eco,
 							Board const& myPosition);
 	void add(GameInfo const& info, Eco eco, uint16_t move, Board const& myPosition);
@@ -232,6 +257,13 @@ private:
 };
 
 } // namespace db
+
+namespace mstl {
+
+template <typename T> struct is_pod;
+template <> struct is_pod<db::Tree::Key> { enum { value = is_pod<db::board::ExactZHPosition>::value }; };
+
+} // namespace mstl
 
 #include "db_tree.ipp"
 

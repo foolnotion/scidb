@@ -32,9 +32,12 @@ inline unsigned TreeCache::used() const	{ return m_inUse; }
 
 inline
 Tree*
-TreeCache::lookup(Board const& position, tree::Mode mode, rating::Type ratingType) const
+TreeCache::lookup(Board const& position,
+						tree::Method method,
+						tree::Mode mode,
+						rating::Type ratingType) const
 {
-	return lookup(position.hash(), position.exactZHPosition(), mode, ratingType);
+	return lookup(position.hash(), position.exactZHPosition(), method, mode, ratingType);
 }
 
 
@@ -42,18 +45,22 @@ inline
 bool
 TreeCache::isCached(	uint64_t hash,
 							Position const& position,
+							tree::Method method,
 							tree::Mode mode,
 							rating::Type ratingType) const
 {
-	return lookup(hash, position, mode, ratingType) != 0;
+	return lookup(hash, position, method, mode, ratingType) != 0;
 }
 
 
 inline
 bool
-TreeCache::isCached(Board const& position, tree::Mode mode, rating::Type ratingType) const
+TreeCache::isCached(	Board const& position,
+							tree::Method method,
+							tree::Mode mode,
+							rating::Type ratingType) const
 {
-	return isCached(position.hash(), position.exactZHPosition(), mode, ratingType);
+	return isCached(position.hash(), position.exactZHPosition(), method, mode, ratingType);
 }
 
 } // namespace db

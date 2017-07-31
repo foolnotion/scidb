@@ -296,6 +296,7 @@ u_piped_progress.o: ../mstl/m_backtrace.h
 u_piped_progress.o: ../mstl/m_types.h
 u_piped_progress.o: ../mstl/m_exception.ipp
 u_piped_progress.o: ../sys/sys_pipe.h
+u_piped_progress.o: u_piped_progress.ipp
 u_piped_progress.o: ../sys/sys_thread.h
 u_piped_progress.o: ../mstl/m_function.h
 u_piped_progress.o: ../mstl/m_function_base.h

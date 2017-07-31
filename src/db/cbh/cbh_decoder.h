@@ -28,21 +28,14 @@
 #define _cbh_decoder_included
 
 #include "cbh_decoder_position.h"
-#include "db_move_node.h"
 #include "db_move.h"
 
-#include "m_fixed_size_allocator.h"
-
 namespace util { class ByteStream; }
-namespace sys { namespace utf8 { class Codec; } }
 
 namespace db {
 
-class GameData;
-class Consumer;
 class TagSet;
 class MoveNode;
-class GameInfo;
 
 namespace cbh {
 
@@ -50,47 +43,29 @@ class Decoder
 {
 public:
 
-	typedef mstl::fixed_size_allocator<db::MoveNode> MoveNodeAllocator;
-
-	Decoder(util::ByteStream& gStrm, util::ByteStream& aStrm, sys::utf8::Codec& codec, bool isChess960);
+	Decoder(util::ByteStream& gStrm, bool isChess960);
 
 	Move findExactPosition(Board const& position, bool skipVariations);
 
-	unsigned doDecoding(GameData& data);
-	save::State doDecoding(	db::Consumer& consumer,
-									TagSet& tags,
-									GameInfo const& info,
-									MoveNodeAllocator& allocator);
+	unsigned doDecoding(uint16_t* moves, unsigned length, Board& startBoard, bool useStartBoard);
+
+protected:
+
+	enum { Token_Move, Token_Push, Token_Pop, Token_Skip };
+
+	unsigned decodeMove(db::Move& move, unsigned& count, bool skipVariations = false);
+	void startDecoding(TagSet* tags = 0);
+
+	util::ByteStream&	m_gStrm;
+	decoder::Position	m_position;
+	bool					m_isChess960;
 
 private:
-
 
 	Decoder(Decoder const&);
 	Decoder& operator=(Decoder const&);
 
-	void startDecoding(TagSet* tags = 0);
-	unsigned decodeMove(Move& move, unsigned& count);
-#if 0
-	void decodeMoves(Consumer& consumer);
-#endif
-	MoveNode* decodeMoves(MoveNode* root);
-	MoveNode* decodeMoves(MoveNodeAllocator& allocator);
-	void decodeMoves(MoveNode* root, unsigned& count);
-	void decodeMoves(MoveNode* root, unsigned& count, MoveNodeAllocator& allocator);
-	void traverse(Consumer& consumer, MoveNode const* root);
-	void getAnnotation(MoveNode* node, int moveNo);
-	void decodeComment(MoveNode* node, unsigned length, move::Position position);
-	void decodeSymbols(MoveNode* node, unsigned length);
-	void decodeSquares(MoveNode* node, unsigned length);
-	void decodeArrows(MoveNode* node, unsigned length);
-
-	util::ByteStream&	m_gStrm;
-	util::ByteStream&	m_aStrm;
-	sys::utf8::Codec&	m_codec;
-	int					m_moveNo;
-	bool					m_isChess960;
-	decoder::Position	m_position;
-	Byte const*			m_lookup;
+	unsigned decodeMoves(uint16_t* line, unsigned length, Board* startBoard);
 };
 
 } // namespace cbh

@@ -166,6 +166,7 @@ array set Colors {
 	lite:table,selectionbackground		#ffdd76
 	lite:table,selectionforeground		black
 	lite:table,disabledforeground			#555555
+	lite:table,activebackground			#e5e5e5
 	lite:table,labelforeground				black
 	lite:table,labelbackground				#d9d9d9
 

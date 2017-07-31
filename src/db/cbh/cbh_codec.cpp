@@ -33,6 +33,7 @@
 
 #include "cbh_codec.h"
 #include "cbh_decoder.h"
+#include "cbh_game_decoder.h"
 
 #include "db_reader.h"
 #include "db_game_data.h"
@@ -2463,7 +2464,7 @@ Codec::decodeIndex(ByteStream& strm, GameInfo& info)
 
 void
 Codec::startDecoding(ByteStream& gameStream,
-							ByteStream& annotationStream,
+							ByteStream* annotationStream,
 							GameInfo const& info,
 							bool& isChess960)
 {
@@ -2505,21 +2506,24 @@ Codec::startDecoding(ByteStream& gameStream,
 		if (!m_annotationStream.seekg(address + 10, mstl::ios_base::beg))
 			IO_RAISE(Annotation, Corrupted, "unexpected end of file");
 
-		if (!m_annotationStream.read(annotationStream.base(), 4))
-			IO_RAISE(Annotation, Corrupted, "unexpected end of file");
+		if (annotationStream)
+		{
+			if (!m_annotationStream.read(annotationStream->base(), 4))
+				IO_RAISE(Annotation, Corrupted, "unexpected end of file");
 
-		size = annotationStream.uint32() - 14;
+			size = annotationStream->uint32() - 14;
 
-		annotationStream.resetg();
-		annotationStream.reserve(size);
-		annotationStream.provide(size);
+			annotationStream->resetg();
+			annotationStream->reserve(size);
+			annotationStream->provide(size);
 
-		if (!m_annotationStream.read(annotationStream.base(), size))
-			IO_RAISE(Annotation, Corrupted, "unexpected end of file");
+			if (!m_annotationStream.read(annotationStream->base(), size))
+				IO_RAISE(Annotation, Corrupted, "unexpected end of file");
+		}
 	}
-	else
+	else if (annotationStream)
 	{
-		annotationStream.provide(0);
+		annotationStream->provide(0);
 	}
 }
 
@@ -2614,6 +2618,22 @@ Codec::addTeamTags(TagSet& tags, GameInfo const& info)
 }
 
 
+unsigned
+Codec::doDecoding(GameInfo const& info,
+						uint16_t* line,
+						unsigned length,
+						Board& startBoard,
+						bool useStartBoard)
+{
+	Byte buf[32768];
+	ByteStream gStrm(buf, sizeof(buf));
+	bool isChess960;
+
+	startDecoding(gStrm, nullptr, info, isChess960);
+	return Decoder(gStrm, isChess960).doDecoding(line, length, startBoard, useStartBoard);
+}
+
+
 void
 Codec::doDecoding(GameData& data, GameInfo& info, unsigned gameIndex, mstl::string*)
 {
@@ -2624,13 +2644,13 @@ Codec::doDecoding(GameData& data, GameInfo& info, unsigned gameIndex, mstl::stri
 
 	bool isChess960;
 
-	startDecoding(gStrm, aStrm, info, isChess960);
+	startDecoding(gStrm, &aStrm, info, isChess960);
 
 	addSourceTags(data.m_tags, gameIndex);
 	addEventTags(data.m_tags, info);
 	addTeamTags(data.m_tags, info);
 
-	Decoder decoder(gStrm, aStrm, *m_codec, isChess960);
+	GameDecoder decoder(gStrm, aStrm, *m_codec, isChess960);
 	info.m_plyCount = mstl::min(GameInfo::MaxPlyCount, decoder.doDecoding(data));
 }
 
@@ -2645,13 +2665,13 @@ Codec::doDecoding(Consumer& consumer, TagSet& tags, GameInfo const& info, unsign
 
 	bool isChess960;
 
-	startDecoding(gStrm, aStrm, info, isChess960);
+	startDecoding(gStrm, &aStrm, info, isChess960);
 
 	addSourceTags(tags, gameIndex);
 	addEventTags(tags, info);
 	addTeamTags(tags, info);
 
-	Decoder decoder(gStrm, aStrm, *m_codec, isChess960);
+	GameDecoder decoder(gStrm, aStrm, *m_codec, isChess960);
 	save::State state = decoder.doDecoding(consumer, tags, info, m_moveNodeAllocator);
 
 	return state;
@@ -2672,7 +2692,7 @@ Codec::findExactPosition(	GameInfo const& info,
 
 	bool isChess960;
 
-	startDecoding(gStrm, aStrm, info, isChess960);
+	startDecoding(gStrm, &aStrm, info, isChess960);
 
 	Decoder decoder(gStrm, aStrm, *m_codec, isChess960);
 	return decoder.findExactPosition(position, skipVariations);

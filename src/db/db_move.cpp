@@ -35,9 +35,10 @@
 using namespace db;
 
 
-Move const Move::m_null		= Move(uint32_t(Bit_Legality));
-Move const Move::m_empty	= Move(uint32_t(0));
-Move const Move::m_invalid	= Move(uint32_t(Invalid));
+Move const Move::m_null			= Move(uint32_t(Bit_Legality));
+Move const Move::m_empty		= Move(uint32_t(0));
+Move const Move::m_invalid		= Move(uint32_t(Invalid | Bit_Legality));
+Move const Move::m_undefined	= Move(uint32_t(Undefined));
 
 
 static void
@@ -78,7 +79,7 @@ Move::transpose()
 
 
 mstl::string&
-Move::printAlgebraic(mstl::string& s, protocol::ID protocol, encoding::CharSet charSet) const
+Move::printCAN(mstl::string& s, protocol::ID protocol, encoding::CharSet charSet) const
 {
 	M_REQUIRE(!isInvalid());
 
@@ -98,6 +99,8 @@ Move::printAlgebraic(mstl::string& s, protocol::ID protocol, encoding::CharSet c
 	else if (isPieceDrop())
 	{
 		s += sq::printAlgebraic(to());
+//		if (protocol == protocol::UCI)
+//			s += '*';
 		::printPiece(s, dropped(), charSet, ::tolower);
 	}
 	else if (isCastling() && protocol != protocol::Scidb)
@@ -122,7 +125,11 @@ Move::printAlgebraic(mstl::string& s, protocol::ID protocol, encoding::CharSet c
 
 
 mstl::string&
-Move::printSan(mstl::string& s, protocol::ID protocol, encoding::CharSet charSet) const
+Move::printSAN(mstl::string& s,
+					protocol::ID protocol,
+					encoding::CharSet charSet,
+					bool compact,
+					bool useGermanCaptureSign) const
 {
 	M_REQUIRE(!isInvalid());
 	M_REQUIRE(isPrintable() || isEmpty());
@@ -144,15 +151,15 @@ Move::printSan(mstl::string& s, protocol::ID protocol, encoding::CharSet charSet
 			if (protocol != protocol::Scidb || dropped() != piece::Pawn)
 				::printPiece(s, dropped(), charSet, ::toupper);
 
-			s += '@';
+			s += (protocol == protocol::UCI) ? '*' : '@';
 			s += sq::printFyle(to());
 			s += sq::printRank(to());
 		}
 		else
 		{
-			if (pieceMoved() != piece::Pawn)
+			if (moved() != piece::Pawn)
 			{
-				::printPiece(s, pieceMoved(), charSet, ::toupper);
+				::printPiece(s, moved(), charSet, ::toupper);
 
 				if (needsFyle())
 					s += sq::printFyle(from());
@@ -164,23 +171,28 @@ Move::printSan(mstl::string& s, protocol::ID protocol, encoding::CharSet charSet
 
 			if (isCapture())
 			{
-				if (pieceMoved() == piece::Pawn)
+				if (moved() == piece::Pawn)
 					s += sq::printFyle(from());
 
-				s += 'x';
+				if (!compact && !useGermanCaptureSign)
+					s += 'x';
 			}
 
 			s += sq::printFyle(to());
 			s += sq::printRank(to());
 
+			if (!compact && isCapture() && useGermanCaptureSign)
+				s += ':';
+
 			if (isPromotion())
 			{
-				s += '=';
+				if (!compact)
+					s += '=';
 				::printPiece(s, promoted(), charSet, ::toupper);
 			}
 		}
 
-		if (protocol == protocol::Scidb)
+		if (!compact && protocol == protocol::Scidb)
 		{
 			if (givesMate())
 				s += '#';
@@ -194,7 +206,7 @@ Move::printSan(mstl::string& s, protocol::ID protocol, encoding::CharSet charSet
 
 
 mstl::string&
-Move::printLan(mstl::string& s, protocol::ID protocol, encoding::CharSet charSet) const
+Move::printLAN(mstl::string& s, protocol::ID protocol, encoding::CharSet charSet, bool reversible) const
 {
 	M_REQUIRE(!isInvalid());
 	M_REQUIRE(isPrintable() || isEmpty());
@@ -208,18 +220,30 @@ Move::printLan(mstl::string& s, protocol::ID protocol, encoding::CharSet charSet
 		if (isPieceDrop())
 		{
 			::printPiece(s, dropped(), charSet, ::toupper);
-			s += '@';
+			s += protocol == protocol::UCI ? '*' : '@';
 			s += sq::printFyle(to());
 			s += sq::printRank(to());
 		}
 		else
 		{
-			if (pieceMoved() != piece::Pawn)
-				::printPiece(s, pieceMoved(), charSet, ::toupper);
+			if (moved() != piece::Pawn)
+				::printPiece(s, moved(), charSet, ::toupper);
 
 			s += sq::printFyle(from());
 			s += sq::printRank(from());
-			s += isCapture() ? 'x' : '-';
+
+			if (isCapture())
+			{
+				s += 'x';
+
+				if (reversible)
+					::printPiece(s, captured(), charSet, ::toupper);
+			}
+			else
+			{
+				s += '-';
+			}
+
 			s += sq::printFyle(to());
 			s += sq::printRank(to());
 
@@ -244,7 +268,54 @@ Move::printLan(mstl::string& s, protocol::ID protocol, encoding::CharSet charSet
 
 
 mstl::string&
-Move::printDescriptive(mstl::string& s) const
+Move::printSmith(mstl::string& s, protocol::ID protocol, encoding::CharSet charSet) const
+{
+	if (isNull())
+	{
+		s.append("----");	// arbitrarely choosen, but fit's with the syntax
+	}
+	else if (!isEmpty())
+	{
+		if (isPieceDrop())
+		{
+			s += piece::print(dropped());
+			s += protocol == protocol::UCI ? '*' : '@';
+			s += sq::printFyle(to());
+			s += sq::printRank(to());
+		}
+		else
+		{
+			s += sq::printFyle(from());
+			s += sq::printRank(from());
+			s += sq::printFyle(to());
+			s += sq::printRank(to());
+
+			if (isCastling())
+				s += isShortCastling() ? 'c' : 'C';
+			else if (isEnPassant())
+				s += 'E';
+			else if (isCapture())
+				::printPiece(s, captured(), charSet, ::tolower);
+
+			if (isPromotion())
+				::printPiece(s, promoted(), charSet, ::toupper);
+		}
+
+		if (protocol == protocol::Scidb)
+		{
+			if (givesMate())
+				s += '#';
+			else if (givesCheck())
+				s += '+';
+		}
+	}
+
+	return s;
+}
+
+
+mstl::string&
+Move::printDescriptive(mstl::string& s, sq::Language lang) const
 {
 	if (isNull())
 	{
@@ -260,63 +331,64 @@ Move::printDescriptive(mstl::string& s) const
 	{
 		if (isPieceDrop())
 		{
-			s += piece::print(dropped());
+			s += piece::print(dropped(), lang);
 			s += '@';
-			s += sq::printDescriptive(to(), color());
+			s += sq::printDescriptive(to(), color(), lang);
 		}
 		else
 		{
 			if (isCapture())
 			{
-				s += piece::print(pieceMoved());
+				s += piece::print(moved(), lang);
 
-				if (needsFyle() || needsRank())
+				if (!isDisambiguated() && (needsFyle() || needsRank()))
 				{
 					s += '(';
-					s += sq::printDescriptive(from(), color());
+					s += sq::printDescriptive(from(), color(), lang);
 					s += ')';
 				}
 
 				s += 'x';
-				s += piece::print(captured());
+				s += piece::print(captured(), lang);
 
 				if (needsDestinationSquare())
 				{
 					s += '(';
-					s += sq::printDescriptive(to(), color());
+					s += sq::printDescriptive(to(), color(), lang);
 					s += ')';
 				}
 			}
 			else
 			{
-				s += piece::print(pieceMoved());
+				s += piece::print(moved(), lang);
 
-				if (needsFyle() || needsRank())
+				if (!isDisambiguated() && (needsFyle() || needsRank()))
 				{
 					s += '(';
-					s += sq::printDescriptive(from(), color());
+					s += sq::printDescriptive(from(), color(), lang);
 					s += ')';
 				}
 
-				s += '-';
-				s += sq::printDescriptive(to(), color());
+				if (lang == sq::English)
+					s += '-';
+				s += sq::printDescriptive(to(), color(), lang);
 			}
 
 			if (isPromotion())
 			{
 				s += '(';
-				s += piece::print(promoted());
+				s += piece::print(promoted(), lang);
 				s += ')';
 			}
 		}
 
 		if (givesMate())
-			s.append("++", 2);
+			s.append("++", 2);	// English: "mate"
 		else if (givesCheck())
-			s += '+';
+			s += '+';				// English: "ch"
 
 		if (isEnPassant())
-			s.append(" e.p.", 5);
+			s.append(lang == sq::English ? " e.p." : " d.p.", 5);
 	}
 
 	return s;
@@ -381,12 +453,17 @@ Move::print(mstl::string& s,
 {
 	switch (style)
 	{
-		case move::Algebraic:		printAlgebraic(s, protocol, charSet); break;
-		case move::ShortAlgebraic:	printSan(s, protocol, charSet); break;
-		case move::LongAlgebraic:	printLan(s, protocol, charSet); break;
-		case move::Descriptive:		printDescriptive(s); break;
-		case move::Correspondence:	printNumeric(s); break;
-		case move::Telegraphic:		printAlphabetic(s, charSet); break;
+		case move::CAN:			printCAN(s, protocol, charSet); break;
+		case move::SAN:			printSAN(s, protocol, charSet); break;
+		case move::LAN:			printLAN(s, protocol, charSet); break;
+		case move::GAN:			printGAN(s, protocol, charSet); break;
+		case move::MAN:			printMAN(s, protocol, charSet); break;
+		case move::RAN:			printRAN(s, protocol, charSet); break;
+		case move::Smith:			printSmith(s, protocol, charSet); break;
+		case move::EDN:			printDescriptive(s, sq::English); break;
+		case move::SDN:			printDescriptive(s, sq::Spanish); break;
+		case move::Numeric:		printNumeric(s); break;
+		case move::Alphabetic:	printAlphabetic(s, charSet); break;
 	}
 
 	return s;
@@ -398,7 +475,7 @@ Move::printForDisplay(mstl::string& s, move::Notation style) const
 {
 	print(s, style, protocol::Scidb, encoding::Utf8);
 
-	if (style == move::ShortAlgebraic || style == move::LongAlgebraic)
+	if (style == move::SAN || style == move::LAN)
 	{
 		if (!givesMate())
 		{
@@ -454,8 +531,8 @@ Move::dump(mstl::string& result) const
 		}
 		else
 		{
-			if (pieceMoved() != piece::Pawn)
-				result += piece::print(pieceMoved());
+			if (moved() != piece::Pawn)
+				result += piece::print(moved());
 
 			result += sq::printFyle(from());
 			result += sq::printRank(from());
@@ -480,6 +557,36 @@ Move::dump(mstl::string& result) const
 	}
 
 	return result;
+}
+
+
+Move
+Move::genMove(	uint32_t from,
+					uint32_t to,
+					uint32_t pieceType,
+					uint32_t captured,
+					uint32_t promotedType)
+{
+	if (from == to && pieceType != piece::None)
+		return genPieceDrop(to, pieceType);
+	
+	switch (pieceType)
+	{
+		case piece::King:
+		case piece::Queen:
+		case piece::Rook:
+		case piece::Bishop:
+		case piece::Knight:
+			return genMove(from, to, pieceType, captured);
+
+		case piece::Pawn:
+			if (promotedType != piece::None)
+				return genCapturePromote(from, to, promotedType, captured);
+
+			return genPawnCapture(from, to, captured);
+	}
+
+	return m_null;
 }
 
 

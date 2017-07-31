@@ -35,6 +35,8 @@ namespace mstl { class string; }
 
 namespace db {
 
+class Board;
+
 struct Line
 {
 	Line();
@@ -61,6 +63,22 @@ struct Line
 
 	mstl::string& print(	mstl::string& result,
 								variant::Type variant,
+								move::Notation style,
+								protocol::ID protocol,
+								encoding::CharSet charSet = encoding::Latin1) const;
+	mstl::string& print(	mstl::string& result,
+								Board const& startBoard,
+								variant::Type variant,
+								move::Notation style,
+								protocol::ID protocol,
+								encoding::CharSet charSet = encoding::Latin1) const;
+	mstl::string& print(	mstl::string& result,
+								Board const& startBoard,
+								variant::Type variant,
+								unsigned firstPly,
+								unsigned midPly,
+								unsigned lastPly,
+								move::Notation style,
 								protocol::ID protocol,
 								encoding::CharSet charSet = encoding::Latin1) const;
 	void dump() const;

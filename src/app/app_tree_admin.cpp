@@ -25,6 +25,7 @@
 // ======================================================================
 
 #include "app_tree_admin.h"
+#include "app_cursor.h"
 
 #include "db_tree.h"
 #include "db_database.h"
@@ -43,11 +44,13 @@ struct TreeAdmin::Runnable
 	Runnable(db::Tree::TreeP tree,
 				db::Game& game,
 				db::Database& database,
+				db::tree::Method method,
 				db::tree::Mode mode,
 				db::rating::Type ratingType,
 				PipedProgress& progress)
 		:m_database(database)
 		,m_progress(progress)
+		,m_method(method)
 		,m_mode(mode)
 		,m_ratingType(ratingType)
 		,m_currentLine(m_lineBuf)
@@ -56,14 +59,24 @@ struct TreeAdmin::Runnable
 		,m_startPosition(game.startBoard())
 		,m_currentPosition(game.currentBoard())
 		,m_tree(tree)
+		,m_closed(false)
 	{
+		game.currentLine(m_currentLine);
 	}
 
-	bool finished() const { return !m_database.usingAsyncReader(); }
+	~Runnable() { close(); }
+
+	void close()
+	{
+		if (m_closed)
+			return;
+		m_database.closeAsyncReader(db::thread::Tree);
+		m_closed = true;
+	}
 
 	void operator() ()
 	{
-		m_database.openAsyncReader();
+		m_database.openAsyncReader(db::thread::Tree);
 
 		try
 		{
@@ -74,21 +87,23 @@ struct TreeAdmin::Runnable
 														m_currentLine,
 														m_hpsig,
 														m_database,
+														m_method,
 														m_mode,
 														m_ratingType,
 														m_progress));
 		}
 		catch (...)
 		{
-			m_database.closeAsyncReader();
+			close();
 			throw;
 		}
 
-		m_database.closeAsyncReader();
+		close();
 	}
 
 	db::Database&			m_database;
 	util::PipedProgress&	m_progress;
+	db::tree::Method		m_method;
 	db::tree::Mode			m_mode;
 	db::rating::Type		m_ratingType;
 	db::Line					m_currentLine;
@@ -98,19 +113,25 @@ struct TreeAdmin::Runnable
 	db::Board				m_currentPosition;
 	TreeP						m_tree;
 	uint16_t					m_lineBuf[db::opening::Max_Line_Length];
+	bool						m_closed;
 };
 
 
 TreeAdmin::TreeAdmin() :m_runnable(0) {}
+TreeAdmin::~TreeAdmin() { delete m_runnable; }
 
 
 bool
-TreeAdmin::isUpToDate(db::Database const& referenceBase, db::Game const& game, Key const& key) const
+TreeAdmin::isUpToDate(Cursor const& cursor, db::Game const& game, Key const& key) const
 {
 	if (m_runnable)
 		return false;
 
-	TreeP tree(db::Tree::lookup(referenceBase, game.currentBoard(), key.mode(), key.ratingType()));
+	TreeP tree(db::Tree::lookup(	cursor.database(),
+											game.currentBoard(),
+											key.method(),
+											key.mode(),
+											key.ratingType()));
 	return tree ? tree->key() == key && tree->isComplete() : false;
 }
 
@@ -118,7 +139,8 @@ TreeAdmin::isUpToDate(db::Database const& referenceBase, db::Game const& game, K
 void
 TreeAdmin::destroy()
 {
-	m_thread.stop();
+	stop();
+	setWorkingOn();
 
 	if (m_runnable)
 	{
@@ -135,18 +157,22 @@ TreeAdmin::destroy()
 
 
 void
-TreeAdmin::stopUpdate()
+TreeAdmin::signal(Signal signal)
 {
-	m_thread.stop();
+	stop();
+	setWorkingOn();
 
 	if (m_runnable)
 	{
-		TreeP tree = m_runnable->m_tree;
-
-		if (tree)
+		if (signal == Stop)
 		{
-			tree->compressFilter();
-			db::Tree::addToCache(tree.get());
+			TreeP tree = m_runnable->m_tree;
+
+			if (tree)
+			{
+				tree->compressFilter();
+				db::Tree::addToCache(tree.get());
+			}
 		}
 
 		delete m_runnable;
@@ -155,25 +181,16 @@ TreeAdmin::stopUpdate()
 }
 
 
-void
-TreeAdmin::cancelUpdate()
-{
-	m_thread.stop();
-	delete m_runnable;
-	m_runnable = 0;
-}
-
-
 bool
-TreeAdmin::startUpdate(	db::Database& referenceBase,
+TreeAdmin::startUpdate(	Cursor& cursor,
 								db::Game& game,
+								db::tree::Method method,
 								db::tree::Mode mode,
 								db::rating::Type ratingType,
 								PipedProgress& progress)
 {
-	stopUpdate();
-
-	TreeP tree(db::Tree::lookup(referenceBase, game.currentBoard(), mode, ratingType));
+	db::Database& referenceBase(cursor.getDatabase()); // calls signal(Stop)
+	TreeP tree(db::Tree::lookup(referenceBase, game.currentBoard(), method, mode, ratingType));
 
 	if (tree)
 	{
@@ -183,22 +200,25 @@ TreeAdmin::startUpdate(	db::Database& referenceBase,
 		tree->uncompressFilter();
 	}
 
-	m_runnable = new Runnable(tree, game, referenceBase, mode, ratingType, progress);
+	m_runnable = new Runnable(tree, game, referenceBase, method, mode, ratingType, progress);
 
-	if (!m_thread.start(mstl::function<void ()>(&Runnable::operator(), m_runnable)))
+	if (!start(mstl::function<void ()>(&Runnable::operator(), m_runnable)))
 	{
 		delete m_runnable;
 		m_runnable = 0;
 		IO_RAISE(Unspecified, Cannot_Create_Thread, "start of tree update failed");
 	}
 
+	setWorkingOn(&cursor);
+
 	return false;
 }
 
 
 bool
-TreeAdmin::finishUpdate(db::Database const* referenceBase,
+TreeAdmin::finishUpdate(Cursor const* cursor,
 								db::Game const& game,
+								db::tree::Method method,
 								db::tree::Mode mode,
 								db::rating::Type ratingType,
 								db::attribute::tree::ID sortAttr)
@@ -207,7 +227,8 @@ TreeAdmin::finishUpdate(db::Database const* referenceBase,
 
 	TreeP tree;
 
-	m_thread.stop();
+	stop();
+	setWorkingOn();
 
 	if (m_runnable)
 	{
@@ -217,9 +238,11 @@ TreeAdmin::finishUpdate(db::Database const* referenceBase,
 		{
 			db::Tree::addToCache(tree.get());
 
+			db::Database const* referenceBase = cursor ? &cursor->database() : 0;
+
 			if (	referenceBase == 0
 				|| referenceBase->countGames() != tree->filter().size()
-				|| !tree->isTreeFor(*referenceBase, game.currentBoard(), mode, ratingType))
+				|| !tree->isTreeFor(*referenceBase, game.currentBoard(), method, mode, ratingType))
 			{
 				tree->compressFilter();
 				tree.reset(0);	// tree is incomplete or outdated
@@ -230,7 +253,7 @@ TreeAdmin::finishUpdate(db::Database const* referenceBase,
 		m_runnable = 0;
 	}
 
-	if (referenceBase == 0)
+	if (cursor == 0)
 	{
 		m_currentTree.reset();
 	}
@@ -238,11 +261,13 @@ TreeAdmin::finishUpdate(db::Database const* referenceBase,
 	{
 		if (!tree)
 		{
-			tree.reset(db::Tree::lookup(*referenceBase, game.currentBoard(), mode, ratingType));
+			db::Database const& referenceBase = cursor->database();
+
+			tree.reset(db::Tree::lookup(referenceBase, game.currentBoard(), method, mode, ratingType));
 
 			if (tree)
 			{
-				if (tree->filter().size() != referenceBase->countGames())
+				if (tree->filter().size() != referenceBase.countGames())
 					tree->setIncomplete();
 
 				if (!tree->isComplete())

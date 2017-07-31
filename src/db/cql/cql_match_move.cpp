@@ -101,7 +101,7 @@ MoveFrom::match(Board const& board, Move const& move, Variant variant)
 		color::ID	color		= board.sideToMove();
 		uint64_t		position	= set1Bit(move.from());
 
-		switch (move.pieceMoved())
+		switch (move.moved())
 		{
 			case db::piece::King:	return bool(position & m_designator.kings(color));
 			case db::piece::Queen:	return bool(position & m_designator.queens(color));

@@ -292,7 +292,7 @@ public:
 	/// Print current move in given notation
 	mstl::string& printMove(mstl::string& result,
 									unsigned flags = ExportFormat,
-									move::Notation style = move::ShortAlgebraic) const;
+									move::Notation style = move::SAN) const;
 	/// Print FEN at current position
 	mstl::string& printFen(mstl::string& result) const;
 	/// Print FEN at given position

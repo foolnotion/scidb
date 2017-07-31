@@ -95,6 +95,11 @@ public:
 
 	void close() override;
 
+	unsigned doDecoding(	GameInfo const& info,
+								uint16_t* line,
+								unsigned length,
+								Board& startBoard,
+								bool useStartBoard) override;
 	void doDecoding(GameData& data, GameInfo& info, unsigned gameIndex, mstl::string*) override;
 	save::State doDecoding(	Consumer& consumer,
 									TagSet& tags,
@@ -140,7 +145,7 @@ private:
 	typedef mstl::fixed_size_allocator<db::MoveNode>	MoveNodeAllocator;
 
 	void startDecoding(	util::ByteStream& gameStream,
-								util::ByteStream& annotationStream,
+								util::ByteStream* annotationStream,
 								GameInfo const& info,
 								bool& isChess960);
 	void decodeIndex(util::ByteStream& strm, GameInfo& info);

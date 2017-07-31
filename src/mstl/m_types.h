@@ -63,6 +63,9 @@
 #define __m_printf_format__(index, first_to_check) \
 	__attribute__((__format__(__printf__, index, first_to_check)))
 
+#define __m_likely(expr)		__builtin_expect(!!(expr), 1)
+#define __m_unlikely(expr)		__builtin_expect(!!(expr), 0)
+
 #define __m_warn_unused __attribute__((warn_unused_result))
 
 ///////////////////////////////////////////////////////////////////////////////

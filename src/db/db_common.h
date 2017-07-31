@@ -73,6 +73,8 @@ namespace sq
 	enum Fyle { FyleA, FyleB, FyleC, FyleD, FyleE, FyleF, FyleG, FyleH };
 	enum Rank { Rank1, Rank2, Rank3, Rank4, Rank5, Rank6, Rank7, Rank8 };
 
+	enum Language { English, Spanish };
+
 	ID make(Square fyle, Square rank);
 	ID make(char const* s);
 	ID makeEnPassant(Fyle fyle, color::ID color);
@@ -111,8 +113,8 @@ namespace sq
 	char const* printAlgebraic(Square square);
 	char const* printNumeric(Square square);
 	char const* printAlphabetic(Square square);
-	char const* printDescriptive(Square square);
-	char const* printDescriptive(Square square, color::ID color);
+	char const* printDescriptive(Square square, Language lang);
+	char const* printDescriptive(Square square, color::ID color, Language lang);
 }
 
 namespace opening
@@ -378,7 +380,17 @@ namespace move
 
 	enum Notation
 	{
-		Algebraic, ShortAlgebraic, LongAlgebraic, Descriptive,  Correspondence, Telegraphic
+		CAN,			// (Computer) Algebraic Notation (Coordinate Notation)
+		SAN,			// Short (Standard) Algebraic Notation
+		LAN,			// Long Algebraic Notation
+		GAN,			// German Form of Short Algebraic Notation
+		MAN,			// Minimal Algebraic Notation
+		RAN,			// Reversible Algebraic Notation
+		Smith,		// Smith Notation
+		EDN,			// English Descriptive Notation
+		SDN,			// Spanish Descriptive Notation
+		Numeric,		// ICCF Numeric Notation (correspondence chess)
+		Alphabetic,	// Alphabetic Notation (telegraph, Gringmuth notation)
 	};
 
 } // namespace move
@@ -926,6 +938,7 @@ namespace piece
 	char print(ID piece);
 	/// Return the ASCII character for a given piece type.
 	char print(Type type);
+	char print(Type type, sq::Language lang);
 
 	/// Return the numerical ASCII value for given piece type.
 	char printNumeric(Type type);
@@ -1017,7 +1030,8 @@ namespace mark
 
 namespace tree
 {
-	enum Mode { Exact, Fast, Rapid, };
+	enum Method	{ Exact, Fast, Rapid };
+	enum Mode	{ MainlineOnly, IncludeVariations };
 }
 
 namespace format
@@ -1501,6 +1515,7 @@ namespace attribute
 			Annotator,
 			Idn,
 			Position,
+			MoveList,
 			Length,
 			Eco,
 			Flags,
@@ -1518,7 +1533,6 @@ namespace attribute
 			Termination,
 			Mode,
 			TimeMode,
-			Overview,
 
 			// additional attributes
 			Opening,
@@ -1983,6 +1997,11 @@ namespace country
 	bool match(Code lhs, Code rhs);
 	bool validate(char const* s, char const* e);
 	int compare(Code lhs, Code rhs);
+}
+
+namespace thread
+{
+	enum Type { Tree, MoveList, LAST };
 }
 
 } // namespace db

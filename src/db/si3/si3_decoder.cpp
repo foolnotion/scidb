@@ -278,6 +278,14 @@ Decoder::decodeMove(Byte value)
 
 
 void
+Decoder::handleInvalidMove(Move const& move)
+{
+	// TODO: more clever error handling
+	M_THROW(DecodingFailedException("Invalid move"));
+}
+
+
+void
 Decoder::decodeVariation(unsigned level)
 {
 	bool preComment = false;
@@ -288,7 +296,9 @@ Decoder::decodeVariation(unsigned level)
 
 		while (__builtin_expect((b = m_strm.get()) > token::Last, 1))
 		{
-			m_position.doMove(m_move, decodeMove(b));
+			if (!m_position.doMove(m_move, decodeMove(b)))
+				handleInvalidMove(m_move);
+
 			m_currentNode->setNext(new MoveNode(m_move));
 			m_currentNode = m_currentNode->next();
 
@@ -301,7 +311,9 @@ Decoder::decodeVariation(unsigned level)
 
 		if (b < token::First)
 		{
-			m_position.doMove(m_move, decodeMove(b));
+			if (!m_position.doMove(m_move, decodeMove(b)))
+				handleInvalidMove(m_move);
+
 			m_currentNode->setNext(new MoveNode(m_move));
 			m_currentNode = m_currentNode->next();
 
@@ -869,6 +881,71 @@ Decoder::checkVariant(TagSet& tags)
 }
 
 
+unsigned
+Decoder::doDecoding(uint16_t* line, unsigned length, Board& startBoard, bool useStartBoard)
+{
+	skipTags();
+
+	if (m_strm.get() & flags::Non_Standard_Start)
+	{
+		mstl::string fen;
+		m_strm.get(fen);
+		m_position.setup(fen);
+	}
+	else
+	{
+		m_position.setup();
+	}
+
+	if (!useStartBoard)
+		startBoard = m_position.board();
+	else if (startBoard.isEqualZHPosition(m_position.board()))
+		useStartBoard = false;
+
+	unsigned index = 0;
+
+	while (index < length)
+	{
+		Byte b;
+
+		if (__m_likely((b = m_strm.get()) > token::Last) || b < token::First)
+		{
+			if (!m_position.doMove(m_move, decodeMove(b)))
+				handleInvalidMove(m_move);
+
+			if (!useStartBoard)
+			{
+				line[index++] = m_move.index();
+			}
+			else if (startBoard.isEqualZHPosition(m_position.board()))
+			{
+				startBoard.setPlyNumber(m_position.board().plyNumber());
+				useStartBoard = false;
+			}
+		}
+		else
+		{
+			switch (b)
+			{
+				case token::End_Game:
+				case token::End_Marker:
+					return index;
+
+				case token::Start_Marker:
+					skipVariation();
+					break;
+
+				case token::Nag:
+					m_strm.skip(1);
+					break;
+			}
+		}
+	}
+
+	return index;
+}
+
+
 save::State
 Decoder::doDecoding(db::Consumer& consumer, TagSet& tags)
 {
@@ -1066,7 +1143,8 @@ Decoder::nextMove()
 
 		if (__builtin_expect(b > token::Last, 1) || token::First > b)
 		{
-			m_position.doMove(m_move, decodeMove(b));
+			if (!m_position.doMove(m_move, decodeMove(b)))
+				handleInvalidMove(m_move);
 			return m_move;
 		}
 
@@ -1118,7 +1196,8 @@ Decoder::findExactPosition(Board const& position, bool skipVariations)
 
 		while (__builtin_expect((b = m_strm.get()) > token::Last, 1))
 		{
-			m_position.doMove(m_move, decodeMove(b));
+			if (!m_position.doMove(m_move, decodeMove(b)))
+				handleInvalidMove(m_move);
 
 			if (m_position.board().isEqualPosition(position))
 				return nextMove();
@@ -1129,7 +1208,8 @@ Decoder::findExactPosition(Board const& position, bool skipVariations)
 
 		if (b < token::First)
 		{
-			m_position.doMove(m_move, decodeMove(b));
+			if (!m_position.doMove(m_move, decodeMove(b)))
+				handleInvalidMove(m_move);
 
 			if (m_position.board().isEqualPosition(position))
 				return nextMove();

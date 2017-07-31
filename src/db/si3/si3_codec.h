@@ -133,6 +133,11 @@ public:
 									util::ByteStream& strm,
 									TagSet& tags) override;
 	void doDecoding(GameData& data, GameInfo& info, unsigned gameIndex, mstl::string* encoding) override;
+	unsigned doDecoding(	GameInfo const& info,
+								uint16_t* line,
+								unsigned length,
+								Board& startBoard,
+								bool useStartBoard) override;
 
 	void doEncoding(	util::ByteStream& strm,
 							GameData const& data,

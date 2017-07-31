@@ -61,6 +61,8 @@
 #include "m_auto_ptr.h"
 #include "m_limits.h"
 #include "m_string.h"
+#include "m_utility.h"
+#include "m_range.h"
 #include "m_assert.h"
 #include "m_stdio.h"
 
@@ -297,6 +299,8 @@ Application::Application()
 	m_clipbase = (*clipbase)[variant::Index_Normal];
 	setActiveBase(m_clipbase);
 	setReferenceBase(0, false);
+
+	m_threadList.push_back(&m_treeAdmin);
 }
 
 
@@ -311,6 +315,9 @@ Application::~Application() throw()
 		(*i)->deactivate();
 		delete *i;
 	}
+
+	for (ThreadList::iterator i = m_threadList.begin(); i != m_threadList.end(); ++i)
+		delete *i;
 
 	m_gameMap.clear();
 }
@@ -820,11 +827,10 @@ Application::close(mstl::string const& name)
 		{
 			Cursor* cursor = (*multiCursor)[v];
 
+			cancelAllThreads(*cursor);
+
 			if (m_referenceBase == cursor)
-			{
-				cancelUpdateTree();
 				setReferenceBase(0, false);
-			}
 
 			if (m_subscriber)
 				m_subscriber->closeDatabase(name, variant::fromIndex(v));
@@ -865,9 +871,7 @@ Application::closeAll(CloseMode mode)
 			{
 				if (Cursor* cursor = (*i->second)[v])
 				{
-					if (cursor == m_referenceBase)
-						cancelUpdateTree();
-
+					cancelAllThreads(*cursor);
 					moveGamesToScratchbase(*cursor);
 
 					if (m_subscriber)
@@ -962,10 +966,26 @@ Application::gameNumber(unsigned position) const
 }
 
 
+Cursor&
+Application::getGameCursor(unsigned position)
+{
+	M_REQUIRE(containsGameAt(position));
+
+	if (position == InvalidPosition)
+		position = m_currentPosition;
+
+	return *m_gameMap.find(position)->second->sink.cursor;
+}
+
+
 Cursor const&
 Application::getGameCursor(unsigned position) const
 {
 	M_REQUIRE(containsGameAt(position));
+
+	if (position == InvalidPosition)
+		position = m_currentPosition;
+
 	return *m_gameMap.find(position)->second->sink.cursor;
 }
 
@@ -1132,7 +1152,7 @@ Application::setReferenceBase(Cursor* cursor, bool isUserSet)
 			m_referenceBase->setReferenceBase(false);
 		}
 
-		stopUpdateTree();
+		m_treeAdmin.signal(Thread::Stop);
 		m_referenceBase = cursor;
 
 		if (m_referenceBase)
@@ -1340,8 +1360,7 @@ Application::recode(Cursor& cursor, mstl::string const& encoding, util::Progress
 		case format::Scidb:
 			if (!base.isMemoryOnly())
 				return;
-			if (cursor.isReferenceBase())
-				stopUpdateTree();
+			stopAllThreads(cursor);
 			// we have to use PGN reader
 			base.reopen(encoding, progress);
 			break;
@@ -1350,8 +1369,7 @@ Application::recode(Cursor& cursor, mstl::string const& encoding, util::Progress
 		case format::Scid4:
 		case format::ChessBase:
 		case format::ChessBaseDOS:
-			if (cursor.isReferenceBase())
-				stopUpdateTree();
+			stopAllThreads(cursor);
 			if (base.namebases().isOriginal())
 				base.recode(encoding, progress);
 			else
@@ -1497,6 +1515,8 @@ Application::releaseGame(unsigned position)
 	if (!containsGameAt(position))
 		return;
 
+	Cursor& cursor = getGameCursor(position);
+
 	stopAnalysis(m_gameMap.find(position)->second->data.game);
 
 	m_gameMap.erase(position);
@@ -1504,7 +1524,7 @@ Application::releaseGame(unsigned position)
 
 	if (m_currentPosition == position)
 	{
-		cancelUpdateTree();
+		cancelAllThreads(cursor);
 
 		if (m_fallbackPosition != InvalidPosition)
 			switchGame(m_fallbackPosition, UpdateReferenceGames);
@@ -1841,7 +1861,7 @@ Application::switchGame(unsigned position, ReferenceGames updateReferenceGames)
 		return; // not yet ready for update
 
 	if (updateReferenceGames == UpdateReferenceGames)
-		stopUpdateTree();
+		m_treeAdmin.signal(Thread::Stop);
 
 	m_currentPosition = position;
 
@@ -2075,8 +2095,7 @@ Application::compactBase(Cursor& cursor, util::Progress& progress)
 	M_REQUIRE(!cursor.isReadonly());
 	M_REQUIRE(!cursor.isScratchbase());
 
-	if (cursor.isReferenceBase())
-		cancelUpdateTree();
+	cancelAllThreads(cursor);
 
 	if (compact(cursor, progress) && m_subscriber)
 	{
@@ -2101,12 +2120,15 @@ Application::treeIsUpToDate(Tree::Key const& key) const
 		return true;
 
 	M_ASSERT(m_referenceBase->hasTreeView());
-	return m_treeAdmin.isUpToDate(m_referenceBase->database(), game(), key);
+	return m_treeAdmin.isUpToDate(*m_referenceBase, game(), key);
 }
 
 
 bool
-Application::updateTree(tree::Mode mode, rating::Type ratingType, PipedProgress& progress)
+Application::updateTree(db::tree::Method method,
+								tree::Mode mode,
+								rating::Type ratingType,
+								PipedProgress& progress)
 {
 	if (m_referenceBase == 0 || !haveCurrentGame())
 		return true;
@@ -2115,16 +2137,17 @@ Application::updateTree(tree::Mode mode, rating::Type ratingType, PipedProgress&
 		return false;
 
 	M_ASSERT(m_referenceBase->hasTreeView());
-	return m_treeAdmin.startUpdate(m_referenceBase->base(), game(), mode, ratingType, progress);
+	return m_treeAdmin.startUpdate(*m_referenceBase, game(), method, mode, ratingType, progress);
 }
 
 
 Tree const*
-Application::finishUpdateTree(tree::Mode mode, rating::Type ratingType, attribute::tree::ID sortAttr)
+Application::finishUpdateTree(tree::Method method,
+										tree::Mode mode,
+										rating::Type ratingType,
+										attribute::tree::ID sortAttr)
 {
-	Database const* base = m_referenceBase ? &m_referenceBase->database() : 0;
-
-	if (m_treeAdmin.finishUpdate(base, game(), mode, ratingType, sortAttr))
+	if (m_treeAdmin.finishUpdate(m_referenceBase, game(), method, mode, ratingType, sortAttr))
 	{
 		M_ASSERT(m_referenceBase);
 		M_ASSERT(m_treeAdmin.tree());
@@ -2152,18 +2175,31 @@ Application::finishUpdateTree(tree::Mode mode, rating::Type ratingType, attribut
 
 
 void
-Application::stopUpdateTree()
+Application::stopAllThreads(Cursor const& cursor)
 {
-	M_REQUIRE(hasInstance());
-	m_treeAdmin.stopUpdate();
+	for (unsigned i = 0; i < m_threadList.size(); ++i)
+	{
+		if (m_threadList[i]->isWorkingOn(cursor))
+			m_threadList[i]->signal(Thread::Stop);
+	}
 }
 
 
 void
-Application::cancelUpdateTree()
+Application::cancelAllThreads(Cursor const& cursor)
 {
-	M_REQUIRE(hasInstance());
-	m_treeAdmin.cancelUpdate();
+	for (unsigned i = 0; i < m_threadList.size(); ++i)
+	{
+		if (m_threadList[i]->isWorkingOn(cursor))
+			m_threadList[i]->signal(Thread::Cancel);
+	}
+}
+
+
+void
+Application::stopUpdateTree()
+{
+	m_treeAdmin.signal(Thread::Stop);
 }
 
 
@@ -2222,7 +2258,9 @@ Application::clearTreeCache()
 
 
 void
-Application::invalidateTreeCache(db::Database const& database, unsigned gameIndex)
+Application::invalidateTreeCache(db::Database const& database,
+											unsigned firstGameIndex,
+											unsigned lastGameIndex)
 {
 	if (m_subscriber && !m_treeIsFrozen)
 		m_subscriber->invalidateTreeCache();
@@ -2230,9 +2268,7 @@ Application::invalidateTreeCache(db::Database const& database, unsigned gameInde
 	for (Iterator i = begin(), e = end(); i != e; ++i)
 	{
 		if (i->base().id() == database.id())
-			Tree::invalidateCache(i->base(), gameIndex);
-		else
-			Tree::invalidateCache(i->base());
+			db::Tree::invalidateCache(i->getDatabase(), firstGameIndex, lastGameIndex);
 	}
 }
 
@@ -2244,6 +2280,8 @@ Application::saveGame(Cursor& cursor, bool replace)
 	M_REQUIRE(!cursor.isReadonly());
 	M_REQUIRE(haveCurrentGame());
 	M_REQUIRE(!hasTrialMode());
+
+	stopAllThreads(cursor);
 
 	EditGame& g = *m_gameMap.find(m_currentPosition)->second;
 
@@ -2334,8 +2372,16 @@ Application::saveGame(Cursor& cursor, bool replace)
 
 	if (m_subscriber)
 	{ 
-		if (!replace || g.data.game->isModified())
-			invalidateTreeCache(g.sink.cursor->database(), g.sink.index);
+		if (!replace)
+		{
+			invalidateTreeCache(	g.sink.cursor->database(),
+										g.sink.index,
+										mstl::numeric_limits<unsigned>::max());
+		}
+		else if (g.data.game->isModified())
+		{
+			invalidateTreeCache(g.sink.cursor->database(), g.sink.index, g.sink.index + 1);
+		}
 
 		if (cursor.isReferenceBase() && !m_treeIsFrozen)
 			m_subscriber->updateTree(db.name(), db.variant());
@@ -2359,8 +2405,7 @@ Application::updateMoves()
 
 	Cursor& cursor = this->cursor(sourceName());
 
-	if (cursor.isReferenceBase())
-		stopUpdateTree();
+	stopAllThreads(cursor);
 
 	g.data.game->setIndex(g.link.index);
 
@@ -2401,7 +2446,7 @@ Application::updateMoves()
 			}
 		}
 
-		invalidateTreeCache(g.sink.cursor->database(), g.link.index);
+		invalidateTreeCache(g.sink.cursor->database(), g.link.index, g.link.index + 1);
 
 		if (cursor.isReferenceBase() && !m_treeIsFrozen)
 			m_subscriber->updateTree(name, cursor.variant());
@@ -2419,8 +2464,7 @@ Application::updateCharacteristics(Cursor& cursor, unsigned index, TagSet const&
 	M_REQUIRE(index < cursor.count(table::Games));
 
 	// be sure that we do not have conflicts
-	if (cursor.isReferenceBase())
-		stopUpdateTree();
+	stopAllThreads(cursor);
 
 	unsigned		position	= 0; // satisifes the compiler
 	save::State	state		= cursor.base().updateCharacteristics(index, tags);
@@ -2654,8 +2698,8 @@ Application::multiBase(mstl::string const& name)
 
 	for (unsigned v = 0; v < variant::NumberOfVariants; ++v)
 	{
-		if (multiCursor->exists(v) && (*multiCursor)[v]->isReferenceBase())
-			stopUpdateTree();
+		if (multiCursor->exists(v))
+			stopAllThreads(*(*multiCursor)[v]);
 	}
 
 	return multiCursor->multiBase();
@@ -2718,7 +2762,8 @@ Application::cursor(unsigned databaseId) const
 void
 Application::finalize()
 {
-	m_treeAdmin.thread().stop();
+	for (unsigned i = 0; i < m_threadList.size(); ++i)
+		m_threadList[i]->signal(Thread::Kill);
 
 	for (Iterator i = begin(), e = end(); i != e; ++i)
 		i->close();
@@ -3282,8 +3327,7 @@ Application::copyGame(MultiCursor& sink, unsigned position, copy::Source source)
 	Database&	database		= destination.base();
 	save::State	state			= save::Ok;
 
-	if (m_referenceBase == &destination)
-		stopUpdateTree();
+	stopAllThreads(destination);
 
 	{
 		SwapTrialGame trialGameGuard(*g);
@@ -3542,6 +3586,44 @@ Application::verifyGame(unsigned position)
 	releaseGame(ReservedPosition);
 
 	return result;
+}
+
+
+sys::Thread&
+Application::newMoveListThread()
+{
+	m_threadList.push_back(new MoveListThread());
+	return *m_threadList.back();
+}
+
+
+void
+Application::retrieveMoveList(sys::Thread& thread,
+										Cursor& cursor,
+										unsigned view,
+										unsigned length,
+										mstl::string const* fen,
+										db::move::Notation notation,
+										Range const& rangeOfView,
+										Range const& rangeOfGames,
+										util::PipedProgress& progress)
+{
+	M_REQUIRE(cursor.isValidView(view));
+	M_REQUIRE(rangeOfGames.right() <= cursor.view(view).count(table::Games));
+
+	MoveListThread& moveListThread = static_cast<MoveListThread&>(thread);
+
+	moveListThread.signal(Thread::Stop);
+	moveListThread.retrieve(cursor, view, length, fen, notation, rangeOfView, rangeOfGames, progress);
+}
+
+
+void
+Application::deleteMoveList(sys::Thread& thread)
+{
+	ThreadList::iterator i = m_threadList.find(&thread);
+	M_ASSERT(i != m_threadList.end());
+	m_threadList.erase(i);
 }
 
 // vi:set ts=3 sw=3:

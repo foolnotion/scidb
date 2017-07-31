@@ -772,6 +772,7 @@
 ::application::tree::mc::End									"end" ;# NEW
 ::application::tree::mc::ShowMoveTree						"Show move tree" ;# NEW
 ::application::tree::mc::ShowMoveOrders					"Show move orders" ;# NEW
+::application::tree::mc::SearchInsideVariations			"Search inside variations" ;# NEW
 
 ::application::tree::mc::FromWhitesPerspective			"Desde el lado de las Blancas"
 ::application::tree::mc::FromBlacksPerspective			"Desde el lado de las Negras"
@@ -1245,6 +1246,7 @@
 ::gametable::mc::F_Acv						"ACV"
 ::gametable::mc::F_Idn						"960"
 ::gametable::mc::F_Position				"Posición"
+::gametable::mc::F_MoveList				"Move List" ;# NEW
 ::gametable::mc::F_EventDate				"Fecha del Evento"
 ::gametable::mc::F_EventType				"Tipo de Ev."
 ::gametable::mc::F_Promotion				"Promoción"
@@ -1283,19 +1285,23 @@
 ::gametable::mc::T_Variations				"Variantes"
 ::gametable::mc::T_TimeMode				"Control de tiempo"
 
-::gametable::mc::P_Rating					"Puntaje de rating"
+::gametable::mc::P_Name						"Nombre"
+::gametable::mc::P_FideID					"Fide ID"
+::gametable::mc::P_Rating1					"Puntaje de rating"
+::gametable::mc::P_Rating2					"Rating Score (Second Rating)" ;# NEW
 ::gametable::mc::P_RatingType				"Tipo de rating"
 ::gametable::mc::P_Country					"País"
 ::gametable::mc::P_Title					"Título"
 ::gametable::mc::P_Type						"Tipo"
-::gametable::mc::P_Date						"Fecha"
-::gametable::mc::P_Mode						"Modo"
 ::gametable::mc::P_Sex						"Sexo"
-::gametable::mc::P_Name						"Nombre"
 
-::gametable::mc::G_White					"Blancas"
-::gametable::mc::G_Black					"Negras"
-::gametable::mc::G_Event					"Evento"
+::gametable::mc::G_Player					"Player data"
+::gametable::mc::G_Event					"Event data"
+::gametable::mc::G_Game						"Game information"
+::gametable::mc::G_Opening					"Opening information"
+::gametable::mc::G_Flags					"Flags"
+::gametable::mc::G_Notation				"Notation"
+::gametable::mc::G_Internal				"Internal"
 
 ::gametable::mc::EventType(game)			"Partida"
 ::gametable::mc::EventType(match)		"Match"
@@ -1885,12 +1891,17 @@
 ### notation ###########################################################
 ::notation::mc::Notation		"Notación"
 
-::notation::mc::MoveForm(alg)	"Algebraica" 
-::notation::mc::MoveForm(san)	"Algebraica Corta" 
-::notation::mc::MoveForm(lan)	"Algebraica Larga" 
-::notation::mc::MoveForm(eng)	"Inglés" 
-::notation::mc::MoveForm(cor)	"Correspondencia" 
-::notation::mc::MoveForm(tel)	"Telegrafico" 
+::notation::mc::MoveForm(can)	"Computer Algebraic Notation" ;# NEW also: "Coordinate Notation"
+::notation::mc::MoveForm(san)	"Short Algebraic Notation" ;# NEW also "Standard Algebraic Notation"
+::notation::mc::MoveForm(lan)	"Long Algebraic Notation"
+::notation::mc::MoveForm(gan)	"German Short Algebraic Notation"
+::notation::mc::MoveForm(man)	"Minimal Algebraic Notation"
+::notation::mc::MoveForm(ran)	"Reversible Algebraic Notation"
+::notation::mc::MoveForm(smi)	"Smith Notation"
+::notation::mc::MoveForm(edn)	"English Descriptive Notation"
+::notation::mc::MoveForm(sdn)	"Spanish Descriptive Notation"
+::notation::mc::MoveForm(cor)	"ICCF Numeric Notation (Correspondence)"
+::notation::mc::MoveForm(tel)	"Alphabetic Notation (Telegraph)"
 
 ### figurine ###########################################################
 ::figurines::mc::Figurines	"Piezas"

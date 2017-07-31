@@ -58,6 +58,7 @@ public:
 	Move findExactPosition(Board const& position, bool skipVariations);
 
 	void doDecoding(GameData& data);
+	unsigned doDecoding(uint16_t* line, unsigned length, Board& startBoard, bool useStartBoard);
 	save::State doDecoding(db::Consumer& consumer, TagSet& tags);
 
 private:

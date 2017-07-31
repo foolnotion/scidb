@@ -92,9 +92,13 @@ array set ColorLookup {
 	selectionbackground		#ffdd76
 	selectionforeground		black
 	disabledforeground		#555555
+	activebackground			#e5e5e5
 	labelforeground			black
 	labelbackground			#d9d9d9
 }
+#	activebackground			#e5e5e5
+#	activebackground			#d4d8d9
+#	activebackground			#ffdc9d
 
 array set Defaults {
 	-width                  0
@@ -112,6 +116,13 @@ array set Defaults {
 	-takefocus          		1
 	-fixedrows					0
 	-configurable				1
+	-showlines					0
+	-linethickness				2
+	-linecolor					{}
+	-showrootchildbuttons	0
+	-showrootbutton			0
+	-treecolumn					{}
+	-buttonimage				{}
 	-imagepadx					{2 2}
 	-imagepady					{0 0}
 	-padx							{2 2}
@@ -126,6 +137,7 @@ array set Defaults {
 	-selectionbackground		table,selectionbackground
 	-selectionforeground		table,selectionforeground
 	-disabledforeground		table,disabledforeground
+	-activebackground			table,activebackground
 	-labelforeground			table,labelforeground
 	-labelbackground			table,labelbackground
 }
@@ -133,10 +145,13 @@ array set Defaults {
 variable Eraser [::icon::makeStateSpecificIcons $::colormenu::icon::16x16::eraser]
 variable Colors {black white gray50 darkviolet darkBlue blue2 blue darkGreen darkRed red2 red #68480a}
 variable RecentColors
+variable OptionMap
 
 set KeyFitColumns			<Control-Key-comma>
 set KeyOptimizeColumns	<Control-Key-period>
 set KeySqueezeColumns	<Control-Key-numbersign>
+
+set shiftMask 1
 
 
 proc table {args} {
@@ -148,6 +163,7 @@ proc table {args} {
 	variable KeyFitColumns
 	variable KeyOptimizeColumns
 	variable KeySqueezeColumns
+	variable OptionMap
 
 	set parent [lindex $args 0]
 	set table [tk::frame $parent]
@@ -155,15 +171,25 @@ proc table {args} {
 	namespace eval [namespace current]::$table {}
 	variable ${table}::Vars
 	variable ${table}::Options
+	variable ColorLookup
+
+	set Vars(id) ""
 
 	if {![info exists Options]} {
 		array set Options [array get Defaults]
 		array set Options [lrange $args 1 end]
+		if {[info exists Options(-id)]} {
+			set Vars(id) $Options(-id)
+			array unset Options -id
+		}
 	} else {
 		set opts(-labelcommand) {}
 		array set opts [lrange $args 1 end]
-		set Options(-labelcommand) $opts(-labelcommand)
-		set Options(-takefocus) $opts(-takefocus)
+		foreach attr {	-labelcommand -takefocus -showlines -linethickness -linecolor
+							-showrootchildbuttons -showrootbutton -treecolumn -buttonimage} {
+			if {[info exists opts($attr)]} { set Options($attr) $opts($attr) }
+		}
+		if {[info exists opts(-id)]} { set Vars(id) $opts(-id) }
 		unset opts
 
 		foreach key [array names Defaults] {
@@ -171,6 +197,10 @@ proc table {args} {
 				set Options($key) $Defaults($key)
 			}
 		}
+	}
+
+	if {[info exists OptionMap($Vars(id))]} {
+		array set Options $OptionMap($Vars(id))
 	}
 
 	set Vars(charwidth)		[font measure $Options(-font) "0"]
@@ -190,28 +220,40 @@ proc table {args} {
 	set Vars(visible)			{}
 	set Vars(order)			{}
 	set Vars(styles)			{}
+	set Vars(treecolumn)		$Options(-treecolumn)
+	set Vars(detach)			0
+
+	if {$Options(-showlines)} { set Vars(detach) 1 }
 
 	set background [lookupColor $Options(-background)]
+	set showrsb $Options(-showrootchildbuttons)
+	set showrb $Options(-showrootbutton)
 
-	treectrl $table.t                      \
-		-width $Options(-width)             \
-		-takefocus $Options(-takefocus)     \
-		-highlightthickness 0               \
-		-borderwidth $Options(-borderwidth) \
-		-relief sunken                      \
-		-showheader yes                     \
-		-showbuttons no                     \
-		-selectmode single                  \
-		-showroot no                        \
-		-showlines no                       \
-		-showrootlines no                   \
-		-columnresizemode realtime          \
-		-itemprefix i                       \
-		-xscrollincrement 1                 \
-		-keepuserwidth no                   \
-		-fullstripes $Options(-fullstripes) \
-		-background $background             \
+	treectrl $table.t                          \
+		-width $Options(-width)                 \
+		-takefocus $Options(-takefocus)         \
+		-highlightthickness 0                   \
+		-borderwidth $Options(-borderwidth)     \
+		-relief sunken                          \
+		-showheader yes                         \
+		-showbuttons $Options(-showlines)       \
+		-linethickness $Options(-linethickness) \
+		-linestyle solid                        \
+		-selectmode single                      \
+		-showroot no                            \
+		-showlines $Options(-showlines)         \
+		-showrootlines no                       \
+		-showrootchildbuttons $showrsb          \
+		-showrootbutton $showrb                 \
+		-columnresizemode realtime              \
+		-itemprefix i                           \
+		-xscrollincrement 1                     \
+		-keepuserwidth no                       \
+		-fullstripes $Options(-fullstripes)     \
+		-background $background                 \
+		-buttonimage $Options(-buttonimage)     \
 		;
+	if {[string length $Options(-linecolor)]} { $table.t configure -linecolor $Options(-linecolor) }
 	$table.t column dragconfigure -enable yes
 	$table.t notify install <ColumnDrag-receive>
 	$table.t notify install <Header-enter>
@@ -220,18 +262,25 @@ proc table {args} {
 	$table.t notify install <Item-leave>
 	$table.t notify install <Column-resized>
 	$table.t notify bind Table <ColumnDrag-receive> [namespace code [list MoveColumn $table %C %b]]
-	$table.t notify bind Table <Header-enter> [namespace code [list Tooltip $table show %C]]
-	$table.t notify bind Table <Header-leave> [namespace code [list Tooltip $table hide]]
-	$table.t notify bind Table <Item-enter> [namespace code [list VisitItem $table enter %C %I]]
-	$table.t notify bind Table <Item-leave> [namespace code [list VisitItem $table leave %C %I]]
+	$table.t notify bind Table <Header-enter> [namespace code [list VisitHeader $table enter %C %I]]
+	$table.t notify bind Table <Header-leave> [namespace code [list VisitHeader $table leave %C %I]]
+	$table.t notify bind Table <Item-enter> [namespace code [list VisitItem $table enter %C %I %M]]
+	$table.t notify bind Table <Item-leave> [namespace code [list VisitItem $table leave %C %I %M]]
 	$table.t notify bind Table <Column-resized> [namespace code [list UpdateColunnWidth $table %C %w]]
 
+	foreach attr {	-showbuttons -showlines -showrootbutton -showrootchildbuttons -linethickness \
+						-linecolor -fullstripes -buttonimage} {
+		array unset Options $attr
+	}
+
 	setColumnBackground $table tail [lookupColor $Options(-stripes)] [lookupColor $background]
+	set activeBackground [list [lookupColor $Options(-activebackground)] {active} {} {}]
 	$table.t state define deleted
+	$table.t state define warning
 	$table.t state define check
 	$table.t state define nocheck
 	$table.t element create elemIco image
-	set colors [list [lookupColor $Options(-selectionbackground)] selected]
+	lappend colors [lookupColor $Options(-selectionbackground)] selected
 	if {[llength $Options(-highlightcolor)]} {
 		lappend colors [lookupColor $Options(-highlightcolor)] active
 	}
@@ -242,7 +291,7 @@ proc table {args} {
 		-filled no                           \
 		-relief raised                       \
 		-thickness 1                         \
-		-background {#e5e5e5 {active} {} {}} \
+		-background $activeBackground        \
 		;
 
 	if {$Options(-fixedrows)} {
@@ -258,14 +307,30 @@ proc table {args} {
 	::bind $table.t <Double-Button-1>	[namespace code [list SetSelection $table %x %y %s]]
 	::bind $table.t <FocusIn>				[namespace code [list FocusIn $table]]
 	::bind $table.t <FocusOut>				[namespace code [list FocusOut $table]]
-	::bind $table.t <Home>					[namespace code [list Scroll $table home]]
-	::bind $table.t <End>					[namespace code [list Scroll $table end]]
-	::bind $table.t <Prior>					[namespace code [list Scroll $table prior]]
-	::bind $table.t <Next>					[namespace code [list Scroll $table next]]
-	::bind $table.t <Up>						[namespace code [list Scroll $table up]]
-	::bind $table.t <Down>					[namespace code [list Scroll $table down]]
+	::bind $table.t <Home>					[namespace code [list ScrollVert $table home]]
+	::bind $table.t <End>					[namespace code [list ScrollVert $table end]]
+	::bind $table.t <Prior>					[namespace code [list ScrollVert $table prior]]
+	::bind $table.t <Next>					[namespace code [list ScrollVert $table next]]
+	::bind $table.t <Up>						[namespace code [list ScrollVert $table up]]
+	::bind $table.t <Down>					[namespace code [list ScrollVert $table down]]
+	::bind $table.t <Control-Home>		[namespace code [list ScrollVert $table see]]
 	::bind $table.t <Key-space>			[namespace code [list SetSelection $table %s]]
+	::bind $table.t <Left>					[list $table.t xview scroll -5 units]
+	::bind $table.t <Right>					[list $table.t xview scroll +5 units]
+	::bind $table.t <Control-Left>		[list $table.t xview moveto 0.0]
+	::bind $table.t <Control-Right>		[list $table.t xview moveto 1.0]
 	::bind $table.t <<ThemeChanged>>		[namespace code [list ThemeChanged $table]]
+
+	if {[tk windowingsystem] eq "x11"} {
+		::table::bind $table <Button-4> [namespace code [list ScrollHorz $table.t -10 %s]]
+		::table::bind $table <Button-4> {+ break }
+		::table::bind $table <Button-5> [namespace code [list ScrollHorz $table.t +10 %s]]
+		::table::bind $table <Button-5> {+ break }
+	} else {
+		::table::bind $table <MouseWheel> [namespace code [list \
+			[list ScrollHorz $table.t {[expr {%D < 0 ? -10 : 10}]} %s]]]
+		::table::bind $table <MouseWheel> {+ break }
+	}
 
 	set toplevel [winfo toplevel $parent]
 	::bind $toplevel $KeyFitColumns [namespace code [list fitColumns $toplevel]]
@@ -303,51 +368,45 @@ proc addcol {table id args} {
 	set index [llength $Vars(columns)]
 
 	array set opts {
-		-visible					1
-		-minwidth				0
-		-maxwidth				0
-		-lastwidth				0
-		-stretch   				0
-		-removable				0
-		-ellipsis            0
-		-optimizable			1
-		-fixed					0
-		-pixels					0
-		-checkbutton			0
-		-width					10
-		-justify					left
-		-lock                none
-		-image					{}
-		-text						{}
-		-textvar					{}
-		-tooltip					{}
-		-tooltipvar				{}
-		-group					{}
-		-groupvar				{}
-		-menu						{}
-		-foreground				{}
-		-background				{}
-		-selectionforeground	{}
-		-disabledforeground	{}
-		-stripes					{}
+		-text				{}
+		-textvar			{}
+		-image			{}
+		-tooltip			{}
+		-tooltipvar		{}
+		-nameingroup	{}
+		-associated		{}
+		-menu				{}
+		-group			{}
+		-groupvar		{}
 	}
 
 	if {[info exists Options(-visible:$id)]} {
-		array set opts {
-			-text			{}
-			-textvar		{}
-			-image		{}
-			-tooltip		{}
-			-tooltipvar	{}
-			-menu			{}
-			-group		{}
-			-groupvar	{}
-		}
 		array set opts $args
 		foreach {key val} [array get Options *:$id] {
 			set opts([lindex [split $key ":"] 0]) $val
 		}
 	} else {
+		array set opts {
+			-visible					1
+			-minwidth				0
+			-maxwidth				0
+			-lastwidth				0
+			-stretch   				0
+			-removable				0
+			-ellipsis            0
+			-optimizable			1
+			-fixed					0
+			-pixels					0
+			-checkbutton			0
+			-width					10
+			-justify					left
+			-lock                none
+			-foreground				{}
+			-background				{}
+			-selectionforeground	{}
+			-disabledforeground	{}
+			-stripes					{}
+		}
 		set opts(-order) $index
 		array set opts $args
 	}
@@ -449,6 +508,10 @@ proc addcol {table id args} {
 		-itembackground $colors                              \
 		;
 
+	if {$id eq $Vars(treecolumn)} {
+		$table.t configure -treecolumn $id
+	}
+
 	set foreground $opts(-foreground)
 	if {[llength $foreground] == 0} { set foreground $Options(-foreground) }
 	set disabledforeground $opts(-disabledforeground)
@@ -456,6 +519,8 @@ proc addcol {table id args} {
 
 	set Vars(tooltip:$id) $opts(-tooltip)
 	set Vars(tooltipvar:$id) $opts(-tooltipvar)
+	set Vars(nameingroup:$id) $opts(-nameingroup)
+	set Vars(associated:$id) $opts(-associated)
 	set Vars(menu:$id) $opts(-menu)
 	set Vars(group:$id) $opts(-group)
 	set Vars(groupvar:$id) $opts(-groupvar)
@@ -494,10 +559,11 @@ proc addcol {table id args} {
 	}
 	set n [llength $columns]
 	if {$n > 1} {
-		set next [lindex $columns end-1]
+		set next [lindex $columns end]
 		for {set i [expr {$n - 2}]} {$i >= 0} {incr i -1} {
 			set prev [lindex $columns $i]
-			$table.t column move $prev $next
+			# catch possible problem with locked columns
+			if {$prev ne $next} { catch { $table.t column move $prev $next } }
 			set next $prev
 		}
 	}
@@ -506,6 +572,8 @@ proc addcol {table id args} {
 	unset opts(-textvar)
 	unset opts(-tooltip)
 	unset opts(-tooltipvar)
+	unset opts(-nameingroup)
+	unset opts(-associated)
 	unset opts(-group)
 	unset opts(-groupvar)
 	unset opts(-image)
@@ -515,6 +583,15 @@ proc addcol {table id args} {
 	incr Vars(size)
 
 	MakeStyles $table $id $foreground $disabledforeground $opts(-checkbutton)
+}
+
+
+proc itemconfigure {table index args} {
+	variable ${table}::Vars
+
+	if {$index < $Vars(height)} {
+		$table.t item configure $index {*}$args
+	}
 }
 
 
@@ -540,6 +617,26 @@ proc insert {table index list} {
 	}
 
 	set Vars(rows) [max $Vars(rows) [expr {$index + 1}]]
+}
+
+
+proc setElement {table index id value} {
+	variable ${table}::Vars
+
+	if {$index >= $Vars(height)} { return }
+
+	if {[string index $value 0] eq "@" && [lindex $value 0] eq "@"} {
+		$table.t item element configure $index $id elemTxt$id -text ""
+		$table.t item element configure $index $id elemIco -image [lindex $value 1]
+	} else {
+		$table.t item element configure $index $id elemIco -image {}
+		$table.t item element configure $index $id elemTxt$id -text $value
+	}
+}
+
+
+proc configureItem {table index id args} {
+	$table.t item element configure $index $id elemTxt$id {*}$args
 }
 
 
@@ -590,6 +687,12 @@ proc setOptions {table options} {
 }
 
 
+proc bindOptions {id options} {
+	variable OptionMap
+	set OptionMap($id) $options
+}
+
+
 proc setHeight {table height {cmd {}}} {
 	variable ${table}::Vars
 
@@ -624,7 +727,9 @@ proc setHeight {table height {cmd {}}} {
 		event generate $table <<TableResized>> -data $height
 	}
 
-	catch { select $table $selection }
+	if {$selection < $height} {
+		select $table $selection
+	}
 }
 
 
@@ -649,13 +754,16 @@ proc hideColumn {table id} {
 	variable ${table}::Options
 	variable ${table}::Vars
 
-	if {!$Options(-visible:$id)} { return }
-
-	$table.t column configure $id -visible 0
-	set Options(-visible:$id) 0
-	set i [lsearch -exact $Vars(visible) $id]
-	if {$i >= 0} { set Vars(visible) [lreplace $Vars(visible) $i $i] }
-	event generate $table <<TableHide>> -data $id
+	lappend ids $id {*}$Vars(associated:$id)
+	foreach id $ids {
+		set Options(-visible:$id) 0
+		$table.t column configure $id -visible 0
+		set i [lsearch -exact $Vars(visible) $id]
+		if {$i >= 0} { set Vars(visible) [lreplace $Vars(visible) $i $i] }
+	}
+	foreach id $ids {
+		event generate $table <<TableHide>> -data $id
+	}
 	after idle [namespace code [list UpdateColunnWidths $table]]
 }
 
@@ -664,15 +772,18 @@ proc showColumn {table id} {
 	variable ${table}::Options
 	variable ${table}::Vars
 
-	if {$Options(-visible:$id)} { return }
-
-	$table.t column configure $id -visible 1
-	set Options(-visible:$id) 1
+	lappend ids $id {*}$Vars(associated:$id)
+	foreach id $ids {
+		set Options(-visible:$id) 1
+		$table.t column configure $id -visible 1
+	}
 	set Vars(visible) {}
 	foreach i $Vars(columns) {
 		if {$Options(-visible:$i)} { lappend Vars(visible) $i }
 	}
-	event generate $table <<TableShow>> -data $id
+	foreach id $ids {
+		event generate $table <<TableShow>> -data $id
+	}
 	event generate $table <<TableFill>> -data [list 0 $Vars(rows)]
 	after idle [namespace code [list UpdateColunnWidths $table]]
 }
@@ -756,8 +867,20 @@ proc bind {table sequence script} {
 }
 
 
-proc configure {table id args} {
-	$table.t element configure elemTxt$id {*}$args
+proc configure {table args} {
+	if {[llength $args] % 2 == 0} {
+		$table.t configure {*}$args
+	} else {
+		set id [lindex $args 0]
+		set args [lrange $args 1 end]
+
+		foreach {attr value} $args {
+			switch -- $attr {
+				-labelfont	{ $table.t column configure $id -font $value }
+				default		{ $table.t element configure elemTxt$id $attr $value }
+			}
+		}
+	}
 }
 
 
@@ -789,7 +912,7 @@ proc identify {table x y} {
 	if {[lindex $info 0] ne "item"} { return {-1 -1} }
 	set row [$table.t item tag names [lindex $info 1]]
 	if {$row >= $Vars(rows)} { set row -1 }
-	return [list $row [lindex $info 3]]
+	return [list $row [lindex $info 3] [lindex $info 1] [lindex $info 2]]
 }
 
 
@@ -834,14 +957,16 @@ proc clear {table {first -1} {last -1}} {
 	activate $table none
 
 	set Vars(rows) $first
+	set t $table.t
 
 	for {set row $first} {$row < $last} {incr row} {
-		set item [$table.t item id $row]
+		set item [$t item id $row]
 		if {[llength $item]} {
+			# $t item reset $row XXX
 			foreach id $Vars(visible) {
 				catch {
-					$table.t item element configure $row $id elemIco -image {}
-					$table.t item element configure $row $id elemTxt$id -text ""
+					$t item element configure $row $id elemIco -image {}
+					$t item element configure $row $id elemTxt$id -text ""
 				}
 			}
 		}
@@ -950,6 +1075,7 @@ proc select {table row} {
 proc setSelection {table row} {
 	variable ${table}::Vars
 
+	if {$row == -1} { return }
 	if {$row == $Vars(selection)} { return }
 
 	select $table $row
@@ -997,22 +1123,37 @@ proc setDefaultLayout {table id style} {
 		-padx [list $padx $padx] \
 		-squeeze $squeeze \
 		-sticky w \
+		-indent yes \
 		;
-	$table.t style layout $style elemImg -union elemIco -iexpand nswe
-	$table.t style layout $style elemIco -height $Vars(linespace) -padx [list $padx 0]
+	# we don't use detach if it does not have a tree column, otherwise the item is not centering
+	$table.t style layout $style elemImg -union elemIco -iexpand nswe -indent no -detach $Vars(detach)
+	$table.t style layout $style elemIco -height $Vars(linespace) -indent no -detach $Vars(detach)
 }
 
 
 proc SbSet {sb first last} {
-	if {$first <= 0 && $last >= 1} {
-		grid remove $sb
-		set state hide
+	variable Priv
+
+	set parent [winfo parent $sb]
+	set state ""
+
+	if {$first <= 0 && $last >= 1.0} {
+		if {$sb in [grid slaves $parent]} {
+			grid remove $sb
+			set state hide
+		}
 	} else {
-		grid $sb
-		set state show
+		if {$sb ni [grid slaves $parent]} {
+			grid $sb
+			set state show
+		}
 	}
+
 	$sb set $first $last
-	event generate [winfo parent $sb] <<TableScrollbar>> -data $state
+
+	if {[llength $state]} {
+		event generate [winfo parent $sb] <<TableScrollbar>> -data $state
+	}
 }
 
 
@@ -1049,7 +1190,7 @@ proc ConfigureOnce {table w h} {
 	}
 
 	set Vars(labelHeight) [$table.t headerheight]
-	bind $table <Configure> {}
+	::bind $table.t <Configure> {}
 }
 
 
@@ -1064,6 +1205,8 @@ proc UpdateColunnWidth {table column width} {
 
 
 proc UpdateColunnWidths {table} {
+	if {![winfo exists $table]} { return }
+
 	variable ${table}::Vars
 	variable ${table}::Options
 
@@ -1095,6 +1238,7 @@ proc ThemeChanged {table} {
 
 
 proc GenerateTableMinSizeEvent {table} {
+	if {![winfo exists $table]} { return }
 	variable ${table}::Vars
 
 	set minwidth 0
@@ -1125,9 +1269,9 @@ proc MakeStyles {table id foreground disabledForeground isCheckButton} {
 		$table.t style create style$id
 		$table.t style elements style$id [list elemSel elemImg elemBrd elemChk elemIco elemTxt$id]
 		setDefaultLayout $table $id style$id
-		$table.t style layout style$id elemSel -union elemTxt$id -iexpand nswe
-		$table.t style layout style$id elemBrd -iexpand xy -detach yes
-		$table.t style layout style$id elemChk -expand nws -padx {4 0}
+		$table.t style layout style$id elemSel -iexpand nswe -detach yes -indent no
+		$table.t style layout style$id elemBrd -iexpand xy -detach yes -indent no
+		$table.t style layout style$id elemChk -expand nws -padx {4 0} -indent yes
 	} else {
 		$table.t element create elemTxt$id text -lines 1 -font $Options(-font)
 		SetForeground $table $id
@@ -1135,8 +1279,20 @@ proc MakeStyles {table id foreground disabledForeground isCheckButton} {
 		$table.t style create style$id
 		$table.t style elements style$id [list elemSel elemImg elemBrd elemIco elemTxt$id]
 		setDefaultLayout $table $id style$id
-		$table.t style layout style$id elemSel -union elemTxt$id -iexpand nswe
-		$table.t style layout style$id elemBrd -iexpand xy -detach yes
+		$table.t style layout style$id elemSel -iexpand nswe -detach yes -indent no
+		$table.t style layout style$id elemBrd -iexpand xy -detach yes -indent no
+
+	}
+}
+
+
+proc ShowColumn {table id} {
+	variable ${table}::Options
+
+	if {$Options(-visible:$id)} {
+		showColumn $table $id
+	} else {
+		hideColumn $table $id
 	}
 }
 
@@ -1183,8 +1339,10 @@ proc FocusIn {table} {
 
 	if {$Vars(active) != -1} {
 		set row $Vars(active)
-		set Vars(active) -1
-		Activate $table $row false true
+		if {$row < $Vars(height) && ([::focus] eq "$table.t")} {
+			$table.t activate $row
+			event generate $table <<TableActivated>> -data $row
+		}
 	}
 }
 
@@ -1207,26 +1365,42 @@ proc Highlight {table x y} {
 
 	switch [lindex $id 0] {
 		item {
-			set row [$table.t item order [lindex $id 1] -visible]
-			set elem [lindex $id 5]
-			if {$elem eq "elemChk"} {
-				set states [$table.t item state get $row]
-				if {"nocheck" in $states} {
-					$table.t item state set $row {check !nocheck}
-					event generate $table <<TableCheckbutton>> -data [list $row 1]
-				} elseif {"check" in $states} {
-					$table.t item state set $row {!check nocheck}
-					event generate $table <<TableCheckbutton>> -data [list $row 0]
+			switch [lindex $id 2] {
+				column {
+					set row [$table.t item order [lindex $id 1] -visible]
+					set elem [lindex $id 5]
+					if {$elem eq "elemChk"} {
+						set states [$table.t item state get $row]
+						if {"nocheck" in $states} {
+							$table.t item state set $row {check !nocheck}
+							event generate $table <<TableCheckbutton>> -data [list $row 1]
+						} elseif {"check" in $states} {
+							$table.t item state set $row {!check nocheck}
+							event generate $table <<TableCheckbutton>> -data [list $row 0]
+						}
+					}
+					if {$row < $Vars(rows)} { Activate $table $row false true }
+				}
+				
+				button {
+					set row [$table.t item order [lindex $id 1] -visible]
+					event generate $table <<TableToggleButton>> -data $row
+				}
+
+				default {
+					if {[$table.t item cget [lindex $id 1] -forcedepth] >= 0} {
+						set row [$table.t item order [lindex $id 1] -visible]
+						if {$row < $Vars(rows)} { Activate $table $row false true }
+					}
 				}
 			}
-			if {$row < $Vars(rows)} { Activate $table $row false true }
 		}
 
 		header {
 			::TreeCtrl::ButtonPress1Header $table.t $id $x $y 0
 			if {[$table.t header dragcget -enable]} {
 				if {[$table.t column cget [lindex $id 1] -lock] eq "none"} {
-					$table.t configure -cursor hand2
+					ttk::setCursor $table.t link
 				}
 			}
 			set Vars(header) 1
@@ -1241,7 +1415,7 @@ proc Release {table x y} {
 	if {$Vars(header)} {
 		::TreeCtrl::Release1 $table.t $x $y
 		if {[$table.t header dragcget -enable]} {
-			$table.t configure -cursor {}
+			ttk::setCursor $table.t {}
 		}
 	}
 }
@@ -1250,8 +1424,10 @@ proc Release {table x y} {
 proc SetSelection {table args} {
 	variable ${table}::Vars
 
-	set shiftIsHeldDown 0
 	set active $Vars(active)
+	if {$active == -1} { return }
+
+	set shiftIsHeldDown 0
 
 	if {[llength $args] == 3} {
 		lassign $args x y state
@@ -1272,7 +1448,16 @@ proc SetSelection {table args} {
 }
 
 
-proc Scroll {table action} {
+proc ScrollHorz {table units state} {
+	variable shiftMask
+
+	if {[expr {($state & $shiftMask) != 0}]} {
+		$table.t xview scroll $units units
+	}
+}
+
+
+proc ScrollVert {table action} {
 	variable ${table}::Vars
 
 	if {$Vars(rows) == 0} { return }
@@ -1340,7 +1525,7 @@ proc Tooltip {table mode {id {}}} {
 
 	if {[llength $id]} {
 		set id [$table.t column tag names $id]
-		if {$Vars(ellipsis:$id) && ![$table.t column ellipsis $id]} { return }
+		if {[string length $id] && $Vars(ellipsis:$id) && ![$table.t column ellipsis $id]} { return }
 		set focus [::focus]
 		if {![llength $focus] || [winfo toplevel $table] ne [winfo toplevel $focus]} {
 			set mode hide
@@ -1363,14 +1548,27 @@ proc Tooltip {table mode {id {}}} {
 }
 
 
-proc VisitItem {table mode column item} {
+proc VisitHeader {table mode item column} {
+	variable ${table}::Vars
+
+	if {$mode eq "enter"} {
+		Tooltip $table show $item
+	} else {
+		Tooltip $table hide
+	}
+
+	VisitItem $table $mode $column "" -1
+}
+
+
+proc VisitItem {table mode column item member} {
 	variable ${table}::Vars
 
 	if {[string length $column] == 0} { return }
 	if {[catch { set row [$table.t item tag names $item] }]} { return }
 	if {$row >= $Vars(rows)} { return }
 	set id [$table.t column tag names $column]
-	event generate $table <<TableVisit>> -data [list $mode $id $row]
+	event generate $table <<TableVisit>> -data [list $mode $id $row $column $item $member]
 }
 
 
@@ -1404,17 +1602,6 @@ proc GetStripes {table id} {
 	if {[llength $Options(-stripes)] == 0} { return {} }
 	if {[llength $Options(-stripes:$id)] == 0} { return $Options(-stripes) }
 	return $Options(-stripes:$id)
-}
-
-
-proc ShowColumn {table id} {
-	variable Visible_
-
-	if {$Visible_($id)} {
-		showColumn $table $id
-	} else {
-		hideColumn $table $id
-	}
 }
 
 
@@ -1453,10 +1640,10 @@ proc PopupMenu {table x y X Y} {
 	::tooltip::hide
 
 	array unset Visible_
-	array set hidden {}
-	set groups {}
 	set tail 0
 	set optimize 0
+	set ignore {}
+	set groups {}
 	foreach i [$table.t column list] {
 		set cid [$table.t column tag names $i]
 		if {$Options(-optimizable:$cid)} {
@@ -1465,18 +1652,20 @@ proc PopupMenu {table x y X Y} {
 		if {$cid eq "tail"} {
 			set tail 1
 		} elseif {$Options(-removable:$cid)} {
-			set g $Vars(groupvar:$cid)
-			set t 1
-			if {[llength $g] == 0} {
-				set g $Vars(group:$cid)
-				set t 0
+			if {[string length [set g $Vars(groupvar:$cid)]] > 0} {
+				set t 1
+				if {[llength $g] == 0} {
+					set g $Vars(group:$cid)
+					set t 0
+				}
+				set entry [list $t $g]
+				if {$entry ni $groups} { lappend groups $entry }
+				lappend groupmember($g) $cid
+				lappend ignore {*}$Vars(associated:$cid)
 			}
-			set entry [list $t $g]
-			if {$entry ni $groups} { lappend groups $entry }
-			lappend groupmember($g) $cid
 		}
 	}
-	set k [lsearch -exact $groups ""]
+	set k [lsearch -exact -index 1 $groups ""]
 	if {$k >= 0} {
 		set e [lindex $groups $k]
 		set groups [lreplace $groups $k $k]
@@ -1541,36 +1730,33 @@ proc PopupMenu {table x y X Y} {
 		foreach group $groups {
 			set name [lindex $group 1]
 			foreach cid $groupmember($name) {
-				if {[llength $Vars(tooltipvar:$cid)]} {
-					set text [set $Vars(tooltipvar:$cid)]
-				} elseif {[llength $Vars(tooltip:$cid)]} {
-					set text $Vars(tooltip:$cid)
-				} else {
-					set text [$table.t column cget $cid -text]
+				if {$cid ni $ignore} {
+					if {[llength $Vars(nameingroup:$cid)]} {
+						set text [set $Vars(nameingroup:$cid)]
+					} elseif {[llength $Vars(tooltipvar:$cid)]} {
+						set text [set $Vars(tooltipvar:$cid)]
+					} elseif {[llength $Vars(tooltip:$cid)]} {
+						set text $Vars(tooltip:$cid)
+					} else {
+						set text [$table.t column cget $cid -text]
+					}
+					if {[string length $name]} { set m $subm.$index } else { set m $subm }
+					$m add checkbutton \
+						-label $text \
+						-command [namespace code [list ShowColumn $table $cid]] \
+						-variable [namespace current]::${table}::Options(-visible:$cid) \
+						;
+					configureCheckEntry $m
 				}
-				if {[string length $name]} {
-					set m $subm.$index
-				} else {
-					set m $subm
-				}
-				set Visible_($cid) $Options(-visible:$cid)
-				$m add checkbutton \
-					-label $text \
-					-variable [namespace current]::Visible_($cid) \
-					-command [namespace code [list ShowColumn $table $cid]] \
-					;
-				::theme::configureCheckEntry $m
 			}
 			if {[string length $name]} { incr index }
 		}
 		if {$tail} {
-			set Visible_($id) $Options(-visible:$id)
 			$subm add checkbutton \
 				-label $mc::FillColumn \
-				-variable [namespace current]::Visible_($id) \
 				-command [namespace code [list ShowColumn $table $id]] \
+				-variable [namespace current]::${table}::Options(-visible:$id) \
 				;
-			::theme::configureCheckEntry $m
 		}
 	}
 
@@ -2006,6 +2192,7 @@ proc SelectTableColor {table id parent title which} {
 		$usedColors         \
 		false               \
 	]
+	if {![winfo exists $parent]} { return } ;# may happen if parent is closed
 
 	if {[llength $color]} {
 		set Options(-$which) $color
@@ -2098,6 +2285,7 @@ proc SelectColor {table id parent title which} {
 		$usedColors         \
 		$eraser             \
 	]
+	if {![winfo exists $parent]} { return } ;# may happen if parent is closed
 	if {[llength $color] == 0} { return }
 	if {$color eq "erase"} { set color {} }
 	set Options(-$which:$id) $color
@@ -2125,6 +2313,7 @@ proc SelectTableStripes {table id parent} {
 		{}                                  \
 		$eraser                             \
 	]
+	if {![winfo exists $parent]} { return } ;# may happen if parent is closed
 
 	if {$color eq "erase"} {
 		set Options(-stripes) {}
@@ -2158,6 +2347,7 @@ proc SelectStripes {table id parent} {
 		{}                                    \
 		$eraser                               \
 	]
+	if {![winfo exists $parent]} { return } ;# may happen if parent is closed
 
 	if {$color eq "erase"} {
 		set Options(-stripes:$id) {}
@@ -2198,17 +2388,16 @@ proc ResetColors {table id} {
 proc SetForeground {table id} {
 	variable ${table}::Options
 
-	set foreground $Options(-foreground:$id)
-	if {[llength $foreground] == 0} { set foreground $Options(-foreground) }
-	set selected $Options(-selectionforeground:$id)
-	if {[llength $selected] == 0} { set selected $Options(-selectionforeground) }
-	set disabled $Options(-disabledforeground:$id)
-	if {[llength $disabled] == 0} { set disabled $Options(-disabledforeground) }
+	foreach color {foreground selectionforeground disabledforeground} {
+		if {![info exists Options(-$color:$id)] || [llength $Options(-$color:$id)] == 0} {
+			set Options(-$color:$id) $Options(-$color)
+		}
+	}
 
 	set colors [list \
-		[lookupColor $disabled] deleted \
-		[lookupColor $selected] selected \
-		[lookupColor $foreground] {} \
+		[lookupColor $Options(-disabledforeground:$id)] deleted \
+		[lookupColor $Options(-selectionforeground:$id)] selected \
+		[lookupColor $Options(-foreground:$id)] {} \
 	]
 	$table.t element configure elemTxt$id -fill $colors
 }

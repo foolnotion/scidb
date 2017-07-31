@@ -217,13 +217,13 @@ log::finishLayout
 proc dialog::fsbox::setBookmarks {args} {}
 
 if {[file readable $::scidb::file::options]} {
-	if {[catch {
+#	if {[catch {
 			::load::source $::scidb::file::options -message $::load::mc::ReadingFile(options) -encoding utf-8 -throw 1
-		}]} {
-		unset ::setup::board::History
-		set ::setup::board::History {}
-		catch { source -encoding utf-8 $::scidb::file::options }
-	}
+#		}]} {
+#		unset ::setup::board::History
+#		set ::setup::board::History {}
+#		catch { source -encoding utf-8 $::scidb::file::options }
+#	}
 }
 
 if {[catch {

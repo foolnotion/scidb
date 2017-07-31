@@ -1129,7 +1129,7 @@ db::Guess::staticExchangeEvaluator(Move const& move) const
 	}
 	else
 	{
-		attackedPiece = pieceValue(move.pieceMoved(), move.from());
+		attackedPiece = pieceValue(move.moved(), move.from());
 		swapList[0] = m_pieceValues[move.capturedOrDropped()];
 
 		if (!variant::isAntichess(m_variant) && attackedPiece != pieceValue(piece::Rook, move.from()))

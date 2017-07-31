@@ -753,6 +753,18 @@ Codec::prepareDecoding(GameInfo const& info, unsigned gameIndex, ByteStream& str
 }
 
 
+unsigned
+Codec::doDecoding(GameInfo const&,
+						uint16_t* line,
+						unsigned length,
+						Board& startBoard,
+						bool useStartBoard)
+{
+	ByteStream bstrm;
+	return Decoder(bstrm, *m_codec).doDecoding(line, length, startBoard, useStartBoard);
+}
+
+
 void
 Codec::doDecoding(GameData& data, GameInfo& info, unsigned gameIndex, mstl::string*)
 {

@@ -133,6 +133,19 @@ Line::operator[](unsigned n) const
 }
 
 
+inline
+mstl::string&
+Line::print(mstl::string& result,
+				Board const& startBoard,
+				variant::Type variant,
+				move::Notation style,
+				protocol::ID protocol,
+				encoding::CharSet charSet) const
+{
+	return print(result, startBoard, variant, 0, length, length, style, protocol, charSet);
+}
+
+
 #if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 
 inline

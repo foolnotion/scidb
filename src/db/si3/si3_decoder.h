@@ -65,6 +65,7 @@ public:
 
 	unsigned doDecoding(GameData& data);
 	save::State doDecoding(db::Consumer& consumer, TagSet& tags);
+	unsigned doDecoding(uint16_t* line, unsigned length, Board& startBoard, bool useStartBoard);
 
 	static type::ID decodeType(unsigned type);
 
@@ -87,6 +88,7 @@ private:
 	void decodePawn(sq::ID from, Byte nybble);
 
 	void decodeVariation(Consumer& consumer, MoveNode const* node);
+	void handleInvalidMove(Move const& move);
 
 	void Report(char const* charset);
 

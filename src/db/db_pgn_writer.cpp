@@ -697,7 +697,7 @@ PgnWriter::writeMove(Move const& move,
 		m_move += moveNumber;
 	}
 
-	move.printSan(m_move, protocol::Standard, encoding::Latin1);
+	move.printSAN(m_move, protocol::Standard, encoding::Latin1);
 
 	if (!annotation.isEmpty())
 	{

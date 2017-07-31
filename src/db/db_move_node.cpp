@@ -1167,7 +1167,7 @@ MoveNode::dump(unsigned level) const
 		if (n->move())
 		{
 			s.clear();
-			n->move().printSan(s, protocol::Standard, encoding::Latin1);
+			n->move().printSAN(s, protocol::Standard, encoding::Latin1);
 			::printf("%s ", s.c_str());
 		}
 

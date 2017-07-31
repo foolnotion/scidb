@@ -172,6 +172,11 @@ public:
 
 	unsigned importGames(Producer& producer, util::Progress& progress, int startIndex = -1);
 
+	unsigned decodeGame(	GameInfo const& info,
+								uint16_t* line,
+								unsigned length,
+								Board& startBoard,
+								bool useStartBoard);
 	void decodeGame(GameData& data, GameInfo& info, unsigned gameIndex, mstl::string* encoding = 0);
 	void encodeGame(	util::ByteStream& strm,
 							GameData const& data,
@@ -248,6 +253,11 @@ protected:
 	virtual unsigned doOpenProgressive(mstl::string const& rootname, mstl::string const& encoding);
 	virtual void doClear(mstl::string const& rootname);
 
+	virtual unsigned doDecoding(	GameInfo const& info,
+											uint16_t* line,
+											unsigned length,
+											Board& startBoard,
+											bool useStartBoard) = 0;
 	virtual void doDecoding(GameData& data,
 									GameInfo& info,
 									unsigned gameIndex,

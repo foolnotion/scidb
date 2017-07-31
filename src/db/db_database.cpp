@@ -112,12 +112,12 @@ Database::Database(Database const& db, mstl::string const& name)
 	,m_initialSize(0)
 	,m_lastChange(sys::time::timestamp())
 	,m_fileTime(0)
-	,m_asyncReader(0)
 	,m_encodingFailed(false)
 	,m_encodingOk(true)
 	,m_descriptionHasChanged(false)
-	,m_usingAsyncReader(false)
 {
+	::memset(m_asyncReader, 0, sizeof(m_asyncReader));
+
 	try
 	{
 		m_codec->open(this, m_encoding);
@@ -141,14 +141,14 @@ Database::Database(mstl::string const& name, mstl::string const& encoding)
 	,m_initialSize(0)
 	,m_lastChange(sys::time::timestamp())
 	,m_fileTime(0)
-	,m_asyncReader(0)
 	,m_encodingFailed(false)
 	,m_encodingOk(true)
 	,m_descriptionHasChanged(false)
-	,m_usingAsyncReader(false)
 {
 	M_REQUIRE(encoding != sys::utf8::Codec::automatic());
 	M_ASSERT(m_codec);
+
+	::memset(m_asyncReader, 0, sizeof(m_asyncReader));
 
 	// NOTE: we assume normalized (unique) file names.
 
@@ -176,17 +176,17 @@ Database::Database(	mstl::string const& name,
 	,m_initialSize(0)
 	,m_lastChange(sys::time::timestamp())
 	,m_fileTime(0)
-	,m_asyncReader(0)
 	,m_encodingFailed(false)
 	,m_encodingOk(true)
 	,m_descriptionHasChanged(false)
-	,m_usingAsyncReader(false)
 {
 	M_REQUIRE(storage != storage::Temporary);
 	M_REQUIRE(variant::isMainVariant(variant));
 	M_REQUIRE(encoding != sys::utf8::Codec::automatic());
 
 	M_ASSERT(m_codec);
+
+	::memset(m_asyncReader, 0, sizeof(m_asyncReader));
 
 	// NOTE: we assume normalized (unique) file names.
 
@@ -236,14 +236,14 @@ Database::Database(	mstl::string const& name,
 	,m_initialSize(0)
 	,m_lastChange(sys::time::timestamp())
 	,m_fileTime(0)
-	,m_asyncReader(0)
 	,m_encodingFailed(false)
 	,m_encodingOk(true)
 	,m_descriptionHasChanged(false)
-	,m_usingAsyncReader(false)
 {
 	M_REQUIRE(misc::file::hasSuffix(name));
 	M_REQUIRE(misc::file::suffix(m_name) == "sci" || mode == permission::ReadOnly);
+
+	::memset(m_asyncReader, 0, sizeof(m_asyncReader));
 
 	// NOTE: we assume normalized (unique) file names.
 
@@ -293,12 +293,12 @@ Database::Database(mstl::string const& name, Producer& producer, util::Progress&
 	,m_initialSize(0)
 	,m_lastChange(sys::time::timestamp())
 	,m_fileTime(0)
-	,m_asyncReader(0)
 	,m_encodingFailed(false)
 	,m_encodingOk(true)
 	,m_descriptionHasChanged(false)
-	,m_usingAsyncReader(false)
 {
+	::memset(m_asyncReader, 0, sizeof(m_asyncReader));
+
 	// NOTE: we assume normalized (unique) file names.
 
 	m_codec = DatabaseCodec::makeCodec(name, DatabaseCodec::Existing);
@@ -334,8 +334,11 @@ Database::Database(mstl::string const& name, Producer& producer, util::Progress&
 
 Database::~Database() throw()
 {
-	if (m_asyncReader)
-		m_codec->closeAsyncReader(m_asyncReader);
+	for (unsigned i = 0; i < thread::LAST; ++i)
+	{
+		if (m_asyncReader[i])
+			m_codec->closeAsyncReader(m_asyncReader[i]);
+	}
 
 	delete m_codec;
 }
@@ -810,6 +813,31 @@ Database::computeChecksum(unsigned index) const
 	}
 
 	return crc;
+}
+
+
+unsigned
+Database::loadGame(	unsigned index,
+							uint16_t* line,
+							unsigned length,
+							Board& startBoard,
+							bool useStartBoard)
+{
+	M_REQUIRE(isOpen());
+	M_REQUIRE(index < countGames());
+
+	m_codec->reset();
+
+	try
+	{
+		length = m_codec->decodeGame(*m_gameInfoList[index], line, length, startBoard, useStartBoard);
+	}
+	catch (...)
+	{
+		return 0;
+	}
+
+	return length;
 }
 
 
@@ -1747,31 +1775,27 @@ Database::findExactPosition(unsigned index, Board const& position, bool skipVari
 	return m_codec->findExactPosition(	*m_gameInfoList[index],
 													position,
 													skipVariations,
-													m_asyncReader);
+													m_asyncReader[thread::Tree]);
 }
 
 
 void
-Database::openAsyncReader()
+Database::openAsyncReader(thread::Type thread)
 {
 	M_REQUIRE(isOpen());
 
-	if (m_asyncReader == 0)
-	{
-		m_asyncReader = m_codec->getAsyncReader();
-		m_usingAsyncReader = true;
-	}
+	if (!m_asyncReader[thread])
+		m_asyncReader[thread] = m_codec->getAsyncReader();
 }
 
 
 void
-Database::closeAsyncReader()
+Database::closeAsyncReader(thread::Type thread)
 {
-	if (m_usingAsyncReader)
+	if (m_asyncReader[thread])
 	{
-		m_codec->closeAsyncReader(m_asyncReader);
-		m_asyncReader = 0;
-		m_usingAsyncReader = false;
+		m_codec->closeAsyncReader(m_asyncReader[thread]);
+		m_asyncReader[thread] = 0;
 	}
 }
 

@@ -727,7 +727,7 @@ Game::EditorOptions::EditorOptions()
 	,m_linebreakMinCommentLength(0)
 	,m_displayStyle(display::CompactStyle)
 	,m_moveInfoTypes(unsigned(-1))
-	,m_moveStyle(move::ShortAlgebraic)
+	,m_moveStyle(move::SAN)
 {
 }
 
@@ -3851,7 +3851,7 @@ Game::dumpHistory(mstl::string& result, protocol::ID protocol) const
 		if (!result.empty())
 			result.append(' ');
 
-		hist[i].printAlgebraic(result, protocol, encoding::Latin1);
+		hist[i].printCAN(result, protocol, encoding::Latin1);
 	}
 
 	return hist.size();

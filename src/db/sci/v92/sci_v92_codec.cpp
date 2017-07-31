@@ -818,6 +818,20 @@ Codec::getConsumer(format::Type srcFormat)
 }
 
 
+unsigned
+Codec::doDecoding(GameInfo const& info,
+						uint16_t* line,
+						unsigned length,
+						Board& startBoard,
+						bool useStartBoard)
+{
+	ByteStream strm;
+	getGameRecord(info, m_gameData->reader(), strm);
+	Decoder decoder(strm, m_gameData->blockSize() - info.gameOffset());
+	return decoder.doDecoding(line, length, startBoard, useStartBoard);
+}
+
+
 save::State
 Codec::doDecoding(db::Consumer& consumer, TagSet& tags, GameInfo const& info, unsigned gameIndex)
 {

@@ -31,16 +31,21 @@ namespace eval mc {
 
 set Notation		"Notation"
 
-set MoveForm(alg)	"Algebraic"
-set MoveForm(san)	"Short Algebraic"
-set MoveForm(lan)	"Long Algebraic"
-set MoveForm(eng)	"English"
-set MoveForm(cor)	"Correspondence"
-set MoveForm(tel)	"Telegraphic"
+set MoveForm(can)	"Computer Algebraic Notation"	;# also "Coordinate Algebraic"
+set MoveForm(san)	"Short Algebraic Notation"		;# also "Standard  Algebraic Notation"
+set MoveForm(lan)	"Long Algebraic Notation"
+set MoveForm(gan) "German Short Algebraic Notation"
+set MoveForm(man)	"Minimal Algebraic Notation"	;# Informator style
+set MoveForm(ran)	"Reversible Algebraic Notation"
+set MoveForm(smi)	"Smith Notation"
+set MoveForm(edn)	"English Descriptive Notation"
+set MoveForm(sdn)	"Spanish Descriptive Notation"
+set MoveForm(cor)	"ICCF Numeric Notation (Correspondence)"
+set MoveForm(tel)	"Alphabetic Notation (Telegraph)"
 
 } ;# namespace mc
 
-variable moveStyles { san lan alg eng cor tel }
+variable moveStyles { san lan can man gan ran smi edn sdn cor tel }
 
 
 proc listbox {path args} {
@@ -58,7 +63,12 @@ proc listbox {path args} {
 
 	ttk::labelframe $path -text $mc::Notation
 	set list [ttk::frame $path.list -takefocus 0]
-	set selbox [::tlistbox $list.selection -exportselection 0 -pady 1 -borderwidth 1 {*}$args]
+	set selbox [::tlistbox $list.selection \
+		-exportselection 0 \
+		-pady 1 \
+		-borderwidth 1 \
+		-usescroll 0 \
+		{*}$args]
 	$selbox addcol text -id text -expand yes
 	foreach name $NotationList { $selbox insert [list $name] }
 	pack $selbox -anchor s -fill both -expand yes
@@ -93,6 +103,20 @@ proc listbox {path args} {
 	proc ::$path {command args} "[namespace current]::WidgetProc $path \$command {*}\$args"
 
 	return $path
+}
+
+
+proc buildMenuForShortNotation {cmd var} {
+	set menu {}
+	foreach notation {san gan man} {
+		lappend menu [list radiobutton \
+			-command $cmd \
+			-labelvar ::notation::mc::MoveForm($notation) \
+			-variable $var \
+			-value $notation \
+		]
+	}
+	return $menu
 }
 
 
@@ -134,16 +158,21 @@ proc SetNotation {w text {send 0}} {
 	$text delete 1.0 end
 
 	switch $notation {
-		san { $text insert end "1.e4 " text }
-		lan { $text insert end "1.e2-e4 " text }
-		alg { $text insert end "1.e2e4 g8f6" text }
-		eng { $text insert end "1.P-K4 N-KB3" text }
-		cor { $text insert end "1.5254 7866" text }
-		tel { $text insert end "1.GEGO WATI" text }
+		san { $text insert end "17.e4 " text }
+		gan { $text insert end "17.e4 " text }
+		man { $text insert end "17.e4 " text }
+		lan { $text insert end "17.e3-e4 " text }
+		ran { $text insert end "17.e3-e4 " text }
+		can { $text insert end "17.e3e4 f6e4" text }
+		smi { $text insert end "17.e3e4 f6e4" text }
+		edn { $text insert end "17.P-K4 NxP+" text }
+		sdn { $text insert end "17.P4R CxP+" text }
+		cor { $text insert end "17.5354 6654" text }
+		tel { $text insert end "17.GEGO TIGO" text }
 	}
 
 	switch $notation {
-		san - lan {
+		san - gan - lan - man - ran {
 			if {$Lang eq "graphic"} {
 				$text insert end [lindex $::figurines::langSet(graphic) 4] figurine
 			} else {
@@ -153,8 +182,30 @@ proc SetNotation {w text {send 0}} {
 	}
 
 	switch $notation {
-		san { $text insert end "f6" text }
-		lan { $text insert end "g8-f6" text }
+		san			{ $text insert end "x" text }
+		lan - ran	{ $text insert end "f6x" text }
+	}
+
+	if {$notation eq "ran"} {
+		if {$Lang eq "graphic"} {
+			$text insert end [lindex $::figurines::langSet(graphic) 5] figurine
+		} else {
+			$text insert end [lindex $::figurines::langSet($Lang) 5] text
+		}
+	}
+
+	switch $notation {
+		man					{ $text insert end "e4" text }
+		san - lan - ran	{ $text insert end "e4+" text }
+		gan					{ $text insert end "e4:+" text }
+	}
+
+	if {$notation eq "smi"} {
+		if {$Lang eq "graphic"} {
+			$text insert end [lindex $::figurines::langSet(graphic) 4] figurine
+		} else {
+			$text insert end [string tolower [lindex $::figurines::langSet($Lang) 4]] text
+		}
 	}
 
 	$text configure -state disabled

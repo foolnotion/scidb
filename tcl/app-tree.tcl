@@ -52,6 +52,7 @@ set VariantsNotYetSupported		"Chess variants not yet supported."
 set End									"end"
 set ShowMoveOrders					"Show move orders"
 set ShowMoveTree						"Show move tree"
+set SearchInsideVariations			"Search inside variations"
 
 set FromWhitesPerspective			"From whites perspective"
 set FromBlacksPerspective			"From blacks perspective"
@@ -108,6 +109,7 @@ array set Options {
 	bar:transparent	1
 	search:automatic	1
 	search:mode			exact
+	search:variations	0
 	base:lock			0
 	sort:column			frequency
 	rating:type			Elo
@@ -406,6 +408,13 @@ proc build {parent width height} {
 		-tooltipvar [namespace current]::mc::AutomaticSearch \
 		-command [namespace code [list AutomaticSearch $tb]] \
 		;
+# XXX not yet working, the tree list is incorrect
+#	::toolbar::add $tbControl checkbutton \
+#		-image $::icon::toolbarArrowDivide \
+#		-variable [namespace current]::Options(search:variations) \
+#		-tooltipvar [namespace current]::mc::SearchInsideVariations \
+#		-command [namespace code [list InvalidateSearch $tb]] \
+#		;
 	set search [::toolbar::add $tbControl button \
 		-image $::icon::toolbarStart \
 		-tooltipvar [namespace current]::mc::StartSearch \
@@ -435,7 +444,7 @@ proc build {parent width height} {
 			-variable [namespace current]::Options(search:mode) \
 			-tooltipvar [namespace current]::mc::Use[string toupper $mode 0 0]Mode \
 			-value $mode \
-			-command [list set [namespace current]::Options(search:mode) $mode] \
+			-command [namespace code [list InvalidateSearch $tb]] \
 		]
 	}
 	set tbProgress [::toolbar::toolbar $parent \
@@ -681,7 +690,7 @@ proc DoSearch {table} {
 if {[::scidb::game::query mainvariant?] ne "Normal"} { return }
 #################################################
 
-	if {[::scidb::tree::update $Options(rating:type) $Options(search:mode)]} {
+	if {[::scidb::tree::update $Options(rating:type) $Options(search:mode) $Options(search:variations)]} {
 		if {$Vars(searching)} {
 			$Vars(progress) configure -background [::colors::lookup $Priv(progress:finished)]
 			place $Vars(progress) -x 1 -y 1 -width 127
@@ -737,6 +746,12 @@ proc Tick {table n} {
 			after idle [namespace code [list SearchResultAvailable $table]]
 		}
 	}
+}
+
+
+proc InvalidateSearch {table} {
+	::scidb::tree::invalidate
+	AutomaticSearch $table
 }
 
 
@@ -959,7 +974,12 @@ if {$Vars(force)} { set force true }
 	if {[llength $Options(sort:column)]} {
 		lappend options -sort [columnIndex $Options(sort:column)]
 	}
-	set state [::scidb::tree::finish $Options(rating:type) $Options(search:mode) {*}$options]
+	set state [::scidb::tree::finish \
+		$Options(rating:type) \
+		$Options(search:mode) \
+		$Options(search:variations) \
+		{*}$options \
+	]
 
 	if {$force || $state ne "unchanged"} {
 		set Vars(data) [::scidb::tree::fetch]
@@ -1380,7 +1400,7 @@ proc LoadFirstGame {table row move} {
 	set variant [::scidb::app::variant]
 	set view [::scidb::tree::view]
 
-	set position [::game::new $table -base $base -variant $variant -view $view -number $index -fen $fen]
+	::game::new $table -base $base -variant $variant -view $view -number $index -fen $fen
 }
 
 
@@ -1565,6 +1585,14 @@ proc PopupMenu {table x y} {
 		-variable [namespace current]::Options(search:automatic) \
 		-image $::icon::16x16::search \
 		-compound left \
+		;
+	::theme::configureCheckEntry $m
+	$m add checkbutton \
+		-label $mc::SearchInsideVariations \
+		-variable [namespace current]::Options(search:variations) \
+		-image $::icon::16x16::none \
+		-compound left \
+		-command [namespace code [list InvalidateSearch $table]] \
 		;
 	::theme::configureCheckEntry $m
 	$m add checkbutton \

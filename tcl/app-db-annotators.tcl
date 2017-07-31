@@ -117,7 +117,7 @@ proc build {parent} {
 		$top
 
 	set columns {white whiteElo black blackElo event result date acv}
-	::gametable::build $rt [namespace code [list View $rt]] $columns
+	::gametable::build $rt [namespace code [list View $rt]] $columns -id db:annotators
 	::scidb::db::subscribe gameList \
 		[namespace current]::games::Update \
 		[namespace current]::Close \

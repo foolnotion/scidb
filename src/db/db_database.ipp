@@ -38,7 +38,6 @@ inline bool Database::shouldUpgrade() const					{ return m_codec->isExpired(); }
 inline bool Database::isMemoryOnly() const					{ return m_memoryOnly; }
 inline bool Database::encodingIsBroken() const				{ return !m_encodingOk; }
 inline bool Database::encodingFailed() const					{ return m_encodingFailed; }
-inline bool Database::usingAsyncReader() const				{ return m_usingAsyncReader; }
 inline bool Database::hasTemporaryStorage() const			{ return m_temporary; }
 inline bool Database::descriptionHasChanged() const		{ return m_descriptionHasChanged; }
 inline bool Database::isAdded(unsigned index) const		{ return index >= m_initialSize; }
@@ -72,6 +71,23 @@ Database::codec() const
 {
 	M_REQUIRE(isOpen());
 	return *m_codec;
+}
+
+
+inline
+bool
+Database::usingAsyncReader() const
+{
+	static_assert(thread::LAST == 2, "number of threads has changed");
+	return m_asyncReader[0] || m_asyncReader[1];
+}
+
+
+inline
+bool
+Database::usingAsyncReader(thread::Type thread) const
+{
+	return m_asyncReader[thread];
 }
 
 

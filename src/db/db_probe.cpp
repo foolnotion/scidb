@@ -341,7 +341,7 @@ movePiece(Move const& move, egtb::Square* whiteSquares, egtb::Square* blackSquar
 	egtb::Square*	squares	= ::db::color::isWhite(move.color()) == flip ? blackSquares : whiteSquares;
 	egtb::Square	from		= egtb::mapSquare(move.from());
 
-	squares += egtb::mapPiece(move.pieceMoved()) << Piece_Shift;
+	squares += egtb::mapPiece(move.moved()) << Piece_Shift;
 
 	for (unsigned i = 0; i < 1 << Piece_Shift; ++i)
 	{

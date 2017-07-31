@@ -67,28 +67,62 @@ Line::transpose(Line& dst) const
 
 mstl::string&
 Line::print(mstl::string& result,
+				Board const& startBoard,
 				variant::Type variant,
+				unsigned firstPly,
+				unsigned midPly,
+				unsigned lastPly,
+				move::Notation style,
 				protocol::ID protocol,
 				encoding::CharSet charSet) const
 {
-	Board board = Board::standardBoard(variant);
+	M_REQUIRE(lastPly <= length);
 
-	for (unsigned i = 0; i < length; ++i)
+	Board board(startBoard);
+
+	for (unsigned i = 0; i < lastPly; ++i)
 	{
 		Move m = board.makeMove(moves[i]);
 
-		if (i > 0)
-			result += ' ';
+		if (i >= firstPly)
+		{
+			if (i > firstPly)
+				result += ' ';
+			if (i == midPly)
+				result += '(';
 
-		if ((i & 1) == 0)
-			result.format("%u.", mstl::div2(i) + 1);
+			if (style != move::MAN)
+			{
+				unsigned plyNumber = board.plyNumber();
 
-		board.prepareForPrint(m, variant, Board::ExternalRepresentation);
-		m.printSan(result, protocol, charSet);
+				if ((plyNumber & 1) == 0)
+					result.format("%u.", mstl::div2(plyNumber) + 1);
+				else if (i == firstPly)
+					result.format("%u...", mstl::div2(plyNumber) + 1);
+			}
+
+			board.prepareForPrint(m, variant, Board::ExternalRepresentation);
+			m.print(result, style, protocol, charSet);
+		}
+
 		board.doMove(m, variant);
 	}
 
+	if (midPly < lastPly)
+		result += ')';
+
 	return result;
+}
+
+
+mstl::string&
+Line::print(	mstl::string& result,
+					variant::Type variant,
+					move::Notation style,
+					protocol::ID protocol,
+					encoding::CharSet charSet) const
+{
+	return print(result, Board::standardBoard(variant), variant, style, protocol, charSet);
 }
 
 
@@ -96,7 +130,11 @@ void
 Line::dump() const
 {
 	mstl::string result;
-	::printf("%s\n", print(result, variant::Normal, protocol::Standard).c_str());
+	::printf("%s\n", print(	result,
+									Board::standardBoard(variant::Normal),
+									variant::Normal,
+									move::MAN,
+									protocol::Standard).c_str());
 }
 
 // vi:set ts=3 sw=3:

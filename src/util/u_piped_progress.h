@@ -36,6 +36,8 @@ public:
 	bool interrupted() override;
 	bool interruptReceived() const;
 
+	sys::Thread& thread();
+
 	void start(unsigned total) override;
 	void update(unsigned progress) override;
 	void refresh(unsigned progress);
@@ -50,6 +52,8 @@ private:
 };
 
 } // namespace util
+
+#include "u_piped_progress.ipp"
 
 #endif // _u_piped_progress_included
 

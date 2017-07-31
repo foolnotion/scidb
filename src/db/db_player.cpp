@@ -28,6 +28,7 @@
 #include "db_namebase_entry.h"
 #include "db_player_stats.h"
 #include "db_eco_table.h"
+#include "db_board.h"
 
 #include "T_Receptacle.h"
 #include "T_ListToken.h"
@@ -3122,7 +3123,7 @@ Player::emitPlayerCard(	TeXt::Receptacle& receptacle,
 		List ecoLine(new ListToken);
 		mstl::string line;
 		Eco code(stats.ecoLine(color::White, i));
-		ecoTable.getLine(code).print(line, variant::Normal, protocol::Standard);
+		ecoTable.getLine(code).print(line, variant::Normal, move::SAN, protocol::Standard);
 		ecoLine->append(code.asString());
 		ecoLine->append(Value(stats.ecoCount(color::White, i)));
 		ecoLine->append(line);
@@ -3135,7 +3136,7 @@ Player::emitPlayerCard(	TeXt::Receptacle& receptacle,
 		List ecoLine(new ListToken);
 		mstl::string line;
 		Eco code(stats.ecoLine(color::Black, i));
-		ecoTable.getLine(code).print(line, variant::Normal, protocol::Standard);
+		ecoTable.getLine(code).print(line, variant::Normal, move::SAN, protocol::Standard);
 		ecoLine->append(code.asString());
 		ecoLine->append(Value(stats.ecoCount(color::Black, i)));
 		ecoLine->append(line);

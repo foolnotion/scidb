@@ -53,6 +53,7 @@ TreeCache::~TreeCache()
 Tree*
 TreeCache::lookup(uint64_t hash,
 						Position const& position,
+						tree::Method method,
 						tree::Mode mode,
 						rating::Type ratingType) const
 {
@@ -62,7 +63,7 @@ TreeCache::lookup(uint64_t hash,
 	{
 		Tree* t = m_cache[i];
 
-		if (t->match(mode, ratingType, hash, position))
+		if (t->match(method, mode, ratingType, hash, position))
 		{
 			m_lastIndex = i;
 			return t;
@@ -73,7 +74,7 @@ TreeCache::lookup(uint64_t hash,
 	{
 		Tree* t = m_cache[i];
 
-		if (t->match(mode, ratingType, hash, position))
+		if (t->match(method, mode, ratingType, hash, position))
 		{
 			m_lastIndex = i;
 			return t;
@@ -94,7 +95,7 @@ TreeCache::add(Tree* tree)
 
 #endif
 
-	if (isCached(tree->hash(), tree->position(), tree->mode(), tree->ratingType()))
+	if (isCached(tree->hash(), tree->position(), tree->method(), tree->mode(), tree->ratingType()))
 		return;
 
 	if (++m_mostRecentIndex == CacheSize)
@@ -115,13 +116,36 @@ TreeCache::clear()
 {
 	for (unsigned i = 0; i < m_inUse; ++i)
 	{
-		if (m_cache[i]->release())
-			delete m_cache[i];
+		Tree* tree = m_cache[i];
+
+		if (tree->release())
+			delete tree;
 	}
 
 	m_inUse = 0;
 	m_lastIndex = 0;
 	m_mostRecentIndex = CacheSize - 1;
+}
+
+
+void
+TreeCache::clear(tree::Mode mode)
+{
+	unsigned index = 0;
+
+	for (unsigned i = 0; i < m_inUse; ++i)
+	{
+		Tree* tree = m_cache[i];
+
+		if (tree->mode() != mode)
+			m_cache[index++] = tree;
+		else if (tree->release())
+			delete tree;
+	}
+
+	m_inUse = index;
+	m_lastIndex = 0;
+	m_mostRecentIndex = 0;
 }
 
 
@@ -134,10 +158,10 @@ TreeCache::setIncomplete()
 
 
 void
-TreeCache::setIncomplete(unsigned index)
+TreeCache::setIncomplete(unsigned firstIndex, unsigned lastIndex)
 {
 	for (unsigned i = 0; i < m_inUse; ++i)
-		m_cache[i]->setIncomplete(index);
+		m_cache[i]->setIncomplete(firstIndex, lastIndex);
 }
 
 // vi:set ts=3 sw=3:

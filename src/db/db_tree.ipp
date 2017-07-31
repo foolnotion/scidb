@@ -32,6 +32,7 @@ namespace db {
 
 inline uint64_t Tree::Key::hash() const						{ return m_hash; }
 inline Tree::Position const& Tree::Key::position() const	{ return m_position; }
+inline tree::Method Tree::Key::method() const				{ return m_method; }
 inline tree::Mode Tree::Key::mode() const						{ return m_mode; }
 inline rating::Type Tree::Key::ratingType() const			{ return m_ratingType; }
 
@@ -40,7 +41,8 @@ inline
 bool
 Tree::Key::operator==(Key const& key) const
 {
-	return	m_mode == key.m_mode
+	return	m_method == key.m_method
+			&& m_mode == key.m_mode
 			&& m_ratingType == key.m_ratingType
 			&& m_hash == key.m_hash
 			&& m_position == key.m_position;
@@ -57,9 +59,17 @@ Tree::Key::operator!=(Key const& key) const
 
 inline
 bool
-Tree::Key::match(tree::Mode mode, rating::Type ratingType, uint64_t hash, Position const& position) const
+Tree::Key::match(	tree::Method method,
+						tree::Mode mode,
+						rating::Type ratingType,
+						uint64_t hash,
+						Position const& position) const
 {
-	return m_mode == mode && m_ratingType == ratingType && m_hash == hash && m_position == position;
+	return	m_method == method
+			&& m_mode == mode
+			&& m_ratingType == ratingType
+			&& m_hash == hash
+			&& m_position == position;
 }
 
 
@@ -76,6 +86,7 @@ inline unsigned Tree::prevGameCount() const				{ return m_prevGameCount; }
 inline Tree::Key const& Tree::key() const					{ return m_key; }
 inline uint64_t Tree::hash() const							{ return m_key.hash(); }
 inline Tree::Position const& Tree::position() const	{ return m_key.position(); }
+inline tree::Method Tree::method() const					{ return m_key.method(); }
 inline tree::Mode Tree::mode() const						{ return m_key.mode(); }
 inline rating::Type Tree::ratingType() const				{ return m_key.ratingType(); }
 
@@ -87,9 +98,13 @@ inline void Tree::uncompressFilter()	{ m_filter.uncompress(); }
 
 inline
 bool
-Tree::match(tree::Mode mode, rating::Type ratingType, uint64_t hash, Position const& position) const
+Tree::match(tree::Method method,
+				tree::Mode mode,
+				rating::Type ratingType,
+				uint64_t hash,
+				Position const& position) const
 {
-	return m_key.match(mode, ratingType,  hash, position);
+	return m_key.match(method, mode, ratingType,  hash, position);
 }
 
 
@@ -104,17 +119,25 @@ Tree::info(unsigned n) const
 
 inline
 bool
-Tree::isCached(Database const& base, Board const& position, tree::Mode mode, rating::Type ratingType)
+Tree::isCached(Database const& base,
+					Board const& position,
+					tree::Method method,
+					tree::Mode mode,
+					rating::Type ratingType)
 {
-	return base.treeCache().isCached(position, mode, ratingType);
+	return base.treeCache().isCached(position, method, mode, ratingType);
 }
 
 
 inline
 Tree*
-Tree::lookup(Database const& base, Board const& position, tree::Mode mode, rating::Type ratingType)
+Tree::lookup(	Database const& base,
+					Board const& position,
+					tree::Method method,
+					tree::Mode mode,
+					rating::Type ratingType)
 {
-	return base.treeCache().lookup(position, mode, ratingType);
+	return base.treeCache().lookup(position, method, mode, ratingType);
 }
 
 
@@ -137,17 +160,9 @@ Tree::clearCache(Database& base)
 
 inline
 void
-Tree::invalidateCache(Database& base)
+Tree::invalidateCache(Database& base, unsigned firstGameIndex, unsigned lastGameIndex)
 {
-	base.treeCache().setIncomplete();
-}
-
-
-inline
-void
-Tree::invalidateCache(Database& base, unsigned gameIndex)
-{
-	base.treeCache().setIncomplete(gameIndex);
+	base.treeCache().setIncomplete(firstGameIndex, lastGameIndex);
 }
 
 } // namespace db

@@ -87,6 +87,7 @@ set F_Material				"Material"
 set F_Acv					"ACV"
 set F_Idn					"960"
 set F_Position				"Position"
+set F_MoveList				"Move List"
 set F_EventDate			"Event Date"
 set F_EventType			"Ev.Type"
 set F_Promotion			"Promotion"
@@ -125,19 +126,23 @@ set T_Comments				"Comments"
 set T_Variations			"Variations"
 set T_TimeMode				"Time Mode"
 
-set P_RatingScore			"Score"
+set P_Name					"Name"
+set P_FideID				"Fide ID"
+set P_Rating1				"Rating Score"
+set P_Rating2				"Rating Score (Second Rating)"
 set P_RatingType			"Rating Type"
 set P_Country				"Country"
 set P_Title					"Title"
 set P_Type					"Type"
-set P_Mode					"Mode"
-set P_Date					"Date"
 set P_Sex					"Sex"
-set P_Name					"Name"
 
-set G_White					"White"
-set G_Black					"Black"
+set G_Player				"Player"
 set G_Event					"Event"
+set G_Game					"Game information"
+set G_Opening				"Opening"
+set G_Flags					"Flags"
+set G_Notation				"Notation"
+set G_Internal				"Internal"
 
 set PlayerType(human)	"Human"
 set PlayerType(program)	"Computer"
@@ -197,8 +202,8 @@ namespace import ::tcl::mathfunc::min
 #		ID   				Group	Adjustment	Min	Max	Width	Stretch	Removable	Elipsis	Color
 #	-------------------------------------------------------------------------------------------------
 variable Columns {
-	{ number				{}			right		 4		 9		 6			0			1			1			{}				}
-	{ white				white		left		10		 0		18			1			0			1			darkblue		}
+	{ number				game		right		 4		 9		 6			0			1			1			{}				}
+	{ white				white		left		10		 0		18			1			1			1			darkblue		}
 	{ whiteFideID		white		right		 0		 0		10			0			1			1			{}				}
 	{ whiteRating1		white		center	 0		 0		 6			0			1			1			darkgreen	}
 	{ whiteRating2		white		center	 0		 0		 6			0			1			1			darkgreen	}
@@ -207,7 +212,7 @@ variable Columns {
 	{ whiteTitle		white		left		 0		 0		 5			0			1			1			darkred		}
 	{ whiteType			white		center	 0		 0		14px		0			1			0			{}				}
 	{ whiteSex			white		center	 0		 0		14px		0			1			0			{}				}
-	{ black				black		left		10		 0		18			1			0			1			darkblue		}
+	{ black				black		left		10		 0		18			1			1			1			darkblue		}
 	{ blackFideID		black		right		 0		 0		10			0			1			1			{}				}
 	{ blackRating1		black		center	 0		 0		 6			0			1			1			darkgreen	}
 	{ blackRating2		black		center	 0		 0		 6			0			1			1			darkgreen	}
@@ -219,36 +224,36 @@ variable Columns {
 	{ event				event		left		10		 0		18			1			1			1			{}				}
 	{ eventType			event		left		 2		 8		 6			0			1			0			{}				}
 	{ eventDate			event		left		 5		10		10			0			1			0			darkred		}
-	{ result				{}			center	 5		 5		 5			0			1			1			blue			}
+	{ result				game		center	 5		 5		 5			0			1			1			blue			}
 	{ eventCountry		event		center	 4		 5		 5			0			1			0			{}				}
 	{ site				event		left		10		 0		16			1			1			1			{}				}
-	{ date				{}			left		 5		10		10			0			1			0			darkred		}
-	{ round				{}			right		 2		 0		 5			0			1			1			{}				}
-	{ annotator			{}			left		10		 0		10			0			1			1			darkred		}
-	{ idn					{}			right		 0		 0		 5			0			1			1			#68480a		}
-	{ position			{}			left		 0		 0		13			0			1			1			#68480a		}
-	{ length				{}			right		 3		 5		 4			0			1			1			{}				}
-	{ eco					{}			left		 4		 5		 4			0			1			0			darkgreen	}
-	{ flags				{}			left		 2		 0		54px		0			1			0			{}				}
-	{ material			{}			left		 8		 0		25			0			1			1			{}				}
-	{ deleted			{}			center	 0		 0		14px		0			1			0			red			}
-	{ changed			{}			center	 0		 0		14px		0			1			0			{}				}
-	{ added				{}			center	 0		 0		14px		0			1			0			{}				}
-	{ acv					{}			center	 0		 0		30px		0			1			0			{}				}
-	{ engFlag			{}			center	 0		 0		18px		0			1			0			black			}
-	{ othFlag			{}			center	 0		 0		18px		0			1			0			black			}
-	{ promotion			{}			center	 0		 0		14px		0			1			0			{}				}
-	{ underPromo		{}			center	 0		 0		14px		0			1			0			{}				}
-	{ standardPos		{}			center	 0		 0		14px		0			1			0			{}				}
-	{ chess960Pos		{}			center	 0		 0		14px		0			1			0			{}				}
-	{ termination		{}			center	 0		 0		14px		0			1			0			{}				}
+	{ date				game		left		 5		10		10			0			1			0			darkred		}
+	{ round				game		right		 2		 0		 5			0			1			1			{}				}
+	{ annotator			game		left		10		 0		10			0			1			1			darkred		}
+	{ idn					opening	right		 0		 0		 5			0			1			1			#68480a		}
+	{ position			opening	left		 0		 0		13			0			1			1			#68480a		}
+	{ moveList			notation	left		10		 0		20			1			1			1			{}				}
+	{ length				game		right		 3		 5		 4			0			1			1			{}				}
+	{ eco					opening	left		 4		 5		 4			0			1			0			darkgreen	}
+	{ flags				flags		left		 2		 0		54px		0			1			0			{}				}
+	{ material			notation	left		 8		 0		25			0			1			1			{}				}
+	{ deleted			flags		center	 0		 0		14px		0			1			0			red			}
+	{ changed			flags		center	 0		 0		14px		0			1			0			{}				}
+	{ added				flags		center	 0		 0		14px		0			1			0			{}				}
+	{ acv					flags		center	 0		 0		30px		0			1			0			{}				}
+	{ engFlag			flags		center	 0		 0		18px		0			1			0			black			}
+	{ othFlag			flags		center	 0		 0		18px		0			1			0			black			}
+	{ promotion			flags		center	 0		 0		14px		0			1			0			{}				}
+	{ underPromo		flags		center	 0		 0		14px		0			1			0			{}				}
+	{ standardPos		flags		center	 0		 0		14px		0			1			0			{}				}
+	{ chess960Pos		flags		center	 0		 0		14px		0			1			0			{}				}
+	{ termination		game		center	 0		 0		14px		0			1			0			{}				}
 	{ eventMode			event		center	 0		 0		14px		0			1			1			{}				}
 	{ timeMode			event		center	 0		 0		14px		0			1			1			{}				}
-	{ overview			{}			left		10		 0		10			0			1			1			{}				}
-	{ opening			{}			left		10		 0		10			1			1			1			{}				}
-	{ variation			{}			left		10		 0		10			1			1			1			{}				}
-	{ subvariation		{}			left		10		 0		10			1			1			1			{}				}
-	{ key					{}			left		 4		 9		 9			0			1			0			magenta4		}
+	{ opening			opening	left		10		 0		15			1			1			1			{}				}
+	{ variation			opening	left		10		 0		10			1			1			1			{}				}
+	{ subvariation		opening	left		10		 0		10			1			1			1			{}				}
+	{ key					internal	left		 4		 9		 9			0			1			0			magenta4		}
 }
 # alternative colors: darkgoldenrod
 
@@ -258,17 +263,19 @@ variable columns {}
 foreach col $Columns { lappend columns [lindex $col 0] }
 
 array set Defaults {
-	monochrome		0
-	showIDN			0
-	relief			0
-	transparent		0
-	opening-index	0
-	exclude-elo		1
-	include-type	0
-	country-code	flags
-	eventtype-icon	1
-	rating:1			Elo
-	rating:2			DWZ
+	monochrome			0
+	showIDN				0
+	relief				0
+	transparent			0
+	opening-index		0
+	exclude-elo			1
+	include-type		0
+	country-code		flags
+	eventtype-icon		1
+	rating:1				Elo
+	rating:2				DWZ
+	move:notation		san
+	movelist:delay		30
 }
 
 array set GameFlags {}
@@ -277,8 +284,8 @@ variable ratings {Elo DWZ ECF IPS USCF ICCF Rapid Rating Any}
 
 
 proc build {path getViewCmd {visibleColumns {}} {args {}}} {
-	variable Columns
 	variable Defaults
+	variable Columns
 	variable ratings
 
 	namespace eval $path {}
@@ -294,18 +301,13 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 		columns		{}
 		positioncmd	{}
 		selectcmd	{}
-	}
-
-	if {[lsort [array names Options]] ne [lsort [array names Defaults]]} {
-		array set Options [array get Defaults]
+		range			{}
+		afterID		{}
+		id				{}
 	}
 
 	RefreshHeader $path 1
 	RefreshHeader $path 2
-
-	if {[info exists options(-mode)]} {
-		if {$Vars(mode) eq "list"} { set options(-listmode) 1 }
-	}
 
 	array set options $args
 	foreach opt {positioncmd selectcmd mode sortable} {
@@ -315,6 +317,10 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 		}
 	}
 	set args [array get options]
+
+	foreach name [array names Defaults] {
+		if {![info exists Options($name)]} { set Options($name) $Defaults($name) }
+	}
 
 	set columns {}
 	set index 0
@@ -389,7 +395,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 					lappend menu [list radiobutton \
 						-command [namespace code [list RefreshRatings $path $number]] \
 						-label $rt \
-						-variable [namespace current]::Defaults(rating:$number) \
+						-variable [namespace current]::${path}::Options(rating:$number) \
 						-value $ratType \
 					]
 				}
@@ -432,6 +438,14 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 
 			idn {
 				set Vars(idn-index) $index
+			}
+
+			moveList {
+				lappend menu {*}[::notation::buildMenuForShortNotation \
+					[namespace code [list Refresh $path]] \
+					[namespace current]::${path}::Options(move:notation) \
+				]
+				lappend menu { separator }
 			}
 		}
 
@@ -484,9 +498,10 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 		if {$Vars(mode) eq "merge" && $id eq "number"} {
 			lassign {{} {} {}} ivar fvar tvar
 		} else {
-			set ivar [namespace current]::icon::12x12::I_[string toupper $id 0 0]
-			set fvar [namespace current]::mc::F_[string toupper $id 0 0]
-			set tvar [namespace current]::mc::T_[string toupper $id 0 0]
+			set sid [string toupper $id 0 0]
+			set ivar [namespace current]::icon::12x12::I_$sid
+			set fvar [namespace current]::mc::F_$sid
+			set tvar [namespace current]::mc::T_$sid
 			if {![info exists $tvar]} { set tvar {} }
 			if {![info exists $fvar]} { set fvar $tvar }
 			if {![info exists $ivar]} { set ivar {} } else { set ivar [set $ivar] }
@@ -510,6 +525,17 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 		lappend opts -tooltipvar $tvar
 		lappend opts -checkbutton $checkbutton
 
+		if {$group eq "white"} {
+			set name [string range $sid 5 end]
+			if {[string length $name] == 0} { set name Name }
+			lappend opts -nameingroup [namespace current]::mc::P_$name
+			lappend opts -associated black[string range $id 5 end]
+			lappend opts -groupvar [namespace current]::mc::G_Player
+			set group player
+		} elseif {$group eq "black"} {
+			set group {}
+		}
+
 		if {[llength $group]} {
 			lappend opts -groupvar [namespace current]::mc::G_[string toupper $group 0 0]
 		}
@@ -525,7 +551,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	set specialfont [list [list $::font::figurine(text:normal) 9812 9823]]
 	::scrolledtable::configure $path material -specialfont $specialfont
 	::scrolledtable::configure $path position -specialfont $specialfont
-	::scrolledtable::configure $path overview -specialfont $specialfont
+	::scrolledtable::configure $path moveList -specialfont $specialfont
 	RefreshEventType $path
 
 	::bind $path <<TableFill>>			[namespace code [list TableFill $path %d]]
@@ -550,6 +576,10 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 		::scrolledtable::configure $path $col -specialfont $specialfont
 	}
 
+	if {[::scrolledtable::visible? $path moveList]} {
+		::scidb::app::moveList open $path [namespace current]::FetchMoveList
+	}
+	set Vars(ranges) {}
 	set Vars(viewcmd) $getViewCmd
 
 	return $Vars(table)
@@ -646,23 +676,33 @@ proc getOptions {path} {
 }
 
 
-proc setOptions {path options} {
-	namespace eval [namespace current]::$path {}
-
-	variable ${path}::Options
+proc setOptions {id options} {
 	variable Defaults
 
 	array set myOptions $options
-	array set Options [array get Defaults]
+
+### XXX upgrade
+	if {[info exists myOptions(move:notation)]} {
+		set myOptions(move:notation) [string map {alg can gsa gan inf man} $myOptions(move:notation)]
+	}
+### endif
 
 	foreach key [array names Defaults] {
-		if {[info exists myOptions($key)]} {
-			set Options($key) $myOptions($key)
-			array unset myOptions $key
+		if {![info exists myOptions($key)]} {
+			set myOptions($key) $Defaults($key)
 		}
 	}
 
-	::scrolledtable::setOptions $path [array get myOptions]
+	set otions [array get myOptions]
+
+	if {[string match {.application.*} $id]} {
+		# XXX needed for upgrade
+		namespace eval [namespace current]::$id {}
+		variable ${id}::Options
+		::scrolledtable::setOptions $id $options
+	} else {
+		::scrolledtable::bindOptions $id $options
+	}
 }
 
 
@@ -738,14 +778,17 @@ proc showGame {path base variant view index {pos {}}} {
 #	set result [::util::formatResult $result]
 	if {$result eq "1/2-1/2"} { set result "1/2" }
 	set moves [lindex [::scidb::game::dump $base $variant $view $index $pos] 1]
-	showMoves $path $moves $result [expr {$length == 0}]
+	showMoves $path $moves -result $result -showEmpty [expr {$length == 0}]
 }
 
 
 proc hideGame {path} { hideMoves $path }
 
 
-proc showMoves {path moves result showEmpty {width 50}} {
+proc showMoves {path moves args} {
+	array set opts { -result "" -showEmpty 1 -width 50 }
+	array set opts $args
+
 	set w $path.showmoves
 	if {![winfo exists $w]} {
 		set f [::util::makePopup $w]
@@ -773,14 +816,14 @@ proc showMoves {path moves result showEmpty {width 50}} {
 		::shadow::allow $w
 	}
 	set t $w.f.text
-	$t configure -width $width -state normal
+	$t configure -width $opts(-width) -state normal
 	$t delete 1.0 end
 	set moves [::font::splitMoves $moves]
 	set complete 1
 	if {[string length $moves] == 0} {
-		if {$showEmpty} { set text $mc::NoMoves } else { set text $mc::NoMoreMoves }
+		if {$opts(-showEmpty)} { set text $mc::NoMoves } else { set text $mc::NoMoreMoves }
 		$t insert end $text
-		$t insert end " "
+		set needSpace 1
 	} else {
 		set i 0
 		foreach {move tag} $moves {
@@ -790,8 +833,12 @@ proc showMoves {path moves result showEmpty {width 50}} {
 				break
 			}
 		}
+		set needSpace 0
 	}
-	if {$complete} { $t insert end $result }
+	if {$complete && [string length $opts(-result)]} {
+		if {$needSpace} { $t insert end " " }
+		$t insert end $opts(-result)
+	}
 	::update idletasks
 	set lines [min 20 [$t count -displaylines 1.0 8.0]]
 	if {$lines == 1} {
@@ -884,7 +931,7 @@ proc TableSelected {path index} {
 	if {[llength $Vars(selectcmd)]} {
 		{*}$Vars(selectcmd) $base $variant $number $fen
 	} else {
-		::widget::busyOperation { \
+		::widget::busyOperation {
 			::game::new $path \
 				-base $base \
 				-variant $variant \
@@ -905,6 +952,10 @@ proc TableInvoked {path shiftIsHeldDown} {
 
 
 proc Refresh {path} {
+	variable ${path}::Vars
+
+	set Vars(ranges) {}
+	if {[::scidb::app::moveList open? $path]} { ::scidb::app::moveList clear $path }
 	::scrolledtable::refresh $path
 }
 
@@ -1046,8 +1097,7 @@ proc TableFill {path args} {
 
 	if {![::scidb::view::open? games $base $variant $view]} {
 		# may happen due to pending updates
-		clear $path
-		return
+		return [clear $path]
 	}
 
 	set last [expr {min($last, [scidb::view::count games $base $variant $view] - $start)}]
@@ -1065,7 +1115,8 @@ proc TableFill {path args} {
 
 	for {set i $first; set count 0} {$i < $last} {incr i; incr count} {
 		set index [expr {$start + $i}]
-		set line [::scidb::db::get gameInfo $index $view $base $variant -ratings $ratings]
+		set line [::scidb::db::get gameInfo $index $view $base $variant \
+			-ratings $ratings -notation $Options(move:notation)]
 		set deleted !
 		set text {}
 		set k 0
@@ -1098,7 +1149,7 @@ proc TableFill {path args} {
 									::scidb::tk::image alpha 0 $image -area {*}$Vars(area:$j)
 								} else {
 									set a [expr {([lindex $item $j]*17)/255.0}]
-#								set a [expr {sqrt([lindex $item $j]*4335)/255.0}]
+#									set a [expr {sqrt([lindex $item $j]*4335)/255.0}]
 									::scidb::tk::image alpha $a $image -area {*}$Vars(area:$j)
 									incr usage
 								}
@@ -1142,10 +1193,11 @@ proc TableFill {path args} {
 						}
 					}
 
-					engFlag - othFlag {
+					allFlag - engFlag - othFlag {
 						if {$codec eq "sci"} {
 							if {$item} {
 								# TODO: only for 12pt; use U+2716 (or U+2718) for other sizes
+								# TODO: or use icon font
 								set image $Check
 							} else {
 								set image {}
@@ -1158,6 +1210,7 @@ proc TableFill {path args} {
 
 					deleted {
 						# TODO: only for 12pt; use U+2716 (or U+2718) for other sizes
+						# TODO: or use icon font
 						if {$item} { set image $CrossHandRed } else { set image {} }
 						lappend text [list @ $image]
 					}
@@ -1173,10 +1226,11 @@ proc TableFill {path args} {
 					}
 
 					promotion - underPromo {
-						if {$codec eq "cbh" || $codec eq "cbf"} {
+						if {[string match cb? $codec]} {
 							lappend text [list @ $NotAvailable]
 						} else {
 							# TODO: only for 12pt; use U+2714 for other sizes
+							# TODO: or use icon font
 							if {$item} { set image $Check } else { set image {} }
 							lappend text [list @ $image]
 						}
@@ -1184,6 +1238,7 @@ proc TableFill {path args} {
 
 					standardPos - chess960Pos - added {
 						# TODO: only for 12pt; use U+2714 for other sizes
+						# TODO: or use icon font
 						if {$item} { set image $Check } else { set image {} }
 						lappend text [list @ $image]
 					}
@@ -1286,7 +1341,6 @@ proc TableFill {path args} {
 					}
 
 					result {
-						# if {$item eq "1/2-1/2"} { set item "1/2" }
 						lappend text [::util::formatResult $item]
 					}
 
@@ -1318,7 +1372,7 @@ proc TableFill {path args} {
 					}
 
 					material {
-						if {$codec eq "cbh" || $codec eq "cbf"} {
+						if {[string match cb? $codec]} {
 							lappend text $::mc::NotAvailableSign
 						} else {
 							lappend text [::font::translate [string map {: " - "} $item]]
@@ -1326,7 +1380,7 @@ proc TableFill {path args} {
 					}
 
 					key {
-						if {$codec eq "cbh" || $codec eq "cbf"} {
+						if {[string match cb? $codec]} {
 							lappend text $::mc::NotAvailableSign
 						} else {
 							lappend text $item
@@ -1334,19 +1388,18 @@ proc TableFill {path args} {
 					}
 
 					opening {
-						lappend text [::mc::translateEco [lindex $item $Options(opening-index)]]
+						lassign $item op(0) op(1) var(0) var(1)
+						set value [::mc::translateEco $op($Options(opening-index))]
+						if {$Options(opening-variations)} {
+							set comma ": "
+							if {[string length $var(0)]} { append value $comma $var(0); set comma ", " }
+							if {[string length $var(1)]} { append value $comma $var(1) }
+						}
+						lappend text $value
 					}
 
 					variation - subvariation {
 						lappend text [::mc::translateEco $item]
-					}
-
-					overview {
-						if {$codec eq "cbh" || $codec eq "cbf"} {
-							lappend text $::mc::NotAvailableSign
-						} else {
-							lappend text [::font::translate $item]
-						}
 					}
 
 					whiteType - blackType {
@@ -1429,13 +1482,61 @@ proc TableFill {path args} {
 		::table::insert $table $i $text
 		::table::setState $table $i ${deleted}deleted
 	}
+
+	if {$first < $last && [::scidb::app::moveList open? $path]} {
+		FetchMoveList $path
+
+		set first [expr {$first + $start}]
+		set last [expr {$last + $start}]
+		set end [::scrolledtable::lastRow $path]
+
+		lappend Vars(ranges) [list $first $last]
+		set opts {}
+		if {[llength $Vars(positioncmd)]} { set opts [list -fen [{*}$Vars(positioncmd)]] }
+		::scidb::app::moveList retrieve $path $base $variant $view $start $end $first $last \
+			-length 40 -notation $Options(move:notation) {*}$opts
+	}
+}
+
+
+proc FetchMoveList {path} {
+	variable ${path}::Vars
+
+	set firstRow [::scrolledtable::firstRow $path]
+	set lastRow [::scrolledtable::lastRow $path]
+	set ranges {}
+
+	foreach range $Vars(ranges) {
+		lassign $range lower upper
+
+		set lower [expr {max($lower, $firstRow)}]
+		set upper [expr {min($upper, $lastRow)}]
+
+		for {} {$lower < $upper} {incr lower} {
+			if {[string length [set moves [::scidb::app::moveList fetch $path $lower]]]} {
+				if {$moves == "*"} { set moves $mc::NoMoves }
+				::table::setElement $Vars(table) [expr {$lower - $firstRow}] moveList $moves
+			} else {
+				lappend ranges [list $lower [expr {$lower + 1}]]
+			}
+		}
+	}
+
+	set Vars(ranges) $ranges
 }
 
 
 proc TableHide {table id flag} {
 	variable ${table}::Vars
 
-	if {$id eq "deleted"} {
+	if {$id eq "moveList"} {
+		if {$flag} {
+			::scidb::app::moveList close $table
+		} else {
+			::scidb::app::moveList open $table [namespace current]::FetchMoveList
+			::scrolledtable::refresh $table
+		}
+	} elseif {$id eq "deleted"} {
 		::scrolledtable::refresh $table
 	}
 }
@@ -1448,10 +1549,11 @@ proc TableVisit {table data} {
 	variable ratings
 
 	lassign $data base variant mode id row
+	if {$row == -1} { return }
 	set codec [::scidb::db::get codec $base $variant]
 
 	switch $id {
-		acv - key - overview - opening { if {$codec eq "cbh" || $codec eq "cbf"} { return } }
+		acv - key - opening { if {[string match cb? $codec]} { return } }
 		idn - termination { if {$codec ne "sci"} { return } }
 		eventType { if {[string match si? $codec]} { return } }
 		eco - eventMode - timeMode - flags {}
@@ -1667,11 +1769,7 @@ proc ShowGame {path x y} {
 	set base [::scrolledtable::base $path]
 	set variant [::scrolledtable::variant $path]
 	set view [{*}$Vars(viewcmd) $base $variant]
-	if {[llength $Vars(positioncmd)]} {
-		set pos [{*}$Vars(positioncmd)]
-	} else {
-		set pos {}
-	}
+	if {[llength $Vars(positioncmd)]} { set pos [{*}$Vars(positioncmd)] } else { set pos {} }
 	showGame $path $base $variant $view $index $pos
 }
 
@@ -1829,12 +1927,7 @@ proc PopupMenu {path menu base variant index} {
 	foreach entry $Columns {
 		if {[set id [lindex $entry 0]] in $visibleColumns} {
 			set group [lindex $entry 1]
-			if {![info exists use($group)]} {
-				lappend groups $group
-				set use($group) 0
-			} else {
-				incr use($group)
-			}
+			if {![info exists use($group)]} { set use($group) 0 } else { incr use($group) }
 		}
 	}
 
@@ -1872,20 +1965,33 @@ proc PopupMenu {path menu base variant index} {
 					if {[llength $group] && $use($group)} {
 						if {![winfo exists $m.$group]} {
 							menu $m.$group
-							$m add cascade \
-								-label [set [namespace current]::mc::G_[string toupper $group 0 0]] \
-								-menu $m.$group \
-								;
+							switch $group {
+								white		{ set var ::mc::White }
+								black		{ set var ::mc::Black }
+								default	{ set var [namespace current]::mc::G_[string toupper $group 0 0] }
+							}
+							$m add cascade -label [set $var] -menu $m.$group
 						}
 						append m .$group
 					}
-					set idl [string toupper $id 0 0]
-					set fvar [namespace current]::mc::F_$idl
-					set fvar [namespace current]::mc::F_$idl
-					set tvar [namespace current]::mc::T_$idl
-					if {[info exists $tvar]} { set var $tvar } else { set var $fvar }
+					if {$group in {white black}} {
+						set name [string range $id 5 end]
+						if {[string length $name] == 0} { set name Name }
+						set var [namespace current]::mc::P_$name
+					} else {
+						set idl [string toupper $id 0 0]
+						set fvar [namespace current]::mc::F_$idl
+						set fvar [namespace current]::mc::F_$idl
+						set tvar [namespace current]::mc::T_$idl
+						if {[info exists $tvar]} { set var $tvar } else { set var $fvar }
+						set text [set $var]
+					}
+					set text [set $var]
+					if {$group in {white black} && !$use($group)} {
+						append text " - [set mc::[string toupper $group 0 0]]"
+					}
 					$m add command \
-						-label [set $var] \
+						-label $text \
 						-command [namespace code [list SortColumn $path $id $dir]] \
 						;
 				}

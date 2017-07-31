@@ -85,6 +85,11 @@ public:
 
 	void close() override;
 
+	unsigned doDecoding(	GameInfo const& info,
+								uint16_t* line,
+								unsigned length,
+								Board& startBoard,
+								bool useStartBoard) override;
 	void doDecoding(GameData& data, GameInfo& info, unsigned gameIndex, mstl::string*) override;
 	save::State doDecoding(	Consumer& consumer,
 									TagSet& tags,

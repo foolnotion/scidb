@@ -99,7 +99,7 @@ HomePawns::update(uint16_t mask)
 void
 HomePawns::move(Move const& move)
 {
-	if (move.pieceMoved() == piece::Pawn)
+	if (move.moved() == piece::Pawn)
 		update(::HomePawnMask[move.color()][move.from()]);
 
 	if (move.isPawnCapture())

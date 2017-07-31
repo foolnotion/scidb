@@ -36,6 +36,7 @@ namespace db {
 
 inline Move::Move() :m(0), u(0) {}
 inline Move::Move(uint32_t m) :m(m), u(0) {}
+inline Move::Move(Move const& m, sq::ID from) :m(m.m), u(0) { setFrom(from); }
 
 inline Move::operator bool () const { return m != 0; }
 inline bool Move::operator!() const { return m == 0; }
@@ -43,6 +44,7 @@ inline bool Move::operator!() const { return m == 0; }
 inline Move const& Move::empty()						{ return m_empty; }
 inline Move const& Move::null()						{ return m_null; }
 inline Move const& Move::invalid()					{ return m_invalid; }
+inline Move const& Move::undefined()				{ return m_undefined; }
 
 inline Square Move::from() const						{ return m & 0x3f; }
 inline Square Move::to() const						{ return (m >> 6) & 0x3f; }
@@ -50,15 +52,22 @@ inline Square Move::castlingKingFrom() const		{ return from(); }
 inline Square Move::castlingRookFrom() const		{ return to(); }
 inline Square Move::enPassantSquare() const		{ return from() > 31 ? to() - 8 : to() + 8; }
 
-inline uint32_t Move::prevHalfMoves() const		{ return u & Mask_HalfMoveClock; }
-inline Square Move::prevEpSquare() const			{ return u >> Shift_EpSquare; }
 inline bool Move::prevCapturePromoted() const	{ return u & Bit_CapturePromoted; }
+inline Square Move::prevEpSquare() const			{ return (u >> Shift_EpSquare) & Mask_EpSquare; }
+
+inline
+uint32_t
+Move::prevHalfMoves() const
+{
+	static_assert(Shift_HalfMoveClock == 0, "need shift");
+	return u & Mask_HalfMoveClock;
+}
 
 inline
 Byte
 Move::prevCastlingRights() const
 {
-	return Square((u >> Shift_CastlingRights) & Mask_CastlingRights);
+	return Square((u >> Shift_CastleRights) & Mask_CastlingRights);
 }
 
 inline
@@ -68,15 +77,22 @@ Move::prevKingHasMoved() const
 	return Byte((u >> Shift_KingHasMoved) & Mask_KingHasMoved);
 }
 
+inline
+Byte
+Move::prevGivesCheck() const
+{
+	return Byte((u >> Shift_GivesCheck) & Mask_GivesCheck);
+}
+
 inline uint32_t Move::action() const					{ return (m >> Shift_Action) & Mask_Action; }
 inline uint32_t Move::removal() const					{ return (m >> Shift_Removal) & Mask_Removal; }
 inline uint32_t Move::data() const						{ return m; }
 inline unsigned Move::index() const						{ return m & Mask_Index; }
-inline unsigned Move::checksGiven() const				{ return (u >> Shift_ChecksGiven) & Mask_ChecksGiven;}
+inline unsigned Move::field() const						{ return m & Field_Index; }
 
-inline bool Move::givesCheck() const					{ return m & Bit_Check; }
-inline bool Move::givesDoubleCheck() const			{ return m & Bit_DoubleCheck; }
-inline bool Move::givesMate() const						{ return m & Bit_Mate; }
+inline bool Move::givesCheck() const					{ return u & Bit_Check; }
+inline bool Move::givesDoubleCheck() const			{ return u & Bit_DoubleCheck; }
+inline bool Move::givesMate() const						{ return u & Bit_Mate; }
 inline bool Move::isCastling() const					{ return m & Bit_Castling; }
 inline bool Move::isDoubleAdvance() const				{ return m & Bit_TwoForward; }
 inline bool Move::isEmpty() const						{ return m == 0; }
@@ -85,34 +101,63 @@ inline bool Move::isPieceDrop() const					{ return m & Bit_PieceDrop; }
 inline bool Move::isLegal() const						{ return m & Bit_Legality; }
 inline bool Move::isIllegal() const						{ return (m & Bit_Legality) == 0; }
 inline bool Move::isNull() const							{ return (m & Mask_Null) == Bit_Legality; }
-inline bool Move::isInvalid() const						{ return index() == Invalid; }
+inline bool Move::isInvalid() const						{ return (m & Invalid) == Invalid; }
+inline bool Move::isValid() const						{ return (m & Invalid) != Invalid; }
+inline bool Move::isUndefined() const					{ return (m & Mask_Undefined) == Undefined; }
 inline bool Move::isPromotion() const					{ return m & Bit_Promote; }
 inline bool Move::isSpecial() const						{ return m & Bits_Special; }
 inline bool Move::isPrintable() const					{ return u & Bit_Printable; }
 inline bool Move::needsFyle() const						{ return u & Bit_Fyle; }
 inline bool Move::needsRank() const						{ return u & Bit_Rank; }
-inline bool Move::needsDestinationSquare() const	{ return m & Bit_Destination; }
+inline bool Move::needsDestinationSquare() const	{ return u & Bit_Destination; }
+inline bool Move::isDisambiguated() const				{ return u & Bit_Disambiguated; }
 
 inline void Move::clear()							{ m = 0; }
 inline bool Move::preparedForUndo() const		{ return u & Bit_Prepared; }
 
-inline piece::Type Move::pieceMoved() const	{ return piece::Type(Mask_PieceType & (m >> Shift_Piece)); }
-
 inline color::ID Move::color() const			{ return color::ID((m >> Shift_SideToMove) & 1); }
-inline piece::ID Move::piece() const			{ return piece::piece(pieceMoved(), color()); }
+inline piece::ID Move::piece() const			{ return piece::piece(moved(), color()); }
 
+inline void Move::unsetEnPassant()				{ m &= ~Bit_EnPassant; }
 inline void Move::setFrom(uint32_t from)		{ m = ((m & (~0x3f)) | from) & ~Bit_Legality; }
 inline void Move::setTo(uint32_t to)			{ m = ((m & (~(0x3f << 6))) | (to << 6)) & ~Bit_Legality; }
-inline void Move::setCheck()						{ m |= Bit_Check; }
-inline void Move::setDoubleCheck()				{ m |= Bit_DoubleCheck; }
 inline void Move::setLegalMove()					{ m |= Bit_Legality; }
 inline void Move::setIllegalMove()				{ m &= ~Bit_Legality; }
-inline void Move::setMate()						{ m |= Bit_Mate; }
 inline void Move::setNeedsFyle()					{ u |= Bit_Fyle; }
 inline void Move::setNeedsRank()					{ u |= Bit_Rank; }
-inline void Move::setNeedsDestinationSquare(){ m |= Bit_Destination; }
+inline void Move::setDisambiguated()			{ u |= Bit_Disambiguated; }
+inline void Move::setCheck()						{ u |= Bit_Check; }
+inline void Move::setDoubleCheck()				{ u |= Bit_DoubleCheck; }
+inline void Move::setMate()						{ u |= Bit_Mate; }
 inline void Move::setPrintable()					{ u |= Bit_Printable; }
-inline void Move::unsetEnPassant()				{ m &= ~Bit_EnPassant; }
+inline void Move::setNeedsDestinationSquare(){ u |= Bit_Destination; }
+inline void Move::clearInfoStatus()				{ u &= ~Mask_Info; }
+
+inline piece::Type Move::moved() const		{ return piece::Type(Mask_PieceType & (m >> Shift_Piece)); }
+
+
+inline
+unsigned
+Move::checksGiven() const
+{
+	return (u >> Shift_ChecksGiven) & Mask_ChecksGiven;
+}
+
+
+inline
+bool
+Move::isIllegalOrInvalid() const
+{
+	return (m & Bit_Legality) == 0 || (m & Invalid) == Invalid;
+}
+
+
+inline
+bool
+Move::isNullOrInvalid() const
+{
+	return (m & Mask_Null) == Bit_Legality || (m & Invalid) == Invalid;
+}
 
 
 inline
@@ -125,17 +170,33 @@ Move::Move(Square from, Square to, unsigned color)
 
 inline
 bool
-operator==(Move const& m1, Move const& m2)
+Move::operator==(Move const& m) const
 {
-	return (m1.m & Move::Mask_Compare) == (m2.m & Move::Mask_Compare);
+	return (this->m & Move::Mask_Compare) == (m.m & Move::Mask_Compare);
 }
 
 
 inline
 bool
-operator<(Move const& m1, Move const& m2)
+Move::operator!=(Move const& m) const
 {
-	return (m1.m & Move::Mask_Compare) <  (m2.m & Move::Mask_Compare);
+	return (this->m & Move::Mask_Compare) != (m.m & Move::Mask_Compare);
+}
+
+
+inline
+bool
+Move::operator<(Move const& m) const
+{
+	return (this->m & Move::Mask_Compare) < (m.m & Move::Mask_Compare);
+}
+
+
+inline
+uint16_t
+Move::makeIndex(uint16_t from, uint16_t to)
+{
+	return from | (to << 6);
 }
 
 
@@ -166,7 +227,7 @@ Move::isShortCastling() const
 	M_REQUIRE(isCastling());
 	M_ASSERT(from() != to());
 
-	return from() < to();
+	return m & Invalid ? to() < from() : from() < to();
 }
 
 
@@ -176,7 +237,7 @@ Move::isLongCastling() const
 	M_REQUIRE(isCastling());
 	M_ASSERT(from() != to());
 
-	return from() > to();
+	return m & Invalid ? to() > from() : from() > to();
 }
 
 
@@ -206,6 +267,14 @@ Move::isCaptureOrPromotion() const
 
 
 inline
+bool
+Move::isCaptureOrPromotionOrDrop() const
+{
+	return (((m >> Shift_Capture) & Mask_PieceType) | (m & Bit_Promote));
+}
+
+
+inline
 Square
 Move::capturedSquare() const
 {
@@ -218,6 +287,9 @@ inline
 Square
 Move::castlingKingTo() const
 {
+	if (m & Invalid)
+		return sq::make(from() < to() ? sq::FyleF : sq::FyleB, sq::rank(from()));
+
 	return sq::make(from() < to() ? sq::FyleG : sq::FyleC, sq::rank(from()));
 }
 
@@ -226,6 +298,9 @@ inline
 Square
 Move::castlingRookTo() const
 {
+	if (m & Invalid)
+		return sq::make(from() < to() ? sq::FyleE : sq::FyleC, sq::rank(from()));
+
 	return sq::make(from() < to() ? sq::FyleF : sq::FyleD, sq::rank(from()));
 }
 
@@ -293,27 +368,10 @@ Move::capturedPiece() const
 
 
 inline
-piece::ID
-Move::droppedPiece() const
-{
-	M_REQUIRE(isPieceDrop());
-	return piece::piece(dropped(), color());
-}
-
-
-inline
 piece::Type
 Move::promoted() const
 {
 	return piece::Type((m >> Shift_Promotion) & Mask_PieceType);
-}
-
-
-inline
-piece::ID
-Move::promotedPiece() const
-{
-	return piece::piece(promoted(), color());
 }
 
 
@@ -323,6 +381,23 @@ Move::dropped() const
 {
 	M_REQUIRE(isPieceDrop());
 	return promoted();
+}
+
+
+inline
+piece::ID
+Move::droppedPiece() const
+{
+	M_REQUIRE(isPieceDrop());
+	return piece::piece(dropped(), color::opposite(color()));
+}
+
+
+inline
+piece::ID
+Move::promotedPiece() const
+{
+	return piece::piece(promoted(), color());
 }
 
 
@@ -393,6 +468,17 @@ Move::genPawnCapture(uint32_t from, uint32_t to, uint32_t captured)
 					 | (to << 6)
 					 | (captured << Shift_Capture)
 					 | (uint32_t(piece::Pawn) << Shift_Piece));
+}
+
+
+inline
+Move
+Move::genMove(uint32_t from, uint32_t to, uint32_t pieceType, uint32_t captured)
+{
+	return Move(	from
+					 | (to << 6)
+					 | (captured << Shift_Capture)
+					 | (pieceType << Shift_Piece));
 }
 
 
@@ -488,18 +574,22 @@ inline
 void
 Move::setUndo(	uint32_t halfMoves,
 					uint32_t epSquare,
-					uint32_t castlingRights,
-					uint32_t kingHasMoved,
+					uint32_t castleRights,
+					uint32_t kingMovedOrGivesCheck,
 					uint32_t capturePromoted)
 {
-	u &= Clear_Undo;
-	u |=	(	(halfMoves & Mask_HalfMoveClock)
-			 | epSquare << Shift_EpSquare
-			 | castlingRights << Shift_CastlingRights
-			 | kingHasMoved << Shift_KingHasMoved
-			 | capturePromoted << Shift_CapturePromoted
-			 | uint32_t(Bit_Prepared)
-			) & uint32_t(Mask_Undo);
+	M_ASSERT(epSquare <= sq::Null);
+	M_ASSERT((castleRights & Mask_CastlingRights) == castleRights);
+	M_ASSERT((kingMovedOrGivesCheck & (Mask_KingHasMoved | Mask_GivesCheck)) == kingMovedOrGivesCheck);
+	M_ASSERT(capturePromoted <= 1);
+
+	u = (halfMoves & Mask_HalfMoveClock)
+	  | epSquare << Shift_EpSquare
+	  | castleRights << Shift_CastleRights
+	  | kingMovedOrGivesCheck << (Mask_KingHasMoved | Mask_GivesCheck)
+	  | capturePromoted << Shift_CapturePromoted
+	  | uint32_t(Bit_Prepared)
+	  ;
 }
 
 
@@ -508,6 +598,46 @@ util::crc::checksum_t
 Move::computeChecksum(util::crc::checksum_t crc) const
 {
 	return ::util::crc::compute(crc, index());
+}
+
+
+inline
+mstl::string&
+Move::printSAN(mstl::string& s, protocol::ID protocol, encoding::CharSet charSet) const
+{
+	return printSAN(s, protocol, charSet, false, false);
+}
+
+
+inline
+mstl::string&
+Move::printMAN(mstl::string& s, protocol::ID protocol, encoding::CharSet charSet) const
+{
+	return printSAN(s, protocol, charSet, true, false);
+}
+
+
+inline
+mstl::string&
+Move::printGAN(mstl::string& s, protocol::ID protocol, encoding::CharSet charSet) const
+{
+	return printSAN(s, protocol, charSet, false, true);
+}
+
+
+inline
+mstl::string&
+Move::printLAN(mstl::string& s, protocol::ID protocol, encoding::CharSet charSet) const
+{
+	return printLAN(s, protocol, charSet, false);
+}
+
+
+inline
+mstl::string&
+Move::printRAN(mstl::string& s, protocol::ID protocol, encoding::CharSet charSet) const
+{
+	return printLAN(s, protocol, charSet, true);
 }
 
 } // namespace db

@@ -47,13 +47,24 @@ struct Position
 	bool operator==(Position const& position) const;
 	bool operator!=(Position const& position) const;
 
-	uint64_t m_occupiedBy[2];			// square mask of those occupied by each color
-	uint64_t m_pawns;
-	uint64_t m_knights;
-	uint64_t m_bishops;
-	uint64_t m_rooks;
-	uint64_t m_queens;
-	uint64_t m_kings;
+	union
+	{
+		struct
+		{
+			uint64_t m_occupiedBy[2];	// square mask of those occupied by each color
+			uint64_t m_kings;
+			uint64_t m_queens;
+			uint64_t m_rooks;
+			uint64_t m_bishops;
+			uint64_t m_knights;
+			uint64_t m_pawns;
+		};
+		struct
+		{
+			uint64_t __placeholder__;
+			uint64_t m_pieces[7];
+		};
+	};
 }
 __attribute__((packed));
 
@@ -302,6 +313,8 @@ public:
 	bool isEqualZHPosition(Board const& target) const;
 	/// Return true if side to move is in check
 	bool isInCheck() const;
+	/// Returns whether the side not to move is in check (illegal position).
+	bool sideNotToMoveInCheck() const;
 	/// Return true if given side is in check
 	bool isInCheck(color::ID color) const;
 	/// Return true if given move is a contact check or double check
@@ -504,6 +517,8 @@ public:
 	uint64_t pieces() const;
 	/// Return all sqaures occupied by pawns of any color
 	uint64_t pawns() const;
+	/// Return all squares occupied by given piece
+	uint64_t pieces(color::ID color, piece::Type pt) const;
 	/// Return all sqaures occupied by any piece of given color
 	uint64_t pieces(color::ID color) const;
 	/// Return all sqaures occupied by kings of given color
@@ -522,6 +537,11 @@ public:
 	uint64_t empty() const;
 	/// Return all squares attacked by any piece of given color on given square
 	uint64_t attacks(unsigned color, Square square) const;
+	/// Return all squares where an enemy piece is attacking the king of given color
+	uint64_t checkers(color::ID color) const;
+	/// Return all squares where an enemy piece is attacking the king of side to move
+	uint64_t checkers() const;
+	/// Return the pinned pieces of a given color
 	/// Return all promoted pieces
 	uint64_t promoted() const;
 	/// Return all promoted pieces of given color
@@ -626,6 +646,7 @@ private:
 	Move prepareCastle(Square from, Square to, move::Constraint flag) const;
 
    void filterCheckMoves(Move move, uint64_t& movers, variant::Type variant) const;
+	void filterCheckMoves(Move move, uint64_t& movers, variant::Type variant, unsigned state) const;
    void filterCheckmateMoves(Move move, uint64_t& movers, variant::Type variant) const;
 
 	/// Revoke all castling rights from the given color

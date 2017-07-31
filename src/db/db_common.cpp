@@ -1320,6 +1320,22 @@ castling::transpose(unsigned rights)
 }
 
 
+char
+piece::print(Type type, sq::Language lang)
+{
+	M_ASSERT(type <= 6);
+
+	if (lang == sq::English)
+		return print(type);
+
+	static_assert(
+		King == 1 && Queen == 2 && Rook == 3 && Bishop == 4 && Knight == 5 && Pawn == 6,
+		"piece number has changed");
+
+	return " RDTACP"[type];
+}
+
+
 mstl::string const&
 piece::utf8::asString(Type type)
 {
@@ -1799,33 +1815,46 @@ sq::printAlgebraic(Square square)
 
 
 char const*
-sq::printDescriptive(Square square)
+sq::printDescriptive(Square square, Language lang)
 {
-	static char const* Squares[8] =
+	static char const* Squares[2][8] =
 	{
-		"QR", "QN", "QB", "Q", "K", "KB", "KN", "KR",
+		{ "QR", "QN", "QB", "Q", "K", "KB", "KN", "KR", },
+		{ "TD", "CD", "AD", "D", "R", "AR", "CR", "TR", },
 	};
 
-	return Squares[square & 7];
+	return Squares[lang][square & 7];
 }
 
 
 char const*
-sq::printDescriptive(Square square, color::ID color)
+sq::printDescriptive(Square square, color::ID color, Language lang)
 {
-	static char const* Squares[64] =
+	static char const* Squares[2][64] =
 	{
-		"QR1", "QN1", "QB1", "Q1", "K1", "KB1", "KN1", "KR1",
-		"QR2", "QN2", "QB2", "Q2", "K2", "KB2", "KN2", "KR2",
-		"QR3", "QN3", "QB3", "Q3", "K3", "KB3", "KN3", "KR3",
-		"QR4", "QN4", "QB4", "Q4", "K4", "KB4", "KN4", "KR4",
-		"QR5", "QN5", "QB5", "Q5", "K5", "KB5", "KN5", "KR5",
-		"QR6", "QN6", "QB6", "Q6", "K6", "KB6", "KN6", "KR6",
-		"QR7", "QN7", "QB7", "Q7", "K7", "KB7", "KN7", "KR7",
-		"QR8", "QN8", "QB8", "Q8", "K8", "KB8", "KN8", "KR8",
+		{
+			"QR1", "QN1", "QB1", "Q1", "K1", "KB1", "KN1", "KR1",
+			"QR2", "QN2", "QB2", "Q2", "K2", "KB2", "KN2", "KR2",
+			"QR3", "QN3", "QB3", "Q3", "K3", "KB3", "KN3", "KR3",
+			"QR4", "QN4", "QB4", "Q4", "K4", "KB4", "KN4", "KR4",
+			"QR5", "QN5", "QB5", "Q5", "K5", "KB5", "KN5", "KR5",
+			"QR6", "QN6", "QB6", "Q6", "K6", "KB6", "KN6", "KR6",
+			"QR7", "QN7", "QB7", "Q7", "K7", "KB7", "KN7", "KR7",
+			"QR8", "QN8", "QB8", "Q8", "K8", "KB8", "KN8", "KR8",
+		},
+		{
+			"1TD", "1CD", "1AD", "1D", "1R", "1AR", "1CR", "1TR",
+			"2TD", "2CD", "2AD", "2D", "2R", "2AR", "2CR", "2TR",
+			"3TD", "3CD", "3AD", "3D", "3R", "3AR", "3CR", "3TR",
+			"4TD", "4CD", "4AD", "4D", "4R", "4AR", "4CR", "4TR",
+			"5TD", "5CD", "5AD", "5D", "5R", "5AR", "5CR", "5TR",
+			"6TD", "6CD", "6AD", "6D", "6R", "6AR", "6CR", "6TR",
+			"7TD", "7CD", "7AD", "7D", "7R", "7AR", "7CR", "7TR",
+			"8TD", "8CD", "8AD", "8D", "8R", "8AR", "8CR", "8TR",
+		},
 	};
 
-	if (square >= U_NUMBER_OF(Squares))
+	if (square >= U_NUMBER_OF(Squares[0]))
 		return "--";
 
    Rank r = rank(square);
@@ -1833,7 +1862,7 @@ sq::printDescriptive(Square square, color::ID color)
    if (color::isBlack(color))
       r = flipRank(r);
 
-	return Squares[make(fyle(square), r)];
+	return Squares[lang][make(fyle(square), r)];
 }
 
 

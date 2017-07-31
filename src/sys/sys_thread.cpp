@@ -17,19 +17,28 @@
 // ======================================================================
 
 #include "sys_thread.h"
+#include "sys_info.h"
+#include "sys_base.h"
 
 #include "m_assert.h"
 #include "m_stdio.h"
 #include "m_exception.h"
+#include "m_map.h"
 
 #include <tcl.h>
 
 #include <stdlib.h>
 
+#ifndef __WIN32__
+# include <time.h>
+#endif
+
 using namespace sys;
 
 typedef Thread::atomic_t atomic_t;
 typedef Thread::lock_t lock_t;
+
+static int isSMP = -1;
 
 
 struct Guard
@@ -41,6 +50,7 @@ struct Guard
 	~Guard() { release(); }
 
 	static void initLock(lock_t& lock);
+	static void destroy(lock_t& lock);
 
 	lock_t& m_lock;
 };
@@ -63,6 +73,55 @@ startRoutine(Thread::Runnable& runnable, mstl::exception*& exception)
 	{
 		fprintf(stderr, "*** unhandled exception catched in worker thread ***\n");
 	}
+}
+
+
+#ifdef  __WIN32__
+
+static void sleep() { Sleep(1); }
+
+#else
+
+static void
+sleep()
+{
+	// Linux will busy loop for delays < 2ms on real time tasks
+	struct ::timespec tm;
+	tm.tv_sec = 0;
+	tm.tv_nsec = 2000000L + 1;
+	::nanosleep(&tm, NULL);
+}
+
+#endif
+
+
+#ifdef  __WIN32__
+static void yield() { Yield(); } // use Sleep(0) instead?
+#else
+static void yield() { sched_yield(); }
+#endif
+
+
+#if defined(__i386__) || defined(__x86_64__)
+static void pausing() { __asm__ __volatile__("pause"); }
+#else
+static void pausing() { yield(); }
+#endif
+
+
+static void
+spin(unsigned& k)
+{
+	if (!::isSMP)
+		yield();
+	else if (++k < 4)
+		; // spin
+	else if (k < 16)
+		pausing();
+	else if (k < 32)
+		yield();
+	else
+		sleep();
 }
 
 
@@ -183,10 +242,12 @@ atomic_cmpxchg(atomic_t* v, int oldval, int newval)
 void
 Guard::acquire()
 {
+	unsigned k = 0;
+
 	while (__sync_fetch_and_add(&m_lock, 1) > 0)
 	{
 		__sync_sub_and_fetch(&m_lock, 1);
-		sched_yield();
+		spin(k);
 	}
 }
 
@@ -203,15 +264,23 @@ Guard::initLock(lock_t& lock)
 	lock = 0;
 }
 
+
+void
+Guard::destroy(lock_t& lock)
+{
+}
+
 #elif defined( __WIN32__) ///////////////////////////////////////////////////////////
 
 void
 Guard::acquire()
 {
+	unsigned k = 0;
+
 	while (InterlockedIncrement(&m_lock) > 1)
 	{
 		InterlockedDecrement(&m_lock);
-		Yield();
+		spin(k);
 	}
 }
 
@@ -228,15 +297,23 @@ Guard::initLock(lock_t& lock)
 	lock = 0;
 }
 
+
+void
+Guard::destroy(lock_t& lock)
+{
+}
+
 #elif defined(__i386__) || defined(__x86_64__) || defined(__MacOSX__) ///////////////
 
 void
 Guard::acquire()
 {
+	unsigned k = 0;
+
 	while (!atomic_dec_and_test(&m_lock))
 	{
 		atomic_inc(&m_lock);
-		sched_yield();
+		spin(k);
 	}
 }
 
@@ -253,6 +330,12 @@ Guard::initLock(lock_t& lock)
 	lock.counter = 1;
 }
 
+
+void
+Guard::destroy(lock_t& lock)
+{
+}
+
 #elif defined (__unix__) ////////////////////////////////////////////////////////////
 
 // This is the fallback implementation.
@@ -260,17 +343,18 @@ Guard::initLock(lock_t& lock)
 void
 Guard::acquire()
 {
-	if (pthread_mutex_lock(&m_lock) != 0)
-		M_RAISE("pthread_mutex_lock() failed");
+	if (pthread_spin_lock(&m_lock) != 0)
+		M_RAISE("pthread_spin_lock() failed");
 }
+
 
 void
 Guard::release()
 {
-	if (pthread_mutex_unlock(&m_lock) != 0)
+	if (pthread_spin_unlock(&m_lock) != 0)
 	{
 		// don't throw an exception, release() will be used in a destructor
-		::fprintf(stderr, "pthread_mutex_unlock() failed\n");
+		::fprintf(stderr, "pthread_spin_unlock() failed\n");
 	}
 }
 
@@ -278,7 +362,14 @@ Guard::release()
 void
 Guard::initLock(lock_t& lock)
 {
-	lock = 1;
+	pthread_spin_init(&lock, 0);
+}
+
+
+void
+Guard::destroy(lock_t& lock)
+{
+	pthread_spin_destroy(&lock);
 }
 
 #else ///////////////////////////////////////////////////////////////////////////////
@@ -287,6 +378,175 @@ Guard::initLock(lock_t& lock)
 
 #endif //////////////////////////////////////////////////////////////////////////////
 
+#ifdef __WIN32__
+
+# include <winsock2.h>
+# include <windows.h>
+# include <io.h>
+
+static int
+socketpair(SOCKET socks[2])
+{
+	union
+	{
+		struct sockaddr_in inaddr;
+		struct sockaddr addr;
+	}
+	addr;
+
+	SOCKET listener = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+	if (listener == INVALID_SOCKET) 
+		return SOCKET_ERROR;
+
+	memset(&addr, 0, sizeof(addr));
+	addr.inaddr.sin_family = AF_INET;
+	addr.inaddr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+	addr.inaddr.sin_port = 0; 
+
+	socks[0] = socks[1] = INVALID_SOCKET;
+
+	int reuse = 1;
+	socklen_t addrlen = sizeof(a.inaddr);
+
+	if (setsockopt(listener,
+						SOL_SOCKET,
+						SO_REUSEADDR,
+						reinterpret_cast<char*>(&reuse),
+						sizeof(reuse)) == 0)
+	{
+		if (	bind(listener, &addr.addr, sizeof(addr.inaddr)) != SOCKET_ERROR
+			&& getsockname(listener, &addr.addr, &addrlen) != SOCKET_ERROR
+			&& listen(listener, 1) != SOCKET_ERROR)
+		{
+			if (	(socks[0] = WSASocket(AF_INET, SOCK_STREAM, 0, 0, 0, 0) != INVALID_SOCKET)
+				&& connect(socks[0], &addr.addr, sizeof(addr.inaddr)) != SOCKET_ERROR
+				&& (socks[1] = accept(listener, 0, 0)) != INVALID_SOCKET)
+			{
+				closesocket(listener);
+				return 0;
+			}
+		}
+	}
+
+	int err = WSAGetLastError();
+
+	closesocket(listener);
+	closesocket(socks[0]);
+	closesocket(socks[1]);
+
+	WSASetLastError(err);
+	return SOCKET_ERROR;
+}
+
+#else
+
+# include <unistd.h>
+# include <sys/socket.h>
+
+# define SOCKET int
+
+#endif
+
+
+namespace {
+
+union Serialize
+{
+	typedef Thread::ThreadId ThreadId;
+	Serialize() :id(0) {}
+	Serialize(ThreadId threadId) :id(threadId) {}
+	char str[sizeof(ThreadId)];
+	ThreadId id;
+};
+
+} // namespace
+
+
+struct Thread::Synchonize
+{
+	Synchonize()
+		:m_chan(0)
+	{
+		Guard::initLock(m_lock);
+
+		if (::socketpair(PF_UNIX, SOCK_STREAM, 0, m_fd) != 0)
+			M_RAISE("cannot create sockets");
+
+		m_chan = Tcl_MakeFileChannel(reinterpret_cast<ClientData>(m_fd[0]), TCL_READABLE);
+
+		Tcl_CreateChannelHandler(m_chan, TCL_READABLE, sendSignal, this);
+		Tcl_RegisterChannel(tcl::interp(), m_chan);
+		Tcl_SetChannelOption(0, m_chan, "-blocking", "yes");
+		Tcl_SetChannelOption(0, m_chan, "-encoding", "binary");
+		Tcl_SetChannelOption(0, m_chan, "-translation", "binary binary");
+	}
+
+	~Synchonize()
+	{
+		Guard::destroy(m_lock);
+		Tcl_DeleteChannelHandler(m_chan, sendSignal, this);
+		Tcl_UnregisterChannel(::sys::tcl::interp(), m_chan);
+	}
+
+	void addThread(Thread* thread)
+	{
+		M_ASSERT(thread);
+		M_ASSERT(Thread::insideMainThread());
+		M_ASSERT(!thread->isMainThread());
+
+		m_map[thread->threadId()] = thread;
+	}
+
+	void eraseThread(Thread* thread)
+	{
+		M_ASSERT(thread);
+		M_ASSERT(Thread::insideMainThread());
+		M_ASSERT(!thread->isMainThread());
+
+		Map::iterator i = m_map.find(thread->threadId());
+		if (i != m_map.end())
+			m_map.erase(i);
+	}
+
+	void signal(ThreadId threadId, int signal)
+	{
+		M_ASSERT(!Thread::insideMainThread());
+
+		Guard guard(m_lock);
+
+		if (::write(m_fd[1], ::Serialize(threadId).str, sizeof(::Serialize)))
+			; // avoid warning of unused result
+		if (::write(m_fd[1], reinterpret_cast<char*>(&signal), sizeof(int)))
+			; // avoid warning of unused result
+	}
+
+	static void
+	sendSignal(ClientData data, int)
+	{
+		M_ASSERT(Thread::insideMainThread());
+
+		Synchonize* sync = static_cast<Synchonize*>(data);
+
+		Serialize serialize;
+		int signal;
+
+		Tcl_Read(sync->m_chan, serialize.str, sizeof(serialize));
+		Tcl_Read(sync->m_chan, reinterpret_cast<char*>(&signal), sizeof(int));
+
+		sync->m_map[serialize.id]->sendSignal(signal);
+	}
+
+	typedef mstl::map<ThreadId,Thread*> Map;
+
+	Thread::lock_t	m_lock;
+	Tcl_Channel		m_chan;
+	Map				m_map;
+	SOCKET			m_fd[2];
+};
+
+
+Thread::Synchonize* Thread::m_synchronize = 0;
 
 #ifdef __WIN32__ ////////////////////////////////////////////////////////////////////
 
@@ -308,7 +568,6 @@ bool
 Thread::createThread()
 {
 	M_ASSERT((&m_cancel & 0x1f) == 0);	// must be aligned to 32-bit boundary
-
 	return (m_threadId = CreateThread(0, 0, &startThread, this, 0, 0)) != 0;
 }
 
@@ -325,6 +584,7 @@ void
 Thread::doSleep()
 {
 	InitializeConditionVariable(&m_condition);
+	InitializeCriticalSection(&&m_condMutex);
 	EnterCriticalSection(&m_condMutex);
 	m_wakeUp = false;
 	while (!m_wakeUp)
@@ -385,6 +645,7 @@ void
 Thread::doSleep()
 {
 	pthread_cond_init(&m_condition, 0);
+	pthread_mutex_init(&m_condMutex, 0);
 	pthread_mutex_lock(&m_condMutex);
 	m_wakeUp = false;
 	while (!m_wakeUp)
@@ -413,11 +674,20 @@ static bool m_noThreads = getenv("SCIDB_NO_THREADS") != 0;
 static int wakeUp(Tcl_Event*, int) { return 1; }
 
 
+void
+Thread::initialize()
+{
+	if (::isSMP == -1)
+		::isSMP = info::numberOfProcessors() > 1;
+}
+
+
 Thread::Thread(ThreadId threadId)
 	:m_threadId(threadId)
 	,m_exception(0)
 	,m_wakeUp(false)
 {
+	initialize();
 }
 
 
@@ -425,6 +695,8 @@ Thread::Thread()
 	:m_exception(0)
 	,m_wakeUp(false)
 {
+	initialize();
+
 	Guard::initLock(m_lock);
 	atomic_set(&m_cancel, 1);
 	atomic_set(&m_running, 0);
@@ -438,6 +710,8 @@ Thread::~Thread()
 		Guard guard(m_lock);	// really neccessary?
 		cancelThread();
 	}
+
+	Guard::destroy(m_lock);
 }
 
 
@@ -471,10 +745,8 @@ Thread::mainThread()
 
 
 bool
-Thread::start(Runnable runnable)
+Thread::doStart(Runnable runnable)
 {
-	M_REQUIRE(this != mainThread());
-
 	m_runnable = runnable;
 
 #ifndef NDEBUG
@@ -505,10 +777,36 @@ Thread::start(Runnable runnable)
 }
 
 
+bool
+Thread::start(Runnable runnable)
+{
+	M_REQUIRE(this != mainThread());
+
+	m_signal = Signal();
+	return doStart(runnable);
+}
+
+
+bool
+Thread::start(Runnable runnable, Signal signal)
+{
+	M_REQUIRE(this != mainThread());
+
+	if (m_synchronize == 0)
+		m_synchronize = new Synchonize;
+
+	m_signal = signal;
+	m_synchronize->addThread(this);
+
+	return doStart(runnable);
+}
+
+
 void
 Thread::finishThread()
 {
-	atomic_cmpxchg(&m_cancel, 0, 1);
+	if (m_signal)
+		m_synchronize->signal(m_threadId, -1);
 }
 
 
@@ -520,6 +818,9 @@ Thread::cancelThread()
 
 	atomic_set(&m_cancel, 1);
 	joinThread();
+
+	if (m_synchronize)
+		m_synchronize->eraseThread(this);
 
 	return true;
 }
@@ -537,6 +838,13 @@ Thread::stop()
 
 	Guard guard(m_lock);
 	return cancelThread();
+}
+
+
+void
+Thread::join()
+{
+	cancelThread();
 }
 
 
@@ -561,6 +869,7 @@ Thread::sleep()
 	if (isMainThread())
 	{
 		m_wakeUp = false;
+
 		while (!m_wakeUp)
 			Tcl_DoOneEvent(TCL_ALL_EVENTS);
 	}
@@ -585,6 +894,13 @@ Thread::awake()
 	{
 		doAwake();
 	}
+}
+
+
+void
+Thread::sendSignal(int signal)
+{
+	m_signal(signal);
 }
 
 // vi:set ts=3 sw=3:

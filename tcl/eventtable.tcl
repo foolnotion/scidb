@@ -75,8 +75,8 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 		find-current	{}
 	}
 
-	if {[lsort [array names Options]] ne [lsort [array names Defaults]]} {
-		array set Options [array get Defaults]
+	foreach name [array names Defaults] {
+		if {![info exists Options($name)]} { set Options($name) $Defaults($name) }
 	}
 
 	if {[llength $visibleColumns] == 0} { set visibleColumns $columns }

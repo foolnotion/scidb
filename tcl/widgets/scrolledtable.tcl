@@ -54,80 +54,20 @@ proc build {path columns args} {
 		-listmode		0
 		-sortable		1
 		-fixedrows		0
+		-lineBasedMenu	1
 		-configurable	no
 		-height			10
 	}
 	array set opts $args
 
-	ttk::frame $path -takefocus 0
-	set top [ttk::frame $path.top -takefocus 0]
-	pack $top -fill both -expand yes
-
-	set tb $top.table
-	set sb $top.scrollbar
-	set sc $top.scale
-	set sq $top.square
+	set top $path.top
+	set tb  $top.table
+	set sb  $top.scrollbar
+	set sc  $top.scale
+	set sq  $top.square
 
 	namespace eval [namespace current]::$tb {}
 	variable [namespace current]::${tb}::Vars
-
-	table::table $tb                                  \
-		-moveable 1                                    \
-		-takefocus $opts(-takefocus)                   \
-		-fillcolumn end                                \
-		-stripes $opts(-stripes)                       \
-		-highlightcolor $Defaults(highlight)           \
-		-background $opts(-background)                 \
-		-separatorcolor $Defaults(separatorcolor)      \
-		-listmode $opts(-listmode)                     \
-		-fixedrows $opts(-fixedrows)                   \
-		-sortable $opts(-sortable)                     \
-		-labelbackground theme,background              \
-		-configurable $opts(-configurable)             \
-		-height $opts(-height)                         \
-		;
-	::bind $tb <Destroy> [namespace code [list TableOptions $tb]]
-	
-	if {$opts(-useScale)} {
-		tk::scale $sc                                    \
-			-orient horizontal                            \
-			-from 0                                       \
-			-showvalue 0                                  \
-			-takefocus 0                                  \
-			-width 10                                     \
-			-command [namespace code [list SetStart $tb]] \
-			;
-		::bind $sc <ButtonRelease-1> [list ::table::focus $tb]
-	}
-	
-	ttk::scrollbar $sb  \
-		-orient vertical \
-		-takefocus 0     \
-		-command [namespace code [list Scroll $tb]] \
-		;
-	::bind $sb <Any-Button> [list ::tooltip::hide]
-	if {$opts(-takefocus)} {
-		::bind $sb <ButtonPress-1> [list ::table::focus $tb]
-	}
-	ttk::frame $sq -borderwidth 1 -relief sunken
-
-	if {!$opts(-useScale) || $opts(-layout) eq "right"} {
-		grid $sb -column 1 -row 0 -rowspan 2 -sticky ns
-		grid rowconfigure $top {2 4} -minsize 0
-	} else {
-		grid $sc \
-			-column 0 \
-			-row 3 \
-			-columnspan 2 \
-			-sticky ew \
-			-padx $Defaults(scale:padx) \
-			;
-		grid rowconfigure $top {2 4} -minsize $Defaults(scale:pady)
-	}
-	grid $tb -column 0 -row 0 -rowspan 2 -sticky nsew
-
-	grid columnconfigure $top 0 -weight 1
-	grid rowconfigure $top 0 -weight 1
 
 	array set Vars {
 		start					0
@@ -145,18 +85,75 @@ proc build {path columns args} {
 		mousewheel:list	{}
 	}
 
-	set Vars(scale)		$sc
-	set Vars(scrollbar)	$sb
-	set Vars(popupcmd)	$opts(-popupcmd)
-	set Vars(lock)			$opts(-lock)
-	set Vars(takefocus)	$opts(-takefocus)
-	set Vars(theme)		[::theme::currentTheme]
-	if {$opts(-useScale)} {
-		set Vars(slider)	[$sc cget -sliderlength]
-		set Vars(layout)	$opts(-layout)
-	} else {
-		set Vars(layout)	right
+	set Vars(scale)			$sc
+	set Vars(scrollbar)		$sb
+	set Vars(popupcmd)		$opts(-popupcmd)
+	set Vars(lock)				$opts(-lock)
+	set Vars(takefocus)		$opts(-takefocus)
+	set Vars(theme)			[::theme::currentTheme]
+	set Vars(lineBasedMenu)	$opts(-lineBasedMenu)
+	set useScale				$opts(-useScale)
+
+	if {$useScale} { set Vars(layout) $opts(-layout) } else { set Vars(layout) right }
+	foreach attr {-popupcmd -lock -useScale -layout -lineBasedMenu} { array unset opts $attr }
+
+	ttk::frame $path -takefocus 0
+	ttk::frame $top -takefocus 0
+	pack $top -fill both -expand yes
+
+	table::table $tb                                  \
+		-moveable 1                                    \
+		-fillcolumn end                                \
+		-highlightcolor $Defaults(highlight)           \
+		-separatorcolor $Defaults(separatorcolor)      \
+		-labelbackground theme,background              \
+		{*}[array get opts]                            \
+		;
+	::bind $tb <Destroy> [namespace code [list TableOptions $tb]]
+	
+	if {$useScale} {
+		tk::scale $sc                                    \
+			-orient horizontal                            \
+			-from 0                                       \
+			-showvalue 0                                  \
+			-takefocus 0                                  \
+			-width 10                                     \
+			-command [namespace code [list SetStart $tb]] \
+			;
+		::bind $sc <ButtonRelease-1> [list ::table::focus $tb]
+		::bind $sc <ButtonPress-1> [namespace code [list StopMouseWheel $tb]]
+		set Vars(slider) [$sc cget -sliderlength]
 	}
+	
+	ttk::scrollbar $sb  \
+		-orient vertical \
+		-takefocus 0     \
+		-command [namespace code [list Scroll $tb]] \
+		;
+	::bind $sb <Any-Button> [list ::tooltip::hide]
+	::bind $sb <ButtonPress-1> [namespace code [list StopMouseWheel $tb]]
+	if {$Vars(takefocus)} {
+		::bind $sb <ButtonPress-1> +[list ::table::focus $tb]
+	}
+	ttk::frame $sq -borderwidth 1 -relief sunken
+
+	if {$Vars(layout) eq "right"} {
+		grid $sb -column 1 -row 0 -rowspan 2 -sticky ns
+		grid rowconfigure $top {2 4} -minsize 0
+	} else {
+		grid $sc \
+			-column 0 \
+			-row 3 \
+			-columnspan 2 \
+			-sticky ew \
+			-padx $Defaults(scale:padx) \
+			;
+		grid rowconfigure $top {2 4} -minsize $Defaults(scale:pady)
+	}
+	grid $tb -column 0 -row 0 -rowspan 2 -sticky nsew
+
+	grid columnconfigure $top 0 -weight 1
+	grid rowconfigure $top 0 -weight 1
 
 	foreach {id args} $columns {
 		if {$Vars(lock) eq $id} { lappend args -lock left }
@@ -169,6 +166,7 @@ proc build {path columns args} {
 	::bind $tb <<TableSelected>>				 [namespace code [list TableSelected $tb %d]]
 	::bind $tb <<TableInvoked>>				 [namespace code [list TableInvoked $tb %d]]
 	::bind $tb <<TableActivated>>				 [namespace code [list TableActivated $tb %d]]
+	::bind $tb <<TableToggleButton>>        [namespace code [list TableToggleButton $tb %d]]
 	::bind $tb <<TableScroll>>					 [namespace code [list TableScroll $tb %d]]
 	::bind $tb <<TableMinSize>>				 [namespace code [list TableMinSize $tb %d]]
 	::bind $tb <<TableOptions>>				 [namespace code [list TableOptions $tb]]
@@ -179,7 +177,7 @@ proc build {path columns args} {
 #	::bind $sb <<ThemeChanged>>				 [namespace code [list GenerateTableMinSizeEvent $tb]]
 #	::bind $sb <Destroy>							+[list namespace delete [namespace current]::$tb]
 	::bind $sb <Configure>						 [namespace code [list ConfigureScrollbar $tb]]
-	if {$opts(-useScale)} {
+	if {$useScale} {
 		::bind $tb <<TableScroll>>				+[namespace code [list ConfigureScale $tb]]
 		::bind $sc <Configure>					 [namespace code [list ConfigureScale $tb]]
 	}
@@ -188,20 +186,23 @@ proc build {path columns args} {
 	::table::bind $tb <Shift-Prior>			 [namespace code [list ShiftScroll $tb prior]]
 	::table::bind $tb <Shift-Next>			 [namespace code [list ShiftScroll $tb next]]
 
-	::table::bind $tb <ButtonPress-1>		+[namespace code [list ScanMark $tb %x %y]]
-	::table::bind $tb <Button1-Motion>		 [namespace code [list ScanDrag $tb %x %y]]
-	::table::bind $tb <ButtonRelease-1>		+[namespace code [list MoveRow $tb %x %y]]
+	::bind $tb.t <ButtonPress-1>		+[namespace code [list ScanMark $tb %x %y]]
+	::bind $tb.t <Button1-Motion>		+[namespace code [list ScanDrag $tb %x %y]]
+	::bind $tb.t <ButtonRelease-1>	+[namespace code [list MoveRow $tb %x %y]]
 
 	if {[tk windowingsystem] eq "x11"} {
-		::table::bind $tb <Button-4> [namespace code [list MouseWheel $path up 10]]
-		::table::bind $tb <Button-5> [namespace code [list MouseWheel $path down 10]]
-		::table::bind $tb <Shift-Button-4> [namespace code [list MouseWheel $path back]]
-		::table::bind $tb <Shift-Button-5> [namespace code [list MouseWheel $path forward]]
+		::table::bind $tb <Button-4> [namespace code [list MouseWheel $path up 10 %s]]
+		::table::bind $tb <Button-4> {+ break }
+		::table::bind $tb <Button-5> [namespace code [list MouseWheel $path down 10 %s]]
+		::table::bind $tb <Button-5> {+ break }
+		::table::bind $tb <Control-Button-4> [namespace code [list MouseWheel $path back]]
+		::table::bind $tb <Control-Button-5> [namespace code [list MouseWheel $path forward]]
 	} else {
 		::table::bind $tb <MouseWheel> [namespace code [list \
-			if {%D < 0} [list MouseWheel $path up 10] else [list MouseWheel $path down 10]]]
-		::table::bind $tb <Shift-MouseWheel> [namespace code [list \
-			if {%D < 0} [list MouseWheel $path back] else [list MouseWheel $path forward]]]
+			[list MouseWheel $path {[expr {%D < 0 ? "up" : "down"}]} 10]]]
+		::table::bind $tb <Control-MouseWheel> [namespace code [list \
+			[list MouseWheel $path {[expr {%D < 0 ? "back" : "forward"}]} 10]]]
+		::table::bind $tb <MouseWheel> {+ break }
 	}
 
 	set stopcmd [namespace code [list MouseWheel $path stop]]
@@ -287,6 +288,11 @@ proc tablePath {path} {
 }
 
 
+proc height {path} {
+	return [::table::height $path.top.table]
+}
+
+
 proc visibleColumns {path} {
 	return [::table::visibleColumns $path.top.table]
 }
@@ -319,7 +325,7 @@ proc scroll {path position {units 1}} {
 		end			{ TableScroll $table end }
 
 		up - down	{
-			if {$units > $Vars(height)/2} { set units [expr {max(1, $Vars(height)/2)}] }
+#			if {$units > $Vars(height)/2} { set units [expr {max(1, $Vars(height)/2)}] }
 			if {$position eq "up"} { set dir [expr {-$units}] } else { set dir $units }
 			set start [expr {max(0, min($Vars(size) - 1, $Vars(start) + $dir))}]
 			if {$start == $Vars(start)} { return }
@@ -416,6 +422,22 @@ proc index {path} {
 }
 
 
+proc firstRow {path} {
+	set table $path.top.table
+	variable ${table}::Vars
+
+	return $Vars(start)
+}
+
+
+proc lastRow {path} {
+	set table $path.top.table
+	variable ${table}::Vars
+
+	return [expr {$Vars(start) + $Vars(height)}]
+}
+
+
 proc indexToRow {path index} {
 	set table $path.top.table
 	variable ${table}::Vars
@@ -452,8 +474,8 @@ proc bind {path sequence script} {
 }
 
 
-proc configure {path id args} {
-	::table::configure $path.top.table $id {*}$args
+proc configure {path args} {
+	::table::configure $path.top.table {*}$args
 }
 
 
@@ -486,6 +508,11 @@ proc setColumnMininumWidth {path id width} {
 
 proc setOptions {path options} {
 	::table::setOptions $path.top.table $options
+}
+
+
+proc bindOptions {id options} {
+	::table::bindOptions $id $options
 }
 
 
@@ -599,8 +626,9 @@ proc activate {path row} {
 	set table $path.top.table
 	variable ${table}::Vars
 
-	if {$row eq "none" || $row == -1 || ($row >= $Vars(start) || $Vars(start) + $Vars(height) > $row)} {
+	if {$row eq "none" || $row == -1 || ($row >= $Vars(start) && $Vars(start) + $Vars(height) > $row)} {
 		set Vars(active) $row
+		if {$row ne "none" && $row >= 0} { set row [expr {$row - $Vars(start)}] }
 		::table::activate $table $row true
 	}
 }
@@ -668,10 +696,14 @@ proc ConfigureScale {table} {
 
 
 proc ConfigureScrollbar {table} {
-	variable ${table}::Vars
+	after idle [namespace code [list ScrollToStart $table]]
+}
 
-	after idle "[namespace current]::Scroll \
-		$table set \[set [namespace current]::${table}::Vars(start)\] false"
+
+proc ScrollToStart {table} {
+	if {![winfo exists $table]} { return }
+	variable ${table}::Vars
+	Scroll $table set $Vars(start) false
 }
 
 
@@ -739,6 +771,7 @@ proc TableScroll {table action} {
 
 	if {$Vars(active) >= 0} {
 		set Vars(active) $active
+		event generate [winfo parent [winfo parent $table]] <<TableActivated>> -data $Vars(active)
 	}
 
 	switch $action {
@@ -761,7 +794,10 @@ proc TableScroll {table action} {
 
 
 proc TableActivated {table number} {
+	if {![winfo exists $table.t]} { return }
 	variable ${table}::Vars
+
+	set active $Vars(active)
 
 	if {$number == -1} {
 		set Vars(active) -1
@@ -772,6 +808,10 @@ proc TableActivated {table number} {
 		if {$number < $Vars(start) || $Vars(start) + $Vars(height) < $number} {
 			SetStart $table [expr {max(0, min($number, $Vars(size) - $Vars(height)))}]
 		}
+	}
+
+	if {$active != $Vars(active)} {
+		event generate [winfo parent [winfo parent $table]] <<TableActivated>> -data $Vars(active)
 	}
 }
 
@@ -784,9 +824,17 @@ proc TableSelected {table number} {
 }
 
 
-proc TableInvoked {table shiftIsHeldDown} {
+proc TableToggleButton {table number} {
 	variable ${table}::Vars
-	event generate [winfo parent [winfo parent $table]] <<TableInvoked>> -data $shiftIsHeldDown
+
+	set number [expr {$number + $Vars(start)}]
+	event generate [winfo parent [winfo parent $table]] <<TableToggleButton>> -data $number
+}
+
+
+proc TableInvoked {table number} {
+	variable ${table}::Vars
+	event generate [winfo parent [winfo parent $table]] <<TableInvoked>> -data $Vars(selection)
 }
 
 
@@ -826,18 +874,31 @@ proc ShiftScroll {table action} {
 }
 
 
-proc MouseWheel {path position {units 1}} {
-	set table $path.top.table
+proc StopMouseWheel {table} {
 	variable ${table}::Vars
-
-	# scrolling is a slow operation, so we have to collect the operations
 
 	after cancel $Vars(mousewheel:after)
 	set Vars(mousewheel:after) {}
-	set Vars(mousewheel:list) {}
+}
 
-	if {$position != "stop"} {
-		lappend Vars(mousewheel:list) [list $position $units]
+
+proc MouseWheel {path dir {units 0} {state 0}} {
+	set table $path.top.table
+	variable ${table}::Vars
+	variable ::table::shiftMask
+
+	# vertical scrolling is a slow operation, so we have to collect the operations
+
+	after cancel $Vars(mousewheel:after)
+	set Vars(mousewheel:after) {}
+
+	if {$dir eq "stop"} {
+		set Vars(mousewheel:list) {}
+	} elseif {[expr {($state & $shiftMask) != 0}]} {
+		set Vars(mousewheel:list) {}
+		$path.top.table.t xview scroll [expr {$dir == "up" ? -10 : 10}] units
+	} else {
+		lappend Vars(mousewheel:list) [list $dir $units]
 		set Vars(mousewheel:after) [after 5 [namespace code [list DoMouseWheel $path]]]
 	}
 }
@@ -845,9 +906,9 @@ proc MouseWheel {path position {units 1}} {
 
 proc DoMouseWheel {path} {
 	set table $path.top.table
+	if {![winfo exists $table]} { return }
 	variable ${table}::Vars
 
-	if {![winfo exists $table]} { return }
 	if {[llength $Vars(mousewheel:list)] == 0} { return }
 
 	lassign [lindex $Vars(mousewheel:list) 0] position units
@@ -977,8 +1038,10 @@ proc PopupMenu {table y} {
 
 		default {
 			set index [expr {$Vars(start) + $row}]
-			set Vars(active) $row
-			::table::activate $table $row
+			if {$Vars(lineBasedMenu)} {
+				set Vars(active) $row
+				::table::activate $table $row
+			}
 		}
 	}
 

@@ -44,9 +44,11 @@ namespace tcl
 	{
 		typedef mstl::pair< ::db::rating::Type, ::db::rating::Type> Ratings;
 
-		int getGameInfo(	::db::Database const& db,
-								unsigned index,
-								Ratings const& ratings);
+		int getGameInfo(
+			::db::Database const& db,
+			unsigned index,
+			Ratings const& ratings,
+			::db::move::Notation notation);
 		int getPlayerStats(::db::Database const& db, ::db::NamebasePlayer const& player);
 		int getTags(::db::TagSet const& tags, bool userSuppliedOnly);
 

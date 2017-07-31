@@ -323,8 +323,64 @@ Decoder::decodeVariation(Consumer& consumer, ByteStream& moves, ByteStream& text
 }
 
 
+unsigned
+Decoder::decodeMainline(ByteStream& moves, uint16_t* line, unsigned length, Board* startBoard)
+{
+	Move move;
+
+	unsigned level = 0;
+	unsigned index = 0;
+
+	while (moves.remaining())
+	{
+		Byte b = moves.get();
+
+		switch (b)
+		{
+			case Start_Marker:
+			{
+				if (!move)
+					return index;
+				++level;
+				break;
+			}
+
+			case End_Marker:
+				if (level-- == 0)
+					return index;
+				break;
+
+			default:
+			{
+				if ((b & 0x7f) == 0)
+					return index; // end of game (bug in ChessBase?)
+
+				if (!(move = m_position.doMove(b & 0x7f)))
+					return index;
+
+				if (level == 0)
+				{
+					if (!startBoard)
+					{
+						line[index++] = move.index();
+					}
+					else if (startBoard->isEqualZHPosition(m_position.board()))
+					{
+						startBoard->setPlyNumber(m_position.board().plyNumber());
+						startBoard = nullptr;
+					}
+				}
+				break;
+			}
+		}
+	}
+
+	return index;
+}
+
+
 void
-Decoder::prepareDecoding(ByteStream& moveArea, ByteStream& textArea)
+Decoder::prepareDecoding(ByteStream& moveArea, ByteStream* textArea)
 {
 	Byte* buf = m_strm.base();
 
@@ -343,7 +399,8 @@ Decoder::prepareDecoding(ByteStream& moveArea, ByteStream& textArea)
 	ByteStream boardArea(buf + boardPos, m_strm.end());
 	m_position.setup(boardArea, buf[10], buf[11]);
 
-	textArea.setup(m_strm.base() + textPos, boardPos - textPos);
+	if (textArea)
+		textArea->setup(m_strm.base() + textPos, boardPos - textPos);
 	moveArea.setup(m_strm.base() + movePos, textPos - movePos);
 
 	if (moveAreaLength > 0)
@@ -356,12 +413,32 @@ Decoder::prepareDecoding(ByteStream& moveArea, ByteStream& textArea)
 }
 
 
+unsigned
+Decoder::doDecoding(uint16_t* line, unsigned length, Board& startBoard, bool useStartBoard)
+{
+	ByteStream moves;
+
+	prepareDecoding(moves);
+
+	if (!useStartBoard)
+		startBoard = m_position.board();
+	else if (startBoard.isEqualZHPosition(m_position.board()))
+		useStartBoard = false;
+
+	if (!useStartBoard)
+		return decodeMainline(moves, line, length, nullptr);
+
+	Board board(startBoard);
+	return decodeMainline(moves, line, length, &board);
+}
+
+
 void
 Decoder::doDecoding(GameData& data)
 {
 	ByteStream moves, text;
 
-	prepareDecoding(moves, text);
+	prepareDecoding(moves, &text);
 	data.m_startBoard = m_position.board();
 	m_currentNode = data.m_startNode;
 	decodeVariation(moves, text);
@@ -374,7 +451,7 @@ Decoder::doDecoding(Consumer& consumer, TagSet& tags)
 {
 	ByteStream moves, text;
 
-	prepareDecoding(moves, text);
+	prepareDecoding(moves, &text);
 	consumer.startGame(tags, m_position.board());
 	consumer.startMoveSection();
 	decodeVariation(consumer, moves, text);

@@ -257,6 +257,46 @@ makePromotionList(Board const& board)
 }
 
 
+::db::move::Notation
+tcl::game::notationFromObj(Tcl_Obj* obj)
+{
+	char const* moveStyle = Tcl_GetString(obj);
+
+	if (strcmp(moveStyle, "can") == 0)
+		return move::CAN;
+	else if (strcmp(moveStyle, "san") == 0)
+		return move::SAN;
+	else if (strcmp(moveStyle, "lan") == 0)
+		return move::LAN;
+	else if (strcmp(moveStyle, "gan") == 0)
+		return move::GAN;
+	else if (strcmp(moveStyle, "man") == 0)
+		return move::MAN;
+	else if (strcmp(moveStyle, "ran") == 0)
+		return move::RAN;
+	else if (strcmp(moveStyle, "smi") == 0)
+		return move::Smith;
+	else if (strcmp(moveStyle, "edn") == 0)
+		return move::EDN;
+	else if (strcmp(moveStyle, "sdn") == 0)
+		return move::SDN;
+	else if (strcmp(moveStyle, "cor") == 0)
+		return move::Numeric;
+	else if (strcmp(moveStyle, "tel") == 0)
+		return move::Alphabetic;
+
+	M_RAISE("unexpected move style '%s'", moveStyle);
+	return move::SAN;
+}
+
+
+::db::move::Notation
+tcl::game::notationFromObj(unsigned objc, Tcl_Obj* const objv[], unsigned index)
+{
+	return notationFromObj(objectFromObj(objc, objv, index));
+}
+
+
 ::db::variant::Type
 tcl::game::variantFromObj(Tcl_Obj* obj)
 {
@@ -1606,7 +1646,8 @@ cmdInfo(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	return tcl::db::getGameInfo(	Scidb->database(position),
 											Scidb->gameIndex(position),
-											tcl::db::Ratings(rating::Elo, rating::Elo));
+											tcl::db::Ratings(rating::Elo, rating::Elo),
+											move::SAN);
 }
 
 
@@ -1948,7 +1989,7 @@ cmdNext(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 			case Cmd_Moves:
 			{
-				move::Notation style = move::ShortAlgebraic;
+				move::Notation style = move::SAN;
 				if (useGameStyle)
 					style = Scidb->game(position).moveStyle();
 				Scidb->game(position).getNextMoves(result, style, flags);
@@ -2872,25 +2913,23 @@ cmdSetupStyle(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	if (Scidb->containsGameAt(position))
 	{
-		unsigned 	linebreakThreshold			= unsignedFromObj(objc, objv, 2);
-		unsigned 	linebreakMaxLineLengthMain	= unsignedFromObj(objc, objv, 3);
-		unsigned 	linebreakMaxLineLengthVar	= unsignedFromObj(objc, objv, 4);
-		unsigned 	linebreakMinCommentLength	= unsignedFromObj(objc, objv, 5);
-		bool			columnStyle						= boolFromObj(objc, objv, 6);
-		char const*	moveStyle						= stringFromObj(objc, objv, 7);
-		bool			paragraphSpacing				= boolFromObj(objc, objv, 8);
-		bool			showDiagram						= boolFromObj(objc, objv, 9);
-		Tcl_Obj*		showMoveInfo					= objectFromObj(objc, objv, 10);
-		bool			showEmoticon					= boolFromObj(objc, objv, 11);
-		bool			showVariationNumbers			= boolFromObj(objc, objv, 12);
-		bool			discardUnknownResult			= boolFromObj(objc, objv, 13);
-		unsigned		displayStyle					= columnStyle ? display::ColumnStyle : display::CompactStyle;
-		unsigned		moveInfoTypes;
+		unsigned 		linebreakThreshold			= unsignedFromObj(objc, objv, 2);
+		unsigned 		linebreakMaxLineLengthMain	= unsignedFromObj(objc, objv, 3);
+		unsigned 		linebreakMaxLineLengthVar	= unsignedFromObj(objc, objv, 4);
+		unsigned 		linebreakMinCommentLength	= unsignedFromObj(objc, objv, 5);
+		bool				columnStyle						= boolFromObj(objc, objv, 6);
+		move::Notation	moveForm							= game::notationFromObj(objc, objv, 7);
+		bool				paragraphSpacing				= boolFromObj(objc, objv, 8);
+		bool				showDiagram						= boolFromObj(objc, objv, 9);
+		Tcl_Obj*			showMoveInfo					= objectFromObj(objc, objv, 10);
+		bool				showEmoticon					= boolFromObj(objc, objv, 11);
+		bool				showVariationNumbers			= boolFromObj(objc, objv, 12);
+		bool				discardUnknownResult			= boolFromObj(objc, objv, 13);
+		unsigned			displayStyle					= columnStyle ? display::ColumnStyle : display::CompactStyle;
+		unsigned			moveInfoTypes;
 
 		if (getMoveInfoTypes(::CmdSetupStyle, 0, showMoveInfo, moveInfoTypes) != TCL_OK)
 			return TCL_ERROR;
-
-		move::Notation moveForm;
 
 		if (showDiagram)
 			displayStyle |= display::ShowDiagrams;
@@ -2904,21 +2943,6 @@ cmdSetupStyle(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			displayStyle |= display::ShowVariationNumbers;
 		if (discardUnknownResult)
 			displayStyle |= display::DiscardUnknownResult;
-
-		if (strcmp(moveStyle, "alg") == 0)
-			moveForm = move::Algebraic;
-		else if (strcmp(moveStyle, "san") == 0)
-			moveForm = move::ShortAlgebraic;
-		else if (strcmp(moveStyle, "lan") == 0)
-			moveForm = move::LongAlgebraic;
-		else if (strcmp(moveStyle, "eng") == 0)
-			moveForm = move::Descriptive;
-		else if (strcmp(moveStyle, "cor") == 0)
-			moveForm = move::Correspondence;
-		else if (strcmp(moveStyle, "tel") == 0)
-			moveForm = move::Telegraphic;
-		else
-			return error(::CmdSetupStyle, nullptr, nullptr, "unexpected move style '%s'", moveStyle);
 
 		scidb->game(position).setup(	linebreakThreshold,
 												linebreakMaxLineLengthMain,
@@ -3872,7 +3896,7 @@ cmdLines(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	for (EcoTable::Lines::const_iterator i = lines.begin(); i != lines.end(); ++i)
 	{
 		mstl::string opening;
-		i->line().print(opening, game.variant(), protocol::Scidb, encoding::Utf8);
+		i->line().print(opening, game.variant(), move::SAN, protocol::Scidb, encoding::Utf8);
 		objs[index++] = Tcl_NewStringObj(opening, opening.size());
 	}
 

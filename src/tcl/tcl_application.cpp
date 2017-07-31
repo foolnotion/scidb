@@ -26,6 +26,7 @@
 
 #include "tcl_application.h"
 #include "tcl_tree.h"
+#include "tcl_game.h"
 #include "tcl_base.h"
 
 #include "app_application.h"
@@ -38,8 +39,11 @@
 #include "db_eco_table.h"
 
 #include "u_zstream.h"
+#include "u_piped_progress.h"
 
+#include "m_map.h"
 #include "m_ifstream.h"
+#include "m_range.h"
 #include "m_assert.h"
 
 #include <tcl.h>
@@ -61,8 +65,41 @@ static char const* CmdGet					= "::scidb::app::get";
 static char const* CmdInitialized		= "::scidb::app::initialized?";
 static char const* CmdLoad					= "::scidb::app::load";
 static char const* CmdLookup				= "::scidb::app::lookup";
+static char const* CmdMoveList			= "::scidb::app::moveList";
 static char const* CmdVariant				= "::scidb::app::variant";
 static char const* CmdWriting				= "::scidb::app::writing";
+
+
+namespace {
+
+struct MyPipedProgress : public util::PipedProgress
+{
+	MyPipedProgress(::sys::Thread& thread, Tcl_Obj* cmd, Tcl_Obj* arg)
+		:PipedProgress(thread)
+		,m_cmd(cmd)
+		,m_arg(arg)
+	{
+		M_ASSERT(cmd);
+		M_ASSERT(arg);
+
+		Tcl_IncrRefCount(m_cmd);
+		Tcl_IncrRefCount(m_arg);
+	}
+
+	void available(unsigned char) override
+	{
+		invoke(__func__, m_cmd, m_arg, nullptr);
+	}
+
+	Tcl_Obj* m_cmd;
+	Tcl_Obj* m_arg;
+};
+
+} // namespace
+
+
+typedef mstl::map<mstl::string,MyPipedProgress*> MoveListMap;
+static MoveListMap m_moveListMap;
 
 
 static int
@@ -442,6 +479,127 @@ cmdWriting(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 }
 
 
+static int
+cmdMoveList(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	static char const* subcommands[] = { "open", "close", "open?", "retrieve", "fetch", "clear", 0 };
+	static char const* args[] =
+	{
+		"<path> <cmd>",
+		"<path>",
+		"<path>",
+		"<path> <database> <variant> <view> <view-lower> <view-upper> <index-lower> <index-upper>",
+		"<path> <index>",
+		"<path>",
+		0
+	};
+	enum { Cmd_Open, Cmd_Close, Cmd_Open_, Cmd_Retrieve, Cmd_Fetch, Cmd_Clear };
+
+	int index;
+
+	if (objc < 3 || (index = tcl::uniqueMatchObj(objv[1], subcommands)) == -1)
+		return usage(::CmdMoveList, 0, 0, subcommands, args);
+
+	Tcl_Obj* id = objectFromObj(objc, objv, 2);
+
+	if (index == Cmd_Open)
+	{
+		MyPipedProgress*& progress = m_moveListMap[stringFromObj(objc, objv, 2)];
+		if (progress == 0)
+			progress = new MyPipedProgress(scidb->newMoveListThread(), objectFromObj(objc, objv, 3), id);
+	}
+	else
+	{
+		MoveListMap::iterator i = m_moveListMap.find(Tcl_GetString(id));
+
+		if (i == m_moveListMap.end())
+		{
+			if (index == Cmd_Close)
+				return TCL_OK;
+
+			if (index == Cmd_Open_)
+			{
+				setResult(false);
+				return TCL_OK;
+			}
+
+			return error(	CmdMoveList,
+								Tcl_GetString(objv[1]),
+								nullptr,
+								"'%s' is not open",
+								Tcl_GetString(objv[2]));
+		}
+
+		MyPipedProgress* progress = i->second;
+
+		switch (index)
+		{
+			case Cmd_Retrieve:
+			{
+				char const*		database	= stringFromObj(objc, objv, 3);
+				variant::Type	variant	= tcl::game::variantFromObj(objc, objv, 4);
+				int				view		= intFromObj(objc, objv, 5);
+				unsigned			vlower	= unsignedFromObj(objc, objv, 6);
+				unsigned			vupper	= unsignedFromObj(objc, objv, 7);
+				unsigned			ilower	= unsignedFromObj(objc, objv, 8);
+				unsigned			iupper	= unsignedFromObj(objc, objv, 9);
+				Cursor&			cursor	= scidb->cursor(database, variant);
+				move::Notation	notation	= move::SAN;
+				unsigned			length	= 40;
+				mstl::string	fen;
+
+				for ( ; objc > 10; objc -= 2)
+				{
+					char const* option = stringFromObj(objc, objv, objc - 2);
+
+					if (strcmp(option, "-notation") == 0)
+						notation = tcl::game::notationFromObj(objv[objc - 1]);
+					else if (strcmp(option, "-length") == 0)
+						length = unsignedFromObj(objc, objv, objc - 1);
+					else if (strcmp(option, "-fen") == 0)
+						fen = stringFromObj(objc, objv, objc - 1);
+					else
+						return error(CmdMoveList, "retrieve", nullptr, "unknown option %s", option);
+				}
+
+				Application::Range vrange(vlower, vupper);
+				Application::Range irange(ilower, iupper);
+
+				scidb->retrieveMoveList(progress->thread(),
+												cursor,
+												view,
+												length,
+												fen.empty() ? nullptr : &fen,
+												notation,
+												vrange,
+												irange,
+												*progress);
+				break;
+			}
+
+			case Cmd_Fetch:
+				setResult(scidb->fetchMoveList(progress->thread(), unsignedFromObj(objc, objv, 3)));
+				break;
+
+			case Cmd_Clear:
+				scidb->clearMoveList(progress->thread());
+				break;
+
+			case Cmd_Open_:
+				setResult(true);
+				break;
+
+			case Cmd_Close:
+				scidb->deleteMoveList(progress->thread());
+				m_moveListMap.erase(i);
+				break;
+		}
+	}
+
+	return TCL_OK;
+}
+
+
 void
 tcl::app::setup(::app::Application* app)
 {
@@ -461,6 +619,7 @@ tcl::app::init(Tcl_Interp* ti)
 	createCommand(ti, CmdInitialized,		cmdInitialized);
 	createCommand(ti, CmdLoad,					cmdLoad);
 	createCommand(ti, CmdLookup,				cmdLookup);
+	createCommand(ti, CmdMoveList,			cmdMoveList);
 	createCommand(ti, CmdVariant,				cmdVariant);
 	createCommand(ti, CmdWriting,				cmdWriting);
 }

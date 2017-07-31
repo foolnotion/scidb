@@ -234,6 +234,39 @@ count_bits(T x)
 }
 
 
+/// \brief Returns whether the number of 1 bits is greater than 1.
+/// \ingroup BitAlgorithm
+template <typename T>
+inline
+constexpr bool
+more_than_one(T x)
+{
+	return x & (x - 1);
+}
+
+
+/// \brief Returns whether the number of 1 bits is less than or equal to 1.
+/// \ingroup BitAlgorithm
+template <typename T>
+inline
+constexpr bool
+at_most_one(T x)
+{
+	return !more_than_one(x);
+}
+
+
+/// \brief Returns whether the number of 1 bits is equal to 1.
+/// \ingroup BitAlgorithm
+template <typename T>
+inline
+constexpr bool
+exactly_one(T x)
+{
+	return x && at_most_one(x);
+}
+
+
 /// \brief Computes the index of the most significant bit in a number.
 /// \ingroup ConditionAlgorithms
 template <typename T>

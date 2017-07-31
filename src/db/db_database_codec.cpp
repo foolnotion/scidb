@@ -852,6 +852,18 @@ DatabaseCodec::sync()
 }
 
 
+unsigned
+DatabaseCodec::decodeGame(	GameInfo const& info,
+									uint16_t* line,
+									unsigned length,
+									Board& startBoard,
+									bool useStartBoard)
+{
+	M_REQUIRE(isOpen());
+	return doDecoding(info, line, length, startBoard, useStartBoard);
+}
+
+
 void
 DatabaseCodec::decodeGame(GameData& data, GameInfo& info, unsigned gameIndex, mstl::string* encoding)
 {

@@ -27,9 +27,9 @@
 #ifndef _app_tree_admin_included
 #define _app_tree_admin_included
 
-#include "db_tree.h"
+#include "app_thread.h"
 
-#include "sys_thread.h"
+#include "db_tree.h"
 
 #include "m_ref_counted_ptr.h"
 
@@ -48,7 +48,9 @@ namespace util
 
 namespace app {
 
-class TreeAdmin
+class Cursor;
+
+class TreeAdmin : public Thread
 {
 public:
 
@@ -56,27 +58,28 @@ public:
 	typedef db::Tree::Key Key;
 
 	TreeAdmin();
+	~TreeAdmin();
 
 	TreeP tree() const;
-	sys::Thread& thread();
 
-	bool isUpToDate(db::Database const& referenceBase, db::Game const& game, Key const& key) const;
+	bool isUpToDate(Cursor const& cursor, db::Game const& game, Key const& key) const;
 	bool isRunning() const;
 
-	bool startUpdate(	db::Database& referenceBase,
+	bool startUpdate(	Cursor& cursor,
 							db::Game& game,
+							db::tree::Method method,
 							db::tree::Mode mode,
 							db::rating::Type ratingType,
 							util::PipedProgress& progress);
 
-	bool finishUpdate(db::Database const* referenceBase,
+	bool finishUpdate(Cursor const* cursor,
 							db::Game const& game,
+							db::tree::Method method,
 							db::tree::Mode mode,
 							db::rating::Type ratingType,
 							db::attribute::tree::ID sortAttr);
 
-	void stopUpdate();
-	void cancelUpdate();
+	void signal(Signal signal) override;
 
 private:
 
@@ -86,7 +89,6 @@ private:
 
 	Runnable*	m_runnable;
 	TreeP			m_currentTree;
-	sys::Thread	m_thread;
 };
 
 } // namespace app

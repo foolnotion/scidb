@@ -70,6 +70,7 @@ public:
 
 	void doDecoding(GameData& data);
 	save::State doDecoding(db::Consumer& consumer, TagSet& tags);
+	unsigned doDecoding(uint16_t* line, unsigned length, Board& startBoard, bool useStartBoard);
 
 	bool stripMoveInformation(unsigned halfMoveCount, unsigned types);
 	bool stripTags(TagMap const& tags);

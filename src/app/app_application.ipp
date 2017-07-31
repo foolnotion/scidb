@@ -50,7 +50,7 @@ inline Application::Subscriber* Application::subscriber() const	{ return m_subsc
 inline unsigned Application::currentPosition() const					{ return m_currentPosition; }
 inline db::Tree const* Application::currentTree() const				{ return m_treeAdmin.tree().get(); }
 inline mstl::ostream* Application::engineLog() const					{ return m_engineLog; }
-inline sys::Thread& Application::treeThread()							{ return m_treeAdmin.thread(); }
+inline sys::Thread& Application::treeThread()							{ return m_treeAdmin; }
 inline mstl::string const& Application::currentlyWriting() const	{ return m_isWriting; }
 
 inline void Application::setIsWriting(mstl::string const& name)	{ m_isWriting = name; }
@@ -160,6 +160,22 @@ Application::engine(unsigned id) const
 	M_REQUIRE(engineExists(id));
 
 	return m_engineList[id];
+}
+
+
+inline
+mstl::string const&
+Application::fetchMoveList(sys::Thread& thread, unsigned index) const
+{
+	return static_cast<MoveListThread&>(thread).moveList(index);
+}
+
+
+inline
+void
+Application::clearMoveList(sys::Thread& thread)
+{
+	static_cast<MoveListThread&>(thread).clear();
 }
 
 } // namespace app

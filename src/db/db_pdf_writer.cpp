@@ -161,7 +161,7 @@ PdfWriter::writeMove(Move const& move,
 
 	if (m_font[Move_Figurine_MainLine])
 	{
-		move.printSan(str, protocol::Standard, encoding::Utf8);
+		move.printSAN(str, protocol::Standard, encoding::Utf8);
 		char const* s = str;
 
 		while (*s)
@@ -189,7 +189,7 @@ PdfWriter::writeMove(Move const& move,
 	}
 	else
 	{
-		move.printSan(str, protocol::Standard, encoding::Latin1);
+		move.printSAN(str, protocol::Standard, encoding::Latin1);
 		setFont(Move_Text_Variation);
 		HPDF_Page_ShowText(m_page, str, str.size());
 	}

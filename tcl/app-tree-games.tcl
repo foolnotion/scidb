@@ -30,17 +30,22 @@ namespace eval application {
 namespace eval tree {
 namespace eval games {
 
+variable Tables {}
+
 
 proc build {parent width height} {
+	variable Tables
 	variable Vars
 
 	set table $parent.treeGames
 	set columns {white whiteElo black blackElo event result date length}
 	set tb [::gametable::build $table [namespace code [list View $parent.treeGames]] $columns \
+		-id db:tree:games \
 		-takefocus 0 \
 		-mode list \
 		-positioncmd ::scidb::tree::position \
 	]
+	lappend Tables $table
 
 	::bind $tb <<TableVisit>>		+[namespace code [list TableVisit $table %d]]
 	::bind $tb <<TablePopdown>>	+[namespace code [list ReleaseButton $table]]
@@ -250,6 +255,19 @@ proc TableMinSize {table minsize} {
 proc Close {table base variant} {
 	::gametable::forget $table $base $variant
 }
+
+
+proc WriteOptions {chan} {
+	variable Tables
+
+	foreach table $Tables {
+		puts $chan "::gametable::setOptions db:tree:games {"
+		::options::writeArray $chan [::gametable::getOptions $table]
+		puts $chan "}"
+	}
+}
+
+::options::hookWriter [namespace current]::WriteOptions
 
 } ;# namespace games
 } ;# namespace tree

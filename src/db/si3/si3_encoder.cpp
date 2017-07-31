@@ -499,9 +499,9 @@ Encoder::encodePawn(Move const& move)
 void
 Encoder::encodeMove(Move const& move)
 {
-	M_ASSERT((move.pieceMoved() == piece::None) == move.isNull());
+	M_ASSERT((move.moved() == piece::None) == move.isNull());
 
-	switch (move.pieceMoved())
+	switch (move.moved())
 	{
 		case piece::None:		encodeNullMove(move); break;
 		case piece::King:		encodeKing(move); break;

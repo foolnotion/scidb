@@ -45,22 +45,34 @@ public:
 	TreeCache();
 	~TreeCache();
 
-	bool isCached(Board const& position, tree::Mode mode, rating::Type ratingType) const;
+	bool isCached(	Board const& position,
+						tree::Method method,
+						tree::Mode mode,
+						rating::Type ratingType) const;
 	bool isCached(	uint64_t hash,
 						Position const& position,
+						tree::Method method,
 						tree::Mode mode,
 						rating::Type ratingType) const;
 
 	static unsigned size();
 	unsigned used() const;
 
-	Tree* lookup(Board const& position, tree::Mode mode, rating::Type ratingType) const;
-	Tree* lookup(uint64_t hash, Position const& position, tree::Mode mode, rating::Type ratingType) const;
+	Tree* lookup(	Board const& position,
+						tree::Method method,
+						tree::Mode mode,
+						rating::Type ratingType) const;
+	Tree* lookup(	uint64_t hash,
+						Position const& position,
+						tree::Method method,
+						tree::Mode mode,
+						rating::Type ratingType) const;
 
 	void add(Tree* tree);
 	void clear();
+	void clear(tree::Mode mode);
 	void setIncomplete();
-	void setIncomplete(unsigned index);
+	void setIncomplete(unsigned firstIndex, unsigned lastIndex);
 
 private:
 

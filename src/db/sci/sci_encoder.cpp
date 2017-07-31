@@ -379,11 +379,11 @@ Encoder::encodePawn(Move const& move)
 bool
 Encoder::encodeMove(Move const& move)
 {
-	M_ASSERT(	(	move.pieceMoved() == piece::None
+	M_ASSERT(	(	move.moved() == piece::None
 					&& (!move.isPieceDrop() || move.dropped() == piece::None))
 				== move.isNull());
 
-	switch (move.pieceMoved())
+	switch (move.moved())
 	{
 		case piece::None:		encodeNullOrDropMove(move); break;
 		case piece::King:		encodeKing(move); break;

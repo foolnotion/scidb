@@ -58,6 +58,7 @@ static char const* CmdFreeze		= "::scidb::tree::freeze";
 static char const* CmdGameIndex	= "::scidb::tree::gameIndex";
 static char const* CmdGet			= "::scidb::tree::get";
 static char const* CmdInit			= "::scidb::tree::init";
+static char const* CmdInvalidate	= "::scidb::tree::invalidate";
 static char const* CmdIsRefBase	= "::scidb::tree::isRefBase?";
 static char const* CmdIsUpToDate	= "::scidb::tree::isUpToDate?";
 static char const* CmdList			= "::scidb::tree::list";
@@ -73,23 +74,28 @@ static char const* CmdView			= "::scidb::tree::view";
 
 
 static int
-parseArguments(int objc, Tcl_Obj* const objv[], rating::Type& ratingType, ::db::tree::Mode& mode)
+parseArguments(int objc, Tcl_Obj* const objv[],
+					rating::Type& ratingType,
+					::db::tree::Method& method,
+					::db::tree::Mode& mode)
 {
 	ratingType = rating::fromString(stringFromObj(objc, objv, 1));
 
 	if (ratingType == rating::Last)
 		return error(CmdUpdate, nullptr, nullptr, "unknown rating type %s", stringFromObj(objc, objv, 1));
 
+	mode = boolFromObj(objc, objv, 3) ? ::db::tree::IncludeVariations : ::db::tree::MainlineOnly;
+
 	char const* which = stringFromObj(objc, objv, 2);
 
 	if (::strcmp(which, "exact") == 0)
-		mode = ::db::tree::Exact;
+		method = ::db::tree::Exact;
 	else if (::strcmp(which, "fast") == 0)
-		mode = ::db::tree::Fast;
+		method = ::db::tree::Fast;
 	else if (::strcmp(which, "quick") == 0)
-		mode = ::db::tree::Rapid;
+		method = ::db::tree::Rapid;
 	else
-		return error(CmdUpdate, nullptr, nullptr, "unknown mode '%s'", which);
+		return error(CmdUpdate, nullptr, nullptr, "unknown method '%s'", which);
 
 	return TCL_OK;
 }
@@ -280,12 +286,13 @@ cmdUpdate(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	}
 
 	rating::Type ratingType;
-	::db::tree::Mode mode = db::tree::Exact; // satisifies the compiler
+	::db::tree::Mode mode;
+	::db::tree::Method method;
 
-	int rc = parseArguments(objc, objv, ratingType, mode);
+	int rc = parseArguments(objc, objv, ratingType, method, mode);
 
 	if (rc == TCL_OK)
-		setResult(scidb->updateTree(mode, ratingType, *m_progress));
+		setResult(scidb->updateTree(method, mode, ratingType, *m_progress));
 
 	return rc;
 }
@@ -304,7 +311,7 @@ cmdFinish(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	attribute::tree::ID sortColumn = attribute::tree::LastColumn;
 
-	while (objc > 3)
+	while (objc > 4)
 	{
 		char const* option = stringFromObj(objc, objv, objc - 2);
 
@@ -319,7 +326,7 @@ cmdFinish(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				|| column < 0
 				|| column >= attribute::tree::LastColumn)
 			{
-				return error(	CmdFetch, nullptr, nullptr,
+				return error(	CmdFinish, nullptr, nullptr,
 									"integer in range 0-%d expected",
 									attribute::tree::LastColumn - 1);
 			}
@@ -334,9 +341,10 @@ cmdFinish(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	}
 
 	rating::Type ratingType;
-	::db::tree::Mode mode = db::tree::Exact; // satisifies the compiler
+	::db::tree::Mode mode;
+	::db::tree::Method method;
 
-	int rc = parseArguments(objc, objv, ratingType, mode);
+	int rc = parseArguments(objc, objv, ratingType, method, mode);
 
 	if (rc != TCL_OK)
 		return rc;
@@ -344,7 +352,7 @@ cmdFinish(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	if (sortColumn == attribute::tree::LastColumn)
 		return error(CmdFetch, nullptr, nullptr, "no sort column given");
 
-	Tree const* tree = scidb->finishUpdateTree(mode, ratingType, sortColumn);
+	Tree const* tree = scidb->finishUpdateTree(method, mode, ratingType, sortColumn);
 
 	char const* result = "";
 
@@ -416,7 +424,7 @@ cmdFetch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			mstl::string const& most = info.mostFrequentPlayer().name();
 
 			if (info.move())
-				info.move().printSan(move, protocol::Scidb, encoding::Utf8);
+				info.move().printSAN(move, protocol::Scidb, encoding::Utf8);
 			else if (i < objc)
 				move = "end";
 
@@ -488,7 +496,7 @@ cmdMove(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			if (board.isValidMove(info.move(), game.variant(), move::DontAllowIllegalMove))
 			{
 				mstl::string s;
-				info.move().printSan(s, protocol::Standard, encoding::Latin1);
+				info.move().printSAN(s, protocol::Standard, encoding::Latin1);
 				setResult(s);
 			}
 		}
@@ -601,6 +609,14 @@ cmdIsUpToDate(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 }
 
 
+static int
+cmdInvalidate(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	tcl::tree::invalidateCache();
+	return TCL_OK;
+}
+
+
 namespace tcl {
 namespace tree {
 
@@ -613,6 +629,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdGameIndex,	cmdGameIndex);
 	createCommand(ti, CmdGet,			cmdGet);
 	createCommand(ti, CmdInit,			cmdInit);
+	createCommand(ti, CmdInvalidate,	cmdInvalidate);
 	createCommand(ti, CmdIsRefBase,	cmdIsRefBase);
 	createCommand(ti, CmdIsUpToDate,	cmdIsUpToDate);
 	createCommand(ti, CmdList,			cmdList);

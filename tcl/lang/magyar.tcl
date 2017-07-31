@@ -776,6 +776,7 @@
 ::application::tree::mc::ComputeSpread			"Compute Spread" ;# NEW
 ::application::tree::mc::ShowMoveTree			"Show move tree" ;# NEW
 ::application::tree::mc::ShowMoveOrders			"Show move orders" ;# NEW
+::application::tree::mc::SearchInsideVariations		"Search inside variations" ;# NEW
 
 ::application::tree::mc::FromWhitesPerspective		"Világos nézőpontjából"
 ::application::tree::mc::FromBlacksPerspective		"Sötét nézőpontjából"
@@ -1253,6 +1254,7 @@
 ::gametable::mc::F_Acv						"ACV"
 ::gametable::mc::F_Idn						"960"
 ::gametable::mc::F_Position				"Pozíció"
+::gametable::mc::F_MoveList				"Move List" ;# NEW
 ::gametable::mc::F_EventDate				"Esemény dátuma"
 ::gametable::mc::F_EventType				"Esemény típusa"
 ::gametable::mc::F_Promotion				"Promotion"
@@ -1291,19 +1293,23 @@
 ::gametable::mc::T_Variations				"Változatok"
 ::gametable::mc::T_TimeMode				"Játékidő"
 
-::gametable::mc::P_Rating					"Rating Score"
+::gametable::mc::P_Name						"Név"
+::gametable::mc::P_FideID					"Fide ID"
+::gametable::mc::P_Rating1					"Rating Score"
+::gametable::mc::P_Rating2					"Rating Score (Second Rating)" ;# NEW
 ::gametable::mc::P_RatingType				"Rating Type"
 ::gametable::mc::P_Country					"Ország"
 ::gametable::mc::P_Title					"Cím"
 ::gametable::mc::P_Type						"Típus"
-::gametable::mc::P_Date						"Dátum"
-::gametable::mc::P_Mode						"Mód"
 ::gametable::mc::P_Sex						"Nem"
-::gametable::mc::P_Name						"Név"
 
-::gametable::mc::G_White					"Világos"
-::gametable::mc::G_Black					"Sötét"
-::gametable::mc::G_Event					"Verseny"
+::gametable::mc::G_Player					"Player data"
+::gametable::mc::G_Event					"Event data"
+::gametable::mc::G_Game						"Game information"
+::gametable::mc::G_Opening					"Opening information"
+::gametable::mc::G_Flags					"Flags"
+::gametable::mc::G_Notation				"Notation"
+::gametable::mc::G_Internal				"Internal"
 
 ::gametable::mc::EventType(game)			"Játszma"
 ::gametable::mc::EventType(match)		"Mérkőzés"
@@ -1891,12 +1897,17 @@
 ### notation ###########################################################
 ::notation::mc::Notation	"Játszmajegyzés"
 
-::notation::mc::MoveForm(alg)	"Algebria"
-::notation::mc::MoveForm(san)	"Rövidített algebrai"
-::notation::mc::MoveForm(lan)	"Teljes algebrai"
-::notation::mc::MoveForm(eng)	"Angol"
-::notation::mc::MoveForm(cor)	"Levelezési"
-::notation::mc::MoveForm(tel)	"Távirati"
+::notation::mc::MoveForm(can)	"Computer Algebraic Notation" ;# NEW also: "Coordinate Notation"
+::notation::mc::MoveForm(san)	"Short Algebraic Notation" ;# NEW also "Standard Algebraic Notation"
+::notation::mc::MoveForm(lan)	"Long Algebraic Notation"
+::notation::mc::MoveForm(gan)	"German Short Algebraic Notation"
+::notation::mc::MoveForm(man)	"Minimal Algebraic Notation"
+::notation::mc::MoveForm(ran)	"Reversible Algebraic Notation"
+::notation::mc::MoveForm(smi)	"Smith Notation"
+::notation::mc::MoveForm(edn)	"English Descriptive Notation"
+::notation::mc::MoveForm(sdn)	"Spanish Descriptive Notation"
+::notation::mc::MoveForm(cor)	"ICCF Numeric Notation (Correspondence)"
+::notation::mc::MoveForm(tel)	"Alphabetic Notation (Telegraph)"
 
 ### figurine ###########################################################
 ::figurines::mc::Figurines	"Figurális"

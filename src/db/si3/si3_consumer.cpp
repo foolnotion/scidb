@@ -344,7 +344,7 @@ Consumer::checkMove(Move const& move)
 	Move m(move);
 
 	board.prepareForPrint(m, variant::Normal, Board::ExternalRepresentation);
-	m.printSan(san, protocol::Standard, m_encoding); // XXX use language dependent pieces if not UTF-8
+	m.printSAN(san, protocol::Standard, m_encoding); // XXX use language dependent pieces if not UTF-8
 	m_strm.put(token::Comment);
 	preparePhrase(comment, Phrase);
 	comment.appendCommonSuffix(": " + san);

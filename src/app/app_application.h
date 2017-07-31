@@ -28,6 +28,7 @@
 #define _app_application_included
 
 #include "app_tree_admin.h"
+#include "app_move_list_thread.h"
 
 #include "db_common.h"
 #include "db_tree.h"
@@ -48,8 +49,11 @@ namespace util { class PipedProgress; }
 
 namespace mstl { class ostream; }
 namespace mstl { class string; }
+namespace mstl { template <typename T> class range; }
 
 namespace TeXt { class Environment; }
+
+namespace sys  { class Thread; }
 
 namespace db {
 
@@ -73,6 +77,7 @@ class Cursor;
 class View;
 class Engine;
 class FAMService;
+class Thread;
 
 class Application
 {
@@ -153,6 +158,7 @@ public:
 	typedef mstl::ref_counted_ptr<Subscriber> SubscriberP;
 	typedef mstl::vector<Cursor*> CursorList;
 	typedef mstl::vector<MultiCursor*> MultiCursorList;
+	typedef mstl::range<unsigned> Range;
 
 	enum CloseMode	{ Except_Clipbase, Including_Clipbase };
 	enum Filter		{ None = 0, Players = 1 << 0, Events = 1 << 1, Sites = 1 << 2 };
@@ -189,7 +195,7 @@ public:
 	unsigned countEngines() const;
 	unsigned maxEngineId() const;
 
-	sys::Thread& treeThread();
+	::sys::Thread& treeThread();
 
 	void enumCursors(CursorList& list, db::variant::Type variant) const;
 	void enumCursors(MultiCursorList& list) const;
@@ -231,6 +237,7 @@ public:
 	Cursor const& cursor(mstl::string const& name) const;
 	Cursor const& cursor(mstl::string const& name, db::variant::Type variant) const;
 	Cursor const& cursor(unsigned databaseId) const;
+	Cursor& getGameCursor(unsigned position);
 	Cursor const& getGameCursor(unsigned position) const;
 
 	int getViewId(unsigned position = InvalidPosition) const;
@@ -374,13 +381,32 @@ public:
 	void setSwitchReferenceBase(bool flag);
 
 	db::Tree const* currentTree() const;
-	bool updateTree(db::tree::Mode mode, db::rating::Type ratingType, util::PipedProgress& progress);
-	db::Tree const* finishUpdateTree(db::tree::Mode mode,
+	bool updateTree(	db::tree::Method method,
+							db::tree::Mode mode,
+							db::rating::Type ratingType,
+							util::PipedProgress& progress);
+	db::Tree const* finishUpdateTree(db::tree::Method method,
+												db::tree::Mode mode,
 												db::rating::Type ratingType,
 												db::attribute::tree::ID sortAttr);
 	void freezeTree(bool flag);
+	void stopAllThreads(Cursor const& cursor);
+	void cancelAllThreads(Cursor const& cursor);
 	void stopUpdateTree();
-	void cancelUpdateTree();
+
+	::sys::Thread& newMoveListThread();
+	void deleteMoveList(::sys::Thread& thread);
+	void retrieveMoveList(	::sys::Thread& thread,
+									Cursor& cursor,
+									unsigned view,
+									unsigned length,
+									mstl::string const* fen,
+									db::move::Notation notation,
+									Range const& rangeOfView,
+									Range const& rangeOfGames,
+									util::PipedProgress& progress);
+	mstl::string const& fetchMoveList(::sys::Thread& thread, unsigned index) const;
+	void clearMoveList(::sys::Thread& thread);
 
 	void startTrialMode();
 	void endTrialMode();
@@ -475,6 +501,7 @@ private:
 	typedef mstl::ref_counted_ptr<MultiCursor>	CursorP;
 	typedef mstl::map<mstl::string,CursorP>		CursorMap;
 	typedef mstl::vector<Engine*>						EngineList;
+	typedef mstl::vector<Thread*>						ThreadList;
 
 	struct Iterator
 	{
@@ -516,7 +543,9 @@ private:
 	bool compact(Cursor& cursor, util::Progress& progress);
 	bool compact(Cursor& cursor);
 	void clearTreeCache();
-	void invalidateTreeCache(db::Database const& database, unsigned gameIndex);
+	void invalidateTreeCache(	db::Database const& database,
+										unsigned firstGameIndex,
+										unsigned lastGameIndex);
 
 	Cursor*			m_current;
 	Cursor*			m_clipbase;
@@ -536,6 +565,7 @@ private:
 	bool				m_treeIsFrozen;
 	mstl::string	m_isWriting;
 	TreeAdmin		m_treeAdmin;
+	ThreadList		m_threadList;
 	LanguageSet		m_langSet;
 	bool				m_allLanguages;
 

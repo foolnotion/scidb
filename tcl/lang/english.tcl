@@ -769,6 +769,7 @@
 ::application::tree::mc::End									"end"
 ::application::tree::mc::ShowMoveTree						"Show move tree"
 ::application::tree::mc::ShowMoveOrders					"Show move orders"
+::application::tree::mc::SearchInsideVariations			"Search inside variations"
 
 ::application::tree::mc::FromWhitesPerspective			"From whites perspective"
 ::application::tree::mc::FromBlacksPerspective			"From blacks perspective"
@@ -1241,6 +1242,7 @@
 ::gametable::mc::F_Acv						"ACV"
 ::gametable::mc::F_Idn						"960"
 ::gametable::mc::F_Position				"Position"
+::gametable::mc::F_MoveList				"Move List"
 ::gametable::mc::F_EventDate				"Event Date"
 ::gametable::mc::F_EventType				"Ev.Type"
 ::gametable::mc::F_Promotion				"Promotion"
@@ -1279,19 +1281,23 @@
 ::gametable::mc::T_Variations				"Variations"
 ::gametable::mc::T_TimeMode				"Time Mode"
 
-::gametable::mc::P_Rating					"Rating Score"
+::gametable::mc::P_Name						"Name"
+::gametable::mc::P_FideID					"Fide ID"
+::gametable::mc::P_Rating1					"Rating Score"
+::gametable::mc::P_Rating2					"Rating Score (Second Rating)"
 ::gametable::mc::P_RatingType				"Rating Type"
 ::gametable::mc::P_Country					"Country"
 ::gametable::mc::P_Title					"Title"
 ::gametable::mc::P_Type						"Type"
-::gametable::mc::P_Date						"Date"
-::gametable::mc::P_Mode						"Mode"
 ::gametable::mc::P_Sex						"Sex"
-::gametable::mc::P_Name						"Name"
 
-::gametable::mc::G_White					"White"
-::gametable::mc::G_Black					"Black"
-::gametable::mc::G_Event					"Event"
+::gametable::mc::G_Player					"Player data"
+::gametable::mc::G_Event					"Event data"
+::gametable::mc::G_Game						"Game information"
+::gametable::mc::G_Opening					"Opening information"
+::gametable::mc::G_Flags					"Flags"
+::gametable::mc::G_Notation				"Notation"
+::gametable::mc::G_Internal				"Internal"
 
 ::gametable::mc::EventType(game)			"Game"
 ::gametable::mc::EventType(match)		"Match"
@@ -1879,12 +1885,24 @@
 ### notation ###########################################################
 ::notation::mc::Notation		"Notation"
 
-::notation::mc::MoveForm(alg)	"Algebraic"
-::notation::mc::MoveForm(san)	"Short Algebraic"
-::notation::mc::MoveForm(lan)	"Long Algebraic"
-::notation::mc::MoveForm(eng)	"English"
-::notation::mc::MoveForm(cor)	"Correspondence"
-::notation::mc::MoveForm(tel)	"Telegraphic"
+# Note to translators:
+# Choose the form which is common in your country; example:
+#   "Computer Algebraic Notation", or
+#	 "Computer Algebraic", or
+#	 "Coordinate Notation", or
+#	 "Algebraic - Computer", or
+#	 "Algebraic - coordinate form"
+::notation::mc::MoveForm(can)	"Computer Algebraic Notation" ;# also: "Coordinate Notation"
+::notation::mc::MoveForm(san)	"Short Algebraic Notation" ;# also "Standard Algebraic Notation"
+::notation::mc::MoveForm(lan)	"Long Algebraic Notation"
+::notation::mc::MoveForm(gan)	"German Short Algebraic Notation"
+::notation::mc::MoveForm(man)	"Minimal Algebraic Notation"
+::notation::mc::MoveForm(ran)	"Reversible Algebraic Notation"
+::notation::mc::MoveForm(smi)	"Smith Notation"
+::notation::mc::MoveForm(edn)	"English Descriptive Notation"
+::notation::mc::MoveForm(sdn)	"Spanish Descriptive Notation"
+::notation::mc::MoveForm(cor)	"ICCF Numeric Notation (Correspondence)"
+::notation::mc::MoveForm(tel)	"Alphabetic Notation (Telegraph)"
 
 ### figurine ###########################################################
 ::figurines::mc::Figurines	"Figurines"

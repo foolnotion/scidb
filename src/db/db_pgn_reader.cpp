@@ -1242,7 +1242,7 @@ PgnReader::handleError(Error code, mstl::string const& message)
 
 			if (m_move && !board().isValidMove(m_move, m_variant))
 			{
-				m_move.printSan(msg, protocol::Standard, encoding::Latin1);
+				m_move.printSAN(msg, protocol::Standard, encoding::Latin1);
 				msg += ' ';
 			}
 

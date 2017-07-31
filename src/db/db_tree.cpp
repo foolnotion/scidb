@@ -96,15 +96,20 @@ move(Board const& position, uint16_t m)
 Tree::Key::Key()
 	:m_hash(0)
 	,m_position(Board::emptyBoard().exactZHPosition())
-	,m_mode(tree::Exact)
+	,m_method(tree::Exact)
 	,m_ratingType(rating::Any)
 {
 }
 
 
-Tree::Key::Key(uint64_t hash, Position const& position, tree::Mode mode, rating::Type ratingType)
+Tree::Key::Key(uint64_t hash,
+					Position const& position,
+					tree::Method method,
+					tree::Mode mode,
+					rating::Type ratingType)
 	:m_hash(hash)
 	,m_position(position)
+	,m_method(method)
 	,m_mode(mode)
 	,m_ratingType(ratingType)
 {
@@ -120,10 +125,15 @@ Tree::Key::clear()
 
 
 void
-Tree::Key::set(tree::Mode mode, rating::Type ratingType, uint64_t hash, Position const& position)
+Tree::Key::set(tree::Method method,
+					tree::Mode mode,
+					rating::Type ratingType,
+					uint64_t hash,
+					Position const& position)
 {
 	m_hash = hash;
 	m_position = position;
+	m_method = method;
 	m_mode = mode;
 	m_ratingType = ratingType;
 }
@@ -196,12 +206,13 @@ Tree::uncompressFilter()
 void
 Tree::possiblyAdd(Database const& base,
 						GameInfo const& info,
+						tree::Mode mode,
 						Eco eco,
 						Board const& myPosition)
 {
 	try
 	{
-		Move m = base.findExactPosition(m_index, myPosition, true);
+		Move m = base.findExactPosition(m_index, myPosition, mode == tree::MainlineOnly);
 
 		if (!m.isInvalid())
 			add(info, eco, ::index(m), myPosition);
@@ -228,6 +239,7 @@ Tree::buildTree0(	unsigned myIdn,
 						Line const& myLine,
 						uint16_t hpSig,
 						Database const& base,
+						tree::Method method,
 						tree::Mode mode,
 						ReachableFunc reachableFunc,
 						util::Progress& progress,
@@ -255,12 +267,16 @@ Tree::buildTree0(	unsigned myIdn,
 
 		GameInfo const& info = base.gameInfo(m_index);
 
-		// XXX reachableFunc should not use home pawns
-		if (info.idn()
-				? reachableFunc(myPosition.signature(), info.signature(), hpSig)
-				: Signature::isReachable(myPosition.signature(), info.signature()))
+		if (mode == tree::IncludeVariations && info.countVariations() > 0)
 		{
-			possiblyAdd(base, info, Eco(), myPosition);
+			possiblyAdd(base, info, mode, Eco(), myPosition);
+		}
+		// XXX reachableFunc should not use home pawns
+		else if (info.idn()
+					? reachableFunc(myPosition.signature(), info.signature(), hpSig)
+					: Signature::isReachable(myPosition.signature(), info.signature()))
+		{
+			possiblyAdd(base, info, mode, Eco(), myPosition);
 		}
 	}
 
@@ -275,6 +291,7 @@ Tree::buildTree518(	unsigned myIdn,
 							Line const& myLine,
 							uint16_t hpSig,
 							Database const& base,
+							tree::Method method,
 							tree::Mode mode,
 							ReachableFunc reachableFunc,
 							util::Progress& progress,
@@ -315,9 +332,13 @@ Tree::buildTree518(	unsigned myIdn,
 		{
 			if (info.plyCount() && reachableFunc(myPosition.signature(), info.signature(), hpSig))
 			{
-//				if (	myLength == info.plyCount()
-//					&& myLine.length == myLength
-//					&& info.ecoOpening() == myOpening)
+				if (mode == tree::IncludeVariations && info.countVariations() > 0)
+				{
+					possiblyAdd(base, info, mode, Eco(), myPosition);
+				}
+//				else if (	myLength == info.plyCount()
+//						&& myLine.length == myLength
+//						&& info.ecoOpening() == myOpening)
 //				{
 //					add(info, myEco, ::Empty, myPosition);
 //				}
@@ -334,19 +355,23 @@ Tree::buildTree518(	unsigned myIdn,
 					if (succ)
 						add(info, succ->eco, succ->move, myPosition);
 					else
-						possiblyAdd(base, info, Eco(), myPosition);
+						possiblyAdd(base, info, mode, Eco(), myPosition);
 				}
 			}
 		}
 		else
 		{
-			// XXX reachableFunc should not use home pawns if info.idn() == 0
-			if (	mode == tree::Exact
-				&& info.idn()
-						? reachableFunc(myPosition.signature(), info.signature(), hpSig)
-						: Signature::isReachable(myPosition.signature(), info.signature()))
+			if (mode == tree::IncludeVariations && info.countVariations() > 0)
 			{
-				possiblyAdd(base, info, Eco(), myPosition);
+				// nothing to do
+			}
+			// XXX reachableFunc should not use home pawns if info.idn() == 0
+			else if (	method == tree::Exact
+					&& info.idn()
+							? reachableFunc(myPosition.signature(), info.signature(), hpSig)
+							: Signature::isReachable(myPosition.signature(), info.signature()))
+			{
+				possiblyAdd(base, info, mode, Eco(), myPosition);
 			}
 		}
 	}
@@ -362,6 +387,7 @@ Tree::buildTree960(	unsigned myIdn,
 							Line const& myLine,
 							uint16_t hpSig,
 							Database const& base,
+							tree::Method method,
 							tree::Mode mode,
 							ReachableFunc reachableFunc,
 							util::Progress& progress,
@@ -387,7 +413,11 @@ Tree::buildTree960(	unsigned myIdn,
 
 		GameInfo const& info = base.gameInfo(m_index);
 
-		if (info.idn() == myIdn)
+		if (mode == tree::IncludeVariations && info.countVariations() > 0)
+		{
+			possiblyAdd(base, info, mode, Eco(), myPosition);
+		}
+		else if (info.idn() == myIdn)
 		{
 			switch (myLine.length)
 			{
@@ -415,7 +445,7 @@ Tree::buildTree960(	unsigned myIdn,
 							if (myLine[0] == info.ply<0>())
 								add(info, Eco(), info.ply<1>(), myPosition);
 							else if (reachableFunc(myPosition.signature(), info.signature(), hpSig))
-								possiblyAdd(base, info, Eco(), myPosition);
+								possiblyAdd(base, info, mode, Eco(), myPosition);
 							break;
 					}
 					break;
@@ -436,7 +466,7 @@ Tree::buildTree960(	unsigned myIdn,
 
 						default:
 							if (reachableFunc(myPosition.signature(), info.signature(), hpSig))
-								possiblyAdd(base, info, Eco(), myPosition);
+								possiblyAdd(base, info, mode, Eco(), myPosition);
 							break;
 					}
 					break;
@@ -445,18 +475,18 @@ Tree::buildTree960(	unsigned myIdn,
 					if (	info.plyCount() > 2
 						&& reachableFunc(myPosition.signature(), info.signature(), hpSig))
 					{
-						possiblyAdd(base, info, Eco(), myPosition);
+						possiblyAdd(base, info, mode, Eco(), myPosition);
 					}
 					break;
 			}
 		}
-		else if (mode == tree::Exact)
+		else if (method == tree::Exact)
 		{
 			if (info.idn()
 					? reachableFunc(myPosition.signature(), info.signature(), hpSig)
 					: Signature::isReachable(myPosition.signature(), info.signature()))
 			{
-				possiblyAdd(base, info, Eco(), myPosition);
+				possiblyAdd(base, info, mode, Eco(), myPosition);
 			}
 		}
 	}
@@ -472,6 +502,7 @@ Tree::buildTreeStandard(unsigned myIdn,
 								Line const& myLine,
 								uint16_t hpSig,
 								Database const& base,
+								tree::Method method,
 								tree::Mode mode,
 								ReachableFunc reachableFunc,
 								util::Progress& progress,
@@ -513,14 +544,14 @@ Tree::buildTreeStandard(unsigned myIdn,
 				if (succ)	// should always be non-null
 					add(info, succ->eco, succ->move, myPosition);
 				else
-					possiblyAdd(base, info, Eco(), myPosition);
+					possiblyAdd(base, info, mode, Eco(), myPosition);
 			}
 		}
 		else if (info.idn() == 0)
 		{
 			// NOTE: In Scid it is possible that a standard position
 			// is declared as a non-standard position.
-			possiblyAdd(base, info, Eco(), myPosition);
+			possiblyAdd(base, info, mode, Eco(), myPosition);
 		}
 	}
 
@@ -535,6 +566,7 @@ Tree::buildTreeStart(unsigned myIdn,
 							Line const& myLine,
 							uint16_t hpSig,
 							Database const& base,
+							tree::Method method,
 							tree::Mode mode,
 							ReachableFunc reachableFunc,
 							util::Progress& progress,
@@ -566,13 +598,13 @@ Tree::buildTreeStart(unsigned myIdn,
 			if (info.plyCount() == 0)
 				add(info, Eco(), ::Empty, myPosition);
 			else if (info.ply<0>() == 0)
-				possiblyAdd(base, info, Eco(), myPosition);
+				possiblyAdd(base, info, mode, Eco(), myPosition);
 			else
 				add(info, Eco(), info.ply<0>(), myPosition);
 		}
 		else if (info.idn() == 0)	// match is really possible?
 		{
-			possiblyAdd(base, info, Eco(), myPosition);
+			possiblyAdd(base, info, mode, Eco(), myPosition);
 		}
 	}
 
@@ -588,6 +620,7 @@ Tree::makeTree(TreeP& tree,
 					Line myLine,
 					uint16_t hpSig,
 					Database& base,
+					tree::Method method,
 					tree::Mode mode,
 					rating::Type ratingType,
 					util::Progress& progress)
@@ -601,6 +634,7 @@ Tree::makeTree(TreeP& tree,
 												Line const&,
 												uint16_t,
 												Database const&,
+												tree::Method,
 												tree::Mode,
 												ReachableFunc,
 												util::Progress&,
@@ -629,7 +663,7 @@ Tree::makeTree(TreeP& tree,
 
 	ReachableFunc reachableFunc;
 
-	if (mode == tree::Exact || base.format() != format::Scidb)
+	if (method == tree::Exact || base.format() != format::Scidb)
 		reachableFunc = Signature::isReachablePosition;
 	else
 		reachableFunc = Signature::isReachable;
@@ -652,7 +686,7 @@ Tree::makeTree(TreeP& tree,
 	{
 		tree.reset(new Tree);
 
-		tree->m_key.set(mode, ratingType, myPosition.hash(), myPosition.exactZHPosition());
+		tree->m_key.set(method, mode, ratingType, myPosition.hash(), myPosition.exactZHPosition());
 		tree->m_index = 0;
 		tree->m_last = mstl::numeric_limits<unsigned>::max();
 		tree->m_prevGameCount = 0;
@@ -673,6 +707,7 @@ Tree::makeTree(TreeP& tree,
 											myLine,
 											hpSig,
 											base,
+											method,
 											mode,
 											reachableFunc,
 											progress,
@@ -723,6 +758,7 @@ Tree::makeTree(TreeP& tree,
 					Line myLine,
 					uint16_t hpSig,
 					Database& base,
+					tree::Method method,
 					tree::Mode mode,
 					rating::Type ratingType,
 					util::Progress& progress)
@@ -736,6 +772,7 @@ Tree::makeTree(TreeP& tree,
 												Line const&,
 												uint16_t,
 												Database const&,
+												tree::Method,
 												tree::Mode,
 												ReachableFunc,
 												util::Progress&,
@@ -843,18 +880,23 @@ Tree::setIncomplete()
 
 
 void
-Tree::setIncomplete(unsigned index)
+Tree::setIncomplete(unsigned firstIndex, unsigned lastIndex)
 {
+	M_REQUIRE(firstIndex < lastIndex);
+
 	if (m_complete)
 	{
-		m_index = index;
-		m_last = index;
+		m_index = firstIndex;
+		m_last = lastIndex;
 		m_complete = false;
 	}
-	else if (index < m_index)
+	else if (firstIndex < m_index)
 	{
-		m_index = index;
+		m_index = firstIndex;
 	}
+
+	if (m_last < lastIndex)
+		m_last = lastIndex;
 }
 
 
@@ -878,12 +920,13 @@ Tree::isTreeFor(Database const& base, Board const& position) const
 bool
 Tree::isTreeFor(	Database const& base,
 						Board const& position,
+						tree::Method method,
 						tree::Mode mode,
 						rating::Type ratingType) const
 {
 	return	m_complete
 			&& m_base->id() == base.id()
-			&& m_key.match(mode, ratingType, position.hash(), position.exactZHPosition());
+			&& m_key.match(method, mode, ratingType, position.hash(), position.exactZHPosition());
 }
 
 

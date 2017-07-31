@@ -45,7 +45,7 @@ public:
 	void setup(char const* fen);
 	void setup();
 
-	void doMove(Move& move, unsigned pieceNum);
+	bool doMove(Move& move, unsigned pieceNum);
 	void undoMove(Move const& move);
 	void push();
 	void pop();

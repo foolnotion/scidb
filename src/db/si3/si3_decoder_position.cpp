@@ -59,7 +59,7 @@ Position::Position()
 }
 
 
-void
+bool
 Position::doMove(Move& move, unsigned pieceNum)
 {
 	Lookup&		lookup	= m_stack.top();
@@ -70,7 +70,7 @@ Position::doMove(Move& move, unsigned pieceNum)
 	if (lookup.board.isValidMove(move, variant::Normal, move::DontAllowIllegalMove))
 		move.setLegalMove();
 	else if (!lookup.board.checkMove(move, variant::Normal, move::AllowIllegalMove))
-		M_THROW(DecodingFailedException("Invalid move"));
+		return false;
 
 	lookup.board.prepareUndo(move);
 
@@ -118,6 +118,7 @@ Position::doMove(Move& move, unsigned pieceNum)
 	}
 
 	lookup.board.doMove(move, variant::Normal);
+	return true;
 }
 
 
