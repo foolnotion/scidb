@@ -108,8 +108,8 @@ public:
 	bool encodingIsBroken() const;
 	/// Returns whether asynchronous reader is in use.
 	bool usingAsyncReader() const;
-	/// Returns whether given asynchronous reader is in use.
-	bool usingAsyncReader(thread::Type thread) const;
+	/// Returns whether asynchronous reader for tree search is in use.
+	bool usingAsyncTreeSearchReader() const;
 	/// Returns whether the database format should be upgraded.
 	bool shouldUpgrade() const;
 	/// Returns whether this database should be compressed.
@@ -217,7 +217,8 @@ public:
 	/// Load a game from the given position.
 	load::State loadGame(unsigned index, Game& game, mstl::string& encoding, mstl::string const* fen = 0);
 	/// Load a game from the given position.
-	unsigned loadGame(unsigned index,
+	unsigned loadGame(::util::BlockFileReader* asyncReader,
+							unsigned index,
 							uint16_t* line,
 							unsigned length,
 							Board& startBoard,
@@ -303,10 +304,14 @@ public:
 	/// Generate player card information for given player.
 	void emitPlayerCard(TeXt::Receptacle& receptacle, NamebasePlayer const& player) const;
 
-	/// Open an asynchronous game stream (block file) reader for findExactPositionAsync() operation.
-	void openAsyncReader(thread::Type thread);
+	/// Open an asynchronous game stream (block file) reader for asynchronous tree search operation.
+	void openAsyncTreeSearchReader();
+	/// Close asynchronous game stream reader for tree search.
+	void closeAsyncTreeSearchReader();
+	/// Open an asynchronous game stream (block file) reader for asynchronous operations.
+	::util::BlockFileReader* openAsyncReader();
 	/// Close asynchronous game stream reader.
-	void closeAsyncReader(thread::Type thread);
+	void closeAsyncReader(::util::BlockFileReader* reader);
 
 	/// Setup tag/value pairs.
 	void setupTags(unsigned index, TagSet& tags) const;
@@ -376,7 +381,7 @@ private:
 	uint64_t			m_lastChange;
 	uint32_t			m_fileTime;
 	TreeCache		m_treeCache;
-	AsyncReader*	m_asyncReader[thread::LAST];
+	AsyncReader*	m_asyncReader;
 	mutable bool	m_encodingFailed;
 	mutable bool	m_encodingOk;
 	bool				m_descriptionHasChanged;

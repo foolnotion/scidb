@@ -1576,6 +1576,8 @@ db_database_codec.o: db_comment.ipp
 db_database_codec.o: ../mstl/m_set.h
 db_database_codec.o: ../mstl/m_set.ipp
 db_database_codec.o: db_move_node.ipp
+db_database_codec.o: ../sys/sys_mutex.h
+db_database_codec.o: ../sys/sys_mutex.ipp
 db_database_codec.o: ../mstl/m_fixed_size_allocator.h
 db_database_codec.o: ../mstl/m_fixed_size_allocator.ipp
 db_database_codec.o: cbf/cbf_codec.h
@@ -8544,6 +8546,8 @@ cbh/cbh_codec.o: db_comment.ipp
 cbh/cbh_codec.o: ../mstl/m_set.h
 cbh/cbh_codec.o: ../mstl/m_set.ipp
 cbh/cbh_codec.o: db_move_node.ipp
+cbh/cbh_codec.o: ../sys/sys_mutex.h
+cbh/cbh_codec.o: ../sys/sys_mutex.ipp
 cbh/cbh_codec.o: ../util/universalchardet/nsUniversalDetector.h
 cbh/cbh_codec.o: ../util/universalchardet/nstypes.h
 cbh/cbh_codec.o: ../mstl/m_fstream.h
@@ -8605,6 +8609,8 @@ cbh/cbh_codec.o: ../sys/sys_utf8.h
 cbh/cbh_codec.o: ../sys/sys_utf8.ipp
 cbh/cbh_codec.o: ../sys/sys_utf8_codec.h
 cbh/cbh_codec.o: ../sys/sys_utf8_codec.ipp
+cbh/cbh_codec.o: ../sys/sys_lock.h
+cbh/cbh_codec.o: ../sys/sys_lock.ipp
 cbh/cbh_codec.o: ../mstl/m_stdio.h
 cbh/cbh_decoder.o: cbh/cbh_decoder.h
 cbh/cbh_decoder.o: cbh/cbh_decoder_position.h

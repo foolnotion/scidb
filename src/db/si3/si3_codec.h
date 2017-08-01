@@ -72,6 +72,7 @@ public:
 
 	bool isWritable() const override;
 	bool encodingFailed() const override;
+	bool usingAsyncReader() const override;
 	bool isFormat3() const;
 	bool isFormat4() const;
 
@@ -133,7 +134,8 @@ public:
 									util::ByteStream& strm,
 									TagSet& tags) override;
 	void doDecoding(GameData& data, GameInfo& info, unsigned gameIndex, mstl::string* encoding) override;
-	unsigned doDecoding(	GameInfo const& info,
+	unsigned doDecoding(	::util::BlockFileReader* asyncReader,
+								GameInfo const& info,
 								uint16_t* line,
 								unsigned length,
 								Board& startBoard,

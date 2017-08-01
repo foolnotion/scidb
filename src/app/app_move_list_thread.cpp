@@ -77,7 +77,6 @@ struct MoveListThread::Runnable
 		,m_useStartBoard(fen != nullptr)
 		,m_stillWorking(true)
 		,m_ranges(1, range)
-		,m_closed(false)
 	{
 		M_ASSERT(!range.empty());
 
@@ -89,10 +88,11 @@ struct MoveListThread::Runnable
 
 	void close()
 	{
-		if (m_closed)
-			return;
-		m_database.closeAsyncReader(db::thread::MoveList);
-		m_closed = true;
+		if (m_asyncReader)
+		{
+			m_database.closeAsyncReader(m_asyncReader);
+			m_asyncReader = nullptr;
+		}
 	}
 
 	bool stillWorking() const
@@ -116,7 +116,7 @@ struct MoveListThread::Runnable
 
 	void operator() ()
 	{
-		m_database.openAsyncReader(db::thread::MoveList);
+		m_asyncReader = m_database.openAsyncReader();
 
 		try
 		{
@@ -159,7 +159,8 @@ struct MoveListThread::Runnable
 
 					unsigned			idx(m_view >= 0 ? m_cursor.index(db::table::Games, index, m_view) : index);
 					uint16_t			moves[m_length];
-					unsigned			length(m_database.loadGame(idx,
+					unsigned			length(m_database.loadGame(m_asyncReader,
+																			idx,
 																			moves,
 																			m_length,
 																			startBoard,
@@ -211,20 +212,20 @@ struct MoveListThread::Runnable
 		close();
 	}
 
-	Cursor&					m_cursor;
-	db::Database&			m_database;
-	ResultList&				m_resultList;
-	util::PipedProgress&	m_progress;
-	unsigned					m_view;
-	unsigned					m_length;
-	db::move::Notation	m_notation;
-	db::Board				m_startBoard;
-	Range						m_range;
-	bool						m_useStartBoard;
-	bool						m_stillWorking;
-	mutable sys::Mutex	m_mutex;
-	Ranges					m_ranges;
-	bool						m_closed;
+	Cursor&						m_cursor;
+	db::Database&				m_database;
+	ResultList&					m_resultList;
+	util::PipedProgress&		m_progress;
+	unsigned						m_view;
+	unsigned						m_length;
+	db::move::Notation		m_notation;
+	db::Board					m_startBoard;
+	Range							m_range;
+	bool							m_useStartBoard;
+	bool							m_stillWorking;
+	mutable sys::Mutex		m_mutex;
+	Ranges						m_ranges;
+	util::BlockFileReader*	m_asyncReader;
 };
 
 

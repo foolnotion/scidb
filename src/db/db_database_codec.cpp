@@ -620,6 +620,13 @@ DatabaseCodec::findExactPosition(GameInfo const&, Board const&, bool, BlockFileR
 }
 
 
+bool
+DatabaseCodec::usingAsyncReader() const
+{
+	return false;
+}
+
+
 BlockFileReader*
 DatabaseCodec::getAsyncReader()
 {
@@ -853,14 +860,15 @@ DatabaseCodec::sync()
 
 
 unsigned
-DatabaseCodec::decodeGame(	GameInfo const& info,
+DatabaseCodec::decodeGame(	::util::BlockFileReader* asyncReader,
+									GameInfo const& info,
 									uint16_t* line,
 									unsigned length,
 									Board& startBoard,
 									bool useStartBoard)
 {
 	M_REQUIRE(isOpen());
-	return doDecoding(info, line, length, startBoard, useStartBoard);
+	return doDecoding(asyncReader, info, line, length, startBoard, useStartBoard);
 }
 
 

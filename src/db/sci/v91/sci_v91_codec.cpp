@@ -661,14 +661,15 @@ Codec::getConsumer(format::Type srcFormat)
 
 
 unsigned
-Codec::doDecoding(GameInfo const& info,
+Codec::doDecoding(::util::BlockFileReader* reader,
+						GameInfo const& info,
 						uint16_t* line,
 						unsigned length,
 						Board& startBoard,
 						bool useStartBoard)
 {
 	ByteStream strm;
-	getGameRecord(info, m_gameData->reader(), strm);
+	getGameRecord(info, *reader, strm);
 	Decoder decoder(strm, m_gameData->blockSize() - info.gameOffset());
 	return decoder.doDecoding(line, length, startBoard, useStartBoard);
 }

@@ -617,6 +617,7 @@ namespace format {
 
 inline bool isScidFormat(Type type)			{ return type & (Scid3 | Scid4); }
 inline bool isChessBaseFormat(Type type)	{ return type & (ChessBase | ChessBaseDOS); }
+inline bool isWritable(Type type)			{ return type & (Scidb | Scid3 | Scid4); }
 
 } // namespace format
 

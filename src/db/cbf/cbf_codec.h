@@ -85,7 +85,8 @@ public:
 
 	void close() override;
 
-	unsigned doDecoding(	GameInfo const& info,
+	unsigned doDecoding(	::util::BlockFileReader* reader,
+								GameInfo const& info,
 								uint16_t* line,
 								unsigned length,
 								Board& startBoard,

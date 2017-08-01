@@ -830,14 +830,17 @@ Codec::getConsumer(format::Type srcFormat)
 
 
 unsigned
-Codec::doDecoding(GameInfo const& info,
+Codec::doDecoding(::util::BlockFileReader* asyncReader,
+						GameInfo const& info,
 						uint16_t* line,
 						unsigned length,
 						Board& startBoard,
 						bool useStartBoard)
 {
+	M_ASSERT(asyncReader);
+
 	ByteStream strm;
-	getGameRecord(info, m_gameData->reader(), strm);
+	getGameRecord(info, *asyncReader, strm);
 	Decoder decoder(strm, variant());
 	return decoder.doDecoding(line, length, startBoard, useStartBoard);
 }
@@ -2442,6 +2445,13 @@ Codec::writePlayerbase(util::ByteStream& bstrm, Namebase& base, util::Progress* 
 
 		prev = entry;
 	}
+}
+
+
+bool
+Codec::usingAsyncReader() const
+{
+	return m_gameData->isInAsyncMode();
 }
 
 

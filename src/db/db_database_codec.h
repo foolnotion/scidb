@@ -113,6 +113,7 @@ public:
 	virtual bool isExpired() const;
 	virtual bool isWritable() const = 0;
 	virtual bool encodingFailed() const = 0;
+	virtual bool usingAsyncReader() const;
 
 	variant::Type variant() const;
 	virtual Format format() const = 0;
@@ -172,7 +173,8 @@ public:
 
 	unsigned importGames(Producer& producer, util::Progress& progress, int startIndex = -1);
 
-	unsigned decodeGame(	GameInfo const& info,
+	unsigned decodeGame(	::util::BlockFileReader* asyncReader,
+								GameInfo const& info,
 								uint16_t* line,
 								unsigned length,
 								Board& startBoard,
@@ -253,7 +255,8 @@ protected:
 	virtual unsigned doOpenProgressive(mstl::string const& rootname, mstl::string const& encoding);
 	virtual void doClear(mstl::string const& rootname);
 
-	virtual unsigned doDecoding(	GameInfo const& info,
+	virtual unsigned doDecoding(	::util::BlockFileReader* asyncReader,
+											GameInfo const& info,
 											uint16_t* line,
 											unsigned length,
 											Board& startBoard,

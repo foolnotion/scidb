@@ -46,6 +46,7 @@
 #include "sys_file.h"
 #include "sys_utf8.h"
 #include "sys_utf8_codec.h"
+#include "sys_lock.h"
 
 #include "m_limits.h"
 #include "m_string.h"
@@ -2468,6 +2469,8 @@ Codec::startDecoding(ByteStream& gameStream,
 							GameInfo const& info,
 							bool& isChess960)
 {
+	sys::Lock lock(&m_mutex);
+
 	if (!info.gameOffset())
 		IO_RAISE(Index, Corrupted, "no game data");
 	if (!m_gameStream.seekg(info.gameOffset(), mstl::ios_base::beg))
@@ -2619,7 +2622,8 @@ Codec::addTeamTags(TagSet& tags, GameInfo const& info)
 
 
 unsigned
-Codec::doDecoding(GameInfo const& info,
+Codec::doDecoding(::util::BlockFileReader* reader, // not used
+						GameInfo const& info,
 						uint16_t* line,
 						unsigned length,
 						Board& startBoard,

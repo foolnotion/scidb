@@ -59,7 +59,6 @@ struct TreeAdmin::Runnable
 		,m_startPosition(game.startBoard())
 		,m_currentPosition(game.currentBoard())
 		,m_tree(tree)
-		,m_closed(false)
 	{
 		game.currentLine(m_currentLine);
 	}
@@ -68,15 +67,12 @@ struct TreeAdmin::Runnable
 
 	void close()
 	{
-		if (m_closed)
-			return;
-		m_database.closeAsyncReader(db::thread::Tree);
-		m_closed = true;
+		m_database.closeAsyncTreeSearchReader();
 	}
 
 	void operator() ()
 	{
-		m_database.openAsyncReader(db::thread::Tree);
+		m_database.openAsyncTreeSearchReader();
 
 		try
 		{
@@ -113,7 +109,6 @@ struct TreeAdmin::Runnable
 	db::Board				m_currentPosition;
 	TreeP						m_tree;
 	uint16_t					m_lineBuf[db::opening::Max_Line_Length];
-	bool						m_closed;
 };
 
 

@@ -42,6 +42,7 @@ inline bool Database::hasTemporaryStorage() const			{ return m_temporary; }
 inline bool Database::descriptionHasChanged() const		{ return m_descriptionHasChanged; }
 inline bool Database::isAdded(unsigned index) const		{ return index >= m_initialSize; }
 inline bool Database::isUnsaved() const						{ return m_size < m_gameInfoList.size(); }
+inline bool Database::usingAsyncTreeSearchReader() const	{ return m_asyncReader; }
 
 inline unsigned Database::id() const							{ return m_id; }
 inline unsigned Database::countGames() const					{ return m_gameInfoList.size(); }
@@ -78,16 +79,7 @@ inline
 bool
 Database::usingAsyncReader() const
 {
-	static_assert(thread::LAST == 2, "number of threads has changed");
-	return m_asyncReader[0] || m_asyncReader[1];
-}
-
-
-inline
-bool
-Database::usingAsyncReader(thread::Type thread) const
-{
-	return m_asyncReader[thread];
+	return isOpen() && (bool(m_asyncReader) || m_codec->usingAsyncReader());
 }
 
 

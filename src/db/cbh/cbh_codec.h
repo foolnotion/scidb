@@ -31,6 +31,8 @@
 #include "db_move_node.h"
 #include "db_date.h"
 
+#include "sys_mutex.h"
+
 #include "nsUniversalDetector.h"
 
 #include "m_fstream.h"
@@ -95,7 +97,8 @@ public:
 
 	void close() override;
 
-	unsigned doDecoding(	GameInfo const& info,
+	unsigned doDecoding(	::util::BlockFileReader* reader,
+								GameInfo const& info,
 								uint16_t* line,
 								unsigned length,
 								Board& startBoard,
@@ -212,6 +215,7 @@ private:
 	unsigned				m_numGames;
 	bool					m_highQuality;
 	MoveNodeAllocator	m_moveNodeAllocator;
+	sys::Mutex			m_mutex;
 };
 
 } // namespace cbh

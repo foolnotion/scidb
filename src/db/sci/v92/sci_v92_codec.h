@@ -118,7 +118,8 @@ public:
 									unsigned gameIndex) override;
 	save::State doDecoding(db::Consumer& consumer, util::ByteStream& strm, TagSet& tags) override;
 	void doDecoding(GameData& data, GameInfo& info, unsigned gameIndex, mstl::string*) override;
-	unsigned doDecoding(	GameInfo const& info,
+	unsigned doDecoding(	::util::BlockFileReader* reader,
+								GameInfo const& info,
 								uint16_t* line,
 								unsigned length,
 								Board& startBoard,

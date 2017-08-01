@@ -1051,6 +1051,7 @@ namespace format
 
 	bool isScidFormat(Type type);
 	bool isChessBaseFormat(Type type);
+	bool isWritable(Type type);
 }
 
 namespace encoding

@@ -1,6 +1,19 @@
 [Juli 2017] ==================================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #1339)
+------------------------------------------------------------------------------
+* New game table column "move list", showing the mnoves of the games.
+
+* New notation styles:
+Computer Algebraic Notation
+German Short Algebraic Notation
+Minimal Algebraic Notation (Informator style)
+Reversible Algebraic Notation
+Smith Notatio
+Spanish Descriptive Notation
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #1295)
 ------------------------------------------------------------------------------
 * Scidb now supports tiled window management.

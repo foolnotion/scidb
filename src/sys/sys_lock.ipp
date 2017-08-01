@@ -20,8 +20,8 @@
 
 namespace sys {
 
-Lock::Lock(Mutex* mutex) :m_mutex(mutex) { if (m_mutex) m_mutex->lock(); }
-Lock::~Lock() { if (m_mutex) m_mutex->release(); }
+inline Lock::Lock(Mutex* mutex) :m_mutex(mutex) { if (m_mutex) m_mutex->lock(); }
+inline Lock::~Lock() { if (m_mutex) m_mutex->release(); }
 
 } // namespace sys
 

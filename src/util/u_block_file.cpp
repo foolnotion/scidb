@@ -446,7 +446,7 @@ BlockFile::sync()
 				fileOffset(m_view.m_buffer.m_number),
 				m_view.m_buffer.m_data,
 				m_view.m_buffer.m_size).fail(),
-			0))
+				0))
 	{
 		return false;
 	}
