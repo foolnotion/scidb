@@ -114,17 +114,12 @@ struct MoveListThread::Runnable
 		M_ASSERT(!range.empty());
 
 		sys::Lock lock(&m_mutex);
-printf("addRange(1): %d %d\n", range.left(), range.right());
 
 		for (Ranges::const_iterator i = m_ranges.begin(); i != m_ranges.end(); ++i)
-{
-printf("subtract(%d %d): from: %d %d -- to: %d %d\n", i->left(), i->right(), range.left(), range.right(), (range - *i).left(), (range - *i).right());
 			range -= *i;
-}
 
 		if (!range.empty())
 			m_ranges.push_front(range);
-printf("addRange(2): %d %d\n", range.left(), range.right());
 	}
 
 	void operator() ()
@@ -147,7 +142,6 @@ printf("addRange(2): %d %d\n", range.left(), range.right());
 				result.range = m_ranges.back();
 				index	= result.range.left();
 				last	= result.range.right();
-printf("next(1): %u %u\n", index, last);
 
 				m_progress.start(m_ranges.size());
 
@@ -218,7 +212,6 @@ printf("next(1): %u %u\n", index, last);
 				result.range = m_ranges.back();
 				index	= result.range.left();
 				last	= result.range.right();
-printf("next(2): %u %u\n", index, last);
 			}
 		}
 		catch (...)
@@ -321,7 +314,6 @@ MoveListThread::retrieve(	Cursor& cursor,
 	}
 	else
 	{
-printf("new thread: %d %d\n", rangeOfGames.left(), rangeOfGames.right());
 		m_runnable = new Runnable(	cursor,
 											database,
 											m_resultList,
