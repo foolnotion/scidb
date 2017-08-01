@@ -434,6 +434,36 @@ list<T>::pop_back()
 
 template <typename T>
 inline
+void
+list<T>::push_front(const_reference v)
+{
+	create_node(v)->hook(m_node.m_next);
+}
+
+
+template <typename T>
+inline
+typename list<T>::reference
+list<T>::push_front()
+{
+	node* p = create_node(T());
+	p->hook(m_node.m_next);
+	return p->m_data;
+}
+
+
+template <typename T>
+inline
+void
+list<T>::pop_front()
+{
+	M_REQUIRE(!empty());
+	erase(m_node.m_next);
+}
+
+
+template <typename T>
+inline
 list<T>::list(size_type n, const_reference v)
 {
 	init();

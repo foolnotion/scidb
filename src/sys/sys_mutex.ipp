@@ -18,17 +18,21 @@
 
 namespace sys {
 
+inline bool Mutex::isLocked() const { return m_isLocked; }
+
 #ifdef __WIN32__
 
-inline Mutex::Mutex()			{ InitializeCriticalSection(&m_lock); }
-inline void Mutex::lock()		{ EnterCriticalSection(&m_lock); }
-inline void Mutex::release()	{ LeaveCriticalSection(&m_lock); }
+inline Mutex::Mutex() :m_isLocked(false) { InitializeCriticalSection(&m_lock); }
+
+inline void Mutex::lock()		{ EnterCriticalSection(&m_lock); m_isLocked = true; }
+inline void Mutex::release()	{ m_isLocked = false; LeaveCriticalSection(&m_lock); }
 
 #else // !__WIN32__
 
-inline Mutex::Mutex()			{ pthread_mutex_init(&m_lock, 0); }
-inline void Mutex::lock()		{ pthread_mutex_lock(&m_lock); }
-inline void Mutex::release()	{ pthread_mutex_unlock(&m_lock); }
+inline Mutex::Mutex() :m_isLocked(false) { pthread_mutex_init(&m_lock, 0); }
+
+inline void Mutex::lock()		{ pthread_mutex_lock(&m_lock); m_isLocked = true; }
+inline void Mutex::release()	{ m_isLocked = false; pthread_mutex_unlock(&m_lock); }
 
 #endif // __WIN32__
 

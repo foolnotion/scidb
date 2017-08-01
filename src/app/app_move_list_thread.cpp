@@ -36,8 +36,10 @@
 #include "sys_mutex.h"
 #include "sys_lock.h"
 
-#include "m_vector.h"
+#include "m_list.h"
 #include "m_assert.h"
+
+#include <stdio.h>
 
 using namespace app;
 
@@ -55,7 +57,7 @@ struct MoveListThread::Runnable
 	typedef MoveListThread::Result Result;
 	typedef MoveListThread::ResultList ResultList;
 	typedef mstl::range<unsigned> Range;
-	typedef mstl::vector<Range> Ranges;
+	typedef mstl::list<Range> Ranges;
 
 	Runnable(Cursor& cursor,
 				db::Database& database,
@@ -77,6 +79,7 @@ struct MoveListThread::Runnable
 		,m_useStartBoard(fen != nullptr)
 		,m_stillWorking(true)
 		,m_ranges(1, range)
+		,m_asyncReader(nullptr)
 	{
 		M_ASSERT(!range.empty());
 
@@ -84,10 +87,15 @@ struct MoveListThread::Runnable
 			m_startBoard.setup(*fen, database.variant());
 	}
 
-	~Runnable() { close(); }
+	~Runnable()
+	{
+		close();
+	}
 
 	void close()
 	{
+		m_stillWorking = false;
+
 		if (m_asyncReader)
 		{
 			m_database.closeAsyncReader(m_asyncReader);
@@ -106,18 +114,21 @@ struct MoveListThread::Runnable
 		M_ASSERT(!range.empty());
 
 		sys::Lock lock(&m_mutex);
+printf("addRange(1): %d %d\n", range.left(), range.right());
 
 		for (Ranges::const_iterator i = m_ranges.begin(); i != m_ranges.end(); ++i)
+{
+printf("subtract(%d %d): from: %d %d -- to: %d %d\n", i->left(), i->right(), range.left(), range.right(), (range - *i).left(), (range - *i).right());
 			range -= *i;
+}
 
 		if (!range.empty())
-			m_ranges.push_back(range);
+			m_ranges.push_front(range);
+printf("addRange(2): %d %d\n", range.left(), range.right());
 	}
 
 	void operator() ()
 	{
-		m_asyncReader = m_database.openAsyncReader();
-
 		try
 		{
 			unsigned	index, last;
@@ -128,43 +139,54 @@ struct MoveListThread::Runnable
 
 				if (m_ranges.empty())
 				{
-					m_stillWorking = false;
+					m_progress.finish();
+					close();
 					return;
 				}
 
 				result.range = m_ranges.back();
 				index	= result.range.left();
 				last	= result.range.right();
+printf("next(1): %u %u\n", index, last);
 
 				m_progress.start(m_ranges.size());
+
+				if (!m_asyncReader)
+					m_asyncReader = m_database.openAsyncReader();
 			}
 
-			while (m_stillWorking)
+			while (true)
 			{
 				for ( ; index < last; ++index)
 				{
-					if (m_progress.interrupted())
-					{
-						sys::Lock lock(&m_mutex);
-						m_ranges.clear();
-						m_stillWorking = false;
-						break;
-					}
-
-					result.list.push_back();
-
 					db::Board startBoard;
 					if (m_useStartBoard)
 						startBoard = m_startBoard;
 
-					unsigned			idx(m_view >= 0 ? m_cursor.index(db::table::Games, index, m_view) : index);
-					uint16_t			moves[m_length];
-					unsigned			length(m_database.loadGame(m_asyncReader,
-																			idx,
-																			moves,
-																			m_length,
-																			startBoard,
-																			m_useStartBoard));
+					{
+						sys::Lock lock(&m_mutex);
+
+						if (!m_stillWorking)
+							return;
+
+						if (m_progress.interrupted())
+						{
+							m_ranges.clear();
+							close();
+							return;
+						}
+
+						M_ASSERT(m_asyncReader);
+					}
+
+					unsigned idx(m_view >= 0 ? m_cursor.index(db::table::Games, index, m_view) : index);
+					uint16_t moves[m_length];
+					unsigned length;
+					
+					length = m_database.loadGame(
+						m_asyncReader, idx, moves, m_length, startBoard, m_useStartBoard);
+					result.list.push_back();
+
 					db::Line			line(moves, length);
 					mstl::string&	str(result.list.back());
 
@@ -181,35 +203,30 @@ struct MoveListThread::Runnable
 						str.append('*');
 				}
 
-				if (m_stillWorking)
+				sys::Lock lock(&m_mutex);
+
+				m_resultList.push_back().swap(result);
+				m_ranges.pop_back();
+
+				if (m_ranges.empty())
 				{
-					sys::Lock lock(&m_mutex);
-
-					m_resultList.push_back().swap(result);
-					m_ranges.pop_back();
-
-					if (m_ranges.empty())
-					{
-						m_stillWorking = false;
-					}
-					else
-					{
-						result.range = m_ranges.back();
-						index	= result.range.left();
-						last	= result.range.right();
-					}
+					m_progress.finish();
+					close();
+					return;
 				}
-			}
 
-			m_progress.finish();
+				result.range = m_ranges.back();
+				index	= result.range.left();
+				last	= result.range.right();
+printf("next(2): %u %u\n", index, last);
+			}
 		}
 		catch (...)
 		{
+			sys::Lock lock(&m_mutex);
 			close();
 			throw;
 		}
-
-		close();
 	}
 
 	Cursor&						m_cursor;
@@ -240,7 +257,11 @@ MoveListThread::MoveListThread()
 
 MoveListThread::~MoveListThread()
 {
-	delete m_runnable;
+	if (m_runnable)
+	{
+		stop();
+		delete m_runnable;
+	}
 }
 
 
@@ -277,9 +298,14 @@ MoveListThread::retrieve(	Cursor& cursor,
 		{
 			for (ResultList::iterator i = m_resultList.begin(); i != m_resultList.end(); ++i)
 			{
-				if (i->range.intersects(rangeOfView))
-					rangeOfGames -= i->range;
-				else
+				if (i->range.intersects(rangeOfGames))
+				{
+					if (rangeOfGames.left() >= i->range.left())
+						rangeOfGames.set_left(i->range.right());
+					if (rangeOfGames.right() <= i->range.right())
+						rangeOfGames.set_right(i->range.left());
+				}
+				if (!i->range.intersects(rangeOfView))
 					i = m_resultList.erase(i);
 			}
 		}
@@ -290,10 +316,12 @@ MoveListThread::retrieve(	Cursor& cursor,
 
 	if (m_runnable && m_runnable->stillWorking())
 	{
+		// If the new list is out of this range, then we have to delete
 		m_runnable->addRange(rangeOfGames);
 	}
 	else
 	{
+printf("new thread: %d %d\n", rangeOfGames.left(), rangeOfGames.right());
 		m_runnable = new Runnable(	cursor,
 											database,
 											m_resultList,
@@ -310,6 +338,8 @@ MoveListThread::retrieve(	Cursor& cursor,
 			m_runnable = 0;
 			IO_RAISE(Unspecified, Cannot_Create_Thread, "start of move list retrieval failed");
 		}
+
+		setWorkingOn(&cursor);
 	}
 }
 
@@ -318,11 +348,12 @@ void
 MoveListThread::signal(Signal signal)
 {
 	stop();
+	setWorkingOn();
 
 	if (m_runnable && signal == Stop)
 	{
 		delete m_runnable;
-		m_runnable = 0;
+		m_runnable = nullptr;
 	}
 }
 
@@ -345,8 +376,13 @@ MoveListThread::moveList(unsigned index) const
 void
 MoveListThread::clear()
 {
-	delete m_runnable;
-	m_runnable = 0;
+	if (m_runnable)
+	{
+		stop();
+		setWorkingOn();
+		delete m_runnable;
+		m_runnable = nullptr;
+	}
 	m_resultList.clear();
 }
 

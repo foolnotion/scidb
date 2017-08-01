@@ -1504,6 +1504,8 @@ proc FetchMoveList {path} {
 
 	set firstRow [::scrolledtable::firstRow $path]
 	set lastRow [::scrolledtable::lastRow $path]
+	set nextStart -1
+	set nextEnd -1
 	set ranges {}
 
 	foreach range $Vars(ranges) {
@@ -1516,10 +1518,21 @@ proc FetchMoveList {path} {
 			if {[string length [set moves [::scidb::app::moveList fetch $path $lower]]]} {
 				if {$moves == "*"} { set moves $mc::NoMoves }
 				::table::setElement $Vars(table) [expr {$lower - $firstRow}] moveList $moves
+			} elseif {$nextStart == -1} {
+				set nextStart $lower
+				set nextEnd [expr {$lower + 1}]
+			} elseif {$nextEnd == $lower} {
+				set nextEnd [expr {$lower + 1}]
 			} else {
-				lappend ranges [list $lower [expr {$lower + 1}]]
+				lappend ranges [list $nextStart $nextEnd]
+				set nextStart $lower
+				set nextEnd [expr {$lower + 1}]
 			}
 		}
+	}
+
+	if {$nextStart >= 0} {
+		lappend ranges [list $nextStart $nextEnd]
 	}
 
 	set Vars(ranges) $ranges

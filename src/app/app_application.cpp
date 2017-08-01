@@ -3612,8 +3612,6 @@ Application::retrieveMoveList(sys::Thread& thread,
 	M_REQUIRE(rangeOfGames.right() <= cursor.view(view).count(table::Games));
 
 	MoveListThread& moveListThread = static_cast<MoveListThread&>(thread);
-
-	moveListThread.signal(Thread::Stop);
 	moveListThread.retrieve(cursor, view, length, fen, notation, rangeOfView, rangeOfGames, progress);
 }
 

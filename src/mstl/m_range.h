@@ -67,6 +67,7 @@ public:
 
 	bool empty() const;
 	bool unit() const;
+	bool contains(range const& r) const;
 	bool contains(value_type i) const;
 
 	bool disjoint(range const& r) const;

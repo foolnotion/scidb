@@ -33,6 +33,8 @@ public:
 
 	Mutex();
 
+	bool isLocked() const;
+
 	void lock();
 	void release();
 
@@ -44,7 +46,8 @@ private:
 	typedef pthread_mutex_t mutex_t;
 #endif
 
-	mutex_t m_lock;
+	mutex_t	m_lock;
+	bool		m_isLocked;
 };
 
 } // namespace sys

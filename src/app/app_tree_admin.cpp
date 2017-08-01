@@ -113,7 +113,16 @@ struct TreeAdmin::Runnable
 
 
 TreeAdmin::TreeAdmin() :m_runnable(0) {}
-TreeAdmin::~TreeAdmin() { delete m_runnable; }
+
+
+TreeAdmin::~TreeAdmin()
+{
+	if (m_runnable)
+	{
+		stop();
+		delete m_runnable;
+	}
+}
 
 
 bool

@@ -158,6 +158,10 @@ public:
 	const_reverse_iterator rbegin() const;
 	const_reverse_iterator rend() const;
 
+	void push_front(const_reference v);
+	reference push_front();
+	void pop_front();
+
 	void push_back(const_reference v);
 	reference push_back();
 	void pop_back();
