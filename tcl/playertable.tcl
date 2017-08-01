@@ -732,6 +732,7 @@ proc TableVisit {path data} {
 	variable Options
 
 	lassign $data base variant mode id row
+	if {[string length $base] == 0} { return }
 	set table $path.table
 
 	if {$mode eq "leave"} {

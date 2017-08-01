@@ -1562,6 +1562,7 @@ proc TableVisit {table data} {
 	variable ratings
 
 	lassign $data base variant mode id row
+	if {[string length $base] == 0} { return }
 	if {$row == -1} { return }
 	set codec [::scidb::db::get codec $base $variant]
 

@@ -584,6 +584,7 @@ proc TableVisit {table data} {
 	variable ${table}::Vars
 
 	lassign $data base variant mode id row
+	if {[string length $base] == 0} { return }
 
 	if {$mode eq "leave"} {
 		::tooltip::hide true
