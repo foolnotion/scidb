@@ -1671,6 +1671,10 @@ proc PopupMenu {table x y X Y} {
 				if {$entry ni $groups} { lappend groups $entry }
 				lappend groupmember($g) $cid
 				lappend ignore {*}$Vars(associated:$cid)
+			} else {
+				lappend groupmember() $cid
+				set entry [list 1 ""]
+				if {$entry ni $groups} { lappend groups $entry }
 			}
 		}
 	}
