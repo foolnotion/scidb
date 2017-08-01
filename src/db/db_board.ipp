@@ -166,7 +166,7 @@ uint64_t
 Board::checkers(color::ID color) const
 {
 	M_ASSERT(m_ksq[color] != sq::Null);
-	return isAttackedBy(~color, m_ksq[color]);
+	return isAttackedBy(color ^ 1, m_ksq[color]);
 }
 
 
