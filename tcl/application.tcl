@@ -499,7 +499,8 @@ proc activeTab {} {
 
 proc exists? {uid} {
 	variable Vars
-	return [info exists Vars(frame:$uid)] && [winfo exists $Vars(frame:$uid)]
+	if {![info exists Vars(frame:$uid)]} { return false }
+	return [winfo exists $Vars(frame:$uid)]
 }
 
 

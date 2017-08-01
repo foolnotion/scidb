@@ -687,6 +687,15 @@ proc setOptions {table options} {
 }
 
 
+# XXX work-around because of a bug in older versions
+proc setOptions {args} {
+	if {[llength $args] != 2} { return }
+	lassign $args table options
+	namespace eval [namespace current]::${table} {}
+	array set [namespace current]::${table}::Options $options
+}
+
+
 proc bindOptions {id options} {
 	variable OptionMap
 	set OptionMap($id) $options
