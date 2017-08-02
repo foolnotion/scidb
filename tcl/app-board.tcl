@@ -1059,7 +1059,7 @@ proc PopupMenu {w} {
 	$m add checkbutton \
 		-label $::board::options::mc::ShowCoordinates \
 		-variable ::board::layout(coordinates) \
-		-command [namespace code Apply] \
+		-command [namespace code Redraw] \
 		;
 	::theme::configureCheckEntry $m
 	$m add checkbutton \
