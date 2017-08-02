@@ -288,6 +288,7 @@ proc checkForUpdate {informProc} {
 		if {[string is integer -strict $port]} { ::http::config -proxyhost $host -proxyport $port }
 	}
 	::http::config -urlencoding utf-8
+   # XXX server does not exist anymore
 	catch {
 		::http::geturl http://scidb-player-photos.googlecode.com/svn/trunk/TIMESTAMP \
 			-binary 1 \

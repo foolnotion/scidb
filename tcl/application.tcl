@@ -1135,7 +1135,7 @@ proc Startup {main args} {
 
 	after idle [namespace code [list switchTab $tab]]
 	after idle [list ::beta::welcomeToScidb $app]
-	::util::photos::checkForUpdate [namespace current]::InformAboutUpdates
+	#::util::photos::checkForUpdate [namespace current]::InformAboutUpdates
 }
 
 
