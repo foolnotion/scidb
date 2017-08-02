@@ -279,6 +279,9 @@ proc findPhotoFile {name} {
 proc checkForUpdate {informProc} {
 	global env
 
+# XXX server does not exist anymore
+return
+
 	if {[catch {package require http 2.7}]} { return 0 }
 	if {[info exists env(http_proxy)]} { set http_proxy $env(http_proxy) } else { set http_proxy "" }
 	set i [string last : $http_proxy]
@@ -288,7 +291,6 @@ proc checkForUpdate {informProc} {
 		if {[string is integer -strict $port]} { ::http::config -proxyhost $host -proxyport $port }
 	}
 	::http::config -urlencoding utf-8
-   # XXX server does not exist anymore
 	catch {
 		::http::geturl http://scidb-player-photos.googlecode.com/svn/trunk/TIMESTAMP \
 			-binary 1 \

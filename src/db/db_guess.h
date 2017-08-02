@@ -103,43 +103,43 @@ private:
 	typedef sq::ID (*Flip)(sq::ID);
 	typedef int const PieceValues[8];
 
-	static int const Infinity			= 32000;
+	static int constexpr Infinity					= 32000;
 
-	static int const KingValue			= 32767;
-	static int const QueenValue		=   970;
-	static int const RookValue			=   500;
-	static int const BishopValue		=   325;
-	static int const KnightValue		=   300;
-	static int const PawnValue			=   100;
+	static int constexpr KingValue				= 32767;
+	static int constexpr QueenValue				=   970;
+	static int constexpr RookValue				=   500;
+	static int constexpr BishopValue				=   325;
+	static int constexpr KnightValue				=   300;
+	static int constexpr PawnValue				=   100;
 
-	static int const KingValueZH		= 32767;
-	static int const QueenValueZH		=   480; // Sjeng gives 450
-	static int const RookValueZH		=   300; // Sjeng gives 250
-	static int const BishopValueZH	=   300; // Sjeng gives 230
-	static int const KnightValueZH	=   250; // sjeng gives 210
-	static int const PawnValueZH		=   130; // Sjeng gives 100
+	static int constexpr KingValueZH				= 32767;
+	static int constexpr QueenValueZH			=   480; // Sjeng gives 450
+	static int constexpr RookValueZH				=   300; // Sjeng gives 250
+	static int constexpr BishopValueZH			=   300; // Sjeng gives 230
+	static int constexpr KnightValueZH			=   250; // sjeng gives 210
+	static int constexpr PawnValueZH				=   130; // Sjeng gives 100
 
-	static int const QueenValueInHand	=   450; // Sjeng gives 450
-	static int const RookValueInHand		=   300; // Sjeng gives 250
-	static int const BishopValueInHand	=   240; // Sjeng gives 230
-	static int const KnightValueInHand	=   250; // sjeng gives 210
-	static int const PawnValueInHand		=   100; // Sjeng gives 100
-
-	// Piece values from Sjeng
-	static int const KingValueSuicide		=  500; //                    -- 280
-	static int const QueenValueSuicide		=   50; // Nilatac gives  100 -- 390
-	static int const RookValueSuicide		=  150; // Nilatac gives  500 -- 500
-	static int const BishopValueSuicide		=    0; // Nilatac gives -200 -- 370
-	static int const KnightValueSuicide		=  150; // Nilatac gives   50 -- 340
-	static int const PawnValueSuicide		=   15; // Nilatac gives -100 -- 290
+	static int constexpr QueenValueInHand		=   450; // Sjeng gives 450
+	static int constexpr RookValueInHand		=   300; // Sjeng gives 250
+	static int constexpr BishopValueInHand		=   240; // Sjeng gives 230
+	static int constexpr KnightValueInHand		=   250; // sjeng gives 210
+	static int constexpr PawnValueInHand		=   100; // Sjeng gives 100
 
 	// Piece values from Sjeng
-	static int const KingValueLosers		= 5000;
-	static int const QueenValueLosers	=  400;
-	static int const RookValueLosers		=  350;
-	static int const BishopValueLosers	=  270;
-	static int const KnightValueLosers	=  320;
-	static int const PawnValueLosers		=   80;
+	static int constexpr KingValueSuicide		=  500; //                    -- 280
+	static int constexpr QueenValueSuicide		=   50; // Nilatac gives  100 -- 390
+	static int constexpr RookValueSuicide		=  150; // Nilatac gives  500 -- 500
+	static int constexpr BishopValueSuicide	=    0; // Nilatac gives -200 -- 370
+	static int constexpr KnightValueSuicide	=  150; // Nilatac gives   50 -- 340
+	static int constexpr PawnValueSuicide		=   15; // Nilatac gives -100 -- 290
+
+	// Piece values from Sjeng
+	static int constexpr KingValueLosers		= 5000;
+	static int constexpr QueenValueLosers		=  400;
+	static int constexpr RookValueLosers		=  350;
+	static int constexpr BishopValueLosers		=  270;
+	static int constexpr KnightValueLosers		=  320;
+	static int constexpr PawnValueLosers		=   80;
 
 	void generateMoves(Square square, MoveList& result) const;
 

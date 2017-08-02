@@ -1135,8 +1135,7 @@ proc Startup {main args} {
 
 	after idle [namespace code [list switchTab $tab]]
 	after idle [list ::beta::welcomeToScidb $app]
-	# XXX server does not exist anymore.
-	#::util::photos::checkForUpdate [namespace current]::InformAboutUpdates
+	::util::photos::checkForUpdate [namespace current]::InformAboutUpdates
 }
 
 
