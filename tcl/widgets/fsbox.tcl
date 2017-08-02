@@ -163,7 +163,9 @@ set DuplicateFileSizeLimit 5000000
 set CurrentPath ""
 
 # possibly we should avoid "{}[]+=,;%", too - especially ';' should be avoided!?
-set reservedChars {\" \\ / : * < > ? |}
+set reservedChars	{\" \\ / : * < > ? |}
+set controlMask	4 ;# default
+set shiftMask		1 ;# default
 
 array set Options {
 	show:hidden					0
@@ -1256,11 +1258,13 @@ proc VisitItem {w t mode item} {
 
 proc SetActiveItem {w item state} {
 	variable ::TreeCtrl::Priv
+	variable controlMask
+	variable shiftMask
 
 	if {[string length $item] == 0} { return  }
 
 	if {[$w cget -selectmode] eq "extended"} {
-		if {[expr {$state & 4}]} { ;# Ctrl is held down
+		if {[expr {$state & $controlMask}]} { ;# Ctrl is held down
 			$w activate $item
 			$w selection anchor $item
 			$w see $item
@@ -1271,7 +1275,7 @@ proc SetActiveItem {w item state} {
 			}
 			set Priv(selection) ""
 			set Priv(prev) ""
-		} elseif {[expr {$state & 1}] && [llength [$w selection get]]} { ;# Shift is held down
+		} elseif {[expr {$state & $shiftMask}] && [llength [$w selection get]]} { ;# Shift is held down
 			TreeCtrl::DataExtend $w $item
 		} else {
 			set Priv(prev) ""
@@ -1414,7 +1418,7 @@ proc DirChanged {w {useHistory 1}} {
 			set HaveFAM 0
 		} elseif {[string length $Vars(fam)] == 0} {
 			set HaveFAM 0
-		} elseif {[tk windowingsystem] eq "x11" && [file isdirectory /media]} {
+		} elseif {$::tcl_platform(platform) eq "unix" && [file isdirectory /media]} {
 			catch { ::fam::add $Vars(fam) /media }
 		}
 		if {!$HaveFAM} { set Vars(fam) {} }
@@ -1713,7 +1717,7 @@ proc EqualPaths {dir1 dir2} {
 
 
 proc FocusIn {w} {
-	if {[$w get] ne ""} {
+	if {[string length [$w get]] > 0} {
 		$w selection range 0 end
 		$w icursor end
 	} else {
