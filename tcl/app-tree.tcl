@@ -98,8 +98,8 @@ set Columns {
 	{ bestRating		right		5		 5		 5			0			1			0			{}				}
 	{ averageYear		right		5		 5		 5			0			1			0			{}				}
 	{ lastYear			right		5		 5		 5			0			1			0			{}				}
-	{ bestPlayer		left		6		 0		12			0			1			1			{}				}
-	{ frequentPlayer	left		6		 0		12			0			1			1			{}				}
+	{ bestPlayer		left		6		 0		12			1			1			1			{}				}
+	{ frequentPlayer	left		6		 0		12			1			1			1			{}				}
 }
 
 array set Options {

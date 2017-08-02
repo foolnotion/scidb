@@ -288,6 +288,11 @@ proc tablePath {path} {
 }
 
 
+proc scrolledtablePath {table} {
+	return [winfo parent [winfo parent $table]]
+}
+
+
 proc height {path} {
 	return [::table::height $path.top.table]
 }
@@ -626,9 +631,11 @@ proc activate {path row} {
 	set table $path.top.table
 	variable ${table}::Vars
 
-	if {$row eq "none" || $row == -1 || ($row >= $Vars(start) && $Vars(start) + $Vars(height) > $row)} {
+	if {$row eq "none" || $row == -1} {
 		set Vars(active) $row
-		if {$row ne "none" && $row >= 0} { set row [expr {$row - $Vars(start)}] }
+		::table::activate $table $row true
+	} elseif {$row < $Vars(height)} {
+		set Vars(active) [expr {$row + $Vars(start)}]
 		::table::activate $table $row true
 	}
 }
@@ -980,6 +987,8 @@ proc Scroll {table action args} {
 			TableFill $table
 		}
 	}
+
+	event generate [winfo parent [winfo parent $table]] <<TableScroll>> -data $start
 }
 
 

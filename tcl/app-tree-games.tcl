@@ -50,6 +50,9 @@ proc build {parent width height} {
 	::bind $tb <<TableVisit>>		+[namespace code [list TableVisit $table %d]]
 	::bind $tb <<TablePopdown>>	+[namespace code [list ReleaseButton $table]]
 
+	::bind [::scrolledtable::scrolledtablePath $tb] <<TableScroll>> \
+		+[namespace code [list ::gametable::doSelection $table]]
+
 	::gametable::bind $table <ButtonPress-1>		+[namespace code [list Press1 $table %x %y]]
 	::gametable::bind $table <Button1-Motion>		 [namespace code [list Motion1 $table %x %y]]
 	::gametable::bind $table <ButtonRelease-1>	+[namespace code [list Release1 $table]]
