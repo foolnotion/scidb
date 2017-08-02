@@ -412,7 +412,6 @@ namespace agg
                                   Scanline& sl,
                                   ScanlineStorage& storage)
     {
-        unsigned i;
         const int8u* buf = (const int8u*)bitmap.buffer;
         int pitch = bitmap.pitch;
         sl.reset(x, x + bitmap.width);
@@ -423,12 +422,11 @@ namespace agg
             y += bitmap.rows;
             pitch = -pitch;
         }
-        for(i = 0; i < bitmap.rows; i++)
+        for(int i = 0; i < bitmap.rows; i++)
         {
             sl.reset_spans();
             bitset_iterator bits(buf, 0);
-            unsigned j;
-            for(j = 0; j < bitmap.width; j++)
+            for(int j = 0; j < bitmap.width; j++)
             {
                 if(bits.bit()) sl.add_cell(x + j, cover_full);
                 ++bits;
@@ -453,7 +451,6 @@ namespace agg
                                    Scanline& sl,
                                    ScanlineStorage& storage)
     {
-        unsigned i, j;
         const int8u* buf = (const int8u*)bitmap.buffer;
         int pitch = bitmap.pitch;
         sl.reset(x, x + bitmap.width);
@@ -464,11 +461,11 @@ namespace agg
             y += bitmap.rows;
             pitch = -pitch;
         }
-        for(i = 0; i < bitmap.rows; i++)
+        for(int i = 0; i < bitmap.rows; i++)
         {
             sl.reset_spans();
             const int8u* p = buf;
-            for(j = 0; j < bitmap.width; j++)
+            for(int j = 0; j < bitmap.width; j++)
             {
                 if(*p) sl.add_cell(x + j, ras.apply_gamma(*p));
                 ++p;
