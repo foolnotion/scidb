@@ -88,7 +88,7 @@ private:
 	void decodePawn(sq::ID from, Byte nybble);
 
 	void decodeVariation(Consumer& consumer, MoveNode const* node);
-	void handleInvalidMove(Move const& move);
+	void handleInvalidMove(Byte value);
 
 	void Report(char const* charset);
 

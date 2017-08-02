@@ -278,8 +278,26 @@ Decoder::decodeMove(Byte value)
 
 
 void
-Decoder::handleInvalidMove(Move const& move)
+Decoder::handleInvalidMove(Byte value)
 {
+	// Scid (at least older versions of Scid) has a bug when parsing PGN files:
+	// a move like "b1" will be decoded in something like "bxc1=N", instead into
+	// the valid move "b1=Q". We try to fix this case.
+
+	if (	m_move.moved() == piece::Pawn
+		&& sq::rank(m_move.from()) == (m_position.blackToMove() ? sq::Rank2 : sq::Rank7))
+	{
+		sq::ID to = sq::make(sq::fyle(m_move.from()), m_position.blackToMove() ? sq::Rank1 : sq::Rank8);
+		m_move = Move::genPromote(m_move.from(), to, piece::Queen);
+
+		unsigned pieceNum = value >> 4;
+		if (m_position.blackToMove())
+			pieceNum |= 0x10;
+
+		if (m_position.doMove(m_move, pieceNum))
+			return;
+	}
+
 	// TODO: more clever error handling
 	M_THROW(DecodingFailedException("Invalid move"));
 }
@@ -297,7 +315,7 @@ Decoder::decodeVariation(unsigned level)
 		while (__builtin_expect((b = m_strm.get()) > token::Last, 1))
 		{
 			if (!m_position.doMove(m_move, decodeMove(b)))
-				handleInvalidMove(m_move);
+				handleInvalidMove(b);
 
 			m_currentNode->setNext(new MoveNode(m_move));
 			m_currentNode = m_currentNode->next();
@@ -312,7 +330,7 @@ Decoder::decodeVariation(unsigned level)
 		if (b < token::First)
 		{
 			if (!m_position.doMove(m_move, decodeMove(b)))
-				handleInvalidMove(m_move);
+				handleInvalidMove(b);
 
 			m_currentNode->setNext(new MoveNode(m_move));
 			m_currentNode = m_currentNode->next();
@@ -911,7 +929,7 @@ Decoder::doDecoding(uint16_t* line, unsigned length, Board& startBoard, bool use
 		if (__m_likely((b = m_strm.get()) > token::Last) || b < token::First)
 		{
 			if (!m_position.doMove(m_move, decodeMove(b)))
-				handleInvalidMove(m_move);
+				handleInvalidMove(b);
 
 			if (!useStartBoard)
 			{
@@ -1144,7 +1162,7 @@ Decoder::nextMove()
 		if (__builtin_expect(b > token::Last, 1) || token::First > b)
 		{
 			if (!m_position.doMove(m_move, decodeMove(b)))
-				handleInvalidMove(m_move);
+				handleInvalidMove(b);
 			return m_move;
 		}
 
@@ -1197,7 +1215,7 @@ Decoder::findExactPosition(Board const& position, bool skipVariations)
 		while (__builtin_expect((b = m_strm.get()) > token::Last, 1))
 		{
 			if (!m_position.doMove(m_move, decodeMove(b)))
-				handleInvalidMove(m_move);
+				handleInvalidMove(b);
 
 			if (m_position.board().isEqualPosition(position))
 				return nextMove();
@@ -1209,7 +1227,7 @@ Decoder::findExactPosition(Board const& position, bool skipVariations)
 		if (b < token::First)
 		{
 			if (!m_position.doMove(m_move, decodeMove(b)))
-				handleInvalidMove(m_move);
+				handleInvalidMove(b);
 
 			if (m_position.board().isEqualPosition(position))
 				return nextMove();
