@@ -27,7 +27,7 @@ switch [tk windowingsystem] {
 
 		proc isTrash? {path} {
 			set dir [directory]
-			if {[string length $dir] == 0} { return }
+			if {[string length $dir] == 0} { return 0 }
 			return [string match ${dir}* $path]
 		}
 
