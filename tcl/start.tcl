@@ -580,7 +580,7 @@ proc toMainVariant {variant} {
 }
 
 
-proc catchException {cmd {resultVar {}}} {
+proc catchException {cmd {resultVar {}} {optionsVar {}}} {
 	if {[catch { uplevel 1 $cmd } result options]} {
 		array set opts $options
 		if {[string first %IO-Error% $opts(-errorinfo)] >= 0} {
@@ -607,7 +607,7 @@ proc catchException {cmd {resultVar {}}} {
 				-detail [string toupper $what 0 0] \
 				-topmost 1 \
 				;
-			return 1
+			return 2
 		}
 		if {[string first %Interrupted% $opts(-errorinfo)] >= 0} {
 			lassign $opts(-errorinfo) type count
@@ -623,6 +623,7 @@ proc catchException {cmd {resultVar {}}} {
 		;
 	}
 	if {[llength $resultVar]} { uplevel 1 [list set $resultVar $result] }
+	if {[llength $optionsVar]} { uplevel 1 [list set $optionsVar $options] }
 	return 0
 }
 

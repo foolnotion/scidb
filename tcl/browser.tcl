@@ -540,6 +540,7 @@ if {0} {
 				append line1 " - " [::mc::translateEco $long]
 			}
 		}
+		# XXX we should convert the files in tcl/lang/eco to UTF-8
 		set line1 [encoding convertfrom iso8859-1 $line1]
 	} elseif {$idn > 0} {
 		if {[llength $position] == 3} {
@@ -908,6 +909,10 @@ proc UpdateHeader {position} {
 	if {[llength $evline] && [llength $date]} { append evline ", " }
 	append evline [::locale::formatNormalDate $date]
 
+	set white  [::figurines::mapToLocal $white  $::mc::langID]
+	set black  [::figurines::mapToLocal $black  $::mc::langID]
+	set evline [::figurines::mapToLocal $evline $::mc::langID]
+
 	$text delete 1.0 end
 	if {[string length $evline]} {
 		$text insert end $evline event
@@ -1242,7 +1247,7 @@ proc FindRange {w key position} {
 #puts "$key --> [$w tag nextrange m:move $key]"
 	set range [$w tag nextrange m:move $key]
 	if {[llength $range] == 0} {
-		# TODO: How can this happen? But in fact it happens sometimes.
+		# should not happen, but who knows?
 		set range {end end}
 	}
 	return $range
