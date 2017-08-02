@@ -357,7 +357,6 @@ proc refresh {{regardFontSize no}} {
 	if {$regardFontSize} {
 		if {$Vars(index) >= 0} { ::scidb::game::refresh $Vars(index) -immediate }
 		SetAlignment
-		UpdateScrollbar
 	}
 
 	::widget::busyCursor off
@@ -519,7 +518,6 @@ proc historyChanged {} {
 proc fontSizeChanged {} {
 	refresh
 	SetAlignment
-	UpdateScrollbar
 }
 
 
@@ -891,7 +889,6 @@ proc Align {height} {
 	if {$height != $Vars(height)} {
 		set Vars(height) $height
 		SetAlignment
-		UpdateScrollbar
 	}
 }
 
@@ -907,6 +904,7 @@ proc SetAlignment {} {
 	set delta [expr {($height - $border) % $linespace1}]
 	set amounts [list $linespace1 $linespace2 $delta]
 	::gamebar::setAlignment $Vars(gamebar) $amounts
+	after idle [namespace code UpdateScrollbar]
 }
 
 
@@ -1378,10 +1376,7 @@ proc UpdateHeader {context position w data} {
 	variable ::pgn::${context}::Options
 	variable Vars
 
-	if {$Vars(virgin:$position)} {
-		# try to ensure correct adjustment after load
-		after idle [list $w yview moveto 0]
-	} else {
+	if {!$Vars(virgin:$position)} {
 		$w delete begin m-start
 	}
 

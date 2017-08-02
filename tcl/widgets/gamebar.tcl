@@ -2799,6 +2799,7 @@ proc SetCountryFlag {gamebar id data side} {
 proc Configure {gamebar width} {
 	set [namespace current]::Specs(width:$gamebar) $width
 	Layout $gamebar
+   event generate $gamebar <<GamebarConfigure>>
 }
 
 
