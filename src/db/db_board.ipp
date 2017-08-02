@@ -508,6 +508,8 @@ inline
 void
 Board::filterCheckMoves(Move move, uint64_t& movers, variant::Type variant, unsigned state) const
 {
+	M_ASSERT(!variant::isAntichessExceptLosers(variant));
+
 	if (state & Checkmate)
 		filterCheckmateMoves(move, movers, variant);
 	else

@@ -121,7 +121,7 @@ public:
 
 	static uint32_t const Mask_PieceType		= (1u << 3) - 1;
 	static uint32_t const Mask_Removal			= (1u << 4) - 1;
-	static uint32_t const Mask_Action			= (1u << 7) - 1;
+	static uint32_t const Mask_Action			= (1u << 8) - 1;
 
 	// NOTE: side to move is not comparable, this flag is a print information
 	static uint32_t const Mask_Compare			= uint32_t(~0) >> (31 - Shift_EnPassant);
