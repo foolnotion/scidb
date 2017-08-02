@@ -230,7 +230,7 @@ array set distribution {
     revision     ""
     machine      ""
     distributor  ""
-    codename     ""
+    version      ""
 }
 
 array set release {
@@ -258,6 +258,7 @@ array set release {
     sun             "Sun JDS"
     SuSE            "SUSE Linux"
     novell          "SUSE Linux"
+    slax            "Slax"
     sles            "SUSE Linux ES9"
     tinysofa        "Tiny Sofa"
     turbolinux      "TurboLinux"
@@ -265,6 +266,7 @@ array set release {
     UnitedLinux     "UnitedLinux"
     va              "VA-Linux/RH-VALE"
     yellowdog       "Yellow Dog"
+    zenwalk         "Zenwalk"
 }
 
 set problematicGCCVersions {4.6 7.1}
@@ -317,7 +319,7 @@ proc DetectDebian {} {
         switch -glob -- $line {
             DISTRIB_ID=*        { set attr distributor  }
             DISTRIB_RELEASE=*   { set attr revision     }
-            DISTRIB_CODENAME=*  { set attr codename     }
+            DISTRIB_CODENAME=*  { set attr version  }
         }
         if {[string length $attr]} {
             set distribution($attr) [string trim [lindex [split $line =] 1]]
@@ -332,7 +334,7 @@ proc DetectRedHat {file} {
 
     set fd [open $file r]; gets $fd line; close $fd
     regexp {(.*) release (.*) \((.*)\)} $line _ \
-        distribution(distributor) distribution(revision) distribution(codename)
+        distribution(distributor) distribution(revision) distribution(version)
 }
 
 
@@ -358,46 +360,78 @@ proc detectUnixDistribution {} {
     set distribution(os) [exec uname -s]
     set distribution(machine) [exec uname -m]
     set distribution(distributor) ""
+    set distribution(version) ""
 
     switch $distribution(os) {
         SunOS {
             set distribution(os) "Solaris"
-            set distribution(revision) [exec uname -v]
+            set distribution(revision) [exec uname -r | sed "s/-.*//"]
         }
         AIX {
             set distribution(revision) [exec oslevel]
         }
         HP-UX {
             set distribution(os) "HP-UX"
-            set distribution(revision) [exec uname -v]
+            set distribution(revision) [exec uname -r | sed "s/-.*//"]
+        }
+        OpenBSD - NetBSD - FreeBSD {
+            set distribution(distributor) $distribution(os)
+            set distribution(revision) [exec uname -r | sed "s/-.*//"]
         }
         Linux {
-            if {[file readable /etc/lsb-release]} {
-                DetectDebian
-            } elseif {[file readable /etc/SuSE-release]} {
-                DetectSuSE /etc/SuSE-release
-            } elseif {[file readable /etc/UnitedLinux-release]} {
-                DetectSuSE /etc/UnitedLinux-release
-            } elseif {[file readable /etc/mandrake-release]} {
-                DetectRedHat /etc/mandrake-release
-            } elseif {[file readable /etc/redhat-release]} {
-                DetectRedHat /etc/redhat-release
-            } elseif {[file readable /etc/debian_version]} {
-                set distribution(distributor) "Debian"
-                set fd [open /etc/debian_version r]; gets $fd line; close $fd
-                set distribution(revision) $line
+            if {[file readable /etc/os-release]} {
+                set fd [open /etc/os-release r]
+                while {[gets $fd line] >= 0} {
+                    if {[string match {NAME=*} $line] && [regexp {="(.*)"} $line -> distributor]} {
+                        set distribution(distributor) $distributor
+                    } elseif {[string match {VERSION_ID=*} $line] && [regexp {="(.*)"} $line -> revision]} {
+                        set distribution(revision) $revision
+                    } elseif {[string match {VERSION=*} $line] && [regexp {="(.*)"} $line -> name]} {
+                        set distribution(version) $name
+                    }
+                }
+                close $fd
             }
-
+            if {[string length $distribution(distributor)] == 0} {
+                if {[file readable /etc/lsb-release]} {
+                    DetectDebian
+                } elseif {[file readable /etc/SuSE-release]} {
+                    DetectSuSE /etc/SuSE-release
+                } elseif {[file readable /etc/UnitedLinux-release]} {
+                    DetectSuSE /etc/UnitedLinux-release
+                } elseif {[file readable /etc/mandrake-release]} {
+                    DetectRedHat /etc/mandrake-release
+                } elseif {[file readable /etc/redhat-release]} {
+                    DetectRedHat /etc/redhat-release
+                } elseif {[file readable /etc/debian_version]} {
+                    set distribution(distributor) "Debian"
+                    set fd [open /etc/debian_version r]; gets $fd line; close $fd
+                    set distribution(revision) $line
+                } elseif {[file readable /etc/slackware-version]} {
+                    if {[file readable /etc/zenwalk-version]} {
+                        set distribution(distributor) "Zenwalk"
+                        set distribution(revision) [exec cat /etc/zenwalk-version]
+                    } elseif {[file readable /etc/slax-version]} {
+                        set distribution(distributor) "Slax"
+                        set distribution(revision) [exec cat /etc/slax-version | cut -d " " -f2]
+                    } else {
+                        set distribution(distributor) [exec cat /etc/slackware-version | cut -d " " -f1]
+                        set distribution(revision) [exec cat /etc/slackware-version | cut -d " " -f2]
+                    }
+                } elseif {[file readable /etc/knoppix_version]} {
+                    set distribution(distributor) "Knoppix"
+                }
+            }
         }
     }
 
     if {[string length $distribution(distributor)] == 0} {
         if {[file readable /proc/version]} {
             set id [exec cat /proc/version]
-            if {[regexp {^.*\(.*\) \((.*)\) [^()]+$} $id _ id]} {
-                if {[regexp {^.*\((.*)\)$} $id _ id]} {
+            if {[regexp {^.*\(.*\) \((.*)\) [^()]+$} $id -> id]} {
+                if {[regexp {^.*\((.*)\)$} $id -> id]} {
                     set detected 1
-                    if {[regexp {^([^0-9]+)\s+([0-9.-]*)$} $id _ distributor revision]} {
+                    if {[regexp {^([^0-9]+)\s+([0-9.-]*)$} $id -> distributor revision]} {
                         set distribution(distributor) $distributor
                         set distribution(revision) $revision
                     } else {
@@ -406,19 +440,13 @@ proc detectUnixDistribution {} {
                 }
             }
         }
-
         if {[string length $distribution(distributor)] == 0} {
             set files [glob -nocomplain -directory /etc -types f *-release]
+            if {[set i [lsearch $files "os-release"]] >= 0} { set files [lreplace $files $i $i] }
             if {[llength $files] == 1} {
                 variable release
                 set id [string range [file tail [lindex $files 0]] 0 end-8]
                 catch { set distribution(distributor) $release($id) }
-            } elseif {[llength $files] == 0} {
-                if {[file readable /etc/knoppix_version]} {
-                    set distribution(distributor) "Knoppix"
-                } elseif {[file readable /etc/slackware-version]} {
-                    set distribution(distributor) "Slackware"
-                }
             }
         }
     }
@@ -2244,8 +2272,8 @@ if {[string length $distribution(distributor)]} {
 if {[string length $distribution(revision)]} {
     puts "                    Revision: $distribution(revision)"
 }
-if {[string length $distribution(codename)]} {
-    puts "                    Codename: [string toupper $distribution(codename) 0 0]"
+if {[string length $distribution(version)]} {
+    puts "                     Version: $distribution(version)"
 }
 
 set configure(tcl-shell) [auto_execok tclsh$tclv]
