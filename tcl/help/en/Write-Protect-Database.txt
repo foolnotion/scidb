@@ -1,0 +1,72 @@
+<!-- ======================================================================
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+======================================================================= -->
+
+<!-- ======================================================================
+* Copyright: (C) 2012-2013 Gregor Cramer
+======================================================================= -->
+
+<!-- ======================================================================
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+======================================================================= -->
+
+INDEX Database write protection
+INDEX Write protection of databases
+INDEX Write protection of PGN archives
+
+TITLE Write protection of databases
+
+<p>
+A database can be set read-only or write protected. This is possible only for
+Scidb databases (<abbr>.sci</abbr>) and PGN archives (<abbr>.pgn</abbr>,
+<abbr>.pgn.gz</abbr>). Scid databases (<abbr>.si3</abbr>, <abbr>.si4</abbr>),
+ChessBase databases (<abbr>.cbh</abbr>, <abbr>.cbf</abbr>), and Zip archives
+(<abbr>.zip</abbr>) are always write protected.
+</p>
+
+<p>
+The write protection has no effects on the file permissions, it is an
+application specific feature. The application is remembering the last
+setting, as long as the database is still existing in the history.
+</p>
+
+<p>
+There are the following restrictions:
+</p>
+
+<ul style="padding-left:0px">
+  <li><p>
+    Database/PGN files without writing permission cannot be set writable,
+    without a change of the file permissions.
+  </p></li>
+  <li><p>
+    If the loading process of a PGN archive has been interrupted, it is
+    not allowed to set it writable due to technical reasons.
+  </p></li>
+  <li><p>
+    It is not possible to set the <a href="Clipbase.html">Clipbase</a>
+    read-only.
+  </p></li>
+  <li><p>
+    PGN archives (<abbr>.pgn</abbr>, <abbr>.pgn.gz</abbr>) will always be
+    opened read-only, unless another setting is existing in the history.
+    These databases must be set writable explicitly, if a modification of
+    the archive is required.
+  </p></li>
+</ul>
+
+<p>
+Note that a modified PGN archive has to be saved explicitly, this can take a longer
+time if the archive is big. Whether a PGN archive is modified can be realized
+because of a reddish coloring of the database icon.
+</p>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html fileencoding=latin1: -->

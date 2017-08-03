@@ -1,20 +1,20 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision: 161 $
 * Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2012-2013 Gregor Cramer
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
 
 INDEX Datenbankformate
 INDEX Dateiformate
@@ -26,7 +26,7 @@ TITLE Datenbankformate
 Scidb unterstützt folgende Formate:
 </p>
 
-<ul>
+<dir>
   <li>
     <img src="../images/ft-scidb.png" />
     <a href="#Scidb">Scidb</a>
@@ -47,7 +47,7 @@ Scidb unterstützt folgende Formate:
     <img src="../images/ft-archive.png" />
     <a href="#Database-Archive">Datenbankarchiv</a>
   </li>
-</ul>
+</dir>
 
 <h2 id="Scidb">
 <img src="../images/ft-scidb.png" />
@@ -96,10 +96,28 @@ Eine Datenbank im Scidb-Format besteht aus mehreren Dateien:
     </tr>
     <tr valign="top">
       <td nowrap="nowrap"><kbd>.scn</kbd></td><td>=&nbsp;</td>
-      <td>Spieler/Ereignis/Ort/Kommentator-Daten</td>
+      <td>Spieler/Ereignis/Ort/Kommentatordaten</td>
+    </tr>
+    <tr valign="top">
+      <td nowrap="nowrap"><kbd>.scr</kbd></td><td>=&nbsp;</td>
+      <td>Verwaltungsdaten für Partienverknüpfungen</td>
+    </tr>
+    <tr valign="top">
+      <td nowrap="nowrap"><kbd>.scj</kbd></td><td>=&nbsp;</td>
+      <td>Piktogrammsatz</td>
     </tr>
   </table>
 </box>
+
+<p>
+Nur die Dateien mit den Endungen .sci, .scg und .scn existieren immer, die anderen nur bei Bedarf.
+</p>
+
+<p>
+Der Piktogrammsatz (.scj) wird angelegt, sobald im Auswahldialog für das Datenbankpiktogramm
+(<see/> <a href="Database-Switcher.html#ChangeIcon">Datenbankumschalter</a>) eigene Bilddateien
+ausgewählt werden.
+</p>
 
 <h2 id="Scid">
 <img src="../images/ft-scid.png" />
@@ -226,9 +244,9 @@ Das alte Datenbankformat besteht nur aus vier Dateien:
 <p>
 Das <abbr>PGN</abbr>-Format (Portable Game Notation) ist ein verbreiteter Standard zum
 Transfer von Schachpartien. <abbr>PGN</abbr>-Dateien werden im Lesemodus geöffnet,
-können jedoch schreibbar gesetzt werden, sofern die geöffnete Datei Schreibrechte
-besitzt. Bei größeren <abbr>PGN</abbr>-Partiensammlungen wird eine Umwandlung in das
-Scidb-Format empfohlen.
+können jedoch schreibbar gesetzt werden (ausgenommen Zip-Archive; <see/>
+<a href="Write-Protect-Database.html">Schreibschutz einer Datenbank</a>).
+Bei größeren <abbr>PGN</abbr>-Partiensammlungen wird eine Umwandlung in das Scidb-Format empfohlen.
 </p>
 
 <p>

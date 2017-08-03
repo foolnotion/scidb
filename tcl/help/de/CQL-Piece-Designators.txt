@@ -1,20 +1,20 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision: 161 $
 * Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2013 Gregor Cramer
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
 
 INDEX Figurenbezeichner (CQL)
 
@@ -38,6 +38,7 @@ die im Figurenartbezeichner enthalten ist.
 <ul>
   <li><a href="#examples">Beispiele für den Figurenbezeichner</a></li>
   <li><a href="#allowed">Zulässige Figurenartbezeichner</a></li>
+  <li><a href="#promoted">Verwandelte Figuren</a></li>
   <li><a href="#tagging">Figurenartbezeichner markieren</a></li>
 </ul>
 
@@ -109,6 +110,43 @@ Dies sind die zulässigen Figurenartbezeichner:
    </table>
    <p></p>
 </box>
+
+<h2 id="promoted">Verwandelte Figuren</h2>
+
+<p>
+Des weiteren gibt es noch eine Kennzeichnung von Figuren, die aus einer Bauernumwandlung
+hervorgingen: <expr>[&Q;~&q;~]</expr> kennzeichnet eine weiße oder schwarze Dame, die aus
+einer Bauernumwandlung hervorging. Es kann auch explizit spezifiziert werden, daß eine
+Figur nicht aus einer Bauerumwandlung hervorging, in diesem Fall wird
+<expr>[&Q;~~&q;~~]</expr> verwendet. (Die Kennzeichnung von verwandelten Figuren ist
+insbesondere für die Schachformen %::mc::VariantName(DropChess)% und %::mc::VariantName(Bughouse)%
+interessant, aber auch für alle anderen Schachformen verwendbar.)
+</p>
+
+<h3>Beispiele</h3>
+
+<table class="stripes">
+  <tr valign="top" class="stripes">
+    <td class="left"><expr>&U;~</expr></td>
+     <td class="right">kennzeichnet eine beliebige, aus einer Bauerumwandlung
+        hervorgegangene Figur</td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><expr>[&Q;~&q;~][a1,h1,a8,h8]</expr></td>
+     <td class="right">kennzeichnet eine Dame auf einem Eckfeld, die aus einer
+        Bauernumwandlung hervorging,</td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="left"><expr>&U;~~</expr></td>
+     <td class="right">kennzeichnet eine beliebige Figur, die nicht aus einer
+     Bauernumwandlung hervorgegangen ist</td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><expr>[&Q;~~&q;~~][a1,h1,a8,h8]</expr></td>
+     <td class="right">kennzeichnet eine Dame auf einem Eckfeld, die nicht aus einer
+        Bauernumwandlung hervorging,</td>
+  </tr>
+</table>
 
 <h2 id="tagging">Figurenartbezeichner markieren</h2>
 

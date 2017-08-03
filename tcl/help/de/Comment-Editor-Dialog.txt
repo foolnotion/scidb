@@ -1,19 +1,19 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision: 161 $
 * Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2013 Gregor Cramer
-*********************************************************************** -->
-<!-- **********************************************************************
+======================================================================= -->
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
 
 INDEX Kommentareditor
 TITLE Kommentareditor
@@ -32,7 +32,7 @@ Dieser Dialog wird auf einer der folgenden Weisen im Partieeditor geöffnet:
     Mit dem Tastaturkürzel
     <key>Ctrl</key>+<key>Shift</key>+<key>%::application::board::mc::Accel(edit-comment)%</key>
     zum Bearbeiten eines Kommentars vor dem Zug; bzw. zum Bearbeiten eines
-    vorangestellten Kommentars einer Variante, wenn der Cursor vor dem ersten
+    vorangestellten Kommentars einer Variante, wenn der Eingabezeiger vor dem ersten
     Zug der Variante (bzw. Hauptvariante) steht.
   </li>
   <li style="margin-bottom:0.5em;">
@@ -41,7 +41,7 @@ Dieser Dialog wird auf einer der folgenden Weisen im Partieeditor geöffnet:
   <li>
     Durch Mausklick auf einen Kommentar. In diesem Fall schaltet der
     Dialog automatisch bereits beim Öffnen auf die Sprache des
-    angeklickten Kommentars um.
+    angewählten Kommentars um.
   </li>
 </ul>
 
@@ -91,10 +91,10 @@ Es sind alle Kombinationen dieser Formatierungen erlaubt. Dazu wird ein
 Textbereich selektiert (<see/> <a href="#Control">Steuerung im Textfeld</a>)
 und dann das entsprechende Symbol gewählt. Das Setzen einer Formatierung wirkt
 auf den gesamten selektierten Bereich. Bei jeder Neupositionierung des
-Einfüge-Cursors im Textfeld wird die Formatierung des Zeichens links vom
-Cursor entsprechend angezeigt. Bei einer Texteingabe wird die Formatierung
-links vom Einfüge-Cursor weiter fortgesetzt, jedoch nicht die Formatierung
-rechts vom Einfüge-Cursor.
+Eingabezeigers im Textfeld wird die Formatierung des Zeichens links vom
+Eingabezeiger entsprechend angezeigt. Bei einer Texteingabe wird die Formatierung
+links vom Eingabezeiger weiter fortgesetzt, jedoch nicht die Formatierung
+rechts vom Eingabezeiger.
 </p>
 
 <p>
@@ -115,10 +115,18 @@ oder <i>%::export::mc::Option(pgn,use_scidb_import_format)%</i>
 wird verwendet) gehen alle Formatierungen verloren.
 </annotation>
 
-<h2 id="Control">Textfeld</h2>
+<p>
+Der Kommentareditor markiert alle Symbole, die als <a href="NAG-Comments.txt">NAG</a>
+erkannt wurden, zur besseren Sichtbarkeit mir dunkelrotem Vordergrund. Wird der
+Mauszeiger über ein solches Symbol gehalten, so erfolgt die Anzeige einer Kurzinfo
+mit der Bedeutung dieses Symbols.
+</p>
+
+<h2 id="Text">Textfeld</h2>
 
 <ul>
   <li><a href="#Text:Control">Steuerung im Textfeld</a></li>
+  <li><a href="#Text:Hyperlinks">Hyperlinks</a></li>
   <li><a href="#Text:Emoticons">Smileys</a></li>
   <li><a href="#Text:Menu">Kontextsensitives Menü</a></li>
 </ul>
@@ -126,59 +134,60 @@ wird verwendet) gehen alle Formatierungen verloren.
 <h3 id="Text:Control">Steuerung im Textfeld</h3>
 
 <ul>
-  <li><a href="#Control:Mouse">Cursorsteuerung mit der Maus</a></li>
-  <li><a href="#Control:Keyboard">Cursorsteuerung mit der Tastatur</a></li>
+  <li><a href="#Control:Mouse">Eingabezeigersteuerung mit der Maus</a></li>
+  <li><a href="#Control:Keyboard">Eingabezeigersteuerung mit der Tastatur</a></li>
   <li><a href="#Control:Select">Textselektion</a></li>
   <li><a href="#Control:Delete">Text löschen</a></li>
   <li><a href="#Control:Undo">Rückgängig &amp; Wiederherstellen</a></li>
   <li><a href="#Control:Misc">Weitere Steuerungskürzel</a></li>
+  <li><a href="#Control:Special">Einfügen von Sonderzeichen</a></li>
   <li><a href="#Control:Figurine">Einfügen einer Figur</a></li>
 </ul>
 
-<h4 id="Control:Mouse">Cursorsteuerung mit der Maus</h4>
+<h4 id="Control:Mouse">Eingabezeigersteuerung mit der Maus</h4>
 
 <p>
-Klicken mit der linken Maustaste positioniert den Einfüge-Cursor vor das
-unter dem Maus-Cursor befindliche Zeichen, setzt den Engabefokus auf das
+Klicken mit der linken Maustaste positioniert den Eingabezeiger vor das
+unter dem Mauszeiger befindliche Zeichen, setzt den Engabefokus auf das
 Textfeld, und deselektiert jeglichen selektierten Text. Das Ziehen mit der
 Maus bei gedrückter linker Maustaste selektiert den Text zwischen dem
-Einfüge-Cursor und dem Zeichen unter dem Maus-Cursor.
+Eingabezeiger und dem Zeichen unter dem Mauszeiger.
 </p>
 
 <p>
 Doppelklicken mit der linken Maustaste selektiert das Wort unter dem
-Maus-Cursor und positioniert den Einfüge-Cursor am Anfang des Wortes.
+Mauszeiger und positioniert den Eingabezeiger am Anfang des Wortes.
 Das Ziehen mit der Maus bei gedrückter linker Maustaste nach einem
-Doppelklick selektiert die Wörter zwischen dem Einfüge-Cursor und dem Zeichen
-unter dem Maus-Cursor.
+Doppelklick selektiert die Wörter zwischen dem Eingabezeiger und dem Zeichen
+unter dem Mauszeiger.
 </p>
 
 <p>
 Ein Dreifachklick mit der linken Maustaste selektiert die Zeile unter dem
-Maus-Cursor und positioniert den Einfüge-Cursor am Emde der Zeile.
+Mauszeiger und positioniert den Eingabezeiger am Ende der Zeile.
 Das Ziehen mit der Maus bei gedrückter linker Maustaste nach einem
-Dreifachklick selektiert alle Zeilen zwischen dem Einfüge-Cursor und dem
-Zeichen unter dem Maus-Cursor.
+Dreifachklick selektiert alle Zeilen zwischen dem Eingabezeiger und dem
+Zeichen unter dem Mauszeiger.
 </p>
 
 <p>
 Das Ende einer Textselektion kan mit ziehender Maus bei gedrückter linker
 Maustaste erweitert werden; dies wirkt auf das Ende der Selektion, das dem
-Maus-Cursor während des Klicks am nächsten war. Wurde ein Doppelklick
+Mauszeiger während des Klicks am nächsten war. Wurde ein Doppelklick
 ausgeführt vor dem Ziehen, dann wird in Worteinheiten erweitert, bei einem
 vorangegangenen Dreifachklick wird in Zeileneinheiten erweitert.
 </p>
 
 <p>
-Klciken der linken Maustaste während die <key>Ctrl</key>-Taste gehalten
-wird, positioniert den Einfüge-Cursor ohne die Textselektion zu beeeinflussen.
+Klicken der linken Maustaste während die <key>Ctrl</key>-Taste gehalten
+wird, positioniert den Eingabezeiger ohne die Textselektion zu beeeinflussen.
 </p>
 
 <p>
 Der Textausschnitt im Textfeld kann durch Ziehen bei gedrückter mittlerer
 Maustaste geändert werden. Wird die mittlere Maustaste geklickt, ohne die
 Maus zu Ziehen, dann wird die aktuelle X-Textselektion der Zwischenablage
-an die Position des Einfüge-Cursor eingefügt (nur Linux/Unix).
+an die Position des Eingabezeiger eingefügt (nur Linux/Unix).
 </p>
 
 <p>
@@ -187,7 +196,7 @@ gehalten wird, dann bewegt sich der Text automatisch, um mehr Text sichtbar
 zu machen.
 </p>
 
-<h4 id="Control:Keyboard">Cursorsteuerung mit der Tastatur</h4>
+<h4 id="Control:Keyboard">Eingabezeigersteuerung mit der Tastatur</h4>
 
 <table>
   <tr valign="top">
@@ -196,7 +205,7 @@ zu machen.
       <key>Right</key> oder <key>Ctrl</key>+<key>F</key>
     </td>
     <td class='justification' style="padding-left: 0.5em;">
-      Bewegt den Einfüge-Cursor ein Zeichen nach links oder rechts;
+      Bewegt den Eingabezeiger ein Zeichen nach links oder rechts;
       zudem wird jeglicher Text im Textfenster deselektiert.
     </td>
   </tr>
@@ -207,7 +216,7 @@ zu machen.
       <key>Shift</key>+<key>Right</key>
     </td>
     <td class='justification' style="padding-top: 1em; padding-left: 0.5em;">
-      Bewegt den Einfüge-Cursor ein Zeichen nach links oder rechts;
+      Bewegt den Eingabezeiger ein Zeichen nach links oder rechts;
       die Selektion im Textfenster wird mit dem neuen Zeichen erweitert.
     </td>
   </tr>
@@ -220,7 +229,7 @@ zu machen.
       <aqua><key>Option</key>+<key>Right</key><br/></aqua>
     </td>
     <td class='justification' style="padding-top: 1em; padding-left: 0.5em;">
-      Bewegt den Einfüge-Cursor wortweise, und deselektiert jegliche
+      Bewegt den Eingabezeiger wortweise, und deselektiert jegliche
       Textselektion.
     </td>
   </tr>
@@ -231,7 +240,7 @@ zu machen.
       <key>Ctrl</key>+<key>Shift</key>+<key>Right</key>
     </td>
     <td class='justification' style="padding-top: 1em; padding-left: 0.5em;">
-      Bewegt den Einfüge-Cursor wortweise, und erweitert die Textselektion.
+      Bewegt den Eingabezeiger wortweise, und erweitert die Textselektion.
     </td>
   </tr>
 
@@ -241,7 +250,7 @@ zu machen.
       <key>Down</key> oder <key>Ctrl</key>+<key>N</key>
     </td>
     <td class='justification' style="padding-top: 1em; padding-left: 0.5em;">
-      Bewegt den Einfüge-Cursor eine Zeile hoch oder runter, und deselektiert
+      Bewegt den Eingabezeiger eine Zeile hoch oder runter, und deselektiert
       jegliche Textselektion.
     </td>
   </tr>
@@ -252,7 +261,7 @@ zu machen.
       <key>Shift</key>+<key>Down</key>
     </td>
     <td class='justification' style="padding-top: 1em; padding-left: 0.5em;">
-      Bewegt den Einfüge-Cursor eine Zeile hoch oder runter, die Textselektion
+      Bewegt den Eingabezeiger eine Zeile hoch oder runter, die Textselektion
       wird um die neuen Zeichen erweitert.
     </td>
   </tr>
@@ -265,7 +274,7 @@ zu machen.
       <aqua><key>Option</key>+<key>Down</key><br/></aqua>
     </td>
     <td class='justification' style="padding-top: 1em; padding-left: 0.5em;">
-      Bewegt den Einfüge-Cursor paragraphenweise (Zeilengruppen separiert
+      Bewegt den Eingabezeiger paragraphenweise (Zeilengruppen separiert
       duch Leerzeilen), und deselektiert jegliche Textselektion.
     </td>
   </tr>
@@ -276,7 +285,7 @@ zu machen.
       <key>Ctrl</key>+<key>Shift</key>+<key>Down</key>
     </td>
     <td class='justification' style="padding-top: 1em; padding-left: 0.5em;">
-      Bewegt den Einfüge-Cursor paragraphenweise, und erweitert die
+      Bewegt den Eingabezeiger paragraphenweise, und erweitert die
       Textselektion.
     </td>
   </tr>
@@ -287,7 +296,7 @@ zu machen.
       <key>Prior</key>
     </td>
     <td class='justification' style="padding-top: 1em; padding-left: 0.5em;">
-      Bewegt den Einfüge-Cursor einen Textbereich vorwärts oder rückwärts, und
+      Bewegt den Eingabezeiger einen Textbereich vorwärts oder rückwärts, und
       deselektiert jegliche Textselektion.
     </td>
   </tr>
@@ -298,7 +307,7 @@ zu machen.
       <key>Shift</key>+<key>Prior</key>
     </td>
     <td class='justification' style="padding-top: 1em; padding-left: 0.5em;">
-      Bewegt den Einfüge-Cursor einen Textbereich vorwärts oder rückwärts, und
+      Bewegt den Eingabezeiger einen Textbereich vorwärts oder rückwärts, und
       erweitert die Textselektion.
     </td>
   </tr>
@@ -310,7 +319,7 @@ zu machen.
     </td>
     <td class='justification' style="padding-top: 1em; padding-left: 0.5em;">
       Rollt den Textbereich um eine Seite vorwärts oder rückwärts, ohne
-      den Einfüge-Cursor zu verändern, oder die Textselektion zu beeinflußen.
+      den Eingabezeiger zu verändern, oder die Textselektion zu beeinflußen.
     </td>
   </tr>
 
@@ -319,7 +328,7 @@ zu machen.
       <key>Home</key>
     </td>
     <td class='justification' style="padding-top: 1em; padding-left: 0.5em;">
-      Bewegt den Einfüge-Cursor an den Anfang der Displayzeile, und deselektiert
+      Bewegt den Eingabezeiger an den Anfang der Displayzeile, und deselektiert
       jegliche Textselektion im Textfeld.
     </td>
   </tr>
@@ -329,7 +338,7 @@ zu machen.
       <key>Shift</key>+<key>Home</key>
     </td>
     <td class='justification' style="padding-top: 1em; padding-left: 0.5em;">
-      Bewegt den Einfüge-Cursor an den Anfang der Displayzeile, und erweitert
+      Bewegt den Eingabezeiger an den Anfang der Displayzeile, und erweitert
       die Textselektion bis zu diesem Punkt.
     </td>
   </tr>
@@ -339,7 +348,7 @@ zu machen.
       <key>Ctrl</key>+<key>Home</key>
     </td>
     <td class='justification' style="padding-top: 1em; padding-left: 0.5em;">
-      Bewegt den Einfüge-Cursor an den Textanfang, und deselektiert
+      Bewegt den Eingabezeiger an den Textanfang, und deselektiert
       jegliche Textselektion im Textfeld.
     </td>
   </tr>
@@ -349,7 +358,7 @@ zu machen.
       <key>Ctrl</key>+<key>Shift</key>+<key>Home</key>
     </td>
     <td class='justification' style="padding-top: 1em; padding-left: 0.5em;">
-      Bewegt den Einfüge-Cursor an den Textanfang, und erweitert
+      Bewegt den Eingabezeiger an den Textanfang, und erweitert
       die Textselektion bis zu diesem Punkt.
     </td>
   </tr>
@@ -359,7 +368,7 @@ zu machen.
       <key>End</key>
     </td>
     <td class='justification' style="padding-top: 1em; padding-left: 0.5em;">
-      Bewegt den Einfüge-Cursor an das Ende der Displayzeile, und deselektiert
+      Bewegt den Eingabezeiger an das Ende der Displayzeile, und deselektiert
       jegliche Textselektion im Textfeld.
     </td>
   </tr>
@@ -369,7 +378,7 @@ zu machen.
       <key>Shift</key>+<key>End</key>
     </td>
     <td class='justification' style="padding-top: 1em; padding-left: 0.5em;">
-      Bewegt den Einfüge-Cursor an das Ende der Displayzeile, und erweitert
+      Bewegt den Eingabezeiger an das Ende der Displayzeile, und erweitert
       die Textselektion bis zu diesem Punkt.
     </td>
   </tr>
@@ -379,7 +388,7 @@ zu machen.
       <key>Ctrl</key>+<key>End</key>
     </td>
     <td class='justification' style="padding-top: 1em; padding-left: 0.5em;">
-      Bewegt den Einfüge-Cursor an das Textende, und deselektiert
+      Bewegt den Eingabezeiger an das Textende, und deselektiert
       jegliche Textselektion im Textfeld.
     </td>
   </tr>
@@ -389,7 +398,7 @@ zu machen.
       <key>Ctrl</key>+<key>Shift</key>+<key>End</key>
     </td>
     <td class='justification' style="padding-top: 1em; padding-left: 0.5em;">
-      Bewegt den Einfüge-Cursor an das Textende, und erweitert
+      Bewegt den Eingabezeiger an das Textende, und erweitert
       die Textselektion bis zu diesem Punkt.
     </td>
   </tr>
@@ -439,7 +448,7 @@ zu machen.
       <aqua><br/><key>F4</key></aqua>
     </td>
     <td class='justification' style="padding-top: 1em; padding-left: 0.5em;">
-      Fügt den Inhalt der Zwischenablage hinter den Einfüge-Cursors ein.
+      Fügt den Inhalt der Zwischenablage hinter dem Eingabezeiger ein.
     </td>
   </tr>
 
@@ -449,7 +458,7 @@ zu machen.
     </td>
     <td class='justification' style="padding-top: 1em; padding-left: 0.5em;">
       Löscht den selektierten Text sofern welcher vorhanden ist, andernfalls
-      wird das Zeichen rechts vom Einfüge-Cursors gelöscht.
+      wird das Zeichen rechts vom Eingabezeiger gelöscht.
     </td>
   </tr>
 
@@ -459,7 +468,7 @@ zu machen.
     </td>
     <td class='justification' style="padding-top: 1em; padding-left: 0.5em;">
       Löscht den selektierten Text sofern welcher vorhanden ist, andernfalls
-      wird das Zeichen links vom Einfüge-Cursor gelöscht.
+      wird das Zeichen links vom Eingabezeiger gelöscht.
     </td>
   </tr>
 </table>
@@ -472,7 +481,7 @@ zu machen.
       <key>Del</key>
     </td>
     <td class='justification' style="padding-left: 0.5em;">
-      Löscht das Zeichen rechts vom Einfüge-Cursor. Ist Text selektiert
+      Löscht das Zeichen rechts vom Eingabezeiger. Ist Text selektiert
       worden, dann wird der selektierte Text gelöscht.
     </td>
   </tr>
@@ -482,9 +491,8 @@ zu machen.
       <key>BS</key>
     </td>
     <td class='justification' style="padding-top: 1em; padding-left: 0.5em;">
-      Löscht das Zeichen links vom Einfüge-Cursor. Ist Text selektiert
+      Löscht das Zeichen links vom Eingabezeiger. Ist Text selektiert
       worden, dann wird der selektierte Text gelöscht.
-      deleted.
     </td>
   </tr>
 
@@ -493,7 +501,7 @@ zu machen.
       <key>Ctrl</key>+<key>D</key>
     </td>
     <td class='justification' style="padding-top: 1em; padding-left: 0.5em;">
-      Löscht das Zeichen rechts vom Einfüge-Cursor.
+      Löscht das Zeichen rechts vom Eingabezeiger.
     </td>
   </tr>
 
@@ -502,7 +510,7 @@ zu machen.
       <key>Ctrl</key>+<key>E</key>
     </td>
     <td class='justification' style="padding-top: 1em; padding-left: 0.5em;">
-      Löscht das Wort rechts vom Einfüge-Cursor.
+      Löscht das Wort rechts vom Eingabezeiger.
     </td>
   </tr>
 
@@ -511,7 +519,7 @@ zu machen.
       <key>Ctrl</key>+<key>Q</key>
     </td>
     <td class='justification' style="padding-top: 1em; padding-left: 0.5em;">
-      Löscht das Wort links vom Einfüge-Cursor.
+      Löscht das Wort links vom Eingabezeiger.
     </td>
   </tr>
 
@@ -520,7 +528,7 @@ zu machen.
       <key>Ctrl</key>+<key>K</key>
     </td>
     <td class='justification' style="padding-top: 1em; padding-left: 0.5em;">
-      Löscht vom Einfüge-Cursor bis zum Ender der Zeile. Ist der Einfüge-Cursor
+      Löscht vom Eingabezeiger bis zum Ender der Zeile. Ist der Eingabezeiger
       bereits am Ende der Zeile, dann wird der Zeilenumbruch gelöscht.
     </td>
   </tr>
@@ -556,7 +564,50 @@ zu machen.
       <key>Ctrl</key>+<key>T</key>
     </td>
     <td class='justification' style="padding-top: 1em; padding-left: 0.5em;">
-      Vertauscht die beiden Zeichen rechts vom Einfüge-Cursor.
+      Vertauscht die beiden Zeichen rechts vom Eingabezeiger.
+    </td>
+  </tr>
+
+</table>
+
+<h4 id="Control:Special">Einfügen von Sonderzeichen</h4>
+
+<table>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="nowrap">
+      <key>Alt</key>+<key>&#x2212;</key>
+    </td>
+    <td class='justification' style="padding-top: 1em; padding-left: 0.5em;">
+    Einfügen eines langen Gedankenstrichs.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="nowrap">
+      <key>Ctrl</key>+<key>&#x2212;</key>
+    </td>
+    <td class='justification' style="padding-top: 1em; padding-left: 0.5em;">
+    Einfügen eines kurzen Gedankenstrichs.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="nowrap">
+      <key>Ctrl</key>+<key>Shift</key>+<key>&#x2212;</key><br/>
+      <key>Ctrl</key>+<key>_</key>
+    </td>
+    <td class='justification' style="padding-top: 1em; padding-left: 0.5em;">
+    Einfügen eines geschützten Bindestrichs (nicht umbrechender Bindestrich).
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="nowrap">
+      <key>Ctrl</key>+<key>Shift</key>+<key>Space</key>
+    </td>
+    <td class='justification' style="padding-top: 1em; padding-left: 0.5em;">
+    Einfügen eines geschützten Leerzeichens (verhindert einen automatischen Zeilenumbruch).
     </td>
   </tr>
 
@@ -581,6 +632,7 @@ zu machen.
 
   <tr valign="top">
     <td style="padding-top: 1em;" nowrap="nowrap">
+      <key>Shift</key>+<key>Enter</key><br/>
       <key>Ctrl</key>+<key>Enter</key>
     </td>
     <td class='justification' style="padding-top: 1em; padding-left: 0.5em;">
@@ -593,6 +645,7 @@ zu machen.
       vorkommen können).
     </td>
   </tr>
+
 </table>
 
 <h4 id="Control:Figurine">Einfügen einer Figur</h4>
@@ -603,11 +656,42 @@ Nachfolgende Tastaturkürzel dienen zum Einfügen einer Figur:
 
 INCLUDE ../Comment-Editor-Pieces.txt
 
+<h3 id="Text:Hyperlinks">Hyperlinks</h3>
+
+<p>
+Der Editor erlaubt die Eingabe von Web-Verweisen (Hyperlinks), als auch
+die Eingabe von aktivierbaren Email-Adressen. Die Syntax für die Eingabe ist der
+Wiki-Syntax entlehnt worden:
+</p>
+
+<ol>
+  <li style="text-align: left">
+    <code>[[http://scidb.sourceforge.net]]</code> verlinkt die Url
+    <a href="http://scidb.sourceforge.net">http://scidb.sourceforge.net</a>
+    zur Web-Seite <code>http://scidb.sourceforge.net</code>.
+  </li>
+  <li style="text-align: left">
+    <code>[[http://scidb.sourceforge.net][Scidb]]</code> verlinkt das Wort
+    <a href="http://scidb.sourceforge.net">Scidb</a> zur Web-Seite
+    <code>http://scidb.sourceforge.net</code>. Alternativ kann auch die
+    Syntax <code>[[http://scidb.sourceforge.net|Scidb]]</code> verwendet werden.
+  </li>
+  <li style="text-align: left">
+    <code>[[fred@feuerstein.net][Fred Feuerstein]]</code> verweist auf die Email-Adresse
+    von <a href="mailto:fred@feuerstein.net">Fred Feuerstein</a>.
+  </li>
+</ol>
+
+<p>
+Zur Erleichterung der Eingabe eines Links existiert eine Hilfsfunktion im
+kontextsensitiven Menü.
+</p>
+
 <h3 id="Text:Emoticons">Smileys</h3>
 
 <p>
 Der Editor erkennt Smileys, sofern die Erkennung vom Smileys im Partieeditor
-eingeschaltet ist, d.h. das textuelle Smiley-Codes &ndash; wie z.B.
+eingeschaltet wurde, d.h. das textuelle Smiley-Codes &ndash; wie z.B.
 <expr>:-)</expr> &ndash; mit dem entsprechenden Piktogramm
 (z.B. <img src="../images/smiley.png" />) angezeigt werden,
 sofern eine Erkennung möglich war. Dazu muss allerdings auch die Anzeige von
@@ -652,14 +736,24 @@ markiert ist.
 
 <p>
 <menuitem>%::mc::Paste%</menuitem>
-Text aus der Zwischenablage an der Cursorposition einfügen.
+Text aus der Zwischenablage an der Eingabezeigerposition einfügen.
 Dieser Menüpunkt steht nur zur Verfügung wenn Text in
 der Zwischenablage vorhanden ist.
 </p>
 
 <p>
 <menuitem>%::comment::mc::InsertSymbol%</menuitem>
-Ein Symbol aus den Untermenüs an der Cursorposition einfügen.
+Ein Symbol an der Eingabezeigerposition einfügen.
+</p>
+
+<p>
+<menuitem>%::comment::mc::InsertEmoticon%</menuitem>
+Ein Emoticon (Smiley) an der Eingabezeigerposition einfügen.
+</p>
+
+<p>
+<menuitem>%::comment::mc::InsertLink%</menuitem>
+Einen Hyperlink an der Eingabezeigerposition einfügen.
 </p>
 
 <p>
@@ -725,7 +819,7 @@ Smileys im Partieeditor eingeschaltet ist.
 
 <p>
 <menuitem>%::comment::mc::InsertSymbol%</menuitem>
-Schnelleingabe eines Symbols an der aktuellen Cursorposition, wie z.B.
+Schnelleingabe eines Symbols an der aktuellen Eingabezeigerposition, wie z.B.
 einer Stellungsbewertung, oder eines anderen Sonderzeichens.
 </p>
 

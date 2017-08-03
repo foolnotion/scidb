@@ -1,0 +1,64 @@
+<!-- ======================================================================
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $HeadURL$
+======================================================================= -->
+
+<!-- ======================================================================
+* Copyright: (C) 2014 Gregor Cramer
+======================================================================= -->
+
+<!-- ======================================================================
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+======================================================================= -->
+
+BEGIN
+<table style="white-space:nowrap">
+ <tr>
+	<td class="l"><expr>normal</expr></td>
+	<td class="r">%::mc::VariantName(Normal)%</td>
+ </tr>
+ <tr>
+	<td class="l"><expr>three-check</expr></td>
+	<td class="r">%::mc::VariantName(ThreeCheck)%</td>
+ </tr>
+ <tr>
+	<td class="l"><expr>king-of-the-hill</expr></td>
+	<td class="r">%::mc::VariantName(KingOfTheHill)%</td>
+ </tr>
+ <tr>
+	<td class="l"><expr>dropchess</expr></td>
+	<td class="r">%::mc::VariantName(DropChess)%</td>
+ </tr>
+ <tr>
+	<td class="l"><expr>crazyhouse</expr></td>
+	<td class="r">%::mc::VariantName(Crazyhouse)%</td>
+ </tr>
+ <tr>
+	<td class="l"><expr>chessgi</expr></td>
+	<td class="r">%::mc::VariantName(Chessgi)%</td>
+ </tr>
+ <tr>
+	<td class="l"><expr>antichess</expr></td>
+	<td class="r">%::mc::VariantName(Antichess)%</td>
+ </tr>
+ <tr>
+	<td class="l"><expr>suicide</expr></td>
+	<td class="r">%::mc::VariantName(Suicide)%</td>
+ </tr>
+ <tr>
+	<td class="l"><expr>giveaway</expr></td>
+	<td class="r">%::mc::VariantName(Giveaway)%</td>
+ </tr>
+ <tr>
+	<td class="l"><expr>losers</expr></td>
+	<td class="r">%::mc::VariantName(Losers)%</td>
+ </tr>
+</table>
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

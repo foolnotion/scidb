@@ -1,82 +1,95 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision: 161 $
 * Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2013 Gregor Cramer
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
 
 INDEX Bereichsangaben (CQL)
 TITLE CQL - Bereichsangaben
 
 <p>
 Viele Schlüsselworte erwarten eine optionale Bereichsangabe. Eine
-Bereichsangabe besteht entweder nur aus einer Zahl, oder aus zwei
-Zahlen, separiert durch Leerzeichen.
+Bereichsangabe besteht entweder nur aus einer Zahl, der ein
+Vergleichsoperator vorangestellt sein kann, oder aus zwei Zahlen
+(hier ohne vorangestellten Vergleichsoperator), separiert durch
+Leerzeichen.
 </p>
 
 <p>
-Besteht eine Bereichsangabe nur aus einer Zahl, so bezeichnet sie den
-Bereich. ansonsten bezeichnen beide Zahlen den Bereich zwischen diesen
-Zahlen, einschließlich der beiden Grenzen.
+Besteht eine Bereichsangabe aus zwei Zahlen, so bezeichnen beide den
+Bereich zwischen diesen Zahlen, einschließlich der beiden Grenzen.
+Ist nur eine Zahl gegeben, so bezeichnen diese den Bereich. Hat
+diese Zahl einen vorangestellten Vergleichsoperator, so wird ein
+Bereich definiert, der in einer Richtung grenzenlos ist:
 </p>
 
+<box>
+<table>
+  <tr><td><expr>&gt;</expr></td>  <td></td> <td>Mehr als</td></tr>
+  <tr><td><expr>&gt;=</expr></td> <td></td> <td>Mindestens</td></tr>
+  <tr><td><expr>&lt;</expr></td>  <td></td> <td>Weniger als</td></tr>
+  <tr><td><expr>&lt;=</expr></td> <td></td> <td>Höchstens</td></tr>
+</table>
+</box>
+
+<note>
+Die Voranstellung eines Vergleichsoperators ist nicht Bestandteil des
+CQL-Standards.
+</note>
+
 <p>
-Eine spezielle Bedeutung hat der Wert <i>unlimited</i> (unbeschränkt). Ist
-<i>unlimited</i> der einzige Parameter, so ist der Bereich grenzenlos, d.h.
-er bezeichnet alle Werte. Ist der niedrigere Wert <i>unlimited</i>, so ist
-der Bereich nach unten grenzenlos. Ist der höhere Wert <i>unlimited</i>, so
-ist der Bereich nach oben grenzenlos.
+Weiterhin gibt es zwei spezielle Werte: <expr>&ndash;</expr> um einen
+leeren Bereich zu defnieren, sowie <expr>*</expr> um einen beliebigen
+Wert (d.h. nach beiden Seiten unbeschränkten Bereich) zu definieren.
+Diese speziellen Werte sind nicht in jeder Abfrage sinnvoll einsetzbar,
+und es hängt von der Abfrage ab, ob sie zulässig sind (bei vielen Abfragen
+in der Partiedatensuche, aber i.A. nicht bei Abfragen in der
+Positionssuche).
 </p>
 
 <note>
-Der spezielle Wert <i>unlimited</i> ist nicht Bestandteil des CQL-Standards.
+Die speziellen Wertebereiche <expr>&ndash;</expr> und <expr>*</expr> sind nicht
+Bestandteil des CQL-Standards.
 </note>
-
-<annotation>
-Der Gebrauch von <i>unlimited</i> (in der Bereichsangabe) statt irgendeinem
-willkürlichen Extremwert, der auch nur eine Grenzenlosigkeit signalisieren
-soll, erlaubt dem Suchalgorithmus die Möglichkeit zur Optimierung, und damit
-kann evt. eine signifikant schnellere Suche stattfinden.
-</annotation>
 
 <h2>Beispiele</h2>
 
 <p>
-Die Suchliste kann das Schlüsselwort <cql>:year</cql> enthalten, mit dem
-der Bereich der Jahre spezifiziert wird, in dem die in Frage kommende Partie
-liegen muß, um aufgefunden zu werden.
+In den folgenden Beispielen werden Wertebereiche für Jahresangaben
+behandelt, um beispielsweise Partien aufzufinden, die in einem
+definierten Jahresbereich liegen sollen.
 </p>
 
 <verb>
-<cql>match:year</cql> 1934
+1934
 </verb>
 
 <p>
-Bezeichnet das Jahr 1934, <code>1934</code> ist die Bereichsangabe.
+Bezeichnet das Jahr 1934.
 </p>
 
 <verb>
-<cql>match:year</cql> 1934 2000
+1934 2000
 </verb>
 
 <p>
-Bezeichnet die Jahre von 1934 bis 2000. Die Bereichsangabe ist
-<code>1934</code> <code>2000</code>.
+Bezeichnet die Jahre von 1934 bis 2000 (einschließlich der Grenzen).
 </p>
 
 <verb>
-<cql>match:year</cql> 1934 unlimited
+&gt;=1934
 </verb>
 
 <p>
@@ -84,7 +97,7 @@ Bezeichnet alle Jahre ab 1934.
 </p>
 
 <verb>
-<cql>match:year</cql> unlimited 1934
+&lt;1935
 </verb>
 
 <p>
@@ -92,12 +105,20 @@ Bezeichnet alle Jahre vor 1935.
 </p>
 
 <verb>
-<cql>match:elo</cql> unlimited
+*
 </verb>
 
 <p>
-Finde alle Partien, in denen ein Spieler eine (d.h. irgendeine) ELO-Wertung
-besitzt.
+Finde alle Partien, die ein (d.h. irgendein beliebiges) Partiedatum besitzen. Dies
+schließt also alle Partien aus, die ohne Partiedatumsangabe sind.
+</p>
+
+<verb>
+&ndash;
+</verb>
+
+<p>
+Dies findet alle Partien auf, die ohne Partiedatumsangabe sind.
 </p>
 
 END

@@ -1,20 +1,20 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision: 161 $
 * Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2013 Gregor Cramer
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
 
 INDEX Board Setup
 TITLE Board Setup
@@ -28,7 +28,7 @@ use, therefore only the features will be explained.
   <li><a href="#PieceSelection">%::board::piece::mc::PieceSelection%</a></li>
   <li><a href="#Castling">%::setup::board::mc::Castling%</a></li>
   <li><a href="#StartPosition">%::setup::board::mc::StartPosition%</a></li>
-  <li><a href="#Crazyhouse">%::mc::VariantName(Crazyhouse)%</a></li>
+  <li><a href="#DropChess">%::mc::VariantName(DropChess)%</a></li>
   <li><a href="#ThreeCheck">%::mc::VariantName(ThreeCheck)%</a></li>
 </ul>
 
@@ -64,12 +64,12 @@ Chess960 numbering scheme</a>.
 </p>
 
 <p>
-Scidb is alos supporting Shuffle Chess positions. Shuffle Chess contains
+Scidb is also supporting Shuffle Chess positions. Shuffle Chess contains
 all the Chess 960 positions, with or without castling rights. Furthermore
 Shuffle Chess is allowing positions where castling is not possible,
 because the rule that the king is between two rooks will not be fullfilled.
-These positions will be enumerated with an extension of the Scharnagl scheme
-- there exists 2880 different start positions. All Chess 960 positions,
+These positions will be enumerated with an extension of the Scharnagl scheme &ndash;
+there exists 2880 different start positions. All Chess 960 positions,
 with or without castlings rights, are retaining their position numbers.
 </p>
 
@@ -80,7 +80,7 @@ with button <img src="../images/fics-start-position-menu-button.png"/>.
 But only the start positions which are supported from Scidb will be offered.
 </p>
 
-<h2 id="Crazyhouse">%::mc::VariantName(Crazyhouse)%</h2>
+<h2 id="DropChess">%::mc::VariantName(DropChess)%</h2>
 
 <p>
 In this chess variant it is necessary to specify the pieces in holding.
@@ -94,8 +94,8 @@ Moreover a special button exists:
 
 <p>
 With the use of this symbol you can tag pieces which are the result of a
-pawn promotion. This is essential, because in Crazyhouse promoted
-but captured pawns are dropped as pawns.
+pawn promotion. This is essential, because in %::mc::VariantName(Crazyhouse)%
+promoted but captured pawns are dropped as pawns.
 </p>
 
 

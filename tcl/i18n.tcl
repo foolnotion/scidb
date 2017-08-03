@@ -97,6 +97,7 @@ set Top					"Top"
 set Undo					"Undo"
 set Variant				"Variant"
 set Variation			"Variation"
+set Volume				"Volume"
 set White				"White"
 set Yes					"Yes"
 

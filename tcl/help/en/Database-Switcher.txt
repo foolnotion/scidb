@@ -1,24 +1,23 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision: 161 $
 * Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2012-2013 Gregor Cramer
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
 
 INDEX Database switcher
-INDEX Compress#Compact
-INDEX Compress database#Compact
+INDEX Compact database#Compact
 INDEX Administrate database#Administration
 TITLE The database switcher
 
@@ -168,9 +167,12 @@ This sub-menu provides functionality for the maintenance of databases.
 
 <dir><img src="images/database-switcher-menu-maintenance.png"/></dir>
 
-<p>
+<p id="ChangeIcon">
 <menuitem>%::application::database::mc::ChangeIcon%</menuitem>
-Select an icon for this database.
+Select an icon for this database. A selection dialog will be opened
+which allows also the selection of image files (Scidb databases only).
+The image files must be PNG files in the resolutions of 16x16, 24x24,
+32x32, and 48x48.
 <note/>This is not possible for the <a href="Clipbase.html">Clipbase</a>.
 </p>
 
@@ -201,10 +203,16 @@ of the database is done.
 <p id="Compact">
 <menuitem>%::application::database::mc::FileCompact%</menuitem>
 Compact this database, this means that all games marked for deletion
-wil be deleted physically. You cannot revert this action. This menu
-item is disabled if the database does not contain any game with a
-deletion marker.
+wil be deleted physically. Furthermore the gaps will disappear caused
+by some actions. You cannot revert this action. This menu item is disabled
+if the database does not contain any gaps, and also no game has a deletion
+marker.
 </p>
+
+<annotation>
+The compaction of a database is a safe operation: if the compaction unexpectedly 
+fails or will be interrupted, the original database will not be changed.
+</annotation>
 
 <h3 id="DND">Drag &amp; Drop</h3>
 

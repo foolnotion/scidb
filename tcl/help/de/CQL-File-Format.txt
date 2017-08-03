@@ -1,0 +1,157 @@
+<!-- ======================================================================
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $HeadURL$
+======================================================================= -->
+
+<!-- ======================================================================
+* Copyright: (C) 2014 Gregor Cramer
+======================================================================= -->
+
+<!-- ======================================================================
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+======================================================================= -->
+
+INDEX CQL Dateiformat
+
+TITLE CQL-Dateiformat
+
+<p>
+Alle <expr>.cqls</expr> Dateien haben in der ersten Zeile eine Erkennung mit einer
+Versionsnummer. Dahinter folgt eine in Klammern gesetzte komma-separierte Liste,
+in der alle Schachformen aufgeführt werden, für die dieses Skript vorgesehen ist.
+Es folgt eine zweite in Klammern gesetzte komma-separierte Liste, in der alle
+Schachformen aufgeführt werden, die die Anwendung unterstützen muß, um dieses
+Skript ausführen zu können. Die erste Zeile ist zwingend.
+</p>
+
+<p>
+Die erste Zeile einer <expr>.cqls</expr>-Datei sieht beispielsweise folgendermaßen aus:
+</p>
+
+<verb>
+; CQL-S 1.0 (normal,three-check) (normal)
+</verb>
+
+<p>
+Die ersten 11 Zeichen können von anderen Progammen zur Dateityperkennung genutzt werden.
+</p>
+
+<p>
+Dieses sind die unterstützten Schachformen:
+</p>
+
+<box>
+INCLUDE ../Chess-Variants.txt
+</box>
+
+<p>
+Nach einer Leerzeile schreibt Scidb den Ersteller (das Programm), den Autor,
+und das Datum:
+</p>
+
+<verbatim>
+; Creator: Scidb 1.0
+; Author:  NobodyKnowsMe
+; Date:    2014/11/18
+</verbatim>
+
+<p>
+In den nächsten Zeilen, nach einer Leerzeile, folgt eine optionale Beschreibung
+des Skripts. Diese wird multilingual gehalten und sieht dann etwa so aus:
+</p>
+
+<verbatim>
+; Description (en): Smothered Mate
+; This ingenious script ...
+;
+; Description (de): Ersticktes Matt
+; Dieses grandiose Skript ...
+</verbatim>
+
+<p>
+Mit dem gleichen Format werden von Scidb auch die Standard-CQL-Skripte mit der Dateiendung
+<expr>.cql</expr> geschrieben, nur das hier die Erkennung in der ersten Zeile
+abweicht &ndash; die Schachvarianten werden in Standard-CQL nicht unterstützt &ndash; z.B.:
+</p>
+
+<verb>
+; CQL 1.0
+</verb>
+
+<p>
+Hier können die ersten 9 Zeichen zur Dateityperkennung genutzt werden. Jedoch
+schreibt bisher nur Scidb diese Erkennung.
+</p>
+
+<p>
+Alle CQL- bzw. <nobr>CQL-S</nobr>-Skripte sind im <nobr>UTF-8</nobr>-Format kodiert.
+</p>
+
+<p>
+Dies ist nun die Backus-Naur-Beschreibung einer CQL-Datei:
+</p>
+
+<verbatim>
+&lt;CQL-Header&gt;     ::= &lt;Identification&gt; &lt;LF&gt; &lt;Creator&gt; &lt;Author&gt;
+                     &lt;Date&gt; &lt;LF&gt; &lt;Descriptions&gt; &lt;Body&gt;
+&lt;Identification&gt; ::= &lt;Id-CQL-S&gt; | &lt;Id-CQL&gt;
+&lt;Id-CQL&gt;         ::= ";&#x2423;CQL&#x2423;" &lt;Version&gt;
+&lt;Id-CQL-S&gt;       ::= ";&#x2423;CQL-S&#x2423;" &lt;Version&gt; "&#x2423;" &lt;Variants&gt; "&#x2423;" &lt;Variants&gt;
+&lt;Version&gt;        ::= &lt;Digit&gt; "." &lt;Digit&gt;
+&lt;Variants&gt;       ::= "(" &lt;Variant&gt; ( "," &lt;Variant&gt; )* ")"
+&lt;Creator&gt;        ::= "Creator:" &lt;Spaces&gt; &lt;UTF-8-String&gt; &lt;LF&gt;
+&lt;Author&gt;         ::= "Author:" &lt;Spaces&gt; &lt;UTF-8-String&gt; &lt;LF&gt;
+&lt;Date&gt;           ::= "Date:" &lt;Spaces&gt; &lt;YYYY/MM/DD&gt; &lt;LF&gt;
+&lt;Descriptions&gt;   ::= ( &lt;Description&gt; &lt;LF&gt;* )*
+&lt;Description&gt;    ::= "Description&#x2423;(" &lt;ISO-639-1&gt; "):" &lt;Spaces&gt;
+                     &lt;Title&gt; &lt;LF&gt; ( &lt;CommentLine&gt; )*
+&lt;Title&gt;          ::= &lt;UTF-8-String&gt;
+&lt;CommentLine&gt;    ::= ";" ( &lt;Spaces&gt; &lt;UTF-8-String&gt; )? ( &lt;LF&gt; )+
+&lt;Spaces&gt;         ::= ( &lt;SpaceOrTab&gt; )*
+</verbatim>
+
+<p>
+Der Zeilenumbruch <expr>&lt;LF&gt;</expr> hängt vom Betriebssystem ab, auf dem
+die erzeugende Anwendung läuft (moderne Editoren sollten mit allen
+Zeilenumbrüchen zurechtkommen). Statt <nobr>ISO-639-1</nobr> für den Sprachcode
+kann auch <nobr>ISO-639-2</nobr> verwendet werden, jedoch nur wenn es nicht anders
+möglich ist.
+</p>
+
+<p>
+Hier nun ein Beispiel für ein vollständiges Skript:
+</p>
+
+<verbatim>
+; CQL-S 1.0 (normal,three-check,king-of-the-hill,crazyhouse,bughouse,losers) (normal)
+
+; Creator: Scidb 1.0
+; Author:  Gregor Cramer
+; Date:    2014/06/24
+
+; Description (en): Smothered Mate
+; A smothered mate is a checkmate delivered by a knight
+; in which the mated king is unable to move because he is
+; surrounded (or smothered) by his own pieces.
+
+; Description (de): Ersticktes Matt
+; Ein ersticktes Matt liegt vor, wenn ein Springer Matt
+; setzt und der König nicht entweichen kann, weil er
+; von eigenen Figuren umgeben (erstickt) ist.
+
+(match
+  (position
+    flipcolor            ; either color
+    attackcount k [A.] 0 ; king is smothered by own pieces
+    btm                  ; black to move
+    mate))               ; and is mate
+</verbatim>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html fileencoding=latin1: -->

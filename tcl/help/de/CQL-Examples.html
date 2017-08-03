@@ -19,7 +19,7 @@
   <meta name="generator"
      content="scidb.sourceforge.net" />
   <meta name="description"
-     content="Scidb Help Page" />
+     content="Scidb - Help Page" />
 
   <link rel="icon"
        href="http://scidb.sourceforge.net/favicon.ico"
@@ -29,9 +29,38 @@
   <link rel="stylesheet"
        type="text/css"
       media="screen"
-       href="../styles/help.css" />
+		 href="../styles/help.css" />
 
-  <title>Scidb Hilfe: CQL - Beispiele</title>
+  <title>Scidb - Hilfe: CQL - Beispiele</title>
+
+  <style type="text/css">
+  
+    #tooltip1 {
+      outline: none;
+      cursor: help;
+      margin-top: 0;
+      margin-bottom: 0;
+      position: relative;
+    }
+    #tooltip1 a {
+      color: #006400;
+    }
+    #tooltip1 a:hover {
+      color: #006400;
+      background: #ffff00;
+      text-decoration: none;
+    }
+    #tooltip1 a img {
+      display: none;
+    }
+    #tooltip1 a:hover img {
+      display: block;
+      position: absolute;
+      left: 2em;
+      top: 2em;
+      z-index: 99;
+    }
+    </style>
 </head>
 
 <body>
@@ -44,15 +73,19 @@
   <li><a href="#accumulator">Benutzung von Akkumulatoren zur Zählung von Freibauern</a></li>
   <li><a href="#relation">Beispiele zur Relationenliste</a></li>
   <li><a href="#tagging">Beispiele für Markierungen</a></li>
+  <li><a href="#line">Beispiele für Zugsequenzen</a></li>
+  <li><a href="#pawnending">Bauernendspiele</a></li>
   <li><a href="#more">Noch mehr Beispiele</a></li>
 </ul>
 
-<h2 id="accumulator">Benutzung von Akkumulatoren zur Zählung von Freibauern</h2>
+<h3 id="accumulator">Benutzung von Akkumulatoren zur Zählung von Freibauern</h3>
 
 <p>
-Wir werden zeigen wie <a href="CQL-Position-List.html#position:accumulate"><span style='white-space:nowrap;'>:accumulate</span></a> und
-<a href="CQL-Position-List.html#position:sumrange"><span style='white-space:nowrap;'>:sumrange</span></a> zu verwenden sind, um nach Partien
-mit mindestens 3 weißen Freibauern in einer Position zu suchen.
+Wir werden zeigen wie <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:accumulate">:accumulate</span></a> und
+<span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:sumrange">:sumrange</span></a> zu verwenden sind, um nach Partien
+mit mindestens drei weißen Freibauern in einer Position zu suchen.
+Ein Freibauer ist ein Bauer, dem kein gegenerischer Bauer auf der gleichen
+Linie oder einer benachbarten Linie im Weg steht.
 Zuerst schreiben wir einen Positionsfilter, der jede Position
 findet mit einem weißen Freibauern:
 </p>
@@ -61,24 +94,24 @@ findet mit einem weißen Freibauern:
 --><span class='comment'>; finde eine Position mit einem weißen Freibauern</span>
 (position
   <span class='piece'>&#x2659;</span>d2
-  <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> [<span class='piece'>&#x265f;</span><span class='piece'>&#x2659;</span>][d3-7] 0
-  <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='piece'>&#x265f;</span>[c3-7,e3-7] 0
-  <a href="CQL-Position-List.html#position:shift"><span style='white-space:nowrap;'>:shift</span></a>)<!--
+  <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:piececount">:piececount</span></a> [<span class='piece'>&#x265f;</span><span class='piece'>&#x2659;</span>][d3-7] 0
+  <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:piececount">:piececount</span></a> <span class='piece'>&#x265f;</span>[c3-7,e3-7] 0
+  <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:shift">:shift</span></a>)<!--
 --></code></pre></div>
 
 <p>
-Um mindestens 3 weiße Feibauern zu finden fügen wir die Akkumulation hinzu:
+Um mindestens drei weiße Feibauern zu finden fügen wir die Akkumulation hinzu:
 </p>
 
 <div class='box'><pre><code><!--
 --><span class='comment'>; finde eine Position mit mindestens drei weißen Freibauern</span>
 (position
   <span class='piece'>&#x2659;</span>d2
-  <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> [<span class='piece'>&#x265f;</span><span class='piece'>&#x2659;</span>][d3-7] 0
-  <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='piece'>&#x265f;</span>[c3-7,e3-7] 0
-  <a href="CQL-Position-List.html#position:shift"><span style='white-space:nowrap;'>:shift</span></a>
-  <a href="CQL-Position-List.html#position:accumulate"><span style='white-space:nowrap;'>:accumulate</span></a> weisse_freibauern_zaehler
-  <a href="CQL-Position-List.html#position:sumrange"><span style='white-space:nowrap;'>:sumrange</span></a> weisse_freibauern_zaehler 3 8)<!--
+  <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:piececount">:piececount</span></a> [<span class='piece'>&#x265f;</span><span class='piece'>&#x2659;</span>][d3-7] 0
+  <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:piececount">:piececount</span></a> <span class='piece'>&#x265f;</span>[c3-7,e3-7] 0
+  <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:shift">:shift</span></a>
+  <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:accumulate">:accumulate</span></a> weisse_freibauern_zaehler
+  <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:sumrange">:sumrange</span></a> weisse_freibauern_zaehler 3 8)<!--
 --></code></pre></div>
 
 <p>
@@ -86,14 +119,14 @@ Nun wollen wir Positionen finden mit mindestens zwei schwarzen Freibauern:
 </p>
 
 <div class='box'><pre><code><!--
---><span class='comment'>;finde eine Position mit mindestens zwei schwarzen Freibauern</span>
+--><span class='comment'>; finde eine Position mit mindestens zwei schwarzen Freibauern</span>
 (position
-  <span class='piece'>&#x265f;</span>d7 
-  <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> [<span class='piece'>&#x265f;</span><span class='piece'>&#x2659;</span>][d2-6] 0
-  <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='piece'>&#x2659;</span>[c2-6,e2-6] 0
-  <a href="CQL-Position-List.html#position:shift"><span style='white-space:nowrap;'>:shift</span></a>
-  <a href="CQL-Position-List.html#position:accumulate"><span style='white-space:nowrap;'>:accumulate</span></a> schwarze_freibauern_zaehler
-  <a href="CQL-Position-List.html#position:sumrange"><span style='white-space:nowrap;'>:sumrange</span></a> schwarze_freibauern_zaehler 2 8)<!--
+  <span class='piece'>&#x265f;</span>d7
+  <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:piececount">:piececount</span></a> [<span class='piece'>&#x265f;</span><span class='piece'>&#x2659;</span>][d2-6] 0
+  <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:piececount">:piececount</span></a> <span class='piece'>&#x2659;</span>[c2-6,e2-6] 0
+  <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:shift">:shift</span></a>
+  <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:accumulate">:accumulate</span></a> schwarze_freibauern_zaehler
+  <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:sumrange">:sumrange</span></a> schwarze_freibauern_zaehler 2 8)<!--
 --></code></pre></div>
 
 <p>
@@ -105,24 +138,51 @@ schwarzen und drei weißen Freibauern zu finden:
 --><span class='comment'>; finde eine Position mit mindestens drei</span>
 <span class='comment'>; weissen und zwei schwarzen Freibauern</span>
 (position
-  <a href="CQL-Position-List.html#position:sumrange"><span style='white-space:nowrap;'>:sumrange</span></a> weisse_freibauern_zaehler 3 8 
-  <a href="CQL-Position-List.html#position:sumrange"><span style='white-space:nowrap;'>:sumrange</span></a> schwarze_freibauern_zaehler 2 8
-  <a href="CQL-Position-List.html#position:and"><span style='white-space:nowrap;'>:and</span></a> (
+  <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:sumrange">:sumrange</span></a> weisse_freibauern_zaehler 3 8
+  <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:sumrange">:sumrange</span></a> schwarze_freibauern_zaehler 2 8
+  <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:and">:and</span></a> (
     (position
-      <span class='piece'>&#x2659;</span>d2 
-      <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> [<span class='piece'>&#x265f;</span><span class='piece'>&#x2659;</span>][d3-7] 0
-      <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='piece'>&#x265f;</span>[c3-7,e3-7] 0
-      <a href="CQL-Position-List.html#position:shift"><span style='white-space:nowrap;'>:shift</span></a>
-      <a href="CQL-Position-List.html#position:accumulate"><span style='white-space:nowrap;'>:accumulate</span></a> weisse_freibauern_zaehler)
+      <span class='piece'>&#x2659;</span>d2
+      <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:piececount">:piececount</span></a> [<span class='piece'>&#x265f;</span><span class='piece'>&#x2659;</span>][d3-7] 0
+      <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:piececount">:piececount</span></a> <span class='piece'>&#x265f;</span>[c3-7,e3-7] 0
+      <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:shift">:shift</span></a>
+      <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:accumulate">:accumulate</span></a> weisse_freibauern_zaehler)
     (position
-      <span class='piece'>&#x265f;</span>d7 
-      <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> [<span class='piece'>&#x265f;</span><span class='piece'>&#x2659;</span>][d2-6] 0
-      <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='piece'>&#x2659;</span>[c2-6,e2-6] 0
-      <a href="CQL-Position-List.html#position:shift"><span style='white-space:nowrap;'>:shift</span></a>
-      <a href="CQL-Position-List.html#position:accumulate"><span style='white-space:nowrap;'>:accumulate</span></a> schwarze_freibauern_zaehler)))<!--
+      <span class='piece'>&#x265f;</span>d7
+      <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:piececount">:piececount</span></a> [<span class='piece'>&#x265f;</span><span class='piece'>&#x2659;</span>][d2-6] 0
+      <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:piececount">:piececount</span></a> <span class='piece'>&#x2659;</span>[c2-6,e2-6] 0
+      <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:shift">:shift</span></a>
+      <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:accumulate">:accumulate</span></a> schwarze_freibauern_zaehler)))<!--
 --></code></pre></div>
 
-<h2 id="relation">Beispiele zur Relationenliste</h2>
+<p id="accumulator:passed-pawn">
+Wir suchen nun nach Positionen mit mindestens drei Freibauern.
+</p>
+
+<div class='box'><pre><code><!--
+--><span class='comment'>; Finde Positionen mit mindestens drei Freibauern.</span>
+
+(match
+  (position
+    <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:or">:or</span></a> (
+      (position
+        <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:sumrange">:sumrange</span></a> zaehler 3 8
+        Pd2
+        <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:piececount">:piececount</span></a> [pP][d3-7] 0
+        <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:piececount">:piececount</span></a> p[c3-7,e3-7] 0
+        <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:shift">:shift</span></a>
+        <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:flipcolor">:flipcolor</span></a> <span class='comment'>; accumulate* zählt für jede Farbe einzeln</span>
+        <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:accumulate_">:accumulate*</span></a> zaehler))))<!--
+--></code></pre></div>
+
+<p>
+Letzendlich ist anzumerken, daß diese Beispiele nur die Wirkungsweise von
+<span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:accumulate">:accumulate</span></a> veranschaulichen sollen. Tatsächlich können
+all diese Abfragen sehr viel effizienter mittels <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:pawncount">:pawncount</span></a>
+realisiert werden.
+</p>
+
+<h3 id="relation">Beispiele zur Relationenliste</h3>
 
 <p>
 Die folgende Positionsliste sucht nach Partien, in denen die Anordnung
@@ -140,25 +200,25 @@ Originalanordnung auf denselben Feldern steht:
 <div class='box'><pre><code><!--
 -->(position
   <span class='piece'>&#x2654;</span>e6 <span class='piece'>&#x265d;</span>e7 <span class='piece'>&#x265d;</span>e4 <span class='piece'>&#x265e;</span>d5
-  <a href="CQL-Position-List.html#position:shift"><span style='white-space:nowrap;'>:shift</span></a>
-  <a href="CQL-Position-List.html#position:flip"><span style='white-space:nowrap;'>:flip</span></a>
-  <a href="CQL-Position-List.html#position:relation"><span style='white-space:nowrap;'>:relation</span></a> (
-    <a href="CQL-Relation-List.html#relation:pattern"><span style='white-space:nowrap;'>:pattern</span></a>
-    <a href="CQL-Relation-List.html#relation:shift"><span style='white-space:nowrap;'>:shift</span></a>
-    <a href="CQL-Relation-List.html#relation:flip"><span style='white-space:nowrap;'>:flip</span></a>
-    <a href="CQL-Relation-List.html#relation:originalsamecount"><span style='white-space:nowrap;'>:originalsamecount</span></a> 0
-    <a href="CQL-Relation-List.html#relation:samesidetomove"><span style='white-space:nowrap;'>:samesidetomove</span></a>
-    <a href="CQL-Relation-List.html#relation:variations"><span style='white-space:nowrap;'>:variations</span></a>))<!--
+  <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:shift">:shift</span></a>
+  <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:flip">:flip</span></a>
+  <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:relation">:relation</span></a> (
+    <span style='white-space:nowrap;'><a href="CQL-Relation-List.html#relation:pattern">:pattern</span></a>
+    <span style='white-space:nowrap;'><a href="CQL-Relation-List.html#relation:shift">:shift</span></a>
+    <span style='white-space:nowrap;'><a href="CQL-Relation-List.html#relation:flip">:flip</span></a>
+    <span style='white-space:nowrap;'><a href="CQL-Relation-List.html#relation:originalsamecount">:originalsamecount</span></a> 0
+    <span style='white-space:nowrap;'><a href="CQL-Relation-List.html#relation:samesidetomove">:samesidetomove</span></a>
+    <span style='white-space:nowrap;'><a href="CQL-Relation-List.html#relation:variations">:variations</span></a>))<!--
 --></code></pre></div>
 
 <p>
-Wird der Parameter für <a href="CQL-Relation-List.html#relation:originalsamecount"><span style='white-space:nowrap;'>:originalsamecount</span></a> verändert,
+Wird der Parameter für <span style='white-space:nowrap;'><a href="CQL-Relation-List.html#relation:originalsamecount">:originalsamecount</span></a> verändert,
 beispielsweise vom derzeitigen Wert <span style='white-space:nowrap;'><code>0</code></span> auf den Bereich
 <span style='white-space:nowrap;'><code>0 3</code></span>, dann wäre eine Überlappung mit bis zu drei Feldern der
 Originalanordnung erlaubt.
 </p>
 
-<h2 id="tagging">Beispiele für Markierungen</h2>
+<h3 id="tagging">Beispiele für Markierungen</h3>
 
 <p>
 Wir untersuchen das Problem, alle Partien zu erkennen, in denen der gleiche Turm
@@ -167,15 +227,15 @@ alle vier Ecken des Bretts besucht:
 
 <div class='box'><pre><code><!--
 -->(match
-  <a href="CQL-Match-List.html#match:forany"><span style='white-space:nowrap;'>:forany</span></a> turm [<span class='piece'>&#x265c;</span><span class='piece'>&#x2656;</span>] <span class='comment'>; über alle Türme iterieren</span>
-  (position $turm[a1]) 
+  <span style='white-space:nowrap;'><a href="CQL-Match-List.html#match:forany">:forany</span></a> turm [<span class='piece'>&#x265c;</span><span class='piece'>&#x2656;</span>] <span class='comment'>; über alle Türme iterieren</span>
+  (position $turm[a1])
   (position $turm[h1])
   (position $turm[h8])
   (position $turm[a8]))<!--
 --></code></pre></div>
 
 <p>
-In diesem Beipiel definiert das Schlüsselwort <a href="CQL-Position-List.html#position:forany"><span style='white-space:nowrap;'>:forany</span></a> eine
+In diesem Beipiel definiert das Schlüsselwort <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:forany">:forany</span></a> eine
 Markierung mit dem Namen "turm", die an weiße oder schwarze Türme gebunden wird,
 (die auch aus einer Bauernumwandlung enstanden sein konnten).
 </p>
@@ -185,7 +245,7 @@ Die erste Positionsliste findet Partien in denen eine Position vorliegt, in der
 die Markierung "turm" einen Turm auf a1 repräsentiert. Die nächste Positionsliste
 findet Partien in denen eine Position vorliegt, in der die Markierung "turm"
 einen Turm auf h1 repräsentiert. Die Markierung repräsentiert die gleiche Figur
-zwischen den Positionslisten. Das Schlüsselwort <a href="CQL-Position-List.html#position:forany"><span style='white-space:nowrap;'>:forany</span></a>
+zwischen den Positionslisten. Das Schlüsselwort <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:forany">:forany</span></a>
 bindet nacheinander die Markierung an alle erlaubten Figuren.
 </p>
 
@@ -201,19 +261,18 @@ und verwandelt sich dann.
 
 <div class='box'><pre><code><!--
 -->(match
-  <a href="CQL-Match-List.html#match:forany"><span style='white-space:nowrap;'>:forany</span></a> bauer [<span class='piece'>&#x2659;</span><span class='piece'>&#x265f;</span>]
+  <span style='white-space:nowrap;'><a href="CQL-Match-List.html#match:forany">:forany</span></a> bauer [<span class='piece'>&#x2659;</span><span class='piece'>&#x265f;</span>]
   (position
-    <a href="CQL-Position-List.html#position:initial"><span style='white-space:nowrap;'>:initial</span></a>
-    <a href="CQL-Position-List.html#position:tagmatch"><span style='white-space:nowrap;'>:tagmatch</span></a> bauer <span class='piece'>&#x2659;</span>?2
-    <a href="CQL-Position-List.html#position:gappedsequence"><span style='white-space:nowrap;'>:gappedsequence</span></a> ((position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> $bauer <a href="CQL-Position-List.html#position:promote"><span style='white-space:nowrap;'>:promote</span></a> <span class='cqlpiece'>&#x25d1;</span>))
-    <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a>))<!--
+    <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:initial">:initial</span></a>
+    <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:tagmatch">:tagmatch</span></a> bauer [<span class='piece'>&#x2659;</span><span class='piece'>&#x265f;</span>]?[27]
+    <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:gappedsequence">:gappedsequence</span></a> ((position <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:movefrom">:movefrom</span></a> $bauer <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:promote">:promote</span></a> <span class='cql' title='Irgendeine Figur'>&#x25d1;</span>))))<!--
 --></code></pre></div>
 
 <p>
-<a href="CQL-Position-List.html#position:tagmatch"><span style='white-space:nowrap;'>:tagmatch</span></a> findet Bauern auf der zweiten Reihe, und die
-mit <a href="CQL-Position-List.html#position:gappedsequence"><span style='white-space:nowrap;'>:gappedsequence</span></a> definierte Positionsreihe ist
-erfolgreich, wenn die Markierung "bauer" in irgendeiner nachfolgenden
-Position verwandelt.
+<span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:tagmatch">:tagmatch</span></a> findet in der Startposition Bauern auf der zweiten oder
+siebten Reihe, und die mit <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:gappedsequence">:gappedsequence</span></a> definierte Positionsreihe
+ist erfolgreich, wenn die Markierung "bauer" in irgendeiner nachfolgenden Position
+verwandelt.
 </p>
 
 <p>
@@ -223,67 +282,123 @@ Partie.
 
 <div class='box'><pre><code><!--
 -->(match
-  <a href="CQL-Match-List.html#match:forany"><span style='white-space:nowrap;'>:forany</span></a> schachgeber <span class='cqlpiece'>&#x25cb;</span>
+  <span style='white-space:nowrap;'><a href="CQL-Match-List.html#match:forany">:forany</span></a> schachgeber <span class='cql' title='Beliebige weiße Figur'>&#x25cb;</span>
   (position
-    <a href="CQL-Position-List.html#position:btm"><span style='white-space:nowrap;'>:btm</span></a>
-    <a href="CQL-Position-List.html#position:attackcount"><span style='white-space:nowrap;'>:attackcount</span></a> $schachgeber <span class='piece'>&#x265a;</span> 1
-    <a href="CQL-Position-List.html#position:matchcount"><span style='white-space:nowrap;'>:matchcount</span></a> 30 unlimited
-    <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a>))<!--
+    <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:btm">:btm</span></a>
+    <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:attackcount">:attackcount</span></a> $schachgeber <span class='piece'>&#x265a;</span> 1
+    <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:matchcount">:matchcount</span></a> &gt;=30
+    <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:flipcolor">:flipcolor</span></a>))<!--
 --></code></pre></div>
 
-<p>
+<p id="knight">
 Viertes Beispiel: ein Springer gibt Matt mit seinem ersten Zug.
 </p>
 
 <div class='box'><pre><code><!--
 -->(match
-  <a href="CQL-Match-List.html#match:forany"><span style='white-space:nowrap;'>:forany</span></a> springer <span class='piece'>&#x2658;</span>
+  <span style='white-space:nowrap;'><a href="CQL-Match-List.html#match:forany">:forany</span></a> springer [<span class='piece'>&#x2658;</span><span class='piece'>&#x265e;</span>]
   (position
-    <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> $springer
-    <a href="CQL-Position-List.html#position:matchcount"><span style='white-space:nowrap;'>:matchcount</span></a> 1)
+    <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:movefrom">:movefrom</span></a> $springer
+    <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:matchcount">:matchcount</span></a> 1)
   (position
-    <a href="CQL-Position-List.html#position:mate"><span style='white-space:nowrap;'>:mate</span></a>
-    <a href="CQL-Position-List.html#position:attackcount"><span style='white-space:nowrap;'>:attackcount</span></a> $springer <span class='piece'>&#x265a;</span> 1)) <!--
+    <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:mate">:mate</span></a>
+    <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:attackcount">:attackcount</span></a> $springer [<span class='piece'>&#x2654;</span><span class='piece'>&#x265a;</span>] 1))<!--
 --></code></pre></div>
 
-<h2 id="more">Noch mehr Beispiele</h2>
+<h3 id="line">Beispiele für Zugsequenzen</h3>
 
 <div class='box'><pre><code><!--
---><span class='comment'>; Finde isolierte Trippelbauern auf verbundenen Feldern</span>
-<span class='comment'>; Beispiel: 8/p4pk1/8/2R1P1N1/6P1/6P1/2P2KP1/1r5r w - - 0 1</span>
+--><span class='comment'>; Wir suchen nach einem Mattmanöver im Legall-Stil,</span>
+<span class='comment'>; wie in der Partie Falkbeer-N.N., Wien 1847:</span>
+<span class='comment'>; <span style='white-space:nowrap;'><code>1.e4</code></span> <span style='white-space:nowrap;'><code>e5</code></span> <span style='white-space:nowrap;'><code>2.<span class='piece'>&#x2658;</span>f3</code></span> <span style='white-space:nowrap;'><code><span class='piece'>&#x2658;</span>c6</code></span> <span style='white-space:nowrap;'><code>3.d4</code></span> <span style='white-space:nowrap;'><code>exd4</code></span> <span style='white-space:nowrap;'><code>4.c3</code></span> <span style='white-space:nowrap;'><code>dxc3</code></span> <span style='white-space:nowrap;'><code>5.<span class='piece'>&#x2658;</span>xc3</code></span> <span style='white-space:nowrap;'><code>d6</code></span></span>
+<span class='comment'>; <span style='white-space:nowrap;'><code>6.<span class='piece'>&#x2657;</span>c4</code></span> <span style='white-space:nowrap;'><code><span class='piece'>&#x2657;</span>g4</code></span> <span style='white-space:nowrap;'><code>7.0-0</code></span> <span style='white-space:nowrap;'><code><span class='piece'>&#x2658;</span>e5</code></span> <span style='white-space:nowrap;'><code>8.<span class='piece'>&#x2658;</span>xe5</code></span> <span style='white-space:nowrap;'><code><span class='piece'>&#x2657;</span>xd1</code></span> <span style='white-space:nowrap;'><code>9.<span class='piece'>&#x2657;</span>xf7+</code></span> <span style='white-space:nowrap;'><code><span class='piece'>&#x2654;</span>e7</code></span> <span style='white-space:nowrap;'><code>10.<span class='piece'>&#x2658;</span>d5#</code></span></span>
+<span class='comment'>; Wir wollen auch Partien finden, in denen der Unterlegene</span>
+<span class='comment'>; bereits nach dem Läuferschach aufgibt.</span>
 
 (match
   (position
-    <span class='piece'>&#x2659;</span>[c2-4]                <span class='comment'>; Bauern auf verbundenen Feldern</span>
-    <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='piece'>&#x2659;</span>c? 3 6    <span class='comment'>; midestens drei Beuern</span>
-    <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='piece'>&#x2659;</span>[b?,d?] 0 <span class='comment'>; Bauern sind isoliert</span>
-    <a href="CQL-Position-List.html#position:shiftvertical"><span style='white-space:nowrap;'>:shiftvertical</span></a>         <span class='comment'>; beliebige Reihe</span>
-    <a href="CQL-Position-List.html#position:shifthorizontal"><span style='white-space:nowrap;'>:shifthorizontal</span></a>       <span class='comment'>; beliebige Linie</span>
-    <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a>))           <span class='comment'>; beliebige Seite</span><!--
+    <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:flipcolor">:flipcolor</span></a> <span class='comment'>; auch nach dem farbinvertierten Thema suchen</span>
+    <span class='comment'>; Erinnerung: '!' bedeutet 'einziger Zug'.</span>
+    <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:line">:line</span></a> (<span class='piece'>&#x2658;</span>xe5 <span class='piece'>&#x265d;</span>x<span class='piece'>&#x2655;</span> <span class='piece'>&#x2657;</span>:f7+ | <span class='piece'>&#x265a;</span>e7! <span class='piece'>&#x2658;</span>d5#)))
+
+<span class='comment'>; Dies vermag auch die folgenden Partien zu finden:</span>
+<span class='comment'>; <span style='white-space:nowrap;'><code>1.e4</code></span> <span style='white-space:nowrap;'><code>e5</code></span> <span style='white-space:nowrap;'><code>2.<span class='piece'>&#x2658;</span>f3</code></span> <span style='white-space:nowrap;'><code>d6</code></span> <span style='white-space:nowrap;'><code>3.<span class='piece'>&#x2657;</span>c4</code></span> <span style='white-space:nowrap;'><code><span class='piece'>&#x2657;</span>g4</code></span> <span style='white-space:nowrap;'><code>4.<span class='piece'>&#x2658;</span>c3</code></span> <span style='white-space:nowrap;'><code>h6</code></span> <span style='white-space:nowrap;'><code>5.<span class='piece'>&#x2658;</span>xe5</code></span> <span style='white-space:nowrap;'><code><span class='piece'>&#x2657;</span>xd1</code></span></span>
+<span class='comment'>; <span style='white-space:nowrap;'><code>6.<span class='piece'>&#x2657;</span>xf7+</code></span></span>
+<span class='comment'>; 1&ndash;0 Banks-Pakenham, Halesowen v Warley Quinbourne 2001</span>
+<span class='comment'>; 1&ndash;0 Zaynytdinov-Kalashnikov, Povolje 2010</span><!--
 --></code></pre></div>
 
 <div class='box'><pre><code><!--
---><span class='comment'>; Mehrere aufeinanderfolgende Turmschachgebote jeweils</span>
-<span class='comment'>; gefolgt von einem Königszug auf ein freies Feld;</span>
-<span class='comment'>; normalerweise um Patt zu vermeiden wenn der Turm</span>
-<span class='comment'>; geschlagen wird.</span>
+--><span class='comment'>; Suche nach einem Mattmanöver im Réti-Stil,</span>
+<span class='comment'>; wie in der Partie Réti-Tartakower, Wien 1910:</span>
+<span class='comment'>; <span style='white-space:nowrap;'><code>1.e4</code></span> <span style='white-space:nowrap;'><code>c6</code></span> <span style='white-space:nowrap;'><code>2.d4</code></span> <span style='white-space:nowrap;'><code>d5</code></span> <span style='white-space:nowrap;'><code>3.<span class='piece'>&#x2658;</span>c3</code></span> <span style='white-space:nowrap;'><code>dxe4</code></span> <span style='white-space:nowrap;'><code>4.<span class='piece'>&#x2658;</span>xe4</code></span> <span style='white-space:nowrap;'><code><span class='piece'>&#x2658;</span>f6</code></span> <span style='white-space:nowrap;'><code>5.<span class='piece'>&#x2655;</span>d3</code></span> <span style='white-space:nowrap;'><code>e5</code></span> <span style='white-space:nowrap;'><code>6.dxe5</code></span></span>
+<span class='comment'>; <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>a5+</code></span> <span style='white-space:nowrap;'><code>7.<span class='piece'>&#x2657;</span>d2</code></span> <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>xe5</code></span> <span style='white-space:nowrap;'><code>8.0-0-0</code></span> <span style='white-space:nowrap;'><code><span class='piece'>&#x2658;</span>xe4</code></span> <span style='white-space:nowrap;'><code>9.<span class='piece'>&#x2655;</span>d8+</code></span> <span style='white-space:nowrap;'><code><span class='piece'>&#x2654;</span>xd8</code></span> <span style='white-space:nowrap;'><code>10.<span class='piece'>&#x2657;</span>g5++</code></span> <span style='white-space:nowrap;'><code><span class='piece'>&#x2654;</span>c7</code></span></span>
+<span class='comment'>; <span style='white-space:nowrap;'><code>(10...<span class='piece'>&#x2654;</span>e8</code></span> <span style='white-space:nowrap;'><code>11.<span class='piece'>&#x2656;</span>d8#)</code></span> <span style='white-space:nowrap;'><code>11.<span class='piece'>&#x2657;</span>d8#</code></span></span>
+<span class='comment'>; Finde auch dann Partien, wenn der Unterlegene bereits</span>
+<span class='comment'>; nach dem Damenschach aufgibt.</span>
 
 (match
-  <a href="CQL-Match-List.html#match:result"><span style='white-space:nowrap;'>:result</span></a> 1/2
-  (position 
-    <a href="CQL-Position-List.html#position:wtm"><span style='white-space:nowrap;'>:wtm</span></a>
-    <a href="CQL-Position-List.html#position:sequence"><span style='white-space:nowrap;'>:sequence</span></a> (  
-      (position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x2656;</span> <a href="CQL-Position-List.html#position:moveto"><span style='white-space:nowrap;'>:moveto</span></a> .)
-      (position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x265a;</span> <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a>)
-      (position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x2656;</span> <a href="CQL-Position-List.html#position:moveto"><span style='white-space:nowrap;'>:moveto</span></a> .)
-      (position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x265a;</span> <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a>)
-      (position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x2656;</span> <a href="CQL-Position-List.html#position:moveto"><span style='white-space:nowrap;'>:moveto</span></a> .)
-      (position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x265a;</span> <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a>)
-      (position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x2656;</span> <a href="CQL-Position-List.html#position:moveto"><span style='white-space:nowrap;'>:moveto</span></a> .)
-      (position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x265a;</span> <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a>)
-      (position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x2656;</span> <a href="CQL-Position-List.html#position:moveto"><span style='white-space:nowrap;'>:moveto</span></a> .)
-      (position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x265a;</span> <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a>))))<!--
+  (position
+    <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:flipcolor">:flipcolor</span></a> <span class='comment'>; auch nach dem farbinvertierten Thema suchen</span>
+    <span class='comment'>; Erinnerung: '!' bedeutet 'einziger Zug'.</span>
+    <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:line">:line</span></a> (<span class='piece'>&#x2655;</span>d8+ | <span class='piece'>&#x265a;</span>xd8! <span class='piece'>&#x2657;</span>:g5++ <span class='piece'>&#x265a;</span> [<span class='piece'>&#x2656;</span><span class='piece'>&#x2657;</span>]d8#)))
+
+<span class='comment'>; Dies vermag auch die folgende Partie zu finden:</span>
+<span class='comment'>; <span style='white-space:nowrap;'><code>1.e4</code></span> <span style='white-space:nowrap;'><code>c5</code></span> <span style='white-space:nowrap;'><code>2.d4</code></span> <span style='white-space:nowrap;'><code>cxd4</code></span> <span style='white-space:nowrap;'><code>3.c3</code></span> <span style='white-space:nowrap;'><code>d5</code></span> <span style='white-space:nowrap;'><code>4.exd5</code></span> <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>xd5</code></span> <span style='white-space:nowrap;'><code>5.<span class='piece'>&#x2658;</span>f3</code></span> <span style='white-space:nowrap;'><code><span class='piece'>&#x2657;</span>g4</code></span> <span style='white-space:nowrap;'><code>6.<span class='piece'>&#x2655;</span>a4+</code></span></span>
+<span class='comment'>; <span style='white-space:nowrap;'><code><span class='piece'>&#x2658;</span>c6</code></span> <span style='white-space:nowrap;'><code>7.<span class='piece'>&#x2658;</span>xd4</code></span> <span style='white-space:nowrap;'><code><span class='piece'>&#x2657;</span>d7</code></span> <span style='white-space:nowrap;'><code>8.<span class='piece'>&#x2658;</span>b5</code></span> <span style='white-space:nowrap;'><code>0-0-0</code></span> <span style='white-space:nowrap;'><code>9.<span class='piece'>&#x2658;</span>xa7+</code></span> <span style='white-space:nowrap;'><code><span class='piece'>&#x2658;</span>xa7</code></span> <span style='white-space:nowrap;'><code>10.<span class='piece'>&#x2655;</span>xa7</code></span> <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>d1+</code></span></span>
+<span class='comment'>; 0&ndash;1 Dutch-Sugden, London 1964</span><!--
 --></code></pre></div>
+
+<p>
+In beiden obigen Beispielen ist zu beachten, daß auch Partien aufgefunden werden können,
+in denen die potentiellen Zugfolgen nicht gespielt wurden, sondern eine anderer Fortsetzung
+erfolgte. D.h. es werden auch Partien aufgefunden, in denen die potentielle Zugfolge
+verpaßt wurde. Sollen solche Partien ausgeschlossen werden, dann findet hier
+<span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:terminal">:terminal</span></a> eine Anwendung:
+</p>
+
+<div class='box'><pre><code><!--
+-->(match
+  (position
+    <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:sequence">:sequence</span></a> (
+      (position
+        <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:flipcolor">:flipcolor</span></a>
+        <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:line">:line</span></a> (<span class='piece'>&#x2655;</span>d8+ | <span class='piece'>&#x265a;</span>xd8! <span class='piece'>&#x2657;</span>:g5++ <span class='piece'>&#x265a;</span> [<span class='piece'>&#x2656;</span><span class='piece'>&#x2657;</span>]d8#))
+      (position <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:terminal">:terminal</span></a>))))<!--
+--></code></pre></div>
+
+<p>
+Nun werden nur diejenigen Partien aufgefunden, die auch mit einem der Züge
+<span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>d8+</code></span>, <span style='white-space:nowrap;'><code><span class='piece'>&#x265a;</span>xd8!</code></span>, <span style='white-space:nowrap;'><code><span class='piece'>&#x2657;</span>:g5++</code></span>,
+<span style='white-space:nowrap;'><code><span class='piece'>&#x265a;</span></code></span>, oder <span style='white-space:nowrap;'><code>[<span class='piece'>&#x2656;</span><span class='piece'>&#x2657;</span>]d8#</code></span> enden.
+</p>
+
+<h3 id="pawnending">Bauernendspiele</h3>
+
+<div class='box'><pre><code><!--
+--><span class='comment'>; Eine der Parteien opfert in einem materiell gleichstehenden</span>
+<span class='comment'>; Bauernendspiel zwei Bauern, erhält mindestens einen nicht</span>
+<span class='comment'>; aufhaltbaren Freibauern, und gewinnt die Partie.</span>
+
+(match
+  (position
+    <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:flipcolor">:flipcolor</span></a>    <span class='comment'>; auch nach dem farbinvertierten Thema suchen</span>
+    <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:result">:result</span></a> 1-0   <span class='comment'>; Weiß gewinnt die Partie</span>
+    <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:gappedsequence">:gappedsequence</span></a> (
+      (position
+        <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:piececount">:piececount</span></a> [<span class='cql' title='Weiße Schwerfigur'>&#x25b3;</span><span class='cql' title='Schwarze Schwerfigur'>&#x25b2;</span><span class='cql' title='Weiße Leichtfigur'>&#x25bd;</span><span class='cql' title='Schwarze Leichtfigur'>&#x25bc;</span>] 0    <span class='comment'>; es ist ein Bauernendspiel</span>
+        <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:powerdifference">:powerdifference</span></a> <span class='cql' title='Irgendeine Figur'>&#x25d1;</span> 0     <span class='comment'>; materielle Ausgeglichenheit</span>
+        <span class='comment'>; noch keine unaufhaltbare Freibauern</span>
+        <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:pawncount">:pawncount</span></a> <span class='piece'>&#x2659;</span> passed-!inside 0)
+      (position
+        <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:btm">:btm</span></a>                     <span class='comment'>; Schwarz ist am Zug</span>
+        <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:piececount">:piececount</span></a> [<span class='cql' title='Weiße Schwerfigur'>&#x25b3;</span><span class='cql' title='Schwarze Schwerfigur'>&#x25b2;</span><span class='cql' title='Weiße Leichtfigur'>&#x25bd;</span><span class='cql' title='Schwarze Leichtfigur'>&#x25bc;</span>] 0    <span class='comment'>; nach wie vor ein Bauernendspiel</span>
+        <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:powerdifference">:powerdifference</span></a> <span class='cql' title='Irgendeine Figur'>&#x25d1;</span> &lt;=&#x2212;2  <span class='comment'>; zwei Bauern im Nachteil</span>
+        <span class='comment'>; mindestens ein unaufhaltbarer Freibauer</span>
+        <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:pawncount">:pawncount</span></a> <span class='piece'>&#x2659;</span> passed-!inside &gt;=1))))<!--
+--></code></pre></div>
+
+<h3 id="more">Noch mehr Beispiele</h3>
 
 <div class='box'><pre><code><!--
 --><span class='comment'>; Ersticktes Matt</span>
@@ -294,9 +409,34 @@ Viertes Beispiel: ein Springer gibt Matt mit seinem ersten Zug.
 
 (match
   (position
-    <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a>            <span class='comment'>; Jede Farbe</span>
-    <a href="CQL-Position-List.html#position:attackcount"><span style='white-space:nowrap;'>:attackcount</span></a> <span class='piece'>&#x265a;</span> [<span class='cqlpiece'>&#x25cb;</span>.] 0 <span class='comment'>; König ist von eigenen Figuren umzingelt</span>
-    <a href="CQL-Position-List.html#position:mate"><span style='white-space:nowrap;'>:mate</span></a>))               <span class='comment'>; und ist matt</span><!--
+    <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:flipcolor">:flipcolor</span></a>            <span class='comment'>; Jede Farbe</span>
+    <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:attackcount">:attackcount</span></a> <span class='piece'>&#x265a;</span> [<span class='cql' title='Beliebige weiße Figur'>&#x25cb;</span>.] 0 <span class='comment'>; König ist von eigenen Figuren umzingelt</span>
+    <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:btm">:btm</span></a>                  <span class='comment'>; Schwarz ist am Zug</span>
+    <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:mate">:mate</span></a>))               <span class='comment'>; und ist matt</span><!--
+--></code></pre></div>
+
+<div class='box'><pre><code><!--
+--><span class='comment'>; Allumwandlung: Suche nach Partien mit Bauernumwandlungen in alle</span>
+<span class='comment'>; Figuren. Die Reihenfolge der Positionslisten spielt keine Rolle.</span>
+
+(match
+  (position <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:promote">:promote</span></a> [<span class='piece'>&#x2655;</span><span class='piece'>&#x265b;</span>])
+  (position <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:promote">:promote</span></a> [<span class='piece'>&#x2656;</span><span class='piece'>&#x265c;</span>])
+  (position <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:promote">:promote</span></a> [<span class='piece'>&#x2657;</span><span class='piece'>&#x265d;</span>])
+  (position <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:promote">:promote</span></a> [<span class='piece'>&#x2658;</span><span class='piece'>&#x265e;</span>]))<!--
+--></code></pre></div>
+
+<div class='box'><pre><code><!--
+--><span class='comment'>; Allumwandlung: Suche nach Partien mit Bauernumwandlungen in alle</span>
+<span class='comment'>; Figuren. Die Reihenfolge der Positionslisten spielt keine Rolle.</span>
+<span class='comment'>; Es wird verlangt, daß alle Umwandlungen aufeinanderfolgend sind.</span>
+
+(match
+  (position <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:matchconsecutive">:matchconsecutive</span></a> (
+    (position <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:promote">:promote</span></a> [<span class='piece'>&#x2655;</span><span class='piece'>&#x265b;</span>])
+    (position <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:promote">:promote</span></a> [<span class='piece'>&#x2656;</span><span class='piece'>&#x265c;</span>])
+    (position <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:promote">:promote</span></a> [<span class='piece'>&#x2657;</span><span class='piece'>&#x265d;</span>])
+    (position <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:promote">:promote</span></a> [<span class='piece'>&#x2658;</span><span class='piece'>&#x265e;</span>])))<!--
 --></code></pre></div>
 
 </body>

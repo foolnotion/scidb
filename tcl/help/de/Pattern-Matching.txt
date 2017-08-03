@@ -1,26 +1,26 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision: 161 $
 * Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2013 Gregor Cramer
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
 
 INDEX Suchmusterabgleich (Pattern-Matching)
 TITLE Suchmusterabgleich (Pattern-Matching)
 
 <p>
-Ein Suchuster (Pattern) ist eine Zeichenkette, die folgende Spezialzeichen
+Ein Suchmuster (Pattern) ist eine Zeichenkette, die folgende Spezialzeichen
 enthalten kann:
 </p>
 
@@ -40,10 +40,33 @@ enthalten kann:
       </td>
     </tr>
     <tr valign="top">
+      <td class="l"><expr>!</expr></td>
+      <td class="r">
+        Startet die Zeichenkette mit diesem Zeichen dann erfolgt einer
+        von der Groß-/Kleinschreibung abhängiger Suchabgleich. Das
+        Startzeichen <expr>!</expr> wird in diesem Fall nicht bei der
+        Suche eingeschlossen.
+      </td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><expr>(</expr></td>
+      <td class="r">
+        Diese Stelle im Suchmuster kann den Wortanfang, beginnend
+        mit einem Buchtstaben oder einer Ziffer, abgleichen.
+      </td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><expr>)</expr></td>
+      <td class="r">
+        Diese Stellen im Suchmuster kann das Wortende, endend
+        mit einem Buchstaben oder einer Ziffer, abgleichen.
+      </td>
+    </tr>
+    <tr valign="top">
       <td class="l"><expr>\x</expr></td>
       <td class="r">
         Bezeichnet das Zeichen x. Dies bietet einen Weg um die
-        spezielle Interpretation der Zeichen <expr>*?\</expr> im
+        spezielle Interpretation der Zeichen <expr>(){}*!?\</expr> im
         Suchmuster zu unterdrücken.
       </td>
     </tr>
@@ -51,8 +74,36 @@ enthalten kann:
 </div>
 
 <p>
-Der Suchmusterabgleich unterscheidet nicht zwischen Groß- und
-Kleinschreibung.
+Die Zeichen <expr>! \? . , ; :</expr> sind Trennzeichen.
+</p>
+
+<p>
+Der Suchmusterabgleich unterscheidet generell nicht zwischen Groß- und
+Kleinschreibung, es sei denn das Suchmuster startet mit dem speziellen Zeichen
+<expr>!</expr>.
+</p>
+
+<p>
+Auch das Leerzeichen wird als Spezialzeichen interpretiert, es ersetzt immer
+eine beliebige Anzahl an Leerzeichen, aber keine leere Zeichenkette. Befindet
+sich aber vor oder nach dem Leerzeichen ein Trennzeichen, dann wird auch eine
+leere Zeichenkette mit dem Leerzeichen abgeglichen. Dadurch können Fehler in
+den Schreibweisen ausgeglichen werden.
+</p>
+
+<p>
+Weiterhin gilt folgende Sonderregelung: ein beidseitig geklammerter Ausdruck
+(d.h. keine geschützten Klammern) wie z.B. <expr>"(J*)"</expr>, kann keine
+Zeichenkette ersetzen die Leerzeichen oder Trennzeichen enthält.
+Ein geklammerter Ausdruck darf selbst keine Leerzeichen oder Trennzeichen
+enthalten. Außerdem haben diese Klammern nach wie vor die Bedeutung des
+Wortabgleichs.
+</p>
+
+<p>
+Zweite Sonderregel: ein beidseitig geklammerter Ausdruck in geschweiften
+Klammern, wie z.B. <expr>{,}</expr>, setzt alle Leerzeichensonderregeln außer
+Kraft.
 </p>
 
 <h2 id="examples">Beispiele</h2>
@@ -61,8 +112,10 @@ Kleinschreibung.
 Polgar, J*
 </verb>
 
-Dieses Suchuster kann folgende Zeichenketten ersetzen: <nobr>"Polgar,</nobr>
-<nobr>J"</nobr>, und <nobr>"Polgar,</nobr> <nobr>Judit"</nobr>.
+<p>
+Dieses Suchmuster kann folgende Zeichenketten ersetzen: <expr>"Polgar, J"</expr>,
+und <expr>"Polgar, Judit"</expr>.
+</p>
 
 <verb>
 A?erba?h
@@ -70,19 +123,132 @@ A?erba?h
 
 <p>
 Dies kann folgende Namen ersetzen:
-<nobr>"Averbakh"</nobr> (englische Schreibweise), und <nobr>"Awerbach"</nobr> 
+<expr>"Averbakh"</expr> (englische Schreibweise), und <expr>"Awerbach"</expr> 
 (deutsche Schreibweise).
 </p>
 
 <verb>
-wirklich beabsichtigt\?
+Kasparov*
 </verb>
 
-Dies kann nur durch die Zeichenkette "wirklich beabsichtigt?" ersetzt werden.
-Das Zeichen <code>?</code> im Suchuster hat keine spezielle Bedeutung, denn es
-wurde mit dem Schrägstrich davon ausgenommen. Das heißt, daß die
-Zeichenkette "wirklich beabsichtigt!" nicht mit diesem Suchmuster gefunden
-werden kann.
+<p>
+Dies kann unter anderem die folgenden Zeichenketten ersetzen:
+<expr>"Kasparov"</expr>, <expr>"Kasparova"</expr>,
+<expr>"Kasparov, Garry"</expr> und <expr>"Kasparova, Tatiana"</expr>.
+</p>
+
+<verb>
+Kasparov*)
+</verb>
+
+<p>
+Dies kann die gleichen Zeichenketten ersetzen wie im letzen Fall
+aufgezählt, denn alle endeten mit Buchstaben. Aber eine Zeichenkette wie
+z.B. <expr>"Kasparov, G."</expr> würde hier nicht ersetzt werden.
+</p>
+
+<verb>
+(Kasparov*)
+</verb>
+
+<p>
+Dies kann unter anderem die Zeichenketten <expr>"Kasparov"</expr> und
+<expr>"Kasparova"</expr> ersetzen, aber nicht <expr>"Kasparov, Garry"</expr>
+oder <expr>"Kasparova, Tatiana"</expr>. Eine beidseitig geklammerte
+Schreibweise schließt Leer- und Trennzeichen aus.
+</p>
+
+<verb>
+(Kasparov)*
+</verb>
+
+<p>
+Dies kann unter anderem die Zeichenketten <expr>"Kasparov"</expr> und
+<expr>"Kasparov, Garry"</expr> ersetzen, aber nicht <expr>"Kasparova"</expr>
+oder <expr>"Kasparova, Tatiana"</expr>.
+</p>
+
+<verb>
+Kasparov*,*
+</verb>
+
+<p>
+Dies kann unter anderem die Zeichenketten <expr>"Kasparov, Garry"</expr> und
+<expr>"Kasparova, Tatiana"</expr> ersetzen, aber nicht <expr>"Kasparov"</expr>
+oder <expr>"Kasparova"</expr>.
+</p>
+
+<verb>
+Kasparov, Garry
+</verb>
+
+</p>
+Dies findet <expr>"Kasparov, Garry"</expr> auf. Aufgrund der Regelung mit dem
+Trennzeichen können ebenfalls auch die folgende Zeichenketten aufgefunden werden:
+<expr>"Kasparov,Garry"</expr> (fehlendes Leerzeichen) und
+<expr>"Kasparov,&nbsp;&nbsp;Garry"</expr> (ein Leerzeichen zuviel).
+</p>
+
+<verb>
+Kasparov{,} Garry
+</verb>
+
+<p>
+Dies findet <expr>"Kasparov, Garry"</expr> auf, aber nicht mehr
+<expr>"Kasparov,Garry"</expr>, denn hier wurde ein geklammerter
+Ausdruck mit geschweiften Klammern verwendet, dieser setzt
+Leerzeichensonderregelungen außer Kraft.
+</p>
+
+<verb>
+{Kasparov, Garry}
+</verb>
+
+<p>
+Dies findet nur <expr>"Kasparov,&nbsp;Garry"</expr> (genau ein
+Leerzeichen) auf, denn alle Leerzeichensonderregelungen wurden außer
+Kraft gesetzt.
+</p>
+
+<verb>
+\{Kasparov, Garry}
+</verb>
+
+<p>
+Dies findet <expr>"{Kasparov,&nbsp;Garry}"</expr>, dazu mußte eine der
+geschweiften Klammern geschützt werden.
+</p>
+
+<verb>
+!MacDonald
+</verb>
+
+<p>
+Dies findet <expr>"MacDonald"</expr> auf, aber nicht <expr>"Macdonald"</expr>,
+denn die Groß- und Kleinschreibung wird nun beachtet.
+</p>
+
+<verb>
+\!!
+</verb>
+
+<p>
+Dies kann nur <expr>"!!"</expr> abgleichen. Das erste Zeichen muß geschützt
+werden damit es als Zeichen zählt, und nicht als Aufhebung der Groß- und Kleinschreibung.
+</p>
+
+<verb>
+*\(Berlin\)
+</verb>
+
+<p>
+Dies kann beispielsweise durch die Zeichenkette <expr>"Deutschland (Berlin)"</expr>
+ersetzt werden. Die Zeichen <expr>(</expr> und <expr>)</expr> haben
+hier keine spezielle Bedeutung mehr, diese wurde mit dem Schrägstrich
+davon ausgenommen. Das heißt, daß die Zeichenkette <expr>"Deutschland Berlin"</expr>
+mit diesem Suchmuster nicht aufgefunden wird.
+</p>
+
 END
 
 <!-- vi:set ts=2 sw=2 et filetype=html: -->

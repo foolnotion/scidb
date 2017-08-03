@@ -1,20 +1,20 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision: 161 $
 * Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2013 Gregor Cramer
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
 
 INDEX Felderbezeichner (CQL)
 INDEX Felderbezeichnerverbund (CQL)#compound
@@ -42,6 +42,17 @@ als Zeichen für die Linie werden alle Linien a bis h bezeichnet. Mit
 bezeichnet. Beispiel: der Figurenbezeichner <expr>&b;b3</expr> hat einen
 einfachen Felderbezeichner, der das Feld b3 kennzeichnet, und bezeichnet
 einen schwarzen Läufer auf b3.
+</p>
+
+<p>
+Es gibt noch eine spezielle Felderbezeichnung (die nicht zum CQL-Standard gehört):
+Mit <expr>&L;</expr> als Zeichen für die Linien werden alle weißfeldrigen Felder
+Linien a bis h gekennzeichnet, und mit <expr>&D;</expr> entsprechend alle
+schwarzfeldrigen Felder auf diesen Linien. Ensprechend können <expr>&L;</expr>
+und <expr>&D;</expr> auch für die Kennzeichnung weiß- bzw. schwarzfeldriger Reihen
+verwendet werden. Jedoch ist es nicht erlaubt, daß diese spezielle Felderbezeichnung
+sowohl für Linien als auch für Reihen gemeinsam verwendet wird, d.h.
+<expr>&D;&D;</expr> ist beispielsweise nicht erlaubt.
 </p>
 
 <h2 id="compound">Felderbezeichnerverbünde</h2>
@@ -91,6 +102,14 @@ eingechlossen sein.
     <td class="right">kennzeichnet die ersten beiden Reihen plus a8 und h8.</td>
   </tr>
   <tr valign="top">
+    <td class="left"><expr>[&L;?]</expr></td>
+    <td class="right">kennzeichnet alle weißfeldrigen Felder.</td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="left"><expr>[&D;1]</expr></td>
+    <td class="right">kennzeichnet alle schwarzfeldrigen Felder auf der ersten Reihe.</td>
+  </tr>
+  <tr valign="top">
     <td class="left"><expr>[&thinsp;]</expr></td>
     <td class="right">kennzeichnet eine leere Menge von Feldern. Dies ist absolut
         verschieden vom Leerfeldbezeichner, der alle Felder kennzeichnet.</td>
@@ -102,27 +121,77 @@ eingechlossen sein.
 <table class="stripes">
   <tr valign="top" class="stripes">
     <td class="left"><expr>&I;a1</expr></td>
-    <td class="right">kennzeichnet eine weiße Leichtfigur auf a1. Er findet jede
-        Position mit einem weißen Läufer oder einem weißen Springer auf a1.</td>
+    <td class="right">
+        kennzeichnet eine weiße Leichtfigur auf a1. Er findet jede
+        Position mit einem weißen Läufer oder einem weißen Springer auf a1.
+    </td>
   </tr>
   <tr valign="top">
     <td class="left"><expr>&R;[a-h1-2]</expr></td>
-    <td class="right">findet jede Position mit einem weißen Turm auf den ersten
-        beiden Reihen.</td>
+    <td class="right">
+      findet jede Position mit einem weißen Turm auf den ersten beiden Reihen.
+    </td>
   </tr>
   <tr valign="top" class="stripes">
     <td class="left"><expr>[&A;&r;][a-h1-2,a8,h8]</expr></td>
-    <td class="right">findet jede Position mit einer weißen Figur oder einem schwarzen
-        Turm auf den ersten beiden Reihen oder in den Ecken.</td>
+    <td class="right">
+      findet jede Position mit einer weißen Figur oder einem schwarzen
+      Turm auf den ersten beiden Reihen oder in den Ecken.
+    </td>
   </tr>
   <tr valign="top">
     <td class="left"><expr>[&R;&B;&N;&Q;&P;][a1,h1,a8,h8]</expr></td>
-    <td class="right">findet jede Position mit einem weißen Nicht-König in den Ecken.</td>
+    <td class="right">
+      findet jede Position mit einem weißen Nicht-König in den Ecken.
+    </td>
   </tr>
   <tr valign="top" class="stripes">
+    <td class="left"><expr>[&B;&b;]&L;?</expr></td>
+    <td class="right">
+      findet jede Position mit einem weißfeldrigen Läufer.
+    </td>
+  </tr>
+  <tr valign="top">
     <td class="left"><expr>&B;[&thinsp;]</expr></td>
-    <td class="right">kennzeichnet einen weißen Läufer auf einem freien Feld. Dies
-        kann natürlich nicht aufgefunden werden.</td>
+    <td class="right">
+      kennzeichnet einen weißen Läufer auf einem freien Feld. Dies
+      kann natürlich nicht aufgefunden werden.
+    </td>
+  </tr>
+</table>
+
+<h2>Erweiterung für %::mc::VariantName(DropChess)% und %::mc::VariantName(Bughouse)%:</h2>
+
+<p>
+Es gibt eine weitere spezielle Felderbezeichnung: die Rückhand &ndash; wo die
+geschlagenen Figuren gehalten werden &ndash; wird mit <expr>[+]</expr> notiert.
+Es ist zu beachten das die Notierung <expr>??</expr>, als auch der
+Leerfeldbezeichner, die Rückhand nicht mit einschließt. Um alle Felder
+einschließlich der Rückhand zu notieren ist die Abkürzung <expr>[*]</expr> zulässig.
+Die Notierung mit der Rückhand ist auch in anderen Schachformen zulässig, somit
+können Skripte formuliert werden für alle Schachformen gemeinsam.
+</p>
+
+<h3>Beispiele</h3>
+
+<table class="stripes">
+  <tr valign="top" class="stripes">
+    <td class="left"><expr>[+]</expr></td>
+     <td class="right">kennzeichnet die Rückhand</td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><expr>[+,a1]</expr></td>
+     <td class="right">kennzeichnet die Rückhand und das Feld a1</td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="left"><expr>[*]</expr></td>
+     <td class="right">kennzeichnet alle Felder einschließlich der Rückhand</td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><expr>&N;[+]</expr></td>
+    <td class="right">
+      kennzeichnet einen weißen Springer in der Rückhand</td>
+    </td>
   </tr>
 </table>
 

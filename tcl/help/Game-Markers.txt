@@ -1,0 +1,129 @@
+<!-- ======================================================================
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+======================================================================= -->
+
+<!-- ======================================================================
+* Copyright: (C) 2012-2013 Gregor Cramer
+======================================================================= -->
+
+<!-- ======================================================================
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+======================================================================= -->
+
+BEGIN
+<table>
+ <tr>
+	<td class="l">w</td>
+	<td class="m"><img src="../images/gameflag-White-Opening.png"/></td>
+	<td class="r">%::gametable::mc::GameFlags(w)%</td>
+ </tr>
+ <tr>
+	<td class="l">b</td>
+	<td class="m"><img src="../images/gameflag-Black-Opening.png"/></td>
+	<td class="r">%::gametable::mc::GameFlags(b)%</td>
+ </tr>
+ <tr>
+	<td class="l">m</td>
+	<td class="m"><img src="../images/gameflag-Middle-Game.png"/></td>
+	<td class="r">%::gametable::mc::GameFlags(m)%</td>
+ </tr>
+ <tr>
+	<td class="l">e</td>
+	<td class="m"><img src="../images/gameflag-End-Game.png"/></td>
+	<td class="r">%::gametable::mc::GameFlags(e)%</td>
+ </tr>
+ <tr>
+	<td class="l">N</td>
+	<td class="m"><img src="../images/gameflag-Novelty.png"/></td>
+	<td class="r">%::gametable::mc::GameFlags(N)%</td>
+ </tr>
+ <tr>
+	<td class="l">p</td>
+	<td class="m"><img src="../images/gameflag-Pawn-Structure.png"/></td>
+	<td class="r">%::gametable::mc::GameFlags(p)%</td>
+ </tr>
+ <tr>
+	<td class="l">T</td>
+	<td class="m"><img src="../images/gameflag-Tactics.png"/></td>
+	<td class="r">%::gametable::mc::GameFlags(T)%</td>
+ </tr>
+ <tr>
+	<td class="l">K</td>
+	<td class="m"><img src="../images/gameflag-King-Side.png"/></td>
+	<td class="r">%::gametable::mc::GameFlags(K)%</td>
+ </tr>
+ <tr>
+	<td class="l">Q</td>
+	<td class="m"><img src="../images/gameflag-Queen-Side.png"/></td>
+	<td class="r">%::gametable::mc::GameFlags(Q)%</td>
+ </tr>
+ <tr>
+	<td class="l">!</td>
+	<td class="m"><img src="../images/gameflag-Brilliancy.png"/></td>
+	<td class="r">%::gametable::mc::GameFlags(!)%</td>
+ </tr>
+ <tr>
+	<td class="l">?</td>
+	<td class="m"><img src="../images/gameflag-Blunder.png"/></td>
+	<td class="r">%::gametable::mc::GameFlags(?)%</td>
+ </tr>
+ <tr>
+	<td class="l">U</td>
+	<td class="m"><img src="../images/gameflag-User.png"/></td>
+	<td class="r">%::gametable::mc::GameFlags(U)%</td>
+ </tr>
+ <tr>
+	<td class="l">*</td>
+	<td class="m"><img src="../images/gameflag-Best-Game.png"/></td>
+	<td class="r">%::gametable::mc::GameFlags(*)%</td>
+ </tr>
+ <tr>
+	<td class="l">D</td>
+	<td class="m"><img src="../images/gameflag-Decided-Tournament.png"/></td>
+	<td class="r">%::gametable::mc::GameFlags(D)%</td>
+ </tr>
+ <tr>
+	<td class="l">G</td>
+	<td class="m"><img src="../images/gameflag-Model-Game.png"/></td>
+	<td class="r">%::gametable::mc::GameFlags(G)%</td>
+ </tr>
+ <tr>
+	<td class="l">S</td>
+	<td class="m"><img src="../images/gameflag-Strategy.png"/></td>
+	<td class="r">%::gametable::mc::GameFlags(S)%</td>
+ </tr>
+ <tr>
+	<td class="l">^</td>
+	<td class="m"><img src="../images/gameflag-With-Attack.png"/></td>
+	<td class="r">%::gametable::mc::GameFlags(^)%</td>
+ </tr>
+ <tr>
+	<td class="l">~</td>
+	<td class="m"><img src="../images/gameflag-Sacrifice.png"/></td>
+	<td class="r">%::gametable::mc::GameFlags(~)%</td>
+ </tr>
+ <tr>
+	<td class="l">=</td>
+	<td class="m"><img src="../images/gameflag-Defense.png"/></td>
+	<td class="r">%::gametable::mc::GameFlags(=)%</td>
+ </tr>
+ <tr>
+	<td class="l">M</td>
+	<td class="m"><img src="../images/gameflag-Material.png"/></td>
+	<td class="r">%::gametable::mc::GameFlags(M)%</td>
+ </tr>
+ <tr>
+	<td class="l">P</td>
+	<td class="m"><img src="../images/gameflag-Piece-Play.png"/></td>
+	<td class="r">%::gametable::mc::GameFlags(P)%</td>
+ </tr>
+</table>
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

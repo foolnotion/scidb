@@ -1,0 +1,3095 @@
+<!-- ======================================================================
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $HeadURL$
+======================================================================= -->
+
+<!-- ======================================================================
+* Copyright: (C) 2014 Gregor Cramer
+======================================================================= -->
+
+<!-- ======================================================================
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+======================================================================= -->
+
+BEGIN
+<ul>
+  <li><a href="#A">%::mc::Volume% A</a></li>
+  <li><a href="#B">%::mc::Volume% B</a></li>
+  <li><a href="#C">%::mc::Volume% C</a></li>
+  <li><a href="#D">%::mc::Volume% D</a></li>
+  <li><a href="#E">%::mc::Volume% E</a></li>
+</ul>
+
+<h3 id="A">%::mc::Volume% A</h3>
+
+<ul>
+  <li><a href="#A00-A09">A00-A09</a></li>
+  <li><a href="#A11-A19">A11-A19</a></li>
+  <li><a href="#A22-A09">A22-A29</a></li>
+  <li><a href="#A33-A29">A33-A39</a></li>
+  <li><a href="#A44-A39">A44-A49</a></li>
+  <li><a href="#A55-A49">A55-A59</a></li>
+  <li><a href="#A66-A59">A66-A69</a></li>
+  <li><a href="#A77-A69">A77-A79</a></li>
+  <li><a href="#A88-A79">A88-A89</a></li>
+  <li><a href="#A99-A89">A99-A99</a></li>
+</ul>
+
+<h4 id="A00-A09">A00-A09</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">A00</td>
+    <td class="m"><game>1.--</game></td>
+    <td class="r">
+      &#x00ac; <game>1.b3</game><br/>
+      &#x00ac; <game>1.f4</game><br/>
+      &#x00ac; <game>1.Nf3</game><br/>
+      &#x00ac; <game>1.c4</game><br/>
+      &#x00ac; <game>1.d4</game><br/>
+      &#x00ac; <game>1.e4</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A01</td>
+    <td class="m"><game>1.b3</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A02</td>
+    <td class="m"><game>1.f4</game></td>
+    <td class="r">&#x00ac; <game>1...d5</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A03</td>
+    <td class="m"><game>1.f4 d5</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A04</td>
+    <td class="m"><game>1.Nf3</game></td>
+    <td class="r">
+      &#x00ac; <game>1...Nf6</game><br/>
+      &#x00ac; <game>1...d5</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A05</td>
+    <td class="m"><game>1.Nf3 Nf6</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A06</td>
+    <td class="m"><game>1.Nf3 d5</game></td>
+    <td class="r">
+      &#x00ac; <game>2.g3</game><br/>
+      &#x00ac; <game>2.c4</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A07</td>
+    <td class="m"><game>1.Nf3 d5 2.g3</game></td>
+    <td class="r">&#x00ac; <game>2...c5</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A08</td>
+    <td class="m"><game>1.Nf3 d5 2.g3 c5</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A09</td>
+    <td class="m"><game>1.Nf3 d5 2.c4</game></td>
+  </tr>
+</table>
+
+<h4 id="A10-A19">A10-A19</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">A10</td>
+    <td class="m"><game>1.c4</game></td>
+    <td class="r">
+      &#x00ac; <game>1...c6</game><br/>
+      &#x00ac; <game>1...e6</game><br/>
+      &#x00ac; <game>1...Nf6</game><br/>
+      &#x00ac; <game>1...e5</game><br/>
+      &#x00ac; <game>1...c5</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A11</td>
+    <td class="m"><game>1.c4 c6</game></td>
+    <td class="r">&#x00ac; <game>2.Nf3 d5 3.b3</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A12</td>
+    <td class="m"><game>1.c4 c6 2.Nf3 d5 3.b3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A13</td>
+    <td class="m"><game>1.c4 e6</game></td>
+    <td class="r">&#x00ac; <game>2.Nf3 d5 3.g3 Nf6 4.Bg2 Be7</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A14</td>
+    <td class="m"><game>1.c4 e6 2.Nf3 d5 3.g3 Nf6 4.Bg2 Be7</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A15</td>
+    <td class="m"><game>1.c4 Nf6</game></td>
+    <td class="r">&#x00ac; <game>2.Nc3</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A16</td>
+    <td class="m"><game>1.c4 Nf6 2.Nc3</game></td>
+    <td class="r">&#x00ac; <game>2...e6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A17</td>
+    <td class="m"><game>1.c4 Nf6 2.Nc3 e6</game></td>
+    <td class="r">&#x00ac; <game>3.e4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A18</td>
+    <td class="m"><game>1.c4 Nf6 2.Nc3 e6 3.e4</game></td>
+    <td class="r">&#x00ac; <game>3...c5</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A19</td>
+    <td class="m"><game>1.c4 Nf6 2.Nc3 e6 3.e4 c5</game></td>
+  </tr>
+</table>
+
+<h4 id="A20-A29">A20-A29</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">A20</td>
+    <td class="m"><game>1.c4 e5</game></td>
+    <td class="r">&#x00ac; <game>2.Nc3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A21</td>
+    <td class="m"><game>1.c4 e5 2.Nc3</game></td>
+    <td class="r">
+      &#x00ac; <game>2...Nf6</game><br/>
+      &#x00ac; <game>2...Nc6</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A22</td>
+    <td class="m"><game>1.c4 e5 2.Nc3 Nf6</game></td>
+    <td class="r">
+      &#x00ac; <game>3.g3 c6</game><br/>
+      &#x00ac; <game>3.g3 g6</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A23</td>
+    <td class="m"><game>1.c4 e5 2.Nc3 Nf6 3.g3 c6</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A24</td>
+    <td class="m"><game>1.c4 e5 2.Nc3 Nf6 3.g3 g6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A25</td>
+    <td class="m"><game>1.c4 e5 2.Nc3 Nc6</game></td>
+    <td class="r">
+      &#x00ac; <game>3.g3 g6 4.Bg2 Bg7 5.d3 d6</game><br/>
+      &#x00ac; <game>3.Nf3</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A26</td>
+    <td class="m"><game>1.c4 e5 2.Nc3 Nc6 3.g3 g6 4.Bg2 Bg7 5.d3 d6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A27</td>
+    <td class="m"><game>1.c4 e5 2.Nc3 Nc6 3.Nf3</game></td>
+    <td class="r">&#x00ac; <game>3...Nf6</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A28</td>
+    <td class="m"><game>1.c4 e5 2.Nc3 Nc6 3.Nf3 Nf6</game></td>
+    <td class="r">&#x00ac; <game>4.g3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A29</td>
+    <td class="m"><game>1.c4 e5 2.Nc3 Nc6 3.Nf3 Nf6 4.g3</game></td>
+  </tr>
+</table>
+
+<h4 id="A30-A39">A30-A39</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">A30</td>
+    <td class="m"><game>1.c4 c5</game></td>
+    <td class="r">
+      &#x00ac; <game>2.Nf3 Nf6 3.d4</game><br/>
+      &#x00ac; <game>2.Nc3</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A31</td>
+    <td class="m"><game>1.c4 c5 2.Nf3 Nf6 3.d4</game></td>
+    <td class="r">&#x00ac; <game>3...cxd4 4.Nxd4 e6</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A32</td>
+    <td class="m"><game>1.c4 c5 2.Nf3 Nf6 3.d4 cxd4 4.Nxd4 e6</game></td>
+    <td class="r">&#x00ac; <game>5.Nc3 Nc6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A33</td>
+    <td class="m"><game>1.c4 c5 2.Nf3 Nf6 3.d4 cxd4 4.Nxd4 e6 5.Nc3 Nc6</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A34</td>
+    <td class="m"><game>1.c4 c5 2.Nc3</game></td>
+    <td class="r">&#x00ac; <game>2...Nc6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A35</td>
+    <td class="m"><game>1.c4 c5 2.Nc3 Nc6</game></td>
+    <td class="r">&#x00ac; <game>3.g3</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A36</td>
+    <td class="m"><game>1.c4 c5 2.Nc3 Nc6 3.g3</game></td>
+    <td class="r">&#x00ac; <game>3...g6 4.Bg2 Bg7 5.Nf3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A37</td>
+    <td class="m"><game>1.c4 c5 2.Nc3 Nc6 3.g3 g6 4.Bg2 Bg7 5.Nf3</game></td>
+    <td class="r">&#x00ac; <game>5...Nf6</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A38</td>
+    <td class="m"><game>1.c4 c5 2.Nc3 Nc6 3.g3 g6 4.Bg2 Bg7 5.Nf3 Nf6</game></td>
+    <td class="r">&#x00ac; <game>6.O-O O-O 7.d4</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A39</td>
+    <td class="m"><game>1.c4 c5 2.Nc3 Nc6 3.g3 g6 4.Bg2 Bg7 5.Nf3 Nf6<br/>6.O-O O-O 7.d4</game></td>
+  </tr>
+</table>
+
+<h4 id="A40-A49">A40-A49</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">A40</td>
+    <td class="m"><game>1.d4</game></td>
+    <td class="r">
+      &#x00ac; <game>1...d6</game><br/>
+      &#x00ac; <game>1...c5</game><br/>
+      &#x00ac; <game>1...Nf6</game><br/>
+      &#x00ac; <game>1...f5</game><br/>
+      &#x00ac; <game>1...d5</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A41</td>
+    <td class="m"><game>1.d4 d6</game></td>
+    <td class="r">&#x00ac; <game>2.c4 g6 3.Nc3 Bg7 4.e4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A42</td>
+    <td class="m"><game>1.d4 d6 2.c4 g6 3.Nc3 Bg7 4.e4</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A43</td>
+    <td class="m"><game>1.d4 c5</game></td>
+    <td class="r">&#x00ac; <game>2.d5 e5</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A44</td>
+    <td class="m"><game>1.d4 c5 2.d5 e5</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A45</td>
+    <td class="m"><game>1.d4 Nf6</game></td>
+    <td class="r">
+      &#x00ac; <game>2.Nf3</game><br/>
+      &#x00ac; <game>2.c4</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A46</td>
+    <td class="m"><game>1.d4 Nf6 2.Nf3</game></td>
+    <td class="r">
+      &#x00ac; <game>2...b6</game><br/>
+      &#x00ac; <game>2...g6</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A47</td>
+    <td class="m"><game>1.d4 Nf6 2.Nf3 b6 </game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A48</td>
+    <td class="m"><game>1.d4 Nf6 2.Nf3 g6</game></td>
+    <td class="r">&#x00ac; <game>3.g3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A49</td>
+    <td class="m"><game>1.d4 Nf6 2.Nf3 g6 3.g3</game></td>
+  </tr>
+</table>
+
+<h4 id="A50-A59">A50-A59</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">A50</td>
+    <td class="m"><game>1.d4 Nf6 2.c4</game></td>
+    <td class="r">
+      &#x00ac; <game>2...e5</game><br/>
+      &#x00ac; <game>2...d6</game><br/>
+      &#x00ac; <game>2...c5</game><br/>
+      &#x00ac; <game>2...e6</game><br/>
+      &#x00ac; <game>2...g6</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A51</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e5</game></td>
+    <td class="r">&#x00ac; <game>3.dxe5 Ng4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A52</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e5 3.dxe5 Ng4</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A53</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 d6</game></td>
+    <td class="r">&#x00ac; <game>3.Nc3 e5 4.Nf3</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A54</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 d6 3.Nc3 e5 4.Nf3</game></td>
+    <td class="r">&#x00ac; <game>4...Nbd7 5.e4</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A55</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 d6 3.Nc3 e5 4.Nf3 Nbd7 5.e4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A56</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 c5</game></td>
+    <td class="r">
+      &#x00ac; <game>3.d5 b5</game><br/>
+      &#x00ac; <game>3.d5 e6</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A57</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 c5 3.d5 b5</game></td>
+    <td class="r">&#x00ac; <game>4.cxb5 a6 5.bxa6</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A58</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 c5 3.d5 b5 4.cxb5 a6 5.bxa6</game></td>
+    <td class="r">&#x00ac; <game>5...Bxa6 6.Nc3 d6 7.e4</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A59</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 c5 3.d5 b5 4.cxb5 a6 5.bxa6 Bxa6<br/>6.Nc3 d6 7.e4</game></td>
+  </tr>
+</table>
+
+<h4 id="A60-A69">A60-A69</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">A60</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 c5 3.d5 e6</game></td>
+    <td class="r">
+      &#x00ac; <game>4.Nc3 exd5 5.cxd5 d6 6.Nf3 g6</game><br/>
+      &#x00ac; <game>4.Nc3 exd5 5.cxd5 d6 6.e4</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A61</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 c5 3.d5 e6 4.Nc3 exd5 5.cxd5 d6<br/>6.Nf3 g6</game></td>
+    <td class="r">&#x00ac; <game>7.g3 Bg7</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A62</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 c5 3.d5 e6 4.Nc3 exd5 5.cxd5 d6<br/>6.Nf3 g6 7.g3 Bg7</game></td>
+    <td class="r">&#x00ac; <game>8.Bg2 O-O 9.O-O Nbd7</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A63</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 c5 3.d5 e6 4.Nc3 exd5 5.cxd5 d6<br/>6.Nf3 g6 7.g3 Bg7 8.Bg2 O-O 9.O-O Nbd7</game></td>
+    <td class="r">&#x00ac; <game>10.Nd2 a6 11.a4 Re8</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A64</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 c5 3.d5 e6 4.Nc3 exd5 5.cxd5 d6<br/>6.Nf3 g6 7.g3 Bg7 8.Bg2 O-O 9.O-O Nbd7<br/>10.Nd2 a6 11.a4 Re8</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A65</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 c5 3.d5 e6 4.Nc3 exd5 5.cxd5 d6<br/>6.e4</game></td>
+    <td class="r">
+      &#x00ac; <game>6...g6 7.f4</game><br/>
+      &#x00ac; <game>6...g6 7.Nf3</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A66</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 c5 3.d5 e6 4.Nc3 exd5 5.cxd5 d6<br/>6.e4 g6 7.f4</game></td>
+    <td class="r">
+      &#x00ac; <game>7...Bg7 8.Bb5+</game><br/>
+      &#x00ac; <game>7...Bg7 8.Nf3</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A67</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 c5 3.d5 e6 4.Nc3 exd5 5.cxd5 d6<br/>6.e4 g6 7.f4 Bg7 8.Bb5+</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A68</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 c5 3.d5 e6 4.Nc3 exd5 5.cxd5 d6<br/>6.e4 g6 7.f4 Bg7 8.Nf3</game></td>
+    <td class="r">&#x00ac; <game>8...O-O 9.Be2 Re8</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A69</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 c5 3.d5 e6 4.Nc3 exd5 5.cxd5 d6<br/>6.e4 g6 7.f4 Bg7 8.Nf3 O-O 9.Be2 Re8</game></td>
+  </tr>
+</table>
+
+<h4 id="A70-A79">A70-A79</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">A70</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 c5 3.d5 e6 4.Nc3 exd5 5.cxd5 d6<br/>6.e4 g6 7.Nf3</game></td>
+    <td class="r">
+      &#x00ac; <game>7...Bg7 8.Bg5</game><br/>
+      &#x00ac; <game>7...Bg7 8.Be2 O-O</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A71</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 c5 3.d5 e6 4.Nc3 exd5 5.cxd5 d6<br/>6.e4 g6 7.Nf3 Bg7 8.Bg5</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A72</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 c5 3.d5 e6 4.Nc3 exd5 5.cxd5 d6<br/>6.e4 g6 7.Nf3 Bg7 8.Be2 O-O</game></td>
+    <td class="r">&#x00ac; <game>9.O-O</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A73</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 c5 3.d5 e6 4.Nc3 exd5 5.cxd5 d6<br/>6.e4 g6 7.Nf3 Bg7 8.Be2 O-O 9.O-O</game></td>
+    <td class="r">
+      &#x00ac; <game>9...a6 10.a4</game><br/>
+      &#x00ac; <game>9...Re8</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A74</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 c5 3.d5 e6 4.Nc3 exd5 5.cxd5 d6<br/>6.e4 g6 7.Nf3 Bg7 8.Be2 O-O 9.O-O a6 10.a4</game></td>
+    <td class="r">&#x00ac; <game>10...Bg4</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A75</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 c5 3.d5 e6 4.Nc3 exd5 5.cxd5 d6<br/>6.e4 g6 7.Nf3 Bg7 8.Be2 O-O 9.O-O a6<br/>10.a4 Bg4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A76</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 c5 3.d5 e6 4.Nc3 exd5 5.cxd5 d6<br/>6.e4 g6 7.Nf3 Bg7 8.Be2 O-O 9.O-O Re8</game></td>
+    <td class="r">&#x00ac; <game>10.Nd2</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A77</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 c5 3.d5 e6 4.Nc3 exd5 5.cxd5 d6<br/>6.e4 g6 7.Nf3 Bg7 8.Be2 O-O 9.O-O Re8 10.Nd2</game></td>
+    <td class="r">&#x00ac; <game>10...Na6</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A78</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 c5 3.d5 e6 4.Nc3 exd5 5.cxd5 d6<br/>6.e4 g6 7.Nf3 Bg7 8.Be2 O-O 9.O-O Re8<br/>10.Nd2 Na6</game></td>
+    <td class="r">&#x00ac; <game>11.f3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A79</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 c5 3.d5 e6 4.Nc3 exd5 5.cxd5 d6<br/>6.e4 g6 7.Nf3 Bg7 8.Be2 O-O 9.O-O Re8<br/>10.Nd2 Na6 11.f3</game></td>
+  </tr>
+</table>
+
+<h4 id="A80-A89">A80-A89</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">A80</td>
+    <td class="m"><game>1.d4 f5</game></td>
+    <td class="r">
+      &#x00ac; <game>2.g3</game><br/>
+      &#x00ac; <game>2.e4</game><br/>
+      &#x00ac; <game>2.c4</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A81</td>
+    <td class="m"><game>1.d4 f5 2.g3</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A82</td>
+    <td class="m"><game>1.d4 f5 2.e4</game></td>
+    <td class="r">&#x00ac; <game>2...fxe4 3.Nc3 Nf6 4.Bg5</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A83</td>
+    <td class="m"><game>1.d4 f5 2.e4 fxe4 3.Nc3 Nf6 4.Bg5</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A84</td>
+    <td class="m"><game>1.d4 f5 2.c4</game></td>
+    <td class="r">
+      &#x00ac; <game>2...Nf6 3.Nc3</game><br/>
+      &#x00ac; <game>2...Nf6 3.g3</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A85</td>
+    <td class="m"><game>1.d4 f5 2.c4 Nf6 3.Nc3</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A86</td>
+    <td class="m"><game>1.d4 f5 2.c4 Nf6 3.g3</game></td>
+    <td class="r">
+      &#x00ac; <game>3...g6 4.Bg2 Bg7 5.Nf3</game><br/>
+      &#x00ac; <game>3...e6</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A87</td>
+    <td class="m"><game>1.d4 f5 2.c4 Nf6 3.g3 g6 4.Bg2 Bg7 5.Nf3</game></td>
+    <td class="r">
+      &#x00ac; <game>5...O-O 6.O-O d6 7.Nc3 c6</game><br/>
+      &#x00ac; <game>5...O-O 6.O-O d6 7.Nc3 Nc6</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A88</td>
+    <td class="m"><game>1.d4 f5 2.c4 Nf6 3.g3 g6 4.Bg2 Bg7 5.Nf3 O-O<br/>6.O-O d6 7.Nc3 c6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A89</td>
+    <td class="m"><game>1.d4 f5 2.c4 Nf6 3.g3 g6 4.Bg2 Bg7 5.Nf3 O-O<br/>6.O-O d6 7.Nc3 Nc6</game></td>
+  </tr>
+</table>
+
+<h4 id="A90-A99">A90-A99</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">A90</td>
+    <td class="m"><game>1.d4 f5 2.c4 Nf6 3.g3 e6</game></td>
+    <td class="r">&#x00ac; <game>4.Bg2 Be7</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A91</td>
+    <td class="m"><game>1.d4 f5 2.c4 Nf6 3.g3 e6 4.Bg2 Be7</game></td>
+    <td class="r">&#x00ac; <game>5.Nf3 O-O</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A92</td>
+    <td class="m"><game>1.d4 f5 2.c4 Nf6 3.g3 e6 4.Bg2 Be7 5.Nf3 O-O</game></td>
+    <td class="r">
+      &#x00ac; <game>6.O-O d5 7.b3</game><br/>
+      &#x00ac; <game>6.O-O d5 7.Nc3</game><br/>
+      &#x00ac; <game>6.O-O d6</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A93</td>
+    <td class="m"><game>1.d4 f5 2.c4 Nf6 3.g3 e6 4.Bg2 Be7 5.Nf3 O-O<br/>6.O-O d5 7.b3</game></td>
+    <td class="r">&#x00ac; <game>7...c6 8.Ba3</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A94</td>
+    <td class="m"><game>1.d4 f5 2.c4 Nf6 3.g3 e6 4.Bg2 Be7 5.Nf3 O-O<br/>6.O-O d5 7.b3 c6 8.Ba3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A95</td>
+    <td class="m"><game>1.d4 f5 2.c4 Nf6 3.g3 e6 4.Bg2 Be7 5.Nf3 O-O<br/>6.O-O d5 7.Nc3</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A96</td>
+    <td class="m"><game>1.d4 f5 2.c4 Nf6 3.g3 e6 4.Bg2 Be7 5.Nf3 O-O<br/>6.O-O d6</game></td>
+    <td class="r">&#x00ac; <game>7.Nc3 Qe8</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A97</td>
+    <td class="m"><game>1.d4 f5 2.c4 Nf6 3.g3 e6 4.Bg2 Be7 5.Nf3 O-O<br/>6.O-O d6 7.Nc3 Qe8</game></td>
+    <td class="r">
+      &#x00ac; <game>8.Qc2</game><br/>
+      &#x00ac; <game>8.b3</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">A98</td>
+    <td class="m"><game>1.d4 f5 2.c4 Nf6 3.g3 e6 4.Bg2 Be7 5.Nf3 O-O<br/>6.O-O d6 7.Nc3 Qe8 8.Qc2</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">A99</td>
+    <td class="m"><game>1.d4 f5 2.c4 Nf6 3.g3 e6 4.Bg2 Be7 5.Nf3 O-O<br/>6.O-O d6 7.Nc3 Qe8 8.b3</game></td>
+  </tr>
+</table>
+
+<h3 id="B">%::mc::Volume% B</h3>
+
+<ul>
+  <li><a href="#B00-B09">B00-B09</a></li>
+  <li><a href="#B11-B19">B11-B19</a></li>
+  <li><a href="#B22-B09">B22-B29</a></li>
+  <li><a href="#B33-B29">B33-B39</a></li>
+  <li><a href="#B44-B39">B44-B49</a></li>
+  <li><a href="#B55-B49">B55-B59</a></li>
+  <li><a href="#B66-B59">B66-B69</a></li>
+  <li><a href="#B77-B69">B77-B79</a></li>
+  <li><a href="#B88-B79">B88-B89</a></li>
+  <li><a href="#B99-B89">B99-B99</a></li>
+</ul>
+
+<h4 id="B00-B09">B00-B09</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">B00</td>
+    <td class="m"><game>1.e4</game></td>
+    <td class="r">
+      &#x00ac; <game>1...d5</game><br/>
+      &#x00ac; <game>1...Nf6</game><br/>
+      &#x00ac; <game>1...g6</game><br/>
+      &#x00ac; <game>1...d6</game><br/>
+      &#x00ac; <game>1...c6</game><br/>
+      &#x00ac; <game>1...c5</game><br/>
+      &#x00ac; <game>1...e6</game><br/>
+      &#x00ac; <game>1...e5</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B01</td>
+    <td class="m"><game>1.e4 d5</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B02</td>
+    <td class="m"><game>1.e4 Nf6</game></td>
+    <td class="r">&#x00ac; <game>2.e5 Nd5 3.d4</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B03</td>
+    <td class="m"><game>1.e4 Nf6 2.e5 Nd5 3.d4</game></td>
+    <td class="r">&#x00ac; <game>3...d6 4.Nf3</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B04</td>
+    <td class="m"><game>1.e4 Nf6 2.e5 Nd5 3.d4 d6 4.Nf3</game></td>
+    <td class="r">&#x00ac; <game>4...Bg4</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B05</td>
+    <td class="m"><game>1.e4 Nf6 2.e5 Nd5 3.d4 d6 4.Nf3 Bg4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B06</td>
+    <td class="m"><game>1.e4 g6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B07</td>
+    <td class="m"><game>1.e4 d6</game></td>
+    <td class="r">
+      &#x00ac; <game>2.d4 Nf6 3.Nc3 g6 4.Nf3</game><br/>
+      &#x00ac; <game>2.d4 Nf6 3.Nc3 g6 4.f4</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B08</td>
+    <td class="m"><game>1.e4 d6 2.d4 Nf6 3.Nc3 g6 4.Nf3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B09</td>
+    <td class="m"><game>1.e4 d6 2.d4 Nf6 3.Nc3 g6 4.f4</game></td>
+  </tr>
+</table>
+
+<h4 id="B10-B19">B10-B19</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">B10</td>
+    <td class="m"><game>1.e4 c6</game></td>
+    <td class="r">
+      &#x00ac; <game>2.Nc3</game><br/>
+      &#x00ac; <game>2.d4</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B11</td>
+    <td class="m"><game>1.e4 c6 2.Nc3 d5 3.Nf3 Bg4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B12</td>
+    <td class="m"><game>1.e4 c6 2.d4</game></td>
+    <td class="r">
+      &#x00ac; <game>2...d5 3.exd5</game><br/>
+      &#x00ac; <game>2...d5 3.Nc3</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B13</td>
+    <td class="m"><game>1.e4 c6 2.d4 d5 3.exd5</game></td>
+    <td class="r">
+      &#x00ac; <game>3...cxd5 4.c4 Nf6 5.Nc3 e6</game><br/>
+      &#x00ac; <game>3...cxd5 4.c4 Nf6 5.Nc3 g6</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B14</td>
+    <td class="m"><game>1.e4 c6 2.d4 d5 3.exd5 cxd5 4.c4 Nf6 5.Nc3 g6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B15</td>
+    <td class="m"><game>1.e4 c6 2.d4 d5 3.Nc3</game></td>
+    <td class="r">
+      &#x00ac; <game>3...dxe4 4.Nxe4 Nf6 5.Nxf6+ gxf6</game><br/>
+      &#x00ac; <game>3...dxe4 4.Nxe4 Nd7</game><br/>
+      &#x00ac; <game>3...dxe4 4.Nxe4 Bf5</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B16</td>
+    <td class="m"><game>1.e4 c6 2.d4 d5 3.Nc3 dxe4 4.Nxe4 Nf6 5.Nxf6+ gxf6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B17</td>
+    <td class="m"><game>1.e4 c6 2.d4 d5 3.Nc3 dxe4 4.Nxe4 Nd7</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B18</td>
+    <td class="m"><game>1.e4 c6 2.d4 d5 3.Nc3 dxe4 4.Nxe4 Bf5</game></td>
+    <td class="r">&#x00ac; <game>5.Ng3 Bg6 6.h4 h6 7.Nf3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B19</td>
+    <td class="m"><game>1.e4 c6 2.d4 d5 3.Nc3 dxe4 4.Nxe4 Bf5 5.Ng3 Bg6<br/>6.h4 h6 7.Nf3</game></td>
+  </tr>
+</table>
+
+<h4 id="B20-B29">B20-B29</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">B20</td>
+    <td class="m"><game>1.e4 c5</game></td>
+    <td class="r">
+      &#x00ac; <game>2.c3</game><br/>
+      &#x00ac; <game>2.d4</game><br/>
+      &#x00ac; <game>2.f4</game><br/>
+      &#x00ac; <game>2.Nc3</game><br/>
+      &#x00ac; <game>2.Nf3</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B21</td>
+    <td class="m"><game>1.e4 c5 2.f4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B22</td>
+    <td class="m"><game>1.e4 c5 2.c3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B23</td>
+    <td class="m"><game>1.e4 c5 2.Nc3</game></td>
+    <td class="r">&#x00ac; <game>2...Nc6 3.g3</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B24</td>
+    <td class="m"><game>1.e4 c5 2.Nc3 Nc6 3.g3</game></td>
+    <td class="r">&#x00ac; <game>3...g6 4.Bg2 Bg7 5.d3 d6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B25</td>
+    <td class="m"><game>1.e4 c5 2.Nc3 Nc6 3.g3 g6 4.Bg2 Bg7 5.d3 d6</game></td>
+    <td class="r">&#x00ac; <game>6.Be3</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B26</td>
+    <td class="m"><game>1.e4 c5 2.Nc3 Nc6 3.g3 g6 4.Bg2 Bg7 5.d3 d6<br/>6.Be3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B27</td>
+    <td class="m"><game>1.e4 c5 2.Nf3</game></td>
+    <td class="r">
+      &#x00ac; <game>2...a6</game><br/>
+      &#x00ac; <game>2...d6</game><br/>
+      &#x00ac; <game>2...e6</game><br/>
+      &#x00ac; <game>2...Nc6</game><br/>
+      &#x00ac; <game>2...Nf6</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B28</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 a6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B29</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 Nf6</game></td>
+  </tr>
+</table>
+
+<h4 id="B30-B39">B30-B39</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">B30</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 Nc6</game></td>
+    <td class="r">
+      &#x00ac; <game>3.Bb5 g6</game><br/>
+      &#x00ac; <game>3.d4</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B31</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 Nc6 3.Bb5 g6</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B32</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 Nc6 3.d4</game></td>
+    <td class="r">
+      &#x00ac; <game>3...cxd4 4.Nxd4 Nf6</game><br/>
+      &#x00ac; <game>3...cxd4 4.Nxd4 g6</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B33</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 Nc6 3.d4 cxd4 4.Nxd4 Nf6</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B34</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 Nc6 3.d4 cxd4 4.Nxd4 g6</game></td>
+    <td class="r">
+      &#x00ac; <game>5.Nc3 Bg7 6.Be3 Nf6 7.Bc4</game><br/>
+      &#x00ac; <game>5.c4</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B35</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 Nc6 3.d4 cxd4 4.Nxd4 g6 5.Nc3 Bg7<br/>6.Be3 Nf6 7.Bc4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B36</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 Nc6 3.d4 cxd4 4.Nxd4 g6 5.c4</game></td>
+    <td class="r">&#x00ac; <game>5...Bg7</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B37</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 Nc6 3.d4 cxd4 4.Nxd4 g6 5.c4 Bg7</game></td>
+    <td class="r">&#x00ac; <game>6.Be3</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B38</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 Nc6 3.d4 cxd4 4.Nxd4 g6 5.c4 Bg7<br/>6.Be3</game></td>
+    <td class="r">&#x00ac; <game>6...Nf6 7.Nc3 Ng4</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B39</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 Nc6 3.d4 cxd4 4.Nxd4 g6 5.c4 Bg7<br/>6.Be3 Nf6 7.Nc3 Ng4</game></td>
+  </tr>
+</table>
+
+<h4 id="B40-B49">B40-B49</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">B40</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 e6</game></td>
+    <td class="r">&#x00ac; <game>3.d4</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B41</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 e6 3.d4</game></td>
+    <td class="r">
+      &#x00ac; <game>3...cxd4 4.Nxd4 a6 5.Bd3</game><br/>
+      &#x00ac; <game>3...cxd4 4.Nxd4 a6 5.Nc3</game><br/>
+      &#x00ac; <game>3...cxd4 4.Nxd4 Nc6</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B42</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 e6 3.d4 cxd4 4.Nxd4 a6 5.Bd3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B43</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 e6 3.d4 cxd4 4.Nxd4 a6 5.Nc3</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B44</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 e6 3.d4 cxd4 4.Nxd4 Nc6</game></td>
+    <td class="r">
+      &#x00ac; <game>5.Nc3</game><br/>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B45</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 e6 3.d4 cxd4 4.Nxd4 Nc6 5.Nc3</game></td>
+    <td class="r">
+      &#x00ac; <game>5...a6</game><br/>
+      &#x00ac; <game>5...d6</game><br/>
+      &#x00ac; <game>5...Qc7</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B46</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 e6 3.d4 cxd4 4.Nxd4 Nc6 5.Nc3 a6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B47</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 e6 3.d4 cxd4 4.Nxd4 Nc6 5.Nc3 Qc7</game></td>
+    <td class="r">&#x00ac; <game>6.Be3</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B48</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 e6 3.d4 cxd4 4.Nxd4 Nc6 5.Nc3 Qc7<br/>6.Be3</game></td>
+    <td class="r">&#x00ac; <game>6...a6 7.Be2</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B49</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 e6 3.d4 cxd4 4.Nxd4 Nc6 5.Nc3 Qc7<br/>6.Be3 a6 7.Be2</game></td>
+  </tr>
+</table>
+
+<h4 id="B50-B59">B50-B59</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">B50</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6</game></td>
+    <td class="r">
+      &#x00ac; <game>3.Bb5+</game><br/>
+      &#x00ac; <game>3.d4</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B51</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.Bb5+</game></td>
+    <td class="r">&#x00ac; <game>3...Bd7</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B52</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.Bb5+ Bd7</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B53</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4</game></td>
+    <td class="r">&#x00ac; <game>3...cxd4 4.Nxd4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B54</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4</game></td>
+    <td class="r">&#x00ac; <game>4...Nf6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B55</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.f3 e5<br/>6.Bb5+</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B56</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3</game></td>
+    <td class="r">
+      &#x00ac; <game>5...Nc6 6.Bc4</game><br/>
+      &#x00ac; <game>5...Nc6 6.Be2</game><br/>
+      &#x00ac; <game>5...Nc6 6.Bg5</game><br/>
+      &#x00ac; <game>5...g6</game><br/>
+      &#x00ac; <game>5...e6</game><br/>
+      &#x00ac; <game>5...a6</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B57</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 Nc6<br/>6.Bc4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B58</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 Nc6<br/>6.Be2</game></td>
+    <td class="r">&#x00ac; <game>6...e5 7.Nb3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B59</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 Nc6<br/>6.Be2 e5 7.Nb3</game></td>
+  </tr>
+</table>
+
+<h4 id="B60-B69">B60-B69</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">B60</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 Nc6<br/>6.Bg5</game></td>
+    <td class="r">
+      &#x00ac; <game>6...Bd7 7.Qd2</game><br/>
+      &#x00ac; <game>6...e6</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B61</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 Nc6<br/>6.Bg5 Bd7 7.Qd2</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B62</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 Nc6<br/>6.Bg5 e6</game></td>
+    <td class="r">&#x00ac; <game>7.Qd2</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B63</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 Nc6<br/>6.Bg5 e6 7.Qd2</game></td>
+    <td class="r">
+      &#x00ac; <game>7...Be7 8.O-O-O O-O 9.f4</game><br/>
+      &#x00ac; <game>7...a6</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B64</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 Nc6<br/>6.Bg5 e6 7.Qd2 Be7 8.O-O-O O-O 9.f4</game></td>
+    <td class="r">&#x00ac; <game>9...Nxd4 10.Qxd4</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B65</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 Nc6<br/>6.Bg5 e6 7.Qd2 Be7 8.O-O-O O-O 9.f4 Nxd4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B66</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 Nc6<br/>6.Bg5 e6 7.Qd2 a6</game></td>
+    <td class="r">&#x00ac; <game>8.O-O-O Bd7</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B67</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 Nc6<br/>6.Bg5 e6 7.Qd2 a6 8.O-O-O Bd7</game></td>
+    <td class="r">&#x00ac; <game>9.f4 Be7</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B68</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 Nc6<br/>6.Bg5 e6 7.Qd2 a6 8.O-O-O Bd7 9.f4 Be7</game></td>
+    <td class="r">&#x00ac; <game>10.Nf3 b5 11.Bxf6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B69</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 Nc6<br/>6.Bg5 e6 7.Qd2 a6 8.O-O-O Bd7 9.f4 Be710.Nf3 b5<br/>11.Bxf6</game></td>
+  </tr>
+</table>
+
+<h4 id="B70-B79">B70-B79</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">B70</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 g6</game></td>
+    <td class="r">
+      &#x00ac; <game>6.f4</game><br/>
+      &#x00ac; <game>6.Be3</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B71</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 g6<br/>6.f4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B72</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 g6<br/>6.Be3</game></td>
+    <td class="r">
+      &#x00ac; <game>6...Bg7 7.Be2 Nc6 8.O-O</game><br/>
+      &#x00ac; <game>6...Bg7 7.g3</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B73</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 g6<br/>6.Be3 Bg7 7.Be2 Nc6 8.O-O</game></td>
+    <td class="r">&#x00ac; <game>8...O-O 9.Nb3</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B74</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 g6<br/>6.Be3 Bg7 7.Be2 Nc6 8.O-O O-O 9.Nb3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B75</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 g6<br/>6.Be3 Bg7 7.f3</game></td>
+    <td class="r">&#x00ac; <game>7...O-O</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B76</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 g6<br/>6.Be3 Bg7 7.f3 O-O</game></td>
+    <td class="r">&#x00ac; <game>8.Qd2 Nc6 9.Bc4</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B77</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 g6<br/>6.Be3 Bg7 7.f3 O-O 8.Qd2 Nc6 9.Bc4</game></td>
+    <td class="r">&#x00ac; <game>9...Bd7 10.O-O-O</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B78</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 g6<br/>6.Be3 Bg7 7.f3 O-O 8.Qd2 Nc6 9.Bc4 Bd7<br/>10.O-O-O</game></td>
+    <td class="r">&#x00ac; <game>10...Qa5 11.Bb3 Rfc8 12.h4</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B79</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 g6<br/>6.Be3 Bg7 7.f3 O-O 8.Qd2 Nc6 9.Bc4 Bd7<br/>10.O-O-O Qa5 11.Bb3 Rfc8 12.h4</game></td>
+  </tr>
+</table>
+
+<h4 id="B80-B89">B80-B89</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">B80</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 e6</game></td>
+    <td class="r">
+      &#x00ac; <game>6.g4</game><br/>
+      &#x00ac; <game>6.f4</game><br/>
+      &#x00ac; <game>6.Be2</game><br/>
+      &#x00ac; <game>6.Bc4</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B81</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 e6<br/>6.g4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B82</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 e6<br/>6.f4</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B83</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 e6<br/>6.Be2</game></td>
+    <td class="r">&#x00ac; <game>6...a6</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B84</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 e6<br/>6.Be2 a6</game></td>
+    <td class="r">&#x00ac; <game>7.O-O Be7 8.f4 O-O 9.Be3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B85</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 e6<br/>6.Be2 a6 7.O-O Be7 8.f4 O-O 9.Be3</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B86</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 e6<br/>6.Bc4</game></td>
+    <td class="r">
+      &#x00ac; <game>6...a6 7.Bb3 b5</game><br/>
+      &#x00ac; <game>6...Nc6</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B87</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 e6<br/>6.Bc4 a6 7.Bb3 b5</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B88</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 e6<br/>6.Bc4 Nc6</game></td>
+    <td class="r">&#x00ac; <game>7.Be3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B89</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 e6<br/>6.Bc4 Nc6 7.Be3</game></td>
+  </tr>
+</table>
+
+<h4 id="B90-B99">B90-B99</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">B90</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 a6</game></td>
+    <td class="r">
+      &#x00ac; <game>6.g3</game><br/>
+      &#x00ac; <game>6.Be2</game><br/>
+      &#x00ac; <game>6.f4</game><br/>
+      &#x00ac; <game>6.Bg5</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B91</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 a6<br/>6.g3</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B92</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 a6<br/>6.Be2</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B93</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 a6<br/>6.f4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B94</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 a6<br/>6.Bg5</game></td>
+    <td class="r">&#x00ac; <game>6...e6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B95</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 a6<br/>6.Bg5 e6</game></td>
+    <td class="r">&#x00ac; <game>7.f4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B96</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 a6<br/>6.Bg5 e6 7.f4</game></td>
+    <td class="r">
+      &#x00ac; <game>7...Qb6</game><br/>
+      &#x00ac; <game>7...Be7</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B97</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 a6<br/>6.Bg5 e6 7.f4 Qb6</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">B98</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 a6<br/>6.Bg5 e6 7.f4 Be7</game></td>
+    <td class="r">&#x00ac; <game>8.Qf3 Qc7 9.O-O-O Nbd7</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">B99</td>
+    <td class="m"><game>1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 a6<br/>6.Bg5 e6 7.f4 Be7 8.Qf3 Qc7 9.O-O-O Nbd7</game></td>
+  </tr>
+</table>
+
+<h3 id="C">%::mc::Volume% C</h3>
+
+<ul>
+  <li><a href="#C00-C09">C00-C09</a></li>
+  <li><a href="#C11-C19">C11-C19</a></li>
+  <li><a href="#C22-C09">C22-C29</a></li>
+  <li><a href="#C33-C29">C33-C39</a></li>
+  <li><a href="#C44-C39">C44-C49</a></li>
+  <li><a href="#C55-C49">C55-C59</a></li>
+  <li><a href="#C66-C59">C66-C69</a></li>
+  <li><a href="#C77-C69">C77-C79</a></li>
+  <li><a href="#C88-C79">C88-C89</a></li>
+  <li><a href="#C99-C89">C99-C99</a></li>
+</ul>
+
+<h4 id="C00-C09">C00-C09</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">C00</td>
+    <td class="m"><game>1.e4 e6</game></td>
+    <td class="r">
+      &#x00ac; <game>2.d4 d5 3.exd5</game><br/>
+      &#x00ac; <game>2.d4 d5 3.e5</game><br/>
+      &#x00ac; <game>2.d4 d5 3.Nd2</game><br/>
+      &#x00ac; <game>2.d4 d5 3.Nc3</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C01</td>
+    <td class="m"><game>1.e4 e6 2.d4 d5 3.exd5</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C02</td>
+    <td class="m"><game>1.e4 e6 2.d4 d5 3.e5</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C03</td>
+    <td class="m"><game>1.e4 e6 2.d4 d5 3.Nd2</game></td>
+    <td class="r">
+      &#x00ac; <game>3...Nc6 4.Ngf3 Nf6</game><br/>
+      &#x00ac; <game>3...Nf6</game><br/>
+      &#x00ac; <game>3...c5</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C04</td>
+    <td class="m"><game>1.e4 e6 2.d4 d5 3.Nd2 Nc6 4.Ngf3 Nf6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C05</td>
+    <td class="m"><game>1.e4 e6 2.d4 d5 3.Nd2 Nf6</game></td>
+    <td class="r">&#x00ac; <game>4.e5 Nfd7 5.Bd3 c5 6.c3 Nc6 7.Ne2 cxd4 8.cxd4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C06</td>
+    <td class="m"><game>1.e4 e6 2.d4 d5 3.Nd2 Nf6 4.e5 Nfd7 5.Bd3 c5<br/>6.c3 Nc6 7.Ne2 cxd4 8.cxd4</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C07</td>
+    <td class="m"><game>1.e4 e6 2.d4 d5 3.Nd2 c5</game></td>
+    <td class="r">&#x00ac; <game>4.exd5 exd5</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C08</td>
+    <td class="m"><game>1.e4 e6 2.d4 d5 3.Nd2 c5 4.exd5 exd5</game></td>
+    <td class="r">&#x00ac; <game>5.Ngf3 Nc6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C09</td>
+    <td class="m"><game>1.e4 e6 2.d4 d5 3.Nd2 c5 4.exd5 exd5</game></td>
+  </tr>
+</table>
+
+<h4 id="C10-C19">C10-C19</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">C10</td>
+    <td class="m"><game>1.e4 e6 2.d4 d5 3.Nc3</game></td>
+    <td class="r">
+      &#x00ac; <game>3...Nf6</game><br/>
+      &#x00ac; <game>3...Bb4</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C11</td>
+    <td class="m"><game>1.e4 e6 2.d4 d5 3.Nc3 Nf6</game></td>
+    <td class="r">
+      &#x00ac; <game>4.Bg5 Bb4</game><br/>
+      &#x00ac; <game>4.Bg5 Be7</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C12</td>
+    <td class="m"><game>1.e4 e6 2.d4 d5 3.Nc3 Nf6 4.Bg5 Bb4</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C13</td>
+    <td class="m"><game>1.e4 e6 2.d4 d5 3.Nc3 Nf6 4.Bg5 Be7</game></td>
+    <td class="r">&#x00ac; <game>5.e5 Nfd7 6.Bxe7 Qxe7</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C14</td>
+    <td class="m"><game>1.e4 e6 2.d4 d5 3.Nc3 Nf6 4.Bg5 Be7 5.e5 Nfd7<br/>6.Bxe7 Qxe7</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C15</td>
+    <td class="m"><game>1.e4 e6 2.d4 d5 3.Nc3 Bb4</game></td>
+    <td class="r">&#x00ac; <game>4.e5</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C16</td>
+    <td class="m"><game>1.e4 e6 2.d4 d5 3.Nc3 Bb4 4.e5</game></td>
+    <td class="r">&#x00ac; <game>4...c5</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C17</td>
+    <td class="m"><game>1.e4 e6 2.d4 d5 3.Nc3 Bb4 4.e5 c5</game></td>
+    <td class="r">&#x00ac; <game>5.a3 Bxc3+</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C18</td>
+    <td class="m"><game>1.e4 e6 2.d4 d5 3.Nc3 Bb4 4.e5 c5 5.a3 Bxc3+</game></td>
+    <td class="r">
+      &#x00ac; <game>6.bxc3 Ne7 7.Nf3</game><br/>
+      &#x00ac; <game>6.bxc3 Ne7 7.a4</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C19</td>
+    <td class="m"><game>1.e4 e6 2.d4 d5 3.Nc3 Bb4 4.e5 c5 5.a3 Bxc3+ 6.bxc3 Ne7 7.a4</game><br/>
+                  <game>1.e4 e6 2.d4 d5 3.Nc3 Bb4 4.e5 c5 5.a3 Bxc3+ 6.bxc3 Ne7 7.Nf3</game></td>
+  </tr>
+</table>
+
+<h4 id="C20-C29">C20-C29</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">C20</td>
+    <td class="m"><game>1.e4 e5</game></td>
+    <td class="r">
+      &#x00ac; <game>2.d4</game><br/>
+      &#x00ac; <game>2.Bc4</game><br/>
+      &#x00ac; <game>2.Nc3</game><br/>
+      &#x00ac; <game>2.f4</game><br/>
+      &#x00ac; <game>2.Nf3</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C21</td>
+    <td class="m"><game>1.e4 e5 2.d4</game></td>
+    <td class="r">&#x00ac; <game>2...exd4 3.Qxd4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C22</td>
+    <td class="m"><game>1.e4 e5 2.d4 exd4 3.Qxd4</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C23</td>
+    <td class="m"><game>1.e4 e5 2.Bc4</game></td>
+    <td class="r">&#x00ac; <game>2...Nf6</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C24</td>
+    <td class="m"><game>1.e4 e5 2.Bc4 Nf6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C25</td>
+    <td class="m"><game>1.e4 e5 2.Nc3</game></td>
+    <td class="r">
+      &#x00ac; <game>2...Nf6 3.Bc4</game><br/>
+      &#x00ac; <game>2...Nf6 3.f4</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C26</td>
+    <td class="m"><game>1.e4 e5 2.Nc3 Nf6</game></td>
+    <td class="r">
+      &#x00ac; <game>3.f4</game><br/>
+      &#x00ac; <game>3.Bc4 Nxe4</game><br/>
+      &#x00ac; <game>3.Bc4 Nc6</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C27</td>
+    <td class="m"><game>1.e4 e5 2.Nc3 Nf6 3.Bc4 Nxe4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C28</td>
+    <td class="m"><game>1.e4 e5 2.Nc3 Nf6 3.Bc4 Nc6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C29</td>
+    <td class="m"><game>1.e4 e5 2.Nc3 Nf6 3.f4</game></td>
+  </tr>
+</table>
+
+<h4 id="C30-C39">C30-C39</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">C30</td>
+    <td class="m"><game>1.e4 e5 2.f4</game></td>
+    <td class="r">
+      &#x00ac; <game>2...d5</game><br/>
+      &#x00ac; <game>2...exf4</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C31</td>
+    <td class="m"><game>1.e4 e5 2.f4 d5</game></td>
+    <td class="r">&#x00ac; <game>3.exd5 e4 4.d3 Nf6</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C32</td>
+    <td class="m"><game>1.e4 e5 2.f4 d5 3.exd5 e4 4.d3 Nf6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C33</td>
+    <td class="m"><game>1.e4 e5 2.f4 exf4</game></td>
+    <td class="r">&#x00ac; <game>3.Nf3</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C34</td>
+    <td class="m"><game>1.e4 e5 2.f4 exf4 3.Nf3</game></td>
+    <td class="r">
+      &#x00ac; <game>3...Be7</game><br/>
+      &#x00ac; <game>3...d5</game><br/>
+      &#x00ac; <game>3...g5</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C35</td>
+    <td class="m"><game>1.e4 e5 2.f4 exf4 3.Nf3 Be7</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C36</td>
+    <td class="m"><game>1.e4 e5 2.f4 exf4 3.Nf3 d5</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C37</td>
+    <td class="m"><game>1.e4 e5 2.f4 exf4 3.Nf3 g5</game></td>
+    <td class="r">
+      &#x00ac; <game>4.Bc4 Bg7</game><br/>
+      &#x00ac; <game>4.h4</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C38</td>
+    <td class="m"><game>1.e4 e5 2.f4 exf4 3.Nf3 g5 4.Bc4 Bg7</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C39</td>
+    <td class="m"><game>1.e4 e5 2.f4 exf4 3.Nf3 g5 4.h4</game></td>
+  </tr>
+</table>
+
+<h4 id="C40-C49">C40-C49</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">C40</td>
+    <td class="m"><game>1.e4 e5 2.Nf3</game></td>
+    <td class="r">
+      &#x00ac; <game>2...d6</game><br/>
+      &#x00ac; <game>2...Nf6</game><br/>
+      &#x00ac; <game>2...Nc6</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C41</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 d6</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C42</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nf6</game></td>
+    <td class="r">&#x00ac; <game>3.d4</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C43</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nf6 3.d4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C44</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6</game></td>
+    <td class="r">
+      &#x00ac; <game>3.d4 exd4 4.Nxd4</game><br/>
+      &#x00ac; <game>3.Nc3</game><br/>
+      &#x00ac; <game>3.Bc4</game><br/>
+      &#x00ac; <game>3.Bb5</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C45</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.d4 exd4 4.Nxd4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C46</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Nc3</game></td>
+    <td class="r">&#x00ac; <game>3...Nf6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C47</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Nc3 Nf6</game></td>
+    <td class="r">&#x00ac; <game>4.Bb5</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C48</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Nc3 Nf6 4.Bb5</game></td>
+    <td class="r">&#x00ac; <game>4...Bb4</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C49</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Nc3 Nf6 4.Bb5 Bb4</game></td>
+  </tr>
+</table>
+
+<h4 id="C50-C59">C50-C59</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">C50</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bc4</game></td>
+    <td class="r">
+      &#x00ac; <game>3...Bc5 4.b4</game><br/>
+      &#x00ac; <game>3...Bc5 4.c3</game><br/>
+      &#x00ac; <game>3...Nf6</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C51</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.b4</game></td>
+    <td class="r">&#x00ac; <game>4...Bxb4 5.c3 Ba5</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C52</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.b4 Bxb4 5.c3 Ba5</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C53</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.c3</game></td>
+    <td class="r">&#x00ac; <game>4...Nf6</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C54</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.c3 Nf6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C55</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bc4 Nf6</game></td>
+    <td class="r">
+      &#x00ac; <game>4.d4</game><br/>
+      &#x00ac; <game>4.Ng5</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C56</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bc4 Nf6 4.d4 exd4 5.O-O Nxe4</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C57</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bc4 Nf6 4.Ng5</game></td>
+    <td class="r">&#x00ac; <game>4...d5 5.exd5 Na5</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C58</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bc4 Nf6 4.Ng5 d5 5.exd5 Na5</game></td>
+    <td class="r">&#x00ac; <game>6.Bb5+ c6 7.dxc6 bxc6 8.Be2 h6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C59</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bc4 Nf6 4.Ng5 d5 5.exd5 Na5<br/>6.Bb5+ c6 7.dxc6 bxc6 8.Be2 h6</game></td>
+  </tr>
+</table>
+
+<h4 id="C60-C69">C60-C69</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">C60</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5</game></td>
+    <td class="r">
+      &#x00ac; <game>3...Nd4</game><br/>
+      &#x00ac; <game>3...d6</game><br/>
+      &#x00ac; <game>3...f5</game><br/>
+      &#x00ac; <game>3...Bc5</game><br/>
+      &#x00ac; <game>3...Nf6</game><br/>
+      &#x00ac; <game>3...a6</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C61</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 Nd4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C62</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 d6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C63</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 f5</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C64</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 Bc5</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C65</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 Nf6</game></td>
+    <td class="r">
+      &#x00ac; <game>4.O-O d6</game><br/>
+      &#x00ac; <game>4.O-O Nxe4</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C66</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 Nf6 4.O-O d6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C67</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 Nf6 4.O-O Nxe4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C68</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 a6</game></td>
+    <td class="r">
+      &#x00ac; <game>4.Bxc6 dxc6 5.O-O f6</game><br/>
+      &#x00ac; <game>4.Ba4</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C69</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Bxc6 dxc6 5.O-O f6</game></td>
+  </tr>
+</table>
+
+<h4 id="C70-C79">C70-C79</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">C70</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4</game></td>
+    <td class="r">
+      &#x00ac; <game>4...d6</game><br/>
+      &#x00ac; <game>4...Nf6</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C71</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 d6</game></td>
+    <td class="r">
+      &#x00ac; <game>5.O-O</game><br/>
+      &#x00ac; <game>5.Bxc6+ bxc6</game><br/>
+      &#x00ac; <game>5.c3</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C72</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 d6 5.O-O</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C73</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 d6 5.Bxc6+</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C74</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 d6 5.c3</game></td>
+    <td class="r">&#x00ac; <game>5...Bd7</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C75</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 d6 5.c3 Bd7</game></td>
+    <td class="r">&#x00ac; <game>6.d4 g6</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C76</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 d6 5.c3 Bd7 6.d4 g6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C77</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6</game></td>
+    <td class="r">&#x00ac; <game>5.O-O</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C78</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O</game></td>
+    <td class="r">
+      &#x00ac; <game>5...d6</game><br/>
+      &#x00ac; <game>5...Nxe4</game><br/>
+      &#x00ac; <game>5...Be7</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C79</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O d6</game></td>
+  </tr>
+</table>
+
+<h4 id="C80-C89">C80-C89</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">C80</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O Nxe4</game></td>
+    <td class="r">
+      &#x00ac; <game>6.d4 b5 7.Bb3 d5 8.dxe5 Be6 9.Qe2</game><br/>
+      &#x00ac; <game>6.d4 b5 7.Bb3 d5 8.dxe5 Be6 9.c3</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C81</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O Nxe4<br/>6.d4 b5 7.Bb3 d5 8.dxe5 Be6 9.Qe2</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C82</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O Nxe4<br/>6.d4 b5 7.Bb3 d5 8.dxe5 Be6 9.c3</game></td>
+    <td class="r">&#x00ac; <game>9...Be7</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C83</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O Nxe4<br/>6.d4 b5 7.Bb3 d5 8.dxe5 Be6 9.c3 Be7</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C84</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O Be7</game></td>
+    <td class="r">
+      &#x00ac; <game>6.Bxc6</game><br/>
+      &#x00ac; <game>6.Qe2</game><br/>
+      &#x00ac; <game>6.Re1</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C85</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O Be7<br/>6.Bxc6</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C86</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O Be7<br/>6.Qe2</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C87</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O Be7<br/>6.Re1</game></td>
+    <td class="r">&#x00ac; <game>6...b5</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C88</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O Be7<br/>6.Re1 b5</game></td>
+    <td class="r">
+      &#x00ac; <game>7.Bb3 O-O 8.c3 d5</game><br/>
+      &#x00ac; <game>7.Bb3 O-O 8.c3 d6</game><br/>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C89</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O Be7<br/>6.Re1 b5 7.Bb3 O-O 8.c3 d5</game></td>
+  </tr>
+</table>
+
+<h4 id="C90-C99">C90-C99</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">C90</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O Be7<br/>6.Re1 b5 7.Bb3 O-O 8.c3 d6</game></td>
+    <td class="r">
+      &#x00ac; <game>9.d4</game><br/>
+      &#x00ac; <game>9.h3</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C91</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O Be7<br/>6.Re1 b5 7.Bb3 O-O 8.c3 d6 9.d4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C92</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O Be7<br/>6.Re1 b5 7.Bb3 O-O 8.c3 d6 9.h3</game></td>
+    <td class="r">
+      &#x00ac; <game>9...h6</game><br/>
+      &#x00ac; <game>9...Nb8</game><br/>
+      &#x00ac; <game>9...Na5</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C93</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O Be7<br/>6.Re1 b5 7.Bb3 O-O 8.c3 d6 9.h3 h6</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C94</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O Be7<br/>6.Re1 b5 7.Bb3 O-O 8.c3 d6 9.h3 Nb8</game></td>
+    <td class="r">&#x00ac; <game>10.d4</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C95</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O Be7<br/>6.Re1 b5 7.Bb3 O-O 8.c3 d6 9.h3 Nb8 10.d4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C96</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O Be7<br/>6.Re1 b5 7.Bb3 O-O 8.c3 d6 9.h3 Na5</game></td>
+    <td class="r">&#x00ac; <game>10.Bc2 c5 11.d4 Qc7</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C97</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O Be7<br/>6.Re1 b5 7.Bb3 O-O 8.c3 d6 9.h3 Na5 10.Bc2 c5<br/>11.d4 Qc7</game></td>
+    <td class="r">
+      &#x00ac; <game>12.Nbd2 Nc6</game><br/>
+      &#x00ac; <game>12.Nbd2 cxd4</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">C98</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O Be7<br/>6.Re1 b5 7.Bb3 O-O 8.c3 d6 9.h3 Na5 10.Bc2 c5<br/>11.d4 Qc7 12.Nbd2 Nc6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">C99</td>
+    <td class="m"><game>1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O Be7<br/>6.Re1 b5 7.Bb3 O-O 8.c3 d6 9.h3 Na5 10.Bc2 c5<br/>11.d4 Qc7 12.Nbd2 cxd4</game></td>
+  </tr>
+</table>
+
+<h3 id="D">%::mc::Volume% D</h3>
+
+<ul>
+  <li><a href="#D00-D09">D00-D09</a></li>
+  <li><a href="#D11-D19">D11-D19</a></li>
+  <li><a href="#D22-D09">D22-D29</a></li>
+  <li><a href="#D33-D29">D33-D39</a></li>
+  <li><a href="#D44-D39">D44-D49</a></li>
+  <li><a href="#D55-D49">D55-D59</a></li>
+  <li><a href="#D66-D59">D66-D69</a></li>
+  <li><a href="#D77-D69">D77-D79</a></li>
+  <li><a href="#D88-D79">D88-D89</a></li>
+  <li><a href="#D99-D89">D99-D99</a></li>
+</ul>
+
+<h4 id="D00-D09">D00-D09</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">D00</td>
+    <td class="m"><game>1.d4 d5</game></td>
+    <td class="r">
+      &#x00ac; <game>2.Nc3 Nf6 3.Bg5</game><br/>
+      &#x00ac; <game>2.Nf3</game><br/>
+      &#x00ac; <game>2.c4</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D01</td>
+    <td class="m"><game>1.d4 d5 2.Nc3 Nf6 3.Bg5</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D02</td>
+    <td class="m"><game>1.d4 d5 2.Nf3</game></td>
+    <td class="r">
+      &#x00ac; <game>2...Nf6 3.Bg5</game><br/>
+      &#x00ac; <game>2...Nf6 3.e3</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D03</td>
+    <td class="m"><game> 1.d4 d5 2.Nf3 Nf6 3.Bg5</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D04</td>
+    <td class="m"><game>1.d4 d5 2.Nf3 Nf6 3.e3</game></td>
+    <td class="r">&#x00ac; <game>3...e6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D05</td>
+    <td class="m"><game>1.d4 d5 2.Nf3 Nf6 3.e3 e6</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D06</td>
+    <td class="m"><game>1.d4 d5 2.c4</game></td>
+    <td class="r">
+      &#x00ac; <game>2...Nc6</game><br/>
+      &#x00ac; <game>2...e5</game><br/>
+      &#x00ac; <game>2...c6</game><br/>
+      &#x00ac; <game>2...dxc4</game><br/>
+      &#x00ac; <game>2...e6</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D07</td>
+    <td class="m"><game>1.d4 d5 2.c4 Nc6</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D08</td>
+    <td class="m"><game>1.d4 d5 2.c4 e5</game></td>
+    <td class="r">&#x00ac; <game>3.dxe5 d4 4.Nf3 Nc6 5.g3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D09</td>
+    <td class="m"><game>1.d4 d5 2.c4 e5 3.dxe5 d4 4.Nf3 Nc6 5.g3</game></td>
+  </tr>
+</table>
+
+<h4 id="D10-D19">D10-D19</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">D10</td>
+    <td class="m"><game>1.d4 d5 2.c4 c6</game></td>
+    <td class="r">&#x00ac; <game>3.Nf3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D11</td>
+    <td class="m"><game>1.d4 d5 2.c4 c6 3.Nf3</game></td>
+    <td class="r">
+      &#x00ac; <game>3...Nf6 4.e3</game><br/>
+      &#x00ac; <game>3...Nf6 4.cxd5</game><br/>
+      &#x00ac; <game>3...Nf6 4.Nc3</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D12</td>
+    <td class="m"><game>1.d4 d5 2.c4 c6 3.Nf3 Nf6 4.e3 Bf5</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D13</td>
+    <td class="m"><game>1.d4 d5 2.c4 c6 3.Nf3 Nf6 4.cxd5</game></td>
+    <td class="r">&#x00ac; <game>4...cxd5 5.Nc3 Nc6 6.Bf4 Bf5</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D14</td>
+    <td class="m"><game>1.d4 d5 2.c4 c6 3.Nf3 Nf6 4.cxd5 cxd5 5.Nc3 Nc6<br/>6.Bf4 Bf5</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D15</td>
+    <td class="m"><game>1.d4 d5 2.c4 c6 3.Nf3 Nf6 4.Nc3</game></td>
+    <td class="r">&#x00ac; <game>4...dxc4 5.a4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D16</td>
+    <td class="m"><game>1.d4 d5 2.c4 c6 3.Nf3 Nf6 4.Nc3 dxc4 5.a4</game></td>
+    <td class="r">&#x00ac; <game>5...Bf5</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D17</td>
+    <td class="m"><game>1.d4 d5 2.c4 c6 3.Nf3 Nf6 4.Nc3 dxc4 5.a4 Bf5</game></td>
+    <td class="r">&#x00ac; <game>6.e3</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D18</td>
+    <td class="m"><game>1.d4 d5 2.c4 c6 3.Nf3 Nf6 4.Nc3 dxc4 5.a4 Bf5<br/>6.e3</game></td>
+    <td class="r">&#x00ac; <game>6...e6 7.Bc4 Bb4 8.O-O O-O 9.Qe2</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D19</td>
+    <td class="m"><game>1.d4 d5 2.c4 c6 3.Nf3 Nf6 4.Nc3 dxc4 5.a4 Bf5<br/>6.e3 e6 7.Bxc4 Bb4 8.O-O O-O 9.Qe2</game></td>
+  </tr>
+</table>
+
+<h4 id="D20-D29">D20-D29</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">D20</td>
+    <td class="m"><game>1.d4 d5 2.c4 dxc4</game></td>
+    <td class="r">&#x00ac; <game>3.Nf3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D21</td>
+    <td class="m"><game>1.d4 d5 2.c4 dxc4 3.Nf3</game></td>
+    <td class="r">
+      &#x00ac; <game>3...a6 4.e3</game><br/>
+      &#x00ac; <game>3...Nf6</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D22</td>
+    <td class="m"><game>1.d4 d5 2.c4 dxc4 3.Nf3 a6 4.e3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D23</td>
+    <td class="m"><game>1.d4 d5 2.c4 dxc4 3.Nf3 Nf6</game></td>
+    <td class="r">
+      &#x00ac; <game>4.Nc3</game><br/>
+      &#x00ac; <game>4.e3</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D24</td>
+    <td class="m"><game>1.d4 d5 2.c4 dxc4 3.Nf3 Nf6 4.Nc3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D25</td>
+    <td class="m"><game>1.d4 d5 2.c4 dxc4 3.Nf3 Nf6 4.e3</game></td>
+    <td class="r">&#x00ac; <game>4...e6</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D26</td>
+    <td class="m"><game>1.d4 d5 2.c4 dxc4 3.Nf3 Nf6 4.e3 e6</game></td>
+    <td class="r">&#x00ac; <game>5.Bxc4 c5 6.O-O a6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D27</td>
+    <td class="m"><game>1.d4 d5 2.c4 dxc4 3.Nf3 Nf6 4.e3 e6 5.Bxc4 c5 6.O-O a6</game></td>
+    <td class="r">&#x00ac; <game>7.Qe2</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D28</td>
+    <td class="m"><game>1.d4 d5 2.c4 dxc4 3.Nf3 Nf6 4.e3 e6 5.Bxc4 c5<br/>6.O-O a6 7.Qe2</game></td>
+    <td class="r">&#x00ac; <game>7...b5 8.Bb3 Bb7</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D29</td>
+    <td class="m"><game>1.d4 d5 2.c4 dxc4 3.Nf3 Nf6 4.e3 e6 5.Bxc4 c5<br/>6.O-O a6 7.Qe2 b5 8.Bb3 Bb7</game></td>
+  </tr>
+</table>
+
+<h4 id="D30-D39">D30-D39</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">D30</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6</game></td>
+    <td class="r">&#x00ac; <game>3.Nc3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D31</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3</game></td>
+    <td class="r">
+      &#x00ac; <game>3...c5</game><br/>
+      &#x00ac; <game>3...Nf6</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D32</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 c5</game></td>
+    <td class="r">&#x00ac; <game>4.cxd5 exd5 5.Nf3 Nc6 6.g3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D33</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 c5 4.cxd5 exd5 5.Nf3 Nc6<br/>6.g3</game></td>
+    <td class="r">&#x00ac; <game>6...Nf6 7.Bg2 Be7</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D34</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 c5 4.cxd5 exd5 5.Nf3 Nc6<br/>6.g3 Nf6 7.Bg2 Be7</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D35</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6</game></td>
+    <td class="r">
+      &#x00ac; <game>4.cxd5 exd5 5.Bg5 c6 6.Qc2</game><br/>
+      &#x00ac; <game>4.Nf3</game><br/>
+      &#x00ac; <game>4.Bg5</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D36</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.cxd5 exd5 5.Bg5 c6<br/>6.Qc2</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D37</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Nf3</game></td>
+    <td class="r">
+      &#x00ac; <game>4...Bb4</game><br/>
+      &#x00ac; <game>4...c5</game><br/>
+      &#x00ac; <game>4...c6</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D38</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Nf3 Bb4</game></td>
+    <td class="r">&#x00ac; <game>5.Bg5</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D39</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Nf3 Bb4 5.Bg5 dxc4</game></td>
+  </tr>
+</table>
+
+<h4 id="D40-D49">D40-D49</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">D40</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Nf3 c5</game></td>
+    <td class="r">&#x00ac; <game>5.cxd5</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D41</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Nf3 c5 5.cxd5</game></td>
+    <td class="r">&#x00ac; <game>5...Nxd5 6.e3 Nc6 7.Bd3</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D42</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Nf3 c5 5.cxd5 Nxd5<br/>6.e3 Nc6 7.Bd3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D43</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Nf3 c6</game></td>
+    <td class="r">
+      &#x00ac; <game>5.Bg5 dxc4</game><br/>
+      &#x00ac; <game>5.e3</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D44</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Nf3 c6 5.Bg5 dxc4</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D45</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Nf3 c6 5.e3</game></td>
+    <td class="r">&#x00ac; <game>5...Nbd7 6.Bd3</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D46</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Nf3 c6 5.e3 Nbd7<br/>6.Bd3</game></td>
+    <td class="r">&#x00ac; <game>6...dxc4</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D47</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Nf3 c6 5.e3 Nbd7<br/>6.Bd3 dxc4</game></td>
+    <td class="r">&#x00ac; <game>7.Bxc4 b5 8.Bd3 a6</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D48</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Nf3 c6 5.e3 Nbd7<br/>6.Bd3 dxc4 7.Bxc4 b5 8.Bd3 a6</game></td>
+    <td class="r">&#x00ac; <game>9.e4 c5 10.e5 cxd4 11.Nxb5</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D49</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Nf3 c6 5.e3 Nbd7<br/>6.Bd3 dxc4 7.Bxc4 b5 8.Bd3 a6 9.e4 c5 10.e5 cxd4<br/>11.Nxb5</game></td>
+  </tr>
+</table>
+
+<h4 id="D50-D59">D50-D59</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">D50</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Bg5</game></td>
+    <td class="r">
+      &#x00ac; <game>4...Nbd7</game><br/>
+      &#x00ac; <game>4...Be7</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D51</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Bg5 Nbd7</game></td>
+    <td class="r">&#x00ac; <game>5.e3 c6 6.Nf3</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D52</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Bg5 Nbd7 5.e3 c6<br/>6.Nf3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D53</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Bg5 Be7</game></td>
+    <td class="r">
+      &#x00ac; <game>5.e3 O-O 6.Rc1</game><br/>
+      &#x00ac; <game>5.e3 O-O 6.Nf3</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D54</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Bg5 Be7 5.e3 O-O<br/>6.Rc1</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D55</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Bg5 Be7 5.e3 O-O<br/>6.Nf3</game></td>
+    <td class="r">
+      &#x00ac; <game>6...h6 7.Bh4</game><br/>
+      &#x00ac; <game>6...Nbd7</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D56</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Bg5 Be7 5.e3 O-O<br/>6.Nf3 h6 7.Bh4</game></td>
+    <td class="r">
+      &#x00ac; <game>7...Ne4 8.Bxe7 Qxe7 9.cxd5</game><br/>
+      &#x00ac; <game>7...b6</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D57</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Bg5 Be7 5.e3 O-O<br/>6.Nf3 h6 7.Bh4 Ne4 8.Bxe7 Qxe7 9.cxd5</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D58</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Bg5 Be7 5.e3 O-O<br/>6.Nf3 h6 7.Bh4 b6</game></td>
+    <td class="r">&#x00ac; <game>8.cxd5 Nxd5</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D59</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Bg5 Be7 5.e3 O-O<br/>6.Nf3 h6 7.Bh4 b6 8.cxd5 Nxd5</game></td>
+  </tr>
+</table>
+
+<h4 id="D60-D69">D60-D69</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">D60</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Bg5 Be7 5.e3 O-O<br/>6.Nf3 Nbd7</game></td>
+    <td class="r">
+      &#x00ac; <game>7.Qc2</game><br/>
+      &#x00ac; <game>7.Rc1</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D61</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Bg5 Be7 5.e3 O-O<br/>6.Nf3 Nbd7 7.Qc2</game></td>
+    <td class="r">&#x00ac; <game>7...c5 8.cxd5</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D62</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Bg5 Be7 5.e3 O-O<br/>6.Nf3 Nbd7 7.Qc2 c5 8.cxd5</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D63</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Bg5 Be7 5.e3 O-O<br/>6.Nf3 Nbd7 7.Rc1</game></td>
+    <td class="r">
+      &#x00ac; <game>7...c6 8.Qc2</game><br/>
+      &#x00ac; <game>7...c6 8.Bd3</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D64</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Bg5 Be7 5.e3 O-O<br/>6.Nf3 Nbd7 7.Rc1 c6 8.Qc2</game></td>
+    <td class="r">&#x00ac; <game>8...a6 9.cxd5</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D65</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Bg5 Be7 5.e3 O-O<br/>6.Nf3 Nbd7 7.Rc1 c6 8.Qc2 a6 9.cxd5</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D66</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Bg5 Be7 5.e3 O-O<br/>6.Nf3 Nbd7 7.Rc1 c6 8.Bd3</game></td>
+    <td class="r">&#x00ac; <game>8...dxc4 9.Bxc4 Nd5</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D67</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Bg5 Be7 5.e3 O-O<br/>6.Nf3 Nbd7 7.Rc1 c6 8.Bd3 dxc4 9.Bxc4 Nd5</game></td>
+    <td class="r">&#x00ac; <game>10.Bxe7 Qxe7 11.O-O Nxc3 12.Rxc3 e5</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D68</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Bg5 Be7 5.e3 O-O<br/>6.Nf3 Nbd7 7.Rc1 c6 8.Bd3 dxc4 9.Bxc4 Nd5<br/>10.Bxe7 Qxe7 11.O-O Nxc3 12.Rxc3 e5</game></td>
+    <td class="r">&#x00ac; <game>13.dxe5</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D69</td>
+    <td class="m"><game>1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Bg5 Be7 5.e3 O-O<br/>6.Nf3 Nbd7 7.Rc1 c6 8.Bd3 dxc4 9.Bxc4 Nd5<br/>10.Bxe7 Qxe7 11.O-O Nxc3 12.Rxc3 e5 13.dxe5</game></td>
+  </tr>
+</table>
+
+<h4 id="D70-D79">D70-D79</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">D70</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.-- d5</game></td>
+    <td class="r">
+      &#x00ac; <game>3.g3</game><br/>
+      &#x00ac; <game>3.Nc3</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D71</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.g3 d5</game></td>
+    <td class="r">
+      &#x00ac; <game>4.Bg2 Bg7 5.cxd5 Nxd5 6.e4 Nb6</game><br/>
+      &#x00ac; <game>4.Bg2 Bg7 5.Nf3</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D72</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.g3 d5 4.Bg2 Bg7 5.cxd5 Nxd5<br/>6.e4 Nb6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D73</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.g3 d5 4.Bg2 Bg7 5.Nf3</game></td>
+    <td class="r">
+      &#x00ac; <game>5...O-O 6.cxd5 Nxd5 7.O-O</game><br/>
+      &#x00ac; <game>5...O-O 6.O-O</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D74</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.g3 d5 4.Bg2 Bg7 5.Nf3 O-O<br/>6.cxd5 Nxd5 7.O-O</game></td>
+    <td class="r">
+      &#x00ac; <game>7...c5 8.Nc3</game><br/>
+      &#x00ac; <game>7...Nb6</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D75</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.g3 d5 4.Bg2 Bg7 5.Nf3 O-O<br/>6.cxd5 Nxd5 7.O-O c5 8.Nc3</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D76</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.g3 d5 4.Bg2 Bg7 5.Nf3 O-O<br/>6.cxd5 Nxd5 7.O-O Nb6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D77</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.g3 d5 4.Bg2 Bg7 5.Nf3 O-O<br/>6.O-O</game></td>
+    <td class="r">&#x00ac; <game>6...c6</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D78</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.g3 d5 4.Bg2 Bg7 5.Nf3 O-O<br/>6.O-O c6</game></td>
+    <td class="r">&#x00ac; <game>7.cxd5</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D79</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.g3 d5 4.Bg2 Bg7 5.Nf3 O-O<br/>6.O-O c6 7.cxd5</game></td>
+  </tr>
+</table>
+
+<h4 id="D80-D89">D80-D89</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">D80</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 d5</game></td>
+    <td class="r">
+      &#x00ac; <game>4.Qb3</game><br/>
+      &#x00ac; <game>4.Bf4</game><br/>
+      &#x00ac; <game>4.cxd5</game><br/>
+      &#x00ac; <game>4.Nf3</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D81</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 d5 4.Qb3</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D82</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 d5 4.Bf4</game></td>
+    <td class="r">&#x00ac; <game>4...Bg7 5.e3 O-O</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D83</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 d5 4.Bf4 Bg7 5.e3 O-O</game></td>
+    <td class="r">&#x00ac; <game>6.cxd5</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D84</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 d5 4.Bf4 Bg7 5.e3 O-O 6.cxd5</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D85</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 d5 4.cxd5</game></td>
+    <td class="r">&#x00ac; <game>4...Nxd5 5.e4 Nxc3 6.bxc3 Bg7 7.Bc4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D86</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 d5 4.cxd5 Nxd5 5.e4 Nxc3<br/>6.bxc3 Bg7 7.Bc4</game></td>
+    <td class="r">&#x00ac; <game>7...O-O 8.Ne2 c5</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D87</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 d5 4.cxd5 Nxd5 5.e4 Nxc3<br/>6.bxc3 Bg7 7.Bc4 O-O 8.Ne2 c5</game></td>
+    <td class="r">&#x00ac; <game>9.O-O Nc6 10.Be3 cxd4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D88</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 d5 4.cxd5 Nxd5 5.e4 Nxc3<br/>6.bxc3 Bg7 7.Bc4 O-O 8.Ne2 c5 9.O-O Nc6 10.Be3 cxd4</game></td>
+    <td class="r">&#x00ac; <game>11.cxd4 Bg4 12.f3 Na5 13.Bd3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D89</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 d5 4.cxd5 Nxd5 5.e4 Nxc3<br/>6.bxc3 Bg7 7.Bc4 O-O 8.Ne2 c5 9.O-O Nc6 10.Be3 cxd4<br/>11.cxd4 Bg4 12.f3 Na5 13.Bd3</game></td>
+  </tr>
+</table>
+
+<h4 id="D90-D99">D90-D99</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">D90</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 d5 4.Nf3</game></td>
+    <td class="r">
+      &#x00ac; <game>4...Bg7 5.Bg5</game><br/>
+      &#x00ac; <game>4...Bg7 5.Bf4</game><br/>
+      &#x00ac; <game>4...Bg7 5.e3</game><br/>
+      &#x00ac; <game>4...Bg7 5.Qb3</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D91</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 d5 4.Nf3 Bg7 5.Bg5</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D92</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 d5 4.Nf3 Bg7 5.Bf4</game></td>
+    <td class="r">&#x00ac; <game>5...O-O 6.e3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D93</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 d5 4.Nf3 Bg7 5.Bf4 O-O<br/>6.e3</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D94</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 d5 4.Nf3 Bg7 5.e3</game></td>
+    <td class="r">&#x00ac; <game>5...O-O 6.Qb3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D95</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 d5 4.Nf3 Bg7 5.e3 O-O<br/>6.Qb3</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D96</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 d5 4.Nf3 Bg7 5.Qb3</game></td>
+    <td class="r">&#x00ac; <game>5...dxc4 6.Qxc4 O-O 7.e4</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D97</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 d5 4.Nf3 Bg7 5.Qb3 dxc4<br/>6.Qxc4 O-O 7.e4</game></td>
+    <td class="r">&#x00ac; <game>7...Bg4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">D98</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 d5 4.Nf3 Bg7 5.Qb3 dxc4<br/>6.Qxc4 O-O 7.e4 Bg4</game></td>
+    <td class="r">&#x00ac; <game>8.Be3 Nfd7 9.Qb3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">D99</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 d5 4.Nf3 Bg7 5.Qb3 dxc4<br/>6.Qxc4 O-O 7.e4 Bg4 8.Be3 Nfd7 9.Qb3</game></td>
+  </tr>
+</table>
+
+<h3 id="E">%::mc::Volume% E</h3>
+
+<ul>
+  <li><a href="#E00-E09">E00-E09</a></li>
+  <li><a href="#E11-E19">E11-E19</a></li>
+  <li><a href="#E22-E09">E22-E29</a></li>
+  <li><a href="#E33-E29">E33-E39</a></li>
+  <li><a href="#E44-E39">E44-E49</a></li>
+  <li><a href="#E55-E49">E55-E59</a></li>
+  <li><a href="#E66-E59">E66-E69</a></li>
+  <li><a href="#E77-E69">E77-E79</a></li>
+  <li><a href="#E88-E79">E88-E89</a></li>
+  <li><a href="#E99-E89">E99-E99</a></li>
+</ul>
+
+<h4 id="E00-E09">E00-E09</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">E00</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6</game></td>
+    <td class="r">
+      &#x00ac; <game>3.g3 d5</game><br/>
+      &#x00ac; <game>3.Nf3</game><br/>
+      &#x00ac; <game>3.Nc3 d5</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E01</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.g3 d5</game></td>
+    <td class="r">
+      &#x00ac; <game>4.Bg2 dxc4</game><br/>
+      &#x00ac; <game>4.Bg2 Be7</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E02</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.g3 d5 4.Bg2 dxc4</game></td>
+    <td class="r">
+      &#x00ac; <game>5.Qa4+ Nbd7 6.Qxc4</game><br/>
+      &#x00ac; <game>5.Nf3</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E03</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.g3 d5 4.Bg2 dxc4 5.Qa4+ Nbd7<br/>6.Qxc4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E04</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.g3 d5 4.Bg2 dxc4 5.Nf3</game></td>
+    <td class="r">&#x00ac; <game>5...Be7</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E05</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.g3 d5 4.Bg2 dxc4 5.Nf3 Be7</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E06</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.g3 d5 4.Bg2 Be7</game></td>
+    <td class="r">&#x00ac; <game>5.Nf3 O-O 6.O-O Nbd7</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E07</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.g3 d5 4.Bg2 Be7 5.Nf3 O-O<br/>6.O-O Nbd7</game></td>
+    <td class="r">&#x00ac; <game>7.Qc2</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E08</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.g3 d5 4.Bg2 Be7 5.Nf3 O-O<br/>6.O-O Nbd7 7.Qc2</game></td>
+    <td class="r">&#x00ac; <game>7...c6 8.Nbd2</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E09</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.g3 d5 4.Bg2 Be7 5.Nf3 O-O<br/>6.O-O Nbd7 7.Qc2 c6 8.Nbd2</game></td>
+  </tr>
+</table>
+
+<h4 id="E10-E19">E10-E19</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">E10</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nf3</game></td>
+    <td class="r">
+      &#x00ac; <game>3...Bb4+</game><br/>
+      &#x00ac; <game>3...b6</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E11</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nf3 Bb4+</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E12</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nf3 b6</game></td>
+    <td class="r">
+      &#x00ac; <game>4.Nc3 Bb7 5.Bg5</game><br/>
+      &#x00ac; <game>4.e3</game><br/>
+      &#x00ac; <game>4.g3</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E13</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nf3 b6 4.Nc3 Bb7 5.Bg5 h6<br/>6.Bh4 Bb4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E14</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nf3 b6 4.e3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E15</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nf3 b6 4.g3</game></td>
+    <td class="r">
+      &#x00ac; <game>4...Bb7 5.Bg2 Bb4+</game><br/>
+      &#x00ac; <game>4...Bb7 5.Bg2 Be7</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E16</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nf3 b6 4.g3 Bb7 5.Bg2 Bb4+</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E17</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nf3 b6 4.g3 Bb7 5.Bg2 Be7</game></td>
+    <td class="r">&#x00ac; <game>6.O-O O-O 7.Nc3</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E18</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nf3 b6 4.g3 Bb7 5.Bg2 Be7<br/>6.O-O O-O 7.Nc3</game></td>
+    <td class="r">&#x00ac; <game>7...Ne4 8.Qc2 Nxc3 9.Qxc3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E19</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nf3 b6 4.g3 Bb7 5.Bg2 Be7<br/>6.O-O O-O 7.Nc3 Ne4 8.Qc2 Nxc3 9.Qxc3</game></td>
+  </tr>
+</table>
+
+<h4 id="E20-E29">E20-E29</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">E20</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4</game></td>
+    <td class="r">
+      &#x00ac; <game>4.Nf3</game><br/>
+      &#x00ac; <game>4.Qb3</game><br/>
+      &#x00ac; <game>4.a3</game><br/>
+      &#x00ac; <game>4.Bg5</game><br/>
+      &#x00ac; <game>4.Qc2</game><br/>
+      &#x00ac; <game>4.e3</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E21</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.Nf3</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E22</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.Qb3</game></td>
+    <td class="r">&#x00ac; <game>4...c5 5.dxc5 Nc6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E23</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.Qb3 c5 5.dxc5 Nc6</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E24</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.a3</game></td>
+    <td class="r">
+      &#x00ac; <game>4...Bxc3+ 5.bxc3 c5 6.e3</game><br/>
+      &#x00ac; <game>4...Bxc3+ 5.bxc3 O-O</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E25</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.a3 Bxc3+ 5.bxc3 c5<br/>6.f3 d5 7.cxd5</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E26</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.a3 Bxc3+ 5.bxc3 c5<br/>6.e3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E27</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.a3 Bxc3+ 5.bxc3 O-O</game></td>
+    <td class="r">&#x00ac; <game>6.e3</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E28</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.a3 Bxc3+ 5.bxc3 O-O<br/>6.e3</game></td>
+    <td class="r">&#x00ac; <game>6...c5 7.Bd3 Nc6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E29</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.a3 Bxc3+ 5.bxc3 O-O<br/>6.e3 c5 7.Bd3 Nc6</game></td>
+  </tr>
+</table>
+
+<h4 id="E30-E39">E30-E39</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">E30</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.Bg5</game></td>
+    <td class="r">&#x00ac; <game>4...h6 5.Bh4 c5 6.d5 d6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E31</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.Bg5 h6 5.Bh4 c5<br/>6.d5 d6</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E32</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.Qc2</game></td>
+    <td class="r">
+      &#x00ac; <game>4...Nc6</game><br/>
+      &#x00ac; <game>4...d5</game><br/>
+      &#x00ac; <game>4...c5</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E33</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.Qc2 Nc6</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E34</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.Qc2 d5</game></td>
+    <td class="r">
+      &#x00ac; <game>5.cxd5 exd5</game><br/>
+      &#x00ac; <game>5.a3</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E35</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.Qc2 d5 5.cxd5 exd5</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E36</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.Qc2 d5 5.a3</game></td>
+    <td class="r">&#x00ac; <game>5...Bxc3+ 6.Qxc3 Ne4 7.Qc2</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E37</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.Qc2 d5 5.a3 Bxc3+<br/>6.Qxc3 Ne4 7.Qc2</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E38</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.Qc2 c5</game></td>
+    <td class="r">&#x00ac; <game>5.dxc5 O-O</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E39</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.Qc2 c5 5.dxc5 O-O</game></td>
+  </tr>
+</table>
+
+<h4 id="E40-E49">E40-E49</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">E40</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.e3</game></td>
+    <td class="r">
+      &#x00ac; <game>4...c5</game><br/>
+      &#x00ac; <game>4...b5</game><br/>
+      &#x00ac; <game>4...O-O</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E41</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.e3 c5</game></td>
+    <td class="r">&#x00ac; <game>5.Nge2</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E42</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.e3 c5 5.Nge2</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E43</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.e3 b6</game></td>
+    <td class="r">&#x00ac; <game>5.Nge2</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E44</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.e3 b6 5.Nge2</game></td>
+    <td class="r">&#x00ac; <game>5...Ba6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E45</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.e3 b6 5.Nge2 Ba6</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E46</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.e3 O-O</game></td>
+    <td class="r">
+      &#x00ac; <game>5.Bd3</game><br/>
+      &#x00ac; <game>5.Nf3</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E47</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.e3 O-O 5.Bd3</game></td>
+    <td class="r">&#x00ac; <game>5...d5</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E48</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.e3 O-O 5.Bd3 d5</game></td>
+    <td class="r">&#x00ac; <game>6.a3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E49</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.e3 O-O 5.Bd3 d5<br/>6.a3 Bxc3+ 7.bxc3</game></td>
+  </tr>
+</table>
+
+<h4 id="E50-E59">E50-E59</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">E50</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.e3 O-O 5.Nf3</game></td>
+    <td class="r">&#x00ac; <game>5...d5</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E51</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.e3 O-O 5.Nf3 d5</game></td>
+    <td class="r">
+      &#x00ac; <game>6.Bd3 b6</game><br/>
+      &#x00ac; <game>6.Bd3 c5</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E52</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.e3 O-O 5.Nf3 d5<br/>6.Bd3 b6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E53</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.e3 O-O 5.Nf3 d5<br/>6.Bd3 c5</game></td>
+    <td class="r">
+      &#x00ac; <game>7.O-O dxc4 8.Bxc4</game><br/>
+      &#x00ac; <game>7.O-O Nc6</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E54</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.e3 O-O 5.Nf3 d5<br/>6.Bd3 c5 7.O-O dxc4 8.Bxc4</game></td>
+    <td class="r">&#x00ac; <game>8...Nbd7</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E55</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.e3 O-O 5.Nf3 d5<br/>6.Bd3 c5 7.O-O dxc4 8.Bxc4 Nbd7</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E56</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.e3 O-O 5.Nf3 d5<br/>6.Bd3 c5 7.O-O Nc6</game></td>
+    <td class="r">
+      &#x00ac; <game>8.a3 dxc4 9.Bxc4 cxd4</game><br/>
+      &#x00ac; <game>8.a3 Bxc3 9.bxc3</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E57</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.e3 O-O 5.Nf3 d5<br/>6.Bd3 c5 7.O-O Nc6 8.a3 dxc4 9.Bxc4 cxd4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E58</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.e3 O-O 5.Nf3 d5<br/>6.Bd3 c5 7.O-O Nc6 8.a3 Bxc3 9.bxc3</game></td>
+    <td class="r">&#x00ac; <game>9...dxc4 10.Bxc4</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E59</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.e3 O-O 5.Nf3 d5<br/>6.Bd3 c5 7.O-O Nc6 8.a3 Bxc3 9.bxc3 dxc4<br/>10.Bxc4</game></td>
+  </tr>
+</table>
+
+<h4 id="E60-E69">E60-E69</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">E60</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6</game></td>
+    <td class="r">&#x00ac; <game>3.Nc3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E61</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3</game></td>
+    <td class="r">
+      &#x00ac; <game>3...d5</game><br/>
+      &#x00ac; <game>3...Bg7 4.Nf3 d6 5.g3</game><br/>
+      &#x00ac; <game>3...Bg7 4.e4</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E62</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.Nf3 d6 5.g3</game></td>
+    <td class="r">
+      &#x00ac; <game>5...O-O 6.Bg2 Nc6 7.O-O a6</game><br/>
+      &#x00ac; <game>5...O-O 6.Bg2 c5</game><br/>
+      &#x00ac; <game>5...O-O 6.Bg2 Nbd7</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E63</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.Nf3 d6 5.g3 O-O<br/>6.Bg2 Nc6 7.O-O a6</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E64</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.Nf3 d6 5.g3 O-O<br/>6.Bg2 c5</game></td>
+    <td class="r">&#x00ac; <game>7.O-O</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E65</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.Nf3 d6 5.g3 O-O<br/>6.Bg2 c5 7.O-O</game></td>
+    <td class="r">&#x00ac; <game>7...Nc6 8.d5</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E66</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.Nf3 d6 5.g3 O-O<br/>6.Bg2 c5 7.O-O Nc6 8.d5</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E67</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.Nf3 d6 5.g3 O-O<br/>6.Bg2 Nbd7</game></td>
+    <td class="r">&#x00ac; <game>7.O-O e5 8.e4</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E68</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.Nf3 d6 5.g3 O-O<br/>6.Bg2 Nbd7 7.O-O e5 8.e4</game></td>
+    <td class="r">&#x00ac; <game> 8...c6 9.h3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E69</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.Nf3 d6 5.g3 O-O<br/>6.Bg2 Nbd7 7.O-O e5 8.e4 c6 9.h3</game></td>
+  </tr>
+</table>
+
+<h4 id="E70-E79">E70-E79</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">E70</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4</game></td>
+    <td class="r">
+      &#x00ac; <game>4...d6 5.h3</game><br/>
+      &#x00ac; <game>4...d6 5.g3</game><br/>
+      &#x00ac; <game>4...d6 5.Be2</game><br/>
+      &#x00ac; <game>4...d6 5.f4</game><br/>
+      &#x00ac; <game>4...d6 5.f3</game><br/>
+      &#x00ac; <game>4...d6 5.Nf3</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E71</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.h3</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E72</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.g3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E73</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.Be2</game></td>
+    <td class="r">&#x00ac; <game>5...O-O 6.Bg5 c5</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E74</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.Be2 O-O<br/>6.Bg5 c5</game></td>
+    <td class="r">&#x00ac; <game>7.d5 e6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E75</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.Be2 O-O<br/>6.Bg5 c5 7.d5 e6</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E76</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.f4</game></td>
+    <td class="r">&#x00ac; <game>5...O-O 6.Be2</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E77</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.f4 O-O<br/>6.Be2</game></td>
+    <td class="r">&#x00ac; <game>6...c5 7.Nf3</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E78</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.f4 O-O<br/>6.Be2 c5 7.Nf3</game></td>
+    <td class="r">&#x00ac; <game>7...cxd4 8.Nxd4 Nc6 9.Be3</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E79</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.f4 O-O<br/>6.Be2 c5 7.Nf3 cxd4 8.Nxd4 Nc6 9.Be3</game></td>
+  </tr>
+</table>
+
+<h4 id="E80-E89">E80-E89</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">E80</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.f3</game></td>
+    <td class="r">&#x00ac; <game>5...O-O</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E81</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.f3 O-O</game></td>
+    <td class="r">
+      &#x00ac; <game>6.Be3 b6</game><br/>
+      &#x00ac; <game>6.Be3 e5</game><br/>
+      &#x00ac; <game>6.Be3 Nc6</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E82</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.f3 O-O<br/>6.Be3 b6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E83</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.f3 O-O<br/>6.Be3 Nc6</game></td>
+    <td class="r">&#x00ac; <game>7.Nge2 a6 8.Qd2 Rb8</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E84</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.f3 O-O<br/>6.Be3 Nc6 7.Nge2 a6 8.Qd2 Rb8</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E85</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.f3 O-O<br/>6.Be3 e5</game></td>
+    <td class="r">
+      &#x00ac; <game>7.Nge2 c6</game><br/>
+      &#x00ac; <game>7.d5</game>
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E86</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.f3 O-O<br/>6.Be3 e5 7.Nge2 c6</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E87</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.f3 O-O<br/>6.Be3 e5 7.d5</game></td>
+    <td class="r">&#x00ac; <game>7...c6</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E88</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.f3 O-O<br/>6.Be3 e5 7.d5 c6</game></td>
+    <td class="r">&#x00ac; <game>8.Nge2 cxd5</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E89</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.f3 O-O<br/>6.Be3 e5 7.d5 c6 8.Nge2 cxd5</game></td>
+  </tr>
+</table>
+
+<h4 id="E90-E99">E90-E99</h4>
+
+<table class="stripes" style="white-space: nowrap;">
+  <tr valign="top" class="stripes">
+    <td class="l">E90</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.Nf3</game></td>
+    <td class="r">&#x00ac; <game>5...O-O 6.Be2</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E91</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.Nf3 O-O<br/>6.Be2</game></td>
+    <td class="r">&#x00ac; <game>6...e5</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E92</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.Nf3 O-O<br/>6.Be2 e5</game></td>
+    <td class="r">
+      &#x00ac; <game>7.d5 Nbd7</game><br/>
+      &#x00ac; <game>7.O-O</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E93</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.Nf3 O-O<br/>6.Be2 e5 7.d5 Nbd7</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E94</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.Nf3 O-O<br/>6.Be2 e5 7.O-O</game></td>
+    <td class="r">
+      &#x00ac; <game>7...Nbd7 8.Re1</game><br/>
+      &#x00ac; <game>7...Nc6</game>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E95</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.Nf3 O-O<br/>6.Be2 e5 7.O-O Nbd7 8.Re1</game></td>
+    <td class="r">&#x00ac; <game>8...c6 9.Bf1 a5</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E96</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.Nf3 O-O<br/>6.Be2 e5 7.O-O Nbd7 8.Re1 c6 9.Bf1 a5</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E97</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.Nf3 O-O<br/>6.Be2 e5 7.O-O Nc6</game></td>
+    <td class="r">&#x00ac; <game>8.d5 Ne7 9.Ne1</game></td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="l">E98</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.Nf3 O-O<br/>6.Be2 e5 7.O-O Nc6 8.d5 Ne7 9.Ne1</game></td>
+    <td class="r">&#x00ac; <game>9...Nd7 10.f3 f5</game></td>
+  </tr>
+  <tr valign="top">
+    <td class="l">E99</td>
+    <td class="m"><game>1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.Nf3 O-O<br/>6.Be2 e5 7.O-O Nc6 8.d5 Ne7 9.Ne1 Nd7<br/>10.f3 f5</game></td>
+  </tr>
+</table>
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

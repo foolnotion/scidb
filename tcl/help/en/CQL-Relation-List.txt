@@ -1,20 +1,20 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision: 161 $
 * Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2013 Gregor Cramer
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
 
 INDEX Relation List (CQL)
 INDEX CQL Relation List
@@ -22,7 +22,7 @@ INDEX CQL Relation List
 TITLE CQL - The relation list
 
 <dir>
-  <table>
+  <table style="white-space:nowrap">
     <tr><td>&#x2022;</td><td><a href="#relation">The :relation keyword</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#keywords">Relation keywords</a></td></tr>
   </table>
@@ -41,7 +41,7 @@ Example:
 </p>
 
 <verb>
-(position <keyword>:relation</keyword> (<cql>relation:missingpiececount</cql> &A; 1 unlimited))
+(position <keyword>position:relation</keyword> (<cql>relation:missingpiececount</cql> &A; 1 unlimited))
 </verb>
 
 <p>
@@ -58,22 +58,20 @@ P1 and P2 matches the parameters defined in the relation specifier.
 
 <h2 id="keywords">Relation keywords</h2>
 
-<dir>
-  <table>
-    <tr><td>&#x2022;</td><td><a href="#relation:changesidetomove">:changesidetomove</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:flip">:flip</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:ignoresidetomove">:ignoresidetomove</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:missingpiececount">:missingpiececount</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:newpiececount">:newpiececount</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:originaldifferentcount">:originaldifferentcount</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:originalsamecount">:originalsamecount</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:pattern">:pattern</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:samesidetomove">:samesidetomove</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:shift">:shift</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:variations">:variations</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:variationsonly">:variationsonly</a></td></tr>
-  </table>
-</dir>
+<table style="white-space:nowrap">
+  <tr><td>&#x2022;</td><td><a href="#relation:changesidetomove">:changesidetomove</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:flip">:flip</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:ignoresidetomove">:ignoresidetomove</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:missingpiececount">:missingpiececount</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:newpiececount">:newpiececount</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:originaldifferentcount">:originaldifferentcount</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:originalsamecount">:originalsamecount</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:pattern">:pattern</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:samesidetomove">:samesidetomove</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:shift">:shift</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:variations">:variations</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:variationsonly">:variationsonly</a></td></tr>
+</table>
 
 <h3 id="relation:changesidetomove">:changesidetomove</h3>
 
@@ -91,7 +89,7 @@ To search games in which the same position occurs with white and black to move
 </p>
 
 <verb>
-position <cql>position:relation</cql> (<keyword>:changesidetomove</keyword>))
+position <cql>position:relation</cql> (<keyword>relation:changesidetomove</keyword>))
 </verb>
 
 <h3 id="relation:flip">:flip</h3>

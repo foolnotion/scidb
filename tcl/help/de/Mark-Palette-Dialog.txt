@@ -1,20 +1,20 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision: 161 $
 * Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2013 Gregor Cramer
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
 
 INDEX Feldmarkierungspalette
 INDEX Feldmarkierungen
@@ -47,7 +47,7 @@ Die Palette ist nur sichtbar, wenn das Schachbrettfenster aktiv ist.
 
 <p>
 Im Partieeditor werden Markierungen mit dem Symbol
-<span color="|::pgn::editor::Colors(foreground:marks)|#6300c6|">&#x27f8;</span>
+<span color="|::pgn::editor::Colors(foreground:marks)|#6300c6|"><awesome>&#xf0b2;</awesome></span>
 gekennzeichnet. Die Kurzinfo (Tooltip) zeigt den Code an, wie er im
 <a href="Database-Formats.html#PGN">PGN-Format</a> aussieht.
 </p>
@@ -73,7 +73,7 @@ Doppelklick bei gehaltener <key>Ctrl</key>-Taste mit dem gleichen Symbol und
 der gleichen Farbe. Es ist zu beachten das nach dem ersten Klick die Markierung
 für das ausgewählte Feld zu sehen ist, und erst nach dem zweiten Klick wird das
 Symbol sichtbar. Eine Feldmarkierung kann durch eine andere Feldmarkierung
-überschrieben werden. Eine doppelte Feldmarkierung ist nicht möglich.
+überschrieben werden. Eine mehrfache Feldmarkierung ist nicht möglich.
 </p>
 
 <h3 id="move">Einen Zug mit einem Pfeil markieren</h3>

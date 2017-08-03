@@ -19,7 +19,7 @@
   <meta name="generator"
      content="scidb.sourceforge.net" />
   <meta name="description"
-     content="Scidb Help Page" />
+     content="Scidb - Help Page" />
 
   <link rel="icon"
        href="http://scidb.sourceforge.net/favicon.ico"
@@ -29,9 +29,9 @@
   <link rel="stylesheet"
        type="text/css"
       media="screen"
-       href="../styles/help.css" />
+		 href="../styles/help.css" />
 
-  <title>Scidb Help: How to set the default browser</title>
+  <title>Scidb - Help: How to set the default browser</title>
 </head>
 
 <body>
@@ -42,10 +42,15 @@
 
 <p>
 The default browser will be used for opening external links.
-There exists four possibilites to set the default browser:
+There exists five possibilites to set the default browser:
 </p>
 
 <ol>
+  <li><p>
+    Scidb will open the link in the user's preferred application with the help
+    of the program <span style='white-space:nowrap;'><code>xdg-open</code></span>, if installed.
+  </p></li>
+
   <li><p>
     The value of the environment variable <code>BROWSER</code> wil be used
     at program start. Example:<br/>
@@ -83,7 +88,7 @@ possible to start a browser and an error message will be shown.
 </p>
 
 <p><img src='../images/note.png' alt='note' /> Terminal browsers will not be used with Scidb, this means you have
-to set a X brower (graphical browser).</p>
+to set an X brower (graphical browser).</p>
 
 </body>
 </html>

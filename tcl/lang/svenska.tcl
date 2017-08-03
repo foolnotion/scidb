@@ -104,6 +104,7 @@
 ::mc::Undo					"Undo"
 ::mc::Variant				"Variant" ;# NEW different from "Variation"
 ::mc::Variation			"Variation"
+::mc::Volume				"Volume" ;# NEW
 ::mc::White					"Vit"
 ::mc::Yes					"ja"
 
@@ -113,6 +114,22 @@
 ::mc::Piece(B)				"Löpare"
 ::mc::Piece(N)				"Springare"
 ::mc::Piece(P)				"Bonde"
+
+::mc::PieceCQL(.)			"Empty square" ;# NEW
+::mc::PieceCQL(A)			"Any white piece" ;# NEW
+::mc::PieceCQL(a)			"Any black piece" ;# NEW
+::mc::PieceCQL(M)			"White major piece" ;# NEW
+::mc::PieceCQL(m)			"Black major piece" ;# NEW
+::mc::PieceCQL(I)			"White minor piece" ;# NEW
+::mc::PieceCQL(i)			"Black minor piece" ;# NEW
+::mc::PieceCQL(U)			"Any piece at all" ;# NEW
+::mc::PieceCQL(?)			"Any piece or empty square" ;# NEW
+
+::mc::SquareCQL(L)		"Light squares" ;# NEW
+::mc::SquareCQL(D)		"Dark squares" ;# NEW
+
+::mc::SquareLetter(L)	"L" ;# NEW shortcut for 'light square' (uppercase)
+::mc::SquareLetter(D)	"D" ;# NEW shortcut for 'dark square'  (uppercase)
 
 ::mc::Logical(reset)		"Återställ"
 ::mc::Logical(or)			"Eller"
@@ -1366,6 +1383,7 @@
 ::gametable::mc::GameFlags(s)				"Strategisk miss"
 ::gametable::mc::GameFlags(C)				"Ogiltig rockad"
 ::gametable::mc::GameFlags(I)				"Ogiltigt drag"
+::gametable::mc::GameFlags(X)				"Invalid Move" ;# NEW
 
 ### playertable ########################################################
 ::playertable::mc::F_LastName					"Efternamn"
@@ -2104,6 +2122,7 @@
 ::terminationbox::mc::Result(1/2-1/2)					"Remi"
 
 ::terminationbox::mc::Reason(Unplayed)					"Parti är ospelat"
+::terminationbox::mc::Reason(ByForfeit)				"Opponent did not show up" ;# NEW
 ::terminationbox::mc::Reason(Abandoned)				"Parti är avbrutit"
 ::terminationbox::mc::Reason(Adjudication)			"Avdömt"
 ::terminationbox::mc::Reason(Disconnection)			"Bortkopplad"
@@ -2112,6 +2131,8 @@
 ::terminationbox::mc::Reason(TimeForfeit)				"%s tidsförlust"
 ::terminationbox::mc::Reason(TimeForfeit,both)		"Båda spelarna överskred tiden"
 ::terminationbox::mc::Reason(TimeForfeit,remis)		"%causer fick slut på tiden och %opponent kan inte vinna"
+::terminationbox::mc::Reason(NoOpponent)				"Point given for game with no opponent" ;# NEW
+::terminationbox::mc::Reason(Unterminated)			"No finalizado" ;# NEW
 ::terminationbox::mc::Reason(Unterminated)			"Ej färdigspelat"
 
 ::terminationbox::mc::Termination(checkmate)			"%s är matt"
@@ -2136,7 +2157,7 @@
 ::eventmodebox::mc::Composition	"Komposition"
 
 ### eventtypebox #######################################################
-::eventtypebox::mc::Type(game)	"Fristående parti"
+::eventtypebox::mc::Type(casual)	"Fristående parti"
 ::eventtypebox::mc::Type(match)	"Tävlingsparti"
 ::eventtypebox::mc::Type(tourn)	"Berger"
 ::eventtypebox::mc::Type(swiss)	"Schweizerturnering"
@@ -2261,30 +2282,32 @@
 ::crosstable::mc::CannotCreateFile			"Kan inte skapa fil '%s': åtkomst nekad."
 
 ### info ###############################################################
-::info::mc::InfoTitle			"Om %s"
-::info::mc::Info					"Info"
-::info::mc::About					"Om"
-::info::mc::Contributions		"Bidrag"
-::info::mc::License				"Licens"
-::info::mc::Localization		"Localization"
-::info::mc::Testing				"Testing"
-::info::mc::References			"Referenser"
-::info::mc::System				"System"
-::info::mc::FontDesign			"Design av schackfonter"
-::info::mc::ChessPieceDesign	"Design av schackpjäser"
-::info::mc::BoardThemeDesign	"Design av schackbräden"
-::info::mc::FlagsDesign			"Design av miniaturflaggor"
-::info::mc::IconDesign			"Design av ikoner"
-::info::mc::Development			"Utveckling"
-::info::mc::Programming			"Programmering"
-::info::mc::Head					"Huvud"
-::info::mc::AllOthers			"all others" ;# NEW
-::info::mc::TheMissingOnes		"the missing ones" ;# NEW
+::info::mc::InfoTitle				"Om %s"
+::info::mc::Info						"Info"
+::info::mc::About						"Om"
+::info::mc::Contributions			"Bidrag"
+::info::mc::License					"Licens"
+::info::mc::Localization			"Localization"
+::info::mc::Testing					"Testing"
+::info::mc::References				"Referenser"
+::info::mc::System					"System"
+::info::mc::FontDesign				"Design av schackfonter"
+::info::mc::TruetypeFonts			"Truetype fonts" ;# NEW
+::info::mc::ChessPieceDesign		"Design av schackpjäser"
+::info::mc::BoardThemeDesign		"Design av schackbräden"
+::info::mc::FlagsDesign				"Design av miniaturflaggor"
+::info::mc::IconDesign				"Design av ikoner"
+::info::mc::Development				"Utveckling"
+::info::mc::DevelopmentOfUnCBV	"Development of unzipping CBV archives" ;# NEW
+::info::mc::Programming				"Programmering"
+::info::mc::Head						"Huvud"
+::info::mc::AllOthers				"all others" ;# NEW
+::info::mc::TheMissingOnes			"the missing ones" ;# NEW
 
-::info::mc::Version				"Version"
-::info::mc::Distributed			"Det här programmet distribueras enligt bestämmelserna i GNU General Public License."
-::info::mc::Inspired				"Scidb bygger på Scid 3.6.1, copyright \u00A9 1999-2003 by Shane Hudson."
-::info::mc::SpecialThanks		"Särskilt tack till %s för ett fantastiska jobb. Hans insatser är grunden för detta program."
+::info::mc::Version					"Version"
+::info::mc::Distributed				"Det här programmet distribueras enligt bestämmelserna i GNU General Public License."
+::info::mc::Inspired					"Scidb bygger på Scid 3.6.1, copyright \u00A9 1999-2003 by Shane Hudson."
+::info::mc::SpecialThanks			"Särskilt tack till %s för ett fantastiska jobb. Hans insatser är grunden för detta program."
 
 ### comment ############################################################
 ::comment::mc::CommentBeforeMove		"Kommentar före draget"
@@ -2303,6 +2326,7 @@
 
 ::comment::mc::LanguageSelection		"Val av språk"
 ::comment::mc::Formatting				"Formaterar"
+::comment::mc::InsertLink				"Insert link" ;# NEW
 
 ::comment::mc::Bold						"Fet"
 ::comment::mc::Italic					"Kursivt"
@@ -2369,7 +2393,7 @@
 ::titlebox::mc::Title(CGM)		"Correspondence Grandmaster (ICCF)"
 ::titlebox::mc::Title(CIM)		"Correspondence International Master (ICCF)"
 ::titlebox::mc::Title(CLGM)	"Correspondence Lady Grandmaster (ICCF)"
-::titlebox::mc::Title(CILM)	"Correspondence Lady International Master (ICCF)"
+::titlebox::mc::Title(CLIM)	"Correspondence Lady International Master (ICCF)"
 ::titlebox::mc::Title(CSIM)	"Correspondence Senior International Master (ICCF)"
 
 ### messagebox #########################################################
@@ -3116,5 +3140,8 @@
 
 ### remote #############################################################
 ::remote::mc::PostponedMessage "Databasen \"%s\" kommer inte att öppnas förrän den pågående operationen är avslutad."
+
+### web ################################################################
+::web::mc::SaveFile "Save File" ;# NEW
 
 # vi:set ts=3 sw=3:

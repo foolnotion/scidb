@@ -103,6 +103,7 @@
 ::mc::Undo					"Undo"
 ::mc::Variant				"Variant"
 ::mc::Variation			"Variation"
+::mc::Volume				"Volume"
 ::mc::White					"White"
 ::mc::Yes					"yes"
 
@@ -112,6 +113,22 @@
 ::mc::Piece(B)				"Bishop"
 ::mc::Piece(N)				"Knight"
 ::mc::Piece(P)				"Pawn"
+
+::mc::PieceCQL(.)			"Empty square"
+::mc::PieceCQL(A)			"Any white piece"
+::mc::PieceCQL(a)			"Any black piece"
+::mc::PieceCQL(M)			"White major piece"
+::mc::PieceCQL(m)			"Black major piece"
+::mc::PieceCQL(I)			"White minor piece"
+::mc::PieceCQL(i)			"Black minor piece"
+::mc::PieceCQL(U)			"Any piece at all"
+::mc::PieceCQL(?)			"Any piece or empty square"
+
+::mc::SquareCQL(L)		"Light squares"
+::mc::SquareCQL(D)		"Dark squares"
+
+::mc::SquareLetter(L)	"L" ;# shortcut for 'light square' (uppercase)
+::mc::SquareLetter(D)	"D" ;# shortcut for 'dark square'  (uppercase)
 
 ::mc::Logical(reset)		"Reset"
 ::mc::Logical(or)			"Or"
@@ -1355,6 +1372,7 @@
 ::gametable::mc::GameFlags(s)				"Strategical Blunder"
 ::gametable::mc::GameFlags(C)				"Illegal Castling"
 ::gametable::mc::GameFlags(I)				"Illegal Move"
+::gametable::mc::GameFlags(X)				"Invalid Move"
 
 ### playertable ########################################################
 ::playertable::mc::F_LastName					"Last Name"
@@ -2099,6 +2117,7 @@
 ::terminationbox::mc::Result(1/2-1/2)					"Draw agreed"
 
 ::terminationbox::mc::Reason(Unplayed)					"Game is unplayed"
+::terminationbox::mc::Reason(ByForfeit)				"Opponent did not show up"
 ::terminationbox::mc::Reason(Abandoned)				"Game is abandoned"
 ::terminationbox::mc::Reason(Adjudication)			"Adjudication"
 ::terminationbox::mc::Reason(Disconnection)			"Disconnection"
@@ -2107,6 +2126,8 @@
 ::terminationbox::mc::Reason(TimeForfeit)				"%s forfeits on time"
 ::terminationbox::mc::Reason(TimeForfeit,both)		"Both players forfeits on time"
 ::terminationbox::mc::Reason(TimeForfeit,remis)		"%causer ran out of time and %opponent cannot win"
+::terminationbox::mc::Reason(DrawClaim)				"One of the players claimed a draw"
+::terminationbox::mc::Reason(NoOpponent)				"Point given for game with no opponent"
 ::terminationbox::mc::Reason(Unterminated)			"Unterminated"
 
 ::terminationbox::mc::Termination(checkmate)			"%s is checkmate"
@@ -2131,7 +2152,7 @@
 ::eventmodebox::mc::Composition	"Composition"
 
 ### eventtypebox #######################################################
-::eventtypebox::mc::Type(game)	"Individual Game"
+::eventtypebox::mc::Type(casual)	"Individual Game"
 ::eventtypebox::mc::Type(match)	"Match"
 ::eventtypebox::mc::Type(tourn)	"Round Robin"
 ::eventtypebox::mc::Type(swiss)	"Swiss-System Tournament"
@@ -2256,30 +2277,32 @@
 ::crosstable::mc::CannotCreateFile			"Cannot create file '%s': permission denied."
 
 ### info ###############################################################
-::info::mc::InfoTitle			"About %s"
-::info::mc::Info					"Info"
-::info::mc::About					"About"
-::info::mc::Contributions		"Contributions"
-::info::mc::License				"License"
-::info::mc::Localization		"Localization"
-::info::mc::Testing				"Testing"
-::info::mc::References			"References"
-::info::mc::System				"System"
-::info::mc::FontDesign			"chess font design"
-::info::mc::ChessPieceDesign	"chess piece design"
-::info::mc::BoardThemeDesign	"Board theme design"
-::info::mc::FlagsDesign			"Miniature flags design"
-::info::mc::IconDesign			"Icon design"
-::info::mc::Development			"Development"
-::info::mc::Programming			"Programming"
-::info::mc::Head					"Head"
-::info::mc::AllOthers			"all others"
-::info::mc::TheMissingOnes		"the missing ones"
+::info::mc::InfoTitle				"About %s"
+::info::mc::Info						"Info"
+::info::mc::About						"About"
+::info::mc::Contributions			"Contributions"
+::info::mc::License					"License"
+::info::mc::Localization			"Localization"
+::info::mc::Testing					"Testing"
+::info::mc::References				"References"
+::info::mc::System					"System"
+::info::mc::FontDesign				"chess font design"
+::info::mc::TruetypeFonts			"Truetype fonts"
+::info::mc::ChessPieceDesign		"chess piece design"
+::info::mc::BoardThemeDesign		"Board theme design"
+::info::mc::FlagsDesign				"Miniature flags design"
+::info::mc::IconDesign				"Icon design"
+::info::mc::Development				"Development"
+::info::mc::DevelopmentOfUnCBV	"Development of unzipping CBV archives"
+::info::mc::Programming				"Programming"
+::info::mc::Head						"Head"
+::info::mc::AllOthers				"all others"
+::info::mc::TheMissingOnes			"the missing ones"
 
-::info::mc::Version				"Version"
-::info::mc::Distributed			"This program is distributed under the terms of the GNU General Public License."
-::info::mc::Inspired				"Scidb is inspired by Scid 3.6.1, copyrighted \u00A9 1999-2003 by Shane Hudson."
-::info::mc::SpecialThanks		"Special thanks to %s for his terrific work. His effort is the basis for this application."
+::info::mc::Version					"Version"
+::info::mc::Distributed				"This program is distributed under the terms of the GNU General Public License."
+::info::mc::Inspired					"Scidb is inspired by Scid 3.6.1, copyrighted \u00A9 1999-2003 by Shane Hudson."
+::info::mc::SpecialThanks			"Special thanks to %s for his terrific work. His effort is the basis for this application."
 
 ### comment ############################################################
 ::comment::mc::CommentBeforeMove		"Comment before move"
@@ -2298,6 +2321,7 @@
 
 ::comment::mc::LanguageSelection		"Language selection"
 ::comment::mc::Formatting				"Formatting"
+::comment::mc::InsertLink				"Insert link"
 
 ::comment::mc::Bold						"Bold"
 ::comment::mc::Italic					"Italic"
@@ -2364,7 +2388,7 @@
 ::titlebox::mc::Title(CGM)		"Correspondence Grandmaster (ICCF)"
 ::titlebox::mc::Title(CIM)		"Correspondence International Master (ICCF)"
 ::titlebox::mc::Title(CLGM)	"Correspondence Lady Grandmaster (ICCF)"
-::titlebox::mc::Title(CILM)	"Correspondence Lady International Master (ICCF)"
+::titlebox::mc::Title(CLIM)	"Correspondence Lady International Master (ICCF)"
 ::titlebox::mc::Title(CSIM)	"Correspondence Senior International Master (ICCF)"
 
 ### messagebox #########################################################
@@ -3111,5 +3135,8 @@
 
 ### remote #############################################################
 ::remote::mc::PostponedMessage "Opening of database \"%s\" is postponed until current operation will be finished."
+
+### web ################################################################
+::web::mc::SaveFile "Save File"
 
 # vi:set ts=3 sw=3:

@@ -1,27 +1,27 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision: 161 $
 * Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2013 Gregor Cramer
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
 
 INDEX Suchliste (CQL)
 INDEX CQL Suchliste
 
 DEFINE <extension/> &ensp;<img src="../images/ft-scidb-tiny.png" />
 
-TITLE CQL - Die Suchliste
+TITLE CQL &ndash; Die Suchliste
 
 <p>
 Jedes CQL-Skript muß auf oberster Ebene genau eine Suchliste haben. Die
@@ -31,16 +31,30 @@ kontrollieren. Die Suchliste enhält Null oder mehr Positionslisten.
 wird nur dann gefiltert (aufgefunden), wenn alle Bedingungen in der
 Suchliste erfüllt wurden. Wenn Positionslisten existieren, dann muß
 jede von ihnen mindestens eine Position in der Partile filtern (auffinden),
-damit die Partie von der Suchliste gefiltert wird. Scidb erlaubt eine
-zusätzliche Besonderheit: die Suchliste kann logische Schlüsselwörter
-(<cql>match:and</cql>, <cql>match:or</cql>, <cql>match:not</cql>) mit
-weiteren Suchlisten enthalten.
+damit die Partie von der Suchliste gefiltert wird.
 </p>
 
 <p>
-Viele Beispiele auf dieser Seite sind nicht konform zum CQL-Standard,
+Viele Beispiele auf dieser Seite sind nicht kompatibel zum CQL-Standard,
 denn er fordert mindestens eine enthaltene Positionsliste.
 </p>
+
+<p>
+Einige der Schlüsselwörter können mit einem vorangegangenen Ausrufungszeichen negiert
+werden, dies ist dann eine Kurzschreibweise; z.B. ist
+</p>
+
+<verb>
+(match <cql>!match:ischess960</cql>)
+</verb>
+
+<p>
+eine Kurzschreibweise für
+</p>
+
+<verb>
+(match <cql>match:not</cql> (match <cql>match:ischess960</cql>))
+</verb>
 
 <p>
 Das Symbol <img src="../images/ft-scidb-tiny.png" /> im Titel einer
@@ -49,13 +63,14 @@ Erweiterung ist, also nicht zum CQL-Standard gehört.
 </p>
 
 <dir>
-  <table>
+  <table style="white-space:nowrap">
     <tr><td>&#x2022;</td><td><a href="#index">Index</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#logical">Schlüsselwörter für die Kontrolllogik</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#event">Schlüsselwörter für die Turniersuche</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#player">Schlüsselwörter für die Spielersuche</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#header">Schlüsselwörter für die Partieinformationssuche</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#data">Schlüsselwörter für die Partiedatensuche</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#transform">Schlüsselwörter für die Transformation</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#tagging">Schlüsselwörter für das Markieren</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#meaningless">Bedeutungslose Schlüsselwörter</a></td></tr>
   </table>
@@ -63,90 +78,26 @@ Erweiterung ist, also nicht zum CQL-Standard gehört.
 
 <h2 id="index">Index</h2>
 
-<dir>
-  <table>
-    <tr><td>      &#x2022;</td><td><a href="#match:and">:and</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:annotator">:annotator</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:birthyear">:birthyear</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:whitebirthyear">:whitebirthyear</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:blackbirthyear">:blackbirthyear</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:comment">:comment</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:country">:country</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:whitecountry">:whitecountry</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:blackcountry">:blackcountry</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:date">:date</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:deathyear">:deathyear</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:whitedeathyear">:whitedeathyear</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:blackdeathyear">:blackdeathyear</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:eco">:eco</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:elo">:elo</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:whiteelo">:whiteelo</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:blackelo">:blackelo</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:event">:event</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:eventcountry">:eventcountry</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:eventdate">:eventdate</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:eventmode">:eventmode</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:eventtype">:eventtype</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:forany">:forany</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:gamenumber">:gamenumber</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:gender">:gender</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:whitegender">:whitegender</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:blackgender">:blackgender</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:hasannotation">:hasannotation</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:hascomments">:hascomments</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:hasmarkers">:hasmarkers</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:hasspecialmarkers">:hasspecialmarkers</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:hasvariations">:hasvariations</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:ischess960">:ischess960</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:iscomputer">:iscomputer</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:whiteiscomputer">:whiteiscomputer</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:blackiscomputer">:blackiscomputer</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:ishuman">:ishuman</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:whiteishuman">:whiteishuman</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:blackishuman">:blackishuman</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:isshufflechess">:isshufflechess</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:not">:not</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:or">:or</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:output">:output</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:pgn">:pgn</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:player">:player</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:whiteplayer">:whiteplayer</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:blackplayer">:blackplayer</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:plycount">:plycount</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:rating">:rating</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:whiterating">:whiterating</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:blackrating">:blackrating</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:result">:result</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:site">:site</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:startposition">:startposition</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:termination">:termination</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:timemode">:timemode</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:title">:title</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:whitetitle">:whitetitle</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:blacktitle">:blacktitle</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:variant">:variant</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#match:year">:year</a></td></tr>
-  </table>
-</dir>
+INCLUDE ../CQL-Match-List-Index.txt
 
 <!-- ############################################################################## -->
 <h2 id="logical">Schlüsselwörter für die Kontrolllogik</h2>
 <!-- ############################################################################## -->
 
-<dir>
-  <table>
-    <tr><td>&#x2022;</td><td><a href="#match:and">:and</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:not">:not</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:or">:or</a></td></tr>
-  </table>
-</dir>
+<table style="white-space:nowrap">
+  <tr><td>&#x2022;</td><td><a href="#match:and">:and</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:cond">:cond</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:not">:not</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:or">:or</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:xor">:xor</a></td></tr>
+</table>
 
-<h3 id="match:and">:and<extension/>&emsp;<n>(und)</n></h3>
+<h3 id="match:and">:and<extension/>&emsp;<n>(Und)</n></h3>
 
 <p>
 Erwartet eine Liste von Untersuchlisten und filtert nur dann eine Partie, wenn jede
 von ihnen diese Partie filtert. Eine Untersuchliste kann keine Positionslisten
-enthalten.
+enthalten. Die Argumente werden von links nach rechts ausgewertet.
 </p>
 
 <p>
@@ -155,9 +106,9 @@ Beispiel:
 
 <verbatim>
 (match
-  <keyword>:and</keyword> (
+  <keyword>match:and</keyword> (
     (match <cql>match:isshufflechess</cql>)
-    (match <cql>match:ischess960</cql> <cql>match:not</cql>))))
+    (match <cql>!match:ischess960</cql>))))
 </verbatim>
 
 <p>
@@ -165,24 +116,114 @@ Suche nach Shuffle-Schach-Partien, die keine Schach-960-Partien sind. Dieses
 Beispiel ist identisch zu:
 </p>
 
-<verbatim>
-(match <cql>match:isshufflechess</cql> <cql>match:not</cql> (match <cql>match:ischess960</cql>))
-</verbatim>
+<verb>
+(match <cql>match:isshufflechess</cql> <cql>!match:ischess960</cql>)
+</verb>
 
 <p>
 Scheinbar ist dieses Schlüsselwort entbehrlich, doch es kann innerhalb von
-<cql>position:or</cql> oder <cql>position:and</cql> benötigt werden.
+<cql>match:or</cql>, <cql>match:xor</cql> oder <cql>match:cond</cql> benötigt werden.
 </p>
 
-<h3 id="match:not">:not<extension/>&emsp;<n>(nicht)</n></h3>
+<h3 id="match:cond">:cond<extension/>&emsp;<n>(Bedingte Auswertung)</n></h3>
 
 <p>
-Dieses Schlüsselwort kann in zwei Formen angewandt werden: entweder ist es in
-einer Suchliste enthalten, oder es hat eine Untersuchliste als Parameter.
+Dieses Schlüsselwort wird in folgender allgemeinen Form angewandt:
+</p>
+
+<verbatim>
+<keyword>match:cond</keyword>
+  (match &lt;Bedingung<sub>1</sub>&gt;) (match &lt;Ausdruck<sub>1</sub>&gt;)
+  (match &lt;Bedingung<sub>2</sub>&gt;) (match &lt;Ausdruck<sub>2</sub>&gt;)
+  ...
+  (match &lt;Bedingung<sub>k</sub>&gt;) (match &lt;Ausdruck<sub>k</sub>&gt;)
+</verbatim>
+
+<p>
+<expr>:cond</expr> erwartet eine beliebige Anzahl von Argumenten. Jedes Argument
+<expr>&lt;Bedingung<sub>i</sub>&gt;</expr> wird eine <b>Klausel</b> genannt, und jedes Argument
+<expr>&lt;Ausdruck<sub>i</sub>&gt;</expr> ist eine <b>Assoziation</b>. Es werden nacheinander
+alle Klauseln von links nach rechts ausgewertet, bis eine der Klauseln eine Partie filtern
+würde, dann ist das Resultat des gesamten Ausdrucks das Resultat der Auswertung der Klausel
+und der zugehörigen Assoziation. Wenn keine Klausel filtert, dann kann diese Partie nicht
+aufgefunden werden. Kein Argument darf Positionslisten enthalten.
+</p>
+
+<p>
+Oftmals wird als letztes Paar ein Ausdruck der folgenden Form benötigt:
+</p>
+
+<verb>
+(match) (match &lt;Ausdruck<sub>k</sub>&gt;)
+</verb>
+
+<p>
+Die leere Suchliste filtert jede Partie. Dieser letzte Fall kann verkürzt
+ausgedrückt werden, indem das vorletzte Argument <expr>(match)</expr>
+weggelassen wird, dann wird in jedem Fall das Resultat des letzten Ausdrucks
+gewertet, wenn alle zuvorigen Klauseln nicht erfüllt werden.
+</p>
+
+<p>
+Tatsächlich ist dieses Schlüsselwort redundant, denn die folgende Umformung
+ist äquivalent:
+</p>
+
+<verbatim>
+(match <cql>match:or</cql> (
+  (match &lt;Bedingung<sub>1</sub>&gt; &lt;Ausdruck<sub>1</sub>&gt;)
+  (match &lt;Bedingung<sub>2</sub>&gt; &lt;Ausdruck<sub>2</sub>&gt;)
+  ...
+  (match &lt;Bedingung<sub>k</sub>&gt; &lt;Ausdruck<sub>k</sub>&gt;)))
+</verbatim>
+
+<p>
+Aber zum einen wird hier <expr>:cond</expr> zugelassen, um konform mit der
+Positionsliste zu sein, und zum anderen wird der <expr>:cond</expr>-Ausdruck
+etwas effizienter ausgeführt (beachte beispielsweise den Fall, das
+<expr>&lt;Bedingung<sub>1</sub>&gt;</expr> erfüllt wird, aber nicht
+<expr>&lt;Ausdruck<sub>1</sub>&gt;</expr>, dann wird der
+<expr>:or</expr>-Ausdruck mit der nächsten Liste fortgesetzt, während der
+<expr>:cond</expr>-Ausdruck sofort das Resultat von
+<expr>&lt;Ausdruck<sub>1</sub>&gt;</expr> liefert).
+</p>
+
+<p>
+Ein Beispiel für die Anwendung von <expr>:cond</expr>:
+</p>
+
+<verbatim>
+(match
+  <keyword>match:cond</keyword> (
+    (match <cql>match:result</cql> 1-0) (match <cql>match:whiteplayer</cql> "Kasparov, Garry")
+    (match <cql>match:result</cql> 0-1) (match <cql>match:blackplayer</cql> "Kasparov, Garry")))
+</verbatim>
+
+<p>
+Findet alle Gewinnpartien mit "Kasparov, Garry". Dies ist jedoch nur ein
+Demonstrationsbeispiel, einfacher wäre hier:
+</p>
+
+<verbatim>
+(match
+  <cql>match:eithercolor</cql>
+  <cql>match:result</cql> 1-0
+  <cql>match:whiteplayer</cql> "Kasparov, Garry")
+</verbatim>
+
+<p>
+Siehe auch: <cql>match:or</cql>.
+</p>
+
+<h3 id="match:not">:not<extension/>&emsp;<n>(Nicht)</n></h3>
+
+<p>
+Dieses Schlüsselwort kann in zwei Formen angewandt werden: entweder ist es
+parameterlos, oder es hat eine Untersuchliste als Parameter.
 Im ersten Fall filtert dieses Schlüsselwort, wenn die Suchliste ohne dieses
 Schlüsselwort nicht filtern würde. Im zweiten Fall: das Resultat der
 Untersuchliste wird negiert. Die erste Form wurde definiert, um mit dem
-CQL-Standard des Schlüsselwortes <cql>position:not</cql> der Positionsliste
+CQL-Standard des Schlüsselwortes <cql>match:not</cql> der Positionsliste
 konform zu sein.
 </p>
 
@@ -191,7 +232,7 @@ Beispiel:
 </p>
 
 <verb>
-(match <cql>match:isshufflechess</cql> <keyword>:not</keyword>)
+(match <cql>match:isshufflechess</cql> <keyword>match:not</keyword>)
 </verb>
 
 <p>
@@ -200,15 +241,23 @@ Dieses Beispiel kann auch mit der zweiten Form formuliert werden:
 </p>
 
 <verb>
-(match <keyword>:not</keyword> (match <cql>match:isshufflechess</cql>))
+(match <keyword>match:not</keyword> (match <cql>match:isshufflechess</cql>))
 </verb>
 
-<h3 id="match:or">:or<extension/>&emsp;<n>(oder)</n></h3>
+<p>
+Allerdings läßt dieses spezielle Beispiel eine noch einfachere Form zu:
+</p>
+
+<verb>
+(match <cql>!match:isshufflechess</cql>)
+</verb>
+
+<h3 id="match:or">:or<extension/>&emsp;<n>(Oder)</n></h3>
 
 <p>
 Erwartet eine Liste von Untersuchlisten und filtert nur dann eine Partie, wenn
 mindestens eine von ihnen diese Partie filtert. Eine Untersuchliste kann
-keine Positionslisten enthalten.
+keine Positionslisten enthalten. Die Argumente werden von links nach rechts ausgewertet.
 </p>
 
 <p>
@@ -219,28 +268,66 @@ Beispiel:
 (match
   <keyword>:or</keyword> (
     (match <cql>match:event</cql> "FIDE-Wch*"
-    (match <cql>match:event</cql> "PCA-World Championchip*"))))
+    (match <cql>match:event</cql> "PCA-World Championship*"))))
 </verbatim>
 
 <p>
 Suche nach Weltmeisterschaftspartien.
 </p>
 
+<p>
+Siehe auch:
+<cql>match:cond</cql>,
+<cql>match:xor</cql>
+</p>
+
+<h3 id="match:xor">:xor<extension/>&emsp;<n>(Exklusives Oder)</n></h3>
+
+<p>
+Erwartet eine Liste von Untersuchlisten und filtert nur dann eine Partie, wenn
+genau eine von ihnen diese Partie filtert. Eine Untersuchliste kann
+keine Positionslisten enthalten. Die Argumente werden von links nach rechts ausgewertet.
+</p>
+
+<p>
+Beispiel:
+</p>
+
+<verbatim>
+(match
+  <keyword>match:xor</keyword> (
+    (match <cql>match:hasmarker</cql> !)   <comment>; %::gametable::mc::GameFlags(!)%</comment>
+    (match <cql>match:hasmarker</cql> ?))) <comment>; %::gametable::mc::GameFlags(?)%</comment>
+</verbatim>
+
+<p>
+Suche nach Partien, die mit <i>%::gametable::mc::GameFlags(!)%</i> oder
+mit <i>%::gametable::mc::GameFlags(?)%</i> ausgezeichnet sind, aber nicht mit
+beiden Merkmalen.
+</p>
+
+<p>
+Siehe auch:
+<cql>match:cond</cql>,
+<cql>match:or</cql>.
+</p>
+
 <!-- ############################################################################## -->
 <h2 id="event">Schlüsselwörter für die Turniersuche</h2>
 <!-- ############################################################################## -->
 
-<dir>
-  <table>
-    <tr><td>&#x2022;</td><td><a href="#match:event">:event</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:eventcountry">:eventcountry</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:eventdate">:eventdate</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:eventmode">:eventmode</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:eventtype">:eventtype</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:site">:site</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:timemode">:timemode</a></td></tr>
-  </table>
-</dir>
+<table style="white-space:nowrap">
+  <tr><td>&#x2022;</td><td><a href="#match:event">:event</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:eventcategory">:eventcategory</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:eventcountry">:eventcountry</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:eventdate">:eventdate</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:eventmode">:eventmode</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:eventtype">:eventtype</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:round">:round</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:site">:site</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:subround">:subround</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:timemode">:timemode</a></td></tr>
+</table>
 
 <h3 id="match:event">:event<extension/>&emsp;<n>(Turnier)</n></h3>
 
@@ -252,7 +339,68 @@ Suche nach Partien deren Turnierbezeichnung mit dem gegebenen Muster
 <p>
 Als Argument wird entweder ein Suchmuster in doppelten
 Anführungszeichen, oder eine einfache Zeichenkette erwartet.
-Siehe <a href="#match:player">:player</a> für eine detaillierte Beschreibung.
+</p>
+
+<p>
+<b>Einfache Zeichenkette</b>: Nur Turniere, deren Bezeichnung den
+Parameter als Teilzeichenkette enthält, werden gefiltert. Der
+Zeichenkettenvergleich ist unabhängig von Groß- und Kleinschreibung.
+</p>
+
+<p>
+Beispiel:
+</p>
+
+<verb>
+<keyword>match:event</keyword> Berlin
+</verb>
+
+<p>
+Filtere nur Partien, in denen die Turnierbezeichnung eine Teilzeichenkette
+<nobr>"Berlin"</nobr> enthält.
+</p>
+
+<p>
+<b>Suchmuster in doppelten Anführungszeichen:</b> Nur Turniere, deren
+Bezeichnung durch das Suchmuster ersetzt werden kann, werden aufgefunden.
+Für eine Beschreibung der Suchmuster siehe
+<a href="Pattern-Matching.html">Suchmusterabgleich</a>.
+</p>
+
+<h3 id="match:eventcategory">:eventcategory<extension/>&emsp;<n>(Turnierkategorie)</n></h3>
+
+<p>
+Filtere alle Partien, deren FIDE-Kategorie des zugehörigen Turniers
+innerhalb der gegebenen
+<a href="CQL-Range-Specifiers.html">Bereichsangabe</a> liegt.
+In diesem Fall dürfen die numerischen Werte auch als römische
+Zahlen angeben werden.
+</p>
+
+<p>
+Beispiele:
+</p>
+
+<verb>
+<keyword>match:eventcategory</keyword> &gt;=20
+</verb>
+
+<verb>
+<keyword>match:eventcategory</keyword> &gt;=XX
+</verb>
+
+<p>
+In beiden Beispielen werden Partien gefiltert, die einem Turnier zugeordnet
+sind, deren FIDE-Kategorie mindestens XX ist.
+</p>
+
+<verb>
+<keyword>match:eventcategory</keyword> 0
+</verb>
+
+<p>
+Eine besondere Bedeuting hat der Wert "0", hier werden nur Partuen gefiltert, deren
+zugeordneten Turnieren keine FIDE-Kategorie zugeorndet ist.
 </p>
 
 <h3 id="match:eventcountry">:eventcountry<extension/>&emsp;<n>(Turnieraustragungsland)</n></h3>
@@ -262,31 +410,36 @@ Filtere nur Partien, deren Turnieraustragungsland mit einem der in
 der kommaseparierten Liste gegebenen Ländercodes übereinstimmt.
 Ein Ländercode ist entweder ein
 <a href="http://de.wikipedia.org/wiki/Liste_der_olympischen_Mannschaftsk%C3%BCrzel">IOC-Ländercode</a>,
-oder ein <a href="http://de.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2-Ländercode</a>.
-Weiterhin sind die speziellen Ländercodes <expr>UNK</expr> (IOC-Form) und
-<expr>xx</expr> (ISO 3166-2-Form) erlaubt, die Partien filtern deren
-Turnieraustragungsland unbekannt ist.
+ein <a href="http://de.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2-Ländercode</a>, oder ein
+<a href="http://ccif.sourceforge.net/cif-country.html">ISO 3166-1-Ländercode</a>.
+Weiterhin sind die speziellen Ländercodes <expr>UNK</expr> (IOC-Form),
+<expr>xx</expr> (ISO 3166-2-Form), und <expr>0</expr> (ISO 3166-1-Form) erlaubt, die Partien
+filtern deren Turnieraustragungsland unbekannt ist.
 Der CQL-Editor biete eine Hilfe zur Unterstützung der Eingabe von Ländercodes.
 </p>
+
+<note>
+Der ChessBase-Ländercode ist kein IOC-Ländercode, und deshalb nicht verwendbar.
+</note>
 
 <p>
 Beispiele:
 </p>
 
 <verb>
-<keyword>:eventcountry</keyword> dk,fi,no,se
+<keyword>match:eventcountry</keyword> dk,fi,no,se
 </verb>
 
 <p>
-Suche nach Partien, die im Skandinavischen Raum gespielt wurden.
+Suche nach Partien die im Skandinavischen Raum gespielt wurden.
 </p>
 
 <verb>
-<keyword>:eventcountry</keyword> xx
+<keyword>match:eventcountry</keyword> xx
 </verb>
 
 <p>
-Suche nach Partien, deren Turnieraustragungsland nicht bekannt ist.
+Suche nach Partien deren Turnieraustragungsland nicht bekannt ist.
 </p>
 
 <p>
@@ -296,13 +449,26 @@ Siehe auch: <cql>match:site</cql>.
 <h3 id="match:eventdate">:eventdate<extension/>&emsp;<n>(Turnierdatum)</n></h3>
 
 <p>
-Dies erwartet eine Angabe für den Datumsbereich, im dem das Turnierdatum
+Dies erwartet eine Angabe für den Datumsbereich, im dem das Turnierdatum (bzw. Ereignisdatum)
 liegen soll.
 </p>
 
 <p>
 Für eine detaillierte Beschreibung des Datumsbereich siehe
 <cql>match:date</cql>.
+</p>
+
+<p>
+Beispiel:
+</p>
+
+<verb>
+<keyword>match:eventdate</keyword> 1930 1935
+</verb>
+
+<p>
+Suche nach historischen Partien, deren Turnierdatum (bzw. Ereignisdatum) in den Jahren
+1930 bis 1935 liegt.
 </p>
 
 <h3 id="match:eventmode">:eventmode<extension/>&emsp;<n>(Turniermodus)</n></h3>
@@ -370,7 +536,7 @@ Beispiel:
 </p>
 
 <verb>
-<keyword>:eventmode</keyword> corr,email
+<keyword>match:eventmode</keyword> corr,email
 </verb>
 
 <p>
@@ -389,7 +555,7 @@ Der Turniertyp ist einer der folgenden Typen:
 </p>
 
 <dir>
-  <table>
+  <table style="white-space:nowrap">
     <tr>
       <td class="l"><expr>unknown</expr></td>
       <td class="m"></td>
@@ -398,7 +564,7 @@ Der Turniertyp ist einer der folgenden Typen:
     <tr>
       <td class="l"><expr>game</expr></td>
       <td class="m"><img src="../images/eventtype_game.png"/></td>
-      <td class="r">%::eventtypebox::mc::Type(game)%</td>
+      <td class="r">%::eventtypebox::mc::Type(casual)%</td>
     </tr>
     <tr>
       <td class="l"><expr>match</expr></td>
@@ -447,8 +613,42 @@ Beispiel:
 </p>
 
 <verb>
-<keyword>:eventtype</keyword> tourn,swiss
+<keyword>match:eventtype</keyword> tourn,swiss
 </verb>
+
+<h3 id="match:round">:round<extension/>&emsp;<n>(Runde)</n></h3>
+
+<p>
+Suche nach Partien, deren Rundenangabe innerhalb der gegebenen
+<a href="CQL-Range-Specifiers.html">Bereichsangabe</a> liegt.
+Eine spezielle Bedeutung hat die Null, diese filtert Partien ohne
+Rundenangabe.
+</p>
+
+<p>
+Beispiele:
+</p>
+
+<verb>
+(match <cql>match:round</cql> 0)
+</verb>
+
+<p>
+Filtere alle Partien, die keine Rundenangabe haben.
+</p>
+
+<verb>
+(match <cql>match:round</cql> 0 1)
+</verb>
+
+<p>
+Filtere alle Partien, die entweder keine Rundenangabe haben, oder die in Runde 1
+gespielt wurden.
+</p>
+
+<p>
+Siehe auch: <cql>match:subround</cql>.
+</p>
 
 <h3 id="match:site">:site<extension/>&emsp;<n>(Turnierort)</n></h3>
 
@@ -459,11 +659,71 @@ Suche nach Partien, deren Turnierort mit dem gegebenen Muster übereinstimmt.
 <p>
 Als Argument wird entweder ein Suchmuster in doppelten
 Anführungszeichen, oder eine einfache Zeichenkette erwartet.
-Siehe <a href="#match:player">:player</a> für eine detaillierte Beschreibung.
+</p>
+
+<p>
+<b>Einfache Zeichenkette</b>: Nur Turniere, deren Bezeichnung den Parameter
+als Teilzeichenkette enthält, werden gefiltert. Der
+Zeichenkettenvergleich ist unabhängig von Groß- und Kleinschreibung.
+</p>
+
+<p>
+Beispiel:
+</p>
+
+<verb>
+<keyword>match:event</keyword> Berlin
+</verb>
+
+<p>
+Filtere nur Partien, in denen die Turnierortsbezeichnung eine Teilzeichenkette
+<nobr>"Berlin"</nobr> enthält.
+</p>
+
+<p>
+<b>Suchmuster in doppelten Anführungszeichen:</b> Nur Turniere, deren
+Turnierort durch das Suchmuster ersetzt werden kann, werden aufgefunden.
+Für eine Beschreibung der Suchmuster siehe
+<a href="Pattern-Matching.html">Suchmusterabgleich</a>.
 </p>
 
 <p>
 Siehe auch: <cql>match:eventcountry</cql>.
+</p>
+
+<h3 id="match:subround">:subround<extension/>&emsp;<n>(Unterrunde)</n></h3>
+
+<p>
+Suche nach Partien, deren Unterrundenangabe innerhalb der gegebenen
+<a href="CQL-Range-Specifiers.html">Bereichsangabe</a> liegt.
+Eine spezielle Bedeutung hat die Null, diese filtert Partien ohne
+Unterrundenangabe. Eine Partie ohne Rundenangabe kann niemals eine
+Unterrundenangabe besitzen.
+</p>
+
+<p>
+Beispiele:
+</p>
+
+<verb>
+(match <cql>match:subround</cql> 0)
+</verb>
+
+<p>
+Filtere alle Partien, die keine Unterrundenangabe haben.
+</p>
+
+<verb>
+(match <cql>match:subround</cql> 0 1)
+</verb>
+
+<p>
+Filtere alle Partien, die entweder keine Unterrundenangabe haben, oder die in Unterrunde 1
+gespielt wurden.
+</p>
+
+<p>
+Siehe auch: <cql>match:round</cql>.
 </p>
 
 <h3 id="match:timemode">:timemode<extension/>&emsp;<n>(Zeitmodus)</n></h3>
@@ -478,7 +738,7 @@ Der Zeitmodus ist einer der folgenden Modi:
 </p>
 
 <dir>
-  <table>
+  <table style="white-space:nowrap">
     <tr>
       <td class="l"><expr>unknown</expr></td>
       <td class="m"></td>
@@ -521,7 +781,7 @@ Beispiel:
 </p>
 
 <verb>
-<keyword>:timemode</keyword> blitz,bullet
+<keyword>match:timemode</keyword> blitz,bullet
 </verb>
 
 <p>
@@ -532,40 +792,104 @@ Suche nach Blitz- bzw. Bullet-Partien.
 <h2 id="player">Schlüsselwörter für die Spielersuche</h2>
 <!-- ############################################################################## -->
 
-<dir>
-  <table>
-    <tr><td>&#x2022;</td><td><a href="#match:birthyear">:birthyear</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:whitebirthyear">:whitebirthyear</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:blackbirthyear">:blackbirthyear</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:country">:country</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:whitecountry">:whitecountry</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:blackcountry">:blackcountry</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:deathyear">:deathyear</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:whitedeathyear">:whitedeathyear</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:blackdeathyear">:blackdeathyear</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:elo">:elo</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:whiteelo">:whiteelo</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:blackelo">:blackelo</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:gender">:gender</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:whitegender">:whitegender</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:blackgender">:blackgender</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:iscomputer">:iscomputer</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:whiteiscomputer">:whiteiscomputer</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:blackiscomputer">:blackiscomputer</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:ishuman">:ishuman</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:whiteishuman">:whiteishuman</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:blackishuman">:blackishuman</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:player">:player</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:whiteplayer">:whiteplayer</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:blackplayer">:blackplayer</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:rating">:rating</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:whiterating">:whiterating</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:blackrating">:blackrating</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:title">:title</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:whitetitle">:whitetitle</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#match:blacktitle">:blacktitle</a></td></tr>
-  </table>
-</dir>
+<table style="white-space:nowrap">
+  <tr><td>      &#x2022;</td><td><a href="#match:averagerating">:averagerating</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:averagerating_">:averagerating*</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:birthyear">:birthyear</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:whitebirthyear">:whitebirthyear</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:blackbirthyear">:blackbirthyear</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:country">:country</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:whitecountry">:whitecountry</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:blackcountry">:blackcountry</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:deathyear">:deathyear</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:whitedeathyear">:whitedeathyear</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:blackdeathyear">:blackdeathyear</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:elo">:elo</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:whiteelo">:whiteelo</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:blackelo">:blackelo</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:gender">:gender</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:whitegender">:whitegender</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:blackgender">:blackgender</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:iscomputer">:iscomputer</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:whiteiscomputer">:whiteiscomputer</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:blackiscomputer">:blackiscomputer</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:ishuman">:ishuman</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:whiteishuman">:whiteishuman</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:blackishuman">:blackishuman</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:player">:player</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:whiteplayer">:whiteplayer</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:blackplayer">:blackplayer</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:playerid">:playerid</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:whiteid">:whiteid</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:blackid">:blackid</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:rating">:rating</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:whiterating">:whiterating</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:blackrating">:blackrating</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:ratingdifference:">:ratingdifference</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:title">:title</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:whitetitle">:whitetitle</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:blacktitle">:blacktitle</a></td></tr>
+</table>
+
+<h3 id="match:averagerating">:averagerating<extension/>&emsp;<n>(Durschnittliche Wertungszahl)</n></h3>
+
+<p>
+Diese Variante von <cql>match:rating</cql> erwartet die gleichen Argumente,
+jedoch wird nach der durchschnittlichen Wertungszahl beider Spieler gesucht.
+Hat nur einer der Spieler eine Wertungszahl, so bildet diese den Durchschnitt.
+</p>
+
+<p>
+Beispiel:
+</p>
+
+<verb>
+<keyword>match:averagerating</keyword> ELO &ndash;
+</verb>
+
+<p>
+Finde alle Partien in denen beide Spieler keine ELO-Wertung besitzen.
+</p>
+
+<p>
+Siehe auch:
+<cql>match:averagerating*</cql>,
+<cql>match:whiterating</cql>,
+<cql>match:blackrating</cql>,
+<cql>match:rating</cql>,
+<cql>match:ratingdifference</cql>.
+</p>
+
+<h3 id="match:averagerating_">:averagerating*<extension/>&emsp;<n>(Durschnittliche Wertungszahl)</n></h3>
+
+<p>
+Diese Variante von <cql>match:averagerating</cql> erwartet die gleichen Argumente,
+jedoch werden hier nur Partien gefiltert, in denen beide Spieler eine Wertungszahl
+besitzen.
+</p>
+
+<p>
+Beispiele:
+</p>
+
+<verb>
+<keyword>match:averagerating*</keyword> ELO &gt;=2500
+</verb>
+
+<p>
+Suche nach Partien, in denen die Spieler eine durchschnittliche ELO-Zahl
+von mindestens 2500 aufweisen. Es werden keine Partien gefiltert,
+in denen einer der Spieler keine ELO-Wertung aufweist.
+</p>
+
+<p>
+Siehe auch:
+<cql>match:averagerating</cql>,
+<cql>match:whiterating</cql>,
+<cql>match:blackrating</cql>,
+<cql>match:rating</cql>,
+<cql>match:ratingdifference</cql>.
+</p>
 
 <h3 id="match:birthyear">:birthyear<extension/>&emsp;<n>(Geburtsjahr)</n></h3>
 
@@ -579,7 +903,7 @@ Beispiel:
 </p>
 
 <verb>
-<keyword>:birthyear</keyword> 1990 unlimited
+<keyword>match:birthyear</keyword> &gt;=1990
 </verb>
 
 <p>
@@ -588,11 +912,13 @@ oder später.
 </p>
 
 <p>
-Siehe auch: <cql>match:whitebirthyear</cql>, <cql>match:blackbirthyear</cql>,
+Siehe auch:
+<cql>match:whitebirthyear</cql>,
+<cql>match:blackbirthyear</cql>,
 <cql>match:deathyear</cql>.
 </p>
 
-<h3 id="match:blackbirthyear">:blackbirthyear<extension/>&emsp;<n>(Geburtsjahr - schwarzer Spieler)</n></h3>
+<h3 id="match:blackbirthyear">:blackbirthyear<extension/>&emsp;<n>(Geburtsjahr &ndash; schwarzer Spieler)</n></h3>
 
 <p>
 Suche nach Partien, in denen der schwarze Spieler innerhalb der gegebenen
@@ -600,12 +926,15 @@ Suche nach Partien, in denen der schwarze Spieler innerhalb der gegebenen
 </p>
 
 <p>
-Siehe auch: <cql>match:whitebirthyear</cql>, <cql>match:birthyear</cql>,
-<cql>match:blackdeathyear</cql>, <cql>match:whitedeathyear</cql>,
+Siehe auch:
+<cql>match:whitebirthyear</cql>,
+<cql>match:birthyear</cql>,
+<cql>match:blackdeathyear</cql>,
+<cql>match:whitedeathyear</cql>,
 <cql>match:deathyear</cql>.
 </p>
 
-<h3 id="match:blackcountry">:blackcountry<extension/>&emsp;<n>(Land - schwarzer Spieler)</n></h3>
+<h3 id="match:blackcountry">:blackcountry<extension/>&emsp;<n>(Land &ndash; schwarzer Spieler)</n></h3>
 
 <p>
 Filtere nur Partien, in denen die Nationalität des schwarzen Spielers mit einem
@@ -613,22 +942,29 @@ der Ländercodes in der gegebenen kommaseparierten Liste von Ländercodes
 übereinstimmt.
 Ein Ländercode ist entweder ein
 <a href="http://de.wikipedia.org/wiki/Liste_der_olympischen_Mannschaftsk%C3%BCrzel">IOC-Ländercode</a>,
-oder ein <a href="http://de.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2-Ländercode</a>.
-Weiterhin sind die speziellen Ländercodes <expr>UNK</expr> (IOC-Form) und
-<expr>xx</expr> (ISO 3166-2-Form) erlaubt, die Partien filtern, in denen die
-Nationalität des schwarzen Spielers unbekannt ist.
+ein <a href="http://de.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2-Ländercode</a>, oder ein
+<a href="http://ccif.sourceforge.net/cif-country.html">ISO 3166-1-Ländercode</a>.
+Weiterhin sind die speziellen Ländercodes <expr>UNK</expr> (IOC-Form),
+<expr>xx</expr> (ISO 3166-2-Form), und <expr>0</expr> (ISO 3166-1-Form) erlaubt, die Partien
+filtern in denen die Nationalität des schwarzen Spielers unbekannt ist.
 Der CQL-Editor biete eine Hilfe zur Unterstützung der Eingabe von Ländercodes.
 </p>
+
+<note>
+Der ChessBase-Ländercode ist kein IOC-Ländercode, und deshalb nicht verwendbar.
+</note>
 
 <p>
 Für Beispiele siehe <cql>match:country</cql>.
 </p>
 
 <p>
-Siehe auch: <cql>match:country</cql>, <cql>match:whitecountry</cql>.
+Siehe auch:
+<cql>match:country</cql>,
+<cql>match:whitecountry</cql>.
 </p>
 
-<h3 id="match:blackdeathyear">:blackdeathyear<extension/>&emsp;<n>(Todesjahr - schwarzer Spieler)</n></h3>
+<h3 id="match:blackdeathyear">:blackdeathyear<extension/>&emsp;<n>(Todesjahr &ndash; schwarzer Spieler)</n></h3>
 
 <p>
 Suche nach Partien, in denen der schwarze Spieler innnerhalb der gegebenen
@@ -636,12 +972,15 @@ Suche nach Partien, in denen der schwarze Spieler innnerhalb der gegebenen
 </p>
 
 <p>
-Siehe auch: <cql>match:whitedeathyear</cql>, <cql>match:deathyear</cql>,
-<cql>match:blackbirthyear</cql>, <cql>match:whitebirthyear</cql>,
+Siehe auch:
+<cql>match:whitedeathyear</cql>,
+<cql>match:deathyear</cql>,
+<cql>match:blackbirthyear</cql>,
+<cql>match:whitebirthyear</cql>,
 <cql>match:birthyear</cql>.
 </p>
 
-<h3 id="match:blackelo">:blackelo<extension/>&emsp;<n>(<abbr>ELO</abbr> - schwarzer Spieler)</n></h3>
+<h3 id="match:blackelo">:blackelo<extension/>&emsp;<n>(<abbr>ELO</abbr> &ndash; schwarzer Spieler)</n></h3>
 
 <p>
 Dieses Schlüsselwort erwartet eine
@@ -650,11 +989,13 @@ Spielers muß innerhalb dieses Bereichs liegen.
 </p>
 
 <p>
-Siehe auch: <cql>match:whiteelo</cql>, <cql>match:elo</cql>,
+Siehe auch:
+<cql>match:whiteelo</cql>,
+<cql>match:elo</cql>,
 <cql>match:blackrating</cql>.
 </p>
 
-<h3 id="match:blackgender">:blackgender<extension/>&emsp;<n>(Geschlecht - schwarzer Spieler)</n></h3>
+<h3 id="match:blackgender">:blackgender<extension/>&emsp;<n>(Geschlecht &ndash; schwarzer Spieler)</n></h3>
 
 <p>
 Filtere nur Partien, in denen das Geschlecht des schwarzer Spielers mit dem
@@ -669,7 +1010,7 @@ Beispiel:
 </p>
 
 <verb>
-<keyword>:blackgender</keyword> f
+<keyword>match:blackgender</keyword> f
 </verb>
 
 <p>
@@ -677,7 +1018,7 @@ Suche nur nach Partien mit mindestens einem weiblichen Spieler.
 </p>
 
 <verb>
-<keyword>:blackgender</keyword> x
+<keyword>match:blackgender</keyword> x
 </verb>
 
 <p>
@@ -685,27 +1026,67 @@ Suche nach Partien, in denen bei einem Spieler das Geschlecht nicht bekannt ist.
 </p>
 
 <p>
-Siehe auch: <cql>match:whitegender</cql>, <cql>match:gender</cql>.
+Siehe auch:
+<cql>match:whitegender</cql>,
+<cql>match:gender</cql>.
 </p>
 
-<h3 id="match:blackiscomputer">:blackiscomputer<extension/>&emsp;<n>(Computer? - schwarzer Spieler)</n></h3>
+<h3 id="match:blackid">:blackid<extension/>&emsp;<n>(Spielerkennung &ndash; schwarzer Spieler)</n></h3>
+
+<p>
+Suche nach Partien, in denen die schwarze Spielerkennung (ID) mit dem gegebenen Argumenten
+übereinstimmt. Für eine nähere Beschreibung siehe <cql>match:playerid</cql>, nur das
+hier ausschliesslich nach Spielern mit der schwarzen Figurenfarbe gesucht wird.
+</p>
+
+<h3 id="match:blackiscomputer">:blackiscomputer<extension/>&emsp;<n>(Computer? &ndash; schwarzer Spieler)</n></h3>
 
 <p>
 Suche nach Partien, in denen der schwarze Spieler ein Schachcomputer ist.
 </p>
 
 <p>
-Siehe auch: <cql>match:iscomputer</cql>, <cql>match:whiteiscomputer</cql>.
+Dieses Schlüsselwort kann auch in negierter Form &ndash; mit einem vorangestellten
+Ausrufungszeichen &ndash; verwendet werden. Beispiel:
 </p>
 
-<h3 id="match:blackishuman">:blackishuman<extension/>&emsp;<n>(Menschlich? - schwarzer Spieler)</n></h3>
+<verb>
+(match <keyword>!match:blackiscomputer</keyword>)
+</verb>
+
+<p>
+Suche nach Partien, in denen der schwarze Spieler kein Schachcomputer ist.
+</p>
+
+<p>
+Siehe auch:
+<cql>match:iscomputer</cql>,
+<cql>match:whiteiscomputer</cql>.
+</p>
+
+<h3 id="match:blackishuman">:blackishuman<extension/>&emsp;<n>(Menschlich? &ndash; schwarzer Spieler)</n></h3>
 
 <p>
 Suche nach Partien, in denen der schwarze Spieler ein Mensch ist.
 </p>
 
 <p>
-Siehe auch: <cql>match:ishuman</cql>, <cql>match:whiteishuman</cql>.
+Dieses Schlüsselwort kann auch in negierter Form &ndash; mit einem vorangestellten
+Ausrufungszeichen &ndash; verwendet werden. Beispiel:
+</p>
+
+<verb>
+(match <keyword>!match:blackishuman</keyword>)
+</verb>
+
+<p>
+Suche nach Partien, in denen der schwarze Spieler kein Mensch ist.
+</p>
+
+<p>
+Siehe auch:
+<cql>match:ishuman</cql>,
+<cql>match:whiteishuman</cql>.
 </p>
 
 <h3 id="match:blackplayer">:blackplayer<extension/>&emsp;<n>(Schwarzer Spieler)</n></h3>
@@ -718,28 +1099,34 @@ Suche nach Partien, in denen der schwarze Spielername mit dem gegebenen Muster
 <p>
 Als Argument wird entweder ein Suchmuster in doppelten
 Anführungszeichen, oder eine einfache Zeichenkette erwartet.
-Siehe <a href="#match:player">:player</a> für eine detaillierte Beschreibung.
+Für eine detaillierte Beschreibung siehe bei <cql>match:player</cql>.
 </p>
 
 <p>
-Siehe auch: <cql>match:player</cql>, <cql>match:whiteplayer</cql>.
+Siehe auch:
+<cql>match:player</cql>,
+<cql>match:whiteplayer</cql>.
 </p>
 
-<h3 id="match:blackrating">:blackrating<extension/>&emsp;<n>(Wertungszahl - schwarzer Spieler)</n></h3>
+<h3 id="match:blackrating">:blackrating<extension/>&emsp;<n>(Wertungszahl &ndash; schwarzer Spieler)</n></h3>
 
 <p>
 Suche nur nach Partien, in denen die Wertungszahl des schwarzen Spielers für
-den gegebenen Wertungstyp innerhalb der gegebenen
+das gegebene Wertungssystem innerhalb der gegebenen
 <a href="CQL-Range-Specifiers.html">Bereichsangabe</a> liegt.
-Der erste Parameter ist der Wertungstyp, dann folgt der Wertebereich.
+Der erste Parameter ist das Wertungssystem, dann folgt der Wertebereich.
 Für eine detaillierte Beschreibung siehe <cql>match:rating</cql>.
 </p>
 
 <p>
-Siehe auch: <cql>match:whiterating</cql>, <cql>match:rating</cql>.
+Siehe auch:
+<cql>match:whiterating</cql>,
+<cql>match:rating</cql>,
+<cql>match:averagerating</cql>,
+<cql>match:ratingdifference</cql>.
 </p>
 
-<h3 id="match:blacktitle">:blacktitle<extension/>&emsp;<n>(Titel - schwarzer Spieler)</n></h3>
+<h3 id="match:blacktitle">:blacktitle<extension/>&emsp;<n>(Titel &ndash; schwarzer Spieler)</n></h3>
 
 <p>
 Suche nur nach Partien, in denen der Titel des schwarzen Spielers mit einem
@@ -748,7 +1135,9 @@ Siehe <cql>match:title</cql> für eine detailliertere Beschreibung.
 </p>
 
 <p>
-Siehe auch: <cql>match:whitetitle</cql>, <cql>match:title</cql>.
+Siehe auch:
+<cql>match:whitetitle</cql>,
+<cql>match:title</cql>.
 </p>
 
 <h3 id="match:country">:country<extension/>&emsp;<n>(Land)</n></h3>
@@ -759,21 +1148,24 @@ der Ländercodes in der gegebenen kommaseparierten Liste von Ländercodes
 übereinstimmt.
 Ein Ländercode ist entweder ein
 <a href="http://de.wikipedia.org/wiki/Liste_der_olympischen_Mannschaftsk%C3%BCrzel">IOC-Ländercode</a>,
-oder ein <a href="http://de.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2-Ländercode</a>.
-Weiterhin sind die speziellen Ländercodes <expr>UNK</expr> (IOC-Form) und
-<expr>xx</expr> (ISO 3166-2-Form) erlaubt, die Partien filtern, in denen
-die Nationalität einer der Spieler unbekannt ist.
+ein <a href="http://de.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2-Ländercode</a>, oder ein
+<a href="http://ccif.sourceforge.net/cif-country.html">ISO 3166-1-Ländercode</a>.
+Weiterhin sind die speziellen Ländercodes <expr>UNK</expr> (IOC-Form),
+<expr>xx</expr> (ISO 3166-2-Form), und <expr>0</expr> (ISO 3166-1-Form) erlaubt, die Partien
+filtern in denen die Nationalität einer der Spieler unbekannt ist.
 Der CQL-Editor biete eine Hilfe zur Unterstützung der Eingabe von Ländercodes.
 </p>
+
+<note>
+Der ChessBase-Ländercode ist kein IOC-Ländercode, und deshalb nicht verwendbar.
+</note>
 
 <p>
 Beispiele:
 </p>
 
-<verb>
-<keyword>:country</keyword> GER<br/>
-<keyword>:country</keyword> de
-</verb>
+<verb><keyword>match:country</keyword> GER</verb>
+<verb><keyword>match:country</keyword> de</verb>
 
 <p>
 In beiden Beispielen werden nur Partien gefiltert, in denen einer
@@ -781,7 +1173,9 @@ der Spieler eine deutsche Nationalität besitzt.
 </p>
 
 <p>
-Siehe auch: <cql>match:whitecountry</cql>, <cql>match:blackcountry</cql>.
+Siehe auch:
+<cql>match:whitecountry</cql>,
+<cql>match:blackcountry</cql>.
 </p>
 
 <h3 id="match:deathyear">:deathyear<extension/>&emsp;<n>(Todesjahr)</n></h3>
@@ -796,7 +1190,7 @@ Beispiel:
 </p>
 
 <verb>
-<keyword>:deathyear</keyword> 1800 1950
+<keyword>match:deathyear</keyword> 1800 1950
 </verb>
 
 <p>
@@ -805,8 +1199,11 @@ Spieler vestarb zwischen 1800 und 1950.
 </p>
 
 <p>
-Siehe auch: <cql>match:whitedeathyear</cql>, <cql>match:blackdeathyear</cql>,
-<cql>match:whitebirthyear</cql>, <cql>match:blackbirthyear</cql>,
+Siehe auch:
+<cql>match:whitedeathyear</cql>,
+<cql>match:blackdeathyear</cql>,
+<cql>match:whitebirthyear</cql>,
+<cql>match:blackbirthyear</cql>,
 <cql>match:birthyear</cql>.
 </p>
 
@@ -819,7 +1216,31 @@ einem Spieler muß innerhalb dieses Bereichs liegen.
 </p>
 
 <p>
-Siehe auch: <cql>match:whiteelo</cql>, <cql>match:blackelo</cql>,
+Beispiele:
+</p>
+
+<verb>
+<keyword>match:elo</keyword> &ndash;
+</verb>
+
+<p>
+Filtert alle Partien, in denen keiner der Spieler eine ELO-Wertungszahl hat.
+</p>
+
+<verb>
+<keyword>match:elo</keyword> *
+</verb>
+
+<p>
+Filtert alle Partien, in mindestens einer der Spieler eine ELO-Wertungszahl besitzt.
+</p>
+
+<p>
+Siehe auch:
+<cql>match:averagerating</cql>,
+<cql>match:averagerating*</cql>,
+<cql>match:whiteelo</cql>,
+<cql>match:blackelo</cql>,
 <cql>match:rating</cql>.
 </p>
 
@@ -838,7 +1259,9 @@ Für Beispiele siehe <cql>match:blackgender</cql>.
 </p>
 
 <p>
-Siehe auch: <cql>match:blackgender</cql>, <cql>match:whitegender</cql>.
+Siehe auch:
+<cql>match:blackgender</cql>,
+<cql>match:whitegender</cql>.
 </p>
 
 <h3 id="match:iscomputer">:iscomputer<extension/>&emsp;<n>(Computer?)</n></h3>
@@ -848,7 +1271,22 @@ Suche nach Partien, in denen einer der Spieler ein Schachcomputer ist.
 </p>
 
 <p>
-Siehe auch: <cql>match:whiteiscomputer</cql>, <cql>match:blackiscomputer</cql>.
+Dieses Schlüsselwort kann auch in negierter Form &ndash; mit einem vorangestellten
+Ausrufungszeichen &ndash; verwendet werden. Beispiel:
+</p>
+
+<verb>
+(match <keyword>!match:iscomputer</keyword>)
+</verb>
+
+<p>
+Suche nach Partien, in denen keiner der Spieler ein Schachcomputer ist.
+</p>
+
+<p>
+Siehe auch:
+<cql>match:whiteiscomputer</cql>,
+<cql>match:blackiscomputer</cql>.
 </p>
 
 <h3 id="match:ishuman">:ishuman<extension/>&emsp;<n>(Ein Mensch?)</n></h3>
@@ -858,7 +1296,22 @@ Suche nach Partien, in denen einer der Spieler ein Mensch ist.
 </p>
 
 <p>
-Siehe auch: <cql>match:whiteishuman</cql>, <cql>match:blackishuman</cql>.
+Dieses Schlüsselwort kann auch in negierter Form &ndash; mit einem vorangestellten
+Ausrufungszeichen &ndash; verwendet werden. Beispiel:
+</p>
+
+<verb>
+(match <keyword>!match:ishuman</keyword>)
+</verb>
+
+<p>
+Suche nach Partien, in denen keiner der Spieler ein Mensch ist.
+</p>
+
+<p>
+Siehe auch:
+<cql>match:whiteishuman</cql>,
+<cql>match:blackishuman</cql>.
 </p>
 
 <h3 id="match:player">:player&emsp;<n>(Spieler)</n></h3>
@@ -871,7 +1324,7 @@ einfache Zeichenkette.
 
 <p>
 <b>Einfache Zeichenkette</b>: Nur Partien, in denen mindestens einer
-der Spielernamen eine Teilzeichenkette des Parameters ist, werden
+der Spielernamen den Parameter als Teilzeichenkette enthält, werden
 gefiltert. Der Zeichenkettenvergleich ist unabhängig von Groß- und
 Kleinschreibung. Diese Form entspricht dem CQL-Standard.
 </p>
@@ -881,7 +1334,7 @@ Beispiel:
 </p>
 
 <verb>
-<keyword>:player</keyword> coeff
+<keyword>match:player</keyword> coeff
 </verb>
 
 <p>
@@ -893,7 +1346,7 @@ Filtere nur Partien, in denen einer der Spielernamen eine Teilzeichenkette
 <b>Suchmuster in doppelten Anführungszeichen:</b> Nur Partien, in denen
 mindestens einer der Spielernamen durch das Suchmuster ersetzt werden kann,
 werden aufgefunden. Für eine Beschreibung der Suchmuster siehe
-<a href="Pattern-Matching.html#examples">Suchmusterabgleich</a>.
+<a href="Pattern-Matching.html">Suchmusterabgleich</a>.
 </p>
 
 <note>
@@ -902,37 +1355,165 @@ nicht dem CQL-Standard.
 </note>
 
 <p>
+Siehe auch:
+<cql>match:whiteplayer</cql>,
+<cql>match:blackplayer</cql>.
+</p>
+
+<h3 id="match:playerid">:playerid<extension/>&emsp;<n>(Spielerkennung)</n></h3>
+
+<p>
+Suche nach Partien, in denen einer der Spielerkennungen (ID) mit dem gegebenen Argumenten
+übereinstimmt.
+</p>
+
+<p>
+Dieses Schlüsselwort erwartet zwei Argumente: das erste bezeichnet die Organization,
+die die im zweiten Argument angegebene Kennung vergibt. Die Kennung kann auch
+als <a href="Pattern-Matching.html">Suchmuster</a> spezifiziert werden.
+</p>
+
+<p>
+Folgende Organizationen werden erkannt:
+</p>
+
+<box>
+	<table>
+		<tr>
+			<td class="l">ACF</td>
+      <td class="r">Australischer Schachbund</td>
+		</tr>
+		<tr>
+			<td class="l">BdF</td>
+      <td class="r">Bund deutscher Fernschachfreunde</td>
+		</tr>
+		<tr>
+			<td class="l">CCRL</td>
+      <td class="r">
+        Computerschachwertungsliste
+        (<a href="http://www.computerchess.org.uk">http://www.computerchess.org.uk</a>)
+      </td>
+		</tr>
+		<tr>
+			<td class="l">CFC</td>
+      <td class="r">Schachbund von Kanada</td>
+		</tr>
+		<tr>
+			<td class="l">DSB</td>
+      <td class="r">Deutscher Schachbund</td>
+		</tr>
+		<tr>
+			<td class="l">ECF</td>
+      <td class="r">Englischer Schachverband</td>
+		</tr>
+		<tr>
+			<td class="l">EHCR</td>
+      <td class="r">
+        Edo - Historische Schachwertungszahlen
+        (<a href="http://www.edochess.ca">http://www.edochess.ca</a>)
+      </td>
+		</tr>
+		<tr>
+			<td class="l">FICGS</td>
+      <td class="r">
+        Freier Internet-Korrespondenzschach-Server
+        (<a href="http://www.ficgs.com/">http://www.ficgs.com/</a>)
+       </td>
+		</tr>
+		<tr>
+			<td class="l">FICS</td>
+      <td class="r">
+        Freier Internet-Schachserver
+        (<a href="http://www.freechess.org">http://www.freechess.org"</a>)
+      </td>
+		</tr>
+		<tr>
+			<td class="l">FIDE</td>
+      <td class="r">Weltschachbund</td>
+		</tr>
+		<tr>
+			<td class="l">ICC</td>
+      <td class="r">Internet-Schachklub</td>
+		</tr>
+		<tr>
+			<td class="l">ICCF</td>
+      <td class="r">Internationaler Korrespondenzschachbund</td>
+		</tr>
+		<tr>
+			<td class="l">Lichess</td>
+      <td class="r">
+        Internet-Schachserver
+        (<a href="lichess.org">lichess.org</a>)
+      </td>
+		</tr>
+		<tr>
+			<td class="l">NZCF</td>
+      <td class="r">Neuseeländischer Schachbund</td>
+		</tr>
+		<tr>
+			<td class="l">Playchess</td>
+      <td class="r">
+        Internet-Schachserver von ChessBase
+        (<a href="playchess.com">playchess.com</a>)
+      </td>
+		</tr>
+		<tr>
+			<td class="l">SchemingMind</td>
+      <td class="r">
+        Internationaler Korrespondenzschachklub
+        (<a href="www.schemingmind.com">www.schemingmind.com</a>)
+      </td>
+		</tr>
+		<tr>
+			<td class="l">USCF</td>
+      <td class="r">Schachbund der Vereinigten Staaten</td>
+		</tr>
+		<tr>
+			<td class="l">WNCA</td>
+      <td class="r">Neuer Weltschachverband</td>
+		</tr>
+	</table>
+</box>
+
+<p>
+Die Groß- und Kleinschreibung spielt keine Rolle, so wird das Argument "schemingmind"
+als <i>SchemingMind</i> erkannt.
+</p>
+
+<p>
 Beispiele:
 </p>
 
 <verb>
-<keyword>:player</keyword> "*coeff*"
+(match <keyword>match:playerid<keyword> FIDE 4100018)
 </verb>
 
 <p>
-Dies ist identisch zum vorigen Beispiel (ohne Anführungszeichen).
+Dies sollte alle Partien auffinden die von Ksparov gespielt wurden, sofern diesen
+Partien eine FIDE-Kennung zugeordnet wurde.
 </p>
 
-<p>
-Für weitere Beispiele siehe
-<a href="Pattern-Matching.html#examples">Suchmusterabgleich</a>.
-</p>
+<verb>
+(match <keyword>match:playerid<keyword> DSB 55039-*)
+</verb>
 
 <p>
-Siehe auch: <cql>match:whiteplayer</cql>, <cql>match:blackplayer</cql>.
+Finde alle Partien, an denen ein Spieler beteiligt ist, der dem Verband mit dem ZPS-Code
+55039 ("Chess Tigers Schach-Förderverein") angehört, sofern diesen Partien eine
+DSB-Kennung zugeordnet wurde.
 </p>
 
 <h3 id="match:rating">:rating<extension/>&emsp;<n>(Wertungszahl)</n></h3>
 
 <p>
 Suche nur nach Partien, in denen die Wertungszahl einer der Spielers für
-den gegebenen Wertungstyp innerhalb der gegebenen
+das gegebene Wertungssystem innerhalb der gegebenen
 <a href="CQL-Range-Specifiers.html">Bereichsangabe</a> liegt.
-Der erste Parameter ist der Wertungstyp, dann folgt der Wertebereich.
+Der erste Parameter ist das Wertungssystem, dann folgt der Wertebereich.
 </p>
 
 <p>
-Der Wertungstyp ist einer der folgenden Typen:
+Das Wertungssystem ist einer der folgenden Systeme:
 </p>
 
 <div class="dir">
@@ -950,24 +1531,28 @@ Der Wertungstyp ist einer der folgenden Typen:
       <td class="r">Englischer Schachverband</td>
     </tr>
     <tr valign="top">
-      <td class="l"><expr>Rapid</expr></td>
-      <td class="r">Schnellturnierwertung des englischen Schachvernbands</td>
-    </tr>
-    <tr valign="top">
-      <td class="l"><expr>ICCF</expr></td>
-      <td class="r">Internationaler Fernschachverband</td>
+      <td class="l"><expr>ACF</expr></td>
+      <td class="r">Australischer Schachverband</td>
     </tr>
     <tr valign="top">
       <td class="l"><expr>USCF</expr></td>
       <td class="r">Schachverband der USA</td>
     </tr>
     <tr valign="top">
-      <td class="l"><expr>IPS</expr></td>
-      <td class="r">Schach-960-Wertung (Individual Player Strength)</td>
+      <td class="l"><expr>Rapid</expr></td>
+      <td class="r">Schnellturnierwertung der FIDE</td>
     </tr>
     <tr valign="top">
-      <td class="l"><expr>Rating</expr></td>
-      <td class="r">Jeder andere Wertungstyp</td>
+      <td class="l"><expr>Blitz</expr></td>
+      <td class="r">Blitzturnierwertung der FIDE</td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><expr>ICCF</expr></td>
+      <td class="r">Internationaler Fernschachverband</td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><expr>Edo</expr></td>
+      <td class="r">Historische Schachwertung</td>
     </tr>
   </table>
 </div>
@@ -977,7 +1562,7 @@ Beispiel:
 </p>
 
 <verb>
-<keyword>:rating</keyword> ELO 2000 3000
+<keyword>match:rating</keyword> ELO 2000 3000
 </verb>
 
 <p>
@@ -986,7 +1571,42 @@ zwischen 2000 und 3000 besitzt.
 </p>
 
 <p>
-Siehe auch: <cql>match:whiterating</cql>, <cql>match:blackrating</cql>.
+Siehe auch:
+<cql>match:whiterating</cql>,
+<cql>match:blackrating</cql>,
+<cql>match:averagerating</cql>,
+<cql>match:ratingdifference</cql>.
+</p>
+
+<h3 id="match:ratingdifference">:ratingdifference<extension/>&emsp;<n>(Wertungszahldifferenz)</n></h3>
+
+<p>
+Suche nach Partien, in denen beide Spieler eine Wertungszahl im
+spezifizierten Wertungssystem besitzen, deren Differenz innerhalb des
+gegebenen <a href="CQL-Range-Specifiers.html">Bereichsangabe</a> liegt.
+Der erste Parameter ist das Wertungssystem (siehe bei <cql>match:rating</cql>),
+dann folgt der Wertebereich.
+</p>
+
+<p>
+Beispiel:
+</p>
+
+<verb>
+<keyword>match:ratingdifference</keyword> ELO &lt;=500
+</verb>
+
+<p>
+Filtert alle Partien, in denen die ELO-Differenz der Spieler maximal
+500 beträgt.
+</p>
+
+<p>
+Siehe auch:
+<cql>match:whiterating</cql>,
+<cql>match:blackrating</cql>,
+<cql>match:rating</cql>,
+<cql>match:averagerating</cql>.
 </p>
 
 <h3 id="match:title">:title<extension/>&emsp;<n>(Titel)</n></h3>
@@ -1006,7 +1626,7 @@ Beispiele:
 </p>
 
 <verb>
-<keyword>:title</keyword> GM,IM
+<keyword>match:title</keyword> GM,IM
 </verb>
 
 <p>
@@ -1014,14 +1634,14 @@ Suche nur nach Partien mit mindestens einem GM oder IM.
 </p>
 
 <verb>
-<keyword>:title</keyword> None
+<keyword>match:title</keyword> None
 </verb>
 
 <p>
 Suche nur nach Partien, in denen keiner der Spieler einen Titel besitzt.
 </p>
 
-<h3 id="match:whitebirthyear">:whitebirthyear<extension/>&emsp;<n>(Geburtsjahr - weißer Spieler)</n></h3>
+<h3 id="match:whitebirthyear">:whitebirthyear<extension/>&emsp;<n>(Geburtsjahr &ndash; weißer Spieler)</n></h3>
 
 <p>
 Suche nach Partien, in denen der weiße Spieler innerhalb der gegebenen
@@ -1029,12 +1649,15 @@ Suche nach Partien, in denen der weiße Spieler innerhalb der gegebenen
 </p>
 
 <p>
-Siehe auch: <cql>match:blackbirthyear</cql>, <cql>match:birthyear</cql>,
-<cql>match:whitedeathyear</cql>, <cql>match:blackdeathyear</cql>,
+Siehe auch:
+<cql>match:blackbirthyear</cql>,
+<cql>match:birthyear</cql>,
+<cql>match:whitedeathyear</cql>,
+<cql>match:blackdeathyear</cql>,
 <cql>match:deathyear</cql>.
 </p>
 
-<h3 id="match:whitecountry">:whitecountry<extension/>&emsp;<n>(Land - weißer Spieler)</n></h3>
+<h3 id="match:whitecountry">:whitecountry<extension/>&emsp;<n>(Land &ndash; weißer Spieler)</n></h3>
 
 <p>
 Filtere nur Partien, in denen die Nationalität des weißen Spielers mit einem
@@ -1042,22 +1665,29 @@ der Ländercodes in der gegebenen kommaseparierten Liste von Ländercodes
 übereinstimmt.
 Ein Ländercode ist entweder ein
 <a href="http://de.wikipedia.org/wiki/Liste_der_olympischen_Mannschaftsk%C3%BCrzel">IOC-Ländercode</a>,
-oder ein <a href="http://de.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2-Ländercode</a>.
-Weiterhin sind die speziellen Ländercodes <expr>UNK</expr> (IOC-Form) und
-<expr>xx</expr> (ISO 3166-2-Form) erlaubt, die Partien filtern, in denen die
-Nationalität des weißen Spielers unbekannt ist.
+ein <a href="http://de.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2-Ländercode</a>, oder ein
+<a href="http://ccif.sourceforge.net/cif-country.html">ISO 3166-1-Ländercode</a>.
+Weiterhin sind die speziellen Ländercodes <expr>UNK</expr> (IOC-Form),
+<expr>xx</expr> (ISO 3166-2-Form), und <expr>0</expr> (ISO 3166-1-Form) erlaubt, die Partien
+filtern in denen die Nationalität des weißen Spielers unbekannt ist.
 Der CQL-Editor biete eine Hilfe zur Unterstützung der Eingabe von Ländercodes.
 </p>
+
+<note>
+Der ChessBase-Ländercode ist kein IOC-Ländercode, und deshalb nicht verwendbar.
+</note>
 
 <p>
 Für Beispiele siehe <cql>match:country</cql>.
 </p>
 
 <p>
-Siehe auch: <cql>match:blackcountry</cql>, <cql>match:country</cql>.
+Siehe auch:
+<cql>match:blackcountry</cql>,
+<cql>match:country</cql>.
 </p>
 
-<h3 id="match:whitedeathyear">:whitedeathyear<extension/>&emsp;<n>(Todesjahr - weißer Spieler)</n></h3>
+<h3 id="match:whitedeathyear">:whitedeathyear<extension/>&emsp;<n>(Todesjahr &ndash; weißer Spieler)</n></h3>
 
 <p>
 Suche nach Partien, in denen der weiße Spieler innnerhalb der gegebenen
@@ -1065,12 +1695,15 @@ Suche nach Partien, in denen der weiße Spieler innnerhalb der gegebenen
 </p>
 
 <p>
-Siehe auch: <cql>match:blackdeathyear</cql>, <cql>match:deathyear</cql>,
-<cql>match:whitebirthyear</cql>, <cql>match:blackbirthyear</cql>,
+Siehe auch:
+<cql>match:blackdeathyear</cql>,
+<cql>match:deathyear</cql>,
+<cql>match:whitebirthyear</cql>,
+<cql>match:blackbirthyear</cql>,
 <cql>match:birthyear</cql>.
 </p>
 
-<h3 id="match:whiteelo">:whiteelo<extension/>&emsp;<n>(<abbr>ELO</abbr> - weißer Spieler)</n></h3>
+<h3 id="match:whiteelo">:whiteelo<extension/>&emsp;<n>(<abbr>ELO</abbr> &ndash; weißer Spieler)</n></h3>
 
 <p>
 Dieses Schlüsselwort erwartet eine
@@ -1079,11 +1712,13 @@ Spielers muß innerhalb dieses Bereichs liegen.
 </p>
 
 <p>
-Siehe auch: <cql>match:blackelo</cql>, <cql>match:elo</cql>,
+Siehe auch:
+<cql>match:blackelo</cql>,
+<cql>match:elo</cql>,
 <cql>match:whiterating</cql>.
 </p>
 
-<h3 id="match:whitegender">:whitegender<extension/>&emsp;<n>(Geschlecht - weißer Spieler)</n></h3>
+<h3 id="match:whitegender">:whitegender<extension/>&emsp;<n>(Geschlecht &ndash; weißer Spieler)</n></h3>
 
 <p>
 Filtere nur Partien, in denen das Geschlecht des weißen Spielers mit dem
@@ -1098,27 +1733,67 @@ Für Beispiele siehe <cql>match:blackgender</cql>.
 </p>
 
 <p>
-Siehe auch: <cql>match:blackgender</cql>, <cql>match:gender</cql>.
+Siehe auch:
+<cql>match:blackgender</cql>,
+<cql>match:gender</cql>.
 </p>
 
-<h3 id="match:whiteiscomputer">:whiteiscomputer<extension/>&emsp;<n>(Computer? - weißer Spieler)</n></h3>
+<h3 id="match:whiteiscomputer">:whiteiscomputer<extension/>&emsp;<n>(Computer? &ndash; weißer Spieler)</n></h3>
 
 <p>
 Suche nach Partien, in denen der weiße Spieler ein Schachcomputer ist.
 </p>
 
 <p>
-Siehe auch: <cql>match:iscomputer</cql>, <cql>match:blackiscomputer</cql>.
+Dieses Schlüsselwort kann auch in negierter Form &ndash; mit einem vorangestellten
+Ausrufungszeichen &ndash; verwendet werden. Beispiel:
 </p>
 
-<h3 id="match:whiteishuman">:whiteishuman<extension/>&emsp;<n>(Menschlich? - weißer Spieler)</n></h3>
+<verb>
+(match <keyword>!match:whiteiscomputer</keyword>)
+</verb>
+
+<p>
+Suche nach Partien, in denen der weiße Spieler kein Schachcomputer ist.
+</p>
+
+<p>
+Siehe auch:
+<cql>match:iscomputer</cql>,
+<cql>match:blackiscomputer</cql>.
+</p>
+
+<h3 id="match:whiteid">:whiteid<extension/>&emsp;<n>(Spielerkennung &ndash; weißer Spieler)</n></h3>
+
+<p>
+Suche nach Partien, in denen die weiße Spielerkennung (ID) mit dem gegebenen Argumenten
+übereinstimmt. Für eine nähere Beschreibung siehe <cql>match:playerid</cql>, nur das
+hier ausschliesslich nach Spielern mit der weißen Figurenfarbe gesucht wird.
+</p>
+
+<h3 id="match:whiteishuman">:whiteishuman<extension/>&emsp;<n>(Menschlich? &ndash; weißer Spieler)</n></h3>
 
 <p>
 Suche nach Partien, in denen der weiße Spieler ein Mensch ist.
 </p>
 
 <p>
-Siehe auch: <cql>match:ishuman</cql>, <cql>match:blackishuman</cql>.
+Dieses Schlüsselwort kann auch in negierter Form &ndash; mit einem vorangestellten
+Ausrufungszeichen &ndash; verwendet werden. Beispiel:
+</p>
+
+<verb>
+(match <keyword>!match:whiteishuman</keyword>)
+</verb>
+
+<p>
+Suche nach Partien, in denen der weiße Spieler kein Mensch ist.
+</p>
+
+<p>
+Siehe auch:
+<cql>match:ishuman</cql>,
+<cql>match:blackishuman</cql>.
 </p>
 
 <h3 id="match:whiteplayer">:whiteplayer<extension/>&emsp;<n>(Weißer Spieler)</n></h3>
@@ -1131,28 +1806,34 @@ Suche nach Partien, in denen der weiße Spielername mit dem gegebenen Muster
 <p>
 Ein Argument wird entweder ein Suchmuster in doppelten Anführungszeichen, oder
 eine einfache Zeichenkette erwartet.
-Siehe <a href="#match:player">:player</a> für eine detaillierte Beschreibung.
+Für eine detaillierte Beschreibung siehe bei <cql>match:player</cql>.
 </p>
 
 <p>
-Siehe auch: <cql>match:blackplayer</cql>, <cql>match:player</cql>.
+Siehe auch:
+<cql>match:blackplayer</cql>,
+<cql>match:player</cql>.
 </p>
 
-<h3 id="match:whiterating">:whiterating<extension/>&emsp;<n>(Wertungszahl - weißer Spieler)</n></h3>
+<h3 id="match:whiterating">:whiterating<extension/>&emsp;<n>(Wertungszahl &ndash; weißer Spieler)</n></h3>
 
 <p>
 Suche nur nach Partien, in denen die Wertungszahl des weißen Spielers für
-den gegebenen Wertungstyp innerhalb der gegebenen
+das gegebene Wertungssystem innerhalb der gegebenen
 <a href="CQL-Range-Specifiers.html">Bereichsangabe</a> liegt.
-Der erste Parameter ist der Wertungstyp, dann folgt der Wertebereich.
+Der erste Parameter ist das Wertungssystem, dann folgt der Wertebereich.
 Für eine detaillierte Beschreibung siehe <cql>match:rating</cql>.
 </p>
 
 <p>
-Siehe auch: <cql>match:blackrating</cql>, <cql>match:rating</cql>.
+Siehe auch:
+<cql>match:blackrating</cql>,
+<cql>match:rating</cql>,
+<cql>match:averagerating</cql>,
+<cql>match:ratingdifference</cql>.
 </p>
 
-<h3 id="match:whitetitle">:whitetitle<extension/>&emsp;<n>(Titel - weißer Spieler)</n></h3>
+<h3 id="match:whitetitle">:whitetitle<extension/>&emsp;<n>(Titel &ndash; weißer Spieler)</n></h3>
 
 <p>
 Suche nur nach Partien, in denen der Titel des weißen Spielers mit einem
@@ -1161,28 +1842,29 @@ Siehe <cql>match:title</cql> für eine detailliertere Beschreibung.
 </p>
 
 <p>
-Siehe auch: <cql>match:blacktitle</cql>, <cql>match:title</cql>.
+Siehe auch:
+<cql>match:blacktitle</cql>,
+<cql>match:title</cql>.
 </p>
 
 <!-- ############################################################################## -->
 <h2 id="header">Schlüsselwörter für die Partieinformationssuche</h2>
 <!-- ############################################################################## -->
 
-<dir>
-  <table>
-    <tr><td>&#x2022;</td><td><a href="#match:annotator">:annotator</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:date">:date</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:eco">:eco</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:gamenumber">:gamenumber</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:hasmarkers">:hasmarkers</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:hasspecialmarkers">:hasspecialmarkers</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:plycount">:plycount</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:result">:result</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:termination">:termination</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:variant">:variant</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:year">:year</a></td></tr>
-  </table>
-</dir>
+<table style="white-space:nowrap">
+  <tr><td>&#x2022;</td><td><a href="#match:annotator">:annotator</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:date">:date</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:eco">:eco</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:eco_">:eco*</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:gamenumber">:gamenumber</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:hasmarker">:hasmarker</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:hasspecialmarker">:hasspecialmarker</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:plycount">:plycount</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:result">:result</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:termination">:termination</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:variant">:variant</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:year">:year</a></td></tr>
+</table>
 
 <h3 id="match:annotator">:annotator<extension/>&emsp;<n>(Kommentator)</n></h3>
 
@@ -1194,7 +1876,8 @@ gegebenen Suchmuster übereinstimmt.
 <p>
 Als Argument wird entweder ein Suchmuster in doppelten Anführungszeichen, oder
 eine einfache Zeichenkette erwartet.
-Siehe <a href="#match:player">:player</a> für eine detaillierte Beschreibung.
+Für eine Beschreibung der Suchmuster siehe
+<a href="Pattern-Matching.html">Suchmusterabgleich</a>.
 </p>
 
 <p>
@@ -1202,19 +1885,38 @@ Beispiele:
 </p>
 
 <verb>
-<keyword>:annotator</keyword> Capablanca
+<keyword>match:annotator</keyword> Capablanca
 </verb>
 
+<p>
 Suche nach Partien, in denen der Kommentatorname eine Teilzeichenkette
- <nobr>"Capablanca"</nobr> enthält.
+<nobr>"Capablanca"</nobr> enthält.
+</p>
 
 <verb>
-<keyword>:annotator</keyword> "*"
+<keyword>match:annotator</keyword> "?*"
 </verb>
 
 <p>
 Suche nach Partien mit einem Kommentator, d.h. daß Partien ohne
-Kommentator werden ausgefiltert.
+Kommentator ausgefiltert werden.
+</p>
+
+<verb>
+<keyword>match:annotator</keyword> ""
+</verb>
+
+<p>
+Suche nach Partien ohne einen Kommentator (diese Partien können
+trotzdem Kommentierungen enthalten).
+</p>
+
+<verb>
+<keyword>match:annotator</keyword> "*"
+</verb>
+
+<p>
+Dieses Kriterium findet alle Partien (und hat somit keinen Sinn).
 </p>
 
 <p>
@@ -1237,16 +1939,22 @@ Der Datumsbereich muß einer der folgenden Syntaxformen genügen:
   <table>
     <tr valign="top">
       <td class="l"><expr>2010-10-27</expr></td>
-      <td class="r">bezeichnet ein einzelnes Datum</td>
+      <td class="r">Bezeichnet ein einzelnes Datum.</td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><expr>&gt;=2010-10-27</expr></td>
+      <td class="r">Einem einzelnen Datum kann ein Vergleichsoperator vorangestellt
+          werden, der die gleiche Bedeutung hat wie bei den
+          <a href="CQL-Range-Specifiers.html">Bereichsangaben</a>.</td>
     </tr>
     <tr valign="top">
       <td class="l"><expr>2010-10-01 2010-10-31</expr></td>
-      <td class="r">bezeichnet einen Datumsbereich, inklusive der Schranken</td>
+      <td class="r">Bezeichnet einen Datumsbereich, inklusive der Schranken.</td>
     </tr>
     <tr valign="top">
       <td class="l"><expr>2010-10-01 .. 2010-11-01</expr></td>
-      <td class="r">bezeichnet einen Datumsbereich, inklusive der
-          linken Schranke, aber exklusive der rechten Schranke</td>
+      <td class="r">Bezeichnet einen Datumsbereich, inklusive der
+          linken Schranke, aber exklusive der rechten Schranke.</td>
     </tr>
   </table>
 </div>
@@ -1304,9 +2012,9 @@ Ein Datum hat die folgende Form:
 </div>
 
 <p>
-Es ist zudem das spezielle Datum "unlimited" erlaubt -
-siehe <a href="CQL-Range-Specifiers.html">Bereichsangabe</a> für eine
-Beschreibung - jedoch nicht als rechte Schranke in der dritten Form.
+Es sind zudem die speziellen Datumsbereiche <expr>&ndash;</expr> und <expr>*</expr>
+erlaubt &ndash; siehe <a href="CQL-Range-Specifiers.html">Bereichsangabe</a> für eine
+Beschreibung.
 </p>
 
 <p>
@@ -1314,7 +2022,7 @@ Beispiele:
 </p>
 
 <verb>
-<keyword>:date</keyword> 2010-10-01
+<keyword>match:date</keyword> 2010-10-01
 </verb>
 
 <p>
@@ -1322,7 +2030,7 @@ Suche nach allen Partien gespielt am 1. Oktober 2010.
 </p>
 
 <verb>
-<keyword>:date</keyword> 2010-10-01 unlimited
+<keyword>match:date</keyword> &gt;=2010-10-01
 </verb>
 
 <p>
@@ -1330,7 +2038,7 @@ Suche nach allen Partien gespielt nach dem 30. September 2010.
 </p>
 
 <verb>
-<keyword>:date</keyword> 2010-10-01 .. 2010-11-01
+<keyword>match:date</keyword> 2010-10-01 .. 2010-11-01
 </verb>
 
 <p>
@@ -1339,7 +2047,7 @@ Suche nach allen Partien gespielt im Oktober 2010: zwischen dem
 </p>
 
 <verb>
-<keyword>:date</keyword> 2010-10-01 .. 2010-10-01+1m
+<keyword>match:date</keyword> 2010-10-01 .. 2010-10-01+1m
 </verb>
 
 <p>
@@ -1350,7 +2058,7 @@ rechte Datumsangabe (<expr>2010-10-01+1m</expr> ist der
 </p>
 
 <verb>
-<keyword>:date</keyword> 2010-10-27 .. 2010-10-27-43d
+<keyword>match:date</keyword> 2010-10-27 .. 2010-10-27-43d
 </verb>
 
 <p>
@@ -1363,7 +2071,7 @@ daß die linke Datumsschranke größer sein darf als die rechte Datumsschranke.
 </p>
 
 <verb>
-<keyword>:date</keyword> unlimited <cql>position:not</cql>
+<keyword>match:date</keyword> &ndash;
 </verb>
 
 <p>
@@ -1377,9 +2085,28 @@ Siehe auch: <cql>match:year</cql>.
 <h3 id="match:eco">:eco<extension/></h3>
 
 <p>
-Erwartet eine <a href="ECO-Code.html">ECO-Code</a>-Bereich, und filtert nur
-Partien mit einem ECO-Code, der in diesem Bereich liegt. Der Bereich kann
-auch aus einem einzelnem ECO-Code bestehen.
+Erwartet eine kommaseparierte Liste von <a href="ECO-Code.html">ECO-Code</a>-Bereichen
+und filtert nur Partien mit einem ECO-Code, der in einem dieser Bereiche liegt.
+Zum Abgleich wird entweder der vom Benutzer gespeicherte ECO-Code verwendet, oder,
+wenn dieser nicht exisitiert, der automatisch ermittelte ECO-Code.
+</p>
+
+<p>
+Beispiele für ECO-Code-Bereiche:
+</p>
+
+<box>
+  <table>
+    <tr><td class="l"><expr>A00</expr></td><td class="r">ECO-Code A00</td></tr>
+    <tr><td class="l"><expr>B00-99</expr></td><td class="r">ECO-Code-Bereich B00 bis B99</td></tr>
+  </table>
+</box>
+
+<p>
+Es sind zudem die speziellen Wertebereiche <expr>&ndash;</expr> und <expr>*</expr>
+erlaubt &ndash; siehe <a href="CQL-Range-Specifiers.html">Bereichsangabe</a> für eine
+Beschreibung. Sie können jedoch nicht Bestandteil einer Liste sein, sondern nur
+eine Liste ersetzen.
 </p>
 
 <p>
@@ -1387,20 +2114,53 @@ Beispiele:
 </p>
 
 <verb>
-<keyword>:eco</keyword> A00
+<keyword>match:eco</keyword> A00
 </verb>
 
 <p>
-Suche nur nach Partien mit ECO-Code A00.
+Suche ausschließlich nach Partien mit ECO-Code A00.
 </p>
 
 <verb>
-<keyword>:eco</keyword> A00 A99
+<keyword>match:eco</keyword> A11-39
 </verb>
 
 <p>
-Suche nur nach Partien mit einem ECO-Code zwischen A00 und A99 (inklusive der
-Schranken).
+Suche nur nach Partien mit der englischen Eröffnung.
+</p>
+
+<verb>
+<keyword>match:eco</keyword> B00-99,C00-99
+</verb>
+
+<p>
+Suche nur nach Partien mit einem ECO-Code zwischen B00 und B99
+(halb-offene Spiele), sowie zwischen C00 und C99 (offene Spiele).
+</p>
+
+<verb>
+<keyword>match:eco</keyword> *
+</verb>
+
+<p>
+Suche nach allen Partien mit einem zugewiesenen ECO-Code, d.h. Partien ohne
+ECO-Codes sind ausgeschlossen.
+</p>
+
+<p>
+Siehe auch: <cql>match:eco*</cql>.
+</p>
+
+<h3 id="match:eco_">:eco*<extension/></h3>
+
+<p>
+Diese Variante entspricht in der Handhabung dem Schlüsselwort <cql>match:elo</cql>.
+Jedoch wird zum Abgleich nur der automatisch ermittelte ECO-Code verwendet,
+ein vom Benutzer zugewiesener ECO-Code wird nicht berücksichtigt.
+</p>
+
+<p>
+Siehe auch: <cql>match:eco</cql>.
 </p>
 
 <h3 id="match:gamenumber">:gamenumber&emsp;<n>(Partiennummer)</n></h3>
@@ -1412,9 +2172,9 @@ liegt.
 </p>
 
 <p>
-Beachte daß im Falle von PGN-Datenbanken eine Partienummer mehrmals vorkommen
+Beachte daß im Falle von PGN-Archiven eine Partienummer mehrmals vorkommen
 kann, nämlich in verschiedenen <a href="Chess-Variants.html">Schachformen</a>.
-Evt. ist die Suche mit dem Schlüsselwort <cql>match:variant</cql>
+Gegebenenfalls ist die Suche mit dem Schlüsselwort <cql>match:variant</cql>
 einzuschränken.
 </p>
 
@@ -1422,17 +2182,15 @@ einzuschränken.
 Beispiele:
 </p>
 
-<verb>
-<keyword>:gamenumber</keyword> 1000<br/>
-<keyword>:gamenumber</keyword> 1 100
-</verb>
+<verb><keyword>match:gamenumber</keyword> 1000</verb>
+<verb><keyword>match:gamenumber</keyword> 1 100</verb>
 
-<h3 id="match:hasmarkers">:hasmarkers<extension/>&emsp;<n>(Partiemarkierung?)</n></h3>
+<h3 id="match:hasmarker">:hasmarker<extension/>&emsp;<n>(Partiemarkierung?)</n></h3>
 
 <p>
 Suche nach Partien, in denen mindestens eine Partiemarkierung (<see/>
 <a href="Game-Flags.html">Partiemarkierungen</a>) gesetzt ist, die in der
-gegebenen Zeichenkette mit ihrem Kürzel aufgeführt wird. Wenn kein Parameter
+gegebenen kommaseparierten Liste mit ihrem Kürzel aufgeführt wird. Wenn kein Parameter
 vorhanden ist so wird nach Partien gesucht, in denen irgendeine
 Partiemarkierung gesetzt wurde.
 </p>
@@ -1442,113 +2200,7 @@ Die Kürzel für Partiemarkierungen sind:
 </p>
 
 <div class="dir">
-  <table>
-    <tr>
-      <td class="l">w</td>
-      <td class="m"><img src="../images/gameflag-White-Opening.png"/></td>
-      <td class="r">%::gametable::mc::GameFlags(w)%</td>
-    </tr>
-    <tr>
-      <td class="l">b</td>
-      <td class="m"><img src="../images/gameflag-Black-Opening.png"/></td>
-      <td class="r">%::gametable::mc::GameFlags(b)%</td>
-    </tr>
-    <tr>
-      <td class="l">m</td>
-      <td class="m"><img src="../images/gameflag-Middle-Game.png"/></td>
-      <td class="r">%::gametable::mc::GameFlags(m)%</td>
-    </tr>
-    <tr>
-      <td class="l">e</td>
-      <td class="m"><img src="../images/gameflag-End-Game.png"/></td>
-      <td class="r">%::gametable::mc::GameFlags(e)%</td>
-    </tr>
-    <tr>
-      <td class="l">N</td>
-      <td class="m"><img src="../images/gameflag-Novelty.png"/></td>
-      <td class="r">%::gametable::mc::GameFlags(N)%</td>
-    </tr>
-    <tr>
-      <td class="l">p</td>
-      <td class="m"><img src="../images/gameflag-Pawn-Structure.png"/></td>
-      <td class="r">%::gametable::mc::GameFlags(p)%</td>
-    </tr>
-    <tr>
-      <td class="l">T</td>
-      <td class="m"><img src="../images/gameflag-Tactics.png"/></td>
-      <td class="r">%::gametable::mc::GameFlags(T)%</td>
-    </tr>
-    <tr>
-      <td class="l">K</td>
-      <td class="m"><img src="../images/gameflag-King-Side.png"/></td>
-      <td class="r">%::gametable::mc::GameFlags(K)%</td>
-    </tr>
-    <tr>
-      <td class="l">Q</td>
-      <td class="m"><img src="../images/gameflag-Queen-Side.png"/></td>
-      <td class="r">%::gametable::mc::GameFlags(Q)%</td>
-    </tr>
-    <tr>
-      <td class="l">!</td>
-      <td class="m"><img src="../images/gameflag-Brilliancy.png"/></td>
-      <td class="r">%::gametable::mc::GameFlags(!)%</td>
-    </tr>
-    <tr>
-      <td class="l">?</td>
-      <td class="m"><img src="../images/gameflag-Blunder.png"/></td>
-      <td class="r">%::gametable::mc::GameFlags(?)%</td>
-    </tr>
-    <tr>
-      <td class="l">U</td>
-      <td class="m"><img src="../images/gameflag-User.png"/></td>
-      <td class="r">%::gametable::mc::GameFlags(U)%</td>
-    </tr>
-    <tr>
-      <td class="l">*</td>
-      <td class="m"><img src="../images/gameflag-Best-Game.png"/></td>
-      <td class="r">%::gametable::mc::GameFlags(*)%</td>
-    </tr>
-    <tr>
-      <td class="l">D</td>
-      <td class="m"><img src="../images/gameflag-Decided-Tournament.png"/></td>
-      <td class="r">%::gametable::mc::GameFlags(D)%</td>
-    </tr>
-    <tr>
-      <td class="l">G</td>
-      <td class="m"><img src="../images/gameflag-Model-Game.png"/></td>
-      <td class="r">%::gametable::mc::GameFlags(G)%</td>
-    </tr>
-    <tr>
-      <td class="l">S</td>
-      <td class="m"><img src="../images/gameflag-Strategy.png"/></td>
-      <td class="r">%::gametable::mc::GameFlags(S)%</td>
-    </tr>
-    <tr>
-      <td class="l">^</td>
-      <td class="m"><img src="../images/gameflag-With-Attack.png"/></td>
-      <td class="r">%::gametable::mc::GameFlags(^)%</td>
-    </tr>
-    <tr>
-      <td class="l">~</td>
-      <td class="m"><img src="../images/gameflag-Sacrifice.png"/></td>
-      <td class="r">%::gametable::mc::GameFlags(~)%</td>
-    </tr>
-    <tr>
-      <td class="l">=</td>
-      <td class="m"><img src="../images/gameflag-Defense.png"/></td>
-      <td class="r">%::gametable::mc::GameFlags(=)%</td>
-    </tr>
-    <tr>
-      <td class="l">M</td>
-      <td class="m"><img src="../images/gameflag-Material.png"/></td>
-      <td class="r">%::gametable::mc::GameFlags(M)%</td>
-    </tr>
-    <tr>
-      <td class="l">P</td>
-      <td class="m"><img src="../images/gameflag-Piece-Play.png"/></td>
-      <td class="r">%::gametable::mc::GameFlags(P)%</td>
-    </tr>
-  </table>
+INCLUDE ../Game-Markers.txt
 </div>
 
 <p>
@@ -1561,7 +2213,7 @@ Beispiele:
 </p>
 
 <verb>
-<keyword>:hasmarkers</keyword> wb
+<keyword>match:hasmarker</keyword> w,b
 </verb>
 
 <p>
@@ -1570,7 +2222,7 @@ oder <i>%::gametable::mc::GameFlags(b)%</i> (oder beiden).
 </p>
 
 <verb>
-<keyword>:hasmarkers</keyword>
+<keyword>match:hasmarker</keyword>
 </verb>
 
 <p>
@@ -1578,7 +2230,7 @@ Suche nach Partien, in denen irgendeine Markierung gesetzt wurde; d.h. alle
 Partien ohne eine Markierung sind ausgeschlossen.
 </p>
 
-<h3 id="match:hasspecialmarkers">:hasspecialmarkers<extension/>&emsp;<n>(Spezielle Partiemarkierung?)</n></h3>
+<h3 id="match:hasspecialmarker">:hasspecialmarker<extension/>&emsp;<n>(Spezielle Partiemarkierung?)</n></h3>
 
 <p>
 Suche nach Partien, in denen mindestens eine der speziellen Markierungen
@@ -1609,18 +2261,18 @@ Eine spezielle Markierung wird folgendermaßen spezifiziert:
     <tr>
       <td class="l"><expr>illegalmove</expr></td>
       <td class="m"><img src="../images/gameflag-Illegal-Move.png"/></td>
-      <td class="r">Die Partie enthält unerlaubte Züge.</td>
+      <td class="r">Die Partie enthält regelwidrige Züge.</td>
     </tr>
     <tr>
-      <td class="l"><expr>illegalcastling</expr></td>
-      <td class="m"><img src="../images/gameflag-Illegal-Castling.png"/></td>
-      <td class="r">Die Partie enthält unerlaubte Rochaden.</td>
+      <td class="l"><expr>invalidmove</expr></td>
+      <td class="m"><img src="../images/gameflag-Invalid-Move.png"/></td>
+      <td class="r">Die Partie enthält unerlaubte Züge (Kinderschach-Unterstützung).</td>
     </tr>
   </table>
 </div>
 
 <p>
-Beachte das <expr>illegalmove</expr> keine unerlaubten Rochaden beinhaltet.
+Beachte das ein unerlaubter Zug nicht zugleich als regelwidrig eingestuft wird.
 Der CQL-Editor biete eine Hilfe zur Unterstützung der Eingabe von
 speziellen Markierungen.
 </p>
@@ -1630,12 +2282,12 @@ Beispiel:
 </p>
 
 <verb>
-<cql>match:not</cql> (match <keyword>:hasspecialmarkers</keyword> illegalmove)
+<cql>match:not</cql> (match <keyword>match:hasspecialmarker</keyword> invalidmove)
 </verb>
 
 <p>
-Suche nach Partien ohne unerlaubte Züge, unerlaubte Rochaden sind jedoch
-zulässig.
+Suche nach Partien ohne unerlaubte Züge, regelwidrige Züge (wie regelwidrige
+Rochade) sind jedoch zulässig.
 </p>
 
 <h3 id="match:plycount">:plycount<extension/>&emsp;<n>(Halbzugzähler)</n></h3>
@@ -1650,7 +2302,7 @@ Beispiel:
 </p>
 
 <verb>
-<keyword>:plycount</keyword> 40 60
+<keyword>match:plycount</keyword> 40 60
 </verb>
 
 <p>
@@ -1664,10 +2316,6 @@ als 30 Züge.
 Suche nach Partien, deren Ergebnis mit einem in der gegebenen
 kommaseparierten Liste von Ergebnissen übereinstimmt.
 </p>
-
-<note>
-Der CQL-Standard erlaubt nur ein einziges Ergebnis als Parameter.
-</note>
 
 <p>
 Erlaubte Ergebnisse sind:
@@ -1707,7 +2355,7 @@ Beispiele:
 </p>
 
 <verb>
-<keyword>:result</keyword> 1/2
+<keyword>match:result</keyword> 1/2
 </verb>
 
 <p>
@@ -1715,12 +2363,11 @@ Finde alle Remispartien.
 </p>
 
 <verb>
-<keyword>:result</keyword> 1-0,0-1
+<keyword>match:result</keyword> 1-0,0-1
 </verb>
 
 <p>
-Finde nur Partien, in denen eine Seite gewann. Dieses Beispiel ist nicht
-konform zum CQL-Standard.
+Finde nur Partien, in denen eine Seite gewann.
 </p>
 
 <h3 id="match:termination">:termination<extension/>&emsp;<n>(Beendigung)</n></h3>
@@ -1745,11 +2392,6 @@ Erlaubte Beendigungsursachen sind:
       <td class="l"><expr>normal</expr></td>
       <td class="m"><img src="../images/termination_reason_Normal.png"/></td>
       <td class="r">Die Partie endete auf normale Weise</td>
-    </tr>
-    <tr>
-      <td class="l"><expr>unplayed</expr></td>
-      <td class="m"><img src="../images/termination_reason_Unplayed.png"/></td>
-      <td class="r">%::terminationbox::mc::Reason(Unplayed)%</td>
     </tr>
     <tr>
       <td class="l"><expr>abandoned</expr></td>
@@ -1782,6 +2424,16 @@ Erlaubte Beendigungsursachen sind:
       <td class="r">Ein Spieler, oder sogar beide, überschritten die Zeit</td>
     </tr>
     <tr>
+      <td class="l"><expr>unplayed</expr></td>
+      <td class="m"><img src="../images/termination_reason_DrawClaim.png"/></td>
+      <td class="r">%::terminationbox::mc::Reason(DrawClaim)%</td>
+    </tr>
+    <tr>
+      <td class="l"><expr>unplayed</expr></td>
+      <td class="m"><img src="../images/termination_reason_NoOpponent.png"/></td>
+      <td class="r">%::terminationbox::mc::Reason(NoOpponent)%</td>
+    </tr>
+    <tr>
       <td class="l"><expr>unterminated</expr></td>
       <td class="m"><img src="../images/termination_reason_Unterminated.png"/></td>
       <td class="r">%::terminationbox::mc::Reason(Unterminated)%</td>
@@ -1794,7 +2446,7 @@ Beispiel:
 </p>
 
 <verb>
-<keyword>:termination</keyword> unknown,normal
+<keyword>match:termination</keyword> unknown,normal
 </verb>
 
 <p>
@@ -1815,32 +2467,7 @@ Erlaubte Schachformen sind:
 </p>
 
 <div class="dir">
-  <table>
-    <tr>
-      <td class="l"><expr>normal</expr></td>
-      <td class="r">%::mc::VariantName(Normal)%</td>
-    </tr>
-    <tr>
-      <td class="l"><expr>threecheck</expr></td>
-      <td class="r">%::mc::VariantName(ThreeCheck)%</td>
-    </tr>
-    <tr>
-      <td class="l"><expr>crazyhouse</expr></td>
-      <td class="r">%::mc::VariantName(Crazyhouse)%</td>
-    </tr>
-    <tr>
-      <td class="l"><expr>suicide</expr></td>
-      <td class="r">%::mc::VariantName(Suicide)%</td>
-    </tr>
-    <tr>
-      <td class="l"><expr>giveaway</expr></td>
-      <td class="r">%::mc::VariantName(Giveaway)%</td>
-    </tr>
-    <tr>
-      <td class="l"><expr>losers</expr></td>
-      <td class="r">%::mc::VariantName(Losers)%</td>
-    </tr>
-  </table>
+INCLUDE ../Chess-Variants.txt
 </div>
 
 <p>
@@ -1848,7 +2475,7 @@ Beispiel:
 </p>
 
 <verb>
-<keyword>:variant</keyword> suicide,giveaway,losers
+<keyword>match:variant</keyword> suicide,giveaway,losers
 </verb>
 
 <p>
@@ -1867,10 +2494,8 @@ Bereichs liegt.
 Beispiele:
 </p>
 
-<verb>
-<keyword>:year</keyword> 2000<br/>
-<keyword>:year</keyword> 2000 2010
-</verb>
+<verb><keyword>match:year</keyword> 2000</verb>
+<verb><keyword>match:year</keyword> 2000 2010</verb>
 
 <p>
 Siehe auch: <cql>match:date</cql>.
@@ -1880,17 +2505,19 @@ Siehe auch: <cql>match:date</cql>.
 <h2 id="data">Schlüsselwörter für die Partiedatensuche</h2>
 <!-- ############################################################################## -->
 
-<dir>
-  <table>
-    <tr><td>&#x2022;</td><td><a href="#match:comment">:comment</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:hasannotation">:hasannotation</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:hascomments">:hascomments</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:hasvariations">:hasvariations</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:ischess960">:ischess960</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:isshufflechess">:isshufflechess</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:startposition">:startposition</a></td></tr>
-  </table>
-</dir>
+<table style="white-space:nowrap">
+  <tr><td>&#x2022;</td><td><a href="#match:comment">:comment</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:comment_">:comment*</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:error">:error</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:goodgame">:goodgame</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:hasannotation">:hasannotation</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:hascomments">:hascomments</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:hasvariations">:hasvariations</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:ischess960">:ischess960</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:isshufflechess">:isshufflechess</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:startposition">:startposition</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:tag">:tag</a></td></tr>
+</table>
 
 <h3 id="match:comment">:comment<extension/>&emsp;<n>(Kommentar)</n></h3>
 
@@ -1898,15 +2525,28 @@ Siehe auch: <cql>match:date</cql>.
 Filtere nur Partien, in denen mindestens ein Kommentar eine Teilzeichenkette
 enthält, die vom gegebenen Suchmuster ersetzt werden kann (<see/>
 <a href="Pattern-Matching.html">Suchmusterabgleich</a>). Das Suchmuster
-muß in doppelten Anführungszeichen eingeschlossen sein.
+muß in doppelten Anführungszeichen eingeschlossen sein. Der Teilzeichenkette
+kann optional eine kommaseparierte Liste von
+<a href="http://de.wikipedia.org/wiki/ISO_639">ISO 639-2</a>-Sprachcodes
+als Argument vorausgehen, mit der die Suche auf bestimmte Sprachen eingschränkt wird.
+Die folgenden Codes sind Erweiterungen:
 </p>
 
+<div class="dir">
+  <table>
+    <tr><td class="l"><code>xx</code></td><td class="r">Sprachenunabhängiger Kommentar</td></tr>
+    <tr><td class="l" valign="top"><code>yy</code></td>
+        <td class="r">Irgendeine Sprache außer Englisch
+          (dies schließt nicht den sprachenunabhängigen Kommentar mit ein)</td></tr>
+  </table>
+</div>
+
 <p>
-Beispiel:
+Beispiele:
 </p>
 
 <verb>
-<keyword>:comment</keyword> "entscheidungspartie"
+<keyword>match:comment</keyword> "Entscheidungspartie"
 </verb>
 
 <p>
@@ -1915,14 +2555,164 @@ den Satz "Diese Entscheidungspartie begann mit einer Überraschung."
 enthält.
 </p>
 
-<h3 id="match:hasannotation">:hasannotation<extension/>&emsp;<n>(Anmerkung?)</n></h3>
+<verb>
+<keyword>match:comment</keyword> de,xx "Entscheidungspartie"
+</verb>
 
 <p>
-Suche nach Partien mit Anmerkungen (dies sind nicht Kommentare).
+Die Kommentarsuche wird auf Deutsch und "Sprachenunabhängig" eingeschränkt.
 </p>
 
 <p>
-Siehe auch: <cql>match:hascomments</cql>, <cql>match:hasvariations</cql>.
+Siehe auch: 
+<cql>match:comment*</cwl>.
+<cql>match:hascomments</cql>,
+</p>
+
+<h3 id="match:comment_">:comment*<extension/>&emsp;<n>(Kommentar)</n></h3>
+
+<p>
+Dieses Schlüsselwort enspricht dem Schlüsselwort <cql>match:comment</cql>, nur
+wird hier nicht nach einer Teilzeichenkette gesucht, sondern der Kommentar muß
+vollständig vom Suchmuster ersetzt werden, damit die Partie gefiltert wird.
+</p>
+
+<p>
+Siehe auch: 
+<cql>match:comment</cwl>.
+<cql>match:hascomments</cql>,
+</p>
+
+<h3 id="match:error">:error<extension/>&emsp;<n>(Fehler)</n></h3>
+
+<p>
+Suche nach Datenfehlern, die beim Importieren von Partien einer Scid- oder
+ChessBase-Datenbank auftraten.
+</p>
+
+<div class="dir">
+  <table>
+    <tr>
+      <td class="l" valign="top" style="white-space:nowrap">None</td>
+      <td class="r" valign="top">
+        Es lag kein Fehler beim Dekodieren dieser Partie vor.
+      </td>
+    </tr>
+    <tr>
+      <td class="l" valign="top" style="white-space:nowrap">DecodingFailed</td>
+      <td class="r" valign="top">
+        Dieses Problem kann bei ChessBase-Datenbanken auftreten, in seltenen Fällen
+        ist eine Dekodierung der Partiezüge nicht möglich.
+      </td>
+    </tr>
+    <tr>
+      <td class="l" valign="top" style="white-space:nowrap">GameDataCorrupted</td>
+      <td class="r" valign="top">
+        Es lag (wahrscheinlich) ein Datenfehler in der Datenbank vor.
+      </td>
+    </tr>
+    <tr>
+      <td class="l" valign="top" style="white-space:nowrap">ChecksumError</td>
+      <td class="r" valign="top">
+        Es lag ein Datenfehler beim Dekodieren einer ChessBase-Datenbank im alten
+        DOS-Format vor, die Prüfsumme stimmte nicht.
+      </td>
+    </tr>
+    <tr>
+      <td class="l" valign="top" style="white-space:nowrap">IllegalStartPosition</td>
+      <td class="r" valign="top">
+        Dieses Problem könnte auftreten wenn eine ungültige Startposition vorliegt.
+        Allerdings ist ein Auftreten dieses Problems bisher noch nicht bekannt.
+      </td>
+    </tr>
+    <tr>
+      <td class="l" valign="top" style="white-space:nowrap">CannotDecodeMove</td>
+      <td class="r" valign="top">
+        Beim Dekodieren der Partiedaten trat eine unerwartete Datensequenz auf.
+      </td>
+    </tr>
+    <tr>
+      <td class="l" valign="top" style="white-space:nowrap">UnexpectedEndOfStream</td>
+      <td class="r" valign="top">
+        Es trat ein unerwartetes Dateiende auf.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<note>
+Dieses Schlüsselwort ist privat, es ist nicht Bestandteil des <nobr>CQL-S</nobr>-Standards,
+und sollte auch niemals zum <nobr>CQL-S-Standard</nobr> gehören. Dies erlaubt jeder
+Applikation eine private Definition zur Suche nach Datenbankfehlern.
+</note>
+
+<h3 id="match:goodgame">:goodgame<extension/>&emsp;<n>(Gute Partie)</n></h3>
+
+<p>
+Dies entspricht in etwa der ChessBase-Einschätzung qualitativ guter Partien, und
+ist äquivalent zu:
+</p>
+
+<verbatim>
+(match
+  <comment>; Nur Partien mit normaler Zeitregelung.</comment>
+  <cql>match:timemode</cql> normal, corr
+  <comment>; Keine Simultanpartien.</comment>
+  <cql>match:not</cql> (match <cql>match:eventtype</cql> simul)
+  <comment>; Keine Remispartien mit weniger als 40 Halbzügen,</comment>
+  <comment>; ansonsten keine Partien mit weniger als 16 Halbzügen.</comment>
+  <cql>match:cond</cql> (
+    (match <cql>match:result</cql> 1/2) (match <cql>match:plycount</cql> &gt;=40)
+    (match <cql>match:plycount</cql> &gt;=16))
+  <comment>; Nur Partien mit einem Spieler eines höheren Titels,</comment>
+  <comment>; oder aber mit einer guten Wertungszahl.</comment>
+  <cql>match:or</cql> (
+    (match <cql>match:title</cql> IM,GM,WIM,WGM,CIM,CGM)
+    (match <cql>match:rating</cql> ELO &gt;=2350)
+    (match <cql>match:rating</cql> DWZ &gt;=2350)
+    (match <cql>match:rating</cql> ACF &gt;=2350)
+    (match <cql>match:rating</cql> ECF &gt;=220)
+    (match <cql>match:rating</cql> ICCF &gt;=2350)
+    (match <cql>match:rating</cql> USCF &gt;=2375)))
+</verbatim>
+
+<p>
+Dieses Schlüsselwort kann auch in negierter Form &ndash; mit einem vorangestellten
+Ausrufungszeichen &ndash; verwendet werden. Beispiel:
+</p>
+
+<verb>
+(match <keyword>!match:goodgame</keyword>)
+</verb>
+
+<p>
+Suche nach qualitativ schlechteren Partien.
+</p>
+
+<h3 id="match:hasannotation">:hasannotation<extension/>&emsp;<n>(Anmerkung?)</n></h3>
+
+<p>
+Suche nach Partien mit symbolischen Anmerkungen (<see/>
+<a href="NAG-Comments.html">NAG-Kommentarwerte</a>).
+</p>
+
+<p>
+Dieses Schlüsselwort kann auch in negierter Form &ndash; mit einem vorangestellten
+Ausrufungszeichen &ndash; verwendet werden. Beispiel:
+</p>
+
+<verb>
+(match <keyword>!match:hasannotation</keyword>)
+</verb>
+
+<p>
+Suche nach Partien ohne symbolischen Anmerkungen.
+</p>
+
+<p>
+Siehe auch:
+<cql>match:hascomments</cql>,
+<cql>match:hasvariations</cql>.
 </p>
 
 <h3 id="match:hascomments">:hascomments<extension/>&emsp;<n>(Kommentar?)</n></h3>
@@ -1932,7 +2722,51 @@ Suche nach kommentierten Partien. Beachte das eine kommentierte Partie keinen
 Kommentator (<see/> <cql>match:annotator</cql>) haben muß.
 </p>
 
-Siehe auch: <cql>match:hasannotation</cql>, <cql>match:hasvariations</cql>.
+<p>
+Dieses Schlüsselwort läßt als Parameter eine optionale Liste von
+<a href="http://de.wikipedia.org/wiki/ISO_639">ISO 639-2</a>-Sprachcodes zu.
+Die folgenden Codes sind Erweiterungen:
+</p>
+
+<div class="dir">
+  <table>
+    <tr><td class="l"><code>xx</code></td><td class="r">Sprachenunabhängiger Kommentar</td></tr>
+    <tr><td class="l" valign="top"><code>yy</code></td>
+        <td class="r">Irgendeine Sprache außer Englisch
+          (dies schließt nicht den sprachenunabhängigen Kommentar mit ein)</td></tr>
+  </table>
+</div>
+
+<p>
+Der CQL-Editor biete eine Hilfe zur Unterstützung der Eingabe von Sprachcodes.
+</p>
+
+<p>
+Beispiele:
+</p>
+
+<verb>
+<keyword>match:hascomments</keyword>
+</verb>
+
+<p>
+Filtere Partien die Kommentare enthalten.
+</p>
+
+<verb>
+<keyword>match:hascomments</keyword> de,en
+</verb>
+
+<p>
+Filtere nur Partien, die Kommentare in deutscher oder englischer Sprache enthalten.
+</p>
+
+<p>
+Siehe auch:
+<cql>match:hasannotation</cql>,
+<cql>match:hasvariations</cql>,
+<cql>match:comment</cql>.
+</p>
 
 <h3 id="match:hasvariations">:hasvariations<extension/>&emsp;<n>(Varianten?)</n></h3>
 
@@ -1941,45 +2775,108 @@ Suche nach Partien mit Untervarianten.
 </p>
 
 <p>
-Siehe auch: <cql>match:hasannotation</cql>, <cql>match:hascomments</cql>.
+Dieses Schlüsselwort kann auch in negierter Form &ndash; mit einem vorangestellten
+Ausrufungszeichen &ndash; verwendet werden. Beispiel:
+</p>
+
+<verb>
+(match <keyword>!match:hasvariations</keyword>)
+</verb>
+
+<p>
+Suche nach Partien ohne Untervarianten.
+</p>
+
+<p>
+Siehe auch:
+<cql>match:hasannotation</cql>,
+<cql>match:hascomments</cql>.
 </p>
 
 <h3 id="match:ischess960">:ischess960<extension/>&emsp;<n>(Schach-960?)</n></h3>
 
 <p>
 Suche nach Partien beginnend mit einer Schach-960-Position. Dies beinhaltet
-die Standardstartposition.
+die Standardstartposition. Dies ist eine Kurzschreibweise für:
+</p>
+
+<verb>
+<cql>match:startposition</cql> 1-960
+</verb>
+
+<p>
+Dieses Schlüsselwort kann auch in negierter Form &ndash; mit einem vorangestellten
+Ausrufungszeichen &ndash; verwendet werden. Beispiel:
+</p>
+
+<verb>
+(match <keyword>!match:ischess960</keyword>)
+</verb>
+
+<p>
+Suche nach Partien, die nicht mit einer Schach-960-Position beginnen.
 </p>
 
 <p>
-Siehe auch: <cql>match:isshufflechess</cql>.
+Siehe auch:
+<cql>match:startposition</cql>.
+<cql>match:isshufflechess</cql>,
 </p>
 
 <h3 id="match:isshufflechess">:isshufflechess<extension/>&emsp;<n>(Shuffle-Schach?)</n></h3>
 
 <p>
 Suche nach Partien beginnend mit einer Schuffle-Schach-Position. Dies
-beinhaltet Schach-960-Positionen.
+beinhaltet Schach-960-Positionen. Dies ist eine Kurzschreibweise für:
+</p>
+
+<verb>
+<cql>match:startposition</cql> 1-3840
+</verb>
+
+<p>
+Dieses Schlüsselwort kann auch in negierter Form &ndash; mit einem vorangestellten
+Ausrufungszeichen &ndash; verwendet werden. Beispiel:
+</p>
+
+<verb>
+(match <keyword>!match:isshufflechess</keyword>)
+</verb>
+
+<p>
+Suche nach Partien, die nicht mit einer  Schuffle-Schach-Position beginnen.
 </p>
 
 <p>
-Siehe auch: <cql>match:ischess960</cql>.
+Siehe auch:
+<cql>match:startposition</cql>.
+<cql>match:ischess960</cql>,
 </p>
 
 <h3 id="match:startposition">:startposition<extension/></h3>
 
 <p>
-Erwartet eine kommaseparierte Liste von Startpositionen. Eine Startposition
-ist entweder eine Positionsnummer, oder eine FICS-Variantenbezeichnung.
+Erwartet eine kommaseparierte Liste von Startpositionbereichen. Eine Startposition
+ist entweder eine Positionsnummer, oder eine FICS-Variantenbezeichnung. Ein
+Startpositionsbereich ist eine Folge von Startpositionen, wie z.B.
+</p>
+
+<verb>
+1-960
+</verb>
+
+<p>
+Dieser Bereich enthält die Positionen 1 bis 960.
 </p>
 
 <p>
 Im Falle der Positionsnummer Null werden nur Partien gefiltert, die nicht
-mit einer Shuffle-Schach-Positionen beginnen. Eine Positionsnummer zwischen
-1 und 3840 bezeichnet eine Shuffle-Schach-Position. Ist die Nummer kleiner
-oder gleich 960 (aber nicht Null), dann ist es eine Schach-960-Positionsnummer.
-Eine spezielle Bedeutung hat die Nummer -1: diese Nummer schliesst alle
-Shuffle-Schach-Positionen und alle (unterstützten) FICS-Varianten aus.
+mit einer Shuffle-Schach-Positionen beginnen, und auch nicht mit einer
+FICS-Variante. Eine Positionsnummer zwischen 1 und 3840 bezeichnet eine
+Shuffle-Schach-Position. Ist die Nummer kleiner oder gleich 960 (aber
+nicht Null), dann ist es eine Schach-960-Positionsnummer. Eine spezielle
+Bedeutung hat "*": dieses Symbol schließt alle
+Shuffle-Schach-Positionen und alle (unterstützten) FICS-Varianten ein.
 </p>
 
 <p>
@@ -2012,8 +2909,8 @@ in der folgenden Weise abgeleitet:
 <p>
 Für die Schachformen %::mc::VariantName(Suicide)% und
 %::mc::VariantName(Giveaway)% gilt eine spezielle Regel:
-hier ist die Positionsnummer N equivalent zur Positionsnummer
-<expr>N&#x2212;3&#x00d7;960</expr>, wenn <nobr>N &gt; 3&#x00d7;960</nobr>.
+hier ist die Positionsnummer <expr>N</expr> äquivalent zur Positionsnummer
+<expr>N&#x2212;(3&#x00d7;960)</expr>, wenn <expr>N &gt; 3&#x00d7;960</expr>.
 Dies vereinfacht die Suche nach Standardpositionen; siehe untenstehendes
 Beispiel. Beachte das eine Startposition in diesen Schachformen keine
 Positionsnummer haben kann, die kleiner oder gleich 960 ist.
@@ -2033,7 +2930,7 @@ Beispiele:
 </p>
 
 <verb>
-<keyword>:startposition</keyword> 518
+<keyword>match:startposition</keyword> 518
 </verb>
 
 <p>
@@ -2045,7 +2942,7 @@ der Nummer 3398 (dies ist die Standardstartposition von
 </p>
 
 <verb>
-<keyword>:startposition</keyword> 518,3398
+<keyword>match:startposition</keyword> 518,3398
 </verb>
 
 <p>
@@ -2055,7 +2952,16 @@ Startpositionen 3398 aufgefunden, im Unterschied zum vorigen Beispiel.
 </p>
 
 <verb>
-<keyword>:startposition</keyword> misc/runaway
+<keyword>match:startposition</keyword> 1-960,2881-3840
+</verb>
+
+<p>
+Filtere alle Partien mit einer Shuffle-Schach-Startposition, in der sich der
+König zwischen den Türmen befindet.
+</p>
+
+<verb>
+<keyword>match:startposition</keyword> misc/runaway
 </verb>
 
 <p>
@@ -2063,17 +2969,15 @@ Suche nach Partien der FICS-Variante <expr>misc/runaway</expr>.
 </p>
 
 <verb>
-<keyword>:startposition</keyword> 0 <cql>match:not</cql>
+<keyword>match:startposition</keyword> 0 <cql>match:not</cql>
 </verb>
 
 <p>
-Suche nach Partien beginnend mit einer beliebigen Startposition:
-dies bedeutet das die erste Position dieser Partien eine
-Schuffle-Schach-Position sein muß.
+Suche nach Partien, die mit einer Schuffle-Schach-Position starten.
 </p>
 
 <verb>
-<keyword>:startposition</keyword> -1 <cql>match:not</cql>
+<keyword>match:startposition</keyword> *
 </verb>
 
 <p>
@@ -2082,21 +2986,123 @@ dies bedeuetet das die erste Position dieser Partien entweder eine
 Schuffle-Schach-Position ist, oder eine der unterstützen FICS-Varianten.
 </p>
 
+<p>
+Siehe auch:
+<cql>match:ischess960</cql>,
+<cql>match:isshufflechess</cql>.
+</p>
+
+<h3 id="match:tag">:tag<extension/>&emsp;<n>(Kennzeichen)</n></h3>
+
+<p>
+Suche nach Partien, in denen ein zusätzliches PGN-Kennzeichen exisistiert,
+dessen Name mit dem ersten Argument übereinstimmt, und dessen Wert mit dem
+gegebenen Suchmuster im zweiten Argument übereinstimmt. Fehlt das zweite Argument,
+dann werden alle Partien mit diesem Kennzeichen unabhängig von dessen Wert
+gefunden.
+</p>
+
+<p>
+Als optionales zweites Argument wird entweder ein Suchmuster in doppelten
+Anführungszeichen, oder eine einfache Zeichenkette erwartet.
+Für eine Beschreibung der Suchmuster siehe
+<a href="Pattern-Matching.html">Suchmusterabgleich</a>.
+</p>
+
+<p>
+Als spezieller Wert für das erste Argument ist <expr>*</expr> erlaubt. Dies
+filtert jedes PGN-Kennzeichen.
+</p>
+
+<p>
+Beispiele:
+</p>
+
+<verb>
+<keyword>match:tag</keyword> Source
+</verb>
+
+<p>
+Finde alle Partien, die das PGN-Kennzeichen <expr>Source</expr> definiert haben.
+</p>
+
+<verb>
+<keyword>match:tag</keyword> WhiteTeamCountry USA
+</verb>
+
+<p>
+Dies findet beispielsweise jede Partie auf, die das PGN-Kennzeichen
+<expr>WhiteTeamCountry</expr> mit dem Wert <expr>USA</expr> enthält.
+</p>
+
+<verb>
+<keyword>match:tag</keyword> * <cql>match:not</cql>
+</verb>
+
+<p>
+Findet alle Partien, die kein zusätzliches PGN-Kennzeichen enthalten.
+</p>
+
+<verb>
+<keyword>match:tag</keyword> * USA
+</verb>
+
+<p>
+Finde alle Partien mit einem beliebigen zusätzlichen PGN-Kennzeichen, das den Wert
+<expr>USA</expr> hat.
+</p>
+
+<!-- ############################################################################## -->
+<h2 id="transform">Schlüsselwörter für die Transformation</h2>
+<!-- ############################################################################## -->
+
+<table style="white-space:nowrap">
+  <tr><td>&#x2022;</td><td><a href="#match:eithercolor">:eithercolor</a></td></tr>
+</table>
+
+<h3 id="match:eithercolor">:eithercolor<extension/>&emsp;<n>(Beide Farben)</n></h3>
+
+<p>
+Führt einen Farbwechsel aus. Diese Farbwechseltransformation wirkt sich
+ebenfalls auf Positionslisten aus, damit ist <cql>position:flipcolor</cql>
+nicht mehr erlaubt sobald <cql>eithercolor</cql> verwendet wird.
+</p>
+
+<p>
+Dies macht beispielsweise folgende Suche möglich:
+</p>
+
+<verbatim>
+(match (
+  <cql>match:result</cql> 1-0
+  <cql>match:whiteelo</cql> &lt;=2300
+  <cql>match:blackelo</cql> &gt;=2600
+  <keyword>match:eithercolor</keyword>))
+</verbatim>
+
+<p>
+Suche nach Partien in denen ein Spieler mit ELO 2300 oder geringer einen
+Spieler mit ELO 2600 oder höher besiegt.
+</p>
+
+<p>
+Siehe <a href="CQL-Position-List.html#eithercolor:example">powerdifference : position</a>
+für ein Beispiel in Verbindung mit einer Positionsliste.
+</p>
+
 <!-- ############################################################################## -->
 <h2 id="tagging">Schlüsselwörter für das Markieren</h2>
 <!-- ############################################################################## -->
 
-<dir>
-  <table>
-    <tr><td>&#x2022;</td><td><a href="#match:forany">:forany</a></td></tr>
-  </table>
-</dir>
+<table style="white-space:nowrap">
+  <tr><td>&#x2022;</td><td><a href="#match:forany">:forany</a></td></tr>
+</table>
 
 <h3 id="match:forany">:forany&emsp;<n>(Für jede)</n></h3>
 
 <p>
 Erwartet zwei Parameter, einen Markierungsnamen und einen Figurenartbezeichner.
-Diese Funktionalität wird auf der Seite <a href="CQL-Tagging">Tagging</a>
+Diese Funktionalität wird auf der Seite <a href="CQL-Tagging.html">Tagging</a>
 beschrieben.
 </p>
 
@@ -2104,12 +3110,10 @@ beschrieben.
 <h2 id="meaningless">Bedeutungslose Schlüsselwörter</h2>
 <!-- ############################################################################## -->
 
-<dir>
-  <table>
-    <tr><td>&#x2022;</td><td><a href="#match:output">:output</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:pgn">:pgn</a></td></tr>
-  </table>
-</dir>
+<table style="white-space:nowrap">
+  <tr><td>&#x2022;</td><td><a href="#match:output">:output</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#match:pgn">:pgn</a></td></tr>
+</table>
 
 <h3 id="match:output">:output&emsp;<n>(Ausgabe)</n></h3>
 
@@ -2119,7 +3123,7 @@ Erwartet einen Parameter, der einen Dateinamen bezeichnet.
 
 <p>
 Dieses Schlüsselwort wird unterstützt um kompatibel mit dem CQL-Standard
-zu sein, es hat jedoch keinerlei Bedeutung in Scidb.
+zu sein, es hat jedoch keinerlei Bedeutung in <nobr>CQL-S</nobr>.
 </p>
 
 <h3 id="match:pgn">:pgn</h3>
@@ -2130,7 +3134,7 @@ Erwartet einen Parameter, der einen Dateinamen bezeichnet.
 
 <p>
 Dieses Schlüsselwort wird unterstützt um kompatibel mit dem CQL-Standard
-zu sein, es hat jedoch keinerlei Bedeutung in Scidb.
+zu sein, es hat jedoch keinerlei Bedeutung in <nobr>CQL-S</nobr>.
 </p>
 
 END

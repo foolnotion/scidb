@@ -1,80 +1,91 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision: 161 $
 * Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2013 Gregor Cramer
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
 
 INDEX Range specifiers (CQL)
 TITLE CQL - Range specifiers
 
 <p>
 Many keyword options are followed by optional range specifiers. A range
-specifier consists of either a single integer or two integers separated
-by whitespace.
+specifier either consists of a single integer, optionally prefixed by a
+comparative operator, or two integers (without comparative operators)
+separated by whitespace.
 </p>
 
 <p>
-If a range specifier has one integer, it denotes that integer. Otherwise
-it denotes all the integers between its first and second integers inclusive.
+In case of two integers the range between the integers (inclusive this
+values) will denote the specified range. If only one value is given
+this denotes the range. If this single integer is prefixed by a comparative
+operator, a range will be specified which is open at one boundary:
 </p>
 
+<box>
+<table>
+  <tr><td><expr>&gt;</expr></td>  <td></td> <td>More than</td></tr>
+  <tr><td><expr>&gt;=</expr></td> <td></td> <td>At least</td></tr>
+  <tr><td><expr>&lt;</expr></td>  <td></td> <td>Less than</td></tr>
+  <tr><td><expr>&lt;=</expr></td> <td></td> <td>At most</td></tr>
+</table>
+</box>
+
+<note>
+The form with preceding comparative operator is not part of the CQL standard.
+</note>
+
 <p>
-A special meaning has the value <i>unlimited</i>. If <i>unlimited</i> is a
-single argument, the range is completely unlimited, this means all
-values are included. If the lower range is <i>unlimited</i>, the meaning
-is negative unlimited. If the upper range is <i>unlimited</i>, the meaning is
-positive unlimited.
+Furthermore there are two special values defined: <expr>&ndash;</expr> is
+defining an empty range, and <expr>*</expr> is defining an arbitrary
+value (this means a range which is unlimited at both boundaries).
+But these special values are nor applicable in every query, it depends
+on the query whether it is permitted to use it (in most cases when
+searching for game information, but in general not when searching for
+positions).
 </p>
 
 <note>
-The special range <i>unlimited</i> is not part of the CQL standard.
+The special ranges <expr>&ndash;</expr> and <expr>*</expr> are not part of
+the CQL standard.
 </note>
-
-<annotation>
-The use of <i>unlimited</i> (inside the range specifier) instead of an
-arbitry chosen value, which also only is signalising infinity, allows
-the search algorithm optimisations, and this may result in a considerably
-faster search.
-</annotation>
 
 <h2>Examples</h2>
 
 <p>
-The match list can have a <cql>:year</cql> keyword denoting the range of
-years in which the game in question must lie in order for a match to occur.
+In following examples ranges will be used for year specifications,
+e.g. to find games within a certain year range.
 </p>
 
 <verb>
-<cql>match:year</cql> 1934
+1934
 </verb>
 
 <p>
-Denotes the year 1934. <code>1934</code> is the range specifier.
+Denotes the year 1934.
 </p>
 
 <verb>
-<cql>match:year</cql> 1934 2000
+1934 2000
 </verb>
 
 <p>
-Denotes the years between 1934 and 2000 inclusive. The range specifier is
-<code>1934</code> <code>2000</code>.
+Denotes the years between 1934 and 2000 inclusive.
 </p>
 
 <verb>
-<cql>match:year</cql> 1934 unlimited
+&gt;=1934
 </verb>
 
 <p>
@@ -82,7 +93,7 @@ Denotes all the years after 1933.
 </p>
 
 <verb>
-<cql>match:year</cql> unlimited 1934
+&lt;1935
 </verb>
 
 <p>
@@ -90,11 +101,20 @@ Denotes all the years before 1935.
 </p>
 
 <verb>
-<cql>match:elo</cql> unlimited
+*
 </verb>
 
 <p>
-Match all games where one player has an ELO rating.
+Find all games having any game date, this is excluding games not having
+a game date.
+</p>
+
+<verb>
+&ndash;
+</verb>
+
+<p>
+Find all games not having a game date.
 </p>
 
 END

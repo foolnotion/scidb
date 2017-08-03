@@ -19,7 +19,7 @@
   <meta name="generator"
      content="scidb.sourceforge.net" />
   <meta name="description"
-     content="Scidb Help Page" />
+     content="Scidb - Help Page" />
 
   <link rel="icon"
        href="http://scidb.sourceforge.net/favicon.ico"
@@ -29,112 +29,107 @@
   <link rel="stylesheet"
        type="text/css"
       media="screen"
-       href="../styles/help.css" />
+		 href="../styles/help.css" />
 
-  <title>Scidb Hilfe: CQL - Chess Query Language</title>
+  <title>Scidb - Hilfe: Chess Query Language (Schachdatenbanksprache)</title>
 </head>
 
 <body>
 
 <div class="title">
-  <h1 class="title">CQL - Chess Query Language</h1>
+  <h1 class="title">Chess Query Language (Schachdatenbanksprache)</h1>
 </div>
 
 <p>
 Chess Query Language (CQL) wurde entwickelt um Rechercheuren, Autoren und
 Spielern die Suche nach Partien, Problemen und Studien, die zu speziellen
-Themen passen, zu erlauben
-(&#x21d2; <a href="http://www.rbnn.com/cql/" target="blank_">CQL Manual&nbsp;<span class="awesome">&#xf08e;</span></a>).
+Themen passen, zu erlauben (&#x21d2;
+<a href="http://web.archive.org/web/20160303173407/http://www.rbnn.com/cql/" target="blank_">CQL Manual&nbsp;<span class="awesome">&#xf08e;</span></a>).
 </p>
 
 <p>
-Scidb benutzt ein erweitertes CQL als Basis für alle komplexen
-Suchfunktionen.
+Scidb benutzt <span style='white-space:nowrap;'>CQL-S</span> 1.0, ein erweitertes CQL, als Basis für alle
+Suchfunktionen. <span style='white-space:nowrap;'>CQL-S</span> wurde sehr reichhaltig erweitert, um den
+Ansprüchen moderner Schachdatenbanken zu genügen. <span style='white-space:nowrap;'>CQL-S</span> ist eine
+abwärtskompatible Erweiterung, alle Standard-CQL-Skripte sollten auch in
+Scidb anwendbar sein.
 </p>
 
 <p>
 Einige Teile dieses Handbuchs wurden der Seite
-<a href="http://www.rbnn.com/cql/" target="blank_">CQL Manual&nbsp;<span class="awesome">&#xf08e;</span></a> entnommen.
+<a href="http://web.archive.org/web/20160303173407/http://www.rbnn.com/cql/" target="blank_">CQL Manual&nbsp;<span class="awesome">&#xf08e;</span></a> entnommen.
 </p>
-
-<p>
-Standardmäßig wird zur Internationalisierung die figurine Notation der
-Schachfiguren verwendet. Der CQL-Editor arbeitet ebenfalls mit Figurensymbolen,
-allerdings werden die CQL-Dateien mit den entsprechenden englischen Bezeichnern
-gespeichert:
-</p>
-
-<ul style='list-style-type: none'><li>
-  <table>
-    <!-- Note to translators: don't translate English piece letters in third column -->
-    <tr><td><span class='chess'>&#x2654;</span>  </td><td>=</td><td>K</td><td>=</td><td>weißer König</td></tr>
-    <tr><td><span class='chess'>&#x2655;</span> </td><td>=</td><td>Q</td><td>=</td><td>weiße Dame</td></tr>
-    <tr><td><span class='chess'>&#x2656;</span>  </td><td>=</td><td>R</td><td>=</td><td>weißer Turm</td></tr>
-    <tr><td><span class='chess'>&#x2657;</span></td><td>=</td><td>B</td><td>=</td><td>weißer Läufer</td></tr>
-    <tr><td><span class='chess'>&#x2658;</span></td><td>=</td><td>N</td><td>=</td><td>weißer Springer</td></tr>
-    <tr><td><span class='chess'>&#x2659;</span>  </td><td>=</td><td>P</td><td>=</td><td>weißer Bauer</td></tr>
-    <tr><td><span class='chess'>&#x265a;</span>  </td><td>=</td><td>k</td><td>=</td><td>schwarzer König</td></tr>
-    <tr><td><span class='chess'>&#x265b;</span> </td><td>=</td><td>q</td><td>=</td><td>schwarze Dame</td></tr>
-    <tr><td><span class='chess'>&#x265c;</span>  </td><td>=</td><td>r</td><td>=</td><td>schwarzer Turm</td></tr>
-    <tr><td><span class='chess'>&#x265d;</span></td><td>=</td><td>b</td><td>=</td><td>schwarzer Läufer</td></tr>
-    <tr><td><span class='chess'>&#x265e;</span></td><td>=</td><td>n</td><td>=</td><td>schwarzer Springer</td></tr>
-    <tr><td><span class='chess'>&#x265f;</span>  </td><td>=</td><td>p</td><td>=</td><td>schwarzer Bauer</td></tr>
-  </table>
-</li></ul>
-
-<p>
-Sollten Bezeichner für die Anzeige der Figuren vorgezogen werden, so ist einer der
-folgenden Optionen auszuwählen:
-</p>
-
-<table>
-  <tr valign="top">
-    <td>
-      <div embed='piecelang en text "Englische Bezeichner verwenden"'
-           style="display: inline;">
-        (Nicht verfügbar im Web-Browser)
-      </div>
-    </td>
-    <td nowrap="true">&emsp;K Q R B N P k q r b n p (wird in den CQL-Dateien verwendet)</td>
-  </tr>
-  <tr valign="top">
-    <td>
-      <div embed='piecelang regional text "Regionale Bezeichner verwenden"'
-           style="display: inline;">
-        (Nicht verfügbar im Web-Browser)
-      </div>
-    </td>
-    <td nowrap="true">&emsp;K D T L S B k d t l s b</td>
-  </tr>
-  <tr valign="top">
-    <td>
-      <div embed='piecelang graphic text "Zurück zu Figurensymbolen"'
-           style="display: inline;">
-        Standard im Web-Browser
-      </div>
-    </td>
-    <td nowrap="true">&emsp;<span class='chess'>&#x2654;</span> <span class='chess'>&#x2655;</span> <span class='chess'>&#x2656;</span> <span class='chess'>&#x2657;</span> <span class='chess'>&#x2658;</span> <span class='chess'>&#x2659;</span> <span class='chess'>&#x265a;</span> <span class='chess'>&#x265b;</span> <span class='chess'>&#x265c;</span> <span class='chess'>&#x265d;</span> <span class='chess'>&#x265e;</span> <span class='chess'>&#x265f;</span></td>
-  </tr>
-</table>
-
-<h2>Index</h2>
 
 <ul>
-  <li><a href="CQL-Syntax.html">Syntax</a>
-    <ul class="index">
-      <li><a href="CQL-Piece-Designators.html">Figurenbezeichner</a></li>
-      <li><a href="CQL-Square-Designators.html">Felderbezeichner</a></li>
-      <li><a href="CQL-Range-Specifiers.html">Bereichsangaben</a></li>
-      <li><a href="Pattern-Matching.html">Suchmusterabgleich (Pattern-Matching)</a></li>
-    </ul>
-  </li>
-  <li><a href="CQL-Transformations.html">Transformationen</a></li>
-  <li><a href="CQL-Match-List.html">Die Suchliste</a></li>
-  <li><a href="CQL-Position-List.html">Die Positionsliste</a></li>
-  <li><a href="CQL-Relation-List.html">Die Relationsliste</a></li>
-  <li><a href="CQL-Tagging.html">Markierung</a></li>
-  <li><a href="CQL-Examples.html">Beispiele</a></li>
+  <li><a href="#fundamentals">Grundlagen</a></li>
+  <li><a href="#technichal">Technische Beschreibungen</a></li>
+  <li><a href="#file">CQL-Dateien</a></li>
 </ul>
+
+<h2 id="fundamentals">Grundlagen</h2>
+
+<p>
+Alle Suchfunktionen in Scidb basieren auf <span style='white-space:nowrap;'>CQL-S</span>. Zur Formulierung
+von CQL-Abfragen stellt der CQL-Editor eine komfortable, übersichtliche und leicht
+bedienbare Benutzeroberfläche zur Verfügung. Um <span style='white-space:nowrap;'>CQL-S</span> anwenden
+zu können werden keine Kenntnisse der technischen CQL-Beschreibungen vorausgesetzt.
+Es ist auch nicht notwendig die Skriptsprache zu verstehen, nur die sehr
+engagierten Anwender werden sich direkt mit den CQL-Skripten befassen.
+Lediglich die folgenden relativ kurzen Einführungen sind zum Verständnis von
+CQL unabdingbar:
+</p>
+
+<ul>
+  <li><a href="CQL-Piece-Designators.html">Figurenbezeichner</a></li>
+  <li><a href="CQL-Square-Designators.html">Felderbezeichner</a></li>
+  <li><a href="CQL-Range-Specifiers.html">Bereichsangaben</a></li>
+  <li><a href="CQL-Percentage-Specifiers.html">Prozentuale Bereiche</a></li>
+  <li><a href="Pattern-Matching.html">Suchmusterabgleich (Pattern-Matching)</a></li>
+</ul>
+
+<p>
+Aber auch für weniger technisch Interessierte ist es aufschlussreich,
+zumindest einmal in die Dokumente
+<a href="CQL-Match-List.html">Die Suchliste</a>,
+<a href="CQL-Relation-List.html">Die Positionsliste</a> und
+<a href="CQL-Examples.html">Beispiele</a>
+hineinzuschauen, um so einen Überblick über die Mächtigkeit von
+<span style='white-space:nowrap;'>CQL-S</span> zu erhalten. Selbst die komplexesten Suchabfragen sind
+tatsächlich möglich.
+</p>
+
+<h2 id="technichal">Technische Beschreibungen</h2>
+
+<p>
+Für einen vertieftes Verständnis von <span style='white-space:nowrap;'>CQL-S</span> dienen die
+technischen Beschreibungen, die zugleich Grundlage sind, um ein CQL-Skript
+verstehen und evt. auch schreiben zu können. Auch um sehr komplexe Suchabfragen
+gestalten zu können ist ein vertieftes Verständnis notwendig.
+</p>
+
+<div class='annotation'><img src='../images/annotation.png' style='float:left; margin:0 1em 0 0' alt='annotation' />
+Die technische Beschreibung ist keine Voraussetzung, um die
+Suchfunktionen in Scidb verwenden zu können.
+</div>
+
+<ul class="index">
+  <li><a href="CQL-Technical-Description.html">Technische Beschreibungen &ndash; Übersicht</a></li>
+</ul>
+
+<h2 id="file">CQL-Dateien</h2>
+
+<p>
+Scidb schreibt <span style='white-space:nowrap;'>CQL-S</span>-Skripte mit der Dateiendung <span style='white-space:nowrap;'><code>.cqls</code></span>.
+Entspricht eine CQL-Abfrage noch dem CQL-Standard (was meistens der Fall sein dürfte),
+dann kann dieses <span style='white-space:nowrap;'>CQL-S</span>-Skript jederzeit auch als CQL-Datei mit der
+Dateiendung <span style='white-space:nowrap;'><code>.cql</code></span> exportiert werden. Scidb kann alle
+<span style='white-space:nowrap;'><code>.cql</code></span>-Skripte, die mit anderen Programmen erstellt wurden, importieren.
+</p>
+
+<p>
+Für eine genaue Beschreibung des Dateiformats siehe
+<a href="CQL-File-Format.html">Dateiformat</a>.
+</p>
 
 </body>
 </html>

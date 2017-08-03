@@ -19,7 +19,7 @@
   <meta name="generator"
      content="scidb.sourceforge.net" />
   <meta name="description"
-     content="Scidb Help Page" />
+     content="Scidb - Help Page" />
 
   <link rel="icon"
        href="http://scidb.sourceforge.net/favicon.ico"
@@ -29,9 +29,9 @@
   <link rel="stylesheet"
        type="text/css"
       media="screen"
-       href="../styles/help.css" />
+		 href="../styles/help.css" />
 
-  <title>Scidb Help: Database archive</title>
+  <title>Scidb - Help: Database archive</title>
 </head>
 
 <body>
@@ -54,21 +54,24 @@ This archive format has the following syntax (simplified EBNF):
 <div class='box'><pre><code><!-- don't translate --><!--
 -->Archive     = Magic [ ArchInfo ] [ UserInfo ] { File } ;
 Magic       = 'iveArch' LF ;
-File        = Header BinaryData ;
+File        = Header ( DataDelim BinaryData | NoDataDelim );
 Header      = HeadDelim LF HeaderInfo DataDelim ;
 HeadDelim   = LF '&lt;-- H E A D --&gt;' ;
 DataDelim   = '&lt;-- D A T A --&gt;' LF ;
+NoDataDelim = '&lt;-- N O D A T A --&gt;' LF ;
 HeaderInfo  =
+  [ '&lt;Database&gt;' { Space } DatabaseName LF ]
   '&lt;FileName&gt;' { Space } FileName LF
   [ '&lt;URI&gt;' { Space } Number LF ]
   [ '&lt;FileSize&gt;' { Space } Number LF ]
   [ '&lt;Size&gt;' { Space } Number LF ]
+  [ '&lt;MimeType&gt;' { Space } MimeType LF ]
   [ '&lt;Compression&gt;' { Space } Compression LF ]
   [ '&lt;Checksum&gt;' { Space } Crc32Number LF ]
   [ '&lt;Modified&gt;' { Space } Timestamp LF ]
   [ '&lt;Encoding&gt;' { Space } Encoding LF ] ;
 Space       = HT | " " ;
-Compression = 'raw' | 'zlib' | 'lzo' ;
+Compression = 'raw' | 'zlib' ;
 BinaryData  = { Byte } ;
 ArchInfo    = '&lt;TotalSize&gt;' { Space } Number ;
 UserInfo    = LF { Attribute LF } Attribute ;
@@ -82,37 +85,68 @@ Time        = Hour ":" Minute ":" Second ;<!--
 --></code></pre></div>
 
 <p>
+This notation of the syntax is a bit simplified, the order of the optional
+attributes inside segment <i>HeaderInfo</i> is arbitrary.
+</p>
+
+<p>
 <b><code>&lt;FileName&gt;</code></b> is any platform independent, and valid
-file name, without a preceding path. A platform independent file name cannot
-contain the characters "&lt;" and "&gt;"
+file name. Basically this file name does not contain a directory, except
+it is preceded by a sub-directory name. A platform independent file name cannot
+contain the characters "&lt;" or "&gt;". This attribute is mandatory, of
+course, and must be the first attribute inside <i>HeaderInfo</i>.
+</p>
+
+<p>
+<b><code>&lt;Database&gt;</code></b> must be given if the archive contains more
+than one database, in this way each file can be assigned uniquely to a database.
+It is always the first attribute inside, followed by attribute
+<code>&lt;FileName&gt;</code>. This attribute is not required if only database
+is insdie the archive.
 </p>
 
 <p>
 <b><code>&lt;URI&gt;</code></b> is an unified resource identifier, for example
 <code>http://www.chess-and-more.com/any-database.scv</code>, or
 <code>file:///home/chris/Chess/MyBase.sci</code>. It is the decision of the
-decoder in which way the preceding path specification will be used.
+decoder in which way the preceding path specification will be handled.
+It is also possible to use a path specification, containing the directory
+of the original file, inclusive file name. In case of references to external
+files (outside of this archive) the data segment will not be available.
 </p>
 
 <p>
 <b><code>&lt;Size&gt;</code></b> is the size of the file contained inside
-the archive,
+the data segment, This internal size information is also the offset
+to next file header (plus the size of the data segment ID). This attribute
+must exists if and only if a data segment is existing.
+</p>
+
+<p>
+<b><code>&lt;MimeType&gt;</code></b> is specifying the content of the unpacked
+file.  This Attribute is not mandatory, but should be written.
+</p>
+
+<p>
+<b><code>&lt;Compression&gt;</code></b> is specifying the compression method
+usef for the data inside the data segment. Momently only  <i>zlib</i> (use
+of the zlib library), and <i>raw</i> (no compression) wil be recognized.
+If this attribute is not available then <i>raw</i> is the default. This
+compression method is not specifying the compression method of the unpacked
+data, this will be done with attribute <code>&lt;MimeType&gt;</code>.
 </p>
 
 <p>
 <b><code>&lt;FileSize&gt;</code></b> is the size of the unpacked file.
-This internal size information is simultaneously the offset to next file
-header.
-</p>
-
-<p>
-<b><code>&lt;TotalSize&gt;</code></b> contains the sum of all unpacked files.
-This attribute may not be available if the sum is unknown.
+This attribute must be available if a data segment is given. If this
+attribute is not available then <code>&lt;TotalSize&gt;</code> will also
+be unspecified.
 </p>
 
 <p>
 <b><code>&lt;Checksum&gt;</code></b> is a check-sum which concerns the file
-data inside the archive, and will be computed with the CRC32 method.
+data inside the archive, and will be computed with the CRC32 method. This
+attribute is optional.
 </p>
 
 <p>
@@ -122,25 +156,20 @@ extracted file.
 </p>
 
 <p>
-<b><code>&lt;Encoding&gt;</code></b> is specifying the character set.
+<b><code>&lt;Encoding&gt;</code></b> is specifying the character set. This
+attribute must be available if and only if the unpacked file is containing
+encoded characters (ISO-8859-1 for example). This means that in case of
+binary data this attribute cannot exist.
 </p>
 
 <p>
-The attributes <code>&lt;FileName&gt;</code>, <code>&lt;URI&gt;</code>,
-<code>&lt;FileSize&gt;</code>, <code>&lt;Size&gt;</code>,
-<code>&lt;Compression&gt;</code>, <code>&lt;Checksum&gt;</code>,
-and <code>&lt;Modified&gt;</code> may be enumerated in random order.
-The default for the attribute <code>&lt;Compression&gt;</code> is
-'<code>raw</code>' (which means no decompression is required).
+<b><code>&lt;TotalSize&gt;</code></b> contains the sum of all unpacked files.
+This attribute may not be available if the sum is unknown.
 </p>
 
 <p>
-if <code>URI</code> is an external sink (for example <code>http://*</code>),
-<code>Size</code> may not be  available, and <code>FileSize</code>
-may be unknown as well (not available). In this case usually the data section
-is empty (empty line). But file data may be available, which should be used
-if the external sink is unavailable. Then the attribute <code>Size</code>
-has to be specified anyway.
+<b><code>Timestamp</code></b> has format <code>"YYYY-MM-DD HH:MM:SS"</code>
+(Y = year, M = month, D = day, H = hour, M = minute, S = second).
 </p>
 
 <p>
@@ -166,37 +195,46 @@ following definition:
 -->UserInfo    = { LF Attributes } ;
 Attributes  =
   "&lt;Format&gt;" { Space } Formats
-  "&lt;Type&gt;" { Space } Type
   [ "&lt;Count&gt;" { Space } Number ] ;
 Type        = 'single' | 'multi' ;
-Formats     = Format { "," Format } ;
-Format      = 'sci' | 'si3' | 'si4' |
-              'cbh' | 'cbf' | 'pgn' |
-              'pgn.gz | 'bpgn' | 'bpgn.gz' ;<!--
+Format      = 'sci'  |                   # Scidb Database
+              'si3'  | 'si4'  |          # Scid Database
+              'cbh'  | 'cbf'  |          # ChessBase Database
+              'cdp'  |                   # Chess Assistant Database
+              'dsn'  |                   # Rybka-Aquarium Database
+              'cif'  | 'ccif' |          # C/CIF Archiv
+              'pgn'  |                   # PGN Archiv
+              'bpgn' ;                   # BPGN Archiv<!--
 --></code></pre></div>
 
 <p>
+A database archive may contain more than one PGN, BPGN, or C/CIF archives (all
+formats). In this case the name of the database will be given with the first
+contained file.
+</p>
+
+<p>
+PGN, BPGN, and CIF archives can be packed with a gzip-compressed format. In this
+case the file name should end with the additional suffix .gz; i.e.
+"MillionBase.pgn.gz".
+</p>
+
+<p>
 <b><code>&lt;Count&gt;</code></b> is the number of games in the database. If this
-information is unknown (for example in case of PGN files), then this
-attribute is not available.
+information is unknown (for example in case of PGN files) then this
+attribute cannot be available.
 </p>
 
 <p>
-<b><code>&lt;Format&gt;</code></b> describes the format of the extracted database.
+<b><code>&lt;Format&gt;</code></b> describes the format of the extracted database,
+with the use of the leading file suffix (normally the suffix of the index file).
+If more than one archive format is inside (PGN, BPGN, or C/CIF), list them
+comma-separated.
 </p>
 
 <p>
-In general archives do contain only one database (<b><code>&lt;Type&gt;</code></b>
-= 'single').  But it is also provided that several database may be packed in one
-archive. In this case <code>&lt;Type&gt;</code> should have the value 'multi', and
-<code>&lt;Format&gt;</code> will contain a comma separated list of all
-comprised database formats.  Moreover <code>&lt;Count&gt;</code>
-is the sum of all games in all databases.
-</p>
-
-<p>
-The order of the attributes <code>&lt;Count&gt;</code>, <code>&lt;Format&gt;</code>,
-and <code>&lt;Type&gt;</code> is arbitrary.
+The order of the attributes <code>&lt;Count&gt;</code> and <code>&lt;Format&gt;</code>
+is arbitrary.
 </p>
 
 <p>
@@ -210,7 +248,8 @@ At least two simple examples for archives:
 &lt;Format&gt; pgn
 &lt;Type&gt; single
 &lt;-- H E A D --&gt;
-&lt;Name&gt; one-game.pgn
+&lt;FileName&gt; Staunton-vs-Brodie,1851-05-27.pgn
+&lt;FileSize&gt; 468
 &lt;Size&gt; 468
 &lt;Compression&gt; raw
 &lt;Checksum&gt; 3225351655
@@ -239,17 +278,16 @@ Qf6 7.e5 Qe7 8.a3 cxb2 9.Bxb2 Bc5 10.Nc3 d6 11.Nd5 Qd8
 
 <div class='box'><pre><code><!-- don't translate --><!--
 -->iveArch
-&lt;Format&gt; pgn
+&lt;Format&gt; pgn, cif
 &lt;Type&gt; multi
 &lt;-- H E A D --&gt;
-&lt;FileName&gt; tiny-1.pgn
+&lt;FileName&gt; tiny.pgn
 &lt;URI&gt; http://scidb.sf.net/bases/tiny-1.pgn
-&lt;-- D A T A --&gt;
-
+&lt;-- N O D A T A --&gt;
 &lt;-- H E A D --&gt;
-&lt;FileName&gt; tiny-2.pgn
-&lt;URI&gt; http://scidb.sf.net/bases/tiny-2.pgn
-&lt;-- D A T A --&gt;<!--
+&lt;FileName&gt; tiny-2.cif
+&lt;URI&gt; http://scidb.sf.net/bases/tiny-2.cif
+&lt;-- N O D A T A --&gt;<!--
 --></code></pre></div>
 
 </body>

@@ -1,20 +1,20 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision: 161 $
 * Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2013 Gregor Cramer
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
 
 INDEX CQL Transformationen
 INDEX Transformationen (CQL)
@@ -131,7 +131,7 @@ Eine <b>diedrische Transformation</b>, angewendet auf einen Figurenbezeichner,
 ist eine Spiegelungstransformation gefolgt von einer Spiegelungstransformation
 oder der identischen Transformation (es können statt der ersten
 Spiegelungstransformation auch Rotationen von 90, 180, oder 270 Grad eingesetzt
-werden).  Es gibt 8 unterscheidbare diedrische Transformationen des
+werden).  Es gibt acht unterscheidbare diedrische Transformationen des
 Schachbretts.  Beispielsweise ist das Resultat einer Anwendung aller
 diedrischen Transformationen auf den Figurenbezeichner
 <expr>&Q;c2</expr> die Menge der 8 Figurenbezeichner <expr>&Q;c2</expr>,
@@ -148,14 +148,14 @@ diedrischen Transformationen auf den Figurenbezeichner
   <tr>
     <td align="center">
       Diedrische Transformationen von <expr>&Q;c2</expr>, beispielsweise:<br/>
-      diagonale Spiegelung + diagonale Spiegelung (nach c2)<br/>
-      diagonale Spiegelung + identische Transformation (nach b3)<br/>
-      diagonale Spiegelung + horizontale Spiegelung (nach b6)<br/>
-      horizontale Spiegelung + identische Transformation (nach c7)<br/>
-      horizontale Spiegelung + vertikale Spiegelung (nach f7)<br/>
-      gegendiagonale Spiegelung + identische Transformation (nach g6)<br/>
-      gegendiagonale Spiegelung + horizontale Spiegelung (nach g3)<br/>
-      vertikale Spiegelung + identische Transformation (nach f2)<br/>
+      diagonale Spiegelung (via b3) + diagonale Spiegelung (nach c2)<br/>
+      diagonale Spiegelung (via b3) + identische Transformation (nach b3)<br/>
+      diagonale Spiegelung (via b3) + horizontale Spiegelung (nach b6)<br/>
+      horizontale Spiegelung (via c7) + identische Transformation (nach c7)<br/>
+      horizontale Spiegelung (via c7) + vertikale Spiegelung (nach f7)<br/>
+      gegendiagonale Spiegelung (via g6) + identische Transformation (nach g6)<br/>
+      gegendiagonale Spiegelung (via g6) + horizontale Spiegelung (nach g3)<br/>
+      vertikale Spiegelung (via f2) + identische Transformation (nach f2)<br/>
     </td>
   </tr>
 </table>
@@ -196,7 +196,7 @@ Rechtswärtstransformation auf <expr>&Q;d4</expr> ergibt <expr>&Q;g4</expr>.
 
 <p>
 Die Definitionen der <b>Linkswärtstransformation</b>,
-<b>Hochwärtstransformation</b>, und <b>Runterwärtstransformation</b> sind
+<b>Hochwärtstransformation</b> und <b>Runterwärtstransformation</b> sind
 entsprechend.
 </p>
 
@@ -304,7 +304,7 @@ ist folglich
 </verb>
 
 <p>
-Zur Erinnerung: Verschiebungen wiRKen in spezieller Weise mit einigen
+Zur Erinnerung: Verschiebungen wirken in spezieller Weise mit einigen
 Randfeldern. Beispielsweise das Resultat der Anwendung einer
 einstelligen Hochwärtstransformation auf folgende Positionsliste
 </p>
@@ -352,7 +352,7 @@ hinzufügen:
 </p>
 
 <verb>
-(position &R;c3 &q;g3 <keyword>:shifthorizontal</keyword>)
+(position &R;c3 &q;g3 <keyword>position:shifthorizontal</keyword>)
 </verb>
 
 <p>
@@ -373,7 +373,7 @@ Felder links von der schwarzen Dame steht.
 </p>
 
 <verb>
-(position &R;c3 &q;g3 <keyword>:shiftvertical</keyword>)
+(position &R;c3 &q;g3 <keyword>position:shiftvertical</keyword>)
 </verb>
 
 <p>
@@ -383,7 +383,7 @@ und der Turm auf der c-Linie steht, und die Dame auf der g-Linie.
 </p>
 
 <verb>
-(position &R;c3 &q;g3 <keyword>:shift</keyword>)
+(position &R;c3 &q;g3 <keyword>position:shift</keyword>)
 </verb>
 
 <p>
@@ -393,7 +393,7 @@ der schwarzen Dame steht.
 </p>
 
 <verb>
-(position &R;c3 &q;g3 <keyword>:fliphorizontal</keyword>)
+(position &R;c3 &q;g3 <keyword>position:fliphorizontal</keyword>)
 </verb>
 
 <p>
@@ -403,7 +403,7 @@ eine schwarze Dame auf g6.
 </p>
 
 <verb>
-(position &R;c3 &q;g3 <keyword>:flipdiagonal</keyword>)
+(position &R;c3 &q;g3 <keyword>position:flipdiagonal</keyword>)
 </verb>
 
 <p>
@@ -413,7 +413,7 @@ eine schwarze Dame auf c7.
 </p>
 
 <verb>
-(position &R;c3 &q;g3 <keyword>:flip</keyword>)
+(position &R;c3 &q;g3 <keyword>position:flip</keyword>)
 </verb>
 
 <p>
@@ -422,7 +422,7 @@ einem weißen Bauern auf der c-Linie steht.
 </p>
 
 <verb>
-(position &P;c2 &R;c1 <keyword>:shiftvertical</keyword>)
+(position &P;c2 &R;c1 <keyword>position:shiftvertical</keyword>)
 </verb>
 
 <p>
@@ -437,7 +437,7 @@ aud der gleichen Linie steht, verwenden wir:
 </p>
 
 <verb>
-(position &P;c2 &R;c1 <keyword>:shift</keyword>)
+(position &P;c2 &R;c1 <keyword>position:shift</keyword>)
 </verb>
 
 <h2 id="multiple">Mehrfachtransformationsschlüsselwörter</h2>
@@ -458,7 +458,7 @@ Beispiel: die Positionsliste
 </p>
 
 <verb>
-(position &N;d4 &k;f3 <keyword>:shift</keyword> <keyword>:flip</keyword>)
+(position &N;d4 &k;f3 <keyword>position:shift</keyword> <keyword>position:flip</keyword>)
 </verb>
 
 <p>
@@ -467,7 +467,7 @@ angreift, während
 </p>
 
 <verb>
-(position &N;d4 &k;f3 <keyword>:shift</keyword> <keyword>:flip</keyword> <keyword>:flipcolor</keyword>)
+(position &N;d4 &k;f3 <keyword>position:shift</keyword> <keyword>position:flip</keyword> <keyword>position:flipcolor</keyword>)
 </verb>
 
 <p>
@@ -479,7 +479,7 @@ Das letzte Beispiel kann jedoch effizienter formuliert werden kann:
 </p>
 
 <verb>
-(position <cql>position:attackcount</cql> &N; &k; 1 unlimited <keyword>:flipcolor</keyword>)
+(position <cql>position:attackcount</cql> &N; &k; &gt;0 <keyword>position:flipcolor</keyword>)
 </verb>
 
 END

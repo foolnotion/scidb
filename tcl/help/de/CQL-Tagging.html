@@ -19,7 +19,7 @@
   <meta name="generator"
      content="scidb.sourceforge.net" />
   <meta name="description"
-     content="Scidb Help Page" />
+     content="Scidb - Help Page" />
 
   <link rel="icon"
        href="http://scidb.sourceforge.net/favicon.ico"
@@ -29,9 +29,9 @@
   <link rel="stylesheet"
        type="text/css"
       media="screen"
-       href="../styles/help.css" />
+		 href="../styles/help.css" />
 
-  <title>Scidb Hilfe: CQL - Markierung</title>
+  <title>Scidb - Hilfe: CQL - Markierung</title>
 </head>
 
 <body>
@@ -47,6 +47,12 @@ Bauernumwandlungen ändern die Identität der Figur nicht. Eine Markierung
 ist eine benamte Identität, sie ist an die Identität gebunden. Eine Markierung
 repräsentiert eine einzelne Figur, deren Identität mit dieser Markierung
 verbunden ist.
+</p>
+
+<p>
+Überall wo ein Figurenartbezeichner auftritt kann auch ein Markierungsname,
+beginnend mit dem Zeichen <span style='white-space:nowrap;'><code>$</code></span>, auftreten. Diese Figurenart
+vertritt exakt die Figur, die durch den Markierungnamen vertreten wird.
 </p>
 
 <ul>
@@ -81,7 +87,7 @@ Markierung, so daß folgende Bedingungen erfüllt sind:
 
 <p>
 Markierungen können nicht verwendet werden, wenn das Schlüsselwort
-<a href="CQL-Position-List.html#position:relation"><span style='white-space:nowrap;'>:relation</span></a> in einer der Positionslisten vorhanden ist.
+<span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:relation">:relation</span></a> in einer der Positionslisten vorhanden ist.
 <br/><img src="../images/gameflag-Illegal-Move.png" alt="" /> Beides ist zu prüfen!
 </p>
 
@@ -101,7 +107,7 @@ Position soll nur dann gefiltert werden, wenn "foo" ein weißer Bauer ist:
 </p>
 
 <div class='verb'><code>
-(position <span class='keyword'>:tagmatch</span> foo <span class='piece'>&#x2659;</span>)
+(position <span style='white-space:nowrap;'><span class='keyword'>:tagmatch</span></span> foo <span class='piece'>&#x2659;</span>)
 </code></div>
 
 <h2 id="designators">Figurenbezeichner und Markierungen</h2>

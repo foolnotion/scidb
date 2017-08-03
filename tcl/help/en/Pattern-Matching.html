@@ -19,7 +19,7 @@
   <meta name="generator"
      content="scidb.sourceforge.net" />
   <meta name="description"
-     content="Scidb Help Page" />
+     content="Scidb - Help Page" />
 
   <link rel="icon"
        href="http://scidb.sourceforge.net/favicon.ico"
@@ -29,9 +29,9 @@
   <link rel="stylesheet"
        type="text/css"
       media="screen"
-       href="../styles/help.css" />
+		 href="../styles/help.css" />
 
-  <title>Scidb Help: Pattern matching</title>
+  <title>Scidb - Help: Pattern matching</title>
 </head>
 
 <body>
@@ -60,18 +60,67 @@ A pattern is a string which may contain the following special characters:
       </td>
     </tr>
     <tr valign="top">
+      <td class="l"><span style='white-space:nowrap;'><code>!</code></span></td>
+      <td class="r">
+        if the pattern is starting with this character then the pattern match
+        will be case-sensitive. In this case the starting character is
+        excluded from the match.
+      </td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><span style='white-space:nowrap;'><code>(</code></span></td>
+      <td class="r">
+        This position within the pattern is matching the start of
+        a word, either beginning with a letter or a digit.
+      </td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><span style='white-space:nowrap;'><code>)</code></span></td>
+      <td class="r">
+        This position within the pattern is matching the end of
+        a word, either ending with a letter or a digit.
+      </td>
+    </tr>
+    <tr valign="top">
       <td class="l"><span style='white-space:nowrap;'><code>\x</code></span></td>
       <td class="r">
         Matches the single character x. This provides a way of avoiding
-        the special interpretation of the characters <span style='white-space:nowrap;'><code>*?\</code></span> in
-        pattern.
+        the special interpretation of the characters <span style='white-space:nowrap;'><code>(){}*!?\</code></span>
+        in pattern.
       </td>
     </tr>
   </table>
 </div>
 
 <p>
-Pattern matching is always case-insensitive.
+The characters <span style='white-space:nowrap;'><code>! \? . , ; :</code></span> are called delimiters.
+</p>
+
+<p>
+Pattern matching is in general case-insensitive, except if the pattern is
+starting with the special character <span style='white-space:nowrap;'><code>!</code></span>.
+</p>
+
+<p>
+Also the blank character will be interpreted as a special character
+(if not protected), it is matching any number of blank characters,
+but not the empty string. But if a delimiter is adjacent to a blank
+character, also an empty string will match. In this way mistakes in
+spelling can be compensated.
+</p>
+
+<p>
+Furthermore the following special rule applies: a parenthetical
+expression &ndash; e.g. <span style='white-space:nowrap;'><code>"(J*)"</code></span> &ndash; will not
+match any string which contains blanks or delimiters.
+Furthermore the parentheses are maintaining the meaning of being
+word delimiters.
+</p>
+
+<p>
+Second special rule: a parenthetical expression with curly braces
+&ndash; e.g. <span style='white-space:nowrap;'><code>"{,}"</code></span> &ndash; is switching off all
+special rules concerning blanks.
 </p>
 
 <h2 id="examples">Examples</h2>
@@ -80,27 +129,143 @@ Pattern matching is always case-insensitive.
 Polgar, J*
 </code></div>
 
-This pattern is matching the following strings: <span style='white-space:nowrap;'>"Polgar,</span>
-<span style='white-space:nowrap;'>J"</span>, and <span style='white-space:nowrap;'>"Polgar,</span> <span style='white-space:nowrap;'>Judit"</span>.
+<p>
+This pattern can match the following strings: <span style='white-space:nowrap;'><code>"Polgar, J"</code></span>,
+and <span style='white-space:nowrap;'><code>"Polgar, Judit"</code></span>.
+</p>
 
 <div class='verb'><code>
 A?erba?h
 </code></div>
 
 <p>
-This will match the following names:
-<span style='white-space:nowrap;'>"Averbakh"</span> (English spelling), and <span style='white-space:nowrap;'>"Awerbach"</span> 
+This can match the following names:
+<span style='white-space:nowrap;'><code>"Averbakh"</code></span> (English spelling), and <span style='white-space:nowrap;'><code>"Awerbach"</code></span>
 (German spelling).
 </p>
 
 <div class='verb'><code>
-really intended\?
+Kasparov*
 </code></div>
 
-Is only matching the string "really intended?". The character <code>?</code>
-in the pattern does not have a special meaning because it is escaped with
-Backslash. This means that this pattern is not matching the string
-"really intended!".
+<p>
+This can match, among others, the following strings:
+<span style='white-space:nowrap;'><code>"Kasparov"</code></span>, <span style='white-space:nowrap;'><code>"Kasparova"</code></span>,
+<span style='white-space:nowrap;'><code>"Kasparov, Garry"</code></span>, and <span style='white-space:nowrap;'><code>"Kasparova, Tatiana"</code></span>.
+</p>
+
+<div class='verb'><code>
+Kasparov*)
+</code></div>
+
+<p>
+This can match the same strings as in the latter case, because all
+these strings are ending with a letter. But a string like
+<span style='white-space:nowrap;'><code>"Kasparov, G."</code></span> cannot match.
+</p>
+
+<div class='verb'><code>
+(Kasparov*)
+</code></div>
+
+<p>
+This can match, among others, the strings <span style='white-space:nowrap;'><code>"Kasparov"</code></span>, and
+<span style='white-space:nowrap;'><code>"Kasparova"</code></span>, but it cannot match <span style='white-space:nowrap;'><code>"Kasparov, Garry"</code></span>,
+or <span style='white-space:nowrap;'><code>"Kasparova, Tatiana"</code></span>. A parenthetical expression is
+excluding the match of blanks and separating characters.
+</p>
+
+<div class='verb'><code>
+(Kasparov)*
+</code></div>
+
+<p>
+This can match, among others, the strings <span style='white-space:nowrap;'><code>"Kasparov"</code></span>, and
+<span style='white-space:nowrap;'><code>"Kasparov, Garry"</code></span>, but it cannot match <span style='white-space:nowrap;'><code>"Kasparova"</code></span>,
+or <span style='white-space:nowrap;'><code>"Kasparova, Tatiana"</code></span>.
+</p>
+
+<div class='verb'><code>
+Kasparov*,*
+</code></div>
+
+<p>
+This can match, among others, the strings <span style='white-space:nowrap;'><code>"Kasparov, Garry"</code></span>, and
+<span style='white-space:nowrap;'><code>"Kasparova, Tatiana"</code></span>, but it cannot match <span style='white-space:nowrap;'><code>"Kasparov"</code></span>,
+or <span style='white-space:nowrap;'><code>"Kasparova"</code></span>.
+</p>
+
+<div class='verb'><code>
+Kasparov, Garry
+</code></div>
+
+</p>
+This is matching the string <span style='white-space:nowrap;'><code>"Kasparov, Garry"</code></span>. Because of the
+special rule with separating characters also the following strings will
+match: <span style='white-space:nowrap;'><code>"Kasparov,Garry"</code></span> (lacking blank character), and
+<span style='white-space:nowrap;'><code>"Kasparov,&nbsp;&nbsp;Garry"</code></span> (one blank too many).
+</p>
+
+<div class='verb'><code>
+Kasparov{,} Garry
+</code></div>
+
+<p>
+This is matching <span style='white-space:nowrap;'><code>"Kasparov, Garry"</code></span>, but not <span style='white-space:nowrap;'><code>"Kasparov,Garry"</code></span>,
+because an expression inside curly braces is switching off the special rules
+concerning the blanks.
+
+<div class='verb'><code>
+Kasparov,\ Garry
+</code></div>
+
+<div class='verb'><code>
+{Kasparov, Garry}
+</code></div>
+
+<p>
+This is only matching the string <span style='white-space:nowrap;'><code>"Kasparov,&nbsp;Garry"</code></span> (exactly one
+blank character), all special rules concerning blanks are switched off.
+</p>
+
+<div class='verb'><code>
+\{Kasparov, Garry}
+</code></div>
+
+<p>
+Now the string <span style='white-space:nowrap;'><code>"{Kasparov,&nbsp;Garry}" will match, because the curly brace is
+protected and has no special meaning.
+</p>
+
+<div class='verb'><code>
+!MacDonald
+</code></div>
+
+<p>
+This is matching <span style='white-space:nowrap;'><code>"MacDonald"</code></span>, but not <span style='white-space:nowrap;'><code>"Macdonald"</code></span>,
+because the match is case-sensitive.
+</p>
+
+<div class='verb'><code>
+\!!
+</code></div>
+
+<p>
+This can only match <epxr>"!!"</code></span>. The first character has to be
+protected, otherwise it will be recognized as a switch for case insensitive
+search, and not as the character <span style='white-space:nowrap;'><code>!</code></span>.
+</p>
+
+<div class='verb'><code>
+*\(Berlin\)
+</code></div>
+
+<p>
+This can match the string <span style='white-space:nowrap;'><code>"Germany (Berlin)"</code></span>, among others.
+The characters <span style='white-space:nowrap;'><code>(</code></span>, and <span style='white-space:nowrap;'><code>)</code></span> do not have any special
+meaning, because they are protected by a backslash. This means that the
+string <span style='white-space:nowrap;'><code>"Germany Berlin"</code></span> cannot match.
+</p>
 
 </body>
 </html>

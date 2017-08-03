@@ -1,20 +1,20 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision: 161 $
 * Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2012-2013 Gregor Cramer
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
 
 INDEX Partien-Browser
 TITLE Der Partien-Browser
@@ -62,7 +62,7 @@ im kontextsensitiven Menü), sofern die Ursprungsdatenbank noch geöffnet ist.
 Wird der Mauszeiger ausserhalb des Textfensters (mit den Partiezügen)
 positioniert, aber noch innerhalb des Dialogs, kann das Mausrad zum
 Vorspielen der Züge eingesetzt werden. Durch Klick auf den mit dem
-Cursor hervorgehobenen Zug wird zu dieser Position gewechselt.
+Mauszeiger hervorgehobenen Zug wird zu dieser Position gewechselt.
 </p>
 
 <p>

@@ -1,20 +1,20 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision: 161 $
 * Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2013 Gregor Cramer
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
 
 INDEX CQL Syntax
 TITLE CQL Syntax
@@ -45,8 +45,7 @@ in games played in year 2013:
 (match
   <cql>match:year</cql> 2013
   (position
-    <cql>position:piececount</cql> &P;[b2-7] 4
-    <cql>position:shifthorizontal</cql>
+    <cql>position:pawncount</cql> consecutive(4) &gt;0
     <cql>position:flipcolor</cql>))
 </verbatim>
 
@@ -101,14 +100,13 @@ In the list
 <verbatim>
 (match
   (position
-    <cql>position:piececount</cql> &P;[b2-7] 4
-    <cql>position:shifthorizontal</cql>
+    <cql>position:pawncount</cql> consecutive(4) &gt;0
     <cql>position:flipcolor</cql>))
 </verbatim>
 
 <p>
-<cql>position:piececount</cql> has keyword parameters <expr>&P;[b2-7]</expr>
-and <expr>4</expr>. The other keywords <cql>position:shifthorizontal</cql>
+<cql>position:pawncount</cql> has keyword parameters <expr>consecutive(4)</expr>
+and <expr>&gt;0</expr>. The other keywords <cql>position:shifthorizontal</cql>
 and <cql>position:flipcolor</cql> do not take keyword parameters. A list
 whose first element is <nobr>"match"</nobr> is called a match list and defines
 a match filter.
@@ -161,7 +159,7 @@ simply selects all games:
 </verb>
 
 <p>
-In Scidb this script can be written even more simpler, because in Scidb,
+In CQL-S this script can be written even more simpler, because in CQL-S,
 different from CQL standard, the match list must not contain position lists:
 </p>
 
@@ -188,6 +186,7 @@ Any characters following a semicolon are ignored in a CQL script. Example:
   <li><a href="CQL-Piece-Designators.html">Piece designators</a></li>
   <li><a href="CQL-Square-Designators.html">Square designators</a></li>
   <li><a href="CQL-Range-Specifiers.html">Range specifiers</a></li>
+  <li><a href="CQL-Percentage-Specifiers.html">Percentage ranges</a></li>
   <li><a href="Pattern-Matching.html">Pattern-Matching</a></li>
 </ul>
 

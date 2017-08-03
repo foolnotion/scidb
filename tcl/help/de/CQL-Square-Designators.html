@@ -19,7 +19,7 @@
   <meta name="generator"
      content="scidb.sourceforge.net" />
   <meta name="description"
-     content="Scidb Help Page" />
+     content="Scidb - Help Page" />
 
   <link rel="icon"
        href="http://scidb.sourceforge.net/favicon.ico"
@@ -29,9 +29,9 @@
   <link rel="stylesheet"
        type="text/css"
       media="screen"
-       href="../styles/help.css" />
+		 href="../styles/help.css" />
 
-  <title>Scidb Hilfe: CQL - Felderbezeichner</title>
+  <title>Scidb - Hilfe: CQL - Felderbezeichner</title>
 </head>
 
 <body>
@@ -61,6 +61,17 @@ als Zeichen für die Linie werden alle Linien a bis h bezeichnet. Mit
 bezeichnet. Beispiel: der Figurenbezeichner <span style='white-space:nowrap;'><code><span class='piece'>&#x265d;</span>b3</code></span> hat einen
 einfachen Felderbezeichner, der das Feld b3 kennzeichnet, und bezeichnet
 einen schwarzen Läufer auf b3.
+</p>
+
+<p>
+Es gibt noch eine spezielle Felderbezeichnung (die nicht zum CQL-Standard gehört):
+Mit <span style='white-space:nowrap;'><code><span class='cql' title='Weiße Felder'>&#x25a1;</span></code></span> als Zeichen für die Linien werden alle weißfeldrigen Felder
+Linien a bis h gekennzeichnet, und mit <span style='white-space:nowrap;'><code><span class='cql' title='Schwarze Felder'>&#x25a0;</span></code></span> entsprechend alle
+schwarzfeldrigen Felder auf diesen Linien. Ensprechend können <span style='white-space:nowrap;'><code><span class='cql' title='Weiße Felder'>&#x25a1;</span></code></span>
+und <span style='white-space:nowrap;'><code><span class='cql' title='Schwarze Felder'>&#x25a0;</span></code></span> auch für die Kennzeichnung weiß- bzw. schwarzfeldriger Reihen
+verwendet werden. Jedoch ist es nicht erlaubt, daß diese spezielle Felderbezeichnung
+sowohl für Linien als auch für Reihen gemeinsam verwendet wird, d.h.
+<span style='white-space:nowrap;'><code><span class='cql' title='Schwarze Felder'>&#x25a0;</span><span class='cql' title='Schwarze Felder'>&#x25a0;</span></code></span> ist beispielsweise nicht erlaubt.
 </p>
 
 <h2 id="compound">Felderbezeichnerverbünde</h2>
@@ -110,6 +121,14 @@ eingechlossen sein.
     <td class="right">kennzeichnet die ersten beiden Reihen plus a8 und h8.</td>
   </tr>
   <tr valign="top">
+    <td class="left"><span style='white-space:nowrap;'><code>[<span class='cql' title='Weiße Felder'>&#x25a1;</span>?]</code></span></td>
+    <td class="right">kennzeichnet alle weißfeldrigen Felder.</td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="left"><span style='white-space:nowrap;'><code>[<span class='cql' title='Schwarze Felder'>&#x25a0;</span>1]</code></span></td>
+    <td class="right">kennzeichnet alle schwarzfeldrigen Felder auf der ersten Reihe.</td>
+  </tr>
+  <tr valign="top">
     <td class="left"><span style='white-space:nowrap;'><code>[&thinsp;]</code></span></td>
     <td class="right">kennzeichnet eine leere Menge von Feldern. Dies ist absolut
         verschieden vom Leerfeldbezeichner, der alle Felder kennzeichnet.</td>
@@ -120,28 +139,78 @@ eingechlossen sein.
 
 <table class="stripes">
   <tr valign="top" class="stripes">
-    <td class="left"><span style='white-space:nowrap;'><code><span class='cqlpiece'>&#x25bd;</span>a1</code></span></td>
-    <td class="right">kennzeichnet eine weiße Leichtfigur auf a1. Er findet jede
-        Position mit einem weißen Läufer oder einem weißen Springer auf a1.</td>
+    <td class="left"><span style='white-space:nowrap;'><code><span class='cql' title='Weiße Leichtfigur'>&#x25bd;</span>a1</code></span></td>
+    <td class="right">
+        kennzeichnet eine weiße Leichtfigur auf a1. Er findet jede
+        Position mit einem weißen Läufer oder einem weißen Springer auf a1.
+    </td>
   </tr>
   <tr valign="top">
     <td class="left"><span style='white-space:nowrap;'><code><span class='piece'>&#x2656;</span>[a-h1-2]</code></span></td>
-    <td class="right">findet jede Position mit einem weißen Turm auf den ersten
-        beiden Reihen.</td>
+    <td class="right">
+      findet jede Position mit einem weißen Turm auf den ersten beiden Reihen.
+    </td>
   </tr>
   <tr valign="top" class="stripes">
-    <td class="left"><span style='white-space:nowrap;'><code>[<span class='cqlpiece'>&#x25cb;</span><span class='piece'>&#x265c;</span>][a-h1-2,a8,h8]</code></span></td>
-    <td class="right">findet jede Position mit einer weißen Figur oder einem schwarzen
-        Turm auf den ersten beiden Reihen oder in den Ecken.</td>
+    <td class="left"><span style='white-space:nowrap;'><code>[<span class='cql' title='Beliebige weiße Figur'>&#x25cb;</span><span class='piece'>&#x265c;</span>][a-h1-2,a8,h8]</code></span></td>
+    <td class="right">
+      findet jede Position mit einer weißen Figur oder einem schwarzen
+      Turm auf den ersten beiden Reihen oder in den Ecken.
+    </td>
   </tr>
   <tr valign="top">
     <td class="left"><span style='white-space:nowrap;'><code>[<span class='piece'>&#x2656;</span><span class='piece'>&#x2657;</span><span class='piece'>&#x2658;</span><span class='piece'>&#x2655;</span><span class='piece'>&#x2659;</span>][a1,h1,a8,h8]</code></span></td>
-    <td class="right">findet jede Position mit einem weißen Nicht-König in den Ecken.</td>
+    <td class="right">
+      findet jede Position mit einem weißen Nicht-König in den Ecken.
+    </td>
   </tr>
   <tr valign="top" class="stripes">
+    <td class="left"><span style='white-space:nowrap;'><code>[<span class='piece'>&#x2657;</span><span class='piece'>&#x265d;</span>]<span class='cql' title='Weiße Felder'>&#x25a1;</span>?</code></span></td>
+    <td class="right">
+      findet jede Position mit einem weißfeldrigen Läufer.
+    </td>
+  </tr>
+  <tr valign="top">
     <td class="left"><span style='white-space:nowrap;'><code><span class='piece'>&#x2657;</span>[&thinsp;]</code></span></td>
-    <td class="right">kennzeichnet einen weißen Läufer auf einem freien Feld. Dies
-        kann natürlich nicht aufgefunden werden.</td>
+    <td class="right">
+      kennzeichnet einen weißen Läufer auf einem freien Feld. Dies
+      kann natürlich nicht aufgefunden werden.
+    </td>
+  </tr>
+</table>
+
+<h2>Erweiterung für Einsetzschach und Tandemschach:</h2>
+
+<p>
+Es gibt eine weitere spezielle Felderbezeichnung: die Rückhand &ndash; wo die
+geschlagenen Figuren gehalten werden &ndash; wird mit <span style='white-space:nowrap;'><code>[+]</code></span> notiert.
+Es ist zu beachten das die Notierung <span style='white-space:nowrap;'><code>??</code></span>, als auch der
+Leerfeldbezeichner, die Rückhand nicht mit einschließt. Um alle Felder
+einschließlich der Rückhand zu notieren ist die Abkürzung <span style='white-space:nowrap;'><code>[*]</code></span> zulässig.
+Die Notierung mit der Rückhand ist auch in anderen Schachformen zulässig, somit
+können Skripte formuliert werden für alle Schachformen gemeinsam.
+</p>
+
+<h3>Beispiele</h3>
+
+<table class="stripes">
+  <tr valign="top" class="stripes">
+    <td class="left"><span style='white-space:nowrap;'><code>[+]</code></span></td>
+     <td class="right">kennzeichnet die Rückhand</td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><span style='white-space:nowrap;'><code>[+,a1]</code></span></td>
+     <td class="right">kennzeichnet die Rückhand und das Feld a1</td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="left"><span style='white-space:nowrap;'><code>[*]</code></span></td>
+     <td class="right">kennzeichnet alle Felder einschließlich der Rückhand</td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><span style='white-space:nowrap;'><code><span class='piece'>&#x2658;</span>[+]</code></span></td>
+    <td class="right">
+      kennzeichnet einen weißen Springer in der Rückhand</td>
+    </td>
   </tr>
 </table>
 

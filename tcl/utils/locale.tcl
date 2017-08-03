@@ -16,6 +16,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source local
+
 namespace eval locale {
 
 namespace import ::tcl::mathfunc::int
@@ -37,12 +39,12 @@ array set Pattern {
 proc decimalPoint {} { return [set [namespace current]::Pattern(decimalPoint)] }
 
 
-proc formatNumber {n {kilo false}} {
+proc formatNumber {n {format ""}} {
 	variable Pattern
 
 	set unit ""
 
-	if {$kilo} {
+	if {$format eq "kilo"} {
 		if {$n >= 1000000} {
 			set decimalPart [format "%02d" [expr {(int($n/10000)) % 100}]]
 			set n [expr {int($n)/1000000}]
@@ -60,19 +62,52 @@ proc formatNumber {n {kilo false}} {
 }
 
 
+proc formatDouble {v {prec 2}} {
+	variable Pattern
+
+	set s [format "%0.${prec}f" $v]
+	lassign [split $s .] dec frac
+	return "[formatNumber $dec]${Pattern(decimalPoint)}${frac}"
+}
+
+
+proc formatSpinboxDouble {v} {
+	variable Pattern
+
+	if {[info tclversion] < "8.6"} { return $v }
+	return [string map [list . $Pattern(decimalPoint)] $v]
+}
+
+
 proc formatFileSize {size} {
-	set unit Byte
-	if {$size >= 1000000000} {
-		set size [expr {($size + 500000000)/1000000000}]
+	if {$size >= 1073741824} {
+		set size [expr {($size + 536870912)/1073741824}]
 		set unit GB
-	} elseif {$size >= 1000000} {
-		set size [expr {($size + 500000)/1000000}]
+	} elseif {$size >= 1048576} {
+		set size [expr {($size + 524288)/1048576}]
 		set unit MB
-	} elseif {$size >= 1000} {
-		set size [expr {($size + 500)/1000}]
+	} elseif {$size >= 1024} {
+		set size [expr {($size + 512)/1024}]
 		set unit KB
+	} else {
+		set unit Byte
 	}
 	return "[formatNumber $size false] $unit"
+}
+
+
+proc formatByteCount {size {prec 2}} {
+	if {$size >= 536870912} {
+		set size [expr {$size/1073741824.0}]
+		set unit GB
+	} elseif {$size >= 524288} {
+		set size [expr {$size/1048576.0}]
+		set unit MB
+	} else {
+		set size [expr {$size/1024.0}]
+		set unit KB
+	}
+	return "[formatDouble $size $prec] $unit"
 }
 
 
@@ -155,6 +190,12 @@ proc timestampToTime {timestamp} {
 
 proc currentTime {} {
 	return [timestampToTime [clock seconds]]
+}
+
+
+proc toDouble {formattedValue} {
+	variable Pattern
+	return [string map [list $Pattern(decimalPoint) .] $formattedValue]
 }
 
 } ;# namespace locale

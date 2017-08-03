@@ -1,20 +1,20 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision$
 * Date   : $Date$
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2012-2013 Gregor Cramer
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
 
 INDEX Kontaktinformationen
 INDEX Homepage#Homepage
@@ -88,13 +88,6 @@ Für Scidb-Benutzer könnten folgende Seiten interessant sein:
   </p></li>
 
   <li><p>
-    <a href="http://sourceforge.net/apps/aguestbook/scidb/sign.php"
-       style="line-height: 150%;">
-    Scidb Guestbook</a><br/>
-    Hier wird das Gästebuch von Scidb bereitgestellt.
-  </p></li>
-
-  <li><p>
     <a href="https://lists.sourceforge.net/lists/listinfo/scidb-users"
        style="line-height: 150%;">
     Scidb Users Mailing List subskribieren</a><br/>
@@ -128,7 +121,7 @@ Für Scidb-Benutzer könnten folgende Seiten interessant sein:
   </p></li>-->
 
   <li><p>
-    <a href="http://www.chess.co.uk/twic/"
+    <a href="http://www.theweekinchess.com"
        style="line-height: 150%;">
     The Week in Chess</a><br/>
     Ein hervorragendes Wochenmagazin für internationale Schachpartien, das

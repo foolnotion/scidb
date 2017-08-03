@@ -1,20 +1,20 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision: 161 $
 * Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2013 Gregor Cramer
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
 
 INDEX CQL Syntax
 TITLE CQL Syntax
@@ -47,8 +47,7 @@ im Jahr 2013:
 (match
   <cql>match:year</cql> 2013
   (position
-    <cql>position:piececount</cql> &P;[b2-7] 4
-    <cql>position:shifthorizontal</cql>
+    <cql>position:pawncount</cql> consecutive(4) &gt;0
     <cql>position:flipcolor</cql>))
 </verbatim>
 
@@ -58,7 +57,7 @@ Terminologien definiert.
 </p>
 
 <p>
-Eine Liste ist eine endliche Folge von Elementen, separiert mit Leerzeichen,
+Eine <b>Liste</b> ist eine endliche Folge von Elementen, separiert mit Leerzeichen,
 und eingeschlossen in Klammern. Jedes Element ist entweder eine Zeichenkette,
 die keine Leerzeichen enthält, oder eine weitere Liste.
 </p>
@@ -94,7 +93,7 @@ hinter dem Schlüsselwort, das einen Parameter erwartet. Einige
 Schlüsselwörter erwarten mehrere Parameter, einen hinter dem anderen.
 </p>
 
-<h2>Beispiele für Schlüsselwörterparameter</h2>
+<h2>Beispiele für Schlüsselwortparameter</h2>
 
 <p>
 In der Liste
@@ -103,22 +102,21 @@ In der Liste
 <verbatim>
 (match
   (position
-    <cql>position:piececount</cql> &P;[b2-7] 4
-    <cql>position:shifthorizontal</cql>
+    <cql>position:pawncount</cql> consecutive(4) &gt;0
     <cql>position:flipcolor</cql>))
 </verbatim>
 
 <p>
-erhält <cql>position:piececount</cql> die Parameter <expr>&P;[b2-7]</expr>
-und <expr>4</expr>. Die anderen Schlüsselwörter
+erhält <cql>position:pawncount</cql> die Parameter <expr>consecutive(4)</expr>
+und <expr>&gt;0</expr>. Die anderen Schlüsselwörter
 <cql>position:shifthorizontal</cql> und <cql>position:flipcolor</cql> erwarten
 keine Parameter. Eine Liste mit dem ersten Element <nobr>"match"</nobr> wird eine
-Suchliste genannt und definiert einen Suchfilter.
+<b>Suchliste</b> genannt und definiert einen <b>Suchfilter</b>.
 </p>
 
 <p>
 Eine Liste mit dem ersten Element <nobr>"position"</nobr> wird eine
-Positionsliste genannt und definiert einen Positionsfilter.
+<b>Positionsliste</b> genannt und definiert einen <b>Positionsfilter</b>.
 </p>
 
 <h2>Funktionsweise von CQL</h2>
@@ -162,8 +160,8 @@ Skript alle Partien:
 </verb>
 
 <p>
-In Scidb kann dieses Skript noch einfacher formuliert werden, denn in
-Scidb muß die Suchliste, abweichend vom CQL-Standard, keine Positionsliste
+In <nobr>CQL-S</nobr> kann dieses Skript noch einfacher formuliert werden, denn
+in <nobr>CQL-S</nobr> muß die Suchliste, abweichend vom CQL-Standard, keine Positionsliste
 enthalten:
 </p>
 
@@ -191,6 +189,7 @@ Beispiel:
     <li><a href="CQL-Piece-Designators.html">Figurenbezeichner</a></li>
     <li><a href="CQL-Square-Designators.html">Felderbezeichner</a></li>
     <li><a href="CQL-Range-Specifiers.html">Bereichsangaben</a></li>
+    <li><a href="CQL-Percentage-Specifiers.html">Prozentuale Bereiche</a></li>
     <li><a href="Pattern-Matching.html">Suchmusterabgleich (Pattern-Matching)</a></li>
 </ul>
 

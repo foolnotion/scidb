@@ -1,0 +1,139 @@
+<!-- ======================================================================
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $HeadURL$
+======================================================================= -->
+
+<!-- ======================================================================
+* Copyright: (C) 2014 Gregor Cramer
+======================================================================= -->
+
+<!-- ======================================================================
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+======================================================================= -->
+
+TITLE CQL Technical Description
+
+<annotation>
+The technichal description is not a precondition for the usage
+of the search functions in Scidb.
+</annotation>
+
+<ul class="index">
+  <li><a href="#index">Index</a></li>
+  <li><a href="#display">Display</a></li>
+  <li><a href="#standard">The CQL-S standard</a></li>
+</ul>
+
+<h2 id="index">Index</h2>
+
+<ul class="index">
+  <li><a href="CQL-Syntax.html">Syntax</a></li>
+  <li><a href="CQL-Transformations.html">Transformations</a></li>
+  <li><a href="CQL-Match-List.html">The match list</a></li>
+  <li><a href="CQL-Position-List.html">The position list</a></li>
+  <li><a href="CQL-Relation-List.html">The relation list</a></li>
+  <li><a href="CQL-Tagging.html">Tagging</a></li>
+  <li><a href="CQL-Examples.html">Examples</a></li>
+  <li><a href="CQL-File-Format.html">File format</a></li>
+</ul>
+
+<h2 id="display">Display</h2>
+
+<p>
+Per default graphical figurine for the notation of chess pieces will be used,
+due to internalization reasons. The CQL editor is also working with graphical
+figurine, although the CQL files will be saved with the corresponding English
+letters:
+</p>
+
+<dir>
+  <table style="white-space:nowrap">
+    <!-- Note to translators: only translate the last column -->
+    <tr><td>&King;  </td><td>=</td><td>K</td><td>=</td><td>white king</td></tr>
+    <tr><td>&Queen; </td><td>=</td><td>Q</td><td>=</td><td>white queen</td></tr>
+    <tr><td>&Rook;  </td><td>=</td><td>R</td><td>=</td><td>white rook</td></tr>
+    <tr><td>&Bishop;</td><td>=</td><td>B</td><td>=</td><td>white bishop</td></tr>
+    <tr><td>&Knight;</td><td>=</td><td>N</td><td>=</td><td>white knight</td></tr>
+    <tr><td>&Pawn;  </td><td>=</td><td>P</td><td>=</td><td>white pawn</td></tr>
+    <tr><td>&king;  </td><td>=</td><td>k</td><td>=</td><td>black king</td></tr>
+    <tr><td>&queen; </td><td>=</td><td>q</td><td>=</td><td>black queen</td></tr>
+    <tr><td>&rook;  </td><td>=</td><td>r</td><td>=</td><td>black rook</td></tr>
+    <tr><td>&bishop;</td><td>=</td><td>b</td><td>=</td><td>black bishop</td></tr>
+    <tr><td>&knight;</td><td>=</td><td>n</td><td>=</td><td>black knight</td></tr>
+    <tr><td>&pawn;  </td><td>=</td><td>p</td><td>=</td><td>black pawn</td></tr>
+  </table>
+</dir>
+
+<p>
+If you prefer to see piece letters, please select one of the options:
+</p>
+
+<table style="white-space:nowrap">
+  <tr valign="top">
+    <td>
+      <div embed='piecelang en text "Use English piece letters"'
+           style="display: inline;">
+        (Not available in web browser)
+      </div>
+    </td>
+    <td>&emsp;K Q R B N P k q r b n p (will be used in CQL files)</td>
+  </tr>
+  <tr valign="top">
+    <td>
+      <div embed='piecelang regional text "Use regional letters"'
+           style="display: inline;">
+        (Not available in web browser)
+      </div>
+    </td>
+    <td>&emsp;<whitepieceletters/> <blackpieceletters/></td>
+  </tr>
+  <tr valign="top">
+    <td>
+      <div embed='piecelang graphic text "Revert to designators"'
+           style="display: inline;">
+        (Not available in web browser)
+      </div>
+    </td>
+    <td>&emsp;&King; &Queen; &Rook; &Bishop; &Knight; &Pawn; &king; &queen; &rook; &bishop; &knight; &pawn;</td>
+  </tr>
+</table>
+
+<h2 id="standard">The CQL-S standard</h2>
+
+<p>
+The <nobr>CQL-S</nobr> standard is developed to cover all functions of Scidb also
+inside the game search and position search. For fulfilling the <nobr>CQL-S</nobr>
+standard all keywords have to be implemented. But the features for other chess
+variants must not be supported (this means, for example, that
+<cql>position:mustcapture</cql> will not be satisfied ever). The CQL parser
+should use the file header to detect whether a <nobr>CQL-S</nobr> script can
+be executed (<see/> <a href="CQL-File-Format.html">file format</a>).
+</p>
+
+<p>
+<nobr>CQL-S</nobr> is almost 100% backward compatible with just two exceptions:
+</p>
+
+<ol>
+  <li>
+    In CQL <nobr>1.0</nobr> <cql>position:flipcolor</cql> does not apply to <cql>position:result</cql>
+    (inside position list). The behavior of CQL <nobr>1.0</nobr> may well be considered as
+    an error. In <nobr>CQL-S</nobr> <cql>position:flipcolor</cql> will also do a color flip
+    transformation in <cql>position:result</cql>.
+  </li>
+  <li style="margin-top:0.5em">
+    In CQL <nobr>1.0</nobr> the start position will not be considered when searching. In
+    <nobr>CQL-S</nobr> also the start position will be considered when searching
+    for a position, and will match where appropriate. Including the start position
+    is essential for position search in a chess database.
+  </li>
+</ol>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html fileencoding=latin1: -->

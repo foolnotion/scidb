@@ -1,0 +1,88 @@
+<!-- ======================================================================
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $HeadURL$
+======================================================================= -->
+
+<!-- ======================================================================
+* Copyright: (C) 2014 Gregor Cramer
+======================================================================= -->
+
+<!-- ======================================================================
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+======================================================================= -->
+
+INDEX Percentage range specifiers (CQL)
+TITLE CQL - Percentage range specifiers
+
+<p>
+Some keywords are expecting percentage range specifications.
+A percentage range specification consists either of only one
+percentage value, which must start with an comparative operator,
+or with two percentage values, separated by whitespace (and
+without comparative operators).
+</p>
+
+<p>
+If a percentage range specification consists of only one value, this
+value is denoting the range, otherwise both values will specify the
+range, with a lower and an upper bound.
+</p>
+
+<p>
+The percentage value is a positive integer between zero and 100
+(inclusive). This value must be suffixed with a percentage symboi.
+</p>
+
+<p>
+These are the permissible comparative operators:
+</p>
+
+<box>
+<table>
+  <tr><td><expr>&gt;</expr></td>  <td></td> <td>More than</td></tr>
+  <tr><td><expr>&gt;=</expr></td> <td></td> <td>At least</td></tr>
+  <tr><td><expr>&lt;</expr></td>  <td></td> <td>Less than</td></tr>
+  <tr><td><expr>&lt;=</expr></td> <td></td> <td>At most</td></tr>
+</table>
+</box>
+
+<h2>Beispiele</h2>
+
+<p>
+The following examples are percentage ranges for counting connected
+pawns on the board.
+</p>
+
+<verb>
+&gt;70%
+</verb>
+
+<p>
+More than 70% of all pawns on the board are connected.
+</p>
+
+<verb>
+&gt;=20%
+</verb>
+
+<p>
+At least 20% of all pawns are connected.
+</p>
+
+<verb>
+30% 70%
+</verb>
+
+<p>
+Between 30 and 70% (both boundaries are inclusive) of all pawns on the
+board are connected.
+</p>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html fileencoding=latin1: -->

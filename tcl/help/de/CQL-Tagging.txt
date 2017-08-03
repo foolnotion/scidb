@@ -1,20 +1,20 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision: 161 $
 * Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2013 Gregor Cramer
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
 
 INDEX Markierung (CQL)
 INDEX CQL Markierung
@@ -28,6 +28,12 @@ Bauernumwandlungen ändern die Identität der Figur nicht. Eine Markierung
 ist eine benamte Identität, sie ist an die Identität gebunden. Eine Markierung
 repräsentiert eine einzelne Figur, deren Identität mit dieser Markierung
 verbunden ist.
+</p>
+
+<p>
+Überall wo ein Figurenartbezeichner auftritt kann auch ein Markierungsname,
+beginnend mit dem Zeichen <expr>$</expr>, auftreten. Diese Figurenart
+vertritt exakt die Figur, die durch den Markierungnamen vertreten wird.
 </p>
 
 <ul>
@@ -82,7 +88,7 @@ Position soll nur dann gefiltert werden, wenn "foo" ein weißer Bauer ist:
 </p>
 
 <verb>
-(position <keyword>:tagmatch</keyword> foo &P;)
+(position <keyword>relation:tagmatch</keyword> foo &P;)
 </verb>
 
 <h2 id="designators">Figurenbezeichner und Markierungen</h2>

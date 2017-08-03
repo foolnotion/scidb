@@ -6,7 +6,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2010-2013 Gregor Cramer
+# Copyright: (C) 2010-2017 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -16,11 +16,26 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source web
+
 namespace eval web {
+namespace eval mc {
+
+set SaveFile "Save File"
+
+}
+
+proc isExternalLink {url} {
+	# These regular expressions aren't perfect, but sufficient for our purposes.
+	if {	[regexp {^[a-z]{3,5}://.*\.[a-z]{2,6}$} $url]
+		|| [regexp {^(mailto:)?[a-zA-Z0-9_.+-]+@([a-zA-Z0-9-]+\.)+[a-z]{2,6}$} $url]} {
+		return 1
+	}
+	return 0
+}
+
 
 proc open {parent url} {
-	variable Escape
-
 	set url [::scidb::misc::url escape $url]
 	::widget::busyCursor on
 
@@ -31,9 +46,9 @@ proc open {parent url} {
 
 		"win32" {
 			if {$::tcl_platform(os) eq "Windows NT"} {
-				catch {exec $::env(COMSPEC) /c start $url &}
+				catch {exec $::env(COMSPEC) /c start \"$url\" &}
 			} else {
-				catch {exec start $url &}
+				catch {exec start \"$url\" &}
 			}
 		}
 
@@ -42,29 +57,163 @@ proc open {parent url} {
 			variable Excluded
 			variable Options
 
-			if {![info exists DefaultBrowser]} {
-				set DefaultBrowser [FindDefaultBrowser]
-			}
-			while {[llength $DefaultBrowser]} {
-				if {[info exists Options($DefaultBrowser)]} {
-					set options [string map [list %url% $url] $Options($DefaultBrowser)]
-					if {![catch {exec /bin/sh -c "$DefaultBrowser $options"}]} { break }
+			set xdgopen [auto_execok xdg-open]
+			if {[string length $xdgopen] > 0} {
+				# xdg-open always reports errors
+				if {![regexp {^[a-z]+:} $url]} {
+					if {[string match *@* $url]} {
+						set prot mailto:
+					} elseif {![regexp {^[a-z]+://} $url]} {
+						set prot http://
+					}
+					set url ${prot}${url}
 				}
-				if {![catch {exec /bin/sh -c "$DefaultBrowser '$url'" &}]} { break }
-				lappend Excluded $DefaultBrowser
-				set DefaultBrowser [FindDefaultBrowser]
-			}
-			if {[llength $DefaultBrowser] == 0} {
-				::dialog::error \
-					-parent $parent \
-					-message $mc::CannotFindBrowser \
-					-detail $mc::CannotFindBrowserDetail \
-					;
+				catch { exec $xdgopen "$url" & }
+			} else {
+				if {![info exists DefaultBrowser]} {
+					set DefaultBrowser [FindDefaultBrowser]
+				}
+				while {[string length $DefaultBrowser]} {
+					if {[info exists Options($DefaultBrowser)]} {
+						set options [string map [list %url% $url] $Options($DefaultBrowser)]
+						if {![catch {exec /bin/sh -c "$DefaultBrowser $options"}]} { break }
+					}
+					if {![catch {exec /bin/sh -c "$DefaultBrowser '$url'" &}]} { break }
+					lappend Excluded $DefaultBrowser
+					set DefaultBrowser [FindDefaultBrowser]
+				}
+				if {[llength $DefaultBrowser] == 0} {
+					::dialog::error \
+						-parent $parent \
+						-message $mc::CannotFindBrowser \
+						-detail $mc::CannotFindBrowserDetail \
+						;
+				}
 			}
 		}
 	}
 
 	::widget::busyCursor off
+}
+
+
+proc downloadURL {parent url args} {
+   global env
+
+	array set opts {
+		-successcmd {}
+		-failedcmd  {}
+		-retrycmd   {}
+		-timeouts   {5000}
+		-filetypes  {}
+	}
+	array set opts $args
+
+   if {[catch {package require http 2.7}]} {
+		if {[llength $opts(failedcmd)]} {
+			{*}$opts(failedcmd) $parent $url
+		}
+		return
+   }
+
+   if {[info exists env(http_proxy)]} {
+      set http_proxy $env(http_proxy)
+   } else {
+      set http_proxy ""
+   }
+   set i [string last : $http_proxy]
+   if {$i >= 0} {
+      set host [string range $http_proxy 0 [expr {$i - 1}]]
+      set port [string range $http_proxy [expr {$i + 1}] end]
+      if {[string is integer -strict $port]} {
+         ::http::config -proxyhost $host -proxyport $port
+      }
+   }
+
+   ::http::config -urlencoding utf-8
+   set ::http::defaultCharset utf-8
+
+	if {[llength $opts(successcmd)] == 0} {
+		set opts(successcmd) [namespace current]::SaveData
+	}
+
+   return [GetURL $parent $url {*}[array get opts]]
+}
+
+
+proc GetURL {parent url opts} {
+	array set opts $args
+	set timeout [lindex $opts(timeouts) 0]
+	if {[llength $timeout] == 0} { set timeout 5000 }
+	set opts(timeouts) [lrange $opts(timeouts) 1 end]
+   set cmd [list [namespace current]::DownLoadResponse $parent $url {*}[array get opts]] 
+
+   if {[catch { ::http::geturl $url -command $cmd -timeout $timeout }] && [llength $opts(failedcmd)]} {
+		{*}$opts(failedcmd) $parent $url
+   }
+}
+
+
+proc DownLoadResponse {parent url args} {
+	array set opts $args
+   set code [::http::ncode $token]
+   set state [::http::status $token]
+   set data [::http::data $token]
+   ::http::cleanup $token
+   set retry 0
+
+   switch $state {
+      error { set code 404 }
+      timeout - eof { set retry 1 }
+
+      ok {
+         if {[string length $code] == 0} {
+            set code 100
+         }
+         switch $code {
+            100 - 408 - 429 - 503 - 503 - 522 { set retry 1 }
+            200 { ;# ok }
+
+            default {
+					if {[llength $opts(failedcmd)]} {
+						{*}$opts(failedcmd) $parent $url
+					}
+					return
+				}
+         }
+      }
+   }
+
+   if {!$retry} {
+		if {[llength $opts(successcmd)]} {
+			{*}$opts(successcmd) $parent $url $data
+		} else {
+			SaveData $parent $url $data {*}$args
+		}
+   } elseif {[llength $opts(timeouts)]} {
+		set timeout [lindex $trials 0]
+		set opts(timeouts) [lrange $opts(timeouts) 1 end]
+      after $timeout [list [namespace current]::GetURL $url {*}[array get opts]]
+   } else if {[llength $opts(failedcmd)]} {
+		{*}$opts(failedcmd) $parent $url
+   }
+}
+
+
+proc SaveData {parent url data args} {
+	array set opts $args
+
+	set result [::dialog::saveFile \
+		-parent $parent \
+		-filetypes $opts(filetypes) \
+		-geometry last \
+		-title [set [namespace current]::mc::SaveFile] \
+	]
+	if {[llength $result]} {
+		set fp [open $result wb]
+		puts -nonewline $fp $data
+		close $fp
+	}
 }
 
 
@@ -75,7 +224,7 @@ namespace eval mc {
 	set CannotFindBrowserDetail	"Set the BROWSER environment variable to your desired browser."
 }
 
-variable Browsers {google-chrome iceweasel firefox mozilla opera iexplorer konqueror epiphany galeon mosaic amaya browsex}
+variable Browsers {google-chrome firefox iceweasel mozilla safari opera iexplorer konqueror epiphany galeon mosaic amaya browsex}
 variable Options {
 	mozilla		{-raise -remote 'openURL(%url%)'}
 	iceweasel	{-remote 'openURL(%url%)'}

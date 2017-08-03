@@ -1,20 +1,20 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision: 161 $
 * Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2013 Gregor Cramer
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
 
 INDEX FEN (Forsyth-Edwards Notation)
 INDEX X-FEN (Extended Forsyth-Edwards Notation)
@@ -31,7 +31,7 @@ one weakness: it is not describing how many times the described position
 was repeated.  A detailed description is available online:
 </p>
 
-<!-- Not for translators: please replace with local Wikipedia link. -->
+<!-- Note for translators: please replace with local Wikipedia link. -->
 <ul>
   <li><a href="http://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation">
         ForsythEdwards Notation - Wikipedia</a></li>
@@ -48,14 +48,14 @@ required extensions:
 </p>
 
 <ul>
-  <li><a href="#Crazyhouse">%::mc::VariantName(Crazyhouse)%</a></li>
+  <li><a href="#DropChess">%::mc::VariantName(DropChess)%</a></li>
   <li><a href="#ThreeCheck">%::mc::VariantName(ThreeCheck)%</a></li>
 </ul>
 
-<h2 id="Crazyhouse">%::mc::VariantName(Crazyhouse)%</h2>
+<h2 id="DropChess">%::mc::VariantName(DropChess)%</h2>
 
 <p>
-Scidb is using an extended FEN (X-FEN, or Shredder FEN) for Crazyhouse,
+Scidb is using an extended FEN (X-FEN, or Shredder FEN) for %::mc::VariantName(DropChess)%,
 derived from BPGN standard (<see/>
 <a href="http://bughousedb.com/Lieven_BPGN_Standard.txt">
 BPGN - Bughouse Portable Game Notation</a>).
@@ -63,9 +63,9 @@ The pieces in holding will be added at the end of first field; for
 example:
 </p>
 
-<dir><code>
+<example>
 r2q1rk1/ppp2ppp/5p2/b7/8/P1NPB2b/1PP1QP1P/R3R1K1/NNPPbnp b - - 0 16
-</code></dir>
+</example>
 
 <p>
 <code>NNPPbnp</code> is describing that the white player has two
@@ -78,9 +78,9 @@ For pieces resulted from a pawn promotion the character tilde is
 tagging this piece. Example:
 </p>
 
-<dir><code>
+<example>
 rkn2Q~N1/pppq4/5P2/8/1P1P1n2/5B1P/PPPN1PpP/R3K1R1/RBBBPPq b Q - 0 43
-</code></dir>
+</example>
 
 <p>
 The white queen (<code>Q~</code>) was originated from a pawn
@@ -95,9 +95,9 @@ For this chess variant an additional field will be appended to the FEN
 Example:
 </p>
 
-<dir><code>
+<example>
 rnb1k1nr/pppp1ppp/8/4p3/3PP2q/2N5/PP3PPP/R1BQKBNR w KQkq - 1 5 +0+2
-</code></dir>
+</example>
 
 <p>
 <code>+0+2</code> means:

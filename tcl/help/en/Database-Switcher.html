@@ -19,7 +19,7 @@
   <meta name="generator"
      content="scidb.sourceforge.net" />
   <meta name="description"
-     content="Scidb Help Page" />
+     content="Scidb - Help Page" />
 
   <link rel="icon"
        href="http://scidb.sourceforge.net/favicon.ico"
@@ -29,9 +29,9 @@
   <link rel="stylesheet"
        type="text/css"
       media="screen"
-       href="../styles/help.css" />
+		 href="../styles/help.css" />
 
-  <title>Scidb Help: The database switcher</title>
+  <title>Scidb - Help: The database switcher</title>
 </head>
 
 <body>
@@ -186,9 +186,12 @@ This sub-menu provides functionality for the maintenance of databases.
 
 <ul style='list-style-type: none'><li><img src="images/database-switcher-menu-maintenance.png" alt=""/></li></ul>
 
-<p>
+<p id="ChangeIcon">
 <span class='menuitem'>Change Icon</span>
-Select an icon for this database.
+Select an icon for this database. A selection dialog will be opened
+which allows also the selection of image files (Scidb databases only).
+The image files must be PNG files in the resolutions of 16x16, 24x24,
+32x32, and 48x48.
 <br/><img src='../images/note.png' alt='note' /> This is not possible for the <a href="Clipbase.html">Clipbase</a>.
 </p>
 
@@ -219,10 +222,16 @@ of the database is done.
 <p id="Compact">
 <span class='menuitem'>Compact</span>
 Compact this database, this means that all games marked for deletion
-wil be deleted physically. You cannot revert this action. This menu
-item is disabled if the database does not contain any game with a
-deletion marker.
+wil be deleted physically. Furthermore the gaps will disappear caused
+by some actions. You cannot revert this action. This menu item is disabled
+if the database does not contain any gaps, and also no game has a deletion
+marker.
 </p>
+
+<div class='annotation'><img src='../images/annotation.png' style='float:left; margin:0 1em 0 0' alt='annotation' />
+The compaction of a database is a safe operation: if the compaction unexpectedly
+fails or will be interrupted, the original database will not be changed.
+</div>
 
 <h3 id="DND">Drag &amp; Drop</h3>
 
@@ -234,7 +243,7 @@ In this way you may open databases with the help of an external file manager.
 </p>
 
 <p>
-The list of files may also be dropped over a database field. In this case 
+The list of files may also be dropped over a database field. In this case
 the games will be copied into the destination database.
 </p>
 

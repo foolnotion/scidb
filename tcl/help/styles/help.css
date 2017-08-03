@@ -57,7 +57,7 @@ span.piece {
 	font-size: 90%;
 }
 
-span.cqlpiece {
+span.cql {
 	font-weight: normal;
 	font-style: normal;
 	font-size: 110%;
@@ -94,6 +94,12 @@ div.box {
 	padding-bottom:	0em;
 	padding-left:		1em;
 	padding-right:		1em;
+}
+
+div.example {
+	text-align:			left;
+	white-space:		nowrap;
+	padding-left:		1em;
 }
 
 div.verb {
@@ -191,6 +197,14 @@ td.r {
 	padding-right:	0.2em;
 }
 
+td.t {
+	padding-left:		0.5em;
+	padding-right:		0.5em;
+	border-top-width:	1px;
+	border-top-style:	solid;
+	border-top-color:	#999999;
+}
+
 kbd.key {
 	font-size:			smaller;
 	border-width:		0.2em;
@@ -211,6 +225,29 @@ span.button {
 	white-space:		nowrap;
 }
 
+/*
+kbd.key {
+	font-size:		smaller;
+	border-width:	1px 2px 2px 1px;
+	border-style:	solid;
+	border-color:	#edd #baa #baa #eed;
+	padding:			0px 1px 0px 1px;
+	background:		#faf6f6;
+	color:			#000;
+	white-space:	nowrap;
+}
+
+span.button {
+	font-size:		smaller;
+	border-width:	1px 2px 2px 1px;
+	border-style:	solid;
+	border-color:	#edd #baa #baa #eed;
+	padding:			0px 1px 0px 1px;
+	background:		#faf6f6;
+	color:			#000;
+	white-space:	nowrap;
+}*/
+
 .menuitem {
 /*	color:         	black; */
 	background:    	#c4d0f4;
@@ -223,7 +260,7 @@ li.space {
 
 a:link    { text-decoration: none; }
 a:visited { text-decoration: none; }
-a:hover   { text-decoration: underline; background: #ffff00; }
+a:hover   { text-decoration: underline; }
 a:active  { text-decoration: underline; }
 
 /* vi:set ts=3 sw=3: */

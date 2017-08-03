@@ -103,6 +103,7 @@
 ::mc::Undo					"Rückgängig"
 ::mc::Variant				"Schachform"
 ::mc::Variation			"Variante"
+::mc::Volume				"Hauptgruppe"
 ::mc::White					"Weiß"
 ::mc::Yes					"ja"
 
@@ -112,6 +113,22 @@
 ::mc::Piece(B)				"Läufer"
 ::mc::Piece(N)				"Springer"
 ::mc::Piece(P)				"Bauer"
+
+::mc::PieceCQL(.)			"Leerfeld"
+::mc::PieceCQL(A)			"Beliebige weiße Figur"
+::mc::PieceCQL(a)			"Beliebige schwarze Figur"
+::mc::PieceCQL(M)			"Weiße Schwerfigur"
+::mc::PieceCQL(m)			"Schwarze Schwerfigur"
+::mc::PieceCQL(I)			"Weiße Leichtfigur"
+::mc::PieceCQL(i)			"Schwarze Leichtfigur"
+::mc::PieceCQL(U)			"Irgendeine Figur"
+::mc::PieceCQL(?)			"Irgendeine Figur oder ein Leerfeld"
+
+::mc::SquareCQL(L)		"Weiße Felder"
+::mc::SquareCQL(D)		"Schwarze Felder"
+
+::mc::SquareLetter(L)	"W"
+::mc::SquareLetter(D)	"B"
 
 ::mc::Logical(reset)		"Zurücksetzen"
 ::mc::Logical(or)			"Oder"
@@ -1356,6 +1373,7 @@
 ::gametable::mc::GameFlags(s)				"Strategische Schnitzer"
 ::gametable::mc::GameFlags(C)				"Regelwidrige Rochade"
 ::gametable::mc::GameFlags(I)				"Regelwidriger Zug"
+::gametable::mc::GameFlags(X)				"Ungültiger Zug"
 
 ### playertable ########################################################
 ::playertable::mc::F_LastName					"Nachname"
@@ -2093,6 +2111,7 @@
 ::terminationbox::mc::Result(1/2-1/2)					"Remis vereinbart"
 
 ::terminationbox::mc::Reason(Unplayed)					"Die Partie wurde nicht gespielt"
+::terminationbox::mc::Reason(ByForfeit)				"Der Gegner trat nicht an"
 ::terminationbox::mc::Reason(Abandoned)				"Die Partie wurde abgebrochen"
 ::terminationbox::mc::Reason(Adjudication)			"Abschätzung"
 ::terminationbox::mc::Reason(Disconnection)			"Leitungsunterbrechung"
@@ -2101,6 +2120,8 @@
 ::terminationbox::mc::Reason(TimeForfeit)				"%s überschritt die Bedenkzeit"
 ::terminationbox::mc::Reason(TimeForfeit,both)		"Beide Spieler überschritten die Bedenkzeit"
 ::terminationbox::mc::Reason(TimeForfeit,remis)		"%causer überschritt die Zeit und %opponent kann nicht mehr gewinnen"
+::terminationbox::mc::Reason(DrawClaim)				"Einer der Spieler forderte Remis"
+::terminationbox::mc::Reason(NoOpponent)				"Partiegewinn ohne einen Gegner"
 ::terminationbox::mc::Reason(Unterminated)			"Unvollendet"
 
 ::terminationbox::mc::Termination(checkmate)			"%s ist schachmatt"
@@ -2125,7 +2146,7 @@
 ::eventmodebox::mc::Composition	"Komposition"
 
 ### eventtypebox #######################################################
-::eventtypebox::mc::Type(game)	"Freie Partie"
+::eventtypebox::mc::Type(casual)	"Freie Partie"
 ::eventtypebox::mc::Type(match)	"Wettkampf"
 ::eventtypebox::mc::Type(tourn)	"Rundenturnier"
 ::eventtypebox::mc::Type(swiss)	"Schweizer System-Turnier"
@@ -2250,30 +2271,32 @@
 ::crosstable::mc::CannotCreateFile			"Die Datei '%s' kann nicht angelegt werden: keine ausreichenden Rechte vorhanden."
 
 ### info ###############################################################
-::info::mc::InfoTitle			"Über %s"
-::info::mc::Info					"Information"
-::info::mc::About					"Über Scidb"
-::info::mc::Contributions		"Beteiligte"
-::info::mc::License				"Lizens"
-::info::mc::Localization		"Lokalisierung"
-::info::mc::Testing				"Tester"
-::info::mc::References			"Quellen"
-::info::mc::System				"System"
-::info::mc::FontDesign			"Schachzeichensatzdesign"
-::info::mc::ChessPieceDesign	"Schachfigurendesign"
-::info::mc::BoardThemeDesign	"Schachbrettthemendesign"
-::info::mc::FlagsDesign			"Miniaturflaggendesign"
-::info::mc::IconDesign			"Piktogrammdesign"
-::info::mc::Development			"Entwicklung"
-::info::mc::Programming			"Programmierung"
-::info::mc::Head					"Leitung"
-::info::mc::AllOthers			"alle anderen"
-::info::mc::TheMissingOnes		"die fehlenden"
+::info::mc::InfoTitle				"Über %s"
+::info::mc::Info						"Information"
+::info::mc::About						"Über Scidb"
+::info::mc::Contributions			"Beteiligte"
+::info::mc::License					"Lizens"
+::info::mc::Localization			"Lokalisierung"
+::info::mc::Testing					"Tester"
+::info::mc::References				"Quellen"
+::info::mc::System					"System"
+::info::mc::FontDesign				"Schachzeichensatzdesign"
+::info::mc::TruetypeFonts			"Truetype-Zeichensätze"
+::info::mc::ChessPieceDesign		"Schachfigurendesign"
+::info::mc::BoardThemeDesign		"Schachbrettthemendesign"
+::info::mc::FlagsDesign				"Miniaturflaggendesign"
+::info::mc::IconDesign				"Piktogrammdesign"
+::info::mc::Development				"Entwicklung"
+::info::mc::DevelopmentOfUnCBV	"Entwicklung des Entpackens von CBV-Archiven"
+::info::mc::Programming				"Programmierung"
+::info::mc::Head						"Leitung"
+::info::mc::AllOthers				"alle anderen"
+::info::mc::TheMissingOnes			"die fehlenden"
 
-::info::mc::Version				"Version"
-::info::mc::Distributed			"Dieses Program wurde unter den Bedingungen der GNU General Public License verbreitet."
-::info::mc::Inspired				"Scidb wurde inspiriert durch Scid 3.6.1, Copyright \u00A9 1999-2003 Shane Hudson."
-::info::mc::SpecialThanks		"Besonderen Dank an %s für seine fantastische Arbeit. Seine Leistung ist Basis für diese Applikation."
+::info::mc::Version					"Version"
+::info::mc::Distributed				"Dieses Program wurde unter den Bedingungen der GNU General Public License verbreitet."
+::info::mc::Inspired					"Scidb wurde inspiriert durch Scid 3.6.1, Copyright \u00A9 1999-2003 Shane Hudson."
+::info::mc::SpecialThanks			"Besonderen Dank an %s für seine fantastische Arbeit. Seine Leistung ist Basis für diese Applikation."
 
 ### comment ############################################################
 ::comment::mc::CommentBeforeMove		"Kommentar vor dem Zug"
@@ -2291,6 +2314,7 @@
 
 ::comment::mc::LanguageSelection		"Sprachauswahl"
 ::comment::mc::Formatting				"Formatierung"
+::comment::mc::InsertLink				"Link einfügen"
 
 ::comment::mc::Bold						"Fett"
 ::comment::mc::Italic					"Kursiv"
@@ -2356,7 +2380,7 @@
 ::titlebox::mc::Title(CGM)		"Fernschach-Großmeister (ICCF)"
 ::titlebox::mc::Title(CIM)		"Internationaler Fernschachmeister (ICCF)"
 ::titlebox::mc::Title(CLGM)	"Frauen - Fernschachgroßmeisterin (ICCF)"
-::titlebox::mc::Title(CILM)	"Frauen - Internationale Fernschachmeisterin (ICCF)"
+::titlebox::mc::Title(CLIM)	"Frauen - Internationale Fernschachmeisterin (ICCF)"
 ::titlebox::mc::Title(CSIM)	"Verdienter Internationaler Fernschachmeister (ICCF)"
 
 ### messagebox #########################################################
@@ -3103,5 +3127,8 @@
 
 ### remote #############################################################
 ::remote::mc::PostponedMessage "Das Öffnen der Datenbank \"%s\" wird zurückgestellt bis die aktuelle Datenbankoperation beendet wurde."
+
+### web ################################################################
+::web::mc::SaveFile "Datei speichern"
 
 # vi:set ts=3 sw=3:

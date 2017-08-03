@@ -105,6 +105,7 @@
 ::mc::Undo					"Indietro"
 ::mc::Variant				"Variante Eterodossa"
 ::mc::Variation			"Variante"
+::mc::Volume				"Volume" ;# NEW
 ::mc::White					"Bianco"
 ::mc::Yes					"sì"
 
@@ -114,6 +115,22 @@
 ::mc::Piece(B)				"Alfiere"
 ::mc::Piece(N)				"Cavallo"
 ::mc::Piece(P)				"Pedone"
+
+::mc::PieceCQL(.)			"Empty square" ;# NEW
+::mc::PieceCQL(A)			"Any white piece" ;# NEW
+::mc::PieceCQL(a)			"Any black piece" ;# NEW
+::mc::PieceCQL(M)			"White major piece" ;# NEW
+::mc::PieceCQL(m)			"Black major piece" ;# NEW
+::mc::PieceCQL(I)			"White minor piece" ;# NEW
+::mc::PieceCQL(i)			"Black minor piece" ;# NEW
+::mc::PieceCQL(U)			"Any piece at all" ;# NEW
+::mc::PieceCQL(?)			"Any piece or empty square" ;# NEW
+
+::mc::SquareCQL(L)		"Light squares" ;# NEW
+::mc::SquareCQL(D)		"Dark squares" ;# NEW
+
+::mc::SquareLetter(L)	"L" ;# NEW shortcut for 'light square' (uppercase)
+::mc::SquareLetter(D)	"D" ;# NEW shortcut for 'dark square'  (uppercase)
 
 ::mc::Logical(reset)		"Reset"
 ::mc::Logical(or)			"OR"
@@ -1367,6 +1384,7 @@
 ::gametable::mc::GameFlags(s)				"Svista strategica"
 ::gametable::mc::GameFlags(C)				"Arrocco illegale"
 ::gametable::mc::GameFlags(I)				"Mossa illegale"
+::gametable::mc::GameFlags(X)				"Invalid Move" ;# NEW
 
 ### playertable ########################################################
 ::playertable::mc::F_LastName					"Cognome"
@@ -2109,6 +2127,7 @@
 ::terminationbox::mc::Result(1/2-1/2)					"Patta per accordo"
 
 ::terminationbox::mc::Reason(Unplayed)					"La partita non è stata giocata"
+::terminationbox::mc::Reason(ByForfeit)				"Opponent did not show up" ;# NEW
 ::terminationbox::mc::Reason(Abandoned)				"La partita è stata abbandonata"
 ::terminationbox::mc::Reason(Adjudication)			"Aggiundicata"
 ::terminationbox::mc::Reason(Disconnection)			"Disconnessione"
@@ -2117,6 +2136,8 @@
 ::terminationbox::mc::Reason(TimeForfeit)				"%s perde per tempo"
 ::terminationbox::mc::Reason(TimeForfeit,both)		"Entrambi i giocatori perdono per tempo"
 ::terminationbox::mc::Reason(TimeForfeit,remis)		"%causer ha finito il tempo e %opponent non ha materiale per vincere"
+::terminationbox::mc::Reason(NoOpponent)				"Point given for game with no opponent" ;# NEW
+::terminationbox::mc::Reason(Unterminated)			"No finalizado" ;# NEW
 ::terminationbox::mc::Reason(Unterminated)			"Non terminata"
 
 ::terminationbox::mc::Termination(checkmate)			"%s è scacco matto"
@@ -2141,7 +2162,7 @@
 ::eventmodebox::mc::Composition	"Composizione"
 
 ### eventtypebox #######################################################
-::eventtypebox::mc::Type(game)	"Partita singola"
+::eventtypebox::mc::Type(casual)	"Partita singola"
 ::eventtypebox::mc::Type(match)	"Match"
 ::eventtypebox::mc::Type(tourn)	"Round Robin"
 ::eventtypebox::mc::Type(swiss)	"Torneo con Sistema Svizzero"
@@ -2266,30 +2287,32 @@
 ::crosstable::mc::CannotCreateFile			"Impossibile creare il file '%s': permesso negato."
 
 ### info ###############################################################
-::info::mc::InfoTitle			"About %s"
-::info::mc::Info					"Info"
-::info::mc::About					"About"
-::info::mc::Contributions		"Contributi"
-::info::mc::License				"Licenza"
-::info::mc::Localization		"Localizzazione"
-::info::mc::Testing				"Testing"
-::info::mc::References			"Riferimenti"
-::info::mc::System				"Sistema"
-::info::mc::FontDesign			"Design del font di scacchi"
-::info::mc::ChessPieceDesign	"Design dei pezzi"
-::info::mc::BoardThemeDesign	"Design della scacchiera"
-::info::mc::FlagsDesign			"Design identificatori miniaturizzati"
-::info::mc::IconDesign			"Design icone"
-::info::mc::Development			"Sviluppo"
-::info::mc::Programming			"Programmazione"
-::info::mc::Head					"Intestazione"
-::info::mc::AllOthers			"all others" ;# NEW
-::info::mc::TheMissingOnes		"the missing ones" ;# NEW
+::info::mc::InfoTitle				"About %s"
+::info::mc::Info						"Info"
+::info::mc::About						"About"
+::info::mc::Contributions			"Contributi"
+::info::mc::License					"Licenza"
+::info::mc::Localization			"Localizzazione"
+::info::mc::Testing					"Testing"
+::info::mc::References				"Riferimenti"
+::info::mc::System					"Sistema"
+::info::mc::FontDesign				"Design del font di scacchi"
+::info::mc::TruetypeFonts			"Truetype fonts" ;# NEW
+::info::mc::ChessPieceDesign		"Design dei pezzi"
+::info::mc::BoardThemeDesign		"Design della scacchiera"
+::info::mc::FlagsDesign				"Design identificatori miniaturizzati"
+::info::mc::IconDesign				"Design icone"
+::info::mc::Development				"Sviluppo"
+::info::mc::DevelopmentOfUnCBV	"Development of unzipping CBV archives" ;# NEW
+::info::mc::Programming				"Programmazione"
+::info::mc::Head						"Intestazione"
+::info::mc::AllOthers				"all others" ;# NEW
+::info::mc::TheMissingOnes			"the missing ones" ;# NEW
 
-::info::mc::Version				"Versione"
-::info::mc::Distributed			"Questo programma è distribuito secondo i termini della GNU General Public License."
-::info::mc::Inspired				"Scidb è ispirato a Scid 3.6.1, copyrighted \u00A9 1999-2003 by Shane Hudson."
-::info::mc::SpecialThanks		"Ringraziamenti speciali a %s per il suo incredibile lavoro. I suoi sforzi sono alla base di questa applicazione."
+::info::mc::Version					"Versione"
+::info::mc::Distributed				"Questo programma è distribuito secondo i termini della GNU General Public License."
+::info::mc::Inspired					"Scidb è ispirato a Scid 3.6.1, copyrighted \u00A9 1999-2003 by Shane Hudson."
+::info::mc::SpecialThanks			"Ringraziamenti speciali a %s per il suo incredibile lavoro. I suoi sforzi sono alla base di questa applicazione."
 
 ### comment ############################################################
 ::comment::mc::CommentBeforeMove		"Commento prima della mossa"
@@ -2307,6 +2330,7 @@
 
 ::comment::mc::LanguageSelection		"Selezione lingua"
 ::comment::mc::Formatting				"Formattazione"
+::comment::mc::InsertLink				"Insert link" ;# NEW
 
 ::comment::mc::Bold						"Grassetto"
 ::comment::mc::Italic					"Corsivo"
@@ -2372,7 +2396,7 @@
 ::titlebox::mc::Title(CGM)		"Grande Maestro per corrispondenza (ICCF)"
 ::titlebox::mc::Title(CIM)		"Maestro Internazionale per corrispondenza (ICCF)"
 ::titlebox::mc::Title(CLGM)	"Grande Maestro femminile per corrispondenza (ICCF)"
-::titlebox::mc::Title(CILM)	"Maestro Internazionale femminile per corrispondenza (ICCF)"
+::titlebox::mc::Title(CLIM)	"Maestro Internazionale femminile per corrispondenza (ICCF)"
 ::titlebox::mc::Title(CSIM)	"Maestro Internazionale Senior per corrispondenza (ICCF)"
 
 ### messagebox #########################################################
@@ -3119,5 +3143,8 @@
 
 ### remote #############################################################
 ::remote::mc::PostponedMessage "Apertura database \"%s\" in pausa fino a che l'operazione attuale non è conclusa."
+
+### web ################################################################
+::web::mc::SaveFile "Save File" ;# NEW
 
 # vi:set ts=3 sw=3:

@@ -19,7 +19,7 @@
   <meta name="generator"
      content="scidb.sourceforge.net" />
   <meta name="description"
-     content="Scidb Help Page" />
+     content="Scidb - Help Page" />
 
   <link rel="icon"
        href="http://scidb.sourceforge.net/favicon.ico"
@@ -29,9 +29,9 @@
   <link rel="stylesheet"
        type="text/css"
       media="screen"
-       href="../styles/help.css" />
+		 href="../styles/help.css" />
 
-  <title>Scidb Hilfe: Festlegung des Standard-Browsers</title>
+  <title>Scidb - Hilfe: Festlegung des Standard-Browsers</title>
 </head>
 
 <body>
@@ -41,11 +41,16 @@
 </div>
 
 <p>
-Es existieren vier Möglichkeiten um den Standard-Browser, mit dem die
+Es existieren fünf Möglichkeiten um den Standard-Browser, mit dem die
 externen Verweise geöffnet werden, festzulegen:
 </p>
 
 <ol>
+  <li><p>
+    Das Programm <span style='white-space:nowrap;'><code>xdg-open</code></span>, sofern installiert, wird verwendet
+    um die festgelegte Standard-Applikation für diesen Verweis zu starten.
+  </p></li>
+
   <li><p>
     Scidb benutzt den Wert der Umgebungsvariable <code>BROWSER</code> zur
     Bestimmung des Standard-Browsers. Beispiel:<br/>
@@ -77,7 +82,7 @@ externen Verweise geöffnet werden, festzulegen:
 </ol>
 
 <p>
-Die erste der vier Möglichkeiten, die erfolgreich ist, bestimmt den
+Die erste der fünf Möglichkeiten, die erfolgreich ist, bestimmt den
 Standard-Browser. Schlagen alle fehl, kann kein Browser gestartet
 werden und es erfolgt eine Fehlermeldung.
 </p>

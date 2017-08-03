@@ -1,20 +1,53 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision: 161 $
 * Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2013 Gregor Cramer
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
+
+HEAD
+
+<style type="text/css">
+
+  #tooltip1 {
+    outline: none;
+    cursor: help;
+    margin-top: 0;
+    margin-bottom: 0;
+    position: relative;
+  }
+  #tooltip1 a {
+    color: #006400;
+  }
+  #tooltip1 a:hover {
+    color: #006400;
+    background: #ffff00;
+    text-decoration: none;
+  }
+  #tooltip1 a img {
+    display: none;
+  }
+  #tooltip1 a:hover img {
+    display: block;
+    position: absolute;
+    left: 2em;
+    top: 2em;
+    z-index: 99;
+  }
+  </style>
+
+END
 
 INDEX CQL Beispiele
 TITLE CQL - Beispiele
@@ -23,15 +56,19 @@ TITLE CQL - Beispiele
   <li><a href="#accumulator">Benutzung von Akkumulatoren zur Zählung von Freibauern</a></li>
   <li><a href="#relation">Beispiele zur Relationenliste</a></li>
   <li><a href="#tagging">Beispiele für Markierungen</a></li>
+  <li><a href="#line">Beispiele für Zugsequenzen</a></li>
+  <li><a href="#pawnending">Bauernendspiele</a></li>
   <li><a href="#more">Noch mehr Beispiele</a></li>
 </ul>
 
-<h2 id="accumulator">Benutzung von Akkumulatoren zur Zählung von Freibauern</h2>
+<h3 id="accumulator">Benutzung von Akkumulatoren zur Zählung von Freibauern</h3>
 
 <p>
 Wir werden zeigen wie <cql>position:accumulate</cql> und
 <cql>position:sumrange</cql> zu verwenden sind, um nach Partien
-mit mindestens 3 weißen Freibauern in einer Position zu suchen.
+mit mindestens drei weißen Freibauern in einer Position zu suchen.
+Ein Freibauer ist ein Bauer, dem kein gegenerischer Bauer auf der gleichen
+Linie oder einer benachbarten Linie im Weg steht.
 Zuerst schreiben wir einen Positionsfilter, der jede Position
 findet mit einem weißen Freibauern:
 </p>
@@ -46,7 +83,7 @@ findet mit einem weißen Freibauern:
 </verbatim>
 
 <p>
-Um mindestens 3 weiße Feibauern zu finden fügen wir die Akkumulation hinzu:
+Um mindestens drei weiße Feibauern zu finden fügen wir die Akkumulation hinzu:
 </p>
 
 <verbatim>
@@ -65,7 +102,7 @@ Nun wollen wir Positionen finden mit mindestens zwei schwarzen Freibauern:
 </p>
 
 <verbatim>
-<comment>;finde eine Position mit mindestens zwei schwarzen Freibauern</comment>
+<comment>; finde eine Position mit mindestens zwei schwarzen Freibauern</comment>
 (position
   &p;d7 
   <cql>position:piececount</cql> [&p;&P;][d2-6] 0
@@ -101,7 +138,34 @@ schwarzen und drei weißen Freibauern zu finden:
       <cql>position:accumulate</cql> schwarze_freibauern_zaehler)))
 </verbatim>
 
-<h2 id="relation">Beispiele zur Relationenliste</h2>
+<p id="accumulator:passed-pawn">
+Wir suchen nun nach Positionen mit mindestens drei Freibauern.
+</p>
+
+<verbatim>
+<comment>; Finde Positionen mit mindestens drei Freibauern.</comment>
+
+(match
+  (position 
+    <cql>position:or</cql> (
+      (position
+        <cql>position:sumrange</cql> zaehler 3 8
+        Pd2
+        <cql>position:piececount</cql> [pP][d3-7] 0
+        <cql>position:piececount</cql> p[c3-7,e3-7] 0
+        <cql>position:shift</cql>
+        <cql>position:flipcolor</cql> <comment>; accumulate* zählt für jede Farbe einzeln</comment>
+        <cql>position:accumulate*</cql> zaehler))))
+</verbatim>
+
+<p>
+Letzendlich ist anzumerken, daß diese Beispiele nur die Wirkungsweise von
+<cql>position:accumulate</cql> veranschaulichen sollen. Tatsächlich können
+all diese Abfragen sehr viel effizienter mittels <cql>position:pawncount</cql>
+realisiert werden.
+</p>
+
+<h3 id="relation">Beispiele zur Relationenliste</h3>
 
 <p>
 Die folgende Positionsliste sucht nach Partien, in denen die Anordnung
@@ -137,7 +201,7 @@ beispielsweise vom derzeitigen Wert <expr>0</expr> auf den Bereich
 Originalanordnung erlaubt.
 </p>
 
-<h2 id="tagging">Beispiele für Markierungen</h2>
+<h3 id="tagging">Beispiele für Markierungen</h3>
 
 <p>
 Wir untersuchen das Problem, alle Partien zu erkennen, in denen der gleiche Turm
@@ -183,16 +247,15 @@ und verwandelt sich dann.
   <cql>match:forany</cql> bauer [&P;&p;]
   (position
     <cql>position:initial</cql>
-    <cql>position:tagmatch</cql> bauer &P;?2
-    <cql>position:gappedsequence</cql> ((position <cql>position:movefrom</cql> $bauer <cql>position:promote</cql> &U;))
-    <cql>position:flipcolor</cql>))
+    <cql>position:tagmatch</cql> bauer [&P;&p;]?[27]
+    <cql>position:gappedsequence</cql> ((position <cql>position:movefrom</cql> $bauer <cql>position:promote</cql> &U;))))
 </verbatim>
 
 <p>
-<cql>position:tagmatch</cql> findet Bauern auf der zweiten Reihe, und die
-mit <cql>position:gappedsequence</cql> definierte Positionsreihe ist
-erfolgreich, wenn die Markierung "bauer" in irgendeiner nachfolgenden
-Position verwandelt.
+<cql>position:tagmatch</cql> findet in der Startposition Bauern auf der zweiten oder
+siebten Reihe, und die mit <cql>position:gappedsequence</cql> definierte Positionsreihe
+ist erfolgreich, wenn die Markierung "bauer" in irgendeiner nachfolgenden Position
+verwandelt.
 </p>
 
 <p>
@@ -206,63 +269,119 @@ Partie.
   (position
     <cql>position:btm</cql>
     <cql>position:attackcount</cql> $schachgeber &k; 1
-    <cql>position:matchcount</cql> 30 unlimited
+    <cql>position:matchcount</cql> &gt;=30
     <cql>position:flipcolor</cql>))
 </verbatim>
 
-<p>
+<p id="knight">
 Viertes Beispiel: ein Springer gibt Matt mit seinem ersten Zug.
 </p>
 
 <verbatim>
 (match
-  <cql>match:forany</cql> springer &N;
+  <cql>match:forany</cql> springer [&N;&n;]
   (position
     <cql>position:movefrom</cql> $springer
     <cql>position:matchcount</cql> 1)
   (position
     <cql>position:mate</cql>
-    <cql>position:attackcount</cql> $springer &k; 1)) 
+    <cql>position:attackcount</cql> $springer [&K;&k;] 1)) 
 </verbatim>
 
-<h2 id="more">Noch mehr Beispiele</h2>
+<h3 id="line">Beispiele für Zugsequenzen</h3>
 
 <verbatim>
-<comment>; Finde isolierte Trippelbauern auf verbundenen Feldern</comment>
-<comment>; Beispiel: 8/p4pk1/8/2R1P1N1/6P1/6P1/2P2KP1/1r5r w - - 0 1</comment>
+<comment>; Wir suchen nach einem Mattmanöver im Legall-Stil,</comment>
+<comment>; wie in der Partie Falkbeer-N.N., Wien 1847:</comment>
+<comment>; <game>1.e4 e5 2.Nf3 Nc6 3.d4 exd4 4.c3 dxc3 5.Nxc3 d6</game></comment>
+<comment>; <game>6.Bc4 Bg4 7.O-O Ne5 8.Nxe5 Bxd1 9.Bxf7+ Ke7 10.Nd5#</game></comment>
+<comment>; Wir wollen auch Partien finden, in denen der Unterlegene</comment>
+<comment>; bereits nach dem Läuferschach aufgibt.</comment>
 
 (match
   (position
-    &P;[c2-4]                <comment>; Bauern auf verbundenen Feldern</comment>
-    <cql>position:piececount</cql> &P;c? 3 6    <comment>; midestens drei Beuern</comment>
-    <cql>position:piececount</cql> &P;[b?,d?] 0 <comment>; Bauern sind isoliert</comment>
-    <cql>position:shiftvertical</cql>         <comment>; beliebige Reihe</comment>
-    <cql>position:shifthorizontal</cql>       <comment>; beliebige Linie</comment>
-    <cql>position:flipcolor</cql>))           <comment>; beliebige Seite</comment>
+    <cql>position:flipcolor</cql> <comment>; auch nach dem farbinvertierten Thema suchen</comment>
+    <comment>; Erinnerung: '!' bedeutet 'einziger Zug'.</comment>
+    <cql>position:line</cql> (&N;xe5 &b;x&Q; &B;:f7+ | &k;e7! &N;d5#)))
+
+<comment>; Dies vermag auch die folgenden Partien zu finden:</comment>
+<comment>; <game>1.e4 e5 2.Nf3 d6 3.Bc4 Bg4 4.Nc3 h6 5.Nxe5 Bxd1</game></comment>
+<comment>; <game>6.Bxf7+</game></comment>
+<comment>; 1&ndash;0 Banks-Pakenham, Halesowen v Warley Quinbourne 2001</comment>
+<comment>; 1&ndash;0 Zaynytdinov-Kalashnikov, Povolje 2010</comment>
 </verbatim>
 
 <verbatim>
-<comment>; Mehrere aufeinanderfolgende Turmschachgebote jeweils</comment>
-<comment>; gefolgt von einem Königszug auf ein freies Feld;</comment>
-<comment>; normalerweise um Patt zu vermeiden wenn der Turm</comment>
-<comment>; geschlagen wird.</comment>
+<comment>; Suche nach einem Mattmanöver im Réti-Stil,</comment>
+<comment>; wie in der Partie Réti-Tartakower, Wien 1910:</comment>
+<comment>; <game>1.e4 c6 2.d4 d5 3.Nc3 dxe4 4.Nxe4 Nf6 5.Qd3 e5 6.dxe5</game></comment>
+<comment>; <game>Qa5+ 7.Bd2 Qxe5 8.0-0-0 Nxe4 9.Qd8+ Kxd8 10.Bg5++ Kc7</game></comment>
+<comment>; <game>(10...Ke8 11.Rd8#) 11.Bd8#</game></comment>
+<comment>; Finde auch dann Partien, wenn der Unterlegene bereits</comment>
+<comment>; nach dem Damenschach aufgibt.</comment>
 
 (match
-  <cql>match:result</cql> 1/2
-  (position 
-    <cql>position:wtm</cql>
-    <cql>position:sequence</cql> (  
-      (position <cql>position:movefrom</cql> &R; <cql>position:moveto</cql> .)
-      (position <cql>position:movefrom</cql> &k; <cql>position:check</cql>)
-      (position <cql>position:movefrom</cql> &R; <cql>position:moveto</cql> .)
-      (position <cql>position:movefrom</cql> &k; <cql>position:check</cql>)
-      (position <cql>position:movefrom</cql> &R; <cql>position:moveto</cql> .)
-      (position <cql>position:movefrom</cql> &k; <cql>position:check</cql>)
-      (position <cql>position:movefrom</cql> &R; <cql>position:moveto</cql> .)
-      (position <cql>position:movefrom</cql> &k; <cql>position:check</cql>)
-      (position <cql>position:movefrom</cql> &R; <cql>position:moveto</cql> .)
-      (position <cql>position:movefrom</cql> &k; <cql>position:check</cql>))))
+  (position
+    <cql>position:flipcolor</cql> <comment>; auch nach dem farbinvertierten Thema suchen</comment>
+    <comment>; Erinnerung: '!' bedeutet 'einziger Zug'.</comment>
+    <cql>position:line</cql> (&Q;d8+ | &k;xd8! &B;:g5++ &k; [&R;&B;]d8#)))
+
+<comment>; Dies vermag auch die folgende Partie zu finden:</comment>
+<comment>; <game>1.e4 c5 2.d4 cxd4 3.c3 d5 4.exd5 Qxd5 5.Nf3 Bg4 6.Qa4+</game></comment>
+<comment>; <game>Nc6 7.Nxd4 Bd7 8.Nb5 0-0-0 9.Nxa7+ Nxa7 10.Qxa7 Qd1+</game></comment>
+<comment>; 0&ndash;1 Dutch-Sugden, London 1964</comment>
 </verbatim>
+
+<p>
+In beiden obigen Beispielen ist zu beachten, daß auch Partien aufgefunden werden können,
+in denen die potentiellen Zugfolgen nicht gespielt wurden, sondern eine anderer Fortsetzung
+erfolgte. D.h. es werden auch Partien aufgefunden, in denen die potentielle Zugfolge
+verpaßt wurde. Sollen solche Partien ausgeschlossen werden, dann findet hier
+<cql>position:terminal</cql> eine Anwendung:
+</p>
+
+<verbatim>
+(match
+  (position
+    <cql>position:sequence</cql> (
+      (position
+        <cql>position:flipcolor</cql>
+        <cql>position:line</cql> (&Q;d8+ | &k;xd8! &B;:g5++ &k; [&R;&B;]d8#))
+      (position <cql>position:terminal</cql>))))
+</verbatim>
+
+<p>
+Nun werden nur diejenigen Partien aufgefunden, die auch mit einem der Züge
+<expr>&Q;d8+</expr>, <expr>&k;xd8!</expr>, <expr>&B;:g5++</expr>,
+<expr>&k;</expr>, oder <expr>[&R;&B;]d8#</expr> enden.
+</p>
+
+<h3 id="pawnending">Bauernendspiele</h3>
+
+<verbatim>
+<comment>; Eine der Parteien opfert in einem materiell gleichstehenden</comment>
+<comment>; Bauernendspiel zwei Bauern, erhält mindestens einen nicht</comment>
+<comment>; aufhaltbaren Freibauern, und gewinnt die Partie.</comment>
+
+(match
+  (position
+    <cql>position:flipcolor</cql>    <comment>; auch nach dem farbinvertierten Thema suchen</comment>
+    <cql>position:result</cql> 1-0   <comment>; Weiß gewinnt die Partie</comment>
+    <cql>position:gappedsequence</cql> (
+      (position
+        <cql>position:piececount</cql> [&M;&m;&I;&i;] 0    <comment>; es ist ein Bauernendspiel</comment>
+        <cql>position:powerdifference</cql> &U; 0     <comment>; materielle Ausgeglichenheit</comment>
+        <comment>; noch keine unaufhaltbare Freibauern</comment>
+        <cql>position:pawncount</cql> &P; passed-!inside 0)
+      (position
+        <cql>position:btm</cql>                     <comment>; Schwarz ist am Zug</comment>
+        <cql>position:piececount</cql> [&M;&m;&I;&i;] 0    <comment>; nach wie vor ein Bauernendspiel</comment>
+        <cql>position:powerdifference</cql> &U; &lt;=&#x2212;2  <comment>; zwei Bauern im Nachteil</comment>
+        <comment>; mindestens ein unaufhaltbarer Freibauer</comment>
+        <cql>position:pawncount</cql> &P; passed-!inside &gt;=1))))
+</verbatim>
+
+<h3 id="more">Noch mehr Beispiele</h3>
 
 <verbatim>
 <comment>; Ersticktes Matt</comment>
@@ -275,7 +394,32 @@ Viertes Beispiel: ein Springer gibt Matt mit seinem ersten Zug.
   (position
     <cql>position:flipcolor</cql>            <comment>; Jede Farbe</comment>
     <cql>position:attackcount</cql> &k; [&A;.] 0 <comment>; König ist von eigenen Figuren umzingelt</comment>
+    <cql>position:btm</cql>                  <comment>; Schwarz ist am Zug</comment>
     <cql>position:mate</cql>))               <comment>; und ist matt</comment>
+</verbatim>
+
+<verbatim>
+<comment>; Allumwandlung: Suche nach Partien mit Bauernumwandlungen in alle</comment>
+<comment>; Figuren. Die Reihenfolge der Positionslisten spielt keine Rolle.</comment>
+
+(match
+  (position <cql>position:promote</cql> [&Q;&q;])
+  (position <cql>position:promote</cql> [&R;&r;])
+  (position <cql>position:promote</cql> [&B;&b;])
+  (position <cql>position:promote</cql> [&N;&n;]))
+</verbatim>
+
+<verbatim>
+<comment>; Allumwandlung: Suche nach Partien mit Bauernumwandlungen in alle</comment>
+<comment>; Figuren. Die Reihenfolge der Positionslisten spielt keine Rolle.</comment>
+<comment>; Es wird verlangt, daß alle Umwandlungen aufeinanderfolgend sind.</comment>
+
+(match
+  (position <cql>position:matchconsecutive</cql> (
+    (position <cql>position:promote</cql> [&Q;&q;])
+    (position <cql>position:promote</cql> [&R;&r;])
+    (position <cql>position:promote</cql> [&B;&b;])
+    (position <cql>position:promote</cql> [&N;&n;])))
 </verbatim>
 
 END

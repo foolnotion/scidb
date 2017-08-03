@@ -1,20 +1,20 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision: 161 $
 * Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2013 Gregor Cramer
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
 
 INDEX Relationsliste (CQL)
 INDEX CQL Relationsliste
@@ -22,7 +22,7 @@ INDEX CQL Relationsliste
 TITLE CQL - Die Relationsliste
 
 <dir>
-  <table>
+  <table style="white-space:nowrap">
     <tr><td>&#x2022;</td><td><a href="#relation">Das Schlüsselwort :relation</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#keywords">Schlüsselwörter der Relationsliste</a></td></tr>
   </table>
@@ -31,7 +31,7 @@ TITLE CQL - Die Relationsliste
 <h2 id="relation">Das Schlüsselwort :relation</h2>
 
 <p>
-Das Schlüsselwort <cql>:relation</cql> kann in einer Positionsliste verwendet
+Das Schlüsselwort <cql>position:relation</cql> kann in einer Positionsliste verwendet
 werden. Es erwartet als Argument eine Relationenspezifikation. Eine
 Relationenspezifikation ist eine Liste von Argumenten für dieses Schlüsselwort.
 </p>
@@ -41,7 +41,7 @@ Beispiel:
 </p>
 
 <verb>
-(position <keyword>:relation</keyword> (<cql>relation:missingpiececount</cql> &A; 1 unlimited))
+(position <keyword>position:relation</keyword> (<cql>relation:missingpiececount</cql> &A; &gt;0))
 </verb>
 
 <p>
@@ -60,22 +60,20 @@ Relationenspezifikation übereinstimmt.
 
 <h2 id="keywords">Schlüsselwörter der Relationsliste</h2>
 
-<dir>
-  <table>
-    <tr><td>&#x2022;</td><td><a href="#relation:changesidetomove">:changesidetomove</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:flip">:flip</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:ignoresidetomove">:ignoresidetomove</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:missingpiececount">:missingpiececount</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:newpiececount">:newpiececount</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:originaldifferentcount">:originaldifferentcount</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:originalsamecount">:originalsamecount</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:pattern">:pattern</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:samesidetomove">:samesidetomove</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:shift">:shift</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:variations">:variations</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:variationsonly">:variationsonly</a></td></tr>
-  </table>
-</dir>
+<table style="white-space:nowrap">
+  <tr><td>&#x2022;</td><td><a href="#relation:changesidetomove">:changesidetomove</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:flip">:flip</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:ignoresidetomove">:ignoresidetomove</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:missingpiececount">:missingpiececount</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:newpiececount">:newpiececount</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:originaldifferentcount">:originaldifferentcount</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:originalsamecount">:originalsamecount</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:pattern">:pattern</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:samesidetomove">:samesidetomove</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:shift">:shift</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:variations">:variations</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:variationsonly">:variationsonly</a></td></tr>
+</table>
 
 <h3 id="relation:changesidetomove">:changesidetomove&emsp;<n>(Zugrecht umwandeln)</n></h3>
 
@@ -90,11 +88,11 @@ Beispiel:
 <p>
 Wird verwendet um Partien zu suchen, in denen die gleiche Position sowohl mit
 Weiß als auch mit Schwarz am Zug enthalten ist. Dies ist beispielsweise
-sinnvoll bei der Suche nach beidseitigem Zugwzang, wie folgt:
+sinnvoll bei der Suche nach beidseitigem Zugzwang, wie folgt:
 </p>
 
 <verb>
-position <cql>position:relation</cql> (<keyword>:changesidetomove</keyword>))
+position <cql>position:relation</cql> (<keyword>relation:changesidetomove</keyword>))
 </verb>
 
 <h3 id="relation:flip">:flip&emsp;<n>(Spiegelung)</n></h3>

@@ -19,7 +19,7 @@
   <meta name="generator"
      content="scidb.sourceforge.net" />
   <meta name="description"
-     content="Scidb Help Page" />
+     content="Scidb - Help Page" />
 
   <link rel="icon"
        href="http://scidb.sourceforge.net/favicon.ico"
@@ -29,9 +29,9 @@
   <link rel="stylesheet"
        type="text/css"
       media="screen"
-       href="../styles/help.css" />
+		 href="../styles/help.css" />
 
-  <title>Scidb Hilfe: CQL - Die Relationsliste</title>
+  <title>Scidb - Hilfe: CQL - Die Relationsliste</title>
 </head>
 
 <body>
@@ -41,7 +41,7 @@
 </div>
 
 <ul style='list-style-type: none'><li>
-  <table>
+  <table style="white-space:nowrap">
     <tr><td>&#x2022;</td><td><a href="#relation">Das Schlüsselwort :relation</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#keywords">Schlüsselwörter der Relationsliste</a></td></tr>
   </table>
@@ -50,7 +50,7 @@
 <h2 id="relation">Das Schlüsselwort :relation</h2>
 
 <p>
-Das Schlüsselwort <span style='white-space:nowrap;'>:relation</span> kann in einer Positionsliste verwendet
+Das Schlüsselwort <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:relation">:relation</span></span> : <span style='white-space:nowrap;'>position</span></a> kann in einer Positionsliste verwendet
 werden. Es erwartet als Argument eine Relationenspezifikation. Eine
 Relationenspezifikation ist eine Liste von Argumenten für dieses Schlüsselwort.
 </p>
@@ -60,7 +60,7 @@ Beispiel:
 </p>
 
 <div class='verb'><code>
-(position <span class='keyword'>:relation</span> (<a href="CQL-Relation-List.html#relation:missingpiececount"><span style='white-space:nowrap;'>:missingpiececount</span></a> <span class='cqlpiece'>&#x25cb;</span> 1 unlimited))
+(position <span style='white-space:nowrap;'><span class='keyword'>:relation</span></span> (<span style='white-space:nowrap;'><a href="CQL-Relation-List.html#relation:missingpiececount">:missingpiececount</span></a> <span class='cql' title='Beliebige weiße Figur'>&#x25cb;</span> &gt;0))
 </code></div>
 
 <p>
@@ -79,22 +79,20 @@ Relationenspezifikation übereinstimmt.
 
 <h2 id="keywords">Schlüsselwörter der Relationsliste</h2>
 
-<ul style='list-style-type: none'><li>
-  <table>
-    <tr><td>&#x2022;</td><td><a href="#relation:changesidetomove">:changesidetomove</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:flip">:flip</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:ignoresidetomove">:ignoresidetomove</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:missingpiececount">:missingpiececount</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:newpiececount">:newpiececount</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:originaldifferentcount">:originaldifferentcount</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:originalsamecount">:originalsamecount</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:pattern">:pattern</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:samesidetomove">:samesidetomove</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:shift">:shift</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:variations">:variations</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:variationsonly">:variationsonly</a></td></tr>
-  </table>
-</li></ul>
+<table style="white-space:nowrap">
+  <tr><td>&#x2022;</td><td><a href="#relation:changesidetomove">:changesidetomove</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:flip">:flip</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:ignoresidetomove">:ignoresidetomove</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:missingpiececount">:missingpiececount</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:newpiececount">:newpiececount</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:originaldifferentcount">:originaldifferentcount</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:originalsamecount">:originalsamecount</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:pattern">:pattern</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:samesidetomove">:samesidetomove</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:shift">:shift</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:variations">:variations</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:variationsonly">:variationsonly</a></td></tr>
+</table>
 
 <h3 id="relation:changesidetomove">:changesidetomove&emsp;<span class='normal'>(Zugrecht umwandeln)</span></h3>
 
@@ -109,11 +107,11 @@ Beispiel:
 <p>
 Wird verwendet um Partien zu suchen, in denen die gleiche Position sowohl mit
 Weiß als auch mit Schwarz am Zug enthalten ist. Dies ist beispielsweise
-sinnvoll bei der Suche nach beidseitigem Zugwzang, wie folgt:
+sinnvoll bei der Suche nach beidseitigem Zugzwang, wie folgt:
 </p>
 
 <div class='verb'><code>
-position <a href="CQL-Position-List.html#position:relation"><span style='white-space:nowrap;'>:relation</span></a> (<span class='keyword'>:changesidetomove</span>))
+position <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:relation">:relation</span></a> (<span style='white-space:nowrap;'><span class='keyword'>:changesidetomove</span></span>))
 </code></div>
 
 <h3 id="relation:flip">:flip&emsp;<span class='normal'>(Spiegelung)</span></h3>
@@ -134,13 +132,13 @@ Das Zugrecht wird ignoriert beim Stellungsvergleich.
 
 <p>
 Dieses Schlüsselwort erwartet die gleichen Argumente wie das Schlüsselwort
-<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> in der Positionsliste: einen
+<span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:piececount">:piececount</span></span> : <span style='white-space:nowrap;'>position</span></a> in der Positionsliste: einen
 Figurenbezeichner gefolgt von einer
 <a href="CQL-Range-Specifiers.html">Bereichsangabe</a>. Eine fehlende Figur
 ist eine Figur, die in P1 auf einem Feld steht das in P2 leerstehend ist.
 P2 wird gefiltert wenn die Anzahl der fehlenden Figuren innerhalb des
 gegebenen Bereichs liegt. Anders als im Fall des Schlüsselworts
-<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> kann <span style='white-space:nowrap;'>:missingpiececount</span> nur
+<span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:piececount">:piececount</span></span> : <span style='white-space:nowrap;'>position</span></a> kann <span style='white-space:nowrap;'>:missingpiececount</span> nur
 einmalig innerhalb der Relationsliste verwendet werden. Keine diedrische
 Transformation und auch keine Translation in der beinhaltenden Positionsliste
 beeinflußt den Figurenbezeichner dieses Schlüsselworts.
@@ -148,7 +146,7 @@ beeinflußt den Figurenbezeichner dieses Schlüsselworts.
 
 <p>
 Der Standardfigurenbezeichner für <span style='white-space:nowrap;'>:missingpiececount</span> ist
-<code><span class='cqlpiece'>&#x25d1;</span></code>, und der Standardbereich ist Null. D.h. standardmäßig darf
+<code><span class='cql' title='Irgendeine Figur'>&#x25d1;</span></code>, und der Standardbereich ist Null. D.h. standardmäßig darf
 es keine fehlenden Figuren geben.
 </p>
 
@@ -156,13 +154,13 @@ es keine fehlenden Figuren geben.
 
 <p>
 Dieses Schlüsselwort erwartet die gleichen Argument wie das Schlüsselwort
-<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> in der Positionsliste: einen Figurenbezeichner
+<span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:piececount">:piececount</span></span> : <span style='white-space:nowrap;'>position</span></a> in der Positionsliste: einen Figurenbezeichner
 gefolget von einer
 <a href="CQL-Range-Specifiers.html">Bereichsangabe</a>. Eine zusätzliche Figur
 ist eine Figur, die in P2 auf einem Feld steht das in P1 leerstehend ist.
 P2 wird gefiltert wenn die Anzahl der zusätzlichen Figuren innerhalb des
 gegebenen Bereichs liegt. Anders als im Fall des Schlüsselworts
-<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> kann <span style='white-space:nowrap;'>:newpiececount</span> nur
+<span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:piececount">:piececount</span></span> : <span style='white-space:nowrap;'>position</span></a> kann <span style='white-space:nowrap;'>:newpiececount</span> nur
 einmalig innerhalb der Relationsliste verwendet werden. Keine diedrische
 Transformation und auch keine Translation in der beinhaltenden Positionsliste
 beeinflußt den Figurenbezeichner dieses Schlüsselworts.
@@ -170,7 +168,7 @@ beeinflußt den Figurenbezeichner dieses Schlüsselworts.
 
 <p>
 Der Standardfigurenbezeichner für <span style='white-space:nowrap;'>:newpiececount</span> ist
-<code><span class='cqlpiece'>&#x25d1;</span></code>, und der Standardbereich ist Null. D.h. standardmäßig darf
+<code><span class='cql' title='Irgendeine Figur'>&#x25d1;</span></code>, und der Standardbereich ist Null. D.h. standardmäßig darf
 es keine zusätzlichen Figuren geben.
 </p>
 

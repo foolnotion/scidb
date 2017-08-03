@@ -19,7 +19,7 @@
   <meta name="generator"
      content="scidb.sourceforge.net" />
   <meta name="description"
-     content="Scidb Help Page" />
+     content="Scidb - Help Page" />
 
   <link rel="icon"
        href="http://scidb.sourceforge.net/favicon.ico"
@@ -29,9 +29,9 @@
   <link rel="stylesheet"
        type="text/css"
       media="screen"
-       href="../styles/help.css" />
+		 href="../styles/help.css" />
 
-  <title>Scidb Hilfe: Datenbankformate</title>
+  <title>Scidb - Hilfe: Datenbankformate</title>
 </head>
 
 <body>
@@ -44,7 +44,7 @@
 Scidb unterstützt folgende Formate:
 </p>
 
-<ul>
+<ul style='list-style-type: none'><li>
   <li>
     <img src="../images/ft-scidb.png" alt="" />
     <a href="#Scidb">Scidb</a>
@@ -65,7 +65,7 @@ Scidb unterstützt folgende Formate:
     <img src="../images/ft-archive.png" alt="" />
     <a href="#Database-Archive">Datenbankarchiv</a>
   </li>
-</ul>
+</li></ul>
 
 <h2 id="Scidb">
 <img src="../images/ft-scidb.png" alt="" />
@@ -114,10 +114,28 @@ Eine Datenbank im Scidb-Format besteht aus mehreren Dateien:
     </tr>
     <tr valign="top">
       <td nowrap="nowrap"><kbd>.scn</kbd></td><td>=&nbsp;</td>
-      <td>Spieler/Ereignis/Ort/Kommentator-Daten</td>
+      <td>Spieler/Ereignis/Ort/Kommentatordaten</td>
+    </tr>
+    <tr valign="top">
+      <td nowrap="nowrap"><kbd>.scr</kbd></td><td>=&nbsp;</td>
+      <td>Verwaltungsdaten für Partienverknüpfungen</td>
+    </tr>
+    <tr valign="top">
+      <td nowrap="nowrap"><kbd>.scj</kbd></td><td>=&nbsp;</td>
+      <td>Piktogrammsatz</td>
     </tr>
   </table>
 </div>
+
+<p>
+Nur die Dateien mit den Endungen .sci, .scg und .scn existieren immer, die anderen nur bei Bedarf.
+</p>
+
+<p>
+Der Piktogrammsatz (.scj) wird angelegt, sobald im Auswahldialog für das Datenbankpiktogramm
+(&#x21d2; <a href="Database-Switcher.html#ChangeIcon">Datenbankumschalter</a>) eigene Bilddateien
+ausgewählt werden.
+</p>
 
 <h2 id="Scid">
 <img src="../images/ft-scid.png" alt="" />
@@ -244,9 +262,9 @@ Das alte Datenbankformat besteht nur aus vier Dateien:
 <p>
 Das <abbr>PGN</abbr>-Format (Portable Game Notation) ist ein verbreiteter Standard zum
 Transfer von Schachpartien. <abbr>PGN</abbr>-Dateien werden im Lesemodus geöffnet,
-können jedoch schreibbar gesetzt werden, sofern die geöffnete Datei Schreibrechte
-besitzt. Bei größeren <abbr>PGN</abbr>-Partiensammlungen wird eine Umwandlung in das
-Scidb-Format empfohlen.
+können jedoch schreibbar gesetzt werden (ausgenommen Zip-Archive; &#x21d2;
+<a href="Write-Protect-Database.html">Schreibschutz einer Datenbank</a>).
+Bei größeren <abbr>PGN</abbr>-Partiensammlungen wird eine Umwandlung in das Scidb-Format empfohlen.
 </p>
 
 <p>

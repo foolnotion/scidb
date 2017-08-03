@@ -60,7 +60,7 @@ set HtmlHead {<head>
   <meta name="generator"
      content="scidb.sourceforge.net" />
   <meta name="description"
-     content="Scidb Help Page" />
+     content="%CONTENT%" />
 
   <link rel="icon"
        href="http://scidb.sourceforge.net/favicon.ico"
@@ -70,10 +70,10 @@ set HtmlHead {<head>
   <link rel="stylesheet"
        type="text/css"
       media="screen"
-       href="../styles/help.css" />
+		 href="%STYLE%" />
 
-  <title>%HELP%: %TITLE%</title>
-</head>
+  <title>%TITLE-PREFIX%: %TITLE%</title>
+%HEAD%</head>
 }
 
 set HtmlH1 {<div class="title">
@@ -106,6 +106,9 @@ set HtmlMapping {
 	<verbatim>		{<div class='box'><pre><code>}
 	</verbatim>		{</code></pre></div>}
 
+	<example>		{<div class='example'><pre>}
+	</example>		{</pre></div>}
+
 	<annotation>	{<div class='annotation'><img src='../images/annotation.png' style='float:left; margin:0 1em 0 0' alt='annotation' />}
 	</annotation>	{</div>}
 
@@ -122,6 +125,9 @@ set HtmlMapping {
 
 	<chess>			{<span class='chess'>}
 	</chess>			</span>
+
+	<awesome>		{<span class='awesome'>}
+	</awesome>		</span>
 
 	<n>				{<span class='normal'>}
 	</n>				</span>
@@ -157,13 +163,19 @@ set HtmlMapping {
 	&n;				{<span class='piece'>&#x265e;</span>}
 	&p;				{<span class='piece'>&#x265f;</span>}
 
-	&A;				{<span class='cqlpiece'>&#x25cb;</span>}
-	&a;				{<span class='cqlpiece'>&#x25cf;</span>}
-	&M;				{<span class='cqlpiece'>&#x25b3;</span>}
-	&m;				{<span class='cqlpiece'>&#x25b2;</span>}
-	&I;				{<span class='cqlpiece'>&#x25bd;</span>}
-	&i;				{<span class='cqlpiece'>&#x25bc;</span>}
-	&U;				{<span class='cqlpiece'>&#x25d1;</span>}
+	&A;				{<span class='cql' title='%::mc::PieceCQL(A)%'>&#x25cb;</span>}
+	&a;				{<span class='cql' title='%::mc::PieceCQL(a)%'>&#x25cf;</span>}
+	&M;				{<span class='cql' title='%::mc::PieceCQL(M)%'>&#x25b3;</span>}
+	&m;				{<span class='cql' title='%::mc::PieceCQL(m)%'>&#x25b2;</span>}
+	&I;				{<span class='cql' title='%::mc::PieceCQL(I)%'>&#x25bd;</span>}
+	&i;				{<span class='cql' title='%::mc::PieceCQL(i)%'>&#x25bc;</span>}
+	&U;				{<span class='cql' title='%::mc::PieceCQL(U)%'>&#x25d1;</span>}
+
+	&L;				{<span class='cql' title='%::mc::SquareCQL(L)%'>&#x25a1;</span>}
+	&D;				{<span class='cql' title='%::mc::SquareCQL(D)%'>&#x25a0;</span>}
+	&H;				+
+
+	fa-external-link-square	{&#xf14c;}
 }
 
 switch [tk windowingsystem] {
@@ -176,6 +188,15 @@ switch [tk windowingsystem] {
 	aqua	{
 		lappend SysMapping <x11> {<!-- } </x11> { -->} <win32> {<!-- } </win32> { -->} <aqua> {} </aqua> {}
 	}
+}
+
+set PieceMapping {
+	K {<span class='piece'>&#x2654;</span>}
+	Q {<span class='piece'>&#x2655;</span>}
+	R {<span class='piece'>&#x2656;</span>}
+	B {<span class='piece'>&#x2657;</span>}
+	N {<span class='piece'>&#x2658;</span>}
+	P {<span class='piece'>&#x2659;</span>}
 }
 
 set f [open ../../../Makefile.in r]
@@ -191,10 +212,32 @@ if {"%scidb%" ni $HtmlMapping} {
 	exit 1
 }
 
-proc print {chan source title body} {
+proc print {chan source title head body} {
 	variable lang
 
-	set headerMap [list %TITLE% $title %HELP% "Scidb $::help::mc::Help" %LANG% $lang]
+	if {[string length $head]} {
+		set content \n
+		foreach line [split [string trim $head] \n] {
+			append content "  " $line \n
+		}
+		set head $content
+	}
+
+	set headerMap [list \
+		%TITLE% $title \
+		%TITLE-PREFIX% "Scidb - $::help::mc::Help" \
+		%LANG% $lang \
+		%CONTENT% "Scidb - Help Page" \
+		%STYLE% "../styles/help.css" \
+		%HEAD% $head
+	]
+
+if {0} {
+	set p [open [list |../scripts/paragraphs.pl << $body] r] 
+	set body ""
+	while {![eof $p]} { append body [gets $p] \n } 
+	close $p
+}
 
 	puts $chan $::HtmlDocType
 	puts $chan "<!-- Generated from $source -->"
@@ -331,11 +374,20 @@ set src [open $srcfile r]
 set charset $charsetName
 chan configure $src -encoding $charset
 set title ""
+set head ""
+set parseHead 0
+set skip 0
 
 readTranslationFile $transFile $nagFile $charsetName
 
 while {[gets $src line] >= 0} {
-	if {[string match TITLE* $line]} {
+	if {$parseHead} {
+		if {$line eq "END"} {
+			set parseHead 0
+		} else {
+			append head $line \n
+		}
+	} elseif {[string match TITLE* $line]} {
 		set title [substituteVariables [getArg $line]]
 		break
 	} elseif {[string match CHARSET* $line]} {
@@ -347,6 +399,8 @@ while {[gets $src line] >= 0} {
 		} else {
 			puts stderr "Error([info script]): DEFINE statement invalid"
 		}
+	} elseif {$line eq "HEAD"} {
+		set parseHead 1
 	}
 }
 
@@ -386,6 +440,74 @@ proc formatPath {path} {
 	return $result
 }
 
+proc parseGameToken {line expr} {
+	variable PieceMapping
+
+	set result ""
+	set comma ""
+
+	foreach tok [split $line " "] {
+		set tok [string trim $tok]
+		if {[string length $tok] > 0} {
+			set tok [string map $PieceMapping $tok]
+			set tok [string map {"O-O-O-O" "0-0-0-0" "O-O-O" "0-0-0" "O-O" "0-0"} $tok]
+			append result $comma
+			if {[string length $expr]} { append result "<$expr>" }
+			append result $tok
+			if {[string length $expr]} { append result "</$expr>" }
+			set comma " "
+		}
+	}
+
+	return $result
+}
+
+proc parseGame {line code expr} {
+	variable insideComment
+
+	set result ""
+	set comma ""
+	set n 0
+
+	if {$insideComment} {
+		set k 0
+	} else {
+		set k [string first "\{" $line]
+	}
+
+	while {$k >= 0} {
+		set insideComment 1
+		set j [string first "\}" $line $n]
+		if {$j == -1} {
+			set j end
+		} else {
+			set insideComment 0
+			incr j -1
+		}
+
+		append result [parseGameToken [string range $line $n [expr {$k - 1}]] $expr]
+		if {[string length $result] > 0} { append result " " }
+		append result "("
+		if {[string length $code]} { append result "<$code>" }
+		append result [string range $line [expr {$k + 1}] $j]
+		append result ")"
+		if {[string length $code]} { append result "</$code>" }
+		set comma " "
+
+		if {$insideComment} {
+			set k -1
+		} else {
+			set n [expr {$j + 2}]
+			set k [string first "\{" $line $n]
+		}
+	}
+
+	append result $comma
+	append result [parseGameToken [string range $line $n end] $expr]
+
+	return $result
+}
+
 proc formatUrl {url} {
 	set i [string first :// $url]
 	if {$i == -1} { return [formatPath $url] }
@@ -395,24 +517,65 @@ proc formatUrl {url} {
 }
 
 proc readContents {chan file} {
+	global argv
 	variable HtmlMapping
 	variable HtmlDefs
 	variable SysMapping
 	variable Pieces
+	variable insideComment
 	variable charset
 	variable lang
 
+	set thisSection ""
 	set contents {}
 	set indices {}
 	set linePref ""
+	set parseGame 0
+	set insideVerbatim 0
+	set insideComment 0
+
+	set s [string tolower [lindex [split [lindex $argv 0] -] 1]]
+	if {$s eq "match" || $s eq "position" || $s eq "relation"} { set thisSection $s }
 
 	while {[gets $chan line] >= 0} {
+		set line [string trimright $line]
 		if {[string match END* $line]} { break }
 
 		if {[string length $linePref]} {
 			append linePref $line
 			set line $linePref
 			set linePref ""
+		}
+
+		if {$insideVerbatim} {
+			set expr "expr"
+			set code "code"
+		} else {
+			set expr ""
+			set code ""
+		}
+
+		if {[string match {*<game>*} $line]} {
+			set insideComment 0
+			set n [string first "<game>" $line]
+			set k [string first "</game>" $line]
+			set newline [string range $line 0 [expr {$n - 1}]]
+			if {$k == -1} {
+				append newline [parseGame [string range $line [expr {$n + 6}] end] $code $expr]
+				set parseGame 1
+			} else {
+				append newline [parseGame [string range $line [expr {$n + 6}] [expr {$k - 1}]] $code $expr]
+				append newline [string range $line [expr {$k + 7}] end]
+			}
+			set line $newline
+		} elseif {[string match {*</game>*} $line]} {
+			set n [string first "</game>" $line]
+			set newline [parseGame [string range $line 0 [expr {$n - 1}]] $code $expr]
+			append newline [string range $line [expr {$n + 7}] end]
+			set line $newline
+			set parseGame 0
+		} elseif {$parseGame} {
+			set line [parseGame $line $code $expr]
 		}
 
 		if {[string match *verbatim>* $line]} {
@@ -427,6 +590,25 @@ proc readContents {chan file} {
 				append s $line
 				set line $s
 			}
+		}
+
+		if {[string match *<verbatim>* $line] || [string match *<verb>* $line]} {
+			set insideVerbatim 1
+		}
+
+		while {[regexp -indices {<furtherinfo href=.*/>} $line location]} {
+			lassign $location i k
+			set file [string trim [string range $line [expr {$i + 18}] [expr {$k - 2}]]]
+			set file [string trim [string range $file 1 end-1]]
+#			set content "<div style='text-align: center'>\n"
+#			append content "  <div embed='$file'>\n"
+#			append content "  </div>\n"
+#			append content "</div>"
+			set content "<p><a href='$file'>$::tips::mc::FurtherInformation...</a></p>\n"
+			set newline [string range $line 0 [expr {$i - 1}]]
+			append newline $content
+			append newline [string range $line [expr {$k + 1}] end]
+			set line $newline
 		}
 
 		while {[regexp -indices {<url>.*</url>} $line location]} {
@@ -444,14 +626,46 @@ proc readContents {chan file} {
 			set newline [string range $line 0 [expr {$i - 1}]]
 			if {[string index $keyword 0] == ":"} {
 				append newline "<nobr>$keyword</nobr>"
+			} elseif {[string index $keyword 0] == "!" && [string index $keyword 1] == ":"} {
+				append newline "<nobr>$keyword</nobr>"
 			} else {
 				set parts [split $keyword :]
 				set section [lindex $parts 0]
+				set exclamationMark ""
+				if {[string index $section 0] == "!"} {
+					set exclamationMark "!"
+					set section [string range $section 1 end]
+				}
 				set keyword [string trim [lindex [split [lindex $parts 1] " "] 0]]
 				set text [join [lrange $parts 1 end] ":"]
 				set Section [string toupper $section 0 0]
-				append newline "<a href=\"CQL-$Section-List.html#$section:$keyword\"><nobr>:$text</nobr></a>"
+				set href [string map {* _} $keyword]
+				append newline \
+					"<nobr>$exclamationMark<a href=\"CQL-$Section-List.html#$section:$href\">:$text</nobr>"
+				if {!$insideVerbatim && [string length $thisSection] && $section ne $thisSection} {
+					append newline "</nobr> : <nobr>$section</nobr>"
+				}
+				append newline "</a>"
 			}
+			append newline [string range $line [expr {$k + 1}] end]
+			set line $newline
+		}
+
+		if {[string match *</verbatim>* $line] || [string match *</verb>* $line]} {
+			set insideVerbatim 0
+		}
+
+		while {[regexp -indices {<keyword>[^/]*</keyword>} $line location]} {
+			lassign $location i k
+			set keyword [string trim [string range $line [expr {$i + 9}] [expr {$k - 10}]]]
+			set exclamationMark ""
+			if {[string index $keyword 0] == "!"} {
+				set exclamationMark "!"
+				set keyword [string range $keyword 1 end]
+			}
+			set newline [string range $line 0 [expr {$i - 1}]]
+			set keyword ":[lindex [split $keyword :] 1]"
+			append newline "<nobr>$exclamationMark<span class='keyword'>$keyword</span></nobr>"
 			append newline [string range $line [expr {$k + 1}] end]
 			set line $newline
 		}
@@ -503,6 +717,15 @@ proc readContents {chan file} {
 				append newline [string range $line [expr {$e + 1}] end]
 				set line $newline
 			}
+			while {[regexp -indices {<a[^>]*href=.mailto[^>]*()>[^<]*</a>} $line indices inspos]} {
+				lassign $indices s e; lassign $inspos f l
+				set newline [string range $line 0 $l]
+				append newline " target=\"blank_\""
+				append newline [string range $line $f [expr {$e - 4}]]
+				append newline "&nbsp;<span class=\"awesome\">&#xf112;</span></a>"
+				append newline [string range $line [expr {$e + 1}] end]
+				set line $newline
+			}
 			set indices {}
 			regexp -indices -start $e {<a[^>]*href=.http} $line indices
 			if {[llength $indices] == 0} {
@@ -513,7 +736,7 @@ proc readContents {chan file} {
 			}
 		}
 
-		while {[regexp {<key>([a-zA-Z0-9%:\(\)-]*)</key>} $line _ key]} {
+		while {[regexp {<key>([a-zA-Z0-9\&%#:;\(\)_-]+)</key>} $line _ key]} {
 			switch $key {
 				King		{ set expr "<kbd class='key'>[lindex $Pieces($lang) 0]</kbd>" }
 				Queen		{ set expr "<kbd class='key'>[lindex $Pieces($lang) 1]</kbd>" }
@@ -523,7 +746,7 @@ proc readContents {chan file} {
 				Pawn		{ set expr "<kbd class='key'>[lindex $Pieces($lang) 5]</kbd>" }
 
 				default {
-					if {[string length $key] == 1 || [string index $key 0] == "%"} {
+					if {[string length $key] == 1 || [string index $key 0] in {"%" "&"}} {
 						set expr "<kbd class='key'>$key</kbd>"
 					} elseif {[regexp {F[0-9][0-9]?} $key]} {
 						set expr "<kbd class='key'>$key</kbd>"
@@ -533,6 +756,7 @@ proc readContents {chan file} {
 				}
 			}
 			set key [string map {( "\\(" ) "\\)"} $key]
+			regsub -all -- {[&]} $expr {\\\0} expr
 			set line [regsub -all "<key>$key</key>" $line $expr]
 		}
 
@@ -580,6 +804,7 @@ proc processContents {contents} {
 	variable charset
 
 	set indices {}
+	set skip 0
 
 	foreach line $contents {
 		if {[string match {INCLUDE *} $line]} {
@@ -600,7 +825,11 @@ proc processContents {contents} {
 				exit 1
 			}
 			processContents [readContents $inc $f]
-		} else {
+		} elseif {[string match EXCLUDE-BEGIN* $line]} {
+			set skip 1
+		} elseif {[string match EXCLUDE-END* $line]} {
+			set skip 0
+		} elseif {!$skip} {
 			lappend body [substituteVariables $line]
 		}
 	}
@@ -611,11 +840,11 @@ processContents [readContents $src [info script]]
 
 if {[string length $dstfile] == 0} {
 	fconfigure stdout -encoding utf-8
-	print stdout [file join tcl help $lang $srcfile] $title $body
+	print stdout [file join tcl help $lang $srcfile] $title $head $body
 } else {
 	set dst [open $dstfile w]
 	fconfigure $dst -encoding utf-8
-	print $dst [file join tcl help $lang $srcfile] $title $body
+	print $dst [file join tcl help $lang $srcfile] $title $head $body
 	close $dst
 }
 

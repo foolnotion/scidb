@@ -19,7 +19,7 @@
   <meta name="generator"
      content="scidb.sourceforge.net" />
   <meta name="description"
-     content="Scidb Help Page" />
+     content="Scidb - Help Page" />
 
   <link rel="icon"
        href="http://scidb.sourceforge.net/favicon.ico"
@@ -29,9 +29,9 @@
   <link rel="stylesheet"
        type="text/css"
       media="screen"
-       href="../styles/help.css" />
+		 href="../styles/help.css" />
 
-  <title>Scidb Help: CQL - Square designators</title>
+  <title>Scidb - Help: CQL - Square designators</title>
 </head>
 
 <body>
@@ -61,6 +61,16 @@ For example: the piece designator <span style='white-space:nowrap;'><code><span 
 designator denoting the square b3, and denotes a black bishop on b3.
 </p>
 
+<p>
+There is also a special square designator (not belonging to the CQL standard):
+<span style='white-space:nowrap;'><code><span class='cql' title='Light squares'>&#x25a1;</span></code></span> as character for the files is designating all light-squared
+fields on the files a through h. Accordingly <span style='white-space:nowrap;'><code><span class='cql' title='Dark squares'>&#x25a0;</span></code></span> is designating
+all dark-squared fields on these lines. <span style='white-space:nowrap;'><code><span class='cql' title='Light squares'>&#x25a1;</span></code></span> and <span style='white-space:nowrap;'><code><span class='cql' title='Dark squares'>&#x25a0;</span></code></span>
+can also be used for the designation of the ranks. But it is not allowed to use
+this special square designator both for lines and ranks, this means for example
+that <span style='white-space:nowrap;'><code><span class='cql' title='Dark squares'>&#x25a0;</span><span class='cql' title='Dark squares'>&#x25a0;</span></code></span> is not allowed.
+</p>
+
 <h2 id="compound">Compound square designators</h2>
 
 <p>
@@ -80,6 +90,17 @@ constituent square designators.
 
 <p>
 Any compound square designator not contained in brackets must be contained in brackets.
+</p>
+
+<p>
+Drop Chess, and Bughouse Chess:
+a further special square designator exists (not belonging to CQL standard);
+the backhand &ndash; the place of the captured pieces &ndash; will be designated
+with <span style='white-space:nowrap;'><code>[+]</code></span>. Note that the designation <span style='white-space:nowrap;'><code>??</code></span>, as well as the
+empty square designator, does not include the backhand. To designate all squares
+inclusive the backhand the shortcut <span style='white-space:nowrap;'><code>[*]</code></span> is allowed. The notation with
+backhand is also possible in other chess variants, in this way a skript can be
+written for all chess variants altogether.
 </p>
 
 <h3>Examples of compound square designators</h3>
@@ -106,6 +127,29 @@ Any compound square designator not contained in brackets must be contained in br
     <td class="right">denotes the first two ranks plus a8 and h8.</td>
   </tr>
   <tr valign="top">
+    <td class="left"><span style='white-space:nowrap;'><code>[<span class='cql' title='Light squares'>&#x25a1;</span>?]</code></span></td>
+    <td class="right">denotes all light-squares fields.</td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="left"><span style='white-space:nowrap;'><code>[<span class='cql' title='Dark squares'>&#x25a0;</span>1]</code></span></td>
+    <td class="right">denotes all dark-squares fields on the first rank.</td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><span style='white-space:nowrap;'><code>[+]</code></span></td>
+     <td class="right">denotes the backhand
+       (Drop Chess, Bughouse Chess).</td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="left"><span style='white-space:nowrap;'><code>[+,a1]</code></span></td>
+     <td class="right">denotes the backhand and square a1
+       (Drop Chess, Bughouse Chess).</td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><span style='white-space:nowrap;'><code>[*]</code></span></td>
+     <td class="right">denotes alle squares inclusive the backhand
+       (Drop Chess, Bughouse Chess).</td>
+  </tr>
+  <tr valign="top" class="stripes">
     <td class="left"><span style='white-space:nowrap;'><code>[&thinsp;]</code></span></td>
     <td class="right">denotes no squares at all. This is very different from the empty
         square designator, which designates all squares.</td>
@@ -116,27 +160,50 @@ Any compound square designator not contained in brackets must be contained in br
 
 <table class="stripes">
   <tr valign="top" class="stripes">
-    <td class="left"><span style='white-space:nowrap;'><code><span class='cqlpiece'>&#x25bd;</span>a1</code></span></td>
-    <td class="right">denotes a white minor piece on a1. It will match any position
-        with a white bishop or white knight on a1.</td>
+    <td class="left"><span style='white-space:nowrap;'><code><span class='cql' title='White minor piece'>&#x25bd;</span>a1</code></span></td>
+    <td class="right">
+      denotes a white minor piece on a1. It will match any position
+      with a white bishop or white knight on a1.
+    </td>
   </tr>
   <tr valign="top">
     <td class="left"><span style='white-space:nowrap;'><code><span class='piece'>&#x2656;</span>[a-h1-2]</code></span></td>
-    <td class="right">will match any position with a white rook on the first two ranks.</td>
+    <td class="right">
+      will match any position with a white rook on the first two ranks.
+    </td>
   </tr>
   <tr valign="top" class="stripes">
-    <td class="left"><span style='white-space:nowrap;'><code>[<span class='cqlpiece'>&#x25cb;</span><span class='piece'>&#x265c;</span>][a-h1-2,a8,h8]</code></span></td>
-    <td class="right">will match any position that has a white piece or a black rook on
-        the first two ranks or the corners.</td>
+    <td class="left"><span style='white-space:nowrap;'><code>[<span class='cql' title='Any white piece'>&#x25cb;</span><span class='piece'>&#x265c;</span>][a-h1-2,a8,h8]</code></span></td>
+    <td class="right">
+      will match any position that has a white piece or a black rook on
+      the first two ranks or the corners.
+    </td>
   </tr>
   <tr valign="top">
     <td class="left"><span style='white-space:nowrap;'><code>[<span class='piece'>&#x2656;</span><span class='piece'>&#x2657;</span><span class='piece'>&#x2658;</span><span class='piece'>&#x2655;</span><span class='piece'>&#x2659;</span>][a1,h1,a8,h8]</code></span></td>
-    <td class="right">will match any position with a white non-king piece at the corners.</td>
+    <td class="right">
+      will match any position with a white non-king piece at the corners.
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="left"><span style='white-space:nowrap;'><code>[<span class='piece'>&#x2657;</span><span class='piece'>&#x265d;</span>]<span class='cql' title='Light squares'>&#x25a1;</span>?</code></span></td>
+    <td class="right">
+      will match any positions with a light-squares bishop.
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><span style='white-space:nowrap;'><code><span class='piece'>&#x2658;</span>[+]</code></span></td>
+    <td class="right">
+      denotes a white knight in the backhand
+      (Drop Chess, Bughouse Chess).
+    </td>
   </tr>
   <tr valign="top" class="stripes">
     <td class="left"><span style='white-space:nowrap;'><code><span class='piece'>&#x2657;</span>[&thinsp;]</code></span></td>
-    <td class="right">denotes a white bishop on an empty set of squares. This can never match
-        any position of course.</td>
+    <td class="right">
+      denotes a white bishop on an empty set of squares. This can never match
+      any position of course.
+    </td>
   </tr>
 </table>
 

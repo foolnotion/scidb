@@ -19,7 +19,7 @@
   <meta name="generator"
      content="scidb.sourceforge.net" />
   <meta name="description"
-     content="Scidb Help Page" />
+     content="Scidb - Help Page" />
 
   <link rel="icon"
        href="http://scidb.sourceforge.net/favicon.ico"
@@ -29,9 +29,9 @@
   <link rel="stylesheet"
        type="text/css"
       media="screen"
-       href="../styles/help.css" />
+		 href="../styles/help.css" />
 
-  <title>Scidb Help: CQL - Range specifiers</title>
+  <title>Scidb - Help: CQL - Range specifiers</title>
 </head>
 
 <body>
@@ -42,60 +42,71 @@
 
 <p>
 Many keyword options are followed by optional range specifiers. A range
-specifier consists of either a single integer or two integers separated
-by whitespace.
+specifier either consists of a single integer, optionally prefixed by a
+comparative operator, or two integers (without comparative operators)
+separated by whitespace.
 </p>
 
 <p>
-If a range specifier has one integer, it denotes that integer. Otherwise
-it denotes all the integers between its first and second integers inclusive.
+In case of two integers the range between the integers (inclusive this
+values) will denote the specified range. If only one value is given
+this denotes the range. If this single integer is prefixed by a comparative
+operator, a range will be specified which is open at one boundary:
+</p>
+
+<div class='box'>
+<table>
+  <tr><td><span style='white-space:nowrap;'><code>&gt;</code></span></td>  <td></td> <td>More than</td></tr>
+  <tr><td><span style='white-space:nowrap;'><code>&gt;=</code></span></td> <td></td> <td>At least</td></tr>
+  <tr><td><span style='white-space:nowrap;'><code>&lt;</code></span></td>  <td></td> <td>Less than</td></tr>
+  <tr><td><span style='white-space:nowrap;'><code>&lt;=</code></span></td> <td></td> <td>At most</td></tr>
+</table>
+</div>
+
+<p><img src='../images/note.png' alt='note' /> 
+The form with preceding comparative operator is not part of the CQL standard.
 </p>
 
 <p>
-A special meaning has the value <i>unlimited</i>. If <i>unlimited</i> is a
-single argument, the range is completely unlimited, this means all
-values are included. If the lower range is <i>unlimited</i>, the meaning
-is negative unlimited. If the upper range is <i>unlimited</i>, the meaning is
-positive unlimited.
+Furthermore there are two special values defined: <span style='white-space:nowrap;'><code>&ndash;</code></span> is
+defining an empty range, and <span style='white-space:nowrap;'><code>*</code></span> is defining an arbitrary
+value (this means a range which is unlimited at both boundaries).
+But these special values are nor applicable in every query, it depends
+on the query whether it is permitted to use it (in most cases when
+searching for game information, but in general not when searching for
+positions).
 </p>
 
 <p><img src='../images/note.png' alt='note' /> 
-The special range <i>unlimited</i> is not part of the CQL standard.
+The special ranges <span style='white-space:nowrap;'><code>&ndash;</code></span> and <span style='white-space:nowrap;'><code>*</code></span> are not part of
+the CQL standard.
 </p>
-
-<div class='annotation'><img src='../images/annotation.png' style='float:left; margin:0 1em 0 0' alt='annotation' />
-The use of <i>unlimited</i> (inside the range specifier) instead of an
-arbitry chosen value, which also only is signalising infinity, allows
-the search algorithm optimisations, and this may result in a considerably
-faster search.
-</div>
 
 <h2>Examples</h2>
 
 <p>
-The match list can have a <span style='white-space:nowrap;'>:year</span> keyword denoting the range of
-years in which the game in question must lie in order for a match to occur.
+In following examples ranges will be used for year specifications,
+e.g. to find games within a certain year range.
 </p>
 
 <div class='verb'><code>
-<a href="CQL-Match-List.html#match:year"><span style='white-space:nowrap;'>:year</span></a> 1934
+1934
 </code></div>
 
 <p>
-Denotes the year 1934. <code>1934</code> is the range specifier.
+Denotes the year 1934.
 </p>
 
 <div class='verb'><code>
-<a href="CQL-Match-List.html#match:year"><span style='white-space:nowrap;'>:year</span></a> 1934 2000
+1934 2000
 </code></div>
 
 <p>
-Denotes the years between 1934 and 2000 inclusive. The range specifier is
-<code>1934</code> <code>2000</code>.
+Denotes the years between 1934 and 2000 inclusive.
 </p>
 
 <div class='verb'><code>
-<a href="CQL-Match-List.html#match:year"><span style='white-space:nowrap;'>:year</span></a> 1934 unlimited
+&gt;=1934
 </code></div>
 
 <p>
@@ -103,7 +114,7 @@ Denotes all the years after 1933.
 </p>
 
 <div class='verb'><code>
-<a href="CQL-Match-List.html#match:year"><span style='white-space:nowrap;'>:year</span></a> unlimited 1934
+&lt;1935
 </code></div>
 
 <p>
@@ -111,11 +122,20 @@ Denotes all the years before 1935.
 </p>
 
 <div class='verb'><code>
-<a href="CQL-Match-List.html#match:elo"><span style='white-space:nowrap;'>:elo</span></a> unlimited
+*
 </code></div>
 
 <p>
-Match all games where one player has an ELO rating.
+Find all games having any game date, this is excluding games not having
+a game date.
+</p>
+
+<div class='verb'><code>
+&ndash;
+</code></div>
+
+<p>
+Find all games not having a game date.
 </p>
 
 </body>

@@ -19,7 +19,7 @@
   <meta name="generator"
      content="scidb.sourceforge.net" />
   <meta name="description"
-     content="Scidb Help Page" />
+     content="Scidb - Help Page" />
 
   <link rel="icon"
        href="http://scidb.sourceforge.net/favicon.ico"
@@ -29,9 +29,9 @@
   <link rel="stylesheet"
        type="text/css"
       media="screen"
-       href="../styles/help.css" />
+		 href="../styles/help.css" />
 
-  <title>Scidb Hilfe: CQL - Transformationen</title>
+  <title>Scidb - Hilfe: CQL - Transformationen</title>
 </head>
 
 <body>
@@ -73,8 +73,8 @@ Hauptdiagonalen.
 </table>
 
 <p>
-Beispielsweise ist die diagonale Spiegelung von <span style='white-space:nowrap;'><code>[<span class='cqlpiece'>&#x25cb;</span><span class='cqlpiece'>&#x25cf;</span>][a-h1-2,f6,h7]</code></span>
-gleich <span style='white-space:nowrap;'><code>[<span class='cqlpiece'>&#x25cb;</span><span class='cqlpiece'>&#x25cf;</span>][a-b1-8,f6,g8]</code></span>.
+Beispielsweise ist die diagonale Spiegelung von <span style='white-space:nowrap;'><code>[<span class='cql' title='Beliebige weiße Figur'>&#x25cb;</span><span class='cql' title='Beliebige schwarze Figur'>&#x25cf;</span>][a-h1-2,f6,h7]</code></span>
+gleich <span style='white-space:nowrap;'><code>[<span class='cql' title='Beliebige weiße Figur'>&#x25cb;</span><span class='cql' title='Beliebige schwarze Figur'>&#x25cf;</span>][a-b1-8,f6,g8]</code></span>.
 </p>
 
 <p>
@@ -108,8 +108,8 @@ Reihe.
 Eine <b>vertikale Spiegelungstransformation</b>, angewendet auf einen
 Figurenbezeichner, reflektiert jedes Feld auf das Feld gegenüber der
 vertikalen Halbierungslinie des Schachbretts. Beispielsweise ist die vertikale
-Spiegelung von <span style='white-space:nowrap;'><code><span class='cqlpiece'>&#x25d1;</span>f6</code></span>, kennzeichnend eine Figur auf f6, gleich
-<span style='white-space:nowrap;'><code><span class='cqlpiece'>&#x25d1;</span>c6</code></span>.
+Spiegelung von <span style='white-space:nowrap;'><code><span class='cql' title='Irgendeine Figur'>&#x25d1;</span>f6</code></span>, kennzeichnend eine Figur auf f6, gleich
+<span style='white-space:nowrap;'><code><span class='cql' title='Irgendeine Figur'>&#x25d1;</span>c6</code></span>.
 </p>
 
 <table width="100%" border="0">
@@ -129,7 +129,7 @@ Spiegelung von <span style='white-space:nowrap;'><code><span class='cqlpiece'>&#
 Eine <b>horizontale Spiegelungstransformation</b>, angewendet auf einen
 Figurenbezeichner, reflektiert jedes Feld auf das Feld gegenüber der
 horizontalen Halbierungslinie des Schachbretts. Beispielsweise ist die horizontale
-Spiegelung von <span style='white-space:nowrap;'><code><span class='cqlpiece'>&#x25d1;</span>f6</code></span> gleich <span style='white-space:nowrap;'><code><span class='cqlpiece'>&#x25d1;</span>f3</code></span>.
+Spiegelung von <span style='white-space:nowrap;'><code><span class='cql' title='Irgendeine Figur'>&#x25d1;</span>f6</code></span> gleich <span style='white-space:nowrap;'><code><span class='cql' title='Irgendeine Figur'>&#x25d1;</span>f3</code></span>.
 </p>
 
 <table width="100%" border="0">
@@ -150,7 +150,7 @@ Eine <b>diedrische Transformation</b>, angewendet auf einen Figurenbezeichner,
 ist eine Spiegelungstransformation gefolgt von einer Spiegelungstransformation
 oder der identischen Transformation (es können statt der ersten
 Spiegelungstransformation auch Rotationen von 90, 180, oder 270 Grad eingesetzt
-werden).  Es gibt 8 unterscheidbare diedrische Transformationen des
+werden).  Es gibt acht unterscheidbare diedrische Transformationen des
 Schachbretts.  Beispielsweise ist das Resultat einer Anwendung aller
 diedrischen Transformationen auf den Figurenbezeichner
 <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>c2</code></span> die Menge der 8 Figurenbezeichner <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>c2</code></span>,
@@ -167,14 +167,14 @@ diedrischen Transformationen auf den Figurenbezeichner
   <tr>
     <td align="center">
       Diedrische Transformationen von <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>c2</code></span>, beispielsweise:<br/>
-      diagonale Spiegelung + diagonale Spiegelung (nach c2)<br/>
-      diagonale Spiegelung + identische Transformation (nach b3)<br/>
-      diagonale Spiegelung + horizontale Spiegelung (nach b6)<br/>
-      horizontale Spiegelung + identische Transformation (nach c7)<br/>
-      horizontale Spiegelung + vertikale Spiegelung (nach f7)<br/>
-      gegendiagonale Spiegelung + identische Transformation (nach g6)<br/>
-      gegendiagonale Spiegelung + horizontale Spiegelung (nach g3)<br/>
-      vertikale Spiegelung + identische Transformation (nach f2)<br/>
+      diagonale Spiegelung (via b3) + diagonale Spiegelung (nach c2)<br/>
+      diagonale Spiegelung (via b3) + identische Transformation (nach b3)<br/>
+      diagonale Spiegelung (via b3) + horizontale Spiegelung (nach b6)<br/>
+      horizontale Spiegelung (via c7) + identische Transformation (nach c7)<br/>
+      horizontale Spiegelung (via c7) + vertikale Spiegelung (nach f7)<br/>
+      gegendiagonale Spiegelung (via g6) + identische Transformation (nach g6)<br/>
+      gegendiagonale Spiegelung (via g6) + horizontale Spiegelung (nach g3)<br/>
+      vertikale Spiegelung (via f2) + identische Transformation (nach f2)<br/>
     </td>
   </tr>
 </table>
@@ -215,7 +215,7 @@ Rechtswärtstransformation auf <span style='white-space:nowrap;'><code><span cla
 
 <p>
 Die Definitionen der <b>Linkswärtstransformation</b>,
-<b>Hochwärtstransformation</b>, und <b>Runterwärtstransformation</b> sind
+<b>Hochwärtstransformation</b> und <b>Runterwärtstransformation</b> sind
 entsprechend.
 </p>
 
@@ -257,7 +257,7 @@ c2 oder a2, ergibt die Menge <span style='white-space:nowrap;'><code>[<span clas
 Bestimmte Schlüsselwörter in einer Positionsliste spezifizieren, daß die
 Positionsliste eine Position filtert, wenn eine transformierte
 Positionsliste die Position gefiltert hat. Beispielsweise spezifiziert
-das Schlüsselwort <a href="CQL-Position-List.html#position:fliphorizontal"><span style='white-space:nowrap;'>:fliphorizontal</span></a>, daß die Positionsliste
+das Schlüsselwort <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:fliphorizontal">:fliphorizontal</span></a>, daß die Positionsliste
 dann eine Position filtert, wenn entweder die Ursprungspositionsliste diese
 Position filtert, oder wenn eine an der horizontalen Halbierungslinie
 gespiegelte Positionsliste diese Position filtert.
@@ -269,9 +269,9 @@ auf alle in der Positionsliste enthaltenen Figurenbezeichner angewendet
 wird, und rekursiv eine Anwendungen dieser Transformation auch auf jede andere
 enthaltene Positionsliste erfolgt. Ist die Transformation eine
 Farbwechseltransformation, dann werden auch alle Schlüsselwörter
-<a href="CQL-Position-List.html#position:btm"><span style='white-space:nowrap;'>:btm</span></a> und <a href="CQL-Position-List.html#position:wtm"><span style='white-space:nowrap;'>:wtm</span></a> gegeneinander
+<span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:btm">:btm</span></a> und <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:wtm">:wtm</span></a> gegeneinander
 ausgetauscht. Weiterhin werden alle Argumente des Schlüsselwortes
-<a href="CQL-Position-List.html#position:result"><span style='white-space:nowrap;'>:result</span></a> enstprechend gedreht.
+<span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:result">:result</span></a> enstprechend gedreht.
 </p>
 
 <p>
@@ -279,7 +279,7 @@ Als Beispiel betrachten wir die Positionsliste
 </p>
 
 <div class='verb'><code>
-(position <span class='piece'>&#x2656;</span>c2 <span class='piece'>&#x2657;</span>h8 <a href="CQL-Position-List.html#position:wtm"><span style='white-space:nowrap;'>:wtm</span></a>)
+(position <span class='piece'>&#x2656;</span>c2 <span class='piece'>&#x2657;</span>h8 <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:wtm">:wtm</span></a>)
 </code></div>
 
 <p>
@@ -289,7 +289,7 @@ Linkswärtstransformation auf diese Positionsliste ist diese neue Positionsliste
 </p>
 
 <div class='verb'><code>
-(position <span class='piece'>&#x2656;</span>b2 <span class='piece'>&#x2657;</span>g8 <a href="CQL-Position-List.html#position:wtm"><span style='white-space:nowrap;'>:wtm</span></a>)
+(position <span class='piece'>&#x2656;</span>b2 <span class='piece'>&#x2657;</span>g8 <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:wtm">:wtm</span></a>)
 </code></div>
 
 <p>
@@ -303,7 +303,7 @@ auf diese Positionsliste die neue Liste:
 </p>
 
 <div class='verb'><code>
-(position <span class='piece'>&#x2656;</span>b8 <span class='piece'>&#x2657;</span>g1 <a href="CQL-Position-List.html#position:wtm"><span style='white-space:nowrap;'>:wtm</span></a>)
+(position <span class='piece'>&#x2656;</span>b8 <span class='piece'>&#x2657;</span>g1 <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:wtm">:wtm</span></a>)
 </code></div>
 
 <p>
@@ -311,7 +311,7 @@ Das Resultat einer Farbwechseltransformation auf
 </p>
 
 <div class='verb'><code>
-(position <span class='piece'>&#x2656;</span>b2 <span class='piece'>&#x2657;</span>g8 <a href="CQL-Position-List.html#position:wtm"><span style='white-space:nowrap;'>:wtm</span></a>)
+(position <span class='piece'>&#x2656;</span>b2 <span class='piece'>&#x2657;</span>g8 <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:wtm">:wtm</span></a>)
 </code></div>
 
 <p>
@@ -319,11 +319,11 @@ ist folglich
 </p>
 
 <div class='verb'><code>
-(position <span class='piece'>&#x2656;</span>b8 <span class='piece'>&#x2657;</span>g1 <a href="CQL-Position-List.html#position:btm"><span style='white-space:nowrap;'>:btm</span></a>)
+(position <span class='piece'>&#x2656;</span>b8 <span class='piece'>&#x2657;</span>g1 <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:btm">:btm</span></a>)
 </code></div>
 
 <p>
-Zur Erinnerung: Verschiebungen wiRKen in spezieller Weise mit einigen
+Zur Erinnerung: Verschiebungen wirken in spezieller Weise mit einigen
 Randfeldern. Beispielsweise das Resultat der Anwendung einer
 einstelligen Hochwärtstransformation auf folgende Positionsliste
 </p>
@@ -366,12 +366,12 @@ Transformationsschlüsselwörter</a>.
 
 <p>
 Diese Positionsliste filtert jede Position mit einem weißen Turn auf c3, und
-einer schwarzen Dame auf g3. Wir können das Schlüsselwort :shifthorizontal 
+einer schwarzen Dame auf g3. Wir können das Schlüsselwort :shifthorizontal
 hinzufügen:
 </p>
 
 <div class='verb'><code>
-(position <span class='piece'>&#x2656;</span>c3 <span class='piece'>&#x265b;</span>g3 <span class='keyword'>:shifthorizontal</span>)
+(position <span class='piece'>&#x2656;</span>c3 <span class='piece'>&#x265b;</span>g3 <span style='white-space:nowrap;'><span class='keyword'>:shifthorizontal</span></span>)
 </code></div>
 
 <p>
@@ -392,7 +392,7 @@ Felder links von der schwarzen Dame steht.
 </p>
 
 <div class='verb'><code>
-(position <span class='piece'>&#x2656;</span>c3 <span class='piece'>&#x265b;</span>g3 <span class='keyword'>:shiftvertical</span>)
+(position <span class='piece'>&#x2656;</span>c3 <span class='piece'>&#x265b;</span>g3 <span style='white-space:nowrap;'><span class='keyword'>:shiftvertical</span></span>)
 </code></div>
 
 <p>
@@ -402,7 +402,7 @@ und der Turm auf der c-Linie steht, und die Dame auf der g-Linie.
 </p>
 
 <div class='verb'><code>
-(position <span class='piece'>&#x2656;</span>c3 <span class='piece'>&#x265b;</span>g3 <span class='keyword'>:shift</span>)
+(position <span class='piece'>&#x2656;</span>c3 <span class='piece'>&#x265b;</span>g3 <span style='white-space:nowrap;'><span class='keyword'>:shift</span></span>)
 </code></div>
 
 <p>
@@ -412,7 +412,7 @@ der schwarzen Dame steht.
 </p>
 
 <div class='verb'><code>
-(position <span class='piece'>&#x2656;</span>c3 <span class='piece'>&#x265b;</span>g3 <span class='keyword'>:fliphorizontal</span>)
+(position <span class='piece'>&#x2656;</span>c3 <span class='piece'>&#x265b;</span>g3 <span style='white-space:nowrap;'><span class='keyword'>:fliphorizontal</span></span>)
 </code></div>
 
 <p>
@@ -422,7 +422,7 @@ eine schwarze Dame auf g6.
 </p>
 
 <div class='verb'><code>
-(position <span class='piece'>&#x2656;</span>c3 <span class='piece'>&#x265b;</span>g3 <span class='keyword'>:flipdiagonal</span>)
+(position <span class='piece'>&#x2656;</span>c3 <span class='piece'>&#x265b;</span>g3 <span style='white-space:nowrap;'><span class='keyword'>:flipdiagonal</span></span>)
 </code></div>
 
 <p>
@@ -432,7 +432,7 @@ eine schwarze Dame auf c7.
 </p>
 
 <div class='verb'><code>
-(position <span class='piece'>&#x2656;</span>c3 <span class='piece'>&#x265b;</span>g3 <span class='keyword'>:flip</span>)
+(position <span class='piece'>&#x2656;</span>c3 <span class='piece'>&#x265b;</span>g3 <span style='white-space:nowrap;'><span class='keyword'>:flip</span></span>)
 </code></div>
 
 <p>
@@ -441,7 +441,7 @@ einem weißen Bauern auf der c-Linie steht.
 </p>
 
 <div class='verb'><code>
-(position <span class='piece'>&#x2659;</span>c2 <span class='piece'>&#x2656;</span>c1 <span class='keyword'>:shiftvertical</span>)
+(position <span class='piece'>&#x2659;</span>c2 <span class='piece'>&#x2656;</span>c1 <span style='white-space:nowrap;'><span class='keyword'>:shiftvertical</span></span>)
 </code></div>
 
 <p>
@@ -456,7 +456,7 @@ aud der gleichen Linie steht, verwenden wir:
 </p>
 
 <div class='verb'><code>
-(position <span class='piece'>&#x2659;</span>c2 <span class='piece'>&#x2656;</span>c1 <span class='keyword'>:shift</span>)
+(position <span class='piece'>&#x2659;</span>c2 <span class='piece'>&#x2656;</span>c1 <span style='white-space:nowrap;'><span class='keyword'>:shift</span></span>)
 </code></div>
 
 <h2 id="multiple">Mehrfachtransformationsschlüsselwörter</h2>
@@ -477,7 +477,7 @@ Beispiel: die Positionsliste
 </p>
 
 <div class='verb'><code>
-(position <span class='piece'>&#x2658;</span>d4 <span class='piece'>&#x265a;</span>f3 <span class='keyword'>:shift</span> <span class='keyword'>:flip</span>)
+(position <span class='piece'>&#x2658;</span>d4 <span class='piece'>&#x265a;</span>f3 <span style='white-space:nowrap;'><span class='keyword'>:shift</span></span> <span style='white-space:nowrap;'><span class='keyword'>:flip</span></span>)
 </code></div>
 
 <p>
@@ -486,7 +486,7 @@ angreift, während
 </p>
 
 <div class='verb'><code>
-(position <span class='piece'>&#x2658;</span>d4 <span class='piece'>&#x265a;</span>f3 <span class='keyword'>:shift</span> <span class='keyword'>:flip</span> <span class='keyword'>:flipcolor</span>)
+(position <span class='piece'>&#x2658;</span>d4 <span class='piece'>&#x265a;</span>f3 <span style='white-space:nowrap;'><span class='keyword'>:shift</span></span> <span style='white-space:nowrap;'><span class='keyword'>:flip</span></span> <span style='white-space:nowrap;'><span class='keyword'>:flipcolor</span></span>)
 </code></div>
 
 <p>
@@ -498,7 +498,7 @@ Das letzte Beispiel kann jedoch effizienter formuliert werden kann:
 </p>
 
 <div class='verb'><code>
-(position <a href="CQL-Position-List.html#position:attackcount"><span style='white-space:nowrap;'>:attackcount</span></a> <span class='piece'>&#x2658;</span> <span class='piece'>&#x265a;</span> 1 unlimited <span class='keyword'>:flipcolor</span>)
+(position <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:attackcount">:attackcount</span></a> <span class='piece'>&#x2658;</span> <span class='piece'>&#x265a;</span> &gt;0 <span style='white-space:nowrap;'><span class='keyword'>:flipcolor</span></span>)
 </code></div>
 
 </body>

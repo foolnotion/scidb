@@ -1,20 +1,20 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision: 161 $
 * Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2013 Gregor Cramer
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
 
 INDEX Square designators (CQL)
 INDEX Compound square designators (CQL)#compound
@@ -42,6 +42,16 @@ For example: the piece designator <expr>&b;b3</expr> has a simple square
 designator denoting the square b3, and denotes a black bishop on b3.
 </p>
 
+<p>
+There is also a special square designator (not belonging to the CQL standard):
+<expr>&L;</expr> as character for the files is designating all light-squared
+fields on the files a through h. Accordingly <expr>&D;</expr> is designating
+all dark-squared fields on these lines. <expr>&L;</expr> and <expr>&D;</expr>
+can also be used for the designation of the ranks. But it is not allowed to use
+this special square designator both for lines and ranks, this means for example
+that <expr>&D;&D;</expr> is not allowed.
+</p>
+
 <h2 id="compound">Compound square designators</h2>
 
 <p>
@@ -61,6 +71,17 @@ constituent square designators.
 
 <p>
 Any compound square designator not contained in brackets must be contained in brackets.
+</p>
+
+<p>
+%::mc::VariantName(DropChess)%, and %::mc::VariantName(Bughouse)%:
+a further special square designator exists (not belonging to CQL standard);
+the backhand &ndash; the place of the captured pieces &ndash; will be designated
+with <expr>[+]</expr>. Note that the designation <expr>??</expr>, as well as the
+empty square designator, does not include the backhand. To designate all squares
+inclusive the backhand the shortcut <expr>[*]</expr> is allowed. The notation with
+backhand is also possible in other chess variants, in this way a skript can be
+written for all chess variants altogether.
 </p>
 
 <h3>Examples of compound square designators</h3>
@@ -87,6 +108,29 @@ Any compound square designator not contained in brackets must be contained in br
     <td class="right">denotes the first two ranks plus a8 and h8.</td>
   </tr>
   <tr valign="top">
+    <td class="left"><expr>[&L;?]</expr></td>
+    <td class="right">denotes all light-squares fields.</td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="left"><expr>[&D;1]</expr></td>
+    <td class="right">denotes all dark-squares fields on the first rank.</td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><expr>[+]</expr></td>
+     <td class="right">denotes the backhand
+       (%::mc::VariantName(DropChess)%, %::mc::VariantName(Bughouse)%).</td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="left"><expr>[+,a1]</expr></td>
+     <td class="right">denotes the backhand and square a1
+       (%::mc::VariantName(DropChess)%, %::mc::VariantName(Bughouse)%).</td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><expr>[*]</expr></td>
+     <td class="right">denotes alle squares inclusive the backhand
+       (%::mc::VariantName(DropChess)%, %::mc::VariantName(Bughouse)%).</td>
+  </tr>
+  <tr valign="top" class="stripes">
     <td class="left"><expr>[&thinsp;]</expr></td>
     <td class="right">denotes no squares at all. This is very different from the empty
         square designator, which designates all squares.</td>
@@ -98,26 +142,49 @@ Any compound square designator not contained in brackets must be contained in br
 <table class="stripes">
   <tr valign="top" class="stripes">
     <td class="left"><expr>&I;a1</expr></td>
-    <td class="right">denotes a white minor piece on a1. It will match any position
-        with a white bishop or white knight on a1.</td>
+    <td class="right">
+      denotes a white minor piece on a1. It will match any position
+      with a white bishop or white knight on a1.
+    </td>
   </tr>
   <tr valign="top">
     <td class="left"><expr>&R;[a-h1-2]</expr></td>
-    <td class="right">will match any position with a white rook on the first two ranks.</td>
+    <td class="right">
+      will match any position with a white rook on the first two ranks.
+    </td>
   </tr>
   <tr valign="top" class="stripes">
     <td class="left"><expr>[&A;&r;][a-h1-2,a8,h8]</expr></td>
-    <td class="right">will match any position that has a white piece or a black rook on
-        the first two ranks or the corners.</td>
+    <td class="right">
+      will match any position that has a white piece or a black rook on
+      the first two ranks or the corners.
+    </td>
   </tr>
   <tr valign="top">
     <td class="left"><expr>[&R;&B;&N;&Q;&P;][a1,h1,a8,h8]</expr></td>
-    <td class="right">will match any position with a white non-king piece at the corners.</td>
+    <td class="right">
+      will match any position with a white non-king piece at the corners.
+    </td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="left"><expr>[&B;&b;]&L;?</expr></td>
+    <td class="right">
+      will match any positions with a light-squares bishop.
+    </td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><expr>&N;[+]</expr></td>
+    <td class="right">
+      denotes a white knight in the backhand
+      (%::mc::VariantName(DropChess)%, %::mc::VariantName(Bughouse)%).
+    </td>
   </tr>
   <tr valign="top" class="stripes">
     <td class="left"><expr>&B;[&thinsp;]</expr></td>
-    <td class="right">denotes a white bishop on an empty set of squares. This can never match
-        any position of course.</td>
+    <td class="right">
+      denotes a white bishop on an empty set of squares. This can never match
+      any position of course.
+    </td>
   </tr>
 </table>
 

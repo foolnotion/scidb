@@ -1,20 +1,20 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision$
 * Date   : $Date$
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2012-2013 Gregor Cramer
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
 
 INDEX Contact information
 INDEX Homepage#Homepage
@@ -24,7 +24,7 @@ TITLE Contact information
 
 <h2 id="Homepage">Homepage</h2>
 
-The Scidb web page is located at
+The web page of Scidb is located at
 <a href="http://scidb.sourceforge.net/">scidb.sourceforge.net</a>.
 
 <h2>Help</h2>
@@ -97,13 +97,6 @@ Scidb users may find the following websites interesting:
   </p></li>
 
   <li><p>
-    <a href="http://sourceforge.net/apps/aguestbook/scidb/sign.php"
-       style="line-height: 150%;">
-    Scidb Guestbook</a><br/>
-    At this site the guest book is available.
-  </p></li>
-
-  <li><p>
     <a href="ftp://ftp.cis.uab.edu/pub/hyatt/"
        style="line-height: 150%;">
     ftp://ftp.cis.uab.edu/pub/hyatt/</a><br/>
@@ -127,7 +120,7 @@ Scidb users may find the following websites interesting:
   </p></li>-->
 
   <li><p>
-    <a href="http://www.chess.co.uk/twic/"
+    <a href="http://www.theweekinchess.com"
        style="line-height: 150%;">
     The Week in Chess</a><br/>
     An excellent weekly bulletin of international chess games in available

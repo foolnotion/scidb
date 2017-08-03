@@ -1,24 +1,24 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision: 161 $
 * Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2012-2013 Gregor Cramer
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
 
 INDEX Datenbankumschalter
-INDEX Komprimieren#Compact
-INDEX Datenbank komprimieren#Compact
+INDEX Kompaktieren#Compact
+INDEX Datenbank kompaktieren#Compact
 INDEX Datenbank administrieren#Administration
 TITLE Der Datenbankumschalter
 
@@ -109,13 +109,8 @@ aber noch ungespeichert, erfolgt vor der Schliessung eine Sicherheitsabfrage.
 <p>
 <menuitem>%::database::switcher::mc::ReadOnly%</menuitem>
 Diese Datenbank wird schreibgeschützt bzw. schreibberechtigt gesetzt.
-Dies ist nur für Scidb- und Scid-Datenbanken
-(<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>)
-und PGN-Dateien (<abbr>.pgn</abbr>, <abbr>.pgn.gz</abbr>) möglich.
-<note/>ChessBase-Datenbanken und Zip-Archive (<abbr>.zip</abbr>)
-sind immer schreibgeschützt. <note/>Die
-<a href="Clipbase.html">Ablage-Datenbank</a> kann nicht
-schreibgeschützt werden.
+Für weitere Informationen siehe
+<a href="Write-Protect-Database.html">Schreibschutz einer Datenbank</a>.
 </p>
 
 <p>
@@ -168,9 +163,12 @@ Dieses Untermenü bietet Funktionalitäten um Datenbanken zu verwalten:
 
 <dir><img src="images/database-switcher-menu-maintenance.png"/></dir>
 
-<p>
+<p id="ChangeIcon">
 <menuitem>%::application::database::mc::ChangeIcon%</menuitem>
-Ein neues Piktogramm für diese Datenbank auswählen.
+Ein neues Piktogramm für diese Datenbank auswählen. Es öffnet sich ein Auswahldialog,
+der auch die Auswahl eigener Bilddateien zuläßt (nur für das Scidb-Datenformat).
+Es müssen Bilddateien im PNG-Format in den Auflösungen 16x16, 24x24, 32x32 und 48x48
+vorliegen.
 <note/>Dies ist nicht für die <a href="Clipbase.html">Ablage-Datenbank</a> möglich.
 </p>
 
@@ -200,11 +198,18 @@ geschieht.
 
 <p id="Compact">
 <menuitem>%::application::database::mc::FileCompact%</menuitem>
-Diese Datenbank komprimieren, d.h. die zum Löschen vorgemerkten Partien werden
-physikalisch gelöscht. Diese Aktion kann nicht rückgägngig gemacht werden.
-Dieser Menüpunkt ist gesperrt wenn keine Partien in dieser Datenbank mit einer
-Lösch-Markierung versehen sind.
+Diese Datenbank kompaktieren, d.h. die zum Löschen vorgemerkten Partien werden
+physikalisch gelöscht. Zudem verschwinden die Lücken, die durch andere Aktionen
+entstanden sind.  Diese Aktion kann nicht rückgägngig gemacht werden.
+Dieser Menüpunkt ist gesperrt wenn die Datenbank keine Lücken aufweist, und
+auch keine Partien mit ener Lösch-Markierung versehen sind.
 </p>
+
+<annotation>
+Die Kompaktierung einer Datenbank ist eine sichere Operation: wenn die
+Kompaktierung unerwartet fehlschlägt oder abgebrochen wird, dann bleibt die
+Originaldatenbank unverändert.
+</annotation>
 
 <h3 id="DND">Drag &amp; Drop</h3>
 

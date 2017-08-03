@@ -19,7 +19,7 @@
   <meta name="generator"
      content="scidb.sourceforge.net" />
   <meta name="description"
-     content="Scidb Help Page" />
+     content="Scidb - Help Page" />
 
   <link rel="icon"
        href="http://scidb.sourceforge.net/favicon.ico"
@@ -29,9 +29,9 @@
   <link rel="stylesheet"
        type="text/css"
       media="screen"
-       href="../styles/help.css" />
+		 href="../styles/help.css" />
 
-  <title>Scidb Help: Database formats</title>
+  <title>Scidb - Help: Database formats</title>
 </head>
 
 <body>
@@ -44,7 +44,7 @@
 Scidb supports the following formats:
 </p>
 
-<ul>
+<ul style='list-style-type: none'><li>
   <li>
     <img src="../images/ft-scidb.png" alt="" />
     <a href="#Scidb">Scidb</a>
@@ -65,7 +65,7 @@ Scidb supports the following formats:
     <img src="../images/ft-archive.png" alt="" />
     <a href="#Database-Archive">Database archive</a>
   </li>
-</ul>
+</li></ul>
 
 <h2 id="Scidb">
 <img src="../images/ft-scidb.png" alt="" />
@@ -116,8 +116,25 @@ A database in Scidb's format is divided into several files:
       <td nowrap="nowrap"><kbd>.scn</kbd></td><td>=&nbsp;</td>
       <td>Player/Event/Site/Annotator data</td>
     </tr>
+    <tr valign="top">
+      <td nowrap="nowrap"><kbd>.scr</kbd></td><td>=&nbsp;</td>
+      <td>Overhead for game links</td>
+    </tr>
+    <tr valign="top">
+      <td nowrap="nowrap"><kbd>.scj</kbd></td><td>=&nbsp;</td>
+      <td>Set of icons</td>
+    </tr>
   </table>
 </div>
+
+<p>
+Only the files with suffixes .sci, .scg, and .scn are mandatory, others only if required.
+</p>
+
+<p>
+The icon set (.scj) will be created when image files are selected inside the selection dialog
+for the database icon (&#x21d2; <a href="Database-Switcher.html#ChangeIcon">database switcher</a>
+</p>
 
 <h2 id="Scid">
 <img src="../images/ft-scid.png" alt="" />
@@ -242,8 +259,10 @@ A database in old format consists of only four files:
 <p>
 The <abbr>PGN</abbr> format (Portable Game Notation) is a common standard for transfering
 chess games. Opening a <abbr>PGN</abbr> file will be done in reading mode, but it is
-possible to set it writeable if the file has writing permission. With larger
-<abbr>PGN</abbr> game collections it is recommended to convert it into the Scidb format.
+possible to set it writeable (except Zip archives; &#x21d2;
+<a href="Write-Protect-Database.html">Write protection of databases</a>).
+With larger <abbr>PGN</abbr> game collections it is recommended to convert it into the
+Scidb format.
 </p>
 
 <p>

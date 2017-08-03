@@ -1,19 +1,19 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision: 161 $
 * Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2013 Gregor Cramer
-*********************************************************************** -->
-<!-- **********************************************************************
+======================================================================= -->
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
 
 INDEX Stellungseingabe
 TITLE Stellungseingabe
@@ -27,15 +27,15 @@ bedienen, deshalb werden nur die Besonderheiten erwähnt.
   <li><a href="#PieceSelection">%::board::piece::mc::PieceSelection%</a></li>
   <li><a href="#Castling">%::setup::board::mc::Castling%</a></li>
   <li><a href="#StartPosition">%::setup::board::mc::StartPosition%</a></li>
-  <li><a href="#Crazyhouse">%::mc::VariantName(Crazyhouse)%</a></li>
+  <li><a href="#DropChess">%::mc::VariantName(DropChess)%</a></li>
   <li><a href="#ThreeCheck">%::mc::VariantName(ThreeCheck)%</a></li>
 </ul>
 
 <h2 id="PieceSelection">%::board::piece::mc::PieceSelection%</h2>
 
 <p>
-Befindet sich der Mauszeiger über dem Brett - in diesem Fall zeigt der
-Cursor die gewählte Figur - dient die mittlere Maustaste, um
+Befindet sich der Mauszeiger über dem Brett - in diesem Fall zeigt das
+Zeigersymbol die gewählte Figur - dient die mittlere Maustaste, um
 die nächste Figur auszuwählen, und die rechte Maustaste, um die Farbe
 der Figur zu wechseln. Ein Feld wird geleert, indem die vorhandene
 Figur noch einmal auf dieses Feld gesetzt wird.
@@ -82,7 +82,7 @@ ausgewählt werden. Es werden nur diejenigen Positionen angeboten, die auch von
 Scidb unterstützt werden können.
 </p>
 
-<h2 id="Crazyhouse">%::mc::VariantName(Crazyhouse)%</h2>
+<h2 id="DropChess">%::mc::VariantName(DropChess)%</h2>
 
 <p>
 In dieser Schachform ist es erforderlich, daß die in der Rückhand
@@ -98,10 +98,9 @@ Zudem existiert eine besondere Schaltfläche:
 <p>
 Mit diesem Symbol wird ein Feld ausgezeichnet, auf dem sich eine Figur
 befindet, die infolge einer Bauernumwandlung enstand. Dies ist
-unerläßlich, denn im Einsetzschach wird ein geschlagener verwandelter Bauer
-wieder zum Bauern.
+unerläßlich, denn in %::mc::VariantName(Crazyhouse)% wird ein geschlagener
+verwandelter Bauer wieder zum Bauern.
 </p>
-
 
 <h2 id="ThreeCheck">%::mc::VariantName(ThreeCheck)%</h2>
 

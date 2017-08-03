@@ -19,7 +19,7 @@
   <meta name="generator"
      content="scidb.sourceforge.net" />
   <meta name="description"
-     content="Scidb Help Page" />
+     content="Scidb - Help Page" />
 
   <link rel="icon"
        href="http://scidb.sourceforge.net/favicon.ico"
@@ -29,9 +29,9 @@
   <link rel="stylesheet"
        type="text/css"
       media="screen"
-       href="../styles/help.css" />
+		 href="../styles/help.css" />
 
-  <title>Scidb Help: CQL - The relation list</title>
+  <title>Scidb - Help: CQL - The relation list</title>
 </head>
 
 <body>
@@ -41,7 +41,7 @@
 </div>
 
 <ul style='list-style-type: none'><li>
-  <table>
+  <table style="white-space:nowrap">
     <tr><td>&#x2022;</td><td><a href="#relation">The :relation keyword</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#keywords">Relation keywords</a></td></tr>
   </table>
@@ -60,7 +60,7 @@ Example:
 </p>
 
 <div class='verb'><code>
-(position <span class='keyword'>:relation</span> (<a href="CQL-Relation-List.html#relation:missingpiececount"><span style='white-space:nowrap;'>:missingpiececount</span></a> <span class='cqlpiece'>&#x25cb;</span> 1 unlimited))
+(position <span style='white-space:nowrap;'><span class='keyword'>:relation</span></span> (<span style='white-space:nowrap;'><a href="CQL-Relation-List.html#relation:missingpiececount">:missingpiececount</span></a> <span class='cql' title='Any white piece'>&#x25cb;</span> 1 unlimited))
 </code></div>
 
 <p>
@@ -77,22 +77,20 @@ P1 and P2 matches the parameters defined in the relation specifier.
 
 <h2 id="keywords">Relation keywords</h2>
 
-<ul style='list-style-type: none'><li>
-  <table>
-    <tr><td>&#x2022;</td><td><a href="#relation:changesidetomove">:changesidetomove</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:flip">:flip</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:ignoresidetomove">:ignoresidetomove</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:missingpiececount">:missingpiececount</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:newpiececount">:newpiececount</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:originaldifferentcount">:originaldifferentcount</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:originalsamecount">:originalsamecount</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:pattern">:pattern</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:samesidetomove">:samesidetomove</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:shift">:shift</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:variations">:variations</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:variationsonly">:variationsonly</a></td></tr>
-  </table>
-</li></ul>
+<table style="white-space:nowrap">
+  <tr><td>&#x2022;</td><td><a href="#relation:changesidetomove">:changesidetomove</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:flip">:flip</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:ignoresidetomove">:ignoresidetomove</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:missingpiececount">:missingpiececount</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:newpiececount">:newpiececount</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:originaldifferentcount">:originaldifferentcount</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:originalsamecount">:originalsamecount</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:pattern">:pattern</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:samesidetomove">:samesidetomove</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:shift">:shift</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:variations">:variations</a></td></tr>
+  <tr><td>&#x2022;</td><td><a href="#relation:variationsonly">:variationsonly</a></td></tr>
+</table>
 
 <h3 id="relation:changesidetomove">:changesidetomove</h3>
 
@@ -110,7 +108,7 @@ To search games in which the same position occurs with white and black to move
 </p>
 
 <div class='verb'><code>
-position <a href="CQL-Position-List.html#position:relation"><span style='white-space:nowrap;'>:relation</span></a> (<span class='keyword'>:changesidetomove</span>))
+position <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:relation">:relation</span></a> (<span style='white-space:nowrap;'><span class='keyword'>:changesidetomove</span></span>))
 </code></div>
 
 <h3 id="relation:flip">:flip</h3>
@@ -131,11 +129,11 @@ Side to move information is ignored.
 
 <p>
 This keyword takes the same parameters as does the
-<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> keyword in a position list: a pieced
+<span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:piececount">:piececount</span></span> : <span style='white-space:nowrap;'>position</span></a> keyword in a position list: a pieced
 designator followed by a range. A missing piece is a piece that occurs in
 P1 on a square that is empty on P2. P2 matches if the number of these
 missing pieces lies within the range specifier. Unlike the case of the
-<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> keyowrd, at most one
+<span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:piececount">:piececount</span></span> : <span style='white-space:nowrap;'>position</span></a> keyowrd, at most one
 <span style='white-space:nowrap;'>:missingpiececount</span> specifier can occur inside the relation list.
 No shift or flip transformation specifiers in the containing position list
 affect the piece designator in this keyword.
@@ -143,25 +141,25 @@ affect the piece designator in this keyword.
 
 <p>
 The default piece designator for <span style='white-space:nowrap;'>:missingpiececount</span> is
-<code><span class='cqlpiece'>&#x25d1;</span></code> and the default range is zero. That is, by default there can
-be no missing pieces. 
+<code><span class='cql' title='Any piece at all'>&#x25d1;</span></code> and the default range is zero. That is, by default there can
+be no missing pieces.
 </p>
 
 <h3 id="relation:newpiececount">:newpiececount</h3>
 
 <p>
-This keyword takes the same parameters as does the <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a>
+This keyword takes the same parameters as does the <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:piececount">:piececount</span></span> : <span style='white-space:nowrap;'>position</span></a>
 keyword in a position list: a pieced designator followed by a range. A new piece
 is a piece that occurs in P2 on a square that is empty on P1. P2 matches if the
 number of these new pieces lies within the range specifier. Unlike the case of
-the <a href="CQL-Position-List.html#position:pieccount"><span style='white-space:nowrap;'>:pieccount</span></a> keyowrd, at most one <span style='white-space:nowrap;'>:newpiececount</span>
+the <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:pieccount">:pieccount</span></span> : <span style='white-space:nowrap;'>position</span></a> keyowrd, at most one <span style='white-space:nowrap;'>:newpiececount</span>
 specifier can occur. No shift or flip transformation specifiers in the
 containing position list affect the piece designator in this keyword.
 </p>
 
 <p>
-The default piece designator for <span style='white-space:nowrap;'>:newiececount</span> is <code><span class='cqlpiece'>&#x25d1;</span></code> and
-the default range is zero. That is, by default there can be no new pieces. 
+The default piece designator for <span style='white-space:nowrap;'>:newiececount</span> is <code><span class='cql' title='Any piece at all'>&#x25d1;</span></code> and
+the default range is zero. That is, by default there can be no new pieces.
 </p>
 
 <h3 id="relation:originaldifferentcount">:originaldifferentcount</h3>

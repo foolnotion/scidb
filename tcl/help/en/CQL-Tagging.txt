@@ -1,20 +1,20 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision: 161 $
 * Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2013 Gregor Cramer
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
 
 INDEX Tagging (CQL)
 INDEX CQL Tagging
@@ -82,7 +82,7 @@ tag named "foo", this position will only match if "foo" is a white pawn:
 </p>
 
 <verb>
-(position <keyword>:tagmatch</keyword> foo &P;)
+(position <keyword>relation:tagmatch</keyword> foo &P;)
 </verb>
 
 <h2 id="designators">Piece designators and tags</h2>

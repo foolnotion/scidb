@@ -105,6 +105,7 @@
 ::mc::Undo					"Deshacer"
 ::mc::Variant				"Variant" ;# NEW different from "Variation"
 ::mc::Variation			"Variante"
+::mc::Volume				"Volume" ;# NEW
 ::mc::White					"Blancas"
 ::mc::Yes					"Sí"
 
@@ -114,6 +115,22 @@
 ::mc::Piece(B)				"Alfil"
 ::mc::Piece(N)				"Caballo"
 ::mc::Piece(P)				"Peón"
+
+::mc::PieceCQL(.)			"Empty square" ;# NEW
+::mc::PieceCQL(A)			"Any white piece" ;# NEW
+::mc::PieceCQL(a)			"Any black piece" ;# NEW
+::mc::PieceCQL(M)			"White major piece" ;# NEW
+::mc::PieceCQL(m)			"Black major piece" ;# NEW
+::mc::PieceCQL(I)			"White minor piece" ;# NEW
+::mc::PieceCQL(i)			"Black minor piece" ;# NEW
+::mc::PieceCQL(U)			"Any piece at all" ;# NEW
+::mc::PieceCQL(?)			"Any piece or empty square" ;# NEW
+
+::mc::SquareCQL(L)		"Light squares" ;# NEW
+::mc::SquareCQL(D)		"Dark squares" ;# NEW
+
+::mc::SquareLetter(L)	"L" ;# NEW shortcut for 'light square' (uppercase)
+::mc::SquareLetter(D)	"D" ;# NEW shortcut for 'dark square'  (uppercase)
 
 ::mc::Logical(reset)		"Restablecer"
 ::mc::Logical(or)			"O"
@@ -1359,6 +1376,7 @@
 ::gametable::mc::GameFlags(s)				"Error estratégico"
 ::gametable::mc::GameFlags(C)				"Entoque Ilegal"
 ::gametable::mc::GameFlags(I)				"Jugada Ilegal"
+::gametable::mc::GameFlags(X)				"Invalid Move" ;# NEW
 
 ### playertable ########################################################
 ::playertable::mc::F_LastName					"Apellido"
@@ -2098,6 +2116,7 @@
 ::terminationbox::mc::Result(1/2-1/2)					"Se acordó tablas"
 
 ::terminationbox::mc::Reason(Unplayed)					"La partida no se jugó"
+::terminationbox::mc::Reason(ByForfeit)				"Opponent did not show up" ;# NEW
 ::terminationbox::mc::Reason(Abandoned)				"Se abandonó la partida"
 ::terminationbox::mc::Reason(Adjudication)			"Adjudicado"
 ::terminationbox::mc::Reason(Disconnection)			"Disconnection" ;# NEW
@@ -2106,7 +2125,9 @@
 ::terminationbox::mc::Reason(TimeForfeit)				"%s pierde por tiempo"
 ::terminationbox::mc::Reason(TimeForfeit,both)		"Ambos jugadores pierden por tiempo"
 ::terminationbox::mc::Reason(TimeForfeit,remis)		"%causer ran out of time and %opponent cannot win" ;# NEW
-::terminationbox::mc::Reason(Unterminated)			"No finalizado"
+::terminationbox::mc::Reason(DrawClaim)				"One of the players claimed a draw"
+::terminationbox::mc::Reason(NoOpponent)				"Point given for game with no opponent" ;# NEW
+::terminationbox::mc::Reason(Unterminated)			"No finalizado" ;# NEW
 
 ::terminationbox::mc::Termination(checkmate)			"%s es jaque mate"
 ::terminationbox::mc::Termination(stalemate)			"%s es ahogado"
@@ -2130,7 +2151,7 @@
 ::eventmodebox::mc::Composition	"Composición"
 
 ### eventtypebox #######################################################
-::eventtypebox::mc::Type(game)	"Partida individual"
+::eventtypebox::mc::Type(casual)	"Partida individual"
 ::eventtypebox::mc::Type(match)	"Match"
 ::eventtypebox::mc::Type(tourn)	"Round Robin"
 ::eventtypebox::mc::Type(swiss)	"Torneo por sistema suizo"
@@ -2255,30 +2276,32 @@
 ::crosstable::mc::CannotCreateFile			"Cannot create file '%s': permission denied." ;# NEW
 
 ### info ###############################################################
-::info::mc::InfoTitle			"Acerca de %s"
-::info::mc::Info					"Información"
-::info::mc::About					"Acerca de"
-::info::mc::Contributions		"Contribuciones"
-::info::mc::License				"Licencia"
-::info::mc::Localization		"Localización"
-::info::mc::Testing				"Pruebas"
-::info::mc::References			"Referencias"
-::info::mc::System				"Sistema"
-::info::mc::FontDesign			"Diseño de fuentes"
-::info::mc::ChessPieceDesign	"Diseño de las piezas"
-::info::mc::BoardThemeDesign	"Diseño de tema de tablero"
-::info::mc::FlagsDesign			"Diseño de las banderas en miniatura"
-::info::mc::IconDesign			"Diseño de iconos"
-::info::mc::Development			"Desarrollo"
-::info::mc::Programming			"Programación"
-::info::mc::Head					"Líder"
-::info::mc::AllOthers			"all others" ;# NEW
-::info::mc::TheMissingOnes		"the missing ones" ;# NEW
+::info::mc::InfoTitle				"Acerca de %s"
+::info::mc::Info						"Información"
+::info::mc::About						"Acerca de"
+::info::mc::Contributions			"Contribuciones"
+::info::mc::License					"Licencia"
+::info::mc::Localization			"Localización"
+::info::mc::Testing					"Pruebas"
+::info::mc::References				"Referencias"
+::info::mc::System					"Sistema"
+::info::mc::FontDesign				"Diseño de fuentes"
+::info::mc::TruetypeFonts			"Truetype fonts" ;# NEW
+::info::mc::ChessPieceDesign		"Diseño de las piezas"
+::info::mc::BoardThemeDesign		"Diseño de tema de tablero"
+::info::mc::FlagsDesign				"Diseño de las banderas en miniatura"
+::info::mc::IconDesign				"Diseño de iconos"
+::info::mc::Development				"Desarrollo"
+::info::mc::DevelopmentOfUnCBV	"Development of unzipping CBV archives" ;# NEW
+::info::mc::Programming				"Programación"
+::info::mc::Head						"Líder"
+::info::mc::AllOthers				"all others" ;# NEW
+::info::mc::TheMissingOnes			"the missing ones" ;# NEW
 
-::info::mc::Version				"Versión"
-::info::mc::Distributed			"Este programa se distribuye bajo los términos de la Licencia Pública General GNU."
-::info::mc::Inspired				"Scidb está inspirado en Scid 3.6.1, registrado en \u00A9 1999-2003 por Shane Hudson."
-::info::mc::SpecialThanks		"Un especial agradecimiento a %s por su estupendo trabajo. Su empeño constituye la base de esta aplicación."
+::info::mc::Version					"Versión"
+::info::mc::Distributed				"Este programa se distribuye bajo los términos de la Licencia Pública General GNU."
+::info::mc::Inspired					"Scidb está inspirado en Scid 3.6.1, registrado en \u00A9 1999-2003 por Shane Hudson."
+::info::mc::SpecialThanks			"Un especial agradecimiento a %s por su estupendo trabajo. Su empeño constituye la base de esta aplicación."
 
 ### comment ############################################################
 ::comment::mc::CommentBeforeMove		"Comentario antes de la jugada"
@@ -2297,6 +2320,7 @@
 
 ::comment::mc::LanguageSelection		"Selección de idioma"
 ::comment::mc::Formatting				"Formateando"
+::comment::mc::InsertLink				"Insert link" ;# NEW
 
 ::comment::mc::Bold						"Negrita"
 ::comment::mc::Italic					"Itálica"
@@ -2363,7 +2387,7 @@
 ::titlebox::mc::Title(CGM)		"Gran Maestro por Correspondencia (ICCF)"
 ::titlebox::mc::Title(CIM)		"Maestro Internacional por Correspondencia (ICCF)"
 ::titlebox::mc::Title(CLGM)	"Gran Maestro Femenino por Correspondencia (ICCF)"
-::titlebox::mc::Title(CILM)	"Maestro Internacional Femenino por Correspondencia (ICCF)"
+::titlebox::mc::Title(CLIM)	"Maestro Internacional Femenino por Correspondencia (ICCF)"
 ::titlebox::mc::Title(CSIM)	"Maestro Internacional Senior por Correspondencia (ICCF)"
 
 ### messagebox #########################################################
@@ -3110,5 +3134,8 @@
 
 ### remote #############################################################
 ::remote::mc::PostponedMessage "La apertura de la base \"%s\" se pospondrá hasta que concluya la operación en curso."
+
+### web ################################################################
+::web::mc::SaveFile "Save File" ;# NEW
 
 # vi:set ts=3 sw=3:

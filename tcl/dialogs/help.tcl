@@ -1446,7 +1446,7 @@ proc BuildHtmlFrame {dlg w} {
 		-fittowidth yes \
 		-width $Options(htmlwidth) \
 		-height $Options(htmlheight) \
-		-cursor left_ptr \
+		-cursor standard \
 		-borderwidth 1 \
 		-relief sunken \
 		-doublebuffer yes \

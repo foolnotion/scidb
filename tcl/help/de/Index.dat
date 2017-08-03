@@ -14,14 +14,14 @@ set Index {
     {
       {{Chess Query Language} {CQL-Index.html} {}}
       {{CQL Beispiele} {CQL-Examples.html} {}}
-      {{CQL Handbuch} {CQL-Index.html} {}}
+      {{CQL Dateiformat} {CQL-File-Format.html} {}}
+      {{CQL Einführung} {CQL-Index.html} {}}
       {{CQL Markierung} {CQL-Tagging.html} {}}
       {{CQL Positionsliste} {CQL-Position-List.html} {}}
       {{CQL Relationsliste} {CQL-Relation-List.html} {}}
       {{CQL Suchliste} {CQL-Match-List.html} {}}
       {{CQL Syntax} {CQL-Syntax.html} {}}
       {{CQL Transformationen} {CQL-Transformations.html} {}}
-      {{Crazyhouse} {Chess-Variants.html} {}}
     }
   }
   { D
@@ -29,9 +29,10 @@ set Index {
       {{Dateiauswahldialog} {File-Selection-Dialog.html} {}}
       {{Dateiformate} {Database-Formats.html} {}}
       {{Datenbank administrieren} {Database-Switcher.html} {Administration}}
-      {{Datenbank komprimieren} {Database-Switcher.html} {Compact}}
+      {{Datenbank kompaktieren} {Database-Switcher.html} {Compact}}
       {{Datenbankarchiv} {Database-Formats.html} {Database-Archive}}
       {{Datenbankformate} {Database-Formats.html} {}}
+      {{Datenbankschreibschutz} {Write-Protect-Database.html} {}}
       {{Datenbankumschalter} {Database-Switcher.html} {}}
       {{Dreimal-Schach} {Chess-Variants.html} {}}
     }
@@ -39,6 +40,7 @@ set Index {
   { E
     {
       {{ECO-Code} {ECO-Code.html} {}}
+      {{Einsetzschach} {Chess-Variants.html} {}}
       {{Enzyklopädie der Schacheröffnungen} {ECO-Code.html} {}}
     }
   }
@@ -67,8 +69,9 @@ set Index {
     {
       {{Kommandozeilenoptionen} {Command-Line-Options.html} {}}
       {{Kommentareditor} {Comment-Editor-Dialog.html} {}}
-      {{Komprimieren} {Database-Switcher.html} {Compact}}
+      {{Kompaktieren} {Database-Switcher.html} {Compact}}
       {{Kontaktinformationen} {Contact-Information.html} {}}
+      {{König-auf-dem-Hügel} {Chess-Variants.html} {}}
     }
   }
   { L
@@ -97,6 +100,7 @@ set Index {
       {{Partien-Browser} {Game-Browser.html} {}}
       {{Partien-Übersichts-Browser} {Game-Overview.html} {}}
       {{Positionsliste (CQL)} {CQL-Position-List.html} {}}
+      {{Prozentuale Bereichsangaben (CQL)} {CQL-Percentage-Specifiers.html} {}}
     }
   }
   { R
@@ -106,8 +110,11 @@ set Index {
   }
   { S
     {
+      {{Schachdatenbanksprache} {CQL-Index.html} {}}
       {{Schachformen} {Chess-Variants.html} {}}
       {{Schlagschach} {Chess-Variants.html} {}}
+      {{Schreibschutz einer Datenbank} {Write-Protect-Database.html} {}}
+      {{Schreibschutz eines PGN-Archivs} {Write-Protect-Database.html} {}}
       {{Shredder-FEN} {FEN.html} {}}
       {{Startpositionseingabe} {Start-Position-Setup-Dialog.html} {}}
       {{Stellungseingabe} {Board-Setup-Dialog.html} {}}

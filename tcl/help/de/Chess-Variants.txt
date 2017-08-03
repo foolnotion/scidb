@@ -1,25 +1,26 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision: 161 $
 * Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2013 Gregor Cramer
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
 
 INDEX Schachformen
 INDEX %::mc::VariantName(Normal)%
-INDEX %::mc::VariantName(Crazyhouse)%
+INDEX %::mc::VariantName(DropChess)%
 INDEX %::mc::VariantName(ThreeCheck)%
+INDEX %::mc::VariantName(KingOfTheHill)%
 INDEX %::mc::VariantName(Antichess)%
 INDEX %::mc::VariantName(Suicide)%
 INDEX %::mc::VariantName(Giveaway)%
@@ -41,16 +42,17 @@ Scidb unterstützt verschiedene Schachformen, zur Zeit sind dies:
          %::mc::VariantName(Crazyhouse)%</a></td>
       <td></td>
       <td>(<a href="http://en.wikipedia.org/wiki/Crazyhouse">Crazyhouse</a>)</td>
-    </tr>
+      <td>(<a href="http://www.chessvariants.org/other.dir/chessgi.html">Chessgi</a> (Englisch))</td>
     <tr>
       <td><a href="http://de.wikipedia.org/wiki/R%C3%A4uberschach">
         %::mc::VariantName(Antichess)%</a></td>
       <td></td>
-      <td>(<a href="http://suicidechess.ca/index.php?lg=en">Suicide</a>,
+      <td>(<a href="http://suicidechess.ca/index.php">Suicide</a>,
           <a href="http://www6.chessclub.com/help/Giveaway">Giveaway</a>)</td>
     </tr>
     <tr>
-      <td><a href="http://loserschess.org/">Losers</a></td>
+      <!-- <td><a href="http://loserschess.org/">Losers</a></td> HACKED -->
+      <td><a href="http://en.wikipedia.org/wiki/Losing_chess">Losers</a></td>
       <td></td>
       <td>(Schlagschachvariante)</td>
     </tr>
@@ -59,6 +61,13 @@ Scidb unterstützt verschiedene Schachformen, zur Zeit sind dies:
       <td></td>
       <td>(<a href="http://en.wikipedia.org/wiki/Three-check_chess">Three-check Chess</a>)</td>
     </tr>
+<!--
+    <tr>
+      <td>%::mc::VariantName(KingOfTheHill)%</td>
+      <td></td>
+      <td>(<a href="http://en.lichess.org/king-of-the-hill">King of the Hill</a>)</td>
+    </tr>
+-->
   </table>
 </box>
 

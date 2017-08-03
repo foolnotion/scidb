@@ -1,0 +1,102 @@
+<!-- ======================================================================
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+======================================================================= -->
+
+<!-- ======================================================================
+* Copyright: (C) 2015 Gregor Cramer
+======================================================================= -->
+
+<!-- ======================================================================
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+======================================================================= -->
+
+BEGIN
+<table style="white-space:nowrap">
+  <tr><td>      &#x2022;</td><td><a href="#match:and">:and</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:annotator">:annotator</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:averagerating">:averagerating</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:averagerating_">:averagerating*</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:birthyear">:birthyear</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:whitebirthyear">:whitebirthyear</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:blackbirthyear">:blackbirthyear</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:cond">:cond</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:comment">:comment</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:comment_">:comment*</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:country">:country</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:whitecountry">:whitecountry</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:blackcountry">:blackcountry</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:date">:date</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:deathyear">:deathyear</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:whitedeathyear">:whitedeathyear</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:blackdeathyear">:blackdeathyear</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:eco">:eco</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:eco_">:eco*</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:eithercolor">:eithercolor</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:elo">:elo</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:whiteelo">:whiteelo</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:blackelo">:blackelo</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:error">:error</a></td>
+  <tr><td>      &#x2022;</td><td><a href="#match:event">:event</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:eventcategory">:eventcategory</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:eventcountry">:eventcountry</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:eventdate">:eventdate</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:eventmode">:eventmode</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:eventtype">:eventtype</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:forany">:forany</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:gamenumber">:gamenumber</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:gender">:gender</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:whitegender">:whitegender</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:blackgender">:blackgender</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:goodgame">:goodgame</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:hasannotation">:hasannotation</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:hascomments">:hascomments</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:hasmarker">:hasmarker</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:hasspecialmarker">:hasspecialmarker</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:hasvariations">:hasvariations</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:ischess960">:ischess960</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:iscomputer">:iscomputer</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:whiteiscomputer">:whiteiscomputer</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:blackiscomputer">:blackiscomputer</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:ishuman">:ishuman</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:whiteishuman">:whiteishuman</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:blackishuman">:blackishuman</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:isshufflechess">:isshufflechess</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:not">:not</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:or">:or</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:output">:output</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:pgn">:pgn</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:player">:player</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:whiteplayer">:whiteplayer</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:blackplayer">:blackplayer</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:playerid">:playerid</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:whiteid">:whiteid</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:blackid">:blackid</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:plycount">:plycount</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:rating">:rating</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:whiterating">:whiterating</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:blackrating">:blackrating</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:ratingdifference">:ratingdifference</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:result">:result</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:round">:round</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:site">:site</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:startposition">:startposition</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:subround">:subround</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:tag">:tag</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:termination">:termination</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:timemode">:timemode</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:title">:title</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:whitetitle">:whitetitle</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#match:blacktitle">:blacktitle</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:variant">:variant</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:xor">:xor</a></td></tr>
+  <tr><td>      &#x2022;</td><td><a href="#match:year">:year</a></td></tr>
+</table>
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

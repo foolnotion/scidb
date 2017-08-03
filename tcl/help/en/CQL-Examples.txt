@@ -1,20 +1,53 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision: 161 $
 * Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2013 Gregor Cramer
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
+
+HEAD
+
+<style type="text/css">
+
+  #tooltip1 {
+    outline: none;
+    cursor: help;
+    margin-top: 0;
+    margin-bottom: 0;
+    position: relative;
+  }
+  #tooltip1 a {
+    color: #006400;
+  }
+  #tooltip1 a:hover {
+    color: #006400;
+    background: #ffff00;
+    text-decoration: none;
+  }
+  #tooltip1 a img {
+    display: none;
+  }
+  #tooltip1 a:hover img {
+    display: block;
+    position: absolute;
+    left: 2em;
+    top: 2em;
+    z-index: 99;
+  }
+  </style>
+
+END
 
 INDEX CQL Examples
 TITLE CQL - Examples
@@ -23,6 +56,8 @@ TITLE CQL - Examples
   <li><a href="#accumulator">Using accumulators to count passed pawns</a></li>
   <li><a href="#relation">Relation list example</a></li>
   <li><a href="#tagging">Examples for tagging</a></li>
+  <li><a href="#line">Examples for move lines</a></li>
+  <li><a href="#pawnending">Pawn endings</a></li>
   <li><a href="#more">More examples</a></li>
 </ul>
 
@@ -31,7 +66,10 @@ TITLE CQL - Examples
 <p>
 We will show how to use <cql>position:accumulate</cql> and
 <cql>position:sumrange</cql> to look for games that have at least 3 white
-passed pawns in a position. First, we give a position filter that will
+passed pawns in a position.
+A passed pawn is one which does not have an opposing pawn on its file or on
+adjacent files on its way to promotion.
+First, we give a position filter that will
 match any position with a white passed pawn:
 </p>
 
@@ -45,7 +83,7 @@ match any position with a white passed pawn:
 </verbatim>
 
 <p>
-Now, to find at least 3 white passed pawns, we add in some accumulation code:
+Now, to find at least three white passed pawns, we add in some accumulation code:
 </p>
 
 <verbatim>
@@ -100,6 +138,32 @@ white passers, we combine these lists:
       <cql>position:shift</cql>
       <cql>position:accumulate</cql> black_passer_counter)))
 </verbatim>
+
+<p id="accumulator:passed-pawn">
+We are searching for positions with at least three passed pawns.
+</p>
+
+<verbatim>
+<comment>; Find positions with at least three passed pawns.</comment>
+
+(match
+  (position 
+    <cql>position:or</cql> (
+      (position
+        <cql>position:sumrange</cql> counter 3 8
+        Pd2
+        <cql>position:piececount</cql> [pP][d3-7] 0
+        <cql>position:piececount</cql> p[c3-7,e3-7] 0
+        <cql>position:shift</cql>
+        <cql>position:flipcolor</cql> <comment>; accumulate* is counting each color separately</comment>
+        <cql>position:accumulate*</cql> counter))))
+</verbatim>
+
+<p>
+At least we should mention that these are examples to become clear
+about the art of <cql>position:accumulate</cql>. In fact all these examples
+can be realized quite more efficient with the use of <cql>position:pawncount</cql>.
+</p>
 
 <h2 id="relation">Relation list example</h2>
 
@@ -181,15 +245,14 @@ promotes.
   <cql>match:forany</cql> pawn [&P;&p;]
   (position
     <cql>position:initial</cql>
-    <cql>position:tagmatch</cql> pawn &P;?2
-    <cql>position:gappedsequence</cql> ((position <cql>position:movefrom</cql> $pawn <cql>position:promote</cql> &U;))
-    <cql>position:flipcolor</cql>))
+    <cql>position:tagmatch</cql> pawn [&P;&p;]?[27]
+    <cql>position:gappedsequence</cql> ((position <cql>position:movefrom</cql> $pawn <cql>position:promote</cql> &U;))))
 </verbatim>
 
 <p>
-<cql>position:tagmatch</cql> is matching pawns on second rank, and
-the position sequence of <cql>position:gappedsequence</cql> is matching if
-the tagged "pawn" is promoting in any subsequent game position.
+<cql>position:tagmatch</cql> is matching pawns on second or seventh rank in
+start position, and the position sequence of <cql>position:gappedsequence</cql>
+is matching if the tagged "pawn" is promoting in any subsequent game position.
 </p>
 
 <p>
@@ -202,7 +265,7 @@ Third example: the same piece delivers at least 30 checks in the game.
   (position
     <cql>position:btm</cql>
     <cql>position:attackcount</cql> $checker &k; 1
-    <cql>position:matchcount</cql> 30 unlimited
+    <cql>position:matchcount</cql> &gt;=30
     <cql>position:flipcolor</cql>))
 </verbatim>
 
@@ -221,42 +284,87 @@ Fourth example: knight gives mate with its first move.
     <cql>position:attackcount</cql> $knight &k; 1)) 
 </verbatim>
 
-<h2 id="more">More examples</h2>
+<h3 id="line">Examples for move lines</h3>
 
 <verbatim>
-<comment>; Match isolated triple pawns on connected squares</comment>
-<comment>; Example: 8/p4pk1/8/2R1P1N1/6P1/6P1/2P2KP1/1r5r w - - 0 1</comment>
+<comment>; Match positions with a mate manoeuvre in the style</comment>
+<comment>; of Légal as was seen in the game Falkbeer-N.N., Vienna 1847:</comment>
+<comment>; <game>1.e4 e5 2.Nf3 Nc6 3.d4 exd4 4.c3 dxc3 5.Nxc3 d6</game></comment>
+<comment>; <game>6.Bc4 Bg4 7.O-O Ne5 8.Nxe5 Bxd1 9.Bxf7+ Ke7 10.Nd5#</game></comment>
+<comment>; We also want to find games where the defeated is already</comment>
+<comment>; giving up after bishop check.</comment>
 
 (match
   (position
-    &P;[c2-4]                <comment>; pawns on connected squares</comment>
-    <cql>position:piececount</cql> &P;c? 3 6    <comment>; at least three pawns </comment>
-    <cql>position:piececount</cql> &P;[b?,d?] 0 <comment>; the triple pawns are isolated</comment>
-    <cql>position:shiftvertical</cql>         <comment>; any rank</comment>
-    <cql>position:shifthorizontal</cql>       <comment>; any file</comment>
-    <cql>position:flipcolor</cql>))           <comment>; any side</comment>
+    <cql>position:flipcolor</cql> <comment>; also look for the color flipped theme</comment>
+    <comment>; Remember: '!' means 'singular move'.</comment>
+    <cql>position:line</cql> (&N;xe5 &b;x&Q; &B;xf7+ | &k;e7! &N;d5#)))
 </verbatim>
 
+<verbatim>
+<comment>; Match positions with a mate manoeuvre in the style of Réti,</comment>
+<comment>; as was seen in the game Réti-Tartakower, Vienna 1910:</comment>
+<comment>; <game>1.e4 c6 2.d4 d5 3.Nc3 dxe4 4.Nxe4 Nf6 5.Qd3 e5 6.dxe5</game></comment>
+<comment>; <game>Qa5+ 7.Bd2 Qxe5 8.0-0-0 Nxe4 9.Qd8+ Kxd8 10.Bg5++ Kc7</game></comment>
+<comment>; <game>{10...Ke8 11.Rd8#} 11.Bd8#</game></comment>
+<comment>; We also want to find games where the defeated is already</comment>
+<comment>; giving up after queen check.</comment>
+
+(match
+  (position
+    <cql>position:flipcolor</cql> <comment>; also look for the color flipped theme</comment>
+    <comment>; Remember: '!' means 'singular move'.</comment>
+    <cql>position:line</cql> (&Q;d8+ | &k;xd8! &B;:g5++ &k; [&R;&B;]d8#)))
+
+<comment>; This will also find the following game:</comment>
+<comment>; <game>1.e4 c5 2.d4 cxd4 3.c3 d5 4.exd5 Qxd5 5.Nf3 Bg4 6.Qa4+</game></comment>
+<comment>; <game>Nc6 7.Nxd4 Bd7 8.Nb5 0-0-0 9.Nxa7+ Nxa7 10.Qxa7 Qd1+</game></comment>
+<comment>; 0&ndash;1 Dutch-Sugden, London 1964</comment>
+</verbatim>
+
+<h3 id="pawnending">Pawn endings</h3>
+
+<verbatim>
+<comment>; One side is sacrificing two pawns in a positon with material</comment>
+<comment>; balance, obtains at least one unstoppable passed pawn, and</comment>
+<comment>; is winning the game.</comment>
+
+(match
+  (position
+    <cql>position:flipcolor</cql>    <comment>; also look for the color flipped theme</comment>
+    <cql>position:result</cql> 1-0   <comment>; White is winning the game</comment>
+    <cql>position:gappedsequence</cql> (
+      (position
+        <cql>position:piececount</cql> [&M;&m;&I;&i;] 0          <comment>; it's a pawn ending</comment>
+        <cql>position:powerdifference</cql> &U; 0           <comment>; material balance</comment>
+        <cql>position:pawncount</cql> &P; passed-!inside 0) <comment>; no unstoppable passed pawn yet</comment>
+      (position
+        <cql>position:btm</cql>                            <comment>; Black to move</comment>
+        <cql>position:piececount</cql> [&M;&m;&I;&i;] 0           <comment>; it's still a pawn ending</comment>
+          <cql>position:powerdifference</cql> &U; &lt;=&#x2212;2         <comment>; two pawns less</comment>
+        <comment>; at least one unstoppable passed pawn</comment>
+        <cql>position:pawncount</cql> &P; passed-!inside &gt;=1))))
+</verbatim>
+
+EXCLUDE-BEGIN
 <verbatim>
 <comment>; Multiple consecutive rook checks followed by king moving to</comment>
 <comment>; empty square; usually to avoid stalemate if rook is captured.</comment>
 
 (match
   <cql>match:result</cql> 1/2
-  (position 
-    <cql>position:wtm</cql>
-    <cql>position:sequence</cql> (  
-      (position <cql>position:movefrom</cql> &R; <cql>position:moveto</cql> .)
-      (position <cql>position:movefrom</cql> &k; <cql>position:check</cql>)
-      (position <cql>position:movefrom</cql> &R; <cql>position:moveto</cql> .)
-      (position <cql>position:movefrom</cql> &k; <cql>position:check</cql>)
-      (position <cql>position:movefrom</cql> &R; <cql>position:moveto</cql> .)
-      (position <cql>position:movefrom</cql> &k; <cql>position:check</cql>)
-      (position <cql>position:movefrom</cql> &R; <cql>position:moveto</cql> .)
-      (position <cql>position:movefrom</cql> &k; <cql>position:check</cql>)
-      (position <cql>position:movefrom</cql> &R; <cql>position:moveto</cql> .)
-      (position <cql>position:movefrom</cql> &k; <cql>position:check</cql>))))
+  (position
+    <cql>position:flipcolor</cql> <comment>; also look for the color flipped theme</comment>
+    <cql>position:halfmovenumber</cql> end-8 end-7 <comment>; search at the end of the game</comment>
+    <cql>position:sequence</cql> (
+      <cql>position:line</cql> (&R;:+ &k; &R;:+ &k; &R;:+ &k; &R;:+)
+      <cql>position:or</cql> (
+        (position <cql>position:terminal</cql>)
+        (position <cql>position:line</cql> (&k;))))))
 </verbatim>
+EXCLUDE-END
+
+<h2 id="more">More examples</h2>
 
 <verbatim>
 <comment>; Smothered Mate</comment>
@@ -272,6 +380,30 @@ Fourth example: knight gives mate with its first move.
     <cql>position:mate</cql>))               <comment>; and is mate</comment>
 </verbatim>
 
+<verbatim>
+<comment>; Allumwandlung: Match games with pawn promotions into all</comment>
+<comment>; pieces. The order of position lists is not significant.</comment>
+
+(match
+  (position <cql>position:promote</cql> [&Q;&q;])
+  (position <cql>position:promote</cql> [&R;&r;])
+  (position <cql>position:promote</cql> [&B;&b;])
+  (position <cql>position:promote</cql> [&N;&n;]))
+</verbatim>
+
+<verbatim>
+<comment>; Allumwandlung: Match games with pawn promotions into all</comment>
+<comment>; pieces. The order of position lists is not significant.</comment>
+<comment>; It is required that all promotions are done in succession.</comment>
+
+(match
+  (position <cql>position:matchconsecutive</cql> (
+    (position <cql>position:promote</cql> [&Q;&q;])
+    (position <cql>position:promote</cql> [&R;&r;])
+    (position <cql>position:promote</cql> [&B;&b;])
+    (position <cql>position:promote</cql> [&N;&n;])))
+</verbatim>
+
 END
 
-<!-- vi:set ts=2 sw=2 et filetype=html: -->
+<!-- vi:set ts=2 sw=2 et filetype=html fileencoding=latin1: -->

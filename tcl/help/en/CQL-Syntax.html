@@ -19,7 +19,7 @@
   <meta name="generator"
      content="scidb.sourceforge.net" />
   <meta name="description"
-     content="Scidb Help Page" />
+     content="Scidb - Help Page" />
 
   <link rel="icon"
        href="http://scidb.sourceforge.net/favicon.ico"
@@ -29,9 +29,9 @@
   <link rel="stylesheet"
        type="text/css"
       media="screen"
-       href="../styles/help.css" />
+		 href="../styles/help.css" />
 
-  <title>Scidb Help: CQL Syntax</title>
+  <title>Scidb - Help: CQL Syntax</title>
 </head>
 
 <body>
@@ -64,11 +64,10 @@ in games played in year 2013:
 
 <div class='box'><pre><code><!--
 -->(match
-  <a href="CQL-Match-List.html#match:year"><span style='white-space:nowrap;'>:year</span></a> 2013
+  <span style='white-space:nowrap;'><a href="CQL-Match-List.html#match:year">:year</span></a> 2013
   (position
-    <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='piece'>&#x2659;</span>[b2-7] 4
-    <a href="CQL-Position-List.html#position:shifthorizontal"><span style='white-space:nowrap;'>:shifthorizontal</span></a>
-    <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a>))<!--
+    <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:pawncount">:pawncount</span></a> consecutive(4) &gt;0
+    <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:flipcolor">:flipcolor</span></a>))<!--
 --></code></pre></div>
 
 <p>
@@ -87,7 +86,7 @@ For example
 </p>
 
 <div class='verb'><code>
-(position <a href="CQL-Position-List.html#position:shifthorizontal"><span style='white-space:nowrap;'>:shifthorizontal</span></a> <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a>)
+(position <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:shifthorizontal">:shifthorizontal</span></a> <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:flipcolor">:flipcolor</span></a>)
 </code></div>
 
 <p>
@@ -104,13 +103,13 @@ first element is <span style='white-space:nowrap;'>"position"</span> and whose l
 
 <p>
 A keyword is a string beginning with ":". For example, the match
-list above has keyword <a href="CQL-Match-List.html#match:year"><span style='white-space:nowrap;'>:year</span></a>.
+list above has keyword <span style='white-space:nowrap;'><a href="CQL-Match-List.html#match:year">:year</span></a>.
 </p>
 
 <p>
 A keyword parameter is a list or string immediately following a keyword that
 accepts a keyword parameter. Some keywords accept multiple parameters,
-one after the other. 
+one after the other.
 </p>
 
 <h2>Example of keyword parameter</h2>
@@ -122,22 +121,21 @@ In the list
 <div class='box'><pre><code><!--
 -->(match
   (position
-    <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='piece'>&#x2659;</span>[b2-7] 4
-    <a href="CQL-Position-List.html#position:shifthorizontal"><span style='white-space:nowrap;'>:shifthorizontal</span></a>
-    <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a>))<!--
+    <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:pawncount">:pawncount</span></a> consecutive(4) &gt;0
+    <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:flipcolor">:flipcolor</span></a>))<!--
 --></code></pre></div>
 
 <p>
-<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> has keyword parameters <span style='white-space:nowrap;'><code><span class='piece'>&#x2659;</span>[b2-7]</code></span>
-and <span style='white-space:nowrap;'><code>4</code></span>. The other keywords <a href="CQL-Position-List.html#position:shifthorizontal"><span style='white-space:nowrap;'>:shifthorizontal</span></a>
-and <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a> do not take keyword parameters. A list
+<span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:pawncount">:pawncount</span></a> has keyword parameters <span style='white-space:nowrap;'><code>consecutive(4)</code></span>
+and <span style='white-space:nowrap;'><code>&gt;0</code></span>. The other keywords <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:shifthorizontal">:shifthorizontal</span></a>
+and <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:flipcolor">:flipcolor</span></a> do not take keyword parameters. A list
 whose first element is <span style='white-space:nowrap;'>"match"</span> is called a match list and defines
 a match filter.
 </p>
 
 <p>
 A list whose first element is <span style='white-space:nowrap;'>"position"</span> is called a position list
-and defines a position filter. 
+and defines a position filter.
 </p>
 
 <h2>Overall functioning of CQL</h2>
@@ -182,7 +180,7 @@ simply selects all games:
 </code></div>
 
 <p>
-In Scidb this script can be written even more simpler, because in Scidb,
+In CQL-S this script can be written even more simpler, because in CQL-S,
 different from CQL standard, the match list must not contain position lists:
 </p>
 
@@ -198,7 +196,7 @@ Any characters following a semicolon are ignored in a CQL script. Example:
 
 <div class='box'><pre><code><!--
 --><span class='comment'>; A CQL script that matches all games</span>
-(match 
+(match
   (position) <span class='comment'>; a position filter matching anything</span>
 )<!--
 --></code></pre></div>
@@ -209,6 +207,7 @@ Any characters following a semicolon are ignored in a CQL script. Example:
   <li><a href="CQL-Piece-Designators.html">Piece designators</a></li>
   <li><a href="CQL-Square-Designators.html">Square designators</a></li>
   <li><a href="CQL-Range-Specifiers.html">Range specifiers</a></li>
+  <li><a href="CQL-Percentage-Specifiers.html">Percentage ranges</a></li>
   <li><a href="Pattern-Matching.html">Pattern-Matching</a></li>
 </ul>
 

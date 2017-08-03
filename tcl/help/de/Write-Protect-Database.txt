@@ -1,0 +1,76 @@
+<!-- ======================================================================
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+======================================================================= -->
+
+<!-- ======================================================================
+* Copyright: (C) 2012-2013 Gregor Cramer
+======================================================================= -->
+
+<!-- ======================================================================
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+======================================================================= -->
+
+INDEX Datenbankschreibschutz
+INDEX Schreibschutz einer Datenbank
+INDEX Schreibschutz eines PGN-Archivs
+
+TITLE Schreibschutz einer Datenbank
+
+<p>
+Eine Datenbank kann schreibgeschützt bzw. schreibberechtigt gesetzt
+werden. Dies ist nur für Scidb-Datenbanken (<abbr>.sci</abbr>) sowie für
+PGN-Archive (<abbr>.pgn</abbr>, <abbr>.pgn.gz</abbr>) möglich. Scid- und
+ChessBase-Datenbanken (<abbr>.si3</abbr>, <abbr>.si4</abbr>, <abbr>.cbh</abbr>,
+<abbr>.cbf</abbr>) sowie Zip-Archive (<abbr>.zip</abbr>) sind immer
+schreibgeschützt.
+</p>
+
+<p>
+Ein Schreibschutz hat keine Auswirkungen auf die Schreibberechtigung der
+Dateien, es handelt sich um ein applikationsspezifisches Merkmal. Beim
+Laden einer Datenbank kann sich die Applikation an die letzte Einstellung
+erinnern, sofern diese Datenbank noch in der Historie vorhanden ist.
+</p>
+
+<p>
+Es existieren folgende Einschränkungen:
+</p>
+
+<ul style="padding-left:0px">
+  <li><p>
+    Datenbankdateien bzw. PGN-Dateien, die keine Schreibberechtigung
+    besitzen, können nicht schreibberechtigt gesetzt werden. Dazu muß
+    erst eine Änderung der Dateiberechtigungen erfolgen.
+  </p></li>
+  <li><p>
+    Wird der Ladevorgang einer PGN-Datei unterbrochen, so wird aus
+    technischen Gründen keine Schreibberechtigung zugelassen.
+  </p></li>
+  <li><p>
+    Die <a href="Clipbase.html">Ablage-Datenbank</a> kann nicht
+    schreibgeschützt werden.
+  </p></li>
+  <li><p>
+    PGN-Dateien (<abbr>.pgn</abbr>, <abbr>.pgn.gz</abbr>) werden immer
+    schreibgeschützt geöffnet, sofern nicht in der Historie eine andere
+    Einstellung vorhanden ist. Sie müssen also explizit schreibberechtigt
+    gesetzt werden, wenn eine Bearbeitung erfolgen soll.
+  </p></li>
+</ul>
+
+<p>
+Zu beachten ist, daß bearbeitete PGN-Archive explizit gespeichert werden
+müssen, bei größeren PGN-Archiven kann dies einige Zeit in Anspruch nehmen.
+Ist ein PGN-Archiv verändert worden, dann erkennt man dies an einer
+rötlichen Einfärbung des Datenbankpiktogramms.
+</p>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html fileencoding=latin1: -->

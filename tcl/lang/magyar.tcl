@@ -103,6 +103,7 @@
 ::mc::Undo			"Visszavonás"
 ::mc::Variant			"Variant" ;# NEW different from "Variation"
 ::mc::Variation			"Variáció"
+::mc::Volume			"Volume" ;# NEW
 ::mc::White			"Világos"
 ::mc::Yes			"igen"
 
@@ -112,6 +113,22 @@
 ::mc::Piece(B)			"Futó"
 ::mc::Piece(N)			"Huszár"
 ::mc::Piece(P)			"Gyalog"
+
+::mc::PieceCQL(.)		"Empty square" ;# NEW
+::mc::PieceCQL(A)		"Any white piece" ;# NEW
+::mc::PieceCQL(a)		"Any black piece" ;# NEW
+::mc::PieceCQL(M)		"White major piece" ;# NEW
+::mc::PieceCQL(m)		"Black major piece" ;# NEW
+::mc::PieceCQL(I)		"White minor piece" ;# NEW
+::mc::PieceCQL(i)		"Black minor piece" ;# NEW
+::mc::PieceCQL(U)		"Any piece at all" ;# NEW
+::mc::PieceCQL(?)		"Any piece or empty square" ;# NEW
+
+::mc::SquareCQL(L)		"Light squares" ;# NEW
+::mc::SquareCQL(D)		"Dark squares" ;# NEW
+
+::mc::SquareLetter(L)	"L" ;# NEW shortcut for 'light square' (uppercase)
+::mc::SquareLetter(D)	"D" ;# NEW shortcut for 'dark square'  (uppercase)
 
 ::mc::Logical(reset)		"Reset" ;# NEW
 ::mc::Logical(or)		"Vagy"
@@ -1368,6 +1385,7 @@
 ::gametable::mc::GameFlags(s)				"Stratégiai hiba"
 ::gametable::mc::GameFlags(C)				"Érvénytelen sáncolás"
 ::gametable::mc::GameFlags(I)				"Szabálytalan lépés"
+::gametable::mc::GameFlags(X)				"Invalid Move" ;# NEW
 
 ### playertable ########################################################
 ::playertable::mc::F_LastName			"Családnév"
@@ -2104,7 +2122,8 @@
 ::terminationbox::mc::Result(0-0)			"Declared lost for both players" ;# NEW
 ::terminationbox::mc::Result(1/2-1/2)			"Draw agreed" ;# NEW
 
-::terminationbox::mc::Reason(Unplayed)			"Game is unplayed" ;# NEW
+::terminationbox::mc::Reason(Unplayed)			"La partida no se jugó"
+::terminationbox::mc::Reason(ByForfeit)			"Opponent did not show up" ;# NEW
 ::terminationbox::mc::Reason(Abandoned)			"Game is abandoned" ;# NEW
 ::terminationbox::mc::Reason(Adjudication)		"Adjudication" ;# NEW
 ::terminationbox::mc::Reason(Disconnection)		"Disconnection" ;# NEW
@@ -2113,6 +2132,8 @@
 ::terminationbox::mc::Reason(TimeForfeit)		"%s forfeits on time" ;# NEW
 ::terminationbox::mc::Reason(TimeForfeit,both)		"Both players forfeits on time" ;# NEW
 ::terminationbox::mc::Reason(TimeForfeit,remis)		"%causer ran out of time and %opponent cannot win" ;# NEW
+::terminationbox::mc::Reason(NoOpponent)		"Point given for game with no opponent" ;# NEW
+::terminationbox::mc::Reason(Unterminated)		"No finalizado" ;# NEW
 ::terminationbox::mc::Reason(Unterminated)		"Unterminated" ;# NEW
 
 ::terminationbox::mc::Termination(checkmate)		"%s is checkmate" ;# NEW
@@ -2137,14 +2158,14 @@
 ::eventmodebox::mc::Composition	"Composition"
 
 ### eventtypebox #######################################################
-::eventtypebox::mc::Type(game)	"Egyedi játszma"
-::eventtypebox::mc::Type(match)	"Páros mérkőzés"
-::eventtypebox::mc::Type(tourn)	"Körmérkőzés"
-::eventtypebox::mc::Type(swiss)	"Svájci verseny"
-::eventtypebox::mc::Type(team)	"Csapat verseny"
-::eventtypebox::mc::Type(k.o.)	"Kieséses verseny"
-::eventtypebox::mc::Type(simul)	"Szimultán"
-::eventtypebox::mc::Type(schev)	"Scheveningeni rensdzerű verseny"  
+::eventtypebox::mc::Type(casual)	"Egyedi játszma"
+::eventtypebox::mc::Type(match)		"Páros mérkőzés"
+::eventtypebox::mc::Type(tourn)		"Körmérkőzés"
+::eventtypebox::mc::Type(swiss)		"Svájci verseny"
+::eventtypebox::mc::Type(team)		"Csapat verseny"
+::eventtypebox::mc::Type(k.o.)		"Kieséses verseny"
+::eventtypebox::mc::Type(simul)		"Szimultán"
+::eventtypebox::mc::Type(schev)		"Scheveningeni rensdzerű verseny"  
 
 ### timemodebox ########################################################
 ::timemodebox::mc::Mode(normal)	"Hagyományos"
@@ -2271,11 +2292,13 @@
 ::info::mc::References		"Referenciák"
 ::info::mc::System		"Rendszer"
 ::info::mc::FontDesign		"sakk betűtípus terv" ;#chess font design
+::info::mc::TruetypeFonts	"Truetype fonts" ;# NEW
 ::info::mc::ChessPieceDesign	"Figurakészlet terv" ;# "chess piece design"
 ::info::mc::BoardThemeDesign	"Tábla terv" ;#"Board theme design"
 ::info::mc::FlagsDesign		"Miniatűr zászló terv" ;#"Miniature flags design"
 ::info::mc::IconDesign		"Ikon terv"
 ::info::mc::Development		"Fejlesztés"
+::info::mc::DevelopmentOfUnCBV	"Development of unzipping CBV archives" ;# NEW
 ::info::mc::Programming		"Kódolás"
 ::info::mc::Head		"Head" ;# NEW
 ::info::mc::AllOther		"all others" ;# NEW
@@ -2303,6 +2326,7 @@
 
 ::comment::mc::LanguageSelection	"Nyelvválasztás"
 ::comment::mc::Formatting		"Formázás"
+::comment::mc::InsertLink		"Insert link" ;# NEW
 
 ::comment::mc::Bold			"Félkövér"
 ::comment::mc::Italic			"Dőlt"
@@ -2369,7 +2393,7 @@
 ::titlebox::mc::Title(CGM)	"Correspondence Grandmaster (ICCF)"
 ::titlebox::mc::Title(CIM)	"Correspondence International Master (ICCF)"
 ::titlebox::mc::Title(CLGM)	"Correspondence Lady Grandmaster (ICCF)"
-::titlebox::mc::Title(CILM)	"Correspondence Lady International Master (ICCF)"
+::titlebox::mc::Title(CLIM)	"Correspondence Lady International Master (ICCF)"
 ::titlebox::mc::Title(CSIM)	"Correspondence Senior International Master (ICCF)"
 
 ### messagebox #########################################################
@@ -3116,5 +3140,8 @@
 
 ### remote #############################################################
 ::remote::mc::PostponedMessage "\"%s\" adatbázis megnyitása elhalasztva, amíg az aktuális művelet be nem fejeződik."
+
+### web ################################################################
+::web::mc::SaveFile "Save File" ;# NEW
 
 # vi:set ts=8 sw=8:

@@ -1,20 +1,20 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision: 161 $
 * Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2013 Gregor Cramer
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
 
 INDEX CQL Transformations
 INDEX Transformations (CQL)
@@ -125,7 +125,7 @@ the board. For example, the horizontal flip of <expr>&U;f6</expr> is
 A <b>dihedral transformation</b> of a piece designator is a flip transformation
 followed by a flip transformation or the identity transformation (the first
 flip transformation could be replaced by rotations by 90, 180, or 270 degrees).
-There are 8 distinct dihedral transformations of the board. For example, the
+There are eight distinct dihedral transformations of the board. For example, the
 results of applying all dihedral transformations to the piece designator
 <expr>&Q;c2</expr> are the 8 piece designators <expr>&Q;c2</expr>,
 <expr>&Q;b3</expr>, <expr>&Q;b6</expr>, <expr>&Q;c7</expr>, <expr>&Q;f7</expr>,
@@ -141,14 +141,14 @@ results of applying all dihedral transformations to the piece designator
   <tr>
     <td align="center">
       Dihedral transformations of <expr>&Q;c2</expr>, for example:<br/>
-      diagonal flip + diagonal flip (to c2)<br/>
-      diagonal flip + identity transformation (to b3)<br/>
-      diagonal flip + horizontal flip (to b6)<br/>
-      horizontal flip + identity transformation (to c7)<br/>
-      horizontal flip + vertical flip (to f7)<br/>
-      off-diagonal flip + identity transformation (to g6)<br/>
-      off-diagonal flip + horizontal flip (to g3)<br/>
-      vertical flip + identity transformation (to f2)<br/>
+      diagonal flip (via b3) + diagonal flip (to c2)<br/>
+      diagonal flip (via b3) + identity transformation (to b3)<br/>
+      diagonal flip (via b3) + horizontal flip (to b6)<br/>
+      horizontal flip (via c7) + identity transformation (to c7)<br/>
+      horizontal flip (via c7) + vertical flip (to f7)<br/>
+      off-diagonal flip (via g6) + identity transformation (to g6)<br/>
+      off-diagonal flip (via g6) + horizontal flip (to g3)<br/>
+      vertical flip (via f2) + identity transformation (to f2)<br/>
     </td>
   </tr>
 </table>
@@ -333,7 +333,7 @@ queen on g3. We can add a :shifthorizontal keyword:
 </p>
 
 <verb>
-(position &R;c3 &q;g3 <keyword>:shifthorizontal</keyword>)
+(position &R;c3 &q;g3 <keyword>position:shifthorizontal</keyword>)
 </verb>
 
 <p>
@@ -354,7 +354,7 @@ of the black queen.
 </p>
 
 <verb>
-(position &R;c3 &q;g3 <keyword>:shiftvertical</keyword>)
+(position &R;c3 &q;g3 <keyword>position:shiftvertical</keyword>)
 </verb>
 
 <p>
@@ -364,7 +364,7 @@ file and the queen on the g file.
 </p>
 
 <verb>
-(position &R;c3 &q;g3 <keyword>:shift</keyword>)
+(position &R;c3 &q;g3 <keyword>position:shift</keyword>)
 </verb>
 
 <p>
@@ -374,7 +374,7 @@ of the black queen.
 </p>
 
 <verb>
-(position &R;c3 &q;g3 <keyword>:fliphorizontal</keyword>)
+(position &R;c3 &q;g3 <keyword>position:fliphorizontal</keyword>)
 </verb>
 
 <p>
@@ -384,7 +384,7 @@ black queen on g6.
 </p>
 
 <verb>
-(position &R;c3 &q;g3 <keyword>:flipdiagonal</keyword>)
+(position &R;c3 &q;g3 <keyword>position:flipdiagonal</keyword>)
 </verb>
 
 <p>
@@ -394,7 +394,7 @@ queen is on c7.
 </p>
 
 <verb>
-(position &R;c3 &q;g3 <keyword>:flip</keyword>)
+(position &R;c3 &q;g3 <keyword>position:flip</keyword>)
 </verb>
 
 <p>
@@ -403,7 +403,7 @@ somewhere behind a white pawn on the c file:
 </p>
 
 <verb>
-(position &P;c2 &R;c1 <keyword>:shiftvertical</keyword>)
+(position &P;c2 &R;c1 <keyword>position:shiftvertical</keyword>)
 </verb>
 
 <p>
@@ -417,7 +417,7 @@ same file, use:
 </p>
 
 <verb>
-(position &P;c2 &R;c1 <keyword>:shift</keyword>)
+(position &P;c2 &R;c1 <keyword>position:shift</keyword>)
 </verb>
 
 <h2 id="multiple">Multiple transformation keywords</h2>
@@ -436,7 +436,7 @@ For example, this position list
 </p>
 
 <verb>
-(position &N;d4 &k;f3 <keyword>:shift</keyword> <keyword>:flip</keyword>)
+(position &N;d4 &k;f3 <keyword>position:shift</keyword> <keyword>position:flip</keyword>)
 </verb>
 
 <p>
@@ -444,7 +444,7 @@ matches any position in which a white knight attacks a black king, while
 </p>
 
 <verb>
-(position &N;d4 &k;f3 <keyword>:shift</keyword> <keyword>:flip</keyword> <keyword>:flipcolor</keyword>)
+(position &N;d4 &k;f3 <keyword>position:shift</keyword> <keyword>position:flip</keyword> <keyword>position:flipcolor</keyword>)
 </verb>
 
 <p>
@@ -456,7 +456,7 @@ Note: This example can be written much more efficiently as
 </p>
 
 <verb>
-(position <cql>position:attackcount</cql> &N; &k; 1 unlimited <keyword>:flipcolor</keyword>)
+(position <cql>position:attackcount</cql> &N; &k; 1 unlimited <keyword>position:flipcolor</keyword>)
 </verb>
 
 <p>

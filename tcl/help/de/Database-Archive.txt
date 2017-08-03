@@ -1,20 +1,20 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision: 161 $
 * Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2012-2013 Gregor Cramer
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
 
 TITLE Datenbankarchiv
 
@@ -32,21 +32,23 @@ Dieses Archivformat hat folgende Syntax (vereinfachte EBNF):
 <verbatim><!-- don't translate -->
 Archive     = Magic [ ArchInfo ] [ UserInfo ] { File } ;
 Magic       = 'iveArch' LF ;
-File        = Header BinaryData ;
+File        = Header ( DataDelim BinaryData | NoDataDelim );
 Header      = HeadDelim LF HeaderInfo DataDelim ;
 HeadDelim   = LF '&lt;-- H E A D --&gt;' ;
 DataDelim   = '&lt;-- D A T A --&gt;' LF ;
+NoDataDelim = '&lt;-- N O D A T A --&gt;' LF ;
 HeaderInfo  =
   '&lt;FileName&gt;' { Space } FileName LF
   [ '&lt;URI&gt;' { Space } Number LF ]
   [ '&lt;FileSize&gt;' { Space } Number LF ]
   [ '&lt;Size&gt;' { Space } Number LF ]
+  [ '&lt;MimeType&gt;' { Space } MimeType LF ]
   [ '&lt;Compression&gt;' { Space } Compression LF ]
   [ '&lt;Checksum&gt;' { Space } Crc32Number LF ]
   [ '&lt;Modified&gt;' { Space } Timestamp LF ]
   [ '&lt;Encoding&gt;' { Space } Encoding LF ] ;
 Space       = HT | " " ;
-Compression = 'raw' | 'zlib' | 'lzo' ;
+Compression = 'raw' | 'zlib' ;
 BinaryData  = { Byte } ;
 ArchInfo    = '&lt;TotalSize&gt;' { Space } Number ;
 UserInfo    = LF { Attribute LF } Attribute ;
@@ -60,9 +62,17 @@ Time        = Hour ":" Minute ":" Second ;
 </verbatim>
 
 <p>
-<b><code>&lt;FileName&gt;</code></b> ist irgendein plattformunabhängiger, gültiger Dateiname,
-ohne Pfadbezeichnung. Ein plattformunabhängiger Dateiname darf die Zeichen "&lt;"
-und "&gt;" nicht enthalten.
+Diese Syntaxnotation ist etwas vereinfacht, die Reihenfolge der optionalen
+Attribute innerhalb des Segments <i>HeaderInfo</i> ist tatsächlich beliebig.
+</p>
+
+<p>
+<b><code>&lt;FileName&gt;</code></b> ist irgendein plattformunabhängiger, gültiger
+Dateiname. Grundsätzlich ist dieser Dateiname ohne Pfadbezeichnung, ausgenommen
+er beeinhaltet eine Unterverzeichnisangabe. Ein plattformunabhängiger Dateiname
+darf die Zeichen "&lt;" und "&gt;" nicht enthalten. Diese Angabe darf
+selbstverständlich nicht fehlen, und muß immer das erste Attribut innerhalb
+<i>HeaderInfo</i> sein.
 </p>
 
 <p>
@@ -70,26 +80,44 @@ und "&gt;" nicht enthalten.
 <code>http://www.chess-and-more.com/any-database.scv</code>, oder
 <code>file:///home/chris/Chess/MyBase.sci</code>. Es ist dem Dekodierungsprogramm
 überlassen wie die vorangestellten Pfadbezeichnungen verarbeitet werden.
+Es kann sich auch um eine Pfadangabe handeln, die die Position der Ursprungsdatei
+enthält, inklusive dem Dateinamen. Ist kein Datensegment zu diesr Datei vorhanden,
+dann handelt es sich um eine Referenz auf eine externe Datei (ausserhalb des Archivs).
 </p>
 
 <p>
-<b><code>&lt;Size&gt;</code></b> enthält die Größe der Datei innerhalb der
-Archivierungsdatei.
+<b><code>&lt;Size&gt;</code></b> enthält die Größe der Datei innerhalb des
+Datensegments. Diese Angabe der internen Größe ist zugleich der Offset
+zum nächsten Datei-Header (zuzüglich der Größe der Dateisegmentkennung).
+Diese Angabe muß genau dann angegeben werden, wenn ein Datensegment zu dieser
+Datei existiert.
+</p>
+
+<p>
+<b><code>&lt;MimeType&gt;</code></b> spezifiziert den Inhalt der entpackten Datei.
+Diese Angabe ist nicht zwingend, sollte aber geschrieben werden.
+</p>
+
+<p>
+<b><code>&lt;Compression&gt;</code></b> spezifiziert das Kompressionsverfahren,
+das auf die Daten im Datensegment angewendet wurde. Z.Zt. werden nur <i>zlib</i>
+(Verwendung der zlib-Bibliothek) und <i>raw</i> (keine Kompression) erkannt.
+Fehlt diese Angabe, dann wird <i>raw</i> angenommen. Dabei spielt das
+Kompressionsverfahren der Ursprungsdatei keine Rolle, es handelt sich um
+die Angabe des Kompressionsverfahren des Datensegments. Die Informationen
+über die entpackte Datei werden mit <code>&lt;MimeType&gt;</code> spezifiziert.
 </p>
 
 <p>
 <b><code>&lt;FileSize&gt;</code></b> enthält die Größe der entpackten Datei.
-Diese Angabe der internen Größe ist zugleich der Offset zum nächsten Datei-Header.
-</p>
-
-<p>
-<b><code>&lt;TotalSize&gt;</code></b> enthält die Summe aller (externen) Dateigrößen.
-Ist diese Summe unbekannt, dann ist <code>&lt;TotalSize&gt;</code> nicht vorhanden.
+Diese Angabe muß vorhanden sein, wenn das Datensegment vorhanden ist.
+Ist diese unbekannt, dann kann auch <code>&lt;TotalSize&gt;</code> nicht bekannt
+sein.
 </p>
 
 <p>
 <b><code>&lt;Checksum&gt;</code></b> ist eine mit dem CRC32-Verfahren ermittelte
-Prüfsumme.  Diese Prüfsumme bezieht sich auf die Dateidaten in der Archivierungsdatei.
+Prüfsumme. Diese Angabe ist optional.
 </p>
 
 <p>
@@ -99,26 +127,20 @@ der extrahierten Datei wiederherzustellen.
 </p>
 
 <p>
-<b><code>&lt;Encoding&gt;</code></b> spezifiziert den Zeichensatz der Datei.
+<b><code>&lt;Encoding&gt;</code></b> spezifiziert den Zeichensatz der Datei. Diese
+Angabe muß genau dann vorhanden sein, wenn die entpackte Datei eine Zeichendekodierung
+(z.B. ISO-8859-1) enthält, d.h. im Falle von Binärdateien existiert keine Angabe.
 </p>
 
 <p>
-Die Attribute <code>&lt;FileName&gt;</code>, <code>&lt;URI&gt;</code>,
-<code>&lt;FileSize&gt;</code>, <code>&lt;Size&gt;</code>,
-<code>&lt;Compression&gt;</code>, <code>&lt;Checksum&gt;</code> und
-<code>&lt;Modified&gt;</code> können in beliebiger Reihenfolge aufgeführt werden.
-Fehlt die Angabe <code>&lt;Compression&gt;</code> wird
-'<code>raw</code>' als Wert angenommen (d.h. es wird keine Dekomprimierung verwendet).
+<b><code>&lt;TotalSize&gt;</code></b> enthält die Summe aller (entpackten) Dateigrößen.
+Diese Angabe muß genau dann vorhanden sein, wenn alle enthaltenen Dateien über eine
+Angabe der entpackten Dateigröße verfügen.
 </p>
 
 <p>
-Wenn für URI eine externe Quelle angegeben ist (z.B. <code>http://*</code>),
-dann ist in diesem Fall das Attribute <code>Size</code> nicht vorhanden, und
-<code>FileSize</code> mag ebenso unbekannt sein.  Der Datenbereich ist bei
-Angabe einer externen Quelle normalerweise leer (Leerzeile). Es können jedoch
-Daten vorhanden sein, die verwendet werden sollen, wenn die externe Quelle
-nicht erreichbar ist. Dann muß allerdings auch wieder das Attribute
-<code>Size</code> spezifiziert sein.
+<b><code>Timestamp</code></b> ist im Format <code>"YYYY-MM-DD HH:MM:SS"</code>
+(Y = Jahr, M = Monat, D = Tag, H = Stunde, M = Minute, S = Sekunde).
 </p>
 
 <p>
@@ -143,39 +165,45 @@ Das Archivformat ist insgeamt so aufgebaut, daß es mit einem geeigneten Textedit
 UserInfo    = { LF Attributes } ;
 Attributes  =
   "&lt;Format&gt;" { Space } Formats
-  "&lt;Type&gt;" { Space } Type
   [ "&lt;Count&gt;" { Space } Number ] ;
-Type        = 'single' | 'multi' ;
-Formats     = Format { "," Format } ;
-Format      = 'sci' | 'si3' | 'si4' |
-              'cbh' | 'cbf' | 'pgn' |
-              'pgn.gz | 'bpgn' | 'bpgn.gz' ;
+Format      = 'sci'  |                   # Scidb-Datenbank
+              'si3'  | 'si4'  |          # Scid-Datenbank
+              'cbh'  | 'cbf'  |          # ChessBase-Datenbank
+              'cdp'  |                   # Chess Assistant-Datenbank
+              'dsn'  |                   # Rybka-Aquarium-Datenbank
+              'cif'  | 'ccif' |          # C/CIF-Archive
+              'pgn'  |                   # PGN-Archive
+              'bpgn' ;                   # BPGN-Archive
 </verbatim>
+
+<p>
+Ein Datenbankarchiv kann mehrere PGN-, BPGN-, und C/CIF-Archive enthalten (alle Formate).
+In diesem Fall wird der Datenbankname durch die zuerst enthaltene Datei bestimmt.
+</p>
+
+<p>
+PGN-, BPGN-, und CIF-Archive können auch gzip-komprimiert enthalten sein,
+in diesem Fall sollte die gzip-komprimierte Datei die zusätzliche Dateiendung
+.gz besitzen, z.B. "MillionBase.pgn.gz".
+</p>
 
 <p>
 <b><code>&lt;Count&gt;</code></b> ist die Anzahl der enthaltenen Partien in der
 Datenbank.  Wenn diese Anzahl nicht bekannt ist, z.B. bei
 <acronym>PGN</acronym>-Dateien oder bei der Verwendung von <acronym>URL</acronym>'s,
-dann ist dieses Attribut nicht vorhanden.
+dann ist dieses Attribut nicht (immer) vorhanden.
 </p>
 
 <p>
-<b><code>&lt;Format&gt;</code></b> ist die Angabe des Formats der entpackten Datenbank.
+<b><code>&lt;Format&gt;</code></b> ist die Angabe des Formats der entpackten Datenbank,
+dazu wird die Angabe der Dateiendung der führenden Datei verwendet (in der Regel die
+Dateiendung der Indexdatei). Sind mehrere Archivformate (PGN, BPGN oder C/CIF) im
+Archiv enthalten, dann werden sie kommasepariert aufgeführt.
 </p>
 
 <p>
-Scidb-Archive enthalten in der Regel immer nur eine Datenbank
-(<b><code>&lt;Type&gt;</code></b> = 'single'). Es ist jedoch vorgesehen, daß auch
-mehrere Datenbanken in ein Archiv gepackt werden können. Dann muß
-<code>&lt;Type&gt;</code> den Wert 'multi' enthalten, und unter
-<code>&lt;Format&gt;</code> werden alle enthaltenen Datenbankformate
-komma-separiert aufgeführt. Zudem ist <code>&lt;Count&gt;</code> dann die
-Summe der Partien in allen Datenbanken.
-</p>
-
-<p>
-Die Reihenfolge der Attribute <code>&lt;Count&gt;</code>, <code>&lt;Format&gt;</code>
-und <code>&lt;Type&gt;</code> ist beliebig.
+Die Reihenfolge der Attribute <code>&lt;Count&gt;</code> und <code>&lt;Format&gt;</code>
+ist beliebig.
 </p>
 
 <p>
@@ -187,9 +215,8 @@ iveArch
 &lt;TotalSize&gt; 468
 &lt;Count&gt; 1
 &lt;Format&gt; pgn
-&lt;Type&gt; single
 &lt;-- H E A D --&gt;
-&lt;FileName&gt; one-game.pgn
+&lt;FileName&gt; Staunton-vs-Brodie,1851-05-27.pgn
 &lt;FileSize&gt; 468
 &lt;Size&gt; 468
 &lt;Compression&gt; raw
@@ -219,17 +246,15 @@ Qf6 7.e5 Qe7 8.a3 cxb2 9.Bxb2 Bc5 10.Nc3 d6 11.Nd5 Qd8
 
 <verbatim><!-- don't translate -->
 iveArch
-&lt;Format&gt; pgn
-&lt;Type&gt; multi
+&lt;Format&gt; pgn, cif
 &lt;-- H E A D --&gt;
-&lt;FileName&gt; tiny-1.pgn
+&lt;FileName&gt; tiny.pgn
 &lt;URI&gt; http://scidb.sf.net/bases/tiny-1.pgn
-&lt;-- D A T A --&gt;
-
+&lt;-- N O D A T A --&gt;
 &lt;-- H E A D --&gt;
-&lt;FileName&gt; tiny-2.pgn
-&lt;URI&gt; http://scidb.sf.net/bases/tiny-2.pgn
-&lt;-- D A T A --&gt;
+&lt;FileName&gt; tiny-2.cif
+&lt;URI&gt; http://scidb.sf.net/bases/tiny-2.cif
+&lt;-- N O D A T A --&gt;
 </verbatim>
 
 END

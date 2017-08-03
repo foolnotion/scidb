@@ -19,7 +19,7 @@
   <meta name="generator"
      content="scidb.sourceforge.net" />
   <meta name="description"
-     content="Scidb Help Page" />
+     content="Scidb - Help Page" />
 
   <link rel="icon"
        href="http://scidb.sourceforge.net/favicon.ico"
@@ -29,9 +29,9 @@
   <link rel="stylesheet"
        type="text/css"
       media="screen"
-       href="../styles/help.css" />
+		 href="../styles/help.css" />
 
-  <title>Scidb Help: CQL - Tagging</title>
+  <title>Scidb - Help: CQL - Tagging</title>
 </head>
 
 <body>
@@ -76,13 +76,13 @@ to each possible mark, such that two conditions hold:
   <li class="space">
     A tag may only be bound to a mark that represents a piece that either
     matches, or eventually matches, the piece designator associated with that
-    tag. Square information associated with that piece designator is ignored. 
+    tag. Square information associated with that piece designator is ignored.
   </li>
 </ul>
 
 <p>
 At most two tags may be contained inside a match list. Tags may not be used
-in a matchlist if a <a href="CQL-Position-List.html#position:relation"><span style='white-space:nowrap;'>:relation</span></a> occurs in a position list
+in a matchlist if a <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:relation">:relation</span></a> occurs in a position list
 inside that match list.
 </p>
 
@@ -101,7 +101,7 @@ tag named "foo", this position will only match if "foo" is a white pawn:
 </p>
 
 <div class='verb'><code>
-(position <span class='keyword'>:tagmatch</span> foo <span class='piece'>&#x2659;</span>)
+(position <span style='white-space:nowrap;'><span class='keyword'>:tagmatch</span></span> foo <span class='piece'>&#x2659;</span>)
 </code></div>
 
 <h2 id="designators">Piece designators and tags</h2>

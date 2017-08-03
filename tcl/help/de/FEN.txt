@@ -1,20 +1,20 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision: 161 $
 * Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2013 Gregor Cramer
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
 
 INDEX FEN (Forsyth-Edwards-Notation)
 INDEX X-FEN (Erweiterte Forsyth-Edwards-Notation)
@@ -29,8 +29,7 @@ niedergeschrieben werden kann. Tatsächlich besitzt diese Notation eine
 Schwäche: sie macht keine Aussage, wie oft die beschriebene Stellung
 möglicherweise wiederholt wurde.  Die FEN (bzw. X-FEN) wird ausführlich
 unter <a href="https://de.wikipedia.org/wiki/Forsyth-Edwards-Notation">
-Wikipedia</a>
-beschrieben.
+Wikipedia</a> beschrieben.
 </p>
 
 <p>
@@ -43,15 +42,15 @@ notwendigerweise Erweiterungen:
 </p>
 
 <ul>
-  <li><a href="#Crazyhouse">%::mc::VariantName(Crazyhouse)%</a></li>
+  <li><a href="#DropChess">%::mc::VariantName(DropChess)%</a></li>
   <li><a href="#ThreeCheck">%::mc::VariantName(ThreeCheck)%</a></li>
 </ul>
 
-<h2 id="Crazyhouse">%::mc::VariantName(Crazyhouse)%</h2>
+<h2 id="DropChess">%::mc::VariantName(DropChess)%</h2>
 
 <p>
 Scidb benutzt eine erweiterte FEN (bzw. X-FEN, oder Shredder-FEN)
-für Einsetzschach, die vom BPGN-Standard (<see/>
+für %::mc::VariantName(DropChess)%, die vom BPGN-Standard (<see/>
 <a href="http://bughousedb.com/Lieven_BPGN_Standard.txt">
 BPGN - Bughouse Portable Game Notation</a>)
 abgeleitet wurde. Die
@@ -59,9 +58,9 @@ in der Rückhand befindlichen Figuren werden an das Ende des ersten
 Feldes angefügt; zum Beispiel
 </p>
 
-<dir><code>
+<example>
 r2q1rk1/ppp2ppp/5p2/b7/8/P1NPB2b/1PP1QP1P/R3R1K1/NNPPbnp b - - 0 16
-</code></dir>
+</example>
 
 <p>
 <code>NNPPbnp</code> gibt an, daß Weiß zwei Springer und zwei Bauern
@@ -74,9 +73,9 @@ Die Figuren, die aus einer Bauernumwandlung enstanden, werden mit der
 Tilde ausgezeichnet. Beispiel:
 </p>
 
-<dir><code>
+<example>
 rkn2Q~N1/pppq4/5P2/8/1P1P1n2/5B1P/PPPN1PpP/R3K1R1/RBBBPPq b Q - 0 43
-</code></dir>
+</example>
 
 <p>
 Die weiße Dame (<code>Q~</code>) enstand aus einer Bauernumwandlung.
@@ -89,9 +88,9 @@ Für diese Schachform wird an die FEN (bzw. X-FEN, oder Shredder-FEN)
 ein weiteres Feld angefügt, um die Schachgebote zu notieren. Beispiel:
 </p>
 
-<dir><code>
+<example>
 rnb1k1nr/pppp1ppp/8/4p3/3PP2q/2N5/PP3PPP/R1BQKBNR w KQkq - 1 5 +0+2
-</code></dir>
+</example>
 
 <p>
 <code>+0+2</code> bedeutet:

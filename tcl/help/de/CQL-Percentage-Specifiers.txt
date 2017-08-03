@@ -1,0 +1,88 @@
+<!-- ======================================================================
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $HeadURL$
+======================================================================= -->
+
+<!-- ======================================================================
+* Copyright: (C) 2014 Gregor Cramer
+======================================================================= -->
+
+<!-- ======================================================================
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+======================================================================= -->
+
+INDEX Prozentuale Bereichsangaben (CQL)
+TITLE CQL - Prozentuale Bereichsangaben
+
+<p>
+Manche Schlüsselworte erwarten eine prozentuale Bereichsangabe.
+Eine prozentuale Bereichsangabe besteht entweder aus nur einer
+prozentualen Angabe, die mit einem Vergleichsoperator starten
+muß, oder aber aus zwei prozentualen Angaben, separiert durch
+Leerzeichen (hier ohne Vergleichsoperatoren).
+</p>
+
+<p>
+Besteht eine prozentuale Bereichsangabe nur aus einer prozentualen
+Angabe, so bezeichnet sie den Bereich, ansonsten bezeichnen beide Angaben
+den Bereich, mit einer unteren und einer oberen Schranke.
+</p>
+
+<p>
+Der prozentuale Wert ist eine ganzahlige positive Zahl zwischen Null
+und 100 (einschließlich). Diese Angabe muß mit einem Prozentzeichen enden.
+</p>
+
+<p>
+Zulässige Vergleichsoperatoren sind:
+</p>
+
+<box>
+<table>
+  <tr><td><expr>&gt;</expr></td>  <td></td> <td>Mehr als</td></tr>
+  <tr><td><expr>&gt;=</expr></td> <td></td> <td>Mindestens</td></tr>
+  <tr><td><expr>&lt;</expr></td>  <td></td> <td>Weniger als</td></tr>
+  <tr><td><expr>&lt;=</expr></td> <td></td> <td>Höchstens</td></tr>
+</table>
+</box>
+
+<h2>Beispiele</h2>
+
+<p>
+Die folgenden Beispiele sind prozentuale Wertebereiche für die
+Zählung von verbundenen Bauern auf dem Schachbrett.
+</p>
+
+<verb>
+&gt;70%
+</verb>
+
+<p>
+Mehr als 70% aller Bauern auf dem Schachbrett sind verbundene Bauern.
+</p>
+
+<verb>
+&gt;=20%
+</verb>
+
+<p>
+Mindestens 20% aller Bauern sind verbundene Bauern.
+</p>
+
+<verb>
+30% 70%
+</verb>
+
+<p>
+Zwischen 30 und 70% (beide Grenzen einschließlich) aller Bauern auf dem
+Schachbrett sind verbundene Bauern.
+</p>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html fileencoding=latin1: -->

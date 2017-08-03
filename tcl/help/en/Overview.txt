@@ -1,20 +1,20 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision: 161 $
 * Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2012-2013 Gregor Cramer
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
 
 TITLE Welcome to Scidb-Help
 
@@ -22,6 +22,7 @@ TITLE Welcome to Scidb-Help
 
 <ul class="index">
   <li><a href="Database-Formats.html">Database formats</a></li>
+  <li><a href="Write-Protect-Database.html">Write protection of databases</a></li>
   <li><a href="File-Selection-Dialog.html">Usage of the file selection dialog</a></li>
   <li><a href="Toolbar-Usage.html">Usage of the toolbars</a></li>
   <li><a href="Clipbase.html">The Clipbase</a></li>
@@ -63,21 +64,27 @@ TITLE Welcome to Scidb-Help
 <h2 id="cql-manual">CQL (Chess Query Language)</h2>
 
 <ul class="index">
-  <li><a href="CQL-Index.html">Introduction</a></li>
-  <li><a href="CQL-Syntax.html">Syntax</a>
+  <li><a href="CQL-Index.html">Introduction</a>
     <ul class="index">
       <li><a href="CQL-Piece-Designators.html">Piece designators</a></li>
       <li><a href="CQL-Square-Designators.html">Square designators</a></li>
       <li><a href="CQL-Range-Specifiers.html">Range specifiers</a></li>
+      <li><a href="CQL-Percentage-Specifiers.html">Percentage ranges</a></li>
       <li><a href="Pattern-Matching.html">Pattern matching</a></li>
     </ul>
   </li>
-  <li><a href="CQL-Transformations.html">Transformations</a></li>
-  <li><a href="CQL-Match-List.html">The match list</a></li>
-  <li><a href="CQL-Position-List.html">The position list</a></li>
-  <li><a href="CQL-Relation-List.html">The relation list</a></li>
-  <li><a href="CQL-Tagging.html">Tagging</a></li>
-  <li><a href="CQL-Examples.html">Examples</a></li>
+  <li><a href="CQL-Technical-Description.html">Technical description</a>
+    <ul class="index">
+      <li><a href="CQL-Syntax.html">Syntax</a></li>
+      <li><a href="CQL-Transformations.html">Transformations</a></li>
+      <li><a href="CQL-Match-List.html">The match list</a></li>
+      <li><a href="CQL-Position-List.html">The position list</a></li>
+      <li><a href="CQL-Relation-List.html">The relation list</a></li>
+      <li><a href="CQL-Tagging.html">Tagging</a></li>
+      <li><a href="CQL-Examples.html">Examples</a></li>
+      <li><a href="CQL-File-Format.html">File format</a></li>
+    </ul>
+  </li>
 </ul>
 
 <h2 id="further-information">Further information</h2>
@@ -89,6 +96,7 @@ TITLE Welcome to Scidb-Help
   <li><a href="Command-Line-Options.html">Command line options</a></li>
   <li><a href="NAG-Comments.html">NAG annotation values</a></li>
   <li><a href="ECO-Code.html">ECO-Code</a></li>
+  <li><a href="FEN.html">FEN (Forsyth-Edwards Notation)</a></li>
   <li><a href="Contact-Information.html">Contact information</a></li>
   <li><a href="Development-Roadmap.html">Development roadmap</a></li>
   <li><a href="Whats-New.html">What's new?</a></li>

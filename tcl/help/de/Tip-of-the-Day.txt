@@ -429,7 +429,7 @@ noch nicht alle Informationen lesen.
 <TIP number="027" level="3">
 
 <p>
-In Partieeditor werden Züge, die &ndash; mölicherweise aufgrund einer Zugumstellung
+Im Partieeditor werden Züge, die &ndash; mölicherweise aufgrund einer Zugumstellung
 &ndash; zu einer bereits vorhandenen Stellung in der Hauptvariante führen, mit einem
 Verknüpfungssymbol <awesome>fa-external-link-square</awesome> versehen. Wenn die
 Maus über diesem Symbol gehalten wird erfolgt eine Hervorhebung des Zuges in der

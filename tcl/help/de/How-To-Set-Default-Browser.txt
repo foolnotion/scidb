@@ -1,29 +1,34 @@
-<!-- **********************************************************************
+<!-- ======================================================================
 * Author : $Author$
 * Version: $Revision$
 * Date   : $Date$
 * Url    : $URL$
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * Copyright: (C) 2011-2013 Gregor Cramer
-*********************************************************************** -->
+======================================================================= -->
 
-<!-- **********************************************************************
+<!-- ======================================================================
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
-*********************************************************************** -->
+======================================================================= -->
 
 TITLE Festlegung des Standard-Browsers
 
 <p>
-Es existieren vier Möglichkeiten um den Standard-Browser, mit dem die
+Es existieren fünf Möglichkeiten um den Standard-Browser, mit dem die
 externen Verweise geöffnet werden, festzulegen:
 </p>
 
 <ol>
+  <li><p>
+    Das Programm <nobr><code>xdg-open</code></nobr>, sofern installiert, wird verwendet
+    um die festgelegte Standard-Applikation für diesen Verweis zu starten.
+  </p></li>
+
   <li><p>
     Scidb benutzt den Wert der Umgebungsvariable <code>BROWSER</code> zur
     Bestimmung des Standard-Browsers. Beispiel:<br/>
@@ -55,7 +60,7 @@ externen Verweise geöffnet werden, festzulegen:
 </ol>
 
 <p>
-Die erste der vier Möglichkeiten, die erfolgreich ist, bestimmt den
+Die erste der fünf Möglichkeiten, die erfolgreich ist, bestimmt den
 Standard-Browser. Schlagen alle fehl, kann kein Browser gestartet
 werden und es erfolgt eine Fehlermeldung.
 </p>

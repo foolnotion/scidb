@@ -19,7 +19,7 @@
   <meta name="generator"
      content="scidb.sourceforge.net" />
   <meta name="description"
-     content="Scidb Help Page" />
+     content="Scidb - Help Page" />
 
   <link rel="icon"
        href="http://scidb.sourceforge.net/favicon.ico"
@@ -29,9 +29,9 @@
   <link rel="stylesheet"
        type="text/css"
       media="screen"
-       href="../styles/help.css" />
+		 href="../styles/help.css" />
 
-  <title>Scidb Hilfe: CQL - Bereichsangaben</title>
+  <title>Scidb - Hilfe: CQL - Bereichsangaben</title>
 </head>
 
 <body>
@@ -42,62 +42,75 @@
 
 <p>
 Viele Schlüsselworte erwarten eine optionale Bereichsangabe. Eine
-Bereichsangabe besteht entweder nur aus einer Zahl, oder aus zwei
-Zahlen, separiert durch Leerzeichen.
+Bereichsangabe besteht entweder nur aus einer Zahl, der ein
+Vergleichsoperator vorangestellt sein kann, oder aus zwei Zahlen
+(hier ohne vorangestellten Vergleichsoperator), separiert durch
+Leerzeichen.
 </p>
 
 <p>
-Besteht eine Bereichsangabe nur aus einer Zahl, so bezeichnet sie den
-Bereich. ansonsten bezeichnen beide Zahlen den Bereich zwischen diesen
-Zahlen, einschließlich der beiden Grenzen.
+Besteht eine Bereichsangabe aus zwei Zahlen, so bezeichnen beide den
+Bereich zwischen diesen Zahlen, einschließlich der beiden Grenzen.
+Ist nur eine Zahl gegeben, so bezeichnen diese den Bereich. Hat
+diese Zahl einen vorangestellten Vergleichsoperator, so wird ein
+Bereich definiert, der in einer Richtung grenzenlos ist:
+</p>
+
+<div class='box'>
+<table>
+  <tr><td><span style='white-space:nowrap;'><code>&gt;</code></span></td>  <td></td> <td>Mehr als</td></tr>
+  <tr><td><span style='white-space:nowrap;'><code>&gt;=</code></span></td> <td></td> <td>Mindestens</td></tr>
+  <tr><td><span style='white-space:nowrap;'><code>&lt;</code></span></td>  <td></td> <td>Weniger als</td></tr>
+  <tr><td><span style='white-space:nowrap;'><code>&lt;=</code></span></td> <td></td> <td>Höchstens</td></tr>
+</table>
+</div>
+
+<p><img src='../images/note.png' alt='note' /> 
+Die Voranstellung eines Vergleichsoperators ist nicht Bestandteil des
+CQL-Standards.
 </p>
 
 <p>
-Eine spezielle Bedeutung hat der Wert <i>unlimited</i> (unbeschränkt). Ist
-<i>unlimited</i> der einzige Parameter, so ist der Bereich grenzenlos, d.h.
-er bezeichnet alle Werte. Ist der niedrigere Wert <i>unlimited</i>, so ist
-der Bereich nach unten grenzenlos. Ist der höhere Wert <i>unlimited</i>, so
-ist der Bereich nach oben grenzenlos.
+Weiterhin gibt es zwei spezielle Werte: <span style='white-space:nowrap;'><code>&ndash;</code></span> um einen
+leeren Bereich zu defnieren, sowie <span style='white-space:nowrap;'><code>*</code></span> um einen beliebigen
+Wert (d.h. nach beiden Seiten unbeschränkten Bereich) zu definieren.
+Diese speziellen Werte sind nicht in jeder Abfrage sinnvoll einsetzbar,
+und es hängt von der Abfrage ab, ob sie zulässig sind (bei vielen Abfragen
+in der Partiedatensuche, aber i.A. nicht bei Abfragen in der
+Positionssuche).
 </p>
 
 <p><img src='../images/note.png' alt='note' /> 
-Der spezielle Wert <i>unlimited</i> ist nicht Bestandteil des CQL-Standards.
+Die speziellen Wertebereiche <span style='white-space:nowrap;'><code>&ndash;</code></span> und <span style='white-space:nowrap;'><code>*</code></span> sind nicht
+Bestandteil des CQL-Standards.
 </p>
-
-<div class='annotation'><img src='../images/annotation.png' style='float:left; margin:0 1em 0 0' alt='annotation' />
-Der Gebrauch von <i>unlimited</i> (in der Bereichsangabe) statt irgendeinem
-willkürlichen Extremwert, der auch nur eine Grenzenlosigkeit signalisieren
-soll, erlaubt dem Suchalgorithmus die Möglichkeit zur Optimierung, und damit
-kann evt. eine signifikant schnellere Suche stattfinden.
-</div>
 
 <h2>Beispiele</h2>
 
 <p>
-Die Suchliste kann das Schlüsselwort <span style='white-space:nowrap;'>:year</span> enthalten, mit dem
-der Bereich der Jahre spezifiziert wird, in dem die in Frage kommende Partie
-liegen muß, um aufgefunden zu werden.
+In den folgenden Beispielen werden Wertebereiche für Jahresangaben
+behandelt, um beispielsweise Partien aufzufinden, die in einem
+definierten Jahresbereich liegen sollen.
 </p>
 
 <div class='verb'><code>
-<a href="CQL-Match-List.html#match:year"><span style='white-space:nowrap;'>:year</span></a> 1934
+1934
 </code></div>
 
 <p>
-Bezeichnet das Jahr 1934, <code>1934</code> ist die Bereichsangabe.
+Bezeichnet das Jahr 1934.
 </p>
 
 <div class='verb'><code>
-<a href="CQL-Match-List.html#match:year"><span style='white-space:nowrap;'>:year</span></a> 1934 2000
+1934 2000
 </code></div>
 
 <p>
-Bezeichnet die Jahre von 1934 bis 2000. Die Bereichsangabe ist
-<code>1934</code> <code>2000</code>.
+Bezeichnet die Jahre von 1934 bis 2000 (einschließlich der Grenzen).
 </p>
 
 <div class='verb'><code>
-<a href="CQL-Match-List.html#match:year"><span style='white-space:nowrap;'>:year</span></a> 1934 unlimited
+&gt;=1934
 </code></div>
 
 <p>
@@ -105,7 +118,7 @@ Bezeichnet alle Jahre ab 1934.
 </p>
 
 <div class='verb'><code>
-<a href="CQL-Match-List.html#match:year"><span style='white-space:nowrap;'>:year</span></a> unlimited 1934
+&lt;1935
 </code></div>
 
 <p>
@@ -113,12 +126,20 @@ Bezeichnet alle Jahre vor 1935.
 </p>
 
 <div class='verb'><code>
-<a href="CQL-Match-List.html#match:elo"><span style='white-space:nowrap;'>:elo</span></a> unlimited
+*
 </code></div>
 
 <p>
-Finde alle Partien, in denen ein Spieler eine (d.h. irgendeine) ELO-Wertung
-besitzt.
+Finde alle Partien, die ein (d.h. irgendein beliebiges) Partiedatum besitzen. Dies
+schließt also alle Partien aus, die ohne Partiedatumsangabe sind.
+</p>
+
+<div class='verb'><code>
+&ndash;
+</code></div>
+
+<p>
+Dies findet alle Partien auf, die ohne Partiedatumsangabe sind.
 </p>
 
 </body>

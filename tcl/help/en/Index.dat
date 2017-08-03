@@ -18,12 +18,12 @@ set Index {
       {{Chess variants} {Chess-Variants.html} {}}
       {{Clipbase} {Clipbase.html} {}}
       {{Command line options} {Command-Line-Options.html} {}}
+      {{Compact database} {Database-Switcher.html} {Compact}}
       {{Compound square designators (CQL)} {CQL-Square-Designators.html} {compound}}
-      {{Compress} {Database-Switcher.html} {Compact}}
-      {{Compress database} {Database-Switcher.html} {Compact}}
       {{Contact information} {Contact-Information.html} {}}
       {{CQL Examples} {CQL-Examples.html} {}}
-      {{CQL Manual} {CQL-Index.html} {}}
+      {{CQL File format} {CQL-File-Format.html} {}}
+      {{CQL Introduction} {CQL-Index.html} {}}
       {{CQL Match List} {CQL-Match-List.html} {}}
       {{CQL Position List} {CQL-Position-List.html} {}}
       {{CQL Relation List} {CQL-Relation-List.html} {}}
@@ -38,6 +38,7 @@ set Index {
       {{Database archive} {Database-Formats.html} {Database-Archive}}
       {{Database formats} {Database-Formats.html} {}}
       {{Database switcher} {Database-Switcher.html} {}}
+      {{Database write protection} {Write-Protect-Database.html} {}}
     }
   }
   { E
@@ -65,6 +66,11 @@ set Index {
       {{Homepage} {Contact-Information.html} {Homepage}}
     }
   }
+  { K
+    {
+      {{King-of-the-Hill} {Chess-Variants.html} {}}
+    }
+  }
   { L
     {
       {{Losers} {Chess-Variants.html} {}}
@@ -86,6 +92,7 @@ set Index {
   { P
     {
       {{Pattern matching} {Pattern-Matching.html} {}}
+      {{Percentage range specifiers (CQL)} {CQL-Percentage-Specifiers.html} {}}
       {{Piece designators (CQL)} {CQL-Piece-Designators.html} {}}
       {{Position List (CQL)} {CQL-Position-List.html} {}}
     }
@@ -114,6 +121,8 @@ set Index {
   { W
     {
       {{Website} {Contact-Information.html} {Homepage}}
+      {{Write protection of databases} {Write-Protect-Database.html} {}}
+      {{Write protection of PGN archives} {Write-Protect-Database.html} {}}
     }
   }
   { X

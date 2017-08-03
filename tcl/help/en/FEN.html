@@ -19,7 +19,7 @@
   <meta name="generator"
      content="scidb.sourceforge.net" />
   <meta name="description"
-     content="Scidb Help Page" />
+     content="Scidb - Help Page" />
 
   <link rel="icon"
        href="http://scidb.sourceforge.net/favicon.ico"
@@ -29,9 +29,9 @@
   <link rel="stylesheet"
        type="text/css"
       media="screen"
-       href="../styles/help.css" />
+		 href="../styles/help.css" />
 
-  <title>Scidb Help: FEN (Forsyth-Edwards Notation)</title>
+  <title>Scidb - Help: FEN (Forsyth-Edwards Notation)</title>
 </head>
 
 <body>
@@ -49,7 +49,7 @@ one weakness: it is not describing how many times the described position
 was repeated.  A detailed description is available online:
 </p>
 
-<!-- Not for translators: please replace with local Wikipedia link. -->
+<!-- Note for translators: please replace with local Wikipedia link. -->
 <ul>
   <li><a href="http://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation">
         ForsythEdwards Notation - Wikipedia&nbsp;<span class="awesome">&#xf08e;</span></a></li>
@@ -66,14 +66,14 @@ required extensions:
 </p>
 
 <ul>
-  <li><a href="#Crazyhouse">Crazyhouse</a></li>
+  <li><a href="#DropChess">Drop Chess</a></li>
   <li><a href="#ThreeCheck">Three-check Chess</a></li>
 </ul>
 
-<h2 id="Crazyhouse">Crazyhouse</h2>
+<h2 id="DropChess">Drop Chess</h2>
 
 <p>
-Scidb is using an extended FEN (X-FEN, or Shredder FEN) for Crazyhouse,
+Scidb is using an extended FEN (X-FEN, or Shredder FEN) for Drop Chess,
 derived from BPGN standard (&#x21d2;
 <a href="http://bughousedb.com/Lieven_BPGN_Standard.txt">
 BPGN - Bughouse Portable Game Notation&nbsp;<span class="awesome">&#xf08e;</span></a>).
@@ -81,9 +81,9 @@ The pieces in holding will be added at the end of first field; for
 example:
 </p>
 
-<ul style='list-style-type: none'><li><code>
+<div class='example'><pre>
 r2q1rk1/ppp2ppp/5p2/b7/8/P1NPB2b/1PP1QP1P/R3R1K1/NNPPbnp b - - 0 16
-</code></li></ul>
+</pre></div>
 
 <p>
 <code>NNPPbnp</code> is describing that the white player has two
@@ -96,9 +96,9 @@ For pieces resulted from a pawn promotion the character tilde is
 tagging this piece. Example:
 </p>
 
-<ul style='list-style-type: none'><li><code>
+<div class='example'><pre>
 rkn2Q~N1/pppq4/5P2/8/1P1P1n2/5B1P/PPPN1PpP/R3K1R1/RBBBPPq b Q - 0 43
-</code></li></ul>
+</pre></div>
 
 <p>
 The white queen (<code>Q~</code>) was originated from a pawn
@@ -113,9 +113,9 @@ For this chess variant an additional field will be appended to the FEN
 Example:
 </p>
 
-<ul style='list-style-type: none'><li><code>
+<div class='example'><pre>
 rnb1k1nr/pppp1ppp/8/4p3/3PP2q/2N5/PP3PPP/R1BQKBNR w KQkq - 1 5 +0+2
-</code></li></ul>
+</pre></div>
 
 <p>
 <code>+0+2</code> means:
