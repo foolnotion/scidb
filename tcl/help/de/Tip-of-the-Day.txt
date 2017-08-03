@@ -33,8 +33,9 @@ Mit gedrückter rechter Maustaste wird dieses Menü aktiviert.
 <TIP number="002" level="2">
 
 <p>
-Im Datenbankumschalter können per Drag&#x2009;&amp;&#x2009;Drop (Ziehen und Ablegen)
-Partien von einer Datenbank in eine andere Datenbank kopiert werden.
+Im Datenbankumschalter können per Ziehen&#x2009;&amp;&#x2009;Ablegen
+(Drag&#x2009;&amp;&#x2009;Drop) Partien von einer Datenbank in eine andere
+Datenbank kopiert werden.
 </p>
 
 <furtherinfo href="Database-Switcher#DND"/>
@@ -158,8 +159,8 @@ kontextsensitiven Menüs im Partienumschalter, oder aber mit dem Tastaturkürzel
 <p>
 Alle Funktionsleisten sind frei positionierbar, neben weiteren einstellbaren
 Attributen. Die geriffelte Leiste in der Funktionsleiste erlaubt
-Drag&#x2009;&amp;&#x2009;Drop (Ziehen und Ablegen), und bietet ein kontextsensitive
-s Menü.
+Ziehen&#x2009;&amp;&#x2009;Ablegen (Drag&#x2009;&amp;&#x2009;Drop), und bietet
+ein kontextsensitives Menü.
 </p>
 
 <furtherinfo href="Toolbar-Usage"/>
@@ -478,8 +479,8 @@ unterstützt.
 
 <p>
 Die Fensterelemente auf dem Schachbrettreiter sind frei konfigurierbar mittels
-Drag&#x2009;&amp;&#x2009;Drop (Ziehen und Ablegen) der Titelleiste. Die Balken zwischen
-den Fensterelementen erlauben eine Adjustierung der Fenstergrößen.
+Ziehen&#x2009;&amp;&#x2009;Ablegen (Drag&#x2009;&amp;&#x2009;Drop) der Titelleiste.
+Die Balken zwischen den Fensterelementen erlauben eine Adjustierung der Fenstergrößen.
 </p>
 
 </TIP>
