@@ -42,6 +42,7 @@ SOURCES = \
 	encoding.tcl \
 	dialogs/fileselectionbox.tcl \
 	dialogs/help.tcl \
+	dialogs/tip-of-the-day.tcl \
 	contrib/tkmenu.tcl \
 	contrib/treectrl.tcl \
 	contrib/filelist-bindings.tcl \

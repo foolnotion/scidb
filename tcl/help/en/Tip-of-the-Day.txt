@@ -1,0 +1,471 @@
+<!-- ======================================================================
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $HeadURL$
+======================================================================= -->
+
+<!-- ======================================================================
+* Copyright: (C) 2013-2017 Gregor Cramer
+======================================================================= -->
+
+<!-- ======================================================================
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+======================================================================= -->
+
+TITLE Tip des Tages
+
+<!-- NEXT TIP ========================================================= -->
+<TIP number="001" level="1">
+
+<p>
+Many window areas are providing a context-sensitive menu. This menu will
+be activated by pressing the right mouse button.
+</p>
+
+<!--<furtherinfo href="Context-Sensitive-Menu"/>-->
+
+</TIP>
+<!-- NEXT TIP ========================================================= -->
+<TIP number="002" level="2">
+
+<p>
+Inside the database switcher games can be copied with Drag&#x2009;&amp;&#x2009;Drop
+from one database to another.
+</p>
+
+<furtherinfo href="Database-Switcher#DND"/>
+
+</TIP>
+<!-- NEXT TIP ========================================================= -->
+<TIP number="003" level="3">
+
+<p>
+Game flags are useful for marking games with particular characteristics,
+at a later point you may specifically search for them.
+</p>
+
+<furtherinfo href="Game-Flags"/>
+
+</TIP>
+<!-- NEXT TIP ========================================================= -->
+<TIP number="004" level="3">
+
+<p>
+If you want to quickly try out some moves without changing the game, simply
+turn on Trial mode:
+</p>
+
+<ul>
+  <li><p>
+    Use the shortcut
+    <key>Ctrl</key>+<key>%::application::board::mc::Accel(trial-mode)%</key>
+    to turn this mode on or off.
+  </p></li>
+  <li><p>
+    Use the context-sensitive menu in game editor: 
+    <menuitem>%::application::pgn::mc::StartTrialMode%</menuitem>
+    turns on, and
+    <menuitem>%::application::pgn::mc::StopTrialMode%</menuitem>
+    turns off the Trial mode.
+  </p></li>
+</ul>
+
+<p>
+Turning it off resets the game to it's original state.
+</p>
+
+</TIP>
+<!-- NEXT TIP ========================================================= -->
+<TIP number="005" level="2">
+
+<p>
+If a database should be protected from accidental changes you might set
+the file permissions to "read-only". This can be done with the help of
+the file selection dialog.
+</p>
+
+<p>
+The best method protecting a database from accidental changes just
+temporary is the use of the write-protect switch in the database switcher.
+Next start of Scidb the application will remember the last write-protection
+setting, as long as the database in located in the history.
+</p>
+
+</TIP>
+<!-- NEXT TIP ========================================================= -->
+<TIP number="006" level="3">
+
+<p>
+A correction of previously entered moves will be done in the following way:
+</p>
+
+<ol>
+  <li><p>
+    Create a sub-variation with the corrected moves.
+  </p></li>
+  <li><p>
+    Inside this variation choose
+    <menuitem>%::application::pgn::mc::Command(variation:exchange)%</menuitem>
+    from the context-sensitive menu.
+  </p></li>
+</ol>
+
+</TIP>
+<!-- NEXT TIP ========================================================= -->
+<TIP number="007" level="2">
+
+<p>
+The game editor allows to undo changes, and also to redo undone changes.
+</p>
+
+<p>
+This is easily accomplished with shortcuts: <key>Ctrl</key>+<key>Z</key>
+for undo, and <key>Ctrl</key>+<key>Y</key> for redo.
+</p>
+
+<p>
+The context-sensitive menu offers menu entries for this, also providing
+information about the concerned modification.
+</p>
+
+</TIP>
+<!-- NEXT TIP ========================================================= -->
+<TIP number="008" level="2">
+
+<p>
+After changes in a game in the game editor you can specifically save the
+game moves, without using the dialog for editing the game characteristic
+(quick save). Either with the help of the context-sensitive menu, or with
+shortcut
+<key>Ctrl</key>+<key>%::application::board::mc::Accel(replace-moves)%</key>.
+</p>
+
+<!--<furtherinfo href="Game-Editor#ReplaceMoves"/>-->
+
+</TIP>
+<!-- NEXT TIP ========================================================= -->
+<TIP number="009" level="1">
+
+<p>
+All toolbars are freely positionable, apart from further adjustable
+attributes. The ribbed bar inside the toolbar provides drag &amp;
+drop of the toolbar, and additionally a context-sensitive menu.
+</p>
+
+<furtherinfo href="Toolbar-Usage"/>
+
+</TIP>
+<!-- NEXT TIP ========================================================= -->
+#<TIP number="010" level="1">
+#
+#<p>
+#It is reommended to download the player photo files. This is available in
+#main menu with entry
+#<menuitem>%::menu::mc::Extras%</menuitem>&#x27a2;<menuitem>%::util::photos::mc::InstallPlayerPhotos%</menuitem>.
+#</p>
+#
+#<p>
+#As soon as an update of the player photo files is available on the server
+#a sepcial menu beside the main menu will indicate this:
+#</p>
+#
+#<dir><img src="images/download-hint.png" /></dir>
+#
+#</TIP>
+<!-- NEXT TIP ========================================================= -->
+<TIP number="011" level="1">
+
+<p>
+A fullscreen function is available. The easiest way to use is the shortut
+<key>F11</key> to activate or deactivate. This function is also available
+in main menu.
+</p>
+
+</TIP>
+<!-- NEXT TIP ========================================================= -->
+<TIP number="012" level="1">
+
+<p>
+Inside the tables &ndash; like game list, player list, etc. &ndash; all
+columns are freely configurable, in order to do this use the
+context-sensitive menu. By Drag&#x2009;&amp;&#x2009;Drop with left mouse
+button on the table header the column order can be changed.
+</p>
+
+</TIP>
+<!-- NEXT TIP ========================================================= -->
+<TIP number="013" level="2">
+
+<p>
+For a quick setup of Chess960 start positions the entry
+<menuitem>%::setup::position::mc::SetStartPosition%</menuitem> inside
+the context-sensitive menu of the board should be used:
+</p>
+
+<ul>
+  <li>
+    Enter the position number, if known.
+  </li>
+  <li>
+    Reuse the last entered start position.
+  </li>
+  <li>
+    Enter the position of the back rank.
+  </li>
+</ul>
+
+</TIP>
+<!-- NEXT TIP ========================================================= -->
+<TIP number="014" level="1">
+
+<p>
+Many icons, labels, and other information buttons &ndash; which are abbreviated
+for example, or with a meaning which isn't obvious &ndash; do offer a tooltip
+when the mouse pointer is hovering.
+</p>
+
+</TIP>
+<!-- NEXT TIP ========================================================= -->
+<TIP number="015" level="2">
+
+<p>
+Sending databases via the Internet will be done with the use of the database
+independent archive format (with suffix .scv). This format is also appropriate
+for archiving. An open database can be archived inside the database switcher,
+in this case the modified version will be archived. The file selection dialog
+is also providing the archiving feature, at this place the data on the disk
+will be archived.
+</p>
+
+</TIP>
+<!-- NEXT TIP ========================================================= -->
+<TIP number="016" level="2">
+
+<p>
+PGN archives, as well as zipped archives (.pgn.gz), can be modified and
+saved. For this purpose the PGN database has to be set writable in the
+database switcher, because per default all PGN archives will be opened
+read-only. But unlike with databases modified PGN archives has to be saved
+explicitly.
+</p>
+
+<p>
+This functionality supports, among other things, correspondence about games
+via Internet, with the use of the PGN format. But in general it is
+recommended to convert PGN files into Scidb's format, especially if the
+archive is large.
+</p>
+
+<furtherinfo href="Write-Protect-Database"/>
+
+</TIP>
+<!-- NEXT TIP ========================================================= -->
+<TIP number="017" level="1">
+
+<p>
+If a database is not writable after opening, and Scidb is not offering any
+option to set the permissions, then one of the following cases applies:
+</p>
+
+<ul>
+  <li><p>
+    It is a ChessBase database, Scidb cannot write nor modify these bases.
+  </p></li>
+  <li><p>
+    It is a zip file, this can be opened, but cannot be modified.
+  </p></li>
+  <li><p>
+    At least one of the files on disk belonging to this database does not
+    have write permissions. With the help of the file selection box the write
+    permission can be set, but only if the volume or folder of the files is
+    permitting write permissions.
+  </p></li>
+</ul>
+
+</TIP>
+<!-- NEXT TIP ========================================================= -->
+<TIP number="018" level="1">
+
+<p>
+It's not a problem zu close Scidb even if some open games are unsaved. With next
+start of Scidb all these games will be recovered, provided that this has been
+approved when the program ends.
+</p>
+
+</TIP>
+<!-- NEXT TIP ========================================================= -->
+<TIP number="019" level="2">
+
+<p>
+When starting Scidb all the games that are locked as Scidb has been closed,
+will be opened automatically after confirmation. Concurrently all the
+related databases will be opened.
+</p>
+
+</TIP>
+<!-- NEXT TIP ========================================================= -->
+<TIP number="020" level="3">
+
+<p>
+Scidb allows to enter invalid moves: castling despite the lack of castling
+rights, or crossing threatened squares with the King, as well as moving the
+King into check. Entering invalid moves will be facilitated when holding
+the <key>Shift</key> key.
+</p>
+
+</TIP>
+<!-- NEXT TIP ========================================================= -->
+<TIP number="021" level="3">
+
+<p>
+Es wird eine besondere Eigenheit historischer Partien unterstützt, nämlich
+die Ausführung einer Rochade trotz fehlenden Rochadeturms. In Vorgabepartien
+aus früheren Zeiten gab es die Regelung, daß bei Vorgabe eines Turms trotzdem
+die Rochade ausgeführt werden durfte. Dazu sollte in der Startposition das
+entsprechende Rochaderecht ausgewiesen sein.
+</p>
+
+</TIP>
+<!-- NEXT TIP ========================================================= -->
+<TIP number="022" level="3">
+
+<p>
+Scidb unterstützt Schach-960-Positionen, als auch Shuffle-Schach-Positionen,
+nicht nur im Normalschach, sondern auch in allen anderen unterstützen
+Schachformen: %::mc::VariantName(DropChess)%, %::mc::VariantName(Bughouse)%,
+%::mc::VariantName(Antichess)%, %::mc::VariantName(ThreeCheck)% und
+%::mc::VariantName(KingOfTheHill)%.
+</p>
+
+</TIP>
+<!-- NEXT TIP ========================================================= -->
+<TIP number="023" level="1">
+
+<p>
+Scidb hat einen speziell angepassten Dateiauswahldialog. Alle Operationen
+&ndash; wie das Kopieren einer Datenbank, das Löschen einer Datenbank, das
+Umbenennen, sowie die Schreibschutzvergabe &ndash; werden auf alle zu einer
+Datenbank gehörigen Dateien ausgeführt.
+</p>
+
+</TIP>
+<!-- NEXT TIP ========================================================= -->
+<TIP number="024" level="1">
+
+<p>
+Unter Linux/Unix können auch Windows-Programme als Motoren
+(Schachprogramme) genutzt werden &ndash; beispielsweise Houdini &ndash;,
+wenn der Windows-Emulator <em>Wine</em> installiert ist. Allerdings wird
+beim Motorstart Geduld gefordert, der Windows-Emulator benötigt eine ganze
+Weile beim ersten Start.
+</p>
+
+<p>
+Die Nutzung des Windows-Programms unterscheidet sich nicht von der Nutzung
+eines Unix-Programms, Scidb erkennt sebsttätig, wie der Motor zu starten ist.
+</p>
+
+</TIP>
+<!-- NEXT TIP ========================================================= -->
+#<TIP number="025" level="3">
+#
+#<p>
+#Der Partieeditor unterstützt Hyperlinks (Web-Links, oder Email-Adressen).
+#Mit <key>Shift</key>+Mausklick wird der Link geöffnet (ein Mausklick ohne
+#gehaltener <key>Shift</key>-Taste öffnet hingegen den Kommentareditor).
+#</p>
+#
+#<p>
+#Hyperlinks können im Kommentareditor bearbeitet werden. Die Syntax ist
+#der Wiki-Syntax entlehnt worden.
+#</p>
+#
+#<furtherinfo href="Comment-Editor-Dialog#Text:Hyperlinks"/>
+#
+#</TIP>
+<!-- NEXT TIP ========================================================= -->
+<TIP number="026" level="1">
+
+<p>
+Scidb öffnet auch ChessBase-Datenbanken, sowohl das neue Format (.cbh), als
+auch das alte DOS-Format (.cbf). Jedoch können ChessBase-Datenbanken nicht
+als Referenzdatenbank verwendet werden. Deshalb wird ein Export in das
+Scidb-Format (.sci) empfohlen.
+</p>
+
+<p>
+In seltenen Fällen kommt es vor, daß in einer ChessBase-Datenbank eine Partie
+nicht gelesen werden kann (in der MegaBase 2014 sind es 11 von 5.7 Mio.
+Partien). ChessBase hält sein Datenformat geheim, und Scidb kann noch nicht
+alle Informationen lesen.
+</p>
+
+</TIP>
+<!-- NEXT TIP ========================================================= -->
+<TIP number="027" level="3">
+
+<p>
+In Partieeditor werden Züge, die &ndash; mölicherweise aufgrund einer Zugumstellung
+&ndash; zu einer bereits vorhandenen Stellung in der Hauptvariante führen, mit einem
+Verknüpfungssymbol <awesome>fa-external-link-square</awesome> versehen. Wenn die
+Maus über diesem Symbol gehalten wird erfolgt eine Hervorhebung des Zuges in der
+Hauptvariante, der zur gleichen Stellung führt &ndash; sofern dieser Zug sichtbar
+ist. Ein Mausklick auf dieses Symbol positioniert auf den hervogehobenen Zug (auch
+wenn sieser nicht sichtbar ist). Dies erleichtert u.a. das Erkennen von
+Zugumstellungen bei der Eingabe von Varianten.
+</p>
+
+</TIP>
+<!-- NEXT TIP ========================================================= -->
+<TIP number="028" level="2">
+
+<p>
+Der Partieeditor verfügt über umfangreiche Einstellmöglichkeiten. Der dazugehörige
+Dialog wird über das kontextsensitive Menü geöffnet: 
+<menuitem>%::pgn::setup::mc::Configure(editor)%</menuitem>.
+</p>
+
+</TIP>
+<!-- NEXT TIP ========================================================= -->
+<TIP number="029" level="2">
+
+<p>
+Um auf dem Schachbrettreiter durch eine Partie nur mit einer Taste zu traversieren
+sollte die gleitende Variantenanzeige auf "Versteckt" oder "Rechts" eingestellt werden.
+</p>
+
+</TIP>
+<!-- NEXT TIP ========================================================= -->
+<TIP number="030" level="1">
+
+<p>
+Die Eingabe von Varianten wird mit <key>F5</key> vereinfacht. Es wird ein Halbzug
+zurückgespielt, und die nächste Zugeingabe wird als Untervariante angelegt.
+</p>
+
+<p>
+Das Traversieren von Varianten wird mit <key>%::mc::Key(Down)%</key> (in eine
+Variante hineinspringen) und <key>%::mc::Key(Up)%</key> (eine Variant verlassen)
+unterstützt.
+</p>
+
+</TIP>
+<!-- NEXT TIP ========================================================= -->
+<TIP number="031" level="1">
+
+<p>
+Die Fensterelemente auf dem Schachbrettreiter sind frei konfigurierbar mittels
+Drag&#x2009;&amp;&#x2009;Drop (Ziehen und Fallenlassen) der Titelleiste. Die Balken
+zwischen den Fensterelementen erlauben eine Adjustierung der Fenstergrößen.
+</p>
+
+</TIP>
+<!-- NEXT TIP ========================================================= -->
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html fileencoding=latin1: -->
