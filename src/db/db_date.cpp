@@ -52,7 +52,7 @@ computeJulian(unsigned y, unsigned m, unsigned d)
 
 	unsigned c = y/100;
 
-	return 1721119 + d + ((146097*c)>>2) + ((1461*(y - 100*c))>>2) + (153*m + 2)/5;
+	return 1721119 + d + ((146097*c) >> 2) + ((1461*(y - 100*c)) >> 2) + (153*m + 2)/5;
 }
 
 
@@ -64,12 +64,12 @@ computeDate(Date& date, unsigned julian)
 	int j = julian - 1721119;
 	int y, m, d, t;
 
-	y = ((j<<2) - 1)/146097;
-	j = (j<<2) - 146097*y - 1;
-	t = j>>2;
-	j = ((t<<2) + 3)/1461;
+	y = ((j << 2) - 1)/146097;
+	j = (j << 2) - 146097*y - 1;
+	t = j >> 2;
+	j = ((t << 2) + 3)/1461;
 	y = 100*y + j;
-	t = 5*(((t<<2) - 1461*j + 7)>>2);
+	t = 5*(((t << 2) - 1461*j + 7) >> 2);
 	m = (t - 3)/153;
 	d = (t - 153*m + 2)/5;
 
@@ -443,6 +443,28 @@ Date::isValid(unsigned y, unsigned m, unsigned d)
 }
 
 
+bool
+Date::isPartial(Date const& date) const
+{
+	if (date.year() == 0)
+		return true;
+
+	if (year() != date.year())
+		return false;
+
+	if (date.month() == 0)
+		return false;
+
+	if (month() != date.month())
+		return false;
+
+	if (date.day() == 0)
+		return true;
+
+	return day() == date.day();
+}
+
+
 void
 Date::fromString(mstl::string const& s)
 {
@@ -625,6 +647,13 @@ Date::addDays(int n)
 		return false;
 
 	return ::computeDate(*this, julian + n);
+}
+
+
+unsigned
+Date::julianDay(unsigned year, unsigned month, unsigned day)
+{
+	return computeJulian(year, month, day);
 }
 
 // vi:set ts=3 sw=3:

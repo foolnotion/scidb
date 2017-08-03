@@ -117,7 +117,7 @@ MoveInfo::compare(MoveInfo const& mi) const
 			return 0;
 
 		case CorrespondenceChessSent:
-			if (int cmp = m_time.m_date.compare(mi.m_time.m_date))
+			if (int cmp = mstl::compare(m_time.m_date, mi.m_time.m_date))
 				return cmp;
 			// fallthru
 
@@ -125,7 +125,7 @@ MoveInfo::compare(MoveInfo const& mi) const
 		case ElapsedGameTime:
 		case ElapsedMoveTime:
 		case ClockTime:
-			if (int cmp = m_time.m_clock.compare(mi.m_time.m_clock))
+			if (int cmp = mstl::compare(m_time.m_clock, mi.m_time.m_clock))
 				return cmp;
 			break;
 

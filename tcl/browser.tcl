@@ -1244,9 +1244,6 @@ proc FindKey {w attr} {
 
 proc FindRange {w key position} {
 	if {[::scidb::game::position $position startKey] eq $key} { return {end end} }
-	# XXX [$w tag nextrange m:move "m-0.56"] == [$w tag nextrange m:move "m-0.57"]
-#puts "*** [$w tag nextrange m:move m-0.56] == [$w tag nextrange m:move m-0.57]"
-#puts "$key --> [$w tag nextrange m:move $key]"
 	set range [$w tag nextrange m:move $key]
 	if {[llength $range] == 0} {
 		# should not happen, but who knows?

@@ -132,12 +132,14 @@
 ::mc::VariantName(Undetermined)	"Indeterminato"
 ::mc::VariantName(Normal)			"Scacchi Ortodossi"
 ::mc::VariantName(Bughouse)		"Scacchi Mangia-passa"
+::mc::VariantName(DropChess)		"Drop Chess" ;# NEW this is the main term for Crazyhouse and Chessgi
 ::mc::VariantName(Crazyhouse)		"Scacchi Crazyhouse"
+::mc::VariantName(Chessgi)			"Chessgi" ;# NEW
 ::mc::VariantName(ThreeCheck)		"Tre Scacchi"
-::mc::VariantName(Antichess)		"Vinciperdi"
-::mc::VariantName(Suicide)			"Vinciperdi"
+::mc::VariantName(Antichess)		"Vinciperdi" ;# this is the main term for Suicide and Giveaway
+::mc::VariantName(Suicide)			"Vinciperdi" ;# NEW seems to be wrong
 ::mc::VariantName(Giveaway)		"Giveaway"
-::mc::VariantName(Losers)			"Vinciperdi"
+::mc::VariantName(Losers)			"Vinciperdi" ;# NEW seems to be wrong
 ::mc::VariantName(Chess960)		"Scacchi 960"
 ::mc::VariantName(Symm960)			"Scacchi 960 (solo simmetrica)"
 ::mc::VariantName(Shuffle)			"Scacchi Shuffle"
@@ -254,6 +256,7 @@
 ::menu::mc::Toolbars							"&Barre strumenti"
 ::menu::mc::ShowLog							"Mostra &Log"
 ::menu::mc::AboutScidb						"S&u Scidb"
+::menu::mc::TipOfTheDay						"Tip of the &Day" ;# NEW
 ::menu::mc::Fullscreen						"&Schermo intero"
 ::menu::mc::LeaveFullscreen				"Esci da &Schermo intero"
 ::menu::mc::Help								"&Aiuto"
@@ -392,6 +395,21 @@
 ::util::photos::mc::Log(skipped:N)				"%s file(s) saltati."
 ::util::photos::mc::Log(updated:1)				"%s file aggiornati."
 ::util::photos::mc::Log(updated:N)				"%s file(s) aggiornati."
+
+### tip of the day #####################################################
+::tips::mc::TipOfTheDay				"Tip of the Day" ;# NEW
+::tips::mc::FurtherInformation	"Further information" ;# NEW
+::tips::mc::CouldNotOpenFile		"Could not open file %s." ;# NEW
+::tips::mc::CouldNotFindAnyTip	"Could not find any tip." ;# NEW
+::tips::mc::RepeatAllTips			"Repeat all tips (restart from the beginning)" ;# NEW
+::tips::mc::NextTip					"Next Tip" ;# NEW
+::tips::mc::FirstTip					"<p>The Tip-of-the-Day information serves to a better insight into the functioning of this application. Furthermore it will give useful hints that will help to know what is possible.</p><p color='darkgreen'><b>Have joy with Scidb!</b></p>" ;# NEW
+
+::tips::mc::Choice(everytime)					"Show everytime" ;# NEW
+::tips::mc::Choice(periodically)				"Show periodically" ;# NEW
+::tips::mc::Choice(everytimeWhenNew)		"Show everytime, but only new tips" ;# NEW
+::tips::mc::Choice(periodicallyWhenNew)	"Show periodically, but only new tips" ;# NEW
+::tips::mc::Choice(neverShow)					"Don't show anymore" ;# NEW
 
 ### twm ################################################################
 ::twm::mc::Close				"Close" ;# NEW

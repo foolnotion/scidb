@@ -358,7 +358,7 @@ proc dialogButtonAddSeparator {dlg args} {
 	set index 0
 	while {[winfo exists $dlg.sep$index]} { incr index }
 	set sep [tk::frame $dlg.sep$index -borderwidth 0 -takefocus 0 -width 10]
-	PackDialogButton $dlg $sep $opts(-side)
+	PackDialogButton $dlg $sep $opts(-side) $opts(-position)
 	set Specs(justify:$sep) $opts(-justify)
 }
 
@@ -375,9 +375,7 @@ proc dialogButtonAdd {dlg type labelvar icon args} {
 
 	if {![winfo exists $dlg.__buttons]} { dialogButtons $dlg {} }
 	set w [::ttk::button $dlg.$type -class TButton]
-	if {[llength $icon]} {
-		$w configure -compound left -image $icon
-	}
+	if {[llength $icon]} { $w configure -compound left -image $icon }
 	set Specs(justify:$w) $opts(-justify)
 	dialogButtonsSetup $dlg $type $labelvar
 	bind $w <Return> "event generate $w <Key-space>; break"
@@ -640,6 +638,7 @@ proc PackDialogButton {dlg btn side {position {}}} {
 		}
 	}
 	pack $btn -in $dlg.__buttons -pady $::theme::pady -padx $::theme::padx -side $side {*}$options
+	raise $btn
 }
 
 

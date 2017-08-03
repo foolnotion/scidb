@@ -21,27 +21,47 @@ BEGIN
   <table>
     <tr>
       <td>%::notation::mc::MoveForm(san)%</td>
-      <td>&#x2001; &Knight;f3</td>
+      <td>&#x2001; 17.e4 &Knight;xe4+</td>
+    </tr>
+    <tr>
+      <td>%::notation::mc::MoveForm(gan)%</td>
+      <td>&#x2001; 17.e4 &Knight;e4:+</td>
+    </tr>
+    <tr>
+      <td>%::notation::mc::MoveForm(man)%</td>
+      <td>&#x2001; 17.e4 &Knight;e4</td>
     </tr>
     <tr>
       <td>%::notation::mc::MoveForm(lan)%</td>
-      <td>&#x2001; &Knight;g1&#x2212;f3</td>
+      <td>&#x2001; 17.e3&#x2212;e4 &Knight;f6xe4+</td>
     </tr>
     <tr>
-      <td>%::notation::mc::MoveForm(alg)%</td>
-      <td>&#x2001; g1f3</td>
+      <td>%::notation::mc::MoveForm(ran)%</td>
+      <td>&#x2001; 17.e3&#x2212;e4 &Knight;f6x&Pawn;e4+</td>
     </tr>
     <tr>
-      <td>%::notation::mc::MoveForm(eng)%</td>
-      <td>&#x2001; N&#x2212;KB3</td>
+      <td>%::notation::mc::MoveForm(can)%</td>
+      <td>&#x2001; 17.e3e4 f6e4</td>
+    </tr>
+    <tr>
+      <td>%::notation::mc::MoveForm(smi)%</td>
+      <td>&#x2001; 17.e3e4 f6e4&Knight;</td>
+    </tr>
+    <tr>
+      <td>%::notation::mc::MoveForm(edn)%</td>
+      <td>&#x2001; 17.P&#x2212;K4 KxP+</td>
+    </tr>
+    <tr>
+      <td>%::notation::mc::MoveForm(sdn)%</td>
+      <td>&#x2001; 17.P4R CxP+</td>
     </tr>
     <tr>
       <td>%::notation::mc::MoveForm(cor)%</td>
-      <td>&#x2001; 7163</td>
+      <td>&#x2001; 17.5354 6654</td>
     </tr>
     <tr>
       <td>%::notation::mc::MoveForm(tel)%</td>
-      <td>&#x2001; KAHI</td>
+      <td>&#x2001; 17.GEGO TIGO</td>
     </tr>
   </table>
 </box>

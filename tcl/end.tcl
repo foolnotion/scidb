@@ -45,6 +45,8 @@ proc welcomeToScidb {parent} {
 		set Welcome 1
 	} elseif {$WhatsNew} {
 		::help::open .application Whats-New -center 1
+	} else {
+		::tips::show .application
 	}
 }
 
@@ -373,6 +375,7 @@ set ::scidb::revision [::scidb::misc::revision]
 ::board::setup
 ::tooltip::init
 ::font::setupChessFonts
+#if {$beta::Welcome} { ::html::preload $mc::langID }
 application::open
 
 # vi:set ts=3 sw=3:

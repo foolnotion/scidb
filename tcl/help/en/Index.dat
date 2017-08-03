@@ -30,7 +30,7 @@ set Index {
       {{CQL Syntax} {CQL-Syntax.html} {}}
       {{CQL Tagging} {CQL-Tagging.html} {}}
       {{CQL Transformations} {CQL-Transformations.html} {}}
-      {{Crazyhouse Chess} {Chess-Variants.html} {}}
+      {{Crazyhouse} {Chess-Variants.html} {}}
     }
   }
   { D

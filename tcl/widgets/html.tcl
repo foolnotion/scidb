@@ -6,7 +6,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2011-2013 Gregor Cramer
+# Copyright: (C) 2011-2017 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -46,22 +46,38 @@ variable Margin	8 ;# do not change!
 variable MaxWidth	12000
 
 
-proc hyphenate {lang content} {
+
+proc findHyphenPatterns {lang} {
 	set patternFilename [file join $::scidb::dir::hyphen pattern $lang.dat]
-	if {[file readable $patternFilename]} {
-		set dictFilenames ""
-		set filename [file join $::scidb::dir::hyphen dict xx.dat]
-		if {[file readable $filename]} { append dictFilenames $filename }
-		set filename [file join $::scidb::dir::hyphen dict $lang.dat]
-		if {[file readable $filename]} {
-			if {[string length $dictFilenames]} { append dictFilenames ";" }
-			append dictFilenames $filename
-		}
-		set filename [file join $::scidb::dir::home dict $lang.dat]
-		if {[file readable $filename]} {
-			if {[string length $dictFilenames]} { append dictFilenames ";" }
-			append dictFilenames $filename
-		}
+	if {![file readable $patternFilename]} { return { "" {} } }
+	set dictFilenames ""
+	set filename [file join $::scidb::dir::hyphen dict xx.dat]
+	if {[file readable $filename]} { append dictFilenames $filename }
+	set filename [file join $::scidb::dir::hyphen dict $lang.dat]
+	if {[file readable $filename]} {
+		if {[string length $dictFilenames]} { append dictFilenames ";" }
+		append dictFilenames $filename
+	}
+	set filename [file join $::scidb::dir::home dict $lang.dat]
+	if {[file readable $filename]} {
+		if {[string length $dictFilenames]} { append dictFilenames ";" }
+		append dictFilenames $filename
+	}
+	return [list $patternFilename $dictFilenames]
+}
+
+
+proc preload {lang} {
+	lassign [findHyphenPatterns $lang] patternFilename dictFilenames
+	if {[string length $patternFilename]} {
+		::scidb::misc::html preload $patternFilename $dictFilenames
+	}
+}
+
+
+proc hyphenate {lang content} {
+	lassign [findHyphenPatterns $lang] patternFilename dictFilenames
+	if {[string length $patternFilename]} {
 #		if {$lang eq "de"} {
 #			# don't use German eszet:
 #			set content [string map {"ß" "ss"} $content]
@@ -116,15 +132,15 @@ proc formatUrl {url} {
 }
 
 
-proc defaultCSS {monoFamilies textFamilies} {
+proc defaultCSS {monoFamilies textFamilies {hoverColor none}} {
 	append css \n
-	append css ":link    { color: blue2; text-decoration: none; }\n"
-	append css ":visited { color: purple; text-decoration: none; }\n"
-	append css ":user    { color: blue2; text-decoration: none; }   /* http link */\n"
-	append css ":user2   { color: purple; text-decoration: none; }  /* http visited */\n"
-	append css ":user3   { color: black; text-decoration: none; }   /* invalid link */\n"
-	append css ":hover   { text-decoration: underline; background: yellow; }\n"
-	append css ".match   { background: yellow; color: black; }\n"
+	append css ":link    { color: blue2; text-decoration: none; }" \n
+	append css ":visited { color: purple; text-decoration: none; }" \n
+	append css ":user    { color: blue2; text-decoration: none; }   /* http link */" \n
+	append css ":user2   { color: purple; text-decoration: none; }  /* http visited */" \n
+	append css ":user3   { color: black; text-decoration: none; }   /* invalid link */" \n
+	append css ":hover   { text-decoration: underline; background: $hoverColor; }" \n
+	append css ".match   { background: yellow; color: black; }" \n
 	append css "body     { color: black; }\n"
 	append css [monoStyle $monoFamilies] \n
 	append css [textStyle $textFamilies] \n
@@ -207,6 +223,7 @@ proc Build {w args} {
 		-fonttable			{}
 		-fontsize			11
 		-textalign			"left"
+		-cursor				standard
 	}
 
 	array set opts $args
@@ -233,7 +250,7 @@ proc Build {w args} {
 	set htmlOptions {}
 	foreach name [array names opts] {
 		switch -- $name {
-			-delay - -css - -center - -fittowidth - -fittoheight - -importdir - -textalign -
+			-delay - -css - -center - -fittowidth - -fittoheight - -importdir - -textalign - -cursor -
 			-usehorzscroll - -usevertscroll - -keephorzscroll - -keepvertscroll - -fontsize -
 			-backgroundimage - -fixedwidth {}
 
@@ -309,6 +326,9 @@ proc Build {w args} {
 	set Priv(preamble) $preamble
 	set Priv(fixedwidth) $opts(-fixedwidth)
 
+	lappend Priv(onmouseover) [namespace code [list ShowTooltip $html]]
+	lappend Priv(onmouseout)  [namespace code HideTooltip]
+
 	foreach attr {delay center fittowidth fittoheight borderwidth css importdir textalign} {
 		set Priv($attr) $opts(-$attr)
 	}
@@ -340,6 +360,8 @@ proc Build {w args} {
 	if {[string length $Priv(importdir)]} {
 		$html handler node link [namespace code [list LinkHandler $html]]
 	}
+
+	ttk::setCursor $html $opts(-cursor)
 
 	if {$opts(-usehorzscroll)} {
 		if {$opts(-keephorzscroll)} {
@@ -425,6 +447,24 @@ proc UrlHandler {w args} {
 }
 
 
+proc ShowTooltip {html nodes} {
+	foreach node $nodes {
+		if {[string length [set tip [$node attribute -default "" title]]]} {
+			::tooltip::show $html $tip
+		}
+	}
+}
+
+
+proc HideTooltip {nodes} {
+	foreach node $nodes {
+		if {[string length [$node attribute -default "" title]]} {
+			::tooltip::hide
+		}
+	}
+}
+
+
 proc GetImage {file} {
 	if {[catch { set img [image create photo -file $file] }]} { return {} }
 	return [list $img [namespace code DeleteImage]]
@@ -477,6 +517,7 @@ proc WidgetProc {w command args} {
 				$w.sub.html configure -fixedwidth $width
 			}
 			if {$Priv(fittoheight)} {
+				update idletasks
 				lassign [$w.sub.html bbox] x y wd ht
 				set height [expr {$ht + 2*$y}]
 				$w.sub configure -height $height
@@ -520,7 +561,11 @@ proc WidgetProc {w command args} {
 				append msg [join [array names Priv onmouse*] ", "]
 				error $msg
 			}
-			lappend Priv($command) [lindex $args 0]
+			set Priv($command) $args
+			switch $command {
+				onmouseover	{ lappend Priv(onmouseover) [namespace code [list ShowTooltip $w.sub.html]] }
+				onmouseout	{ lappend Priv(onmouseout)  [namespace code HideTooltip] }
+			}
 			return
 		}
 
@@ -643,6 +688,9 @@ proc WidgetProc {w command args} {
 			if {!$Priv(focus)} {
 				set Priv(focus) 1
 				if {[$w.sub.html cget -exportselection]} {
+					# TODO the problem with this change is that
+					# the whole widget will be updated. In this
+					# case the double buffering cannot work.
 					$w.sub.html tag configure selection \
 						-foreground [$w.sub.html cget -selectforeground] \
 						-background [$w.sub.html cget -selectbackground] \
@@ -656,6 +704,9 @@ proc WidgetProc {w command args} {
 			if {$Priv(focus)} {
 				set Priv(focus) 0
 				if {[$w.sub.html cget -exportselection]} {
+					# TODO the problem with this change is that
+					# the whole widget will be updated. In this
+					# case the double buffering cannot work.
 					$w.sub.html tag configure selection \
 						-foreground [$w.sub.html cget -inactiveselectforeground] \
 						-background [$w.sub.html cget -inactiveselectbackground] \
@@ -695,7 +746,7 @@ proc WidgetProc {w command args} {
 				switch -- $attr {
 					-imagecmd - -doublebuffer - -latinligatures - -exportselection -
 					-selectbackground - -selectforeground - -inactiveselectbackground -
-					-inactiveselectforeground - -width - -height - -fonttable {
+					-inactiveselectforeground - -width - -fonttable {
 						$w.sub.html configure $attr $value
 					}
 					default {
@@ -707,6 +758,9 @@ proc WidgetProc {w command args} {
 				SetupCSS $w
 				$w.sub.html configure -showhyphens $showhyphens
 				$w parse $Priv(script)
+			}
+			if {[info exists opts(-height)]} {
+				$w.sub configure -height $opts(-height)
 			}
 		}
 	}
@@ -772,10 +826,10 @@ proc ConfigureWidget {w options} {
 
 
 proc Place {w} {
+	if {![winfo exists $w]} { return }
+
 	variable [winfo parent $w]::Priv
 	variable MaxWidth
-
-	if {![winfo exists $w]} { return }
 
 	set width [winfo width $w]
 	if {$width == 1} { return }
@@ -1435,6 +1489,19 @@ proc WrapLeave {w}	{ Leave [winfo parent $w] }
 proc WrapMapped {w}	{ Mapped [winfo parent $w] }
 
 
+proc Scroll {w units {state 0}} {
+	variable ::util::shiftMask
+
+	set w [winfo parent $w]
+
+	if {[expr {($state & $shiftMask) != 0}]} {
+		$w xview scroll $units units
+	} else {
+		$w yview scroll $units units
+	}
+}
+
+
 proc FrameWrapButtonPress {w k} {
 	GenerateEvent $w.html onmousedown${k} {{}}
 }
@@ -1465,18 +1532,18 @@ bind Html <Shift-Triple-ButtonPress-1>	[namespace code { WrapExtendSelection %W 
 
 switch [tk windowingsystem] {
 	win32 {
-		bind Html <MouseWheel> { [winfo parent %W] yview scroll [expr %D/-30] units; break }
-		bind _HTML_Frame_ <MouseWheel> { %W.html yview scroll [expr %D/-30] units; break }
+		bind Html <MouseWheel> [namespace code [list Scroll %W {[expr {(%D/-120)*4}]} %s]]
+		bind Html <MouseWheel> {+ break }
 	}
 	aqua {
-		bind Html <MouseWheel> { [winfo parent %W] yview scroll [expr %D*-4] units; break }
-		bind _HTML_Frame_ <MouseWheel> { %W.html yview scroll [expr %D*-4] units; break }
+		bind Html <MouseWheel> [namespace code [list Scroll %W [expr {-(%D)}] %s]]
+		bind Html <MouseWheel> {+ break }
 	}
 	x11 {
-		bind Html <ButtonPress-4> { [winfo parent %W] yview scroll -4 units; break }
-		bind Html <ButtonPress-5> { [winfo parent %W] yview scroll +4 units; break }
-		bind _HTML_Frame_ <ButtonPress-4> { %W.html yview scroll -4 units; break }
-		bind _HTML_Frame_ <ButtonPress-5> { %W.html yview scroll +4 units; break }
+		bind Html <ButtonPress-4> [namespace code [list Scroll %W -5 %s]]
+		bind Html <ButtonPress-4> {+ break }
+		bind Html <ButtonPress-5> [namespace code [list Scroll %W +5 %s]]
+		bind Html <ButtonPress-5> {+ break }
 	}
 }
 

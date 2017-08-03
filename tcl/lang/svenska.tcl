@@ -131,15 +131,18 @@
 ::mc::VariantName(Undetermined)	"Obestämd"
 ::mc::VariantName(Normal)			"Normalt schack"
 ::mc::VariantName(Bughouse)		"Bughouse schack"
+::mc::VariantName(DropChess)		"Drop Chess" ;# NEW this is the main term for Crazyhouse and Chessgi
 ::mc::VariantName(Crazyhouse)		"Crazyhouse schack"
+::mc::VariantName(Chessgi)			"Chessgi" ;# NEW
 ::mc::VariantName(ThreeCheck)		"Tre-schack"
-::mc::VariantName(Antichess)		"Slagschack"
+::mc::VariantName(KingOfTheHill)	"King-of-the-Hill" ;# NEW
+::mc::VariantName(Antichess)		"Slagschack" ;# this is the main term for Suicide and Giveaway
 ::mc::VariantName(Suicide)			"Suicide" ;# NEW
 ::mc::VariantName(Giveaway)		"Giveaway" ;# NEW
 ::mc::VariantName(Losers)			"Losers" ;# NEW
 ::mc::VariantName(Chess960)		"Schack960"
 ::mc::VariantName(Symm960)			"Schack960 (endast symmetriskt)"
-::mc::VariantName(Shuffle)			"Shuffle Chess"
+::mc::VariantName(Shuffle)			"Shuffle Chess" ;# NEW
 
 ### themes #############################################################
 ::scidb::themes::mc::CannotOverwriteTheme	"Kan inte skriva över tema %s."
@@ -253,6 +256,7 @@
 ::menu::mc::Toolbars						"&Verktygsfält"
 ::menu::mc::ShowLog						"Visa &Log"
 ::menu::mc::AboutScidb					"&Om Scidb"
+::menu::mc::TipOfTheDay					"Tip of the &Day" ;# NEW
 ::menu::mc::Fullscreen					"&Helskärm"
 ::menu::mc::LeaveFullscreen			"Lämna &helskärm"
 ::menu::mc::Help							"&Hjälp"
@@ -391,6 +395,21 @@
 ::util::photos::mc::Log(skipped:N)				"%s fil(er) överhoppad."
 ::util::photos::mc::Log(updated:1)				"%s fil updaterad."
 ::util::photos::mc::Log(updated:N)				"%s fil(er) updaterad."
+
+### tip of the day #####################################################
+::tips::mc::TipOfTheDay          "Tip of the Day" ;# NEW
+::tips::mc::FurtherInformation   "Further information" ;# NEW
+::tips::mc::CouldNotOpenFile     "Could not open file %s." ;# NEW
+::tips::mc::CouldNotFindAnyTip   "Could not find any tip." ;# NEW
+::tips::mc::RepeatAllTips        "Repeat all tips (restart from the beginning)" ;# NEW
+::tips::mc::NextTip              "Next Tip" ;# NEW
+::tips::mc::FirstTip             "<p>The Tip-of-the-Day information serves to a better insight into the functioning of this application. Furthermore it will give useful hints that will help to know what is possible.</p><p color='darkgreen'><b>Have joy with Scidb!</b></p>" ;# NEW
+
+::tips::mc::Choice(everytime)             "Show everytime" ;# NEW
+::tips::mc::Choice(periodically)          "Show periodically" ;# NEW
+::tips::mc::Choice(everytimeWhenNew)      "Show everytime, but only new tips" ;# NEW
+::tips::mc::Choice(periodicallyWhenNew)   "Show periodically, but only new tips" ;# NEW
+::tips::mc::Choice(neverShow)             "Don't show anymore" ;# NEW
 
 ### twm ################################################################
 ::twm::mc::Close				"Close" ;# NEW

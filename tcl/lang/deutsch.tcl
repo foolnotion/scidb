@@ -130,8 +130,11 @@
 ::mc::VariantName(Undetermined)	"Unbestimmt"
 ::mc::VariantName(Normal)			"Normalschach"
 ::mc::VariantName(Bughouse)		"Tandemschach"
-::mc::VariantName(Crazyhouse)		"Einsetzschach"
+::mc::VariantName(DropChess)		"Einsetzschach"
+::mc::VariantName(Crazyhouse)		"Crazyhouse"
+::mc::VariantName(Chessgi)			"Chessgi"
 ::mc::VariantName(ThreeCheck)		"Dreimal-Schach"
+::mc::VariantName(KingOfTheHill)	"König-auf-dem-Hügel"
 ::mc::VariantName(Antichess)		"Schlagschach"
 ::mc::VariantName(Suicide)			"Suicide"
 ::mc::VariantName(Giveaway)		"Giveaway"
@@ -252,6 +255,7 @@
 ::menu::mc::Toolbars							"&Funktionsleisten"
 ::menu::mc::ShowLog							"&Log zeigen"
 ::menu::mc::AboutScidb						"&Über Scidb"
+::menu::mc::TipOfTheDay						"&Tip des Tages"
 ::menu::mc::Fullscreen						"&Vollbild"
 ::menu::mc::LeaveFullscreen				"&Vollbild verlassen"
 ::menu::mc::Help								"&Hilfe"
@@ -391,6 +395,21 @@
 ::util::photos::mc::Log(skipped:N)				"%s Dateien wurden übersprungen."
 ::util::photos::mc::Log(updated:1)				"%s Datei wurde erneuert."
 ::util::photos::mc::Log(updated:N)				"%s Dateien wurden erneuert."
+
+### tip of the day #####################################################
+::tips::mc::TipOfTheDay				"Tip des Tages"
+::tips::mc::FurtherInformation	"Weitere Informationen"
+::tips::mc::CouldNotOpenFile		"Die Datei %s konnte nicht geöffnet werden."
+::tips::mc::CouldNotFindAnyTip	"Es konnte kein Tip gefunden werden."
+::tips::mc::RepeatAllTips			"Alle Tips wiederholen (erneut von vorne starten)"
+::tips::mc::NextTip					"Nächster Tip"
+::tips::mc::FirstTip					"<p>Die Tip-des-Tages-Informationen dienen zu einem besseren Verständnis zur Arbeitsweise mit dieser Applikation. Weiterhin werden nützliche Hinweise gegeben, um zu wissen was mit Scidb möglich ist.</p><p color='darkgreen'><b>Viel Freude mit Scidb!</b></p>"
+
+::tips::mc::Choice(everytime)					"Immer anzeigen"
+::tips::mc::Choice(periodically)				"Periodisch anzeigen"
+::tips::mc::Choice(everytimeWhenNew)		"Immer anzeigen, aber nur neue Tips"
+::tips::mc::Choice(periodicallyWhenNew)	"Periodisch anzeigen, aber nur neue Tips"
+::tips::mc::Choice(neverShow)					"Nicht mehr anzeigen"
 
 ### twm ################################################################
 ::twm::mc::Close				"Schliessen"

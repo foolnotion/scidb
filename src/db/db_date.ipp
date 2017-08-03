@@ -36,11 +36,24 @@ namespace db {
 inline Date::operator bool() const	{ return m_year > 0; }
 inline bool Date::isEmpty() const	{ return m_year == 0; }
 inline bool Date::isFull() const		{ return m_year && m_month && m_day; }
+inline bool Date::isValid() const	{ return isValid(m_year, m_month, m_day); }
 inline unsigned Date::year() const	{ return m_year; }
 inline unsigned Date::month() const	{ return m_month; }
 inline unsigned Date::day() const	{ return m_day; }
 inline unsigned Date::hash() const	{ return m_value; }
 inline void Date::clear()				{ m_value = 0; }
+inline Date Date::minDate()			{ return Date(MinYear, 1, 1); }
+inline Date Date::maxDate()			{ return Date(MaxYear, 12, 31); }
+
+
+inline
+Date
+Date::operator+(int n) const
+{
+	Date d(*this);
+	d.addDays(n);
+	return d;
+}
 
 
 inline
@@ -109,14 +122,6 @@ operator>=(const Date& d1, const Date& d2)
 
 
 inline
-int
-Date::compare(Date const& date) const
-{
-	return int(m_value) - int(date.m_value);
-}
-
-
-inline
 bool
 Date::isBetween(Date const& min, Date const& max) const
 {
@@ -126,6 +131,27 @@ Date::isBetween(Date const& min, Date const& max) const
 	return min <= *this && *this <= max;
 }
 
+
+inline
+bool
+Date::checkYear(unsigned y)
+{
+	return MinYear <= y && y <= MaxYear;
+}
+
+
+inline
+bool Date::isValidYear(unsigned year)
+{
+	return year == 0 || checkYear(year);
+}
+
 } // namespace db
+
+namespace mstl {
+
+inline int compare(::db::Date const& lhs, ::db::Date const& rhs) { return ::db::Date::compare(lhs, rhs); }
+
+}
 
 // vi:set ts=3 sw=3:

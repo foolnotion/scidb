@@ -64,6 +64,9 @@ public:
 	/// String constructor. Creates date from PGN date format (assumes valid input).
 	Date(mstl::string const& s);
 
+	/// Returns new date incremented/decremented by given number of days.
+	Date operator+(int n) const;
+
 	/// Converts date to string. Uses PGN date format (e.g. "1990.01.??").
 	mstl::string asString() const;
 	/// Converts date to string. Uses short format (e.g. "1990", "1990.01", "1990.01.15").
@@ -78,6 +81,10 @@ public:
 	bool isFull() const;
 	/// Returns true if date is between min and max.
 	bool isBetween(Date const& min, Date const& max) const;
+	/// Return true if given date is partial matching this date.
+	bool isPartial(Date const& date) const;
+	/// Return true whether this is a valid date.
+	bool isValid() const;
 
 	/// Returns year, @p 0 if undefined.
 	unsigned year() const;
@@ -87,9 +94,6 @@ public:
 	unsigned day() const;
 	/// Return hash code
 	unsigned hash() const;
-	/// Returns an integer less than, equal to, or greater than zero if 'this' is found, respectively,
-	/// to be less than, to match, or be greater than the argument.
-	int compare(Date const& date) const;
 
 	/// Return computed checksum.
 	::util::crc::checksum_t computeChecksum(util::crc::checksum_t crc) const;
@@ -114,17 +118,27 @@ public:
 	/// Add given days to date; returns whether resulting date is valid.
 	bool addDays(int n);
 
+	/// Computes the julian day.
+	static unsigned julianDay(unsigned year, unsigned month, unsigned day);
+
 	static bool isValid(char const* s, unsigned len = 0);
 	static bool isValid(mstl::string const& s);
 	static bool isValid(unsigned y, unsigned m, unsigned d);
+	static bool isValidYear(unsigned year);
 	static bool checkDay(unsigned y, unsigned m, unsigned d);
+	static bool checkYear(unsigned y);
 
+	/// Returns an integer less than, equal to, or greater than zero if 'this' is found, respectively,
+	/// to be less than, to match, or be greater than the argument.
 	static int compare(Date const& lhs, Date const& rhs);
 
 	static unsigned lastDayInMonth(unsigned y, unsigned m);
 
 	static unsigned decodeYearFrom10Bits(unsigned year);
 	static unsigned encodeYearTo10Bits(unsigned year);
+
+	static Date minDate();
+	static Date maxDate();
 
 	friend bool operator==(const Date& d1, const Date& d2);
 	friend bool operator!=(const Date& d1, const Date& d2);
@@ -174,6 +188,10 @@ namespace mstl {
 
 template <typename T> struct is_pod;
 template <> struct is_pod<db::Date> { enum { value = 1 }; };
+
+/// Returns an integer less than, equal to, or greater than zero if 'this' is found, respectively,
+/// to be less than, to match, or be greater than the argument.
+int compare(::db::Date const& lhs, ::db::Date const& rhs);
 
 } // namespace mstl
 

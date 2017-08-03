@@ -46,12 +46,13 @@ public:
 	uint8_t minute() const;
 	uint8_t second() const;
 
-	int compare(Clock const& clock) const;
 	::util::crc::checksum_t computeChecksum(util::crc::checksum_t crc) const;
 
 	void setHMS(uint8_t hour, uint8_t minute, uint8_t second);
 
 	char const* parse(char const* s);
+
+	static int compare(Clock const& lhs, Clock const& rhs);
 
 	void dump() const;
 
@@ -76,6 +77,8 @@ namespace mstl {
 
 template <typename T> struct is_pod;
 template <> struct is_pod<db::Clock> { enum { value = 1 }; };
+
+int compare(::db::Clock const& lhs, ::db::Clock const& rhs);
 
 } // namespace mstl
 

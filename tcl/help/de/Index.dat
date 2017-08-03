@@ -21,6 +21,7 @@ set Index {
       {{CQL Suchliste} {CQL-Match-List.html} {}}
       {{CQL Syntax} {CQL-Syntax.html} {}}
       {{CQL Transformationen} {CQL-Transformations.html} {}}
+      {{Crazyhouse} {Chess-Variants.html} {}}
     }
   }
   { D
@@ -38,7 +39,6 @@ set Index {
   { E
     {
       {{ECO-Code} {ECO-Code.html} {}}
-      {{Einsetzschach} {Chess-Variants.html} {}}
       {{Enzyklopädie der Schacheröffnungen} {ECO-Code.html} {}}
     }
   }

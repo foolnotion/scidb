@@ -93,13 +93,13 @@ cmpSex(void const* lhs, void const* rhs)
 static int
 cmpDateOfBirth(void const* lhs, void const* rhs)
 {
-	return m_sign*PLAYER(lhs).dateOfBirth().compare(PLAYER(rhs).dateOfBirth());
+	return m_sign*mstl::compare(PLAYER(lhs).dateOfBirth(), PLAYER(rhs).dateOfBirth());
 }
 
 static int
 cmpDateOfDeath(void const* lhs, void const* rhs)
 {
-	return m_sign*PLAYER(lhs).dateOfDeath().compare(PLAYER(rhs).dateOfDeath());
+	return m_sign*mstl::compare(PLAYER(lhs).dateOfDeath(), PLAYER(rhs).dateOfDeath());
 }
 
 static int

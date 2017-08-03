@@ -127,18 +127,22 @@
 ::mc::LogicalDetail(remove)	"Add to filter / Remove from display" ;# NEW
 ::mc::LogicalDetail(not)	"Restrict filter / Extent display" ;# NEW
 
-::mc::VariantName(Undetermined)	"Undetermined" ;# NEW
-::mc::VariantName(Normal)	"Normal Chess" ;# NEW
-::mc::VariantName(Bughouse)	"Bughouse Chess" ;# NEW
-::mc::VariantName(Crazyhouse)	"Crazyhouse Chess" ;# NEW
-::mc::VariantName(ThreeCheck)	"Three-check Chess" ;# NEW
-::mc::VariantName(Antichess)	"Antichess" ;# NEW
-::mc::VariantName(Suicide)	"Suicide" ;# NEW
-::mc::VariantName(Giveaway)	"Giveaway" ;# NEW
-::mc::VariantName(Losers)	"Losers" ;# NEW
-::mc::VariantName(Chess960)	"Chess 960" ;# NEW
-::mc::VariantName(Symm960)	"Chess 960 (symmetrical only)" ;# NEW
-::mc::VariantName(Shuffle)	"Shuffle Chess" ;# NEW
+::mc::VariantName(Undetermined)		"Undetermined" ;# NEW
+::mc::VariantName(Normal)		"Normal Chess" ;# NEW
+::mc::VariantName(Bughouse)		"Bughouse Chess" ;# NEW
+::mc::VariantName(DropChess)		"Drop Chess" ;# NEW this is the main term for Crazyhouse and Chessgi
+::mc::VariantName(Crazyhouse)		"Crazyhouse" ;# NEW
+::mc::VariantName(Chessgi)		"Chessgi" ;# NEW
+::mc::VariantName(ThreeCheck)		"Three-check Chess" ;# NEW
+::mc::VariantName(KingOfTheHill)	"King-of-the-Hill" ;# NEW
+::mc::VariantName(Antichess)		"Antichess" ;# NEW this is the main term for Suicide and Giveaway
+::mc::VariantName(Suicide)		"Suicide" ;# NEW
+::mc::VariantName(Giveaway)		"Giveaway" ;# NEW
+::mc::VariantName(Losers)		"Losers" ;# NEW
+::mc::VariantName(Chess960)		"Chess 960" ;# NEW
+::mc::VariantName(Symm960)		"Chess 960 (symmetrical only)" ;# NEW
+::mc::VariantName(Shuffle)		"Shuffle Chess" ;# NEW
+
 
 ### themes #############################################################
 ::scidb::themes::mc::CannotOverwriteTheme	"A %s témát nem lehet felülírni."
@@ -253,6 +257,7 @@
 ::menu::mc::Toolbars			"&Eszköztár"
 ::menu::mc::ShowLog			"&Log fájl mutatása"
 ::menu::mc::AboutScidb			"Scidb &Névjegy"
+::menu::mc::TipOfTheDay			"Tip of the &Day" ;# NEW
 ::menu::mc::Fullscreen			"&Teljes képernyő"
 ::menu::mc::LeaveFullscreen		"Leave &Teljes képernyő" ;# NEW "Leave Full-Screen"
 ::menu::mc::Help			"&Súgó"
@@ -392,6 +397,21 @@
 ::util::photos::mc::Log(skipped:N)		"%s fájlok kihagyva."
 ::util::photos::mc::Log(updated:1)		"%s fájl frissítve."
 ::util::photos::mc::Log(updated:N)		"%s fájlok frissítve."
+
+### tip of the day #####################################################
+::tips::mc::TipOfTheDay		"Tip of the Day" ;# NEW
+::tips::mc::FurtherInformation	"Further information" ;# NEW
+::tips::mc::CouldNotOpenFile	"Could not open file %s." ;# NEW
+::tips::mc::CouldNotFindAnyTip	"Could not find any tip." ;# NEW
+::tips::mc::RepeatAllTips	"Repeat all tips (restart from the beginning)" ;# NEW
+::tips::mc::NextTip		"Next Tip" ;# NEW
+::tips::mc::FirstTip		"<p>The Tip-of-the-Day information serves to a better insight into the functioning of this application. Furthermore it will give useful hints that will help to know what is possible.</p><p color='darkgreen'><b>Have joy with Scidb!</b></p>" ;# NEW
+
+::tips::mc::Choice(everytime)		"Show everytime" ;# NEW
+::tips::mc::Choice(periodically)	"Show periodically" ;# NEW
+::tips::mc::Choice(everytimeWhenNew)	"Show everytime, but only new tips" ;# NEW
+::tips::mc::Choice(periodicallyWhenNew)	"Show periodically, but only new tips" ;# NEW
+::tips::mc::Choice(neverShow)		"Don't show anymore" ;# NEW
 
 ### twm ################################################################
 ::twm::mc::Close		"Close" ;# NEW

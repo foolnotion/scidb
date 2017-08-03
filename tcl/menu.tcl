@@ -55,6 +55,7 @@ set Language						"&Language"
 set Toolbars						"&Toolbars"
 set ShowLog							"&Show Log"
 set AboutScidb						"&About Scidb"
+set TipOfTheDay					"Tip of the &Day"
 set Fullscreen						"&Full-Screen"
 set LeaveFullscreen				"Leave &Full-Screen"
 set Help								"&Help"
@@ -432,6 +433,17 @@ if {0} {
 		-image $::icon::16x16::log \
 		-accelerator "${::mc::Key(Ctrl)}+L" \
 		-command [list ::log::show -force] \
+		;
+
+	### tip of the day #######################################################
+	lassign [::tk::UnderlineAmpersand $mc::TipOfTheDay] text ul
+	set cmd [namespace code [list tips::open .application]]
+	$menu add command \
+		-compound left \
+		-label " $text..." \
+		-underline [incr ul] \
+		-image $::icon::16x16::postIt \
+		-command $cmd \
 		;
 
 	### contact ##############################################################
