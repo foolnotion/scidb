@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/de/CQL-Percentage-Specifiers.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='de'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-language"
+           content="de" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+
+  <meta name="author"
+     content="scidb.sourceforge.net" />
+  <meta name="generator"
+     content="scidb.sourceforge.net" />
+  <meta name="description"
+     content="Scidb - Help Page" />
+
+  <link rel="icon"
+       href="http://scidb.sourceforge.net/favicon.ico"
+       type="image/x-icon" />
+  <link rel="shortcut icon"
+       href="http://scidb.sourceforge.net/favicon.ico" />
+  <link rel="stylesheet"
+       type="text/css"
+      media="screen"
+		 href="../styles/help.css" />
+
+  <title>Scidb - Hilfe: CQL - Prozentuale Bereichsangaben</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">CQL - Prozentuale Bereichsangaben</h1>
+</div>
+
+<p>
+Manche Schlüsselworte erwarten eine prozentuale Bereichsangabe.
+Eine prozentuale Bereichsangabe besteht entweder aus nur einer
+prozentualen Angabe, die mit einem Vergleichsoperator starten
+muß, oder aber aus zwei prozentualen Angaben, separiert durch
+Leerzeichen (hier ohne Vergleichsoperatoren).
+</p>
+
+<p>
+Besteht eine prozentuale Bereichsangabe nur aus einer prozentualen
+Angabe, so bezeichnet sie den Bereich, ansonsten bezeichnen beide Angaben
+den Bereich, mit einer unteren und einer oberen Schranke.
+</p>
+
+<p>
+Der prozentuale Wert ist eine ganzahlige positive Zahl zwischen Null
+und 100 (einschließlich). Diese Angabe muß mit einem Prozentzeichen enden.
+</p>
+
+<p>
+Zulässige Vergleichsoperatoren sind:
+</p>
+
+<div class='box'>
+<table>
+  <tr><td><span style='white-space:nowrap;'><code>&gt;</code></span></td>  <td></td> <td>Mehr als</td></tr>
+  <tr><td><span style='white-space:nowrap;'><code>&gt;=</code></span></td> <td></td> <td>Mindestens</td></tr>
+  <tr><td><span style='white-space:nowrap;'><code>&lt;</code></span></td>  <td></td> <td>Weniger als</td></tr>
+  <tr><td><span style='white-space:nowrap;'><code>&lt;=</code></span></td> <td></td> <td>Höchstens</td></tr>
+</table>
+</div>
+
+<h2>Beispiele</h2>
+
+<p>
+Die folgenden Beispiele sind prozentuale Wertebereiche für die
+Zählung von verbundenen Bauern auf dem Schachbrett.
+</p>
+
+<div class='verb'><code>
+&gt;70%
+</code></div>
+
+<p>
+Mehr als 70% aller Bauern auf dem Schachbrett sind verbundene Bauern.
+</p>
+
+<div class='verb'><code>
+&gt;=20%
+</code></div>
+
+<p>
+Mindestens 20% aller Bauern sind verbundene Bauern.
+</p>
+
+<div class='verb'><code>
+30% 70%
+</code></div>
+
+<p>
+Zwischen 30 und 70% (beide Grenzen einschließlich) aller Bauern auf dem
+Schachbrett sind verbundene Bauern.
+</p>
+
+</body>
+</html>

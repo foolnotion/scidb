@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/en/CQL-File-Format.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='en'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-language"
+           content="en" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+
+  <meta name="author"
+     content="scidb.sourceforge.net" />
+  <meta name="generator"
+     content="scidb.sourceforge.net" />
+  <meta name="description"
+     content="Scidb - Help Page" />
+
+  <link rel="icon"
+       href="http://scidb.sourceforge.net/favicon.ico"
+       type="image/x-icon" />
+  <link rel="shortcut icon"
+       href="http://scidb.sourceforge.net/favicon.ico" />
+  <link rel="stylesheet"
+       type="text/css"
+      media="screen"
+		 href="../styles/help.css" />
+
+  <title>Scidb - Help: CQL File Format</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">CQL File Format</h1>
+</div>
+
+<p>
+All <span style='white-space:nowrap;'><code>.cqls</code></span> files have in their first lines an identifier with a
+version number. Just behind this identifier there is a parenthesized comma-separated
+list, enumerating all chess variants intended for this script. A second parenthesized
+comma-separated is following, enumerating all chess variants which must be
+supported by the application in order to execute the script. The first line
+is mandatory.
+</p>
+
+<p>
+The first line in a <span style='white-space:nowrap;'><code>.cqls</code></span> file may look like:
+</p>
+
+<div class='verb'><code>
+; CQL-S 1.0 (normal,three-check) (normal)
+</code></div>
+
+<p>
+The first 11 characters can be used by third party applications for the detection
+of the file type.
+</p>
+
+<p>
+These are the supported chess variants:
+</p>
+
+<div class='box'>
+<table style="white-space:nowrap">
+ <tr>
+	<td class="l"><span style='white-space:nowrap;'><code>normal</code></span></td>
+	<td class="r">Normal Chess</td>
+ </tr>
+ <tr>
+	<td class="l"><span style='white-space:nowrap;'><code>three-check</code></span></td>
+	<td class="r">Three-check Chess</td>
+ </tr>
+ <tr>
+	<td class="l"><span style='white-space:nowrap;'><code>king-of-the-hill</code></span></td>
+	<td class="r">King-of-the-Hill</td>
+ </tr>
+ <tr>
+	<td class="l"><span style='white-space:nowrap;'><code>dropchess</code></span></td>
+	<td class="r">Drop Chess</td>
+ </tr>
+ <tr>
+	<td class="l"><span style='white-space:nowrap;'><code>crazyhouse</code></span></td>
+	<td class="r">Crazyhouse</td>
+ </tr>
+ <tr>
+	<td class="l"><span style='white-space:nowrap;'><code>chessgi</code></span></td>
+	<td class="r">Chessgi</td>
+ </tr>
+ <tr>
+	<td class="l"><span style='white-space:nowrap;'><code>antichess</code></span></td>
+	<td class="r">Antichess</td>
+ </tr>
+ <tr>
+	<td class="l"><span style='white-space:nowrap;'><code>suicide</code></span></td>
+	<td class="r">Suicide</td>
+ </tr>
+ <tr>
+	<td class="l"><span style='white-space:nowrap;'><code>giveaway</code></span></td>
+	<td class="r">Giveaway</td>
+ </tr>
+ <tr>
+	<td class="l"><span style='white-space:nowrap;'><code>losers</code></span></td>
+	<td class="r">Losers</td>
+ </tr>
+</table>
+</div>
+
+<p>
+Immediately after an additional blank line Scidb is writing the creator (the
+application), the author, and the date:
+</p>
+
+<div class='box'><pre><code><!--
+-->; Creator: Scidb 1.0
+; Author:  NobodyKnowsMe
+; Date:    2014/11/18<!--
+--></code></pre></div>
+
+<p>
+In next lines, after a blank line, an optional description of the script may
+follow. This description will be multilingual any may look like this:
+</p>
+
+<!-- Note for translators: replace the German description, but not the English one -->
+<div class='box'><pre><code><!--
+-->; Description (en): Smothered Mate
+; This ingenious script ...
+;
+; Description (de): Ersticktes Matt
+; Dieses grandiose Skript ...<!--
+--></code></pre></div>
+
+<p>
+With a similar format also the standard CQL scripts will be written by Scidb, in this
+case the file suffix is <span style='white-space:nowrap;'><code>.cql</code></span>. But the chess variants are not supported
+in standard CQL. Example for the first line:
+</p>
+
+<div class='verb'><code>
+; CQL 1.0
+</code></div>
+
+<p>
+In this case the first 9 characters can be used for file type detection.
+Currently only Scidb is writing this identifier.
+</p>
+
+<p>
+All CQL and <span style='white-space:nowrap;'>CQL-S</span> scripts are <span style='white-space:nowrap;'>UTF-8</span> encoded.
+</p>
+
+<p>
+This is the Backus-Naur description of a CQL file:
+</p>
+
+<!-- Note for translators: do not translate this -->
+<div class='box'><pre><code><!--
+-->&lt;CQL-Header&gt;     ::= &lt;Identification&gt; &lt;LF&gt; &lt;Creator&gt; &lt;Author&gt;
+                     &lt;Date&gt; &lt;LF&gt; &lt;Descriptions&gt; &lt;Body&gt;
+&lt;Identification&gt; ::= &lt;Id-CQL-S&gt; | &lt;Id-CQL&gt;
+&lt;Id-CQL&gt;         ::= ";&#x2423;CQL&#x2423;" &lt;Version&gt;
+&lt;Id-CQL-S&gt;       ::= ";&#x2423;CQL-S&#x2423;" &lt;Version&gt; "&#x2423;" &lt;Variants&gt; "&#x2423;" &lt;Variants&gt;
+&lt;Version&gt;        ::= &lt;Digit&gt; "." &lt;Digit&gt;
+&lt;Variants&gt;       ::= "(" &lt;Variant&gt; ( "," &lt;Variant&gt; )* ")"
+&lt;Creator&gt;        ::= "Creator:" &lt;Spaces&gt; &lt;UTF-8-String&gt; &lt;LF&gt;
+&lt;Author&gt;         ::= "Author:" &lt;Spaces&gt; &lt;UTF-8-String&gt; &lt;LF&gt;
+&lt;Date&gt;           ::= "Date:" &lt;Spaces&gt; &lt;YYYY/MM/DD&gt; &lt;LF&gt;
+&lt;Descriptions&gt;   ::= ( &lt;Description&gt; &lt;LF&gt;* )*
+&lt;Description&gt;    ::= "Description&#x2423;(" &lt;ISO-639-1&gt; "):" &lt;Spaces&gt;
+                     &lt;Title&gt; &lt;LF&gt; ( &lt;CommentLine&gt; )*
+&lt;Title&gt;          ::= &lt;UTF-8-String&gt;
+&lt;CommentLine&gt;    ::= ";" ( &lt;Spaces&gt; &lt;UTF-8-String&gt; )? ( &lt;LF&gt; )+
+&lt;Spaces&gt;         ::= ( &lt;SpaceOrTab&gt; )*<!--
+--></code></pre></div>
+
+<p>
+The line break <span style='white-space:nowrap;'><code>&lt;LF&gt;</code></span> is dependent from the operating system
+where the application is running (modern editors should recognize all types
+of line breaks). Instead of <span style='white-space:nowrap;'>ISO-639-1</span> for the language code
+the alternative <span style='white-space:nowrap;'>ISO-639-2</span> can be used, but only when unavoidable.
+</p>
+
+<p>
+This is an example for a complete script:
+</p>
+
+<!-- Note for translators: replace the German description, but not the English one -->
+<div class='box'><pre><code><!--
+-->; CQL-S 1.0 (normal,three-check,king-of-the-hill,crazyhouse,bughouse,losers) (normal)
+
+; Creator: Scidb 1.0
+; Author:  Gregor Cramer
+; Date:    2014/06/24
+
+; Description (en): Smothered Mate
+; A smothered mate is a checkmate delivered by a knight
+; in which the mated king is unable to move because he is
+; surrounded (or smothered) by his own pieces.
+
+; Description (de): Ersticktes Matt
+; Ein ersticktes Matt liegt vor, wenn ein Springer Matt
+; setzt und der König nicht entweichen kann, weil er
+; von eigenen Figuren umgeben (erstickt) ist.
+<!--
+Note for translators: do not translate the comments in following lines -->
+(match
+  (position
+    flipcolor            ; either color
+    attackcount k [A.] 0 ; king is smothered by own pieces
+    btm                  ; black to move
+    mate))               ; and is mate<!--
+--></code></pre></div>
+
+</body>
+</html>

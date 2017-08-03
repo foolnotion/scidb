@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/de/CQL-File-Format.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='de'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-language"
+           content="de" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+
+  <meta name="author"
+     content="scidb.sourceforge.net" />
+  <meta name="generator"
+     content="scidb.sourceforge.net" />
+  <meta name="description"
+     content="Scidb - Help Page" />
+
+  <link rel="icon"
+       href="http://scidb.sourceforge.net/favicon.ico"
+       type="image/x-icon" />
+  <link rel="shortcut icon"
+       href="http://scidb.sourceforge.net/favicon.ico" />
+  <link rel="stylesheet"
+       type="text/css"
+      media="screen"
+		 href="../styles/help.css" />
+
+  <title>Scidb - Hilfe: CQL-Dateiformat</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">CQL-Dateiformat</h1>
+</div>
+
+<p>
+Alle <span style='white-space:nowrap;'><code>.cqls</code></span> Dateien haben in der ersten Zeile eine Erkennung mit einer
+Versionsnummer. Dahinter folgt eine in Klammern gesetzte komma-separierte Liste,
+in der alle Schachformen aufgeführt werden, für die dieses Skript vorgesehen ist.
+Es folgt eine zweite in Klammern gesetzte komma-separierte Liste, in der alle
+Schachformen aufgeführt werden, die die Anwendung unterstützen muß, um dieses
+Skript ausführen zu können. Die erste Zeile ist zwingend.
+</p>
+
+<p>
+Die erste Zeile einer <span style='white-space:nowrap;'><code>.cqls</code></span>-Datei sieht beispielsweise folgendermaßen aus:
+</p>
+
+<div class='verb'><code>
+; CQL-S 1.0 (normal,three-check) (normal)
+</code></div>
+
+<p>
+Die ersten 11 Zeichen können von anderen Progammen zur Dateityperkennung genutzt werden.
+</p>
+
+<p>
+Dieses sind die unterstützten Schachformen:
+</p>
+
+<div class='box'>
+<table style="white-space:nowrap">
+ <tr>
+	<td class="l"><span style='white-space:nowrap;'><code>normal</code></span></td>
+	<td class="r">Normalschach</td>
+ </tr>
+ <tr>
+	<td class="l"><span style='white-space:nowrap;'><code>three-check</code></span></td>
+	<td class="r">Dreimal-Schach</td>
+ </tr>
+ <tr>
+	<td class="l"><span style='white-space:nowrap;'><code>king-of-the-hill</code></span></td>
+	<td class="r">König-auf-dem-Hügel</td>
+ </tr>
+ <tr>
+	<td class="l"><span style='white-space:nowrap;'><code>dropchess</code></span></td>
+	<td class="r">Einsetzschach</td>
+ </tr>
+ <tr>
+	<td class="l"><span style='white-space:nowrap;'><code>crazyhouse</code></span></td>
+	<td class="r">Crazyhouse</td>
+ </tr>
+ <tr>
+	<td class="l"><span style='white-space:nowrap;'><code>chessgi</code></span></td>
+	<td class="r">Chessgi</td>
+ </tr>
+ <tr>
+	<td class="l"><span style='white-space:nowrap;'><code>antichess</code></span></td>
+	<td class="r">Schlagschach</td>
+ </tr>
+ <tr>
+	<td class="l"><span style='white-space:nowrap;'><code>suicide</code></span></td>
+	<td class="r">Suicide</td>
+ </tr>
+ <tr>
+	<td class="l"><span style='white-space:nowrap;'><code>giveaway</code></span></td>
+	<td class="r">Giveaway</td>
+ </tr>
+ <tr>
+	<td class="l"><span style='white-space:nowrap;'><code>losers</code></span></td>
+	<td class="r">Losers</td>
+ </tr>
+</table>
+</div>
+
+<p>
+Nach einer Leerzeile schreibt Scidb den Ersteller (das Programm), den Autor,
+und das Datum:
+</p>
+
+<div class='box'><pre><code><!--
+-->; Creator: Scidb 1.0
+; Author:  NobodyKnowsMe
+; Date:    2014/11/18<!--
+--></code></pre></div>
+
+<p>
+In den nächsten Zeilen, nach einer Leerzeile, folgt eine optionale Beschreibung
+des Skripts. Diese wird multilingual gehalten und sieht dann etwa so aus:
+</p>
+
+<div class='box'><pre><code><!--
+-->; Description (en): Smothered Mate
+; This ingenious script ...
+;
+; Description (de): Ersticktes Matt
+; Dieses grandiose Skript ...<!--
+--></code></pre></div>
+
+<p>
+Mit dem gleichen Format werden von Scidb auch die Standard-CQL-Skripte mit der Dateiendung
+<span style='white-space:nowrap;'><code>.cql</code></span> geschrieben, nur das hier die Erkennung in der ersten Zeile
+abweicht &ndash; die Schachvarianten werden in Standard-CQL nicht unterstützt &ndash; z.B.:
+</p>
+
+<div class='verb'><code>
+; CQL 1.0
+</code></div>
+
+<p>
+Hier können die ersten 9 Zeichen zur Dateityperkennung genutzt werden. Jedoch
+schreibt bisher nur Scidb diese Erkennung.
+</p>
+
+<p>
+Alle CQL- bzw. <span style='white-space:nowrap;'>CQL-S</span>-Skripte sind im <span style='white-space:nowrap;'>UTF-8</span>-Format kodiert.
+</p>
+
+<p>
+Dies ist nun die Backus-Naur-Beschreibung einer CQL-Datei:
+</p>
+
+<div class='box'><pre><code><!--
+-->&lt;CQL-Header&gt;     ::= &lt;Identification&gt; &lt;LF&gt; &lt;Creator&gt; &lt;Author&gt;
+                     &lt;Date&gt; &lt;LF&gt; &lt;Descriptions&gt; &lt;Body&gt;
+&lt;Identification&gt; ::= &lt;Id-CQL-S&gt; | &lt;Id-CQL&gt;
+&lt;Id-CQL&gt;         ::= ";&#x2423;CQL&#x2423;" &lt;Version&gt;
+&lt;Id-CQL-S&gt;       ::= ";&#x2423;CQL-S&#x2423;" &lt;Version&gt; "&#x2423;" &lt;Variants&gt; "&#x2423;" &lt;Variants&gt;
+&lt;Version&gt;        ::= &lt;Digit&gt; "." &lt;Digit&gt;
+&lt;Variants&gt;       ::= "(" &lt;Variant&gt; ( "," &lt;Variant&gt; )* ")"
+&lt;Creator&gt;        ::= "Creator:" &lt;Spaces&gt; &lt;UTF-8-String&gt; &lt;LF&gt;
+&lt;Author&gt;         ::= "Author:" &lt;Spaces&gt; &lt;UTF-8-String&gt; &lt;LF&gt;
+&lt;Date&gt;           ::= "Date:" &lt;Spaces&gt; &lt;YYYY/MM/DD&gt; &lt;LF&gt;
+&lt;Descriptions&gt;   ::= ( &lt;Description&gt; &lt;LF&gt;* )*
+&lt;Description&gt;    ::= "Description&#x2423;(" &lt;ISO-639-1&gt; "):" &lt;Spaces&gt;
+                     &lt;Title&gt; &lt;LF&gt; ( &lt;CommentLine&gt; )*
+&lt;Title&gt;          ::= &lt;UTF-8-String&gt;
+&lt;CommentLine&gt;    ::= ";" ( &lt;Spaces&gt; &lt;UTF-8-String&gt; )? ( &lt;LF&gt; )+
+&lt;Spaces&gt;         ::= ( &lt;SpaceOrTab&gt; )*<!--
+--></code></pre></div>
+
+<p>
+Der Zeilenumbruch <span style='white-space:nowrap;'><code>&lt;LF&gt;</code></span> hängt vom Betriebssystem ab, auf dem
+die erzeugende Anwendung läuft (moderne Editoren sollten mit allen
+Zeilenumbrüchen zurechtkommen). Statt <span style='white-space:nowrap;'>ISO-639-1</span> für den Sprachcode
+kann auch <span style='white-space:nowrap;'>ISO-639-2</span> verwendet werden, jedoch nur wenn es nicht anders
+möglich ist.
+</p>
+
+<p>
+Hier nun ein Beispiel für ein vollständiges Skript:
+</p>
+
+<div class='box'><pre><code><!--
+-->; CQL-S 1.0 (normal,three-check,king-of-the-hill,crazyhouse,bughouse,losers) (normal)
+
+; Creator: Scidb 1.0
+; Author:  Gregor Cramer
+; Date:    2014/06/24
+
+; Description (en): Smothered Mate
+; A smothered mate is a checkmate delivered by a knight
+; in which the mated king is unable to move because he is
+; surrounded (or smothered) by his own pieces.
+
+; Description (de): Ersticktes Matt
+; Ein ersticktes Matt liegt vor, wenn ein Springer Matt
+; setzt und der König nicht entweichen kann, weil er
+; von eigenen Figuren umgeben (erstickt) ist.
+
+(match
+  (position
+    flipcolor            ; either color
+    attackcount k [A.] 0 ; king is smothered by own pieces
+    btm                  ; black to move
+    mate))               ; and is mate<!--
+--></code></pre></div>
+
+</body>
+</html>

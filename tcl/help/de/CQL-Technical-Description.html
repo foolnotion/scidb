@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/de/CQL-Technical-Description.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='de'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-language"
+           content="de" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+
+  <meta name="author"
+     content="scidb.sourceforge.net" />
+  <meta name="generator"
+     content="scidb.sourceforge.net" />
+  <meta name="description"
+     content="Scidb - Help Page" />
+
+  <link rel="icon"
+       href="http://scidb.sourceforge.net/favicon.ico"
+       type="image/x-icon" />
+  <link rel="shortcut icon"
+       href="http://scidb.sourceforge.net/favicon.ico" />
+  <link rel="stylesheet"
+       type="text/css"
+      media="screen"
+		 href="../styles/help.css" />
+
+  <title>Scidb - Hilfe: CQL Technische Beschreibung</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">CQL Technische Beschreibung</h1>
+</div>
+
+<div class='annotation'><img src='../images/annotation.png' style='float:left; margin:0 1em 0 0' alt='annotation' />
+Die technische Beschreibung ist keine Voraussetzung, um die
+Suchfunktionen in Scidb verwenden zu können.
+</div>
+
+<ul class="index">
+  <li><a href="#index">Index</a></li>
+  <li><a href="#display">Darstellung</a></li>
+  <li><a href="#standard">Der CQL-S Standard</a></li>
+</ul>
+
+<h2 id="index">Index</h2>
+
+<ul class="index">
+  <li><a href="CQL-Syntax.html">Syntax</a></li>
+  <li><a href="CQL-Transformations.html">Transformationen</a></li>
+  <li><a href="CQL-Match-List.html">Die Suchliste</a></li>
+  <li><a href="CQL-Position-List.html">Die Positionsliste</a></li>
+  <li><a href="CQL-Relation-List.html">Die Relationsliste</a></li>
+  <li><a href="CQL-Tagging.html">Markierung</a></li>
+  <li><a href="CQL-Examples.html">Beispiele</a></li>
+  <li><a href="CQL-File-Format.html">Dateiformat</a></li>
+</ul>
+
+<h2 id="display">Darstellung</h2>
+
+<p>
+Standardmäßig wird zur Internationalisierung die figurine Notation der
+Schachfiguren verwendet. Der CQL-Editor arbeitet ebenfalls mit Figurensymbolen,
+allerdings werden die CQL-Dateien mit den entsprechenden englischen Bezeichnern
+gespeichert:
+</p>
+
+<ul style='list-style-type: none'><li>
+  <table style="white-space:nowrap">
+    <!-- Note to translators: don't translate English piece letters in third column -->
+    <tr><td><span class='chess'>&#x2654;</span>  </td><td>=</td><td>K</td><td>=</td><td>weißer König</td></tr>
+    <tr><td><span class='chess'>&#x2655;</span> </td><td>=</td><td>Q</td><td>=</td><td>weiße Dame</td></tr>
+    <tr><td><span class='chess'>&#x2656;</span>  </td><td>=</td><td>R</td><td>=</td><td>weißer Turm</td></tr>
+    <tr><td><span class='chess'>&#x2657;</span></td><td>=</td><td>B</td><td>=</td><td>weißer Läufer</td></tr>
+    <tr><td><span class='chess'>&#x2658;</span></td><td>=</td><td>N</td><td>=</td><td>weißer Springer</td></tr>
+    <tr><td><span class='chess'>&#x2659;</span>  </td><td>=</td><td>P</td><td>=</td><td>weißer Bauer</td></tr>
+    <tr><td><span class='chess'>&#x265a;</span>  </td><td>=</td><td>k</td><td>=</td><td>schwarzer König</td></tr>
+    <tr><td><span class='chess'>&#x265b;</span> </td><td>=</td><td>q</td><td>=</td><td>schwarze Dame</td></tr>
+    <tr><td><span class='chess'>&#x265c;</span>  </td><td>=</td><td>r</td><td>=</td><td>schwarzer Turm</td></tr>
+    <tr><td><span class='chess'>&#x265d;</span></td><td>=</td><td>b</td><td>=</td><td>schwarzer Läufer</td></tr>
+    <tr><td><span class='chess'>&#x265e;</span></td><td>=</td><td>n</td><td>=</td><td>schwarzer Springer</td></tr>
+    <tr><td><span class='chess'>&#x265f;</span>  </td><td>=</td><td>p</td><td>=</td><td>schwarzer Bauer</td></tr>
+  </table>
+</li></ul>
+
+<p>
+Sollten Bezeichner für die Anzeige der Figuren vorgezogen werden, so ist einer der
+folgenden Optionen auszuwählen:
+</p>
+
+<table style="white-space:nowrap">
+  <tr valign="top">
+    <td>
+      <div embed='piecelang en text "Englische Bezeichner verwenden"'
+           style="display: inline;">
+        (Nicht verfügbar im Web-Browser)
+      </div>
+    </td>
+    <td>&emsp;K Q R B N P k q r b n p (wird in den CQL-Dateien verwendet)</td>
+  </tr>
+  <tr valign="top">
+    <td>
+      <div embed='piecelang regional text "Regionale Bezeichner verwenden"'
+           style="display: inline;">
+        (Nicht verfügbar im Web-Browser)
+      </div>
+    </td>
+    <td>&emsp;K D T L S B k d t l s b</td>
+  </tr>
+  <tr valign="top">
+    <td>
+      <div embed='piecelang graphic text "Zurück zu Figurensymbolen"'
+           style="display: inline;">
+        Standard im Web-Browser
+      </div>
+    </td>
+    <td>&emsp;<span class='chess'>&#x2654;</span> <span class='chess'>&#x2655;</span> <span class='chess'>&#x2656;</span> <span class='chess'>&#x2657;</span> <span class='chess'>&#x2658;</span> <span class='chess'>&#x2659;</span> <span class='chess'>&#x265a;</span> <span class='chess'>&#x265b;</span> <span class='chess'>&#x265c;</span> <span class='chess'>&#x265d;</span> <span class='chess'>&#x265e;</span> <span class='chess'>&#x265f;</span></td>
+  </tr>
+</table>
+
+<h2 id="standard">Der CQL-S Standard</h2>
+
+<p>
+Der <span style='white-space:nowrap;'>CQL-S</span> Standard wurde für Scidb entwickelt, um alle Möglichkeiten, die
+Scidb bietet, auch in der Partiesuche bzw. Stellungssuche nutzen zu können. Um den
+<span style='white-space:nowrap;'>CQL-S</span> Standard zu erfüllen müssen alle Schlüsselwörter implementiert werden,
+allerdings brauchen die Besonderheiten, die für andere Schachformen vorgesehen sind,
+nicht unterstützt zu werden (was beispielsweise bei <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:mustcapture">:mustcapture</span></a> heißt,
+das diese Bedingung während der Suche einfach nie erfüllt wird). Der CQL-Parser sollte am
+Dateikopf erkennen, ob ein <span style='white-space:nowrap;'>CQL-S</span>-Skript ausgeführt werden kann
+(&#x21d2; <a href="CQL-File-Format.html">Dateiformat</a>).
+</p>
+
+<p>
+<span style='white-space:nowrap;'>CQL-S</span> ist nahezu 100% abwärtskompatibel zu CQL <span style='white-space:nowrap;'>1.0</span>, es gibt nur zwei Ausnahmen:
+</p>
+
+<ol>
+  <li>
+    <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:flipcolor">:flipcolor</span></a> wirkt in CQL <span style='white-space:nowrap;'>1.0</span> nicht auf <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:result">:result</span></a>
+    (in der Positionsliste).  Dieses Verhalten von CQL <span style='white-space:nowrap;'>1.0</span> kann durchaus als Fehler
+    angesehen werden. In <span style='white-space:nowrap;'>CQL-S</span> bewirkt <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:flipcolor">:flipcolor</span></a> auch
+    auf <span style='white-space:nowrap;'><a href="CQL-Position-List.html#position:result">:result</span></a> eine Farbwechseltransformation.
+  </li>
+  <li style="margin-top:0.5em">
+    In CQL <span style='white-space:nowrap;'>1.0</span> wird die Startposition nicht in die Suche mit einbezogen. In
+    <span style='white-space:nowrap;'>CQL-S</span> wird auch die Startposition in der Positionssuche untersucht
+    und gegebenenfalls gefiltert. Die Einbeziehung der Startposition ist für die
+    Positionssuche in einer Datenbank unerläßlich.
+  </li>
+</ol>
+
+</body>
+</html>
