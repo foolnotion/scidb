@@ -1369,7 +1369,7 @@ Move::Move(Work& work, db::Comment const& comment, unsigned varNo, unsigned varC
 }
 
 
-Move::Move(Spacing& spacing, Key const& key, unsigned moveNumber, MoveNode const* move)
+Move::Move(Spacing& spacing, Key const& key, unsigned moveNumber, MoveNode const* move, bool isFirstPly)
 	:KeyNode(key)
 {
 	if (color::isWhite(move->move().color()) && (spacing.m_displayStyle & display::ColumnStyle))
@@ -1382,7 +1382,10 @@ Move::Move(Spacing& spacing, Key const& key, unsigned moveNumber, MoveNode const
 	if (move->hasAnnotation())
 		m_list.push_back(new Annotation(Annotation::Prefix, move->annotation()));
 
-	m_ply = color::isWhite(move->move().color()) ? new Ply(move, moveNumber) : new Ply(move);
+	if (isFirstPly || color::isWhite(move->move().color()))
+		m_ply = new Ply(move, moveNumber);
+	else
+		m_ply = new Ply(move);
 
 	m_list.push_back(m_ply);
 	spacing.incrPlyCount();
@@ -1564,13 +1567,15 @@ Root::makeList(TagSet const& tags,
 	spacing.m_displayStyle = displayStyle;
 
 	Board board(startBoard);
+	bool firstPly = true;
 
 	for (node = node->next(); node->isBeforeLineEnd(); node = node->next())
 	{
 		key.exchangePly(++plyNumber);
-		result.push_back(new Move(spacing, key, moveNumber, node));
+		result.push_back(new Move(spacing, key, moveNumber, node, firstPly));
 		if (color::isBlack(node->move().color()))
 			++moveNumber;
+		firstPly = false;
 	}
 
 	return root;

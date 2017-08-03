@@ -1121,12 +1121,12 @@ proc UpdatePGN {position data {w {}}} {
 				if {[llength $moves] == 0} {
 					if {![::scidb::game::query $position empty?]} {
 						$w mark set $key insert left
-						$w insert insert "\u200b" m:move
+						#$w insert insert "\u200b" m:move XXX
 					}
 				} else {
 					foreach move $moves {
 						switch [lindex $move 0] {
-							annotation - marks { ;# skip }
+							annotation - marks { # skip }
 
 							space { $w insert end " " }
 							break { $w insert end "\n" }
@@ -1138,8 +1138,10 @@ proc UpdatePGN {position data {w {}}} {
 								if {$moveNo > 0} {
 									if {$Options(style:column)} {
 										$w insert insert "$moveNo.\t"
+										if {$stm eq "black"} { $w insert insert "...\t" }
 									} else {
 										$w insert insert "$moveNo." m:move
+										if {$stm eq "black"} { $w insert insert ".." m:move }
 									}
 								}
 								foreach {text tag} [::font::splitMoves $san] {

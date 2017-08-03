@@ -356,7 +356,7 @@ public:
 	Move(Work& work, MoveNode const* move, bool isEmptyGame, unsigned varNo, unsigned varCount);
 
 	Move(Key const& key);
-	Move(Spacing& spacing, Key const& key, unsigned moveNumber, MoveNode const* move);
+	Move(Spacing& spacing, Key const& key, unsigned moveNumber, MoveNode const* move, bool isFirstPly);
 
 	~Move();
 
