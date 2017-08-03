@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2012-2013 Gregor Cramer
+// Copyright: (C) 2012-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -85,6 +85,17 @@ struct Progress : public util::Progress
 	{
 		::printf(".");
 		::fflush(stdout);
+	}
+
+	void finish() throw() override {}
+};
+
+
+struct Tracer : public util::Progress
+{
+	void update(unsigned progress) override
+	{
+		::printf("Game number %u\n", progress);
 	}
 
 	void finish() throw() override {}
@@ -235,6 +246,7 @@ printHelpAndExit(int rc)
 	printf("  --              Only file names after this\n");
 	printf("  --help          Print Help (this message) and exit\n");
 	printf("  --force         Overwrite existing destination files\n");
+	printf("  --trace         Trace the current game number (for debugging)\n");
 	printf("  --convertfrom <encoding>\n");
 	printf("                  The encoding of the source database\n");
 	printf("                  (default is '%s')\n", ::ConvertFrom);
@@ -499,12 +511,12 @@ logIOError(IOException const& exc, unsigned gameNumber = 0)
 
 
 static unsigned
-exportGames(Database& src, Consumer& dst, Progress& progress)
+exportGames(Database& src, Consumer& dst, ::util::Progress& progress, unsigned minFreq)
 {
 	unsigned numGames		= src.countGames();
 
 	util::ProgressWatcher watcher(progress, numGames);
-	progress.setFrequency(mstl::min(200u, mstl::max(numGames/1000, 50u)));
+	progress.setFrequency(mstl::min(minFreq, mstl::max(numGames/1000, 50u)));
 
 	unsigned reportAfter	= progress.frequency();
 	unsigned count			= 0;
@@ -514,11 +526,12 @@ exportGames(Database& src, Consumer& dst, Progress& progress)
 
 	for (unsigned i = 0; i < numGames; ++i)
 	{
-		if (reportAfter == count++)
+		if (reportAfter == count)
 		{
 			progress.update(count);
 			reportAfter += progress.frequency();
 		}
+		count += 1;
 
 		try
 		{
@@ -545,9 +558,8 @@ main(int argc, char* argv[])
 #ifdef BROKEN_LINKER_HACK
 
 		// HACK!
-		// This hack is required for insane systems like Debian Wheezy,
-		// and Ubuntu Oneiric. The static object initialization is not
-		// properly working on these systems (among other problems).
+		// This hack is required because the linker is not working
+		// properly anymore.
 		db::tag::initialize();
 		db::castling::initialize();
 		db::board::base::initialize();
@@ -564,6 +576,7 @@ main(int argc, char* argv[])
 	TclInterpreter	tclInterpreter;
 	mstl::string	convertfrom(::ConvertFrom);
 	bool				force(false);
+	bool				trace(false);
 	bool				allTags(false);
 	bool				noTags(false);
 	bool				defaultTags(true);
@@ -628,6 +641,10 @@ main(int argc, char* argv[])
 		else if (strcmp(argv[i], "--force") == 0)
 		{
 			force = true;
+		}
+		else if (strcmp(argv[i], "--trace") == 0)
+		{
+			trace = true;
 		}
 		else
 		{
@@ -731,8 +748,12 @@ main(int argc, char* argv[])
 		loadEcoFile();
 
 		Progress	progress;
+		Tracer	tracer;
 		Database	dst(sciPath, sys::utf8::Codec::utf8(), storage::OnDisk, variant::Normal);
 		TagBits	tagList;
+
+		util::Progress* progessRef = trace ?
+			static_cast<util::Progress*>(&tracer) : static_cast<util::Progress*>(&progress);
 
 		if (!noTags)
 		{
@@ -757,10 +778,10 @@ main(int argc, char* argv[])
 
 			dst.setType(src.type());
 			fflush(stdout);
-			printf("\nAppend to '%s' ", sciPath.c_str());
+			printf("\nAppend to '%s'%c", sciPath.c_str(), trace ? '\n' : ' ');
 			fflush(stdout);
-			unsigned numGames = exportGames(src, consumer, progress);
-			dst.save(progress);
+			unsigned numGames = exportGames(src, consumer, *progessRef, trace ? 1 : 200);
+			dst.save(*progessRef);
 			printf("\n*** %u game(s) written.", numGames);
 			if (rejected > 0)
 				printf("\n***%u game(s) rejected.", rejected);
