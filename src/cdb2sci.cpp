@@ -519,7 +519,7 @@ exportGames(Database& src, Consumer& dst, ::util::Progress& progress, unsigned m
 	progress.setFrequency(mstl::min(minFreq, mstl::max(numGames/1000, 50u)));
 
 	unsigned reportAfter	= progress.frequency();
-	unsigned count			= 0;
+	unsigned count			= minFreq == 1 ? 1 : 0;
 	unsigned countGames	= 0;
 
 	::Log log;
