@@ -306,6 +306,8 @@ tcl_base.o: ../mstl/m_uninitialized.h
 tcl_base.o: ../mstl/m_uninitialized.ipp
 tcl_base.o: ../mstl/m_construct.h
 tcl_base.o: ../mstl/m_construct.ipp
+tcl_base.o: ../mstl/m_ios.h
+tcl_base.o: ../mstl/m_ios.ipp
 tcl_base.o: ../mstl/m_stdio.h
 tcl_board.o: tcl_board.h
 tcl_board.o: ../mstl/m_string.h
@@ -1806,8 +1808,8 @@ tcl_player.o: ../mstl/m_list.ipp
 tcl_player.o: ../db/db_player.ipp
 tcl_player.o: ../db/db_namebase_entry.h
 tcl_player.o: ../db/db_namebase_entry.ipp
-tcl_player.o: ../mstl/m_match.h
-tcl_player.o: ../mstl/m_match.ipp
+tcl_player.o: ../util/u_match.h
+tcl_player.o: ../util/u_match.ipp
 tcl_position.o: tcl_position.h
 tcl_position.o: ../db/db_common.h
 tcl_position.o: ../util/u_base.h
