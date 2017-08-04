@@ -716,9 +716,6 @@ bool operator<=(Size const& lhs, Size const& rhs)
 bool operator<(Size const& lhs, Size const& rhs)
 { return lhs.width < rhs.width && lhs.height < rhs.height; }
 
-bool operator!=(Size const& lhs, Size const& rhs) { return !operator==(lhs, rhs); }
-bool operator>=(Size const& lhs, Size const& rhs) { return !operator< (lhs, rhs); }
-bool operator> (Size const& lhs, Size const& rhs) { return !operator<=(lhs, rhs); }
 
 
 typedef mstl::map<mstl::string,Size> SizeMap;
