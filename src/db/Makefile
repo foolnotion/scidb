@@ -15,8 +15,8 @@ include ../../Makefile.in
 .SUFFIXES: .cpp
 .PRECIOUS:
 
-INCLUDE	= -I. -Icql -Isci -Isci/v91 -Isci/v92 -Isci/v93 -Isi3 -Icbh -Icbf -I../mstl -I../util -I../util/libTeXt -I../util/libharu -I../util/universalchardet -I../util/expat -I../sys $(ZLIB_INC) $(TCL_INCLUDE)
-CXXFLAGS	+= $(OPTIMIZE) $(PROFILING) $(CXX_DEBUG) $(EXTRA_DEBUG_FLAGS) $(SYS_CXXFLAGS) -DSCI_NAMEBASE_FIX=1
+INCLUDE	= -I. -Icql -Isci -Isci/v91 -Isci/v92 -Isci/v93 -Isi3 -Icbh -Icbf -I../mstl -I../util -I../util/libTeXt -I../util/libharu -I../util/universalchardet -I../util/expat -I../sys $(ZLIB_INC)
+CXXFLAGS	+= $(OPTIMIZE) $(PROFILING) $(CXX_DEBUG) $(EXTRA_DEBUG_FLAGS) $(SYS_CXXFLAGS) $(TCL_INCLUDE) -DSCI_NAMEBASE_FIX=1
 
 SRC_CXX = \
 	cql/cql_common.cpp \
@@ -1025,9 +1025,6 @@ db_comment.o: db_exception.h
 db_comment.o: ../util/u_exception.h
 db_comment.o: ../sys/sys_utf8.h
 db_comment.o: ../sys/sys_utf8.ipp
-db_comment.o: /usr/local/include/tcl.h
-db_comment.o: /usr/local/include/tclDecls.h
-db_comment.o: /usr/local/include/tclPlatDecls.h
 db_comment.o: ../sys/sys_utf8_codec.h
 db_comment.o: ../mstl/m_list.h
 db_comment.o: ../mstl/m_list_node.h
@@ -3541,9 +3538,6 @@ db_namebase.o: db_site.h
 db_namebase.o: db_site.ipp
 db_namebase.o: ../sys/sys_utf8.h
 db_namebase.o: ../sys/sys_utf8.ipp
-db_namebase.o: /usr/local/include/tcl.h
-db_namebase.o: /usr/local/include/tclDecls.h
-db_namebase.o: /usr/local/include/tclPlatDecls.h
 db_namebase.o: ../sys/sys_utf8_codec.h
 db_namebase.o: ../sys/sys_utf8_codec.ipp
 db_namebase_entry.o: db_namebase_entry.h
@@ -3761,9 +3755,6 @@ db_pdf_writer.o: db_mark_set.ipp
 db_pdf_writer.o: ../util/u_misc.h
 db_pdf_writer.o: ../sys/sys_utf8.h
 db_pdf_writer.o: ../sys/sys_utf8.ipp
-db_pdf_writer.o: /usr/local/include/tcl.h
-db_pdf_writer.o: /usr/local/include/tclDecls.h
-db_pdf_writer.o: /usr/local/include/tclPlatDecls.h
 db_pdf_writer.o: ../sys/sys_utf8_codec.h
 db_pdf_writer.o: ../mstl/m_list.h
 db_pdf_writer.o: ../mstl/m_list_node.h
@@ -3924,9 +3915,6 @@ db_pgn_reader.o: ../mstl/m_istream.ipp
 db_pgn_reader.o: ../mstl/m_stdio.h
 db_pgn_reader.o: ../sys/sys_utf8.h
 db_pgn_reader.o: ../sys/sys_utf8.ipp
-db_pgn_reader.o: /usr/local/include/tcl.h
-db_pgn_reader.o: /usr/local/include/tclDecls.h
-db_pgn_reader.o: /usr/local/include/tclPlatDecls.h
 db_pgn_reader.o: ../sys/sys_utf8_codec.h
 db_pgn_reader.o: ../sys/sys_utf8_codec.ipp
 db_pgn_writer.o: db_pgn_writer.h
@@ -4156,9 +4144,6 @@ db_player.o: ../mstl/m_scoped_ptr.ipp
 db_player.o: ../util/libTeXt/T_Environment.ipp
 db_player.o: ../sys/sys_utf8.h
 db_player.o: ../sys/sys_utf8.ipp
-db_player.o: /usr/local/include/tcl.h
-db_player.o: /usr/local/include/tclDecls.h
-db_player.o: /usr/local/include/tclPlatDecls.h
 db_player.o: ../sys/sys_utf8_codec.h
 db_player.o: ../sys/sys_utf8_codec.ipp
 db_player.o: ../mstl/m_istream.h
@@ -4724,9 +4709,6 @@ db_selector.o: db_filter.h
 db_selector.o: db_filter.ipp
 db_selector.o: ../sys/sys_utf8.h
 db_selector.o: ../sys/sys_utf8.ipp
-db_selector.o: /usr/local/include/tcl.h
-db_selector.o: /usr/local/include/tclDecls.h
-db_selector.o: /usr/local/include/tclPlatDecls.h
 db_signature.o: db_signature.h
 db_signature.o: db_common.h
 db_signature.o: ../util/u_base.h
@@ -4819,9 +4801,6 @@ db_site.o: ../mstl/m_algorithm.ipp
 db_site.o: db_site.ipp
 db_site.o: ../sys/sys_utf8.h
 db_site.o: ../sys/sys_utf8.ipp
-db_site.o: /usr/local/include/tcl.h
-db_site.o: /usr/local/include/tclDecls.h
-db_site.o: /usr/local/include/tclPlatDecls.h
 db_site.o: ../sys/sys_utf8_codec.h
 db_site.o: ../mstl/m_list.h
 db_site.o: ../mstl/m_list_node.h
@@ -5754,9 +5733,6 @@ db_writer.o: db_player.ipp
 db_writer.o: db_pgn_aquarium.h
 db_writer.o: ../sys/sys_utf8.h
 db_writer.o: ../sys/sys_utf8.ipp
-db_writer.o: /usr/local/include/tcl.h
-db_writer.o: /usr/local/include/tclDecls.h
-db_writer.o: /usr/local/include/tclPlatDecls.h
 db_writer.o: ../sys/sys_utf8_codec.h
 db_writer.o: ../sys/sys_utf8_codec.ipp
 db_writer.o: ../mstl/m_stdio.h
@@ -7526,9 +7502,6 @@ si3/si3_codec.o: ../sys/sys_file.h
 si3/si3_codec.o: ../sys/sys_file.ipp
 si3/si3_codec.o: ../sys/sys_utf8.h
 si3/si3_codec.o: ../sys/sys_utf8.ipp
-si3/si3_codec.o: /usr/local/include/tcl.h
-si3/si3_codec.o: /usr/local/include/tclDecls.h
-si3/si3_codec.o: /usr/local/include/tclPlatDecls.h
 si3/si3_codec.o: ../sys/sys_utf8_codec.h
 si3/si3_codec.o: ../sys/sys_utf8_codec.ipp
 si3/si3_codec.o: ../mstl/m_function.h
@@ -7818,9 +7791,6 @@ si3/si3_decoder.o: ../util/u_byte_stream.h
 si3/si3_decoder.o: ../util/u_byte_stream.ipp
 si3/si3_decoder.o: ../sys/sys_utf8.h
 si3/si3_decoder.o: ../sys/sys_utf8.ipp
-si3/si3_decoder.o: /usr/local/include/tcl.h
-si3/si3_decoder.o: /usr/local/include/tclDecls.h
-si3/si3_decoder.o: /usr/local/include/tclPlatDecls.h
 si3/si3_decoder.o: ../sys/sys_utf8_codec.h
 si3/si3_decoder.o: ../sys/sys_utf8_codec.ipp
 si3/si3_decoder_position.o: si3/si3_decoder_position.h
@@ -8336,9 +8306,6 @@ cbf/cbf_codec.o: ../sys/sys_utf8_codec.h
 cbf/cbf_codec.o: ../sys/sys_utf8_codec.ipp
 cbf/cbf_codec.o: ../sys/sys_utf8.h
 cbf/cbf_codec.o: ../sys/sys_utf8.ipp
-cbf/cbf_codec.o: /usr/local/include/tcl.h
-cbf/cbf_codec.o: /usr/local/include/tclDecls.h
-cbf/cbf_codec.o: /usr/local/include/tclPlatDecls.h
 cbf/cbf_codec.o: ../sys/sys_file.h
 cbf/cbf_codec.o: ../sys/sys_file.ipp
 cbf/cbf_decoder.o: cbf/cbf_decoder.h
@@ -8441,9 +8408,6 @@ cbf/cbf_decoder.o: ../mstl/m_list.ipp
 cbf/cbf_decoder.o: ../sys/sys_utf8_codec.ipp
 cbf/cbf_decoder.o: ../sys/sys_utf8.h
 cbf/cbf_decoder.o: ../sys/sys_utf8.ipp
-cbf/cbf_decoder.o: /usr/local/include/tcl.h
-cbf/cbf_decoder.o: /usr/local/include/tclDecls.h
-cbf/cbf_decoder.o: /usr/local/include/tclPlatDecls.h
 cbf/cbf_decoder_position.o: cbf/cbf_decoder_position.h
 cbf/cbf_decoder_position.o: db_board.h
 cbf/cbf_decoder_position.o: db_move_list.h
@@ -8652,9 +8616,6 @@ cbh/cbh_codec.o: ../sys/sys_file.h
 cbh/cbh_codec.o: ../sys/sys_file.ipp
 cbh/cbh_codec.o: ../sys/sys_utf8.h
 cbh/cbh_codec.o: ../sys/sys_utf8.ipp
-cbh/cbh_codec.o: /usr/local/include/tcl.h
-cbh/cbh_codec.o: /usr/local/include/tclDecls.h
-cbh/cbh_codec.o: /usr/local/include/tclPlatDecls.h
 cbh/cbh_codec.o: ../sys/sys_utf8_codec.h
 cbh/cbh_codec.o: ../sys/sys_utf8_codec.ipp
 cbh/cbh_codec.o: ../sys/sys_lock.h
@@ -8912,9 +8873,6 @@ cbh/cbh_game_decoder.o: ../util/u_bit_stream.h
 cbh/cbh_game_decoder.o: ../util/u_bit_stream.ipp
 cbh/cbh_game_decoder.o: ../sys/sys_utf8.h
 cbh/cbh_game_decoder.o: ../sys/sys_utf8.ipp
-cbh/cbh_game_decoder.o: /usr/local/include/tcl.h
-cbh/cbh_game_decoder.o: /usr/local/include/tclDecls.h
-cbh/cbh_game_decoder.o: /usr/local/include/tclPlatDecls.h
 cbh/cbh_game_decoder.o: ../sys/sys_utf8_codec.h
 cbh/cbh_game_decoder.o: ../sys/sys_utf8_codec.ipp
 cbh/cbh_game_decoder.o: ../mstl/m_stdio.h
