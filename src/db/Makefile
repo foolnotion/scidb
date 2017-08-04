@@ -15,7 +15,7 @@ include ../../Makefile.in
 .SUFFIXES: .cpp
 .PRECIOUS:
 
-INCLUDE	= -I. -Icql -Isci -Isci/v91 -Isci/v92 -Isci/v93 -Isi3 -Icbh -Icbf -I../mstl -I../util -I../util/libTeXt -I../util/libharu -I../util/universalchardet -I../util/expat -I../sys $(ZLIB_INC)
+INCLUDE	= -I. -Icql -Isci -Isci/v91 -Isci/v92 -Isci/v93 -Isi3 -Icbh -Icbf -I../mstl -I../util -I../util/libTeXt -I../util/libharu -I../util/universalchardet -I../util/expat -I../sys $(ZLIB_INC) $(TCL_INCLUDE)
 CXXFLAGS	+= $(OPTIMIZE) $(PROFILING) $(CXX_DEBUG) $(EXTRA_DEBUG_FLAGS) $(SYS_CXXFLAGS) -DSCI_NAMEBASE_FIX=1
 
 SRC_CXX = \
@@ -4520,6 +4520,8 @@ db_reader.o: ../util/u_misc.h
 db_reader.o: ../sys/sys_file.h
 db_reader.o: ../sys/sys_time.h
 db_reader.o: ../sys/sys_file.ipp
+db_reader.o: ../sys/sys_utf8.h
+db_reader.o: ../sys/sys_utf8.ipp
 db_reader.o: ../sys/sys_utf8_codec.h
 db_reader.o: ../sys/sys_utf8_codec.ipp
 db_search.o: db_search.h
