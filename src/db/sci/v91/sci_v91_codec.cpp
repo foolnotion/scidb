@@ -924,13 +924,13 @@ Codec::decodeIndex(ByteStream& strm, GameInfo& item)
 	NamebasePlayer* whitePlayer = GET(Player, whitePlayer);
 	NamebasePlayer* blackPlayer = GET(Player, blackPlayer);
 
-	whitePlayer->ref(); blackPlayer->ref();
+	whitePlayer->incrRef(); blackPlayer->incrRef();
 
 	{
 		NamebaseEvent* event			= GET(Event, event);
 		NamebaseEntry* annotator	= GET(Annotator, annotator);
 
-		event->ref(); annotator->ref();
+		event->incrRef(); annotator->incrRef();
 
 		item.m_player[color::White]	= whitePlayer;
 		item.m_player[color::Black]	= blackPlayer;
@@ -1293,7 +1293,7 @@ Codec::readEventbase(ByteStream& bstrm, Namebase& base, unsigned count, util::Pr
 
 	NamebaseSite* site = ::getSite(namebase(Namebase::Site), m_lookup[Namebase::Site][bstrm.uint24()]);
 
-	site->ref();
+	site->incrRef();
 
 	if (uint16_t flags = bstrm.uint16())
 	{
@@ -1372,7 +1372,7 @@ Codec::readEventbase(ByteStream& bstrm, Namebase& base, unsigned count, util::Pr
 
 		NamebaseSite* site = ::getSite(namebase(Namebase::Site), m_lookup[Namebase::Site][bstrm.uint24()]);
 
-		site->ref();
+		site->incrRef();
 
 		if (uint16_t flags = bstrm.uint16())
 		{

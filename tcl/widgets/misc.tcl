@@ -579,8 +579,7 @@ proc unbusyCursor {{w {}}} {
 
 proc busyOperation {cmd} {
 	busyCursor on
-
-	set rc [::util::catchException {uplevel 1 $cmd} result options]
+	set rc [catch {uplevel 1 $cmd} result options]
 	busyCursor off
 	if {$rc != 1} { return $result }
 	array set opts $options

@@ -240,15 +240,15 @@ GameInfo::update(	NamebasePlayer* whitePlayer,
 	if (annotator != NamebaseEntry::emptyEntry())
 	{
 		m_annotator = annotator;
-		namebases(Namebase::Annotator).ref(m_annotator);
+		namebases(Namebase::Annotator).incrRef(m_annotator);
 	}
 
 	if (event->frequency() == 0)
-		namebases(Namebase::Site).ref(event->site());
+		namebases(Namebase::Site).incrRef(event->site());
 
-	namebases(Namebase::Player).ref(m_player[color::White] = whitePlayer);
-	namebases(Namebase::Player).ref(m_player[color::Black] = blackPlayer);
-	namebases(Namebase::Event).ref(m_event = event);
+	namebases(Namebase::Player).incrRef(m_player[color::White] = whitePlayer);
+	namebases(Namebase::Player).incrRef(m_player[color::Black] = blackPlayer);
+	namebases(Namebase::Event).incrRef(m_event = event);
 
 	m_dateYear		= Date::Zero10Bits;
 	m_dateMonth		= 0;
@@ -485,7 +485,7 @@ GameInfo::setup(	uint32_t gameOffset,
 	else
 	{
 		m_annotator = annotator;
-		namebases(Namebase::Annotator).ref(m_annotator);
+		namebases(Namebase::Annotator).incrRef(m_annotator);
 	}
 
 	m_gameOffset		= gameOffset;
@@ -494,11 +494,11 @@ GameInfo::setup(	uint32_t gameOffset,
 	m_event				= event;
 
 	if (event->frequency() == 0)
-		namebases(Namebase::Site).ref(event->site());
+		namebases(Namebase::Site).incrRef(event->site());
 
-	namebases(Namebase::Player).ref(whitePlayer);
-	namebases(Namebase::Player).ref(blackPlayer);
-	namebases(Namebase::Event).ref(event);
+	namebases(Namebase::Player).incrRef(whitePlayer);
+	namebases(Namebase::Player).incrRef(blackPlayer);
+	namebases(Namebase::Event).incrRef(event);
 }
 
 
@@ -696,12 +696,12 @@ GameInfo::reset(Namebases& namebases)
 	{
 		unsigned specialFlags = m_gameFlags & Flag_Special;
 
-		namebases(Namebase::Player).deref(m_player[White]);
-		namebases(Namebase::Player).deref(m_player[Black]);
-		namebases(Namebase::Event ).deref(m_event);
+		namebases(Namebase::Player).decrRef(m_player[White]);
+		namebases(Namebase::Player).decrRef(m_player[Black]);
+		namebases(Namebase::Event ).decrRef(m_event);
 
 		if (m_event->frequency() == 0)
-			namebases(Namebase::Site).deref(m_event->site());
+			namebases(Namebase::Site).decrRef(m_event->site());
 
 		unsigned gameOffset = m_gameOffset;
 
@@ -712,7 +712,7 @@ GameInfo::reset(Namebases& namebases)
 		}
 		else
 		{
-			namebases(Namebase::Annotator).deref(m_annotator);
+			namebases(Namebase::Annotator).decrRef(m_annotator);
 			*this = m_initializer;
 		}
 
@@ -727,15 +727,15 @@ GameInfo::resetCharacteristics(Namebases& namebases)
 {
 	M_REQUIRE(!isEmpty());
 
-	namebases(Namebase::Player).deref(m_player[White]);
-	namebases(Namebase::Player).deref(m_player[Black]);
-	namebases(Namebase::Event ).deref(m_event);
+	namebases(Namebase::Player).decrRef(m_player[White]);
+	namebases(Namebase::Player).decrRef(m_player[Black]);
+	namebases(Namebase::Event ).decrRef(m_event);
 
 	if (m_event->frequency() == 0)
-		namebases(Namebase::Site).deref(m_event->site());
+		namebases(Namebase::Site).decrRef(m_event->site());
 
 	if (!hasGameRecordLength())
-		namebases(Namebase::Annotator).deref(m_annotator);
+		namebases(Namebase::Annotator).decrRef(m_annotator);
 
 	m_dateYear		= Date::Zero10Bits;
 	m_dateMonth		= 0;
@@ -756,14 +756,14 @@ GameInfo::restore(GameInfo& oldInfo, Namebases& namebases)
 	*this = oldInfo;
 
 	if (m_event->frequency() == 0)
-		namebases(Namebase::Site  ).ref(m_event->site());
+		namebases(Namebase::Site  ).incrRef(m_event->site());
 
-	namebases(Namebase::Player).ref(m_player[White]);
-	namebases(Namebase::Player).ref(m_player[Black]);
-	namebases(Namebase::Event ).ref(m_event);
+	namebases(Namebase::Player).incrRef(m_player[White]);
+	namebases(Namebase::Player).incrRef(m_player[Black]);
+	namebases(Namebase::Event ).incrRef(m_event);
 
 	if (!hasGameRecordLength())
-		namebases(Namebase::Annotator).ref(m_annotator);
+		namebases(Namebase::Annotator).incrRef(m_annotator);
 }
 
 

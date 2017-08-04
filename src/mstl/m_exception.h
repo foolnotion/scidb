@@ -87,6 +87,7 @@ public:
 #endif
 
 	string const& report() const;
+	::mstl::backtrace& backtrace();
 	::mstl::backtrace const& backtrace() const;
 
 protected:

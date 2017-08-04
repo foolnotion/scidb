@@ -66,6 +66,8 @@ using namespace db;
 static unsigned rejected	= 0;
 static unsigned corrupted	= 0;
 
+static bool newNewline = false;
+
 static mstl::string cdbPath;
 
 
@@ -85,17 +87,6 @@ struct Progress : public util::Progress
 	{
 		::printf(".");
 		::fflush(stdout);
-	}
-
-	void finish() throw() override {}
-};
-
-
-struct Tracer : public util::Progress
-{
-	void update(unsigned progress) override
-	{
-		::printf("Game number %u\n", progress);
 	}
 
 	void finish() throw() override {}
@@ -246,7 +237,6 @@ printHelpAndExit(int rc)
 	printf("  --              Only file names after this\n");
 	printf("  --help          Print Help (this message) and exit\n");
 	printf("  --force         Overwrite existing destination files\n");
-	printf("  --trace         Trace the current game number (for debugging)\n");
 	printf("  --convertfrom <encoding>\n");
 	printf("                  The encoding of the source database\n");
 	printf("                  (default is '%s')\n", ::ConvertFrom);
@@ -498,28 +488,47 @@ logIOError(IOException const& exc, unsigned gameNumber = 0)
 		msg.format(" (#%d)", gameNumber);
 
 	fflush(stdout);
-	printf("\n");
+	if (::newNewline)
+		printf("\n");
 	fflush(stdout);
 	fprintf(stderr, "%s\n", msg.c_str());
+	::newNewline = false;
 
-	if (exc.errorType() == IOException::Read_Error)
+	switch (exc.errorType())
 	{
-		fprintf(stderr, "Abort.\n");
-		exit(1);
+		case IOException::Unknown_Error_Type:
+		case IOException::Create_Failed:
+		case IOException::Open_Failed:
+		case IOException::Unknown_Version:
+		case IOException::Unexpected_Version:
+		case IOException::Write_Failed:
+		case IOException::Max_File_Size_Exceeded:
+		case IOException::Not_Original_Version:
+		case IOException::Read_Only:
+			fprintf(stderr, "Abort.\n");
+			exit(1);
+
+		case IOException::Read_Error:
+		case IOException::Corrupted:
+		case IOException::Invalid_Data:
+		case IOException::Encoding_Failed:
+		case IOException::Load_Failed:
+		case IOException::Cannot_Create_Thread:
+			break;
 	}
 }
 
 
 static unsigned
-exportGames(Database& src, Consumer& dst, ::util::Progress& progress, unsigned minFreq)
+exportGames(Database& src, Consumer& dst, ::util::Progress& progress)
 {
 	unsigned numGames		= src.countGames();
 
 	util::ProgressWatcher watcher(progress, numGames);
-	progress.setFrequency(mstl::min(minFreq, mstl::max(numGames/1000, 50u)));
+	progress.setFrequency(mstl::min(200u, mstl::max(numGames/1000, 50u)));
 
 	unsigned reportAfter	= progress.frequency();
-	unsigned count			= minFreq == 1 ? 1 : 0;
+	unsigned count			= 0;
 	unsigned countGames	= 0;
 
 	::Log log;
@@ -530,6 +539,7 @@ exportGames(Database& src, Consumer& dst, ::util::Progress& progress, unsigned m
 		{
 			progress.update(count);
 			reportAfter += progress.frequency();
+			::newNewline = true;
 		}
 		count += 1;
 
@@ -545,6 +555,13 @@ exportGames(Database& src, Consumer& dst, ::util::Progress& progress, unsigned m
 		catch (IOException const& exc)
 		{
 			logIOError(exc, i + 1);
+		}
+		catch (...)
+		{
+			printf("\n");
+			fflush(stdout);
+			fprintf(stderr, "*** Exception catched while decoding game #%u\n", count);
+			throw;
 		}
 	}
 
@@ -571,12 +588,13 @@ main(int argc, char* argv[])
 
 #endif
 
+	mstl::backtrace::disable();
+
 	typedef mstl::set<mstl::string> BaseList;
 
 	TclInterpreter	tclInterpreter;
 	mstl::string	convertfrom(::ConvertFrom);
 	bool				force(false);
-	bool				trace(false);
 	bool				allTags(false);
 	bool				noTags(false);
 	bool				defaultTags(true);
@@ -641,10 +659,6 @@ main(int argc, char* argv[])
 		else if (strcmp(argv[i], "--force") == 0)
 		{
 			force = true;
-		}
-		else if (strcmp(argv[i], "--trace") == 0)
-		{
-			trace = true;
 		}
 		else
 		{
@@ -748,12 +762,8 @@ main(int argc, char* argv[])
 		loadEcoFile();
 
 		Progress	progress;
-		Tracer	tracer;
 		Database	dst(sciPath, sys::utf8::Codec::utf8(), storage::OnDisk, variant::Normal);
 		TagBits	tagList;
-
-		util::Progress* progessRef = trace ?
-			static_cast<util::Progress*>(&tracer) : static_cast<util::Progress*>(&progress);
 
 		if (!noTags)
 		{
@@ -778,15 +788,16 @@ main(int argc, char* argv[])
 
 			dst.setType(src.type());
 			fflush(stdout);
-			printf("\nAppend to '%s'%c", sciPath.c_str(), trace ? '\n' : ' ');
+			printf("\nAppend to '%s' ", sciPath.c_str());
 			fflush(stdout);
-			unsigned numGames = exportGames(src, consumer, *progessRef, trace ? 1 : 200);
-			dst.save(*progessRef);
+			::newNewline = true;
+			unsigned numGames = exportGames(src, consumer, progress);
+			dst.save(progress);
 			printf("\n*** %u game(s) written.", numGames);
 			if (rejected > 0)
-				printf("\n***%u game(s) rejected.", rejected);
+				printf("\n*** %u game(s) rejected.", rejected);
 			if (corrupted > 0)
-				printf("\n***%u game(s) corrupted.", corrupted);
+				printf("\n*** %u game(s) corrupted.", corrupted);
 			printf("\n");
 			fflush(stdout);
 			src.close();

@@ -1391,7 +1391,7 @@ PgnReader::setUtf8Codec()
 void
 PgnReader::convertToUtf(mstl::string& s)
 {
-	if (s.empty() || sys::utf8::Codec::is7BitAscii(s))
+	if (s.empty() || s.is_7bit())
 		return;
 
 	M_ASSERT(m_codec);

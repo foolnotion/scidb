@@ -24,6 +24,7 @@ SRC_CXX = \
 	u_exception.cpp \
 	u_html.cpp \
 	u_http.cpp \
+	u_match.cpp \
 	u_misc.cpp \
 	u_path.cpp \
 	u_piped_progress.cpp \
@@ -157,7 +158,6 @@ u_byte_stream.o: ../mstl/m_string.ipp
 u_emoticons.o: u_emoticons.h
 u_emoticons.o: ../sys/sys_utf8.h
 u_emoticons.o: ../mstl/m_types.h
-u_emoticons.o: ../sys/sys_utf8.ipp
 u_emoticons.o: ../mstl/m_string.h
 u_emoticons.o: ../mstl/m_string.ipp
 u_emoticons.o: ../mstl/m_utility.h
@@ -173,6 +173,7 @@ u_emoticons.o: ../mstl/m_assert.h
 u_emoticons.o: ../mstl/m_exception.h
 u_emoticons.o: ../mstl/m_backtrace.h
 u_emoticons.o: ../mstl/m_exception.ipp
+u_emoticons.o: ../sys/sys_utf8.ipp
 u_emoticons.o: u_base.h
 u_exception.o: u_exception.h
 u_exception.o: ../mstl/m_exception.h
@@ -254,6 +255,26 @@ u_http.o: ../mstl/m_ostream.ipp
 u_http.o: ../mstl/m_istream.h
 u_http.o: ../mstl/m_istream.ipp
 u_http.o: ../mstl/m_stdio.h
+u_match.o: u_match.h
+u_match.o: ../mstl/m_string.h
+u_match.o: ../mstl/m_types.h
+u_match.o: ../mstl/m_string.ipp
+u_match.o: ../mstl/m_utility.h
+u_match.o: ../mstl/m_type_traits.h
+u_match.o: ../mstl/m_type_traits.ipp
+u_match.o: ../mstl/m_utility.ipp
+u_match.o: ../mstl/m_limits.h
+u_match.o: ../mstl/m_bit_functions.h
+u_match.o: ../mstl/m_bit_functions.ipp
+u_match.o: ../mstl/m_uint128_t.h
+u_match.o: ../mstl/m_uint128.h
+u_match.o: ../mstl/m_assert.h
+u_match.o: ../mstl/m_exception.h
+u_match.o: ../mstl/m_backtrace.h
+u_match.o: ../mstl/m_exception.ipp
+u_match.o: u_match.ipp
+u_match.o: ../sys/sys_utf8.h
+u_match.o: ../sys/sys_utf8.ipp
 u_misc.o: u_misc.h
 u_misc.o: ../mstl/m_string.h
 u_misc.o: ../mstl/m_types.h

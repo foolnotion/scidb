@@ -71,6 +71,7 @@ SOURCES = \
 	widgets/panedwindow.tcl \
 	widgets/calendar.tcl \
 	widgets/datebox.tcl \
+	widgets/rangebox.tcl \
 	widgets/entrybox.tcl \
 	widgets/entrybuttonbox.tcl \
 	widgets/roundbox.tcl \
@@ -87,6 +88,7 @@ SOURCES = \
 	widgets/scorebox.tcl \
 	widgets/terminationbox.tcl \
 	widgets/ecobox.tcl \
+	widgets/organizationbox.tcl \
 	widgets/labelbar.tcl \
 	widgets/html.tcl \
 	widgets/choosedir.tcl \
@@ -98,6 +100,7 @@ SOURCES = \
 	widgets/registerbutton.tcl \
 	widgets/dropdownbutton.tcl \
 	widgets/sliding-varlist.tcl \
+	widgets/searchentry.tcl \
 	gametable.tcl \
 	playertable.tcl \
 	eventtable.tcl \

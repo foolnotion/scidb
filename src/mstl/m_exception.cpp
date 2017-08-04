@@ -112,6 +112,7 @@ exception::exception(char const* fmt, ...)
 
 
 exception::~exception() throw() { delete m_report; }
+backtrace& exception::backtrace() { return m_backtrace; }
 backtrace const& exception::backtrace() const { return m_backtrace; }
 string const& exception::report() const { return *m_report; }
 void exception::set_report(string const& report) { m_report->assign(report); }

@@ -17,6 +17,7 @@
 // ======================================================================
 
 #include "m_backtrace.h"
+#include "m_sstream.h"
 #include "m_chunk_allocator.h"
 
 /// \class backtrace
@@ -31,6 +32,13 @@
 /// actual function names instead of __gxx_personality0+0xF4800.
 
 using namespace mstl;
+
+
+bool backtrace::m_isEnabled = true;
+
+
+void backtrace::enable(bool flag) { m_isEnabled = flag; }
+void backtrace::disable() { m_isEnabled = false; }
 
 
 #ifdef __OPTIMIZE__
@@ -471,9 +479,8 @@ mstl::backtrace::backtrace(bool wanted)
 	:m_nframes(0)
 	,m_allocator(new allocator(512))
 	,m_skip(0)
-	,m_refCount(new unsigned)
+	,m_trace(nullptr)
 {
-	*m_refCount += 1;
 	if (wanted)
 		symbols();
 }
@@ -481,9 +488,9 @@ mstl::backtrace::backtrace(bool wanted)
 
 mstl::backtrace::backtrace(backtrace const& v)
 	:m_nframes(0)
-	,m_allocator(0)
+	,m_allocator(nullptr)
 	,m_skip(0)
-	,m_refCount(0)
+	,m_trace(nullptr)
 {
 	operator=(v);
 }
@@ -492,33 +499,21 @@ mstl::backtrace::backtrace(backtrace const& v)
 
 mstl::backtrace::~backtrace() throw()
 {
-	if (--m_refCount == 0)
-	{
-		delete m_allocator;
-		delete m_refCount;
-	}
+	delete m_allocator;
+	delete m_trace;
 }
 
 
 mstl::backtrace const&
 mstl::backtrace::operator=(backtrace const& v)
 {
-	if (this != &v)
-	{
-		if (m_refCount && --m_refCount == 0)
-		{
-			delete m_allocator;
-			delete m_refCount;
-		}
-
-		::memcpy(m_addresses, v.m_addresses, sizeof(m_addresses));
-		::memcpy(m_symbols, v.m_addresses, sizeof(m_symbols));
-		m_nframes = v.m_nframes;
-		m_allocator = v.m_allocator;
-		*(m_refCount = v.m_refCount) += 1;
-		m_skip = v.m_skip;
-	}
-
+	ostringstream strm;
+	v.text_write(strm, 1);
+	if (!m_trace)
+		m_trace = new string();
+	*m_trace = strm.str();
+	delete m_allocator;
+	m_allocator = nullptr;
 	return *this;
 }
 
@@ -760,14 +755,15 @@ mstl::backtrace::symbols_linux()
 bool
 mstl::backtrace::empty() const
 {
-	return m_allocator->empty();
+	M_ASSERT(m_allocator || m_trace);
+	return m_allocator ? m_allocator->empty() : m_trace->empty();
 }
 
 
 void
 mstl::backtrace::symbols()
 {
-	if (!::isMainThread() || !empty())
+	if (!m_isEnabled || !m_allocator || !::isMainThread() || !empty())
 		return;
 
 # ifdef __unix__
@@ -822,47 +818,56 @@ mstl::backtrace::symbols()
 void
 mstl::backtrace::text_write(ostringstream& os, unsigned skip) const
 {
+	M_ASSERT(m_allocator || m_trace);
+
 	if (empty())
 		return;
-
-	unsigned i = 0;
-
-	skip += m_skip;
-
-	if (::strncmp(m_symbols[0], "__read_nocancel", 12) == 0)
-		skip += 4;
-
-	for ( ; i < m_nframes && skip; ++i)
+	
+	if (m_allocator)
 	{
-		if (m_symbols[i])
-			--skip;
-	}
+		unsigned i = 0;
 
-	for ( ; i < m_nframes; ++i)
-	{
-		char const* s = m_symbols[i];
+		skip += m_skip;
 
-		if (	s
-			&& ::strstr(s, "m_exception.ipp") == 0
-			&& ::strstr(s, "assertion_failure_exception") == 0
-			&& ::strstr(s, "backtrace::backtrace") == 0
-			&& ::strstr(s, "exception::exception") == 0
-			&& ::strstr(s, "Exception::Exception") == 0
-			&& ::strstr(s, "Error::Error") == 0)
+		if (::strncmp(m_symbols[0], "__read_nocancel", 12) == 0)
+			skip += 4;
+
+		for ( ; i < m_nframes && skip; ++i)
 		{
-			char const* e = ::strchr(s, '\n') + 1;
+			if (m_symbols[i])
+				--skip;
+		}
+
+		for ( ; i < m_nframes; ++i)
+		{
+			char const* s = m_symbols[i];
+
+			if (	s
+				&& ::strstr(s, "m_exception.ipp") == 0
+				&& ::strstr(s, "assertion_failure_exception") == 0
+				&& ::strstr(s, "backtrace::backtrace") == 0
+				&& ::strstr(s, "exception::exception") == 0
+				&& ::strstr(s, "Exception::Exception") == 0
+				&& ::strstr(s, "Error::Error") == 0)
+			{
+				char const* e = ::strchr(s, '\n') + 1;
 
 #if 0
-			if (m_addresses[i])
-				os.format(sizeof(long) == 8 ? "0x%016lx" : "0x%08lx", long(m_addresses[i]));
+				if (m_addresses[i])
+					os.format(sizeof(long) == 8 ? "0x%016lx" : "0x%08lx", long(m_addresses[i]));
 #endif
 
-			os.put(' ');
-			os.write(s, distance(s, e));
+				os.put(' ');
+				os.write(s, distance(s, e));
 
-			if (::strncmp(s, "main\n", 5) == 0 || ::strncmp(s, "__libc_start_main\n", 18) == 0)
-				return;
+				if (::strncmp(s, "main\n", 5) == 0 || ::strncmp(s, "__libc_start_main\n", 18) == 0)
+					return;
+			}
 		}
+	}
+	else
+	{
+		os << m_trace;
 	}
 }
 
@@ -873,7 +878,10 @@ void
 mstl::backtrace::clear()
 {
 #ifndef __OPTIMIZE__
-	m_allocator->clear();
+	if (m_allocator)
+		m_allocator->clear();
+	if (m_trace)
+		m_trace->clear();
 #endif
 }
 

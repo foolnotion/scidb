@@ -399,7 +399,7 @@ NameList::buildList(Namebase& base, Codec& codec)
 				m_buf.assign("?", 1);
 				str = &m_buf;
 			}
-			else if (Codec::is7BitAscii(entry->name()))
+			else if (entry->name().is_7bit())
 			{
 				str = &entry->name();
 			}

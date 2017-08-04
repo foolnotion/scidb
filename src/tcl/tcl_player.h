@@ -44,7 +44,7 @@ namespace tcl
 
 		int getInfo(::db::NamebasePlayer const& player,
 						Ratings& ratings,
-						::db::federation::ID federation,
+						::db::organization::ID organization,
 						bool info,
 						bool idCard,
 						bool usePlayerBase);

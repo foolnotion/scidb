@@ -32,7 +32,8 @@
 #include "db_player.h"
 #include "db_namebase_entry.h"
 
-#include "m_match.h"
+#include "u_match.h"
+
 #include "m_utility.h"
 
 #include <tcl.h>
@@ -151,11 +152,28 @@ playerRatings(	NamebasePlayer const& player,
 }
 
 
+static bool
+getMinMax(Tcl_Interp* ti, Tcl_Obj* val, int& min, int& max, char const* msg)
+{
+	Tcl_Obj** objs;
+	int len;
+	if (	Tcl_ListObjGetElements(ti, val, &len, &objs) != TCL_OK
+		|| len != 2
+		|| Tcl_GetIntFromObj(ti, objs[0], &min) != TCL_OK
+		|| Tcl_GetIntFromObj(ti, objs[1], &max) != TCL_OK)
+	{
+		error(CmdFilter, nullptr, nullptr, msg);
+		return false;
+	}
+	return true;
+}
+
+
 static int
 getInfo(	NamebasePlayer const* player,
 			Player const* lookup,
 			tcl::player::Ratings& ratings,
-			federation::ID federation,
+			organization::ID organization,
 			bool info,
 			bool idCard,
 			bool usePlayerBase)
@@ -181,7 +199,7 @@ getInfo(	NamebasePlayer const* player,
 		name = &player->name();
 		sex = sex::toString(player->sex());
 		species = species::toString(usePlayerBase ? player->findType() : player->type());
-		if (federation == federation::Fide && player->fideID())
+		if (organization == organization::Fide && player->fideID())
 			fideID.format("%u", player->fideID());
 		haveInfo = player->havePlayerInfo();
 	}
@@ -190,7 +208,7 @@ getInfo(	NamebasePlayer const* player,
 		name = &lookup->name();
 		sex = sex::toString(lookup->sex());
 		species = species::toString(lookup->type());
-		fideID = lookup->federationID(federation);
+		fideID = lookup->organization(organization);
 		haveInfo = true;
 	}
 
@@ -226,9 +244,9 @@ getInfo(	NamebasePlayer const* player,
 
 		if (fideID.empty())
 		{
-			fideID = lookup->federationID(federation);
+			fideID = lookup->organization(organization);
 
-			if (!fideID.empty() && federation == federation::Fide && !idCard)
+			if (!fideID.empty() && organization == organization::Fide && !idCard)
 				fideID.replace(size_t(0), size_t(0), "*", size_t(1));
 		}
 	}
@@ -348,7 +366,7 @@ getInfo(	NamebasePlayer const* player,
 int
 tcl::player::getInfo(NamebasePlayer const& player,
 							Ratings& ratings,
-							federation::ID federation,
+							organization::ID organization,
 							bool info,
 							bool idCard,
 							bool usePlayerBase)
@@ -356,7 +374,7 @@ tcl::player::getInfo(NamebasePlayer const& player,
 	M_ASSERT(!idCard || info);
 
 	Player const* lookup = usePlayerBase ? player.player() : 0;
-	return ::getInfo(&player, lookup, ratings, federation, info, idCard, usePlayerBase);
+	return ::getInfo(&player, lookup, ratings, organization, info, idCard, usePlayerBase);
 }
 
 
@@ -378,22 +396,22 @@ cmdDict(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		if (m_dictionary)
 			return error(CmdDict, nullptr, nullptr, "player dictionary is already open");
 
-		app::PlayerDictionary::Mode mode;
+		::app::PlayerDictionary::Mode mode;
 		char const* modeStr = stringFromObj(objc, objv, 2);
 
 		if (strcmp(modeStr, "all") == 0)
-			mode = app::PlayerDictionary::All;
+			mode = ::app::PlayerDictionary::All;
 		else if (strcmp(modeStr, "player") == 0)
-			mode = app::PlayerDictionary::PlayersOnly;
+			mode = ::app::PlayerDictionary::PlayersOnly;
 		else if (strcmp(modeStr, "engine") == 0)
-			mode = app::PlayerDictionary::EnginesOnly;
+			mode = ::app::PlayerDictionary::EnginesOnly;
 		else
 			return error(CmdDict, nullptr, nullptr, "unknown dictionary mode '%s'", modeStr);
 
 		if (m_dictionary == 0)
 		{
-			m_dictionary = new app::PlayerDictionary(mode);
-			m_dictionary->sort(app::PlayerDictionary::Name, order::Ascending);
+			m_dictionary = new ::app::PlayerDictionary(mode);
+			m_dictionary->sort(::app::PlayerDictionary::Name, order::Ascending);
 			m_dictionary->finishOperation();
 		}
 	}
@@ -421,32 +439,83 @@ cmdInfo(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		return error(CmdInfo, nullptr, nullptr, "player dictionary is closed");
 
 	tcl::player::Ratings ratings(rating::Elo, rating::DWZ);
-	federation::ID federation = federation::Fide;
-	bool forWeb = false;
+	organization::ID organization = organization::Fide; // organization::Scidb;
+#if 0
+	unsigned champFlags = 0;
+	bool titleYear = false;
+	bool allTrophies = false;
+	db::player::Champion::AgeSet ageSet(true);
+	db::player::Champion::YearRange yearRange(true);
+#endif
 
 	while (objc > 2)
 	{
 		char const* arg = stringFromObj(objc, objv, objc - 2);
 
 		if (::strcmp(arg, "-ratings") == 0)
+		{
 			ratings = ::convRatings(stringFromObj(objc, objv, objc - 1));
-		else if (::strcmp(arg, "-federation") == 0)
-			federation = federation::fromString(stringFromObj(objc, objv, objc - 1));
-		else if (::strcmp(arg, "-web") == 0)
-			forWeb = boolFromObj(objc, objv, objc - 1);
+		}
+		else if (::strcmp(arg, "-organization") == 0)
+		{
+			organization = organization::fromString(stringFromObj(objc, objv, objc - 1));
+		}
+#if 0
+		else if (::strcmp(arg, "-titleyear") == 0)
+		{
+			titleYear = boolFromObj(objc, objv, objc - 1);
+		}
+		else if (::strcmp(arg, "-trophyflags") == 0)
+		{
+			char const* flags = stringFromObj(objc, objv, objc - 1);
+
+			for ( ; *flags; ++flags)
+			{
+				switch (::tolower(*flags))
+				{
+					case 'o': champFlags |= db::player::Champion::OverTheBoard; break;
+					case 'c': champFlags |= db::player::Champion::Correspondence; break;
+					case 'u': champFlags |= db::player::Champion::Unrestricted; break;
+					case 'j': champFlags |= db::player::Champion::Junior; break;
+					case 's': champFlags |= db::player::Champion::Senior; break;
+				}
+			}
+		}
+		else if (::strcmp(arg, "-trophyageset") == 0)
+		{
+			Tcl_Obj** objs;
+			int len;
+
+			if (Tcl_ListObjGetElements(ti, objectFromObj(objc, objv, objc - 1), &len, &objs) != TCL_OK)
+				return error(::CmdInfo, nullptr, nullptr, "list of ages expected");
+
+			for (int i = 0; i < len; ++i)
+			{
+				int age;
+
+				if (Tcl_GetIntFromObj(ti, objs[i], &age) != TCL_OK || 8 > age || age > 20)
+					return error(::CmdInfo, nullptr, nullptr, "list of ages in 8...20 expected");
+
+				ageSet.set(age);
+			}
+		}
+		else if (::strcmp(arg, "-alltrophies") == 0)
+		{
+			allTrophies = true;
+		}
+#endif
 		else
-			return error(::CmdInfo, nullptr, nullptr, "invalid argument %s", arg);
+		{
+			return error(::CmdInfo, nullptr, nullptr, "invalid argument '%s'", arg);
+		}
 
 		objc -= 2;
 	}
 
 	Player const& player = m_dictionary->getPlayer(unsignedFromObj(objc, objv, 1));
 
-	if (forWeb)
-		return ::getInfo(0, &player, ratings, federation, true, false, false);
-
-	Tcl_Obj* objs[10];
-	Tcl_Obj* titles[title::Last];
+	Tcl_Obj* objs[11]; // [14];
+	Tcl_Obj* titles[2];
 	int		numTitles = 0;
 	char		sex;
 
@@ -459,22 +528,74 @@ cmdInfo(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	else
 		sex = ' ';
 
-	for (unsigned i = 0; i < title::Last; ++i)
+	if (player.title() != title::None)
 	{
-		if (i != title::None && title::contains(player.titles(), title::ID(i)))
-			titles[numTitles++] = Tcl_NewStringObj(title::toString(title::ID(i)), -1);
+		mstl::string s(title::toString(player.title()));
+#if 0
+		if (titleYear && player.titleYear()) s.format(":%u", unsigned(player.titleYear()));
+#endif
+		titles[numTitles++] = Tcl_NewStringObj(s, s.size());
+	}
+#if 0
+	if (player.title2() != title::None)
+	{
+		mstl::string s(title::toString(player.title2()));
+		if (titleYear && player.title2Year()) s.format(":%u", unsigned(player.title2Year()));
+		titles[numTitles++] = Tcl_NewStringObj(s, s.size());
 	}
 
-	objs[0] = Tcl_NewStringObj(country::toString(player.nativeCountry()), -1);
-	objs[1] = Tcl_NewStringObj(player.name(), player.name().size());
-	objs[2] = Tcl_NewStringObj(player.federationID(federation), -1);
-	objs[3] = Tcl_NewStringObj(country::toString(player.federation()), -1);
-	objs[4] = Tcl_NewStringObj(&sex, 1);
-	objs[5] = Tcl_NewIntObj(mstl::max(int16_t(0), player.latestRating(ratings.first)));
-	objs[6] = Tcl_NewIntObj(mstl::max(int16_t(0), player.latestRating(ratings.second)));
-	objs[7] = Tcl_NewListObj(numTitles, titles);
-	objs[8] = Tcl_NewIntObj(player.birthYear());
-	objs[9] = Tcl_NewIntObj(player.deathYear());
+	mstl::string specialTitle;
+	Tcl_Obj* specialTitles;
+
+	Player::ChampionIter ci = player.firstChampionRecord();
+	Player::ChampionIter ce = player.lastChampionRecord();
+
+	for ( ; ci != ce; ++ci)
+	{
+		if (ci->match(champFlags, region::World, yearRange, ageSet))
+			{ specialTitle.assign(ci->asString()); break; }
+		else if (ci->match(champFlags, region::Europe, yearRange, ageSet))
+			specialTitle.assign(ci->asString());
+		else if (specialTitle.empty() && ci->match(champFlags, region::Unknown, yearRange, ageSet))
+			specialTitle.assign(ci->asString());
+	}
+
+	if (allTrophies)
+	{
+		specialTitles = Tcl_NewListObj(0, 0);
+
+		for (ci = player.firstChampionRecord(); ci != ce; ++ci)
+		{
+			if (ci->match(champFlags, region::Unknown, yearRange, ageSet))
+				Tcl_ListObjAppendElement(ti, specialTitles, Tcl_NewStringObj(ci->asString(), -1));
+		}
+	}
+	else
+	{
+		specialTitles = Tcl_NewStringObj(specialTitle, specialTitle.size());
+	}
+#endif
+
+	objs[ 0] = Tcl_NewStringObj(country::toString(player.nativeCountry()), -1);
+	objs[ 1] = Tcl_NewStringObj(player.name(), player.name().size());
+	objs[ 2] = Tcl_NewStringObj(player.organization(organization), -1);
+	objs[ 3] = Tcl_NewStringObj(country::toString(player.federation()), -1);
+	objs[ 4] = Tcl_NewStringObj(&sex, 1);
+	objs[ 5] = Tcl_NewIntObj(mstl::max(int16_t(0), player.latestRating(ratings.first)));
+#if 0
+	objs[ 6] = Tcl_NewIntObj(player.ranking(ratings.first));
+#endif
+	objs[ 6] = Tcl_NewIntObj(mstl::max(int16_t(0), player.latestRating(ratings.second)));
+#if 0
+	objs[ 8] = Tcl_NewIntObj(player.ranking(ratings.second));
+#endif
+	objs[ 7] = Tcl_NewListObj(numTitles, titles);
+#if 0
+	objs[10] = specialTitles;
+#endif
+	objs[ 8] = Tcl_NewStringObj(player.dateOfBirth().asShortString(), -1);
+	objs[ 9] = Tcl_NewStringObj(player.dateOfDeath().asShortString(), -1);
+	objs[10] = Tcl_NewIntObj(player.frequency());
 
 	setResult(U_NUMBER_OF(objs), objs);
 	return TCL_OK;
@@ -506,15 +627,15 @@ cmdFilter(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	if (Tcl_ListObjLength(ti, filter, &length) != TCL_OK || mstl::is_odd(length))
 		return error(CmdInfo, nullptr, nullptr, "list of name/value pairs expected");
 
-	app::PlayerDictionary::Operator op = app::PlayerDictionary::Reset;
+	::app::PlayerDictionary::Operator op = ::app::PlayerDictionary::Reset;
 
 	switch (tolower(*opStr))
 	{
 		case 'n':
 			switch (tolower(opStr[1]))
 			{
-				case 'u': op = app::PlayerDictionary::Null; break;
-				case 'o': op = app::PlayerDictionary::Not; break;
+				case 'u': op = ::app::PlayerDictionary::Null; break;
+				case 'o': op = ::app::PlayerDictionary::Not; break;
 			}
 			break;
 
@@ -523,14 +644,14 @@ cmdFilter(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			{
 				switch (tolower(opStr[2]))
 				{
-					case 's': op = app::PlayerDictionary::Reset; break;
-					case 'm': op = app::PlayerDictionary::Remove; break;
+					case 's': op = ::app::PlayerDictionary::Reset; break;
+					case 'm': op = ::app::PlayerDictionary::Remove; break;
 				}
 			}
 			break;
 
-		case 'a': op = app::PlayerDictionary::And; break;
-		case 'o': op = app::PlayerDictionary::Or; break;
+		case 'a': op = ::app::PlayerDictionary::And; break;
+		case 'o': op = ::app::PlayerDictionary::Or; break;
 	}
 
 	if (length > 0)
@@ -552,28 +673,25 @@ cmdFilter(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 					break;
 
 				case 'f':
-					if (strcasecmp(attr, "federationId") == 0)
+					if (strcasecmp(attr, "organization") == 0)
 					{
-						federation::ID federation = federation::None;
-
-						switch (::toupper(*Tcl_GetString(val)))
-						{
-							case 'F': federation = federation::Fide; break;
-							case 'I': federation = federation::ICCF; break;
-							case 'D': federation = federation::DSB; break;
-							case 'E': federation = federation::ECF; break;
-						}
-
-						m_dictionary->filterFederationID(op, federation);
+						organization::ID organization = organization::fromString(Tcl_GetString(val));
+						m_dictionary->filterOrganization(op, organization);
 					}
-					else // federation
+					if (strcasecmp(attr, "federation") == 0)
 					{
 						m_dictionary->filterFederation(op, ::country::fromString(Tcl_GetString(val)));
+					}
+					else // frequency
+					{
+						int min, max;
+						if (::getMinMax(ti, val, min, max, "'min-freq max-freq' expected"))
+							m_dictionary->filterFrequency(op, min, max);
 					}
 					break;
 
 				case 'n': // name
-					m_dictionary->filterName(op, mstl::pattern(Tcl_GetString(val)));
+					m_dictionary->filterName(op, util::Pattern(Tcl_GetString(val)));
 					break;
 
 				case 's': // sex
@@ -597,49 +715,94 @@ cmdFilter(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 					break;
 				}
 
-				case 't': // titles
+				case 't':
 				{
-					Tcl_Obj** objs;
-					int len;
-					unsigned titles = 0;
-					if (Tcl_ListObjGetElements(ti, val, &len, &objs) != TCL_OK)
-						return error(CmdFilter, nullptr, nullptr, "list of titles expected");
-					for (int i = 0; i < len; ++i)
+					switch (::tolower(attr[1]))
 					{
-						char const* s = Tcl_GetString(objs[i]);
-						title::ID title = title::fromString(s);
-						if (title == title::None)
-							return error(CmdFilter, nullptr, nullptr, "invalid title '%s'", s);
-						titles |= title::fromID(title);
+						case 'i':	// titles
+						{
+							Tcl_Obj** objs;
+							int len, minYear, maxYear;
+							if (	Tcl_ListObjGetElements(ti, val, &len, &objs) != TCL_OK
+								|| len != 3
+								|| Tcl_GetIntFromObj(ti, objs[1], &minYear) != TCL_OK
+								|| Tcl_GetIntFromObj(ti, objs[2], &maxYear) != TCL_OK)
+							{
+								return error(CmdFilter, nullptr, nullptr, "'titles min-year max-year' expected");
+							}
+							unsigned titles = 0;
+							if (Tcl_ListObjGetElements(ti, objs[0], &len, &objs) != TCL_OK)
+								return error(CmdFilter, nullptr, nullptr, "list of titles expected");
+							for (int i = 0; i < len; ++i)
+							{
+								char const* s = Tcl_GetString(objs[i]);
+								title::ID title = title::fromString(s);
+								if (title == title::None)
+									return error(CmdFilter, nullptr, nullptr, "invalid title '%s'", s);
+								titles |= title::fromID(title);
+							}
+							m_dictionary->filterTitles(op, titles, minYear, maxYear);
+							break;
+						}
+
+#if 0
+						case 'r':	// trophy
+						{
+							Tcl_Obj** objs;
+							int len;
+							if (Tcl_ListObjGetElements(ti, val, &len, &objs) != TCL_OK || len != 2)
+							{
+								return error(	CmdFilter,
+													nullptr,
+													nullptr,
+													"'trophy region-code list-of-flags' expected");
+							}
+							unsigned flags = 0;
+							if (Tcl_ListObjGetElements(ti, objs[1], &len, &objs) != TCL_OK)
+								return error(CmdFilter, nullptr, nullptr, "list of flags expected");
+							for (int i = 0; i < len; ++i)
+							{
+								char const* flag = Tcl_GetString(objs[i]);
+								switch (::tolower(*flag))
+								{
+									case 'j': flags |= db::player::Champion::Junior; break;
+									case 's': flags |= db::player::Champion::Senior; break;
+									case 'c': flags |= db::player::Champion::Correspondence; break;
+									case 'f': flags |= db::player::Champion::Fide; break;
+									case 'p': flags |= db::player::Champion::PCA; break;
+									case 'u': flags |= db::player::Champion::Unofficial; break;
+								}
+							}
+							char const* str = Tcl_GetString(objs[0]);
+							unsigned code = region::fromString(str);
+							if (code == region::Unknown)
+								code = country::fromString(str);
+							m_dictionary->filterTrophy(op, code, flags);
+							break;
+						}
+#endif
 					}
-					m_dictionary->filterTitles(op, titles);
-					break;
 				}
 
 				case 'b': // birthYear
 				case 'd': // birthYear
 				{
-					Tcl_Obj** objs;
-					int len, min, max;
-					if (	Tcl_ListObjGetElements(ti, val, &len, &objs) != TCL_OK
-						|| len != 2
-						|| Tcl_GetIntFromObj(ti, objs[0], &min) != TCL_OK
-						|| Tcl_GetIntFromObj(ti, objs[0], &max) != TCL_OK)
+					int min, max;
+					if (::getMinMax(ti, val, min, max, "'min-year max-year' expected"))
 					{
-						return error(CmdFilter, nullptr, nullptr, "'min-year max-year' expected");
+						if (tolower(*attr) == 'b')
+							m_dictionary->filterBirthYear(op, min, max);
+						else
+							m_dictionary->filterDeathYear(op, min, max);
 					}
-					if (tolower(*attr) == 'b')
-						m_dictionary->filterBirthYear(op, min, max);
-					else
-						m_dictionary->filterDeathYear(op, min, max);
 					break;
 				}
 			}
 
-			if (op == app::PlayerDictionary::Reset)
-				op = app::PlayerDictionary::And;
-			else if (op == app::PlayerDictionary::Null)
-				op = app::PlayerDictionary::Not;
+			if (op == ::app::PlayerDictionary::Reset)
+				op = ::app::PlayerDictionary::And;
+			else if (op == ::app::PlayerDictionary::Null)
+				op = ::app::PlayerDictionary::Not;
 		}
 	}
 	else
@@ -658,7 +821,10 @@ cmdSearch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	if (!m_dictionary)
 		return error(CmdInfo, nullptr, nullptr, "player dictionary is closed");
 
-	setResult(m_dictionary->search(stringFromObj(objc, objv, 1)));
+	util::Pattern pattern(stringFromObj(objc, objv, 1));
+	unsigned startIndex(intFromObj(objc, objv, 2) + 1);
+
+	setResult(m_dictionary->search(pattern, startIndex));
 	return TCL_OK;
 }
 
@@ -678,64 +844,59 @@ cmdSort(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	else if (strcmp(order, "cancel") == 0)
 	{
 		m_dictionary->cancelSort();
-		m_dictionary->sort(app::PlayerDictionary::Name, order::Ascending);
+		m_dictionary->sort(::app::PlayerDictionary::Name, order::Ascending);
 	}
 	else
 	{
 		char const* attr = stringFromObj(objc, objv, 2);
+		rating::Type ratingType = rating::fromString(stringFromObj(objc, objv, 3));
 
-		app::PlayerDictionary::Attribute attribute = app::PlayerDictionary::Name; // g++ complains w/o initialization
+		if (ratingType == rating::Any)
+			return error(CmdSort, nullptr, nullptr, "invalid rating type");
+
+		// g++ complains w/o initialization
+		::app::PlayerDictionary::Attribute attribute = ::app::PlayerDictionary::Name;
 		order::ID ordering = order::Ascending;
 
 		switch (*attr)
 		{
-			case 'c': attribute = app::PlayerDictionary::NativeCountry; break;
-			case 'n': attribute = app::PlayerDictionary::Name; break;
-			case 'b': attribute = app::PlayerDictionary::DateOfBirth; break;
-			case 'd': attribute = app::PlayerDictionary::DateOfDeath; break;
-			case 's': attribute = app::PlayerDictionary::Sex; break;
-			case 'f': attribute = app::PlayerDictionary::Federation; break;
+			case 'c': attribute = ::app::PlayerDictionary::NativeCountry; break;
+			case 'n': attribute = ::app::PlayerDictionary::Name; break;
+			case 'b': attribute = ::app::PlayerDictionary::DateOfBirth; break;
+			case 'd': attribute = ::app::PlayerDictionary::DateOfDeath; break;
+			case 's': attribute = ::app::PlayerDictionary::Sex; break;
+#if 0
+			case 'A': attribute = ::app::PlayerDictionary::AcfId;
+#endif
+			case 'D': attribute = ::app::PlayerDictionary::DsbId; break;
+			case 'E': attribute = ::app::PlayerDictionary::EcfId;
+			case 'F': attribute = ::app::PlayerDictionary::FideID; break;
+			case 'I': attribute = ::app::PlayerDictionary::IccfId; break;
 
-			case 'F': attribute = app::PlayerDictionary::FideID; break;
-			case 'U': attribute = app::PlayerDictionary::LatestUSCF; break;
+			case 'f':
+				if (attr[1] == 'e')
+					attribute = ::app::PlayerDictionary::Federation;
+				else
+					attribute = ::app::PlayerDictionary::Frequency;
+				break;
 
 			case 't':
 				if (attr[1] == 'y')
-					attribute = app::PlayerDictionary::Type;
+					attribute = ::app::PlayerDictionary::Type;
 				else
-					attribute = app::PlayerDictionary::Titles;
-				break;
-
-			case 'D':
-				if (attr[1] == 'W')
-					attribute = app::PlayerDictionary::LatestDWZ;
-				else
-					attribute = app::PlayerDictionary::DsbId;
-				break;
-
-			case 'E':
-				if (attr[1] != 'C')
-					attribute = app::PlayerDictionary::LatestElo;
-				else if (strlen(attr) == 3)
-					attribute = app::PlayerDictionary::LatestECF;
-				else
-					attribute = app::PlayerDictionary::EcfId;
-				break;
-
-			case 'I':
-				if (attr[1] == 'P')
-					attribute = app::PlayerDictionary::LatestIPS;
-				else if (strlen(attr) == 4)
-					attribute = app::PlayerDictionary::LatestICCF;
-				else
-					attribute = app::PlayerDictionary::IccfId;
+					attribute = ::app::PlayerDictionary::Titles;
 				break;
 
 			case 'R':
-				if (attr[1] == 'a' && attr[2] == 'p')
-					attribute = app::PlayerDictionary::LatestRapid;
-				else
-					attribute = app::PlayerDictionary::LatestRating;
+				if (attr[1] == 'a')
+				{
+					if (attr[2] == 't')
+						attribute = ::app::PlayerDictionary::LatestRating;
+#if 0
+					else
+						attribute = ::app::PlayerDictionary::Ranking;
+#endif
+				}
 				break;
 		}
 
@@ -745,7 +906,7 @@ cmdSort(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			case 'd': ordering = order::Descending; break;
 		}
 
-		m_dictionary->sort(attribute, ordering);
+		m_dictionary->sort(attribute, ordering, ratingType);
 	}
 
 	m_dictionary->finishOperation();

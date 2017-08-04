@@ -32,6 +32,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 using namespace sys::utf8;
 using namespace tcl;
@@ -54,10 +55,10 @@ static char const* const NonDiacriticsTables[28][256] =
 		 ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,
 		 ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  "a",  ___,  ___,  ___,  ___,  ___,
 		 "°",  ___,  ___,  ___,  ___,  ___,  ___,  "-",  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,
-		 "A",  "A",  "A",  "A",  "A",  "A", "Ae",  "C",  "E",  "E",  "E",  "E",  "I",  "I",  "I",  "I",
-		"Dh",  "N",  "O",  "O",  "O",  "O",  "O",  ___,  "O",  "U",  "U",  "U",  "U",  "Y", "Th", "ss",
-		 "a",  "a",  "a",  "a",  "a",  "a", "ae",  "c",  "e",  "e",  "e",  "e",  "i",  "i",  "i",  "i",
-		"dh",  "n",  "o",  "o",  "o",  "o",  "o",  ___,  "o",  "u",  "u",  "u",  "u",  "y", "th",  "y",
+		 "A",  "A",  "A",  "A", "Ae",  "A", "Ae",  "C",  "E",  "E",  "E",  "E",  "I",  "I",  "I",  "I",
+		"Dh",  "N",  "O",  "O",  "O",  "O",  "O",  ___,  "O",  "U",  "U",  "U", "Ue",  "Y", "Th", "ss",
+		 "a",  "a",  "a",  "a", "ae",  "a", "ae",  "c",  "e",  "e",  "e",  "e",  "i",  "i",  "i",  "i",
+		"dh",  "n",  "o",  "o",  "o",  "o", "oe",  ___,  "o",  "u",  "u",  "u", "ue",  "y", "th",  "y",
 	},
 	// Table 1
 	{
@@ -206,7 +207,7 @@ static char const* const NonDiacriticsTables[28][256] =
 		 ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,
 		 ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,
 		 ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,
-		 ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,
+		 ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  "A",  "a",  ___,
 		 ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,
 		 ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,
 		 ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,
@@ -315,7 +316,7 @@ static char const* const NonDiacriticsTables[28][256] =
 		 ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  "O",  "o",  "O",  "o",
 		 ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  "S",  "s",
 		 "S",  "s",  "T",  "t",  ___,  ___,  ___,  ___,  ___,  ___,  "U",  "u",  "U",  "u",  ___,  ___,
-		 ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,
+		 ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  "z",  "Z",
 		 ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  "A",
 		 ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,
 		 ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,  ___,
@@ -577,72 +578,46 @@ static char const* const NonDiacriticsTables[28][256] =
 
 static char const* const* NonDiacriticsLookup[6][33] =
 {
+#define T(N)	NonDiacriticsTables[N]
+#define _____	nullptr
 	// Region 1
 	{
-		NonDiacriticsTables[0],							//  0
-		NonDiacriticsTables[11],						//  1
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	//  2 - 15
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	// 16 - 29
-		0, 0,													// 30 - 31
-		NonDiacriticsTables[22],						// 32
+		T( 0), T(11), _____, _____, _____, _____, _____, _____, _____, _____, _____,
+		_____, _____, _____, _____, _____, _____, _____, _____, _____, _____, _____,
+		_____, _____, _____, _____, _____, _____, _____, _____, _____, _____, T(22),
 	},
 	// Region 2
 	{
-		NonDiacriticsTables[1],							//  0
-		NonDiacriticsTables[8],							//  1
-		NonDiacriticsTables[27],						//  2
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,		//  3 - 15
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	// 15 - 29
-		NonDiacriticsTables[19],						// 30
-		0,														// 31
-		NonDiacriticsTables[23],						// 32
+		T( 1), T( 8), T(27), _____, _____, _____, _____, _____, _____, _____, _____,
+		_____, _____, _____, _____, _____, _____, _____, _____, _____, _____, _____,
+		_____, _____, _____, _____, _____, _____, _____, _____, T(19), _____, T(23),
 	},
 	// Region 3
 	{
-		NonDiacriticsTables[2],							//  0
-		NonDiacriticsTables[9],							//  1
-		NonDiacriticsTables[25],						//  2
-		NonDiacriticsTables[16],						//  3
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	0, 0,	//  4 - 17
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			// 18 - 29
-		NonDiacriticsTables[12],						// 30
-		0,														// 31
-		NonDiacriticsTables[20],						// 32
+		T( 2), T( 9), T(25), T(16), _____, _____, _____, _____, _____, _____, _____,
+		_____, _____, _____, _____, _____, _____, _____, _____, _____, _____, _____,
+		_____, _____, _____, _____, _____, _____, _____, _____, T(12), _____, T(20),
 	},
 	// Region 4
 	{
-		NonDiacriticsTables[3],							//  0
-		NonDiacriticsTables[14],						//  1
-		NonDiacriticsTables[25],						//  2
-		NonDiacriticsTables[17],						//  3
-		NonDiacriticsTables[26],						//  4
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	//  5 - 18
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,				// 19 - 29
-		NonDiacriticsTables[10],						// 30
-		0,														// 31
-		NonDiacriticsTables[21],						// 32
+		T( 3), T(14), T(25), T(17), T(26), _____, _____, _____, _____, _____, _____,
+		_____, _____, _____, _____, _____, _____, _____, _____, _____, _____, _____,
+		_____, _____, _____, _____, _____, _____, _____, _____, T(10), _____, T(21),
 	},
-	// Region 5
+
 	{
-		NonDiacriticsTables[4],							//  0
-		NonDiacriticsTables[15],						//  1
-		0,														//  2
-		NonDiacriticsTables[18],						//  3
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	//  4 - 17
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			// 18 - 29
-		NonDiacriticsTables[13],						// 30
-		0,														// 31
-		NonDiacriticsTables[24],						// 32
+		T( 4), T(15), _____, T(18), _____, _____, _____, _____, _____, _____, _____,
+		_____, _____, _____, _____, _____, _____, _____, _____, _____, _____, _____,
+		_____, _____, _____, _____, _____, _____, _____, _____, T(13), _____, T(24),
 	},
-	// Region 6
+
 	{
-		NonDiacriticsTables[5],							//  0
-		NonDiacriticsTables[7],							//  1
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	//  2 - 15
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	// 16 - 29
-		NonDiacriticsTables[6],							// 30
-		0, 0,													// 31 - 32
+		T( 5), T( 7), _____, _____, _____, _____, _____, _____, _____, _____, _____,
+		_____, _____, _____, _____, _____, _____, _____, _____, _____, _____, _____,
+		_____, _____, _____, _____, _____, _____, _____, _____, T( 6), _____, _____,
 	},
+#undef _____
+#undef T
 };
 
 
@@ -775,6 +750,7 @@ fitsRegion2(mstl::string const& s)
 	//		\xc5[\x9e-\xa5]|
 	//		\xc5[\xaa-\xb3]|
 	//		\xc5[\xb9-\xbe]|
+	//		\xc7[\x8d-\x8e]|
 	//		\xc8[\x98-\x9b]|
 	//		\xe1\xb8[\xae-\xaf]|
 	//		\xe2\x80[\x98-\x99]|
@@ -869,6 +845,12 @@ fitsRegion2(mstl::string const& s)
 
 						default: return false;
 					}
+					break;
+
+				case 0xc7:
+					c = s[i++];
+					if (c != 0x8d && c != 0x8e)
+						return false;
 					break;
 
 				case 0xc8:
@@ -1160,6 +1142,7 @@ fitsRegion4(mstl::string const& s)
 	//		\xc5[\x9e-\x9f]|
 	//		\xc5[\xa1-\xa3]|
 	//		\xc5[\xaa-\xad]|
+	//		\xc5[\xbd-\xbe]|
 	//		\xc6\x8f|
 	//		\xc7\x9d|
 	//		\xc9\x99|
@@ -1245,7 +1228,8 @@ fitsRegion4(mstl::string const& s)
 						case 0x8c ... 0x8f:
 						case 0x9e ... 0x9f:
 						case 0xa1 ... 0xa3:
-						case 0xaa ... 0xad: break;
+						case 0xaa ... 0xad:
+						case 0xbd ... 0xbe: break;
 
 						default: return false;
 					}
@@ -1674,6 +1658,146 @@ fitsRegion6(mstl::string const& s)
 }
 
 
+static
+char const*
+findConversion(sys::utf8::uchar code)
+{
+	switch (code)
+	{
+		// Annotation symbols
+		case 0x00ab: return "<<";   // Queenside
+		case 0x00b1: return "+/-";  // White has a moderate advantage
+		case 0x00bb: return ">>";   // Kingside
+		case 0x01c1: return "&c";   // Etc
+		case 0x2014: return "--";   // See
+		case 0x203c: return "!!";   // Very good move
+		case 0x2047: return "??";   // Very poor move
+		case 0x2048: return "?!";   // Questionable move
+		case 0x2049: return "!?";   // Interesting move
+		case 0x20e4: return "/\\";  // With the idea
+		case 0x2190: return "<-";   // Black has the attack
+		case 0x2191: return "|^";   // White has the initiative
+		case 0x2192: return "->";   // White has the attack
+		case 0x2193: return "|v";   // Black has the initiative
+		case 0x21b9: return "=&";   // Equal chances, active position
+		case 0x21bb: return "@";    // Development
+		case 0x21c6: return "<=>";  // Counterplay
+		case 0x21d1: return "||^";  // White has a lasting initiative
+		case 0x21d4: return "<->";  // Line
+		case 0x21d7: return "/^";   // Diagonal
+		case 0x2206: return "/\\";  // With the idea
+		case 0x2213: return "-/+";  // Black has a moderate advantage
+		case 0x221e: return "~~";   // Unclear position
+		case 0x2228: return "\\/";  // Aimed against
+		case 0x223c: return "~";    // With compensation
+		case 0x2264: return "<=";   // Worse is
+		case 0x226a: return "<<";   // Queenside
+		case 0x226b: return ">>";   // Kingside
+		case 0x227b: return ">";    // More pawns
+		case 0x2295: return "(+)";  // Zeitnot
+		case 0x2299: return "(.)";  // Zugzwang
+		case 0x229e: return "[+]";  // Center
+		case 0x22a5: return "_|_";  // Endgame
+		case 0x22b6: return "^=";   // Bishops of same color
+		case 0x22c1: return "\\/";  // Aimed against
+		case 0x22d8: return "<<<";  // Black has a moderate kingside advantage
+		case 0x22d9: return ">>>";  // White has a moderate kingside advantage
+		case 0x230a: return "|_";   // With
+		case 0x230b: return "_|";   // Without
+		case 0x2313: return ">=";   // Better move
+		case 0x259e: return "^=";   // Bishops of same color
+		case 0x25a0: return "[]";   // Forced move
+		case 0x25a1: return "[]";   // Singular move
+		case 0x25b3: return "/\\";  // With the idea
+		case 0x25dd: return "()";   // Space
+		case 0x25e8: return "^_";   // Bishops of opposite color
+		case 0x25eb: return "^^";   // Pair of bishops
+		case 0x25ef: return "()";   // Space
+		case 0x26a8: return "o^";   // Passed pawn
+		case 0x26ae: return "o.o";  // Connected pawns
+		case 0x26af: return "o/o";  // Isolated pawns
+		case 0x2715: return "><";   // Weak point
+		case 0x27e9: return ">";    // More pawns
+		case 0x27ea: return "<<";   // Queenside
+		case 0x27eb: return ">>";   // Kingside
+		case 0x27fa: return "<->";  // Line
+		case 0x2a71: return "=/+";  // Black has a slight advantage
+		case 0x2a72: return "+/=";  // White has a slight advantage
+		case 0x2b12: return "#";    // Diagram
+		case 0x2b13: return "#";    // Diagram from black's perspective
+		case 0x3007: return "()";   // Space
+		case 0x300a: return "<<";   // Queenside
+		case 0x300b: return ">>";   // Kingside
+
+		// Some commonly used code points
+		case 0x2002: return " ";    // EN SPACE
+		case 0x2003: return " ";    // EM SPACE
+		case 0x2004: return " ";    // THREE-PER-EM SPACE
+		case 0x2005: return " ";    // FOUR-PER-EM SPACE
+		case 0x2006: return " ";    // SIX-PER-EM SPACE
+		case 0x2007: return " ";    // FIGURE SPACE
+		case 0x2008: return " ";    // PUNCTUATION SPACE
+		case 0x2009: return " ";    // THIN SPACE
+		case 0x2010: return "-";    // HYPHEN
+		case 0x2011: return "-";    // NON-BREAKING HYPHEN
+		case 0x2012: return "--";   // FIGURE DASH
+		case 0x2013: return "-";    // EN DASH
+		case 0x2015: return "-";    // HORIZONTAL BAR
+		case 0x2018: return "'";    // LEFT SINGLE QUOTATION MARK
+		case 0x2019: return "'";    // RIGHT SINGLE QUOTATION MARK
+		case 0x201a: return "'";    // SINGLE LOW-9 QUOTATION MARK
+		case 0x201b: return "'";    // SINGLE HIGH-REVERSED-9 QUOTATION MARK
+		case 0x201c: return "\"";   // LEFT DOUBLE QUOTATION MARK
+		case 0x201d: return "\"";   // RIGHT DOUBLE QUOTATION MARK
+		case 0x201e: return "\"";   // DOUBLE LOW-9 QUOTATION MARK
+		case 0x201f: return "\"";   // DOUBLE HIGH-REVERSED-9 QUOTATION MARK
+		case 0x2022: return "-";    // BULLET
+		case 0x2026: return "...";  // HORIZONTAL ELLIPSIs
+		case 0x20ac: return "Euro"; // EURO SIGN
+		case 0x2122: return "TM";   // TRADE MARK SIGN
+		case 0x2139: return "(i)";  // INFORMATION SOURCE
+		case 0x2212: return "-";    // MINUS SIGN
+		case 0x25cf: return "(*)";  // BLACK CIRCLE
+		case 0x2605: return "*";    // BLACK STAR
+		case 0x2654: return "K";    // WHITE CHESS KING
+		case 0x2655: return "Q";    // WHITE CHESS QUEEN
+		case 0x2656: return "R";    // WHITE CHESS ROOK
+		case 0x2657: return "B";    // WHITE CHESS BISHOP
+		case 0x2658: return "N";    // WHITE CHESS KNIGHT
+		case 0x2659: return "P";    // WHITE CHESS PAWN
+		case 0x265a: return "k";    // BLACK CHESS KING
+		case 0x265b: return "q";    // BLACK CHESS QUEEN
+		case 0x265c: return "r";    // BLACK CHESS ROOK
+		case 0x265d: return "b";    // BLACK CHESS BISHOP
+		case 0x265e: return "n";    // BLACK CHESS KNIGHT
+		case 0x265f: return "p";    // BLACK CHESS PAWN
+		case 0x270e: return "**";   // LOWER RIGHT PENCIl
+		case 0xfffd: return "?";    // REPLACEMENT CHARACTER
+
+		// some additional characters in extended ASCII / CP1252
+		case 0x0152: return "OE";   // LATIN CAPITAL LIGATURE OE
+		case 0x0153: return "oe";   // LATIN SMALL LIGATURE OE
+		case 0x0160: return "S";    // LATIN CAPITAL LETTER S WITH CARON
+		case 0x0161: return "s";    // LATIN SMALL LETTER S WITH CARON
+		case 0x0178: return "Y";    // LATIN CAPITAL LETTER Y WITH DIAERESIS
+		case 0x017d: return "Z";    // LATIN CAPITAL LETTER Z WITH CARON
+		case 0x017e: return "z";    // LATIN SMALL LETTER Z WITH CARON
+		case 0x0192: return "f";    // LATIN SMALL LETTER F WITH HOOK
+		case 0x02dc: return "~";    // SMALL TILDE
+		case 0x2017: return "_";    // DOUBLE LOW LINE
+		case 0x2020: return "+";    // DAGGER
+		case 0x2021: return "++";   // DOUBLE DAGGER
+		case 0x2039: return "<";    // SINGLE LEFT-POINTING ANGLE QUOTATION MARK
+		case 0x203a: return ">";    // SINGLE RIGHT-POINTING ANGLE QUOTATION MARK
+		case 0x02c6: return "^";    // MODIFIER LETTER CIRCUMFLEX ACCENT
+		case 0x2030: return "0/00"; // PER MILLE SIGN
+		case 0x2261: return "=";    // IDENTICAL TO
+	}
+
+	return nullptr;
+}
+
+
 static int
 compareEncodings(void const* lhs, void const* rhs)
 {
@@ -1704,9 +1828,11 @@ Codec::Codec(mstl::string const& encoding)
 	:m_codec(Tcl_GetEncoding(::sys::tcl::interp(), encoding))
 	,m_buf(4095, ' ')
 	,m_encoding(encoding)
-	,m_failed(false)
-	,m_isUtf8(encoding == utf8())
+	,m_unknown(0)
+	,m_error(false)
+	,m_type(Other)
 {
+	setupType();
 }
 
 
@@ -1717,16 +1843,17 @@ Codec::~Codec()
 }
 
 
-bool
-Codec::is7BitAscii(char const* s, unsigned nbytes)
+void
+Codec::setupType()
 {
-	for (char const* e = s + nbytes; s < e; ++s)
-	{
-		if (*s & 0x80)
-			return false;
-	}
-
-	return true;
+	if (m_encoding == utf8())
+		m_type = UTF8;
+	else if (m_encoding = windows())
+		m_type = Windows;
+	else if (m_encoding = dos())
+		m_type = DOS;
+	else
+		m_type = Other;
 }
 
 
@@ -1738,8 +1865,81 @@ Codec::reset(mstl::string const& encoding)
 
 	m_codec = Tcl_GetEncoding(::sys::tcl::interp(), encoding);
 	m_encoding = encoding;
-	m_failed = false;
-	m_isUtf8 = (encoding == utf8());
+	m_error = false;
+	m_unknown = 0;
+	setupType();
+}
+
+
+void
+Codec::convertFromDOS(mstl::string const& in, mstl::string& out)
+{
+	for (char const* str = in; *str; ++str)
+	{
+		unsigned char c = *str;
+
+		if (c & 0x80)
+		{
+			static unsigned const CodeTable[128] =
+			{
+				0x00c7, 0x00fc, 0x00e9, 0x00e2, 0x00e4, 0x00e0, 0x00e5, 0x00e7, // 80 ... 87
+				0x00ea, 0x00eb, 0x00e8, 0x00ef, 0x00ee, 0x00ec, 0x00c4, 0x00c5, // 88 ... 8f
+				0x00c9, 0x00e6, 0x00c6, 0x00f4, 0x00f6, 0x00f2, 0x00fb, 0x00f9, // 90 ... 97
+				0x00ff, 0x00d6, 0x00dc, 0x00f8, 0x00a3, 0x00d8, 0x00d7, 0x0192, // 98 ... 9f
+				0x00e1, 0x00ed, 0x00f3, 0x00fa, 0x00f1, 0x00d1, 0x00aa, 0x00ba, // a0 ... a7
+				0x00bf, 0x00ae, 0x00ac, 0x00bd, 0x00bc, 0x00a1, 0x00ab, 0x00bb, // a8 ... af
+				0x2591, 0x2592, 0x2593, 0x2502, 0x2524, 0x00c1, 0x00c2, 0x00c0, // b0 ... b7
+				0x00a9, 0x2563, 0x2551, 0x2557, 0x255d, 0x00a2, 0x00a5, 0x2510, // b8 ... bf
+				0x2514, 0x2534, 0x252c, 0x251c, 0x2500, 0x253c, 0x00e3, 0x00c3, // c0 ... c7
+				0x255a, 0x2554, 0x2569, 0x2566, 0x2560, 0x2550, 0x256c, 0x00a4, // c8 ... cf
+				0x00f0, 0x00d0, 0x00ca, 0x00cb, 0x00c8, 0x0131, 0x00cd, 0x00ce, // d0 ... d7
+				0x00cf, 0x2518, 0x250c, 0x2588, 0x2584, 0x00a6, 0x00cc, 0x2580, // d8 ... df
+				0x00d3, 0x00df, 0x00d4, 0x00d2, 0x00f5, 0x00d5, 0x00b5, 0x00fe, // e0 ... e7
+				0x00de, 0x00da, 0x00db, 0x00d9, 0x00fd, 0x00dd, 0x00af, 0x00b4, // e8 ... ef
+				0x2261, 0x00b1, 0x2017, 0x00be, 0x00b6, 0x00a7, 0x00f7, 0x00b8, // f0 ... f7
+				0x00b0, 0x00a8, 0x00b7, 0x00b9, 0x00b3, 0x00b2, 0x25a0, 0x00a0, // f8 ... ff
+			};
+
+			utf8::append(out, CodeTable[c - 0x80]);
+		}
+		else
+		{
+			out.append(c);
+		}
+	}
+}
+
+
+void
+Codec::convertFromWindows(mstl::string const& in, mstl::string& out)
+{
+	for (char const* str = in; *str; ++str)
+	{
+		unsigned char c = *str;
+
+		if (c & 0x80)
+		{
+			if (c < 0xa8) // otherwise it's identical to Latin-1
+			{
+				static unsigned const CodeTable[128] =
+				{
+					0x20ac, 0xfffd, 0x201a, 0x0192, 0x201e, 0x2026, 0x2020, 0x2021, // 80 ... 87
+					0x02c6, 0x2030, 0x0160, 0x2039, 0x0152, 0xfffd, 0x017d, 0xfffd, // 88 ... 8f
+					0xfffd, 0x2018, 0x2019, 0x201c, 0x201d, 0x2022, 0x2013, 0x2014, // 90 ... 97
+					0x02dc, 0x2122, 0x0161, 0x203a, 0x0153, 0xfffd, 0x017e, 0x0178, // 98 ... 9f
+					0x02a0, 0x00a1, 0x2654, 0x2655, 0x2658, 0x2657, 0x2656, 0x2659, // a0 ... a7
+				};
+
+				c = CodeTable[c - 0x80];
+			}
+
+			utf8::append(out, c);
+		}
+		else
+		{
+			out.append(c);
+		}
+	}
 }
 
 
@@ -1749,7 +1949,7 @@ Codec::convertFromUtf8(mstl::string const& in, mstl::string& out)
 	M_REQUIRE(hasEncoding());
 	M_REQUIRE(sys::utf8::validate(in));
 
-	if (m_isUtf8)
+	if (m_type == UTF8)
 	{
 		out = in;
 		return true;
@@ -1763,6 +1963,8 @@ Codec::convertFromUtf8(mstl::string const& in, mstl::string& out)
 	int flags	= TCL_ENCODING_START | TCL_ENCODING_END | TCL_ENCODING_STOPONERROR;
 	int srcLen	= in.size();
 	int dstLen	= m_buf.size();
+
+	out.clear();
 
 	while (true)
 	{
@@ -1778,34 +1980,62 @@ Codec::convertFromUtf8(mstl::string const& in, mstl::string& out)
 											&bytesOut,
 											&dstChars);
 
-		int soFar = dst + bytesOut - m_buf.c_str();
+		out.append(m_buf.c_str(), dst + bytesOut - m_buf.c_str());
 
 		if (rc == TCL_OK)
-		{
-			out.assign(m_buf.c_str(), soFar);
 			return true;
-		}
+
+		src += bytesIn;
+		srcLen -= bytesIn;
 
 		switch (rc)
 		{
 			case TCL_CONVERT_NOSPACE:
 				flags &= ~TCL_ENCODING_START;
-				src += bytesIn;
-				srcLen -= bytesIn;
-				m_buf.resize(mstl::mul2(m_buf.size()));
-				dst = m_buf.data() + soFar;
-				dstLen = m_buf.size() - soFar;
 				break;
 
 			case TCL_CONVERT_UNKNOWN:
+				flags |= TCL_ENCODING_START;
+
+				if (static_cast<unsigned char>(*src) & 0x80)
+				{
+					unsigned		charLen;
+					utf8::uchar	code(utf8::getChar(src, charLen));
+
+					if (char const* conversion = ::findConversion(code))
+					{
+						out.append(conversion);
+					}
+					else
+					{
+						out.append("?", 1);
+						m_unknown += 1;
+					}
+
+					src += charLen;
+					srcLen -= charLen;
+				}
+				else // this should never happen
+				{
+					out.append(src, 1); // this is ASCII
+				}
+
+				break;
+
 			case TCL_CONVERT_SYNTAX:
 				flags &= ~TCL_ENCODING_STOPONERROR;
-				m_failed = true;
+				m_error = true;
+				out.append("?", 1);
+				flags |= TCL_ENCODING_START;
+				src += 1;
+				srcLen -= 1;
+				for (char const* e = src + srcLen; src < e && !utf8::isFirst(*src); ++src)
+					srcLen -= 1;
 				break;
 
 			case TCL_CONVERT_MULTIBYTE:
-				out.assign(m_buf.c_str(), soFar);
-				m_failed = true;
+				out.append("?", 1);
+				m_error = true;
 				return false;
 		}
 	}
@@ -1819,9 +2049,20 @@ Codec::convertToUtf8(mstl::string const& in, mstl::string& out)
 {
 	M_REQUIRE(hasEncoding());
 
-	if (m_isUtf8)
+	static mstl::string const Replacement("\xef\xbf\xbd", 3);
+
+	if (m_type)
 	{
-		out = in;
+		static_assert(Other == 0, "unexpected enum value");
+
+		switch (m_type)
+		{
+			case Other:		break; // cannot happen
+			case UTF8:		out = in; break;
+			case DOS:		convertFromDOS(in, out); break;
+			case Windows:	convertFromWindows(in, out); break;
+		}
+
 		return true;
 	}
 
@@ -1833,6 +2074,8 @@ Codec::convertToUtf8(mstl::string const& in, mstl::string& out)
 	int flags	= TCL_ENCODING_START | TCL_ENCODING_END | TCL_ENCODING_STOPONERROR;
 	int srcLen	= in.size();
 	int dstLen	= m_buf.size();
+
+	out.clear();
 
 	while (true)
 	{
@@ -1848,51 +2091,51 @@ Codec::convertToUtf8(mstl::string const& in, mstl::string& out)
 											&bytesOut,
 											&dstChars);
 
-		int soFar = dst + bytesOut - m_buf.c_str();
+		int soFar = (dst + bytesOut) - m_buf.c_str();
 
 		if (rc == TCL_OK)
 		{
+			out.assign(m_buf, soFar);
+
 			// NOTE: sometimes Tcl_ExternalToUtf() is producing overlong UTF-8 sequences!
 			if (!sys::utf8::validate(m_buf, soFar))
 			{
-				soFar = removeOverlongSequences(m_buf.data(), soFar);
-
-				if (sys::utf8::validate(m_buf, soFar))
-					out.assign(m_buf.c_str(), soFar);
-				else if (sys::utf8::validate(in))
-					out = in;
-				else
-					out.assign(in.size(), '?');
-
-				m_failed = true;
+				forceValidUtf8(out, Replacement);
 				return false;
 			}
 
-			out.assign(m_buf.c_str(), soFar);
 			return true;
 		}
+
+		out.append(m_buf.c_str(), soFar);
+
+		src += bytesIn;
+		srcLen -= bytesIn;
 
 		switch (rc)
 		{
 			case TCL_CONVERT_NOSPACE:
 				flags &= ~TCL_ENCODING_START;
-				src += bytesIn;
-				srcLen -= bytesIn;
-				m_buf.resize(mstl::mul2(m_buf.size()));
-				dst = m_buf.data() + soFar;
-				dstLen = m_buf.size() - soFar;
 				break;
 
 			case TCL_CONVERT_UNKNOWN:
 			case TCL_CONVERT_SYNTAX:
-				flags &= ~TCL_ENCODING_STOPONERROR;
-				m_failed = true;
+				if (bytesOut > 0 || src == in.c_str())
+				{
+					out.append(Replacement);
+					if (rc == TCL_CONVERT_UNKNOWN)
+						m_unknown += 1;
+					else
+						m_error = true;
+				}
+				src += 1;
+				srcLen -= 1;
+				flags |= TCL_ENCODING_START;
 				break;
 
 			case TCL_CONVERT_MULTIBYTE:
-				out.assign(m_buf.c_str(), soFar);
-				M_ASSERT(sys::utf8::validate(out));
-				m_failed = true;
+				out.append(Replacement);
+				m_error = true;
 				return false;
 		}
 	}
@@ -1906,7 +2149,7 @@ Codec::fromUtf8(mstl::string const& in, mstl::string& out)
 {
 	M_REQUIRE(hasEncoding());
 
-	if (!m_isUtf8 && !is7BitAscii(in, in.size()))
+	if (m_type != UTF8 && !in.is_7bit())
 		return convertFromUtf8(in, out);
 
 	out = in;
@@ -1919,7 +2162,7 @@ Codec::toUtf8(mstl::string const& in, mstl::string& out)
 {
 	M_REQUIRE(hasEncoding());
 
-	if (!m_isUtf8 && !is7BitAscii(in, in.size()))
+	if (m_type != UTF8 && !in.is_7bit())
 		return convertToUtf8(in, out);
 
 	out = in;
@@ -2046,7 +2289,7 @@ Codec::mapFromGerman(mstl::string const& name, mstl::string& result)
 bool
 Codec::matchAscii(mstl::string const& utf8, mstl::string const& ascii, bool noCase)
 {
-	M_REQUIRE(is7BitAscii(ascii));
+	M_REQUIRE(ascii.is_7bit());
 	return sys::utf8::ascii::match(utf8, ascii, noCase);
 }
 
@@ -2054,43 +2297,59 @@ Codec::matchAscii(mstl::string const& utf8, mstl::string const& ascii, bool noCa
 bool
 Codec::matchGerman(mstl::string const& utf8, mstl::string const& ascii, bool noCase)
 {
-	M_REQUIRE(is7BitAscii(ascii));
+	M_REQUIRE(ascii.is_7bit());
 	return sys::utf8::german::match(utf8, ascii, noCase);
 }
 
 
 bool
-Codec::isLatin1(mstl::string const& s) const
+Codec::isConvertibleToLatin1(mstl::string const& str) const
 {
-	for (unsigned i = 0; i < s.size(); ++i)
+	char const* s = str.c_str();
+	char const* e = s + str.size();
+
+	for ( ; s < e; ++s)
 	{
-		unsigned char c = s[i];
+		unsigned char c = *s;
 
 		if (c & 0x80)
 		{
-			if (c < 0xc2 || 0xc3 < c)
-				return false;
+			if (  c == 0xef
+				 && static_cast<unsigned char>(s[1]) == 0xbf
+				 && static_cast<unsigned char>(s[2]) == 0xbd)
+			{
+			  // the UTF-8 replacement character is convertible
+			  s += 2;
+			}
+			else
+			{
+				if (c < 0xc2 || 0xc3 < c)
+					return false;
 
-			c = s[++i];
+				c = *++s;
 
-			if (c < 0x80 || 0xbf < c)
-				return false;
+				if (c < 0x80 || 0xbf < c)
+					return false;
+			}
 		}
 	}
 
-	return false;
-}
-
-
-void
-Codec::forceValidUtf8(mstl::string& str)
-{
-	return sys::utf8::makeValid(str, m_failed);
+	return true;
 }
 
 
 unsigned
-Codec::removeOverlongSequences(char* s, unsigned size)
+Codec::forceValidUtf8(mstl::string& str, mstl::string const& replacement)
+{
+	unsigned removed = removeInvalidSequences(str, replacement) + sys::utf8::makeValid(str, replacement);
+	if (removed)
+		m_error = true;
+	return removed;
+}
+
+
+unsigned
+Codec::removeInvalidSequences(mstl::string& str, mstl::string const& replacement)
 {
 	// remove overlong sequences:
 	//		c0 xx
@@ -2098,67 +2357,115 @@ Codec::removeOverlongSequences(char* s, unsigned size)
 	//		f0 80 80 xx
 	//		f8 80 80 80 xx
 	//		fc 80 80 80 80 xx
+	//
+	// and more...
 
-	char const*	e = s + size;
-	char const*	p = s;
-	char*			q = s;
+	char*			s = str.data();
+	char const*	e = s + str.size();
+
+	unsigned removed = 0;
+
+	mstl::string result;
+	result.reserve(str.size());
 
 	while (s < e)
 	{
-		switch (static_cast<unsigned char>(*s))
+		if (s[0] < 0x80)							// 0bbbbbbb
 		{
-			case 0xc0:
-				s += 2;
-				*q++ = '?';
-				continue;
-
-			case 0xe0:
-				if (s[1] == char(0x80))
-				{
-					s += 3;
-					*q++ = '?';
-					continue;
-				}
-				break;
-
-			case 0xf0:
-				if (s[1] == char(0x80) && s[2] == char(0x80))
-				{
-					s += 4;
-					*q++ = '?';
-					continue;
-				}
-				break;
-
-			case 0xf8:
-				if (s[1] == char(0x80) && s[2] == char(0x80) && s[3] == char(0x80))
-				{
-					s += 5;
-					*q++ = '?';
-					continue;
-				}
-				break;
-
-			case 0xfc:
-				if (s[1] == char(0x80) && s[2] == char(0x80) && s[3] == char(0x80) && s[4] == char(0x80))
-				{
-					s += 6;
-					*q++ = '?';
-					continue;
-				}
-				break;
+			result.append(*s++);
 		}
+		else if ((s[0] & 0xe0) == 0xc0)		// 110bbbbb 10bbbbbb
+		{
+			if ((s[1] & 0xc0) != 0x80)			// invalid
+			{
+				fprintf(stderr, "invalid two-byte UTF-8 sequence detected\n");
+				result.append(replacement);
+				removed += 1;
+			}
+			else if ((s[0] & 0xfe) == 0xc0)	// overlong
+			{
+				fprintf(stderr, "overlong two-byte UTF-8 sequence detected\n");
+				result.append(s[1] & 0x7f);
+			}
+			else
+			{
+				result.append(s, 2);
+			}
 
-		char const*	t = Tcl_UtfNext(s);
-		unsigned		n = t - s;
+			s += 2;
+		}
+		else if ((s[0] & 0xf0) == 0xe0)		// 1110bbbb 10bbbbbb 10bbbbbb
+		{
+			if ((s[1] & 0xc0) != 0x80 || (s[2] & 0xc0) != 0x80)					// invalid
+			{
+				fprintf(stderr, "invalid three-byte UTF-8 sequence detected\n");
+				result.append(replacement);
+				removed += 1;
+			}
+			else if (s[0] == 0xe0 && (s[1] & 0xe0) == 0x80)							// overlong
+			{
+				fprintf(stderr, "overlong three-byte UTF-8 sequence detected\n");
+				result.append(s[2] & 0x7f);
+			}
+			else if (s[0] == 0xed && (s[1] & 0xe0) == 0xa0)							// surrogate
+			{
+				fprintf(stderr, "invalid three-byte surrogate in UTF-8 sequence detected\n");
+				result.append(replacement);
+				removed += 1;
+			}
+			else if (s[0] == 0xef && s[1] == 0xbf && (s[2] & 0xfe) == 0xbe)	// U+FFFE or U+FFFF
+			{
+				fprintf(	stderr,
+							"invalid code point U+FFF%c in UTF-8 sequence detected\n",
+							s[2] == 0xbf ? 'E' : 'F');
+				result.append(replacement);
+				removed += 1;
+			}
+			else
+			{
+				result.append(s, 3);
+			}
 
-		::memcpy(q, s, n);
-		s += n;
-		q += n;
+			s += 3;
+		}
+		else if ((s[0] & 0xf8) == 0xf0)	// 11110bbb 10bbbbbb 10bbbbbb 10bbbbbb
+		{
+			if ((s[1] & 0xc0) != 0x80 || (s[2] & 0xc0) != 0x80 || (s[3] & 0xc0) != 0x80)	// invalid
+			{
+				fprintf(stderr, "invalid four-byte UTF-8 sequence detected\n");
+				result.append(replacement);
+				removed += 1;
+			}
+			else if (s[0] == 0xf0 && (s[1] & 0xf0) == 0x80)	// overlong
+			{
+				fprintf(stderr, "overlong four-byte UTF-8 sequence detected\n");
+				result.append(s[3] & 0x7f);
+			}
+			else if ((s[0] == 0xf4 && s[1] > 0x8f) || s[0] > 0xf4)	// > U+10FFFF
+			{
+				fprintf(stderr, "invalid code point > U+10FFFF in UTF-8 sequence detected\n");
+				result.append(replacement);
+				removed += 1;
+			}
+			else
+			{
+				result.append(s, 4);
+			}
+
+			s += 4;
+		}
+		else
+		{
+			result.append(replacement);
+			removed += 1;
+			s += 5;
+			while (s < e && (*s & 0xc0) == 0x80)
+				++s;
+		}
 	}
 
-	*q = '\0';
-	return q - p;
+	str.swap(result);
+	return removed;
 }
 
 
@@ -2211,7 +2518,7 @@ Codec::fitsRegion(mstl::string const& s, unsigned region)
 
 	switch (region)
 	{
-		case 0: return is7BitAscii(s);
+		case 0: return s.is_7bit();
 		case 1: return ::fitsRegion1(s); break;
 		case 2: return ::fitsRegion2(s); break;
 		case 3: return ::fitsRegion3(s); break;
@@ -2271,6 +2578,53 @@ Codec::convertToNonDiacritics(unsigned region, mstl::string const& s, mstl::stri
 }
 
 
+mstl::string const&
+Codec::convertToShortNonDiacritics(unsigned region, mstl::string const& s, mstl::string& buffer)
+{
+	M_REQUIRE(region <= U_NUMBER_OF(NonDiacriticsLookup));
+	M_REQUIRE(fitsRegion(s, region));
+	M_REQUIRE(s.c_str() != buffer.c_str());
+
+	if (region == 0)
+		return s;
+
+	buffer.clear();
+	buffer.reserve(mstl::mul2(s.size()));
+
+	char const* const** lookup = NonDiacriticsLookup[region - 1];
+
+	char const* p = s.begin();
+	char const* e = s.end();
+
+	while (p < e)
+	{
+		Tcl_UniChar u;
+
+		p += ::utfToUniChar(p, u);
+
+		M_ASSERT(unsigned(u >> 8) < U_NUMBER_OF(NonDiacriticsLookup[0]));
+
+		char const* const* table = lookup[u >> 8];
+
+		M_ASSERT(table);
+
+		char const* q = table[u & 0xff];
+
+		M_ASSERT(q);
+
+		if (q[0])
+		{
+			buffer += q[0];
+
+			if (u == 0x00df)
+				buffer += q[1];	// German es-zet is the only exception (so far)
+		}
+	}
+
+	return buffer;
+}
+
+
 unsigned
 Codec::getEncodingList(EncodingList& result)
 {
@@ -2286,10 +2640,7 @@ Codec::getEncodingList(EncodingList& result)
 	result.clear();
 
 	for (int i = 0; i < objc; ++i)
-	{
-		result.push_back();
-		result.back().assign(Tcl_GetString(objv[i]));
-	}
+		result.push_back().assign(Tcl_GetString(objv[i]));
 
 	return objc;
 }
@@ -2305,6 +2656,19 @@ Codec::checkEncoding(mstl::string const& name)
 	}
 
 	return false;
+}
+
+
+unsigned
+Codec::findRegion(mstl::string const& name)
+{
+	for (unsigned region = 1; region <= 6; ++region)
+	{
+		if (fitsRegion(name, region))
+			return region;
+	}
+
+	return 0;
 }
 
 // vi:set ts=3 sw=3:

@@ -32,7 +32,7 @@
 #include "m_bitset.h"
 #include "m_vector.h"
 
-namespace mstl { class pattern; }
+namespace util { class Pattern; }
 
 namespace db { class Player; }
 namespace db { class Query; }
@@ -75,14 +75,8 @@ public:
 		Federation,
 		Titles,
 		NativeCountry,
-		LatestElo,
+		Frequency,
 		LatestRating,
-		LatestRapid,
-		LatestICCF,
-		LatestUSCF,
-		LatestDWZ,
-		LatestECF,
-		LatestIPS,
 	};
 
 	PlayerDictionary(Mode mode);
@@ -90,27 +84,30 @@ public:
 	unsigned count() const;
 
 	::db::Player const& getPlayer(unsigned number) const;
-	int search(mstl::string const& name) const;
+	int search(util::Pattern const& namePattern, unsigned startIndex = 0) const;
 
 	void finishOperation();
 
-	void sort(Attribute attr, ::db::order::ID order);
+	void sort(	Attribute attr,
+					::db::order::ID order,
+					::db::rating::Type ratingType = ::db::rating::Elo);
 	void reverseOrder();
 	void cancelSort();
 
 	void resetFilter();
 	void negateFilter();
 	void filterLetter(char letter);
-	void filterName(Operator op, mstl::pattern const& pattern);
+	void filterName(Operator op, util::Pattern const& pattern);
 	void filterFederation(Operator op, ::db::country::Code country);
 	void filterNativeCountry(Operator op, ::db::country::Code country);
 	void filterType(Operator op, ::db::species::ID type);
 	void filterSex(Operator op, ::db::sex::ID sex);
-	void filterTitles(Operator op, unsigned titles);
-	void filterFederationID(Operator op, ::db::federation::ID federation);
+	void filterTitles(Operator op, unsigned titles, uint16_t minYear, uint16_t maxYear);
+	void filterOrganization(Operator op, ::db::organization::ID organization);
 	void filterScore(Operator op, ::db::rating::Type rating, uint16_t min, uint16_t max);
 	void filterBirthYear(Operator op, uint16_t minYear, uint16_t maxYear);
 	void filterDeathYear(Operator op, uint16_t minYear, uint16_t maxYear);
+	void filterFrequency(Operator op, unsigned minFrequency, unsigned maxFrequency);
 
 private:
 

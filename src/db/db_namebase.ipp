@@ -261,10 +261,10 @@ Namebase::player(unsigned index)
 
 inline
 void
-Namebase::ref(Entry* entry)
+Namebase::incrRef(Entry* entry)
 {
 	m_isConsistent = false;	// XXX possibly superfluous, force update after changes
-	entry->ref();
+	entry->incrRef();
 }
 
 

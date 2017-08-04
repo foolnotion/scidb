@@ -385,7 +385,7 @@ getTitles(mstl::string const& str, sex::ID& sex)
 									case 'g': titles |= title::Mask_CGM; break;
 									case 'i': titles |= title::Mask_CIM; break;
 									case 's': titles |= title::Mask_CSIM; break;
-									case 'l': titles |= title::Mask_CILM; break;
+									case 'l': titles |= title::Mask_CLIM; break;
 								}
 								break;
 
@@ -771,7 +771,8 @@ Player::PlayerCallback::~PlayerCallback() {}
 
 
 Player::Player()
-	:m_titles(0)
+	:m_frequency(0)
+	,m_titles(0)
 	,m_birthYear(0)
 	,m_deathMonth(0)
 	,m_sex(sex::Unspecified)
@@ -804,13 +805,13 @@ Player::Player()
 
 
 mstl::string
-Player::federationID(federation::ID federation) const
+Player::organization(organization::ID organization) const
 {
-	M_REQUIRE(federation != federation::None);
+	M_REQUIRE(organization != organization::Unspecified);
 
-	switch (federation)
+	switch (organization)
 	{
-		case federation::Fide:
+		case organization::Fide:
 			if (m_fideID)
 			{
 				mstl::string id;
@@ -819,7 +820,7 @@ Player::federationID(federation::ID federation) const
 			}
 			break;
 
-		case federation::ICCF:
+		case organization::ICCF:
 			if (m_iccfID)
 			{
 				mstl::string id;
@@ -828,17 +829,17 @@ Player::federationID(federation::ID federation) const
 			}
 			break;
 
-		case federation::DSB:
+		case organization::DSB:
 			if (m_dsbId)
 				return m_dsbId.asString();
 			break;
 
-		case federation::ECF:
+		case organization::ECF:
 			if (m_ecfId)
 				return m_ecfId.asString();
 			break;
 
-		case federation::None:
+		case organization::Unspecified:
 			break;
 	}
 
@@ -847,20 +848,39 @@ Player::federationID(federation::ID federation) const
 
 
 bool
-Player::hasID(federation::ID federation) const
+Player::hasID(organization::ID organization) const
 {
-	M_REQUIRE(federation != federation::None);
+	M_REQUIRE(organization != organization::Unspecified);
 
-	switch (federation)
+	switch (organization)
 	{
-		case federation::Fide:	return m_fideID;
-		case federation::ICCF:	return m_iccfID;
-		case federation::DSB:	return m_dsbId;
-		case federation::ECF:	return m_ecfId;
-		case federation::None:	break;
+		case organization::Fide:			return m_fideID;
+		case organization::ICCF:			return m_iccfID;
+		case organization::DSB:				return m_dsbId;
+		case organization::ECF:				return m_ecfId;
+		case organization::Unspecified:	break;
 	}
 
 	return false; // satisfies the compiler
+}
+
+
+title::ID
+Player::title() const
+{
+	unsigned titles = this->titles();
+
+	if (titles & title::Mask_GM)	return title::GM;
+	if (titles & title::Mask_WGM)	return title::WGM;
+	if (titles & title::Mask_HGM)	return title::HGM;
+	if (titles & title::Mask_IM)	return title::IM;
+	if (titles & title::Mask_WIM)	return title::WIM;
+	if (titles & title::Mask_FM)	return title::FM;
+	if (titles & title::Mask_WFM)	return title::WFM;
+	if (titles & title::Mask_CM)	return title::CM;
+	if (titles & title::Mask_WCM)	return title::WCM;
+
+	return title::None;
 }
 
 
@@ -1087,7 +1107,7 @@ Player::newPlayer(mstl::string const& name,
 {
 	M_ASSERT(!name.empty());
 	M_ASSERT(sys::utf8::validate(name));
-	M_ASSERT(sys::utf8::Codec::is7BitAscii(ascii));
+	M_ASSERT(ascii.is_7bit());
 
 	mstl::string key, key2;
 	normalize(ascii, key);
@@ -1230,7 +1250,7 @@ Player::newAlias(mstl::string const& name, mstl::string const& ascii, Player* pl
 	M_ASSERT(player);
 	M_ASSERT(!name.empty());
 	M_ASSERT(sys::utf8::validate(name));
-	M_ASSERT(sys::utf8::Codec::is7BitAscii(ascii));
+	M_ASSERT(ascii.is_7bit());
 
 	mstl::string key, key2;
 	normalize(ascii, key);
@@ -1355,7 +1375,7 @@ Player::replaceName(mstl::string const& name, mstl::string const& ascii, Player*
 	M_ASSERT(player);
 	M_ASSERT(!name.empty());
 	M_ASSERT(sys::utf8::validate(name));
-	M_ASSERT(sys::utf8::Codec::is7BitAscii(ascii));
+	M_ASSERT(ascii.is_7bit());
 
 	bool found = false;
 
@@ -1469,7 +1489,7 @@ Player::replaceName(mstl::string const& name, mstl::string const& ascii, Player*
 Player*
 Player::insertPlayer(mstl::string& name, country::Code federation, sex::ID sex)
 {
-	M_ASSERT(sys::utf8::Codec::is7BitAscii(name));
+	M_ASSERT(name.is_7bit());
 
 	if (name.empty())
 		return 0;
@@ -1492,7 +1512,7 @@ Player::insertPlayer(mstl::string& name,
 
 	standardizeNames(name);
 
-	if (sys::utf8::Codec::is7BitAscii(name))
+	if (name.is_7bit())
 		return newPlayer(name, 0, name, federation, sex, forceNewPlayer);
 
 	if (region == 0)
@@ -1539,7 +1559,7 @@ Player::insertPlayer(mstl::string& name,
 bool
 Player::insertAlias(mstl::string& name, Player* player)
 {
-	M_ASSERT(sys::utf8::Codec::is7BitAscii(name));
+	M_ASSERT(name.is_7bit());
 
 	if (name.empty())
 		return 0;
@@ -1558,7 +1578,7 @@ Player::insertAlias(mstl::string& name, unsigned region, Player* player)
 
 	standardizeNames(name);
 
-	if (sys::utf8::Codec::is7BitAscii(name))
+	if (name.is_7bit())
 		return newAlias(name, name, player);
 
 	if (region == 0)
@@ -1587,7 +1607,7 @@ Player::replaceName(mstl::string& name, unsigned region, Player* player)
 
 	standardizeNames(name);
 
-	if (sys::utf8::Codec::is7BitAscii(name))
+	if (name.is_7bit())
 		return replaceName(name, name, player);
 
 	if (region == 0)
@@ -1622,7 +1642,7 @@ Player::replaceName(mstl::string& name, unsigned region, Player* player)
 mstl::string const&
 Player::asciiName() const
 {
-	if (sys::utf8::Codec::is7BitAscii(m_name))
+	if (m_name.is_7bit())
 		return m_name;
 
 	::Lookup::const_iterator i = ::asciiDict.find(this);
@@ -2245,7 +2265,7 @@ Player::parseFideRating(mstl::istream& stream)
 					if (rating < m_minELO)
 						continue;
 
-					if (!sys::utf8::Codec::is7BitAscii(name))
+					if (name.is_7bit())
 						continue;
 
 					standardizeNames(name);
@@ -2500,7 +2520,7 @@ Player::parseDwzRating(mstl::istream& stream)
 				if (player->federation() == country::Unknown)
 					player->setFederation(country::Germany);
 
-				if (!sys::utf8::Codec::is7BitAscii(name))
+				if (!name.is_7bit())
 				{
 					sys::utf8::Codec::mapFromGerman(name, ascii);
 					::alloc(::asciiDict[player], ascii);
@@ -2591,7 +2611,7 @@ Player::parseIccfRating(mstl::istream& stream)
 					switch (line[11])
 					{
 						case 'I': player->addTitle(title::CIM); break;
-						case 'L': player->addTitle(line[12] == 'L' ? title::CILM : title::CLGM); break;
+						case 'L': player->addTitle(line[12] == 'L' ? title::CLIM : title::CLGM); break;
 						case 'S': player->addTitle(title::CSIM); break;
 						case 'G': player->addTitle(title::CGM); break;
 					}

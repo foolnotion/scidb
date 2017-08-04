@@ -626,6 +626,12 @@ namespace hp {
 inline Pawns::Pawns() :value(0) {}
 
 } // namespace hp
+
+namespace order {
+
+inline int constexpr signum(order::ID order) { return int(order); }
+
+} // namspace order
 } // namespace db
 
 // vi:set ts=3 sw=3:

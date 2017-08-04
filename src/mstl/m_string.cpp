@@ -186,17 +186,42 @@ string::string(const_iterator i1, const_iterator i2)
 }
 
 
-string::string(size_type n, const_reference c)
+string::string(size_type n, value_type c)
 	:m_size(n)
 	,m_capacity(0)
 	,m_data(0)
 {
-	if (n)
+	if (m_size)
 	{
-		m_capacity = n + 1;
+		m_capacity = m_size + 1;
 		m_data = new value_type[m_capacity];
-		m_data[n] = '\0';
-		::fill(m_data, n, c);
+		m_data[m_size] = '\0';
+		::fill(m_data, m_size, c);
+	}
+	else
+	{
+		m_data = const_cast<char *>(m_empty);
+	}
+}
+
+
+string::string(size_type n, mstl::string const& s)
+	:m_size(n*s.m_size)
+	,m_capacity(0)
+	,m_data(0)
+{
+	if (m_size)
+	{
+		m_capacity = m_size + 1;
+		m_data = new value_type[m_capacity];
+
+		char* data = m_data;
+		char* end  = data + m_size;
+
+		for ( ; data < end; data += n)
+			::copy(data, s.m_data, s.m_size);
+
+		*end = '\0';
 	}
 	else
 	{
@@ -547,6 +572,32 @@ string::assign(size_type n, const_reference c)
 
 
 string&
+string::assign(unsigned n, string const& s)
+{
+	if (!s.empty())
+	{
+		unsigned nbytes = n*s.m_size;
+
+		resize(nbytes);
+
+		char* data = m_data;
+		char* end  = data + nbytes;
+
+		for ( ; data < end; data += n)
+			::copy(data, s.m_data, s.m_size);
+
+		*end = '\0';
+	}
+	else if (!empty())
+	{
+		clear();
+	}
+
+	return *this;
+}
+
+
+string&
 string::insert(size_type ip, const_reference c)
 {
 	M_REQUIRE(ip == npos || ip <= size());
@@ -629,7 +680,7 @@ string::insert(iterator ip, string const& s, size_type sp, size_type slen)
 void
 string::clear()
 {
-	if (readonly())
+	if (m_capacity == 0)
 	{
 		if (!empty())
 		{
@@ -663,7 +714,7 @@ string::reserve(size_type n)
 	size_type	capacity;
 	pointer		p;
 
-	if (readonly())
+	if (m_capacity == 0)
 	{
 		capacity = mstl::max(m_size, n) + 1;
 		p = new value_type[capacity];
@@ -688,6 +739,23 @@ string::reserve(size_type n)
 
 
 void
+string::reserve_exact(size_type n)
+{
+	M_REQUIRE(n >= size());
+
+	pointer p = new value_type[n + 1];
+	::copy(p, m_data, m_size);
+
+	if (m_capacity)
+		delete [] m_data;
+
+	p[m_size] = '\0';
+	m_data = p;
+	m_capacity = n + 1;
+}
+
+
+void
 string::resize(size_type n)
 {
 	reserve(n);
@@ -700,7 +768,7 @@ string::resize(size_type n)
 void
 string::copy()
 {
-	M_ASSERT(readonly());
+	M_ASSERT(empty() || readonly());
 
 	m_capacity = m_size + 1;
 	pointer p = new value_type[m_capacity];
@@ -721,7 +789,7 @@ string::erase(const_iterator start, size_type n)
 	{
 		size_type i = s - m_data;
 
-		if (readonly())
+		if (m_capacity == 0)
 			copy();
 
 		m_size -= n;
@@ -743,7 +811,7 @@ string::erase(size_type pos, size_type n)
 	if (empty() || n == 0)
 		return *this;
 
-	if (readonly())
+	if (m_capacity == 0)
 		copy();
 
 	if (n == npos)
@@ -814,7 +882,7 @@ string::pop_back()
 {
 	M_REQUIRE(!empty());
 
-	if (readonly())
+	if (m_capacity == 0)
 		copy();
 
 	m_data[--m_size] = '\0';
@@ -1094,7 +1162,7 @@ string::hook(pointer s, size_type slen)
 }
 
 
-void
+mstl::string&
 string::unhook()
 {
 	if (m_capacity == 0)
@@ -1104,10 +1172,12 @@ string::unhook()
 		::memcpy(s, m_data, m_capacity);
 		m_data = s;
 	}
+
+	return *this;
 }
 
 
-void
+mstl::string&
 string::ltrim()
 {
 	value_type const* s = begin();
@@ -1117,14 +1187,16 @@ string::ltrim()
 
 	if (s > begin())
 		erase(begin(), s);
+
+	return *this;
 }
 
 
-void
+mstl::string&
 string::rtrim()
 {
 	if (empty())
-		return;
+		return *this;
 
 	value_type* s = end();
 
@@ -1133,14 +1205,8 @@ string::rtrim()
 
 	if (s < end())
 		erase(s, end());
-}
 
-
-void
-string::trim()
-{
-	ltrim();
-	rtrim();
+	return *this;
 }
 
 
@@ -1305,6 +1371,168 @@ string::toupper(size_type pos, size_type len)
 		*s = ::toupper(*s);
 
 	return *this;
+}
+
+
+string::size_type
+string::map(value_type mapping, value_type c, size_type occurrence)
+{
+	if (occurrence == 0)
+		return 0;
+
+	size_type n = 0;
+
+	for (size_type i = 0; i < m_size; ++i)
+	{
+		if (m_data[i] == mapping)
+		{
+			unhook();
+			m_data[i] = c;
+
+			if (++n == occurrence)
+				return n;
+		}
+	}
+
+	return n;
+}
+
+
+bool
+string::is_7bit(char const* s)
+{
+	M_REQUIRE(s);
+
+	for ( ; *s; ++s)
+	{
+		if (*s & 0x80)
+			return false;
+	}
+
+	return true;
+}
+
+
+bool
+string::is_7bit(char const* s, unsigned length)
+{
+	M_REQUIRE(s);
+
+	char const* e = s + length;
+
+	for ( ; s < e; ++s)
+	{
+		if (*s & 0x80)
+			return false;
+	}
+
+	return true;
+}
+
+
+bool
+bits::eq(char const* lhs, char const* rhs, size_t len)
+{
+	M_ASSERT(lhs);
+	M_ASSERT(rhs);
+
+	while (len--)
+	{
+		if (*lhs++ != *rhs++)
+			return false;
+	}
+
+	return true;
+}
+
+
+bool
+bits::ceq(char const* lhs, char const* rhs, size_t len)
+{
+	M_ASSERT(lhs);
+	M_ASSERT(rhs);
+
+	while (len--)
+	{
+		if (::tolower(*lhs++) != ::tolower(*rhs++))
+			return false;
+	}
+
+	return true;
+}
+
+
+unsigned
+string::levenshtein_distance(mstl::string const& s, unsigned ins, unsigned del, unsigned sub) const
+{
+	if (m_data == s.m_data)
+		return 0;
+	if (m_size == 0)
+		return m_size*ins;
+	if (s.m_size == 0)
+		return s.m_size*ins;
+
+	// algorithm from http://en.wikipedia.org/wiki/Levenshtein_distance
+
+	unsigned d[m_size + 1][s.m_size + 1];
+
+	::memset(d, 0, sizeof(d[0][0])*(m_size+ 1)*(s.m_size + 1));
+
+	for (size_type i = 0; i <= m_size; ++i)
+		d[i][0] = i;
+	for (size_type j = 0; j <= s.m_size; ++j)
+		d[0][j] = j;
+
+	for (unsigned j = 0; j < s.m_size; ++j)
+	{
+		value_type c = s.m_data[j];
+
+		for (unsigned i = 0; i < m_size; ++i)
+		{
+			if (c == m_data[i])
+				d[i + 1][j + 1] = d[i][j];
+			else
+				d[i + 1][j + 1] = mstl::min(d[i][j + 1] + del, d[i + 1][j] + ins, d[i][j] + sub);
+		}
+	}
+
+	return d[m_size][s.m_size];
+}
+
+
+unsigned
+string::levenshtein_distance_fast(mstl::string const& s) const
+{
+	if (m_data == s.m_data)
+		return 0;
+	if (m_size == 0)
+		return s.m_size;
+	if (s.m_size == 0)
+		return m_size;
+
+	// algorithm from http://en.wikipedia.org/wiki/Levenshtein_distance
+
+	unsigned v0[s.m_size + 1];
+	unsigned v1[s.m_size + 1];
+
+	for (unsigned i = 0; i <= s.m_size; ++i)
+		v0[i] = i;
+
+	for (size_type i = 0; i < m_size; ++i)
+	{
+		v1[0] = i + 1;
+
+		for (size_type j = 0; j < s.m_size; ++j)
+		{
+			unsigned cost = (m_data[i] == s.m_data[j]) ? 0 : 1;
+			v1[j + 1] = mstl::min(v1[j] + 1, v0[j + 1] + 1, v0[j] + cost);
+		}
+
+		for (size_type j = 0; j <= s.m_size; ++j)
+			v0[j] = v1[j];
+	}
+
+	return v1[s.m_size];
 }
 
 // vi:set ts=3 sw=3:

@@ -499,15 +499,18 @@ proc load {parent position base args} {
 		set options {}
 		if {$opts(-view) >= 0} { lappend options -view $opts(-view) }
 
-		if {[catch \
+		if {[::util::catchException \
 				{ ::scidb::game::load $position $base $variant $opts(-number) $opts(-fen) {*}$options } \
 				result options]} {
-			array set opts $options
-			::dialog::error \
-				-parent $parent \
-				-message $::import::mc::AbortedDueToInternalError \
-				;
-			return -code error -errorcode $opts(-errorcode) "internal error in ::scidb::game::load"
+			if {$rc == 1} {
+				array set opts $options
+				::dialog::error \
+					-parent $parent \
+					-message $::import::mc::AbortedDueToInternalError \
+					-detail "$mc::InternalMessage: \"$opts(-errorinfo)\"" \
+					;
+			}
+			return 0
 		}
 
 		switch $result {

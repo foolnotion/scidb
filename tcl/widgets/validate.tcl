@@ -6,7 +6,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2008-2013 Gregor Cramer
+# Copyright: (C) 2008-2017 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -187,7 +187,7 @@ proc CheckMinValue {w x y} {
 		}
 		downarrow {
 			if {![string is integer -strict $value] || int([$w cget -from]) == $value} {
-				$w set $mc::Unlimited
+				$w set "\u221e"
 			}
 		}
 	}
@@ -218,7 +218,7 @@ proc ClampInt {w {unlimited 0}} {
 		set val 0
 
 		if {$unlimited} {
-			$w set $mc::Unlimited
+			$w set "\u221e"
 			return
 		}
 	}
@@ -226,7 +226,7 @@ proc ClampInt {w {unlimited 0}} {
 	set min [expr {int([$w cget -from])}]
 
 	if {$unlimited && $val == [$w cget -from]} {
-		$w set $mc::Unlimited
+		$w set "\u221e"
 		return
 	}
 
@@ -236,7 +236,7 @@ proc ClampInt {w {unlimited 0}} {
 		set val $min
 	} elseif {$val > $max} {
 		if {$unlimited} {
-			$w set $mc::Unlimited
+			$w set "\u221e"
 			return
 		}
 		set val $max

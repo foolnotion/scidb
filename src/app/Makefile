@@ -1200,8 +1200,8 @@ app_player_dictionary.o: ../db/db_query.ipp
 app_player_dictionary.o: ../db/db_search.h
 app_player_dictionary.o: ../mstl/m_ref_counter.h
 app_player_dictionary.o: ../mstl/m_ref_counter.ipp
-app_player_dictionary.o: ../mstl/m_match.h
-app_player_dictionary.o: ../mstl/m_match.ipp
+app_player_dictionary.o: ../util/u_match.h
+app_player_dictionary.o: ../util/u_match.ipp
 app_polyglot_book.o: app_polyglot_book.h
 app_polyglot_book.o: app_book.h
 app_polyglot_book.o: ../db/db_move.h

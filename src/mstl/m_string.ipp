@@ -22,24 +22,33 @@
 #include <string.h>
 
 namespace mstl {
+namespace bits
+{
+	bool eq(char const* lhs, char const* rhs, size_t len);
+	inline bool ne(char const* lhs, char const* rhs, size_t len) { return !eq(lhs, rhs, len); }
+
+	bool ceq(char const* lhs, char const* rhs, size_t len);
+	inline bool nce(char const* lhs, char const* rhs, size_t len) { return !ceq(lhs, rhs, len); }
+}
 
 inline string::reference::reference(string& str, size_type pos) : m_str(str), m_pos(pos) {}
 
-inline string::reference::operator value_type() const { return m_str.m_data[m_pos]; }
+inline string::reference::operator value_type () const { return m_str.m_data[m_pos]; }
 
 inline string::string() :m_size(0), m_capacity(0), m_data(const_cast<char*>(m_empty)) {}
 
 inline string& string::operator+=(const_reference c) { append(c); return *this; }
 
 inline bool string::empty() const		{ return m_size == 0; }
-inline bool string::readonly() const	{ return m_capacity == 0; }
-inline bool string::writable() const	{ return m_capacity > 0; }
+inline bool string::readonly() const	{ return m_capacity == 0 && m_size > 0; }
+inline bool string::writable() const	{ return !readonly(); }
+inline bool string::is_7bit() const		{ return is_7bit(m_data, m_size); }
+
 
 inline string::value_type string::back() const	{ M_REQUIRE(!empty()); return m_data[m_size - 1]; }
 inline string::value_type& string::back()			{ M_REQUIRE(!empty()); return m_data[m_size - 1]; }
 
 inline string::size_type string::size() const				{ return m_size; }
-inline string::size_type string::capacity() const			{ return m_capacity - 1; }
 inline string::pointer string::data()							{ return m_data; }
 inline string::const_pointer string::begin() const			{ return m_data; }
 inline string::pointer string::begin()							{ return m_data; }
@@ -49,8 +58,42 @@ inline string::operator string::const_pointer () const	{ return m_data; }
 inline string::value_type string::front() const				{ return *m_data; }
 inline string::value_type& string::front()					{ return *m_data; }
 
+inline string::value_type string::operator*() const		{ return *m_data; }
+
 inline void string::push_back(const_reference c)			{ append(c); }
-inline void string::clone()										{ if (readonly()) copy(); }
+inline void string::clone()										{ if (m_capacity == 0) copy(); }
+
+inline mstl::string& string::trim() { return rtrim().ltrim(); }
+
+
+inline
+string::value_type
+string::back(int offset) const
+{
+	M_REQUIRE(offset <= 0);
+	M_REQUIRE(size_type(mstl::abs(offset)) < size());
+
+	return m_data[m_size + offset - 1];
+}
+
+
+inline
+string::value_type&
+string::back(int offset)
+{
+	M_REQUIRE(offset <= 0);
+	M_REQUIRE(size_type(mstl::abs(offset)) < size());
+
+	return m_data[m_size + offset - 1];
+}
+
+
+inline string::size_type
+string::capacity() const
+{
+	return m_capacity ? m_capacity - 1 : m_capacity;
+}
+
 
 inline
 string&
@@ -60,26 +103,47 @@ string::operator+=(string const& s)
 	return *this;
 }
 
+
 inline string operator+(char lhs, string const& rhs)			{ return string(1, lhs) += rhs; }
 inline string operator+(char const* lhs, string const& rhs)	{ return string(lhs) += rhs; }
 
 
 inline
-string::const_pointer string::c_str() const
+string::const_pointer
+string::c_str() const
 {
 	return m_data ? m_data : const_cast<char*>(m_empty);
 }
 
 
 inline
-string::value_type
-string::reference::operator=(value_type c)
+string::const_pointer
+string::data() const
+{
+	return m_data ? m_data : const_cast<char*>(m_empty);
+}
+
+
+inline
+string::value_type&
+string::reference::get()
 {
 	if (m_str.m_capacity == 0)
 		m_str.copy();
 
-	return m_str.m_data[m_pos] = c;
+	return m_str.m_data[m_pos];
 }
+
+
+inline string::value_type string::reference::operator=(value_type c) { return get() = c; }
+
+template <typename T> inline string::value_type string::reference::operator+=(T v){ return get() += v; }
+template <typename T> inline string::value_type string::reference::operator-=(T v){ return get() -= v; }
+template <typename T> inline string::value_type string::reference::operator*=(T v){ return get() *= v; }
+template <typename T> inline string::value_type string::reference::operator/=(T v){ return get() /= v; }
+template <typename T> inline string::value_type string::reference::operator^=(T v){ return get() ^= v; }
+template <typename T> inline string::value_type string::reference::operator|=(T v){ return get() |= v; }
+template <typename T> inline string::value_type string::reference::operator&=(T v){ return get() &= v; }
 
 
 inline
@@ -139,7 +203,7 @@ inline
 void
 string::make_writable()
 {
-	if (readonly())
+	if (m_capacity == 0)
 		copy();
 }
 
@@ -313,11 +377,190 @@ string::find_last_not_of(string const& s, size_type pos) const
 }
 
 
+inline bool
+string::equal(mstl::string const& s) const
+{
+	return m_size == s.m_size && bits::eq(m_data, s.m_data, m_size);
+}
+
+
+inline bool
+string::equal(char const* s) const
+{
+	M_REQUIRE(s);
+	return m_size == ::strlen(s) && bits::eq(m_data, s, m_size);
+}
+
+
+inline bool
+string::equal(mstl::string const& s, size_type len) const
+{
+	return m_size >= len && bits::eq(m_data, s.m_data, mstl::min(m_size, len));
+}
+
+
+inline bool
+string::equal(char const* s, size_type len) const
+{
+	M_REQUIRE(s || len == 0);
+	return m_size >= len && bits::eq(m_data, s, mstl::min(m_size, len));
+}
+
+
+inline bool
+string::not_equal(mstl::string const& s) const
+{
+	return m_size == s.m_size && bits::ne(m_data, s.m_data, m_size);
+}
+
+
+inline bool
+string::not_equal(char const* s) const
+{
+	M_REQUIRE(s);
+	return m_size == ::strlen(s) && bits::ne(m_data, s, m_size);
+}
+
+
+inline bool
+string::not_equal(mstl::string const& s, size_type len) const
+{
+	return m_size >= len && bits::ne(m_data, s.m_data, mstl::min(m_size, len));
+}
+
+
+inline bool
+string::not_equal(char const* s, size_type len) const
+{
+	M_REQUIRE(s || len == 0);
+	return m_size >= len && bits::ne(m_data, s, mstl::min(m_size, len));
+}
+
+
+inline bool
+string::case_equal(mstl::string const& s) const
+{
+	return m_size == s.m_size && bits::ceq(m_data, s.m_data, m_size);
+}
+
+
+inline bool
+string::case_equal(char const* s) const
+{
+	M_REQUIRE(s);
+	return m_size == ::strlen(s) && bits::ceq(m_data, s, m_size);
+}
+
+
+inline bool
+string::case_equal(mstl::string const& s, size_type len) const
+{
+	return m_size >= len && bits::ceq(m_data, s.m_data, mstl::min(m_size, len));
+}
+
+
+inline bool
+string::case_equal(char const* s, size_type len) const
+{
+	M_REQUIRE(s || len == 0);
+	return m_size >= len && bits::ceq(m_data, s, mstl::min(m_size, len));
+}
+
+
+inline bool
+string::not_case_equal(mstl::string const& s) const
+{
+	return m_size == s.m_size && bits::nce(m_data, s.m_data, m_size);
+}
+
+
+inline bool
+string::not_case_equal(char const* s) const
+{
+	M_REQUIRE(s);
+	return m_size == ::strlen(s) && bits::nce(m_data, s, m_size);
+}
+
+
+inline bool
+string::not_case_equal(mstl::string const& s, size_type len) const
+{
+	return m_size >= len && bits::nce(m_data, s.m_data, mstl::min(m_size, len));
+}
+
+
+inline bool
+string::not_case_equal(char const* s, size_type len) const
+{
+	M_REQUIRE(s || len == 0);
+	return m_size >= len && bits::nce(m_data, s, mstl::min(m_size, len));
+}
+
+namespace bits {
+
+inline
+bool
+eq(char const* lhs, unsigned lhsSize, char const* rhs, unsigned rhsSize)
+{
+	return lhsSize == rhsSize && bits::eq(lhs, rhs, lhsSize);
+}
+
+
+inline
+bool
+ne(char const* lhs, unsigned lhsSize, char const* rhs, unsigned rhsSize)
+{
+	return lhsSize != rhsSize || bits::ne(lhs, rhs, lhsSize);
+}
+
+
+inline
+bool
+le(char const* lhs, unsigned lhsSize, char const* rhs, unsigned rhsSize)
+{
+	unsigned len = mstl::min(lhsSize, rhsSize);
+	int cmp = ::strncmp(lhs, rhs, len);
+	return cmp <= 0 || (cmp == 0 && rhsSize > len);
+}
+
+
+inline
+bool
+lt(char const* lhs, unsigned lhsSize, char const* rhs, unsigned rhsSize)
+{
+	unsigned len = mstl::min(lhsSize, rhsSize);
+
+	int cmp = ::strncmp(lhs, rhs, len);
+	return cmp < 0 || (cmp == 0 && rhsSize > len);
+}
+
+
+inline
+bool
+ge(char const* lhs, unsigned lhsSize, char const* rhs, unsigned rhsSize)
+{
+	unsigned len = mstl::min(lhsSize, rhsSize);
+	int cmp = ::strncmp(lhs, rhs, len);
+	return cmp >= 0 || (cmp == 0 && lhsSize > len);
+}
+
+
+inline
+bool
+gt(char const* lhs, unsigned lhsSize, char const* rhs, unsigned rhsSize)
+{
+	unsigned len = mstl::min(lhsSize, rhsSize);
+	int cmp = ::strncmp(lhs, rhs, len);
+	return cmp > 0 || (cmp == 0 && lhsSize > len);
+}
+
+} // namespace bits
+
 inline
 bool
 operator==(string const& lhs, string const& rhs)
 {
-	return lhs.size() == rhs.size() && ::strcmp(lhs, rhs) == 0;
+	return bits::eq(lhs, lhs.size(), rhs, rhs.size());
 }
 
 
@@ -325,28 +568,197 @@ inline
 bool
 operator!=(string const& lhs, string const& rhs)
 {
-	return lhs.size() != rhs.size() || ::strcmp(lhs, rhs) != 0;
+	return bits::ne(lhs, lhs.size(), rhs, rhs.size());
 }
 
 
-inline bool operator<=(string const& lhs, string const& rhs) { return ::strcmp(lhs, rhs) <= 0; }
-inline bool operator< (string const& lhs, string const& rhs) { return ::strcmp(lhs, rhs) <  0; }
-inline bool operator>=(string const& lhs, string const& rhs) { return ::strcmp(lhs, rhs) >= 0; }
-inline bool operator> (string const& lhs, string const& rhs) { return ::strcmp(lhs, rhs) >  0; }
+inline
+bool
+operator<=(string const& lhs, string const& rhs)
+{
+	return bits::le(lhs, lhs.size(), rhs, rhs.size());
+}
 
-inline bool operator==(string const& lhs, char const* rhs) { return ::strcmp(lhs, rhs) == 0; }
-inline bool operator!=(string const& lhs, char const* rhs) { return ::strcmp(lhs, rhs) != 0; }
-inline bool operator<=(string const& lhs, char const* rhs) { return ::strcmp(lhs, rhs) <= 0; }
-inline bool operator< (string const& lhs, char const* rhs) { return ::strcmp(lhs, rhs) <  0; }
-inline bool operator>=(string const& lhs, char const* rhs) { return ::strcmp(lhs, rhs) >= 0; }
-inline bool operator> (string const& lhs, char const* rhs) { return ::strcmp(lhs, rhs) >  0; }
 
-inline bool operator==(char const* lhs, string const& rhs) { return ::strcmp(lhs, rhs) == 0; }
-inline bool operator!=(char const* lhs, string const& rhs) { return ::strcmp(lhs, rhs) != 0; }
-inline bool operator<=(char const* lhs, string const& rhs) { return ::strcmp(lhs, rhs) <= 0; }
-inline bool operator< (char const* lhs, string const& rhs) { return ::strcmp(lhs, rhs) <  0; }
-inline bool operator>=(char const* lhs, string const& rhs) { return ::strcmp(lhs, rhs) >= 0; }
-inline bool operator> (char const* lhs, string const& rhs) { return ::strcmp(lhs, rhs) >  0; }
+inline
+bool
+operator<(string const& lhs, string const& rhs)
+{
+	return bits::lt(lhs, lhs.size(), rhs, rhs.size());
+}
+
+
+inline
+bool
+operator>=(string const& lhs, string const& rhs)
+{
+	return bits::ge(lhs, lhs.size(), rhs, rhs.size());
+}
+
+
+inline
+bool
+operator>(string const& lhs, string const& rhs)
+{
+	return bits::gt(lhs, lhs.size(), rhs, rhs.size());
+}
+
+
+inline
+bool
+operator==(string const& lhs, char const* rhs)
+{
+	M_REQUIRE(rhs);
+
+	if (lhs.writable())
+		return ::strcmp(lhs, rhs) == 0;
+
+	return bits::eq(lhs, lhs.size(), rhs, ::strlen(rhs));
+}
+
+
+inline
+bool
+operator!=(string const& lhs, char const* rhs)
+{
+	M_REQUIRE(rhs);
+
+	if (lhs.writable())
+		return ::strcmp(lhs, rhs) != 0;
+
+	return bits::ne(lhs, lhs.size(), rhs, ::strlen(rhs));
+}
+
+
+inline
+bool
+operator<=(string const& lhs, char const* rhs)
+{
+	M_REQUIRE(rhs);
+
+	if (lhs.writable())
+		return ::strcmp(lhs, rhs) <= 0;
+
+	return bits::le(lhs, lhs.size(), rhs, ::strlen(rhs));
+}
+
+
+inline
+bool
+operator<(string const& lhs, char const* rhs)
+{
+	M_REQUIRE(rhs);
+
+	if (lhs.writable())
+		return ::strcmp(lhs, rhs) <  0;
+
+	return bits::lt(lhs, lhs.size(), rhs, ::strlen(rhs));
+}
+
+
+inline
+bool
+operator>=(string const& lhs, char const* rhs)
+{
+	M_REQUIRE(rhs);
+
+	if (lhs.writable())
+		return ::strcmp(lhs, rhs) >= 0;
+
+	return bits::ge(lhs, lhs.size(), rhs, ::strlen(rhs));
+}
+
+
+inline
+bool
+operator>(string const& lhs, char const* rhs)
+{
+	M_REQUIRE(rhs);
+
+	if (lhs.writable())
+		return ::strcmp(lhs, rhs) >  0;
+
+	return bits::gt(lhs, lhs.size(), rhs, ::strlen(rhs));
+}
+
+
+inline
+bool
+operator==(char const* lhs, string const& rhs)
+{
+	M_REQUIRE(lhs);
+
+	if (rhs.writable())
+		return ::strcmp(lhs, rhs) == 0;
+	
+	return bits::eq(lhs, ::strlen(lhs), rhs, rhs.size());
+}
+
+
+inline
+bool
+operator!=(char const* lhs, string const& rhs)
+{
+	M_REQUIRE(lhs);
+
+	if (rhs.writable())
+		return ::strcmp(lhs, rhs) != 0;
+	
+	return bits::ne(lhs, ::strlen(lhs), rhs, rhs.size());
+}
+
+
+inline
+bool
+operator<=(char const* lhs, string const& rhs)
+{
+	M_REQUIRE(lhs);
+
+	if (rhs.writable())
+		return ::strcmp(lhs, rhs) <= 0;
+	
+	return bits::le(lhs, ::strlen(lhs), rhs, rhs.size());
+}
+
+
+inline
+bool
+operator<(char const* lhs, string const& rhs)
+{
+	M_REQUIRE(lhs);
+
+	if (rhs.writable())
+		return ::strcmp(lhs, rhs) < 0;
+	
+	return bits::lt(lhs, ::strlen(lhs), rhs, rhs.size());
+}
+
+
+inline
+bool
+operator>=(char const* lhs, string const& rhs)
+{
+	M_REQUIRE(lhs);
+
+	if (rhs.writable())
+		return ::strcmp(lhs, rhs) >= 0;
+	
+	return bits::ge(lhs, ::strlen(lhs), rhs, rhs.size());
+}
+
+
+inline
+bool
+operator>(char const* lhs, string const& rhs)
+{
+	M_REQUIRE(lhs);
+
+	if (rhs.writable())
+		return ::strcmp(lhs, rhs) > 0;
+	
+	return bits::gt(lhs, ::strlen(lhs), rhs, rhs.size());
+}
+
 
 inline void swap(string& lhs, string& rhs) { lhs.swap(rhs); }
 

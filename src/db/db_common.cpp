@@ -230,7 +230,7 @@ static mstl::string const Lookup[] =
 	"GM", "IM", "FM", "CM",
 	"WGM", "WIM", "WFM", "WCM",
 	"HGM",
-	"CGM", "CIM", "CLGM", "CILM", "CSIM",
+	"CGM", "CIM", "CLGM", "CLIM", "CSIM",
 };
 
 } // namespace title
@@ -1445,8 +1445,8 @@ title::add(unsigned titles, ID title)
 		/* HGM	*/ 0,
 		/* CGM	*/ ~unsigned(CSIM | Mask_CIM),
 		/* CIM	*/ 0,
-		/* CLGM	*/ ~unsigned(Mask_CILM),
-		/* CILM	*/ 0,
+		/* CLGM	*/ ~unsigned(Mask_CLIM),
+		/* CLIM	*/ 0,
 		/* CSIM	*/ ~unsigned(Mask_CIM),
 	};
 
@@ -1465,7 +1465,7 @@ title::add(unsigned titles, ID title)
 		/* CGM	*/ 0,
 		/* CIM	*/ Mask_CGM | Mask_CSIM,
 		/* CLGM	*/ 0,
-		/* CILM	*/ Mask_CLGM,
+		/* CLIM	*/ Mask_CLGM,
 		/* CSIM	*/ Mask_CGM,
 	};
 
@@ -1499,7 +1499,7 @@ title::fromString(char const* title)
 				case 'I':
 					switch (title[2])
 					{
-						case 'L': return title[3] == 'M' ? title::CILM : title::None;
+						case 'L': return title[3] == 'M' ? title::CLIM : title::None;
 						case 'M': return title::CIM;
 					}
 					break;
@@ -1513,7 +1513,7 @@ title::fromString(char const* title)
 			switch (title[1])
 			{
 				case 'G': return title[1] == 'G' && title[2] == 'M' ? title::GM : title::None;
-				case 'L': return title[2] == 'M' ? title::CILM : title::None;
+				case 'L': return title[2] == 'M' ? title::CLIM : title::None;
 				case 'M': return title::IM;
 			}
 			break;
@@ -4671,8 +4671,8 @@ board::toString(Status status)
 }
 
 
-federation::ID
-federation::fromString(char const* s)
+organization::ID
+organization::fromString(char const* s)
 {
 	switch (::toupper(*s))
 	{
@@ -4682,7 +4682,7 @@ federation::fromString(char const* s)
 		case 'I': return ICCF;
 	}
 
-	return Fide; // satisfies the compiler
+	return Unspecified;
 }
 
 // vi:set ts=3 sw=3:

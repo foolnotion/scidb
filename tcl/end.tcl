@@ -140,6 +140,8 @@ set dialog::choosefont::iconReset	$icon::iconReset
 
 set dialog::progressbar::icon::16x16::stop $::icon::16x16::stop
 
+proc searchentry::makeStateSpecificIcons {img} { return [::icon::makeStateSpecificIcons $img] }
+
 set tk::ShadowOffset $::shadow::offset
 
 

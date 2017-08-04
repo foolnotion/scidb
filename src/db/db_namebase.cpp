@@ -247,7 +247,7 @@ Namebase::makeSiteEntry(mstl::string const& name, db::Site const* site)
 
 
 Namebase::PlayerEntry*
-Namebase::makePlayerEntry(mstl::string const& name, db::Player const* player)
+Namebase::makePlayerEntry(mstl::string const& name, db::Player* player)
 {
 	M_ASSERT(type() == Player);
 	M_ASSERT(name.size() <= NamebaseEntry::MaxNameLength);
@@ -425,7 +425,7 @@ Namebase::insertPlayer(	mstl::string const& name,
 
 	species::ID myType = type;
 
-	db::Player const* p;
+	db::Player* p;
 
 	if (fideIdFlag)
 	{
@@ -837,13 +837,13 @@ Namebase::cleanup()
 
 
 void
-Namebase::deref(Entry* entry)
+Namebase::decrRef(Entry* entry)
 {
 	M_REQUIRE(entry->frequency() > 0);
 //	M_REQUIRE(entry->id() < previousSize());
 
 	m_isConsistent = false;
-	entry->deref();
+	entry->decrRef();
 
 //	if (entry->frequency() == 0)
 //	{

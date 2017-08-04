@@ -590,7 +590,7 @@ namespace title
 		CGM,	///< Correspondence Grandmaster (ICCF)
 		CIM,	///< Correspondence International Master (ICCF)
 		CLGM,	///< Correspondence Lady Grandmaster (ICCF)
-		CILM,	///< Correspondence Lady International Master (ICCF)
+		CLIM,	///< Correspondence Lady International Master (ICCF)
 		CSIM,	///< Correspondence Senior International Master (ICCF)
 
 		Last,
@@ -611,8 +611,13 @@ namespace title
 		Mask_CGM		= 1 << CGM,
 		Mask_CIM		= 1 << CIM,
 		Mask_CLGM	= 1 << CLGM,
-		Mask_CILM	= 1 << CILM,
+		Mask_CLIM	= 1 << CLIM,
 		Mask_CSIM	= 1 << CSIM,
+
+		Mask_Fide	= Mask_GM  | Mask_IM  | Mask_FM  | Mask_CM
+						| Mask_WGM | Mask_WIM | Mask_WFM | Mask_WCM
+						| Mask_HGM,
+		Mask_ICCF	= Mask_CGM | Mask_CIM | Mask_CLGM | Mask_CLIM | Mask_CSIM,
 	};
 
 	ID toID(unsigned title);
@@ -681,11 +686,11 @@ namespace rating
 	bool isValid(uint16_t score);
 }
 
-namespace federation
+namespace organization
 {
 	enum ID
 	{
-		None,
+		Unspecified,
 		Fide,	// World Chess Federation
 		DSB,	// Deutscher Schachbund (German Chess Federation)
 		ECF,	// English Chess Federation (formerly "BCF: British Chess Federation)
@@ -1664,9 +1669,11 @@ namespace order
 {
 	enum ID
 	{
-		Ascending,
-		Descending,
+		Ascending	= +1,
+		Descending	= -1,
 	};
+
+	int constexpr signum(order::ID order);
 }
 
 namespace copy

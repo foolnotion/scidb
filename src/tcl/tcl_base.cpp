@@ -35,6 +35,7 @@
 #include "m_string.h"
 #include "m_vector.h"
 #include "m_utility.h"
+#include "m_ios.h"
 #include "m_stdio.h"
 
 #include <tcl.h>
@@ -1024,6 +1025,12 @@ safeCall(void* clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		mstl::exception::setDisabled();
 		rc = GetErrorCode(exc);
+	}
+	catch (mstl::ios_base::failure const& exc)
+	{
+		::fprintf(stderr, "#### uncatched I/O error: %s\n", exc.what());
+		mstl::exception::setDisabled();
+		rc = tcl::ioError("tcl::base::safeCall", "uncatched I/O error", exc.what());
 	}
 	catch (mstl::exception const& exc)
 	{

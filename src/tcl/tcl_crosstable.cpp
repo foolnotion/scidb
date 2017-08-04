@@ -200,7 +200,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				if (!player)
 					return error(CmdGet, nullptr, nullptr, "invalid ranking number %u", ranking);
 
-				return tcl::player::getInfo(*player, ratings, federation::Fide, true, true, true);
+				return tcl::player::getInfo(*player, ratings, organization::Fide, true, true, true);
 			}
 			break;
 

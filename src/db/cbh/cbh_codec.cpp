@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2009-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -1598,7 +1598,7 @@ Codec::reloadTournamentData(mstl::string const& rootname, util::Progress& progre
 			name.set_size(::strippedLen(name));
 			m_codec->toUtf8(name);
 
-			if (!sys::utf8::Codec::is7BitAscii(name))
+			if (!name.is_7bit())
 			{
 				if (!sys::utf8::validate(name))
 					m_codec->forceValidUtf8(name);
@@ -1610,7 +1610,7 @@ Codec::reloadTournamentData(mstl::string const& rootname, util::Progress& progre
 			city.set_size(::strippedLen(city));
 			m_codec->toUtf8(city);
 
-			if (!sys::utf8::Codec::is7BitAscii(city))
+			if (!city.is_7bit())
 			{
 				if (!sys::utf8::validate(city))
 					m_codec->forceValidUtf8(city);
@@ -1740,7 +1740,7 @@ Codec::reloadAnnotatorData(mstl::string const& rootname, util::Progress& progres
 			name.set_size(::strippedLen(name));
 			m_codec->toUtf8(name);
 
-			if (!sys::utf8::Codec::is7BitAscii(name))
+			if (!name.is_7bit())
 			{
 				if (!sys::utf8::validate(name))
 					m_codec->forceValidUtf8(name);
@@ -1806,7 +1806,7 @@ Codec::reloadSourceData(mstl::string const& rootname, util::Progress& progress)
 			name.set_size(::strippedLen(name));
 			m_codec->toUtf8(name);
 
-			if (!sys::utf8::Codec::is7BitAscii(name))
+			if (!name.is_7bit())
 			{
 				mstl::string str;
 
@@ -1872,7 +1872,7 @@ Codec::reloadTeamData(mstl::string const& rootname, util::Progress& progress)
 			name.set_size(::strippedLen(name));
 			m_codec->toUtf8(name);
 
-			if (!sys::utf8::Codec::is7BitAscii(name))
+			if (!name.is_7bit())
 			{
 				if (!sys::utf8::validate(name))
 					m_codec->forceValidUtf8(name);
@@ -2112,7 +2112,7 @@ Codec::getPlayer(uint32_t ref)
 
 	if (p != m_playerMap.end())
 	{
-		p->second->ref();
+		p->second->incrRef();
 		return static_cast<NamebasePlayer*>(p->second);
 	}
 
@@ -2122,7 +2122,7 @@ Codec::getPlayer(uint32_t ref)
 									"? (illegal reference)", 0, m_playerMap.size() + 1);
 	}
 
-	m_illegalPlayer->ref();
+	m_illegalPlayer->incrRef();
 	return m_illegalPlayer;
 }
 
@@ -2137,9 +2137,9 @@ Codec::getEvent(uint32_t ref)
 		NamebaseEvent* event = static_cast<NamebaseEvent*>(p->second);
 
 		if (event->frequency() == 0)
-			event->site()->ref();
+			event->site()->incrRef();
 
-		event->ref();
+		event->incrRef();
 		return event;
 	}
 
@@ -2152,10 +2152,10 @@ Codec::getEvent(uint32_t ref)
 									mstl::string::empty_string,
 									country::Unknown,
 									m_eventMap.size() + 1));
-		m_illegalEvent->site()->ref();
+		m_illegalEvent->site()->incrRef();
 	}
 
-	m_illegalEvent->ref();
+	m_illegalEvent->incrRef();
 
 	return m_illegalEvent;
 }
@@ -2169,7 +2169,7 @@ Codec::getAnnotator(uint32_t ref)
 	if (p == m_annotatorMap.end())
 		return 0;
 
-	p->second->ref();
+	p->second->incrRef();
 	return p->second;
 }
 
@@ -2182,7 +2182,7 @@ Codec::getSource(uint32_t ref)
 	if (p == m_sourceMap2.end())
 		return 0;
 
-	p->second->ref();
+	p->second->incrRef();
 
 	return static_cast<Source*>(p->second);
 }
@@ -2471,62 +2471,78 @@ Codec::startDecoding(ByteStream& gameStream,
 {
 	sys::Lock lock(&m_mutex);
 
-	if (!info.gameOffset())
-		IO_RAISE(Index, Corrupted, "no game data");
-	if (!m_gameStream.seekg(info.gameOffset(), mstl::ios_base::beg))
-		IO_RAISE(Game, Corrupted, "unexpected end of file");
-	if (!m_gameStream.read(gameStream.base(), 4))
-		IO_RAISE(Game, Corrupted, "unexpected end of file");
-
-	unsigned word = gameStream.uint32();
-
-	if (word & 0x80000000)
+	try
 	{
-		throw DecodingFailedException("cannot decode");
+		if (!info.gameOffset())
+			IO_RAISE(Index, Corrupted, "no game data");
+		if (!m_gameStream.seekg(info.gameOffset(), mstl::ios_base::beg))
+			IO_RAISE(Game, Corrupted, "unexpected end of file");
+		if (!m_gameStream.read(gameStream.base(), 4))
+			IO_RAISE(Game, Corrupted, "unexpected end of file");
 
-		// TODO: we have something special to do, but what?
-		// look at Big2010, #1964391, Giffard, Nicalas - Castlagliola, Marina
-	}
+		unsigned word = gameStream.uint32();
 
-	isChess960 = bool(word & 0x0a000000);
-	unsigned size = word & 0x00ffffff;
-
-	gameStream.resetg();
-	gameStream.reserve(size);
-	gameStream.provide(size);
-
-	if (!m_gameStream.seekg(-4, mstl::ios_base::cur))
-		IO_RAISE(Game, Unknown_Error_Type, "seek failed");
-	if (!m_gameStream.read(gameStream.base(), size))
-		IO_RAISE(Game, Corrupted, "unexpected end of file");
-
-	AnnotationMap::const_iterator i = m_annotationMap.find(info.gameOffset());
-
-	if (i != m_annotationMap.end())
-	{
-		uint32_t address = i->second;
-
-		if (!m_annotationStream.seekg(address + 10, mstl::ios_base::beg))
-			IO_RAISE(Annotation, Corrupted, "unexpected end of file");
-
-		if (annotationStream)
+		if (word & 0x80000000)
 		{
-			if (!m_annotationStream.read(annotationStream->base(), 4))
+			throw DecodingFailedException("cannot decode");
+
+			// TODO: we have something special to do, but what?
+			// look at Big2010, #1964391, Giffard, Nicalas - Castlagliola, Marina
+			// Is CB shuffling (XOR) the data when this flag is set?
+		}
+
+		isChess960 = bool(word & 0x0a000000);
+		unsigned size = word & 0x00ffffff;
+
+		if (size <= 4)
+			IO_RAISE(Game, Corrupted, "bad data");
+
+		gameStream.resetg();
+		gameStream.reserve(size);
+		gameStream.provide(size);
+
+		if (!m_gameStream.seekg(-4, mstl::ios_base::cur))
+			IO_RAISE(Game, Unknown_Error_Type, "seek failed");
+
+		// Sometimes CB is writing corrupted games, even CB cannot read such a game.
+		if (!m_gameStream.read(gameStream.base(), size))
+			IO_RAISE(Annotation, Corrupted, "bad data");
+
+		AnnotationMap::const_iterator i = m_annotationMap.find(info.gameOffset());
+
+		if (i != m_annotationMap.end())
+		{
+			uint32_t address = i->second;
+
+			if (!m_annotationStream.seekg(address + 10, mstl::ios_base::beg))
 				IO_RAISE(Annotation, Corrupted, "unexpected end of file");
 
-			size = annotationStream->uint32() - 14;
+			if (annotationStream)
+			{
+				if (!m_annotationStream.read(annotationStream->base(), 4))
+					IO_RAISE(Annotation, Corrupted, "unexpected end of file");
 
-			annotationStream->resetg();
-			annotationStream->reserve(size);
-			annotationStream->provide(size);
+				size = annotationStream->uint32() - 14;
 
-			if (!m_annotationStream.read(annotationStream->base(), size))
-				IO_RAISE(Annotation, Corrupted, "unexpected end of file");
+				annotationStream->resetg();
+				annotationStream->reserve(size);
+				annotationStream->provide(size);
+
+				if (!m_annotationStream.read(annotationStream->base(), size))
+					IO_RAISE(Annotation, Corrupted, "unexpected end of file");
+			}
+		}
+		else if (annotationStream)
+		{
+			annotationStream->provide(0);
 		}
 	}
-	else if (annotationStream)
+	catch (mstl::ios_base::failure const& exc)
 	{
-		annotationStream->provide(0);
+		// This is an expected failure when reading CBH files.
+		m_gameStream.clear();
+		m_annotationStream.clear();
+		throw exc;
 	}
 }
 

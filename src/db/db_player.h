@@ -136,7 +136,7 @@ public:
 	/// Return whether Three-Check Chesss is supported.
 	bool supportsThreeCheckChess() const;
 	/// Returns whether given federation ID exists.
-	bool hasID(federation::ID federation) const;
+	bool hasID(organization::ID organization) const;
 
 	/// Returns players name.
 	mstl::string const& name() const;
@@ -166,6 +166,8 @@ public:
 	int16_t latestRating(rating::Type type) const;
 	/// Returns (best) rating type available (rating::Last if none available)
 	rating::Type ratingType() const;
+	/// Returns best title of player; this cannot be a correspondence chess title.
+	title::ID title() const;
 	/// Returns titles of player.
 	unsigned titles() const;
 	/// Returns federation of player.
@@ -180,8 +182,8 @@ public:
 	EcfID ecfID() const;
 	/// Return ICCF player ID.
 	unsigned iccfID() const;
-	/// Return wanted federation id (empty string id not exisiting)
-	mstl::string federationID(federation::ID federation) const;
+	/// Return wanted organization id (empty string if not exisiting)
+	mstl::string organization(organization::ID organization) const;
 	/// Return VIAF (Virtual International Authority File) ID.
 	unsigned viafID() const;
 	/// Return PND (Personennamendatei) ID.
@@ -198,6 +200,8 @@ public:
 	unsigned region() const;
 	//// Return URL of given player (chess engine).
 	mstl::string const& url() const;
+	/// Returns the frequency of this player.
+	unsigned frequency() const;
 
 	void setSex(sex::ID id);
 	void setType(species::ID id);
@@ -231,6 +235,11 @@ public:
 
 	static bool isNormalized(mstl::string const& name);
 	static bool containsPlayer(mstl::string const& name, country::Code country, sex::ID sex);
+
+	// Increment reference count.
+	void incrRef(unsigned count = 1);
+	// Decrement reference count.
+	void decrRef(unsigned count = 1);
 
 	static Player const& getPlayer(unsigned index);
 	static Player* findPlayer(	mstl::string const& name,
@@ -301,7 +310,8 @@ private:
 
 	typedef int16_t Ratings[rating::Last];
 
-	mstl::string m_name;
+	mstl::string	m_name;
+	uint32_t			m_frequency;
 
 	Ratings m_highestRating;
 	Ratings m_latestRating;

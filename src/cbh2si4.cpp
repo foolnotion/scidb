@@ -62,6 +62,8 @@ using namespace db;
 
 static unsigned rejected = 0;
 
+static bool newNewline = false;
+
 
 namespace tcl { namespace bits { Tcl_Interp* interp; } }
 
@@ -79,6 +81,17 @@ struct Progress : public util::Progress
 	{
 		::printf(".");
 		::fflush(stdout);
+	}
+
+	void finish() throw() override {}
+};
+
+
+struct Tracer : public util::Progress
+{
+	void update(unsigned progress) override
+	{
+		::printf("Game number %u\n", progress);
 	}
 
 	void finish() throw() override {}
@@ -430,22 +443,41 @@ logIOError(IOException const& exc, unsigned gameNumber = 0)
 		msg.format(" (#%d)", gameNumber);
 
 	fflush(stdout);
-	printf("\n");
+	if (::newNewline)
+		printf("\n");
 	fflush(stdout);
 	fprintf(stderr, "%s\n", msg.c_str());
+	::newNewline = false;
 
-	if (exc.errorType() == IOException::Read_Error)
+	switch (exc.errorType())
 	{
-		fprintf(stderr, "Abort.\n");
-		exit(1);
+		case IOException::Unknown_Error_Type:
+		case IOException::Create_Failed:
+		case IOException::Open_Failed:
+		case IOException::Unknown_Version:
+		case IOException::Unexpected_Version:
+		case IOException::Write_Failed:
+		case IOException::Max_File_Size_Exceeded:
+		case IOException::Not_Original_Version:
+		case IOException::Read_Only:
+			fprintf(stderr, "Abort.\n");
+			exit(1);
+
+		case IOException::Read_Error:
+		case IOException::Corrupted:
+		case IOException::Invalid_Data:
+		case IOException::Encoding_Failed:
+		case IOException::Load_Failed:
+		case IOException::Cannot_Create_Thread:
+			break;
 	}
 }
 
 
 static unsigned
-exportGames(Database& src, Consumer& dst, Progress& progress)
+exportGames(Database& src, Consumer& dst, ::util::Progress& progress)
 {
-	unsigned numGames		= src.countGames();
+	unsigned numGames = src.countGames();
 
 	util::ProgressWatcher watcher(progress, numGames);
 	progress.setFrequency(mstl::min(200u, mstl::max(numGames/1000, 50u)));
@@ -458,11 +490,13 @@ exportGames(Database& src, Consumer& dst, Progress& progress)
 
 	for (unsigned i = 0; i < numGames; ++i)
 	{
-		if (reportAfter == count++)
+		if (reportAfter == count)
 		{
 			progress.update(count);
 			reportAfter += progress.frequency();
+			::newNewline = true;
 		}
+		count += 1;
 
 		try
 		{
@@ -476,6 +510,13 @@ exportGames(Database& src, Consumer& dst, Progress& progress)
 		catch (IOException const& exc)
 		{
 			logIOError(exc, i + 1);
+		}
+		catch (...)
+		{
+			printf("\n");
+			fflush(stdout);
+			fprintf(stderr, "*** Exception catched while decoding game #%u\n", count);
+			throw;
 		}
 	}
 
@@ -501,6 +542,8 @@ main(int argc, char* argv[])
 		db::sci::Encoder::initialize();
 
 #endif
+
+	mstl::backtrace::disable();
 
 	TclInterpreter	tclInterpreter;
 	mstl::string	convertto(::ConvertTo);
@@ -673,7 +716,7 @@ main(int argc, char* argv[])
 	{
 		loadEcoFile();
 
-		Progress	progress;
+		Progress progress;
 
 		Database	src(cbhPath, convertfrom, permission::ReadOnly, progress);
 		Database	dst(si4Path, convertto, storage::OnDisk, variant::Normal);
@@ -684,7 +727,9 @@ main(int argc, char* argv[])
 										extraTags);
 
 		dst.setType(src.type());
-		printf("Convert '%s' to '%s'\n", cbhPath.c_str(), si4Path.c_str());
+		printf("Convert '%s' to '%s' ", cbhPath.c_str(), si4Path.c_str());
+		fflush(stdout);
+		::newNewline = true;
 		unsigned numGames = exportGames(src, consumer, progress);
 		dst.save(progress);
 		printf("\n%u game(s) written.", numGames);

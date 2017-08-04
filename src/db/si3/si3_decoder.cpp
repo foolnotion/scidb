@@ -1017,8 +1017,8 @@ Decoder::doDecoding(db::Consumer& consumer, TagSet& tags)
 	decodeVariation(consumer, &start);
 	consumer.finishMoveSection(result::fromString(tags.value(tag::Result)));
 
-	if (m_codec->failed())
-		m_givenCodec->setFailed();
+	m_givenCodec->setError(m_codec->error());
+	m_givenCodec->setUnknown(m_codec->unknown());
 
 	return consumer.finishGame(tags);
 }
@@ -1070,8 +1070,8 @@ Decoder::doDecoding(GameData& data)
 	decodeComments(data.m_startNode);
 	data.m_engines.swap(m_engines);
 
-	if (m_codec->failed())
-		m_givenCodec->setFailed();
+	m_givenCodec->setError(m_codec->error());
+	m_givenCodec->setUnknown(m_codec->unknown());
 
 	return m_position.board().plyNumber() - plyNumber;
 }

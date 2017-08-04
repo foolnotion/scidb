@@ -1325,7 +1325,7 @@ Codec::decodeIndex(ByteStream& strm, unsigned index)
 	NamebasePlayer* blackPlayer =
 		::check(static_cast<NamebasePlayer*>(m_playerList->lookup(blackId)->entry));
 
-	whitePlayer->ref(); blackPlayer->ref();
+	whitePlayer->incrRef(); blackPlayer->incrRef();
 
 	item.m_player[color::White] = whitePlayer;
 	item.m_player[color::Black] = blackPlayer;
@@ -1427,10 +1427,10 @@ Codec::decodeIndex(ByteStream& strm, unsigned index)
 	}
 
 	if (event->frequency() == 0)
-		site->ref();
+		site->incrRef();
 
-	round->ref();
-	event->ref();
+	round->incrRef();
+	event->incrRef();
 
 	item.m_event = event;
 
@@ -1669,7 +1669,7 @@ Codec::reloadNamebase(	ByteIStream& bstrm,
 
 		str.set_size(length);
 
-		if (sys::utf8::Codec::is7BitAscii(str))
+		if (str.is_7bit())
 		{
 			base.rename(shadowBase.lookup(index)->entry, str);
 		}
@@ -2209,7 +2209,7 @@ void
 Codec::releaseRoundEntry(unsigned index)
 {
 	if (NamebaseEntry* entry = m_roundLookup[index])
-		namebase(Namebase::Round).deref(entry);
+		namebase(Namebase::Round).decrRef(entry);
 }
 
 
@@ -2226,7 +2226,7 @@ Codec::saveRoundEntry(unsigned index, mstl::string const& value)
 	if (index >= m_roundLookup.size())
 		m_roundLookup.resize((index + mstl::max(20u, (9*index)/10)));
 
-	namebase(Namebase::Round).ref(entry);
+	namebase(Namebase::Round).incrRef(entry);
 	m_roundEntry = m_roundLookup[index];
 	m_roundLookup[index] = entry;
 
@@ -2240,11 +2240,11 @@ Codec::restoreRoundEntry(unsigned index)
 	NamebaseEntry* entry = m_roundLookup[index];
 
 	if (entry)
-		namebase(Namebase::Round).deref(entry);
+		namebase(Namebase::Round).decrRef(entry);
 
 	if (m_roundEntry)
 	{
-		namebase(Namebase::Round).ref(m_roundEntry);
+		namebase(Namebase::Round).incrRef(m_roundEntry);
 
 		if (entry && m_roundLookup[index]->frequency() == 0)
 			m_roundLookup[index] = m_roundEntry;
@@ -2289,7 +2289,7 @@ Codec::useOverflowEntry(unsigned index)
 		m_roundLookup.resize((index + mstl::max(20u, (9*index)/10)));
 
 	m_roundLookup[index] = entry;
-	roundBase.ref(entry);
+	roundBase.incrRef(entry);
 }
 
 

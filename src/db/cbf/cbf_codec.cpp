@@ -703,7 +703,7 @@ Codec::decodeIndexData(GameInfo& info, unsigned offset, NamebaseSite* site)
 		NamebasePlayer* p = namebases()(Namebase::Player).
 			insertPlayer(player[i], country, title, type, sex, 0, mstl::mul2(m_numGames));
 
-		(info.m_player[color] = p)->ref();
+		(info.m_player[color] = p)->incrRef();
 	}
 
 	if (source.empty())
@@ -712,7 +712,7 @@ Codec::decodeIndexData(GameInfo& info, unsigned offset, NamebaseSite* site)
 	country::Code	country	= Reader::extractCountryFromSite(source);
 	event::Mode		mode		= Reader::getEventMode(source, source);
 
-	(info.m_event = namebases()(Namebase::Event).insertEvent(source, site))->ref();
+	(info.m_event = namebases()(Namebase::Event).insertEvent(source, site))->incrRef();
 
 	switch (int(mode))
 	{

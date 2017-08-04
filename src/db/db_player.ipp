@@ -81,6 +81,7 @@ inline uint16_t Player::deathYear() const				{ return m_deathYear; }
 inline unsigned Player::region() const					{ return m_region; }
 inline Player::EcfID Player::ecfID() const			{ return m_ecfId; }
 inline Player::DsbID Player::dsbID() const			{ return m_dsbId; }
+inline unsigned Player::frequency() const				{ return m_frequency; }
 
 
 inline
@@ -257,6 +258,23 @@ Player::setLatestRating(rating::Type type, int16_t rating)
 		if (type != rating::Elo)
 			m_ratingType = mstl::min(rating::Type(m_ratingType), type);
 	}
+}
+
+
+inline
+void
+Player::incrRef(unsigned count)
+{  
+	m_frequency += count;
+}  
+
+
+inline
+void
+Player::decrRef(unsigned count)
+{  
+	M_REQUIRE(frequency() >= count);
+	m_frequency -= count;
 }
 
 } // namespace db

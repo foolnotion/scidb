@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2013 Gregor Cramer
+# Copyright: (C) 2009-2017 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -65,6 +65,7 @@
 ::mc::Colors				"Farben"
 ::mc::Configuration		"Gestaltung"
 ::mc::Copy					"Kopieren"
+::mc::Country				"Land"
 ::mc::Cut					"Ausschneiden"
 ::mc::Dark					"Dunkel"
 ::mc::Database				"Datenbank"
@@ -72,11 +73,13 @@
 ::mc::Delete				"Löschen"
 ::mc::Edit					"Bearbeiten"
 ::mc::Empty					"Leer"
+::mc::Enabled				"Eingeschaltet"
 ::mc::File					"Datei"
 ::mc::Filter				"Filter"
 ::mc::From					"Von"
 ::mc::Game					"Partie"
 ::mc::Hidden				"Versteckt"
+::mc::InternalMessage	"Interne Meldung"
 ::mc::Layout				"Layout"
 ::mc::Left					"Links"
 ::mc::Lite					"Hell"
@@ -1399,6 +1402,7 @@
 ::playertable::mc::NotFound					"Nicht gefunden."
 ::playertable::mc::EnablePlayerBase			"Spielerdatenbank benutzen"
 ::playertable::mc::DisablePlayerBase		"Spielerdatenbank nicht benutzen"
+::playertable::mc::HelpPatternMatching		"Hilfe: Suchmusterabgleich"
 ::playertable::mc::TooltipRating				"Wertungszahl: %s"
 
 ::playertable::mc::Name							"Name"
@@ -1406,6 +1410,8 @@
 ::playertable::mc::MostRecentRating			"Aktuellste Wertungszahl"
 ::playertable::mc::DateOfBirth				"Geburtsdatum"
 ::playertable::mc::DateOfDeath				"Todesdatum"
+::playertable::mc::BirthYear					"Geburtsjahr"
+::playertable::mc::DeathYear					"Todesjahr"
 
 ::playertable::mc::ShowPlayerCard			"Spielerkarteikarte öffnen..."
 
@@ -1415,15 +1421,45 @@
 ### player dictionary ##################################################
 ::playerdict::mc::PlayerDictionary	"Spielerlexikon"
 ::playerdict::mc::PlayerFilter		"Spielerfilter"
+::playerdict::mc::OrganizationID		"Organisations-ID"
 ::playerdict::mc::Count					"Anzahl"
 ::playerdict::mc::Ignore				"Ignorieren"
 ::playerdict::mc::FederationID		"Verbandsnummer"
-::playerdict::mc::BirthYear			"Geburtsjahr"
-::playerdict::mc::DeathYear			"Todesjahr"
 ::playerdict::mc::Ratings				"Wertungen"
 ::playerdict::mc::Titles				"Titel"
 ::playerdict::mc::None					"Keine"
 ::playerdict::mc::Operation			"Verfahren"
+::playerdict::mc::Awarded				"Verliehen"
+::playerdict::mc::RangeOfYears		"Jahresbereich"
+::playerdict::mc::SearchPlayerName	"Spielername suchen"
+
+::playerdict::mc::AgeClass(unrestricted)	"Unbeschränkt"
+::playerdict::mc::AgeClass(junior)			"Junioren"
+::playerdict::mc::AgeClass(senior)			"Senioren"
+
+::playerdict::mc::Champions(world)	"Weltmeister"
+::playerdict::mc::Champions(eu)		"Europameister"
+::playerdict::mc::Champions(nat)		"Nationale Meister"
+
+::playerdict::mc::T_Ranking			"Rangfolge"
+::playerdict::mc::T_Trophy				"Trophäen"
+
+# see tcl/lang/CHAMPIONS.txt how this will be constructed
+::playerdict::mc::ChessChampion	"%region% %under%%age%%mode%%champion% %where%"
+::playerdict::mc::Sex(f)			""
+::playerdict::mc::Sex(m)			""
+::playerdict::mc::Region(w)		""
+::playerdict::mc::Region(e)		"Europäische(r)"
+::playerdict::mc::Region(-)		"National(er,e)"
+::playerdict::mc::Champion(w)		"Weltmeister(,in)"
+::playerdict::mc::Champion(e)		"Meister(,in)"
+::playerdict::mc::Champion(-)		"Meister(,in)"
+::playerdict::mc::Age(j)			"Junioren-"
+::playerdict::mc::Age(s)			"Senioren-"
+::playerdict::mc::Age(-)			""
+::playerdict::mc::Mode(c)			"Fernschach-"
+::playerdict::mc::Mode(-)			""
+::playerdict::mc::Where				"in %country%"
 
 ### player-card ########################################################
 ::playercard::mc::PlayerCard					"Spielerkarteikarte"
@@ -2077,6 +2113,11 @@
 ::game::mc::OpenAssociatedDatabases		"Alle zugehörigen Datenbanken öffnen?"
 ::game::mc::OverwriteCurrentGame			"Aktuelle Partie überschreiben?"
 ::game::mc::OverwriteCurrentGameDetail	"Im Falle von '%s' wird eine neue Partie geöffnet."
+
+### searchentry ########################################################
+::searchentry::mc::Erase					"Löschen"
+::searchentry::mc::FindNext				"Suche weiter"
+::searchentry::mc::InteractiveSearch	"Interaktive Suche"
 
 ### languagebox ########################################################
 ::languagebox::mc::AllLanguages	"Alle Sprachen"

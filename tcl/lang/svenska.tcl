@@ -66,6 +66,7 @@
 ::mc::Colors				"Färger"
 ::mc::Configuration		"Konfiguration"
 ::mc::Copy					"Kopiera"
+::mc::Country				"Country" ;# NEW
 ::mc::Cut					"Klipp ut"
 ::mc::Dark					"Mörk"
 ::mc::Database				"Databas"
@@ -73,11 +74,13 @@
 ::mc::Delete				"Radera"
 ::mc::Edit					"Redigera"
 ::mc::Empty					"Empty" ;# NEW
+::mc::Enabled				"Enabled" ;# NEW
 ::mc::File					"Arkiv"
 ::mc::Filter				"Filter" ;# NEW
 ::mc::From					"Från"
 ::mc::Game					"Parti"
 ::mc::Hidden				"Hidden" ;# NEW
+::mc::InternalMessage	"Internal message" ;# NEW
 ::mc::Layout				"Layout"
 ::mc::Left					"Vänster"
 ::mc::Lite					"Ljus"
@@ -1409,6 +1412,7 @@
 ::playertable::mc::NotFound					"Saknas."
 ::playertable::mc::EnablePlayerBase			"Enable use of player base" ;# NEW
 ::playertable::mc::DisablePlayerBase      "Disable use of player base" ;# NEW
+::playertable::mc::HelpPatternMatching		"Help: Pattern Matching" ;# NEW
 ::playertable::mc::TooltipRating          "Rating: %s" ;# NEW
 
 ::playertable::mc::Name							"Namn"
@@ -1416,6 +1420,8 @@
 ::playertable::mc::MostRecentRating			"Senaste rating"
 ::playertable::mc::DateOfBirth				"Födelsedatum"
 ::playertable::mc::DateOfDeath				"Dödsdatum"
+::playertable::mc::BirthYear					"Birth year" ;# NEW
+::playertable::mc::DeathYear					"Death year" ;# NEW
 
 ::playertable::mc::ShowPlayerCard			"Visa spelarkort..."
 
@@ -1425,15 +1431,45 @@
 ### player dictionary ##################################################
 ::playerdict::mc::PlayerDictionary	"Player Dictionary" ;# NEW
 ::playerdict::mc::PlayerFilter		"Player Filter" ;# NEW
+::playerdict::mc::OrganizationID		"Organization ID" ;# NEW
 ::playerdict::mc::Count					"Count" ;# NEW
 ::playerdict::mc::Ignore				"Ignore" ;# NEW
 ::playerdict::mc::FederationID		"Federation ID" ;# NEW
-::playerdict::mc::BirthYear			"Birth Year" ;# NEW
-::playerdict::mc::DeathYear			"Death Year" ;# NEW
 ::playerdict::mc::Ratings				"Ratings" ;# NEW
 ::playerdict::mc::Titles				"Titles" ;# NEW
 ::playerdict::mc::None					"None" ;# NEW
 ::playerdict::mc::Operation			"Operation" ;# NEW
+::playerdict::mc::Awarded				"Awarded" ;# NEW
+::playerdict::mc::RangeOfYears		"Range of years" ;# NEW
+::playerdict::mc::SearchPlayerName	"Search Player Name" ;# NEW
+
+::playerdict::mc::AgeClass(unrestricted)	"Unrestricted" ;# NEW
+::playerdict::mc::AgeClass(junior)			"Junior" ;# NEW
+::playerdict::mc::AgeClass(senior)			"Senior" ;# NEW
+
+::playerdict::mc::Champions(world)	"World Champions" ;# NEW
+::playerdict::mc::Champions(eu)		"European Champions" ;# NEW
+::playerdict::mc::Champions(nat)		"National Champions" ;# NEW
+
+::playerdict::mc::T_Ranking			"Ranking" ;# NEW
+::playerdict::mc::T_Trophy				"Trophies" ;# NEW
+
+# see tcl/lang/CHAPIONS.txt how this will be constructed
+::playerdict::mc::ChessChampion	"%sex% %mode% %under%%age% %region% %champion% %where%" ;# NEW
+::playerdict::mc::Sex(f)			"Woman" ;# NEW
+::playerdict::mc::Sex(m)			"" ;# NEW
+::playerdict::mc::Region(r)		"World" ;# NEW
+::playerdict::mc::Region(e)		"European" ;# NEW
+::playerdict::mc::Region(-)		"National" ;# NEW
+::playerdict::mc::Champion(w)		"Champion" ;# NEW
+::playerdict::mc::Champion(e)		"Champion" ;# NEW
+::playerdict::mc::Champion(-)		"Champion" ;# NEW
+::playerdict::mc::Age(j)			"Junior" ;# NEW
+::playerdict::mc::Age(s)			"Senior" ;# NEW
+::playerdict::mc::Age(-)			"" ;# NEW
+::playerdict::mc::Mode(c)			"Correspondence" ;# NEW
+::playerdict::mc::Mode(-)			"" ;# NEW
+::playerdict::mc::Where				"in %country%" ;# NEW
 
 ### player-card ########################################################
 ::playercard::mc::PlayerCard					"Spelarkort"
@@ -2088,6 +2124,11 @@
 ::game::mc::OpenAssociatedDatabases		"Open all associated databases?"
 ::game::mc::OverwriteCurrentGame			"Overwrite current game?" ;# NEW
 ::game::mc::OverwriteCurrentGameDetail	"A new game will be opened if answered with '%s'." ;# NEW
+
+### searchentry ########################################################
+::searchentry::mc::Erase					"Erase" ;# NEW
+::searchentry::mc::FindNext				"Find Next" ;# NEW
+::searchentry::mc::InteractiveSearch	"Interactive Search" ;# NEW
 
 ### languagebox ########################################################
 ::languagebox::mc::AllLanguages	"Alla språk"

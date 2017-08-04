@@ -332,7 +332,6 @@ sys_timer.o: ../mstl/m_string.h
 sys_timer.o: ../mstl/m_string.ipp
 sys_utf8.o: sys_utf8.h
 sys_utf8.o: ../mstl/m_types.h
-sys_utf8.o: sys_utf8.ipp
 sys_utf8.o: ../mstl/m_string.h
 sys_utf8.o: ../mstl/m_string.ipp
 sys_utf8.o: ../mstl/m_utility.h
@@ -348,6 +347,7 @@ sys_utf8.o: ../mstl/m_assert.h
 sys_utf8.o: ../mstl/m_exception.h
 sys_utf8.o: ../mstl/m_backtrace.h
 sys_utf8.o: ../mstl/m_exception.ipp
+sys_utf8.o: sys_utf8.ipp
 sys_utf8_codec.o: sys_utf8_codec.h
 sys_utf8_codec.o: ../mstl/m_string.h
 sys_utf8_codec.o: ../mstl/m_types.h

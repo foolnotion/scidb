@@ -30,8 +30,9 @@
 #include "db_query.h"
 #include "db_date.h"
 
+#include "u_match.h"
+
 #include "m_utility.h"
-#include "m_match.h"
 #include "m_assert.h"
 
 #include <string.h>
@@ -42,91 +43,90 @@ using namespace app;
 using namespace db;
 
 
-#define PLAYER(p) Player::getPlayer(*reinterpret_cast<unsigned const*>(p))
-
-static int m_sign = 1;
-static rating::Type m_rating = rating::Any;
-
-
-static int
-cmpName(void const* lhs, void const* rhs)
+struct Arg
 {
-	return m_sign*::strcasecmp(PLAYER(lhs).asciiName(), PLAYER(rhs).asciiName());
-}
+	Arg(rating::Type rt, order::ID order)
+		:ratingType(rt)
+		,signum(order == order::Ascending ? +1 : -1)
+	{
+	}
 
-static int
-cmpFideID(void const* lhs, void const* rhs)
+	rating::Type	ratingType;
+	int				signum;
+};
+
+
+struct CompareAsciiName
 {
-	return m_sign*(int(PLAYER(lhs).fideID()) - int(PLAYER(rhs).fideID()));
-}
+	CompareAsciiName(order::ID order) :m_signum(order::signum(order)) {}
+	int m_signum;
 
-static int
-cmpDsbId(void const* lhs, void const* rhs)
+	int operator()(unsigned lhs, unsigned rhs)
+	{
+		return m_signum*mstl::case_compare(	Player::getPlayer(lhs).asciiName(),
+														Player::getPlayer(rhs).asciiName());
+	}
+};
+
+struct CompareLatestScore
 {
-	return m_sign*(int(PLAYER(lhs).dsbID().value) - int(PLAYER(rhs).dsbID().value));
-}
+	CompareLatestScore(order::ID order, db::rating::Type rt) :m_signum(order::signum(order)), m_rt(rt) {}
 
-static int
-cmpEcfId(void const* lhs, void const* rhs)
+	int m_signum;
+	db::rating::Type m_rt;
+
+	int operator()(unsigned lhs, unsigned rhs)
+	{
+		return m_signum*mstl::compare(Player::getPlayer(lhs).latestRating(m_rt),
+												Player::getPlayer(rhs).latestRating(m_rt));
+	}
+};
+
+struct CompareTitles
 {
-	return m_sign*(int(PLAYER(lhs).ecfID().value) - int(PLAYER(rhs).ecfID().value));
-}
+	CompareTitles(order::ID order) :m_sig(order::signum(order)) {}
+	int m_sig;
 
-static int
-cmpIccfId(void const* lhs, void const* rhs)
-{
-	return m_sign*(int(PLAYER(lhs).iccfID()) - int(PLAYER(rhs).iccfID()));
-}
+	int operator()(unsigned lhs, unsigned rhs)
+	{
+		Player const& lp = Player::getPlayer(lhs);
+		Player const& rp = Player::getPlayer(rhs);
 
-static int
-cmpType(void const* lhs, void const* rhs)
-{
-	return m_sign*(int(PLAYER(lhs).type()) - int(PLAYER(rhs).type()));
-}
+		int cmp = mstl::compare(lp.title(), rp.title());
 
-static int
-cmpSex(void const* lhs, void const* rhs)
-{
-	return m_sign*(int(PLAYER(lhs).sex()) - int(PLAYER(rhs).sex()));
-}
+#if 0
+		if (cmp == 0)
+			cmp = mstl::compare(lp.title2(), rp.title2());
+#endif
 
-static int
-cmpDateOfBirth(void const* lhs, void const* rhs)
-{
-	return m_sign*mstl::compare(PLAYER(lhs).dateOfBirth(), PLAYER(rhs).dateOfBirth());
-}
-
-static int
-cmpDateOfDeath(void const* lhs, void const* rhs)
-{
-	return m_sign*mstl::compare(PLAYER(lhs).dateOfDeath(), PLAYER(rhs).dateOfDeath());
-}
-
-static int
-cmpFederation(void const* lhs, void const* rhs)
-{
-	return m_sign*(int(PLAYER(lhs).federation()) - int(PLAYER(rhs).federation()));
-}
-
-static int
-cmpNativeCountry(void const* lhs, void const* rhs)
-{
-	return m_sign*(int(PLAYER(lhs).nativeCountry()) - int(PLAYER(rhs).nativeCountry()));
-}
-
-static int
-cmpLatestScore(void const* lhs, void const* rhs)
-{
-	return m_sign*(	mstl::max(int16_t(0), PLAYER(lhs).latestRating(m_rating))
-						 - mstl::max(int16_t(0), PLAYER(rhs).latestRating(m_rating)));
-}
+		return m_sig*cmp;
+	}
+};
 
 
-static int
-cmpTitles(void const* lhs, void const* rhs)
-{
-	return m_sign*(int(title::best(PLAYER(lhs).titles())) - int(title::best(PLAYER(rhs).titles())));
-}
+#define MAKE_COMP_STRUCT(Attr, Accessor) \
+	struct Compare##Attr \
+	{ \
+		Compare##Attr(order::ID order) :m_sig(order::signum(order)) {} \
+		int m_sig; \
+		int operator()(unsigned lhs, unsigned rhs) \
+		{ \
+			return m_sig*mstl::compare(Player::getPlayer(lhs).Accessor, Player::getPlayer(rhs).Accessor); \
+		} \
+	};
+
+
+MAKE_COMP_STRUCT(FideID, fideID())
+MAKE_COMP_STRUCT(DsbID, dsbID().value)
+MAKE_COMP_STRUCT(EcfID, ecfID().value)
+MAKE_COMP_STRUCT(IccfID, iccfID())
+MAKE_COMP_STRUCT(Type, type())
+MAKE_COMP_STRUCT(Sex, sex())
+MAKE_COMP_STRUCT(DateOfBirth, dateOfBirth())
+MAKE_COMP_STRUCT(DateOfDeath, dateOfDeath())
+MAKE_COMP_STRUCT(Federation, federation())
+MAKE_COMP_STRUCT(NativeCountry, nativeCountry())
+MAKE_COMP_STRUCT(Frequency, frequency())
 
 
 PlayerDictionary::PlayerDictionary(Mode mode)
@@ -176,26 +176,48 @@ PlayerDictionary::getPlayer(unsigned number) const
 
 
 int
-PlayerDictionary::search(mstl::string const& name) const
+PlayerDictionary::search(util::Pattern const& namePattern, unsigned startIndex) const
 {
-	if (name.empty())
-		return 0;
+	if (count() == 0)
+		return -1;
 
-	char letter = ::toupper(name.front());
+	unsigned numEntries = m_selector.size();
 
-	for (unsigned i = 0, k = 0; i < m_selector.size(); ++i)
+	unsigned k = 0;
+	unsigned i = 0;
+
+	if (startIndex < numEntries)
 	{
+		for ( ; k < startIndex; ++i)
+		{
+			if (m_filter.test(m_selector[i]))
+				++k;
+		}
+	}
+	else
+	{
+		i = mstl::min(startIndex, numEntries);
+	}
+	
+	unsigned n = i == 0 ? numEntries : i - 1;
+
+	while (true)
+	{
+		if (i == numEntries)
+			i = k = 0;
+
 		unsigned index = m_selector[i];
 
 		if (m_filter.test(index))
 		{
-			char const* s = Player::getPlayer(index).asciiName();
-
-			if (*s == letter && ::strncasecmp(name, s, name.size()) == 0)
+			if (namePattern.match(Player::getPlayer(index).asciiName()))
 				return k;
 
 			++k;
 		}
+
+		if (++i == n)
+			break;
 	}
 
 	return -1;
@@ -203,43 +225,25 @@ PlayerDictionary::search(mstl::string const& name) const
 
 
 void
-PlayerDictionary::sort(Attribute attr, ::db::order::ID order)
+PlayerDictionary::sort(Attribute attr, order::ID order, rating::Type ratingType)
 {
-	typedef int (*Compare)(void const*, void const*);
-
-	Compare cmpFunc = ::cmpLatestScore;
-
-	switch (order)
-	{
-		case order::Ascending:	::m_sign = +1; break;
-		case order::Descending:	::m_sign = -1; break;
-	}
-
 	switch (attr)
 	{
-		case Name:				cmpFunc = ::cmpName; break;
-		case FideID:			cmpFunc = ::cmpFideID; break;
-		case DsbId:				cmpFunc = ::cmpDsbId; break;
-		case EcfId:				cmpFunc = ::cmpEcfId; break;
-		case IccfId:			cmpFunc = ::cmpIccfId; break;
-		case Type:				cmpFunc = ::cmpType; break;
-		case Sex:				cmpFunc = ::cmpSex; break;
-		case DateOfBirth:		cmpFunc = ::cmpDateOfBirth; break;
-		case DateOfDeath:		cmpFunc = ::cmpDateOfDeath; break;
-		case Federation:		cmpFunc = ::cmpFederation; break;
-		case Titles:			cmpFunc = ::cmpTitles; break;
-		case NativeCountry:	cmpFunc = ::cmpNativeCountry; break;
-		case LatestElo:		::m_rating = rating::Elo; break;
-		case LatestRating:	::m_rating = rating::Rating; break;
-		case LatestRapid:		::m_rating = rating::Rapid; break;
-		case LatestICCF:		::m_rating = rating::ICCF; break;
-		case LatestUSCF:		::m_rating = rating::USCF; break;
-		case LatestDWZ:		::m_rating = rating::DWZ; break;
-		case LatestECF:		::m_rating = rating::ECF; break;
-		case LatestIPS:		::m_rating = rating::IPS; break;
+		case Name:				m_selector.qsort(::CompareAsciiName(order)); break;
+		case FideID:			m_selector.qsort(::CompareFideID(order)); break;
+		case DsbId:				m_selector.qsort(::CompareDsbID(order)); break;
+		case EcfId:				m_selector.qsort(::CompareEcfID(order)); break;
+		case IccfId:			m_selector.qsort(::CompareIccfID(order)); break;
+		case Type:				m_selector.qsort(::CompareType(order)); break;
+		case Sex:				m_selector.qsort(::CompareSex(order)); break;
+		case DateOfBirth:		m_selector.qsort(::CompareDateOfBirth(order)); break;
+		case DateOfDeath:		m_selector.qsort(::CompareDateOfDeath(order)); break;
+		case Federation:		m_selector.qsort(::CompareFederation(order)); break;
+		case Titles:			m_selector.qsort(::CompareTitles(order)); break;
+		case NativeCountry:	m_selector.qsort(::CompareNativeCountry(order)); break;
+		case Frequency:		m_selector.qsort(::CompareFrequency(order)); break;
+		case LatestRating:	m_selector.qsort(::CompareLatestScore(order, ratingType)); break;
 	}
-
-	::qsort(m_selector.begin(), m_selector.size(), sizeof(Selector::value_type), cmpFunc);
 }
 
 
@@ -349,12 +353,12 @@ PlayerDictionary::filterLetter(char letter)
 
 
 void
-PlayerDictionary::filterName(Operator op, mstl::pattern const& pattern)
+PlayerDictionary::filterName(Operator op, util::Pattern const& pattern)
 {
 	Setter	setter(&mstl::bitset::set); // g++ complains w/o initialization
 	bool		positive = prepareForOp(op, setter);
 
-	if ((pattern.match_any() || pattern.match_none()) && positive)
+	if ((pattern.matchAny() || pattern.matchNone()) && positive)
 	{
 		if (positive)
 			m_attrFilter = m_baseFilter;
@@ -441,7 +445,7 @@ PlayerDictionary::filterSex(Operator op, sex::ID sex)
 
 
 void
-PlayerDictionary::filterTitles(Operator op, unsigned titles)
+PlayerDictionary::filterTitles(Operator op, unsigned titles, uint16_t minYear, uint16_t maxYear)
 {
 	Setter	setter(&mstl::bitset::set); // g++ complains w/o initialization
 	bool		positive = prepareForOp(op, setter);
@@ -450,24 +454,58 @@ PlayerDictionary::filterTitles(Operator op, unsigned titles)
 	{
 		for (unsigned i = 0; i < m_attrFilter.size(); ++i)
 		{
-			if (m_baseFilter.test(i) && bool(Player::getPlayer(i).titles() & titles) == positive)
-				(m_attrFilter.*setter)(i);
+			if (m_baseFilter.test(i))
+			{
+				Player const& player = Player::getPlayer(i);
+
+				if (minYear == 0)
+				{
+					unsigned t = title::fromID(player.title()); // | title::fromID(player.title2());
+
+					if (bool(t & titles) == positive)
+						(m_attrFilter.*setter)(i);
+				}
+#if 0
+				else if (player.title() != title::None)
+				{
+					unsigned title = title::fromID(player.title());
+
+					if ((	bool(titles & title)
+						&& (	!bool(title & title::Mask_Fide)
+							|| mstl::is_between(player.titleYear(), minYear, maxYear))) == positive)
+					{
+						(m_attrFilter.*setter)(i);
+					}
+					else if (player.title2() != title::None)
+					{
+						unsigned title = title::fromID(player.title2());
+
+						if ((	bool(titles & title)
+							&& (	!bool(title & title::Mask_Fide)
+								|| mstl::is_between(player.title2Year(), minYear, maxYear))) == positive)
+						{
+							(m_attrFilter.*setter)(i);
+						}
+					}
+				}
+#endif
+			}
 		}
 	}
 }
 
 
 void
-PlayerDictionary::filterFederationID(Operator op, federation::ID federation)
+PlayerDictionary::filterOrganization(Operator op, organization::ID organization)
 {
 	Setter	setter(&mstl::bitset::set); // g++ complains w/o initialization
 	bool		positive = prepareForOp(op, setter);
 
-	if (federation != federation::None)
+	if (organization != organization::Unspecified)
 	{
 		for (unsigned i = 0; i < m_attrFilter.size(); ++i)
 		{
-			if (m_baseFilter.test(i) && (Player::getPlayer(i).hasID(federation) == positive))
+			if (m_baseFilter.test(i) && (Player::getPlayer(i).hasID(organization) == positive))
 				(m_attrFilter.*setter)(i);
 		}
 	}
@@ -517,6 +555,23 @@ PlayerDictionary::filterDeathYear(Operator op, uint16_t minYear, uint16_t maxYea
 	{
 		if (	m_baseFilter.test(i)
 			&& mstl::is_between(Player::getPlayer(i).deathYear(), minYear, maxYear) == positive)
+		{
+			(m_attrFilter.*setter)(i);
+		}
+	}
+}
+
+
+void
+PlayerDictionary::filterFrequency(Operator op, unsigned minFrequency, unsigned maxFrequency)
+{
+	Setter	setter(&mstl::bitset::set); // g++ complains w/o initialization
+	bool		positive = prepareForOp(op, setter);
+
+	for (unsigned i = 0; i < m_attrFilter.size(); ++i)
+	{
+		if (	m_baseFilter.test(i)
+			&& mstl::is_between(Player::getPlayer(i).frequency(), minFrequency, maxFrequency) == positive)
 		{
 			(m_attrFilter.*setter)(i);
 		}

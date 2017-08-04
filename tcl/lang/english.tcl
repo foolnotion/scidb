@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2013 Gregor Cramer
+# Copyright: (C) 2009-2017 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -65,6 +65,7 @@
 ::mc::Colors				"Colors"
 ::mc::Configuration		"Configuration"
 ::mc::Copy					"Copy"
+::mc::Country				"Country"
 ::mc::Cut					"Cut"
 ::mc::Dark					"Dark"
 ::mc::Database				"Database"
@@ -72,11 +73,13 @@
 ::mc::Delete				"Delete"
 ::mc::Edit					"Edit"
 ::mc::Empty					"Empty"
+::mc::Enabled				"Enabled"
 ::mc::File					"File"
 ::mc::Filter				"Filter"
 ::mc::From					"From"
 ::mc::Game					"Game"
 ::mc::Hidden				"Hidden"
+::mc::InternalMessage	"Internal message"
 ::mc::Layout				"Layout"
 ::mc::Left					"Left"
 ::mc::Lite					"Light"
@@ -1398,6 +1401,7 @@
 ::playertable::mc::NotFound					"Not found."
 ::playertable::mc::EnablePlayerBase			"Enable use of player base"
 ::playertable::mc::DisablePlayerBase		"Disable use of player base"
+::playertable::mc::HelpPatternMatching		"Help: Pattern Matching"
 ::playertable::mc::TooltipRating				"Rating: %s"
 
 ::playertable::mc::Name							"Name"
@@ -1405,6 +1409,8 @@
 ::playertable::mc::MostRecentRating			"Most recent rating"
 ::playertable::mc::DateOfBirth				"Date of birth"
 ::playertable::mc::DateOfDeath				"Date of death"
+::playertable::mc::BirthYear					"Birth year"
+::playertable::mc::DeathYear					"Death year"
 
 ::playertable::mc::ShowPlayerCard			"Show Player Card..."
 
@@ -1414,15 +1420,45 @@
 ### player dictionary ##################################################
 ::playerdict::mc::PlayerDictionary	"Player Dictionary"
 ::playerdict::mc::PlayerFilter		"Player Filter"
+::playerdict::mc::OrganizationID		"Organization ID"
 ::playerdict::mc::Count					"Count"
 ::playerdict::mc::Ignore				"Ignore"
 ::playerdict::mc::FederationID		"Federation ID"
-::playerdict::mc::BirthYear			"Birth Year"
-::playerdict::mc::DeathYear			"Death Year"
 ::playerdict::mc::Ratings				"Ratings"
 ::playerdict::mc::Titles				"Titles"
 ::playerdict::mc::None					"None"
 ::playerdict::mc::Operation			"Operation"
+::playerdict::mc::Awarded				"Awarded"
+::playerdict::mc::RangeOfYears		"Range of years"
+::playerdict::mc::SearchPlayerName	"Search Player Name"
+
+::playerdict::mc::AgeClass(unrestricted)	"Unrestricted"
+::playerdict::mc::AgeClass(junior)			"Junior"
+::playerdict::mc::AgeClass(senior)			"Senior"
+
+::playerdict::mc::Champions(world)	"World Champions"
+::playerdict::mc::Champions(eu)		"European Champions"
+::playerdict::mc::Champions(nat)		"National Champions"
+
+::playerdict::mc::T_Ranking			"Ranking"
+::playerdict::mc::T_Trophy				"Trophies"
+
+# see tcl/lang/CHAPIONS.txt how this will be constructed
+::playerdict::mc::ChessChampion	"%sex% %mode% %under%%age% %region% %champion% %where%"
+::playerdict::mc::Sex(f)			"Woman"
+::playerdict::mc::Sex(m)			""
+::playerdict::mc::Region(r)		"World"
+::playerdict::mc::Region(e)		"European"
+::playerdict::mc::Region(-)		"National"
+::playerdict::mc::Champion(w)		"Champion"
+::playerdict::mc::Champion(e)		"Champion"
+::playerdict::mc::Champion(-)		"Champion"
+::playerdict::mc::Age(j)			"Junior"
+::playerdict::mc::Age(s)			"Senior"
+::playerdict::mc::Age(-)			""
+::playerdict::mc::Mode(c)			"Correspondence"
+::playerdict::mc::Mode(-)			""
+::playerdict::mc::Where				"in %country%"
 
 ### player-card ########################################################
 ::playercard::mc::PlayerCard					"Player Card"
@@ -2083,6 +2119,11 @@
 ::game::mc::OpenAssociatedDatabases		"Open all associated databases?"
 ::game::mc::OverwriteCurrentGame			"Overwrite current game?"
 ::game::mc::OverwriteCurrentGameDetail	"A new game will be opened if answered with '%s'."
+
+### searchentry ########################################################
+::searchentry::mc::Erase					"Erase"
+::searchentry::mc::FindNext				"Find Next"
+::searchentry::mc::InteractiveSearch	"Interactive Search"
 
 ### languagebox ########################################################
 ::languagebox::mc::AllLanguages	"All languages"

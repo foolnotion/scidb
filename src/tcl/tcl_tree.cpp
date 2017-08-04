@@ -538,7 +538,7 @@ cmdPlayer(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 								stringFromObj(objc, objv, 3));
 
 		::tcl::player::Ratings ratings(ratingType, rating::Elo);
-		::tcl::player::getInfo(*player, ratings, federation::Fide, true, true, true);
+		::tcl::player::getInfo(*player, ratings, organization::Fide, true, true, true);
 	}
 	else
 	{

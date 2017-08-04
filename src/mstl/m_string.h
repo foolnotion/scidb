@@ -42,13 +42,23 @@ public:
 	public:
 
 		operator value_type () const;
+
 		value_type operator=(value_type c);
+
+		template <typename T> value_type operator+=(T v);
+		template <typename T> value_type operator-=(T v);
+		template <typename T> value_type operator*=(T v);
+		template <typename T> value_type operator/=(T v);
+		template <typename T> value_type operator^=(T v);
+		template <typename T> value_type operator|=(T v);
+		template <typename T> value_type operator&=(T v);
 
 	private:
 
 		friend class string;
 
 		reference(string& str, size_type pos);
+		value_type& get();
 
 		string&		m_str;
 		size_type	m_pos;
@@ -62,7 +72,8 @@ public:
 	string(const_pointer s);
 	string(const_pointer s, size_type len);
 	string(const_iterator i1, const_iterator i2);
-	string(size_type n, const_reference c);
+	string(size_type n, value_type c);
+	string(size_type n, mstl::string const& s);
 	string(string const& s);
 	string(string const& s, size_type len);
 	string(string const& s, size_type pos, size_type len);
@@ -81,6 +92,8 @@ public:
 	value_type operator[](int pos) const;
 	reference operator[](int pos);
 
+	value_type operator*() const;
+
 	string& operator=(const_reference c);
 	string& operator=(const_pointer s);
 	string& operator=(string const& s);
@@ -96,11 +109,13 @@ public:
 	bool empty() const;
 	bool readonly() const;
 	bool writable() const;
+	bool is_7bit() const;
 
 	size_type size() const;
 	size_type capacity() const;
 
 	const_pointer c_str() const;
+	const_pointer data() const;
 	pointer data();
 
 	value_type at(size_type pos) const;
@@ -109,7 +124,9 @@ public:
 	value_type front() const;
 	value_type& front();
 	value_type back() const;
+	value_type back(int offset) const;
 	value_type& back();
+	value_type& back(int offset);
 
 	const_pointer begin() const;
 	pointer begin();
@@ -127,6 +144,7 @@ public:
 	string& append(const_pointer s);
 
 	string& assign(size_type n, const_reference c);
+	string& assign(size_type n, mstl::string const& s);
 	string& assign(const_iterator i1, const_iterator i2);
 	string& assign(const_pointer s);
 	string& assign(const_pointer s, size_type len);
@@ -159,6 +177,7 @@ public:
 	void clear();
 	void resize(size_type n);
 	void reserve(size_type n);
+	void reserve_exact(size_type n);
 	void set_size(size_type n);
 	void make_writable();
 
@@ -182,9 +201,9 @@ public:
 	unsigned appendSmallRomanNumber(unsigned n);
 	int toArabic(size_type pos = 0, size_type len = npos) const;
 
-	void trim();
-	void ltrim();
-	void rtrim();
+	mstl::string& trim();
+	mstl::string& ltrim();
+	mstl::string& rtrim();
 
 	size_type find(const_reference c, size_type pos = 0) const;
 	size_type find(const_pointer s, size_type pos = 0) const;
@@ -211,10 +230,39 @@ public:
 	size_type find_last_not_of(const_pointer s, size_type pos = npos) const;
 	size_type find_last_not_of(string const& s, size_type pos = npos) const;
 
+	size_type map(value_type mapping, value_type c, size_type occurrence = size_type(-1));
+
+	bool equal(mstl::string const& s) const;
+	bool equal(char const* s) const;
+	bool equal(mstl::string const& s, size_type len) const;
+	bool equal(char const* s, size_type len) const;
+
+	bool not_equal(mstl::string const& s) const;
+	bool not_equal(char const* s) const;
+	bool not_equal(mstl::string const& s, size_type len) const;
+	bool not_equal(char const* s, size_type len) const;
+
+	bool case_equal(mstl::string const& s) const;
+	bool case_equal(char const* s) const;
+	bool case_equal(mstl::string const& s, size_type len) const;
+	bool case_equal(char const* s, size_type len) const;
+
+	bool not_case_equal(mstl::string const& s) const;
+	bool not_case_equal(char const* s) const;
+	bool not_case_equal(mstl::string const& s, size_type len) const;
+	bool not_case_equal(char const* s, size_type len) const;
+
+	unsigned levenshtein_distance_fast(mstl::string const& s) const;
+	unsigned levenshtein_distance(mstl::string const& s,
+											unsigned ins = 2,
+											unsigned del = 2,
+											unsigned sub = 1) const;
+
 	void hook(pointer s);
 	void hook(pointer s, size_type slen);
 	void hook(string const& str);
-	void unhook();
+
+	string& unhook();
 
 	static string cast(int8_t  value);
 	static string cast(int16_t value);
@@ -225,6 +273,9 @@ public:
 	static string cast(uint16_t value);
 	static string cast(uint32_t value);
 	static string cast(uint64_t value);
+
+	static bool is_7bit(char const* s);
+	static bool is_7bit(char const* s, unsigned length);
 
 	struct __EMPTY__ {};
 	string(__EMPTY__); // don't use!
@@ -291,9 +342,6 @@ int case_compare(string const& lhs, string const& rhs, string::size_type len);
 int case_compare(string const& lhs, char const* rhs, string::size_type len);
 int case_compare(char const* lhs, string const& rhs, string::size_type len);
 int case_compare(char const* lhs, char const* rhs, string::size_type len);
-
-template <typename T> struct is_pod;
-template <> struct is_pod<string::value_type> { enum { value = 1 }; };
 
 template <typename T> struct is_movable;
 template <> struct is_movable<string> { enum { value = 1 }; };
