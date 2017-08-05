@@ -12,8 +12,8 @@
 
 include ../../Makefile.in
 
-INCLUDE	= -I. -I../mstl -I../sys -Ilibhyphenate -Izlib -Iminizip -Iexpat $(TCL_INCLUDE)
-CXXFLAGS	+= $(OPTIMIZE) $(PROFILING) $(CXX_DEBUG) $(SYS_CXXFLAGS)
+INCLUDE	= -I. -I../mstl -I../sys -Ilibhyphenate -Izlib -Iminizip -Iexpat
+CXXFLAGS	+= $(OPTIMIZE) $(PROFILING) $(CXX_DEBUG) $(SYS_CXXFLAGS) $(TCL_INCLUDE)
 
 SRC_CXX = \
 	u_base64_decoder.cpp \
@@ -174,9 +174,6 @@ u_emoticons.o: ../mstl/m_exception.h
 u_emoticons.o: ../mstl/m_backtrace.h
 u_emoticons.o: ../mstl/m_exception.ipp
 u_emoticons.o: ../sys/sys_utf8.ipp
-u_emoticons.o: /usr/local/include/tcl.h
-u_emoticons.o: /usr/local/include/tclDecls.h
-u_emoticons.o: /usr/local/include/tclPlatDecls.h
 u_emoticons.o: u_base.h
 u_exception.o: u_exception.h
 u_exception.o: ../mstl/m_exception.h
@@ -227,9 +224,6 @@ u_html.o: ../mstl/m_pair.h
 u_html.o: ../mstl/m_pair.ipp
 u_html.o: ../sys/sys_utf8.h
 u_html.o: ../sys/sys_utf8.ipp
-u_html.o: /usr/local/include/tcl.h
-u_html.o: /usr/local/include/tclDecls.h
-u_html.o: /usr/local/include/tclPlatDecls.h
 u_html.o: ../mstl/m_map.h
 u_html.o: ../mstl/m_map.ipp
 u_html.o: expat/expat.h
@@ -281,9 +275,6 @@ u_match.o: ../mstl/m_exception.ipp
 u_match.o: u_match.ipp
 u_match.o: ../sys/sys_utf8.h
 u_match.o: ../sys/sys_utf8.ipp
-u_match.o: /usr/local/include/tcl.h
-u_match.o: /usr/local/include/tclDecls.h
-u_match.o: /usr/local/include/tclPlatDecls.h
 u_misc.o: u_misc.h
 u_misc.o: ../mstl/m_string.h
 u_misc.o: ../mstl/m_types.h
