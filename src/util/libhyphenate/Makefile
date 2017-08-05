@@ -15,7 +15,7 @@ include ../../../Makefile.in
 .SUFFIXES: .cpp
 
 INCLUDE	= -I. -I../../sys -I../../mstl
-CXXFLAGS	+= $(OPTIMIZE) $(CXX_DEBUG) $(SYS_CXXFLAGS)
+CXXFLAGS	+= $(OPTIMIZE) $(CXX_DEBUG) $(SYS_CXXFLAGS) $(TCL_INCLUDE)
 
 SRC	= \
 	HyphenationRule.cpp \
