@@ -572,7 +572,7 @@ string::assign(size_type n, const_reference c)
 
 
 string&
-string::assign(unsigned n, string const& s)
+string::assign(size_type n, string const& s)
 {
 	if (!s.empty())
 	{
