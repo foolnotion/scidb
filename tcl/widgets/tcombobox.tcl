@@ -86,6 +86,7 @@ proc Build {w args} {
 	array unset listopts -textvar
 	array unset listopts -listjustify
 
+	set opts(-class) TTCombobox
 	set keys [array names opts]
 	foreach key [array names listopts] {
 		if {$key in $keys} {
@@ -139,7 +140,7 @@ proc Build {w args} {
 	}
 
 	set Priv($w:cbopts) $cbopts
-	::ttk::combobox $w -class TTCombobox {*}$cbopts
+	::ttk::combobox $w {*}$cbopts
 	bind $w <<PasteSelection>> {+ %W forgeticon }	;# global binding is not working
 
 	tk::canvas $w.__image__ -borderwidth 0 -background $listopts(-background) -takefocus 0
