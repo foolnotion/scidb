@@ -343,7 +343,7 @@ proc add {args} {
 	set widget [lindex $args 0]
 	set toolbar [winfo parent $widget]
 
-	if {$widget ni $Specs(children:$toolbar)} {
+	if {$widget ni [pack slaves $toolbar]} {
 		PackWidget $toolbar $widget
 		if {[winfo exists $toolbar.floating.frame]} { CloneWidget $toolbar $widget }
 	}
@@ -386,6 +386,8 @@ proc forget {widget} {
 		destroy $widget
 		catch { destroy $Specs(child:$widget:$toolbar.floating.frame) }
 		array unset Specs *:$widget:$toolbar
+		set i [lsearch $Specs(children:$toolbar) $widget]
+		if {$i >= 0} { set Specs(children:$toolbar) [lreplace $Specs(children:$toolbar) $i $i] }
 	}
 }
 
