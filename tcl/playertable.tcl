@@ -808,6 +808,7 @@ proc Find {path mode name} {
 	variable ${path}::Vars
 
 	set base [::scrolledtable::base $path.table]
+	if {[string length $base] == 0} { return }
 	set variant [::scrolledtable::variant $path.table]
 	set view [{*}$Vars(viewcmd) $base $variant]
 	if {$mode eq "next"} { set lastIndex [::scrolledtable::active $path.table] } else { set lastIndex -1 }

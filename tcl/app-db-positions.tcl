@@ -127,10 +127,11 @@ proc build {parent} {
 	::scidb::db::subscribe gameList [namespace current]::games::Update {} $top
 	::scidb::db::subscribe dbInfo [namespace current]::NoOp [namespace current]::Close $top
 
-	bind $lt <<TableMinSize>>	[namespace code [list TableMinSize $lt %d]]
-	bind $lt <<TableFill>>		[namespace code [list positions::TableFill $top %d]]
-	bind $lt <<TableOptions>>	[namespace code [list positions::TableOptions $top]]
-	bind $lt <<TableSelected>>	[namespace code [list positions::TableSelected $top %d]]
+	bind $lt <<TableMinSize>>		[namespace code [list TableMinSize $lt %d]]
+	bind $lt <<TableFill>>			[namespace code [list positions::TableFill $top %d]]
+	bind $lt <<TableOptions>>		[namespace code [list positions::TableOptions $top]]
+	bind $lt <<TableSelected>>		[namespace code [list positions::TableSelected $top %d]]
+	bind $lt <<LanguageChanged>>	[list ::scrolledtable::refresh $top.positions]
 
 	$top add $lt -sticky nsew -stretch middle -width 420
 	$top add $rt -sticky nsew -stretch always
