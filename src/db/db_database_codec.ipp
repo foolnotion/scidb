@@ -100,7 +100,7 @@ GameInfo&
 DatabaseCodec::gameInfo(unsigned index)
 {
 	M_REQUIRE(index < gameInfoList().size());
-	return *m_db->m_gameInfoList[index];
+	return m_db->m_gameInfoList[index];
 }
 
 

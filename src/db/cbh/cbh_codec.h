@@ -221,6 +221,15 @@ private:
 } // namespace cbh
 } // namespace db
 
+namespace mstl {
+
+template <typename T> struct is_movable;
+
+template <>
+struct is_movable<::db::cbh::Codec::Tournament> { enum { value = 1 }; };
+
+}
+
 #endif // _cbh_codec_included
 
 // vi:set ts=3 sw=3:

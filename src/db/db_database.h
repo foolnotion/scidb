@@ -147,6 +147,8 @@ public:
 	unsigned countSites() const;
 	/// Count the number of annotators in the database.
 	unsigned countAnnotators() const;
+	/// Count the number of used positions in the database.
+	unsigned countPositions() const;
 	/// Count number of attendants of given event.
 	unsigned countPlayers(NamebaseEvent const& event, unsigned& averageElo, unsigned& category) const;
 	/// Returns name of database (may be a file name)
@@ -375,6 +377,7 @@ private:
 
 	void getTags(unsigned index, TagSet& tags, bool invert) const;
 	load::State loadGame(unsigned index, Game& game, mstl::string* encoding, mstl::string const* fen);
+	void setShouldCompact();
 
 	NamebaseEntry const* insertPlayer(mstl::string const& name);
 	NamebaseEntry const* insertEvent(mstl::string const& name);

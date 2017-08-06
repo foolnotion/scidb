@@ -610,12 +610,12 @@ Codec::update(mstl::string const& rootname, unsigned index, bool updateNamebase)
 		writeAllNamebases(namebaseStream);
 	}
 
-	GameInfo* info = gameInfoList()[index];
+	GameInfo& info = gameInfoList()[index];
 
 	unsigned char buf[sizeof(IndexEntry)];
 
 	ByteStream bstrm(buf, sizeof(IndexEntry));
-	encodeIndex(*info, bstrm);
+	encodeIndex(info, bstrm);
 
 	if (	!indexStream.seekp(index*sizeof(IndexEntry) + 128)
 		|| !indexStream.write(buf, sizeof(IndexEntry)))
@@ -869,10 +869,7 @@ Codec::readIndexHeader(mstl::fstream& fstrm)
 	setCreated(created);
 
 	GameInfoList& infoList = gameInfoList();
-
 	infoList.resize(numGames);
-	for (unsigned i = 0; i < numGames; ++i)
-		infoList[i] = allocGameInfo();
 
 	// go to first index
 	if (!fstrm.seekg(sizeof(header) + 8, mstl::ios_base::beg))
@@ -906,7 +903,7 @@ Codec::decodeIndex(mstl::fstream &fstrm, util::Progress& progress)
 			IO_RAISE(Index, Corrupted, "unexpected end of index file");
 
 		ByteStream bstrm(buf, sizeof(IndexEntry));
-		decodeIndex(bstrm, *infoList[i]);
+		decodeIndex(bstrm, infoList[i]);
 	}
 }
 
@@ -1028,7 +1025,7 @@ Codec::writeIndexEntries(mstl::fstream& fstrm, unsigned start, util::Progress& p
 		char buf[sizeof(IndexEntry)];
 
 		ByteStream bstrm(buf, sizeof(IndexEntry));
-		encodeIndex(*infoList[i], bstrm);
+		encodeIndex(infoList[i], bstrm);
 
 		if (__builtin_expect(!fstrm.write(buf, sizeof(IndexEntry)), 0))
 			IO_RAISE(Index, Write_Failed, "error while writing index entry");
@@ -1056,19 +1053,19 @@ Codec::updateIndex(mstl::fstream& fstrm)
 
 	for (unsigned i = 0; i < infoList.size(); ++i)
 	{
-		if (infoList[i]->isDirty())
+		if (infoList[i].isDirty())
 		{
 			unsigned char buf[sizeof(IndexEntry)];
 
 			ByteStream bstrm(buf, sizeof(IndexEntry));
-			encodeIndex(*infoList[i], bstrm);
+			encodeIndex(infoList[i], bstrm);
 
 			if (!fstrm.seekp(i*sizeof(IndexEntry) + 128))
 				IO_RAISE(Index, Corrupted, "unexpected end of index file");
 			if (!fstrm.write(buf, sizeof(IndexEntry)))
 				IO_RAISE(Index, Write_Failed, "error while writing index entry");
 
-			infoList[i]->setDirty(false);
+			infoList[i].setDirty(false);
 		}
 	}
 }

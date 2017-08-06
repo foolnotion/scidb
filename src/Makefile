@@ -494,6 +494,8 @@ cbh2si4.o: db/db_namebase_entry.ipp
 cbh2si4.o: db/db_player.h
 cbh2si4.o: db/db_player.ipp
 cbh2si4.o: db/db_namebase.ipp
+cbh2si4.o: mstl/m_cast.h
+cbh2si4.o: mstl/m_cast.ipp
 cbh2si4.o: db/db_namebases.ipp
 cbh2si4.o: db/db_game_info.h
 cbh2si4.o: db/db_signature.h
@@ -502,9 +504,12 @@ cbh2si4.o: db/db_game_info.ipp
 cbh2si4.o: db/db_move.h
 cbh2si4.o: db/db_move.ipp
 cbh2si4.o: db/db_statistic.h
+cbh2si4.o: db/db_statistic.ipp
 cbh2si4.o: db/db_time.h
 cbh2si4.o: sys/sys_time.h
 cbh2si4.o: db/db_time.ipp
+cbh2si4.o: mstl/m_chunk_vector.h
+cbh2si4.o: mstl/m_chunk_vector.ipp
 cbh2si4.o: db/db_database_content.ipp
 cbh2si4.o: db/db_tree_cache.h
 cbh2si4.o: db/db_board.h
@@ -662,6 +667,8 @@ cdb2sci.o: db/db_namebase_entry.ipp
 cdb2sci.o: db/db_player.h
 cdb2sci.o: db/db_player.ipp
 cdb2sci.o: db/db_namebase.ipp
+cdb2sci.o: mstl/m_cast.h
+cdb2sci.o: mstl/m_cast.ipp
 cdb2sci.o: db/db_namebases.ipp
 cdb2sci.o: db/db_game_info.h
 cdb2sci.o: db/db_signature.h
@@ -670,9 +677,12 @@ cdb2sci.o: db/db_game_info.ipp
 cdb2sci.o: db/db_move.h
 cdb2sci.o: db/db_move.ipp
 cdb2sci.o: db/db_statistic.h
+cdb2sci.o: db/db_statistic.ipp
 cdb2sci.o: db/db_time.h
 cdb2sci.o: sys/sys_time.h
 cdb2sci.o: db/db_time.ipp
+cdb2sci.o: mstl/m_chunk_vector.h
+cdb2sci.o: mstl/m_chunk_vector.ipp
 cdb2sci.o: db/db_database_content.ipp
 cdb2sci.o: db/db_tree_cache.h
 cdb2sci.o: db/db_board.h
@@ -1229,9 +1239,12 @@ tkscidb.o: db/db_namebases.ipp
 tkscidb.o: db/db_game_info.h
 tkscidb.o: db/db_game_info.ipp
 tkscidb.o: db/db_statistic.h
+tkscidb.o: db/db_statistic.ipp
 tkscidb.o: db/db_time.h
 tkscidb.o: sys/sys_time.h
 tkscidb.o: db/db_time.ipp
+tkscidb.o: mstl/m_chunk_vector.h
+tkscidb.o: mstl/m_chunk_vector.ipp
 tkscidb.o: db/db_database_content.ipp
 tkscidb.o: db/db_tree_cache.h
 tkscidb.o: db/db_tree_cache.ipp

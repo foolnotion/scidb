@@ -71,20 +71,14 @@ public:
 	typedef db::Byte NagMap[db::nag::Scidb_Last];
 	typedef mstl::map<mstl::string,unsigned> TagMap;
 	typedef mstl::vector<mstl::string> Languages;
-
 	typedef mstl::pair<db::load::State,unsigned> Result;
+	typedef UpdateMode UpdateModeList[db::table::LAST];
 
 	static unsigned const DefaultView = 0;
 
 	View(Application& app, Cursor& cursor);
 	View(View& view);
-	View(	Application& app,
-			Cursor& cursor,
-			UpdateMode gameUpdateMode,
-			UpdateMode playerUpdateMode,
-			UpdateMode eventUpdateMode,
-			UpdateMode siteUpdateMode,
-			UpdateMode annotatorUpdateMode);
+	View(Application& app, Cursor& cursor, UpdateModeList const& updateMode);
 
 	/// Return application.
 	Application const& application() const;
@@ -108,22 +102,28 @@ public:
 	/// Return index according to current selector.
 	unsigned index(db::table::Type type, unsigned index) const;
 
-	/// Return index in current selector of given game number.
-	int lookupGame(unsigned number) const;
 	/// Return index in current selector of given player name.
 	int lookupPlayer(mstl::string const& name) const;
-	/// Return index in current selector of given player number.
-	int lookupPlayer(unsigned number) const;
 	/// Return index in current selector of given event title.
 	int lookupEvent(mstl::string const& name) const;
-	/// Return index in current selector of given event number.
-	int lookupEvent(unsigned number) const;
 	/// Return index in current selector of given site.
 	int lookupSite(mstl::string const& name) const;
-	/// Return index in current selector of given site number.
-	int lookupSite(unsigned number) const;
-	/// Return index in current selector of given annotator number.
+	/// Return index in current selector of given annotator name.
 	int lookupAnnotator(mstl::string const& name) const;
+	/// Return index in current selector of given position number.
+	int lookupPosition(uint16_t idn) const;
+
+	/// Return index in current selector of given game number.
+	int lookupGameIndex(unsigned number) const;
+	/// Return index in current selector of given game number.
+	int lookupPlayerIndex(unsigned number) const;
+	/// Return index in current selector of given game number.
+	int lookupEventIndex(unsigned number) const;
+	/// Return index in current selector of given game number.
+	int lookupSiteIndex(unsigned number) const;
+	/// Return index in current selector of given game number.
+	int lookupPositionIndex(unsigned number) const;
+
 	/// Return index of first matching player.
 	int findPlayer(util::Pattern const& pattern, unsigned startIndex = 0) const;
 	/// Return index of first matching event.
@@ -174,6 +174,8 @@ public:
 	void sort(db::attribute::site::ID attr, db::order::ID order);
 	/// Sort database (using a selector).
 	void sort(db::attribute::annotator::ID attr, db::order::ID order);
+	/// Sort database (using a selector).
+	void sort(db::attribute::position::ID attr, db::order::ID order);
 	/// Reverse order of table (using a selector).
 	void reverseOrder(db::table::Type type);
 	/// Reset order of table (using a selector).
@@ -251,7 +253,7 @@ private:
 
 	Application&	m_app;
 	Cursor&			m_cursor;
-	UpdateMode		m_updateMode[db::table::LAST];
+	UpdateModeList	m_updateMode;
 	db::Filter		m_filter[db::table::LAST];
 	db::Selector	m_selector[db::table::LAST];
 

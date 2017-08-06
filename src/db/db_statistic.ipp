@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -24,50 +24,50 @@
 // (at your option) any later version.
 // ======================================================================
 
-#include "db_database_content.h"
-#include "db_game_info.h"
+#include "m_assert.h"
 
-#include "u_misc.h"
+namespace db {
 
-using namespace db;
-using namespace util;
-
-
-DatabaseContent::~DatabaseContent() throw() {}
-
-
-DatabaseContent::DatabaseContent(mstl::string const& filename, mstl::string const& encoding, Type type)
-	:m_rootname(misc::file::rootname(filename))
-	,m_suffix(misc::file::suffix(filename))
-	,m_type(type)
-	,m_variant(variant::Undetermined)
-	,m_created(0)
-	,m_readOnly(false)
-	,m_writable(true)
-	,m_memoryOnly(false)
-	,m_temporary(false)
-	,m_shouldCompact(false)
-	,m_encoding(encoding)
-	,m_statistic(nullptr)
+inline
+uint32_t
+Statistic::positionCount(uint16_t idn) const
 {
+	M_ASSERT(idn <= variant::MaxCode);
+	return m_counter.posFreq[idn];
 }
 
 
-DatabaseContent::DatabaseContent(mstl::string const& filename, DatabaseContent const& content)
-	:m_rootname(misc::file::rootname(filename))
-	,m_suffix(misc::file::suffix(filename))
-	,m_type(content.m_type)
-	,m_variant(content.m_variant)
-	,m_created(content.m_created)
-	,m_readOnly(content.m_readOnly)
-	,m_writable(content.m_writable)
-	,m_memoryOnly(content.m_memoryOnly)
-	,m_temporary(content.m_temporary)
-	,m_shouldCompact(false)
-	,m_description(content.m_description)
-	,m_encoding(content.m_encoding)
-	,m_statistic(nullptr)
+inline
+uint16_t
+Statistic::idnAt(unsigned index) const
 {
+	M_REQUIRE(index < positions.count());
+	return positions.index(index);
 }
+
+
+template <typename Iterator>
+inline
+void
+Statistic::compute(Iterator first, Iterator last)
+{
+	if (content.minYear == 0)
+		content.minYear = 9999;
+	if (content.minElo == 0)
+		content.minElo = 9999;
+
+	for ( ; first != last; ++first)
+		count(*first);
+
+	if (content.minYear == 9999)
+		content.minYear = 0;
+	if (content.minElo == 9999)
+		content.minElo = 0;
+
+	content.avgYear = uint16_t(m_counter.sumYear/m_counter.dateCount + 0.5);
+	content.avgElo = uint16_t(m_counter.sumElo/m_counter.eloCount + 0.5);
+}
+
+} // namespace db
 
 // vi:set ts=3 sw=3:

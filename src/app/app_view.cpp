@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2009-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -103,7 +103,11 @@ View::View(Application& app, Cursor& cursor)
 	initialize();
 
 	for (unsigned i = 0; i < table::LAST; ++i)
-		m_updateMode[i] = AddNewGames;
+		m_updateMode[i] = NotNeeded;
+
+	m_updateMode[table::Games  ] = AddNewGames;
+	m_updateMode[table::Players] = AddNewGames;
+	m_updateMode[table::Events ] = AddNewGames;
 }
 
 
@@ -121,22 +125,11 @@ View::View(View& view)
 }
 
 
-View::View(	Application& app,
-				Cursor& cursor,
-				UpdateMode gameUpdateMode,
-				UpdateMode playerUpdateMode,
-				UpdateMode eventUpdateMode,
-				UpdateMode siteUpdateMode,
-				UpdateMode annotatorUpdateMode)
+View::View(Application& app, Cursor& cursor, UpdateModeList const& updateMode)
 	:m_app(app)
 	,m_cursor(cursor)
 {
-	m_updateMode[table::Games		] = gameUpdateMode;
-	m_updateMode[table::Players	] = playerUpdateMode;
-	m_updateMode[table::Events		] = eventUpdateMode;
-	m_updateMode[table::Sites		] = siteUpdateMode;
-	m_updateMode[table::Annotators] = annotatorUpdateMode;
-
+	::memcpy(m_updateMode, updateMode, sizeof(updateMode));
 	initialize();
 }
 
@@ -160,10 +153,16 @@ View::initialize()
 {
 	for (unsigned i = 0; i < table::LAST; ++i)
 	{
-		if (i != table::Annotators)
+		switch (i)
 		{
-			m_filter[i].resize(m_cursor.m_db->count(table::Type(i)), Filter::LeaveEmpty);
-			m_filter[i].set();
+			case table::Annotators:
+			case table::Positions:
+				break; // nothing to do
+
+			default:
+				m_filter[i].resize(m_cursor.m_db->count(table::Type(i)), Filter::LeaveEmpty);
+				m_filter[i].set();
+				break;
 		}
 	}
 }
@@ -174,10 +173,19 @@ View::update()
 {
 	for (unsigned i = 0; i < table::LAST; ++i)
 	{
-		if (i != table::Annotators)
+		if (m_updateMode[i] != NotNeeded)
 		{
-			m_filter[i].resize(m_cursor.m_db->count(table::Type(i)), ::map(m_updateMode[i]));
-			m_selector[i].update(m_cursor.m_db->count(table::Type(i)));
+			switch (i)
+			{
+				case table::Annotators:
+				case table::Positions:
+					break; // nothing to do
+
+				default:
+					m_filter[i].resize(m_cursor.m_db->count(table::Type(i)), ::map(m_updateMode[i]));
+					m_selector[i].update(m_cursor.m_db->count(table::Type(i)));
+					break;
+			}
 		}
 	}
 }
@@ -186,35 +194,51 @@ View::update()
 unsigned
 View::count(table::Type type) const
 {
-	if (type == table::Annotators)
-		return m_cursor.m_db->countAnnotators();
+	M_REQUIRE(isUsed(type));
 
-	return m_filter[type].count();
+	switch (type)
+	{
+		case table::Annotators:			return m_cursor.m_db->countAnnotators();
+		case table::Positions:			return m_cursor.m_db->countPositions();
+		default:								return m_filter[type].count();
+	}
+
+	return 0; // never reached
 }
 
 
 unsigned
 View::total(table::Type type) const
 {
-	if (type == table::Annotators)
-		return m_cursor.m_db->countAnnotators();
+	M_REQUIRE(isUsed(type));
 
-	return m_filter[type].size();
+	switch (type)
+	{
+		case table::Annotators:			return m_cursor.m_db->countAnnotators();
+		case table::Positions:			return m_cursor.m_db->countPositions();
+		default:								return m_filter[type].size();
+	}
+
+	return 0; // never reached
 }
 
 
 unsigned
 View::index(table::Type type, unsigned index) const
 {
+	M_REQUIRE(isUsed(type));
 	M_REQUIRE(index < count(type));
+
 	return m_selector[type].lookup(index);
 }
 
 
 int
-View::lookupGame(unsigned number) const
+View::lookupGameIndex(unsigned number) const
 {
+	M_REQUIRE(isUsed(table::Games));
 	M_REQUIRE(number < total(table::Games));
+
 	return m_filter[table::Games].contains(number) ? int(m_selector[table::Games].find(number)) : -1;
 }
 
@@ -222,13 +246,15 @@ View::lookupGame(unsigned number) const
 int
 View::lookupPlayer(mstl::string const& name) const
 {
+	M_REQUIRE(isUsed(table::Players));
 	return m_selector[table::Players].findPlayer(*m_cursor.m_db, name);
 }
 
 
 int
-View::lookupPlayer(unsigned number) const
+View::lookupPlayerIndex(unsigned number) const
 {
+	M_REQUIRE(isUsed(table::Players));
 	return m_filter[table::Players].contains(number) ? int(m_selector[table::Players].find(number)) : -1;
 }
 
@@ -236,13 +262,15 @@ View::lookupPlayer(unsigned number) const
 int
 View::lookupEvent(mstl::string const& name) const
 {
+	M_REQUIRE(isUsed(table::Events));
 	return m_selector[table::Events].findEvent(*m_cursor.m_db, name);
 }
 
 
 int
-View::lookupEvent(unsigned number) const
+View::lookupEventIndex(unsigned number) const
 {
+	M_REQUIRE(isUsed(table::Events));
 	return m_filter[table::Events].contains(number) ? int(m_selector[table::Events].find(number)) : -1;
 }
 
@@ -250,21 +278,40 @@ View::lookupEvent(unsigned number) const
 int
 View::lookupSite(mstl::string const& name) const
 {
+	M_REQUIRE(isUsed(table::Sites));
 	return m_selector[table::Sites].findSite(*m_cursor.m_db, name);
 }
 
 
 int
-View::lookupSite(unsigned number) const
+View::lookupSiteIndex(unsigned number) const
 {
+	M_REQUIRE(isUsed(table::Sites));
 	return m_filter[table::Sites].contains(number) ? int(m_selector[table::Sites].find(number)) : -1;
+}
+
+
+int
+View::lookupPositionIndex(unsigned number) const
+{
+	M_REQUIRE(isUsed(table::Positions));
+	return m_selector[table::Positions].find(number);
 }
 
 
 int
 View::lookupAnnotator(mstl::string const& name) const
 {
+	M_REQUIRE(isUsed(table::Annotators));
 	return m_selector[table::Annotators].findAnnotator(*m_cursor.m_db, name);
+}
+
+
+int
+View::lookupPosition(uint16_t idn) const
+{
+	M_REQUIRE(isUsed(table::Positions));
+	return m_selector[table::Positions].findPosition(*m_cursor.m_db, idn);
 }
 
 
@@ -303,6 +350,7 @@ View::findAnnotator(util::Pattern const& pattern, unsigned startIndex) const
 void
 View::sort(attribute::game::ID attr, order::ID order, rating::Type ratingType)
 {
+	M_REQUIRE(isUsed(table::Games));
 	m_selector[table::Games].sort(*m_cursor.m_db, attr, order, ratingType);
 }
 
@@ -340,8 +388,17 @@ View::sort(attribute::annotator::ID attr, order::ID order)
 
 
 void
+View::sort(attribute::position::ID attr, order::ID order)
+{
+	M_REQUIRE(isUsed(table::Positions));
+	m_selector[table::Positions].sort(*m_cursor.m_db, attr, order);
+}
+
+
+void
 View::reverseOrder(table::Type type)
 {
+	M_REQUIRE(isUsed(type));
 	m_selector[type].reverse(*m_cursor.m_db);
 }
 
@@ -349,6 +406,7 @@ View::reverseOrder(table::Type type)
 void
 View::resetOrder(table::Type type)
 {
+	M_REQUIRE(isUsed(type));
 	m_selector[type].reset(*m_cursor.m_db);
 }
 
@@ -356,16 +414,27 @@ View::resetOrder(table::Type type)
 void
 View::updateSelector(table::Type type)
 {
-	if (type == table::Annotators)
-		m_selector[type].update();
-	else
-		m_selector[type].update(m_filter[type]);
+	M_REQUIRE(isUsed(type));
+
+	switch (type)
+	{
+		case table::Annotators:
+		case table::Positions:
+			m_selector[type].update();
+			break;
+
+		default:
+			m_selector[type].update(m_filter[type]);
+			break;
+	}
 }
 
 
 void
 View::searchGames(Query const& query)
 {
+	M_REQUIRE(isUsed(table::Games));
+
 	m_filter[table::Games].search(query, m_cursor.m_db->content());
 	m_selector[table::Games].update(m_filter[table::Games]);
 }
@@ -374,6 +443,8 @@ View::searchGames(Query const& query)
 void
 View::filterOnGames(table::Type type)
 {
+	M_REQUIRE(isUsed(type));
+
 	switch (type)
 	{
 		case table::Players:
@@ -476,6 +547,19 @@ View::filterOnGames(table::Type type)
 			}
 			break;
 		}
+
+		case table::Positions:
+		{
+			Filter& filter	= m_filter[table::Positions];
+			Filter& games	= m_filter[table::Games];
+
+			filter.reset();
+
+			for (int i = games.next(); i != Filter::Invalid; i = games.next(i))
+				filter.add(m_cursor.m_db->gameInfo(i).idn());
+
+			break;
+		}
 	}
 }
 
@@ -483,6 +567,7 @@ View::filterOnGames(table::Type type)
 void
 View::setGameFilter(Filter const& filter)
 {
+	M_REQUIRE(isUsed(table::Games));
 	M_REQUIRE(filter.size() == m_cursor.m_db->countGames());
 
 	m_filter[table::Games] = filter;
@@ -493,6 +578,7 @@ View::setGameFilter(Filter const& filter)
 TournamentTable*
 View::makeTournamentTable() const
 {
+	M_REQUIRE(isUsed(table::Games));
 	return m_cursor.m_db->makeTournamentTable(m_filter[table::Games]);
 }
 
@@ -500,6 +586,7 @@ View::makeTournamentTable() const
 unsigned
 View::stripMoveInformation(unsigned types, util::Progress& progress)
 {
+	M_REQUIRE(isUsed(table::Games));
 	return m_cursor.m_db->stripMoveInformation(m_filter[table::Games], types, progress);
 }
 
@@ -507,6 +594,7 @@ View::stripMoveInformation(unsigned types, util::Progress& progress)
 unsigned
 View::stripTags(TagMap const& tags, util::Progress& progress)
 {
+	M_REQUIRE(isUsed(table::Games));
 	return m_cursor.m_db->stripTags(m_filter[table::Games], tags, progress);
 }
 
@@ -514,6 +602,7 @@ View::stripTags(TagMap const& tags, util::Progress& progress)
 void
 View::findTags(TagMap& tags, util::Progress& progress) const
 {
+	M_REQUIRE(isUsed(table::Games));
 	m_cursor.m_db->findTags(m_filter[table::Games], tags, progress);
 }
 
@@ -521,6 +610,8 @@ View::findTags(TagMap& tags, util::Progress& progress) const
 View::Result
 View::dumpGame(unsigned index, mstl::string const& fen, mstl::string& result) const
 {
+	M_REQUIRE(isUsed(table::Games));
+
 	Game game;
 
 	load::State state = m_cursor.m_db->loadGame(this->index(table::Games, index), game);
@@ -543,6 +634,8 @@ View::dumpGame(unsigned index,
 					StringList& result,
 					StringList& positions) const
 {
+	M_REQUIRE(isUsed(table::Games));
+
 	typedef mstl::vector<unsigned> LengthList;
 
 	Game game;
@@ -625,6 +718,8 @@ View::copyGames(	Cursor& destination,
 						Log& log,
 						util::Progress& progress)
 {
+	M_REQUIRE(isUsed(table::Games));
+
 	progress.message("copy-game");
 
 	WriteGuard guard(m_app, destination.database());
@@ -650,6 +745,8 @@ View::exportGames(Database& destination,
 						Log& log,
 						util::Progress& progress) const
 {
+	M_REQUIRE(isUsed(table::Games));
+
 	return m_cursor.m_db->exportGames(	destination,
 													m_filter[table::Games],
 													m_selector[table::Games],
@@ -665,6 +762,8 @@ View::exportGames(Consumer& destination,
 						Log& log,
 						util::Progress& progress) const
 {
+	M_REQUIRE(isUsed(table::Games));
+
 	destination.setupVariant(m_cursor.m_db->variant());
 
 	return m_cursor.m_db->exportGames(	destination,
@@ -692,6 +791,7 @@ View::exportGames(mstl::string const& filename,
 						util::Progress& progress,
 						FileMode fmode) const
 {
+	M_REQUIRE(isUsed(table::Games));
 	M_REQUIRE(!application().contains(filename));
 
 	if (m_cursor.m_db->size() == 0)
@@ -747,6 +847,8 @@ View::exportGames(mstl::string const& filename,
 	}
 	else if (ext == "si3" || ext == "si4")
 	{
+		// NOTE: we cannot use storage class Temporary because si3/si4 is using
+		// a shadow namebase (index file must be written after namebase is written).
 		Database destination(filename,
 									sys::utf8::Codec::utf8(),
 									storage::OnDisk,
@@ -872,6 +974,8 @@ View::printGames(	TeXt::Environment& environment,
 						Log& log,
 						util::Progress& progress) const
 {
+	M_REQUIRE(isUsed(table::Games));
+
 	unsigned count = 0;
 
 	switch (int(format))
@@ -902,10 +1006,12 @@ View::printGames(	TeXt::Environment& environment,
 int
 View::nextIndex(db::table::Type type, unsigned index) const
 {
+	M_REQUIRE(isUsed(type));
+
 	if (index >= m_filter[type].size())
 		return -1;
 
-	int i = lookupGame(index);
+	int i = lookupGameIndex(index);
 
 	if (i == -1 || i + 1 == int(m_filter[type].count()))
 		return -1;
@@ -917,10 +1023,12 @@ View::nextIndex(db::table::Type type, unsigned index) const
 int
 View::prevIndex(db::table::Type type, unsigned index) const
 {
+	M_REQUIRE(isUsed(type));
+
 	if (index >= m_filter[type].size())
 		return -1;
 
-	int i = lookupGame(index);
+	int i = lookupGameIndex(index);
 
 	if (i <= 0)
 		return -1;
@@ -932,6 +1040,8 @@ View::prevIndex(db::table::Type type, unsigned index) const
 int
 View::firstIndex(db::table::Type type) const
 {
+	M_REQUIRE(isUsed(type));
+
 	if (m_filter[type].isEmpty())
 		return -1;
 
@@ -942,6 +1052,8 @@ View::firstIndex(db::table::Type type) const
 int
 View::lastIndex(db::table::Type type) const
 {
+	M_REQUIRE(isUsed(type));
+
 	unsigned count = m_filter[type].count();
 
 	if (count == 0)
@@ -954,6 +1066,8 @@ View::lastIndex(db::table::Type type) const
 int
 View::randomGameIndex() const
 {
+	M_REQUIRE(isUsed(table::Games));
+
 	unsigned count = m_filter[table::Games].count();
 
 	if (count == 0)
@@ -995,6 +1109,7 @@ View::randomGameIndex() const
 void
 View::add(db::table::Type type, unsigned index)
 {
+	M_REQUIRE(isUsed(type));
 	M_REQUIRE(index < total(type));
 
 	m_filter[type].add(index);

@@ -42,6 +42,7 @@ SearchEvent::SearchEvent(NamebaseEvent const* entry) :m_entry(entry) {}
 SearchSite::SearchSite(NamebaseSite const* entry) :m_entry(entry) {}
 SearchOpNot::SearchOpNot(SearchP const& search) :m_search(search) { M_REQUIRE(search); }
 SearchAnnotator::SearchAnnotator(mstl::string const& name) :m_name(name) {}
+SearchPosition::SearchPosition(uint16_t idn) :m_idn(idn) {}
 
 
 #if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
@@ -145,6 +146,13 @@ bool
 SearchAnnotator::match(GameInfo const& info) const
 {
 	return info.annotator() == m_name;
+}
+
+
+bool
+SearchPosition::match(GameInfo const& info) const
+{
+	return info.idn() == m_idn;
 }
 
 // vi:set ts=3 sw=3:

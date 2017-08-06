@@ -60,6 +60,8 @@ public:
 	map& operator=(map&& m);
 #endif
 
+	map& operator+=(map const& m);
+
 	bool operator==(map const& v) const;
 	bool operator!=(map const& v) const;
 
@@ -67,6 +69,7 @@ public:
 	mapped_type& operator[](const_key_ref i);
 
 	bool empty() const;
+	bool has_key(const_key_ref k) const;
 
 	size_type size() const;
 	size_type capacity() const;
@@ -98,6 +101,11 @@ public:
 	const_iterator find_data(const_data_ref v, const_iterator first = 0, const_iterator last = 0) const;
 	iterator find_data(const_data_ref v, iterator first = 0, iterator last = 0);
 
+	void qsort();
+	void qsort_key();
+	void qsort_value();
+	void unique();
+
 private:
 
 	iterator lower_bound(const_key_ref k);
@@ -106,6 +114,11 @@ private:
 };
 
 template <typename K, typename V> void swap(map<K,V>& lhs, map<K,V>& rhs);
+
+template <typename K, typename V> struct is_movable< map<K,V> >
+{ enum { value = is_movable<K>::value & is_movable<V>::value }; };
+
+template <typename K, typename V> struct memory_is_contiguous< map<K,V> > { enum { value = 1 }; };
 
 } // namespace mstl
 

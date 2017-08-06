@@ -567,6 +567,7 @@
 ::application::database::mc::Players			"Já&tékosok"
 ::application::database::mc::Events			"&Versenyek"
 ::application::database::mc::Sites			"&Helyszín"  ;#NEW
+::application::database::mc::Positions			"S&tart Positions"
 ::application::database::mc::Annotators			"&Elemző"
 
 ::application::database::mc::File			"Fájl"
@@ -718,6 +719,14 @@
 ::application::database::annotators::mc::Find		"Keres"
 ::application::database::annotators::mc::FindAnnotator	"Elemző keresése"
 ::application::database::annotators::mc::NoAnnotator	"No annotator" ;# NEW
+
+### application::database::positions ###################################
+::application::database::positions::mc::NoCastle	"No castle" ;# NEW
+
+::application::database::positions::mc::F_Position	"Position" ;# NEW
+::application::database::positions::mc::F_Description	"Description" ;# NEW
+::application::database::positions::mc::F_BackRank	"Back Rank" ;# NEW
+::application::database::positions::mc::F_Frequency	"Frequency" ;# NEW
 
 ### application::pgn ###################################################
 ::application::pgn::mc::Command(move:comment)			"Megjegyzés hozzáadása"

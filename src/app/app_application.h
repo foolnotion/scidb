@@ -437,6 +437,10 @@ public:
 					unsigned view,
 					db::attribute::annotator::ID attr,
 					db::order::ID order);
+	void sort(	Cursor& cursor,
+					unsigned view,
+					db::attribute::position::ID attr,
+					db::order::ID order);
 	void reverseOrder(Cursor& cursor, unsigned view, db::table::Type type);
 	void resetOrder(Cursor& cursor, unsigned view, db::table::Type type);
 

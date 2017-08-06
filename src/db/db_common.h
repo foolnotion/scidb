@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2009-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -820,29 +820,30 @@ namespace variant
 
 	enum Idn
 	{
-		None					= 0,
-		Standard				= 518,
-		Transposed			= 534,
-		NoCastling			= 3398,	// Antichess standard start position
+		None							= 0,
+		Standard						= 518,
+		Transposed					= 534,
+		NoCastling					= 3398,	// Antichess standard start position
 
-		LittleGame			= 4000,	// FICS wild/7, pawns/little-game, misc/little-game
-		PawnsOn4thRank		= 4001,	// FICS wild/8
-		KNNvsKP				= 4002,	// FIVS wild/19
-		Pyramid				= 4003,	// FICS misc/pyramid
-		PawnsOnly			= 4004,	// FICS pawns/pawns-only
-		KnightsOnly			= 4005,	// FICS misc/knights-only
-		BishopsOnly			= 4006,	// FICS misc/bishops-only
-		RooksOnly			= 4007,	// FICS misc/rooks-only
-		QueensOnly			= 4008,	// FICS misc/queens-only
-		NoQueens				= 4009,	// FICS misc/no-queens
-		WildFive				= 4010,	// FICS pawns/wild-five
-		KBNK					= 4011,	// FICS endings/kbnk
-		KBBK					= 4012,	// FICS endings/kbbk
-		Runaway				= 4013,	// FICS misc/runaway
-		QueenVsRooks		= 4014,	// FICS misc/queen-rooks
-		UpsideDown			= 4015,	// Upside down chess <http://www.chessvariants.org/diffsetup.dir/upside.html>
+		LittleGame					= 4000,	// FICS wild/7, pawns/little-game, misc/little-game
+		PawnsOn4thRank				= 4001,	// FICS wild/8
+		KNNvsKP						= 4002,	// FIVS wild/19
+		Pyramid						= 4003,	// FICS misc/pyramid
+		PawnsOnly					= 4004,	// FICS pawns/pawns-only
+		KnightsOnly					= 4005,	// FICS misc/knights-only
+		BishopsOnly					= 4006,	// FICS misc/bishops-only
+		RooksOnly					= 4007,	// FICS misc/rooks-only
+		QueensOnly					= 4008,	// FICS misc/queens-only
+		NoQueens						= 4009,	// FICS misc/no-queens
+		WildFive						= 4010,	// FICS pawns/wild-five
+		KBNK							= 4011,	// FICS endings/kbnk
+		KBBK							= 4012,	// FICS endings/kbbk
+		Runaway						= 4013,	// FICS misc/runaway
+		QueenVsRooks				= 4014,	// FICS misc/queen-rooks
+		UpsideDown					= 4015,	// Upside down chess <http://www.chessvariants.org/diffsetup.dir/upside.html>
+		ReversedQueenAndKing		= 4016,	// FICS wild/0 + wild/1
 
-		MaxCode				= 4095,	// maximal number
+		MaxCode						= 4095,	// maximal number
 	};
 
 	bool isNormalChess(Type variant);
@@ -869,8 +870,16 @@ namespace variant
 	mstl::string const& ficsIdentifier(uint16_t idn);
 	Idn idnFromString(mstl::string const& ficsPosition);
 
-	mstl::string const& fen(Idn idn);
 	mstl::string fen(uint16_t idn);
+
+	namespace fics
+	{
+		Idn idnFromString(mstl::string const& position);
+
+		mstl::string const& fen(uint16_t idn);
+		mstl::string const& fen(Idn idn);
+		mstl::string const& identifier(uint16_t idn);
+	}
 }
 
 namespace piece
@@ -1014,7 +1023,27 @@ namespace process
 
 namespace position
 {
+	// According to
+	// http://en.wikipedia.org/wiki/World_records_in_chess
+	// the maximum number of moves is possibly 218.
+	// We have to add maximal 304 for piece drops (Zhouse),
+	// TODO: Make a sharper calculation.
+	enum { Maximum_Moves = 522 };
+
 	enum ID { Initial, Current };
+
+	enum Status
+	{
+		None,
+		Checkmate,
+		Stalemate,
+		ThreeChecks,
+		//KingOfTheHill,
+		Losing,
+		Check,
+	};
+
+	mstl::string toString(Status status);
 }
 
 namespace mark
@@ -1476,6 +1505,7 @@ namespace table
 		Sites,
 		Events,
 		Annotators,
+		Positions,
 		Games,
 	};
 
@@ -1635,6 +1665,19 @@ namespace attribute
 		enum ID
 		{
 			Name,
+			Frequency,
+
+			// last column
+			LastColumn,
+		};
+	}
+
+	namespace position
+	{
+		enum ID
+		{
+			Idn,
+			BackRank,
 			Frequency,
 
 			// last column

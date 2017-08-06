@@ -300,13 +300,6 @@ DatabaseCodec::DatabaseCodec() : m_db(0), m_customFlags(0), m_storedInfo(new Gam
 DatabaseCodec* DatabaseCodec::makeCodec()	{ return new sci::Codec; }
 
 
-GameInfo*
-DatabaseCodec::allocGameInfo()
-{
-	return m_db->m_allocator.alloc();
-}
-
-
 DatabaseCodec::~DatabaseCodec() throw() { delete m_customFlags; }
 
 bool DatabaseCodec::upgradeIndexOnly() { return sci::Codec::upgradeIndexOnly(); }
@@ -958,14 +951,14 @@ DatabaseCodec::saveMoves(util::ByteStream const& gameData, Provider const& provi
 	M_REQUIRE(isOpen());
 	M_REQUIRE(provider.index() >= 0);
 
-	GameInfo* info = m_db->m_gameInfoList[provider.index()];
+	GameInfo& info = m_db->m_gameInfoList[provider.index()];
 
 	if (gameData.size() > maxGameRecordLength())
 		return save::GameTooLong;
 	if (provider.plyCount() > maxGameLength())
 		return save::GameTooLong;
 
-	unsigned gameOffset = putGame(gameData, info->gameOffset(), info->gameRecordLength());
+	unsigned gameOffset = putGame(gameData, info.gameOffset(), info.gameRecordLength());
 
 	switch (gameOffset)
 	{
@@ -982,7 +975,7 @@ DatabaseCodec::saveMoves(util::ByteStream const& gameData, Provider const& provi
 			IO_RAISE(Game, Write_Failed, "offset failure (internal error)");
 	}
 
-	info->setup(gameOffset, gameData.size());
+	info.setup(gameOffset, gameData.size());
 
 	if (!m_db->m_memoryOnly)
 	{
@@ -1015,7 +1008,7 @@ DatabaseCodec::saveGame(ByteStream const& gameData, TagSet const& tags, Provider
 	if (provider.index() >= 0)
 	{
 		index = provider.index();
-		info = m_db->m_gameInfoList[index];
+		info = &m_db->m_gameInfoList[index];
 		*m_storedInfo = *info;
 		info->reset(m_db->m_namebases);
 	}
@@ -1116,7 +1109,7 @@ DatabaseCodec::saveGame(ByteStream const& gameData, TagSet const& tags, Provider
 		M_ASSERT(format() == format::Scid3 || format() == format::Scid4);
 		M_ASSERT(!m_db->m_memoryOnly);
 
-		if (info == 0)
+		if (!info)
 		{
 			if (!static_cast<si3::Codec*>(this)->saveRoundEntry(index, tags.value(tag::Round)))
 			{
@@ -1183,10 +1176,7 @@ DatabaseCodec::saveGame(ByteStream const& gameData, TagSet const& tags, Provider
 	}
 
 	if (info == 0)
-	{
-		info = allocGameInfo();
-		m_db->m_gameInfoList.push_back(info);
-	}
+		info = &m_db->m_gameInfoList.push_back();
 
 	info->setup(gameOffset,
 					gameData.size(),
@@ -1338,10 +1328,8 @@ DatabaseCodec::addGame(ByteStream const& gameData, GameInfo const& info, Allocat
 	whiteEntry->copyRating(*info.playerEntry(color::White));
 	blackEntry->copyRating(*info.playerEntry(color::Black));
 
-	GameInfo* i = allocGameInfo();
-	*i = info;
-
-	i->setup(
+	m_db->m_gameInfoList.push_back(info);
+	m_db->m_gameInfoList.back().setup(
 		gameOffset,
 		gameData.size(),
 		whiteEntry,
@@ -1349,8 +1337,6 @@ DatabaseCodec::addGame(ByteStream const& gameData, GameInfo const& info, Allocat
 		eventEntry,
 		annotatorEntry,
 		m_db->m_namebases);
-
-	m_db->m_gameInfoList.push_back(i);
 
 	return state;
 }
@@ -1366,9 +1352,9 @@ DatabaseCodec::updateCharacteristics(unsigned index, TagSet const& tags)
 	typedef Namebase::SiteEntry*		Site;
 	typedef Namebase::Entry*			Entry;
 
-	GameInfo* info = m_db->m_gameInfoList[index];
-	*m_storedInfo = *info;
-	info->resetCharacteristics(m_db->m_namebases);
+	GameInfo& info = m_db->m_gameInfoList[index];
+	*m_storedInfo = info;
+	info.resetCharacteristics(m_db->m_namebases);
 
 	unsigned maxAnnotatorCount	= this->maxAnnotatorCount();
 	unsigned maxPlayerCount		= this->maxPlayerCount();
@@ -1438,7 +1424,7 @@ DatabaseCodec::updateCharacteristics(unsigned index, TagSet const& tags)
 
 	if (failed)
 	{
-		info->restore(*m_storedInfo, m_db->m_namebases);
+		info.restore(*m_storedInfo, m_db->m_namebases);
 
 		if (format() != format::Scidb)
 		{
@@ -1456,12 +1442,12 @@ DatabaseCodec::updateCharacteristics(unsigned index, TagSet const& tags)
 		return save::TooManyAnnotatorNames;
 	}
 
-	info->update(	whiteEntry,
-						blackEntry,
-						eventEntry,
-						annotatorEntry,
-						tags,
-						m_db->m_namebases);
+	info.update(whiteEntry,
+					blackEntry,
+					eventEntry,
+					annotatorEntry,
+					tags,
+					m_db->m_namebases);
 
 	return state;
 }

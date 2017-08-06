@@ -565,6 +565,7 @@
 ::application::database::mc::Players							"&Spelare"
 ::application::database::mc::Events								"&Tävlingar"
 ::application::database::mc::Sites								"&Platser"
+::application::database::mc::Positions							"S&tart Positions"
 ::application::database::mc::Annotators						"&Kommentatorer"
 
 ::application::database::mc::File								"Fil"
@@ -716,6 +717,14 @@
 ::application::database::annotators::mc::Find				"Sök"
 ::application::database::annotators::mc::FindAnnotator	"Sök kommentator"
 ::application::database::annotators::mc::NoAnnotator		"No annotator" ;# NEW
+
+### application::database::positions ###################################
+::application::database::positions::mc::NoCastle		"No castle" ;# NEW
+
+::application::database::positions::mc::F_Position		"Position" ;# NEW
+::application::database::positions::mc::F_Description	"Description" ;# NEW
+::application::database::positions::mc::F_BackRank		"Back Rank" ;# NEW
+::application::database::positions::mc::F_Frequency	"Frequency" ;# NEW
 
 ### application::pgn ###################################################
 ::application::pgn::mc::Command(move:comment)			"Sätt kommentar"

@@ -70,9 +70,9 @@ svg_gradient.o: agg/agg_math.h
 svg_gradient.o: agg/agg_array.h
 svg_gradient.o: ../../mstl/m_map.h
 svg_gradient.o: ../../mstl/m_vector.h
+svg_gradient.o: ../../mstl/m_types.h
 svg_gradient.o: ../../mstl/m_type_traits.h
 svg_gradient.o: ../../mstl/m_type_traits.ipp
-svg_gradient.o: ../../mstl/m_types.h
 svg_gradient.o: ../../mstl/m_memblock.h
 svg_gradient.o: ../../mstl/m_memblock.ipp
 svg_gradient.o: ../../mstl/m_utility.h
@@ -117,9 +117,9 @@ svg_parser.o: agg/agg_math.h
 svg_parser.o: agg/agg_array.h
 svg_parser.o: ../../mstl/m_map.h
 svg_parser.o: ../../mstl/m_vector.h
+svg_parser.o: ../../mstl/m_types.h
 svg_parser.o: ../../mstl/m_type_traits.h
 svg_parser.o: ../../mstl/m_type_traits.ipp
-svg_parser.o: ../../mstl/m_types.h
 svg_parser.o: ../../mstl/m_memblock.h
 svg_parser.o: ../../mstl/m_memblock.ipp
 svg_parser.o: ../../mstl/m_utility.h
@@ -195,9 +195,9 @@ svg_path_renderer.o: agg/agg_math.h
 svg_path_renderer.o: agg/agg_array.h
 svg_path_renderer.o: ../../mstl/m_map.h
 svg_path_renderer.o: ../../mstl/m_vector.h
+svg_path_renderer.o: ../../mstl/m_types.h
 svg_path_renderer.o: ../../mstl/m_type_traits.h
 svg_path_renderer.o: ../../mstl/m_type_traits.ipp
-svg_path_renderer.o: ../../mstl/m_types.h
 svg_path_renderer.o: ../../mstl/m_memblock.h
 svg_path_renderer.o: ../../mstl/m_memblock.ipp
 svg_path_renderer.o: ../../mstl/m_utility.h

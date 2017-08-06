@@ -265,15 +265,16 @@ struct Subscriber : public Application::Subscriber
 		EventList			= 1 << table::Events,
 		SiteList				= 1 << table::Sites,
 		AnnotatorList		= 1 << table::Annotators,
-		DatabaseInfo		= 1 << 5,
-		GameInfo				= 1 << 6,
-		GameData				= 1 << 7,
-		GameHistory			= 1 << 8,
-		GameSwitched		= 1 << 9,
-		GameClosed			= 1 << 10,
-		DatabaseSwitched	= 1 << 11,
-		Tree					= 1 << 12,
-		None					= 1 << 13,
+		PositionList		= 1 << table::Positions,
+		DatabaseInfo		= 1 << table::LAST,
+		GameInfo				= 1 << (table::LAST + 1),
+		GameData				= 1 << (table::LAST + 2),
+		GameHistory			= 1 << (table::LAST + 3),
+		GameSwitched		= 1 << (table::LAST + 4),
+		GameClosed			= 1 << (table::LAST + 5),
+		DatabaseSwitched	= 1 << (table::LAST + 6),
+		Tree					= 1 << (table::LAST + 7),
+		None					= 1 << (table::LAST + 8),
 	};
 
 	typedef mstl::tuple<Obj, Obj, Obj> Tuple;
@@ -290,11 +291,6 @@ struct Subscriber : public Application::Subscriber
 				arg ? arg : Tcl_NewListObj(0, 0))
 			,m_ref(0)
 		{
-			static_assert(table::Games      < 5, "index failure");
-			static_assert(table::Players    < 5, "index failure");
-			static_assert(table::Events     < 5, "index failure");
-			static_assert(table::Sites      < 5, "index failure");
-			static_assert(table::Annotators < 5, "index failure");
 		}
 
 		void ref()
@@ -846,6 +842,23 @@ lookupAnnotatorBase(Tcl_Obj* obj)
 	}
 
 	return attribute::annotator::ID(column);
+}
+
+
+static attribute::position::ID
+lookupPositionBase(Tcl_Obj* obj)
+{
+	int column;
+
+	if (	Tcl_GetIntFromObj(interp(), obj, &column) != TCL_OK
+		|| column < 0
+		|| column >= attribute::position::LastColumn)
+	{
+		appendResult(	"integer in range 0-%d expected", attribute::position::LastColumn - 1);
+		return attribute::position::ID(-1);
+	}
+
+	return attribute::position::ID(column);
 }
 
 
@@ -1417,7 +1430,7 @@ cmdCount(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	static char const* subcommands[] =
 	{
-		"games", "players", "annotators", "events", "sites", "total", 0
+		"games", "players", "annotators", "positions", "events", "sites", "total", 0
 	};
 	static char const* args[] =
 	{
@@ -1426,9 +1439,10 @@ cmdCount(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		"?\?<database>? <variant>?",
 		"?\?<database>? <variant>?",
 		"?\?<database>? <variant>?",
+		"?\?<database>? <variant>?",
 		"?<database>?",
 	};
-	enum { Cmd_Games, Cmd_Players, Cmd_Annotators, Cmd_Events, Cmd_Sites, Cmd_Total };
+	enum { Cmd_Games, Cmd_Players, Cmd_Annotators, Cmd_Positions, Cmd_Events, Cmd_Sites, Cmd_Total };
 
 	char const*		base		= 0;
 	variant::Type	variant	= variant::Undetermined;
@@ -1461,6 +1475,7 @@ cmdCount(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		case Cmd_Players:		return count(table::Players, base, variant);
 		case Cmd_Annotators:	return count(table::Annotators, base, variant);
+		case Cmd_Positions:	return count(table::Positions, base, variant);
 		case Cmd_Games:		return count(table::Games, base, variant);
 		case Cmd_Events:		return count(table::Events, base, variant);
 		case Cmd_Sites:		return count(table::Sites, base, variant);
@@ -1703,7 +1718,7 @@ getGameIndex(int number, int view, char const* database, variant::Type variant)
 	View const& v = cursor.view(view);
 
 	if (number < int(v.total(table::Games)))
-		::tcl::setResult(v.lookupGame(number));
+		::tcl::setResult(v.lookupGameIndex(number));
 	else
 		::tcl::setResult(-1);
 
@@ -1730,7 +1745,7 @@ getLookupPlayer(unsigned index, int view, char const* database, variant::Type va
 {
 	M_ASSERT(database);
 	M_ASSERT(Scidb->contains(database, variant));
-	::tcl::setResult(Scidb->cursor(database, variant).view(view).lookupPlayer(index));
+	::tcl::setResult(Scidb->cursor(database, variant).view(view).lookupPlayerIndex(index));
 	return TCL_OK;
 }
 
@@ -1740,7 +1755,7 @@ getLookupEvent(unsigned index, int view, char const* database, variant::Type var
 {
 	M_ASSERT(database);
 	M_ASSERT(Scidb->contains(database, variant));
-	::tcl::setResult(Scidb->cursor(database, variant).view(view).lookupEvent(index));
+	::tcl::setResult(Scidb->cursor(database, variant).view(view).lookupEventIndex(index));
 	return TCL_OK;
 }
 
@@ -1750,7 +1765,17 @@ getLookupSite(unsigned index, int view, char const* database, variant::Type vari
 {
 	M_ASSERT(database);
 	M_ASSERT(Scidb->contains(database, variant));
-	::tcl::setResult(Scidb->cursor(database, variant).view(view).lookupSite(index));
+	::tcl::setResult(Scidb->cursor(database, variant).view(view).lookupSiteIndex(index));
+	return TCL_OK;
+}
+
+
+static int
+getLookupPosition(unsigned index, int view, char const* database, variant::Type variant)
+{
+	M_ASSERT(database);
+	M_ASSERT(Scidb->contains(database, variant));
+	::tcl::setResult(Scidb->cursor(database, variant).view(view).lookupPositionIndex(index));
 	return TCL_OK;
 }
 
@@ -1771,9 +1796,9 @@ getStats(char const* database)
 	Statistic const& statistic = Scidb->cursor(database).database().statistic();
 	Tcl_Obj*	objv[14];
 
-	objv[ 0] = Tcl_NewIntObj(statistic.deleted);
-	objv[ 1] = Tcl_NewIntObj(statistic.changed);
-	objv[ 2] = Tcl_NewIntObj(statistic.added);
+	objv[ 0] = Tcl_NewIntObj(statistic.counter.deleted);
+	objv[ 1] = Tcl_NewIntObj(statistic.counter.changed);
+	objv[ 2] = Tcl_NewIntObj(statistic.counter.added);
 	objv[ 3] = Tcl_NewIntObj(statistic.content.minYear);
 	objv[ 4] = Tcl_NewIntObj(statistic.content.maxYear);
 	objv[ 5] = Tcl_NewIntObj(statistic.content.avgYear);
@@ -2440,6 +2465,48 @@ getAnnotator(int index, int view)
 
 
 static int
+getPosition(unsigned index, int view)
+{
+	Tcl_Obj* objv[::attribute::position::LastColumn];
+
+	M_ASSERT(memset(objv, 0, sizeof(objv)));
+
+	Cursor const& cursor = Scidb->cursor();
+
+	if (view >= 0)
+		index = cursor.index(table::Positions, index, view);
+
+	uint16_t idn	= cursor.database().statistic().idnAt(index);
+	unsigned freq	= cursor.database().statistic().positionCount(idn);
+
+	objv[attribute::position::Frequency] = Tcl_NewIntObj(freq);
+
+	if (variant::isShuffleChess(idn))
+	{
+		mstl::string buf;
+
+		objv[attribute::position::Idn] = Tcl_NewIntObj(idn);
+		objv[attribute::position::BackRank] = Tcl_NewStringObj(shuffle::utf8::position(idn, buf), -1);
+	}
+	else if (idn == 0)
+	{
+		objv[attribute::position::Idn] = Tcl_NewIntObj(0);
+		objv[attribute::position::BackRank] = Tcl_NewStringObj(0, 0);
+	}
+	else
+	{
+		objv[attribute::position::Idn] = Tcl_NewStringObj(variant::fics::identifier(idn), -1);
+		objv[attribute::position::BackRank] = Tcl_NewStringObj(0, 0);
+	}
+
+	M_ASSERT(checkNonZero(objv, U_NUMBER_OF(objv)));
+
+	setResult(U_NUMBER_OF(objv), objv);
+	return TCL_OK;
+}
+
+
+static int
 getEncodingState(char const* database)
 {
 	Database const& base = Scidb->cursor(database).database();
@@ -2805,13 +2872,14 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	static char const* subcommands[] =
 	{
 		"clipbase", "scratchbase", "types", "type", "name", "codec", "encoding", "created?",
-		"modified?", "gameInfo", "playerInfo", "eventInfo", "siteInfo", "annotator", "gameIndex",
-		"playerIndex", "eventIndex", "siteIndex", "annotatorIndex", "description", "variant?",
-		"stats", "readonly?", "encodingState", "deleted?", "open?", "lastChange", "customFlags",
-		"gameFlags", "gameNumber", "minYear", "maxYear", "maxUsage", "tags", "checksum", "idn",
-		"eco", "ratingTypes", "lookupPlayer", "lookupEvent", "lookupSite", "writable?",
-		"upgrade?", "memoryOnly?", "compact?", "playerKey", "eventKey", "siteKey", "variants",
-		"changed?", "unsaved?", "changes", "usedencoding", 0
+		"modified?", "gameInfo", "playerInfo", "eventInfo", "siteInfo", "annotator", "position",
+		"gameIndex", "playerIndex", "eventIndex", "siteIndex", "annotatorIndex", "description",
+		"variant?", "stats", "readonly?", "encodingState", "deleted?", "open?", "lastChange",
+		"customFlags", "gameFlags", "gameNumber", "minYear", "maxYear", "maxUsage", "tags",
+		"checksum", "idn", "eco", "ratingTypes", "lookupPlayer", "lookupEvent", "lookupSite",
+		"lookupPosition", "writable?", "upgrade?", "memoryOnly?", "compact?", "playerKey",
+		"eventKey", "siteKey", "variants", "changed?", "unsaved?", "changes", "usedencoding",
+		nullptr
 	};
 	static char const* args[] =
 	{
@@ -2829,6 +2897,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		/* eventInfo		*/ "<index> <view> <database> <variant> ?<which>?",
 		/* siteInfo			*/ "<index> <view> <database> <variant> ?<which>?",
 		/* annotator		*/ "<index> <view>?",
+		/* position			*/ "<index> <view>?",
 		/* gameIndex		*/ "<number> <view> ?<database>? ?<variant>?",
 		/* playerIndex		*/ "<number> ?<view>? ?<database>? ?<variant>?",
 		/* eventIndex		*/ "<number> <view> ?<database>? ?<variant>?",
@@ -2856,6 +2925,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		/* lookupPlayer	*/ "<index> ?<view>? ?<database>? ?<variant>?",
 		/* lookupEvent		*/ "<index> ?<view>? ?<database>? ?<variant>?",
 		/* lookupSite		*/ "<index> ?<view>? ?<database>? ?<variant>?",
+		/* lookupPosition		*/ "<index> ?<view>? ?<database>? ?<variant>?",
 		/* writable?		*/ "?<database>?",
 		/* upgrade?			*/ "<database>",
 		/* memoryOnly?		*/ "?<database>?",
@@ -2874,13 +2944,13 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		Cmd_Clipbase, Cmd_Scratchbase, Cmd_Types, Cmd_Type, Cmd_Name, Cmd_Codec, Cmd_Encoding,
 		Cmd_Created, Cmd_Modified, Cmd_GameInfo, Cmd_PlayerInfo, Cmd_EventInfo, Cmd_SiteInfo,
-		Cmd_Annotator, Cmd_GameIndex, Cmd_PlayerIndex, Cmd_EventIndex, Cmd_SiteIndex,
+		Cmd_Annotator, Cmd_Position, Cmd_GameIndex, Cmd_PlayerIndex, Cmd_EventIndex, Cmd_SiteIndex,
 		Cmd_AnnotatorIndex, Cmd_Description, Cmd_Variant, Cmd_Stats, Cmd_ReadOnly, Cmd_EncodingState,
 		Cmd_Deleted, Cmd_Open, Cmd_LastChange, Cmd_CustomFlags, Cmd_GameFlags, Cmd_GameNumber,
 		Cmd_MinYear, Cmd_MaxYear, Cmd_MaxUsage, Cmd_Tags, Cmd_Checksum, Cmd_Idn, Cmd_Eco, Cmd_RatingTypes,
-		Cmd_LookupPlayer, Cmd_LookupEvent, Cmd_LookupSite, Cmd_Writable, Cmd_Upgrade, Cmd_MemoryOnly,
-		Cmd_Compact, Cmd_PlayerKey, Cmd_EventKey, Cmd_SiteKey, Cmd_Variants, Cmd_Changed, Cmd_Unsaved,
-		Cmd_Changes, Cmd_UsedEncoding,
+		Cmd_LookupPlayer, Cmd_LookupEvent, Cmd_LookupSite, Cmd_LookupPosition, Cmd_Writable, Cmd_Upgrade,
+		Cmd_MemoryOnly, Cmd_Compact, Cmd_PlayerKey, Cmd_EventKey, Cmd_SiteKey, Cmd_Variants, Cmd_Changed,
+		Cmd_Unsaved, Cmd_Changes, Cmd_UsedEncoding,
 	};
 
 	if (objc < 2)
@@ -3113,6 +3183,9 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case Cmd_Annotator:
 			return getAnnotator(unsignedFromObj(objc, objv, 2), objc > 3 ? intFromObj(objc, objv, 3) : -1);
 
+		case Cmd_Position:
+			return getPosition(unsignedFromObj(objc, objv, 2), objc > 3 ? intFromObj(objc, objv, 3) : -1);
+
 		case Cmd_GameIndex:
 			return getGameIndex(	unsignedFromObj(objc, objv, 2),
 										objc > 3 ? intFromObj(objc, objv, 3) : -1,
@@ -3154,6 +3227,12 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		case Cmd_LookupSite:
 			return getLookupSite(unsignedFromObj(objc, objv, 2),
+											objc > 3 ? intFromObj(objc, objv, 3) : -1,
+											objc > 4 ? stringFromObj(objc, objv, 4) : 0,
+											tcl::game::variantFromObj(objc, objv, 5));
+
+		case Cmd_LookupPosition:
+			return getLookupPosition(unsignedFromObj(objc, objv, 2),
 											objc > 3 ? intFromObj(objc, objv, 3) : -1,
 											objc > 4 ? stringFromObj(objc, objv, 4) : 0,
 											tcl::game::variantFromObj(objc, objv, 5));
@@ -3434,7 +3513,7 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		Tcl_WrongNumArgs(
 			ti, 1, objv,
-			"dbInfo|gameList|playerList|annotatorList|eventList|siteList|gameInfo|"
+			"dbInfo|gameList|playerList|annotatorList|positionList|eventList|siteList|gameInfo|"
 			"gameData|gameHistory|gameSwitch|gameClose|databaseSwitch|tree <update-cmd> ??"
 			"<close-cmd> ?<arg>?");
 		return TCL_ERROR;
@@ -3442,15 +3521,16 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	static char const* subcommands[] =
 	{
-		"dbInfo", "gameList", "playerList", "annotatorList", "eventList", "siteList",
-		"gameInfo", "gameData", "gameHistory", "gameSwitch", "gameClose", "databaseSwitch",
+		"dbInfo", "gameList", "playerList", "annotatorList", "positionList", "eventList",
+		"siteList", "gameInfo", "gameData", "gameHistory", "gameSwitch", "gameClose",
+		"databaseSwitch",
 		"tree", 0
 	};
 	enum
 	{
-		Cmd_DbInfo, Cmd_GameList, Cmd_PlayerList, Cmd_AnnotatorList, Cmd_EventList,
-		Cmd_SiteList, Cmd_GameInfo, Cmd_GameData, Cmd_GameHistory, Cmd_GameSwitch,
-		Cmd_GameClose, Cmd_DatabaseSwitched, Cmd_Tree,
+		Cmd_DbInfo, Cmd_GameList, Cmd_PlayerList, Cmd_AnnotatorList, Cmd_PositionList, Cmd_EventList,
+		Cmd_SiteList, Cmd_GameInfo, Cmd_GameData, Cmd_GameHistory, Cmd_GameSwitch, Cmd_GameClose,
+		Cmd_DatabaseSwitched, Cmd_Tree,
 	};
 
 	Subscriber* subscriber = static_cast<Subscriber*>(scidb->subscriber());
@@ -3467,59 +3547,25 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	Tcl_Obj* closeCmd		= objc == 5 ? objv[3] : 0;
 	Tcl_Obj* arg			= objc == 5 ? objv[4] : (objc == 4 ? objv[3] : 0);
 
+	::Subscriber::Type type = ::Subscriber::None;
+
 	switch (index)
 	{
-		case Cmd_DbInfo:
-			subscriber->setCmd(Subscriber::DatabaseInfo, updateCmd, closeCmd, arg);
-			break;
+		case Cmd_DbInfo:				type = ::Subscriber::DatabaseInfo; break;
+		case Cmd_GameList:			type = ::Subscriber::GameList; break;
+		case Cmd_PlayerList:			type = ::Subscriber::PlayerList; break;
+		case Cmd_AnnotatorList:		type = ::Subscriber::AnnotatorList; break;
+		case Cmd_PositionList:		type = ::Subscriber::PositionList; break;
+		case Cmd_EventList:			type = ::Subscriber::EventList; break;
+		case Cmd_SiteList:			type = ::Subscriber::SiteList; break;
+		case Cmd_GameInfo:			type = ::Subscriber::GameInfo; break;
+		case Cmd_GameData:			type = ::Subscriber::GameData; break;
+		case Cmd_GameHistory:		type = ::Subscriber::GameHistory; break;
+		case Cmd_Tree:					type = ::Subscriber::Tree; break;
 
-		case Cmd_GameList:
-			subscriber->setListCmd(table::Games, updateCmd, closeCmd, arg);
-			break;
-
-		case Cmd_PlayerList:
-			subscriber->setListCmd(table::Players, updateCmd, closeCmd, arg);
-			break;
-
-		case Cmd_AnnotatorList:
-			subscriber->setListCmd(table::Annotators, updateCmd, closeCmd, arg);
-			break;
-
-		case Cmd_EventList:
-			subscriber->setListCmd(table::Events, updateCmd, closeCmd, arg);
-			break;
-
-		case Cmd_SiteList:
-			subscriber->setListCmd(table::Sites, updateCmd, closeCmd, arg);
-			break;
-
-		case Cmd_GameInfo:
-			subscriber->setCmd(Subscriber::GameInfo, updateCmd, closeCmd, arg);
-			break;
-
-		case Cmd_GameData:
-			subscriber->setCmd(Subscriber::GameData, updateCmd, closeCmd, arg);
-			break;
-
-		case Cmd_GameHistory:
-			subscriber->setCmd(Subscriber::GameHistory, updateCmd, closeCmd, arg);
-			break;
-
-		case Cmd_GameSwitch:
-			subscriber->setGameSwitchedCmd(updateCmd);
-			break;
-
-		case Cmd_GameClose:
-			subscriber->setGameClosedCmd(updateCmd);
-			break;
-
-		case Cmd_DatabaseSwitched:
-			subscriber->setDatabaseSwitchedCmd(updateCmd);
-			break;
-
-		case Cmd_Tree:
-			subscriber->setCmd(Subscriber::Tree, updateCmd, closeCmd, arg);
-			break;
+		case Cmd_GameSwitch:			subscriber->setGameSwitchedCmd(updateCmd); break;
+		case Cmd_GameClose:			subscriber->setGameClosedCmd(updateCmd); break;
+		case Cmd_DatabaseSwitched:	subscriber->setDatabaseSwitchedCmd(updateCmd); break;
 
 		default:
 			return error(	::CmdSubscribe,
@@ -3527,6 +3573,9 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 								"invalid argument %s",
 								static_cast<char const*>(Tcl_GetString(objv[1])));
 	}
+
+	if (type != ::Subscriber::None)
+		subscriber->setCmd(type, updateCmd, closeCmd, arg);
 
 	return TCL_OK;
 }
@@ -3675,7 +3724,10 @@ cmdClear(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdSort(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	static char const* subcommands[] = { "gameInfo", "player", "event", "site", "annotator", 0 };
+	static char const* subcommands[] =
+	{
+		"gameInfo", "player", "event", "site", "annotator", "position", nullptr
+	};
 	static char const* args[] =
 	{
 		"<database> <variant> <column> ?<view>? ?-reset? ?-descending? ?-ascending? ?-average?"
@@ -3684,8 +3736,9 @@ cmdSort(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		"<database> <variant> <column> ?<view>? ?-reset? ?-descending? ?-ascending?",
 		"<database> <variant> <column> ?<view>? ?-reset? ?-descending? ?-ascending?",
 		"<database> <variant> <column> ?<view>? ?-reset? ?-descending? ?-ascending?",
+		"<database> <variant> <column> ?<view>? ?-reset? ?-descending? ?-ascending?",
 	};
-	enum { Cmd_GameInfo, Cmd_Player, Cmd_Event, Cmd_Site, Cmd_Annotator };
+	enum { Cmd_GameInfo, Cmd_Player, Cmd_Event, Cmd_Site, Cmd_Annotator, Cmd_Position };
 
 	if (objc < 5)
 		return usage(::CmdSort, nullptr, nullptr, subcommands, args);
@@ -3798,6 +3851,17 @@ cmdSort(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 					return TCL_ERROR;
 				if (reset)
 					scidb->resetOrder(scidb->cursor(database, variant), view, table::Annotators);
+				scidb->sort(scidb->cursor(database, variant), view, column, order);
+			}
+			break;
+
+		case Cmd_Position:
+			{
+				attribute::position::ID column = lookupPositionBase(objv[4]);
+				if (column < 0)
+					return TCL_ERROR;
+				if (reset)
+					scidb->resetOrder(scidb->cursor(database, variant), view, table::Positions);
 				scidb->sort(scidb->cursor(database, variant), view, column, order);
 			}
 			break;
@@ -4075,7 +4139,7 @@ cmdFind(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	if (objc != 4 && objc != 5)
 	{
-		Tcl_WrongNumArgs(ti, 1, objv, "player|event|site|annotator <database> ?<variant>? <key>");
+		Tcl_WrongNumArgs(ti, 1, objv, "player|event|site|annotator|position <database> ?<variant>? <key>");
 		return TCL_ERROR;
 	}
 
@@ -4101,12 +4165,16 @@ cmdFind(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		numObjs = 1;
 	}
+	else if (strcmp(what, "position") == 0)
+	{
+		numObjs = 1;
+	}
 	else
 	{
 		return error(	CmdFind,
 							nullptr,
 							nullptr,
-							"only 'player', 'event', 'site', or 'annotator' is allowed");
+							"only 'player', 'event', 'site', 'annotator', or 'position' is allowed");
 	}
 
 	Tcl_Obj* objs[numObjs];
@@ -4164,6 +4232,13 @@ cmdFind(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	else if (strcmp(what, "annotator") == 0)
 	{
 		index = db.namebase(Namebase::Annotator).findAnnotatorIndex(Tcl_GetString(objs[0]));
+	}
+	else if (strcmp(what, "position") == 0)
+	{
+		unsigned position = unsignedFromObj(objc, objs, 0);
+
+		if (db.statistic().positions.test(position))
+			index = position;
 	}
 
 	setResult(index);

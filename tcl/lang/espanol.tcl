@@ -566,6 +566,7 @@
 ::application::database::mc::Players							"&Jugadores"
 ::application::database::mc::Events								"Even&tos"
 ::application::database::mc::Sites								"Lugare&s"
+::application::database::mc::Positions							"S&tart Positions"
 ::application::database::mc::Annotators						"&Comentaristas"
 
 ::application::database::mc::File								"Archivo"
@@ -715,6 +716,14 @@
 ::application::database::annotators::mc::Find				"Buscar"
 ::application::database::annotators::mc::FindAnnotator	"Buscar comentarista"
 ::application::database::annotators::mc::NoAnnotator		"No annotator" ;# NEW
+
+### application::database::positions ###################################
+::application::database::positions::mc::NoCastle		"No castle" ;# NEW
+
+::application::database::positions::mc::F_Position		"Position" ;# NEW
+::application::database::positions::mc::F_Description	"Description" ;# NEW
+::application::database::positions::mc::F_BackRank		"Back Rank" ;# NEW
+::application::database::positions::mc::F_Frequency	"Frequency" ;# NEW
 
 ### application::pgn ###################################################
 ::application::pgn::mc::Command(move:comment)			"Agregar comentario"

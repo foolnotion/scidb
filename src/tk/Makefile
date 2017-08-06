@@ -214,9 +214,9 @@ tk_image.o: svg/agg/agg_math.h
 tk_image.o: svg/agg/agg_array.h
 tk_image.o: ../mstl/m_map.h
 tk_image.o: ../mstl/m_vector.h
+tk_image.o: ../mstl/m_types.h
 tk_image.o: ../mstl/m_type_traits.h
 tk_image.o: ../mstl/m_type_traits.ipp
-tk_image.o: ../mstl/m_types.h
 tk_image.o: ../mstl/m_memblock.h
 tk_image.o: ../mstl/m_memblock.ipp
 tk_image.o: ../mstl/m_utility.h

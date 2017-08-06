@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2013 Gregor Cramer
+# Copyright: (C) 2009-2017 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -50,6 +50,7 @@ set Games								"&Games"
 set Players								"&Players"
 set Events								"&Events"
 set Sites								"&Sites"
+set Positions							"S&tart Positions"
 set Annotators							"&Annotators"
 
 set File									"File"
@@ -204,9 +205,8 @@ array set Vars {
 	pressed			0
 	dragging			0
 	mintabs			3
-	taborder			{games players events sites annotators}
+	taborder			{games players events sites annotators positions}
 }
-#	taborder			{information games players events sites annotators}
 
 
 array set Options {
@@ -1114,7 +1114,7 @@ proc UpdateAfterSwitch {filename variant} {
 		}
 	}
 
-	foreach tab {players events sites annotators} {
+	foreach tab {players events sites annotators positions} {
 		if {[winfo toplevel $Vars($tab)] eq $Vars($tab)} {
 			[namespace current]::${tab}::activate $Vars($tab) 1
 		}
@@ -1141,12 +1141,13 @@ proc CheckTabState {} {
 	set codec [::scidb::db::get codec]
 
 	if {[winfo toplevel $Vars(annotators)] ne $Vars(annotators)} {
-		if {$codec eq "sci" || $codec eq "cbh"} {
-			set state normal
-		} else {
-			set state hidden
-		}
+		if {$codec eq "sci" || $codec eq "cbh"} { set state normal } else { set state hidden }
 		$Vars(contents) tab $Vars(annotators) -state $state
+	}
+
+	if {[winfo toplevel $Vars(positions)] ne $Vars(positions)} {
+		if {$codec eq "sci"} { set state normal } else { set state hidden }
+		$Vars(contents) tab $Vars(positions) -state $state
 	}
 
 	if {[winfo toplevel $Vars(sites)] ne $Vars(sites)} {

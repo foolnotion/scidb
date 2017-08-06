@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2008-2013 Gregor Cramer
+// Copyright: (C) 2008-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -314,6 +314,7 @@ static mstl::string const IdKBBK("endings/kbbk");
 static mstl::string const IdRunaway("misc/runaway");
 static mstl::string const IdQueenVsRooks("misc/queen-rooks");
 static mstl::string const IdUpsideDown("wild/5");
+static mstl::string const IdReversedQueenAndKing("wild/0");
 
 } // namespace variant
 
@@ -4451,53 +4452,179 @@ variant::identifier(Type type)
 
 
 mstl::string const&
-variant::fen(Idn idn)
+variant::fics::fen(uint16_t idn)
 {
-	static mstl::string const FStandard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-	static mstl::string const FTransposed("rnbkqbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBKQBNR w KQkq - 0 1");
-	static mstl::string const FNoCastling("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1");
-	static mstl::string const FLittleGame("4k3/5ppp/8/8/8/8/PPP5/3K4 w - - 0 1");
-	static mstl::string const FPawnsOn4thRank("rnbqkbnr/8/8/pppppppp/PPPPPPPP/8/8/RNBQKBNR w KQkq - 0 1");
-	static mstl::string const FKNNvsKP("8/6k1/4p3/4N3/8/6K1/7N/8 w - - 0 1");
-	static mstl::string const FPyramid("rnbqkbnr/p6p/1p4p1/2pPPp2/2PppP2/1P4P1/P6P/RNBQKBNR w KQkq - 0 1");
-	static mstl::string const FPawnsOnly("4k3/pppppppp/8/8/8/8/PPPPPPPP/4K3 w - - 0 1");
-	static mstl::string const FKnightsOnly("1n2k1n1/pppppppp/8/8/8/8/PPPPPPPP/1N2K1N1 w - - 0 1");
-	static mstl::string const FBishopsOnly("2b1kb2/pppppppp/8/8/8/8/PPPPPPPP/2B1KB2 w - - 0 1");
-	static mstl::string const FRooksOnly("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1");
-	static mstl::string const FQueensOnly("3qk3/pppppppp/8/8/8/8/PPPPPPPP/3QK3 w - - 0 1");
-	static mstl::string const FNoQueens("rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 0 1");
-	static mstl::string const FWildFive("3K4/PPPPPPPP/8/8/8/8/pppppppp/3k4 w - - 0 1");
-	static mstl::string const FKBNK("4k3/8/8/8/8/8/8/B3K2N w - - 0 1");
-	static mstl::string const FKBBK("4k3/8/8/8/8/8/8/B3K2B w - - 0 1");
-	static mstl::string const FRunaway("rnbq1bnr/pppppppp/4k3/8/8/4K3/PPPPPPPP/RNBQ1BNR w KQkq - 0 1");
-	static mstl::string const FQueenVsRooks("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/3QK3 w kq - 0 1");
-	static mstl::string const FUpsideDown("RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr w - - 0 1");
-
 	M_REQUIRE(idn != None);
+
+#define RETURN(s) { static mstl::string const S(s); return S; }
+	switch (Idn(idn))
+	{
+		case None:				return mstl::string::empty_string;
+		case Standard:			RETURN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+		case Transposed:		RETURN("rnbkqbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBKQBNR w KQkq - 0 1");
+		case NoCastling:		RETURN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1");
+		case LittleGame:		RETURN("4k3/5ppp/8/8/8/8/PPP5/3K4 w - - 0 1");
+		case PawnsOn4thRank:	RETURN("rnbqkbnr/8/8/pppppppp/PPPPPPPP/8/8/RNBQKBNR w KQkq - 0 1");
+		case KNNvsKP:			RETURN("8/6k1/4p3/4N3/8/6K1/7N/8 w - - 0 1");
+		case Pyramid:			RETURN("rnbqkbnr/p6p/1p4p1/2pPPp2/2PppP2/1P4P1/P6P/RNBQKBNR w KQkq - 0 1");
+		case PawnsOnly:		RETURN("4k3/pppppppp/8/8/8/8/PPPPPPPP/4K3 w - - 0 1");
+		case KnightsOnly:		RETURN("1n2k1n1/pppppppp/8/8/8/8/PPPPPPPP/1N2K1N1 w - - 0 1");
+		case BishopsOnly:		RETURN("2b1kb2/pppppppp/8/8/8/8/PPPPPPPP/2B1KB2 w - - 0 1");
+		case RooksOnly:		RETURN("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1");
+		case QueensOnly:		RETURN("3qk3/pppppppp/8/8/8/8/PPPPPPPP/3QK3 w - - 0 1");
+		case NoQueens:			RETURN("rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 0 1");
+		case WildFive:			RETURN("3K4/PPPPPPPP/8/8/8/8/pppppppp/3k4 w - - 0 1");
+		case KBNK:				RETURN("4k3/8/8/8/8/8/8/B3K2N w - - 0 1");
+		case KBBK:				RETURN("4k3/8/8/8/8/8/8/B3K2B w - - 0 1");
+		case Runaway:			RETURN("rnbq1bnr/pppppppp/4k3/8/8/4K3/PPPPPPPP/RNBQ1BNR w KQkq - 0 1");
+		case QueenVsRooks:	RETURN("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/3QK3 w kq - 0 1");
+		case UpsideDown:		RETURN("RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr w - - 0 1");
+		case ReversedQueenAndKing: RETURN("rnbkqbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBKQBNR w KQkq - 0 1");
+		case MaxCode:			break;
+	}
+#undef RETURN
+
+	M_ASSERT(!"position number out of range");
+	return mstl::string::empty_string;
+}
+
+
+variant::Idn
+variant::fics::idnFromString(mstl::string const& position)
+{
+	char const* s = position;
+
+	switch (s[0])
+	{
+		case 'e':
+			if (position == IdKBNK)
+				return KBNK;
+			if (position == IdKBBK)
+				return KBNK;
+			break;
+
+		case 'm':
+			if (::strncmp(s, "misc/", 5) == 0)
+			{
+				switch (s[5])
+				{
+					case 'b':
+						if (position == IdBishopsOnly)
+							return BishopsOnly;
+						break;
+
+					case 'k':
+						if (position == IdKnightsOnly)
+							return KnightsOnly;
+
+					case 'n':
+						if (position == IdNoQueens)
+							return NoQueens;
+						break;
+
+					case 'p':
+						if (position == IdPyramid)
+							return Pyramid;
+						break;
+
+					case 'q':
+						if (position == IdQueensOnly)
+							return QueensOnly;
+						if (position == IdQueenVsRooks)
+							return QueenVsRooks;
+						break;
+
+					case 'r':
+						if (position == IdRooksOnly)
+							return RooksOnly;
+						if (position == IdRunaway)
+							return Runaway;
+						break;
+				}
+			}
+			break;
+
+		case 'p':
+			if (::strncmp(s, "pawns/", 6) == 0)
+			{
+				switch (s[6])
+				{
+					case 'l':
+						if (position == IdLittleGame)
+							return LittleGame;
+						break;
+
+					case 'p':
+						if (position == IdPawnsOnly)
+							return PawnsOnly;
+						break;
+
+					case 'w':
+						if (position == IdWildFive)
+							return WildFive;
+						break;
+				}
+			}
+			break;
+
+		case 'w':
+			if (::strncmp(s, "wild/", 5) == 0)
+			{
+				switch (s[5])
+				{
+					case '0':
+						if (position == IdReversedQueenAndKing)
+							return KNNvsKP;
+						break;
+
+					case '1':
+						if (position == IdKNNvsKP)
+							return KNNvsKP;
+						break;
+
+					case '5':
+						if (position == IdUpsideDown)
+							return UpsideDown;
+						break;
+
+					case '8':
+						if (position == IdPawnsOn4thRank)
+							return PawnsOn4thRank;
+						break;
+				}
+			}
+			break;
+	}
+
+	return None;
+}
+
+
+mstl::string const&
+variant::fics::identifier(uint16_t idn)
+{
+	M_REQUIRE(idn);
+	M_REQUIRE(!isShuffleChess(idn));
 
 	switch (idn)
 	{
-		case None:				return mstl::string::empty_string;
-		case Standard:			return FStandard;
-		case Transposed:		return FTransposed;
-		case NoCastling:		return FNoCastling;
-		case LittleGame:		return FLittleGame;
-		case PawnsOn4thRank:	return FPawnsOn4thRank;
-		case KNNvsKP:			return FKNNvsKP;
-		case Pyramid:			return FPyramid;
-		case PawnsOnly:		return FPawnsOnly;
-		case KnightsOnly:		return FKnightsOnly;
-		case BishopsOnly:		return FBishopsOnly;
-		case RooksOnly:		return FRooksOnly;
-		case QueensOnly:		return FQueensOnly;
-		case NoQueens:			return FNoQueens;
-		case WildFive:			return FWildFive;
-		case KBNK:				return FKBNK;
-		case KBBK:				return FKBBK;
-		case Runaway:			return FRunaway;
-		case QueenVsRooks:	return FQueenVsRooks;
-		case UpsideDown:		return FUpsideDown;
-		case MaxCode:			break;
+		case LittleGame:				return IdLittleGame;
+		case PawnsOn4thRank:			return IdPawnsOn4thRank;
+		case KNNvsKP:					return IdKNNvsKP;
+		case Pyramid:					return IdPyramid;
+		case PawnsOnly:				return IdPawnsOnly;
+		case KnightsOnly:				return IdKnightsOnly;
+		case BishopsOnly:				return IdBishopsOnly;
+		case RooksOnly:				return IdRooksOnly;
+		case QueensOnly:				return IdQueensOnly;
+		case NoQueens:					return IdNoQueens;
+		case WildFive:					return IdWildFive;
+		case KBNK:						return IdKBNK;
+		case KBBK:						return IdKBBK;
+		case Runaway:					return IdRunaway;
+		case QueenVsRooks:			return IdQueenVsRooks;
+		case UpsideDown:				return IdUpsideDown;
+		case ReversedQueenAndKing:	return IdReversedQueenAndKing;
 	}
 
 	M_ASSERT(!"position number out of range");
@@ -4514,7 +4641,7 @@ variant::fen(uint16_t idn)
 	if (idn <= 4*960)
 		return shuffle::fen(idn);
 
-	return fen(Idn(idn));
+	return fics::fen(idn);
 }
 
 

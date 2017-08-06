@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2009-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -151,6 +151,19 @@ public:
 private:
 
 	mstl::string m_name;
+};
+
+class SearchPosition : public Search
+{
+public:
+
+	SearchPosition(uint16_t idn);
+
+	bool match(GameInfo const& info) const override;
+
+private:
+
+	uint16_t m_idn;
 };
 
 #if 0

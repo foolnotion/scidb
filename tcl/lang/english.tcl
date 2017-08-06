@@ -564,6 +564,7 @@
 ::application::database::mc::Players							"&Players"
 ::application::database::mc::Events								"&Events"
 ::application::database::mc::Sites								"&Sites"
+::application::database::mc::Positions							"S&tart Positions"
 ::application::database::mc::Annotators						"&Annotators"
 
 ::application::database::mc::File								"File"
@@ -713,6 +714,14 @@
 ::application::database::annotators::mc::Find				"Find"
 ::application::database::annotators::mc::FindAnnotator	"Find annotator"
 ::application::database::annotators::mc::NoAnnotator		"No annotator"
+
+### application::database::positions ###################################
+::application::database::positions::mc::NoCastle		"No castle"
+
+::application::database::positions::mc::F_Position		"Position"
+::application::database::positions::mc::F_Description	"Description"
+::application::database::positions::mc::F_BackRank		"Back Rank"
+::application::database::positions::mc::F_Frequency	"Frequency"
 
 ### application::pgn ###################################################
 ::application::pgn::mc::Command(move:comment)			"Set Comment"

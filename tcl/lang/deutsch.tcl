@@ -565,6 +565,7 @@
 ::application::database::mc::Players							"Spie&ler"
 ::application::database::mc::Events								"&Turniere"
 ::application::database::mc::Sites								"&Orte"
+::application::database::mc::Positions							"Sta&rtpositionen"
 ::application::database::mc::Annotators						"&Kommentatoren"
 
 ::application::database::mc::File								"Datei"
@@ -715,6 +716,14 @@
 ::application::database::annotators::mc::Find				"Suchen"
 ::application::database::annotators::mc::FindAnnotator	"Suche Kommentator"
 ::application::database::annotators::mc::NoAnnotator		"Ohne Kommentator"
+
+### application::database::positions ###################################
+::application::database::positions::mc::NoCastle		"Keine Rochade"
+
+::application::database::positions::mc::F_Position		"Position"
+::application::database::positions::mc::F_Description	"Beschreibung"
+::application::database::positions::mc::F_BackRank		"Grundreihe"
+::application::database::positions::mc::F_Frequency	"Häufigkeit"
 
 ### application::pgn ###################################################
 ::application::pgn::mc::Command(move:comment)			"Kommentar setzen"

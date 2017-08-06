@@ -74,6 +74,7 @@ public:
 	int findEvent(Database const& db, mstl::string const& name) const;
 	int findSite(Database const& db, mstl::string const& name) const;
 	int findAnnotator(Database const& db, mstl::string const& name) const;
+	int findPosition(Database const& db, uint16_t idn) const;
 
 	// 'startIndex' will be given as filtered sort index
 	// returns the filtered sort index, or -1 if not found
@@ -98,6 +99,9 @@ public:
 					order::ID order = order::Ascending);
 	void sort(	Database const& db,
 					attribute::annotator::ID attr,
+					order::ID order = order::Ascending);
+	void sort(	Database const& db,
+					attribute::position::ID attr,
 					order::ID order = order::Ascending);
 
 	void reverse(Database const& db);

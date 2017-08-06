@@ -548,6 +548,8 @@ inline bool isAntichessExceptLosers(Type variant) { return variant & Antichess; 
 inline bool isChess960(uint16_t idn)		{ return 0 < idn && idn <= 960; }
 inline bool isShuffleChess(uint16_t idn)	{ return 0 < idn && idn <= 4*960; }
 
+inline mstl::string const& fics::fen(Idn idn) { return fen(uint16_t(idn)); }
+
 inline
 bool
 isStandardChess(uint16_t idn, variant::Type variant)

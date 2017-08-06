@@ -53,7 +53,6 @@ inline unsigned Database::countInitialGames() const		{ return m_initialSize; }
 inline mstl::string const& Database::name() const			{ return m_name; }
 inline mstl::string const& Database::description() const	{ return m_description; }
 inline type::ID Database::type() const							{ return m_type; }
-inline Statistic const& Database::statistic() const		{ return m_statistic; }
 inline uint64_t Database::lastChange() const					{ return m_lastChange; }
 inline DatabaseContent const& Database::content() const	{ return *this; }
 inline TreeCache const& Database::treeCache() const		{ return m_treeCache; }
@@ -67,6 +66,17 @@ inline int Database::mapEventIndex(int index) const		{ return index; }
 inline int Database::mapSiteIndex(int index) const			{ return index; }
 
 inline void Database::resetInitialSize()						{ resetInitialSize(m_size); }
+
+
+inline
+Statistic const&
+Database::statistic() const
+{
+	M_REQUIRE(isOpen());
+	M_ASSERT(m_statistic);
+
+	return *m_statistic;
+}
 
 
 inline
@@ -181,7 +191,7 @@ Database::gameInfo(unsigned index) const
 	M_REQUIRE(isOpen());
 	M_REQUIRE(index < countGames());
 
-	return *m_gameInfoList[index];
+	return m_gameInfoList[index];
 }
 
 
@@ -192,7 +202,7 @@ Database::gameInfo(unsigned index)
 	M_REQUIRE(isOpen());
 	M_REQUIRE(index < countGames());
 
-	return *m_gameInfoList[index];
+	return m_gameInfoList[index];
 }
 
 

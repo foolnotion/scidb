@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2009-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -117,6 +117,8 @@ Database::Database(Database const& db, mstl::string const& name)
 	,m_encodingOk(true)
 	,m_descriptionHasChanged(false)
 {
+	m_statistic = new Statistic();
+
 	try
 	{
 		m_codec->open(this, m_encoding);
@@ -150,6 +152,7 @@ Database::Database(mstl::string const& name, mstl::string const& encoding)
 
 	// NOTE: we assume normalized (unique) file names.
 
+	m_statistic = new Statistic();
 	m_memoryOnly = false;
 	m_temporary = true;
 	m_created = sys::time::time();
@@ -187,6 +190,7 @@ Database::Database(	mstl::string const& name,
 
 	// NOTE: we assume normalized (unique) file names.
 
+	m_statistic = new Statistic();
 	m_memoryOnly = storage == storage::MemoryOnly;
 	m_temporary = false;
 	m_readOnly = m_temporary;
@@ -243,6 +247,7 @@ Database::Database(	mstl::string const& name,
 
 	// NOTE: we assume normalized (unique) file names.
 
+	m_statistic = new Statistic();
 	m_readOnly = mode == permission::ReadOnly;
 	m_codec = DatabaseCodec::makeCodec(m_name, DatabaseCodec::Existing);
 
@@ -273,9 +278,9 @@ Database::Database(	mstl::string const& name,
 	setEncodingFailed(m_codec->encodingFailed());
 	::sys::file::changed(m_name, m_fileTime);
 
-	m_statistic.compute(	const_cast<GameInfoList const&>(m_gameInfoList).begin(),
-								const_cast<GameInfoList const&>(m_gameInfoList).end(),
-								Statistic::Reset);
+	M_ASSERT(m_statistic);
+	m_statistic->reset();
+	m_statistic->compute(m_gameInfoList.begin(), m_gameInfoList.end());
 }
 
 
@@ -296,6 +301,7 @@ Database::Database(mstl::string const& name, Producer& producer, util::Progress&
 {
 	// NOTE: we assume normalized (unique) file names.
 
+	m_statistic = new Statistic();
 	m_codec = DatabaseCodec::makeCodec(name, DatabaseCodec::Existing);
 	M_ASSERT(m_codec->isWritable());
 
@@ -321,9 +327,9 @@ Database::Database(mstl::string const& name, Producer& producer, util::Progress&
 	setEncodingFailed(producer.encodingFailed());
 	::sys::file::changed(m_name, m_fileTime);
 
-	m_statistic.compute(	const_cast<GameInfoList const&>(m_gameInfoList).begin(),
-								const_cast<GameInfoList const&>(m_gameInfoList).end(),
-								Statistic::Reset);
+	M_ASSERT(m_statistic);
+	m_statistic->reset();
+	m_statistic->compute(m_gameInfoList.begin(), m_gameInfoList.end());
 }
 
 
@@ -332,6 +338,7 @@ Database::~Database() throw()
 	if (m_asyncReader)
 		closeAsyncTreeSearchReader();
 	delete m_codec;
+	delete m_statistic;
 }
 
 
@@ -354,7 +361,9 @@ Database::hasChanged() const
 {
 	return	m_memoryOnly
 			&& (	m_descriptionHasChanged
-				|| m_statistic.deleted + m_statistic.changed + m_statistic.added > 0);
+				|| m_statistic->counter.deleted +
+					m_statistic->counter.changed +
+					m_statistic->counter.added > 0);
 }
 
 
@@ -378,10 +387,11 @@ Database::resetChangedStatus()
 	m_initialSize = m_size = m_gameInfoList.size();
 
 	for (unsigned i = 0; i < m_size; ++i)
-		m_gameInfoList[i]->setUnchanged();
+		m_gameInfoList[i].setUnchanged();
 
-	m_statistic.added = 0;
-	m_statistic.changed = 0;
+	M_ASSERT(m_statistic);
+	m_statistic->counter.added = 0;
+	m_statistic->counter.changed = 0;
 }
 
 
@@ -391,7 +401,7 @@ Database::resetInitialSize(unsigned size)
 	M_REQUIRE(size <= countGames());
 
 	m_initialSize = size;
-	m_statistic.added = m_size - size;
+	m_statistic->counter.added = m_size - size;
 }
 
 
@@ -402,6 +412,7 @@ Database::count(table::Type type) const
 	{
 		case table::Games:		return countGames();
 		case table::Annotators:	return countAnnotators();
+		case table::Positions:	return countPositions();
 		case table::Players:		return m_namebases(Namebase::Player).used();
 		case table::Events:		return m_namebases(Namebase::Event).used();
 		case table::Sites:		return m_namebases(Namebase::Site).used();
@@ -458,12 +469,14 @@ Database::save(util::Progress& progress)
 	m_lastChange = sys::time::timestamp();
 //	m_treeCache.setIncomplete(start);
 
-	m_statistic.compute(	const_cast<GameInfoList const&>(m_gameInfoList).begin() + start,
-								const_cast<GameInfoList const&>(m_gameInfoList).end(),
-								start == 0 ? Statistic::Reset : Statistic::Continue);
-	m_statistic.added = m_size - m_initialSize;
+	M_ASSERT(m_statistic);
+	if (start == 0)
+		m_statistic->reset();
 
-	return m_statistic.added;
+	m_statistic->compute(m_gameInfoList.begin() + start, m_gameInfoList.end());
+	m_statistic->counter.added = m_size - m_initialSize;
+
+	return m_statistic->counter.added;
 }
 
 
@@ -489,7 +502,7 @@ Database::compact(Database &destination, util::Progress& progress)
 			reportAfter += frequency;
 		}
 
-		if (!m_gameInfoList[i]->isDeleted())
+		if (!m_gameInfoList[i].isDeleted())
 		{
 			save::State state = exportGame(i, destination);
 
@@ -521,9 +534,13 @@ Database::compact(Database &destination, util::Progress& progress)
 		}
 	}
 
-	m_statistic.compute(	const_cast<GameInfoList const&>(m_gameInfoList).begin(),
-								const_cast<GameInfoList const&>(m_gameInfoList).end(),
-								Statistic::Reset);
+#if 0 // Database::save() is doing this
+	destination.m_lastChange = sys::time::timestamp();
+
+	M_ASSERT(m_statistic);
+	destination.m_statistic->reset();
+	m_statistic->compute(m_gameInfoList.begin(), m_gameInfoList.end());
+#endif
 }
 
 
@@ -547,9 +564,9 @@ Database::compact(util::Progress& progress)
 	progress.start(numGames);
 
 	GameInfoList newList;
-	newList.reserve(numGames - m_statistic.deleted);
+	unsigned currentChunk = 0;
 
-	Allocator allocator;
+	M_ASSERT(m_statistic);
 
 	for (unsigned i = 0; i < numGames; ++i)
 	{
@@ -559,35 +576,39 @@ Database::compact(util::Progress& progress)
 			reportAfter += frequency;
 		}
 
-		GameInfo* info = m_gameInfoList[i];
+		GameInfo& info = m_gameInfoList[i];
 
-		if (m_gameInfoList[i]->isDeleted())
+		if (info.isDeleted())
 		{
-			m_namebases(Namebase::Player).decrRef(info->playerEntry(color::White));
-			m_namebases(Namebase::Player).decrRef(info->playerEntry(color::Black));
-			m_namebases(Namebase::Site).decrRef(info->eventEntry()->site());
-			m_namebases(Namebase::Event).decrRef(info->eventEntry());
+			m_namebases(Namebase::Player).decrRef(info.playerEntry(color::White));
+			m_namebases(Namebase::Player).decrRef(info.playerEntry(color::Black));
+			m_namebases(Namebase::Site).decrRef(info.eventEntry()->site());
+			m_namebases(Namebase::Event).decrRef(info.eventEntry());
 
-			if (NamebaseEntry* annotator = info->annotatorEntry())
+			if (NamebaseEntry* annotator = info.annotatorEntry())
 				m_namebases(Namebase::Annotator).decrRef(annotator);
 		}
 		else
 		{
-			GameInfo* newInfo = allocator.alloc();
-			*newInfo = *info;
-			newList.push_back(newInfo);
+			newList.push_back(info);
+
+			unsigned chunkIndex = m_gameInfoList.chunk_index(i);
+
+			if (chunkIndex > currentChunk)
+			{
+				m_gameInfoList.release_chunk(chunkIndex);
+				++currentChunk;
+			}
 		}
 	}
 
-	m_allocator.swap(allocator);
 	m_gameInfoList.swap(newList);
 	m_size = m_gameInfoList.size();
-	m_statistic.deleted = 0;
+	m_statistic->counter.deleted = 0;
 	m_namebases.update();
 
-	m_statistic.compute(	const_cast<GameInfoList const&>(m_gameInfoList).begin(),
-								const_cast<GameInfoList const&>(m_gameInfoList).end(),
-								Statistic::Reset);
+	m_statistic->reset();
+	m_statistic->compute(m_gameInfoList.begin(), m_gameInfoList.end());
 }
 
 
@@ -690,7 +711,12 @@ Database::remove()
 bool
 Database::shouldCompact() const
 {
-	return !isReadonly() && format() == format::Scidb && (m_shouldCompact || m_statistic.deleted > 0);
+	M_REQUIRE(isOpen());
+	M_ASSERT(m_statistic);
+
+	return	!isReadonly()
+			&& format() == format::Scidb
+			&& (m_shouldCompact || m_statistic->counter.deleted > 0);
 }
 
 
@@ -752,9 +778,9 @@ Database::clear()
 	M_REQUIRE(isWritable());
 
 	m_gameInfoList.clear();
-	m_statistic.clear();
+	if (m_statistic)
+		m_statistic->reset();
 	m_namebases.clear();
-	m_allocator.clear();
 	m_encodingFailed = false;
 	m_encodingOk = true;
 	m_size = 0;
@@ -775,9 +801,10 @@ Database::reopen(mstl::string const& encoding, util::Progress& progress)
 	M_REQUIRE(!hasTemporaryStorage());
 	M_REQUIRE(format() != format::Scidb);
 
+	M_ASSERT(m_statistic);
+
 	m_gameInfoList.clear();
 	m_namebases.clear();
-	m_allocator.clear();
 	m_treeCache.clear();
 	m_encodingFailed = false;
 	m_encodingOk = true;
@@ -812,7 +839,7 @@ Database::computeChecksum(unsigned index) const
 	M_REQUIRE(isOpen());
 	M_REQUIRE(index < countGames());
 
-	GameInfo const& info = *m_gameInfoList[index];
+	GameInfo const& info = m_gameInfoList[index];
 	util::crc::checksum_t crc = m_codec->computeChecksum(info, info.computeChecksum());
 
 	crc = ::util::crc::compute(crc, uint32_t(m_variant));
@@ -844,7 +871,7 @@ Database::loadGame(	::util::BlockFileReader* asyncReader,
 	try
 	{
 		length = m_codec->decodeGame(	asyncReader,
-												*m_gameInfoList[index],
+												m_gameInfoList[index],
 												line,
 												length,
 												startBoard,
@@ -865,7 +892,7 @@ Database::loadGame(unsigned index, Game& game, mstl::string* encoding, mstl::str
 	M_REQUIRE(isOpen());
 	M_REQUIRE(index < countGames());
 
-	GameInfo* info = m_gameInfoList[index];
+	GameInfo& info = m_gameInfoList[index];
 	m_codec->reset();
 
 	if (encoding)
@@ -874,13 +901,13 @@ Database::loadGame(unsigned index, Game& game, mstl::string* encoding, mstl::str
 	variant::Type variant;
 
 	if (m_variant == variant::Antichess)
-		variant = info->isGiveaway() ? variant::Giveaway : variant::Suicide;
+		variant = info.isGiveaway() ? variant::Giveaway : variant::Suicide;
 	else
 		variant = m_variant;
 
 	try
 	{
-		m_codec->decodeGame(game, *info, index, encoding);
+		m_codec->decodeGame(game, info, index, encoding);
 	}
 	catch (DecodingFailedException const& exc)
 	{
@@ -925,13 +952,12 @@ Database::newGame(Game& game, GameInfo const& info)
 
 	if (save::isOk(state))
 	{
-		GameInfo* info = m_gameInfoList.back();
-
-		info->setDirty(true);
-
+		m_gameInfoList.back().setDirty(true);
 		m_lastChange = sys::time::timestamp();
-		m_statistic.add(*m_gameInfoList.back());
-		m_statistic.added = m_size - m_initialSize;
+
+		M_ASSERT(m_statistic);
+		m_statistic->add(m_gameInfoList.back());
+		m_statistic->counter.added = m_size - m_initialSize;
 	}
 
 	return state;
@@ -967,14 +993,14 @@ Database::addGame(Game& game)
 			::sys::file::changed(m_name, m_fileTime);
 		}
 
-		GameInfo* info = m_gameInfoList.back();
-
-		info->setDirty(true);
-
+		m_gameInfoList.back().setDirty(true);
 		m_size = m_gameInfoList.size();
 		m_lastChange = sys::time::timestamp();
-		m_statistic.add(*m_gameInfoList.back());
-		m_statistic.added = m_size - m_initialSize;
+
+		M_ASSERT(m_statistic);
+		m_statistic->add(m_gameInfoList.back());
+		m_statistic->counter.added = m_size - m_initialSize;
+
 //		m_treeCache.setIncomplete();
 	}
 
@@ -995,8 +1021,8 @@ Database::updateGame(Game& game)
 	unsigned char buffer[8192];
 
 	ByteStream	strm(buffer, sizeof(buffer));
-	GameInfo&	info(*m_gameInfoList[game.index()]);
-	unsigned		offset(info.gameOffset());
+	GameInfo&	info(m_gameInfoList[game.index()]);
+	unsigned		oldOffset(info.gameOffset());
 
 	if (format() == format::Scidb)
 	{
@@ -1016,9 +1042,12 @@ Database::updateGame(Game& game)
 	if (save::isOk(state))
 	{
 		if (!m_memoryOnly)
+		{
 			m_codec->update(game.index(), true);
+			m_codec->sync();
+		}
 
-		if (format() == format::Scidb && offset != info.gameOffset())
+		if (format() == format::Scidb && oldOffset != info.gameOffset())
 		{
 			m_shouldCompact = true;
 
@@ -1026,12 +1055,16 @@ Database::updateGame(Game& game)
 				m_codec->updateHeader();
 		}
 
-		if (!m_memoryOnly)
+		if (format() == format::Scidb && oldOffset != info.gameOffset())
+			setShouldCompact();
+		else if (!m_memoryOnly)
 			::sys::file::changed(m_name, m_fileTime);
+
+		M_ASSERT(m_statistic);
 
 		if (unsigned(game.index()) < m_initialSize && !info.isChanged())
 		{
-			++m_statistic.changed;
+			++m_statistic->counter.changed;
 			info.setChanged(true);
 		}
 
@@ -1040,9 +1073,8 @@ Database::updateGame(Game& game)
 		m_lastChange = sys::time::timestamp();
 //		m_treeCache.setIncomplete(game.index());
 
-		m_statistic.compute(	const_cast<GameInfoList const&>(m_gameInfoList).begin(),
-									const_cast<GameInfoList const&>(m_gameInfoList).end(),
-									Statistic::Reset);
+		m_statistic->reset();
+		m_statistic->compute(m_gameInfoList.begin(), m_gameInfoList.end());
 	}
 
 	return state;
@@ -1064,15 +1096,19 @@ Database::updateMoves(Game& game)
 
 	m_codec->encodeGame(strm, game, game.getFinalBoard().signature(), game.langFlags());
 
-	GameInfo&	info		= *m_gameInfoList[game.index()];
-	unsigned		offset	= info.gameOffset();
-	save::State	state		= m_codec->saveMoves(strm, game);
+	GameInfo&	info			= m_gameInfoList[game.index()];
+	unsigned		oldOffset	= info.gameOffset();
+	save::State	state			= m_codec->saveMoves(strm, game);
+
+	M_ASSERT(m_statistic);
+	m_statistic->removeLanguages(info);
+	m_statistic->removePosition(info);
 
 	if (save::isOk(state))
 	{
 		if (format() == format::Scidb)
 		{
-			if (offset != info.gameOffset())
+			if (oldOffset != info.gameOffset())
 			{
 				m_shouldCompact = true;
 
@@ -1099,7 +1135,7 @@ Database::updateMoves(Game& game)
 
 		if (unsigned(game.index()) < m_initialSize && !info.isChanged())
 		{
-			++m_statistic.changed;
+			++m_statistic->counter.changed;
 			info.setChanged(true);
 		}
 
@@ -1108,6 +1144,9 @@ Database::updateMoves(Game& game)
 		m_lastChange = sys::time::timestamp();
 //		m_treeCache.setIncomplete(game.index());
 	}
+
+	m_statistic->addLanguages(info);
+	m_statistic->addPosition(info);
 
 	return state;
 }
@@ -1134,20 +1173,21 @@ Database::updateCharacteristics(unsigned index, TagSet const& tags)
 			::sys::file::changed(m_name, m_fileTime);
 		}
 
-		GameInfo& info = *m_gameInfoList[index];
+		M_ASSERT(m_statistic);
+
+		GameInfo& info = m_gameInfoList[index];
 
 		if (index <= m_initialSize && !info.isChanged())
 		{
-			++m_statistic.changed;
+			++m_statistic->counter.changed;
 			info.setChanged(true);
 		}
 
 		info.setDirty(false);
 		m_lastChange = sys::time::timestamp();
 
-		m_statistic.compute(	const_cast<GameInfoList const&>(m_gameInfoList).begin(),
-									const_cast<GameInfoList const&>(m_gameInfoList).end(),
-									Statistic::Reset);
+		m_statistic->reset();
+		m_statistic->compute(m_gameInfoList.begin(), m_gameInfoList.end());
 	}
 
 	return state;
@@ -1161,7 +1201,7 @@ Database::exportGame(unsigned index, Consumer& consumer) const
 	M_REQUIRE(index < countGames());
 	M_REQUIRE(consumer.variant() == variant());
 
-	GameInfo const*	info = m_gameInfoList[index];
+	GameInfo const&	info = m_gameInfoList[index];
 	TagSet				tags;
 
 	setupTags(index, tags);
@@ -1255,12 +1295,12 @@ Database::exportGame(unsigned index, Consumer& consumer) const
 	save::State rc;
 
 	m_codec->reset();
-	consumer.setGameFlags(info->flags());
-	consumer.setLangFlags(info->langFlags());
+	consumer.setGameFlags(info.flags());
+	consumer.setLangFlags(info.langFlags());
 
 	try
 	{
-		rc = m_codec->exportGame(consumer, tags, *info, index);
+		rc = m_codec->exportGame(consumer, tags, info, index);
 	}
 	catch (DecodingFailedException const& exc)
 	{
@@ -1292,7 +1332,7 @@ Database::exportGame(unsigned index, Database& destination) const
 				|| destination.format() == format::Scid4);
 	M_REQUIRE(index < countGames());
 
-	GameInfo const&	info			= *m_gameInfoList[index];
+	GameInfo const&	info			= m_gameInfoList[index];
 	format::Type		srcFormat	= format();
 
 	if (srcFormat == destination.format())
@@ -1460,7 +1500,7 @@ Database::exportGames(	Destination& destination,
 			infoIndex = index;
 		}
 
-		if (!illegalRejected || !m_gameInfoList[infoIndex]->containsIllegalMoves())
+		if (!illegalRejected || !m_gameInfoList[infoIndex].containsIllegalMoves())
 		{
 			save::State state = exportGame(infoIndex, destination);
 
@@ -1513,8 +1553,10 @@ Database::importGame(Producer& producer, unsigned index)
 	{
 		m_lastChange = sys::time::timestamp();
 		setEncodingFailed(producer.encodingFailed() || m_codec->encodingFailed());
-		m_statistic.add(*m_gameInfoList[index]);
-		m_statistic.added = m_size - m_initialSize;
+
+		M_ASSERT(m_statistic);
+		m_statistic->add(m_gameInfoList[index]);
+		m_statistic->counter.added = m_size - m_initialSize;
 
 		if (!isMemoryOnly())
 		{
@@ -1638,10 +1680,12 @@ Database::deleteGame(unsigned index, bool flag)
 	if (info.isDeleted() == flag)
 		return;
 
+	M_ASSERT(m_statistic);
+
 	if (flag)
-		++m_statistic.deleted;
+		++m_statistic->counter.deleted;
 	else
-		--m_statistic.deleted;
+		--m_statistic->counter.deleted;
 
 	info.setDeleted(flag);
 
@@ -1749,6 +1793,9 @@ Database::setVariant(variant::Type variant)
 	{
 		m_variant = variant;
 
+		delete m_statistic;
+		m_statistic = new Statistic();
+
 		if (!m_memoryOnly)
 		{
 			m_codec->updateHeader();
@@ -1777,6 +1824,13 @@ Database::countAnnotators() const
 		++n;
 
 	return n;
+}
+
+
+unsigned
+Database::countPositions() const
+{
+	return statistic().positions.count();
 }
 
 
@@ -1816,7 +1870,7 @@ Database::findExactPosition(unsigned index, Board const& position, bool skipVari
 	M_REQUIRE(index < countGames());
 	M_REQUIRE(usingAsyncTreeSearchReader());
 
-	return m_codec->findExactPosition(	*m_gameInfoList[index],
+	return m_codec->findExactPosition(	m_gameInfoList[index],
 													position,
 													skipVariations,
 													m_asyncReader);
@@ -1864,7 +1918,7 @@ Database::makeTournamentTable(Filter const& gameFilter) const
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!gameFilter.isEmpty());
 
-	return new TournamentTable(*this, *(m_gameInfoList[gameFilter.next()]->eventEntry()), gameFilter);
+	return new TournamentTable(*this, *(m_gameInfoList[gameFilter.next()].eventEntry()), gameFilter);
 }
 
 
@@ -1882,15 +1936,15 @@ Database::countPlayers(NamebaseEvent const& event, unsigned& averageElo, unsigne
 
 	for (unsigned i = 0, n = m_gameInfoList.size(); i < n; ++i)
 	{
-		GameInfo const* info = m_gameInfoList[i];
+		GameInfo const& info = m_gameInfoList[i];
 
-		if (info->eventEntry() == &event)
+		if (info.eventEntry() == &event)
 		{
 			for (unsigned side = 0; side < 2; ++side)
 			{
-				NamebasePlayer const* player = info->playerEntry(color::ID(side));
+				NamebasePlayer const* player = info.playerEntry(color::ID(side));
 				EloSet::reference res = eloSet.find_or_insert(player->id(), 0);
-				res = mstl::max(res, info->findElo(color::ID(side)));
+				res = mstl::max(res, info.findElo(color::ID(side)));
 			}
 		}
 	}
@@ -1920,7 +1974,7 @@ Database::player(unsigned gameIndex, color::ID side) const
 	M_REQUIRE(isOpen());
 	M_REQUIRE(gameIndex < countGames());
 
-	return *m_gameInfoList[gameIndex]->playerEntry(side);
+	return *m_gameInfoList[gameIndex].playerEntry(side);
 }
 
 
@@ -1935,7 +1989,7 @@ Database::event(unsigned index, Access access) const
 			return *m_namebases(Namebase::Event).event(index);
 
 		case GameIndex:
-			return *m_gameInfoList[index]->eventEntry();
+			return *m_gameInfoList[index].eventEntry();
 	}
 
 	return *m_namebases(Namebase::Event).event(0); // never reached
@@ -1953,7 +2007,7 @@ Database::site(unsigned index, Access access) const
 			return *m_namebases(Namebase::Site).site(index);
 
 		case GameIndex:
-			return *m_gameInfoList[index]->eventEntry()->site();
+			return *m_gameInfoList[index].eventEntry()->site();
 	}
 
 	return *m_namebases(Namebase::Event).site(0); // never reached
@@ -1976,34 +2030,50 @@ Database::playerStatistic(NamebasePlayer const& player, PlayerStats& stats) cons
 
 	for (unsigned i = 0, n = m_gameInfoList.size(); i < n; ++i)
 	{
-		GameInfo const* info = m_gameInfoList[i];
+		GameInfo const& info = m_gameInfoList[i];
 		int side = Blank;
 
-		if (info->playerEntry(color::White) == &player)
+		if (info.playerEntry(color::White) == &player)
 			side = color::White;
-		else if (info->playerEntry(color::Black) == &player)
+		else if (info.playerEntry(color::Black) == &player)
 			side = color::Black;
 
 		if (side != Blank)
 		{
 			color::ID		color			= color::ID(side);
-			rating::Type	ratingType	= info->ratingType(color);
+			rating::Type	ratingType	= info.ratingType(color);
 
 			if (ratingType != rating::Elo)
-				stats.addRating(ratingType, info->rating(color));
+				stats.addRating(ratingType, info.rating(color));
 
-			stats.addRating(rating::Elo, info->elo(color));
-			stats.addDate(info->date());
-			stats.addScore(color, info->result());
+			stats.addRating(rating::Elo, info.elo(color));
+			stats.addDate(info.date());
+			stats.addScore(color, info.result());
 if (m_variant == variant::Normal) { // XXX
 			// NOTE: in .si4 databases the ECO code may be undefined
-			if (info->idn() == variant::Standard && info->eco(variant::Normal))
-				stats.addEco(color, info->eco(variant::Normal));
+			if (info.idn() == variant::Standard && info.eco(variant::Normal))
+				stats.addEco(color, info.eco(variant::Normal));
 }
 		}
 	}
 
 	stats.finish();
+}
+
+
+void
+Database::setShouldCompact()
+{
+	if (!m_shouldCompact)
+	{
+		m_shouldCompact = true;
+
+		if (!isMemoryOnly())
+		{
+			m_codec->updateHeader();
+			::sys::file::changed(m_name, m_fileTime);
+		}
+	}
 }
 
 
@@ -2032,7 +2102,7 @@ Database::stripMoveInformation(Filter const& filter, unsigned types, util::Progr
 			reportAfter += frequency;
 		}
 
-		if (m_codec->stripMoveInformation(*m_gameInfoList[index], types))
+		if (m_codec->stripMoveInformation(m_gameInfoList[index], types))
 			++numGames;
 	}
 
@@ -2081,7 +2151,7 @@ Database::stripTags(Filter const& filter, TagMap const& tags, util::Progress& pr
 			reportAfter += frequency;
 		}
 
-		if (m_codec->stripTags(*m_gameInfoList[index], tags))
+		if (m_codec->stripTags(m_gameInfoList[index], tags))
 			++numGames;
 	}
 
@@ -2130,7 +2200,7 @@ Database::findTags(Filter const& filter, TagMap& tags, util::Progress& progress)
 			reportAfter += frequency;
 		}
 
-		m_codec->findTags(*m_gameInfoList[index], tags);
+		m_codec->findTags(m_gameInfoList[index], tags);
 	}
 }
 
@@ -2176,7 +2246,7 @@ Database::variant(unsigned index) const
 	M_REQUIRE(index < countGames());
 
 	if (variant::isAntichessExceptLosers(m_variant))
-		return m_gameInfoList[index]->isGiveaway() ? variant::Giveaway : variant::Suicide;
+		return m_gameInfoList[index].isGiveaway() ? variant::Giveaway : variant::Suicide;
 
 	return m_variant;
 }

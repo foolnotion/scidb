@@ -79,7 +79,7 @@ proc build {parent} {
 
 	tk::panedwindow $rt -orient vertical -opaqueresize true -borderwidth 0
 	set columns {white whiteElo black blackElo event result date length}
-	::gametable::build $gl [namespace code [list View $top]] $columns -id players
+	::gametable::build $gl [namespace code [list View $top]] $columns -id db:players
 	set columns {event eventType eventDate eventMode timeMode eventCountry site}
 	::eventtable::build $ev [namespace code [list View $top]] $columns \
 		-selectcmd [namespace code [list SelectEvent $top]] \
@@ -204,7 +204,7 @@ proc InitBase {path base variant} {
 
 	if {![info exists Vars($base:$variant:view)]} {
 		set Vars($base:$variant:initializing) 1
-		set Vars($base:$variant:view) [::scidb::view::new $base $variant slave master slave slave slave]
+		set Vars($base:$variant:view) [::scidb::view::new $base $variant master slave slave slave slave slave]
 		set Vars($base:$variant:update:players) 1
 		set Vars($base:$variant:sort:players) $Defaults(sort:players)
 		set Vars($base:$variant:sort:events) $Defaults(sort:events)

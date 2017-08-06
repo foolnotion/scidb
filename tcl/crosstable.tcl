@@ -254,7 +254,7 @@ proc open {parent base variant index view source} {
 	set Vars(tooltip) ""
 
 	if {![info exists Vars(viewId)]} {
-		set Vars(viewId) [::scidb::view::new $base $variant slave slave slave slave slave]
+		set Vars(viewId) [::scidb::view::new $base $variant unused unused unused unused unused unused]
 	}
 	if {$source eq "game"} { set search gameevent } else { set search event }
 	::scidb::view::search $base $variant $Vars(viewId) null none [list $search $number]

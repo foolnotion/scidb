@@ -172,16 +172,17 @@ buildSearch(Database const& db, Tcl_Interp* ti, Tcl_Obj* query)
 	static char const* subcommands[] =
 	{
 		"OR", "AND", "NOT", "REMOVE", "RESET", "NULL",
-		"player", "event", "site", "gameevent", "annotator",
-		0
+		"player", "event", "site", "gameevent", "annotator", "position",
+		nullptr
 	};
 	static char const* args[] =
 	{
-		"<query>+", "<query>+", "<query>+", "<string>", "<string>", "<string>", "<string>", "<string>", 0
+		"<query>+", "<query>+", "<query>+", "<string>", "<string>", "<string>", "<string>", "<string>",
+		nullptr
 	};
 	enum
 	{
-		Or, And, Not, Remove, Reset, Null, Player, Event, Site, GameEvent, Annotator
+		Or, And, Not, Remove, Reset, Null, Player, Event, Site, GameEvent, Annotator, Position
 	};
 
 	SearchP search;
@@ -252,6 +253,23 @@ buildSearch(Database const& db, Tcl_Interp* ti, Tcl_Obj* query)
 			}
 			search = new SearchAnnotator(Tcl_GetString(objv[1]));
 			break;
+
+		case Position:
+		{
+			if (objc != 2)
+			{
+				error(CmdSearch, "position", 0, "invalid query");
+				return search;
+			}
+			int idn;
+			if (Tcl_GetIntFromObj(ti, objv[1], &idn) != TCL_OK || idn < 0)
+			{
+				error(CmdSearch, "position", 0, "invalid query, positive IDN expected");
+				return search;
+			}
+			search = new SearchPosition(idn);
+			break;
+		}
 
 		default:
 			usage(CmdSearch, Tcl_GetString(objv[0]), nullptr, subcommands, args);
@@ -344,27 +362,30 @@ tcl::view::makeLangList(Tcl_Interp* ti,
 static int
 cmdNew(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	char const*			base		= stringFromObj(objc, objv, 1);
-	variant::Type		variant	= variant::Undetermined;
-	unsigned				n			= 2;
-	View::UpdateMode	mode[5];
+	char const*		base		= stringFromObj(objc, objv, 1);
+	variant::Type	variant	= variant::Undetermined;
+	unsigned			n			= 2;
 
-	if (objc > 7)
+	if (objc > 8)
 		variant = tcl::game::variantFromObj(objv[n++]);
 
-	for (unsigned i = 0; i < U_NUMBER_OF(mode); ++i)
+	::app::View::UpdateModeList updateMode;
+
+	for (unsigned i = 0; i < U_NUMBER_OF(updateMode); ++i)
 	{
 		char const* arg = stringFromObj(objc, objv, i + n);
 
 		if (::strcmp(arg, "master") == 0)
-			mode[i] = View::AddNewGames;
+			updateMode[i] = View::AddNewGames;
 		else if (::strcmp(arg, "slave") == 0)
-			mode[i] = View::LeaveEmpty;
+			updateMode[i] = View::LeaveEmpty;
+		else if (::strcmp(arg, "unused") == 0)
+			updateMode[i] = View::NotNeeded;
 		else
 			error(CmdNew, 0, 0, "unknown resize mode '%s'", arg);
 	}
 
-	setResult(scidb->cursor(base, variant).newView(mode[0], mode[1], mode[2], mode[3], mode[4]));
+	setResult(scidb->cursor(base, variant).newView(updateMode));
 	return TCL_OK;
 }
 
@@ -432,9 +453,12 @@ cmdOpen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdCount(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	static char const* subcommands[] = { "games", "players", "annotators", "events", "sites", 0 };
+	static char const* subcommands[] =
+	{
+		"games", "players", "annotators", "positions", "events", "sites", nullptr
+	};
 	static char const* args[] = { "<database> <variant> <view>" };
-	enum { Cmd_Games, Cmd_Players, Cmd_Annotators, Cmd_Events, Cmd_Sites };
+	enum { Cmd_Games, Cmd_Players, Cmd_Annotators, Cmd_Positions, Cmd_Events, Cmd_Sites };
 
 	if (objc < 5)
 		return usage(CmdCount, nullptr, nullptr, subcommands, args);
@@ -452,6 +476,7 @@ cmdCount(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case Cmd_Games:		type = table::Games; break;
 		case Cmd_Players:		type = table::Players; break;
 		case Cmd_Annotators:	type = table::Annotators; break;
+		case Cmd_Positions:	type = table::Positions; break;
 		case Cmd_Events:		type = table::Events; break;
 		case Cmd_Sites:		type = table::Sites; break;
 		default:					return usage(CmdCount, nullptr, nullptr, subcommands, args);
@@ -826,13 +851,15 @@ cmdMap(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	unsigned			index		= unsignedFromObj(objc, objv, objc > 5 ? 5 : 4);
 
 	if (::strcmp(attr, "player") == 0)
-		setResult(view.lookupPlayer(index));
+		setResult(view.lookupPlayerIndex(index));
 	else if (::strcmp(attr, "event") == 0)
-		setResult(view.lookupEvent(index));
+		setResult(view.lookupEventIndex(index));
 	else if (::strcmp(attr, "site") == 0)
-		setResult(view.lookupSite(index));
+		setResult(view.lookupSiteIndex(index));
 	else if (::strcmp(attr, "game") == 0)
-		setResult(view.lookupGame(index));
+		setResult(view.lookupGameIndex(index));
+	else if (::strcmp(attr, "position") == 0)
+		setResult(view.lookupPositionIndex(index));
 	else
 		error(CmdMap, 0, 0, "unexpected attribute '%s'", attr);
 

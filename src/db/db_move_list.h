@@ -38,12 +38,7 @@ class MoveList
 {
 public:
 
-	// According to
-	// http://en.wikipedia.org/wiki/World_records_in_chess
-	// the maximum number of moves is possibly 218.
-	// We have to add maximal 304 for piece drops (Zhouse),
-	// TODO: Make a sharper calculation.
-	enum { Maximum_Moves = 522 };
+	enum { Maximum_Moves = position::Maximum_Moves };
 
 	typedef mstl::pointer_iterator<Move>			iterator;
 	typedef mstl::pointer_const_iterator<Move>	const_iterator;

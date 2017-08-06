@@ -240,9 +240,9 @@ MultiBase::countGames(Mode mode) const
 		{
 			switch (mode)
 			{
-				case Changed:	total += base->statistic().changed; break;
-				case Added:		total += base->statistic().added; break;
-				case Deleted:	total += base->statistic().deleted; break;
+				case Changed:	total += base->statistic().counter.changed; break;
+				case Added:		total += base->statistic().counter.added; break;
+				case Deleted:	total += base->statistic().counter.deleted; break;
 			}
 		}
 	}
@@ -496,9 +496,9 @@ MultiBase::save(mstl::string const& encoding, unsigned flags, util::Progress& pr
 	{
 		if (Database* database = m_bases[variant])
 		{
-			changedGames += database->statistic().changed;
-			deletedGames += database->statistic().deleted;
-			addedGames += database->statistic().added;
+			changedGames += database->statistic().counter.changed;
+			deletedGames += database->statistic().counter.deleted;
+			addedGames += database->statistic().counter.added;
 		}
 	}
 

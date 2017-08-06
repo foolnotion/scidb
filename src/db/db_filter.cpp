@@ -148,7 +148,7 @@ Filter::search(Query const& query, DatabaseContent const& content)
 			{
 				for (int i = m_set.find_first_not(); i != Invalid; i = m_set.find_next_not(i))
 				{
-					if (query.match(*content.m_gameInfoList[i]))
+					if (query.match(content.m_gameInfoList[i]))
 					{
 						m_set.set(i);
 						++m_count;
@@ -159,7 +159,7 @@ Filter::search(Query const& query, DatabaseContent const& content)
 			{
 				for (unsigned i = 0, n = m_set.size(); i < n; ++i)
 				{
-					if (query.match(*content.m_gameInfoList[i]))
+					if (query.match(content.m_gameInfoList[i]))
 					{
 						m_set.set(i);
 						++m_count;
@@ -173,7 +173,7 @@ Filter::search(Query const& query, DatabaseContent const& content)
 			{
 				for (int i = m_set.find_first(); i != Invalid; i = m_set.find_next(i))
 				{
-					if (!query.match(*content.m_gameInfoList[i]))
+					if (!query.match(content.m_gameInfoList[i]))
 					{
 						m_set.reset(i);
 						--m_count;
@@ -184,7 +184,7 @@ Filter::search(Query const& query, DatabaseContent const& content)
 			{
 				for (unsigned i = 0, n = m_set.size(); i < n; ++i)
 				{
-					if (!query.match(*content.m_gameInfoList[i]))
+					if (!query.match(content.m_gameInfoList[i]))
 					{
 						m_set.reset(i);
 						--m_count;
@@ -198,7 +198,7 @@ Filter::search(Query const& query, DatabaseContent const& content)
 			{
 				for (int i = m_set.find_first_not(); i != Invalid; i = m_set.find_next_not(i))
 				{
-					if (!query.match(*content.m_gameInfoList[i]))
+					if (!query.match(content.m_gameInfoList[i]))
 					{
 						m_set.set(i);
 						++m_count;
@@ -209,7 +209,7 @@ Filter::search(Query const& query, DatabaseContent const& content)
 			{
 				for (unsigned i = 0, n = m_set.size(); i < n; ++i)
 				{
-					if (!query.match(*content.m_gameInfoList[i]))
+					if (!query.match(content.m_gameInfoList[i]))
 					{
 						m_set.set(i);
 						++m_count;
@@ -230,7 +230,7 @@ Filter::search(Query const& query, DatabaseContent const& content)
 			{
 				for (int i = m_set.find_first(); i != Invalid; i = m_set.find_next(i))
 				{
-					if (query.match(*content.m_gameInfoList[i]))
+					if (query.match(content.m_gameInfoList[i]))
 					{
 						m_set.reset(i);
 						--m_count;
@@ -241,7 +241,7 @@ Filter::search(Query const& query, DatabaseContent const& content)
 			{
 				for (unsigned i = 0, n = m_set.size(); i < n; ++i)
 				{
-					if (query.match(*content.m_gameInfoList[i]))
+					if (query.match(content.m_gameInfoList[i]))
 					{
 						m_set.reset(i);
 						--m_count;

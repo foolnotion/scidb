@@ -17,6 +17,7 @@
 // ======================================================================
 
 #include "m_utility.h"
+#include "m_algorithm.h"
 #include "m_assert.h"
 
 namespace mstl {
@@ -237,6 +238,16 @@ map<K,V>::operator[](const_key_ref k)
 
 template <typename K, typename V>
 inline
+bool
+map<K,V>::has_key(const_key_ref k) const
+{
+	const_iterator i = const_cast<map*>(this)->lower_bound(k);
+	return i < end() && !(k < i->first);
+}
+
+
+template <typename K, typename V>
+inline
 typename map<K,V>::iterator
 map<K,V>::replace(const_reference v)
 {
@@ -301,6 +312,43 @@ map<K,V>::swap(map& m)
 }
 
 
+template <typename K, typename V>
+inline
+map<K,V>&
+map<K,V>::operator+=(map const& m)
+{
+	if (!m.empty())
+	{
+		if (empty())
+		{
+			m_v = m.m_v;
+		}
+		else
+		{
+			container_type v;
+
+			typename container_type::const_iterator k = m.m_v.begin();
+			typename container_type::const_iterator e = m.m_v.end();
+
+			for (typename container_type::const_iterator i = m_v.begin(); i != m_v.end(); ++i)
+			{
+				for ( ; k != e && k->first < i->first; ++k)
+					v.push_back(*k);
+
+				v.push_back(*i);
+			}
+
+			for ( ; k != e; ++k)
+				v.push_back(*k);
+
+			m_v.swap(v);
+		}
+	}
+
+	return *this;
+}
+
+
 #if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 
 template <typename K, typename V>
@@ -318,6 +366,78 @@ map<K,V>::operator=(map&& m)
 }
 
 #endif
+
+
+namespace bits {
+namespace map {
+
+template <typename T>
+struct key_pred
+{
+	bool operator()(T const& lhs, T const& rhs) const
+	{
+		return lhs.first < rhs.first;
+	}
+};
+
+
+template <typename T>
+struct compare
+{
+	static int cmp_fst(T const* lhs, T const* rhs)
+	{
+		return ::mstl::compare(lhs->first, rhs->first);
+	}
+
+	static int comp_snd(T const* lhs, T const* rhs)
+	{
+		return ::mstl::compare(lhs->second, rhs->second);
+	}
+};
+
+} // namespace map
+} // namespace bits
+
+
+template <typename K, typename V>
+inline
+void
+map<K,V>::qsort_key()
+{
+	static_assert(::mstl::is_movable<value_type>::value, "cannot use qsort()");
+
+	m_v.qsort(bits::map::compare<value_type>::cmp_fst);
+}
+
+
+template <typename K, typename V>
+inline
+void
+map<K,V>::qsort_value()
+{
+	static_assert(::mstl::is_movable<value_type>::value, "cannot use qsort()");
+
+	m_v.qsort(bits::map::compare<value_type>::comp_snd);
+}
+
+
+template <typename K, typename V>
+inline
+void
+map<K,V>::qsort()
+{
+	static_assert(::mstl::is_movable<value_type>::value, "cannot use qsort()");
+	qsort_key();
+}
+
+
+template <typename K, typename V>
+inline
+void
+map<K,V>::unique()
+{
+	m_v.unique(bits::map::key_pred<value_type>());
+}
 
 } // namespace mstl
 

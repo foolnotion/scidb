@@ -177,7 +177,7 @@ proc InitBase {path base variant} {
 
 	if {![info exists Vars($base:$variant:view)]} {
 		set Vars($base:$variant:initializing) 1
-		set Vars($base:$variant:view) [::scidb::view::new $base $variant slave slave slave master slave]
+		set Vars($base:$variant:view) [::scidb::view::new $base $variant slave master slave slave slave slave]
 		set Vars($base:$variant:update:sites) 1
 		set Vars($base:$variant:sort:sites) $Defaults(sort:sites)
 		set Vars($base:$variant:sort:events) $Defaults(sort:events)

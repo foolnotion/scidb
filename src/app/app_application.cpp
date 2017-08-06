@@ -1347,6 +1347,22 @@ Application::sort(Cursor& cursor, unsigned view, attribute::annotator::ID attr, 
 
 
 void
+Application::sort(Cursor& cursor,
+						unsigned view,
+						attribute::position::ID attr,
+						order::ID order)
+{
+	M_REQUIRE(cursor.isValidView(view));
+
+	cursor.view(view).sort(attr, order);
+	cursor.view(view).updateSelector(table::Positions);
+
+	if (m_subscriber)
+		m_subscriber->updateList(table::Positions, m_updateCount++, cursor.name(), cursor.variant(), view);
+}
+
+
+void
 Application::reverseOrder(Cursor& cursor, unsigned view, table::Type type)
 {
 	cursor.view(view).reverseOrder(type);

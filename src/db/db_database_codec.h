@@ -212,8 +212,6 @@ public:
 												bool skipVariations,
 												::util::BlockFileReader* reader);
 
-	GameInfo* allocGameInfo();
-
 	static bool hasCodecFor(mstl::string const& suffix);
 	static bool upgradeIndexOnly();
 	static DatabaseCodec* makeCodec(mstl::string const& name, Mode mode);

@@ -227,9 +227,9 @@ m_byte_buf.o: m_backtrace.h
 m_byte_buf.o: m_exception.ipp
 m_equiv_classes.o: m_equiv_classes.h
 m_equiv_classes.o: m_vector.h
+m_equiv_classes.o: m_types.h
 m_equiv_classes.o: m_type_traits.h
 m_equiv_classes.o: m_type_traits.ipp
-m_equiv_classes.o: m_types.h
 m_equiv_classes.o: m_memblock.h
 m_equiv_classes.o: m_memblock.ipp
 m_equiv_classes.o: m_utility.h
@@ -331,9 +331,9 @@ m_fstream.o: m_ostream.h
 m_fstream.o: m_ostream.ipp
 m_hash.o: m_hash.h
 m_hash.o: m_vector.h
+m_hash.o: m_types.h
 m_hash.o: m_type_traits.h
 m_hash.o: m_type_traits.ipp
-m_hash.o: m_types.h
 m_hash.o: m_memblock.h
 m_hash.o: m_memblock.ipp
 m_hash.o: m_utility.h

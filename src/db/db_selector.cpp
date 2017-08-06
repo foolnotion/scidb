@@ -557,6 +557,48 @@ DEF_COMPARE(Frequency, frequency());
 
 } // namespace annotator
 
+namespace positions {
+
+static int
+compBackRank(unsigned lhs, unsigned rhs, db::Database const& db)
+{
+	Statistic const& statistic = db.statistic();
+
+	unsigned lhsIdn = statistic.idnAt(lhs);
+	unsigned rhsIdn = statistic.idnAt(rhs);
+
+	if (lhsIdn == 0)
+		return rhsIdn == 0 ? 0 : 1;
+
+	if (rhsIdn == 0)
+		return -1;
+
+	bool lhsIsChess960 = ::variant::isChess960(lhsIdn);
+	bool rhsIsChess960 = ::variant::isChess960(rhsIdn);
+
+	if (lhsIsChess960 == rhsIsChess960)
+		return mstl::compare(chess960::position(lhsIdn), chess960::position(rhsIdn));
+
+	if (!lhsIsChess960 && !rhsIsChess960)
+		return mstl::compare(variant::fics::identifier(lhsIdn), variant::fics::identifier(rhsIdn));
+
+	return lhsIsChess960 ? -1 : +1;
+}
+
+
+static int
+compFrequency(unsigned lhs, unsigned rhs, db::Database const& db)
+{
+	Statistic const& statistic = db.statistic();
+
+	uint16_t lhsIdn = statistic.idnAt(lhs);
+	uint16_t rhsIdn = statistic.idnAt(rhs);
+
+	return mstl::compare(statistic.positionCount(lhsIdn), statistic.positionCount(rhsIdn));
+}
+
+} // namespace positions
+
 
 Selector::Selector() :m_sizeOfMap(0), m_sizeOfList(0) {}
 
@@ -872,6 +914,31 @@ Selector::sort(Database const& db, attribute::annotator::ID attr, order::ID orde
 
 
 void
+Selector::sort(Database const& db, attribute::position::ID attr, order::ID order)
+{
+	Compar func = 0;
+
+	switch (attr)
+	{
+		case attribute::position::Idn:
+			reset(db);
+
+			if (order == order::Descending)
+				reverse(db);
+			return;
+
+		case attribute::position::BackRank:		func = positions::compBackRank; break;
+		case attribute::position::Frequency:	func = positions::compFrequency; break;
+		case attribute::position::LastColumn:	return;
+	}
+
+	M_ASSERT(func);
+
+	finish(db, db.countPositions(), order, func);
+}
+
+
+void
 Selector::reverse(Database const& db)
 {
 	if (m_sizeOfMap == 0)
@@ -952,6 +1019,30 @@ int
 Selector::findAnnotator(Database const& db, mstl::string const& name) const
 {
 	return find(db.namebase(Namebase::Annotator), name);
+}
+
+
+int
+Selector::findPosition(Database const& db, uint16_t idn) const
+{
+	mstl::bitset const& positions = db.statistic().positions;
+
+	if (positions.test(idn))
+	{
+		if (m_sizeOfMap == 0)
+			return positions.index(idn);
+
+		mstl::bitset::enumerator n = positions.end_index();
+		mstl::bitset::enumerator i = positions.begin_index();
+
+		for (unsigned k = 0; i != n; ++i, ++k)
+		{
+			if (m_map[k] == idn)
+				return *i;
+		}
+	}
+
+	return -1;
 }
 
 

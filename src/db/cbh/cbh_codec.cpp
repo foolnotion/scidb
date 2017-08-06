@@ -448,66 +448,6 @@ strippedLen(char const* s)
 }
 
 
-static int
-compTournament(void const* lhs, void const* rhs)
-{
-	typedef mstl::pair<db::NamebaseEvent const*,Codec::Tournament> const ValueType;
-
-	ValueType* l = static_cast<ValueType*>(lhs);
-	ValueType* r = static_cast<ValueType*>(rhs);
-
-#if UINTPTR_MAX == UINT_MAX
-	return l->first - r->first;
-#else
-	if (l->first < r->first) return -1;
-	if (r->first < l->first) return +1;
-	return 0;
-#endif
-}
-
-
-static int
-compIndexLookup(void const* lhs, void const* rhs)
-{
-	typedef mstl::pair<db::GameInfo const*,unsigned> const ValueType;
-
-	ValueType* l = static_cast<ValueType*>(lhs);
-	ValueType* r = static_cast<ValueType*>(rhs);
-
-#if UINTPTR_MAX == UINT_MAX
-	return l->first - r->first;
-#else
-	if (l->first < r->first) return -1;
-	if (r->first < l->first) return +1;
-	return 0;
-#endif
-}
-
-
-static int
-compBase(void const* lhs, void const* rhs)
-{
-	typedef mstl::pair<uint32_t,void*> const ValueType;
-
-	ValueType* l = static_cast<ValueType*>(lhs);
-	ValueType* r = static_cast<ValueType*>(rhs);
-
-	return int(l->first) - int(r->first);
-}
-
-
-static int
-compAnnotation(void const* lhs, void const* rhs)
-{
-	typedef mstl::pair<uint32_t,uint32_t> const ValueType;
-
-	ValueType* l = static_cast<ValueType*>(lhs);
-	ValueType* r = static_cast<ValueType*>(rhs);
-
-	return int(l->first) - int(r->first);
-}
-
-
 Codec::Tournament::Tournament() :category(0) ,rounds(0) {}
 Codec::Tournament::Tournament(Byte cat, Byte nrounds) :category(cat) ,rounds(nrounds) {}
 
@@ -947,14 +887,8 @@ Codec::readTournamentData(mstl::string const& rootname, util::Progress& progress
 	eventBase.setNextId(nrecs);
 	strm.close();
 
-	::qsort(	m_tournamentMap.container().begin(),
-				m_tournamentMap.container().size(),
-				sizeof(TournamentMap::value_type),
-				::compTournament);
-	::qsort(	m_eventMap.container().begin(),
-				m_eventMap.container().size(),
-				sizeof(BaseMap::value_type),
-				compBase);
+	m_tournamentMap.qsort();
+	m_eventMap.qsort();
 }
 
 
@@ -1036,13 +970,9 @@ Codec::readPlayerData(mstl::string const& rootname, util::Progress& progress)
 		}
 	}
 
-	base.setNextId(nrecs);
 	strm.close();
-
-	::qsort(	m_playerMap.container().begin(),
-				m_playerMap.container().size(),
-				sizeof(BaseMap::value_type),
-				compBase);
+	base.setNextId(nrecs);
+	m_playerMap.qsort();
 }
 
 
@@ -1104,13 +1034,9 @@ Codec::readAnnotatorData(mstl::string const& rootname, util::Progress& progress)
 		}
 	}
 
-	base.setNextId(nrecs);
 	strm.close();
-
-	::qsort(	m_annotatorMap.container().begin(),
-				m_annotatorMap.container().size(),
-				sizeof(BaseMap::value_type),
-				compBase);
+	base.setNextId(nrecs);
+	m_annotatorMap.qsort();
 }
 
 
@@ -1187,11 +1113,7 @@ Codec::readSourceData(mstl::string const& rootname, util::Progress& progress)
 	}
 
 	strm.close();
-
-	::qsort(	m_sourceMap2.container().begin(),
-				m_sourceMap2.container().size(),
-				sizeof(BaseMap::value_type),
-				compBase);
+	m_sourceMap2.qsort();
 }
 
 
@@ -1946,6 +1868,8 @@ Codec::readIndexData(mstl::string const& rootname, util::Progress& progress)
 	if (m_teamRecords)
 		m_gameIndexLookup.reserve(m_numGames);
 
+	unsigned gameIndex = 0;
+
 	for (unsigned i = 0; i < m_numGames; ++i)
 	{
 		if (reportAfter == i)
@@ -1961,11 +1885,16 @@ Codec::readIndexData(mstl::string const& rootname, util::Progress& progress)
 
 		if ((flags & 0x2) == 0)
 		{
-			infoList.push_back(allocGameInfo());
-			decodeIndex(bstrm, *infoList.back());
+			M_ASSERT(gameIndex < m_numGames);
+
+			GameInfo& info = infoList.push_back();
+
+			decodeIndex(bstrm, info);
 
 			if (m_teamRecords)
-				m_gameIndexLookup.container().push_back(GameIndexLookup::value_type(infoList.back(), i));
+				m_gameIndexLookup.container().push_back(GameIndexLookup::value_type(&info, gameIndex));
+
+			gameIndex += 1;
 		}
 		else
 		{
@@ -1974,15 +1903,9 @@ Codec::readIndexData(mstl::string const& rootname, util::Progress& progress)
 	}
 
 	strm.close();
-
-	::qsort(	m_gameIndexLookup.container().begin(),
-				m_gameIndexLookup.container().size(),
-				sizeof(GameIndexLookup::value_type),
-				::compIndexLookup);
-	::qsort(	m_annotationMap.container().begin(),
-				m_annotationMap.container().size(),
-				sizeof(AnnotationMap::value_type),
-				::compAnnotation);
+	infoList.resize(gameIndex);
+	m_gameIndexLookup.qsort();
+	m_annotationMap.qsort();
 }
 
 

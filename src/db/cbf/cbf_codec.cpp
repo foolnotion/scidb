@@ -533,9 +533,7 @@ Codec::readIndexData(mstl::string const& indexFilename, util::Progress& progress
 				IO_RAISE(Index, Corrupted, "unexpected end of file");
 
 			unsigned offset = ByteStream::uint32(record) - (i + 2);
-
-			infoList.push_back(allocGameInfo());
-			decodeIndexData(*infoList.back(), offset, site);
+			decodeIndexData(infoList.push_back(), offset, site);
 
 			if (i > 0)
 				m_recordLengths[i - 1] = offset - prevOffset;

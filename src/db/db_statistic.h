@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2009-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -27,7 +27,9 @@
 #ifndef _db_statistic_included
 #define _db_statistic_included
 
-#include "u_base.h"
+#include "db_common.h"
+
+#include "m_bitset.h"
 
 namespace db {
 
@@ -41,14 +43,28 @@ public:
 
 	Statistic();
 
-	void clear();
+	uint32_t positionCount(uint16_t idn) const;
+	uint16_t idnAt(unsigned index) const;
+
 	void reset();
 	void add(GameInfo const& info);
-	void compute(GameInfo* const* first, GameInfo* const* last, Mode mode);
+	void addPosition(GameInfo const& info);
+	void removePosition(GameInfo const& info);
+	void addLanguages(GameInfo const& info);
+	void removeLanguages(GameInfo const& info);
+	template <typename Iterator> void compute(Iterator first, Iterator last);
 
-	unsigned deleted;
-	unsigned changed;
-	unsigned added;
+	struct Counter
+	{
+		unsigned deleted;
+		unsigned changed;
+		unsigned added;
+
+		unsigned commented;
+		//unsigned allLang;
+		unsigned englishLang;
+		unsigned otherLang;
+	};
 
 	struct Content
 	{
@@ -61,19 +77,29 @@ public:
 		unsigned result[5];
 	};
 
-	Content content;
+	Counter			counter;
+	Content			content;
+	mstl::bitset	positions;
 
 private:
 
 	void count(GameInfo const& info);
 
-	double	m_sumYear;
-	double	m_sumElo;
-	unsigned	m_dateCount;
-	unsigned	m_eloCount;
+	struct MyCounter
+	{
+		double	sumYear;
+		double	sumElo;
+		unsigned	dateCount;
+		unsigned	eloCount;
+		uint32_t	posFreq[variant::MaxCode + 1];
+	};
+
+	MyCounter m_counter;
 };
 
 } // namespace db
+
+#include "db_statistic.ipp"
 
 #endif // _db_statistic_included
 

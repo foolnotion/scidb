@@ -877,12 +877,9 @@ Codec::update(mstl::string const& rootname, unsigned index, bool updateNamebase)
 		writeNamebases(namebaseFilename);
 	}
 
-	GameInfo* info = gameInfoList()[index];
-
 	unsigned char buf[m_indexEntrySize];
-
 	ByteStream bstrm(buf, m_indexEntrySize);
-	encodeIndex(*info, index, bstrm);
+	encodeIndex(gameInfoList()[index], index, bstrm);
 
 	if (!indexStream.seekp(index*m_indexEntrySize + m_headerSize + 8))
 		IO_RAISE(Index, Corrupted, "unexpected end of index file");
@@ -969,7 +966,7 @@ Codec::writeIndexEntries(mstl::fstream& fstrm, unsigned start, Progress& progres
 		char buf[MaxIndexEntrySize];
 
 		ByteStream bstrm(buf, m_indexEntrySize);
-		encodeIndex(*infoList[i], i, bstrm);
+		encodeIndex(infoList[i], i, bstrm);
 
 		if (__builtin_expect(!fstrm.write(buf, m_indexEntrySize), 0))
 			IO_RAISE(Index, Write_Failed, "error while writing index entry");
@@ -1001,19 +998,21 @@ Codec::updateIndex(mstl::fstream& fstrm)
 
 	for (unsigned i = 0; i < infoList.size(); ++i)
 	{
-		if (infoList[i]->isDirty())
+		GameInfo& info = infoList[i];
+
+		if (info.isDirty())
 		{
 			unsigned char buf[MaxIndexEntrySize];
 
 			ByteStream bstrm(buf, m_indexEntrySize);
-			encodeIndex(*infoList[i], i, bstrm);
+			encodeIndex(info, i, bstrm);
 
 			if (!fstrm.seekp(i*m_indexEntrySize + (m_headerSize + 8)))
 				IO_RAISE(Index, Corrupted, "unexpected end of file");
 			if (!fstrm.write(buf, m_indexEntrySize))
 				IO_RAISE(Index, Write_Failed, "error while writing index entry");
 
-			infoList[i]->setDirty(false);
+			info.setDirty(false);
 		}
 	}
 }
@@ -1175,19 +1174,9 @@ Codec::readIndexHeader(mstl::fstream& fstrm, unsigned* retNumGames)
 
 	GameInfoList& infoList = gameInfoList();
 	unsigned numGames = bstrm.uint24();
-
+	infoList.resize(retNumGames ? 1 : numGames);
 	if (retNumGames)
-	{
-		infoList.resize(1);
-		infoList[0] = allocGameInfo();
 		*retNumGames = numGames;
-	}
-	else
-	{
-		infoList.resize(numGames);
-		for (unsigned i = 0; i < numGames; ++i)
-			infoList[i] = allocGameInfo();
-	}
 
 	m_autoLoad = bstrm.uint24();
 
