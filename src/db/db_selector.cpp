@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2009-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -26,191 +26,170 @@
 
 #include "db_selector.h"
 #include "db_database.h"
+#include "db_namebase.h"
+#include "db_namebase_entry.h"
 #include "db_date.h"
 #include "db_player.h"
 #include "db_filter.h"
 
+#include "u_match.h"
+
 #include "m_string.h"
 #include "m_bit_functions.h"
 #include "m_utility.h"
+#include "m_algorithm.h"
 
 #include "sys_utf8.h"
 
 #include <string.h>
-#include <stdlib.h>
-
-#ifdef MT_SAFE
-# error "This implementation is not mt-safe"
-#endif
 
 using namespace db;
 using namespace db::color;
 
-static Database const* database = 0;
-static int (*compareFunc)(void const*, void const*) = 0;
-
-
-template <typename T>
-inline static int myCompare(T lhs, T rhs) { return lhs - rhs; }
-inline static int myCompare(Date const& lhs, Date const& rhs) { return Date::compare(lhs, rhs); }
-
-inline static int
-myCompare(mstl::string const& lhs, mstl::string const& rhs)
-{
-	return sys::utf8::casecmp(lhs, rhs);
-}
-
-static int
-reverseCompare(void const* lhs, void const* rhs)
-{
-	return -compareFunc(lhs, rhs);
-}
-
-
 namespace game {
 
 static int
-compRound(unsigned const* lhs, unsigned const* rhs)
+compRound(unsigned lhs, unsigned rhs, db::Database const& db)
 {
-	GameInfo const& l = database->gameInfo(*lhs);
-	GameInfo const& r = database->gameInfo(*rhs);
+	GameInfo const& l = db.gameInfo(lhs);
+	GameInfo const& r = db.gameInfo(rhs);
 
 	if (l.round() == r.round())
-		return myCompare(l.subround(), r.subround());
+		return mstl::compare(l.subround(), r.subround());
 
-	return myCompare(l.round(), r.round());
+	return mstl::compare(l.round(), r.round());
 }
 
 
 static int
-compAcv(unsigned const* lhs, unsigned const* rhs)
+compAcv(unsigned lhs, unsigned rhs, db::Database const& db)
 {
-	GameInfo const& l = database->gameInfo(*lhs);
-	GameInfo const& r = database->gameInfo(*rhs);
+	GameInfo const& l = db.gameInfo(lhs);
+	GameInfo const& r = db.gameInfo(rhs);
 
-	return myCompare(	l.countAnnotations() + l.countComments() + l.countVariations(),
-							r.countAnnotations() + r.countComments() + r.countVariations());
+	return mstl::compare(l.countAnnotations() + l.countComments() + l.countVariations(),
+								r.countAnnotations() + r.countComments() + r.countVariations());
 }
 
 
 static int
-compRatingWhite(unsigned const* lhs, unsigned const* rhs, rating::Type type)
+compRatingWhite(unsigned lhs, unsigned rhs, db::Database const& db, rating::Type type)
 {
-	GameInfo const& l = database->gameInfo(*lhs);
-	GameInfo const& r = database->gameInfo(*rhs);
+	GameInfo const& l = db.gameInfo(lhs);
+	GameInfo const& r = db.gameInfo(rhs);
 
-	return myCompare(l.findRating(White, type), r.findRating(White, type));
+	return mstl::compare(mstl::abs(l.findRating(White, type)), mstl::abs(r.findRating(White, type)));
 }
 
 
 static int
-compRatingBlack(unsigned const* lhs, unsigned const* rhs, rating::Type type)
+compRatingBlack(unsigned lhs, unsigned rhs, db::Database const& db, rating::Type type)
 {
-	GameInfo const& l = database->gameInfo(*lhs);
-	GameInfo const& r = database->gameInfo(*rhs);
+	GameInfo const& l = db.gameInfo(lhs);
+	GameInfo const& r = db.gameInfo(rhs);
 
-	return myCompare(l.findRating(Black, type), r.findRating(Black, type));
+	return mstl::compare(mstl::abs(l.findRating(Black, type)), mstl::abs(r.findRating(Black, type)));
 }
 
 
 static int
-compWhiteAny(unsigned const* lhs, unsigned const* rhs)
+compWhiteAny(unsigned lhs, unsigned rhs, db::Database const& db)
 {
-	GameInfo const& l = database->gameInfo(*lhs);
-	GameInfo const& r = database->gameInfo(*rhs);
+	GameInfo const& l = db.gameInfo(lhs);
+	GameInfo const& r = db.gameInfo(rhs);
 
-	uint16_t eloL = l.rating(White);
-	uint16_t eloR = r.rating(White);
+	uint16_t eloL = mstl::abs(l.rating(White));
+	uint16_t eloR = mstl::abs(r.rating(White));
 
-	if (eloL == 0) eloL = l.findElo(White);
-	if (eloR == 0) eloR = r.findElo(White);
+	if (eloL == 0) eloL = mstl::abs(l.findElo(White));
+	if (eloR == 0) eloR = mstl::abs(r.findElo(White));
 
-	return myCompare(eloL, eloR);
+	return mstl::compare(eloL, eloR);
 }
 
 
 static int
-compBlackAny(unsigned const* lhs, unsigned const* rhs)
+compBlackAny(unsigned lhs, unsigned rhs, db::Database const& db)
 {
-	GameInfo const& l = database->gameInfo(*lhs);
-	GameInfo const& r = database->gameInfo(*rhs);
+	GameInfo const& l = db.gameInfo(lhs);
+	GameInfo const& r = db.gameInfo(rhs);
 
-	uint16_t eloL = l.rating(Black);
-	uint16_t eloR = r.rating(Black);
+	uint16_t eloL = mstl::abs(l.rating(Black));
+	uint16_t eloR = mstl::abs(r.rating(Black));
 
-	if (eloL == 0) eloL = l.findElo(Black);
-	if (eloR == 0) eloR = r.findElo(Black);
+	if (eloL == 0) eloL = mstl::abs(l.findElo(Black));
+	if (eloR == 0) eloR = mstl::abs(r.findElo(Black));
 
-	return myCompare(eloL, eloR);
+	return mstl::compare(eloL, eloR);
 }
 
 
 static int
-compAverageElo(unsigned const* lhs, unsigned const* rhs)
+compAverageElo(unsigned lhs, unsigned rhs, db::Database const& db)
 {
-	GameInfo const& l = database->gameInfo(*lhs);
-	GameInfo const& r = database->gameInfo(*rhs);
+	GameInfo const& l = db.gameInfo(lhs);
+	GameInfo const& r = db.gameInfo(rhs);
 
-	int lw = l.findElo(White);
-	int rw = r.findElo(White);
-	int lb = l.findElo(Black);
-	int rb = r.findElo(Black);
+	int lw = mstl::abs(l.findElo(White));
+	int rw = mstl::abs(r.findElo(White));
+	int lb = mstl::abs(l.findElo(Black));
+	int rb = mstl::abs(r.findElo(Black));
 	int av = lw + lb - rw - rb;
 
-	return -(av ? av : myCompare(mstl::max(lw, lb), mstl::max(rw, rb)));
+	return -(av ? av : mstl::compare(mstl::max(lw, lb), mstl::max(rw, rb)));
 }
 
 
 static int
-compRatingAverage(unsigned const* lhs, unsigned const* rhs, rating::Type type)
+compRatingAverage(unsigned lhs, unsigned rhs, db::Database const& db, rating::Type type)
 {
-	GameInfo const& l = database->gameInfo(*lhs);
-	GameInfo const& r = database->gameInfo(*rhs);
+	GameInfo const& l = db.gameInfo(lhs);
+	GameInfo const& r = db.gameInfo(rhs);
 
-	int lw = l.findRating(White, type);
-	int rw = r.findRating(White, type);
-	int lb = l.findRating(Black, type);
-	int rb = r.findRating(Black, type);
+	int lw = mstl::abs(l.findRating(White, type));
+	int rw = mstl::abs(r.findRating(White, type));
+	int lb = mstl::abs(l.findRating(Black, type));
+	int rb = mstl::abs(r.findRating(Black, type));
 	int av = lw + lb - rw - rb;
 
-	return -(av ? av : myCompare(mstl::max(lw, lb), mstl::max(rw, rb)));
+	return -(av ? av : mstl::compare(mstl::max(lw, lb), mstl::max(rw, rb)));
 }
 
 
 static int
-compAverageAny(unsigned const* lhs, unsigned const* rhs)
+compAverageAny(unsigned lhs, unsigned rhs, db::Database const& db)
 {
-	GameInfo const& l = database->gameInfo(*lhs);
-	GameInfo const& r = database->gameInfo(*rhs);
+	GameInfo const& l = db.gameInfo(lhs);
+	GameInfo const& r = db.gameInfo(rhs);
 
-	int lw = l.rating(White);
-	int rw = r.rating(White);
-	int lb = l.rating(Black);
-	int rb = r.rating(Black);
+	int lw = mstl::abs(l.rating(White));
+	int rw = mstl::abs(r.rating(White));
+	int lb = mstl::abs(l.rating(Black));
+	int rb = mstl::abs(r.rating(Black));
 
-	if (lw == 0) lw = l.findElo(White);
-	if (rw == 0) rw = r.findElo(White);
-	if (lb == 0) lb = l.findElo(Black);
-	if (rb == 0) rb = r.findElo(Black);
+	if (lw == 0) lw = mstl::abs(l.findElo(White));
+	if (rw == 0) rw = mstl::abs(r.findElo(White));
+	if (lb == 0) lb = mstl::abs(l.findElo(Black));
+	if (rb == 0) rb = mstl::abs(r.findElo(Black));
 
 	int av = lw + lb - rw - rb;
 
-	return -(av ? av : myCompare(mstl::max(lw, lb), mstl::max(rw, rb)));
+	return -(av ? av : mstl::compare(mstl::max(lw, lb), mstl::max(rw, rb)));
 }
 
 
 #define DEF_COMPARE_RATING(Color,Type) \
-	static int comp##Color##Type(unsigned const* lhs, unsigned const* rhs) \
+	static int comp##Color##Type(unsigned lhs, unsigned rhs, db::Database const& db) \
 	{ \
-		return compRating##Color(lhs, rhs, rating::Type); \
+		return compRating##Color(lhs, rhs, db, rating::Type); \
 	}
 #define DEF_COMPARE(Type) \
 	DEF_COMPARE_RATING(White,Type) \
 	DEF_COMPARE_RATING(Black,Type) \
 	\
-	static int compAverage##Type(unsigned const* lhs, unsigned const* rhs) \
+	static int compAverage##Type(unsigned lhs, unsigned rhs, db::Database const& db) \
 	{ \
-		return compRatingAverage(lhs, rhs, rating::Type); \
+		return compRatingAverage(lhs, rhs, db, rating::Type); \
 	}
 
 DEF_COMPARE(DWZ)
@@ -226,10 +205,10 @@ DEF_COMPARE(USCF)
 
 
 static int
-compMaterial(unsigned const* lhs, unsigned const* rhs)
+compMaterial(unsigned lhs, unsigned rhs, db::Database const& db)
 {
-	material::Signature ml = database->gameInfo(*lhs).signature().material();
-	material::Signature mr = database->gameInfo(*rhs).signature().material();
+	material::Signature ml = db.gameInfo(lhs).signature().material();
+	material::Signature mr = db.gameInfo(rhs).signature().material();
 
 	unsigned l, r;
 
@@ -306,10 +285,10 @@ compMaterial(unsigned const* lhs, unsigned const* rhs)
 
 
 static int
-compUserEco(unsigned const* lhs, unsigned const* rhs)
+compUserEco(unsigned lhs, unsigned rhs, db::Database const& db)
 {
-	GameInfo const& il = database->gameInfo(*lhs);
-	GameInfo const& ir = database->gameInfo(*rhs);
+	GameInfo const& il = db.gameInfo(lhs);
+	GameInfo const& ir = db.gameInfo(rhs);
 
 	if (il.idn() != variant::Standard)
 		return ir.idn() == variant::Standard;
@@ -317,15 +296,15 @@ compUserEco(unsigned const* lhs, unsigned const* rhs)
 	if (ir.idn() != variant::Standard)
 		return -1;
 
-	return myCompare(il.userEco(), ir.userEco());
+	return mstl::compare(il.userEco(db.variant()), ir.userEco(db.variant()));
 }
 
 
 static int
-compFlags(unsigned const* lhs, unsigned const* rhs)
+compFlags(unsigned lhs, unsigned rhs, db::Database const& db)
 {
-	uint32_t fl = database->gameInfo(*lhs).flags();
-	uint32_t fr = database->gameInfo(*rhs).flags();
+	uint32_t fl = db.gameInfo(lhs).flags();
+	uint32_t fr = db.gameInfo(rhs).flags();
 
 	int nl = mstl::bf::count_bits(fl);
 	int nr = mstl::bf::count_bits(fr);
@@ -336,81 +315,88 @@ compFlags(unsigned const* lhs, unsigned const* rhs)
 	if (nl != nr)
 		return nl - nr;
 
-	return int(mstl::bf::lsb_index(fl)) - int(mstl::bf::lsb_index(fr));
+	return mstl::compare(mstl::bf::lsb_index(fl), mstl::bf::lsb_index(fr));
 }
 
 
 static int
-compStandardPosition(unsigned const* lhs, unsigned const* rhs)
+compStandardPosition(unsigned lhs, unsigned rhs, db::Database const& db)
 {
-	variant::Type variant = database->variant();
+	variant::Type variant = db.variant();
 
-	bool lhsStandard = database->gameInfo(*lhs).hasStandardPosition(variant);
-	bool rhsStandard = database->gameInfo(*rhs).hasStandardPosition(variant);
+	bool lhsStandard = db.gameInfo(lhs).hasStandardPosition(variant);
+	bool rhsStandard = db.gameInfo(rhs).hasStandardPosition(variant);
 
-	return lhsStandard < rhsStandard;
+	return mstl::compare(lhsStandard, rhsStandard);
 }
 
 
 static int
-compWhiteCountry(unsigned const* lhs, unsigned const* rhs)
+compWhiteCountry(unsigned lhs, unsigned rhs, db::Database const& db)
 {
-	return country::compare(database->gameInfo(*lhs).findFederation(White),
-									database->gameInfo(*rhs).findFederation(White));
+	return country::compare(db.gameInfo(lhs).findFederation(White),
+									db.gameInfo(rhs).findFederation(White));
 }
 
 
 static int
-compBlackCountry(unsigned const* lhs, unsigned const* rhs)
+compBlackCountry(unsigned lhs, unsigned rhs, db::Database const& db)
 {
-	return country::compare(database->gameInfo(*lhs).findFederation(Black),
-									database->gameInfo(*rhs).findFederation(Black));
+	return country::compare(db.gameInfo(lhs).findFederation(Black),
+									db.gameInfo(rhs).findFederation(Black));
+}
+
+
+static int
+compEco(unsigned lhs, unsigned rhs, db::Database const& db)
+{
+	variant::Type variant = db.variant();
+	return mstl::compare(db.gameInfo(lhs).eco(variant), db.gameInfo(rhs).eco(variant));
 }
 
 
 #define DEF_COMPARE(Func,Accessor) \
 	static int \
-	comp##Func(unsigned const* lhs, unsigned const* rhs) \
+	comp##Func(unsigned lhs, unsigned rhs, db::Database const& db) \
 	{ \
-		return myCompare(database->gameInfo(*lhs).Accessor, database->gameInfo(*rhs).Accessor); \
+		return mstl::compare(db.gameInfo(lhs).Accessor, db.gameInfo(rhs).Accessor); \
 	}
 
-DEF_COMPARE(WhitePlayer, playerName(White));
-DEF_COMPARE(BlackPlayer, playerName(Black));
-DEF_COMPARE(WhiteFideID, fideID(White));
-DEF_COMPARE(BlackFideID, fideID(Black));
-DEF_COMPARE(Event, event());
-DEF_COMPARE(Site, site());
-DEF_COMPARE(Date, date());
-DEF_COMPARE(Result, result());
-DEF_COMPARE(Annotator, annotator());
-DEF_COMPARE(EventCountry, eventCountry());
-DEF_COMPARE(EventType, eventType());
-DEF_COMPARE(EventDate, eventDate());
-DEF_COMPARE(Length, plyCount());
-DEF_COMPARE(WhiteElo, findElo(White));
-DEF_COMPARE(BlackElo, findElo(Black));
-DEF_COMPARE(WhiteTitle, findTitle(White));
-DEF_COMPARE(BlackTitle, findTitle(Black));
-DEF_COMPARE(WhiteSex, findSex(White));
-DEF_COMPARE(BlackSex, findSex(Black));
-DEF_COMPARE(WhiteType, findPlayerType(White));
-DEF_COMPARE(BlackType, findPlayerType(Black));
-DEF_COMPARE(WhiteRatingType, findRatingType(White));
-DEF_COMPARE(BlackRatingType, findRatingType(Black));
-DEF_COMPARE(Eco, eco());
-DEF_COMPARE(Idn, idn());
-DEF_COMPARE(Position, position());
-DEF_COMPARE(Termination, terminationReason());
-DEF_COMPARE(Mode, eventMode());
-DEF_COMPARE(TimeMode, timeMode());
-DEF_COMPARE(Deleted, isDeleted());
-DEF_COMPARE(Changed, isChanged());
-DEF_COMPARE(Chess960Position, hasChess960Position());
-DEF_COMPARE(Promotion, hasPromotion());
-DEF_COMPARE(UnderPromotion, hasUnderPromotion());
-DEF_COMPARE(EngFlag, containsEnglishLanguage());
-DEF_COMPARE(OthFlag, containsOtherLanguage());
+DEF_COMPARE(WhitePlayer, playerName(White))
+DEF_COMPARE(BlackPlayer, playerName(Black))
+DEF_COMPARE(WhiteFideID, fideID(White))
+DEF_COMPARE(BlackFideID, fideID(Black))
+DEF_COMPARE(Event, event())
+DEF_COMPARE(Site, site())
+DEF_COMPARE(Date, date())
+DEF_COMPARE(Result, result())
+DEF_COMPARE(Annotator, annotator())
+DEF_COMPARE(EventCountry, eventCountry())
+DEF_COMPARE(EventType, eventType())
+DEF_COMPARE(EventDate, eventDate())
+DEF_COMPARE(Length, plyCount())
+DEF_COMPARE(WhiteElo, findElo(White))
+DEF_COMPARE(BlackElo, findElo(Black))
+DEF_COMPARE(WhiteTitle, findTitle(White))
+DEF_COMPARE(BlackTitle, findTitle(Black))
+DEF_COMPARE(WhiteSex, findSex(White))
+DEF_COMPARE(BlackSex, findSex(Black))
+DEF_COMPARE(WhiteType, findPlayerType(White))
+DEF_COMPARE(BlackType, findPlayerType(Black))
+DEF_COMPARE(WhiteRatingType, findRatingType(White))
+DEF_COMPARE(BlackRatingType, findRatingType(Black))
+DEF_COMPARE(Idn, idn())
+DEF_COMPARE(Position, position())
+DEF_COMPARE(Termination, terminationReason())
+DEF_COMPARE(Mode, eventMode())
+DEF_COMPARE(TimeMode, timeMode())
+DEF_COMPARE(Deleted, isDeleted())
+DEF_COMPARE(Changed, isChanged())
+DEF_COMPARE(Chess960Position, hasChess960Position())
+DEF_COMPARE(Promotion, hasPromotion())
+DEF_COMPARE(UnderPromotion, hasUnderPromotion())
+DEF_COMPARE(EngFlag, containsEnglishLanguage())
+DEF_COMPARE(OthFlag, containsOtherLanguage())
 
 } // namespace game
 
@@ -419,10 +405,10 @@ DEF_COMPARE(OthFlag, containsOtherLanguage());
 namespace player {
 
 static int
-compRatingAny(unsigned const* lhs, unsigned const* rhs)
+compRatingAny(unsigned lhs, unsigned rhs, db::Database const& db)
 {
-	NamebasePlayer const& l = database->player(*lhs);
-	NamebasePlayer const& r = database->player(*rhs);
+	NamebasePlayer const& l = db.player(lhs);
+	NamebasePlayer const& r = db.player(rhs);
 
 	uint16_t eloL = l.playerHighestRating();
 	uint16_t eloR = r.playerHighestRating();
@@ -430,15 +416,15 @@ compRatingAny(unsigned const* lhs, unsigned const* rhs)
 	if (eloL == 0) eloL = l.playerHighestElo();
 	if (eloR == 0) eloR = r.playerHighestElo();
 
-	return myCompare(eloL, eloR);
+	return mstl::compare(eloL, eloR);
 }
 
 
 static int
-compRatingLatestAny(unsigned const* lhs, unsigned const* rhs)
+compRatingLatestAny(unsigned lhs, unsigned rhs, db::Database const& db)
 {
-	NamebasePlayer const& l = database->player(*lhs);
-	NamebasePlayer const& r = database->player(*rhs);
+	NamebasePlayer const& l = db.player(lhs);
+	NamebasePlayer const& r = db.player(rhs);
 
 	uint16_t eloL = l.playerLatestRating();
 	uint16_t eloR = r.playerLatestRating();
@@ -446,23 +432,22 @@ compRatingLatestAny(unsigned const* lhs, unsigned const* rhs)
 	if (eloL == 0) eloL = l.playerLatestElo();
 	if (eloR == 0) eloR = r.playerLatestElo();
 
-	return myCompare(eloL, eloR);
+	return mstl::compare(eloL, eloR);
 }
 
 
 static int
-compCountry(unsigned const* lhs, unsigned const* rhs)
+compCountry(unsigned lhs, unsigned rhs, db::Database const& db)
 {
-	return country::compare(database->player(*lhs).findFederation(),
-									database->player(*rhs).findFederation());
+	return country::compare(db.player(lhs).findFederation(), db.player(rhs).findFederation());
 }
 
 
 static int
-compSex(unsigned const* lhs, unsigned const* rhs)
+compSex(unsigned lhs, unsigned rhs, db::Database const& db)
 {
-	NamebasePlayer const& l = database->player(*lhs);
-	NamebasePlayer const& r = database->player(*rhs);
+	NamebasePlayer const& l = db.player(lhs);
+	NamebasePlayer const& r = db.player(rhs);
 
 	sex::ID sexL = l.findSex();
 	sex::ID sexR = r.findSex();
@@ -470,21 +455,21 @@ compSex(unsigned const* lhs, unsigned const* rhs)
 	if (sexL != sexR)
 		return int(sexL) - int(sexR);
 
-	return int(l.findType()) - int(r.findType());
+	return mstl::compare(l.findType(), r.findType());
 }
 
 
 #define DEF_COMPARE(Type) \
-	static int compRating##Type(unsigned const* lhs, unsigned const* rhs) \
+	static int compRating##Type(unsigned lhs, unsigned rhs, db::Database const& db) \
 	{ \
-		return myCompare(database->player(*lhs).playerHighestRating(rating::Type),  \
-							  database->player(*rhs).playerHighestRating(rating::Type)); \
+		return mstl::compare(db.player(lhs).playerHighestRating(rating::Type),  \
+									db.player(rhs).playerHighestRating(rating::Type)); \
 	} \
 	\
-	static int compRatingLatest##Type(unsigned const* lhs, unsigned const* rhs) \
+	static int compRatingLatest##Type(unsigned lhs, unsigned rhs, db::Database const& db) \
 	{ \
-		return myCompare(database->player(*lhs).playerLatestRating(rating::Type),  \
-							  database->player(*rhs).playerLatestRating(rating::Type)); \
+		return mstl::compare(db.player(lhs).playerLatestRating(rating::Type),  \
+									db.player(rhs).playerLatestRating(rating::Type)); \
 	}
 
 DEF_COMPARE(DWZ)
@@ -499,9 +484,9 @@ DEF_COMPARE(USCF)
 
 #define DEF_COMPARE(Func,Accessor) \
 	static int \
-	comp##Func(unsigned const* lhs, unsigned const* rhs) \
+	comp##Func(unsigned lhs, unsigned rhs, db::Database const& db) \
 	{ \
-		return myCompare(database->player(*lhs).Accessor, database->player(*rhs).Accessor); \
+		return mstl::compare(db.player(lhs).Accessor, db.player(rhs).Accessor); \
 	}
 
 //DEF_COMPARE(Sex, findSex());
@@ -523,9 +508,9 @@ namespace event {
 
 #define DEF_COMPARE(Func,Accessor) \
 	static int \
-	comp##Func(unsigned const* lhs, unsigned const* rhs) \
+	comp##Func(unsigned lhs, unsigned rhs, db::Database const& db) \
 	{ \
-		return myCompare(database->event(*lhs).Accessor, database->event(*rhs).Accessor); \
+		return mstl::compare(db.event(lhs).Accessor, db.event(rhs).Accessor); \
 	}
 
 DEF_COMPARE(Country, site()->country());
@@ -545,9 +530,9 @@ namespace site {
 
 #define DEF_COMPARE(Func,Accessor) \
 	static int \
-	comp##Func(unsigned const* lhs, unsigned const* rhs) \
+	comp##Func(unsigned lhs, unsigned rhs, db::Database const& db) \
 	{ \
-		return myCompare(database->site(*lhs).Accessor, database->site(*rhs).Accessor); \
+		return mstl::compare(db.site(lhs).Accessor, db.site(rhs).Accessor); \
 	}
 
 DEF_COMPARE(Country, country());
@@ -562,9 +547,9 @@ namespace annotator {
 
 #define DEF_COMPARE(Func,Accessor) \
 	static int \
-	comp##Func(unsigned const* lhs, unsigned const* rhs) \
+	comp##Func(unsigned lhs, unsigned rhs, db::Database const& db) \
 	{ \
-		return myCompare(database->annotator(*lhs).Accessor, database->annotator(*rhs).Accessor); \
+		return mstl::compare(db.annotator(lhs).Accessor, db.annotator(rhs).Accessor); \
 	}
 
 DEF_COMPARE(Name, name());
@@ -573,18 +558,21 @@ DEF_COMPARE(Frequency, frequency());
 } // namespace annotator
 
 
+Selector::Selector() :m_sizeOfMap(0), m_sizeOfList(0) {}
+
+
 void
 Selector::reserve(Database const& db, unsigned numEntries)
 {
-	M_ASSERT(m_map.size() <= numEntries);
+	M_ASSERT(m_sizeOfMap <= numEntries);
 
-	if (numEntries != m_map.size())
+	if (numEntries != m_sizeOfMap)
 	{
-		unsigned k = m_map.size();
+		unsigned prevSize = m_sizeOfMap;
 
-		m_map.resize(numEntries);
+		m_map.resize(m_sizeOfMap = numEntries);
 
-		for (unsigned i = k; i < numEntries; ++i)
+		for (unsigned i = prevSize; i < numEntries; ++i)
 			m_map[i] = i;
 	}
 }
@@ -593,29 +581,22 @@ Selector::reserve(Database const& db, unsigned numEntries)
 void
 Selector::finish(Database const& db, unsigned numEntries, order::ID order, Compar compFunc)
 {
-	M_ASSERT(m_map.size() <= numEntries);
+	M_ASSERT(m_sizeOfMap <= numEntries);
 	M_ASSERT(compFunc);
 
 	reserve(db, numEntries);
-	::database = &db;
 
 	if (order == order::Descending)
-	{
-		::compareFunc = compFunc;
-		compFunc = ::reverseCompare;
-	}
-
-	::qsort(m_map.begin(), m_map.size(), sizeof(Map::value_type), compFunc);
+		m_map.qsort_reverse(compFunc, db);
+	else
+		m_map.qsort(compFunc, db);
 }
 
 
 void
 Selector::sort(Database const& db, attribute::game::ID attr, order::ID order, rating::Type ratingType)
 {
-	typedef int(*InfoCompar)(unsigned const*, unsigned const*);
-	typedef int(*Compar)(void const*, void const*);
-
-	InfoCompar func = 0;
+	Compar func = 0;
 
 	switch (attr)
 	{
@@ -665,7 +646,7 @@ Selector::sort(Database const& db, attribute::game::ID attr, order::ID order, ra
 		case attribute::game::UnderPromotion:			func = game::compUnderPromotion; break;
 
 		case attribute::game::Added:
-			if (!m_map.empty() && db.countGames() > db.countInitialGames())
+			if (m_sizeOfMap > 0 && db.countGames() > db.countInitialGames())
 			{
 				unsigned numGames			= db.countGames();
 				unsigned initialGames	= db.countInitialGames();
@@ -675,7 +656,7 @@ Selector::sort(Database const& db, attribute::game::ID attr, order::ID order, ra
 				reserve(db, numGames);
 
 				Map map;
-				map.resize(numGames);
+				map.resize(m_sizeOfMap = numGames);
 
 				if (order == order::Ascending)
 					k = 0, j = initialGames;
@@ -761,59 +742,56 @@ Selector::sort(Database const& db, attribute::game::ID attr, order::ID order, ra
 
 	M_ASSERT(func);
 
-	finish(db, db.countGames(), order, reinterpret_cast<Compar>(func));
+	finish(db, db.countGames(), order, func);
 }
 
 
 void
 Selector::sort(Database const& db, attribute::player::ID attr, order::ID order, rating::Type ratingType)
 {
-	typedef int(*InfoCompar)(unsigned const*, unsigned const*);
-	typedef int(*Compar)(void const*, void const*);
-
-	InfoCompar func = 0;
+	Compar func = 0;
 
 	switch (attr)
 	{
-		case attribute::player::Name:				func = player::compName; break;
+		case attribute::player::Name:				func = ::player::compName; break;
 		case attribute::player::FideID:			func = player::compFideID; break;
-		case attribute::player::Sex:				func = player::compSex; break;
-		case attribute::player::EloHighest:		func = player::compElo; break;
-		case attribute::player::EloLatest:		func = player::compEloLatest; break;
-		case attribute::player::RatingType:		func = player::compRatingType; break;
-		case attribute::player::Country:			func = player::compCountry; break;
-		case attribute::player::Title:			func = player::compTitle; break;
-		case attribute::player::Type:				func = player::compType; break;
-		case attribute::player::PlayerInfo:		func = player::compPlayerInfo; break;
-		case attribute::player::Frequency:		func = player::compFrequency; break;
+		case attribute::player::Sex:				func = ::player::compSex; break;
+		case attribute::player::EloHighest:		func = ::player::compElo; break;
+		case attribute::player::EloLatest:		func = ::player::compEloLatest; break;
+		case attribute::player::RatingType:		func = ::player::compRatingType; break;
+		case attribute::player::Country:			func = ::player::compCountry; break;
+		case attribute::player::Title:			func = ::player::compTitle; break;
+		case attribute::player::Type:				func = ::player::compType; break;
+		case attribute::player::PlayerInfo:		func = ::player::compPlayerInfo; break;
+		case attribute::player::Frequency:		func = ::player::compFrequency; break;
 
 		case attribute::player::RatingHighest:
 			switch (ratingType)
 			{
-				case rating::DWZ:		func = player::compRatingDWZ; break;
-				case rating::ECF:		func = player::compRatingECF; break;
-				case rating::Elo:		func = player::compElo; break;
-				case rating::ICCF:	func = player::compRatingICCF; break;
+				case rating::DWZ:		func = ::player::compRatingDWZ; break;
+				case rating::ECF:		func = ::player::compRatingECF; break;
+				case rating::Elo:		func = ::player::compElo; break;
+				case rating::ICCF:	func = ::player::compRatingICCF; break;
 				case rating::IPS:		func = player::compRatingIPS; break;
 				case rating::Rapid:	func = player::compRatingRapid; break;
-				case rating::Rating:	func = player::compRatingRating; break;
-				case rating::USCF:	func = player::compRatingUSCF; break;
-				case rating::Any:		func = player::compRatingAny; break;
+				case rating::Rating:	func = ::player::compRatingRating; break;
+				case rating::USCF:	func = ::player::compRatingUSCF; break;
+				case rating::Any:		func = ::player::compRatingAny; break;
 			}
 			break;
 
 		case attribute::player::RatingLatest:
 			switch (ratingType)
 			{
-				case rating::DWZ:		func = player::compRatingLatestDWZ; break;
-				case rating::ECF:		func = player::compRatingLatestECF; break;
-				case rating::Elo:		func = player::compEloLatest; break;
-				case rating::ICCF:	func = player::compRatingLatestICCF; break;
+				case rating::DWZ:		func = ::player::compRatingLatestDWZ; break;
+				case rating::ECF:		func = ::player::compRatingLatestECF; break;
+				case rating::Elo:		func = ::player::compEloLatest; break;
+				case rating::ICCF:	func = ::player::compRatingLatestICCF; break;
 				case rating::IPS:		func = player::compRatingLatestIPS; break;
 				case rating::Rapid:	func = player::compRatingLatestRapid; break;
 				case rating::Rating:	func = player::compRatingLatestRating; break;
-				case rating::USCF:	func = player::compRatingLatestUSCF; break;
-				case rating::Any:		func = player::compRatingLatestAny; break;
+				case rating::USCF:	func = ::player::compRatingLatestUSCF; break;
+				case rating::Any:		func = ::player::compRatingLatestAny; break;
 			}
 			break;
 
@@ -839,10 +817,7 @@ Selector::sort(Database const& db, attribute::player::ID attr, order::ID order, 
 void
 Selector::sort(Database const& db, attribute::event::ID attr, order::ID order)
 {
-	typedef int(*InfoCompar)(unsigned const*, unsigned const*);
-	typedef int(*Compar)(void const*, void const*);
-
-	InfoCompar func = 0;
+	Compar func = 0;
 
 	switch (attr)
 	{
@@ -857,17 +832,14 @@ Selector::sort(Database const& db, attribute::event::ID attr, order::ID order)
 		case attribute::event::LastColumn:	return;
 	}
 
-	finish(db, db.countEvents(), order, reinterpret_cast<Compar>(func));
+	finish(db, db.countEvents(), order, func);
 }
 
 
 void
 Selector::sort(Database const& db, attribute::site::ID attr, order::ID order)
 {
-	typedef int(*InfoCompar)(unsigned const*, unsigned const*);
-	typedef int(*Compar)(void const*, void const*);
-
-	InfoCompar func = 0;
+	Compar func = 0;
 
 	switch (attr)
 	{
@@ -877,17 +849,14 @@ Selector::sort(Database const& db, attribute::site::ID attr, order::ID order)
 		case attribute::site::LastColumn:	return;
 	}
 
-	finish(db, db.countSites(), order, reinterpret_cast<Compar>(func));
+	finish(db, db.countSites(), order, func);
 }
 
 
 void
 Selector::sort(Database const& db, attribute::annotator::ID attr, order::ID order)
 {
-	typedef int(*InfoCompar)(unsigned const*, unsigned const*);
-	typedef int(*Compar)(void const*, void const*);
-
-	InfoCompar func = 0;
+	Compar func = 0;
 
 	switch (attr)
 	{
@@ -898,18 +867,18 @@ Selector::sort(Database const& db, attribute::annotator::ID attr, order::ID orde
 
 	M_ASSERT(func);
 
-	finish(db, db.countAnnotators(), order, reinterpret_cast<Compar>(func));
+	finish(db, db.countAnnotators(), order, func);
 }
 
 
 void
 Selector::reverse(Database const& db)
 {
-	if (m_map.size() == 0)
+	if (m_sizeOfMap == 0)
 	{
 		unsigned n = db.countGames();
 
-		m_map.resize(n);
+		m_map.resize(m_sizeOfMap = n);
 
 		for (unsigned i = 0; i < n; ++i)
 			m_map[i] = n - i - 1;
@@ -922,135 +891,145 @@ Selector::reverse(Database const& db)
 
 
 void
-Selector::reset(Database const&)
+Selector::reset()
 {
-	m_map.release();
+	m_map.clear();
+	m_lookup.release();
+	m_find.release();
+	m_sizeOfMap = 0;
+	m_sizeOfList = 0;
 }
 
 
-unsigned
-Selector::find(unsigned number) const
+int
+Selector::find(Namebase const& namebase, mstl::string const& name) const
 {
-	unsigned n = m_list.size();
+	int firstIndex = namebase.search(name);
 
-	if (number >= m_list.size() || m_list[number] != number)
+	if (firstIndex == -1)
+		return -1;
+
+	unsigned numEntries	= namebase.size();
+	unsigned found			= unsigned(-1);
+
+	for (unsigned i = firstIndex; i < numEntries; ++i)
 	{
-		for (unsigned i = 0; i < n; ++i)
-		{
-			if (m_list[i] == number)
-				return i;
-		}
+		NamebaseEntry const* entry = namebase.entryAt(i);
+
+		if (::strcmp(entry->name(), name) != 0)
+			break;
+
+		if (entry->used())
+			found = mstl::min(found, find(i));
 	}
 
-	return number;
+	return int(found);
 }
 
 
 int
 Selector::findPlayer(Database const& db, mstl::string const& name) const
 {
-	unsigned n = m_map.size();
-
-	if (n == 0)
-	{
-		n = db.countPlayers();
-
-		for (unsigned i = 0; i < n; ++i)
-		{
-			if (db.player(i).name() == name)
-				return i;
-		}
-	}
-	else
-	{
-		for (unsigned i = 0; i < n; ++i)
-		{
-			if (db.player(m_map[i]).name() == name)
-				return i;
-		}
-	}
-
-	return -1;
+	return find(db.namebase(Namebase::Player), name);
 }
 
 
 int
 Selector::findEvent(Database const& db, mstl::string const& name) const
 {
-	unsigned n = m_map.size();
-
-	if (n == 0)
-	{
-		n = db.countEvents();
-
-		for (unsigned i = 0; i < n; ++i)
-		{
-			if (db.event(i).name() == name)
-				return i;
-		}
-	}
-	else
-	{
-		for (unsigned i = 0; i < n; ++i)
-		{
-			if (db.event(m_map[i]).name() == name)
-				return i;
-		}
-	}
-
-	return -1;
+	return find(db.namebase(Namebase::Event), name);
 }
 
 
 int
 Selector::findSite(Database const& db, mstl::string const& name) const
 {
-	unsigned n = m_map.size();
-
-	if (n == 0)
-	{
-		n = db.countSites();
-
-		for (unsigned i = 0; i < n; ++i)
-		{
-			if (db.site(i).name() == name)
-				return i;
-		}
-	}
-	else
-	{
-		for (unsigned i = 0; i < n; ++i)
-		{
-			if (db.site(m_map[i]).name() == name)
-				return i;
-		}
-	}
-
-	return -1;
+	return find(db.namebase(Namebase::Site), name);
 }
 
 
 int
 Selector::findAnnotator(Database const& db, mstl::string const& name) const
 {
-	unsigned n = m_map.size();
+	return find(db.namebase(Namebase::Annotator), name);
+}
 
-	if (n == 0)
+
+int
+Selector::search(	Namebase const& namebase,
+						mstl::string const& prefix,
+						util::Pattern const& pattern,
+						unsigned startIndex) const
+{
+	typedef int (*Compare)(char const* lhs, char const* rhs, size_t len);
+
+	M_ASSERT(!prefix.empty());
+
+	if (startIndex == namebase.used())
+		startIndex = 0;
+
+	int firstIndex = namebase.search(prefix, isUnsorted() ? namebase.realIndex(lookup(startIndex)) : 0);
+
+	if (firstIndex == -1)
+		return -1;
+	
+	Compare	cmp(pattern.ignoreCase() ? ::strncasecmp : ::strncmp);
+	unsigned	numEntries(namebase.size());
+	unsigned	found[2] = { unsigned(-1), unsigned(-1) };
+
+	for (unsigned i = firstIndex; i < numEntries; ++i)
 	{
-		n = db.countAnnotators();
+		NamebaseEntry const* entry = namebase.entryAt(i);
 
-		for (unsigned i = 0; i < n; ++i)
+		if (cmp(entry->name(), prefix, prefix.size()) != 0)
+			break;
+
+		if (entry->used() && pattern.match(entry->name()))
 		{
-			if (db.annotator(i).name() == name)
-				return i;
+			unsigned index = find(namebase.lookupIndex(i));
+			unsigned which = index >= startIndex ? 0 : 1;
+			found[which] = mstl::min(found[which], index);
 		}
 	}
-	else
+
+	return int(found[0]) >= 0 ? int(found[0]) : int(found[1]);
+}
+
+
+int
+Selector::search(Namebase const& namebase, util::Pattern const& pattern, unsigned startIndex) const
+{
+	if (namebase.used() == 0)
+		return -1;
+
+	if (!pattern.ignoreCase())
 	{
-		for (unsigned i = 0; i < n; ++i)
+		mstl::string prefix = pattern.prefix();
+
+		if (!prefix.empty())
+			return search(namebase, prefix, pattern, startIndex);
+	}
+
+	unsigned numEntries = namebase.used();
+
+	if (m_sizeOfMap > 0)
+		numEntries = mstl::min(m_sizeOfMap, numEntries);
+	
+	if (numEntries)
+	{
+		unsigned i = (startIndex = mstl::min(startIndex, numEntries));
+		unsigned n = startIndex == 0 ? numEntries : startIndex;
+
+		while (true)
 		{
-			if (db.annotator(m_map[i]).name() == name)
+			if (i == numEntries)
+				i = 0;
+
+			if (pattern.match(namebase.lookupEntry(lookup(i))->name()))
 				return i;
+
+			if (++i == n)
+				break;
 		}
 	}
 
@@ -1059,167 +1038,105 @@ Selector::findAnnotator(Database const& db, mstl::string const& name) const
 
 
 int
-Selector::searchPlayer(Database const& db, mstl::string const& name) const
+Selector::searchPlayer(Database const& db, util::Pattern const& pattern, unsigned startIndex) const
 {
-	unsigned n = m_map.size();
-
-	if (n == 0)
-	{
-		n = db.countPlayers();
-
-		for (unsigned i = 0; i < n; ++i)
-		{
-			if (::sys::utf8::caseMatch(db.player(i).name(), name, name.size()))
-				return i;
-		}
-	}
-	else
-	{
-		for (unsigned i = 0; i < n; ++i)
-		{
-			if (::sys::utf8::caseMatch(db.player(m_map[i]).name(), name, name.size()))
-				return i;
-		}
-	}
-
-	return -1;
+	return db.mapPlayerIndex(search(db.namebase(Namebase::Player), pattern, startIndex));
 }
 
 
 int
-Selector::searchEvent(Database const& db, mstl::string const& name) const
+Selector::searchEvent(Database const& db, util::Pattern const& pattern, unsigned startIndex) const
 {
-	unsigned n = m_map.size();
-
-	if (n == 0)
-	{
-		n = db.countEvents();
-
-		for (unsigned i = 0; i < n; ++i)
-		{
-			if (::sys::utf8::caseMatch(db.event(i).name(), name, name.size()))
-				return i;
-		}
-	}
-	else
-	{
-		for (unsigned i = 0; i < n; ++i)
-		{
-			if (::sys::utf8::caseMatch(db.event(m_map[i]).name(), name, name.size()))
-				return i;
-		}
-	}
-
-	return -1;
+	return db.mapEventIndex(search(db.namebase(Namebase::Event), pattern, startIndex));
 }
 
 
 int
-Selector::searchSite(Database const& db, mstl::string const& name) const
+Selector::searchSite(Database const& db, util::Pattern const& pattern, unsigned startIndex) const
 {
-	unsigned n = m_map.size();
-
-	if (n == 0)
-	{
-		n = db.countSites();
-
-		for (unsigned i = 0; i < n; ++i)
-		{
-			if (::sys::utf8::caseMatch(db.site(i).name(), name, name.size()))
-				return i;
-		}
-	}
-	else
-	{
-		for (unsigned i = 0; i < n; ++i)
-		{
-			if (::sys::utf8::caseMatch(db.site(m_map[i]).name(), name, name.size()))
-				return i;
-		}
-	}
-
-	return -1;
+	return db.mapSiteIndex(search(db.namebase(Namebase::Site), pattern, startIndex));
 }
 
+
 int
-Selector::searchAnnotator(Database const& db, mstl::string const& name) const
+Selector::searchAnnotator(Database const& db, util::Pattern const& pattern, unsigned startIndex) const
 {
-	unsigned n = m_map.size();
-
-	if (n == 0)
-	{
-		n = db.countAnnotators();
-
-		for (unsigned i = 0; i < n; ++i)
-		{
-			if (::sys::utf8::caseMatch(db.annotator(i).name(), name, name.size()))
-				return i;
-		}
-	}
-	else
-	{
-		for (unsigned i = 0; i < n; ++i)
-		{
-			if (::sys::utf8::caseMatch(db.annotator(m_map[i]).name(), name, name.size()))
-				return i;
-		}
-	}
-	for (unsigned i = 0; i < n; ++i)
-	{
-		if (::sys::utf8::caseMatch(db.annotator(m_map[i]).name(), name, name.size()))
-			return i;
-	}
-
-	return -1;
+	return db.mapAnnotatorIndex(search(db.namebase(Namebase::Annotator), pattern, startIndex));
 }
 
 
 void
 Selector::update(Filter const& filter)
 {
-	if (!m_map.empty())
+	if (filter.isComplete())
 	{
-		if (filter.size() >= m_map.size())
+		m_lookup = m_map;
+		m_sizeOfList = m_sizeOfMap;
+
+		if (m_sizeOfMap > 0)
 		{
-			m_list.resize(filter.count());
+			m_find.resize(m_sizeOfMap);
+			m_find.zero();
 
-			Map::iterator list = m_list.begin();
+			for (unsigned i = 0, n = m_sizeOfMap; i < n; ++i)
+				m_find[m_map[i]] = i;
+		}
+	}
+	else if (m_sizeOfMap > 0)
+	{
+		if (filter.size() >= m_sizeOfMap)
+		{
+			m_lookup.resize(m_sizeOfList = filter.count());
+			m_lookup.zero();
+			m_find.resize(m_sizeOfMap);
+			m_find.zero();
 
-			for (unsigned i = 0, n = m_map.size(); i < n; ++i)
+			Map::iterator lookup = m_lookup.begin();
+
+			for (unsigned i = 0, j = 0, n = m_sizeOfMap; i < n; ++i)
 			{
 				unsigned k = m_map[i];
 
 				if (filter.contains(k))
-					*list++ = k;
+				{
+					*lookup++ = k;
+					m_find[k] = j++;
+				}
 			}
 
-			M_ASSERT(list == m_list.end());
+			M_ASSERT(lookup == m_lookup.end());
 		}
 		else
 		{
-			m_map.clear();
-			m_list.release();
+			m_map.release();
+			m_lookup.release();
+			m_find.release();
+			m_sizeOfMap = 0;
+			m_sizeOfList = 0;
 		}
-	}
-	else if (filter.isComplete())
-	{
-		m_list.release();
 	}
 	else
 	{
-		m_list.resize(filter.count());
+		m_lookup.resize(m_sizeOfList = filter.count());
+		m_lookup.zero();
 
-		if (!m_list.empty())
+		if (m_sizeOfList > 0)
 		{
-			Map::iterator list = m_list.begin();
+			Map::iterator lookup = m_lookup.begin();
 
-			for (unsigned i = 0, n = filter.size(); i < n; ++i)
+			m_find.resize(filter.size());
+			m_find.zero();
+
+			for (unsigned i = 0, j = 0, n = filter.size(); i < n; ++i)
 			{
 				if (filter.contains(i))
-					*list++ = i;
+				{
+					*lookup++ = i;
+					m_find[i] = j++;
+				}
 			}
 
-			M_ASSERT(list == m_list.end());
+			M_ASSERT(lookup == m_lookup.end());
 		}
 	}
 }
@@ -1228,30 +1145,22 @@ Selector::update(Filter const& filter)
 void
 Selector::update()
 {
-	if (!m_map.empty())
+	if (m_sizeOfMap > 0)
 	{
-		m_list.resize(m_map.size());
+		m_lookup.resize(m_sizeOfList = m_sizeOfMap);
 
-		Map::iterator list = m_list.begin();
+		Map::iterator lookup = m_lookup.begin();
 
-		for (unsigned i = 0, n = m_map.size(); i < n; ++i)
-			*list++ = m_map[i];
+		for (unsigned i = 0, n = m_sizeOfMap; i < n; ++i)
+			*lookup++ = m_map[i];
 	}
 	else
 	{
-		m_list.release();
+		m_lookup.release();
+		m_sizeOfList = 0;
 	}
-}
 
-
-void
-Selector::update(unsigned newSize)
-{
-	if (newSize < m_map.size())
-	{
-		m_map.clear();
-		m_list.release();
-	}
+	m_find.release();
 }
 
 
@@ -1259,7 +1168,10 @@ void
 Selector::swap(Selector& selector)
 {
 	m_map.swap(selector.m_map);
-	m_list.swap(selector.m_list);
+	m_lookup.swap(selector.m_lookup);
+	m_find.swap(selector.m_find);
+	mstl::swap(m_sizeOfMap, selector.m_sizeOfMap);
+	mstl::swap(m_sizeOfList, selector.m_sizeOfList);
 }
 
 // vi:set ts=3 sw=3:

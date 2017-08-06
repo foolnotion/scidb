@@ -549,6 +549,8 @@ Database::compact(util::Progress& progress)
 	GameInfoList newList;
 	newList.reserve(numGames - m_statistic.deleted);
 
+	Allocator allocator;
+
 	for (unsigned i = 0; i < numGames; ++i)
 	{
 		if (reportAfter == i)
@@ -557,13 +559,31 @@ Database::compact(util::Progress& progress)
 			reportAfter += frequency;
 		}
 
-		if (!m_gameInfoList[i]->isDeleted())
-			newList.push_back(m_gameInfoList[i]);
+		GameInfo* info = m_gameInfoList[i];
+
+		if (m_gameInfoList[i]->isDeleted())
+		{
+			m_namebases(Namebase::Player).decrRef(info->playerEntry(color::White));
+			m_namebases(Namebase::Player).decrRef(info->playerEntry(color::Black));
+			m_namebases(Namebase::Site).decrRef(info->eventEntry()->site());
+			m_namebases(Namebase::Event).decrRef(info->eventEntry());
+
+			if (NamebaseEntry* annotator = info->annotatorEntry())
+				m_namebases(Namebase::Annotator).decrRef(annotator);
+		}
+		else
+		{
+			GameInfo* newInfo = allocator.alloc();
+			*newInfo = *info;
+			newList.push_back(newInfo);
+		}
 	}
 
+	m_allocator.swap(allocator);
 	m_gameInfoList.swap(newList);
 	m_size = m_gameInfoList.size();
 	m_statistic.deleted = 0;
+	m_namebases.update();
 
 	m_statistic.compute(	const_cast<GameInfoList const&>(m_gameInfoList).begin(),
 								const_cast<GameInfoList const&>(m_gameInfoList).end(),
@@ -1749,17 +1769,24 @@ Database::setUsedEncoding(mstl::string const& encoding)
 unsigned
 Database::countAnnotators() const
 {
-	Namebase const& annotatorBase = m_namebases(Namebase::Annotator);
+	Namebase const& namebase = m_namebases(Namebase::Annotator);
 
-	if (annotatorBase.isEmpty())
-		return 0;
+	unsigned n = namebase.used();
 
-	unsigned count = annotatorBase.used();
+	if (namebase.emptyAnnotator()->used())
+		++n;
 
-	if (annotatorBase.entryAt(0)->name().empty() && annotatorBase.entryAt(0)->frequency() > 0)
-		--count;
+	return n;
+}
 
-	return count;
+
+int
+Database::mapAnnotatorIndex(int index) const
+{
+	if (index >= 0 && m_namebases(Namebase::Annotator).emptyAnnotator()->used())
+		index += 1;
+
+	return index;
 }
 
 
@@ -1768,10 +1795,17 @@ Database::annotator(unsigned index) const
 {
 	M_REQUIRE(index < countAnnotators());
 
-	if (m_namebases(Namebase::Annotator).entryAt(0)->name().empty())
-		++index;
+	Namebase const& annotatorBase = m_namebases(Namebase::Annotator);
 
-	return *m_namebases(Namebase::Annotator).entryAt(index);
+	if (annotatorBase.emptyAnnotator()->used())
+	{
+		if (index == 0)
+			return *annotatorBase.emptyAnnotator();
+
+		--index;
+	}
+
+	return *annotatorBase.entryAt(index);
 }
 
 
@@ -1963,8 +1997,8 @@ Database::playerStatistic(NamebasePlayer const& player, PlayerStats& stats) cons
 			stats.addScore(color, info->result());
 if (m_variant == variant::Normal) { // XXX
 			// NOTE: in .si4 databases the ECO code may be undefined
-			if (info->idn() == variant::Standard && info->eco())
-				stats.addEco(color, info->eco());
+			if (info->idn() == variant::Standard && info->eco(variant::Normal))
+				stats.addEco(color, info->eco(variant::Normal));
 }
 		}
 	}

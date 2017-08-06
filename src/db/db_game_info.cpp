@@ -176,8 +176,9 @@ bool GameInfo::isEmpty() const { return m_event == &g_event; }
 
 
 Eco
-GameInfo::userEco() const
+GameInfo::userEco(variant::Type variant) const
 {
+	// TODO: variant still unused
 	if (m_positionId != variant::Standard)
 		return Eco();
 
@@ -756,7 +757,7 @@ GameInfo::restore(GameInfo& oldInfo, Namebases& namebases)
 	*this = oldInfo;
 
 	if (m_event->frequency() == 0)
-		namebases(Namebase::Site  ).incrRef(m_event->site());
+		namebases(Namebase::Site).incrRef(m_event->site());
 
 	namebases(Namebase::Player).incrRef(m_player[White]);
 	namebases(Namebase::Player).incrRef(m_player[Black]);
@@ -1411,7 +1412,7 @@ GameInfo::debug() const
 	::printf(   "Mode:             %s\n", event::toString(eventMode()).c_str());
 	::printf(	"Time Mode:        %s\n", time::toString(timeMode()).c_str());
 	::printf(   "IDN:              %u\n", unsigned(idn()));
-	::printf(   "Eco:              %s\n", eco().asString().c_str());
+	::printf(   "Eco:              %s\n", eco(variant::Normal).asString().c_str());
 	if (idn() == variant::Standard)
 	{
 		::printf("Eco Key:          %s\n", Eco(m_ecoKey).asString().c_str());

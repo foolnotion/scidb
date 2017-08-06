@@ -269,6 +269,42 @@ bitfield<Bits>::operator-(bitfield const& bf) const
 template <class Bits>
 inline
 bitfield<Bits>
+bitfield<Bits>::operator&(value_type bits) const
+{
+	return bitfield(m_bits & bits);
+}
+
+
+template <class Bits>
+inline
+bitfield<Bits>
+bitfield<Bits>::operator|(value_type bits) const
+{
+	return bitfield(m_bits | bits);
+}
+
+
+template <class Bits>
+inline
+bitfield<Bits>
+bitfield<Bits>::operator^(value_type bits) const
+{
+	return bitfield(m_bits ^ bits);
+}
+
+
+template <class Bits>
+inline
+bitfield<Bits>
+bitfield<Bits>::operator-(value_type bits) const
+{
+	return bitfield(m_bits & ~bits);
+}
+
+
+template <class Bits>
+inline
+bitfield<Bits>
 bitfield<Bits>::operator~() const
 {
 	return bitfield(~m_bits);
@@ -317,6 +353,46 @@ bitfield<Bits>::operator-=(bitfield const& bf)
 
 template <class Bits>
 inline
+bitfield<Bits>&
+bitfield<Bits>::operator&=(value_type bits)
+{
+	m_bits &= bits;
+	return *this;
+}
+
+
+template <class Bits>
+inline
+bitfield<Bits>&
+bitfield<Bits>::operator|=(value_type bits)
+{
+	m_bits |= bits;
+	return *this;
+}
+
+
+template <class Bits>
+inline
+bitfield<Bits>&
+bitfield<Bits>::operator^=(value_type bits)
+{
+	m_bits ^= bits;
+	return *this;
+}
+
+
+template <class Bits>
+inline
+bitfield<Bits>&
+bitfield<Bits>::operator-=(value_type bits)
+{
+	m_bits &= ~bits;
+	return *this;
+}
+
+
+template <class Bits>
+inline
 Bits
 bitfield<Bits>::mask(unsigned n)
 {
@@ -333,7 +409,7 @@ bitfield<Bits>::mask(unsigned from, unsigned to)
 	M_REQUIRE(to < nbits);
 	M_REQUIRE(from <= to);
 
-	return value_type((value_type(~0) << from) & (value_type(~0) >> ((nbits - 1) - to)));
+	return (~value_type(0) << from) & (~value_type(0) >> ((nbits - 1) - to));
 }
 
 
@@ -402,7 +478,7 @@ inline
 void
 bitfield<Bits>::set()
 {
-	m_bits = value_type(~0);
+	m_bits = ~value_type(0);
 }
 
 
@@ -467,7 +543,7 @@ inline
 void
 bitfield<Bits>::reset()
 {
-	m_bits = 0;
+	m_bits = 0u;
 }
 
 
@@ -529,7 +605,7 @@ inline
 void
 bitfield<Bits>::flip()
 {
-	m_bits ^= value_type(~0);
+	m_bits ^= ~value_type(0);
 }
 
 
@@ -570,7 +646,7 @@ bool
 bitfield<Bits>::test(unsigned n) const
 {
 	M_REQUIRE(n < nbits);
-	return operator[](n);
+	return bool(m_bits & mask(n));
 }
 
 
@@ -588,7 +664,7 @@ inline
 bool
 bitfield<Bits>::any() const
 {
-	return m_bits != 0;
+	return m_bits != 0u;
 }
 
 
@@ -597,7 +673,7 @@ inline
 bool
 bitfield<Bits>::complete() const
 {
-	return m_bits == value_type(~value_type(0));
+	return m_bits == ~value_type(0);
 }
 
 
@@ -616,6 +692,15 @@ bool
 bitfield<Bits>::disjunctive(bitfield const& bf) const
 {
 	return !(bf.m_bits & m_bits);
+}
+
+
+template <class Bits>
+inline
+bool
+bitfield<Bits>::intersects(bitfield const& bf) const
+{
+	return bf.m_bits & m_bits;
 }
 
 
@@ -643,6 +728,16 @@ bitfield<Bits>::count(unsigned start, unsigned end) const
 template <class Bits>
 inline
 unsigned
+bitfield<Bits>::first() const
+{
+	M_REQUIRE(any());
+	return bf::lsb_index(m_bits);
+}
+
+
+template <class Bits>
+inline
+unsigned
 bitfield<Bits>::find_last() const
 {
 	return none() ? npos : bf::msb_index(m_bits);
@@ -661,10 +756,30 @@ bitfield<Bits>::find_first() const
 template <class Bits>
 inline
 unsigned
+bitfield<Bits>::find_first(unsigned nth) const
+{
+	for (unsigned i = 0; i < nbits; ++i)
+	{
+		if (m_bits & (Bits(1) << i))
+		{
+			if ((m_bits & (Bits(1) << i)) && nth == 0)
+				return i;
+
+			nth -= 1;
+		}
+	}
+
+	return npos;
+}
+
+
+template <class Bits>
+inline
+unsigned
 bitfield<Bits>::find_next(unsigned prev) const
 {
 	M_REQUIRE(prev < nbits);
-	return bitfield(value_type(m_bits & ~mask(0, prev))).find_first();
+	return bitfield(m_bits & ~mask(0, prev)).find_first();
 }
 
 
@@ -674,7 +789,7 @@ unsigned
 bitfield<Bits>::find_prev(unsigned next) const
 {
 	M_REQUIRE(next < nbits);
-	return bitfield(value_type(m_bits & ~mask(next, nbits - 1))).find_last();
+	return bitfield(m_bits & ~mask(next, nbits - 1)).find_last();
 }
 
 
@@ -702,7 +817,7 @@ unsigned
 bitfield<Bits>::find_next_not(unsigned prev) const
 {
 	M_REQUIRE(prev < nbits);
-	return bitfield(value_type(m_bits | mask(0, prev))).find_first_not();
+	return bitfield(m_bits | mask(0, prev)).find_first_not();
 }
 
 
@@ -712,7 +827,7 @@ unsigned
 bitfield<Bits>::find_prev_not(unsigned next) const
 {
 	M_REQUIRE(next < nbits);
-	return bitfield(value_type(m_bits | mask(next, nbits - 1))).find_last_not();
+	return bitfield(m_bits | mask(next, nbits - 1)).find_last_not();
 }
 
 
@@ -745,6 +860,16 @@ bitfield<Bits>::rindex(unsigned nth) const
 		n = find_prev(n);
 
 	return n;
+}
+
+
+template <class Bits>
+inline
+unsigned
+bitfield<Bits>::offset(value_type bit) const
+{
+	M_REQUIRE(test(bit));
+	return bf::count_bits(m_bits & value_type((1u << bit) - 1));
 }
 
 

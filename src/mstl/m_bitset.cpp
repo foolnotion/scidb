@@ -534,6 +534,26 @@ bitset::find_first() const
 
 
 bitset::size_type
+bitset::find_first(unsigned nth) const
+{
+	M_REQUIRE(!compressed());
+
+	size_type nwords = count_words();
+	size_type ncount = 0;
+
+	for (size_type i = 0; i < nwords; ++i)
+	{
+		bitfield bf = m_bits[i];
+
+		if (bf.any() && (ncount += bf.count()) >= nth)
+			return (bitfield::nbits*i) + bf.find_first(nth - ncount);
+	}
+
+	return npos;
+}
+
+
+bitset::size_type
 bitset::find_last() const
 {
 	M_REQUIRE(!compressed());
@@ -859,6 +879,23 @@ bitset::flip(size_type from, size_type to)
 
 
 void
+bitset::shrink(unsigned nbits)
+{
+	M_REQUIRE(nbits <= size());
+	M_REQUIRE(!compressed());
+
+	size_type first	= word_index(nbits) + 1;
+	size_type last		= word_index(m_size) + 1;
+
+	for ( ; first < last; ++first)
+		m_bits[first] = 0;
+
+	m_words = count_words(m_size = nbits);
+	reset_unused();
+}
+
+
+void
 bitset::swap(bitset& bset)
 {
 	mstl::swap(m_size, bset.m_size);
@@ -876,6 +913,7 @@ bitset::compress()
 	byte_buf* buf = byte_buf::compress(
 							count_bytes(),
 							reinterpret_cast<byte_buf::value_type const*>(m_bits));
+
 	delete [] m_bits;
 	m_bits = reinterpret_cast<bitfield*>(buf);
 	m_words = 0;
@@ -896,6 +934,27 @@ bitset::uncompress()
 	m_bits = new bitfield[m_words];
 	buf->uncompress(reinterpret_cast<byte_buf::byte*>(m_bits), count_bytes());
 	delete buf;
+}
+
+
+void
+bitset::setup(byte_buf const& compressed_data, unsigned nbits)
+{
+	delete [] m_bits;
+	m_words = count_words(m_size = nbits);
+	m_bits = new bitfield[m_words];
+	compressed_data.uncompress(reinterpret_cast<byte_buf::byte*>(m_bits), count_bytes());
+}
+
+
+void
+bitset::setup(uint32_t const* array, size_type size)
+{
+	M_REQUIRE(!compressed());
+	M_REQUIRE(array_size() == size);
+	M_REQUIRE(array);
+
+	::memcpy(m_bits, array, size*sizeof(uint32_t));
 }
 
 // vi:set ts=3 sw=3:

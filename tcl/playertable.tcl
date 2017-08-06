@@ -107,7 +107,7 @@ array set Defaults {
 }
 
 array set Options {}
-variable Find {}
+variable History {}
 
 
 proc build {path getViewCmd {visibleColumns {}} {args {}}} {
@@ -115,7 +115,6 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	variable Columns
 	variable Options
 	variable Defaults
-	variable Find
 	variable columns
 
 	namespace eval [namespace current]::$path {}
@@ -134,9 +133,8 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	RefreshHeader 2
 
 	array set Vars {
-		columns			{}
-		selectcmd		{}
-		find-current	{}
+		columns		{}
+		selectcmd	{}
 	}
 
 	if {[llength $visibleColumns] == 0} { set visibleColumns $columns }
@@ -306,26 +304,18 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 			-allow {top bottom} \
 			-tooltipvar [namespace current]::mc::Find \
 		]
-		::toolbar::add $tbFind label -float 0 -textvar [::mc::var [namespace current]::mc::Find ":"]
-		set cb [::toolbar::add $tbFind ttk::combobox \
-			-width 20 \
-			-takefocus 1 \
-			-values $Find \
-			-textvariable [namespace current]::${path}::Vars(find-current) \
+		set cb [::toolbar::add $tbFind searchentry \
+			-float 0 \
+			-width 24 \
+			-parent $table \
+			-history [namespace current]::History \
+			-ghosttextvar ::playerdict::mc::SearchPlayerName \
+			-helpinfo ::playerdict::mc::HelpPatternMatching \
+			-mode key \
 		]
-		trace add variable [namespace current]::${path}::Vars(find-current) \
-			write [namespace code [list Find $path $cb]]
-		::bind $cb <Return> [namespace code [list Find $path $cb]]
-		::toolbar::add $tbFind button \
-			-image $::icon::22x22::enter \
-			-tooltipvar [namespace current]::mc::StartSearch \
-			-command [namespace code [list Find $path $cb] \
-		]
-		::toolbar::add $tbFind button \
-			-image $::icon::22x22::clear \
-			-tooltipvar [namespace current]::mc::ClearEntries \
-			-command [namespace code [list Clear $path $cb] \
-		]
+		::bind $cb <<Find>> [namespace code [list Find $path first %d]]
+		::bind $cb <<FindNext>> [namespace code [list Find $path next %d]]
+		::bind $cb <<Help>> [list ::help::open .application Pattern-Matching]
 
 		set tbOptions [::toolbar::toolbar $path \
 			-id playertable-options \
@@ -634,12 +624,8 @@ proc TableFill {path args} {
 				}
 
 				playerInfo {
-					if {$item} {
-						# TODO: only for 12pt; use U+2716 (or U+2718) for other sizes
-						set image $check
-					} else {
-						set image {}
-					}
+					# TODO: only for 12pt; use U+2716 (or U+2718) for other sizes
+					if {$item} { set image $check } else { set image {} }
 					lappend text [list @ $image]
 				}
 
@@ -818,41 +804,18 @@ proc SortColumn {path id dir} {
 }
 
 
-proc Find {path combo args} {
+proc Find {path mode name} {
 	variable ${path}::Vars
-	variable Find
 
-	set value $Vars(find-current)
-	if {[string length $value] == 0} { return }
 	set base [::scrolledtable::base $path.table]
 	set variant [::scrolledtable::variant $path.table]
 	set view [{*}$Vars(viewcmd) $base $variant]
-	set i [::scidb::view::find player $base $variant $view $value]
-	if {[llength $args] == 0} {
-		if {[string length $value] > 2} {
-			lappend Find $value
-			set Find [lsort -dictionary -increasing -unique $Find]
-			::toolbar::childconfigure $combo -values $Find
-		}
-		if {$i >= 0} {
-			::scrolledtable::see $path.table $i
-			::scrolledtable::focus $path.table
-		} else {
-			::dialog::info -parent [::toolbar::lookupChild $combo] -message $mc::NotFound
-		}
-	} elseif {$i >= 0} {
+	if {$mode eq "next"} { set lastIndex [::scrolledtable::active $path.table] } else { set lastIndex -1 }
+	set i [::scidb::view::find player $base $variant $view "$name*" $lastIndex]
+	if {$i >= 0} {
 		::scrolledtable::see $path.table $i
+		::scrolledtable::activate $path.table $i
 	}
-}
-
-
-proc Clear {path combo} {
-	variable ${path}::Vars
-	variable Find
-
-	set Find {}
-	::toolbar::childconfigure $combo -values {}
-	set Vars(find-current) {}
 }
 
 

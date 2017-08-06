@@ -107,7 +107,7 @@ info::Date::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 bool
 info::Eco::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 {
-	db::Eco eco(info.eco());
+	db::Eco eco(info.eco(variant));
 	return m_min <= eco && eco <= m_max;
 }
 

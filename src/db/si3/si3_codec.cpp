@@ -1786,7 +1786,6 @@ Codec::readNamebases(mstl::fstream& stream, util::Progress& progress)
 						count[Namebase::Round],
 						::MaxRoundCount,
 						progress);
-	namebase(Namebase::Annotator).insert();
 	namebases().setModified(false);
 }
 

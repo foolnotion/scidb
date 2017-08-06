@@ -1926,7 +1926,7 @@ getGameInfo(int index, int view, char const* database, variant::Type variant, un
 				Eco eco;
 
 				if (which == attribute::game::Eco || which == attribute::game::Opening)
-					eco = info.userEco();
+					eco = info.userEco(variant);
 				else if (info.idn() == variant::Standard)
 					eco = info.ecoKey();
 
@@ -1935,7 +1935,7 @@ getGameInfo(int index, int view, char const* database, variant::Type variant, un
 
 				if (eco)
 				{
-					if (info.eco().basic() == info.ecoKey().basic())
+					if (info.eco(variant).basic() == info.ecoKey().basic())
 						opening = &ecoTable.getOpening(info.ecoKey());
 					else
 						opening = &ecoTable.getOpening(eco);
@@ -2050,7 +2050,7 @@ tcl::db::getGameInfo(Database const& db, unsigned index, Ratings const& ratings,
 
 	EcoTable const& ecoTable = EcoTable::specimen(db.variant());
 
-	Eco eco = info.eco();
+	Eco eco = info.eco(db.variant());
 	Eco eop = info.idn() == variant::Standard ? info.ecoKey() : Eco();
 
 	if (db.format() == format::Scidb)
@@ -2071,7 +2071,7 @@ tcl::db::getGameInfo(Database const& db, unsigned index, Ratings const& ratings,
 
 	if (info.idn() == variant::Standard && eco)
 	{
-		if (info.eco().basic() == info.ecoKey().basic())
+		if (info.eco(db.variant()).basic() == info.ecoKey().basic())
 			opening = &ecoTable.getOpening(info.ecoKey());
 		else
 			opening = &ecoTable.getOpening(eco);
@@ -2549,7 +2549,8 @@ getIdn(int index, char const* database, variant::Type variant)
 static int
 getEco(int index, char const* database)
 {
-	setResult(Scidb->cursor(database, variant::Normal).database().gameInfo(index).eco().asShortString());
+	setResult(Scidb->cursor(database, variant::Normal).database().
+		gameInfo(index).eco(variant::Normal).asShortString());
 	return TCL_OK;
 }
 
@@ -3338,6 +3339,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case Cmd_Eco:
 			if (objc < 3 || Tcl_GetIntFromObj(ti, objv[2], &index) != TCL_OK)
 				return usage(::CmdGet, nullptr, nullptr, subcommands, args);
+			// XXX we need variant
 			return getEco(index, objc == 4 ? stringFromObj(objc, objv, 3) : 0);
 
 		case Cmd_RatingTypes:

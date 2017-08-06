@@ -149,6 +149,8 @@ proc Select {path base variant index} {
 
 proc View {path base variant} {
 	variable ${path}::Vars
+
+	if {[string length $base] == 0} { return 0 }
 	return $Vars($base:$variant:view)
 }
 

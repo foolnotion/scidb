@@ -29,34 +29,35 @@
 namespace eval playerdict {
 namespace eval mc {
 
-set PlayerDictionary	"Player Dictionary"
-set PlayerFilter		"Player Filter"
-set OrganizationID	"Organization ID"
-set Count				"Count"
-set Ignore				"Ignore"
-set Ratings				"Ratings"
-set Titles				"Titles"
-set None					"None"
-set Operation			"Operation"
-set Awarded				"Awarded"
-set RangeOfYears		"Range of years"
-set SearchPlayerName	"Search Player Name"
+set PlayerDictionary		"Player Dictionary"
+set PlayerFilter			"Player Filter"
+set OrganizationID		"Organization ID"
+set Count					"Count"
+set Ignore					"Ignore"
+set Ratings					"Ratings"
+set Titles					"Titles"
+set None						"None"
+set Operation				"Operation"
+set Awarded					"Awarded"
+set RangeOfYears			"Range of years"
+set SearchPlayerName		"Search Player Name"
+set HelpPatternMatching	"Help: Pattern Matching"
 
-set ChessChampion		"%sex% %mode% %age% %region% %champion% %where%"
-set Sex(f)				"Woman"
-set Sex(m)				""
-set Region(w)			"World"
-set Region(e)			"European"
-set Region(-)			"National"
-set Champion(w)		"Champion"
-set Champion(e)		"Champion"
-set Champion(-)		"Champion"
-set Age(j)				"Junior"
-set Age(s)				"Senior"
-set Age(-)				""
-set Mode(c)				"Correspondence"
-set Mode(-)				""
-set Where				"in %country%"
+set ChessChampion	"%sex% %mode% %age% %region% %champion% %where%"
+set Sex(f)			"Woman"
+set Sex(m)			""
+set Region(w)		"World"
+set Region(e)		"European"
+set Region(-)		"National"
+set Champion(w)	"Champion"
+set Champion(e)	"Champion"
+set Champion(-)	"Champion"
+set Age(j)			"Junior"
+set Age(s)			"Senior"
+set Age(-)			""
+set Mode(c)			"Correspondence"
+set Mode(-)			""
+set Where			"in %country%"
 
 set AgeClass(unrestricted)	"Unrestricted"
 set AgeClass(junior)			"Junior"
@@ -66,8 +67,8 @@ set Champions(world)	"World Champions"
 set Champions(eu)		"European Champions"
 set Champions(nat)	"National Champions"
 
-set T_Ranking			"Ranking"
-set T_Trophy			"Trophäen"
+set T_Ranking	"Ranking"
+set T_Trophy	"Trophäen"
 
 # don't translate
 set F_Rating1			Elo
@@ -297,53 +298,53 @@ proc open {parent args} {
 			}
 
 			titles {
-				lappend menu [list checkbutton \
-					-command [namespace code [list Refresh $table]] \
-					-labelvar ::playertable::mc::ShowTitleYear \
-					-variable [namespace current]::Options(title-year) \
-				]
+#				lappend menu [list checkbutton \
+#					-command [namespace code [list Refresh $table]] \
+#					-labelvar ::playertable::mc::ShowTitleYear \
+#					-variable [namespace current]::Options(title-year) \
+#				]
 			}
 
 			trophy {
-				foreach region {world eu nat} {
-					lappend menu [list checkbutton \
-						-command [namespace code [list Refresh $table]] \
-						-labelvar [namespace current]::mc::Champions($region) \
-						-variable [namespace current]::Options(trophy:region:$region) \
-					]
-				}
-				lappend menu { separator }
-				foreach mode {otb pm} {
-					lappend menu [list checkbutton \
-						-command [namespace code [list Refresh $table]] \
-						-labelvar ::eventmodebox::mc::[string toupper $mode] \
-						-variable [namespace current]::Options(trophy:mode:$mode) \
-					]
-				}
-				lappend menu { separator }
-				foreach cls {unrestricted junior senior} {
-					lappend menu [list checkbutton \
-						-command [namespace code [list Refresh $table]] \
-						-labelvar [namespace current]::mc::AgeClass($cls) \
-						-variable [namespace current]::Options(trophy:age:$cls) \
-					]
-				}
-				lappend menu { separator }
-				foreach age {8 10 12 14 16 18 20} {
-					lappend menu [list checkbutton \
-						-command [namespace code [list Refresh $table]] \
-						-label "U$age" \
-						-variable [namespace current]::Options(trophy:under:$age) \
-					]
-				}
+#				foreach region {world eu nat} {
+#					lappend menu [list checkbutton \
+#						-command [namespace code [list Refresh $table]] \
+#						-labelvar [namespace current]::mc::Champions($region) \
+#						-variable [namespace current]::Options(trophy:region:$region) \
+#					]
+#				}
+#				lappend menu { separator }
+#				foreach mode {otb pm} {
+#					lappend menu [list checkbutton \
+#						-command [namespace code [list Refresh $table]] \
+#						-labelvar ::eventmodebox::mc::[string toupper $mode] \
+#						-variable [namespace current]::Options(trophy:mode:$mode) \
+#					]
+#				}
+#				lappend menu { separator }
+#				foreach cls {unrestricted junior senior} {
+#					lappend menu [list checkbutton \
+#						-command [namespace code [list Refresh $table]] \
+#						-labelvar [namespace current]::mc::AgeClass($cls) \
+#						-variable [namespace current]::Options(trophy:age:$cls) \
+#					]
+#				}
+#				lappend menu { separator }
+#				foreach age {8 10 12 14 16 18 20} {
+#					lappend menu [list checkbutton \
+#						-command [namespace code [list Refresh $table]] \
+#						-label "U$age" \
+#						-variable [namespace current]::Options(trophy:under:$age) \
+#					]
+#				}
 			}
 
 			dateOfBirth - dateOfDeath {
-				lappend menu [list checkbutton \
-					-command [namespace code [list Refresh $table]] \
-					-labelvar ::playertable::mc::ShowFullDate \
-					-variable [namespace current]::Options(date-format) \
-				]
+#				lappend menu [list checkbutton \
+#					-command [namespace code [list Refresh $table]] \
+#					-labelvar ::playertable::mc::ShowFullDate \
+#					-variable [namespace current]::Options(date-format) \
+#				]
 			}
 		}
 
@@ -438,8 +439,8 @@ proc open {parent args} {
 
 	set search [searchentry $top.search \
 		-history [namespace current]::History \
-		-helpinfo ::playertable::mc::HelpPatternMatching \
-		-ghosttext $mc::SearchPlayerName \
+		-helpinfo [namespace current]::mc::HelpPatternMatching \
+		-ghosttextvar [namespace current]::mc::SearchPlayerName \
 		-parent $dlg \
 		-takefocus 1 \
 		-mode key \
@@ -447,6 +448,8 @@ proc open {parent args} {
 	bind $search <<Find>>		[namespace code [list Find $table first %d]]
 	bind $search <<FindNext>>	[namespace code [list Find $table next %d]]
 	bind $search <<Help>>		[list ::help::open .application Pattern-Matching]
+
+	::searchentry::bindShortcuts $dlg
 
 	grid $alpha		-row 1 -column 1 -sticky w -columnspan 7
 	grid $table		-row 3 -column 1 -sticky ewns -columnspan 7
@@ -600,7 +603,7 @@ proc SetFilter {table} {
 	searchentry $general.name \
 		-history [namespace current]::History \
 		-buttons {erase help} \
-		-helpinfo ::playertable::mc::HelpPatternMatching \
+		-helpinfo [namespace current]::mc::HelpPatternMatching \
 		-textvar [namespace current]::Filter(name) \
 		-mode enter \
 		;

@@ -2112,7 +2112,7 @@ Codec::getPlayer(uint32_t ref)
 
 	if (p != m_playerMap.end())
 	{
-		p->second->incrRef();
+		static_cast<NamebasePlayer*>(p->second)->incrRef();
 		return static_cast<NamebasePlayer*>(p->second);
 	}
 
@@ -2165,12 +2165,11 @@ NamebaseEntry*
 Codec::getAnnotator(uint32_t ref)
 {
 	BaseMap::iterator p = m_annotatorMap.find(ref);
+	NamebaseEntry* entry = (p == m_annotatorMap.end()) ?
+			namebase(Namebase::Annotator).emptyAnnotator() : p->second;
 
-	if (p == m_annotatorMap.end())
-		return 0;
-
-	p->second->incrRef();
-	return p->second;
+	entry->incrRef();
+	return entry;
 }
 
 

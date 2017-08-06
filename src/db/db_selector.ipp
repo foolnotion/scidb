@@ -28,16 +28,19 @@
 
 namespace db {
 
-inline bool Selector::isUnsorted() const { return m_map.empty(); }
+inline bool Selector::isUnsorted() const		{ return m_map.empty(); }
+inline bool Selector::isUnfiltered() const	{ return m_lookup.empty(); }
 
-inline unsigned Selector::size() const { return m_map.size(); }
+inline unsigned Selector::size() const			{ return m_map.size(); }
+
+inline void Selector::reset(Database const&)	{ reset(); }
 
 
 inline
 unsigned
 Selector::map(unsigned index) const
 {
-	return index < m_map.size() ? m_map[index] : index;
+	return index < m_sizeOfMap ? m_map[index] : index;
 }
 
 
@@ -45,16 +48,33 @@ inline
 unsigned
 Selector::lookup(unsigned index) const
 {
-	return index < m_list.size() ? m_list[index] : index;
+	return index < m_sizeOfList ? m_lookup[index] : index;
 }
 
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+inline
+unsigned
+Selector::find(unsigned number) const
+{
+	return number < m_find.size() ? m_find[number] : number;
+}
+
+
+inline
+void
+Selector::update(unsigned newSize)
+{
+	if (newSize < m_sizeOfMap)
+		reset();
+}
+
+
+#if HAVE_OX_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 
 inline
 Selector::Selector(Selector&& sel)
 	:m_map(mstl::move(sel.m_map))
-	,m_list(mstl::move(sel.m_list))
+	,m_lookup(mstl::move(sel.m_lookup))
 {
 }
 
@@ -64,7 +84,7 @@ Selector&
 Selector::operator=(Selector&& sel)
 {
 	m_map = mstl::move(sel.m_map);
-	m_list = mstl::move(sel.m_list);
+	m_lookup = mstl::move(sel.m_lookup);
 
 	return *this;
 }

@@ -890,6 +890,21 @@ Pattern::normalize(char const* s, char const* e)
 		m_pattern.append(' ');
 	}
 
+	if (m_isPlain)
+	{
+		mstl::string str;
+		str.swap(m_pattern);
+		char const* s = str.c_str();
+
+		for ( ; *s; ++s)
+		{
+			if (s[0] != '\\')
+				m_pattern.append(*s);
+			else if (s[1] == '\\')
+				m_pattern.append(*s++);
+		}
+	}
+
 	return n;
 }
 

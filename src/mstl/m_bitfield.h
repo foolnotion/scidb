@@ -85,6 +85,10 @@ public:
 	bitfield operator|(bitfield const& bf) const;
 	bitfield operator^(bitfield const& bf) const;
 	bitfield operator-(bitfield const& bf) const;
+	bitfield operator&(value_type bits) const;
+	bitfield operator|(value_type bits) const;
+	bitfield operator^(value_type bits) const;
+	bitfield operator-(value_type bits) const;
 	bitfield operator<<(unsigned n) const;
 	bitfield operator>>(unsigned n) const;
 	bitfield operator~() const;
@@ -93,6 +97,10 @@ public:
 	bitfield& operator|=(bitfield const& bf);
 	bitfield& operator^=(bitfield const& bf);
 	bitfield& operator-=(bitfield const& bf);
+	bitfield& operator&=(value_type bits);
+	bitfield& operator|=(value_type bits);
+	bitfield& operator^=(value_type bits);
+	bitfield& operator-=(value_type bits);
 	bitfield& operator<<=(unsigned n);
 	bitfield& operator>>=(unsigned n);
 
@@ -104,16 +112,20 @@ public:
 	bool complete() const;
 	bool contains(bitfield const& bf) const;
 	bool disjunctive(bitfield const& bf) const;
+	bool intersects(bitfield const& bf) const;
 
 	// accessors
 	unsigned count() const;
 	unsigned count(unsigned start, unsigned end) const;
 	unsigned index(unsigned nth) const;
 	unsigned rindex(unsigned nth) const;
+	unsigned offset(value_type bit) const;
+	unsigned first() const;
 
 	unsigned find_last() const;
 	unsigned find_prev(unsigned next) const;
 	unsigned find_first() const;
+	unsigned find_first(unsigned nth) const;
 	unsigned find_next(unsigned prev) const;
 	unsigned find_last_not() const;
 	unsigned find_prev_not(unsigned next) const;

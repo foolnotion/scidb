@@ -111,15 +111,6 @@ proc build {parent} {
 		-tooltipvar [namespace current]::mc::Control] \
 		;
 	lappend Vars(toolbars) $tbControl
-#	set tbFind [::toolbar::toolbar $parent \
-#		-id games-find \
-#		-hide 1 \
-#		-side bottom \
-#		-alignment center \
-#		-allow {top bottom} \
-#		-tooltipvar [namespace current]::mc::FindText] \
-	;
-#	lappend Vars(toolbars) $tbFind
 	set tbLayout [::toolbar::toolbar $parent \
 		-id games-layout \
 		-hide 1 \
@@ -160,27 +151,15 @@ proc build {parent} {
 		-command [namespace code [list Control $tb end] \
 	]
 
-	::toolbar::add $tbGameNo label -float 0 -textvar [::mc::var [namespace current]::mc::GameNumber ":"]
-	set gameno [::toolbar::add $tbGameNo ::ttk::entry \
-		-width 8 \
-		-takefocus 1 \
-		-textvariable [namespace current]::${tb}::Vars(gameno) \
-		-validatecommand { return [expr {%d == 0 || [string match {[0-9]*} [string trim "%P"]]}] } \
-		-validate key \
-		-invalidcommand { bell } \
+	set cb [::toolbar::add $tbGameNo searchentry \
+		-type number \
+		-width 12 \
+		-usehistory no \
+		-parent $tb \
+		-ghosttextvar [namespace current]::mc::GameNumber \
 	]
-	bind $gameno <Return> [namespace code [list Goto $tb]]
-	bind $gameno <Any-Button> +[list focus $gameno]
-	bind $gameno <FocusOut> [namespace code [list ResetGameNo $tb]]
-	::toolbar::add $tbGameNo button \
-		-image $::icon::22x22::enter \
-		-tooltipvar [namespace current]::mc::GotoEnteredGameNumber \
-		-command [namespace code [list Goto $tb]] \
-		;
-
-#	::toolbar::add $tbFind label -float 0 -textvar [::mc::var [namespace current]::mc::FindText ":"]
-#	::toolbar::add $tbFind ttk::combobox -width 20
-#	::toolbar::add $tbFind button -image $::icon::22x22::enter -command {}
+	bind $cb <<Find>> [namespace code [list Goto $tb %d]]
+	bind $cb <<FindNext>> [namespace code [list Goto $tb %d]]
 
 	::toolbar::add $tbLayout button \
 		-image $::icon::toolbarScrollbarRight \
@@ -366,22 +345,20 @@ proc Control {table action} {
 }
 
 
-proc Goto {table} {
+proc Goto {table number} {
 	variable ${table}::Vars
 
-	set Vars(gameno) [string trim [string map {. "" , ""} $Vars(gameno)]]
-	if {[string is integer -strict $Vars(gameno)] && $Vars(gameno) > 0} {
-		set index [::scidb::db::get gameIndex [expr {$Vars(gameno) - 1}] 0]
+	set number [string trim [string map {. "" , ""} $number]]
+
+	if {[string is integer -strict $number] && $number > 0} {
+		set index [::scidb::db::get gameIndex [expr {$number - 1}] 0]
 		if {$index >= 0} {
 			::gametable::see $table $index
-			after idle [list ::gametable::activate $table [::gametable::indexToRow $table $index]]
+			::gametable::focus $table
+			::gametable::activate $table [::gametable::indexToRow $table $index]
 		}
 	}
-	ResetGameNo $table
 }
-
-
-proc ResetGameNo {table} { set ${table}::Vars(gameno) "" }
 
 
 proc TableMinSize {table minsize} {

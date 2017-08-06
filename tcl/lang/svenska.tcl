@@ -715,7 +715,7 @@
 
 ::application::database::annotators::mc::Find				"Sök"
 ::application::database::annotators::mc::FindAnnotator	"Sök kommentator"
-::application::database::annotators::mc::ClearEntries		"Rensa poster"
+::application::database::annotators::mc::NoAnnotator		"No annotator" ;# NEW
 
 ### application::pgn ###################################################
 ::application::pgn::mc::Command(move:comment)			"Sätt kommentar"
@@ -1412,7 +1412,6 @@
 ::playertable::mc::NotFound					"Saknas."
 ::playertable::mc::EnablePlayerBase			"Enable use of player base" ;# NEW
 ::playertable::mc::DisablePlayerBase      "Disable use of player base" ;# NEW
-::playertable::mc::HelpPatternMatching		"Help: Pattern Matching" ;# NEW
 ::playertable::mc::TooltipRating          "Rating: %s" ;# NEW
 
 ::playertable::mc::Name							"Namn"
@@ -1425,23 +1424,29 @@
 
 ::playertable::mc::ShowPlayerCard			"Visa spelarkort..."
 
+### sitetable ##########################################################
+::sitetable::mc::FindSite	"Search Site" ;# NEW
+::sitetable::mc::T_Country	"Country" ;# NEW
+
 ### eventtable #########################################################
 ::eventtable::mc::Attendance	"Deltagande"
+::eventtable::mc::FindEvent	"Search Event Name" ;# NEW
 
 ### player dictionary ##################################################
-::playerdict::mc::PlayerDictionary	"Player Dictionary" ;# NEW
-::playerdict::mc::PlayerFilter		"Player Filter" ;# NEW
-::playerdict::mc::OrganizationID		"Organization ID" ;# NEW
-::playerdict::mc::Count					"Count" ;# NEW
-::playerdict::mc::Ignore				"Ignore" ;# NEW
-::playerdict::mc::FederationID		"Federation ID" ;# NEW
-::playerdict::mc::Ratings				"Ratings" ;# NEW
-::playerdict::mc::Titles				"Titles" ;# NEW
-::playerdict::mc::None					"None" ;# NEW
-::playerdict::mc::Operation			"Operation" ;# NEW
-::playerdict::mc::Awarded				"Awarded" ;# NEW
-::playerdict::mc::RangeOfYears		"Range of years" ;# NEW
-::playerdict::mc::SearchPlayerName	"Search Player Name" ;# NEW
+::playerdict::mc::PlayerDictionary		"Player Dictionary" ;# NEW
+::playerdict::mc::PlayerFilter			"Player Filter" ;# NEW
+::playerdict::mc::OrganizationID			"Organization ID" ;# NEW
+::playerdict::mc::Count						"Count" ;# NEW
+::playerdict::mc::Ignore					"Ignore" ;# NEW
+::playerdict::mc::FederationID			"Federation ID" ;# NEW
+::playerdict::mc::Ratings					"Ratings" ;# NEW
+::playerdict::mc::Titles					"Titles" ;# NEW
+::playerdict::mc::None						"None" ;# NEW
+::playerdict::mc::Operation				"Operation" ;# NEW
+::playerdict::mc::Awarded					"Awarded" ;# NEW
+::playerdict::mc::RangeOfYears			"Range of years" ;# NEW
+::playerdict::mc::SearchPlayerName		"Search Player Name" ;# NEW
+::playerdict::mc::HelpPatternMatching	"Help: Pattern Matching" ;# NEW
 
 ::playerdict::mc::AgeClass(unrestricted)	"Unrestricted" ;# NEW
 ::playerdict::mc::AgeClass(junior)			"Junior" ;# NEW

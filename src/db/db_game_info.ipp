@@ -84,6 +84,11 @@ inline uint32_t GameInfo::fideID(color::ID color) const			{ return m_player[colo
 inline NamebasePlayer const* GameInfo::playerEntry(color::ID color) const { return m_player[color]; }
 inline NamebaseEvent const* GameInfo::eventEntry() const { return m_event; }
 
+inline NamebasePlayer* GameInfo::playerEntry(color::ID color)	{ return m_player[color]; }
+inline NamebaseEvent* GameInfo::eventEntry()							{ return m_event; }
+
+inline NamebaseEntry* GameInfo::annotatorEntry() { return hasGameRecordLength() ? 0 : m_annotator; }
+
 
 inline
 unsigned
@@ -184,8 +189,9 @@ GameInfo::setIllegalCastling(bool flag)
 
 inline
 Eco
-GameInfo::eco() const
+GameInfo::eco(variant::Type variant) const
 {
+	// TODO: variant still unused
 	return m_positionId == variant::Standard ? Eco::fromShort(m_eco) : Eco();
 }
 

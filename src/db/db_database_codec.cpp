@@ -1094,7 +1094,8 @@ DatabaseCodec::saveGame(ByteStream const& gameData, TagSet const& tags, Provider
 								data.eventMode,
 								maxEventCount(),
 								siteEntry ? siteEntry : NamebaseEvent::emptySite());
-	Entry annotatorEntry	= NamebaseEntry::emptyEntry();
+
+	Entry annotatorEntry	= namebase(Namebase::Annotator).emptyAnnotator();
 
 	if (maxAnnotatorCount)
 	{
@@ -1242,7 +1243,7 @@ DatabaseCodec::addGame(ByteStream const& gameData, GameInfo const& info, Allocat
 	NamebasePlayer*	blackEntry;
 	NamebaseSite*		siteEntry;
 	NamebaseEvent*		eventEntry;
-	NamebaseEntry*		annotatorEntry	= NamebaseEntry::emptyEntry();
+	NamebaseEntry*		annotatorEntry	= namebase(Namebase::Annotator).emptyAnnotator();
 
 	unsigned maxPlayerCount = this->maxPlayerCount();
 
@@ -1402,7 +1403,7 @@ DatabaseCodec::updateCharacteristics(unsigned index, TagSet const& tags)
 										data.eventMode,
 										maxEventCount(),
 										siteEntry ? siteEntry : NamebaseEvent::emptySite());
-	Entry		annotatorEntry	= NamebaseEntry::emptyEntry();
+	Entry		annotatorEntry	= namebase(Namebase::Annotator).emptyAnnotator();
 
 	if (maxAnnotatorCount)
 	{

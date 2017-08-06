@@ -31,18 +31,22 @@
 
 #include "m_vector.h"
 
+namespace util { class Pattern; }
+
 namespace db {
 
 class Database;
 class GameInfo;
+class Namebase;
 class Filter;
 
 class Selector
 {
 public:
 
+	Selector();
+
 #if HAVE_OX_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
-	Selector() = default;
 	Selector(Selector const&) = default;
 	Selector& operator=(Selector const&) = default;
 #endif
@@ -53,21 +57,30 @@ public:
 #endif
 
 	bool isUnsorted() const;
+	bool isUnfiltered() const;
 
+	// returns the size of the sort index, is zero if unsorted
 	unsigned size() const;
 
+	// map from sort index to real index
 	unsigned map(unsigned index) const;
+	// map from filtered sort index to real index
 	unsigned lookup(unsigned index) const;
+	// map from real index to filtered sort index
 	unsigned find(unsigned number) const;
 
+	// returns the filtered sort index, or -1 if not found
 	int findPlayer(Database const& db, mstl::string const& name) const;
 	int findEvent(Database const& db, mstl::string const& name) const;
 	int findSite(Database const& db, mstl::string const& name) const;
 	int findAnnotator(Database const& db, mstl::string const& name) const;
-	int searchPlayer(Database const& db, mstl::string const& name) const;
-	int searchEvent(Database const& db, mstl::string const& name) const;
-	int searchSite(Database const& db, mstl::string const& name) const;
-	int searchAnnotator(Database const& db, mstl::string const& name) const;
+
+	// 'startIndex' will be given as filtered sort index
+	// returns the filtered sort index, or -1 if not found
+	int searchPlayer(Database const& db, util::Pattern const& pattern, unsigned startIndex = 0) const;
+	int searchEvent(Database const& db, util::Pattern const& pattern, unsigned startIndex = 0) const;
+	int searchSite(Database const& db, util::Pattern const& pattern, unsigned startIndex = 0) const;
+	int searchAnnotator(Database const& db, util::Pattern const& pattern, unsigned startIndex = 0) const;
 
 	void sort(	Database const& db,
 					attribute::game::ID attr,
@@ -97,13 +110,24 @@ public:
 private:
 
 	typedef mstl::vector<unsigned> Map;
-	typedef int(*Compar)(void const*, void const*);
+	typedef int (*Compar)(unsigned, unsigned, Database const&);
 
 	void reserve(Database const& db, unsigned numEntries);
 	void finish(Database const& db, unsigned numEntries, order::ID order, Compar compFunc);
+	void reset();
 
-	Map m_map;
-	Map m_list;
+	int search(Namebase const& namebase, util::Pattern const& pattern, unsigned startIndex) const;
+	int search(	Namebase const& namebase,
+					mstl::string const& prefix,
+					util::Pattern const& pattern,
+					unsigned startIndex) const;
+	int find(Namebase const& namebase, mstl::string const& name) const;
+
+	Map		m_map;
+	Map		m_lookup;
+	Map		m_find;
+	unsigned	m_sizeOfMap;
+	unsigned	m_sizeOfList;
 };
 
 } // namespace db

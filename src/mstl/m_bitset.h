@@ -158,6 +158,7 @@ public:
 	size_type find_prev(size_type next) const;
 	size_type find_prev(size_type next, size_type skip) const;
 	size_type find_first() const;
+	size_type find_first(size_type nth) const;
 	size_type find_next(size_type prev) const;
 	size_type find_next(size_type prev, size_type skip) const;
 	size_type find_last_not() const;
@@ -196,6 +197,7 @@ public:
 	void reserve(size_type nbits);
 	void swap(bitset& bset);
 	void clear();
+	void shrink(unsigned nbits);
 
 	void assign(bitfield const* data, size_type n);
 	void assign(value_type const* bits, size_type n);
@@ -204,7 +206,17 @@ public:
 	unsigned char byte(size_type n) const;
 	bitfield word(size_type n) const;
 	bitfield const* content() const;
+	uint32_t const* array() const;
+	unsigned char* data();
+	unsigned char const* data() const;
+	byte_buf const* compressed_data() const;
 
+	// setup
+	void setup(uint32_t const* array, size_type size);
+	void setup(size_type at, uint32_t value);
+	void setup(byte_buf const& compressed_data, unsigned nbits);
+
+	// iteration
 	iterator begin();
 	const_iterator begin() const;
 	iterator end();
@@ -216,6 +228,7 @@ public:
 	size_type count_bytes() const;
 	size_type count_words() const;
 	size_type bytes_used() const;
+	size_type array_size() const;
 	size_type count() const;
 	size_type count(size_type start, size_type end) const;
 	size_type index(size_type nth) const;
@@ -226,17 +239,16 @@ public:
 	void uncompress();
 
 	// helpers
+	static size_type count_bytes(size_type nbits);
 	static size_type count_words(size_type nbits);
 	static size_type word_index(size_type n);
+	static size_type array_size(size_type n);
 
 private:
 
 	// modifiers
 	void fill(size_type first, size_type last, unsigned char value);
 	void reset_unused();
-
-	//  helpers
-	static size_type count_bytes(size_type nwords);
 
 	// attributes
 	size_type	m_size;
@@ -245,6 +257,9 @@ private:
 };
 
 void swap(bitset& lhs, bitset& rhs);
+
+template <typename T> struct is_movable;
+template <> struct is_movable<bitset> { enum { value = 1 }; };
 
 } // namespace mstl
 

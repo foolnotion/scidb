@@ -246,7 +246,7 @@ inline
 bitset::size_type
 bitset::word_index(size_type n)
 {
-	return n >> ((bitfield::nbits + 128)>>5);	// 64 bit safe
+	return n >> ((bitfield::nbits + 128) >> 5);	// 64 bit safe
 }
 
 
@@ -357,7 +357,7 @@ inline
 bitset::size_type
 bitset::count_words() const
 {
-	return count_words(m_size);
+	return m_words;
 }
 
 
@@ -544,9 +544,9 @@ bitset::end_index() const
 
 inline
 bitset::size_type
-bitset::count_bytes(size_type nwords)
+bitset::count_bytes(size_type nbits)
 {
-	return nwords*bitfield::nbytes;
+	return count_words(nbits)*bitfield::nbytes;
 }
 
 
@@ -554,7 +554,7 @@ inline
 bitset::size_type
 bitset::count_bytes() const
 {
-	return count_bytes(count_words());
+	return count_bytes(size());
 }
 
 
@@ -562,7 +562,24 @@ inline
 bitset::size_type
 bitset::bytes_used() const
 {
-	return (m_size + 7) >> 3;
+	return mstl::div8((m_size + 7));
+}
+
+
+inline
+bitset::size_type
+bitset::array_size(size_type nbits)
+{
+	static_assert((sizeof(value_type) % 4) == 0, "computation cannot work");
+	return mstl::div4(count_bytes(nbits));
+}
+
+
+inline
+bitset::size_type
+bitset::array_size() const
+{
+	return array_size(m_size);
 }
 
 
@@ -592,7 +609,46 @@ inline
 bitset::bitfield const*
 bitset::content() const
 {
+	M_REQUIRE(!compressed());
 	return m_bits;
+}
+
+
+inline
+unsigned char*
+bitset::data()
+{
+	M_REQUIRE(!compressed());
+	return reinterpret_cast<unsigned char*>(m_bits);
+}
+
+
+inline
+unsigned char const*
+bitset::data() const
+{
+	M_REQUIRE(!compressed());
+	return reinterpret_cast<unsigned char const*>(m_bits);
+}
+
+
+inline
+uint32_t const*
+bitset::array() const
+{
+	M_REQUIRE(!compressed());
+	return reinterpret_cast<uint32_t const*>(m_bits);
+}
+
+
+inline
+void
+bitset::setup(size_type at, uint32_t value)
+{
+	M_REQUIRE(!compressed());
+	M_REQUIRE(at < array_size());
+
+	reinterpret_cast<uint32_t*>(m_bits)[at] = value;
 }
 
 
@@ -689,6 +745,15 @@ void
 bitset::clear()
 {
 	resize(0);
+}
+
+
+inline
+byte_buf const*
+bitset::compressed_data() const
+{
+	M_REQUIRE(compressed());
+	return reinterpret_cast<byte_buf const*>(m_bits);
 }
 
 

@@ -714,7 +714,7 @@
 
 ::application::database::annotators::mc::Find				"Suchen"
 ::application::database::annotators::mc::FindAnnotator	"Suche Kommentator"
-::application::database::annotators::mc::ClearEntries		"Einträge löschen"
+::application::database::annotators::mc::NoAnnotator		"Ohne Kommentator"
 
 ### application::pgn ###################################################
 ::application::pgn::mc::Command(move:comment)			"Kommentar setzen"
@@ -1402,7 +1402,6 @@
 ::playertable::mc::NotFound					"Nicht gefunden."
 ::playertable::mc::EnablePlayerBase			"Spielerdatenbank benutzen"
 ::playertable::mc::DisablePlayerBase		"Spielerdatenbank nicht benutzen"
-::playertable::mc::HelpPatternMatching		"Hilfe: Suchmusterabgleich"
 ::playertable::mc::TooltipRating				"Wertungszahl: %s"
 
 ::playertable::mc::Name							"Name"
@@ -1415,23 +1414,29 @@
 
 ::playertable::mc::ShowPlayerCard			"Spielerkarteikarte öffnen..."
 
+### sitetable ##########################################################
+::sitetable::mc::FindSite	"Suche Ort"
+::sitetable::mc::T_Country	"Land"
+
 ### eventtable #########################################################
 ::eventtable::mc::Attendance	"Teilnehmerzahl"
+::eventtable::mc::FindEvent	"Suche Turnier"
 
 ### player dictionary ##################################################
-::playerdict::mc::PlayerDictionary	"Spielerlexikon"
-::playerdict::mc::PlayerFilter		"Spielerfilter"
-::playerdict::mc::OrganizationID		"Organisations-ID"
-::playerdict::mc::Count					"Anzahl"
-::playerdict::mc::Ignore				"Ignorieren"
-::playerdict::mc::FederationID		"Verbandsnummer"
-::playerdict::mc::Ratings				"Wertungen"
-::playerdict::mc::Titles				"Titel"
-::playerdict::mc::None					"Keine"
-::playerdict::mc::Operation			"Verfahren"
-::playerdict::mc::Awarded				"Verliehen"
-::playerdict::mc::RangeOfYears		"Jahresbereich"
-::playerdict::mc::SearchPlayerName	"Spielername suchen"
+::playerdict::mc::PlayerDictionary		"Spielerlexikon"
+::playerdict::mc::PlayerFilter			"Spielerfilter"
+::playerdict::mc::OrganizationID			"Organisations-ID"
+::playerdict::mc::Count						"Anzahl"
+::playerdict::mc::Ignore					"Ignorieren"
+::playerdict::mc::FederationID			"Verbandsnummer"
+::playerdict::mc::Ratings					"Wertungen"
+::playerdict::mc::Titles					"Titel"
+::playerdict::mc::None						"Keine"
+::playerdict::mc::Operation				"Verfahren"
+::playerdict::mc::Awarded					"Verliehen"
+::playerdict::mc::RangeOfYears			"Jahresbereich"
+::playerdict::mc::SearchPlayerName		"Suche Spielernamen"
+::playerdict::mc::HelpPatternMatching	"Hilfe: Suchmusterabgleich"
 
 ::playerdict::mc::AgeClass(unrestricted)	"Unbeschränkt"
 ::playerdict::mc::AgeClass(junior)			"Junioren"

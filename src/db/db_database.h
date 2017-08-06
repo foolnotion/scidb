@@ -352,6 +352,15 @@ public:
 								Log& log,
 								util::Progress& progress);
 
+	/// Map namebase index to display index.
+	int mapPlayerIndex(int index) const;
+	/// Map namebase index to display index.
+	int mapEventIndex(int index) const;
+	/// Map namebase index to display index.
+	int mapSiteIndex(int index) const;
+	/// Map namebase index to display index.
+	int mapAnnotatorIndex(int index) const;
+
 	Namebases& namebases();
 	using DatabaseContent::namebase;
 

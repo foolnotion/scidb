@@ -61,6 +61,8 @@ public:
 		Round,	// used in Scid codec
 	};
 
+	static unsigned const InvalidIndex = unsigned(-1);
+
 	Namebase(Type type);
 	~Namebase() throw();
 
@@ -80,6 +82,14 @@ public:
 	unsigned maxFrequency() const;
 	unsigned maxUsage() const;
 	unsigned nextId() const;
+
+	unsigned lookupIndex(unsigned number) const;
+	unsigned realIndex(unsigned number) const;
+
+	PlayerEntry const* lookupPlayer(unsigned number) const;
+	EventEntry const* lookupEvent(unsigned number) const;
+	SiteEntry const* lookupSite(unsigned number) const;
+	Entry const* lookupEntry(unsigned number) const;
 
 	PlayerEntry const* player(unsigned index) const;
 	PlayerEntry* player(unsigned index);
@@ -120,11 +130,14 @@ public:
 	void setMaxUsage(unsigned usage);
 	void setNextId(unsigned id);
 
-	Entry* insert();
+	int search(mstl::string const& name, unsigned startIndex = InvalidIndex) const;
+
 	Entry* insert(mstl::string const& name);
 	Entry* insert(mstl::string const& name, unsigned limit);
 	Entry* insert(mstl::string const& name, unsigned id, unsigned limit);
 	Entry const* append(mstl::string const& name, unsigned id);
+	Entry const* emptyAnnotator() const;
+	Entry* emptyAnnotator();
 
 	SiteEntry* insertSite(mstl::string const& name);
 	SiteEntry* insertSite(mstl::string const& name, country::Code country, unsigned limit);
@@ -245,6 +258,8 @@ private:
 
 	unsigned nextFreeId();
 
+	void beforeClear();
+
 	Entry* makeEntry(mstl::string const& name);
 	EventEntry* makeEventEntry(mstl::string const& name);
 	SiteEntry* makeSiteEntry(mstl::string const& name, db::Site const* site);
@@ -258,6 +273,7 @@ private:
 	List		m_list;
 //	IdSet		m_freeSet;
 //	IdSet		m_reuseSet;
+	IdSet		m_lookupSet;
 	Map		m_map;
 	bool		m_isConsistent;
 	bool		m_isPrepared;
@@ -265,6 +281,7 @@ private:
 	bool		m_isModified;
 	bool		m_isOriginal;
 	bool		m_isReadonly;
+	Entry*	m_emptyAnnotator;
 
 	union
 	{

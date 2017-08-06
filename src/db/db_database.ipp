@@ -62,6 +62,9 @@ inline Namebases& Database::namebases()						{ return m_namebases; }
 inline Time Database::created() const							{ return m_created; }
 inline uint32_t Database::creationTime() const				{ return m_created; }
 inline unsigned Database::size() const							{ return m_size; }
+inline int Database::mapPlayerIndex(int index) const		{ return index; }
+inline int Database::mapEventIndex(int index) const		{ return index; }
+inline int Database::mapSiteIndex(int index) const			{ return index; }
 
 inline void Database::resetInitialSize()						{ resetInitialSize(m_size); }
 

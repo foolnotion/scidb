@@ -22,7 +22,29 @@
 #include "m_type_traits.h"
 #include "m_assert.h"
 
+#include <string.h>
+
 namespace mstl {
+
+template <typename T>
+inline
+bool
+vector<T>::operator==(vector const& v) const
+{
+	size_t n = size();
+
+	if (n != v.size())
+		return false;
+
+	for (size_t i = 0; i < n; ++i)
+	{
+		if (!(this->m_start[i] == v.m_start[i]))
+			return false;
+	}
+
+	return true;
+}
+
 
 template <typename T> inline void swap(vector<T>& lhs, vector<T>& rhs) { lhs.swap(rhs); }
 
@@ -303,16 +325,7 @@ vector<T>::equal(vector_type const& v, size_type n) const
 	M_REQUIRE(n <= v.size());
 	M_REQUIRE(n <= size());
 
-	if (mstl::is_pod<T>::value)
-		return ::memcmp(this->m_start, v.m_start, n*sizeof(T)) == 0;
-
-	for (size_type i = 0; i < n; ++i)
-	{
-		if (this->m_start[i] != v.m_start[i])
-			return false;
-	}
-
-	return true;
+	return mstl::equal(begin(), end(), v.begin());
 }
 
 
@@ -337,10 +350,12 @@ vector<T>::push_back(const_reference v)
 
 template <typename T>
 inline
-void
+typename vector<T>::reference
 vector<T>::push_back()
 {
-	push_back(T());
+	reserve(size() + 1);
+	mstl::bits::construct(this->m_finish, T());
+	return *this->m_finish++;
 }
 
 
@@ -440,6 +455,25 @@ vector<T>::resize(size_type n)
 
 
 template <typename T>
+inline
+void
+vector<T>::shrink(size_type n)
+{
+	M_REQUIRE(n <= size());
+
+	int k = int(size()) - int(n);
+
+	if (k > 0)
+	{
+		memblock<T> block(n);
+		mstl::bits::destroy(this->m_finish - k, this->m_finish);
+		block.m_finish = mstl::uninitialized_move(this->m_start, this->m_start + n, block.m_start);
+		block.swap(*this);
+	}
+}
+
+
+template <typename T>
 void
 vector<T>::release()
 {
@@ -474,13 +508,15 @@ vector<T>::insert(iterator position, const_reference value)
 {
 	M_REQUIRE(position <= end());
 
-	size_type n = position - begin();
-
 	if (position == end() && this->m_finish != this->m_end_of_storage)
+	{
+		vector<T>::iterator i(this->m_finish);
 		mstl::bits::construct(this->m_finish++, value);
-	else
-		insert_aux(position, value);
+		return i;
+	}
 
+	size_type n = position - begin();
+	insert_aux(position, value);
 	return begin() + n;
 }
 
@@ -505,7 +541,7 @@ vector<T>::erase(iterator position)
 	if (is_movable<T>::value)
 	{
 		mstl::bits::destroy(pointer(position));
-		::memmove(position, position + 1, mstl::distance(position + 1, end())*sizeof(T));
+		::memmove(position, position + 1, mstl::distance(position + 1, end())*sizeof(value_type));
 		--this->m_finish;
 	}
 	else
@@ -541,7 +577,7 @@ vector<T>::erase(iterator first, iterator last)
 	if (is_movable<T>::value)
 	{
 		size_t distance = mstl::distance(last, end());
-		::memmove(first, last, distance*sizeof(T));
+		::memmove(first, last, distance*sizeof(value_type));
 		i = first + distance;
 	}
 	else
@@ -565,26 +601,6 @@ vector<T>::erase(reverse_iterator first, reverse_iterator last)
 	M_REQUIRE(first <= last);
 
 	return erase(last.base(), first.base());
-}
-
-
-template <typename T>
-inline
-bool
-vector<T>::operator==(vector const& v) const
-{
-	size_t n = size();
-
-	if (n != v.size())
-		return false;
-
-	for (size_t i = 0; i < n; ++i)
-	{
-		if (!(this->m_start[i] == v.m_start[i]))
-			return false;
-	}
-
-	return true;
 }
 
 
@@ -637,7 +653,7 @@ vector<T>::fill_insert(iterator position, size_type n, const_reference value)
 			{
 				::memmove(	pointer(position) + n,
 								pointer(position),
-								mstl::distance(position, end())*sizeof(T));
+								mstl::distance(position, end())*sizeof(value_type));
 				this->m_finish += n;
 				mstl::fill_n(pointer(position), n, value);
 			}
@@ -680,7 +696,9 @@ vector<T>::insert_aux(iterator position, const_reference value)
 	{
 		if (is_movable<T>::value)
 		{
-			::memmove(pointer(position) + 1, pointer(position), mstl::distance(position, end())*sizeof(T));
+			::memmove(	pointer(position) + 1,
+							pointer(position),
+							mstl::distance(position, end())*sizeof(value_type));
 			mstl::bits::construct(pointer(position), value);
 		}
 		else
@@ -725,13 +743,26 @@ vector<T>::assign(Iterator first, Iterator last)
 
 
 template <typename T>
+inline
 void
-vector<T>::fill(const_reference value)
+vector<T>::fill(value_type const& value)
 {
 	if (mstl::is_pod<value_type>::value)
 		mstl::uninitialized_fill_n(this->m_start, size(), value);
 	else
 		mstl::fill_n(this->m_start, size(), value);
+}
+
+
+template <typename T>
+inline
+void
+vector<T>::zero()
+{
+	if (mstl::is_pod<value_type>::value)
+		::memset(this->m_start, 0, size()*sizeof(value_type));
+	else
+		mstl::fill_n(this->m_start, size(), value_type());
 }
 
 
@@ -743,6 +774,24 @@ vector<T>::operator+=(vector const& v)
 	insert(end(), v.begin(), v.end());
 	return *this;
 }
+
+
+#if HAVE_OX_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+
+template <typename T>
+inline vector<T>::vector(vector&& v) : memblock<T>(mstl::move(*this)) {}
+
+
+template <typename T>
+inline
+vector<T>&
+vector<T>::operator=(vector&& v)
+{
+	static_cast<memblock<T>&>(*this) = mstl::move(*this);
+	return *this;
+}
+
+#endif
 
 
 template <typename T>
@@ -808,6 +857,68 @@ vector<T>::qsort(int (*function)(T, T, Arg const& arg), Arg const& arg)
 
 
 template <typename T>
+template <typename Comparison>
+inline
+void
+vector<T>::qsort_reverse(Comparison comparison)
+{
+	::mstl::qsort_reverse(this->m_start, this->m_finish - this->m_start, comparison);
+}
+
+
+template <typename T>
+inline
+void
+vector<T>::qsort_reverse(int (*comparison)(T const* lhs, T const* rhs))
+{
+	::mstl::qsort_reverse(this->m_start, this->m_finish - this->m_start, comparison);
+}
+
+
+template <typename T>
+inline
+void
+vector<T>::qsort_reverse()
+{
+	qsort_reverse(bits::algo::compare<T>::doit);
+}
+
+
+template <typename T>
+void
+vector<T>::qsort_reverse(int (*function)(T const&, T const&))
+{
+	::mstl::qsort_reverse(this->m_start, this->m_finish - this->m_start, function);
+}
+
+
+template <typename T>
+void
+vector<T>::qsort_reverse(int (*function)(T, T))
+{
+	::mstl::qsort_reverse(this->m_start, this->m_finish - this->m_start, function);
+}
+
+
+template <typename T>
+template <typename Arg>
+void
+vector<T>::qsort_reverse(int (*function)(T const&, T const&, Arg const& arg), Arg const& arg)
+{
+	::mstl::qsort_reverse(this->m_start, this->m_finish - this->m_start, function, arg);
+}
+
+
+template <typename T>
+template <typename Arg>
+void
+vector<T>::qsort_reverse(int (*function)(T, T, Arg const& arg), Arg const& arg)
+{
+	::mstl::qsort_reverse(this->m_start, this->m_finish - this->m_start, function, arg);
+}
+
+
+template <typename T>
 template <typename Less>
 inline
 void
@@ -866,6 +977,57 @@ void
 vector<T>::bubblesort(int (*function)(T, T, Arg const& arg), Arg const& arg)
 {
 	::mstl::bubblesort(this->m_start, this->m_finish - this->m_start, function, arg);
+}
+
+
+template <typename T>
+inline
+void
+vector<T>::unique()
+{
+	T* finish = ::mstl::unique(begin(), end()).ref();
+	mstl::bits::destroy(finish, this->m_finish);
+	this->m_finish = finish;
+}
+
+
+template <typename T>
+template <typename BinaryPredicate>
+inline
+void
+vector<T>::unique(BinaryPredicate pred)
+{
+	T* finish = ::mstl::unique(begin(), end(), pred).ref();
+	mstl::bits::destroy(finish, this->m_finish);
+	this->m_finish = finish;
+}
+
+
+template <typename T>
+inline
+typename vector<T>::const_iterator
+vector<T>::bsearch(const_reference v) const
+{
+	const_iterator i = lower_bound(begin(), end(), v);
+
+	if (i != end() && *i == v)
+		return i;
+
+	return end();
+}
+
+
+template <typename T>
+inline
+typename vector<T>::iterator
+vector<T>::bsearch(const_reference v)
+{
+	iterator i = lower_bound(begin(), end(), v);
+
+	if (i != end() && *i == v)
+		return i;
+
+	return end();
 }
 
 } // namespace mstl

@@ -24,6 +24,7 @@
 // (at your option) any later version.
 // ======================================================================
 
+#include "m_cast.h"
 #include "m_assert.h"
 
 namespace db {
@@ -78,6 +79,32 @@ Namebase::used() const
 {
 	M_REQUIRE(isConsistent());
 	return m_used;
+}
+
+
+inline
+unsigned
+Namebase::realIndex(unsigned number) const
+{
+	M_REQUIRE(number < used());
+
+	if (m_used == m_list.size())
+		return number;
+
+	return m_lookupSet.find_first(number);
+}
+
+
+inline
+unsigned
+Namebase::lookupIndex(unsigned number) const
+{
+	M_REQUIRE(number < size());
+
+	if (m_used == m_list.size())
+		return number;
+
+	return m_lookupSet.index(number);
 }
 
 
@@ -166,6 +193,41 @@ Namebase::playerAt(unsigned index)
 
 
 inline
+Namebase::PlayerEntry const*
+Namebase::lookupPlayer(unsigned number) const
+{
+	M_REQUIRE(type() == Player);
+	return playerAt(lookupIndex(number));
+}
+
+
+inline
+Namebase::EventEntry const*
+Namebase::lookupEvent(unsigned number) const
+{
+	M_REQUIRE(type() == Event);
+	return eventAt(lookupIndex(number));
+}
+
+
+inline
+Namebase::SiteEntry const*
+Namebase::lookupSite(unsigned number) const
+{
+	M_REQUIRE(type() == Site);
+	return siteAt(lookupIndex(number));
+}
+
+
+inline
+Namebase::Entry const*
+Namebase::lookupEntry(unsigned number) const
+{
+	return entryAt(lookupIndex(number));
+}
+
+
+inline
 Namebase::Entry const*
 Namebase::entry(unsigned index) const
 {
@@ -248,6 +310,24 @@ Namebase::player(unsigned index) const
 
 
 inline
+NamebaseEntry const*
+Namebase::emptyAnnotator() const
+{
+	M_REQUIRE(type() == Annotator);
+	return m_emptyAnnotator;
+}
+
+
+inline
+NamebaseEntry*
+Namebase::emptyAnnotator()
+{
+	M_REQUIRE(type() == Annotator);
+	return m_emptyAnnotator;
+}
+
+
+inline
 Namebase::PlayerEntry*
 Namebase::player(unsigned index)
 {
@@ -264,7 +344,11 @@ void
 Namebase::incrRef(Entry* entry)
 {
 	m_isConsistent = false;	// XXX possibly superfluous, force update after changes
-	entry->incrRef();
+
+	if (m_type == Player)
+		mstl::safe_cast_ptr<PlayerEntry>(entry)->incrRef();
+	else
+		entry->incrRef();
 }
 
 

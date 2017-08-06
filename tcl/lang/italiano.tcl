@@ -715,7 +715,7 @@
 
 ::application::database::annotators::mc::Find				"Cerca"
 ::application::database::annotators::mc::FindAnnotator	"Cerca Commentatore"
-::application::database::annotators::mc::ClearEntries		"Pulisci Form"
+::application::database::annotators::mc::NoAnnotator		"No annotator" ;# NEW
 
 ### application::pgn ###################################################
 ::application::pgn::mc::Command(move:comment)			"Imposta commento"
@@ -1413,7 +1413,6 @@
 ::playertable::mc::NotFound					"Nessun risultato."
 ::playertable::mc::EnablePlayerBase			"Usa Database Giocatore"
 ::playertable::mc::DisablePlayerBase		"Disable use of player base" ;# NEW
-::playertable::mc::HelpPatternMatching		"Help: Pattern Matching" ;# NEW
 ::playertable::mc::TooltipRating				"Rating: %s" ;# NEW
 
 ::playertable::mc::Name							"Nome"
@@ -1424,23 +1423,29 @@
 
 ::playertable::mc::ShowPlayerCard			"Mostra Informazioni Giocatore..."
 
+### sitetable ##########################################################
+::sitetable::mc::FindSite	"Search Site" ;# NEW
+::sitetable::mc::T_Country	"Country" ;# NEW
+
 ### eventtable #########################################################
 ::eventtable::mc::Attendance	"Frequenza di partecipazione"
+::eventtable::mc::FindEvent	"Search Event Name" ;# NEW
 
 ### player dictionary ##################################################
-::playerdict::mc::PlayerDictionary	"Dizionario Giocatore"
-::playerdict::mc::PlayerFilter		"Filtri Giocatore"
-::playerdict::mc::OrganizationID		"Organization ID" ;# NEW
-::playerdict::mc::Count					"Conteggio"
-::playerdict::mc::Ignore				"Ignora"
-::playerdict::mc::FederationID		"ID della Federazione"
-::playerdict::mc::Ratings				"Punteggi"
-::playerdict::mc::Titles				"Titoli"
-::playerdict::mc::None					"Nessuno"
-::playerdict::mc::Operation			"Operazione"
-::playerdict::mc::Awarded				"Awarded" ;# NEW
-::playerdict::mc::RangeOfYears		"Range of years" ;# NEW
-::playerdict::mc::SearchPlayerName	"Search Player Name" ;# NEW
+::playerdict::mc::PlayerDictionary		"Dizionario Giocatore"
+::playerdict::mc::PlayerFilter			"Filtri Giocatore"
+::playerdict::mc::OrganizationID			"Organization ID" ;# NEW
+::playerdict::mc::Count						"Conteggio"
+::playerdict::mc::Ignore					"Ignora"
+::playerdict::mc::FederationID			"ID della Federazione"
+::playerdict::mc::Ratings					"Punteggi"
+::playerdict::mc::Titles					"Titoli"
+::playerdict::mc::None						"Nessuno"
+::playerdict::mc::Operation				"Operazione"
+::playerdict::mc::Awarded					"Awarded" ;# NEW
+::playerdict::mc::RangeOfYears			"Range of years" ;# NEW
+::playerdict::mc::SearchPlayerName		"Search Player Name" ;# NEW
+::playertable::mc::HelpPatternMatching	"Help: Pattern Matching" ;# NEW
 
 ::playerdict::mc::AgeClass(unrestricted)	"Unrestricted" ;# NEW
 ::playerdict::mc::AgeClass(junior)			"Junior" ;# NEW

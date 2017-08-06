@@ -1848,9 +1848,9 @@ Codec::setupType()
 {
 	if (m_encoding == utf8())
 		m_type = UTF8;
-	else if (m_encoding = windows())
+	else if (m_encoding == windows())
 		m_type = Windows;
-	else if (m_encoding = dos())
+	else if (m_encoding == dos())
 		m_type = DOS;
 	else
 		m_type = Other;
@@ -1874,7 +1874,10 @@ Codec::reset(mstl::string const& encoding)
 void
 Codec::convertFromDOS(mstl::string const& in, mstl::string& out)
 {
-	for (char const* str = in; *str; ++str)
+	char const* str	= in.begin();
+	char const* e		= in.end();
+
+	for ( ; str < e; ++str)
 	{
 		unsigned char c = *str;
 
@@ -1913,7 +1916,10 @@ Codec::convertFromDOS(mstl::string const& in, mstl::string& out)
 void
 Codec::convertFromWindows(mstl::string const& in, mstl::string& out)
 {
-	for (char const* str = in; *str; ++str)
+	char const* str	= in.begin();
+	char const* e		= in.end();
+
+	for ( ; str < e; ++str)
 	{
 		unsigned char c = *str;
 

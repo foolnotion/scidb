@@ -36,8 +36,10 @@
 #include "m_vector.h"
 #include "m_pair.h"
 #include "m_string.h"
+#include "m_utility.h"
 
 namespace util { class Progress; }
+namespace util { class Pattern; }
 namespace TeXt { class Environment; }
 namespace mstl { template <typename T, typename U> class map; }
 
@@ -56,12 +58,12 @@ namespace app {
 class Application;
 class Cursor;
 
-class View
+class View : private mstl::noncopyable
 {
 public:
 
 	enum FileMode		{ Create, Append, Upgrade };
-	enum UpdateMode	{ AddNewGames, LeaveEmpty };
+	enum UpdateMode	{ NotNeeded, AddNewGames, LeaveEmpty };
 
 	typedef mstl::pvector<mstl::string>	StringList;
 	typedef mstl::vector<unsigned> LengthList;
@@ -93,6 +95,9 @@ public:
 	/// Return database.
 	db::Database const& database() const;
 
+	/// Return whether this table type is used in this view.
+	bool isUsed(db::table::Type type) const;
+
 	/// Return the update mode of the specified table.
 	UpdateMode updateMode(db::table::Type type) const;
 
@@ -120,13 +125,13 @@ public:
 	/// Return index in current selector of given annotator number.
 	int lookupAnnotator(mstl::string const& name) const;
 	/// Return index of first matching player.
-	int findPlayer(mstl::string const& name) const;
+	int findPlayer(util::Pattern const& pattern, unsigned startIndex = 0) const;
 	/// Return index of first matching event.
-	int findEvent(mstl::string const& title) const;
+	int findEvent(util::Pattern const& pattern, unsigned startIndex = 0) const;
 	/// Return index of first matching site.
-	int findSite(mstl::string const& title) const;
+	int findSite(util::Pattern const& pattern, unsigned startIndex = 0) const;
 	/// Return index of first matching annotator.
-	int findAnnotator(mstl::string const& name) const;
+	int findAnnotator(util::Pattern const& pattern, unsigned startIndex = 0) const;
 
 	/// Return current table filter.
 	db::Filter const& filter(db::table::Type type) const;

@@ -33,6 +33,7 @@
 
 #include "m_algorithm.h"
 #include "m_utility.h"
+#include "m_cast.h"
 #include "m_assert.h"
 
 #include <string.h>
@@ -111,6 +112,7 @@ Namebase::Namebase(Type type)
 	,m_isModified(false)
 	,m_isOriginal(true)
 	,m_isReadonly(false)
+	,m_emptyAnnotator(type == Annotator ? new Entry() : 0)
 	,m_stringAllocator(32768)
 	,m_stringAllocator2(0)
 	,m_stringAllocator3(0)
@@ -132,6 +134,8 @@ Namebase::Namebase(Type type)
 
 Namebase::~Namebase() throw()
 {
+	beforeClear();
+
 	switch (m_type)
 	{
 		case Site:		delete m_siteAllocator; break;
@@ -142,6 +146,23 @@ Namebase::~Namebase() throw()
 
 	delete m_stringAllocator2;
 	delete m_stringAllocator3;
+	delete m_emptyAnnotator;
+}
+
+
+void
+Namebase::beforeClear()
+{
+	if (m_type == Player)
+	{
+		for (unsigned i = 0; i < m_list.size(); ++i)
+		{
+			PlayerEntry* entry = mstl::safe_cast_ptr<PlayerEntry>(m_list[i]);
+
+			if (db::Player* p = entry->m_player)
+				p->decrRef(entry->frequency());
+		}
+	}
 }
 
 
@@ -616,26 +637,6 @@ Namebase::insert(mstl::string const& name, unsigned id, unsigned limit)
 }
 
 
-Namebase::Entry*
-Namebase::insert()
-{
-	M_REQUIRE(!isReadonly());
-	M_REQUIRE(this->type() != Site);
-	M_REQUIRE(this->type() != Event);
-	M_REQUIRE(this->type() != Player);
-	M_REQUIRE(m_list.empty() || (m_list.size() == 1 && m_list.front()->name().empty()));
-
-	if (m_list.empty())
-	{
-		m_list.push_back(m_entryAllocator->alloc());
-		m_list.back()->m_id = 0;
-		m_isModified = true;
-	}
-
-	return m_list.front();
-}
-
-
 Namebase::Entry const*
 Namebase::append(mstl::string const& name, unsigned id)
 {
@@ -757,14 +758,32 @@ Namebase::findSite(mstl::string const& name, country::Code country) const
 }
 
 
+int
+Namebase::search(mstl::string const& name, unsigned startIndex) const
+{
+	M_REQUIRE(startIndex == InvalidIndex || startIndex < size());
+
+	unsigned skip = 0;
+
+	if (startIndex != InvalidIndex && *m_list[startIndex] < name)
+		skip = startIndex;
+
+	List::const_iterator i = mstl::lower_bound(m_list.begin() + skip, m_list.end(), name);
+	return i == m_list.end() ? -1 : i - m_list.begin();
+}
+
+
 void
 Namebase::clear()
 {
 	M_REQUIRE(!isReadonly());
 
+	beforeClear();
+
 	m_list.clear();
 //	m_freeSet.clear();
 //	m_reuseSet.clear();
+	m_lookupSet.clear();
 	m_map.clear();
 
 	m_maxFreq = 0;
@@ -776,6 +795,9 @@ Namebase::clear()
 	m_isPrepared = true;
 	m_isModified = true;
 //	m_freeSetIsEmpty = true;
+
+	if (m_emptyAnnotator)
+		m_emptyAnnotator->setFrequency(0);
 
 	m_stringAllocator.clear();
 
@@ -827,7 +849,7 @@ Namebase::cleanup()
 
 	for (List::reverse_iterator i = m_list.rbegin(); i != m_list.rend(); ++i)
 	{
-		if ((*i)->m_frequency == 0 && (*i)->m_id >= size_t(i.base() - m_list.begin()))
+		if ((*i)->m_frequency == 0/* && (*i)->m_id >= size_t(i.base() - m_list.begin())*/)
 			i = m_list.erase(i.base());
 	}
 
@@ -840,10 +862,15 @@ void
 Namebase::decrRef(Entry* entry)
 {
 	M_REQUIRE(entry->frequency() > 0);
+	M_REQUIRE(type() != Annotator || entry != emptyAnnotator());
 //	M_REQUIRE(entry->id() < previousSize());
 
 	m_isConsistent = false;
-	entry->decrRef();
+
+	if (m_type == Player)
+		mstl::safe_cast_ptr<PlayerEntry>(entry)->decrRef();
+	else
+		entry->decrRef();
 
 //	if (entry->frequency() == 0)
 //	{
@@ -879,6 +906,8 @@ Namebase::update()
 //	m_freeSet.reset();
 //	m_reuseSet.resize(m_list.size());
 //	m_freeSetIsEmpty = true;
+	m_lookupSet.resize(m_list.size());
+	m_lookupSet.reset();
 	m_map.resize(m_list.size());
 
 	for (List::iterator i = m_list.begin(); i != m_list.end(); ++i, ++index)
@@ -894,6 +923,7 @@ Namebase::update()
 			m_maxFreq = mstl::max(m_maxFreq, freq);
 			m_nextId = mstl::max(m_nextId, id + 1);
 			m_map[m_used++] = index;
+			m_lookupSet.set(index);
 
 //			if (usedSet.test_and_set(id) && m_reuseSet.test(id))
 //				prepareSet.push_back(*i);
@@ -946,6 +976,8 @@ Namebase::setPrepared(unsigned maxFrequency, unsigned maxId, unsigned maxUsage)
 //	m_freeSet.reset();
 //	m_reuseSet.resize(m_used);
 //	m_freeSetIsEmpty = true;
+	m_lookupSet.resize(m_list.size());
+	m_lookupSet.set();
 	m_map.resize(m_used);
 	m_nextId = maxId + 1;
 

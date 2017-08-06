@@ -61,6 +61,7 @@
 #include "m_auto_ptr.h"
 #include "m_limits.h"
 #include "m_string.h"
+#include "m_vector.h"
 #include "m_utility.h"
 #include "m_range.h"
 #include "m_assert.h"
@@ -819,6 +820,17 @@ Application::close(mstl::string const& name)
 	M_REQUIRE(name != clipbaseName());
 	M_REQUIRE(name != scratchbaseName());
 
+	struct Pair
+	{
+		Pair(mstl::string const& name, variant::Type variant) :name(name), variant(variant) {}
+
+		mstl::string	name;
+		variant::Type	variant;
+	};
+
+	typedef mstl::vector<Pair> Cursors;
+	Cursors cursors;
+
 	CursorP multiCursor = m_cursorMap.find(name)->second;
 
 	for (unsigned v = 0; v < variant::NumberOfVariants; ++v)
@@ -835,6 +847,7 @@ Application::close(mstl::string const& name)
 			if (m_subscriber)
 				m_subscriber->closeDatabase(name, variant::fromIndex(v));
 
+			cursors.push_back(Pair(name, variant::fromIndex(v)));
 			moveGamesToScratchbase(*cursor);
 
 			if (m_current == cursor)
@@ -843,6 +856,13 @@ Application::close(mstl::string const& name)
 	}
 
 	multiCursor->close();
+
+	if (m_subscriber)
+	{
+		for (Cursors::const_iterator i = cursors.begin(); i != cursors.end(); ++i)
+			m_subscriber->updateDatabaseInfo(i->name, i->variant);
+	}
+
 	m_cursorMap.erase(name);
 }
 

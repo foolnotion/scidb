@@ -130,8 +130,7 @@ Cursor::isReadonly() const
 bool
 Cursor::isWritable() const
 {
-	M_REQUIRE(isOpen());
-	return m_db->isWritable();
+	return isOpen() && m_db->isWritable();
 }
 
 
@@ -254,8 +253,7 @@ Cursor::type() const
 unsigned
 Cursor::count(db::table::Type type) const
 {
-	M_REQUIRE(isOpen());
-	return m_db->count(type);
+	return isOpen() ? m_db->count(type) : 0;
 }
 
 

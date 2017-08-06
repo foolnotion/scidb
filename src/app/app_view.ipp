@@ -34,6 +34,14 @@ inline db::Selector const& View::selector(db::table::Type type) const	{ return m
 inline Application const& View::application() const							{ return m_app; }
 inline Cursor const& View::cursor() const											{ return m_cursor; }
 
+
+inline
+bool
+View::isUsed(db::table::Type type) const
+{
+	return m_updateMode[type] != NotNeeded;
+}
+
 } // namespace db
 
 // vi:set ts=3 sw=3:

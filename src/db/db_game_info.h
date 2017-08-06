@@ -131,9 +131,9 @@ public:
 
 	Date date() const;
 	unsigned dateYear() const;
-	Eco eco() const;
+	Eco eco(variant::Type variant) const;
 	Eco ecoKey() const;										// ChessBase: n/a
-	Eco userEco() const;
+	Eco userEco(variant::Type variant) const;
 	template <int N> uint16_t ply() const;
 	bool hasShuffleChessPosition() const;
 	bool hasChess960Position() const;
@@ -177,6 +177,10 @@ public:
 	Signature signature() const;							// ChessBase: n/a; Scid: roughly
 	bool isGiveaway() const;
 	bool isSuicide() const;
+
+	NamebasePlayer* playerEntry(color::ID color);
+	NamebaseEvent* eventEntry();
+	NamebaseEntry* annotatorEntry();
 
 	// Scid 3.x: possibly n/a until game is loaded
 	Date eventDate() const;

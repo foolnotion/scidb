@@ -233,8 +233,7 @@ MultiCursor::isUnsaved() const
 unsigned
 MultiCursor::countGames() const
 {
-	M_REQUIRE(isOpen());
-	return m_base->countGames();
+	return isOpen() ? m_base->countGames() : 0;
 }
 
 
@@ -257,6 +256,8 @@ MultiCursor::close()
 		}
 
 		m_base->close();
+		delete m_base;
+		m_base = 0;
 	}
 }
 

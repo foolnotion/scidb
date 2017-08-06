@@ -29,6 +29,8 @@
 namespace eval sitetable {
 namespace eval mc {
 
+set FindSite "Search Site"
+
 set T_Country "Country"
 
 # translation not needed (TODO)
@@ -53,7 +55,7 @@ array set Defaults {
 }
 
 array set Options {}
-variable Find {}
+variable History {}
 
 
 proc build {path getViewCmd {visibleColumns {}} {args {}}} {
@@ -63,12 +65,8 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	variable Columns
 	variable Options
 	variable Defaults
-	variable Find
 
-	array set Vars {
-		columns			{}
-		find-current	{}
-	}
+	array set Vars { columns {} }
 
 	array set options [array get Defaults]
 	array set options [array get Options]
@@ -178,26 +176,18 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 			-allow {top bottom} \
 			-tooltipvar ::playertable::mc::Find \
 		]
-		::toolbar::add $tbFind label -float 0 -textvar [::mc::var ::playertable::mc::Find ":"]
-		set cb [::toolbar::add $tbFind ttk::combobox \
-			-width 20 \
-			-takefocus 1 \
-			-values $Find \
-			-textvariable [namespace current]::${path}::Vars(find-current) \
+		set cb [::toolbar::add $tbFind searchentry \
+			-float 0 \
+			-width 24 \
+			-parent $path \
+			-history [namespace current]::History \
+			-ghosttextvar [namespace current]::mc::FindSite \
+			-helpinfo ::playerdict::mc::HelpPatternMatching \
+			-mode key \
 		]
-		trace add variable [namespace current]::${path}::Vars(find-current) \
-			write [namespace code [list Find $path $cb]]
-		::bind $cb <Return> [namespace code [list Find $path $cb]]
-		::toolbar::add $tbFind button \
-			-image $::icon::22x22::enter \
-			-tooltipvar ::playertable::mc::StartSearch \
-			-command [namespace code [list Find $path $cb]] \
-			;
-		::toolbar::add $tbFind button \
-			-image $::icon::22x22::clear \
-			-tooltipvar ::playertable::mc::ClearEntries \
-			-command [namespace code [list Clear $path $cb]] \
-			;
+		::bind $cb <<Find>> [namespace code [list Find $path first %d]]
+		::bind $cb <<FindNext>> [namespace code [list Find $path next %d]]
+		::bind $cb <<Help>> [list ::help::open .application Pattern-Matching]
 	}
 
 	return $Vars(table)
@@ -476,41 +466,18 @@ proc SortColumn {path id dir {rating {}}} {
 }
 
 
-proc Find {path combo args} {
+proc Find {path mode name} {
 	variable ${path}::Vars
-	variable Find
 
-	set value $Vars(find-current)
-	if {[string length $value] == 0} { return }
 	set base [::scrolledtable::base $path]
 	set variant [::scrolledtable::variant $path]
 	set view [{*}$Vars(viewcmd) $base $variant]
-	set i [::scidb::view::find site $base $variant $view $value]
-	if {[llength $args] == 0} {
-		if {[string length $value] > 2} {
-			lappend Find $value
-			set Find [lsort -dictionary -increasing -unique $Find]
-			::toolbar::childconfigure $combo -values $Find
-		}
-		if {$i >= 0} {
-			::scrolledtable::see $path $i
-			::scrolledtable::focus $path
-		} else {
-			::dialog::info -parent [::toolbar::lookupChild $combo] -message $::playertable::mc::NotFound
-		}
-	} elseif {$i >= 0} {
+	if {$mode eq "next"} { set lastIndex [::scrolledtable::active $path] } else { set lastIndex -1 }
+	set i [::scidb::view::find site $base $variant $view "$name*" $lastIndex]
+	if {$i >= 0} {
 		::scrolledtable::see $path $i
+		::scrolledtable::activate $path $i
 	}
-}
-
-
-proc Clear {path combo} {
-	variable ${path}::Vars
-	variable Find
-
-	set Find {}
-	::toolbar::childconfigure $combo -values {}
-	set Vars(find-current) {}
 }
 
 

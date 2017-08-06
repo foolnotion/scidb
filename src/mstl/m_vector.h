@@ -19,12 +19,11 @@
 #ifndef _mstl_vector_included
 #define _mstl_vector_included
 
+#include "m_types.h"
 #include "m_type_traits.h"
 #include "m_memblock.h"
 #include "m_pointer_iterator.h"
 #include "m_iterator.h"
-
-#include <stddef.h>
 
 namespace mstl {
 
@@ -55,6 +54,11 @@ public:
 	vector(vector const& v, size_type n);
 	template <typename Iterator> vector(Iterator first, Iterator last);
 	~vector() throw();
+
+#if HAVE_OX_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+	vector(vector&& v);
+	vector& operator=(vector&& v);
+#endif
 
 	vector& operator=(vector const& v);
 
@@ -90,7 +94,7 @@ public:
 	const_pointer data() const;
 
 	void push_back(const_reference v);
-	void push_back();
+	reference push_back();
 	void push_front(const_reference v);
 	void push_front();
 	void pop_back();
@@ -116,15 +120,20 @@ public:
 	iterator erase(iterator first, iterator last);
 	iterator erase(reverse_iterator first, reverse_iterator last);
 
-	void fill(const_reference value);
+	void fill(value_type const& value);
+	void zero();
 
 	void reserve(size_type n);
 	void reserve_exact(size_type n);
 	void resize(size_type n);
 	void resize(size_type n, const_reference v);
+	void shrink(size_type n);
 	void clear();
 	void swap(vector& v);
 	void release();
+
+	const_iterator bsearch(const_reference v) const;
+	iterator bsearch(const_reference v);
 
 	void qsort();
 	template <typename Comparison>
@@ -137,6 +146,17 @@ public:
 		void qsort(int (*function)(T, T, Arg const& arg), Arg const& arg);
 	void qsort(int (*comparison)(T const* lhs, T const* rhs));
 
+	void qsort_reverse();
+	template <typename Comparison>
+		void qsort_reverse(Comparison comparison);
+	void qsort_reverse(int (*function)(T const&, T const&));
+	void qsort_reverse(int (*function)(T, T));
+	template <typename Arg>
+		void qsort_reverse(int (*function)(T const&, T const&, Arg const& arg), Arg const& arg);
+	template <typename Arg>
+		void qsort_reverse(int (*function)(T, T, Arg const& arg), Arg const& arg);
+	void qsort_reverse(int (*comparison)(T const* lhs, T const* rhs));
+
 	void bubblesort();
 	template <typename Less> void bubblesort(Less less);
 	void bubblesort(int (*function)(T const&, T const&));
@@ -147,13 +167,22 @@ public:
 		void bubblesort(int (*function)(T, T, Arg const& arg), Arg const& arg);
 	void bubblesort(int (*less)(T const* lhs, T const* rhs));
 
+	void unique();
+	template <typename BinaryPredicate>
+		void unique(BinaryPredicate pred);
+
 private:
+
+	typedef int (*real_comparison_func_t)(void const* lhs, void const* rhs);
 
 	void fill_insert(iterator position, size_type n, const_reference value);
 	void insert_aux(iterator position, const_reference value);
 };
 
 template <typename T> void swap(vector<T>& lhs, vector<T>& rhs);
+
+template <typename T> struct is_movable< vector<T> > { enum { value = is_movable<T>::value }; };
+template <typename T> struct memory_is_contiguous< vector<T> > { enum { value = 1 }; };
 
 } // namespace mstl
 

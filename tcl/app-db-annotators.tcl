@@ -36,15 +36,15 @@ set F_Frequency	"Frequency"
 
 set Find				"Find"
 set FindAnnotator	"Find annotator"
-set ClearEntries	"Clear entries"
+set NoAnnotator	"No annotator"
 
 } ;# namespace mc
 
 #		ID   		Adjustment	Min	Max	Width	Stretch	Removable	Elipsis	Color
 #	-------------------------------------------------------------------------------------
 set Columns {
-	{ annotator		left		10		0		18			1			0			1			{}	}
-	{ frequency		right		 4		8		 5			0			0			1			{}	}
+	{ annotator		left		10		 0		18			1			0			1			{}	}
+	{ frequency		right		 4		14		 6			0			0			1			{}	}
 }
 
 array set Defaults {
@@ -52,14 +52,13 @@ array set Defaults {
 }
 
 variable Tables {}
-variable Find {}
+variable History {}
 
 
 proc build {parent} {
 	variable ::gametable::Defaults
 	variable Columns
 	variable Tables
-	variable Find
 
 	set top [tk::panedwindow $parent.top \
 		-orient horizontal \
@@ -127,7 +126,6 @@ proc build {parent} {
 
 	namespace eval [namespace current]::$top {}
 	variable [namespace current]::${top}::Vars
-	set Vars(find-current) {}
 	set Vars(active) 0
 	set Vars(base) ""
 
@@ -145,25 +143,20 @@ proc build {parent} {
 		-side bottom \
 		-alignment left \
 		-allow {top bottom} \
-		-tooltipvar [namespace current]::mc::Find \
+		-tooltipvar ::playertable::mc::Find \
 	]
-	::toolbar::add $tbFind label -float 0 -textvar [::mc::var [namespace current]::mc::Find ":"]
-	set cb [::toolbar::add $tbFind ::ttk::combobox \
-		-width 14 \
-		-takefocus 1 \
-		-values $Find \
-		-textvariable [namespace current]::${top}::Vars(find-current)]
-	bind $cb <Return> [namespace code [list Find $top $cb]]
-	::toolbar::add $tbFind button \
-		-image $::icon::22x22::enter \
-		-tooltipvar [namespace current]::mc::FindAnnotator \
-		-command [namespace code [list Find $top $cb] \
+	set cb [::toolbar::add $tbFind searchentry \
+		-float 0 \
+		-width 18 \
+		-parent $lt \
+		-history [namespace current]::History \
+		-ghosttextvar [namespace current]::mc::FindAnnotator \
+		-helpinfo ::playerdict::mc::HelpPatternMatching \
+		-mode key \
 	]
-	::toolbar::add $tbFind button \
-		-image $::icon::22x22::clear \
-		-tooltipvar [namespace current]::mc::ClearEntries \
-		-command [namespace code [list Clear $top $cb] \
-	]
+	bind $cb <<Find>>			[namespace code [list Find $top first %d]]
+	bind $cb <<FindNext>>	[namespace code [list Find $top next %d]]
+	bind $cb <<Help>>			[list ::help::open .application Pattern-Matching]
 
 	return $table
 }
@@ -218,6 +211,7 @@ proc View {pane base variant} {
 	set path [winfo parent $pane]
 	variable ${path}::Vars
 
+	if {[string length $base] == 0} { return 0 }
 	return $Vars($base:$variant:view)
 }
 
@@ -305,7 +299,7 @@ proc Reset {path base variant} {
 
 	::gametable::clear $path.pairings
 	::scrolledtable::select $path.names none
-	::scrolledtable::activate none
+	::scrolledtable::activate $path.names none
 	set Vars($base:$variant:annotator) ""
 }
 
@@ -368,15 +362,33 @@ proc TableFill {path args} {
 	if {![info exists Vars($base:$variant:view)]} { return }
 	set view $Vars($base:$variant:view)
 	set last [expr {min($last, [scidb::view::count annotators $base $variant $view] - $start)}]
+	set state !deleted
 
 	for {set i $first} {$i < $last} {incr i} {
 		set index [expr {$start + $i}]
 		set line [scidb::db::get annotator $index $view]
 		set text {}
 		set k -1
-		foreach id $columns { lappend text [lindex $line [incr k]] }
+		foreach id $columns {
+			set value [lindex $line [incr k]]
+			switch $id {
+				annotator {
+					if {$k == 0 && [string length $value] == 0} {
+						set value "([set [namespace parent]::mc::NoAnnotator])"
+						set state deleted
+					}
+				}
+				
+				frequency {
+					set value [::locale::formatNumber $value]
+				}
+			}
+			lappend text $value
+		}
 		::table::insert $table $i $text
 	}
+
+	if {$first < $last} { ::table::setState $table 0 $state }
 }
 
 
@@ -444,37 +456,18 @@ proc SortColumn {path id dir} {
 }
 
 
-proc Find {path combo} {
+proc Find {path mode name} {
 	variable ${path}::Vars
-	variable Find
 
-	set value $Vars(find-current)
-	if {[string length $value] == 0} { return }
 	set base [::scidb::db::get name]
-	set variant [::scrolledtable::variant $path]
 	set variant [::scidb::app::variant]
-	set i [::scidb::view::find annotator $base $variant $Vars($base:$variant:view) $value]
-	if {[string length $value] > 2} {
-		lappend Find $value
-		set Find [lsort -dictionary -increasing -unique $Find]
-		::toolbar::childconfigure $combo -values $Find
-	}
+	set view $Vars($base:$variant:view)
+	if {$mode eq "next"} { set lastIndex [::scrolledtable::active $path.names] } else { set lastIndex -1 }
+	set i [::scidb::view::find annotator $base $variant $view "$name*" $lastIndex]
 	if {$i >= 0} {
 		::scrolledtable::see $path.names $i
-		::scrolledtable::focus $path.names
-	} else {
-		::dialog::info -parent [::toolbar::lookupChild $combo] -message $::playertable::mc::NotFound
+		::scrolledtable::activate $path.names $i
 	}
-}
-
-
-proc Clear {path combo} {
-	variable ${path}::Vars
-	variable Find
-
-	set Find {}
-	::toolbar::childconfigure $combo -values {}
-	set Vars(find-current) {}
 }
 
 

@@ -1672,10 +1672,11 @@ Codec::readNamebases(mstl::fstream& stream, util::Progress& progress)
 
 		switch (i)
 		{
-			case Namebase::Event:	readEventbase(bstrm, namebase(type), size, progress); break;
-			case Namebase::Site:		readSitebase(bstrm, namebase(type), size, progress); break;
-			case Namebase::Player:	readPlayerbase(bstrm, namebase(type), size, progress); break;
-			default:						readNamebase(bstrm, namebase(type), size, progress); break;
+			case Namebase::Event:		readEventbase(bstrm, namebase(type), size, progress); break;
+			case Namebase::Site:			readSitebase(bstrm, namebase(type), size, progress); break;
+			case Namebase::Player:		readPlayerbase(bstrm, namebase(type), size, progress); break;
+			case Namebase::Annotator:	readNamebase(bstrm, namebase(type), size, progress); break;
+			case Namebase::Round:		M_ASSERT(!"should not happen"); break;
 		}
 
 		m_progressCount += size;

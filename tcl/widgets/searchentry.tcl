@@ -50,6 +50,13 @@ namespace eval mc {
 proc makeStateSpecificIcons {img} { return $img }
 
 
+proc bindShortcuts {w} {
+	bind $w <Control-F> [namespace code [list TriggerFindNext focus]]
+	bind $w <Control-f> [namespace code [list TriggerFindNext focus]]
+	bind $w <F3> [namespace code [list TriggerFindNext findnext]]
+}
+
+
 proc Build {w ns args} {
 	array set opts {
 		-type				pattern
@@ -58,6 +65,7 @@ proc Build {w ns args} {
 		-textvariable	{}
 		-ghosttext		{}
 		-ghosttextvar	{}
+		-ghostcolor		#444444
 		-history			{}
 		-length			10
 		-values			{}
@@ -78,7 +86,6 @@ proc Build {w ns args} {
 	if {$opts(-type) ni {pattern number}} {
 		error "wrong type: should be one of {pattern number}"
 	}
-
 	if {[llength $opts(-mode)] == 0} {
 		switch {$opts(-type)} {
 			number	{ set opts(-mode) enter }
@@ -87,11 +94,9 @@ proc Build {w ns args} {
 	} elseif {$opts(-mode) ni {key enter}} {
 		error "wrong mode: should be one of {key enter}"
 	}
-
 	if {[llength $opts(-usehistory)] == 0} {
 		set opts(-usehistory) [expr {$opts(-type) ne "number"}]
 	}
-
 	if {[llength $opts(-buttons)] == 0} {
 		set opts(-buttons) {erase enter}
 		if {$opts(-type) eq "pattern"} { lappend opts(-buttons) mode }
@@ -113,9 +118,8 @@ proc Build {w ns args} {
 	if {[llength $opts(-ghosttextvar)] == 0} {
 		set opts(-ghosttextvar) ::searchentry::${ns}::Vars(ghosttext)
 	}
-	foreach attr {	type text textvar length values history postcommand
-						mode delay minlength skipfirst helpinfo ghosttext ghosttextvar} {
-		set Vars($attr) $opts(-$attr)
+	foreach attr [array name opts] {
+		set Vars([string range $attr 1 end]) $opts($attr)
 	}
 	if {[string length $Vars(ghosttext)]} {
 		set $Vars(ghosttextvar) $Vars(ghosttext)
@@ -136,8 +140,10 @@ proc Build {w ns args} {
 	set Priv(lock) 0
 	set Priv(content) [set $Vars(textvar)]
 	set Priv(empty) [expr {[string length $Priv(content)] == 0}]
+	set Priv(findnextcmd) $findnextcmd
+	set Priv(focus) ""
 
-	ttk::frame $w -borderwidth 0 -takefocus 0
+	ttk::frame $w -class TSearchEntry -borderwidth 0 -takefocus 0
 	bind $w <Destroy> [list namespace delete [namespace current]::${w}]
 	bind $w <FocusIn> [list focus $w.e]
 	if {$opts(-usehistory)} {
@@ -154,6 +160,7 @@ proc Build {w ns args} {
 			-takefocus $opts(-takefocus) \
 			;
 	}
+	bind $w.e <Escape> [namespace code [list Leave $w]]
 	if {$opts(-width) > 0} {
 		$w.e configure -width $opts(-width)
 	}
@@ -205,13 +212,21 @@ proc Build {w ns args} {
 	FocusOut $w.e
 
 	foreach sub {"" .e} {
-		bind ${w}${sub} <F1> $helpcmd
-		bind ${w}${sub} <F3> $findnextcmd
+		if {"help" in $buttons}  {
+			bind ${w}${sub} <F1> $helpcmd
+			bind ${w}${sub} <F1> {+ break }
+		}
+		if {"enter" in $buttons} {
+			bind ${w}${sub} <F3> $findnextcmd
+			bind ${w}${sub} <F3> {+ break }
+		}
 		bind ${w}${sub} <Control-Key-x> $erasecmd
+		bind ${w}${sub} <Control-Key-X> $erasecmd
 	}
 
-	if {[llength $opts(-parent)]} {
+	if {"enter" in $buttons && [llength $opts(-parent)]} {
 		bind $opts(-parent) <F3> $findnextcmd
+		bind $opts(-parent) <F3> {+ break }
 	}
 
 	ShowButtons $w
@@ -269,7 +284,7 @@ proc WidgetProc {w command args} {
 				set Vars(length) $length
 				array unset opts -length
 			}
-			foreach attr {values command postcommand mode delay minlength skipfirst helpinfo} {
+			foreach attr [array names Vars] {
 				if {[info exists opts(-$attr)]} {
 					set Vars($attr) $opts(-$attr)
 					array unset opts -$attr
@@ -296,9 +311,40 @@ proc WidgetProc {w command args} {
 			}
 			return [Build [lindex $args 0] [set ${w}::NS]]
 		}
+
+		findnext {
+			variable [set ${w}::NS]::Priv
+			if {[string length $Priv(findnextcmd)]} {
+				{*}$Priv(findnextcmd)
+			}
+			return $w
+		}
+
+		focus {
+			set focus [focus]
+			if {$focus ne "$w.e"} {
+				variable [set ${w}::NS]::Priv
+				set Priv(focus) [focus]
+				::focus $w.e
+			}
+			return $w
+		}
 	}
 
 	return [$w.e $command {*}$args]
+}
+
+
+proc Leave {w} {
+	variable [set ${w}::NS]::Priv
+
+	if {[string length $Priv(focus)]} {
+		set focus $Priv(focus)
+		set Priv(focus) ""
+	} else {
+		set focus [winfo toplevel $w.e]
+	}
+	catch { focus $focus }
 }
 
 
@@ -320,13 +366,14 @@ proc ShowButtons {w} {
 proc Clear {w} {
 	set ns [set [winfo parent $w]::NS]
 	variable ::searchentry::${ns}::Priv
+	variable ::searchentry::${ns}::Vars
 
 	set Priv(search) ""
 	set $Vars(textvar) ""
 	set Priv(content) [set $Vars(ghosttextvar)]
 	set Priv(current) 1
 	set Priv(empty) 1
-	$w configure -foreground #666666
+	$w configure -foreground $Vars(ghostcolor)
 	SetupButtons [winfo parent $w]
 	focus $w
 }
@@ -354,6 +401,7 @@ proc FocusOut {w} {
 	variable ::searchentry::${ns}::Vars
 	variable ::searchentry::${ns}::Priv
 
+	set Priv(focus) ""
 	$w selection clear
 	if {[winfo exists $w.popdown] && [winfo ismapped $w.popdown]} { return }
 
@@ -363,7 +411,7 @@ proc FocusOut {w} {
 		set $Vars(textvar) ""
 		set Priv(search) ""
 		set Priv(content) [set $Vars(ghosttextvar)]
-		$w configure -foreground #666666
+		$w configure -foreground $Vars(ghostcolor)
 		if {$Vars(type) eq "number"} { $w configure -validate key }
 		set Priv(lock) 0
 		SetupButtons [winfo parent $w]
@@ -454,7 +502,7 @@ proc ContentChanged {w args} {
 		if {$Vars(mode) eq "key" && ![string match "$Priv(content)*" $Priv(search)]} {
 			after cancel $Priv(after)
 			if {!$Priv(empty) && [string length $Priv(content)]} {
-				set Priv(after) [after 150 [namespace code [list Find $w.e]]]
+				set Priv(after) [after $Vars(delay) [namespace code [list Find $w.e]]]
 			}
 		}
 
@@ -571,6 +619,44 @@ proc Post {w} {
 	set Priv(current) 1
 	set Priv(search) $Priv(content)
 	set $Vars(textvar) $Priv(content)
+}
+
+
+proc TriggerFindNext {cmd} {
+	variable Visited
+
+	if {[string length [set w [focus]]] == 0} { return }
+	array unset Visited *
+	set Visited(.) 1
+	TriggerFindNextRecursively $w $cmd
+}
+
+
+proc TriggerFindNextRecursively {w cmd} {
+	variable Visited
+
+	if {[info exists Visited($w)]} { return 0 }
+	if {[winfo toplevel $w] eq $w} { return 0 }
+	if {![winfo ismapped $w]} { return 0 }
+
+	if {[winfo class $w] eq "TSearchEntry"} {
+		$w $cmd
+		return 1
+	}
+
+	set Visited($w) 1
+
+	foreach child [pack slaves $w] {
+		if {[TriggerFindNextRecursively $child $cmd]} { return 1 }
+	}
+	foreach child [grid slaves $w] {
+		if {[TriggerFindNextRecursively $child $cmd]} { return 1 }
+	}
+	foreach child [place slaves $w] {
+		if {[TriggerFindNextRecursively $child $cmd]} { return 1 }
+	}
+
+	return [TriggerFindNextRecursively [winfo parent $w] $cmd]
 }
 
 

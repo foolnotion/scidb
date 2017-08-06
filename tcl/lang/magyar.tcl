@@ -712,12 +712,12 @@
 ::application::database::players::mc::Score						"Pont"
 
 ### application::database::annotators ##################################
-::application::database::annotators::mc::F_Annotator		"Elemző"
-::application::database::annotators::mc::F_Frequency		"Gyakoriság"
+::application::database::annotators::mc::F_Annotator	"Elemző"
+::application::database::annotators::mc::F_Frequency	"Gyakoriság"
 
-::application::database::annotators::mc::Find				"Keres"
+::application::database::annotators::mc::Find		"Keres"
 ::application::database::annotators::mc::FindAnnotator	"Elemző keresése"
-::application::database::annotators::mc::ClearEntries		"Bejegyzések törlése"
+::application::database::annotators::mc::NoAnnotator	"No annotator" ;# NEW
 
 ### application::pgn ###################################################
 ::application::pgn::mc::Command(move:comment)			"Megjegyzés hozzáadása"
@@ -1414,7 +1414,6 @@
 ::playertable::mc::NotFound			"Nem található."
 ::playertable::mc::EnablePlayerBase		"Enable use of player base" ;# NEW
 ::playertable::mc::DisablePlayerBase    	"Disable use of player base" ;# NEW
-::playertable::mc::HelpPatternMatching		"Help: Pattern Matching" ;# NEW
 ::playertable::mc::TooltipRating         	"Értékszám: %s"
 
 ::playertable::mc::Name				"Név"
@@ -1427,8 +1426,13 @@
 
 ::playertable::mc::ShowPlayerCard		"Show Player Card..." ;# NEW
 
+### sitetable ##########################################################
+::sitetable::mc::FindSite	"Search Site" ;# NEW
+::sitetable::mc::T_Country	"Country" ;# NEW
+
 ### eventtable #########################################################
 ::eventtable::mc::Attendance	"Attendance" ;# NEW
+::eventtable::mc::FindEvent	"Search Event Name" ;# NEW
 
 ### player dictionary ##################################################
 ::playerdict::mc::PlayerDictionary	"Player Dictionary" ;# NEW
@@ -1444,6 +1448,7 @@
 ::playerdict::mc::Awarded		"Awarded" ;# NEW
 ::playerdict::mc::RangeOfYears		"Range of years" ;# NEW
 ::playerdict::mc::SearchPlayerName	"Search Player Name" ;# NEW
+::playerdict::mc::HelpPatternMatching	"Help: Pattern Matching" ;# NEW
 
 ::playerdict::mc::AgeClass(unrestricted)	"Unrestricted" ;# NEW
 ::playerdict::mc::AgeClass(junior)		"Junior" ;# NEW

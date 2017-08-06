@@ -226,6 +226,7 @@ proc open {} {
 	bind $main <<TwmAfter>>    [namespace code board::afterTWM]
 
 	bind .application <<Fullscreen>> [namespace code { Fullscreen %d }]
+	::searchentry::bindShortcuts .application
 
 	set Vars(ready) 0
 	set Vars(terminal:number) 0
