@@ -124,6 +124,7 @@ SOURCES = \
 	app-database.tcl \
 	app-db-icons.tcl \
 	app-db-annotators.tcl \
+	app-db-positions.tcl \
 	app-db-games.tcl \
 	app-db-players.tcl \
 	app-db-events.tcl \
