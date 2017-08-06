@@ -16,6 +16,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source counties
+
 namespace eval country {
 namespace eval mc {
 
@@ -51,6 +53,7 @@ set Benin												"Benin"
 set Bermuda												"Bermuda"
 set Bhutan												"Bhutan"
 set Bolivia												"Bolivia"
+set Bonaire_and_Sint_Eustatius_and_Saba		"Bonaire, Sint Eustatius and Saba"
 set Bosnia_and_Herzegovina							"Bosnia and Herzegovina"
 set Botswana											"Botswana"
 set Bouvet_Islands									"Bouvet Islands"
@@ -65,6 +68,7 @@ set Cambodia											"Cambodia"
 set Cameroon											"Cameroon"
 set Canada												"Canada"
 set Cape_Verde											"Cape Verde"
+set Canary_Islands									"Canary Islands"
 set Catalonia											"Catalonia"
 set Cayman_Islands									"Cayman Islands"
 set Central_African_Republic						"Central African Republic"
@@ -81,6 +85,7 @@ set Cook_Islands										"Cook Islands"
 set Costa_Rica											"Costa Rica"
 set Croatia												"Croatia"
 set Cuba													"Cuba"
+set Curacao												"Curacao"
 set Cyprus												"Cyprus"
 set Czech_Republic									"Czech Republic"
 set Czechoslovakia									"Czechoslovakia"
@@ -140,6 +145,7 @@ set Israel												"Israel"
 set Italy												"Italy"
 set Ivory_Coast										"Ivory Coast"
 set Jamaica												"Jamaica"
+set Jan_Mayen											"Jan Mayen"
 set Jan_Mayen_and_Svalbard							"Jan Mayen and Svalbard"
 set Japan												"Japan"
 set Jersey												"Jersey"
@@ -193,6 +199,7 @@ set Nicaragua											"Nicaragua"
 set Niger												"Niger"
 set Nigeria												"Nigeria"
 set Niue													"Niue"
+set Nordic_Team										"Nordic Team"
 set Norfolk_Island									"Norfolk Island"
 set North_Korea										"North Korea"
 set Northern_Ireland									"Northern Ireland"
@@ -216,9 +223,11 @@ set Reunion												"Reunion"
 set Romania												"Romania"
 set Russia												"Russia"
 set Rwanda												"Rwanda"
+set Saint_Barthelemy									"Saint Barthélemy"
 set Saint_Helena										"Saint Helena"
 set Saint_Kitts_and_Nevis							"Saint Kitts and Nevis"
 set Saint_Lucia										"Saint Lucia"
+set Saint_Martin										"Saint Martin"
 set Saint_Pierre_and_Miquelon						"Saint Pierre and Miquelon"
 set Saint_Vincent_and_the_Grenadines			"Saint Vincent and the Grenadines"
 set Samoa												"Samoa"
@@ -232,6 +241,7 @@ set Serbia_and_Montenegro							"Serbia and Montenegro"
 set Seychelles											"Seychelles"
 set Sierra_Leone										"Sierra Leone"
 set Singapore											"Singapore"
+set Sint_Maarten										"Sint Maarten"
 set Slovakia											"Slovakia"
 set Slovenia											"Slovenia"
 set Solomon_Islands									"Solomon Islands"
@@ -239,11 +249,13 @@ set Somalia												"Somalia"
 set South_Africa										"South Africa"
 set South_Georgia_and_South_Sandwich_Islands	"South Georgia and South Sandwich Islands"
 set South_Korea										"South Korea"
+set South_Sudan										"South Sudan"
 set Soviet_Union										"Soviet Union"
 set Spain												"Spain"
 set Sri_Lanka											"Sri Lanka"
 set Sudan												"Sudan"
 set Suriname											"Suriname"
+set Svalbard											"Svalbard"
 set Swaziland											"Swaziland"
 set Sweden												"Sweden"
 set Switzerland										"Switzerland"
@@ -279,6 +291,7 @@ set Vietnam												"Vietnam"
 set Wales												"Wales"
 set Wallis_and_Futuna								"Wallis and Futuna"
 set West_Germany										"West Germany"
+set West_Indies_Federation							"West Indies Federation"
 set Western_Sahara									"Western Sahara"
 set Yemen												"Yemen"
 set Yugoslavia											"Yugoslavia"
@@ -286,6 +299,10 @@ set Zambia												"Zambia"
 set Zanzibar											"Zanzibar"
 set Zimbabwe											"Zimbabwe"
 
+set German_Empire										"German Empire"
+set Russian_Empire									"Russian Empire"
+
+set World												"World"
 set Africa_North										"Africa, North"
 set Africa_Sub_Saharan								"Africa, Sub-Saharan"
 set America_Caribbean								"America, Caribbean"
@@ -300,6 +317,12 @@ set Europe												"Europe"
 set Europe_East										"Europa, East"
 set Oceania												"Oceania"
 set Stateless											"Stateless"
+set Teams												"Teams"
+set AnyRegion											"Any region"
+
+;# don't need translation
+set ASEAN "ASEAN (Fide)"
+set FIDE  "FIDE"
 
 } ;# namespace mc
 
@@ -704,7 +727,7 @@ proc makeToolbarIcon {countryCode} {
 	return $Icons($countryCode)
 }
 
-namespace eval icon {
+namespace eval icon { ;# 16x11
 
 set flag(AIR) [image create photo -data {
 	iVBORw0KGgoAAAANSUhEUgAAABAAAAALCAIAAAD5gJpuAAAAqElEQVQoz72RMW4CQRAEe5cT
@@ -727,6 +750,16 @@ set flag(ANZ) [image create photo -data {
 	YII=
 }]
 
+set flag(ASE) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAALCAMAAABBPP0LAAAAllBMVEUAEGUAEWUAEWcAE2kA
+	G6YAHKYAIKoAIqoOK6kPK6oRLaoSLqoULqr/AAAmMab/BAApNKb/BgD/BxT/CBT/Ein/FCn/
+	FCoyR7cySLepMXSqMXKsMXKtMXIyUbsyUbzTK1zUK1zXK1syU7v/QAD/QgCBXKiDXKiEXKi+
+	V4zCV4n/agD/bQD/eAD/fAD/rgD/sAD/uAD/6gA9cbfdAAAAe0lEQVQI112OxxLCMBBDnWQN
+	KSxg0kxPJb39/89hj5cLOmneaCQxS4vZjmMzYy0pZVo0Xfd5pspqwMHPUSnzgBuwf4hhmgZx
+	2xkAhwiXbZsxCcCAc4jVupZ4ORIIYkr4QB130Y9jf7pSBwcv0ytvl1bUj1fdtvXvx9/TLzI9
+	C29KHAOhAAAAAElFTkSuQmCC
+}]
+
 set flag(ATA) [image create photo -data {
 	iVBORw0KGgoAAAANSUhEUgAAABAAAAALCAMAAABBPP0LAAAAhFBMVEUDLpgDLpoDL50DMaID
 	MqcDNKwDNa8EL5kFN7M6fc48fs5GhdFJh9JLiNJNidNQi9NSjdRaktZ3pd2Emc6Gr+GOpN2U
@@ -745,13 +778,98 @@ set flag(BAS) [image create photo -data {
 	AElFTkSuQmCC
 }]
 
-set flag(EAZ) [image create photo -data {
-	iVBORw0KGgoAAAANSUhEUgAAABAAAAALCAYAAAB24g05AAABAklEQVQoz6XQvUrDYBTG8f/7
-	5pU2WhPbWvygVq2iCCIFKQ5JHQUL4iy4OHgF3oAX4cW4CS6hpaKCuyAOWYpYhQppctwca6I/
-	OOPzHM5R81cNQUFpFOEGIa+3A97bFwzW9iFJGEcrMBNGOFreIboJGeZX2Lo85KV2wJApfhPc
-	P2IWeyEfnVme3r74bJ/z7Owx6gNEY8NeJQfaQhXyyPHZCdfWBn0qIAlpePUFgt4dAOK3WoLS
-	glKpx/N90doSAyBJknrzDxFA0PyTcU9rOM0qpeZ6pqCzWsWtL2Em/TJ2o0hhcy5TgT1TxM6V
-	MRInSCzsTm9ne0EsEAtGo+k8dP90v1aKb3QAV+lWe35dAAAAAElFTkSuQmCC
+set flag(BES) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAALCAIAAAD5gJpuAAABcElEQVQoz32QTyiDcRyHP7/3
+	j/3WZrysFTk5vt7WMOXosGiuju5OShQ1F1eUlHJQchAjZakp1OywHVZEbP409SIr01vTsu01
+	M+/rYDGbPOfn+fTtS/zLJpTQoangW9iGUVIjogpN01e2oxyAPpcD0AAwph5GGCOstdq+TaRn
+	liPbe1ccAOh5vRA/iHsVRbHb75zORkJIub3oPfHMBlubLIRnGWg5xtwbTuwIgjDYJqmqGgqF
+	vtVE8qV/aGvYs5tRC8TIA2BY61SGm0ilUo4nJeFydzwpyWQynU4DWPdfdg2s7O1fE7OB8OzX
+	BEeM3ZRSAKzVSp2drCDUa8XMKzMys7u6cQqeJRYD9J/zOACUUkmSArLcPDd9m81GYoaxhc3r
+	2CNqKSEot0sBAFEUbTZbIBBYDTKHYbnwViR1tEL9FQCIyrl5X/7o+AGUJ0b+T7sU5N+KS1tn
+	a77z98KHo70F/8Ld3D+PuycvYo8w8hXv/5NPYZyIU3Q193sAAAAASUVORK5CYII=
+}]
+
+set flag(BLM) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAALCAMAAABBPP0LAAAABGdBTUEAALGPC/xhBQAAAAFz
+	UkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAA
+	AWtQTFRFxsbGw8PDv7+/wsLCwMDCwMDA/f394+PkrKum8vL59vLkzL+IxrZ7xrh90caV/v37
+	1dfbsbGu8PDx////1NTUV1dfb25f9fS49OzEsYwTzKwuxqQivJ0////ayciNWVlfcnJ07u7u
+	urq6SkpKjo6Vwr6lx83DjZiomaSfkpuVk56rys6/tbCafH2DUVFQ3t7e6urqdHRzgoKAiYKK
+	eZCqVZj6WorpNm/YMnDDc4CfkYmFd3d0jY2N+fn5q6usTExOnLSauG9q2S5Xu1ZvqCRJowAn
+	qIVzjaGUU1NX2NjY9vb2m5udiYqO9f/i0aqnjiw4iFZ9gz1Vgig47tq+4uzWdnZ9tra2/v7+
+	/PrT+/PP8v//OYHoE1GuAEe0aaf79Oy6/fzj9PT0+vjd8e/I///70trQVGl/cYOX7fPl7uu/
+	///58vDsxa1a5NF+6Oam7uij2cNp0cB4/P3/tLGqqZmKvrvCu7SzqZyGvLu6UwixhgAAAAFi
+	S0dEEwy7XJYAAAAJcEhZcwAAAEgAAABIAEbJaz4AAABqSURBVAgdVcG9EQFBGIDh9z3fzRhr
+	NlGDSCU6uEZ0oQkhVYgVoAH5Biv0c2ZcYD2PCI50b5i9YLT3T43nylYJsi2CbIvgtvHngm5t
+	nTrudTk5p5QguLL2i4VHsM8wODlAjUeBue7ZaYHxAwpOFf+g5ouDAAAAAElFTkSuQmCC
+}]
+
+set flag(BWI) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAALCAIAAAD5gJpuAAACCUlEQVQoz0WRW0iTcQBHf//v
+	+5a7ubnVWEvYzA2bLpCwsmBDS1uFhNASEosoerAizSCCeqiEoCYrmmEPgyZFdHsIA4mizY2I
+	wiDsgrUuzsGMdbNdXG77Lv8eojyPB87TIbB0gQIACAEBAFD6zwCEAAAFKP1rOHu1Yeh8by5f
+	uvXg7XyuCFEyVuo87lpQej/yMZn4AYbR6JUd7jqVQtZ97CI567sqKK3xmfSJ/c7QeLxCLW9c
+	aej3j0iU9O7bHEtks3PF9fWV3uCzGoteLU6T3Ye9e3d1JFKZiXepTL5Uju/t7KkWaxIE4amq
+	e/zpPNUt0SkdNoPZpA1eu8MKKkf8J+cbfu5sMA/0tbYph6w0CgpQLNek3S67e8eBh08/nbkS
+	TWcLE68nmclYShSlEi96L4U1a/sj4TH8h0Vo9La64dxg4EmxJEqUxj58ZTY6bSgIAL1+uTM5
+	drypuWkhkNC8tTMR6gkMeMCLKPAtLhu3qtbUd3Cbd54fvPnipD9cpa8LukxLF6UAfJ4zH7qg
+	/ZIbbt+wYurxEUUZ5/X/4hRlXHh8euZbbtO6auNiJcvKMo2el6+iEqXWNc427awgCPU1xhuj
+	byzLKvQaBTGt7g74js5mCiORmMiLoJDJuZ1bHAzB3Ufvf+eLIOBk7PZWe7lKvqfHS2DugiiB
+	ACy7cFqQAIBjFk6LIijAMn8AaOzZCY1EIrEAAAAASUVORK5CYII=
+}]
+
+set flag(CUW) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAALCAIAAAD5gJpuAAABgElEQVQoz3WOy0ocQRSG/+qu
+	abwEw1xwoYgjJChG4l58BUEE9z6BD6NvILgUfIMsRXChIYEhZi4wcZxba3d1V1V3182F0YwB
+	v9UP5zv/OWT+654QBACZqhAaEH8OgBfMAQCgCuODA7BKwApKDBWCfDs/GoS80RzxrHhgWZxk
+	cZqnvIgSqZUV+Ue88OvmggIYhLzRGjU74z8hDyORppoxGWdZygtl7Ku9Wq8B8ABc3XR/3A4P
+	D7bWV2q9XtIdPo4Zf2TZpA3AhwZAnTfdj2R3wI5PL68b/THjuTL/qS+2BkA9G/T6abP18P3q
+	Pi2M1BbOe748gTJQhksAdHk5rZbFfOUWFVgQvEMWjepLC0YrcnZS3d354vTPf0OH10UpHUtc
+	xFwUOZ6vJew3+bS9/3l9s90dAgABHP4GwGrtTOHyWBliiqy+WO3chbTZKfmzZaD8ptsBzhDk
+	xEhQUD9GgNEwvht8oBurtVb7ItcBSrPwpx0peX4w+b01BXE+jISyMzPeE0sE32qMmJ5qAAAA
+	AElFTkSuQmCC
+}]
+
+set flag(EAR) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAALCAIAAAD5gJpuAAABjElEQVQYGTXBQW8SQRQH8P97
+	M7OzLJQtFjA2ldaYFKMnG2/Giwe/iAe/p148aDStRg5q05VGRWuj0MLuzrwnUvn9aLf7NEn8
+	Yl6axDNriKVIlWU+hmDExkDMLqoAQkQArDUm1rWzDNayusg3W8M7d5mpWizeH40S36jKAMIV
+	VTWd7D5AACKqvJM9fvJof7jX2WpV9bzX7/6YTEBQIQBEBIBFBFeo3hn0B4N+3k23d7cCXTRz
+	t3PrehkvlQLW2BiLFedMeyP7eDwSLT8dfzgZf3777jV7TlseIKwxw2IlhpC1MmtNMT5p523j
+	zGbn2tn52aIqAQWgqkRkVRiEpcW8ksjD4T2TyI3t/vmvmTMbh4ejr+PfBv+pKjMbrBjbePPq
+	aDat9wb7ve7NBwcPQ02nxcRRAjJYM+30gMkB0fnGdDYrvhTeZ9M/l6fF9xfPX34b/4w1GTIE
+	AkBLt3vPQKwaAESGaCArTFARFZA4axOIQKGqvESsIsGnGf6x3jdjxdakGrmZ5gRmZQItMTOA
+	v+EIrinMoYzzAAAAAElFTkSuQmCC
+}]
+
+set flag(EUR) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAALCAMAAABBPP0LAAABJlBMVEUeTrAlU7IvW7YbS68q
+	V7QnVbM0X7c1YLhJb79keo0tWbVHbb4kUrI3YbgiUbE8Zbo5Y7kxXbYZSq4oVrMSRKsyXbcz
+	XrchULEeTao4Yrloen04W5QgT7AmU7JIbbVCZqk/ZKx2hYOHjGZMcsBEZJQuWrVFZpqFi2QY
+	Sa0dTa8XSK1Oc8AOQaoMP6kxXLZGaKZQdcEPQqoTRaw6X5osWLQWR61KbrZ2g3wuWrBKcL8m
+	VLJLcb8URqwfTrBDa71BabyMk3SpoE09Y6cQQ6sgTaVEa70wW7YrWLQ2XaStpEwvVZsnVLKK
+	kXcoVbNieYsjUrEjUbGhn19zgoGbml6+slQRQ6tNcsA8X5YkUrE+ZrssWbUxW6yGjWxFbL0i
+	ULElUacVR6wAMJQwjQZIAAAAmUlEQVQI113ONRaDABREUTRoBALE3d3d3d097H8T+Wl55S3m
+	DKJqQtT31UUSrCet05uMtw7ANpWT5j2//WBAzZM2AJo8OSJWHJlWHgT7AlgM8sMLjlj4dfWO
+	cQAr6Tv7xJybOtPFBBqAaMbFYAsGfBlBqQEUS2LhGebJ/tKrUAGAUBQGdnvmiMmULQEwlv8P
+	3OURRzfOWQBNPzG5JkGp1EazAAAAAElFTkSuQmCC
+}]
+
+set flag(FID) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAALCAMAAABBPP0LAAABv1BMVEUAGj4AGz4AGz8AHkEA
+	Hk4BIEMBIUECIUMBIkEBIkMCIkICIkMCIkQEI0YAJFIAJVQFJUYGJkgHJkcHJkgAJ1QIJkgH
+	J0gHJ0kIJ0gIJ0kIJlQJJ0kIKEkAKVcJKEkJKUkAK1cBK1YBLFYBLFgCLFgDLFcDLFgELFkD
+	LVgFLVoGMFwHMFsHMF0GMVwKMF4OL10IMV0JMV0SMFIJMl0LM18LM2AXMlMLNWANNWEcPnAd
+	QGwiR3InSnkoSngpS3grTXwtTXkrT3UuToMvT4EwUHgyT4AuUXgzT4MyT4YyU3g3U4o4VnxD
+	W5VEYYRMZo9RaaBbdZ1gdqFkda5vfrxqg59ziaJ+iMh+iciAict4j6mMktaPldqKmrmTl9yQ
+	mdOWmt+TnNeXndmVoNGaodOboducoduXp7uepNaepN2eptigpeCgptigqNOdqdOcq8WiqNqk
+	p+OdrcCjqduhrsWhr9GnrN+ls8WlstSpsdqrs9yss92ttdWutd2utd6utd+zu9y1uuS4uey5
+	uuy1vd+3vt+4wty5wt66xdS9xdW+x9nAxt/BxubR1OvS1PLS1PPT1uzW3Ore3/Xg4fXn6PPz
+	8/03sry0AAAAw0lEQVQI12OQlJSRZ2dgZGZiYGCVk5OUZBAzV+d3DEkray8M9RRRMxdmkFFw
+	y+uc0uEbOWFyZ7G3rAwDj3XbxP4YKT4Wq9aeSV0unAy8Jb31LX4BDloW5d3NfdUCDEa5VbVV
+	DYHGynZ1NZUVOWYMgkmNRaXJ+gY6tpnZ+U3p0gzcNgkFGSlBzvb+calZia6cDDJKzuHR8RGW
+	usGxUWHuijIMwiYaKk4+etqGml4eKqqmwgySwjIyXGxCkqISXBySMuKSAJfiLpEKKkx3AAAA
+	AElFTkSuQmCC
 }]
 
 set flag(GDR) [image create photo -data {
@@ -799,11 +917,28 @@ set flag(JEY) [image create photo -data {
 	hdiA7orKhIIwA0dHfQYmFU+gox3sbMyM9IHAVYEZAGNGNFMaWlNJAAAAAElFTkSuQmCC
 }]
 
+set flag(JMY) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAALCAMAAABBPP0LAAAAOVBMVEUAAAATRRA/Pz8caBhU
+	jVEnpiMoqiQvqit7qnmqqqo7+TU8/zZG/0Br+mds/2d0/2+4/7XJ/8f///+y74xgAAAAPUlE
+	QVQI123JSRKAIBTFwCCzCoj3Pyzl7n21lwl8bMYTzAUXvAiO2HbRIqkfoifyOMXIlHmJWai3
+	UX/CywJqtAXx/L9fOQAAAABJRU5ErkJggg==
+}]
+
 set flag(KOS) [image create photo -data {
 	iVBORw0KGgoAAAANSUhEUgAAABAAAAALCAMAAABBPP0LAAAARVBMVEUCPX0DSqcDT6MFQa0Q
 	Pu0RPu4XSu8aUvA2gfVAbJ1FlveFw/qZflqt1/y3k03Jn0PesjTitzDwxybyySX0zSL51Rz8
 	3RcD5sLNAAAASElEQVQI12NgwACcKAAkwMTNzsvBws3FxsHNBBGAAVYmJAFRITAFE+ARERMT
 	RBbgFwMCPiQBRgExMWFmJmQz+JkQZqC7Aw0AAFA3A54vLhP/AAAAAElFTkSuQmCC
+}]
+
+set flag(MAF) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAALCAMAAABBPP0LAAAAsVBMVEUAAEkAAEoAAEsAAHsA
+	AHwAAH0AAH4AAIABAX0CAn4DBoIEB4MFBU4FBYIFDIYGDYcNFI4NFY8nJ5AnJ5InJ5MuLpdJ
+	SXBLS3GCgoyDg42MjMaPj8eSksmVlcuWlpaYmMyYmc2ams2bm86ekcOhksKkj72mi7fc4PLe
+	4/Pi4vHk5PHm1uPn0t3/FSD/FSH/Mi//Pjv/XVj/ZF7/3l3/6dL/72//73H///j///z///3/
+	///Ai0IvAAAAeUlEQVQIHQXBQUrEQBQFwHq/GxkYRVeCuPD+pxJ1IZPMQjABNWliVR5PAOA3
+	Xp4B8PnaUssDgLflp5LpnbFvg49L0iXX/jQOR6ZrolNjavdb2tdlLzpqm+t8rPNfoaDWeRvz
+	UtBBG3v2Bjp3HFU53QRScJxv870G/gFLHyzwYZIvxwAAAABJRU5ErkJggg==
 }]
 
 set flag(NET) [image create photo -data {
@@ -830,6 +965,27 @@ set flag(NIR) [image create photo -data {
 	AABJRU5ErkJggg==
 }]
 
+# set flag(NRD) [image create photo -data {
+# 	iVBORw0KGgoAAAANSUhEUgAAABAAAAALCAMAAABBPP0LAAAABGdBTUEAALGPC/xhBQAAAAFz
+# 	UkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAA
+# 	AMBQTFRF9xIV9w4R+lteko6ciIBArJKn/DM09xAT+RET+Q0P+1pd/jIz+Q8SikBsiD1prnua
+# 	kI+diYBAn5iynFuAiT9qXIzJWorIjq/bj5CfiX8/mqC9dJ3SW4vIkJSrlJeubm58kIY+c3WQ
+# 	lJetjYI7jYM7jII7mY46w7MvkIY8kpWslZiudHWQY43HYIvGk7DamqG9ep7RYozHqzFRqS5O
+# 	xXGHkY6do5avuU5pqjBP+hAS+g0O/FpcrZKn/zEy+g8Q////t97mdQAAAAFiS0dEPz5jMHUA
+# 	AAAJcEhZcwAAAEgAAABIAEbJaz4AAABUSURBVAjXY2RgYISAnwxgwMLBAGazMjJCBViBAmzo
+# 	KiAALgAR+c0BFWCD8tn/wwUYGL8ycjNB+QwszCBbGPmBapC0yJ6XRRjKDhQ4AbYYIsCI7lIA
+# 	qMkNaroWIoEAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTUtMDMtMTlUMjA6MzU6NTMrMDE6MDCX
+# 	avFPAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE1LTAzLTE5VDIwOjM1OjUzKzAxOjAw5jdJ8wAA
+# 	AABJRU5ErkJggg==
+# }]
+
+set flag(NRD) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAALCAMAAABBPP0LAAAAPFBMVEWyBxSyCxSyCxWzDRTw
+	ARrwARvxChvxDxvxDxzxEBvxEBzyEhvyExz1S1j1T1j1T1n1UVi8nR//1Cr/32M45k/uAAAA
+	S0lEQVQI123OWw6AIAxE0VFqfRSElv3vVRGJET2fN2kz0GIYtYHm0x7zrQQzmxerWli3JyAw
+	MxFXAXBJxE/k5ZLc9+T/6Tv0O7qlB7+xCmUuIEAcAAAAAElFTkSuQmCC
+}]
+
 set flag(SCG) [image create photo -data {
 	iVBORw0KGgoAAAANSUhEUgAAABAAAAALCAIAAAD5gJpuAAAA+klEQVQoz21RMU5DUQxzPq+w
 	sCCxduEunIGRnSv0AFyFHoENiaOUjkioQqi8xDbDp/+3CCtKrMhWZCWMGTrl/1YYwGoFwBIA
@@ -849,6 +1005,32 @@ set flag(SPC) [image create photo -data {
 	ampvb29ycnN2dnZ3d3d5eXl7e3p7e3v//wAn9j75AAAAOElEQVQI12NggAHunZ0zgWACA5cg
 	GExg4ASSB0EMdhAlA2SwwaRYQXwQgwUmxQyTYpo5E2IODAAAXcsRgeHrX14AAAAASUVORK5C
 	YII=
+}]
+
+set flag(SSD) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAALCAIAAAD5gJpuAAAAaElEQVQoz2PgtZnCQBIAaggr
+	3+JLHEBoUAuYL0UIoGsAov9EAJCG7O5ddRPKHbOWAfU8kJLChZ77+t6B2DBrxbT//6WAeiD2
+	ENZAsg0k+wEaShPt8SPfVVkMrZqweFiVRQyCagBRRCMAsnbPlkT+YCUAAAAASUVORK5CYII=
+}]
+
+set flag(SVB) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAALCAMAAABBPP0LAAAAM1BMVEUAAAABAQECAgIDAwME
+	BAQFCQkHDAwKEBBZAAB9AAB8fHx+fn5/f39/goK8fHy2trb///+6wUgRAAAATklEQVQI12XO
+	2w6AMAgD0Lp5garA/3+taJa4ZeexDaFAchFHQUMyzIInX0sGQKgG6tfiD4493Rs8UgaNQ0w7
+	JnMwnRSu45fKa9xRsuqXPg1yBcQ7q1JTAAAAAElFTkSuQmCC
+}]
+
+set flag(SXM) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAALCAIAAAD5gJpuAAAAAXNSR0IArs4c6QAAAAlwSFlz
+	AAALEwAACxMBAJqcGAAAAAd0SU1FB9wKFRQUMw4OdBcAAAGNSURBVCjPZZHPK0RRFMfPmbn3
+	TfODJmUyb2EQfwBRysZKlGxmZcfCxj9gbUGhLC1QNhQ1UkosrJQwDaZMs3hKTSGN8sYMg3d/
+	ufPeqCm3T98+i3Nu596DnxtjcuZYAnjAn/zHO1go3JvBZ7WTVVcXwIXiTDEGjCnOlZcaIcDl
+	NZcj0WgThofU7CDETdhch5INjlMr9dITzvRd2N3tA/BR2qzYe/Fy9as/Bovz2NuHhlEjEKiL
+	hmoo+v16JB9BONvdPjp5P9i/+4mauLyE05NuEW1MIAQJIQBEsZdyJBEb6XuwZeXNCnUNP41P
+	nH8Hb/ZsjoIjZzqBa4nR1hVIEy5FRzX7fN05EPRFephdYmtrL+m06dA2BsIBUU8UCdIMMEBI
+	sL1nNGGW85T8FCpzWwu3llUxDD/qH8Q64Dql+s0GkbIUjk0ZLerk+DGVylerjp4ZUb9P1wr8
+	+3196g3FYjkSKR4eBizLjsfDQoS4nlJIdwGSM8m4cFMyJmoNmcxpMlkF+GjYMnfR4rjiNIjx
+	C5yW5kl6qGEDAAAAAElFTkSuQmCC
 }]
 
 set flag(TIB) [image create photo -data {
@@ -871,6 +1053,8 @@ set flag(UNK) [image create photo -data {
 	z4KZce+d+5Kk1JEiaYwRt3T3e+a1AIiE5E/vBahURsmY1zfVAAAAAElFTkSuQmCC
 }]
 
+set flag(ANY) $flag(UNK)
+
 set flag(URS) [image create photo -data {
 	iVBORw0KGgoAAAANSUhEUgAAABAAAAALCAIAAAD5gJpuAAABGElEQVQoz3WRPy9DYRSHn3v7
 	RhFDkzZCsJRIfAMfwNLRYKzBJrk+C5I7iIFPUEOtJDaC2WaQ6CCRphRtnXPe19A2ueL6Tc85
@@ -889,6 +1073,15 @@ set flag(YUG) [image create photo -data {
 	/4KUiIjSYL5BleAfBkkqDQaDF9hY771+1LqrXOJOczrk09sJrtW9OKL3NFzpFdq7Bwzvbilg
 	k3Fe4+zklGyBeZBzkE2YBdkDM+EubKZDjF3ANgkeBNPqb/1GLOkZNb4BG3gUWyZ6258AAAAA
 	SUVORK5CYII=
+}]
+
+set flag(ZAN) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAALCAYAAAB24g05AAABAklEQVQoz6XQvUrDYBTG8f/7
+	5pU2WhPbWvygVq2iCCIFKQ5JHQUL4iy4OHgF3oAX4cW4CS6hpaKCuyAOWYpYhQppctwca6I/
+	OOPzHM5R81cNQUFpFOEGIa+3A97bFwzW9iFJGEcrMBNGOFreIboJGeZX2Lo85KV2wJApfhPc
+	P2IWeyEfnVme3r74bJ/z7Owx6gNEY8NeJQfaQhXyyPHZCdfWBn0qIAlpePUFgt4dAOK3WoLS
+	glKpx/N90doSAyBJknrzDxFA0PyTcU9rOM0qpeZ6pqCzWsWtL2Em/TJ2o0hhcy5TgT1TxM6V
+	MRInSCzsTm9ne0EsEAtGo+k8dP90v1aKb3QAV+lWe35dAAAAAElFTkSuQmCC
 }]
 
 set flag(ZZX) [image create photo -data {
@@ -1639,6 +1832,22 @@ set flag(CXR) [image create photo -data {
 	TSOdDCIR6SINikv0V8/d1YOvCulC5XElAihiu3Znhi/mx8e/qrYeVYVIl6qr
 	dtqzS1Y7Zqcn/4ObAhptMNvBEtC1FcA8Ei//AZNQPUL8Q3U4AAAAAElFTkSu
 	QmCC
+}]
+
+set flag(CYI) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAALCAMAAABBPP0LAAAABGdBTUEAALGP
+	C/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUw
+	AADqYAAAOpgAABdwnLpRPAAAALFQTFRF4uP3P1m8P1m9Pli56N4A3NMA8fP8
+	8PP8m6nelaTcjJzZ//hh//hT7vH77fD7hJXWe43TSGHCdIfR//c7//Y1//Yv
+	YHbKWnHIboLP//Yp//dF7O/7fY/UYnjLOlKuZnvM//Yj0McA4uL27O/6aH3N
+	Y3nLN06lXXPJ//UZ7/L76+76UGjFR2HCNUufa4DOVm3H//URysEA6u36U2vG
+	TmfE7fD6dYjRcobQ4uL0O1OwOVGrZcbW6QAAAAFiS0dEHJwEQQcAAAAJcEhZ
+	cwAAAEgAAABIAEbJaz4AAAB2SURBVAgdBcExTsNQEAXAedbX322cuEoFjRvu
+	f6egICigAtkUMBOQ8LcEiUkiIuIYVCQRSX4sBHN+jZmMi6iy5vVJ8j3qrGVn
+	baq7R/Vh2E/1+VzJWY0FZW6/Obt1tsW99O1Y50pjcPfy7pq360dE9hsieGz4
+	B5f4FYixcl59AAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE0LTExLTI0VDE0OjQ3
+	OjI2KzAxOjAwAqodqAAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0xMS0yNFQx
+	NDo0NzoyNiswMTowMHP3pRQAAAAASUVORK5CYII=
 }]
 
 set flag(CYP) [image create photo -data {
@@ -4044,16 +4253,44 @@ set flag(ZIM) [image create photo -data {
 	MBH01HwAAAAASUVORK5CYII=
 }]
 
-#set flag(ZZX) [image create photo -data {
-#	iVBORw0KGgoAAAANSUhEUgAAABAAAAALCAIAAAD5gJpuAAABaUlEQVQYGQXBvWqTARzF4ZPX
-#	ECNGo+AkFL+wgwQzeQVOgqCTu0MrgiCdHDqK4OAgCJUoXoLg4OYdiDSIoKVaJwepCrY1kPb9
-#	n/PzeTo3bk06aiDISZJKTBzKLnBSSTkmTtwVnDx7qXe4FwImictVidv9grKrqiWZz3Z3fn3u
-#	Bvf6vb/be1Lskmy3ozPbd25+X3u9MN3oO/txm+TI4BSiSZIEHEcCeHb//cetE3efjKebg5er
-#	XyUJSXQ6EjRgcGJkKaNzf+49vSJJ0EFLjy6MF2cISRJIjWMcqKQSL13/AoYkRhWyfPWtJAEg
-#	1CVOKilJhMmb80mBYwsgL95dk5SUJIkmaW27WldrH0y/HVtb+ZC2JCd+tbq1vtEXQZGF0iR2
-#	W1CkoHAtPx6NF3cmDz5dvrh7++ECkJRAhxB0wfPZv8HwuIKkKJjNn8OV56fjHB0G23EqB/M9
-#	RDep3z/WJQESAACBIIhDCMgigv+ogHr46DNZMAAAAABJRU5ErkJggg==
-#}]
+set flag(ZZG) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAALCAIAAAD5gJpuAAAABGdBTUEAALGO
+	fPtRkwAAACBjSFJNAAB6JQAAgIMAAPn/AACA6AAAdTAAAOpgAAA6lwAAF2+X
+	qZnUAAAA8ElEQVQoz5VQQY6DMAxMAkIrYD/AgUv/xz6oL+ExVbvdShxRxY04
+	9o4d2qW9reM4TjKTsePcP81jDsMXczLDQkQpR8sonwOAOY5jCUJRhNvtJzMA
+	ijHS32KWCPi+7wEuP8zatmVToVeLJmQ63DSNlrQsS13XyETE2WCOonsdwh6v
+	4ArkqqrmeQ5K8n7X0YbU+N6vXofX/s3Ey0aU9/9BnA6Hz2FI0ySQJsru0BCS
+	GHldEfNh6Lrz8VjS6SSXM39fNzQQeyh8XTlGR+Tv94RfgqokKbpOFXYiwWjP
+	rcrCUdLVOdZ6NSarMln+9PQ4EWvjF197HFPkEuTnAAAAAElFTkSuQmCC
+}]
+
+# set flag(ZZR) [image create photo -data {
+# 	iVBORw0KGgoAAAANSUhEUgAAABAAAAALCAYAAAB24g05AAABG0lEQVQokaWS
+# 	PW4CQQyFv2G3QimoghQJKW24RxouwgG4Ri6RI0SROEvKIEVCCCkN7M/Ys+MU
+# 	JuyiEKXINB77+T177Am73c74xwlVZTYeu2N2qZVzvup3XQfAdnug/AaH5L+I
+# 	ZkYIwTtYLDpbLgP7fU+IsRdo23S+17UXEclMJgWr1Sfleg3zOWw2DqqAaCCl
+# 	jIihCqqGCIgabeN5s5l3Mxq2KmKIMiDnq+S6zqRU9AKeZOhF5d/J3xyA8pWC
+# 	B32ibj98UE3rCU1z8t0maU5PdPwm3fHCM+UjUMobuXuHGNGcKWIkafQpy9E3
+# 	IZVbdaFC77mFfo1Mpw5UnlgCdjzCdEpuGkZAjpEREKKLd0A4wPkDRH6eYUxP
+# 	thvEvgBty9VbUwA/GwAAAABJRU5ErkJggg==
+# }]
+
+set flag(ZZR) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAALBAMAAACEzBAKAAAAFVBMVEUAAAAr
+	Kyu/mSa/v7/nuC7/1VX////Cd+o5AAAAJUlEQVQI12NggAFGQTAQYGCE8JEY
+	qi5gEISFYZYGBslYGMZQAAAwFhFWYX2Z8AAAAABJRU5ErkJggg==
+}]
+
+# set flag(ZZX) [image create photo -data {
+# 	iVBORw0KGgoAAAANSUhEUgAAABAAAAALCAIAAAD5gJpuAAABaUlEQVQYGQXBvWqTARzF4ZPX
+# 	ECNGo+AkFL+wgwQzeQVOgqCTu0MrgiCdHDqK4OAgCJUoXoLg4OYdiDSIoKVaJwepCrY1kPb9
+# 	n/PzeTo3bk06aiDISZJKTBzKLnBSSTkmTtwVnDx7qXe4FwImictVidv9grKrqiWZz3Z3fn3u
+# 	Bvf6vb/be1Lskmy3ozPbd25+X3u9MN3oO/txm+TI4BSiSZIEHEcCeHb//cetE3efjKebg5er
+# 	XyUJSXQ6EjRgcGJkKaNzf+49vSJJ0EFLjy6MF2cISRJIjWMcqKQSL13/AoYkRhWyfPWtJAEg
+# 	1CVOKilJhMmb80mBYwsgL95dk5SUJIkmaW27WldrH0y/HVtb+ZC2JCd+tbq1vtEXQZGF0iR2
+# 	W1CkoHAtPx6NF3cmDz5dvrh7++ECkJRAhxB0wfPZv8HwuIKkKJjNn8OV56fjHB0G23EqB/M9
+# 	RDep3z/WJQESAACBIIhDCMgigv+ogHr46DNZMAAAAABJRU5ErkJggg==
+# }]
 
 set flag(FRG) $flag(GER)
 
@@ -4685,7 +4922,6 @@ set flag(ZZX) [image create photo -data {
 	2hZapwpB/p7+Ls5fr1Y/01oMjGjxq395a+k2hRbB2Bgv1If7rn8i28B5nrXxc27aPazURaNT
 	6YFsvhVSYF3oWLEvO3LY0zIRE3aa4dA/cfdVCR8ES20AAAAASUVORK5CYII=
 }]
-
 
 } ;# namespace 16x16
 
@@ -6422,7 +6658,6 @@ set flag(ZZX) [image create photo -data {
 }]
 
 } ;# namespace 32x32
-
 } ;# namespace icon
 
 if {[::scidb::misc::debug?]} {
