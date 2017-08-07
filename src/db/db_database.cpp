@@ -338,7 +338,6 @@ Database::~Database() throw()
 	if (m_asyncReader)
 		closeAsyncTreeSearchReader();
 	delete m_codec;
-	delete m_statistic;
 }
 
 
