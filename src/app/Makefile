@@ -213,6 +213,7 @@ app_application.o: ../db/db_comment.h
 app_application.o: ../db/db_comment.ipp
 app_application.o: ../util/u_rkiss.h
 app_application.o: app_application.ipp
+app_application.o: app_subscriber.h
 app_application.o: app_multi_cursor.h
 app_application.o: app_multi_cursor.ipp
 app_application.o: app_cursor.h

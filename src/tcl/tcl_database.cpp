@@ -40,6 +40,7 @@
 #include "tcl_base.h"
 
 #include "app_application.h"
+#include "app_subscriber.h"
 #include "app_multi_cursor.h"
 #include "app_cursor.h"
 #include "app_view.h"
@@ -256,7 +257,7 @@ getNamebaseType(Tcl_Obj* obj, char const* cmd)
 
 namespace {
 
-struct Subscriber : public Application::Subscriber
+struct MySubscriber : public ::app::Subscriber
 {
 	enum Type
 	{
@@ -3533,11 +3534,11 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		Cmd_DatabaseSwitched, Cmd_Tree,
 	};
 
-	Subscriber* subscriber = static_cast<Subscriber*>(scidb->subscriber());
+	MySubscriber* subscriber = static_cast<MySubscriber*>(scidb->subscriber());
 
 	if (subscriber == 0)
 	{
-		subscriber = new Subscriber;
+		subscriber = new MySubscriber;
 		scidb->setSubscriber(Application::SubscriberP(subscriber));
 	}
 
@@ -3547,21 +3548,21 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	Tcl_Obj* closeCmd		= objc == 5 ? objv[3] : 0;
 	Tcl_Obj* arg			= objc == 5 ? objv[4] : (objc == 4 ? objv[3] : 0);
 
-	::Subscriber::Type type = ::Subscriber::None;
+	MySubscriber::Type type = MySubscriber::None;
 
 	switch (index)
 	{
-		case Cmd_DbInfo:				type = ::Subscriber::DatabaseInfo; break;
-		case Cmd_GameList:			type = ::Subscriber::GameList; break;
-		case Cmd_PlayerList:			type = ::Subscriber::PlayerList; break;
-		case Cmd_AnnotatorList:		type = ::Subscriber::AnnotatorList; break;
-		case Cmd_PositionList:		type = ::Subscriber::PositionList; break;
-		case Cmd_EventList:			type = ::Subscriber::EventList; break;
-		case Cmd_SiteList:			type = ::Subscriber::SiteList; break;
-		case Cmd_GameInfo:			type = ::Subscriber::GameInfo; break;
-		case Cmd_GameData:			type = ::Subscriber::GameData; break;
-		case Cmd_GameHistory:		type = ::Subscriber::GameHistory; break;
-		case Cmd_Tree:					type = ::Subscriber::Tree; break;
+		case Cmd_DbInfo:				type = MySubscriber::DatabaseInfo; break;
+		case Cmd_GameList:			type = MySubscriber::GameList; break;
+		case Cmd_PlayerList:			type = MySubscriber::PlayerList; break;
+		case Cmd_AnnotatorList:		type = MySubscriber::AnnotatorList; break;
+		case Cmd_PositionList:		type = MySubscriber::PositionList; break;
+		case Cmd_EventList:			type = MySubscriber::EventList; break;
+		case Cmd_SiteList:			type = MySubscriber::SiteList; break;
+		case Cmd_GameInfo:			type = MySubscriber::GameInfo; break;
+		case Cmd_GameData:			type = MySubscriber::GameData; break;
+		case Cmd_GameHistory:		type = MySubscriber::GameHistory; break;
+		case Cmd_Tree:					type = MySubscriber::Tree; break;
 
 		case Cmd_GameSwitch:			subscriber->setGameSwitchedCmd(updateCmd); break;
 		case Cmd_GameClose:			subscriber->setGameClosedCmd(updateCmd); break;
@@ -3574,7 +3575,7 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 								static_cast<char const*>(Tcl_GetString(objv[1])));
 	}
 
-	if (type != ::Subscriber::None)
+	if (type != ::MySubscriber::None)
 		subscriber->setCmd(type, updateCmd, closeCmd, arg);
 
 	return TCL_OK;
@@ -3605,7 +3606,7 @@ cmdUnsubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		Cmd_AnnotatorList, Cmd_GameInfo, Cmd_GameData, Cmd_GameHistory, Cmd_GameSwitch, Cmd_Tree
 	};
 
-	Subscriber* subscriber = static_cast<Subscriber*>(scidb->subscriber());
+	MySubscriber* subscriber = static_cast<MySubscriber*>(scidb->subscriber());
 
 	if (subscriber == 0)
 		return TCL_OK;
@@ -3619,7 +3620,7 @@ cmdUnsubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	switch (index)
 	{
 		case Cmd_DbInfo:
-			subscriber->unsetCmd(Subscriber::DatabaseInfo, updateCmd, closeCmd, arg);
+			subscriber->unsetCmd(MySubscriber::DatabaseInfo, updateCmd, closeCmd, arg);
 			break;
 
 		case Cmd_GameList:
@@ -3643,15 +3644,15 @@ cmdUnsubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			break;
 
 		case Cmd_GameInfo:
-			subscriber->unsetCmd(Subscriber::GameInfo, updateCmd, closeCmd, arg);
+			subscriber->unsetCmd(MySubscriber::GameInfo, updateCmd, closeCmd, arg);
 			break;
 
 		case Cmd_GameData:
-			subscriber->unsetCmd(Subscriber::GameData, updateCmd, closeCmd, arg);
+			subscriber->unsetCmd(MySubscriber::GameData, updateCmd, closeCmd, arg);
 			break;
 
 		case Cmd_GameHistory:
-			subscriber->unsetCmd(Subscriber::GameHistory, updateCmd, closeCmd, arg);
+			subscriber->unsetCmd(MySubscriber::GameHistory, updateCmd, closeCmd, arg);
 			break;
 
 		case Cmd_GameSwitch:

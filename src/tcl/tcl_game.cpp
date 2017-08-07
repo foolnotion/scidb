@@ -996,7 +996,7 @@ Tcl_Obj* Visitor::m_e					= nullptr;
 Tcl_Obj* Visitor::m_s					= nullptr;
 
 
-struct Subscriber : public Game::Subscriber
+struct MySubscriber : public Game::Subscriber
 {
 	typedef mstl::vector<Tcl_Obj*> CmdList;
 
@@ -1017,7 +1017,7 @@ struct Subscriber : public Game::Subscriber
 	static Tcl_Obj* m_true;
 	static Tcl_Obj* m_false;
 
-	Subscriber(Tcl_Obj* position)
+	MySubscriber(Tcl_Obj* position)
 		:m_pgn(0)
 		,m_state(0)
 		,m_position(position)
@@ -1041,7 +1041,7 @@ struct Subscriber : public Game::Subscriber
 		Tcl_IncrRefCount(m_position);
 	}
 
-	~Subscriber() throw()
+	~MySubscriber() throw()
 	{
 		for (unsigned i = 0; i < m_board.size(); ++i)
 			Tcl_DecrRefCount(m_board[i]);
@@ -1317,14 +1317,14 @@ struct Subscriber : public Game::Subscriber
 	}
 };
 
-Tcl_Obj* Subscriber::m_action	= 0;
-Tcl_Obj* Subscriber::m_set		= 0;
-Tcl_Obj* Subscriber::m_goto	= 0;
-Tcl_Obj* Subscriber::m_move	= 0;
-Tcl_Obj* Subscriber::m_marks	= 0;
-Tcl_Obj* Subscriber::m_merge	= 0;
-Tcl_Obj* Subscriber::m_true	= 0;
-Tcl_Obj* Subscriber::m_false	= 0;
+Tcl_Obj* MySubscriber::m_action	= 0;
+Tcl_Obj* MySubscriber::m_set		= 0;
+Tcl_Obj* MySubscriber::m_goto	= 0;
+Tcl_Obj* MySubscriber::m_move	= 0;
+Tcl_Obj* MySubscriber::m_marks	= 0;
+Tcl_Obj* MySubscriber::m_merge	= 0;
+Tcl_Obj* MySubscriber::m_true	= 0;
+Tcl_Obj* MySubscriber::m_false	= 0;
 
 } // namespace
 
@@ -1681,12 +1681,12 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		return error(::CmdSubscribe, nullptr, nullptr, "unexpected argument %s", what);
 	}
 
-	Game&			game			= scidb->game(position);
-	Subscriber*	subscriber	= static_cast<Subscriber*>(game.subscriber().get());
+	Game&				game			= scidb->game(position);
+	MySubscriber*	subscriber	= static_cast<MySubscriber*>(game.subscriber().get());
 
 	if (subscriber == 0)
 	{
-		subscriber = new Subscriber(objv[2]);
+		subscriber = new MySubscriber(objv[2]);
 		game.setSubscriber(Game::SubscriberP(subscriber));
 	}
 
@@ -1719,8 +1719,8 @@ cmdUnsubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	unsigned	position			= unsignedFromObj(objc, objv, 2);
 
-	Game&			game			= scidb->game(position);
-	Subscriber*	subscriber	= static_cast<Subscriber*>(game.subscriber().get());
+	Game&				game			= scidb->game(position);
+	MySubscriber*	subscriber	= static_cast<MySubscriber*>(game.subscriber().get());
 
 	if (subscriber)
 		game.setSubscriber(Game::SubscriberP(0));

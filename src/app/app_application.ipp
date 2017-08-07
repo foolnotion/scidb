@@ -46,7 +46,6 @@ inline Cursor& Application::scratchBase()					{ return cursor(scratchbaseName())
 inline Cursor const& Application::clipBase() const		{ return cursor(clipbaseName()); }
 inline Cursor& Application::clipBase()						{ return cursor(clipbaseName()); }
 
-inline Application::Subscriber* Application::subscriber() const	{ return m_subscriber.get(); }
 inline unsigned Application::currentPosition() const					{ return m_currentPosition; }
 inline db::Tree const* Application::currentTree() const				{ return m_treeAdmin.tree().get(); }
 inline mstl::ostream* Application::engineLog() const					{ return m_engineLog; }

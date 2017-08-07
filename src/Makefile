@@ -276,7 +276,7 @@ extend_eco: extend_eco.o $(LIBS_STUBS)
 
 dump_eco: dump_eco.o $(LIBS_STUBS)
 	@echo "Building $@"
-	@$(CXX) -o $@ $< $(LDFLAGS) -Idb/si3 $(LIBS_STUBS)
+	@$(CXX) -o $@ $< $(LDFLAGS) -Idb/si3 -DBROKEN_LINKER_HACK=1 $(LIBS_STUBS)
 
 eco2code: eco2code.o $(LIBS_STUBS)
 	@echo "Building $@"
