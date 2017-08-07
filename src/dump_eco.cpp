@@ -48,6 +48,11 @@
 #include <stdio.h>
 #include <ctype.h>
 
+#ifdef BROKEN_LINKER_HACK
+# include "db_board.h"
+# include "db_board_base.h"
+#endif
+
 using namespace db;
 
 
@@ -583,7 +588,7 @@ dumpAscii(	Board& board,
 		board.prepareForPrint(move, variant::Normal, Board::InternalRepresentation);
 		board.doMove(move, variant::Normal);
 		for (unsigned k = 0; k < level; ++k) printf("| ");
-		printf("%s: ", move.printSan(s, protocol::Scidb, encoding::Latin1).c_str());
+		printf("%s: ", move.printSAN(s, protocol::Scidb, encoding::Latin1).c_str());
 		dumpAscii(board, done, i->node, level + 1, i->transposition, ply + 1);
 		board.undoMove(move, variant::Normal);
 	}
@@ -594,7 +599,7 @@ void
 dumpAscii(Node* node)
 {
 	mstl::bitset done(Eco::Max_Code + 1);
-	Board board(Board::standardBoard());
+	Board board(Board::standardBoard(variant::Normal));
 	dumpAscii(board, done, node, 0, false, 0);
 }
 
@@ -715,7 +720,7 @@ dumpBinary(Node* node)
 		mstl::cout.write(strings[i], strings[i].size());
 	}
 
-	Board board(Board::standardBoard());
+	Board board(Board::standardBoard(variant::Normal));
 	dumpBinary(mstl::cout, board, info, done, node);
 }
 
@@ -931,7 +936,7 @@ load(mstl::istream& strm)
 
 		++countCodes;
 
-		Board board(Board::standardBoard());
+		Board board(Board::standardBoard(variant::Normal));
 		MoveList moves;
 		uint16_t linebuf[Max_Move_Length];
 		Line line(linebuf);
@@ -941,8 +946,8 @@ load(mstl::istream& strm)
 			M_ASSERT(eco == Eco("A00"));
 			M_ASSERT(moves.isEmpty());
 
-			root = new Node(eco, name, 0, Board::standardBoard().position(), Line());
-			lookup[Board::standardBoard().hash()] = root;
+			root = new Node(eco, name, 0, Board::standardBoard(variant::Normal).position(), Line());
+			lookup[Board::standardBoard(variant::Normal).hash()] = root;
 		}
 
 		while ((s = ::nextWord(s + 1)) && ::isalpha(*s))
@@ -968,7 +973,7 @@ load(mstl::istream& strm)
 		Name* myName = 0;
 		Eco myEco;
 
-		board = Board::standardBoard();
+		board = Board::standardBoard(variant::Normal);
 
 		for (unsigned i = 0; i < moves.size(); ++i)
 		{
@@ -1073,6 +1078,16 @@ load(mstl::istream& strm)
 int
 main(int argc, char const* argv[])
 {
+#ifdef BROKEN_LINKER_HACK
+
+	// HACK!
+	// This hack is required because the linker is not working
+	// properly anymore.
+	db::board::base::initialize();
+	db::Board::initialize();
+
+#endif
+
 	try
 	{
 		if (argc < 2 || 3 < argc || (argc == 3 && ::strcmp(argv[1], "--ascii") != 0))

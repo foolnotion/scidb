@@ -45,6 +45,11 @@
 #include <stdio.h>
 #include <ctype.h>
 
+#ifdef BROKEN_LINKER_HACK
+# include "db_board.h"
+# include "db_board_base.h"
+#endif
+
 
 extern "C" { struct Tcl_Interp; }
 namespace tcl { Tcl_Interp* interp() { return 0; } }
@@ -169,7 +174,7 @@ printMove(unsigned ply, Move const& move)
 	printf(" ");
 	if ((ply & 1) == 0)
 		printf("%u.", (ply + 2) >> 1);
-	printf("%s", move.printSan(s, protocol::Standard, encoding::Latin1).c_str());
+	printf("%s", move.printSAN(s, protocol::Standard, encoding::Latin1).c_str());
 }
 
 
@@ -235,7 +240,7 @@ extend()
 			MoveList moves;
 			MoveList more;
 
-			Board board(Board::standardBoard());
+			Board board(Board::standardBoard(variant::Normal));
 
 			transform(lines[i].begin(), moves, lines[i].size());
 
@@ -305,13 +310,13 @@ prepare()
 	LineMap			position;
 	mstl::bitset	exists(Eco::Max_Code + 1);
 
-	lookup[Board::standardBoard().hashNoEP()] = Eco(1);
+	lookup[Board::standardBoard(variant::Normal).hashNoEP()] = Eco(1);
 
 	for (unsigned i = 0; i <= Eco::Max_Code; ++i)
 	{
 		if (!lines[i].empty())
 		{
-			Board board(Board::standardBoard());
+			Board board(Board::standardBoard(variant::Normal));
 			Line const& line = lines[i];
 
 			board.doMove(Move(line[0]), variant::Normal);
@@ -339,6 +344,7 @@ prepare()
 								lineNumbers[i],
 								Eco(i).asString().c_str());
 					}
+#if 0
 					else if (	!(		k == mstl::min(line.size(), p->second->line.size()) - 1
 										&& mstl::abs(int(line.size()) - int(p->second->line.size())) == 1)
 								&& !line.equal(p->second->line, k + 1))
@@ -349,6 +355,7 @@ prepare()
 								lineNumbers[i],
 								Eco(i).asString().c_str());
 					}
+#endif
 				}
 			}
 
@@ -357,15 +364,15 @@ prepare()
 	}
 
 	lookup.clear();
-	bookmark[Board::standardBoard().hashNoEP()] = mstl::make_pair(Eco(1), uint16_t(0));
-	lookup[Board::standardBoard().hashNoEP()] = Eco(1);
+	bookmark[Board::standardBoard(variant::Normal).hashNoEP()] = mstl::make_pair(Eco(1), uint16_t(0));
+	lookup[Board::standardBoard(variant::Normal).hashNoEP()] = Eco(1);
 
 	for (unsigned i = 0; i <= Eco::Max_Code; ++i)
 	{
 		if (!lines[i].empty())
 		{
 			Bookmark::const_iterator last = 0;
-			Board board(Board::standardBoard());
+			Board board(Board::standardBoard(variant::Normal));
 			MoveList moves;
 			Line const& line = lines[i];
 
@@ -710,7 +717,7 @@ parse(char const* filename)
 			lineNumbers[ecoCode] = lineNo;
 			lastCode = ecoCode;
 
-			Board board(Board::standardBoard());
+			Board board(Board::standardBoard(variant::Normal));
 			MoveList	moves;
 			Line& line = lines[ecoCode];
 
@@ -852,7 +859,7 @@ parse(char const* filename)
 				}
 			}
 
-			board = Board::standardBoard();
+			board = Board::standardBoard(variant::Normal);
 
 			for (unsigned i = 0; i < moves.size(); ++i)
 			{
@@ -917,6 +924,16 @@ parse(char const* filename)
 int
 main(int argc, char const* argv[])
 {
+#ifdef BROKEN_LINKER_HACK
+
+	// HACK!
+	// This hack is required because the linker is not working
+	// properly anymore.
+	db::board::base::initialize();
+	db::Board::initialize();
+
+#endif
+
 	if (argc < 2 || 3 < argc)
 	{
 		fprintf(stderr, "Usage: %s [--check] <eco-file>\n", argv[0]);
