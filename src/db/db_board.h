@@ -123,13 +123,18 @@ public:
 
 	enum
 	{
-		NoCheck		= 0,			///< side to move is not in check
-		Check			= 1 << 0,	///< side to move is in check
-		DoubleCheck	= 1 << 1,	///< side to move is in double check
-		Checkmate	= 1 << 2,	///< side to move is check mate
-		Stalemate	= 1 << 3,	///< side to move is stale mate
-		Losing		= 1 << 4,	///< side to move has lost all pieces
-		ThreeChecks	= 1 << 5,	///< side to move got three checks
+		NoCheck				= 0,			///< side to move is not in check
+		Check					= 1 << 0,	///< side to move is in check
+		DoubleCheck			= 1 << 1,	///< side to move is in double check
+		ContactCheck		= 1 << 2,	///< side to move is in contact check
+		Checkmate			= 1 << 3,	///< side to move is check mate
+		Stalemate			= 1 << 4,	///< side to move is stale mate
+		Losing				= 1 << 5,	///< side to move has lost all pieces
+		ThreeChecks			= 1 << 6,	///< side to move got three checks
+		DoubleCheckmate	= 1 << 7,	///< both kings are checkmate (Bughouse)
+		DoubleStalemate	= 1 << 8,	///< both kings are stalemate (Bughouse)
+
+		CannotMove			= Checkmate | Stalemate | Losing | ThreeChecks,
 	};
 
 	enum SetupStatus
@@ -212,6 +217,8 @@ public:
 	void undoMove(Move const& m, variant::Type variant);
 	/// Play given moves; returns whether the moves are valid
 	bool doMoves(char const* text);
+	/// Play a null move, update board state appropriately
+	Board& doNullMove();
 
 	// Setup board
 

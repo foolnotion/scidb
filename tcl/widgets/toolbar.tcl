@@ -1852,6 +1852,9 @@ proc SetState {toolbar v w state} {
 				-activebackground $activebackground \
 				-command $command \
 				;
+			if {$state ne "normal"} {
+				$w configure -relief flat
+			}
 			if {[winfo class $w] eq "DropdownButton"} {
 				$w configure -arrowstate $state
 			}

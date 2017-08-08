@@ -21,7 +21,7 @@
 
 # Due to centering problems on windows, see http://wiki.tcl.tk/20773
 
-package provide place 1.1
+package provide place 2.0
 
 namespace eval util {
 
@@ -35,7 +35,8 @@ namespace eval place {
 
 variable mainWindow	.
 
-variable PlaceList	{"at" "center" "left" "right" "above" "below"}
+variable PlaceList	{	"at" "center" "top-center" "left" "right"
+								"above" "below" "above-or-below" "left-or-right" }
 variable ShiftLeft	8
 
 
@@ -69,12 +70,22 @@ proc geometry {path args} {
 	set windowingsystem [tk windowingsystem]
 	set w $opts(-width)
 	set h $opts(-height)
+	# This is not correct in every case, sometimes 'reqheight' is too large.
+	# But sometimes 'height' is too small, and then we need 'reqheight'.
+	# No way to find an optimal solution.
+	# Currently only one window (in Scidb) is known where the placement is
+	# (mathematically) incorrect: the Tip-of-the-Day window.
 	if {$w <= 0} { set w [expr {max([winfo reqwidth  $path], [winfo width  $path])}] }
 	if {$h <= 0} { set h [expr {max([winfo reqheight $path], [winfo height $path])}] }
 	set isPopup 0
-	set cls [winfo class $path]
-	if {$cls eq "Menu" || $cls eq "OptionMenu" || $opts(-type) eq "popup"} { set isPopup 1 }
 	set frameless 0
+	set cls [winfo class $path]
+	if {	$cls eq "Menu"
+		|| $cls eq "OptionMenu"
+		|| $opts(-type) eq "popup"
+		|| [wm overrideredirect $path]} {
+		set isPopup 1
+	}
 	if {$isPopup || $opts(-type) eq "frameless"} { set frameless 1 }
 	if {$isPopup} {
 		set sx 0
@@ -92,10 +103,7 @@ proc geometry {path args} {
 		return -code error "bad position \"$where\": must be [join $list ", "], or $last"
 	}
 	if {$where eq "at"} {
-		set err [catch {
-						set x [expr {int($opts(-x))}]
-						set y [expr {int($opts(-y))}]
-						}]
+		set err [catch { set x [expr {int($opts(-x))}]; set y [expr {int($opts(-y))}] }]
 		if {$err} {
 			return -code error "[namespace current]::geometry: incorrect position"
 		}
@@ -116,12 +124,26 @@ proc geometry {path args} {
 		if {[string length $parent] && ![winfo exists $parent]} {
 			return -code error "[namespace current]::geometry: \"$parent\" does not exist"
 		}
-		if {$where eq "center"} {
-			if {$frameless} {
-				lassign {0 0 0 0} el er et eb
+		if {$frameless} {
+			lassign {0 0 0 0} el er et eb
+		} else {
+			lassign [winfo extents $path] el er et eb
+		}
+		if {$where eq "top-center"} {
+			if {[string length $parent]} {
+				# center to parent
+				set x0 [expr {[winfo rootx $parent] + $sx + ([winfo width $parent] - ($w + $el + $er))/2}]
 			} else {
-				lassign [winfo extents $path] el er et eb
+				# center to screen/desktop
+				set x0 [expr {($sw - ($w + $el + $er))/2 - [winfo vrootx $path] - $sx}]
 			}
+			set x "+$x0"
+			set y "+$opts(-shift)"
+			if {$windowingsystem ne "win32"} {
+				if {$x0 + $w > $sw}	{ set x "-0"; set x0 [expr {$sw - $w}] }
+				if {$x0 < 0}			{ set x "+0" }
+			}
+		} elseif {$where eq "center"} {
 			if {[string length $parent]} {
 				# center to parent
 				set x0 [expr {[winfo rootx $parent] + $sx + ([winfo width  $parent] - ($w + $el + $er))/2}]
@@ -150,11 +172,27 @@ proc geometry {path args} {
 				set y0 [winfo rooty $parent]
 				set x1 [expr {$x0 + [winfo width  $parent]}]
 				set y1 [expr {$y0 + [winfo height $parent]}]
+				if {[winfo toplevel $parent] eq $parent} {
+					lassign [winfo extents $parent] pl pr pt pb
+					set x0 [expr {$x0 - $pl}]
+					set x1 [expr {$x1 + $pr}]
+					set y0 [expr {$y0 - $pr}]
+					set y1 [expr {$y1 + $pb}]
+				}
 			}
-			if {$opts(-shift) && !$frameless} {
-				lassign [winfo extents $path] el er et eb
-			} else {
-				lassign {0 0 0 0} el er et eb
+			set offs $opts(-shift)
+			if {$where eq "above-or-below"} {
+				if {[string length $parent] == 0 || $y0 - $sy >= $sy + $sh - $h} {
+					set where "above"
+				} else {
+					set where "below"
+				}
+			} elseif {$where eq "left-or-right"} {
+				if {[string length $parent] == 0 || $x0 - $sx >= $sx + $sw - $w} {
+					set where "left"
+				} else {
+					set where "right"
+				}
 			}
 			if {$where eq "left" || $where eq "right"} {
 				set y "+$y0"
@@ -163,53 +201,45 @@ proc geometry {path args} {
 					if {$y0 < 0}			{ set y "+0" }
 				}
 				if {$where eq "left"} {
-					incr x0 -$er
-					incr x1 -$er
 					# try left, then right if out, then 0 if out
-					if {$x0 >= $w + $opts(-shift)} {
-						set x +[expr {$x0 - $w - $opts(-shift)}]
-					} elseif {$x1 + $w <= $sw} {
-						set x "+$x1"
+					if {$x0 >= $w + $el + $er + $offs} {
+						set x +[expr {$x0 - $w - $el - $er - $offs}]
+					} elseif {$x1 + $w + $el + $er + $offs <= $sw} {
+						set x +[expr {$x1 + $offs}]
 					} else {
 						set x "+0"
 					}
 				} else {
-					incr x0 $el
-					incr x1 $el
 					# try right, then left if out, then 0 if out
-					if {$x1 + $w <= $sw} {
-						set x "+$x1"
-					} elseif {$x0 >= $w + $opts(-shift)} {
-						set x +[expr {$x0 - $w - $opts(-shift)}]
+					if {$x1 + $w + $el + $er + $offs <= $sw} {
+						set x +[expr {$x1 + $offs}]
+					} elseif {$x0 >= $w + $el + $er + $offs} {
+						set x +[expr {$x0 - $w - $el - $er - $offs}]
 					} else {
 						set x "-0"
 					}
 				}
-			} else {
+			} else { ;# if {$where eq "below" || $where eq "above"}
 				set x "+$x0"
 				if {$windowingsystem ne "win32"} {
 					if {$x0 + $w > $sw}	{ set x "-0"; set x0 [expr {$sw - $w}] }
 					if {$x0 < 0}	      { set x "+0" }
 				}
 				if {$where eq "above"} {
-					incr y0 -$eb
-					incr y1 -$eb
 					# try top, then bottom, then 0
-					if {$h <= $y0} {
-						set y +[expr {$y0 - $sh}]
-					} elseif {$y1 + $h <= $sh} {
-						set y "+$y1"
+					if {$h + $et + $eb + $offs <= $y0} {
+						set y +[expr {$y0 - $h - $et - $eb - $offs}]
+					} elseif {$y1 + $h + $et + $eb + $offs <= $sh} {
+						set y +[expr {$y1 + $offs}]
 					} else {
 						set y "+0"
 					}
 				} else {
-					incr y0 $et
-					incr y1 $et
 					# try bottom, then top, then 0
-					if {$y1 + $h <= $sh} {
-						set y "+$y1"
-					} elseif {$y0 >= $h} {
-						set y +[expr {$y0 - $h}]
+					if {$y1 + $h + $et + $eb + $offs <= $sh} {
+						set y +[expr {$y1 + $offs}]
+					} elseif {$y0 >= $h + $et + $eb + $offs} {
+						set y +[expr {$y0 - $h - $et - $eb - $offs}]
 					} else {
 						set y "-0"
 					}

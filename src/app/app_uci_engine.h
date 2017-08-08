@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2009-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -31,10 +31,9 @@
 
 #include "db_board.h"
 #include "db_move.h"
+#include "db_move_list.h"
 
 #include "m_string.h"
-
-namespace db { class MoveList; }
 
 namespace app {
 namespace uci {
@@ -49,8 +48,8 @@ public:
 	bool stopAnalysis(bool restartIsPending) override;
 	bool continueAnalysis() override;
 
-	bool isReady() const override;
 	bool isAnalyzing() const override;
+	bool isReady() const override;
 
 	using Concrete::stopAnalysis;
 
@@ -58,11 +57,13 @@ protected:
 
 	void protocolStart(bool isProbing) override;
 	void protocolEnd() override;
+	void stimulate() override;
 	void sendNumberOfVariations() override;
 	void clearHash() override;
 	void sendHashSize() override;
 	void sendThreads() override;
 	void sendSkillLevel() override;
+//	void sendPlayingStyle() override;
 	void sendPondering() override;
 	void sendStrength() override;
 	void sendOptions() override;
@@ -70,17 +71,12 @@ protected:
 	void processMessage(mstl::string const& message) override;
 	void doMove(db::Move const& lastMove) override;
 
-	void pause() override;
-	void resume() override;
-
 	Result probeResult() const override;
 	unsigned probeTimeout() const override;
 
 private:
 
 	enum State { None, Start, Stop, Pause };
-
-	typedef ::db::variant::Type Variant;
 
 	bool whiteToMove() const;
 
@@ -93,32 +89,34 @@ private:
 
 	db::Move parseCurrentMove(char const* s);
 
-	mstl::string	m_position;
-	mstl::string	m_waitingOn;
-	mstl::string	m_name;
-	mstl::string	m_value;
-	mstl::string	m_threads;
-	mstl::string	m_minThreads;
-	mstl::string	m_maxThreads;
-	mstl::string	m_clearHash;
-	mstl::string	m_skillLevel;
-	State				m_state;
-	Variant			m_variant;
-	bool				m_uciok;
-	bool				m_isReady;
-	bool				m_hasMultiPV;
-	bool				m_hasAnalyseMode;
-	bool				m_hasOwnBook;
-	bool				m_hasShowCurrLine;
-	bool				m_hasShowRefutations;
-	bool				m_isAnalyzing;
-	bool				m_isNewGame;
-	bool				m_startAnalyzeIsPending;
-	bool				m_stopAnalyzeIsPending;
-	bool				m_isChess960;
-	bool				m_sendAnalyseMode;
-	bool				m_usedAnalyseModeBefore;
-	bool				m_clearHashOnTheFly;
+	mstl::string		m_position;
+	mstl::string		m_waitingOn;
+	mstl::string		m_name;
+	mstl::string		m_value;
+	mstl::string		m_threads;
+//	mstl::string		m_playingStyle;
+	mstl::string		m_minThreads;
+	mstl::string		m_maxThreads;
+	mstl::string		m_clearHash;
+	mstl::string		m_skillLevel;
+	State					m_state;
+	db::variant::Type	m_variant;
+	bool					m_uciok;
+	bool					m_isReady;
+	bool					m_hasMultiPV;
+	bool					m_hasAnalyseMode;
+	bool					m_hasOwnBook;
+	bool					m_hasShowCurrLine;
+	bool					m_hasShowRefutations;
+	bool					m_isAnalyzing;
+	bool					m_isNewGame;
+	bool					m_startAnalyzeIsPending;
+	bool					m_stopAnalyzeIsPending;
+	bool					m_isChess960;
+	bool					m_sendAnalyseMode;
+	bool					m_usedAnalyseModeBefore;
+	bool					m_clearHashOnTheFly;
+	bool					m_uciAlreadySent;
 };
 
 } // namespace uci

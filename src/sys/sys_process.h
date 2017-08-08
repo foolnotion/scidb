@@ -6,7 +6,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2011-2013 Gregor Cramer
+// Copyright: (C) 2011-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -19,14 +19,16 @@
 #ifndef _sys_process_included
 #define _sys_process_included
 
+#include "m_string.h"
+#include "m_vector.h"
+#include "m_utility.h"
+
 extern "C" { struct Tcl_Channel_; }
 extern "C" { struct Tcl_DString; }
 
-namespace mstl { class string; }
-
 namespace sys {
 
-class Process
+class Process : private mstl::noncopyable
 {
 public:
 
@@ -38,7 +40,9 @@ public:
 		High		= -15,
 	};
 
-	Process(mstl::string const& command, mstl::string const& directory);
+	typedef mstl::vector<mstl::string> Command;
+
+	Process(Command const& command, mstl::string const& directory);
 	virtual ~Process();
 
 	bool isAlive() const;
@@ -52,12 +56,16 @@ public:
 	Priority priority() const;
 	long pid() const;
 	int exitStatus() const;
+	mstl::string const& program() const;
 
 	int gets(mstl::string& result);
 	int puts(mstl::string const& msg);
 
 	void close();
 	void setPriority(Priority priority);
+	void stop();
+	void resume();
+	void kill();
 
 	virtual void readyRead() = 0;
 	virtual void exited() = 0;
@@ -80,6 +88,7 @@ private:
 	static void callStopped(void* clientData);
 	static void callResumed(void* clientData);
 
+	mstl::string	m_program;
 	Channel			m_chan;
 	long				m_pid;
 	Tcl_DString*	m_buffer;

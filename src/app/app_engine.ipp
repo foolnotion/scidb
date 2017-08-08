@@ -6,7 +6,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2009-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -25,6 +25,7 @@ inline bool Engine::isAnalyzing() const							{ return m_engine->isAnalyzing(); 
 inline bool Engine::isProbing() const								{ return m_probe; }
 inline bool Engine::playOther() const								{ return m_playOther; }
 inline bool Engine::pondering() const								{ return m_pondering; }
+inline bool Engine::isPausing() const								{ return m_pausing; }
 
 inline unsigned Engine::maxMultiPV() const						{ return m_maxMultiPV; }
 inline unsigned Engine::numVariations() const					{ return m_wantedMultiPV; }
@@ -36,6 +37,168 @@ inline unsigned Engine::skillLevel() const						{ return m_skillLevel; }
 inline unsigned Engine::limitedStrength() const					{ return m_strength; }
 inline unsigned Engine::numCores() const							{ return m_numCores; }
 inline unsigned Engine::countLines() const						{ return m_usedMultiPV; }
+inline mstl::string const& Engine::playingStyle() const		{ return m_playingStyle; }
+
+inline Engine::Protocol Engine::protocol() const				{ return m_protocol; }
+
+inline bool Engine::Concrete::isActive() const					{ return m_engine->isActive(); }
+inline bool Engine::Concrete::isAnalyzing() const				{ return m_engine->isAnalyzing(); }
+inline bool Engine::Concrete::analysesOpponentsView() const	{ return m_engine->analysesOpponentsView(); }
+inline bool Engine::Concrete::isProbing() const					{ return m_engine->isProbing(); }
+inline bool Engine::Concrete::playOther() const					{ return m_engine->playOther(); }
+inline bool Engine::Concrete::pondering() const					{ return m_engine->pondering(); }
+inline bool Engine::Concrete::isChess960Position() const		{ return m_engine->m_isChess960; }
+
+inline unsigned Engine::Concrete::maxMultiPV() const			{ return m_engine->maxMultiPV(); }
+inline unsigned Engine::Concrete::numVariations() const		{ return m_engine->numVariations(); }
+inline unsigned Engine::Concrete::hashSize() const				{ return m_engine->hashSize(); }
+inline unsigned Engine::Concrete::searchMate() const			{ return m_engine->searchMate(); }
+inline unsigned Engine::Concrete::searchDepth() const			{ return m_engine->searchDepth(); }
+inline unsigned Engine::Concrete::searchTime() const			{ return m_engine->searchTime(); }
+inline unsigned Engine::Concrete::skillLevel() const			{ return m_engine->skillLevel(); }
+inline unsigned Engine::Concrete::limitedStrength() const	{ return m_engine->limitedStrength(); }
+inline unsigned Engine::Concrete::numThreads() const			{ return m_engine->numThreads(); }
+inline unsigned Engine::Concrete::minThreads() const			{ return m_engine->minThreads(); }
+inline unsigned Engine::Concrete::maxThreads() const			{ return m_engine->maxThreads(); }
+inline unsigned Engine::Concrete::numCores() const				{ return m_engine->numCores(); }
+inline unsigned Engine::Concrete::supportedVariants() const	{ return m_engine->supportedVariants(); }
+
+inline mstl::string const& Engine::Concrete::playingStyle() const { return m_engine->playingStyle(); }
+
+inline long Engine::Concrete::pid() const							{ return m_engine->pid(); }
+
+inline void Engine::Concrete::send(mstl::string const& message)	{ m_engine->send(message); }
+inline void Engine::Concrete::deactivate()								{ m_engine->deactivate(); }
+inline void Engine::Concrete::addFeature(unsigned feature)			{ m_engine->addFeature(feature); }
+inline void Engine::Concrete::removeFeature(unsigned feature)		{ m_engine->removeFeature(feature); }
+inline void Engine::Concrete::addVariant(unsigned variant)			{ m_engine->addVariant(variant); }
+inline void Engine::Concrete::removeVariant(unsigned variant)		{ m_engine->removeVariant(variant); }
+inline void Engine::Concrete::engineIsReady()							{ m_engine->engineIsReady(); }
+
+inline void Engine::Concrete::setBestMove(db::Move const& move)	{ m_engine->setBestMove(move); }
+inline void Engine::Concrete::setPonder(db::Move const& move)		{ m_engine->setPonder(move); }
+inline void Engine::Concrete::setScore(unsigned no, int score)		{ m_engine->setScore(no, score); }
+inline void Engine::Concrete::setMate(unsigned no, int numMoves)	{ m_engine->setMate(no, numMoves); }
+inline void Engine::Concrete::setDepth(unsigned depth)				{ m_engine->setDepth(depth); }
+inline void Engine::Concrete::setSelectiveDepth(unsigned depth)	{ m_engine->setSelectiveDepth(depth); }
+inline void Engine::Concrete::setTime(double time)						{ m_engine->setTime(time); }
+inline void Engine::Concrete::setTBHits(unsigned hits)				{ m_engine->setTBHits(hits); }
+inline void Engine::Concrete::setNodes(unsigned nodes)				{ m_engine->setNodes(nodes); }
+inline void Engine::Concrete::setNPS(unsigned nps)						{ m_engine->setNPS(nps); }
+
+inline void Engine::Concrete::updatePvInfo(unsigned line)			{ m_engine->updatePvInfo(line); }
+inline void Engine::Concrete::updateCurrMove()							{ m_engine->updateCurrMove(); }
+inline void Engine::Concrete::updateCurrLine()							{ m_engine->updateCurrLine(); }
+inline void Engine::Concrete::updateBestMove()							{ m_engine->updateBestMove(); }
+inline void Engine::Concrete::updateDepthInfo()							{ m_engine->updateDepthInfo(); }
+inline void Engine::Concrete::updateTimeInfo()							{ m_engine->updateTimeInfo(); }
+inline void Engine::Concrete::updateHashFullInfo()						{ m_engine->updateHashFullInfo(); }
+inline void Engine::Concrete::updateError(Error code)					{ m_engine->updateError(code); }
+inline void Engine::Concrete::updateState(State state)				{ m_engine->updateState(state); }
+inline void Engine::Concrete::resetInfo()									{ m_engine->resetInfo(); }
+inline void Engine::Concrete::error(Error code)							{ m_engine->error(code); }
+
+inline void Engine::Concrete::setCurrentBoard(db::Board const& board) { m_currentBoard = board; }
+
+inline void Engine::Concrete::log(mstl::string const& msg)			{ m_engine->log(msg); }
+inline void Engine::Concrete::error(mstl::string const& msg)		{ m_engine->error(msg); }
+
+
+inline
+bool
+Engine::Concrete::supportsChess960Positions() const
+{
+	return m_engine->m_supportsChess960;
+}
+
+
+inline
+void
+Engine::Concrete::setSupportsChess960Positions(bool flag)
+{
+	m_engine->m_supportsChess960 = flag;
+}
+
+
+inline
+db::variant::Type
+Engine::Concrete::currentVariant() const
+{
+	return m_engine->m_currentVariant;
+}
+
+
+inline
+db::Board&
+Engine::Concrete::currentBoard()
+{
+	return m_currentBoard;
+}
+
+
+inline
+db::Board const&
+Engine::Concrete::currentBoard() const
+{
+	return m_currentBoard;
+}
+
+
+inline
+int
+Engine::Concrete::findVariation(db::Move const& move) const
+{
+	return m_engine->findVariation(move);
+}
+
+
+inline
+bool
+Engine::Concrete::detectShortName(mstl::string const& str)
+{
+	return m_engine->detectShortName(str);
+}
+
+
+inline
+bool
+Engine::Concrete::detectIdentifier(mstl::string const& str)
+{
+	return m_engine->detectIdentifier(str);
+}
+
+
+inline
+bool
+Engine::Concrete::detectUrl(mstl::string const& str)
+{
+	return m_engine->detectUrl(str);
+}
+
+
+inline
+bool
+Engine::Concrete::detectEmail(mstl::string const& str)
+{
+	return m_engine->detectEmail(str);
+}
+
+
+inline
+Engine::Options const&
+Engine::Concrete::options() const
+{
+	return m_engine->options();
+}
+
+
+inline
+db::Game const*
+Engine::Concrete::currentGame() const
+{
+	return m_engine->currentGame();
+}
+
 
 inline
 db::Game const*
@@ -206,6 +369,7 @@ inline bool Engine::hasFeature(unsigned feature) const 		{ return m_features & f
 inline bool Engine::hasVariant(unsigned variant) const 		{ return m_variants & variant; }
 inline bool Engine::isProbingAnalyze() const						{ return m_probe; }
 inline bool Engine::isConnected() const							{ return m_process != 0; }
+inline bool Engine::supportsChess960Positions() const			{ return m_supportsChess960; }
 
 inline int Engine::bestScore() const								{ return m_bestScore; }
 inline int Engine::shortestMate() const							{ return m_shortestMate; }
@@ -239,7 +403,7 @@ inline unsigned Engine::minThreads() const						{ return m_minThreads; }
 inline unsigned Engine::maxThreads() const						{ return m_maxThreads; }
 inline Engine::Concrete* Engine::concrete()						{ return m_engine; }
 inline unsigned Engine::supportedVariants() const				{ return m_variants; }
-inline mstl::string const& Engine::command() const				{ return m_command; }
+inline Engine::Command const& Engine::command() const			{ return m_command; }
 inline Engine::Options const& Engine::options() const			{ return m_options; }
 
 inline void Engine::setDepth(unsigned depth)						{ m_depth = depth; }
@@ -247,7 +411,7 @@ inline void Engine::setSelectiveDepth(unsigned depth)			{ m_selDepth = depth; }
 inline void Engine::setTime(double time)							{ m_time = time; }
 inline void Engine::setTBHits(unsigned hits)						{ m_tbhits = hits; }
 inline void Engine::setNodes(unsigned nodes)						{ m_nodes = nodes; }
-inline void Engine::setNPS(unsigned nps)							{ m_nodes = nps; }
+inline void Engine::setNPS(unsigned nps)							{ m_nps = nps; }
 inline void Engine::setAuthor(mstl::string const& name)		{ m_author = name; }
 inline void Engine::setElo(unsigned elo)							{ m_elo = elo; }
 inline void Engine::setPonder(db::Move const& move)			{ m_ponder = move; }
@@ -256,6 +420,14 @@ inline void Engine::resetBestInfoHasChanged()					{ m_bestInfoHasChanged = false
 inline void Engine::addVariant(unsigned variant)				{ m_variants |= variant; }
 inline void Engine::removeVariant(unsigned variant)			{ m_variants &= ~variant; }
 inline void Engine::error(Error code)								{ m_engine->updateError(code); }
+
+
+inline
+bool
+Engine::analysesOpponentsView() const
+{
+	return m_analysisMode == db::analysis::OpponentsView;
+}
 
 
 inline
@@ -354,158 +526,18 @@ Engine::detectIdentifier(mstl::string const& str)
 
 
 inline
-db::MoveList const*
-Engine::findVariation(db::Move const& move) const
+db::Move
+Engine::bestMoveFrom(db::Square square) const
 {
-	int varno = findVariationNo(move);
-	return varno == -1 ? 0 : &m_lines[varno];
-}
-
-
-inline bool Engine::Concrete::isActive() const					{ return m_engine->isActive(); }
-inline bool Engine::Concrete::isAnalyzing() const				{ return m_engine->isAnalyzing(); }
-inline bool Engine::Concrete::isProbing() const					{ return m_engine->isProbing(); }
-inline bool Engine::Concrete::playOther() const					{ return m_engine->playOther(); }
-inline bool Engine::Concrete::pondering() const					{ return m_engine->pondering(); }
-inline bool Engine::Concrete::isChess960Position() const		{ return m_engine->m_isChess960; }
-
-inline unsigned Engine::Concrete::maxMultiPV() const			{ return m_engine->maxMultiPV(); }
-inline unsigned Engine::Concrete::numVariations() const		{ return m_engine->numVariations(); }
-inline unsigned Engine::Concrete::hashSize() const				{ return m_engine->hashSize(); }
-inline unsigned Engine::Concrete::searchMate() const			{ return m_engine->searchMate(); }
-inline unsigned Engine::Concrete::searchDepth() const			{ return m_engine->searchDepth(); }
-inline unsigned Engine::Concrete::searchTime() const			{ return m_engine->searchTime(); }
-inline unsigned Engine::Concrete::skillLevel() const			{ return m_engine->skillLevel(); }
-inline unsigned Engine::Concrete::limitedStrength() const	{ return m_engine->limitedStrength(); }
-inline unsigned Engine::Concrete::numThreads() const			{ return m_engine->numThreads(); }
-inline unsigned Engine::Concrete::minThreads() const			{ return m_engine->minThreads(); }
-inline unsigned Engine::Concrete::maxThreads() const			{ return m_engine->maxThreads(); }
-inline unsigned Engine::Concrete::numCores() const				{ return m_engine->numCores(); }
-inline unsigned Engine::Concrete::supportedVariants() const	{ return m_engine->supportedVariants(); }
-
-inline long Engine::Concrete::pid() const							{ return m_engine->pid(); }
-
-inline void Engine::Concrete::send(mstl::string const& message)	{ m_engine->send(message); }
-inline void Engine::Concrete::deactivate()								{ m_engine->deactivate(); }
-inline void Engine::Concrete::addFeature(unsigned feature)			{ m_engine->addFeature(feature); }
-inline void Engine::Concrete::removeFeature(unsigned feature)		{ m_engine->removeFeature(feature); }
-inline void Engine::Concrete::addVariant(unsigned variant)			{ m_engine->addVariant(variant); }
-inline void Engine::Concrete::removeVariant(unsigned variant)		{ m_engine->removeVariant(variant); }
-inline void Engine::Concrete::engineIsReady()							{ m_engine->engineIsReady(); }
-
-inline void Engine::Concrete::setBestMove(db::Move const& move)	{ m_engine->setBestMove(move); }
-inline void Engine::Concrete::setPonder(db::Move const& move)		{ m_engine->setPonder(move); }
-inline void Engine::Concrete::setScore(unsigned no, int score)		{ m_engine->setScore(no, score); }
-inline void Engine::Concrete::setMate(unsigned no, int numMoves)	{ m_engine->setMate(no, numMoves); }
-inline void Engine::Concrete::setDepth(unsigned depth)				{ m_engine->setDepth(depth); }
-inline void Engine::Concrete::setSelectiveDepth(unsigned depth)	{ m_engine->setSelectiveDepth(depth); }
-inline void Engine::Concrete::setTime(double time)						{ m_engine->setTime(time); }
-inline void Engine::Concrete::setTBHits(unsigned hits)				{ m_engine->setTBHits(hits); }
-inline void Engine::Concrete::setNodes(unsigned nodes)				{ m_engine->setNodes(nodes); }
-inline void Engine::Concrete::setNPS(unsigned nps)						{ m_engine->setNPS(nps); }
-
-inline void Engine::Concrete::updatePvInfo(unsigned line)			{ m_engine->updatePvInfo(line); }
-inline void Engine::Concrete::updateCurrMove()							{ m_engine->updateCurrMove(); }
-inline void Engine::Concrete::updateCurrLine()							{ m_engine->updateCurrLine(); }
-inline void Engine::Concrete::updateBestMove()							{ m_engine->updateBestMove(); }
-inline void Engine::Concrete::updateDepthInfo()							{ m_engine->updateDepthInfo(); }
-inline void Engine::Concrete::updateTimeInfo()							{ m_engine->updateTimeInfo(); }
-inline void Engine::Concrete::updateHashFullInfo()						{ m_engine->updateHashFullInfo(); }
-inline void Engine::Concrete::updateError(Error code)					{ m_engine->updateError(code); }
-inline void Engine::Concrete::updateState(State state)				{ m_engine->updateState(state); }
-inline void Engine::Concrete::resetInfo()									{ m_engine->resetInfo(); }
-inline void Engine::Concrete::error(Error code)							{ m_engine->error(code); }
-inline void Engine::Concrete::setBoard(db::Board const& board)		{ m_board = board; }
-
-inline void Engine::Concrete::log(mstl::string const& msg)			{ m_engine->log(msg); }
-inline void Engine::Concrete::error(mstl::string const& msg)		{ m_engine->error(msg); }
-
-
-inline
-db::variant::Type
-Engine::Concrete::currentVariant() const
-{
-	return m_engine->m_currentVariant;
+	return bestMove(square, true);
 }
 
 
 inline
-db::Board&
-Engine::Concrete::currentBoard()
+db::Move
+Engine::bestMoveTo(db::Square square) const
 {
-	return m_board;
-}
-
-
-inline
-db::Board const&
-Engine::Concrete::currentBoard() const
-{
-	return m_board;
-}
-
-
-inline
-int
-Engine::Concrete::findVariationNo(db::Move const& move) const
-{
-	return m_engine->findVariationNo(move);
-}
-
-
-inline
-db::MoveList const*
-Engine::Concrete::findVariation(db::Move const& move) const
-{
-	return m_engine->findVariation(move);
-}
-
-
-inline
-bool
-Engine::Concrete::detectShortName(mstl::string const& str)
-{
-	return m_engine->detectShortName(str);
-}
-
-
-inline
-bool
-Engine::Concrete::detectIdentifier(mstl::string const& str)
-{
-	return m_engine->detectIdentifier(str);
-}
-
-
-inline
-bool
-Engine::Concrete::detectUrl(mstl::string const& str)
-{
-	return m_engine->detectUrl(str);
-}
-
-
-inline
-bool
-Engine::Concrete::detectEmail(mstl::string const& str)
-{
-	return m_engine->detectEmail(str);
-}
-
-
-inline
-Engine::Options const&
-Engine::Concrete::options() const
-{
-	return m_engine->options();
-}
-
-
-inline
-db::Game const*
-Engine::Concrete::currentGame() const
-{
-	return m_engine->currentGame();
+	return bestMove(square, false);
 }
 
 } // namespace app

@@ -35,6 +35,7 @@
 #include "db_line.h"
 #include "db_eco.h"
 #include "db_edit_key.h"
+#include "db_move_list.h"
 
 #include "u_crc.h"
 
@@ -54,7 +55,6 @@ namespace edit { class Root; }
 namespace edit { class Node; }
 
 class MoveNode;
-class MoveList;
 class Annotation;
 class MarkSet;
 class TagSet;
@@ -115,6 +115,7 @@ public:
 		ExchangeMove,
 		NewMainline,
 		AddVariation,
+		AddVariations,
 		ReplaceVariation,
 		TruncateVariation,
 		FirstVariation,
@@ -123,7 +124,8 @@ public:
 		RemoveVariations,
 		InsertMoves,
 		ExchangeMoves,
-		Merge,
+		MergeVariation,
+		MergeGame,
 		StripMoves,
 		StripAnnotations,
 		StripComments,
@@ -134,6 +136,13 @@ public:
 		MoveComments,
 		Clear,
 		Transpose,
+	};
+
+	enum Action
+	{
+		ReplaceNode,
+		ReplaceNextNode,
+		ExchangeNextNode,
 	};
 
 	enum Constraint
@@ -226,18 +235,22 @@ public:
 	bool atLineEnd() const;
 	/// Return whether the game is before the end position (of current variation or mainline)
 	bool isBeforeLineEnd() const;
+	/// Return whether the game is after the start position (of current variation or mainline)
+	bool isAfterLineStart() const;
 	/// Return whether the game is inside first (not empty) variation
 	bool isFirstVariation() const;
 	/// Return whether the game is inside last (not empty) variation
 	bool isLastVariation() const;
+	/// Return whether current node is a part of a game link expansion
+	bool isExpansion() const;
 	/// Return whether an undo action is possible
 	bool hasUndo() const;
 	/// Return whether an redo action is possible
 	bool hasRedo() const;
 	/// Returns whether given variation does not contain invalid moves.
-	bool isValidVariation(MoveNode const* node) const;
+	bool isValidVariation(MoveNode const* node, move::Position position = move::Post) const;
 	/// Returns whether given variation does not contain invalid moves.
-	bool isValidVariation(MoveList const& moves) const;
+	bool isValidVariation(MoveList const& moves, move::Position position = move::Post) const;
 	/// Return whether given key is valid.
 	bool isValidKey(edit::Key const& key) const;
 	/// Return whether variation is folded at given position
@@ -442,6 +455,8 @@ public:
 
 	/// Sets the comment associated with current move
 	void setComment(mstl::string const& comment, move::Position position);
+	/// Append the comment associated with current move
+	void appendComment(mstl::string const& comment, move::Position position);
 	/// Sets the comment associated with current move
 	void setTrailingComment(mstl::string const& comment);
 	/// Sets the annotation associated with current move
@@ -454,6 +469,8 @@ public:
 	void addMove(Move const& move);
 	/// Adds moves to main line
 	void addMoves(MoveNodeP node);
+	/// Adds moves to main line
+	void addMoves(MoveList const& moves);
 	/// Insert move after the current position
 	bool exchangeMove(mstl::string const& san, Force flag = OnlyIfRemainsConsistent);
 	/// Insert move after the current position
@@ -465,21 +482,21 @@ public:
 	/// Replace variation with given variation number, useful for changing a previously added variation
 	void changeVariation(MoveNodeP node, unsigned variationNumber);
 	/// Adds a move at the current position as a variation, and returns the variation number
-	unsigned addVariation(Move const& move);
+	unsigned addVariation(Move const& move, move::Position position = move::Post);
 	/// Adds a move at the current position as a variation, and returns the variation number
-	unsigned addVariation(mstl::string const& san);
+	unsigned addVariation(mstl::string const& san, move::Position position = move::Post);
 	/// Adds a new variation at the current position
-	unsigned addVariation(MoveNodeP node);
+	unsigned addVariation(MoveNodeP node, move::Position position = move::Post);
 	/// Adds a new variation at the current position
-	unsigned addVariation(MoveList const& moves);
+	unsigned addVariation(MoveList const& moves, move::Position position = move::Post);
 	/// Merge a move as a variation
 	void mergeVariation(Move const& move);
 	/// Merge a move as a variation
 	void mergeVariation(mstl::string const& san);
 	/// Merge a new variation
 	void mergeVariation(MoveNodeP node);
-	/// Merge a new variation
-	void mergeVariation(MoveList const& moves);
+	/// Merge a variation at the current position
+	void mergeVariation(MoveList const& moves, move::Position position = move::Post);
 	/// Adds a new variation and promotes this variation one line up
 	void newMainline(mstl::string const& san);
 	/// Adds a new variation and promotes this variation one line up
@@ -601,7 +618,7 @@ public:
 	/// Get current rollback command.
 	Command rollbackCommand() const;
 	/// Start undo/rollback point.
-	void startUndoPoint(Command command);
+	void startUndoPoint(Command command, Action action);
 	/// End undo/rollback point.
 	void endUndoPoint(unsigned action = UpdatePgn | UpdateBoard);
 
@@ -640,6 +657,8 @@ private:
 		Set_Annotation,
 		Set_Trailing_Comment,
 		Replace_Node,
+		Replace_Prev_Node,
+		Exchange_Next_Node,
 		Truncate_Variation,
 		Swap_Variations,
 		Promote_Variation,
@@ -698,12 +717,19 @@ private:
 							Annotation const& newAnnotation);
 
 	void replaceNode(MoveNode* newNode, Command command);
+	void replacePrevNode(MoveNode* newNode, Command command);
+	void exchangeNextNode(MoveNode* node, Command command);
 	void insertVariation(MoveNode* variation, unsigned number);
 	void unstripMoves(MoveNode* startNode, Board const& startBoard, edit::Key const& key);
 	void revertGame(MoveNode* startNode, Command command);
 	void resetGame(MoveNode* startNode, Board const& startBoard, edit::Key const& key);
 	void moveVariation(unsigned from, unsigned to, Command command);
 	void mergeVariation(Variation const& moves);
+	bool mergeVariation(	Variation const& moves,
+								move::Position position,
+								Command command,
+								unsigned updateFlags);
+	bool mergeVariation(MoveNodeP node, move::Position position, Command command, unsigned updateFlags);
 	void newMainline(MoveNode* node);
 	void promoteVariation(unsigned oldVariationNumber, unsigned newVariationNumber, bool update);
 	void removeMainline();
@@ -717,6 +743,8 @@ private:
 									Board board,
 									unsigned depth,
 									bool ignoreEnPassant) const;
+	/// Return current move node.
+	MoveNode* currentNode() const;
 
 	Move parseMove(mstl::string const& san) const;
 

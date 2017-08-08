@@ -1150,17 +1150,32 @@ Board::checkState(variant::Type variant) const
 			default: state |= Check | DoubleCheck; break;
 		}
 
+		if ((state & Check) && ((state & DoubleCheck) || isContactCheck()))
+			state |= ContactCheck;
+
 		if (variant::isThreeCheck(variant) && m_checksGiven[m_stm ^ 1] >= 3)
 			return state |= ThreeChecks;
 
-		if (findAnyLegalMove(variant))
+		if (!(state & Check) || findAnyLegalMove(variant))
 			return state;
+
+		state |= (state & Check) ? Checkmate : Stalemate;
 
 		switch (variant)
 		{
 			case variant::Bughouse:
-				if ((state & DoubleCheck) || ((state & Check) && checkContactCheck()))
+				if (state & ContactCheck)
 					state |= Checkmate;
+
+				if (state & (Checkmate | Stalemate))
+				{
+					unsigned pstate = m_partner->checkState(variant);
+
+					if ((state & Checkmate) && (pstate & Checkmate))
+						state |= DoubleCheckmate;
+					else if ((state & Stalemate) && (pstate & Stalemate))
+						state |= DoubleStalemate;
+				}
 				break;
 
 			case variant::Crazyhouse:
@@ -5316,6 +5331,25 @@ Board::restoreStates(Move const& m)
 
 	if (m_epSquare != Null)
 		hashEnPassant();
+}
+
+
+Board&
+Board::doNullMove()
+{
+	// NOTE: only required if Zhouse
+	m_capturePromoted = false;
+
+	if (m_epSquare != Null)
+	{
+		hashEnPassant();
+		m_epSquare = Null;
+	}
+
+	swapToMove();
+	++m_plyNumber;
+
+	return *this;
 }
 
 

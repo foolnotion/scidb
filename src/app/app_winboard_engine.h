@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2009-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -37,8 +37,6 @@
 #include "m_auto_ptr.h"
 
 namespace mstl { class string; }
-namespace db   { class Move; }
-namespace db   { class Board; }
 
 namespace app {
 namespace winboard {
@@ -67,6 +65,7 @@ protected:
 
 	void protocolStart(bool isProbing) override;
 	void protocolEnd() override;
+	void stimulate() override;
 	void sendOptions() override;
 	void invokeOption(mstl::string const& name) override;
 	void sendHashSize() override;
@@ -75,8 +74,8 @@ protected:
 	void processMessage(mstl::string const& message) override;
 	void doMove(db::Move const& lastMove) override;
 
-	void pause() override;
-	void resume() override;
+	bool pause() override;
+	bool resume() override;
 
 	Result probeResult() const override;
 	Result probeAnalyzeFeature() const override;
@@ -102,13 +101,13 @@ private:
 	void detectFeatures(char const* identifier);
 	void pongReceived();
 
-	TimerP				m_timer;
-	State					m_state;
-	mstl::string		m_chess960Variant;
-	db::variant::Type	m_variant;
-	uint64_t				m_startTime;
-	unsigned				m_pingCount;
-	unsigned				m_pongCount;
+	TimerP			m_timer;
+	State				m_state;
+	mstl::string	m_chess960Variant;
+	uint64_t			m_startTime;
+	unsigned			m_pingCount;
+	unsigned			m_pongCount;
+	unsigned			m_craftyVersion;
 
 	bool m_isAnalyzing;
 	bool m_response;
@@ -126,13 +125,13 @@ private:
 	bool m_featureColors;
 	bool m_featureSetboard;
 	bool m_featureSigint;
-	bool m_featureSan;
+	bool m_featureSAN;
 	bool m_featureVariant;
 	bool m_featurePing;
-	bool m_isCrafty;
 	bool m_parsingFeatures;
 	bool m_startAnalyzeIsPending;
 	bool m_stopAnalyzeIsPending;
+	bool m_xboardAlreadySent;
 };
 
 } // namespace winboard

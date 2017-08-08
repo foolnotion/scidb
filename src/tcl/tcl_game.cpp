@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2009-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -169,12 +169,14 @@ toString(Game::Command command)
 		case Game::AddMoves:				return "move:nappend";
 		case Game::ExchangeMove:		return "move:exchange";
 		case Game::AddVariation:		return "variation:new";
+		case Game::AddVariations:		return "variation:new:n";
 		case Game::ReplaceVariation:	return "variation:replace";
 		case Game::TruncateVariation:	return "variation:truncate";
 		case Game::FirstVariation:		return "variation:first";
 		case Game::PromoteVariation:	return "variation:promote";
 		case Game::RemoveVariation:	return "variation:remove";
 		case Game::RemoveVariations:	return "variation:remove:n";
+		case Game::MergeVariation:		return "variation:merge";
 		case Game::NewMainline:			return "variation:mainline";
 		case Game::InsertMoves:			return "variation:insert";
 		case Game::ExchangeMoves:		return "variation:exchange";
@@ -187,7 +189,7 @@ toString(Game::Command command)
 		case Game::CopyComments:		return "copy:comments";
 		case Game::MoveComments:		return "move:comments";
 		case Game::Clear:					return "game:clear";
-		case Game::Merge:					return "game:merge";
+		case Game::MergeGame:			return "game:merge";
 		case Game::Transpose:			return "game:transpose";
 	}
 
@@ -2728,6 +2730,7 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				case 'm': setResult(Scidb->game(pos).isEmpty()); break;									// empty?
 				case 'n': setResult(Scidb->encoding(pos)); break;											// encoding?
 				case 'c': setResult(Scidb->game(pos).computeEcoCode().asShortString()); break;	// eco
+				case 'x': setResult(false); break;																// expansion
 
 				case 'l':	// elo
 					{
@@ -3060,7 +3063,7 @@ cmdUpdate(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	static char const* subcommands[] =
 	{
-		"annotation", "infix", "prefix", "suffix", "comment", "marks", "moves", 0
+		"annotation", "infix", "prefix", "suffix", "comment", "marks", "moves", "addcomment", 0
 	};
 	static char const* args[] =
 	{
@@ -3070,10 +3073,15 @@ cmdUpdate(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		"<key> <nag-list>",
 		"<key> <position> <string>",
 		"<key> <type> <color> <from> <to>",
-		"",
-		0
+		"<key>",
+		"<key> <position> <string>",
+		nullptr
 	};
-	enum { Cmd_Annotation, Cmd_Infix, Cmd_Pefix, Cmd_Suffix, Cmd_Comment, Cmd_Marks, Cmd_Moves, };
+	enum
+	{
+		Cmd_Annotation, Cmd_Infix, Cmd_Pefix, Cmd_Suffix,
+		Cmd_Comment, Cmd_Marks, Cmd_Moves, Cmd_AddComment,
+	};
 
 	if (objc < 2)
 		return usage(::CmdUpdate, nullptr, nullptr, subcommands, args);
@@ -3140,6 +3148,13 @@ cmdUpdate(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 						game.setComment(comment, *pos == 'b' ? move::Ante : move::Post);
 				}
 				break;
+
+			case Cmd_AddComment:
+			{
+				mstl::string comment(stringFromObj(objc, objv, 4));
+				game.appendComment(comment, move::Post);
+				break;
+			}
 
 			case Cmd_Marks:
 				{

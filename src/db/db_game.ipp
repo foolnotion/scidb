@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2009-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -35,6 +35,7 @@ inline uint32_t Game::gameFlags() const				{ return m_flags; }
 inline edit::Key const& Game::currentKey() const	{ return m_currentKey; }
 inline move::Notation Game::moveStyle() const		{ return m_editorOptions.m_moveStyle; }
 inline Game::Command Game::rollbackCommand() const	{ return m_rollbackCommand; }
+inline MoveNode* Game::currentNode() const			{ return m_currentNode; }
 
 inline bool Game::isMainline() const					{ return m_currentKey.level() == 0; }
 inline bool Game::isVariation() const					{ return m_currentKey.level() > 0; }

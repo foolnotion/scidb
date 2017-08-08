@@ -731,15 +731,17 @@
 ::application::pgn::mc::Command(move:marks)				"Sätt markering"
 ::application::pgn::mc::Command(move:annotation)		"Sätt schacktecken/kommentar/markering"
 ::application::pgn::mc::Command(move:append)				"Lägg till drag"
-::application::pgn::mc::Command(move:nappend)			"Lägg till drag"
+::application::pgn::mc::Command(move:append:n)			"Lägg till drag"
 ::application::pgn::mc::Command(move:exchange)			"Byt ut drag"
 ::application::pgn::mc::Command(variation:new)			"Lägg till variant"
+::application::pgn::mc::Command(variation:new:n)		"Add Variations" ;# NEW
 ::application::pgn::mc::Command(variation:replace)		"Ersätt drag"
 ::application::pgn::mc::Command(variation:truncate)	"Trunkera variant"
 ::application::pgn::mc::Command(variation:first)		"Ange som huvudvariant"
 ::application::pgn::mc::Command(variation:promote)		"Flytta upp variant till huvudlinje"
 ::application::pgn::mc::Command(variation:remove)		"Radera variant"
 ::application::pgn::mc::Command(variation:remove:n)	"Delete Variations" ;# NEW
+::application::pgn::mc::Command(variation:merge)		"Merge variation(s)" ;# NEW
 ::application::pgn::mc::Command(variation:mainline)	"Ny huvudlinje"
 ::application::pgn::mc::Command(variation:insert)		"Infoga drag"
 ::application::pgn::mc::Command(variation:exchange)	"Byt ut drag"
@@ -1129,7 +1131,7 @@
 ::engine::mc::SortRating				"Sortera på CCRL-rating"
 ::engine::mc::OpenUrl					"Öppna URL (webbläsare)"
 
-::engine::mc::AdminEngines				"Hantera motorer"
+::engine::mc::AdminEngines				"Hantera &motorer"
 ::engine::mc::SetupEngine				"Installera motor %s"
 ::engine::mc::ImageFiles				"Imagefiler"
 ::engine::mc::SelectEngine				"Välj motor"
@@ -1164,6 +1166,10 @@
 ::engine::mc::CommandNotAllowed		"Usage of command '%s' is not allowed here." ;# NEW
 ::engine::mc::ThrowAwayChanges		"Ta bort alla ändringar?"
 ::engine::mc::ResetToDefaultContent	"Reset to default content" ;# NEW
+::engine::mc::PleaseBePatient			"Please be patient, 'Wine' needs some time." ;# NEW
+::engine::mc::TryAgain					"The first start of 'Wine' needs some time, maybe it works if you try it again." ;# NEW
+::engine::mc::CannotUseWindowsExe	"Cannot use Windows executable without 'Wine'." ;# NEW
+::engine::mc::InstallWine				"Please install 'Wine' beforehand." ;# NEW
 
 ::engine::mc::ProbeError(registration)			"This engine requires a registration." ;# NEW
 ::engine::mc::ProbeError(copyprotection)		"This engine is copy-protected." ;# NEW
@@ -1191,12 +1197,15 @@
 ### analysis ###########################################################
 ::application::analysis::mc::Control						"Kontroll"
 ::application::analysis::mc::Information					"Information" ;# NEW
-::application::analysis::mc::Setup							"Setup" ;# NEW
+::application::analysis::mc::SetupEngine					"Setup engine" ;# NEW
 ::application::analysis::mc::Pause							"Pause" ;# NEW
 ::application::analysis::mc::Resume							"Återuppta"
 ::application::analysis::mc::LockEngine					"Lås motor på aktuell position"
+::application::analysis::mc::CloseEngine					"Power down motor" ;# NEW
 ::application::analysis::mc::MultipleVariations			"Flera varianter (multi-pv)"
 ::application::analysis::mc::HashFullness					"Hash djup"
+::application::analysis::mc::NodesPerSecond				"Nodes per second" ;# NEW
+::application::analysis::mc::TablebaseHits				"Tablebase hits" ;# NEW
 ::application::analysis::mc::Hash							"Hash:" ;# NEW
 ::application::analysis::mc::Lines							"Rader:"
 ::application::analysis::mc::MateIn							"%color matt i %n"
@@ -1209,7 +1218,16 @@
 ::application::analysis::mc::DidNotReceivePong			"Engine is not responding to \"ping\" command - Engine aborted" ;# NEW
 ::application::analysis::mc::SearchMateNotSupported	"This engine is not supporting search for mate." ;# NEW
 ::application::analysis::mc::EngineIsPausing				"This engine is currently pausing." ;# NEW
+::application::analysis::mc::PressEngineButton			"Use the locomotive for starting a motor." ;# NEW
 ::application::analysis::mc::Stopped						"stopped" ;# NEW
+::application::analysis::mc::OpponentsView				"Opponents view" ;# NEW
+::application::analysis::mc::InsertMoveAsComment		"Insert move as comment" ;# NEW
+::application::analysis::mc::SetupEvalEdges				"Setup evaluation edges" ;# NEW
+::application::analysis::mc::InvalidEdgeValues			"Invalid edge values." ;# NEW
+::application::analysis::mc::MustBeAscending				"The values must be strictly ascending as in the examples." ;# NEW
+::application::analysis::mc::StartMotor					"Start motor" ;# NEW
+::application::analysis::mc::StartOfMotorFailed			"Start of motor failed"
+::application::analysis::mc::WineIsNotInstalled			"'Wine' is not (properly) installed" ;# NEW
 
 ::application::analysis::mc::LinesPerVariation			"Rader per variant"
 ::application::analysis::mc::BestFirstOrder				"Sortera på  värdering"
@@ -1220,10 +1238,14 @@
 ::application::analysis::mc::Seconds						"sec" ;# NEW
 ::application::analysis::mc::Minutes						"min" ;# NEW
 
+::application::analysis::mc::Show(more)					"Show more" ;# NEW
+::application::analysis::mc::Show(less)					"Show less" ;# NEW
+
 ::application::analysis::mc::Status(checkmate)			"%s är matt"
 ::application::analysis::mc::Status(stalemate)			"%s är patt"
 ::application::analysis::mc::Status(threechecks)		"%s har 3 schackar"
 ::application::analysis::mc::Status(losing)				"%s förlorat alla pjäser"
+::application::analysis::mc::Status(check)				"%s is in check" ;# NEW
 
 ::application::analysis::mc::NotSupported(standard)	"Den här motorn har inte stöd för vanligt schack."
 ::application::analysis::mc::NotSupported(chess960)	"Den här motorn har inte stöd för schack960."
@@ -1237,10 +1259,13 @@
 ::application::analysis::mc::Signal(closed)				"Motorn har stängt anslutningen."
 ::application::analysis::mc::Signal(terminated)			"Motorn avslutades med värde %s."
 
-::application::analysis::mc::Add(move)						"Add move" ;# NEW
+::application::analysis::mc::Add(move)						"Append move" ;# NEW
+::application::analysis::mc::Add(seq)						"Append variation" ;# NEW
 ::application::analysis::mc::Add(var)						"Add move as new variation" ;# NEW
 ::application::analysis::mc::Add(line)						"Add variation" ;# NEW
 ::application::analysis::mc::Add(all)						"Add all variations" ;# NEW
+::application::analysis::mc::Add(merge)					"Merge variation" ;# NEW
+::application::analysis::mc::Add(incl)						"Merge all variations"
 
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Markera parti som raderad"

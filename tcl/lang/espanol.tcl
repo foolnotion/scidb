@@ -730,15 +730,17 @@
 ::application::pgn::mc::Command(move:marks)				"Agregar marcador"
 ::application::pgn::mc::Command(move:annotation)		"Agregar Nota/Comentario/Marcador"
 ::application::pgn::mc::Command(move:append)				"Agregar jugada"
-::application::pgn::mc::Command(move:nappend)			"Agregar jugadas"
+::application::pgn::mc::Command(move:append:n)			"Agregar jugadas"
 ::application::pgn::mc::Command(move:exchange)			"Cambiar jugada"
 ::application::pgn::mc::Command(variation:new)			"Agregar variante"
+::application::pgn::mc::Command(variation:new:n)		"Add Variations" ;# NEW
 ::application::pgn::mc::Command(variation:replace)		"Reemplazar jugadas"
 ::application::pgn::mc::Command(variation:truncate)	"Truncar variante"
 ::application::pgn::mc::Command(variation:first)		"Convertir en primera variante"
 ::application::pgn::mc::Command(variation:promote)		"Transformar variante en Línea principal"
 ::application::pgn::mc::Command(variation:remove)		"Eliminar variante"
 ::application::pgn::mc::Command(variation:remove:n)	"Delete Variations" ;# NEW
+::application::pgn::mc::Command(variation:merge)		"Merge variation(s)" ;# NEW
 ::application::pgn::mc::Command(variation:mainline)	"Nueva Línea principal"
 ::application::pgn::mc::Command(variation:insert)		"Agregar jugadas"
 ::application::pgn::mc::Command(variation:exchange)	"Permutar jugadas"
@@ -1122,7 +1124,7 @@
 ::engine::mc::SortRating				"Sort by CCRL rating" ;# NEW
 ::engine::mc::OpenUrl					"Open URL (web browser)" ;# NEW
 
-::engine::mc::AdminEngines				"Administrar Motores"
+::engine::mc::AdminEngines				"Administrar &Motores"
 ::engine::mc::SetupEngine				"Configurar motor %s"
 ::engine::mc::ImageFiles				"Archivos de Imagen"
 ::engine::mc::SelectEngine				"Seleccionar Motor"
@@ -1157,6 +1159,10 @@
 ::engine::mc::CommandNotAllowed		"El uso del comando '%s' no se permite aqui."
 ::engine::mc::ThrowAwayChanges		"¿Descartar todos los cambios?"
 ::engine::mc::ResetToDefaultContent	"Volver al contenido predeterminado"
+::engine::mc::PleaseBePatient			"Please be patient, 'Wine' needs some time." ;# NEW
+::engine::mc::TryAgain					"The first start of 'Wine' needs some time, maybe it works if you try it again." ;# NEW
+::engine::mc::CannotUseWindowsExe	"Cannot use Windows executable without 'Wine'." ;# NEW
+::engine::mc::InstallWine				"Please install 'Wine' beforehand." ;# NEW
 
 ::engine::mc::ProbeError(registration)			"Este motor requiere de registro."
 ::engine::mc::ProbeError(copyprotection)		"Este motor está protegido contra copias."
@@ -1184,12 +1190,15 @@
 ### analysis ###########################################################
 ::application::analysis::mc::Control						"Control"
 ::application::analysis::mc::Information					"Información"
-::application::analysis::mc::Setup							"Configuración"
+::application::analysis::mc::SetupEngine					"Configuración" ;# NEW changed to "Setup engine"
 ::application::analysis::mc::Pause							"Pausa"
 ::application::analysis::mc::Resume							"Continuar"
 ::application::analysis::mc::LockEngine					"Fijar el motor de análisis a esta posición"
+::application::analysis::mc::CloseEngine					"Power down motor" ;# NEW
 ::application::analysis::mc::MultipleVariations			"Multiples variantes"
 ::application::analysis::mc::HashFullness					"Hash lleno"
+::application::analysis::mc::NodesPerSecond				"Nodes per second" ;# NEW
+::application::analysis::mc::TablebaseHits				"Tablebase hits" ;# NEW
 ::application::analysis::mc::Hash							"Hash:"
 ::application::analysis::mc::Lines							"Líneas:"
 ::application::analysis::mc::MateIn							"%color da mate en %n"
@@ -1202,7 +1211,16 @@
 ::application::analysis::mc::DidNotReceivePong			"Engine is not responding to \"ping\" command - Engine aborted" ;# NEW
 ::application::analysis::mc::SearchMateNotSupported	"This engine is not supporting search for mate." ;# NEW
 ::application::analysis::mc::EngineIsPausing				"This engine is currently pausing." ;# NEW
+::application::analysis::mc::PressEngineButton			"Use the locomotive for starting a motor." ;# NEW
 ::application::analysis::mc::Stopped						"stopped" ;# NEW
+::application::analysis::mc::OpponentsView				"Opponents view" ;# NEW
+::application::analysis::mc::InsertMoveAsComment		"Insert move as comment" ;# NEW
+::application::analysis::mc::SetupEvalEdges				"Setup evaluation edges" ;# NEW
+::application::analysis::mc::InvalidEdgeValues			"Invalid edge values." ;# NEW
+::application::analysis::mc::MustBeAscending				"The values must be strictly ascending as in the examples." ;# NEW
+::application::analysis::mc::StartMotor					"Start motor" ;# NEW
+::application::analysis::mc::StartOfMotorFailed			"Start of motor failed"
+::application::analysis::mc::WineIsNotInstalled			"'Wine' is not (properly) installed" ;# NEW
 
 ::application::analysis::mc::LinesPerVariation			"Líneas por variación"
 ::application::analysis::mc::BestFirstOrder				"Ordenar por evaluación"
@@ -1213,10 +1231,14 @@
 ::application::analysis::mc::Seconds						"sec" ;# NEW
 ::application::analysis::mc::Minutes						"min" ;# NEW
 
+::application::analysis::mc::Show(more)					"Show more" ;# NEW
+::application::analysis::mc::Show(less)					"Show less" ;# NEW
+
 ::application::analysis::mc::Status(checkmate)			"%s es jaque mate"
 ::application::analysis::mc::Status(stalemate)			"%s es ahogado"
 ::application::analysis::mc::Status(threechecks)		"%s got three checks" ;# NEW
 ::application::analysis::mc::Status(losing)				"%s lost all pieces" ;# NEW
+::application::analysis::mc::Status(check)				"%s is in check" ;# NEW
 
 ::application::analysis::mc::NotSupported(standard)	"Este motor de análisis no tiene soporte para ajedrez normal."
 ::application::analysis::mc::NotSupported(chess960)	"Este motor de análisis no tiene soporte para chess 960."
@@ -1230,10 +1252,13 @@
 ::application::analysis::mc::Signal(closed)				"El motor de análisis cerró la conexión."
 ::application::analysis::mc::Signal(terminated)			"El motor de análisis terminado con código %s."
 
-::application::analysis::mc::Add(move)						"Add move" ;# NEW
+::application::analysis::mc::Add(move)						"Append move" ;# NEW
+::application::analysis::mc::Add(seq)						"Append variation" ;# NEW
 ::application::analysis::mc::Add(var)						"Add move as new variation" ;# NEW
 ::application::analysis::mc::Add(line)						"Add variation" ;# NEW
 ::application::analysis::mc::Add(all)						"Add all variations" ;# NEW
+::application::analysis::mc::Add(merge)					"Merge variation" ;# NEW
+::application::analysis::mc::Add(incl)						"Merge all variations"
 
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Marcar partida como eliminada"

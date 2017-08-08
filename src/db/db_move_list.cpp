@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2009-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -26,16 +26,38 @@
 
 #include "db_move_list.h"
 
+#include "m_algorithm.h"
 #include "m_utility.h"
 #include "m_stdio.h"
+#include "m_assert.h"
 
 #include <string.h>
+#include <ctype.h>
 
 using namespace db;
 
 
-MoveList&
-MoveList::operator=(MoveList const& list)
+template <unsigned N>
+MoveBuffer<N>::MoveBuffer(Move move)
+	:m_size(1)
+{
+	m_buffer[0] = move;
+}
+
+
+template <unsigned N>
+MoveBuffer<N>::MoveBuffer(const_iterator first, const_iterator last)
+{
+	m_size = mstl::min(ptrdiff_t(Maximum_Moves), mstl::distance(first, last));
+
+	for (unsigned i = 0; i < m_size; ++i)
+		m_buffer[i] = *first++;
+}
+
+
+template <unsigned N>
+MoveBuffer<N>&
+MoveBuffer<N>::operator=(MoveBuffer const& list)
 {
 	static_assert(mstl::is_pod<Move>::value, "POD required");
 
@@ -46,8 +68,31 @@ MoveList::operator=(MoveList const& list)
 }
 
 
+template <unsigned N>
+void
+MoveBuffer<N>::copy(Move* destination, unsigned size) const
+{
+	M_REQUIRE(destination || size == 0);
+
+	static_assert(mstl::is_pod<Move>::value, "POD required");
+	::memcpy(destination, m_buffer, size*sizeof(m_buffer[0]));
+}
+
+
+template <unsigned N>
+void
+MoveBuffer<N>::fill(MoveBuffer const& source, unsigned size)
+{
+	M_REQUIRE(size <= source.size());
+
+	static_assert(mstl::is_pod<Move>::value, "POD required");
+	::memcpy(m_buffer, source.m_buffer, (m_size = size)*sizeof(m_buffer[0]));
+}
+
+
+template <unsigned N>
 int
-MoveList::find(uint16_t move) const
+MoveBuffer<N>::find(uint16_t move) const
 {
 	for (unsigned i = 0; i < m_size; ++i)
 	{
@@ -59,23 +104,37 @@ MoveList::find(uint16_t move) const
 }
 
 
+template <unsigned N>
 unsigned
-MoveList::match(MoveList const& list) const
+MoveBuffer<N>::match(MoveBuffer const& list, unsigned length) const
 {
-	unsigned n = mstl::min(list.size(), size());
+	M_REQUIRE(length <= size());
+	M_REQUIRE(length <= list.size());
 
-	for (unsigned i = 0; i < n; ++i)
+	for (unsigned i = 0; i < length; ++i)
 	{
 		if (m_buffer[i] != list.m_buffer[i])
 			return i;
 	}
 
-	return 0;
+	return length;
 }
 
 
+template <unsigned N>
 void
-MoveList::sort(int scores[])
+MoveBuffer<N>::prepend(Move const& m)
+{
+	M_ASSERT(m_size < U_NUMBER_OF(m_buffer));
+
+	::memmove(m_buffer + 1, m_buffer, m_size*sizeof(m_buffer[0]));
+	m_buffer[0] = m;
+}
+
+
+template <unsigned N>
+void
+MoveBuffer<N>::sort(int scores[])
 {
 	// require: #scores >= size()
 
@@ -103,8 +162,9 @@ MoveList::sort(int scores[])
 }
 
 
+template <unsigned N>
 void
-MoveList::sort(unsigned startIndex, int scores[])
+MoveBuffer<N>::sort(unsigned startIndex, int scores[])
 {
 	M_REQUIRE(startIndex < size());
 	// require: #scores >= size()
@@ -127,51 +187,94 @@ MoveList::sort(unsigned startIndex, int scores[])
 }
 
 
+template <unsigned N>
 void
-MoveList::print(mstl::string& result, unsigned halfMoveNo, encoding::CharSet encoding) const
+MoveBuffer<N>::rotate(unsigned first, unsigned middle, unsigned last)
 {
-	if (isEmpty())
-		return;
+	M_REQUIRE(first <= middle);
+	M_REQUIRE(middle <= last);
+	M_REQUIRE(last <= size());
 
-	Move const& move = m_buffer[0];
-
-	halfMoveNo += 2;
-	result.format("%u", mstl::div2(halfMoveNo));
-	result.append('.');
-
-	if (mstl::is_odd(halfMoveNo))
-		result.append("..", 2);
-
-	move.printSAN(result, protocol::Scidb, encoding);
-	++halfMoveNo;
-
-	for (unsigned i = 1; i < m_size; ++i, ++halfMoveNo)
-	{
-		Move const& move = m_buffer[i];
-
-		result.append(' ');
-
-		if (mstl::is_even(halfMoveNo))
-		{
-			result.format("%u", mstl::div2(halfMoveNo));
-			result.append('.');
-		}
-
-		move.printSAN(result, protocol::Scidb, encoding);
-	}
+	mstl::rotate(m_buffer + first, m_buffer + middle, m_buffer + last);
 }
 
 
+template <unsigned N>
+mstl::string&
+MoveBuffer<N>::print(mstl::string& result,
+							unsigned halfMoveNo,
+							unsigned maxMoveNo,
+							bool forDisplay) const
+{
+	if (!isEmpty())
+	{
+		bool atStart = result.empty();
+
+		if (maxMoveNo > m_size)
+			maxMoveNo = m_size;
+		else
+			maxMoveNo = mstl::min(m_size, maxMoveNo + halfMoveNo);
+
+		if (atStart || mstl::is_even(halfMoveNo))
+		{
+			result.format("%u", mstl::div2(halfMoveNo) + 1);
+			result.append('.');
+
+			if (mstl::is_odd(halfMoveNo))
+				result.append("..", 2);
+		}
+		else if (!atStart && !::isspace(result.back()))
+		{
+			result.append(' ');
+		}
+
+		Move const& move = m_buffer[0];
+
+		if (forDisplay)
+			move.printForDisplay(result, move::SAN);
+		else
+			move.printSAN(result, protocol::Scidb, encoding::Latin1);
+
+		halfMoveNo += 1;
+
+		for (unsigned index = 1; index < maxMoveNo; ++index, ++halfMoveNo)
+		{
+			Move const& move = m_buffer[index];
+
+			result.append(' ');
+
+			if (mstl::is_even(halfMoveNo))
+			{
+				result.format("%u", mstl::div2(halfMoveNo) + 1);
+				result.append('.');
+			}
+
+			if (forDisplay)
+				move.printForDisplay(result, move::SAN);
+			else
+				move.printSAN(result, protocol::Scidb, encoding::Latin1);
+		}
+	}
+
+	return result;
+}
+
+
+template <unsigned N>
 void
-MoveList::dump()
+MoveBuffer<N>::dump()
 {
 	::printf("Moves(%u)\n", m_size);
 	for (unsigned i = 0; i < m_size; ++i)
 	{
-		::printf("  ");
+		::printf("  %2u: ", i + 1);
 		m_buffer[i].dump();
 	}
 	::fflush(stdout);
 }
+
+
+template class MoveBuffer<position::Maximum_Moves>;
+template class MoveBuffer<opening::Max_Line_Length>;
 
 // vi:set ts=3 sw=3:

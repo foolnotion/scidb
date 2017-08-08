@@ -40,7 +40,7 @@
 namespace db {
 
 class Board;
-class MoveList;
+template <unsigned N> class MoveBuffer;
 
 /** @ingroup Core
    Moves are dependent on current position, (remembers piece, check, capture etc)
@@ -409,7 +409,8 @@ public:
 	static uint16_t makeIndex(uint16_t from, uint16_t to);
 
 	friend class Board;
-	friend class MoveList;
+	friend class MoveBuffer<position::Maximum_Moves>;
+	friend class MoveBuffer<opening::Max_Line_Length>;
 
 private:
 

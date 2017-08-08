@@ -2856,10 +2856,10 @@ Application::setEngineLog(mstl::ostream* strm)
 
 
 bool
-Application::startAnalysis(unsigned engineId)
+Application::startAnalysis(unsigned engineId, db::analysis::Mode mode)
 {
 	M_REQUIRE(engineExists(engineId));
-	return engine(engineId)->startAnalysis(&game());
+	return engine(engineId)->startAnalysis(&game(), mode);
 }
 
 

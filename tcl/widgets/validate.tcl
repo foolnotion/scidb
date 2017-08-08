@@ -57,15 +57,15 @@ proc spinboxInt {w args} {
 }
 
 
-proc spinboxFloat {w args} {
+proc spinboxDouble {w args} {
 	array set opts { -clamp 1 -vcmd {} }
 	array set opts $args
 	set min [$w cget -from]
 	set max [$w cget -to]
-	set vcmd [namespace code { validateFloat %P $opts(-vcmd) }]
+	set vcmd [namespace code { validateDouble %P $opts(-vcmd) }]
 	$w configure -validatecommand $vcmd -invalidcommand { bell }
 	if {$opts(-clamp)} {
-		bind $w <FocusOut> +[namespace code { ClampFloat %W }]
+		bind $w <FocusOut> +[namespace code { ClampDouble %W }]
 	}
 	bind $w <FocusOut> {+ %W selection clear }
 	bind $w <FocusOut> +[namespace code { SendData %W }]
@@ -73,9 +73,9 @@ proc spinboxFloat {w args} {
 }
 
 
-proc entryFloat {w} {
-	$w configure -validatecommand [namespace code { validateFloat %P }] -invalidcommand { bell }
-	bind $w <FocusOut> +[namespace code { formatFloat %W }]
+proc entryDouble {w} {
+	$w configure -validatecommand [namespace code { validateDouble %P }] -invalidcommand { bell }
+	bind $w <FocusOut> +[namespace code { formatDouble %W }]
 	bind $w <FocusOut> {+ %W selection clear }
 	bind $w <FocusOut> +[namespace code { SendData %W }]
 	bind $w <FocusIn>  {+ %W configure -validate key }
@@ -115,7 +115,7 @@ proc validateInteger {value maxlen} {
 }
 
 
-proc validateFloat {value {callback {}}} {
+proc validateDouble {value {callback {}}} {
 	set valid 1
 	set value [string trim $value]
 	if {	![regexp {[0-9]*[.,]?[0-9]*} $value result]
@@ -127,7 +127,7 @@ proc validateFloat {value {callback {}}} {
 }
 
 
-proc formatFloat {w} {
+proc formatDouble {w} {
 	set var [$w cget -textvariable]
 	if {![info exists $var]} { return }
 
@@ -246,7 +246,7 @@ proc ClampInt {w {unlimited 0}} {
 }
 
 
-proc ClampFloat {w} {
+proc ClampDouble {w} {
 	set var [$w cget -textvariable]
 	if {![info exists $var]} { return }
 

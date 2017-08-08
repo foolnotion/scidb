@@ -53,6 +53,7 @@ using namespace tcl;
 static char const* CmdActivate		= "::scidb::engine::activate";
 static char const* CmdAnalyze			= "::scidb::engine::analyze";
 static char const* CmdBind				= "::scidb::engine::bind";
+static char const* CmdBound			= "::scidb::engine::bound?";
 static char const* CmdClearHash		= "::scidb::engine::clearHash";
 static char const* CmdCountLines		= "::scidb::engine::countLines";
 static char const* CmdEmpty			= "::scidb::engine::empty?";
@@ -123,7 +124,7 @@ class ProbeEngine : public ::app::Engine
 {
 public:
 
-	ProbeEngine(Protocol protocol, mstl::string const& command, mstl::string const& directory)
+	ProbeEngine(Protocol protocol, Command const& command, mstl::string const& directory)
 		: ::app::Engine(protocol, command, directory)
 	{
 	}
@@ -141,7 +142,7 @@ public:
 
 	void clearInfo() override {}
 	void updatePvInfo(unsigned) override {}
-	void updateInfo(db::color::ID, board::Status) override {}
+	void updateInfo(db::color::ID, position::Status) override {}
 	void updateState(State) override {}
 	void engineIsReady() override {}
 	void engineSignal(Signal) override {}
@@ -158,7 +159,7 @@ class Engine : public ::app::Engine
 public:
 
 	Engine(	Protocol protocol,
-				mstl::string const& command,
+				Command const& command,
 				mstl::string const& directory,
 				Tcl_Obj* isReadyCmd,
 				Tcl_Obj* signalCmd,
@@ -189,6 +190,7 @@ public:
 			Tcl_IncrRefCount(m_stalemate = Tcl_NewStringObj("stalemate", -1));
 			Tcl_IncrRefCount(m_threechecks = Tcl_NewStringObj("threechecks", -1));
 			Tcl_IncrRefCount(m_losing = Tcl_NewStringObj("losing", -1));
+			Tcl_IncrRefCount(m_check = Tcl_NewStringObj("checl", -1));
 			Tcl_IncrRefCount(m_over = Tcl_NewStringObj("over", -1));
 			Tcl_IncrRefCount(m_move = Tcl_NewStringObj("move", -1));
 			Tcl_IncrRefCount(m_line = Tcl_NewStringObj("line", -1));
@@ -320,17 +322,18 @@ public:
 		sendInfo(m_pv, Tcl_NewListObj(U_NUMBER_OF(objs), objs));
 	}
 
-	void updateInfo(db::color::ID sideToMove, board::Status state) override
+	void updateInfo(db::color::ID sideToMove, position::Status state) override
 	{
 		Tcl_Obj* objs[2];
 
 		switch (state)
 		{
-			case board::Checkmate:		objs[0] = m_checkmate; break;
-			case board::Stalemate:		objs[0] = m_stalemate; break;
-			case board::ThreeChecks:	objs[0] = m_threechecks; break;
-			case board::Losing:			objs[0] = m_losing; break;
-			case board::None:				M_ASSERT(!"should not happen"); return;
+			case position::Checkmate:		objs[0] = m_checkmate; break;
+			case position::Stalemate:		objs[0] = m_stalemate; break;
+			case position::ThreeChecks:	objs[0] = m_threechecks; break;
+			case position::Losing:			objs[0] = m_losing; break;
+			case position::Check:			objs[0] = m_check; break;
+			case position::None:				M_ASSERT(!"should not happen"); return;
 		}
 
 		objs[1] = Tcl_NewStringObj(color::printColor(sideToMove), -1);
@@ -440,6 +443,7 @@ private:
 	static Tcl_Obj* m_stalemate;
 	static Tcl_Obj* m_threechecks;
 	static Tcl_Obj* m_losing;
+	static Tcl_Obj* m_check;
 	static Tcl_Obj* m_over;
 	static Tcl_Obj* m_move;
 	static Tcl_Obj* m_line;
@@ -462,6 +466,7 @@ Tcl_Obj* Engine::m_checkmate		= 0;
 Tcl_Obj* Engine::m_stalemate		= 0;
 Tcl_Obj* Engine::m_threechecks	= 0;
 Tcl_Obj* Engine::m_losing			= 0;
+Tcl_Obj* Engine::m_check			= 0;
 Tcl_Obj* Engine::m_over				= 0;
 Tcl_Obj* Engine::m_move				= 0;
 Tcl_Obj* Engine::m_line				= 0;
@@ -492,6 +497,102 @@ namespace {
 				Tcl_ListObjAppendElement(0, m_list, Tcl_NewStringObj(player.name(), player.name().size()));
 		}
 	};
+}
+
+
+static void
+mergeVariation(Game& game, MoveList moves)
+{
+	move::Position pos = move::Post;
+
+	if (game.atLineEnd())
+	{
+		if (moves.isFull())
+			moves.pop();
+
+		moves.prepend(game.currentMove());
+		pos = move::Ante;
+	}
+
+	game.mergeVariation(moves, pos);
+}
+
+
+static void
+addVariation(Game& game, MoveList moves, bool opponentsView)
+{
+	move::Position pos = move::Post;
+
+	if (opponentsView)
+	{
+		if (moves.isFull())
+			moves.pop();
+
+		moves.prepend(Move::null());
+		pos = move::Post;
+	}
+
+	if (game.atLineEnd())
+	{
+		if (moves.isFull())
+			moves.pop();
+
+		moves.prepend(game.currentMove());
+		pos = move::Ante;
+	}
+
+	game.addVariation(moves, pos);
+}
+
+
+static void
+addVariation(Game& game, Move move, bool opponentsView)
+{
+	if (opponentsView)
+	{
+		MoveList moves;
+		moves.append(Move::null());
+		moves.append(move);
+		game.addVariation(moves);
+	}
+	else
+	{
+		game.addVariation(move);
+	}
+}
+
+
+static void
+addMoves(Game& game, MoveList moves, bool opponentsView)
+{
+	if (opponentsView)
+	{
+		if (moves.isFull())
+			moves.pop();
+
+		moves.prepend(Move::null());
+	}
+
+	game.addMoves(moves);
+}
+
+
+static void
+addMove(Game& game, MoveList const& moves, bool opponentsView)
+{
+	if (opponentsView)
+	{
+		MoveList moveList;
+		moveList.push(Move::null());
+		moveList.push(moves[0]);
+		game.addMoves(moveList);
+		game.goForward(2);
+	}
+	else
+	{
+		game.addMove(moves[0]);
+		game.goForward();
+	}
 }
 
 
@@ -577,10 +678,12 @@ cmdLog(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdProbe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	char const*	command		= stringFromObj(objc, objv, 1);
+	Tcl_Obj*		commands		= objectFromObj(objc, objv, 1);
 	char const*	directory	= stringFromObj(objc, objv, 2);
 	char const*	protocol		= stringFromObj(objc, objv, 3);
-	unsigned		timeout		= 5000;
+	unsigned		timeout		= 2000;
+	Tcl_Obj**	objs;
+	int			size;
 
 	if (objc >= 5)
 		timeout = unsignedFromObj(objc, objv, 4);
@@ -588,11 +691,18 @@ cmdProbe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	ProbeEngine::Protocol prot;
 
 	if (::toupper(*protocol) == 'U')
-		prot = Engine::Uci;
+		prot = Engine::UCI;
 	else if (::toupper(*protocol) == 'W')
 		prot = Engine::WinBoard;
 	else
 		return error(CmdProbe, 0, 0, "unknown protocol '%s'", protocol);
+
+	if (Tcl_ListObjGetElements(ti, commands, &size, &objs) != TCL_OK)
+		return error(CmdProbe, 0, 0, "list expected");
+
+	::app::Engine::Command command;
+	for (int i = 0; i < size; ++i)
+		command.push_back(Tcl_GetString(objs[i]));
 
 	ProbeEngine engine(prot, command, directory);
 
@@ -661,31 +771,16 @@ cmdProbe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				objs[1] = Tcl_NewListObj(n, v);
 				n = 0;
 
-				mstl::bitfield<unsigned> variants(engine.supportedVariants());
+				unsigned variants = engine.supportedVariants();
 
-				for (	unsigned i = variants.find_first();
-						i != mstl::bitfield<unsigned>::npos;
-						i = variants.find_next(i))
-				{
-					char const* s = 0;
-
-					switch (1u << i)
-					{
-						case ::app::Engine::Variant_Standard:		s = "standard"; break;
-						case ::app::Engine::Variant_Chess_960:		s = "chess960"; break;
-						case ::app::Engine::Variant_Losers:			s = "losers"; break;
-						case ::app::Engine::Variant_Suicide:		s = "suicide"; break;
-						case ::app::Engine::Variant_Crazyhouse:	s = "crazyhouse"; break;
-						case ::app::Engine::Variant_Bughouse:		s = "bughouse"; break;
-						case ::app::Engine::Variant_Giveaway:		s = "giveaway"; break;
-						case ::app::Engine::Variant_Three_Check:	s = "3check"; break;
-					}
-
-					if (s == 0)
-						fprintf(stderr, "Do not know variant %u\n", 1u << i);
-					else
-						v[n++] = Tcl_NewStringObj(s, -1);
-				}
+				if (variants & variant::Normal)				v[n++] = Tcl_NewStringObj("standard", -1);
+				if (engine.supportsChess960Positions())	v[n++] = Tcl_NewStringObj("chess960", -1);
+				if (variants & variant::ThreeCheck)			v[n++] = Tcl_NewStringObj("3check", -1);
+				if (variants & variant::Crazyhouse)			v[n++] = Tcl_NewStringObj("crazyhouse", -1);
+				if (variants & variant::Losers)				v[n++] = Tcl_NewStringObj("losers", -1);
+				if (variants & variant::Suicide)				v[n++] = Tcl_NewStringObj("suicide", -1);
+				if (variants & variant::Giveaway)			v[n++] = Tcl_NewStringObj("giveaway", -1);
+				if (variants & variant::Bughouse)			v[n++] = Tcl_NewStringObj("bughouse", -1);
 
 				objs[2] = Tcl_NewListObj(n, v);
 				n = 0;
@@ -802,22 +897,31 @@ cmdProbe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdStart(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	char const*	command		= stringFromObj(objc, objv, 1);
+	Tcl_Obj*		commands		= objectFromObj(objc, objv, 1);
 	char const*	directory	= stringFromObj(objc, objv, 2);
 	char const*	protocol		= stringFromObj(objc, objv, 3);
 	Tcl_Obj*		isReadyCmd	= objectFromObj(objc, objv, 4);
 	Tcl_Obj*		signalCmd	= objectFromObj(objc, objv, 5);
 	Tcl_Obj*		updateCmd	= objectFromObj(objc, objv, 6);
 	Tcl_Obj*		clientData	= objectFromObj(objc, objv, 7);
+	Tcl_Obj**	objs;
+	int			size;
 
 	Engine::Protocol prot;
 
 	if (::toupper(*protocol) == 'U')
-		prot = Engine::Uci;
+		prot = Engine::UCI;
 	else if (::toupper(*protocol) == 'W')
 		prot = Engine::WinBoard;
 	else
 		return error(CmdProbe, 0, 0, "unknown protocol '%s'", protocol);
+
+	if (Tcl_ListObjGetElements(ti, commands, &size, &objs) != TCL_OK)
+		return error(CmdStart, 0, 0, "list expected");
+
+	::app::Engine::Command command;
+	for (int i = 0; i < size; ++i)
+		command.push_back(Tcl_GetString(objs[i]));
 
 	Engine* engine = new Engine(prot, command, directory, isReadyCmd, signalCmd, updateCmd, clientData);
 	unsigned id = tcl::app::scidb->addEngine(engine);
@@ -928,7 +1032,8 @@ cmdSetFeatures(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 					break;
 
 				case Feature_Playing_Styles:
-					engine->changePlayingStyle(value);
+					M_ASSERT(!"not implemented");
+//					engine->changePlayingStyle(value);
 					break;
 			}
 		}
@@ -1001,10 +1106,18 @@ cmdAnalyze(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	if (tcl::app::scidb->engineExists(id))
 	{
+		db::analysis::Mode analysisMode = db::analysis::SideToMove;
+
+		if (objc == 5 && strcmp(Tcl_GetString(objv[3]), "-opponent") == 0)
+		{
+			if (boolFromObj(objc, objv, 4))
+				analysisMode = db::analysis::OpponentsView;
+		}
+
 		if (!tcl::app::scidb->engine(id)->isActive())
 			setResult(false);
 		else if (strcmp(cmd, "start") == 0)
-			setResult(tcl::app::scidb->startAnalysis(id));
+			setResult(tcl::app::scidb->startAnalysis(id, analysisMode));
 		else if (strcmp(cmd, "stop") == 0)
 			setResult(tcl::app::scidb->stopAnalysis(id));
 		else
@@ -1260,85 +1373,128 @@ cmdEmpty(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdSnapshot(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	unsigned	id = unsignedFromObj(objc, objv, 1);
-	bool		rc = false;
+	unsigned			id = unsignedFromObj(objc, objv, 1);
+	mstl::string	rc;
 
-	if (tcl::app::scidb->engineExists(id))
+	if (tcl::app::Scidb->engineExists(id))
 	{
 		::app::Engine* engine = tcl::app::Scidb->engine(id);
-		Game* game = engine->currentGame();
 
 		if (objc == 2)
 		{
 			engine->snapshot();
-			rc = !game->atLineEnd();
+
+			if (!tcl::app::Scidb->haveCurrentGame() || tcl::app::Scidb->game().atLineEnd())
+				rc.assign("atend");
 		}
-		else
+		else if (tcl::app::Scidb->haveCurrentGame())
 		{
 			char const* cmd = Tcl_GetString(objv[2]);
+			Game& game = tcl::app::scidb->game();
 
-			if (game)
+			if (::strcmp(cmd, "clear") == 0)
 			{
-				if (::strcmp(cmd, "add") == 0 || ::strcmp(cmd, "move") == 0)
+				engine->snapshotClear();
+			}
+			else if (::strcmp(cmd, "san") == 0 || ::strcmp(cmd, "comment") == 0)
+			{
+				unsigned line = unsignedFromObj(objc, objv, 3);
+
+				if (engine->snapshotExists(line) && !engine->snapshotLine(line).isEmpty())
+				{
+					Board	board(game.currentBoard());
+					Move	move(engine->snapshotLine(line)[0]);
+
+					if (engine->analysesOpponentsView())
+						board.doMove(Move::null(), game.variant());
+
+					if (board.isValidMove(move, game.variant(), move::DontAllowIllegalMove))
+					{
+						protocol::ID protocol = *cmd == 'c' ? protocol::Scidb : protocol::Standard;
+						move.printSAN(rc, protocol, encoding::Latin1);
+					}
+				}
+			}
+			else if (::strcmp(cmd, "var") == 0 || ::strcmp(cmd, "move") == 0 || ::strcmp(cmd, "line") == 0)
+			{
+				unsigned line = unsignedFromObj(objc, objv, 3);
+
+				if (engine->snapshotExists(line) && !engine->snapshotLine(line).isEmpty())
+				{
+					if (*cmd == 'm')
+						addMove(game, engine->snapshotLine(line), engine->analysesOpponentsView());
+					else if (*cmd == 'v')
+						addVariation(game, engine->snapshotLine(line)[0], engine->analysesOpponentsView());
+					else
+						addVariation(game, engine->snapshotLine(line), engine->analysesOpponentsView());
+
+					rc = true;
+				}
+			}
+			else
+			{
+				if (::strcmp(cmd, "seq") == 0 || ::strcmp(cmd, "merge") == 0)
 				{
 					unsigned line = unsignedFromObj(objc, objv, 3);
 
 					if (engine->snapshotExists(line) && !engine->snapshotLine(line).isEmpty())
 					{
-						if (game->atLineEnd())
-						{
-							game->addMove(engine->snapshotLine(line)[0]);
-							game->goForward();
-						}
-						else if (::strcmp(cmd, "move") == 0)
-						{
-							game->addVariation(engine->snapshotLine(line)[0]);
-						}
+						if (*cmd == 's')
+							addMoves(game, engine->snapshotLine(line), engine->analysesOpponentsView());
 						else
-						{
-							game->addVariation(engine->snapshotLine(line));
-						}
+							mergeVariation(game, engine->snapshotLine(line));
 
 						rc = true;
 					}
 				}
-				else if (!game->isEmpty())
+				else if (::strcmp(cmd, "all") == 0 || ::strcmp(cmd, "incl") == 0)
 				{
-					if (::strcmp(cmd, "line") == 0)
-					{
-						unsigned line = unsignedFromObj(objc, objv, 3);
+					if (game.isEmpty())
+						return error(CmdSnapshot, nullptr, nullptr, "game is empty");
 
-						if (engine->snapshotExists(line) && !engine->snapshotLine(line).isEmpty())
-						{
-							game->mergeVariation(engine->snapshotLine(line));
+					for (unsigned line = 0; engine->snapshotExists(line); ++line)
+					{
+						if (!engine->snapshotLine(line).isEmpty())
 							rc = true;
-						}
 					}
-					else if (::strcmp(cmd, "all") == 0)
+
+					if (rc)
 					{
-						for (unsigned line = 0; engine->snapshotExists(line); ++line)
-						{
-							if (!engine->snapshotLine(line).isEmpty())
-								rc = true;
-						}
+						game.startUndoPoint(
+							Game::AddVariations,
+							game.atLineEnd() ? Game::ReplaceNode : Game::ReplaceNextNode);
 
-						if (rc)
+						try
 						{
-							game->startUndoPoint(Game::RemoveVariations);
-
 							for (unsigned line = 0; engine->snapshotExists(line); ++line)
 							{
 								if (!engine->snapshotLine(line).isEmpty())
-									game->mergeVariation(engine->snapshotLine(line));
+								{
+									if (*cmd == 'a')
+									{
+										addVariation(	game,
+															engine->snapshotLine(line),
+															engine->analysesOpponentsView());
+									}
+									else
+									{
+										mergeVariation(game, engine->snapshotLine(line));
+									}
+								}
 							}
-
-							game->endUndoPoint(Game::UpdatePgn);
 						}
+						catch (...)
+						{
+							game.endUndoPoint(Game::UpdatePgn);
+							throw;
+						}
+
+						game.endUndoPoint(Game::UpdatePgn);
 					}
-					else
-					{
-						return error(CmdSnapshot, 0, 0, "unknown command '%s'", cmd);
-					}
+				}
+				else
+				{
+					return error(CmdSnapshot, 0, 0, "unknown command '%s'", cmd);
 				}
 			}
 		}
@@ -1364,6 +1520,21 @@ cmdBind(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 }
 
 
+static int
+cmdBound(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	unsigned id = unsignedFromObj(objc, objv, 1);
+
+	if (tcl::app::scidb->engineExists(id))
+	{
+		::app::Engine* engine = tcl::app::Scidb->engine(id);
+		setResult(engine->isBound(tcl::app::scidb->game().currentBoard()));
+	}
+
+	return TCL_OK;
+}
+
+
 namespace tcl {
 namespace engine {
 
@@ -1374,6 +1545,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdActive,			cmdActive);
 	createCommand(ti, CmdAnalyze,			cmdAnalyze);
 	createCommand(ti, CmdBind,				cmdBind);
+	createCommand(ti, CmdBound,			cmdBound);
 	createCommand(ti, CmdClearHash,		cmdClearHash);
 	createCommand(ti, CmdCountLines,		cmdCountLines);
 	createCommand(ti, CmdEmpty,			cmdEmpty);

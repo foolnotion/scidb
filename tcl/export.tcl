@@ -2466,11 +2466,11 @@ proc BuildFrame {w} {
 	if {$Info(useCustom)} {
 		ttk::label $w.paper.lsize -text [set [namespace parent]::mc::Size]
 		ttk::entry $w.paper.width -width 5 -textvariable [namespace parent]::Info($type,paper,width)
-		::validate::entryFloat $w.paper.width
+		::validate::entryDouble $w.paper.width
 		$w.paper.width configure -validatecommand [namespace code [list SizeChanged $w %P]]
 		ttk::label $w.paper.x -text "x"
 		ttk::entry $w.paper.height -width 5 -textvariable [namespace parent]::Info($type,paper,height)
-		::validate::entryFloat $w.paper.height
+		::validate::entryDouble $w.paper.height
 		$w.paper.height configure -validatecommand [namespace code [list SizeChanged $w %P]]
 		ttk::combobox $w.paper.units \
 			-state readonly \
@@ -2514,7 +2514,7 @@ proc BuildFrame {w} {
 			}
 			ttk::label $w.margins.l$dir -text [set ::mc::$text]
 			ttk::entry $w.margins.s$dir -width 5 -textvariable [namespace parent]::Info($type,paper,$dir)
-			::validate::entryFloat $w.margins.s$dir
+			::validate::entryDouble $w.margins.s$dir
 			$w.margins.s$dir configure -validatecommand [namespace code [list MarginChanged $w $dir %P]]
 			grid $w.margins.l$dir -row $row -column $col -sticky w
 			grid $w.margins.s$dir -row $row -column [expr {$col + 2}] -sticky ew
@@ -2688,7 +2688,7 @@ proc SizeChanged {w value} {
 	set units [GetUnits]
 
 	if {$units eq "in"} {
-		set ok [::validate::validateFloat $value]
+		set ok [::validate::validateDouble $value]
 	} else {
 		set ok [::validate::validateUnsigned $value 5]
 	}

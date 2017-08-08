@@ -896,6 +896,20 @@ proc verifyPath {path} {
 }
 
 
+proc isWindowsExecutable {path} {
+	global tcl_platform
+
+	if {![file executable $path]} { return 0 }
+	if {$tcl_platform(platform) eq "windows"} { return 1 }
+
+	set ch [open $path r]
+	set magicNumber [read $ch 2]
+	close $ch
+	if {$magicNumber eq "MZ"} { return 1 }
+	return 0
+}
+
+
 proc toUriList {files} {
 	set result {}
 

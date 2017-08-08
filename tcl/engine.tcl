@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2011-2013 Gregor Cramer
+# Copyright: (C) 2011-2017 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -80,7 +80,7 @@ set SortElo						"Sort by Elo rating"
 set SortRating					"Sort by CCRL rating"
 set OpenUrl						"Open URL (web browser)"
 
-set AdminEngines				"Manage Engines"
+set AdminEngines				"&Manage Engines"
 set SetupEngine				"Setup engine %s"
 set ImageFiles					"Image files"
 set SelectEngine				"Select Engine"
@@ -115,6 +115,10 @@ set ScriptErrors				"Any errors while saving will be displayed here."
 set CommandNotAllowed		"Usage of command '%s' is not allowed here."
 set ThrowAwayChanges			"Throw away all changes?"
 set ResetToDefaultContent	"Reset to default content"
+set PleaseBePatient			"Please be patient, 'Wine' needs some time."
+set TryAgain					"The first start of 'Wine' needs some time, maybe it works if you try it again."
+set CannotUseWindowsExe		"Cannot use Windows executable without 'Wine'."
+set InstallWine				"Please install 'Wine' beforehand."
 
 set ProbeError(registration)			"This engine requires a registration."
 set ProbeError(copyprotection)		"This engine is copy-protected."
@@ -205,6 +209,7 @@ array set Colors {
 
 variable PhotoFiles {}
 variable Engines {}
+variable Plugins {}
 
 array set Priv { after {}  }
 array set Logo { width 100 height 54 }
@@ -396,16 +401,16 @@ proc openAdmininstration {parent} {
 		-relief sunken \
 		-doublebuffer no \
 		-exportselection yes \
-		-cursor left_ptr \
 		-showhyphens no \
 		-css $css \
 		-usehorzscroll no \
 		-usevertscroll yes \
 		-takefocus 0 \
 		;
+	ttk::setCursor $nb.features standard
 	$nb add $features -sticky nsew -text $mc::Features -padding {5 5}
 
-	### Variables ########################################################ä
+	### Variables #########################################################
 	set Priv(pane:features) $features
 	set Priv(pane:setup) $setup
 	set Priv(notebook) $nb
@@ -435,7 +440,7 @@ proc openAdmininstration {parent} {
 	wm protocol $dlg WM_DELETE_WINDOW [$dlg.close cget -command]
 	wm minsize $dlg [winfo reqwidth $dlg] [winfo reqheight $dlg]
 	wm resizable $dlg true false
-	wm title $dlg $mc::AdminEngines
+	wm title $dlg [::mc::stripAmpersand $mc::AdminEngines]
 	wm transient $dlg [winfo toplevel $parent]
 	::util::place $dlg -parent $parent -position center
 	wm deiconify $dlg
@@ -546,18 +551,19 @@ proc openSetup {parent {number -1}} {
 		;
 	ttk::frame $lt.protocol -takefocus 0 -borderwidth 0
 	ttk::radiobutton $lt.protocol.buci \
-								-text "UCI" \
-								-value "UCI" \
-								-variable [namespace current]::${number}::Vars(current:protocol) \
-								-command [namespace code [list SetupProfiles $number]] \
-								;
+		-text "UCI" \
+		-value "UCI" \
+		-variable [namespace current]::${number}::Vars(current:protocol) \
+		-command [namespace code [list SetupProfiles $number]] \
+		;
 	if {[tk windowingsystem] eq "x11"} { set prot XBoard } else { set prot WinBoard }
 	ttk::radiobutton $lt.protocol.bwb \
-								-text $prot \
-								-value "WB" \
-								-variable [namespace current]::${number}::Vars(current:protocol) \
-								-command [namespace code [list SetupProfiles $number]] \
-								;
+		-text $prot \
+		-value "WB" \
+		-variable [namespace current]::${number}::Vars(current:protocol) \
+		-command [namespace code [list SetupProfiles $number]] \
+		;
+	ttk::combobox $lt.style
 	ttk::button $lt.clearHash \
 		-textvar [namespace current]::mc::ClearHash \
 		-command [namespace code [list ClearHash $number]] \
@@ -585,6 +591,7 @@ proc openSetup {parent {number -1}} {
 		-minwidth 70 \
 		-sortable 1 \
 		-dontsort {0} \
+		-takefocus 1 \
 	]
 	bind $prof <<ListboxSelect>> [namespace code [list UseProfile $number %d]]
 	bind $prof <<ListboxDropRow>> [namespace code [list UserSortProfiles $number %W %d]]
@@ -729,6 +736,86 @@ proc openEngineLog {parent} {
 }
 
 
+proc checkForNewEngines {} {
+	# implement http://www.talkchess.com/forum/viewtopic.php?t=53674&start=0
+	variable Plugins
+	global env
+	global tcl_platform
+
+	if {$tcl_platform(platform) ne "unix"} { return } ;# TODO
+
+	set dirs {}
+	if {[info exists env(GAMESDATADIR)]} {
+		set dir $env(GAMESDATADIR)
+		foreach prot {uci xboard} {
+			set dir [file join $env(GAMESDATADIR) $prot]
+			if {[file isdirectory $dir]} { lappend dirs $dir }
+		}
+	}
+	foreach dir {	/usr/local/share/games/plugins/uci
+						/usr/share/games/plugins/uci
+						/usr/local/share/games/plugins/xboard
+						/usr/share/games/plugins/xboard} {
+		if {$dir ni $dirs && [file isdirectory $dir]} { lappend dirs $dir }
+	}
+
+	set detected {}
+	foreach dir $dirs {
+		foreach file [glob -nocomplain -directory $dir *.eng] {
+			set rootname [file rootname $file]
+			set i [lsearch -index 0 -exact $Plugins $rootname]
+			set detected 0
+			if {$i >= 0} {
+				file stat $file st
+				if {$st(mtime) > [lindex $Plugins $i 1]} { lappend detected $file }
+			} else if {![lindex $Plugins $i 2]} {
+				lappend detected $file
+			}
+		}
+	}
+
+	if {[llength $detected] == 0} { return }
+
+	set list {}
+	foreach file $detected {
+		set fp [open $file r]
+		set data [read $fp]
+		close $fp
+		set cmdline [lindex [split $data "\n"] 1]
+		set engine [lindex $cmdline 0]
+		set parameters [lrange $cmdline 1 end]
+		if {[string length [auto_execok [lindex $cmdline 0]]]} {
+			switch [file tail [file dirname $file]] {
+				uci		{ set protocol UCI }
+				xboard	{ set protocol WB }
+			}
+			lappend list [list $protocol $engine $parameters $file 1]
+		}
+	}
+
+	# TODO: ask user which one should be installed
+	# Note that existing engines will be re-installed
+
+	foreach entry $list {
+		lassign $entry protocol engine parameters file flag
+		if {$flag} {
+			set dir [file join {*}[lrange [file split [file dirname $file]] 0 end-1]]
+			set file [file normalize $file]
+			set dir [file normalize $dir]
+			set newEntry [list Command $file Parameters $parameters]
+			if {[ProbeNewEngine $parent $newEntry $protocol]} {
+				if {[string length $engine(Directory)]} {
+					catch { file mkdir $engine(Directory) }
+				}
+				set logo "$dir/logos/$engine.png"
+				if {[file exists $logo]} { set engine(Logo) $logo }
+				# Signal that new engine is installed successfully
+			}
+		}
+	}
+}
+
+
 proc logIsOpen? {parent} {
 	if {$parent eq "."} { set dlg .engineLog } else { set dlg $parent.engineLog }
 	return [winfo exists $dlg]
@@ -767,7 +854,7 @@ proc showEngineDictionary {parent} {
 	$lb bind <ButtonPress-3> [namespace code [list PopupMenu $lb %x %y]]
 
 	set colwd 20
-	$lb addcol image -id country -justify center -headervar [namespace current]::mc::Country
+	$lb addcol image -id country -justify center -headervar ::mc::Country
 	$lb addcol text  -id name -headervar [namespace current]::mc::Name -witdh 30
 	$lb addcol text  -id elo -justify right -foreground darkgreen -header "Elo"
 	$lb addcol text  -id ccrl -justify right -foreground darkgreen -header "CCRL"
@@ -850,46 +937,19 @@ proc setup {} {
 				array set newEngine $EmptyEngine
 				array set newEngine $newEntry
 
+				set newEngine(Command) [file normalize $newEngine(Command)]
+
 				if {[file exists $newEngine(Command)]} {
 					set changed 1
 					set index [FindIndex $newEngine(Name)]
 					if {$index >= 0} {
 						array set oldEngine $EmptyEngine
 						array set oldEngine [lindex $Engines $index]
+						set newEngine(Profiles:UCI) \
+							[UpdateProfile $oldEngine(Profiles:UCI) $newEngine(Profiles:UCI)]
 						if {$oldEngine(ProfileType) eq "Options"} {
-							foreach prot {UCI WB} {
-								set oldProfiles $oldEngine(Profiles:$prot)
-								set newProfiles $newEngine(Profiles:$prot)
-								if {[llength $oldProfiles] >= 2 && [llength $newProfiles] == 2} {
-									set newOptions [lindex $newProfiles 1]
-									array set valueMap {}
-									foreach {profile oldOptions} $oldProfiles {
-										array unset valueMap
-										foreach opt $oldOptions { set valueMap([lindex $opt 0]) [lindex $opt 2] }
-										set options {}
-										foreach opt $newOptions {
-											lassign $opt name type value dflt var max
-											if [info exists valueMap($name)] {
-												set oldValue $valueMap($name)
-												switch $type {
-													spin - slider {
-														set oldValue [expr {min($max, max($var, $oldValue))}]
-													}
-													combo {
-														if {$oldValue ni [SplitComboEntries $var]} {
-															set oldValue $value
-														}
-													}
-												}
-												lset opt 2 $oldValue
-											}
-											lappend options $opt
-										}
-										lappend optionList $profile $options
-									}
-									set newEngine(Profiles:$prot) $optionList
-								}
-							}
+							set newEngine(Profiles:WB) \
+								[UpdateProfile $oldEngine(Profiles:WB) $newEngine(Profiles:WB)]
 						} else {
 							foreach {profile options} $newEngine(Profiles:WB) {
 								if {$profile eq "Default"} { set newEngine(Script:Default) $options }
@@ -920,6 +980,22 @@ proc setup {} {
 }
 
 
+proc startCommand {number} {
+	variable EmptyEngine
+	variable Engines
+	variable ${number}::Vars
+
+	set index [FindIndex $Vars(current:name)]
+	if {$index == -1} { return -1 }
+
+	set entry [lindex $Engines $index]
+	array set engine $EmptyEngine
+	array set engine $entry
+
+	return [Command $engine(Command) $engine(Parameters)]
+}
+
+
 proc startEngine {number isReadyCmd signalCmd updateCmd clientData} {
 	variable EmptyEngine
 	variable Engines
@@ -944,8 +1020,12 @@ proc startEngine {number isReadyCmd signalCmd updateCmd clientData} {
 	incr engine(Frequency)
 	lset Engines $index [array get engine]
 	::options::hookWriter [namespace current]::WriteEngineOptions engines
+	set cmd [Command $engine(Command) $engine(Parameters)]
+	if {$cmd eq ""} { return [string trim "$engine(Command) $engine(Parameters)"] }
+	if {$cmd eq "no-wine"} { return -2 }
+
 	set id [::scidb::engine::start \
-		$engine(Command) \
+		$cmd \
 		$dir \
 		$protocol \
 		$isReadyCmd \
@@ -1013,7 +1093,9 @@ proc sendOptions {number engineId} {
 	array set profiles $engine(Profiles:$protocol)
 	if {[llength profiles($Vars(current:profile))]} {
 		set Vars(engine:profile) $Vars(current:profile)
-		switch $engine(ProfileType) {
+		set profileType Options
+		if {$Vars(current:profile) eq "WB" && $engine(ProfileType) eq "Script"} { set profileType Script }
+		switch $profileType {
 			Options {
 				set pairs {}
 				foreach opt $profiles($Vars(current:profile)) {
@@ -1039,7 +1121,7 @@ proc sendOptions {number engineId} {
 }
 
 
-proc restartAnalysis {number features} {
+proc restartAnalysis {number opponentsView features} {
 	variable ${number}::Vars
 
 	set engineId $Vars(engine:id)
@@ -1052,7 +1134,7 @@ proc restartAnalysis {number features} {
 		if {$Vars(current:cores) != $Vars(engine:cores) || $Vars(current:memory) != $Vars(engine:memory)} {
 			sendFeatures $number $engineId $features
 		}
-		::scidb::engine::analyze start $engineId
+		::scidb::engine::analyze start $engineId -opponent $opponentsView
 	}
 }
 
@@ -1135,6 +1217,28 @@ proc engineName {number} {
 }
 
 
+proc tipForVariant {variant} {
+	switch $variant {
+		Losers {
+			set tip "$::mc::VariantName(Antichess) - $::mc::VariantName(Losers)"
+		}
+		Antichess {
+			set tip "$::mc::VariantName(Antichess) - "
+			append tip "$::mc::VariantName(Suicide)/$::mc::VariantName(Giveaway)"
+		}
+		DropChess {
+			set tip "$::mc::VariantName(DropChess) - "
+			append tip "$::mc::VariantName(Crazyhouse)/$::mc::VariantName(Chessgi)"
+		}
+		default {
+			set tip $::mc::VariantName($variant)
+		}
+	}
+
+	return $tip
+}
+
+
 proc OpenUrl {parent index} {
 	variable Priv
 
@@ -1161,15 +1265,7 @@ proc VisitHeader {lb data} {
 		enter {
 			set name [string toupper $id 0 0]
 			if {[info exists ::mc::VariantName($name)]} {
-				switch $name {
-					Suicide - Giveaway - Losers {
-						set tip "$::mc::VariantName(Antichess) - $::mc::VariantName($name)"
-					}
-					default {
-						set tip $::mc::VariantName($name)
-					}
-				}
-				tooltip::show $lb $tip
+				tooltip::show $lb [tipForVariant $name]
 			}
 		}
 		leave {
@@ -1194,15 +1290,7 @@ proc VisitItem {lb data} {
 			} else {
 				set name [string toupper $id 0 0]
 				if {[info exists ::mc::VariantName($name)] && [set $id]} {
-					switch $name {
-						Suicide - Giveaway - Losers {
-							set tip "$::mc::VariantName(Antichess) - $::mc::VariantName($name)"
-						}
-						default {
-							set tip $::mc::VariantName($name)
-						}
-					}
-					tooltip::show $lb $tip
+					tooltip::show $lb [tipForVariant $name]
 				}
 			}
 		}
@@ -1282,12 +1370,9 @@ proc SortEngines {lb} {
 
 
 proc FillHeader {lb} {
-	$lb configcol threeCheck	-header [string range $::mc::VariantName(ThreeCheck) 0 1]
-	$lb configcol crazyhouse	-header [string range $::mc::VariantName(Crazyhouse) 0 1]
-	$lb configcol bughouse		-header [string range $::mc::VariantName(Bughouse) 0 1]
-	$lb configcol suicide		-header [string range $::mc::VariantName(Suicide) 0 1]
-	$lb configcol giveaway		-header [string range $::mc::VariantName(Giveaway) 0 1]
-	$lb configcol losers			-header [string range $::mc::VariantName(Losers) 0 1]
+	foreach v {ThreeCheck Crazyhouse Bughouse Suicide Giveaway Losers} {
+		$lb configcol [string tolower $v 0 1] -header [string range [set ::mc::VariantName($v)] 0 1]
+	}
 }
 
 
@@ -1789,7 +1874,6 @@ proc Select {list item} {
 	variable Engines
 	variable EmptyEngine
 	variable Priv
-	variable Photo
 	variable Data
 
 	if {[llength $item] == 0} { return }
@@ -2014,7 +2098,7 @@ proc FillInfo {list entry} {
 
 	set logo $engine(ShortId)
 	if {[info exists Photo($logo)]} {
-		$list set [list [lindex $Photo($logo) 2]]
+		$list set [list [lindex $Photo($logo) 1]]
 	}
 
 	if {$Priv(initialise)} {
@@ -2049,7 +2133,7 @@ proc FilterOptions {protocol options} {
 			spin {
 				switch $name {
 					hash - multipv - skilllevel {}
-					threads - minthreads - minimalthreads - maxthreads - maximalthreads {}
+					cores - threads - minthreads - minimalthreads - maxthreads - maximalthreads {}
 					default { lappend optionList $opt }
 				}
 			}
@@ -2284,7 +2368,6 @@ proc OpenSetupEngineDialog {number parent} {
 	set i [FindIndex $Vars(current:name)]
 	array set engine $EmptyEngine
 	array set engine [lindex $Engines $i]
-	set protocol $Vars(current:protocol)
 	OpenSetupDialog($engine(ProfileType)) $number $parent
 }
 
@@ -2360,8 +2443,8 @@ proc OpenSetupDialog(Script) {number parent} {
 		-wrap word \
 		-undo no \
 		-font TkFixedFont \
-		-cursor left_ptr \
 		;
+	ttk::setCursor $log.txt standard
 	ttk::scrollbar $log.vsb -orient vertical -command [list ::widget::textLineScroll $log.txt]
 	grid $log.txt -row 1 -column 1 -sticky nsew
 	grid $log.vsb -row 1 -column 2 -sticky ns
@@ -2411,7 +2494,7 @@ proc AskCloseSetup {saveBtn} {
 	set dlg [winfo toplevel $saveBtn]
 
 	if {[$saveBtn cget -state] == "normal"} {
-		set reply [::dialog::question -message $mc::ThrowAwayChanges -parent $dlg]
+		set reply [::dialog::question -message $mc::ThrowAwayAllChanges -parent $dlg]
 		if {$reply eq "no"} { return }
 	}
 
@@ -2715,7 +2798,9 @@ proc OpenSetupDialog(Options) {number parent} {
 				-image [::icon::makeStateSpecificIcons $::icon::12x12::reset] \
 				-command [list set [namespace current]::Opt($name) $dflt] \
 				;
-			::tooltip::tooltip $btn "$mc::ResetToDefault: $dflt"
+			set tip $mc::ResetToDefault
+			if {[string length [string trim $dflt]]} { append tip ": " $dflt }
+			::tooltip::tooltip $btn $tip
 			grid $btn -row $row -column 1
 			set args [list variable [namespace current]::Opt($name) write \
 							[namespace code [list SetOptionState $dlg $val $name $dflt $btn]]]
@@ -3133,7 +3218,7 @@ proc RebuildEngineList {list} {
 		set logo $engine(ShortId)
 
 		if {[info exists Photo($logo)]} {
-			$list insert [list [lindex $Photo($logo) 1]]
+			$list insert [list [lindex $Photo($logo) 2]]
 		} else {
 			set photoFile $engine(Logo)
 			if {![file readable $photoFile]} {
@@ -3164,17 +3249,36 @@ proc RebuildEngineList {list} {
 }
 
 
-proc ProbeEngine {parent entry} {
+proc Command {cmd params} {
+	global tcl_platform
+
+	if {![file executable $cmd]} { return "" }
+
+	if {$tcl_platform(platform) eq "unix"} {
+		if {[::fsbox::isWindowsExecutable $cmd]} {
+			if {[string length [set wine [auto_execok wine]]] == 0} { return "no-wine" }
+			return [list $wine $cmd {*}$params]
+		}
+	}
+
+	return [list $cmd {*}$params]
+}
+
+
+proc ProbeEngine {parent entry protocols} {
 	array set engine $entry
 
-	set protocol(0) WB
-	set protocol(1) UCI
-	set protocols {}
-
+	set supportedProtocols {}
+	set cmd [Command $engine(Command) $engine(Parameters)]
 	set wait [tk::toplevel $parent.wait -class Scidb]
 	wm withdraw $wait
 	pack [tk::frame $wait.f -border 2 -relief raised]
-	pack [tk::label $wait.f.text -compound left -text "$mc::Probing..."] -padx 10 -pady 10
+	pack [tk::label $wait.f.text -text "$mc::Probing..."] -padx 10 -pady 10
+	set timeout 1500
+	if {[string first "/bin/win" [lindex $cmd 0]] >= 0} {
+		pack [tk::message $wait.f.wine -text $mc::PleaseBePatient] -padx 10 -pady 10
+		set timeout 20000
+	}
 	wm resizable $wait no no
 	wm transient $wait $parent
 	::util::place $wait -parent $parent -position center
@@ -3186,16 +3290,15 @@ proc ProbeEngine {parent entry} {
 	set error ""
 	update idletasks
 
-	for {set i 0} {$i < 2} {incr i} {
-		set res [::scidb::engine::probe $engine(Command) $::scidb::dir::log $protocol($i) 2000]
+	foreach prot $protocols {
+		set res [::scidb::engine::probe $cmd $::scidb::dir::log $prot $timeout]
 
 		switch [lindex $res 0] {
 			failed - undecidable {}
 
 			ok {
-				set prot $protocol($i)
 				set result($prot) $res
-				lappend protocols $prot
+				lappend supportedProtocols $prot
 			}
 
 			default { set error $res }
@@ -3213,15 +3316,17 @@ proc ProbeEngine {parent entry} {
 
 	if {[string length $error]} {
 		::dialog::error -parent $parent -message $mc::ProbeError($error)
-		if {[llength $protocols] == 0} { return {} }
+		if {[llength $supportedProtocols] == 0} { return {} }
 	}
 
-	if {[llength $protocols] == 0} {
-		::dialog::error -parent $parent -message $mc::DoesNotRespond
+	if {[llength $supportedProtocols] == 0} {
+		set details ""
+		if {[string first "/bin/win" [lindex $cmd 0]] >= 0} { set details $mc::TryAgain }
+		::dialog::error -parent $parent -message $mc::DoesNotRespond -detail $details
 		return {}
 	}
 
-	foreach prot $protocols {
+	foreach prot $supportedProtocols {
 		lassign $result($prot) ok info variants features options
 
 		# setup information
@@ -3264,19 +3369,19 @@ proc ProbeEngine {parent entry} {
 		set hasAnalyze($prot) [info exists fts(analyze)]
 	}
 
-	if {[llength $protocols] == 2} {
+	if {[llength $supportedProtocols] == 2} {
 		# Ignore WinBoard protocol if UCI protocol is supported and:
 		# 1. WinBoard don't has an analyze feature or
 		# 2. does not have options
 		if {!$hasAnalyze(WB) || [llength $engine(Profiles:WB)] == 0} {
-			set protocols {UCI}
+			set supportedProtocols {UCI}
 		}
 	}
 
-	if {[llength $protocols] == 2} {
+	if {[llength $supportedProtocols] == 2} {
 		set engine(Protocol) {UCI WB}
 	} else {
-		set engine(Protocol) [lindex $protocols 0]
+		set engine(Protocol) [lindex $supportedProtocols 0]
 	}
 
 	array unset result
@@ -3320,6 +3425,10 @@ proc ProbeEngine {parent entry} {
 			close $f
 		}
 	}
+
+	set engine(Timestamp) [clock seconds]
+	file stat $engine(Command) st
+	set engine(FileTime) $st(mtime)
 
 	return [array get engine]
 }
@@ -3389,11 +3498,6 @@ proc SaveEngine {list} {
 				}
 			}
 		}
-
-		set engine(Timestamp) [clock seconds]
-		file stat $engine(Command) st
-		set engine(FileTime) $st(mtime)
-		lset Engines $sel [array get engine]
 	}
 
 	SaveEngineList
@@ -3486,7 +3590,6 @@ proc SetInfoPaneState {state} {
 
 proc NewEngine {list} {
 	variable Engines
-	variable EmptyEngine
 	variable Index_
 	variable Button_
 	variable Priv
@@ -3504,6 +3607,17 @@ proc NewEngine {list} {
 	]
 	if {[llength $result] == 0} { return }
 	set file [lindex $result 0]
+
+	if {	$::tcl_platform(platform) eq "unix"
+		&& [::fsbox::isWindowsExecutable $file]
+		&& [string length [set wine [auto_execok wine]]] == 0} {
+		return [::dialog::error \
+			-parent $parent \
+			-message $mc::CannotUseWindowsExe \
+			-detail $mc::InstallWine \
+		]
+	}
+
 	set newEntry {}
 	set entries {}
 	set numbers {}
@@ -3557,36 +3671,107 @@ proc NewEngine {list} {
 		if {$Index_ >= 0} { set newEntry [lindex $entries $Index_] }
 	}
 
-	array set engine {}
-	array set engine $EmptyEngine
-	array set engine $newEntry
-	set engine(Command) $file
-	set newEntry [ProbeEngine $parent [array get engine]]
-	if {[llength $newEntry] == 0} { return }
-	array unset engine
-	array set engine $newEntry
+	lappend newEntry Command [file normalize $file]
+	if {![ProbeNewEngine $parent $newEntry]} { return }
 
-	set numbers {}
-	foreach entry $Engines {
-		array set e $entry
-		if {$engine(Name) eq $e(Name)} {
-			lappend numbers 1
-		} elseif {[string match "$engine(Name) (\[0-9]*)" $e(Name)]} {
-			if {[regexp {.*\(([0-9]+)\)$} $e(Name) _ n]} { lappend numbers $n }
-		}
-	}
-	if {[llength $numbers]} {
-		set n [lindex [lsort -integer $numbers] end]
-		set engine(Name) "$engine(Name) ([expr {$n + 1}])"
-	}
-
-	lappend Engines [array get engine]
 	RebuildEngineList $list
 	SetInfoPaneState normal
 	$list select end
 	$list see end
 	$Priv(button:delete) configure -state normal
 	SaveEngine $list
+}
+
+
+proc ProbeNewEngine {parent entry {protocols {UCI WB}}} {
+	variable EmptyEngine
+	variable Engines
+
+	array set engine {}
+	array set engine $EmptyEngine
+	array set engine $entry
+	set entry [ProbeEngine $parent [array get engine] $protocols]
+	if {[llength $entry] == 0} { return 0 }
+	array unset engine
+	array set engine $entry
+
+	set numbers {}
+	set index 0
+	foreach entry $Engines {
+		array set e $entry
+
+		# TODO the user should confirm the replacement of these attributes:
+		# Author, Email, Country, Elo, CCRL, Url
+
+		if {$engine(Command) eq $e(Command)} {
+			foreach attr {	Identifier Author Email Country Elo CCRL Parameters
+								Directory Url Protocol Variants Features:UCI Features:WB} {
+				if {[string length $engine($attr)]} { set e($attr) $engine($attr) }
+			}
+
+			foreach prot $protocols {
+				if {$prot ni $e(Protocol)} { lappend e(Protocol) $prot }
+			}
+
+			set e(Profiles:UCI) [UpdateProfile $engine(Profiles:UCI) $e(Profiles:UCI)]
+			if {$engine(ProfileType) eq "Options"} {
+				set e(Profiles:WB [UpdateProfile $engine(Profiles:WB) $e(Profiles:WB)]
+			}
+
+			lset Engines $index [array get e]
+			return 1
+		}
+
+		if {$engine(Name) eq $e(Name)} {
+			lappend numbers 1
+		} elseif {[string match "$engine(Name) (\[0-9]*)" $e(Name)]} {
+			if {[regexp {.*\(([0-9]+)\)$} $e(Name) _ n]} { lappend numbers $n }
+		}
+
+		incr index
+	}
+
+	if {[llength $numbers]} {
+		set n [lindex [lsort -integer $numbers] end]
+		set engine(Name) "$engine(Name) ([expr {$n + 1}])"
+	}
+
+	lappend Engines [array get engine]
+	return 1
+}
+
+
+proc UpdateProfile {oldProfiles newProfiles} {
+	if {[llength $newProfiles] < 2} { return {} }
+	set newOptions [lindex $newProfiles 1]
+	set optionList {}
+
+	foreach {profile oldOptions} $oldProfiles {
+		array unset valueMap
+		foreach opt $oldOptions { set valueMap([lindex $opt 0]) [lindex $opt 2] }
+		set options {}
+		foreach opt $newOptions {
+			lassign $opt name type value dflt var max
+			if [info exists valueMap($name)] {
+				set oldValue $valueMap($name)
+				switch $type {
+					spin - slider {
+						set oldValue [expr {min($max, max($var, $oldValue))}]
+					}
+					combo {
+						if {$oldValue ni [SplitComboEntries $var]} {
+							set oldValue $value
+						}
+					}
+				}
+				lset opt 2 $oldValue
+			}
+			lappend options $opt
+		}
+		lappend optionList $profile $options
+	}
+
+	return $optionList
 }
 
 
@@ -3610,7 +3795,7 @@ proc LoadPhotoFiles {list} {
 	MakePhotos $logo $file
 
 	if {[info exists Photo($logo)]} {
-		if {$item == $Priv(selection)} { set index 2 } else { set index 1 }
+		if {$item == $Priv(selection)} { set index 1 } else { set index 2 }
 		set content [lindex $Photo($logo) $index]
 	} else {
 		set content [list $logo]

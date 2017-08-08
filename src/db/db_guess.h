@@ -28,6 +28,7 @@
 #define _db_guess_included
 
 #include "db_board.h"
+#include "db_move_list.h"
 
 // null move search is probably not recommendable
 //#define USE_NULL_MOVE_SEARCH
@@ -35,7 +36,6 @@
 namespace db {
 
 class Board;
-class MoveList;
 
 class Guess : public Board
 {

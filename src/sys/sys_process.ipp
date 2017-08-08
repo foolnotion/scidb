@@ -6,7 +6,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2011-2013 Gregor Cramer
+// Copyright: (C) 2011-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -25,6 +25,8 @@ inline bool Process::wasKilled() const			{ return m_signalKilled; }
 inline bool Process::pipeWasClosed() const	{ return m_pipeClosed; }
 inline int  Process::exitStatus() const		{ return m_exitStatus; }
 inline long Process::pid() const					{ return m_pid; }
+
+inline mstl::string const& Process::program() const { return m_program; }
 
 } // namespace sys
 

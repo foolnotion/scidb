@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2009-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -68,13 +68,8 @@ isNumeric(char const* s)
 static char const*
 endOfWord(char const* s)
 {
-	while (!isspace(*s))
-	{
-		if (!*s)
-			return s;
-
+	while (*s && !isspace(*s))
 		++s;
-	}
 
 	return s;
 }
@@ -120,10 +115,7 @@ skipDots(char const* s)
 static char const*
 skipWord(char const* s)
 {
-	while (*s && !isspace(*s))
-		++s;
-
-	return skipSpaces(s);
+	return skipSpaces(endOfWord(s));
 }
 
 
@@ -140,7 +132,7 @@ skipWords(char const* s, unsigned n)
 static char const*
 skipMoveNumber(char const* s)
 {
-	if (isdigit(*s))
+	while (isdigit(*s))
 	{
 		do
 			++s;
@@ -152,7 +144,7 @@ skipMoveNumber(char const* s)
 		s = skipSpaces(s);
 	}
 
-	return skipSpaces(s);
+	return s;
 }
 
 
@@ -184,11 +176,11 @@ toHolding(material::Count holding)
 {
 	mstl::string str;
 
-	if (holding.pawn)		str.append(holding.pawn,	'P');
-	if (holding.knight)	str.append(holding.knight,	'N');
-	if (holding.bishop)	str.append(holding.bishop,	'B');
-	if (holding.rook)		str.append(holding.rook,	'R');
-	if (holding.queen)	str.append(holding.queen,	'Q');
+	str.append(holding.pawn,	'P');
+	str.append(holding.knight,	'N');
+	str.append(holding.bishop,	'B');
+	str.append(holding.rook,	'R');
+	str.append(holding.queen,	'Q');
 
 	return str;
 }
@@ -206,10 +198,10 @@ struct winboard::Engine::Timer : public sys::Timer
 
 winboard::Engine::Engine()
 	:m_state(None)
-	,m_variant(variant::Normal)
 	,m_startTime(0)
 	,m_pingCount(0)
 	,m_pongCount(0)
+	,m_craftyVersion(0)
 	,m_isAnalyzing(false)
 	,m_response(false)
 	,m_waitForDone(false)
@@ -226,13 +218,13 @@ winboard::Engine::Engine()
 	,m_featureColors(false)
 	,m_featureSetboard(false)
 	,m_featureSigint(false)
-	,m_featureSan(false)
+	,m_featureSAN(false)
 	,m_featureVariant(false)
 	,m_featurePing(false)
-	,m_isCrafty(false)
 	,m_parsingFeatures(false)
 	,m_startAnalyzeIsPending(false)
 	,m_stopAnalyzeIsPending(false)
+	,m_xboardAlreadySent(false)
 {
 }
 
@@ -390,7 +382,7 @@ winboard::Engine::doMove(Move const& move)
 
 	if (move.isNull())
 		s.append("@@@@", 4);	// alternatives: "pass", "null", "--"
-	else if (/*m_featureSan || */move.isPieceDrop() || (move.isCastling() && m_mustUseChess960))
+	else if (/*m_featureSAN || */move.isPieceDrop() || (move.isCastling() && m_mustUseChess960))
 		move.printSAN(s, protocol::Standard, encoding::Latin1);
 	else
 		move.printCAN(s, protocol::Standard, encoding::Latin1);
@@ -404,19 +396,19 @@ winboard::Engine::setupBoard(Board const& board)
 {
 	if (m_featureSetboard)
 	{	// NOTE:
-		// The WinBoard documentation doesn't specify
-		// any specific FEN format for Chess 960.
-		// Thus we will assume that the engine is
-		// understanding X-Fen().
+		// The WinBoard documentation doesn't specify any specific
+		// FEN format for Chess 960. Thus we will assume that the
+		// engine is understanding X-Fen().
 		// IMPORTANT NOTE:
-		// The "setboard" command might not be appropriate,
-		// because it might clear the hash tables.
-		mstl::string fen(board.toFen(m_variant));
+		// The "setboard" command might not be appropriate, because
+		// it might clear the hash tables.
+		mstl::string fen(board.toFen(currentVariant()));
 
 		::removeHolding(fen);
 		send("setboard " + fen);
 
-		if (m_isCrafty)
+		// NOTE: it's unclear which version has removed "mn", I guess it's version 25
+		if (0 < m_craftyVersion && m_craftyVersion < 25)
 		{
 			mstl::string msg;
 			msg.format("mn %u", board.moveNumber());
@@ -455,7 +447,7 @@ winboard::Engine::setupBoard(Board const& board)
 		send(".");	// leave edit mode
 	}
 
-	if (variant::isZhouse(m_variant))
+	if (variant::isZhouse(currentGame()->variant()))
 	{
 		mstl::string str("holding [");
 		str.append(::toHolding(board.holding(color::White)));
@@ -503,10 +495,6 @@ winboard::Engine::startAnalysis(bool)
 	History moves;
 	game->getHistory(moves);
 
-	setBoard(game->currentBoard());
-	m_variant = game->variant();
-
-	Board const& startBoard = game->startBoard();
 	mstl::string v;
 
 	if (m_featureSigint)
@@ -519,22 +507,26 @@ winboard::Engine::startAnalysis(bool)
 	{
 		if (isChess960Position())
 		{
-			if (m_variant != variant::Normal)
+			if (game->variant() != variant::Normal)
 				error(app::Engine::Chess_960_Not_Supported);
 
 			v = m_chess960Variant;
 		}
 		else
 		{
-			switch (m_variant)
+			switch (currentVariant())
 			{
-				case variant::Normal:		v = "normal"; break;
 				case variant::Losers:		v = "losers"; break;
 				case variant::Suicide:		v = "suicide"; break;
 				case variant::Giveaway:		v = "giveaway"; break;
 				case variant::Bughouse:		v = "bughouse"; break;
 				case variant::Crazyhouse:	v = "crazyhouse"; break;
 				case variant::ThreeCheck:	v = "3check"; break;
+
+				case variant::Normal:
+					// TODO: probably "wildcastle" is required
+					v = "normal";
+					break;
 
 				default:
 					M_RAISE("unexpected variant %s", variant::identifier(game->variant()).c_str());
@@ -546,20 +538,25 @@ winboard::Engine::startAnalysis(bool)
 
 	if (moves.empty())
 	{
-		if (!currentBoard().isStandardPosition(m_variant))
+		if (!currentBoard().isStandardPosition(currentVariant()))
 			setupBoard(currentBoard());
 	}
-	else if (game->historyIsLegal(Game::DontAllowNullMoves))
+	else if (	!m_featureSetboard
+				||	(	!analysesOpponentsView()
+					&& game->historyIsLegal(Game::DontAllowNullMoves)))
 	{
-		if (!startBoard.isStandardPosition(m_variant))
-			setupBoard(startBoard);
+		if (!game->startBoard().isStandardPosition(currentVariant()))
+			setupBoard(game->startBoard());
 
 		for (int i = moves.size() - 1; i >= 0; --i)
 			doMove(moves[i]);
+
+		if (analysesOpponentsView())
+			doMove(Move::null());
 	}
 	else if (m_featureSetboard)
 	{
-		setupBoard(game->currentBoard());
+		setupBoard(currentBoard());
 	}
 	else
 	{
@@ -690,7 +687,7 @@ winboard::Engine::sendStopAnalysis()
 }
 
 
-void
+bool
 winboard::Engine::pause()
 {
 	if (hasFeature(app::Engine::Feature_Pause))
@@ -700,10 +697,11 @@ winboard::Engine::pause()
 
 	m_state = Pause;
 	updateState(app::Engine::Pause);
+	return true;
 }
 
 
-void
+bool
 winboard::Engine::resume()
 {
 	if (hasFeature(app::Engine::Feature_Pause))
@@ -713,6 +711,7 @@ winboard::Engine::resume()
 
 	m_state = Start;
 	updateState(app::Engine::Resume);
+	return true;
 }
 
 
@@ -727,9 +726,10 @@ void
 winboard::Engine::protocolStart(bool isProbing)
 {
 	if (supportedVariants() == 0)
-		addVariant(app::Engine::Variant_Standard);
+		addVariant(variant::Normal);
 
-	send("xboard");
+	if (!m_xboardAlreadySent)
+		send("xboard");
 	send("protover 2");
 //	send("ponder off");
 	send("easy");
@@ -768,6 +768,14 @@ winboard::Engine::protocolEnd()
 		::sys::signal::sendInterrupt(pid());
 
 	send("quit");
+}
+
+
+void
+winboard::Engine::stimulate()
+{
+	send("xboard");
+	m_xboardAlreadySent = true;
 }
 
 
@@ -1071,7 +1079,7 @@ winboard::Engine::parseFeatures(char const* msg)
 					case 'a':
 						if (::strncmp(key, "san=", 4) == 0)
 						{
-							m_featureSan = *val == '1';
+							m_featureSAN = *val == '1';
 //							accept = true;
 						}
 						break;
@@ -1113,8 +1121,9 @@ winboard::Engine::parseFeatures(char const* msg)
 			case 'v':
 				if (::strncmp(key, "variants=", 9) == 0)
 				{
-					removeVariant(app::Engine::Variant_Standard);
-					m_featureVariant = true;
+					unsigned count = 0;
+
+					removeVariant(variant::Normal);
 					++val;
 
 					do
@@ -1127,64 +1136,68 @@ winboard::Engine::parseFeatures(char const* msg)
 						mstl::string variant(val, p);
 						variant.trim();
 
+						count += 1;
+
 						switch (variant[0])
 						{
 							case 'b':
 								if (::strcmp(variant, "bughouse") == 0)
-									addVariant(app::Engine::Variant_Bughouse);
+									addVariant(variant::Bughouse);
 								break;
 
 							case 'c':
 								if (::strcmp(variant, "chess960") == 0)
 								{
-									addVariant(app::Engine::Variant_Chess_960);
+									setSupportsChess960Positions();
 									m_chess960Variant = variant;
 								}
 								else if (::strcmp(variant, "crazyhouse") == 0)
 								{
-									addVariant(app::Engine::Variant_Crazyhouse);
+									addVariant(variant::Crazyhouse);
 								}
 								break;
 
 							case 'f':
 								if (::strcmp(variant, "fischerandom") == 0)
 								{
-									addVariant(app::Engine::Variant_Chess_960);
+									setSupportsChess960Positions();
 									m_chess960Variant = variant;
 								}
 								break;
 
 							case 'g':
 								if (::strcmp(variant, "giveaway") == 0)
-									addVariant(app::Engine::Variant_Giveaway);
+									addVariant(variant::Giveaway);
 								break;
 
 							case 'l':
 								if (::strcmp(variant, "losers") == 0)
-									addVariant(app::Engine::Variant_Losers);
+									addVariant(variant::Losers);
 								break;
 
 							case 'n':
 								if (::strcmp(variant, "normal") == 0)
-									addVariant(app::Engine::Variant_Standard);
+									addVariant(variant::Normal);
 								break;
 
 							case 's':
 								if (::strcmp(variant, "standard") == 0)
-									addVariant(app::Engine::Variant_Standard);
+									addVariant(variant::Normal);
 								else if (::strcmp(variant, "suicide") == 0)
-									addVariant(app::Engine::Variant_Suicide);
+									addVariant(variant::Suicide);
 								break;
 
 							case '3':
 								if (::strcmp(variant, "3check") == 0)
-									addVariant(app::Engine::Variant_Three_Check);
+									addVariant(variant::ThreeCheck);
 								break;
 						}
 
 						val = ::skipSpaces(p + 1);
 					}
 					while (*val);
+
+					m_featureVariant = (count > 1);
 				}
 				break;
 		}
@@ -1329,14 +1342,14 @@ winboard::Engine::parseInfo(mstl::string const& msg)
 		s = ::skipMoveNumber(s);
 
 		Move move;
-		char const* t = board.parseMove(s, move, m_variant);
+		char const* t = board.parseMove(s, move, currentVariant());
 
 		if (t)
 		{
 			if (move.isLegal())
 			{
-				board.prepareForPrint(move, m_variant, Board::InternalRepresentation);
-				board.doMove(move, m_variant);
+				board.prepareForPrint(move, currentVariant(), Board::InternalRepresentation);
+				board.doMove(move, currentVariant());
 				moves.append(move);
 				illegal = 0;
 				s = ::skipSpaces(t);
@@ -1401,9 +1414,9 @@ winboard::Engine::parseInfo(mstl::string const& msg)
 				return;
 			}
 
-			varno = findVariationNo(moves.front());
+			varno = findVariation(moves.front());
 
-			setCurrentMove(0, 0, moves.front());
+			setCurrentMove(0, 0, moves[0]);
 			updateCurrMove();
 
 			if (msg.back() == '!')
@@ -1416,7 +1429,7 @@ winboard::Engine::parseInfo(mstl::string const& msg)
 		if (varno == -1)
 			varno = setVariation(0, moves);
 
-		if (board.checkState(m_variant) & Board::Checkmate)
+		if (board.checkState(currentVariant()) & Board::Checkmate)
 		{
 			int n = mstl::div2(board.plyNumber() - currentBoard().plyNumber() + 1);
 			setMate(varno, board.whiteToMove() ? -n : +n);
@@ -1448,14 +1461,14 @@ winboard::Engine::parseCurrentMove(char const* s)
 		s = ::skipMoveNumber(::skipWords(s, 3));
 
 		Move move;
-		char const* t = currentBoard().parseMove(::skipDots(s), move, m_variant);
+		char const* t = currentBoard().parseMove(::skipDots(s), move, currentVariant());
 
 		if (t == 0)
 			return true; // skip it anayway
 
 		if (move.isLegal())
 		{
-			currentBoard().prepareForPrint(move, m_variant, Board::InternalRepresentation);
+			currentBoard().prepareForPrint(move, currentVariant(), Board::InternalRepresentation);
 			setCurrentMove(moveNo, moveCount, move);
 			updateCurrMove();
 			setTime((hours*60 + minutes)*60 + seconds);
@@ -1607,11 +1620,11 @@ winboard::Engine::parseOption(mstl::string const& option)
 void
 winboard::Engine::detectFeatures(char const* identifier)
 {
-	if (!m_isCrafty && ::strncmp(identifier, "Crafty", 5) == 0)
+	if (m_craftyVersion == 0 && ::strncmp(identifier, "Crafty", 5) == 0)
 	{
-		int major;
-
-		if (::sscanf(identifier, "Crafty v%d.", &major) == 1 && major >= 18)
+		if (::sscanf(identifier, "Crafty v%u.", &m_craftyVersion) == 0)
+			m_craftyVersion = 1;
+		else if (m_craftyVersion >= 18)
 			m_dontInvertScore = true;
 
 		if (isProbing())
@@ -1621,7 +1634,6 @@ winboard::Engine::detectFeatures(char const* identifier)
 
 		addFeature(app::Engine::Feature_Analyze);
 		m_featureSetboard = true;
-		m_isCrafty = true;
 	}
 }
 

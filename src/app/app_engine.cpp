@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2009-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -40,6 +40,7 @@
 #include "m_ostream.h"
 #include "m_vector.h"
 #include "m_algorithm.h"
+#include "m_cast.h"
 
 #include <string.h>
 #include <ctype.h>
@@ -74,36 +75,18 @@ checkOrdering(unsigned* map, unsigned n)
 #endif
 
 
-static unsigned
-toVariant(variant::Type variant)
-{
-	switch (int(variant))
-	{
-		case variant::Normal:		return Engine::Variant_Standard; break;
-		case variant::Losers:		return Engine::Variant_Losers; break;
-		case variant::Suicide:		return Engine::Variant_Suicide; break;
-		case variant::Giveaway:		return Engine::Variant_Giveaway; break;
-		case variant::Bughouse:		return Engine::Variant_Bughouse; break;
-		case variant::Crazyhouse:	return Engine::Variant_Crazyhouse; break;
-		case variant::ThreeCheck:	return Engine::Variant_Three_Check; break;
-	}
-
-	return Engine::Variant_Standard; // should never be reached
-}
-
-
 static Engine::Error
 toError(variant::Type variant)
 {
 	switch (int(variant))
 	{
-		case variant::Normal:		return Engine::Standard_Chess_Not_Supported; break;
-		case variant::Losers:		return Engine::Losers_Not_Supported; break;
-		case variant::Suicide:		return Engine::Suicide_Not_Supported; break;
-		case variant::Giveaway:		return Engine::Giveaway_Not_Supported; break;
-		case variant::Bughouse:		return Engine::Bughouse_Not_Supported; break;
-		case variant::Crazyhouse:	return Engine::Crazyhouse_Not_Supported; break;
-		case variant::ThreeCheck:	return Engine::Three_Check_Not_Supported; break;
+		case variant::Normal:			return Engine::Standard_Chess_Not_Supported; break;
+		case variant::Losers:			return Engine::Losers_Not_Supported; break;
+		case variant::Suicide:			return Engine::Suicide_Not_Supported; break;
+		case variant::Giveaway:			return Engine::Giveaway_Not_Supported; break;
+		case variant::Bughouse:			return Engine::Bughouse_Not_Supported; break;
+		case variant::Crazyhouse:		return Engine::Crazyhouse_Not_Supported; break;
+		case variant::ThreeCheck:		return Engine::Three_Check_Not_Supported; break;
 	}
 
 	return Engine::Standard_Chess_Not_Supported; // should never be reached
@@ -118,7 +101,6 @@ struct Range
 	Range() :start(0), end(0) {}
 
 	operator bool() const { return start < end; }
-
 
 	bool set(char const* s, char const* e)
 	{
@@ -256,21 +238,21 @@ findShortName(Range const& range, char const* delim)
 
 	Ranges ranges;
 
-	if (split(ranges, range, *delim) == 1)
+	for ( ; *delim; ++delim)
 	{
-		if (db::Player::findEngine(mstl::string(range.start, range.end)))
-			return range;
-	}
-	else
-	{
-		if (Range r = findShortName(ranges.begin(), ranges.end()))
-			return r;
+		if (split(ranges, range, *delim) == 1)
+		{
+			if (db::Player::findEngine(mstl::string(range.start, range.end)))
+				return range;
+		}
+		else
+		{
+			if (Range r = findShortName(ranges.begin(), ranges.end()))
+				return r;
+		}
 	}
 
-	if (*++delim == '\0')
-		return Range();
-
-	return findShortName(range, delim);
+	return Range();
 }
 
 
@@ -324,7 +306,7 @@ findRomanNumber(char const* s)
 
 struct Engine::Process : public sys::Process
 {
-	Process(Engine* engine, mstl::string const& command, mstl::string const& directory);
+	Process(Engine* engine, Engine::Command const& command, mstl::string const& directory);
 
 	bool isConnected() const { return m_connected; }
 
@@ -338,7 +320,7 @@ struct Engine::Process : public sys::Process
 };
 
 
-Engine::Process::Process(Engine* engine, mstl::string const& command, mstl::string const& directory)
+Engine::Process::Process(Engine* engine, Engine::Command const& command, mstl::string const& directory)
 	:sys::Process(command, directory)
 	,m_engine(engine)
 	,m_connected(false)
@@ -383,7 +365,6 @@ Engine::Process::resumed()
 }
 
 
-Engine::Concrete::Concrete()  { m_board.clear(); }
 Engine::Concrete::~Concrete() {}
 
 
@@ -402,20 +383,25 @@ void Engine::Concrete::sendStrength() {}
 void Engine::Concrete::sendSkillLevel() {}
 void Engine::Concrete::sendPlayOther() {}
 void Engine::Concrete::sendPondering() {}
-void Engine::Concrete::sendPlayingStyle() {}
+//void Engine::Concrete::sendPlayingStyle() {}
 void Engine::Concrete::clearHash() {}
 
+bool Engine::Concrete::pause()	{ return false; }
+bool Engine::Concrete::resume()	{ return false; }
 
-Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string const& directory)
+
+Engine::Engine(Protocol protocol, Command const& command, mstl::string const& directory)
 	:m_engine(0)
 	,m_game(0)
+	,m_protocol(protocol)
 	,m_gameId(unsigned(-1))
+	,m_analysisMode(analysis::SideToMove)
 	,m_command(command)
 	,m_directory(directory)
-	,m_identifier(rootname(basename(command)))
 	,m_ordering(Unordered)
 	,m_currentVariant(variant::Normal)
 	,m_isChess960(false)
+	,m_supportsChess960(false)
 	,m_elo(0)
 	,m_minElo(0)
 	,m_maxElo(0)
@@ -444,7 +430,6 @@ Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string cons
 	,m_variants(0)
 	,m_currMoveNumber(0)
 	,m_currMoveCount(0)
-	,m_bestIndex(0)
 	,m_bestScore(0)
 	,m_shortestMate(0)
 	,m_depth(0)
@@ -460,15 +445,17 @@ Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string cons
 	,m_useLimitedStrength(false)
 	,m_bestInfoHasChanged(false)
 	,m_useBestInfo(true)
-	,m_pause(false)
+	,m_pausing(false)
+	,m_resumed(false)
 	,m_restart(false)
+	,m_clearHash(false)
 	,m_process(0)
 	,m_exitStatus(0)
 	,m_logStream(0)
 {
 	switch (protocol)
 	{
-		case Uci:		m_engine = new uci::Engine; break;
+		case UCI:		m_engine = new uci::Engine; break;
 		case WinBoard:	m_engine = new winboard::Engine; break;
 	}
 
@@ -481,12 +468,8 @@ Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string cons
 
 Engine::~Engine()
 {
-	if (m_process)
-	{
-		// deactivate(); cannot call in destructor
-		delete m_process;
-	}
-
+	// deactivate(); cannot call in destructor
+	delete m_process;
 	delete m_engine;
 }
 
@@ -497,13 +480,6 @@ void Engine::updateBestMove()			{}
 void Engine::updateDepthInfo()		{}
 void Engine::updateTimeInfo()			{}
 void Engine::updateHashFullInfo()	{}
-
-
-Engine::Protocol
-Engine::protocol() const
-{
-	return dynamic_cast<uci::Engine const*>(m_engine) ? Uci : WinBoard;
-}
 
 
 ::sys::Process&
@@ -529,6 +505,13 @@ Engine::variant() const
 }
 
 
+bool
+Engine::isBound(db::Board const& board) const
+{
+	return m_originalBoard.isEqualZHPosition(board);
+}
+
+
 void
 Engine::kill()
 {
@@ -545,6 +528,36 @@ Engine::invokeOption(mstl::string const& name)
 {
 	if (isActive())
 		m_engine->invokeOption(name);
+}
+
+
+db::Move
+Engine::bestMove(Square square, bool from) const
+{
+	Move	bestMove;
+	bool	whiteToMove	= color::isWhite(currentBoard().sideToMove());
+	int	bestScore	= whiteToMove ? INT_MIN : INT_MAX;
+
+	for (unsigned i = 0; i < m_usedMultiPV; ++i)
+	{
+		if (!m_lines[i].isEmpty())
+		{
+			Move m = m_lines[i].front();
+
+			if (square == (from ? m.from() : m.to()))
+			{
+				int score = m_scores[i];
+
+				if (whiteToMove ? score > bestScore : bestScore > score)
+				{
+					bestScore = score;
+					bestMove = m;
+				}
+			}
+		}
+	}
+
+	return bestMove;
 }
 
 
@@ -863,7 +876,7 @@ Engine::numThreads() const
 void
 Engine::snapshot()
 {
-	m_snapshot.m_board = currentBoard();
+	m_snapshot.m_board = m_originalBoard;
 	m_snapshot.m_lines = m_lines;
 
 	for (unsigned i = 0; i < m_lines.size(); ++i)
@@ -889,19 +902,38 @@ Engine::snapshotLine(unsigned lineNo) const
 
 
 void
+Engine::snapshotClear()
+{
+	m_snapshot.m_lines.clear();
+}
+
+
+void
 Engine::activate()
 {
 	if (!m_process)
 	{
 		m_process = new Process(this, m_command, m_directory);
+		m_identifier.assign(rootname(basename(m_process->program())));
+
+		sys::Timer timer(2000);
+
+		while (m_process && !m_process->isConnected() && !timer.expired())
+			timer.doNextEvent();
+
+		if (!m_process->isConnected())
+		{
+			// Engine hasn't sent a message, so try to stimulate the engine.
+			m_engine->stimulate();
+		}
 	}
-	else if (!m_active)
+	else if (!m_active && !m_probe)
 	{
 		m_engine->protocolStart(false);
 
 		if (!m_script.empty())
 		{
-			dynamic_cast<winboard::Engine*>(m_engine)->sendConfiguration(m_script);
+			mstl::safe_cast_ptr<winboard::Engine>(m_engine)->sendConfiguration(m_script);
 			m_script.clear();
 		}
 
@@ -1020,16 +1052,16 @@ Engine::exited()
 void
 Engine::stopped()
 {
-	fatal("Engine stopped");
-	engineSignal(Stopped);
+	if (!m_pausing)
+		engineSignal(Stopped);
 }
 
 
 void
 Engine::resumed()
 {
-	fatal("Engine resumed");
-	engineSignal(Resumed);
+	if (!m_resumed)
+		engineSignal(Resumed);
 }
 
 
@@ -1063,12 +1095,16 @@ Engine::pause()
 {
 	M_REQUIRE(isActive());
 
-	m_pause = true;
-
 	if (!isAnalyzing())
 		return false;
 
-	m_engine->pause();
+	if (!m_engine->pause())
+		m_process->stop();
+
+	m_pausing = true;
+	m_resumed = false;
+	updateState(app::Engine::Pause);
+
 	return true;
 }
 
@@ -1078,19 +1114,24 @@ Engine::resume()
 {
 	M_REQUIRE(isActive());
 
-	if (!m_pause)
+	if (!m_pausing)
 		return false;
 
-	m_pause = false;
+	if (!m_engine->resume())
+		m_process->resume();
+
+	m_pausing = false;
+	m_resumed = true;
+	updateState(app::Engine::Resume);
+
+	if (m_clearHash)
+		clearHash();
 
 	if (currentGame() == 0)
 		return false;
 
 	if (m_restart)
-		return startAnalysis(m_game);
-
-	if (!currentGame()->currentBoard().gameIsOver(currentGame()->variant()))
-		m_engine->resume();
+		return startAnalysis(m_game, m_analysisMode);
 
 	return true;
 }
@@ -1101,14 +1142,13 @@ Engine::probe(unsigned timeout)
 {
 	Result result = Probe_Failed;
 
-	sys::Timer timer(1000);
+	sys::Timer timer(timeout);
 
 	m_probe = true;
 
 	try
 	{
 		activate();
-		m_active = true;
 
 		while (m_process && !m_process->isConnected() && !timer.expired())
 			timer.doNextEvent();
@@ -1130,7 +1170,7 @@ Engine::probe(unsigned timeout)
 	{
 		deactivate();
 		m_probe = false;
-		throw exc;
+		throw;
 	}
 
 	m_probe = false;
@@ -1145,7 +1185,7 @@ Engine::probe(unsigned timeout)
 		addFeature(Feature_Analyze);
 		m_engine->startAnalysis(true);
 		removeFeature(Feature_Analyze);
-		timer.restart(1000);
+		timer.restart(timeout);
 
 		try
 		{
@@ -1159,7 +1199,7 @@ Engine::probe(unsigned timeout)
 		{
 			deactivate();
 			m_probe = false;
-			throw exc;
+			throw;
 		}
 
 		m_probeAnalyze = false;
@@ -1176,7 +1216,7 @@ Engine::probe(unsigned timeout)
 
 
 bool
-Engine::startAnalysis(Game* game)
+Engine::startAnalysis(Game* game, analysis::Mode mode)
 {
 	M_REQUIRE(game);
 	M_REQUIRE(isActive());
@@ -1189,7 +1229,7 @@ Engine::startAnalysis(Game* game)
 
 	m_game = game;
 
-	if (m_pause)
+	if (m_pausing)
 	{
 		updateState(Pause);
 		m_restart = true;
@@ -1197,27 +1237,31 @@ Engine::startAnalysis(Game* game)
 	}
 
 	m_restart = false;
+	m_clearHash = false;
 
-	bool isNew = m_game ? game->id() != m_gameId : true;
+	bool isNew		= m_game ? game->id() != m_gameId : true;
+	bool restart	= mode != m_analysisMode;
+
+	m_analysisMode = mode;
 
 	if (isNew)
 	{
-		if (!(supportedVariants() & ::toVariant(game->variant())))
+		if (!(supportedVariants() & game->variant()))
 		{
 			error(::toError(game->variant()));
 			m_gameId = unsigned(-1);
 			return false;
 		}
 
-		m_currentVariant = game->variant();
 		m_isChess960 = false;
 
-		if (!variant::isStandardChess(game->idn(), m_currentVariant))
+		if (	variant::isNormalChess(game->variant())
+			&& !variant::isStandardChess(game->idn(), game->variant()))
 		{
 			if (	variant::isShuffleChess(game->idn())
 				|| game->startBoard().notDerivableFromStandardChess())
 			{
-				if (!hasVariant(Variant_Chess_960))
+				if (!supportsChess960Positions())
 				{
 					error(Chess_960_Not_Supported);
 					m_gameId = unsigned(-1);
@@ -1228,16 +1272,22 @@ Engine::startAnalysis(Game* game)
 			}
 		}
 
-		if (m_currentVariant == Variant_Standard && !hasVariant(Variant_Standard))
+		if (game->variant() == variant::Normal && !hasVariant(variant::Normal))
 		{
 			error(Standard_Chess_Not_Supported);
 			m_gameId = unsigned(-1);
 			return false;
 		}
+
+		if (m_currentVariant != game->variant())
+			restart = true;
+
+		m_currentVariant = game->variant();
 	}
-	else if (isAnalyzing())
+
+	if (!restart && isAnalyzing())
 	{
-		if (currentBoard().isEqualZHPosition(game->currentBoard()))
+		if (m_originalBoard.isEqualZHPosition(game->currentBoard()))
 		{
 			m_engine->continueAnalysis();
 			return true;
@@ -1246,6 +1296,14 @@ Engine::startAnalysis(Game* game)
 
 	m_usedMultiPV = 0;
 	m_gameId = game->id();
+	m_engine->setCurrentBoard(m_originalBoard = game->currentBoard());
+
+	//M_ASSERT(m_currentVariant == m_originalBoard.variant());
+
+	unsigned state = m_originalBoard.checkState(m_currentVariant);
+
+	if (mode == analysis::OpponentsView && !(state & Board::CannotMove))
+		m_engine->currentBoard().doNullMove();
 
 	if (m_engine->isReady())
 	{
@@ -1255,7 +1313,7 @@ Engine::startAnalysis(Game* game)
 			return false;
 		}
 
-		int score = color::isWhite(game->currentBoard().sideToMove()) ? INT_MIN : INT_MAX;
+		int score = color::isWhite(currentBoard().sideToMove()) ? INT_MIN : INT_MAX;
 
 		for (unsigned i = 0; i < m_wantedMultiPV; ++i)
 		{
@@ -1267,7 +1325,6 @@ Engine::startAnalysis(Game* game)
 		}
 
 		resetInfo();
-		m_bestIndex = 0;
 		m_bestInfoHasChanged = false;
 		m_selection.reset();
 		m_currMove.clear();
@@ -1277,34 +1334,41 @@ Engine::startAnalysis(Game* game)
 
 		clearInfo();
 
-		if (!variant::isAntichessExceptLosers(game->variant()) && game->currentBoard().givesCheck())
+		if (	!variant::isAntichessExceptLosers(game->variant())
+			&& game->currentBoard().sideNotToMoveInCheck())
 		{
 			m_gameId = unsigned(-1);
 			error(Illegal_Position);
 			return false;
 		}
 
-		unsigned state = game->currentBoard().checkState(m_currentVariant);
+		unsigned state = m_originalBoard.checkState(m_currentVariant);
+
+		// Note that some engines are crashing if started with a position where
+		// no move is possible (for example Stockfish).
 
 		if (state & (Board::Checkmate|Board::Stalemate|Board::ThreeChecks|Board::Losing))
 		{
-			if (isNew)
-				updateState(app::Engine::Start);
-			else
+			if (!isNew)
 				m_engine->stopAnalysis(false);
 
-			board::Status status = board::None; // satisfies the compiler
+			position::Status status = position::None; // satisfies the compiler
 
 			if (state & Board::Checkmate)
-				status = board::Checkmate;
+				status = position::Checkmate;
 			else if (state & Board::Stalemate)
-				status = board::Stalemate;
+				status = position::Stalemate;
 			else if (state & Board::ThreeChecks)
-				status = board::ThreeChecks;
+				status = position::ThreeChecks;
 			else if (state & Board::Losing)
-				status = board::Losing;
+				status = position::Losing;
 
 			updateInfo(game->currentBoard().sideToMove(), status);
+		}
+		else if ((state & Board::Check) && mode == analysis::OpponentsView)
+		{
+			updateInfo(m_originalBoard.sideToMove(), position::Check);
+			return true;
 		}
 		else if (!m_engine->startAnalysis(isNew))
 		{
@@ -1328,6 +1392,9 @@ Engine::stopAnalysis()
 	}
 	else
 	{
+		if (m_pausing)
+			resume();
+
 		m_engine->stopAnalysis(false);
 		rc = true;
 	}
@@ -1513,6 +1580,7 @@ Engine::changeSkillLevel(unsigned level)
 }
 
 
+#if 0
 mstl::string const&
 Engine::changePlayingStyle(mstl::string const& style)
 {
@@ -1523,6 +1591,7 @@ Engine::changePlayingStyle(mstl::string const& style)
 
 	return m_playingStyle;
 }
+#endif
 
 
 bool
@@ -1631,7 +1700,7 @@ Engine::reorderBestFirst(unsigned currentNo)
 
 	M_ASSERT(::checkOrdering(m_map, m_usedMultiPV));
 
-	if (memcmp(m_map, old, sizeof(old[0])*m_usedMultiPV))
+	if (!mstl::equal(m_map, m_map + m_usedMultiPV, old))
 	{
 		m_useBestInfo = false;
 
@@ -1681,7 +1750,7 @@ Engine::insertPV(db::MoveList const& moves)
 
 
 int
-Engine::findVariationNo(db::Move const& move) const
+Engine::findVariation(db::Move const& move) const
 {
 	for (unsigned i = 0; i < m_usedMultiPV; ++i)
 	{
@@ -1732,9 +1801,7 @@ Engine::addOption(mstl::string const& name,
 						mstl::string const& var,
 						mstl::string const& max)
 {
-	m_options.push_back();
-
-	Option& opt = m_options.back();
+	Option& opt = m_options.push_back();
 	UserOptions::const_iterator i = m_userOptions.find(name);
 
 	opt.name	= name;
@@ -1782,7 +1849,7 @@ Engine::updateConfiguration(mstl::string const& script)
 	M_REQUIRE(protocol() == WinBoard);
 
 	if (isActive())
-		dynamic_cast<winboard::Engine*>(m_engine)->sendConfiguration(script);
+		static_cast<winboard::Engine*>(m_engine)->sendConfiguration(script);
 	else
 		m_script.assign(script);
 }
@@ -1792,7 +1859,17 @@ void
 Engine::clearHash()
 {
 	if (isActive() && hasFeature(Feature_Clear_Hash))
-		m_engine->clearHash();
+	{
+		if (m_pausing)
+		{
+			m_clearHash = true;
+		}
+		else
+		{
+			m_engine->clearHash();
+			m_clearHash = false;
+		}
+	}
 }
 
 

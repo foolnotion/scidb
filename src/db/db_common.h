@@ -1450,6 +1450,15 @@ namespace display
 	};
 };
 
+namespace analysis
+{
+	enum Mode
+	{
+		SideToMove,
+		OpponentsView,
+	};
+}
+
 namespace type
 {
 	enum ID

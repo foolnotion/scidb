@@ -1010,7 +1010,7 @@ proc BuildFrame(Layout) {w position context} {
 		-state $state \
 		;
 	::theme::configureSpinbox $m.stabstop1
-	::validate::spinboxFloat $m.stabstop1
+	::validate::spinboxDouble $m.stabstop1
 	ttk::label $m.pixel1 -text $mc::Spaces
 	ttk::label $m.ltabstop2 -text $mc::ParLayout(tabstop-2)
 	ttk::spinbox $m.stabstop2 \
@@ -1025,7 +1025,7 @@ proc BuildFrame(Layout) {w position context} {
 		;
 	ttk::label $m.pixel2 -text $mc::Spaces
 	::theme::configureSpinbox $m.stabstop2
-	::validate::spinboxFloat $m.stabstop2
+	::validate::spinboxDouble $m.stabstop2
 
 	grid $m.columnStyle  -row 3 -column 1 -sticky w -columnspan 4
 	grid $m.ltabstop1    -row 5 -column 2 -sticky w

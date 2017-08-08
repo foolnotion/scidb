@@ -729,35 +729,37 @@
 ::application::database::positions::mc::F_Frequency	"Frequency" ;# NEW
 
 ### application::pgn ###################################################
-::application::pgn::mc::Command(move:comment)			"Megjegyzés hozzáadása"
-::application::pgn::mc::Command(move:marks)				"Jelölés hozzáadása"
-::application::pgn::mc::Command(move:annotation)		"Értékelés/megjegyzés/jelölés hozzáadása"
-::application::pgn::mc::Command(move:append)				"Lépés hozzáadása"
-::application::pgn::mc::Command(move:nappend)			"Lépés hozzáadása"
-::application::pgn::mc::Command(move:exchange)			"Lépés cseréje"
-::application::pgn::mc::Command(variation:new)			"Új változat"
-::application::pgn::mc::Command(variation:replace)		"Lépések felülírása"
+::application::pgn::mc::Command(move:comment)		"Megjegyzés hozzáadása"
+::application::pgn::mc::Command(move:marks)		"Jelölés hozzáadása"
+::application::pgn::mc::Command(move:annotation)	"Értékelés/megjegyzés/jelölés hozzáadása"
+::application::pgn::mc::Command(move:append)		"Lépés hozzáadása"
+::application::pgn::mc::Command(move:append:n)		"Lépés hozzáadása"
+::application::pgn::mc::Command(move:exchange)		"Lépés cseréje"
+::application::pgn::mc::Command(variation:new)		"Új változat"
+::application::pgn::mc::Command(variation:new:n)	"Add Variations" ;# NEW
+::application::pgn::mc::Command(variation:replace)	"Lépések felülírása"
 ::application::pgn::mc::Command(variation:truncate)	"Változat csonkítása"
-::application::pgn::mc::Command(variation:first)		"Első változattá emelés"
-::application::pgn::mc::Command(variation:promote)		"Változat főváltozattá emelése"
-::application::pgn::mc::Command(variation:remove)		"változat törlése"
+::application::pgn::mc::Command(variation:first)	"Első változattá emelés"
+::application::pgn::mc::Command(variation:promote)	"Változat főváltozattá emelése"
+::application::pgn::mc::Command(variation:remove)	"változat törlése"
 ::application::pgn::mc::Command(variation:remove:n)	"Delete Variations" ;# NEW
+::application::pgn::mc::Command(variation:merge)	"Merge variation(s)" ;# NEW
 ::application::pgn::mc::Command(variation:mainline)	"Új főváltozat"
-::application::pgn::mc::Command(variation:insert)		"Lépések beszúrása"
+::application::pgn::mc::Command(variation:insert)	"Lépések beszúrása"
 ::application::pgn::mc::Command(variation:exchange)	"Lépések cseréje"
-::application::pgn::mc::Command(strip:moves)				"Lépések az elejétől"
-::application::pgn::mc::Command(strip:truncate)			"Lépések a végéig"
-::application::pgn::mc::Command(strip:annotations)		"Értékelő jelek"
-::application::pgn::mc::Command(strip:info)				"Lépés információ"
-::application::pgn::mc::Command(strip:marks)				"Jelölések"
-::application::pgn::mc::Command(strip:comments)			"Megjegyzések"
-::application::pgn::mc::Command(strip:language)       "Language" ;# NEW
-::application::pgn::mc::Command(strip:variations)		"Változatok"
-::application::pgn::mc::Command(copy:comments)			"Megjegyzések másolása"
-::application::pgn::mc::Command(move:comments)			"Megjegyzések áthelyezése"
-::application::pgn::mc::Command(game:clear)				"Játszma törlése"
-::application::pgn::mc::Command(game:merge)				"Merge Game" ;# NEW
-::application::pgn::mc::Command(game:transpose)			"Transpose Game"
+::application::pgn::mc::Command(strip:moves)		"Lépések az elejétől"
+::application::pgn::mc::Command(strip:truncate)		"Lépések a végéig"
+::application::pgn::mc::Command(strip:annotations)	"Értékelő jelek"
+::application::pgn::mc::Command(strip:info)		"Lépés információ"
+::application::pgn::mc::Command(strip:marks)		"Jelölések"
+::application::pgn::mc::Command(strip:comments)		"Megjegyzések"
+::application::pgn::mc::Command(strip:language)		"Language" ;# NEW
+::application::pgn::mc::Command(strip:variations)	"Változatok"
+::application::pgn::mc::Command(copy:comments)		"Megjegyzések másolása"
+::application::pgn::mc::Command(move:comments)		"Megjegyzések áthelyezése"
+::application::pgn::mc::Command(game:clear)		"Játszma törlése"
+::application::pgn::mc::Command(game:merge)		"Merge Game" ;# NEW
+::application::pgn::mc::Command(game:transpose)		"Transpose Game"
 
 ::application::pgn::mc::StartTrialMode						"Start Trial Mode"
 ::application::pgn::mc::StopTrialMode						"Stop Trial Mode"
@@ -1131,7 +1133,7 @@
 ::engine::mc::SortRating		"Sort by CCRL rating" ;# NEW
 ::engine::mc::OpenUrl			"Link megnyitása böngészőben"
 
-::engine::mc::AdminEngines		"Elemző modulok kezelése"
+::engine::mc::AdminEngines		"Elemző &modulok kezelése"
 ::engine::mc::SetupEngine		"%s modul beállításai"
 ::engine::mc::ImageFiles		"Képfájlok"
 ::engine::mc::SelectEngine		"Elemzőmodul választása"
@@ -1166,6 +1168,10 @@
 ::engine::mc::CommandNotAllowed		"A(z) '%s' utasítás itt nem használható."
 ::engine::mc::ThrowAwayChanges		"Az összes változtatás elvetése?"
 ::engine::mc::ResetToDefaultContent	"Alapbeállítások visszaállítása"
+::engine::mc::PleaseBePatient		"Please be patient, 'Wine' needs some time." ;# NEW
+::engine::mc::TryAgain			"The first start of 'Wine' needs some time, maybe it works if you try it again." ;# NEW
+::engine::mc::CannotUseWindowsExe	"Cannot use Windows executable without 'Wine'." ;# NEW
+::engine::mc::InstallWine		"Please install 'Wine' beforehand." ;# NEW
 
 ::engine::mc::ProbeError(registration)		"Ez a modul előzetes regosztrációt igényel."
 ::engine::mc::ProbeError(copyprotection)	"Ez a modul másolás-védett."
@@ -1193,12 +1199,15 @@
 ### analysis ###########################################################
 ::application::analysis::mc::Control			"Control" ;# NEW
 ::application::analysis::mc::Information		"Information" ;# NEW
-::application::analysis::mc::Setup			"Setup" ;# NEW
+::application::analysis::mc::SetupEngine		"Setup engine" ;# NEW
 ::application::analysis::mc::Pause			"Pause" ;# NEW
 ::application::analysis::mc::Resume			"Resume" ;# NEW
 ::application::analysis::mc::LockEngine			"Lock engine to current position" ;# NEW
+::application::analysis::mc::CloseEngine		"Power down motor" ;# NEW
 ::application::analysis::mc::MultipleVariations		"Multiple variations (multi-pv)" ;# NEW
 ::application::analysis::mc::HashFullness		"Hash fullness" ;# NEW
+::application::analysis::mc::NodesPerSecond		"Nodes per second" ;# NEW
+::application::analysis::mc::TablebaseHits		"Tablebase hits" ;# NEW
 ::application::analysis::mc::Hash			"Hash:" ;# NEW
 ::application::analysis::mc::Lines			"Lines:" ;# NEW
 ::application::analysis::mc::MateIn			"%color mate in %n" ;# NEW
@@ -1211,7 +1220,16 @@
 ::application::analysis::mc::DidNotReceivePong		"Engine is not responding to \"ping\" command - Engine aborted" ;# NEW
 ::application::analysis::mc::SearchMateNotSupported	"This engine is not supporting search for mate." ;# NEW
 ::application::analysis::mc::EngineIsPausing		"This engine is currently pausing." ;# NEW
+::application::analysis::mc::PressEngineButton		"Use the locomotive for starting a motor." ;# NEW
 ::application::analysis::mc::Stopped			"stopped" ;# NEW
+::application::analysis::mc::OpponentsView		"Opponents view" ;# NEW
+::application::analysis::mc::InsertMoveAsComment	"Insert move as comment" ;# NEW
+::application::analysis::mc::SetupEvalEdges		"Setup evaluation edges" ;# NEW
+::application::analysis::mc::InvalidEdgeValues		"Invalid edge values." ;# NEW
+::application::analysis::mc::MustBeAscending		"The values must be strictly ascending as in the examples." ;# NEW
+::application::analysis::mc::StartMotor			"Start motor" ;# NEW
+::application::analysis::mc::StartOfMotorFailed		"Start of motor failed"
+::application::analysis::mc::WineIsNotInstalled		"'Wine' is not (properly) installed" ;# NEW
 
 ::application::analysis::mc::LinesPerVariation		"Lines per variation" ;# NEW
 ::application::analysis::mc::BestFirstOrder		"Sort by evaluation" ;# NEW
@@ -1222,10 +1240,14 @@
 ::application::analysis::mc::Seconds			"sec" ;# NEW
 ::application::analysis::mc::Minutes			"min" ;# NEW
 
+::application::analysis::mc::Show(more)			"Show more" ;# NEW
+::application::analysis::mc::Show(less)			"Show less" ;# NEW
+
 ::application::analysis::mc::Status(checkmate)		"%s is checkmate" ;# NEW
 ::application::analysis::mc::Status(stalemate)		"%s is stalemate" ;# NEW
 ::application::analysis::mc::Status(threechecks)	"%s got three checks" ;# NEW
 ::application::analysis::mc::Status(losing)		"%s lost all pieces" ;# NEW
+::application::analysis::mc::Status(check)		"%s is in check" ;# NEW
 
 ::application::analysis::mc::NotSupported(standard)	"This engine does not support standard chess." ;# NEW
 ::application::analysis::mc::NotSupported(chess960)	"This engine does not support chess 960." ;# NEW
@@ -1239,10 +1261,13 @@
 ::application::analysis::mc::Signal(closed)		"Engine has closed connection." ;# NEW
 ::application::analysis::mc::Signal(terminated)		"Engine terminated with exit code %s." ;# NEW
 
-::application::analysis::mc::Add(move)			"Add move" ;# NEW
+::application::analysis::mc::Add(move)			"Append move" ;# NEW
+::application::analysis::mc::Add(seq)			"Append variation" ;# NEW
 ::application::analysis::mc::Add(var)			"Add move as new variation" ;# NEW
 ::application::analysis::mc::Add(line)			"Add variation" ;# NEW
 ::application::analysis::mc::Add(all)			"Add all variations" ;# NEW
+::application::analysis::mc::Add(merge)			"Merge variation" ;# NEW
+::application::analysis::mc::Add(incl)			"Merge all variations"
 
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Játszma megjelölése töröltként"

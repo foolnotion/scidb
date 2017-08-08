@@ -393,8 +393,9 @@ proc DestroyPane {main uid analysisNumber} {
 
 
 proc UpdateNameVar {analysisNumber args} {
-	if {![analysis::active? $analysisNumber]} {
-		variable MapAnalysisToTerminal
+	variable MapAnalysisToTerminal
+
+	if {[info exists MapAnalysisToTerminal($analysisNumber)] && ![analysis::active? $analysisNumber]} {
 		variable NameVar
 
 		set terminalNumber $MapAnalysisToTerminal($analysisNumber)

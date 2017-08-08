@@ -6,7 +6,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2011-2013 Gregor Cramer
+// Copyright: (C) 2011-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -18,6 +18,7 @@
 
 #include "sys_process.h"
 #include "sys_thread.h"
+#include "sys_file.h"
 #include "sys_base.h"
 
 #include "tcl_exception.h"
@@ -28,6 +29,7 @@
 
 #include <tcl.h>
 #include <stdlib.h>
+#include <string.h>
 
 //#define DEBUG
 
@@ -229,7 +231,7 @@ readHandler(ClientData clientData, int)
 }
 
 
-Process::Process(mstl::string const& command, mstl::string const& directory)
+Process::Process(Command const& command, mstl::string const& directory)
 	:m_chan(0)
 	,m_pid(-1)
 	,m_buffer(new Tcl_DString)
@@ -254,18 +256,30 @@ Process::Process(mstl::string const& command, mstl::string const& directory)
 
 	Tcl_DStringInit(m_buffer);
 
-	DString cmd, dir, cwd;
-
-	Tcl_TranslateFileName(::sys::tcl::interp(), command, cmd);
+	DString dir, cwd;
 	Tcl_TranslateFileName(::sys::tcl::interp(), directory, dir);
 
 	if (!directory.empty() && Tcl_GetCwd(::sys::tcl::interp(), cwd) && cwd)
 		Tcl_Chdir(dir);
 
-	char const* argv[1] = { command.c_str() };
+	char const* argv[command.size()];
+	DString buf[command.size()];
+	unsigned i = 0;
+
+	for ( ; i < command.size() && file::access(command[i], file::Existence); ++i)
+	{
+		Tcl_TranslateFileName(::sys::tcl::interp(), command[i], buf[i]);
+		argv[i] = buf[i];
+
+		if (file::access(command[i], file::Executable))
+			m_program.assign(command[i]);
+	}
+
+	for ( ; i < command.size(); ++i)
+		argv[i] = command[i];
 
 	m_chan = Tcl_OpenCommandChannel(	::sys::tcl::interp(),
-												1, argv,
+												command.size(), argv,
 												TCL_STDIN | TCL_STDOUT | TCL_STDERR | TCL_ENFORCE_MODE);
 
 	if (cwd)
@@ -435,6 +449,8 @@ Process::close()
 		m_calledExited = true;
 		exited();
 	}
+
+	kill();
 }
 
 
@@ -464,6 +480,47 @@ Process::write(char const* msg, int size)
 	}
 
 	return bytesWritten;
+}
+
+
+void
+Process::stop()
+{
+	M_REQUIRE(isRunning());
+
+	if (!m_stopped)
+	{
+#ifdef __WIN32__
+#else
+		::kill(m_pid, SIGSTOP);
+#endif
+	}
+}
+
+
+void
+Process::resume()
+{
+	M_REQUIRE(isRunning());
+
+	if (m_stopped)
+	{
+#ifdef __WIN32__
+#else
+		::kill(m_pid, SIGCONT);
+#endif
+	}
+}
+
+
+void
+Process::kill()
+{
+	if (m_pid != -1)
+	{
+		::kill(m_pid, SIGKILL);
+		m_pid = -1;
+	}
 }
 
 

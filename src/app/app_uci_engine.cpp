@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2009-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -57,6 +57,14 @@ toStr(unsigned value)
 	char buf[20];
 	snprintf(buf, sizeof(buf), "%u", value);
 	return buf;
+}
+
+
+// UCI options should be case insensitive
+static bool
+ciEqual(char const* lhs, char const* rhs)
+{
+	return strcasecmp(lhs, rhs) == 0;
 }
 
 
@@ -162,8 +170,11 @@ isPathOrFile(mstl::string const& s, char const* upper, char const* lower)
 
 	if (i != mstl::string::npos)
 	{
-		char const* e = s.begin() + i + 4;
-		return *e == '\0' || *e == '_' || strncmp(s, "name", 4) == 0;
+		char const* p = s.begin() + i;
+		char const* e = p + strlen(upper);
+
+		return	(i == 0 || p[-1] == '_' || islower(p[-1]))
+				&& (*e == '\0' || *e == '_' || strncmp(s, "name", 4) == 0);
 	}
 
 	i = s.find(lower);
@@ -172,9 +183,9 @@ isPathOrFile(mstl::string const& s, char const* upper, char const* lower)
 		return false;
 
 	char const* p = s.begin() + i;
-	char const* e = p + 4;
+	char const* e = p + strlen(lower);
 
-	return (i == 0 || p[-1] == '_') && ((*e == '\0' || *e == '_' || strncmp(s, "name", 4) == 0));
+	return (i == 0 || p[-1] == '_') && (*e == '\0' || *e == '_' || strncmp(s, "name", 4) == 0);
 }
 
 
@@ -236,7 +247,6 @@ toId(mstl::string const& name)
 
 uci::Engine::Engine()
 	:m_state(None)
-	,m_variant(variant::Normal)
 	,m_uciok(false)
 	,m_isReady(false)
 	,m_hasMultiPV(false)
@@ -252,6 +262,7 @@ uci::Engine::Engine()
 	,m_sendAnalyseMode(false)
 	,m_usedAnalyseModeBefore(false)
 	,m_clearHashOnTheFly(false)
+	,m_uciAlreadySent(false)
 {
 }
 
@@ -297,7 +308,7 @@ uci::Engine::setupPosition(Board const& board)
 {
 	m_position.assign("position ", 9);
 
-	if (board.isStandardPosition(currentGame()->variant()))
+	if (variant::isNormalChess(currentVariant()) && board.isStandardPosition(currentVariant()))
 	{
 		m_position.append("startpos", 8);
 	}
@@ -324,7 +335,7 @@ uci::Engine::startAnalysis(bool isNewGame)
 {
 	M_ASSERT(currentGame());
 	M_ASSERT(isActive());
-	M_ASSERT(!currentGame()->currentBoard().gameIsOver(currentGame()->variant()));
+	M_ASSERT(!currentGame()->currentBoard().gameIsOver(currentVariant()));
 
 	m_state = Start;
 	m_isNewGame = isNewGame;
@@ -342,9 +353,7 @@ uci::Engine::startAnalysis(bool isNewGame)
 		m_usedAnalyseModeBefore = true;
 	}
 
-	setBoard(game->currentBoard());
-
-	if (game->historyIsLegal(Game::DontAllowNullMoves))
+	if (!analysesOpponentsView() && game->historyIsLegal(Game::DontAllowNullMoves))
 	{
 		// We prefer to use the "position moves" setup because (due to Steve):
 		// The problem is that lots engines will reset their analysis with "position fen".
@@ -359,7 +368,8 @@ uci::Engine::startAnalysis(bool isNewGame)
 	}
 	else
 	{
-		// "position moves" cannot be used because the move history contains illegal moves.
+		// "position moves" cannot be used because the move history contains either
+		// illegal moves or null moves.
 		setupPosition(currentBoard());
 	}
 
@@ -421,7 +431,8 @@ uci::Engine::continueAnalysis()
 }
 
 
-void
+#if 0
+bool
 uci::Engine::pause()
 {
 	// XXX only working for analyzing mode
@@ -430,17 +441,20 @@ uci::Engine::pause()
 	m_state = Pause;
 	m_stopAnalyzeIsPending = true;
 	updateState(app::Engine::Pause);
+	return true;
 }
 
 
-void
+bool
 uci::Engine::resume()
 {
 	send("go infinite");
 	m_isAnalyzing = true;
 	m_state = Start;
 	updateState(app::Engine::Resume);
+	return true;
 }
+#endif
 
 
 bool
@@ -453,10 +467,11 @@ uci::Engine::isReady() const
 void
 uci::Engine::protocolStart(bool isProbing)
 {
-	addVariant(app::Engine::Variant_Standard);
+	addVariant(variant::Normal);
 
 	// tell the engine we are using the UCI protocol
-	send("uci");
+	if (!m_uciAlreadySent)
+		send("uci");
 	// after that we wait for "uciok"
 }
 
@@ -470,6 +485,14 @@ uci::Engine::protocolEnd()
 	m_stopAnalyzeIsPending = false;
 	send("quit");
 	m_isReady = false;
+}
+
+
+void
+uci::Engine::stimulate()
+{
+	send("uci");
+	m_uciAlreadySent = true;
 }
 
 
@@ -521,9 +544,7 @@ uci::Engine::processMessage(mstl::string const& message)
 
 					if (m_variant != currentVariant())
 					{
-						// Currently only variant Three-check Chess is supported in UCI mode.
-						send("setoption name UCI_VariantThreeCheck value " +
-								::toBool(currentVariant() == variant::ThreeCheck));
+						send("setoption name UCI_Variant value " + variant::identifier(currentVariant()));
 						m_variant = currentVariant();
 					}
 
@@ -579,6 +600,9 @@ uci::Engine::processMessage(mstl::string const& message)
 						// Only a few engines are able to clear hash tables on the fly,
 						// currently this is known only for Stockfish.
 						m_clearHashOnTheFly = ::strncmp(identifier, "Stockfish", 9) == 0;
+
+						// TODO: test whether engine is understanding null moves.
+						// Possibly we have to test this while probing the engine.
 					}
 					else if (::strncmp(message, "id author ", 10) == 0)
 					{
@@ -1028,32 +1052,27 @@ uci::Engine::parseOption(char const* msg)
 
 	mstl::string id(::toId(name));
 
-	if (::strncmp(name, "UCI_", 4) == 0)
+	if (::strncasecmp(name, "UCI_", 4) == 0)
 	{
 		switch (name[4])
 		{
 			case 'A':
-				if (name == "UCI_AnalyseMode")
+				if (::ciEqual(name, "UCI_AnalyseMode"))
 					m_hasAnalyseMode = true;
 				break;
 
 			case 'C':
-				if (name == "UCI_Chess960")
-					addVariant(app::Engine::Variant_Chess_960);
-				break;
-
-			case 'L':
-				if (name == "UCI_LimitStrength")
-					addFeature(app::Engine::Feature_Limit_Strength);
+				if (::ciEqual(name, "UCI_Chess960"))
+					setSupportsChess960Positions();
 				break;
 
 			case 'E':
-				if (name == "UCI_EngineAbout")
+				if (::ciEqual(name, "UCI_EngineAbout"))
 				{
 					if (isProbing())
 						detectUrl(dflt);
 				}
-				else if (name == "UCI_Elo")
+				else if (::ciEqual(name, "UCI_Elo"))
 				{
 					if (type == "spin")
 					{
@@ -1063,21 +1082,42 @@ uci::Engine::parseOption(char const* msg)
 				}
 				break;
 
+			case 'L':
+				if (::ciEqual(name, "UCI_LimitStrength"))
+					addFeature(app::Engine::Feature_Limit_Strength);
+				break;
+
 			case 'S':
-				if (name == "UCI_ShowCurrLine")
+				if (::ciEqual(name, "UCI_ShowCurrLine"))
 					m_hasShowCurrLine = true;
-				else if (name == "UCI_ShowRefutations")
+				else if (::ciEqual(name, "UCI_ShowRefutations"))
 					m_hasShowRefutations = true;
-				else if (name == "UCI_ShredderbasesPath")
-					; // we do not use
-				else if (name == "UCI_SetPositionValue")
+//				else if (i:ciEqual(name, "UCI_ShredderbasesPath"))
+//					; // we do not use
+				else if (::ciEqual(name, "UCI_SetPositionValue"))
 					; // we do not use
 				break;
 
 			case 'V':
-				if (name == "UCI_VariantThreeCheck")
-					addVariant(app::Engine::Variant_Three_Check);
-				break; 
+				if (::ciEqual(name, "UCI_Variant"))
+				{
+					Vars::iterator i = vars.begin();
+					Vars::iterator e = vars.end();
+
+					removeVariant(variant::Normal);
+
+					for ( ; i != e; ++i)
+					{
+						variant::Type variant = variant::fromString(*i);
+
+						if (variant != variant::Undetermined)
+							addVariant(variant);
+					}
+
+					if (supportedVariants() == 0)
+						addVariant(variant::Normal);
+				}
+				break;
 		}
 	}
 	else if (type == "check")
@@ -1189,7 +1229,15 @@ uci::Engine::parseOption(char const* msg)
 			addOption(name, type, dflt, var);
 
 			if (id == "playingstyle")
+			{
 				setPlayingStyles(var);
+//				m_playingStyle.assign(name);
+			}
+			else if (id == "style" && !hasFeature(app::Engine::Feature_Playing_Styles))
+			{
+				setPlayingStyles(var);
+//				m_playingStyle.assign(name);
+			}
 		}
 	}
 	else if (type == "button")
@@ -1204,7 +1252,7 @@ uci::Engine::parseOption(char const* msg)
 	}
 	else if (type == "string")
 	{
-		if (::isPath(id))
+		if (::isPath(name))
 			addOption(name, "path", dflt);
 		else if (::isFile(id))
 			addOption(name, "file", dflt);
@@ -1236,6 +1284,7 @@ uci::Engine::sendOptions()
 		if (opt.type == "button")
 			continue; // we shouldn't trigger any button
 
+		// NOTE: "Playing Style" or "Style" will not be exluded here because of the problem with i18n
 		if (opt.name == m_threads || opt.name == m_minThreads || opt.name == m_maxThreads)
 			continue; // should not be sent here
 
@@ -1303,17 +1352,22 @@ uci::Engine::sendOptions()
 					continue; // should not be sent here
 				break;
 
+			case 's':
+				if (id == "skilllevel")
+					continue; // should not be sent here
+				break;
+
 			case 't':
 				if (id == "tbhitinfo" && opt.type == "check")
 					val = "true";
 				break;
 
 			case 'u':
-				if (opt.name == "UCI_LimitStrength")
+				if (::ciEqual(opt.name, "UCI_LimitStrength"))
 					val = limitedStrength() ? "true" : "false";
-				else if (opt.name == "UCI_ShowCurrLine")
+				else if (::ciEqual(opt.name, "UCI_ShowCurrLine"))
 					val = "false";
-				else if (opt.name == "UCI_ShowRefutations")
+				else if (::ciEqual(opt.name, "UCI_ShowRefutations"))
 					val = "false";
 				break;
 		}
@@ -1437,6 +1491,18 @@ uci::Engine::sendSkillLevel()
 
 	sendOption(m_skillLevel, ::toStr(skillLevel()));
 }
+
+
+#if 0
+void
+uci::Engine::sendPlayingStyle()
+{
+	if (m_playingStyle.empty())
+		m_skillLevel.assign("Style");
+
+	sendOption(m_playingStyle, playingStyle());
+}
+#endif
 
 
 void

@@ -326,7 +326,7 @@ public:
 	Engine* engine(unsigned id) const;
 	mstl::ostream* setEngineLog(mstl::ostream* strm = 0);
 	mstl::ostream* engineLog() const;
-	bool startAnalysis(unsigned engineId);
+	bool startAnalysis(unsigned engineId, db::analysis::Mode mode);
 	bool stopAnalysis(unsigned engineId);
 
 	void clearBase(Cursor& cursor);
