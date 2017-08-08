@@ -35,6 +35,8 @@
 #include "sci/sci_codec.h"
 
 #include "u_progress.h"
+#include "u_zstream.h"
+#include "u_misc.h"
 
 #include "sys_utf8_codec.h"
 #include "sys_file.h"
@@ -74,10 +76,200 @@ static mstl::string cdbPath;
 namespace tcl { namespace bits { Tcl_Interp* interp; } }
 
 
+static void
+newline()
+{
+	if (newNewline)
+	{
+		printf("\n");
+		newNewline = false;
+	}
+	fflush(stdout);
+}
+
+
 struct TclInterpreter
 {
 	TclInterpreter()	{ tcl::bits::interp = Tcl_CreateInterp(); }
 	~TclInterpreter()	{ Tcl_DeleteInterp(tcl::bits::interp); }
+};
+
+
+class MyPgnReader : public PgnReader
+{
+public:
+
+	MyPgnReader(mstl::string const& path, mstl::string const& convertfrom)
+		:PgnReader(	*(m_stream = new util::ZStream(sys::file::internalName(path))),
+						variant::Normal,
+						detectEncoding(path, convertfrom),
+						PgnReader::File,
+						PgnReader::Normalize,
+						PgnReader::UseResultTag)
+		,m_tooManyRoundNames(false)
+	{
+		if (!*m_stream)
+		{
+			::newline();
+			::fprintf(stderr, "cannot open file '%s'\n", path.c_str());
+			exit(1);
+		}
+	}
+
+	~MyPgnReader() throw()
+	{
+		delete m_stream;
+	}
+
+	static mstl::string detectEncoding(mstl::string const& path, mstl::string convertfrom)
+	{
+		if (convertfrom == sys::utf8::Codec::automatic())
+		{
+			if (util::ZStream::testByteOrderMark(sys::file::internalName(path)))
+				convertfrom = sys::utf8::Codec::utf8();
+			else
+				convertfrom = sys::utf8::Codec::latin1();
+		}
+		return convertfrom;
+	}
+
+	void warning(	Warning code,
+						unsigned lineNo,
+						unsigned column,
+						unsigned gameNo,
+						::db::variant::Type variant,
+						mstl::string const& info,
+						mstl::string const& item)
+	{
+		char const* msg;
+
+		switch (code)
+		{
+			case MissingWhitePlayerTag:			msg = "missing white player tag"; break;
+			case MissingBlackPlayerTag:			msg = "missing black player tag"; break;
+			case MissingPlayerTags:					msg = "missing player tags"; break;
+			case MissingResult:						msg = "missing result"; break;
+			case MissingResultTag:					msg = "missing result Tag"; break;
+			case InvalidRoundTag:					msg = "invalid round tag"; break;
+			case InvalidResultTag:					msg = "invalid result tag"; break;
+			case InvalidDateTag:						msg = "invalid date tag"; break;
+			case InvalidEventDateTag:				msg = "invalid event date tag"; break;
+			case InvalidTimeModeTag:				msg = "invalid time mode tag"; break;
+			case InvalidEcoTag:						msg = "invalid eco tag"; break;
+			case InvalidTagName:						msg = "invalid tagName"; break;
+			case InvalidCountryCode:				msg = "invalid country code"; break;
+			case InvalidRating:						msg = "invalid rating"; break;
+			case InvalidNag:							msg = "invalid nag"; break;
+			case BraceSeenOutsideComment:			msg = "brace seen outside comment"; break;
+			case MissingFen:							msg = "missing fen"; break;
+			case FixedInvalidFen:					msg = "fixed invalid fen"; break;
+			case UnknownEventType:					msg = "unknown event type"; break;
+			case UnknownTitle:						msg = "unknown title"; break;
+			case UnknownPlayerType:					msg = "unknown player type"; break;
+			case UnknownSex:							msg = "unknown sex"; break;
+			case UnknownTermination:				msg = "unknown termination"; break;
+			case UnknownMode:							msg = "unknown mode"; break;
+			case RatingTooHigh:						msg = "rating too high"; break;
+			case EncodingFailed:						msg = "encoding failed"; break;
+			case TooManyNags:							msg = "too many nags"; break;
+			case IllegalCastling:					msg = "illegal castling"; break;
+			case IllegalMove:							msg = "illegal move"; break;
+			case CastlingCorrection:				msg = "castling correction"; break;
+			case ResultDidNotMatchHeaderResult: msg = "result did not match header result"; break;
+			case ValueTooLong:						msg = "value too long"; break;
+			case NotSuicideNotGiveaway:			msg = "not suicide, not giveaway"; break;
+			case VariantChangedToGiveaway:		msg = "variant changed to giveaway"; break;
+			case VariantChangedToSuicide:			msg = "variant changed to suicide"; break;
+			case ResultCorrection:					msg = "result correction"; break;
+			case MaximalErrorCountExceeded:		msg = "maximal error count exceeded"; break;
+			case MaximalWarningCountExceeded:	msg = "maximal warning count exceeded"; break;
+		}
+
+		::newline();
+		::fprintf(stderr, "*** Warning(game=%u,line=%u.%u): %s", gameNo, lineNo, column, msg);
+		if (!item.empty())
+			::fprintf(stderr, " (%s)", item.c_str());
+		::fprintf(stderr, "\n");
+	}
+
+	void error(	Error code,
+					unsigned lineNo,
+					unsigned column,
+					unsigned gameNo,
+					::db::variant::Type variant,
+					mstl::string const& message,
+					mstl::string const& info,
+					mstl::string const& item)
+	{
+		char const* msg;
+
+		switch (code)
+		{
+			case InvalidToken:					msg = "invalid token"; break;
+			case UnexpectedSymbol:				msg = "unexpected symbol"; break;
+			case UnexpectedEndOfInput:			msg = "unexpected end of input"; break;
+			case UnexpectedTag:					msg = "unexpected tag"; break;
+			case UnexpectedEndOfGame:			msg = "unexpected end of game"; break;
+			case TagNameExpected:				msg = "tag name expected"; break;
+			case TagValueExpected:				msg = "tag value expected"; break;
+			case InvalidFen:						msg = "invalid FEN"; break;
+			case UnterminatedString:			msg = "unterminated string"; break;
+			case UnterminatedVariation:		msg = "unterminated variation"; break;
+			case InvalidMove:						msg = "invalid move"; break;
+			case UnsupportedVariant:			msg = "unsupported variant"; break;
+			case SeemsNotToBePgnText:			msg = "seems not to be PGN text"; break;
+			case UnexpectedResultToken:		msg = "unexpected result token"; break;
+			case UnexpectedCastling:			msg = "unexpected castling"; break;
+			case ContinuationsNotSupported:	msg = "continuations not supported"; break;
+		}
+
+		::newline();
+		::fprintf(stderr, "*** Error(game=%u,line=%u.%u): %s", gameNo, lineNo, column, msg);
+		if (!message.empty())
+			::fprintf(stderr, " -- %s", message.c_str());
+		if (!item.empty())
+			::fprintf(stderr, " (%s)", item.c_str());
+		::fprintf(stderr, "\n");
+	}
+
+	void error(	::db::save::State state,
+					unsigned lineNo,
+					unsigned gameNo,
+					::db::variant::Type variant)
+	{
+		char const* msg;
+
+		switch (state)
+		{
+			case db::save::TooManyGames:				msg = "too many games"; break;
+			case db::save::FileSizeExeeded:			msg = "file size exeeded"; break;
+			case db::save::GameTooLong:				msg = "game too long"; break;
+			case db::save::TooManyPlayerNames:		msg = "too many player names"; break;
+			case db::save::TooManyEventNames:		msg = "too many event names"; break;
+			case db::save::TooManySiteNames:			msg = "too many site names"; break;
+			case db::save::TooManyAnnotatorNames:	msg = "too many annotator names"; break;
+			case db::save::UnsupportedVariant:		msg = "unsupported variant"; break;
+
+			case db::save::TooManyRoundNames:
+				if (m_tooManyRoundNames)
+					return;
+				m_tooManyRoundNames = true;
+				msg = "too many round names"; break;
+				break;
+
+			case db::save::Ok:
+			case db::save::DecodingFailed:
+				return; // should not happen
+		}
+
+		::newline();
+		::fprintf(stderr, "*** Fatal error while reading game %u: %s\n", gameNo, msg);
+	}
+
+private:
+
+	util::ZStream* m_stream;
+	bool m_tooManyRoundNames;
 };
 
 
@@ -158,26 +350,27 @@ getDefaultTags()
 static format::Type
 getFormat(mstl::string& path)
 {
+	mstl::string ext(::util::misc::file::suffix(path));
 	format::Type fmt = format::Invalid;
 
-	if (path.size() >= 7 && strcmp(path.c_str() + path.size() - 7, ".pgn.gz") == 0)
+	if (ext == "gz")
 	{
-		fmt = format::Pgn;
+		ext = ::util::misc::file::suffix(::util::misc::file::basename(path));
+		if (ext = "pgn" || ext == "PGN")
+			fmt = format::Pgn;
 	}
-	else if (path.size() >= 4)
+	else
 	{
-		char const* s = path.c_str() + path.size() - 4;
-
-		if			(strcmp(s, ".si4") == 0) fmt = format::Scid4;
-		else if	(strcmp(s, ".si3") == 0) fmt = format::Scid3;
-		else if	(strcmp(s, ".sci") == 0) fmt = format::Scidb;
-		else if	(strcmp(s, ".cbh") == 0) fmt = format::ChessBase;
-		else if	(strcmp(s, ".cbf") == 0) fmt = format::ChessBaseDOS;
-		else if	(strcmp(s, ".CBF") == 0) fmt = format::ChessBaseDOS;
-		else if	(strcmp(s, ".pgn") == 0) fmt = format::Pgn;
-		else if	(strcmp(s, ".PGN") == 0) fmt = format::Pgn;
-		else if	(strcmp(s, ".zip") == 0) fmt = format::Pgn;
-		else if	(strcmp(s, ".ZIP") == 0) fmt = format::Pgn;
+		if			(ext == "si4") fmt = format::Scid4;
+		else if	(ext == "si3") fmt = format::Scid3;
+		else if	(ext == "sci") fmt = format::Scidb;
+		else if	(ext == "cbh") fmt = format::ChessBase;
+		else if	(ext == "cbf") fmt = format::ChessBaseDOS;
+		else if	(ext == "CBF") fmt = format::ChessBaseDOS;
+		else if	(ext == "pgn") fmt = format::Pgn;
+		else if	(ext == "PGN") fmt = format::Pgn;
+		else if	(ext == "zip") fmt = format::Pgn;
+		else if	(ext == "ZIP") fmt = format::Pgn;
 	}
 
 	return fmt;
@@ -487,12 +680,8 @@ logIOError(IOException const& exc, unsigned gameNumber = 0)
 	if (gameNumber > 0)
 		msg.format(" (#%d)", gameNumber);
 
-	fflush(stdout);
-	if (::newNewline)
-		printf("\n");
-	fflush(stdout);
+	newline();
 	fprintf(stderr, "%s\n", msg.c_str());
-	::newNewline = false;
 
 	switch (exc.errorType())
 	{
@@ -522,7 +711,7 @@ logIOError(IOException const& exc, unsigned gameNumber = 0)
 static unsigned
 exportGames(Database& src, Consumer& dst, ::util::Progress& progress)
 {
-	unsigned numGames		= src.countGames();
+	unsigned numGames = src.countGames();
 
 	util::ProgressWatcher watcher(progress, numGames);
 	progress.setFrequency(mstl::min(200u, mstl::max(numGames/1000, 50u)));
@@ -778,20 +967,38 @@ main(int argc, char* argv[])
 		for (BaseList::const_iterator i = baseList.begin(); i != baseList.end(); ++i)
 		{
 			cdbPath.assign(*i);
-			printf("\nOpen '%s' ", cdbPath.c_str());
 
-			Database			src(cdbPath, convertfrom, permission::ReadOnly, progress);
-			sci::Consumer	consumer(getFormat(cdbPath),
-											sci::Consumer::Codecs(&dynamic_cast<sci::Codec&>(dst.codec())),
-											tagList,
-											extraTags);
+			mstl::string	ext(::util::misc::file::suffix(cdbPath));
+			format::Type	format(getFormat(cdbPath));
+			Database*		src(nullptr);
+			unsigned			numGames;
 
-			dst.setType(src.type());
-			fflush(stdout);
+			::newline();
+			printf("Open '%s' ", cdbPath.c_str());
 			printf("\nAppend to '%s' ", sciPath.c_str());
 			fflush(stdout);
 			::newNewline = true;
-			unsigned numGames = exportGames(src, consumer, progress);
+
+			if (format == format::Pgn)
+			{
+				MyPgnReader reader(cdbPath, convertfrom);
+				dst.setType(type::PGNFile);
+				dst.importGames(reader, progress);
+				numGames = reader.accepted(variant::Normal);
+				rejected = 0;
+
+				for (unsigned i = 0; i < variant::NumberOfVariants; ++i)
+					rejected += reader.rejected(i);
+			}
+			else
+			{
+				sci::Consumer::Codecs codecs(&dynamic_cast<sci::Codec&>(dst.codec()));
+				src = new Database(cdbPath, convertfrom, permission::ReadOnly, progress);
+				sci::Consumer consumer(format, codecs, tagList, extraTags);
+				dst.setType(src->type());
+				numGames = exportGames(*src, consumer, progress);
+			}
+
 			dst.save(progress);
 			printf("\n*** %u game(s) written.", numGames);
 			if (rejected > 0)
@@ -800,8 +1007,8 @@ main(int argc, char* argv[])
 				printf("\n*** %u game(s) corrupted.", corrupted);
 			printf("\n");
 			fflush(stdout);
-			src.close();
 			corrupted = 0;
+			delete src;
 		}
 
 		dst.close();

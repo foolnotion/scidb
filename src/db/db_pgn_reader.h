@@ -72,6 +72,8 @@ public:
 	GameCount const& rejected() const;
 	unsigned accepted(unsigned variant) const;
 	unsigned rejected(unsigned variant) const;
+	unsigned accepted(variant::Type variant) const;
+	unsigned rejected(variant::Type variant) const;
 	Variants const& unsupportedVariants() const;
 	variant::Type detectedVariant() const;
 

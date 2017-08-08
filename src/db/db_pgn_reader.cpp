@@ -5544,6 +5544,20 @@ PgnReader::rejected(unsigned variant) const
 }
 
 
+unsigned
+PgnReader::accepted(variant::Type variant) const
+{
+	return m_accepted[variant::toIndex(variant)];
+}
+
+
+unsigned
+PgnReader::rejected(variant::Type variant) const
+{
+	return m_rejected[variant::toIndex(variant)];
+}
+
+
 PgnReader::Variants const&
 PgnReader::unsupportedVariants() const
 {
