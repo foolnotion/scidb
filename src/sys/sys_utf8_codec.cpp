@@ -2073,9 +2073,16 @@ Codec::convertToUtf8(mstl::string const& in, mstl::string& out)
 	}
 
 	Tcl_EncodingState state;
-
+	mstl::string buffer;
 	char const*	src = in.c_str();
-	char*			dst = m_buf.data();
+
+	if (&in == &out)
+	{
+		buffer.assign(in);
+		src = buffer.c_str();
+	}
+
+	char* dst = m_buf.data();
 
 	int flags	= TCL_ENCODING_START | TCL_ENCODING_END | TCL_ENCODING_STOPONERROR;
 	int srcLen	= in.size();
