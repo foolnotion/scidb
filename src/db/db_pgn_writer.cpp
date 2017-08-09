@@ -61,6 +61,21 @@ replaceCurlyBraces(mstl::string& s)
 }
 
 
+static mstl::string&
+replaceDoubleQuotes(mstl::string& s)
+{
+	mstl::string::size_type n = s.find('"');
+
+	while (n != mstl::string::npos)
+	{
+		s[n] = '\'';
+		n = s.find('"', n + 1);
+	}
+
+	return s;
+}
+
+
 PgnWriter::PgnWriter(format::Type srcFormat,
 							mstl::ostream& strm,
 							mstl::string const& encoding,
@@ -330,10 +345,14 @@ PgnWriter::writeEndGame()
 void
 PgnWriter::writeTag(mstl::string const& name, mstl::string const& value)
 {
+	mstl::string v;
+	v.assign(value);
+	replaceDoubleQuotes(v);
+
 	m_strm.write("[", 1);
 	m_strm.write(name, name.size());
 	m_strm.write(" \"", 2);
-	m_strm.write(value, value.size());
+	m_strm.write(v, value.size());
 	m_strm.write("\"]", 2);
 	m_strm.write(m_eol);
 }

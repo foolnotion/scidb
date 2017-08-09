@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2009-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -2575,7 +2575,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 								break;
 
 							case Country:
-								m_tags.add(tag == White ? WhiteCountry : BlackCountry, mstl::string(v, v.size()));
+								m_tags.add(tag == White ? WhiteCountry : BlackCountry, mstl::string(v,v.size()));
 								break;
 
 							case Title:
@@ -3386,8 +3386,10 @@ PgnReader::readTagValue(mstl::string& s)
 
 	m_prevPos = m_currPos;
 
-	if (c != '"')
-		sendError(TagValueExpected);
+	bool doubleQuoteSeen = (c == '"');
+
+	if (!doubleQuoteSeen)
+		putback(c);
 
 	while (true)
 	{
@@ -3396,7 +3398,13 @@ PgnReader::readTagValue(mstl::string& s)
 		switch (c)
 		{
 			case '\n':
-				sendError(UnterminatedString, m_prevPos);
+				if (s.back() == ']')
+				{
+					putback(']');
+					s.pop_back();
+					return;
+				}
+				sendError(doubleQuoteSeen ? UnterminatedString : TagValueExpected, m_prevPos);
 				// not reached
 
 			case '"':
@@ -3406,16 +3414,35 @@ PgnReader::readTagValue(mstl::string& s)
 				c = '"';
 				break;
 
+			case ']':
+				if (!doubleQuoteSeen)
+				{
+					putback(c);
+					return;
+				}
+				break;
+
 			case '\\':
 				{
 					if ((c = get()) == '\n')
-						sendError(UnterminatedString, m_prevPos);
+						sendError(doubleQuoteSeen ? UnterminatedString : TagValueExpected, m_prevPos);
 
-					int c2 = get();
-					putback(c2);
+					if (doubleQuoteSeen || c != ']')
+					{
+						int c2 = get();
+						putback(c2);
 
-					if (c2 == ']')
-						return;
+						if (c2 == ']')
+						{
+							s += '\\';
+							return;
+						}
+						if (c != '"')
+						{
+							c = '\\';
+							putback(c);
+						}
+					}
 				}
 				break;
 		}
