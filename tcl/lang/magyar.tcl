@@ -1166,7 +1166,6 @@
 ::engine::mc::FailedToCreateDir		"'%s' könyvtár létrehozása meghiúsult."
 ::engine::mc::ScriptErrors		"Any errors while saving will be displayed here." ;# NEW
 ::engine::mc::CommandNotAllowed		"A(z) '%s' utasítás itt nem használható."
-::engine::mc::ThrowAwayChanges		"Az összes változtatás elvetése?"
 ::engine::mc::ResetToDefaultContent	"Alapbeállítások visszaállítása"
 ::engine::mc::PleaseBePatient		"Please be patient, 'Wine' needs some time." ;# NEW
 ::engine::mc::TryAgain			"The first start of 'Wine' needs some time, maybe it works if you try it again." ;# NEW

@@ -1164,7 +1164,6 @@
 ::engine::mc::FailedToCreateDir		"Failed to create directory '%s'." ;# NEW
 ::engine::mc::ScriptErrors				"Any errors while saving will be displayed here." ;# NEW
 ::engine::mc::CommandNotAllowed		"Usage of command '%s' is not allowed here." ;# NEW
-::engine::mc::ThrowAwayChanges		"Ta bort alla ändringar?"
 ::engine::mc::ResetToDefaultContent	"Reset to default content" ;# NEW
 ::engine::mc::PleaseBePatient			"Please be patient, 'Wine' needs some time." ;# NEW
 ::engine::mc::TryAgain					"The first start of 'Wine' needs some time, maybe it works if you try it again." ;# NEW

@@ -3553,7 +3553,7 @@ PgnReader::doCastling(char const* castle)
 		sendError(UnexpectedCastling, castle);
 
 	putMove();
-	board().parseMove(castle, m_move, m_variant, move::DontAllowIllegalMove);
+	board().parseMove(castle, m_move, m_variant);
 
 	if (__builtin_expect(!m_move, 0))
 	{
@@ -3584,7 +3584,7 @@ PgnReader::doCastling(char const* castle)
 				board.tryCastleShort(side);
 		}
 
-		board.parseMove(castle, m_move, m_variant, move::AllowIllegalMove);
+		board.parseMove(castle, m_move, m_variant, move::MustBeUnambiguous, move::AllowIllegalMove);
 
 		if (!m_move)
 		{
@@ -4554,13 +4554,21 @@ PgnReader::parseMove(Token prevToken, int c)
 	m_prevPos = m_currPos;
 	putMove();
 
-	char const* e = board().parseMove(m_linePos - 1, m_move, m_variant, move::AllowIllegalMove);
+	char const* e = board().parseMove(	m_linePos - 1,
+													m_move,
+													m_variant,
+													move::MustBeUnambiguous,
+													move::AllowIllegalMove);
 
 	if (__builtin_expect(e == 0, 0))
 	{
 		if (	m_linePos[0] == '@'
 			&& testVariant(variant::Crazyhouse)
-			&& (e = board().parseMove(m_linePos - 1, m_move, variant::Crazyhouse, move::AllowIllegalMove)))
+			&& (e = board().parseMove(	m_linePos - 1,
+												m_move,
+												variant::Crazyhouse,
+												move::MustBeUnambiguous,
+												move::AllowIllegalMove)))
 		{
 			setupVariant(variant::Crazyhouse);
 		}

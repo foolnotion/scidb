@@ -303,7 +303,7 @@ proc build {parent number {patternNumber 0}} {
 		-font $GlobalOptions(engine:font) \
 		;
 	bind $tree <ButtonPress-3> [namespace code [list PopupMenu $tree $number %x %y]]
-	bind $tree <ButtonPress-1> [namespace code [list AddMoves $tree %x %y]]
+	bind $tree <ButtonPress-1> [namespace code [list AddMove $tree %x %y %s]]
 
 	$tree notify install <Item-enter>
 	$tree notify install <Item-leave>
@@ -399,7 +399,7 @@ proc build {parent number {patternNumber 0}} {
 		-tooltipvar [::mc::var [namespace current]::mc::SetupEngine "..."] \
 		;
 	set Vars(button:close) [::toolbar::add $tbControl button \
-		-image $::icon::toolbarClose \
+		-image $::icon::toolbarStop \
 		-tooltipvar [namespace current]::mc::CloseEngine \
 		-command [namespace code [list CloseEngine $tree]] \
 		-state disabled \
@@ -1246,25 +1246,27 @@ proc VisitItem {tree mode column item {x {}} {y {}}} {
 }
 
 
-proc AddMoves {tree x y} {
+proc AddMove {tree x y state} {
 	variable ${tree}::Vars
 	variable ${Vars(number)}::Options
 
 	if {$Vars(engine:opponent)} { return }
 	if {[::scidb::game::query expansion?]} { return }
-	set id [::engine::id $Vars(number)]
-	if {$id == -1} { return }
-	if {![::scidb::engine::bound? $id]} { return }
+	set engineID [::engine::id $Vars(number)]
+	if {$engineID == -1} { return }
+	if {![::scidb::engine::bound? $engineID]} { return }
 	set id [$tree identify $x $y]
 	if {[lindex $id 0] ne "item"} { return }
+	set id [$tree identify $x $y]
 	set line [$tree item order [lindex $id 1] -visible]
-	if {[::scidb::engine::empty? $id $line]} { return }
-	if {[::scidb::engine::snapshot $id]} { set arg line } else { set arg move }
+	if {[::scidb::engine::empty? $engineID $line]} { return }
+	::scidb::engine::snapshot $engineID
+	set san [::scidb::engine::snapshot $engineID san $line]
 	if  {[::scidb::game::valid? $san]} {
 		set force [::util::shiftIsHeldDown? $state]
-		::move::addMove menu $san {} {} $force
+		::move::addMove menu $san -force $force
 	}
-	::scidb::engine::snapshot $id clear
+	::scidb::engine::snapshot $engineID clear
 }
 
 
@@ -1429,7 +1431,7 @@ proc PopupMenu {tree number args} {
 		if {$Vars(number) >= 0} {
 			$menu add command \
 				-label " $mc::CloseEngine" \
-				-image $::icon::16x16::close \
+				-image $::icon::16x16::stop \
 				-compound left \
 				-command [namespace code [list CloseEngine $tree]] \
 				;

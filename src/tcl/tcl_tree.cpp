@@ -570,7 +570,7 @@ cmdPosition(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		if (move)
 		{
-			Move m = board.parseMove(move, variant, ::db::move::AllowIllegalMove);
+			Move m = board.parseMove(move, variant, move::MustBeUnambiguous, ::db::move::AllowIllegalMove);
 
 			if (!m)
 				return error(CmdPosition, nullptr, nullptr, "illegal move '%s'", move);

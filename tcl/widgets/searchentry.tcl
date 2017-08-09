@@ -592,7 +592,10 @@ proc LanguageChanged {w} {
 	if {[winfo exists $w.r]} { ::tooltip::tooltip $w.r "$mc::FindNext <F3>" }
 	if {[winfo exists $w.c]} { ::tooltip::tooltip $w.c "$mc::Erase <$::mc::Key(Ctrl)-X>" }
 
-	if {$Priv(empty)} { set Priv(content) [set $Vars(ghosttextvar)] }
+	if {$Priv(empty)} {
+		set Priv(content) [set $Vars(ghosttextvar)]
+		set Priv(empty) 1
+	}
 }
 
 

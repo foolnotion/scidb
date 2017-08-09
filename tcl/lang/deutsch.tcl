@@ -1155,7 +1155,6 @@
 ::engine::mc::FailedToCreateDir		"Das Anlegen des Verzeichnisses '%s' schlug fehl."
 ::engine::mc::ScriptErrors				"Alle Fehler beim Speichern werden hier angezeigt."
 ::engine::mc::CommandNotAllowed		"Der Gebrauch des Kommandos '%s' ist hier nicht erlaubt."
-::engine::mc::ThrowAwayChanges		"Alle Änderungen verwerfen?"
 ::engine::mc::ResetToDefaultContent	"Auf Standardinhalt zurücksetzen"
 ::engine::mc::PleaseBePatient			"Bitte gedulden, 'Wine' benötigt seine Zeit."
 ::engine::mc::TryAgain					"Der erste Start von 'Wine' benötigt einige Zeit, ein erneuter Versuch mag erfolgreich sein."

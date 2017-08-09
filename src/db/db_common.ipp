@@ -206,6 +206,13 @@ isDiagonalLongStepPiece(Type piece)
 }
 
 inline
+Type
+promotion(::db::variant::Type variant)
+{
+	return ::db::variant::isAntichessExceptLosers(variant) ? King : Queen;
+}
+
+inline
 char
 print(db::piece::ID piece)
 {

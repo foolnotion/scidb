@@ -268,11 +268,13 @@ public:
 	/// Parse any (LAN, SAN, or algebraic) representation of move, and return proper Move() object
 	Move parseMove(char const* algebraic,
 						variant::Type variant,
+						move::Ambiguity ambuigity = move::MustBeUnambiguous,
 						move::Constraint flag = move::DontAllowIllegalMove) const;
 	/// Parse any (LAN, SAN, or algebraic) representation of move, and return string position after move
 	char const* parseMove(	char const* algebraic,
 									Move& move,
 									variant::Type variant,
+									move::Ambiguity ambuigity = move::MustBeUnambiguous,
 									move::Constraint flag = move::DontAllowIllegalMove) const;
 	/// Parse LAN representation of move, and return string position after move
 	Move parseLAN(char const* algebraic, move::Constraint flag = move::DontAllowIllegalMove) const;
@@ -613,7 +615,7 @@ private:
 	/// Return true if the given squares are attacked by the given color
 	bool isAttackedBy(unsigned color, uint64_t square) const;
 	/// Return whether the move is legal; and sets move legal if it is legal
-	bool checkIfLegalMove(Move& move) const;
+	bool checkIfLegalMove(Move const& move, variant::Type variant) const;
 	/// Return whether check cannot be blocked with a pawn
 	bool checkNotBlockableWithPawn() const;
 	/// Return true if a chess 960 start position is on the board

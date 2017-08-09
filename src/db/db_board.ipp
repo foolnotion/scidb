@@ -430,19 +430,22 @@ Board::countPieces(color::ID color) const
 
 inline
 Move
-Board::parseMove(char const* algebraic, variant::Type variant, move::Constraint flag) const
+Board::parseMove(	char const* algebraic,
+						variant::Type variant,
+						move::Ambiguity ambuigity,
+						move::Constraint constraint) const
 {
 	Move m;
-	return parseMove(algebraic, m, variant, flag) ? m : Move::empty();
+	return parseMove(algebraic, m, variant, ambuigity, constraint) ? m : Move::empty();
 }
 
 
 inline
 Move
-Board::parseLAN(char const* algebraic, move::Constraint flag) const
+Board::parseLAN(char const* algebraic, move::Constraint constraint) const
 {
 	Move m;
-	return parseLAN(algebraic, m, flag) ? m : Move::empty();
+	return parseLAN(algebraic, m, constraint) ? m : Move::empty();
 }
 
 

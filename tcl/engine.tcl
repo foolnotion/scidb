@@ -113,7 +113,6 @@ set NoEngineAvailable		"No engine available."
 set FailedToCreateDir		"Failed to create directory '%s'."
 set ScriptErrors				"Any errors while saving will be displayed here."
 set CommandNotAllowed		"Usage of command '%s' is not allowed here."
-set ThrowAwayChanges			"Throw away all changes?"
 set ResetToDefaultContent	"Reset to default content"
 set PleaseBePatient			"Please be patient, 'Wine' needs some time."
 set TryAgain					"The first start of 'Wine' needs some time, maybe it works if you try it again."
@@ -2494,7 +2493,7 @@ proc AskCloseSetup {saveBtn} {
 	set dlg [winfo toplevel $saveBtn]
 
 	if {[$saveBtn cget -state] == "normal"} {
-		set reply [::dialog::question -message $mc::ThrowAwayAllChanges -parent $dlg]
+		set reply [::dialog::question -message $::application::mc::ThrowAwayAllChanges -parent $dlg]
 		if {$reply eq "no"} { return }
 	}
 

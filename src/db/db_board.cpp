@@ -2149,7 +2149,7 @@ Board::longCastlingBlackIsPossible() const
 
 
 Board::SetupStatus
-Board::validate(variant::Type variant, Handicap handicap, move::Constraint flag) const
+Board::validate(variant::Type variant, Handicap handicap, move::Constraint constraint) const
 {
 	if (count(m_kings) > 2) return TooManyKings;
 
@@ -2427,7 +2427,7 @@ Board::validate(variant::Type variant, Handicap handicap, move::Constraint flag)
 
 		if (n > 32) return TooManyPiecesInHolding;
 
-		if (flag != move::AllowIllegalMove && n < 32)
+		if (constraint != move::AllowIllegalMove && n < 32)
 			return TooFewPiecesInHolding;
 
 		if (m_material[Black].pawn + count(m_promotedPieces[White]) > 16)
@@ -2437,7 +2437,7 @@ Board::validate(variant::Type variant, Handicap handicap, move::Constraint flag)
 
 		uint64_t promoted = m_promotedPieces[White]|m_promotedPieces[Black];
 
-		if (flag != move::AllowIllegalMove)
+		if (constraint != move::AllowIllegalMove)
 		{
 			if (count(m_queens  & ~promoted) > 2) return TooFewPromotedQueens;
 			if (count(m_rooks   & ~promoted) > 4) return TooFewPromotedRooks;
@@ -2454,7 +2454,7 @@ Board::validate(variant::Type variant, Handicap handicap, move::Constraint flag)
 		if (n > 16)
 			return TooManyPromotedPieces;
 
-		if (flag != move::AllowIllegalMove && n < 16)
+		if (constraint != move::AllowIllegalMove && n < 16)
 			return TooFewPromotedPieces;
 	}
 	else if (variant::isThreeCheck(variant))
@@ -2474,10 +2474,10 @@ Board::validate(variant::Type variant, Handicap handicap, move::Constraint flag)
 
 
 bool
-Board::isValidFen(char const* fen, variant::Type variant, Handicap handicap, move::Constraint flag)
+Board::isValidFen(char const* fen, variant::Type variant, Handicap handicap, move::Constraint constraint)
 {
 	Board board;
-	return board.setup(fen, variant) && board.validate(variant, handicap, flag) == Valid;
+	return board.setup(fen, variant) && board.validate(variant, handicap, constraint) == Valid;
 }
 
 
@@ -3960,19 +3960,14 @@ Board::setup(unsigned idn, variant::Type variant)
 
 
 bool
-Board::checkIfLegalMove(Move& move) const
+Board::checkIfLegalMove(Move const& move, variant::Type variant) const
 {
 	if (move.isLegal())
 		return true;
 
 	Board board(*this);
-	board.doMove(move, variant::Normal);
-
-	if (!board.isLegal())
-		return false;
-
-	move.setLegalMove();
-	return true;
+	board.doMove(move, variant);
+	return board.isLegal();
 }
 
 
@@ -4695,7 +4690,11 @@ Board::filterMoves(MoveList& list, unsigned state, variant::Type variant) const
 
 
 char const*
-Board::parseMove(char const* algebraic, Move& move, variant::Type variant, move::Constraint flag) const
+Board::parseMove(	char const* algebraic,
+						Move& move,
+						variant::Type variant,
+						move::Ambiguity ambuigity,
+						move::Constraint constraint) const
 {
 	M_REQUIRE(algebraic);
 
@@ -4706,32 +4705,69 @@ Board::parseMove(char const* algebraic, Move& move, variant::Type variant, move:
 	{
 		case '-':
 			if (*++s != '-')
-				return 0;
+				return nullptr;
 			if (s[1] == '-' && s[2] == '-')	// "----" null move used in LAN
 				s += 2;
 			move = makeNullMove();
 			return ++s;		// "--" null move used in ChessBase
 
+		case 'x':
+		case 'I':
+			// Alternative representations of piece drops:
+			// xNf1 Manson and Hoover (1992)
+			// INf1 Penn and Dizon (1998)
+			switch (s[1])
+			{
+				case 'Q':
+					return parsePieceDrop(
+						s + 1, move, variant, piece::Queen, m_holding[m_stm].queen, constraint);
+
+				case 'R':
+					return parsePieceDrop(
+						s + 1, move, variant, piece::Rook, m_holding[m_stm].rook, constraint);
+
+				case 'B':
+					return parsePieceDrop(
+						s + 1, move, variant, piece::Bishop, m_holding[m_stm].bishop, constraint);
+
+				case 'N':
+					return parsePieceDrop(
+						s + 1, move, variant, piece::Knight, m_holding[m_stm].knight, constraint);
+
+				case 'P':
+					return parsePieceDrop(
+						s + 1, move, variant, piece::Pawn, m_holding[m_stm].pawn, constraint);
+
+				case 'a' ... 'h':
+					return parsePieceDrop(
+						s, move, variant, piece::Pawn, m_holding[m_stm].pawn, constraint);
+			}
+			return nullptr;
+
 		case '@':
 			if (s[1] != '@')
-				return parsePieceDrop(s + 1, move, variant, piece::Pawn, m_holding[m_stm].pawn, flag);
+				return parsePieceDrop(s + 1, move, variant, piece::Pawn, m_holding[m_stm].pawn, constraint);
 			if (s[2] != '@' || s[3] != '@')
-				return 0;
+				return nullptr;
 			return s + 4;	// "@@@@" null move used in WinBoard protocol
+
+		case '*':
+			// This is the Shogi notation for piece drops.
+			return parsePieceDrop(s + 1, move, variant, piece::Pawn, m_holding[m_stm].pawn, constraint);
 
 		case 'n':
 			if (s[1] != 'u' || s[2] != 'l' || s[3] != 'l')
-				return 0;
+				return nullptr;
 			return s + 4;	// "null" null move used in WinBoard protocol
 
 		case 'p':
 			if (s[1] != 'a' || s[2] != 's' || s[3] != 's')
-				return 0;
+				return nullptr;
 			return s + 4;	// "pass" null move used in WinBoard protocol
 
 		case '0':
 			if (s[1] != '0' || s[2] != '0' || s[3] != '0')
-				return 0;
+				return nullptr;
 			move = makeNullMove();
 			return s + 4;	// "0000" null move used in UCI protocol
 
@@ -4755,16 +4791,49 @@ Board::parseMove(char const* algebraic, Move& move, variant::Type variant, move:
 						s += 3;
 					}
 
-					unsigned rook = m_castleRookCurr[index];
+					Square rook = m_castleRookCurr[index];
 
 					if (rook != Null)
 					{
-						move = prepareMove(m_ksq[m_stm], rook, variant, flag);
-						return s;
+						move = prepareMove(m_ksq[m_stm], rook, variant, constraint);
+						return move.isCastling() ? s : nullptr;
 					}
 				}
 			}
-			return 0;
+			return nullptr;
+
+#if 0
+		case 'o':	// Castling
+			if (!variant::isAntichessExceptLosers(variant))
+			{
+				if (s[1] == '-' && s[2] == 'o')
+				{
+					M_ASSERT(kingOnBoard());
+
+					unsigned index;
+
+					if (s[3] == '-' && s[4] == 'o')
+					{
+						index = ::kingSideIndex(m_stm);
+						s += 5;
+					}
+					else
+					{
+						index = ::queenSideIndex(m_stm);
+						s += 3;
+					}
+
+					Square rook = m_castleRookCurr[index];
+
+					if (rook != Null)
+					{
+						move = prepareMirroredCastling(m_ksq[m_stm], rook, variant, constraint);
+						return move.isCastling() ? s : 0;
+					}
+				}
+			}
+			return nullptr;
+#endif
 
 		// Piece
 
@@ -4774,32 +4843,67 @@ Board::parseMove(char const* algebraic, Move& move, variant::Type variant, move:
 			break;
 
 		case 'Q':
-			if (*++s == '@')
-				return parsePieceDrop(s + 1, move, variant, piece::Queen, m_holding[m_stm].queen, flag);
+			if (*++s == '@' || *s == '*')
+			{
+				return parsePieceDrop(	s + 1,
+												move,
+												variant,
+												piece::Queen,
+												m_holding[m_stm].queen,
+												constraint);
+			}
 			type = piece::Queen;
 			break;
 
 		case 'R':
-			if (*++s == '@')
-				return parsePieceDrop(s + 1, move, variant, piece::Rook, m_holding[m_stm].rook, flag);
+			if (*++s == '@' || *s == '*')
+			{
+				return parsePieceDrop(	s + 1,
+												move,
+												variant,
+												piece::Rook,
+												m_holding[m_stm].rook,
+												constraint);
+			}
 			type = piece::Rook;
 			break;
 
 		case 'B':
-			if (*++s == '@')
-				return parsePieceDrop(s + 1, move, variant, piece::Bishop, m_holding[m_stm].bishop, flag);
+			if (*++s == '@' || *s == '*')
+			{
+				return parsePieceDrop(	s + 1,
+												move,
+												variant,
+												piece::Bishop,
+												m_holding[m_stm].bishop,
+												constraint);
+			}
 			type = piece::Bishop;
 			break;
 
 		case 'N':
-			if (*++s == '@')
-				return parsePieceDrop(s + 1, move, variant, piece::Knight, m_holding[m_stm].knight, flag);
+			if (*++s == '@' || *s == '*')
+			{
+				return parsePieceDrop(	s + 1,
+												move,
+												variant,
+												piece::Knight,
+												m_holding[m_stm].knight,
+												constraint);
+			}
 			type = piece::Knight;
 			break;
 
 		case 'P':
-			if (*++s == '@')
-				return parsePieceDrop(s + 1, move, variant, piece::Pawn, m_holding[m_stm].pawn, flag);
+			if (*++s == '@' || *s == '*')
+			{
+				return parsePieceDrop(	s + 1,
+												move,
+												variant,
+												piece::Pawn,
+												m_holding[m_stm].pawn,
+												constraint);
+			}
 			type = piece::Pawn;
 			break;
 
@@ -4845,7 +4949,7 @@ Board::parseMove(char const* algebraic, Move& move, variant::Type variant, move:
 		else
 		{
 			if (type != piece::Pawn)
-				return 0;
+				return nullptr;
 
 			if (fromSquare < 0)	// handle pawn captures like 'ed'
 			{
@@ -4857,39 +4961,55 @@ Board::parseMove(char const* algebraic, Move& move, variant::Type variant, move:
 				MoveList validList;
 				generateCapturingPawnMoves(variant, moveList);
 
-				for (Move* m = moveList.begin(); m != moveList.end(); ++m)
+				for (Move const* m = moveList.begin(); m != moveList.end(); ++m)
 				{
 					if (	::fyle(m->from()) == fromFyle
 						&& ::fyle(m->to()) == toFyle
-						&& (flag != move::DontAllowIllegalMove || checkIfLegalMove(*m)))
+						&& (constraint != move::DontAllowIllegalMove || checkIfLegalMove(*m, variant)))
 					{
 						validList.push(*m);
 					}
 				}
 
 				if (validList.isEmpty())
-					return 0;
+					return nullptr;
 
-				if (!variant::isAntichessExceptLosers(variant))
+				if (	validList.size() > 1
+					&& (*t == '#' || *t == '+')
+					&& !variant::isAntichessExceptLosers(variant))
 				{
-					if (validList.size() > 1)
+					MoveList doubleCheck;
+					MoveList check;
+					MoveList mate;
+
+					for (Move* m = validList.begin(); m != validList.end(); ++m)
 					{
-						if (*t == '#')
-							filterMoves(validList, Checkmate, variant);
+						unsigned state = checkState(*m, variant);
 
-						if (validList.size() > 1)
+						if (state & Check)
 						{
-							if (t[0] == '+' && t[1] == '+')
-								filterMoves(validList, DoubleCheck, variant);
+							check.push(*m);
 
-							if (validList.size() > 1)
-							{
-								if (*t == '#' || *t == '+')
-									filterMoves(validList, Check | Checkmate, variant);
-							}
+							if (state & Checkmate)
+								mate.push(*m);
+
+							if (state & DoubleCheck)
+								doubleCheck.push(*m);
 						}
 					}
+
+					if (*t == '#' && !mate.isEmpty())
+						validList = mate;
+					else if (t[1] == '+' && !doubleCheck.isEmpty())
+						validList = doubleCheck;
+					else if (t[1] == '+' && !mate.isEmpty())
+						validList = mate;
+					else if (!check.isEmpty())
+						validList = check;
 				}
+
+				if (validList.size() > 1 && ambuigity == move::MustBeUnambiguous)
+					return nullptr;
 
 				Move* m = validList.begin();
 
@@ -4906,7 +5026,7 @@ Board::parseMove(char const* algebraic, Move& move, variant::Type variant, move:
 
 					if (toSq1 >= 0)
 					{
-						Move move = prepareMove(fromSquare, toSq1, variant, flag);
+						Move move = prepareMove(fromSquare, toSq1, variant, constraint);
 
 						if (!move)
 							toSq1 = -1;
@@ -4919,7 +5039,7 @@ Board::parseMove(char const* algebraic, Move& move, variant::Type variant, move:
 
 					if (toSq2 >= 0)
 					{
-						Move move = prepareMove(fromSquare, toSq2, variant, flag);
+						Move move = prepareMove(fromSquare, toSq2, variant, constraint);
 
 						if (!move)
 							toSq2 = -1;
@@ -4927,7 +5047,7 @@ Board::parseMove(char const* algebraic, Move& move, variant::Type variant, move:
 				}
 
 				if ((toSquare = toSq1 == -1 ? toSq2 : toSq1) == -1)
-					return 0;
+					return nullptr;
 			}
 		}
 	}
@@ -4938,7 +5058,7 @@ Board::parseMove(char const* algebraic, Move& move, variant::Type variant, move:
 	}
 
 	if (toSquare < 0)
-		return 0;
+		return nullptr;
 
 	if (type == piece::Pawn)
 	{
@@ -4961,9 +5081,12 @@ Board::parseMove(char const* algebraic, Move& move, variant::Type variant, move:
 			{
 				fromSquare = toSquare + base + 1;
 			}
+
+			if (!(m_occupiedBy[m_stm] & m_pawns & set1Bit(fromSquare)))
+				return nullptr;
 		}
 
-		move = prepareMove(fromSquare, toSquare, variant, flag);
+		move = prepareMove(fromSquare, toSquare, variant, constraint);
 
 		if (move.isPromotion())
 		{
@@ -4979,7 +5102,7 @@ Board::parseMove(char const* algebraic, Move& move, variant::Type variant, move:
 				}
 				else
 				{
-					move.setPromoted(piece::Queen);
+					move.setPromoted(piece::promotion(variant));
 					if (s[-1] == '=')
 						--s;
 					return s;
@@ -5007,7 +5130,7 @@ Board::parseMove(char const* algebraic, Move& move, variant::Type variant, move:
 					break;
 
 				default:
-					move.setPromoted(piece::Queen);
+					move.setPromoted(piece::promotion(variant));
 					if (s[-2] == '(')
 						--s;
 					return s[-2] == '=' ? s - 2 : s - 1;
@@ -5031,7 +5154,7 @@ Board::parseMove(char const* algebraic, Move& move, variant::Type variant, move:
 			case piece::Bishop:	match = bishopAttacks(toSquare) & m_bishops; break;
 			case piece::Knight:	match = knightAttacks(toSquare) & m_knights; break;
 			case piece::King:		match = kingAttacks(toSquare) & m_kings; break;
-			default:					return 0;
+			default:					return nullptr;
 		}
 
 		match &= m_occupiedBy[m_stm];
@@ -5041,89 +5164,64 @@ Board::parseMove(char const* algebraic, Move& move, variant::Type variant, move:
 		else if (fromFyle >= 0)
 			match &= FyleMask[fromFyle];
 
-		if (!variant::isAntichessExceptLosers(variant))
-		{
-			// If not yet fully disambiguated, all but one move must be illegal.
-			// Cycle through them, and pick the first legal move.
+		// If not yet fully disambiguated, all but one move must be illegal.
+		// Cycle through them, and pick the first legal move.
 
-			// Only mating moves will be regarded.
-			if (*s == '#')
-			{
-				uint64_t m = match;
+		MoveList validList;
 
-				while (m)
-				{
-					fromSquare = lsbClear(m);
-
-					M_ASSERT(type == m_piece[fromSquare]);
-
-					move = prepareMove(fromSquare, toSquare, variant, flag);
-
-					if (move.isLegal() && (checkState(move, variant) & Checkmate))
-						return s;
-				}
-			}
-
-			// Only double checking moves will be regarded.
-			if (s[0] == '+' && s[1] == '+')
-			{
-				uint64_t m = match;
-
-				while (m)
-				{
-					fromSquare = lsbClear(m);
-
-					M_ASSERT(type == m_piece[fromSquare]);
-
-					move = prepareMove(fromSquare, toSquare, variant, flag);
-
-					if (move.isLegal())
-					{
-						Board peek(*this);
-						peek.doMove(move, variant);
-
-						if (peek.countChecks() > 1)
-							return s;
-					}
-				}
-			}
-
-			// Only checking moves will be regarded.
-			if (*s == '#' || *s == '+')
-			{
-				uint64_t m = match;
-
-				while (m)
-				{
-					fromSquare = lsbClear(m);
-
-					M_ASSERT(type == m_piece[fromSquare]);
-
-					move = prepareMove(fromSquare, toSquare, variant, flag);
-
-					if (move.isLegal())
-					{
-						Board peek(*this);
-						peek.doMove(move, variant);
-
-						if (peek.countChecks() > 0)
-							return s;
-					}
-				}
-			}
-		}
-
-		// All moves will be regarded.
 		while (match)
 		{
 			fromSquare = lsbClear(match);
 
 			M_ASSERT(type == m_piece[fromSquare]);
 
-			move = prepareMove(fromSquare, toSquare, variant, flag);
+			Move m = prepareMove(fromSquare, toSquare, variant, constraint);
 
-			if (move.isLegal())
-				return s;
+			if (constraint != move::DontAllowIllegalMove || m.isLegal())
+				validList.push(m);
+		}
+
+		if (	validList.size() > 1
+			&& (*s == '#' || *s == '+')
+			&& !variant::isAntichessExceptLosers(variant))
+		{
+			MoveList doubleCheck;
+			MoveList check;
+			MoveList mate;
+
+			for (Move* m = validList.begin(); m != validList.end(); ++m)
+			{
+				unsigned state = checkState(*m, variant);
+
+				if (state & Check)
+				{
+					check.push(*m);
+
+					if (state & Checkmate)
+						mate.push(*m);
+
+					if (state & DoubleCheck)
+						doubleCheck.push(*m);
+				}
+			}
+
+			if (*s == '#' && !mate.isEmpty())
+				validList = mate;
+			else if (s[1] == '+' && !doubleCheck.isEmpty())
+				validList = doubleCheck;
+			else if (s[1] == '+' && !mate.isEmpty())
+				validList = mate;
+			else if (!check.isEmpty())
+				validList = check;
+		}
+
+		if (!validList.isEmpty())
+		{
+			if (validList.size() > 1 && ambuigity == move::MustBeUnambiguous)
+				return nullptr;
+
+			move = validList.front();
+			return s;
 		}
 
 		// probably a castling move is desired
@@ -5132,14 +5230,14 @@ Board::parseMove(char const* algebraic, Move& move, variant::Type variant, move:
 			if (canCastleShort(color::ID(m_stm)) && toSquare == m_castleRookCurr[::kingSideIndex(m_stm)])
 			{
 				M_ASSERT(kingOnBoard());
-				move = prepareMove(m_ksq[m_stm], toSquare, variant, flag);
+				move = prepareMove(m_ksq[m_stm], toSquare, variant, constraint);
 				return s;
 			}
 
 			if (canCastleLong(color::ID(m_stm)) && toSquare == m_castleRookCurr[::queenSideIndex(m_stm)])
 			{
 				M_ASSERT(kingOnBoard());
-				move = prepareMove(m_ksq[m_stm], toSquare, variant, flag);
+				move = prepareMove(m_ksq[m_stm], toSquare, variant, constraint);
 				return s;
 			}
 
@@ -5152,7 +5250,7 @@ Board::parseMove(char const* algebraic, Move& move, variant::Type variant, move:
 						move = prepareMove(	m_ksq[White],
 													m_castleRookCurr[::queenSideIndex(White)],
 													variant,
-													flag);
+													constraint);
 						return s;
 					}
 					break;
@@ -5164,7 +5262,7 @@ Board::parseMove(char const* algebraic, Move& move, variant::Type variant, move:
 						move = prepareMove(	m_ksq[White],
 													m_castleRookCurr[::kingSideIndex(White)],
 													variant,
-													flag);
+													constraint);
 						return s;
 					}
 					break;
@@ -5176,7 +5274,7 @@ Board::parseMove(char const* algebraic, Move& move, variant::Type variant, move:
 						move = prepareMove(	m_ksq[Black],
 													m_castleRookCurr[::queenSideIndex(Black)],
 													variant,
-													flag);
+													constraint);
 						return s;
 					}
 					break;
@@ -5188,7 +5286,7 @@ Board::parseMove(char const* algebraic, Move& move, variant::Type variant, move:
 						move = prepareMove(	m_ksq[Black],
 													m_castleRookCurr[::kingSideIndex(Black)],
 													variant,
-													flag);
+													constraint);
 						return s;
 					}
 					break;
@@ -5199,7 +5297,7 @@ Board::parseMove(char const* algebraic, Move& move, variant::Type variant, move:
 	}
 
 	if (type == m_piece[fromSquare])
-		move = prepareMove(fromSquare, toSquare, variant, flag);
+		move = prepareMove(fromSquare, toSquare, variant, constraint);
 
 	return s;
 }
@@ -5211,7 +5309,7 @@ Board::parsePieceDrop(	char const* s,
 								variant::Type variant,
 								piece::Type pieceType,
 								unsigned count,
-								move::Constraint flag) const
+								move::Constraint constraint) const
 {
 	M_ASSERT(	pieceType == piece::Queen
 				|| pieceType == piece::Rook
@@ -5239,7 +5337,7 @@ Board::parsePieceDrop(	char const* s,
 	else
 	{
 		move = Move::genPieceDrop(to, pieceType);
-		prepareMove(move, variant, flag);
+		prepareMove(move, variant, constraint);
 	}
 
 	return s;
@@ -5247,7 +5345,7 @@ Board::parsePieceDrop(	char const* s,
 
 
 char const*
-Board::parseLAN(char const* s, Move& move, move::Constraint flag) const
+Board::parseLAN(char const* s, Move& move, move::Constraint constraint) const
 {
 	// IMPORTANT NOTE: should be used only for normal chess.
 
@@ -5285,7 +5383,7 @@ Board::parseLAN(char const* s, Move& move, move::Constraint flag) const
 	if (!(move = prepareMove(	sq::make(fromFyle, fromRank),
 										sq::make(toFyle, toRank),
 										variant::Normal,
-										flag)))
+										constraint)))
 	{
 		return 0;
 	}
@@ -6181,7 +6279,7 @@ Board::pawnCapturesTo(Square s) const
 
 
 bool
-Board::checkMove(Move const& move, variant::Type variant, move::Constraint flag) const
+Board::checkMove(Move const& move, variant::Type variant, move::Constraint constraint) const
 {
 	if (move.isEmpty())
 		return false;
@@ -6233,18 +6331,18 @@ Board::checkMove(Move const& move, variant::Type variant, move::Constraint flag)
 		if (move.isShortCastling())
 		{
 			if (m_castleRookCurr[::kingSideIndex(m_stm)] == Null)
-				return flag == move::AllowIllegalMove;
+				return constraint == move::AllowIllegalMove;
 
-			if (flag == move::AllowIllegalMove)
+			if (constraint == move::AllowIllegalMove)
 				return shortCastlingIsPossible();
 
 			return canCastleShort(sideToMove()) && shortCastlingIsLegal();
 		}
 
 		if (m_castleRookCurr[::queenSideIndex(m_stm)] == Null)
-			return flag == move::AllowIllegalMove;
+			return constraint == move::AllowIllegalMove;
 
-		if (flag == move::AllowIllegalMove)
+		if (constraint == move::AllowIllegalMove)
 			return longCastlingIsPossible();
 
 		return canCastleLong(sideToMove()) && longCastlingIsLegal();
@@ -6294,14 +6392,14 @@ Board::checkMove(Move const& move, variant::Type variant, move::Constraint flag)
 		case Move::Castle:
 			if (to == m_castleRookCurr[::kingSideIndex(m_stm)])
 			{
-				if (flag == move::AllowIllegalMove)
+				if (constraint == move::AllowIllegalMove)
 					return shortCastlingIsPossible();
 
 				return canCastleShort(sideToMove()) && shortCastlingIsLegal();
 			}
 			if (to == m_castleRookCurr[::queenSideIndex(m_stm)])
 			{
-				if (flag == move::AllowIllegalMove)
+				if (constraint == move::AllowIllegalMove)
 					return longCastlingIsPossible();
 
 				return canCastleLong(sideToMove()) && longCastlingIsLegal();
@@ -6347,22 +6445,22 @@ Board::checkMove(Move const& move, variant::Type variant, move::Constraint flag)
 			break;
 	}
 
-	return	flag == move::AllowIllegalMove
+	return	constraint == move::AllowIllegalMove
 			|| variant::isAntichessExceptLosers(variant)
 			|| !isIntoCheck(move, variant);
 }
 
 
 bool
-Board::isValidMove(Move const& move, variant::Type variant, move::Constraint flag) const
+Board::isValidMove(Move const& move, variant::Type variant, move::Constraint constraint) const
 {
-	if (!checkMove(move, variant, flag))
+	if (!checkMove(move, variant, constraint))
 		return false;
 
 	if (move.isNull())
 		return (checkState(variant) & (Checkmate | ThreeChecks | Stalemate | Losing)) == 0;
 
-	if (variant::isAntichessExceptLosers(variant) || flag == move::AllowIllegalMove)
+	if (variant::isAntichessExceptLosers(variant) || constraint == move::AllowIllegalMove)
 		return true;
 
 	return !isIntoCheck(move, variant);
@@ -6370,7 +6468,7 @@ Board::isValidMove(Move const& move, variant::Type variant, move::Constraint fla
 
 
 Move
-Board::prepareMove(Square from, Square to, variant::Type variant, move::Constraint flag) const
+Board::prepareMove(Square from, Square to, variant::Type variant, move::Constraint constraint) const
 {
 	M_ASSERT(from != Null);
 	M_ASSERT(to != Null);
@@ -6404,7 +6502,7 @@ Board::prepareMove(Square from, Square to, variant::Type variant, move::Constrai
 						if (shortCastlingIsLegal())
 							return setMoveColor(setLegalMove(Move::genCastling(m_ksq[m_stm], to)));
 
-						if (flag == move::AllowIllegalMove && shortCastlingIsPossible())
+						if (constraint == move::AllowIllegalMove && shortCastlingIsPossible())
 							return setMoveColor(Move::genCastling(m_ksq[m_stm], to));
 					}
 				}
@@ -6415,7 +6513,7 @@ Board::prepareMove(Square from, Square to, variant::Type variant, move::Constrai
 						if (longCastlingIsLegal())
 							return setMoveColor(setLegalMove(Move::genCastling(m_ksq[m_stm], to)));
 
-						if (flag == move::AllowIllegalMove && longCastlingIsPossible())
+						if (constraint == move::AllowIllegalMove && longCastlingIsPossible())
 							return setMoveColor(Move::genCastling(m_ksq[m_stm], to));
 					}
 				}
@@ -6431,7 +6529,7 @@ Board::prepareMove(Square from, Square to, variant::Type variant, move::Constrai
 						if (shortCastlingIsLegal())
 							return setMoveColor(setLegalMove(Move::genCastling(m_ksq[m_stm], to)));
 
-						if (flag == move::AllowIllegalMove && shortCastlingIsPossible())
+						if (constraint == move::AllowIllegalMove && shortCastlingIsPossible())
 							return setMoveColor(Move::genCastling(m_ksq[m_stm], to));
 					}
 				}
@@ -6444,7 +6542,7 @@ Board::prepareMove(Square from, Square to, variant::Type variant, move::Constrai
 						if (longCastlingIsLegal())
 							return setMoveColor(setLegalMove(Move::genCastling(m_ksq[m_stm], to)));
 
-						if (flag == move::AllowIllegalMove && longCastlingIsPossible())
+						if (constraint == move::AllowIllegalMove && longCastlingIsPossible())
 							return setMoveColor(Move::genCastling(m_ksq[m_stm], to));
 					}
 				}
@@ -6495,7 +6593,7 @@ Board::prepareMove(Square from, Square to, variant::Type variant, move::Constrai
 		case piece::King:
 			if (!isAntichessExceptLosers(variant) && !(kingAttacks(to) & src))
 			{
-				if ((move = prepareCastle(from, to, flag)))
+				if ((move = prepareCastle(from, to, constraint)))
 					move.setColor(m_stm);
 				return move;
 			}
@@ -6523,7 +6621,7 @@ Board::prepareMove(Square from, Square to, variant::Type variant, move::Constrai
 			break;
 	}
 
-	return prepareMove(move, variant, flag);
+	return prepareMove(move, variant, constraint);
 }
 
 
@@ -6548,7 +6646,7 @@ Board::isInvalidPieceDrop(Move const& move) const
 
 
 Move
-Board::preparePieceDrop(Square to, piece::Type piece, move::Constraint flag) const
+Board::preparePieceDrop(Square to, piece::Type piece, move::Constraint constraint) const
 {
 	M_REQUIRE(piece::Queen <= piece && piece <= piece::Pawn);
 
@@ -6562,7 +6660,7 @@ Board::preparePieceDrop(Square to, piece::Type piece, move::Constraint flag) con
 		move.clear();
 	else if (!isIntoCheck(move, variant::Crazyhouse))
 		move.setLegalMove();
-	else if (flag == move::DontAllowIllegalMove)
+	else if (constraint == move::DontAllowIllegalMove)
 		move.clear();
 
 	return move;
@@ -6570,7 +6668,7 @@ Board::preparePieceDrop(Square to, piece::Type piece, move::Constraint flag) con
 
 
 Move
-Board::prepareMove(Move& move, variant::Type variant, move::Constraint flag) const
+Board::prepareMove(Move& move, variant::Type variant, move::Constraint constraint) const
 {
 	if (move)
 	{
@@ -6591,7 +6689,7 @@ Board::prepareMove(Move& move, variant::Type variant, move::Constraint flag) con
 
 					if (result.isEmpty())
 						move.setLegalMove();
-					else if (flag == move::DontAllowIllegalMove)
+					else if (constraint == move::DontAllowIllegalMove)
 						move.clear();
 				}
 				else
@@ -6612,7 +6710,7 @@ Board::prepareMove(Move& move, variant::Type variant, move::Constraint flag) con
 		{
 			move.setLegalMove();
 		}
-		else if (flag == move::DontAllowIllegalMove)
+		else if (constraint == move::DontAllowIllegalMove)
 		{
 			move.clear();
 		}
@@ -6623,7 +6721,7 @@ Board::prepareMove(Move& move, variant::Type variant, move::Constraint flag) con
 
 
 Move
-Board::prepareCastle(Square from, Square to, move::Constraint flag) const
+Board::prepareCastle(Square from, Square to, move::Constraint constraint) const
 {
 	M_ASSERT(kingOnBoard());
 
@@ -6642,7 +6740,7 @@ Board::prepareCastle(Square from, Square to, move::Constraint flag) const
 						if (shortCastlingWhiteIsLegal())
 							return setLegalMove(Move::genCastling(m_ksq[White], m_castleRookCurr[WhiteKS]));
 
-						if (flag == move::AllowIllegalMove && shortCastlingWhiteIsPossible())
+						if (constraint == move::AllowIllegalMove && shortCastlingWhiteIsPossible())
 							return Move::genCastling(m_ksq[White], m_castleRookCurr[WhiteKS]);
 					}
 					break;
@@ -6653,7 +6751,7 @@ Board::prepareCastle(Square from, Square to, move::Constraint flag) const
 						if (longCastlingWhiteIsLegal())
 							return setLegalMove(Move::genCastling(m_ksq[White], m_castleRookCurr[WhiteQS]));
 
-						if (flag == move::AllowIllegalMove && longCastlingWhiteIsPossible())
+						if (constraint == move::AllowIllegalMove && longCastlingWhiteIsPossible())
 							return Move::genCastling(m_ksq[White], m_castleRookCurr[WhiteQS]);
 					}
 					break;
@@ -6667,7 +6765,7 @@ Board::prepareCastle(Square from, Square to, move::Constraint flag) const
 				if (shortCastlingWhiteIsLegal())
 					return setLegalMove(Move::genCastling(m_ksq[White], m_castleRookCurr[WhiteKS]));
 
-				if (flag == move::AllowIllegalMove && shortCastlingWhiteIsPossible())
+				if (constraint == move::AllowIllegalMove && shortCastlingWhiteIsPossible())
 					return Move::genCastling(m_ksq[White], m_castleRookCurr[WhiteKS]);
 			}
 		}
@@ -6678,7 +6776,7 @@ Board::prepareCastle(Square from, Square to, move::Constraint flag) const
 				if (longCastlingWhiteIsLegal())
 					return setLegalMove(Move::genCastling(m_ksq[White], m_castleRookCurr[WhiteQS]));
 
-				if (flag == move::AllowIllegalMove && longCastlingWhiteIsPossible())
+				if (constraint == move::AllowIllegalMove && longCastlingWhiteIsPossible())
 					return Move::genCastling(m_ksq[White], m_castleRookCurr[WhiteQS]);
 			}
 		}
@@ -6695,7 +6793,7 @@ Board::prepareCastle(Square from, Square to, move::Constraint flag) const
 						if (shortCastlingBlackIsLegal())
 							return setLegalMove(Move::genCastling(m_ksq[Black], m_castleRookCurr[BlackKS]));
 
-						if (flag == move::AllowIllegalMove && shortCastlingBlackIsPossible())
+						if (constraint == move::AllowIllegalMove && shortCastlingBlackIsPossible())
 							return Move::genCastling(m_ksq[Black], m_castleRookCurr[BlackKS]);
 					}
 					break;
@@ -6706,7 +6804,7 @@ Board::prepareCastle(Square from, Square to, move::Constraint flag) const
 						if (longCastlingBlackIsLegal())
 							return setLegalMove(Move::genCastling(m_ksq[Black], m_castleRookCurr[BlackQS]));
 
-						if (flag == move::AllowIllegalMove && longCastlingBlackIsPossible())
+						if (constraint == move::AllowIllegalMove && longCastlingBlackIsPossible())
 							return Move::genCastling(m_ksq[Black], m_castleRookCurr[BlackQS]);
 					}
 					break;
@@ -6720,7 +6818,7 @@ Board::prepareCastle(Square from, Square to, move::Constraint flag) const
 				if (shortCastlingBlackIsLegal())
 					return setLegalMove(Move::genCastling(m_ksq[Black], m_castleRookCurr[BlackKS]));
 
-				if (flag == move::AllowIllegalMove && shortCastlingBlackIsPossible())
+				if (constraint == move::AllowIllegalMove && shortCastlingBlackIsPossible())
 					return Move::genCastling(m_ksq[Black], m_castleRookCurr[BlackKS]);
 			}
 		}
@@ -6731,7 +6829,7 @@ Board::prepareCastle(Square from, Square to, move::Constraint flag) const
 				if (longCastlingBlackIsLegal())
 					return setLegalMove(Move::genCastling(m_ksq[Black], m_castleRookCurr[BlackQS]));
 
-				if (flag == move::AllowIllegalMove && longCastlingBlackIsPossible())
+				if (constraint == move::AllowIllegalMove && longCastlingBlackIsPossible())
 					return Move::genCastling(m_ksq[Black], m_castleRookCurr[BlackQS]);
 			}
 		}

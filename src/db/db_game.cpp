@@ -2650,7 +2650,7 @@ Game::updateLanguageSet()
 Move
 Game::parseMove(mstl::string const& san) const
 {
-	Move move = m_currentBoard.parseMove(san, m_variant, move::AllowIllegalMove);
+	Move move = m_currentBoard.parseMove(san, m_variant, move::MustBeUnambiguous, move::AllowIllegalMove);
 
 	if (!move)
 	{
@@ -2660,7 +2660,7 @@ Game::parseMove(mstl::string const& san) const
 		board.tryCastleShort(side);
 		board.tryCastleLong(side);
 
-		move = board.parseMove(san, m_variant, move::AllowIllegalMove);
+		move = board.parseMove(san, m_variant, move::MustBeUnambiguous, move::AllowIllegalMove);
 		move.setIllegalMove();
 	}
 
