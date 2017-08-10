@@ -414,7 +414,8 @@ eines Unix-Programms, Scidb erkennt sebsttätig, wie der Motor zu starten ist.
 Scidb öffnet auch ChessBase-Datenbanken, sowohl das neue Format (.cbh), als
 auch das alte DOS-Format (.cbf). Jedoch können ChessBase-Datenbanken nicht
 als Referenzdatenbank verwendet werden. Deshalb wird ein Export in das
-Scidb-Format (.sci) empfohlen.
+Scidb-Format (.sci) empfohlen. Dazu kann das Zusatzprogramm <em>cdb2sci</em>
+verwendet werden, es ist aber auch mit der grafischen Oberfläche möglich.
 </p>
 
 <p>
@@ -426,20 +427,20 @@ noch nicht alle Informationen lesen.
 
 </TIP>
 <!-- NEXT TIP ========================================================= -->
-<TIP number="027" level="3">
-
-<p>
-Im Partieeditor werden Züge, die &ndash; mölicherweise aufgrund einer Zugumstellung
-&ndash; zu einer bereits vorhandenen Stellung in der Hauptvariante führen, mit einem
-Verknüpfungssymbol <awesome>fa-external-link-square</awesome> versehen. Wenn die
-Maus über diesem Symbol gehalten wird erfolgt eine Hervorhebung des Zuges in der
-Hauptvariante, der zur gleichen Stellung führt &ndash; sofern dieser Zug sichtbar
-ist. Ein Mausklick auf dieses Symbol positioniert auf den hervogehobenen Zug (auch
-wenn sieser nicht sichtbar ist). Dies erleichtert u.a. das Erkennen von
-Zugumstellungen bei der Eingabe von Varianten.
-</p>
-
-</TIP>
+#<TIP number="027" level="3">
+#
+#<p>
+#Im Partieeditor werden Züge, die &ndash; möglicherweise aufgrund einer Zugumstellung
+#&ndash; zu einer bereits vorhandenen Stellung in der Hauptvariante führen, mit einem
+#Verknüpfungssymbol <awesome>fa-external-link-square</awesome> versehen. Wenn die
+#Maus über diesem Symbol gehalten wird erfolgt eine Hervorhebung des Zuges in der
+#Hauptvariante, der zur gleichen Stellung führt &ndash; sofern dieser Zug sichtbar
+#ist. Ein Mausklick auf dieses Symbol positioniert auf den hervogehobenen Zug (auch
+#wenn sieser nicht sichtbar ist). Dies erleichtert u.a. das Erkennen von
+#Zugumstellungen bei der Eingabe von Varianten.
+#</p>
+#
+#</TIP>
 <!-- NEXT TIP ========================================================= -->
 <TIP number="028" level="2">
 
@@ -455,7 +456,8 @@ Dialog wird über das kontextsensitive Menü geöffnet:
 
 <p>
 Um auf dem Schachbrettreiter durch eine Partie nur mit einer Taste zu traversieren
-sollte die gleitende Variantenanzeige auf "Versteckt" oder "Rechts" eingestellt werden.
+sollte die gleitende Variantenanzeige auf <menuitem>%::mc::Hidden%</menuitem> oder
+<menuitem>%::mc::Right%</menuitem> eingestellt werden.
 </p>
 
 </TIP>

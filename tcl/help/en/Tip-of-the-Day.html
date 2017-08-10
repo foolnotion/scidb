@@ -350,11 +350,11 @@ the <kbd class='key'>Shift</kbd> key.
 <TIP number="021" level="3">
 
 <p>
-Es wird eine besondere Eigenheit historischer Partien unterstützt, nämlich
-die Ausführung einer Rochade trotz fehlenden Rochadeturms. In Vorgabepartien
-aus früheren Zeiten gab es die Regelung, daß bei Vorgabe eines Turms trotzdem
-die Rochade ausgeführt werden durfte. Dazu sollte in der Startposition das
-entsprechende Rochaderecht ausgewiesen sein.
+Scidb is supporting a peculiarity of historical games, namely the castling
+despite a missing castling rook. In handicap games of ancient times it was
+usual that a castling is possible even if the corresponding rook is not on
+board at start of the game. To accomplish this it is required to setup the
+appropriate castling right in start position.
 </p>
 
 </TIP>
@@ -362,10 +362,10 @@ entsprechende Rochaderecht ausgewiesen sein.
 <TIP number="022" level="3">
 
 <p>
-Scidb unterstützt Schach-960-Positionen, als auch Shuffle-Schach-Positionen,
-nicht nur im Normalschach, sondern auch in allen anderen unterstützen
-Schachformen: Drop Chess, Bughouse Chess,
-Antichess, Three-check Chess und
+Scidb is supporting Chess960 positions, and even Shuffle Chess positions,
+not only in standard chess, but also in all other supported chess variants:
+Drop Chess, Bughouse Chess,
+Antichess, Three-check Chess, and
 King-of-the-Hill.
 </p>
 
@@ -374,10 +374,9 @@ King-of-the-Hill.
 <TIP number="023" level="1">
 
 <p>
-Scidb hat einen speziell angepassten Dateiauswahldialog. Alle Operationen
-&ndash; wie das Kopieren einer Datenbank, das Löschen einer Datenbank, das
-Umbenennen, sowie die Schreibschutzvergabe &ndash; werden auf alle zu einer
-Datenbank gehörigen Dateien ausgeführt.
+Scidb provides a specialized file selection box. Any operation like copying
+a database, deleting a database, renaming a database, as well as changing the
+write protection will be performed on all the files belonging to this database.
 </p>
 
 </TIP>
@@ -385,16 +384,15 @@ Datenbank gehörigen Dateien ausgeführt.
 <TIP number="024" level="1">
 
 <p>
-Unter Linux/Unix können auch Windows-Programme als Motoren
-(Schachprogramme) genutzt werden &ndash; beispielsweise Houdini &ndash;,
-wenn der Windows-Emulator <em>Wine</em> installiert ist. Allerdings wird
-beim Motorstart Geduld gefordert, der Windows-Emulator benötigt eine ganze
-Weile beim ersten Start.
+It's possible to use Windows executables as chess engines (like Houdini)
+if the Windows emulator <em>Wine</em> is installed. However patience is
+required when the engine is starting, the Windows emulator takes a longer
+time for startup.
 </p>
 
 <p>
-Die Nutzung des Windows-Programms unterscheidet sich nicht von der Nutzung
-eines Unix-Programms, Scidb erkennt sebsttätig, wie der Motor zu starten ist.
+The use of a Window engine is not different from the use of a Unix engine,
+Scidb is detecting automatically how to start an executable.
 </p>
 
 </TIP>
@@ -420,41 +418,41 @@ eines Unix-Programms, Scidb erkennt sebsttätig, wie der Motor zu starten ist.
 <TIP number="026" level="1">
 
 <p>
-Scidb öffnet auch ChessBase-Datenbanken, sowohl das neue Format (.cbh), als
-auch das alte DOS-Format (.cbf). Jedoch können ChessBase-Datenbanken nicht
-als Referenzdatenbank verwendet werden. Deshalb wird ein Export in das
-Scidb-Format (.sci) empfohlen.
+Scidb is also reading ChessBase files, the new format (.cbh), as well as
+the old DOS format (.cbf). Though it's not possible to use ChessBase databases
+as reference bases it is recommended to export into Scidb's format (.sci).
+For this purpose you may use the additional program <em>cdbsci</em>, but the
+use of the graphical interface is also possible.
 </p>
 
 <p>
-In seltenen Fällen kommt es vor, daß in einer ChessBase-Datenbank eine Partie
-nicht gelesen werden kann (in der MegaBase 2014 sind es 11 von 5.7 Mio.
-Partien). ChessBase hält sein Datenformat geheim, und Scidb kann noch nicht
-alle Informationen lesen.
+In seldom cases a game in a ChessBase database cannot be decoded (in MegaBase 2014
+there a 11 games from 5.7 millions). ChessBase is keeping the format secret, and
+Scidb cannot decode the complete information.
 </p>
 
 </TIP>
 <!-- NEXT TIP ========================================================= -->
-<TIP number="027" level="3">
-
-<p>
-In Partieeditor werden Züge, die &ndash; mölicherweise aufgrund einer Zugumstellung
-&ndash; zu einer bereits vorhandenen Stellung in der Hauptvariante führen, mit einem
-Verknüpfungssymbol <span class='awesome'>&#xf14c;</span> versehen. Wenn die
-Maus über diesem Symbol gehalten wird erfolgt eine Hervorhebung des Zuges in der
-Hauptvariante, der zur gleichen Stellung führt &ndash; sofern dieser Zug sichtbar
-ist. Ein Mausklick auf dieses Symbol positioniert auf den hervogehobenen Zug (auch
-wenn sieser nicht sichtbar ist). Dies erleichtert u.a. das Erkennen von
-Zugumstellungen bei der Eingabe von Varianten.
-</p>
-
-</TIP>
+#<TIP number="027" level="3">
+#
+#<p>
+#In Partieeditor werden Züge, die &ndash; mölicherweise aufgrund einer Zugumstellung
+#&ndash; zu einer bereits vorhandenen Stellung in der Hauptvariante führen, mit einem
+#Verknüpfungssymbol <span class='awesome'>&#xf14c;</span> versehen. Wenn die
+#Maus über diesem Symbol gehalten wird erfolgt eine Hervorhebung des Zuges in der
+#Hauptvariante, der zur gleichen Stellung führt &ndash; sofern dieser Zug sichtbar
+#ist. Ein Mausklick auf dieses Symbol positioniert auf den hervogehobenen Zug (auch
+#wenn sieser nicht sichtbar ist). Dies erleichtert u.a. das Erkennen von
+#Zugumstellungen bei der Eingabe von Varianten.
+#</p>
+#
+#</TIP>
 <!-- NEXT TIP ========================================================= -->
 <TIP number="028" level="2">
 
 <p>
-Der Partieeditor verfügt über umfangreiche Einstellmöglichkeiten. Der dazugehörige
-Dialog wird über das kontextsensitive Menü geöffnet:
+The notation editor is providing comprehensive setup possiblities. The dedicated
+dialog will be opened with the context-sensitive menu:
 <span class='menuitem'>Customize Editor</span>.
 </p>
 
@@ -463,8 +461,8 @@ Dialog wird über das kontextsensitive Menü geöffnet:
 <TIP number="029" level="2">
 
 <p>
-Um auf dem Schachbrettreiter durch eine Partie nur mit einer Taste zu traversieren
-sollte die gleitende Variantenanzeige auf "Versteckt" oder "Rechts" eingestellt werden.
+If you like to traverse a game with only one key then adjust the sliding variation
+pane to <span class='menuitem'>Hidden</span> or <span class='menuitem'>Right</span>.
 </p>
 
 </TIP>
@@ -472,14 +470,13 @@ sollte die gleitende Variantenanzeige auf "Versteckt" oder "Rechts" eingestellt 
 <TIP number="030" level="1">
 
 <p>
-Die Eingabe von Varianten wird mit <kbd class='key'>F5</kbd> vereinfacht. Es wird ein Halbzug
-zurückgespielt, und die nächste Zugeingabe wird als Untervariante angelegt.
+Entering variations may be easier with the use of key <kbd class='key'>F5</kbd>. It plays
+back one ply, and with next move a sub-variation will be created.
 </p>
 
 <p>
-Das Traversieren von Varianten wird mit <kbd class='key'>↓</kbd> (in eine
-Variante hineinspringen) und <kbd class='key'>↑</kbd> (eine Variant verlassen)
-unterstützt.
+Traversing variations will be supported with <kbd class='key'>↓</kbd> (enter
+a variation) and <kbd class='key'>↑</kbd> (leave a variation).
 </p>
 
 </TIP>
@@ -487,9 +484,9 @@ unterstützt.
 <TIP number="031" level="1">
 
 <p>
-Die Fensterelemente auf dem Schachbrettreiter sind frei konfigurierbar mittels
-Drag&#x2009;&amp;&#x2009;Drop (Ziehen und Fallenlassen) der Titelleiste. Die Balken
-zwischen den Fensterelementen erlauben eine Adjustierung der Fenstergrößen.
+The panes on board tab are freely configurable with Drag&#x2009;&amp;&#x2009;Drop
+of the title bar. The bars between the panes allowing an adjustment of the pane
+sizes.
 </p>
 
 </TIP>
