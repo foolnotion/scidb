@@ -123,7 +123,7 @@ proc openDialog {parent} {
 		-doublebuffer no \
 		-exportselection yes \
 		-background $bg \
-		-cursor left_ptr \
+		-cursor standard \
 		-showhyphens 1 \
 		-css $css \
 		-usehorzscroll no \

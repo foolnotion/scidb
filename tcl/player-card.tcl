@@ -116,7 +116,7 @@ proc show {base variant args} {
 		-fittowidth yes \
 		-height 600 \
 		-width 800 \
-		-cursor left_ptr \
+		-cursor standard \
 		-borderwidth 1 \
 		-relief sunken \
 		-doublebuffer no \
