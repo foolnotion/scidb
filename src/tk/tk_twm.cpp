@@ -2275,10 +2275,6 @@ Node::updateDimen(int x, int y, int width, int height)
 {
 	if (width > 1 && height > 1 && exists())
 	{
-#if 0
-if (m_dimen.actual.width != contentSize<Horz>(width) || m_dimen.actual.height != contentSize<Vert>(height))
-printf("updateDimen(%s): %d %d\n", id(), width, height);
-#endif
 		width = contentSize<Horz>(width);
 		height = contentSize<Vert>(height);
 
@@ -3438,7 +3434,9 @@ Node::parseSnapshot(Tcl_Obj* obj)
 
 	tcl::Array elems = tcl::getElements(obj);
 
-	if (elems.size() == 0 || elems.size() % 2)
+	if (elems.size() == 0)
+		M_THROW(tcl::Exception("empty snapshot list"));
+	if (elems.size() % 2)
 		M_THROW(tcl::Exception("odd snapshot list '%s'", tcl::asString(obj)));
 	
 	for (unsigned i = 0; i < elems.size(); i += 2)
@@ -5042,15 +5040,12 @@ Node::performFinalizeCreate()
 	M_ASSERT(exists());
 	M_ASSERT(!isMetaFrame() || child()->exists());
 
-	if (tcl::invoke(	__func__,
-							m_root->pathObj(),
-							m_objFrame2Cmd,
-							pathObj(),
-							isMetaFrame() ? child()->m_path : m_uid,
-							nullptr) != TCL_OK)
-	{
-		M_THROW(tcl::Error());
-	}
+	tcl::invoke(__func__,
+					m_root->pathObj(),
+					m_objFrame2Cmd,
+					pathObj(),
+					isMetaFrame() ? child()->m_path : m_uid,
+					nullptr);
 }
 
 
@@ -5060,17 +5055,14 @@ Node::performBuild()
 	M_ASSERT(exists());
 	M_ASSERT(isLeaf());
 
-	if (tcl::invoke(	__func__,
-							m_root->pathObj(),
-							m_objBuildCmd,
-							pathObj(),
-							uidObj(),
-							tcl::newObj(width<Inner>()),
-							tcl::newObj(height<Inner>()),
-							nullptr) != TCL_OK)
-	{
-		M_THROW(tcl::Error());
-	}
+	tcl::invoke(__func__,
+					m_root->pathObj(),
+					m_objBuildCmd,
+					pathObj(),
+					uidObj(),
+					tcl::newObj(width<Inner>()),
+					tcl::newObj(height<Inner>()),
+					nullptr);
 }
 
 
@@ -5079,15 +5071,12 @@ Node::performReady()
 {
 	M_ASSERT(isRoot());
 
-	if (tcl::invoke(	__func__,
-							m_root->pathObj(),
-							m_objReadyCmd,
-							tcl::newObj(width<Outer>()),
-							tcl::newObj(height<Outer>()),
-							nullptr) != TCL_OK)
-	{
-		M_THROW(tcl::Error());
-	}
+	tcl::invoke(__func__,
+					m_root->pathObj(),
+					m_objReadyCmd,
+					tcl::newObj(width<Outer>()),
+					tcl::newObj(height<Outer>()),
+					nullptr);
 }
 
 
@@ -5675,21 +5664,18 @@ Node::performDeleteInactiveNodes()
 void
 Node::performDeiconify(bool force)
 {
-	if (tcl::invoke(
-			__func__,
-			m_root->pathObj(),
-			m_objDeiconifyCmd,
-			pathObj(),
-			tcl::newObj(dimen<Outer,Horz>()),
-			tcl::newObj(dimen<Outer,Vert>()),
-			tcl::newObj(m_coord.x),
-			tcl::newObj(m_coord.y),
-			tcl::newObj(force),
-			nullptr) != TCL_OK)
-	{
-		M_THROW(tcl::Error());
-	}
+	tcl::invoke(__func__,
+					m_root->pathObj(),
+					m_objDeiconifyCmd,
+					pathObj(),
+					tcl::newObj(dimen<Outer,Horz>()),
+					tcl::newObj(dimen<Outer,Vert>()),
+					tcl::newObj(m_coord.x),
+					tcl::newObj(m_coord.y),
+					tcl::newObj(force),
+					nullptr);
 }
+
 
 void
 Node::performDeiconifyFloats()

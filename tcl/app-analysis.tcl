@@ -201,6 +201,7 @@ proc build {parent number {patternNumber 0}} {
 		-background [::colors::lookup $GlobalOptions(background)] \
 	]
 	bind $mesg <<LanguageChanged>> [namespace code LanguageChanged]
+	bind $mesg <ButtonPress-3> [namespace code [list PopupMenu $tree $number]]
 
 	$mw add $main -sticky nsew
 	$mw add $mesg
@@ -393,6 +394,13 @@ proc build {parent number {patternNumber 0}} {
 		-command [namespace code [list EngineLock $tree]] \
 	]
 	lappend Vars(toolbar:childs) $Vars(button:lock)
+	set Vars(button:opponent) [::toolbar::add $tbControl checkbutton \
+		-image $::icon::toolbarRotateBoard \
+		-variable [namespace current]::${tree}::Vars(engine:opponent) \
+		-command [namespace code [list restartAnalysis $Vars(number)]] \
+		-tooltipvar [namespace current]::mc::OpponentsView \
+	]
+	lappend Vars(toolbar:childs) $Vars(button:opponent)
 	::toolbar::add $tbControl button \
 		-image $::icon::toolbarEngine \
 		-command [namespace code [list Setup $tree $number]] \
@@ -404,13 +412,6 @@ proc build {parent number {patternNumber 0}} {
 		-command [namespace code [list CloseEngine $tree]] \
 		-state disabled \
 	]
-	set Vars(button:opponent) [::toolbar::add $tbControl checkbutton \
-		-image $::icon::toolbarRotateBoard \
-		-variable [namespace current]::${tree}::Vars(engine:opponent) \
-		-command [namespace code [list restartAnalysis $Vars(number)]] \
-		-tooltipvar [namespace current]::mc::OpponentsView \
-	]
-	lappend Vars(toolbar:childs) $Vars(button:opponent)
 	::toolbar::addSeparator $tbControl
 	set tbw [::toolbar::add $tbControl checkbutton \
 		-image $::icon::toolbarLines \
@@ -420,14 +421,14 @@ proc build {parent number {patternNumber 0}} {
 		-tooltipvar [namespace current]::mc::MultipleVariations \
 		-command [namespace code [list SetMultiPV $tree]] \
 	]
-	lappend Vars(toolbar:childs) $tbw
+	#lappend Vars(toolbar:childs) $tbw
 	set Vars(widget:ordering) [::toolbar::add $tbControl checkbutton \
 		-image $::icon::toolbarSort(descending) \
 		-variable [namespace current]::${number}::Options(engine:bestFirst) \
 		-tooltipvar [namespace current]::mc::BestFirstOrder \
 		-command [namespace code [list SetOrdering $tree]] \
 	]
-	lappend Vars(toolbar:childs) $Vars(widget:ordering)
+	#lappend Vars(toolbar:childs) $Vars(widget:ordering)
 	::toolbar::addSeparator $tbControl
 	::toolbar::add $tbControl label -textvar [namespace current]::mc::Lines
 	set lpv [::toolbar::add $tbControl ::ttk::spinbox \
@@ -721,7 +722,9 @@ proc SetOrdering {tree} {
 		set order unordered
 	}
 
-	::scidb::engine::ordering [::engine::id $Vars(number)] $order
+	if {[::engine::active? $Vars(number)]} {
+		::scidb::engine::ordering [::engine::id $Vars(number)] $order
+	}
 
 	if {$Options(engine:bestFirst)} {
 		foreach i {0 1 2 3 4 5 6 7} {
@@ -765,7 +768,9 @@ proc SetMultiPV {tree {number 0}} {
 	}
 
 	if {$Options(engine:singlePV)} { set multiPV 1 } else { set multiPV $Options(engine:multiPV) }
-	::scidb::engine::multiPV [::engine::id $Vars(number)] $multiPV
+	if {[::engine::active? $Vars(number)]} {
+		::scidb::engine::multiPV [::engine::id $Vars(number)] $multiPV
+	}
 	if {$Options(engine:bestFirst) || $Options(engine:singlePV)} {
 		set Vars(best:1) black
 	} else {

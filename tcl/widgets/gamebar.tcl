@@ -1384,9 +1384,9 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 
 			$n add command \
 				-label [::util::databaseName $base] \
-				-background "#d3d3d3" \
+				-background #d3d3d3 \
 				-foreground black \
-				-activebackground "#d3d3d3" \
+				-activebackground #d3d3d3 \
 				-activeforeground black \
 				-font $::table::options(menu:headerfont) \
 				-state disabled \

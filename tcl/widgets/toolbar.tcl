@@ -1831,12 +1831,14 @@ proc SetState {toolbar v w state} {
 	switch [winfo class $w] {
 		Button - DropdownButton {
 			if {$state eq "normal"} {
+				set relief $Specs(relief:$w:$toolbar)
 				set overrelief $Specs(overrelief:$v:$toolbar)
 				set activebackground $Specs(active:$v:$toolbar)
 				set command $Specs(command:$v:$toolbar)
 				bind $w <ButtonPress-1> $Specs(button1:$v:$toolbar)
 				bind $w <Enter> $Specs(entercmd:$v:$toolbar)
 			} else {
+				set relief flat
 				set overrelief flat
 				set activebackground [$w cget -background]
 				set command {}
@@ -1848,13 +1850,11 @@ proc SetState {toolbar v w state} {
 			set icon $Specs($iconsize-$state:$v:$toolbar)
 			$w configure \
 				-image $icon \
+				-relief $relief \
 				-overrelief $overrelief \
 				-activebackground $activebackground \
 				-command $command \
 				;
-			if {$state ne "normal"} {
-				$w configure -relief flat
-			}
 			if {[winfo class $w] eq "DropdownButton"} {
 				$w configure -arrowstate $state
 			}
