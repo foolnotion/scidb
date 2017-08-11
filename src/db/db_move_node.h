@@ -99,8 +99,10 @@ public:
 		IsMerged				= 1 << 15,
 	};
 
-	MoveNode(Move const& move);
+	// NOTE: the game class should use only this constructor
 	MoveNode(Board const& board, Move const& move, variant::Type variant);
+
+	MoveNode(Move const& move);
 	explicit MoveNode(MoveNode* node);
 	explicit MoveNode(Annotation* set = 0);
 	~MoveNode();

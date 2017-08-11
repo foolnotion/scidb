@@ -2861,7 +2861,7 @@ Game::addMoves(MoveList const& moves)
 	{
 		Move move = moves[i];
 
-		n->setNext(new MoveNode(move));
+		n->setNext(new MoveNode(board, move, m_variant));
 		board.doMove(move, variant());
 		n = n->next();
 	}
@@ -2946,14 +2946,13 @@ Game::addVariation(MoveNodeP node, move::Position position)
 
 	currNode->addVariation(varNode);
 
-	Board board(m_currentBoard);
-
+#ifndef NDEBUG
 	for (MoveNode* n = varNode->next(); !n->atLineEnd(); n = n->next())
 	{
-		board.prepareUndo(n->move());
-		n->prepareForPrint(board, m_variant);
-		board.doMove(n->move(), m_variant);
+		n->move().preparedForUndo();
+		n->move().isPrintable();
 	}
+#endif
 
 	END_BACKUP;
 
@@ -2982,7 +2981,7 @@ Game::addVariation(MoveList const& moves, move::Position position)
 	{
 		Move move = moves[i];
 
-		n->setNext(new MoveNode(move));
+		n->setNext(new MoveNode(board, move, m_variant));
 		board.doMove(move, variant());
 		n = n->next();
 	}
@@ -2999,11 +2998,16 @@ Game::addVariation(Move const& move, move::Position position)
 	M_REQUIRE(isAfterLineStart() || position == move::Post);
 	M_REQUIRE(isValidVariation(MoveList(move), position));
 
-	MoveNode* node = new MoveNode(move);
-	node->setNext(new MoveNode);
-	MoveNodeP var(new MoveNode(node));
+	Board			board(m_currentBoard);
+	MoveNodeP	node(new MoveNode);
+	MoveNode*	n(node.get());
 
-	return addVariation(var, position);
+	if (position == move::Ante)
+		board.undoMove(currentMove(), variant());
+
+	n->setNext(new MoveNode(board, move, m_variant));
+	n->setNext(new MoveNode);
+	return addVariation(node, position);
 }
 
 
@@ -3043,7 +3047,7 @@ Game::mergeVariation(Variation const& moves,
 //	for (MoveNode* const* n = moves.begin(); n != moves.end(); ++n)
 //	{
 //		board.prepareUndo((*n)->move());
-//		(*n)->move()->prepareForPrint(board);
+//		(*n)->prepareForPrint(board, m_variant);
 //		board.doMove((*n)->move());
 //	}
 
@@ -3105,7 +3109,7 @@ Game::mergeVariation(Variation const& moves)
 	for (MoveNode* const* n = moves.begin(); n != moves.end(); ++n)
 	{
 		board.prepareUndo((*n)->move());
-		board.prepareForPrint((*n)->move(), m_variant, Board::InternalRepresentation);
+		(*n)->prepareForPrint(board, m_variant);
 		board.doMove((*n)->move(), m_variant);
 	}
 
@@ -3168,7 +3172,7 @@ Game::mergeVariation(MoveList const& moves, move::Position position)
 	for (unsigned i = 0; i < moves.size(); ++i)
 	{
 		Move			move = moves[i];
-		MoveNode*	node = new MoveNode(move);
+		MoveNode*	node = new MoveNode(board, move, m_variant);
 
 		n->setNext(node);
 		n = n->next();
@@ -3597,16 +3601,15 @@ Game::changeVariation(MoveNodeP node, unsigned variationNumber)
 	M_REQUIRE(isValidVariation(node.get()));
 	M_REQUIRE(variationNumber < subVariationCount());
 
-	Board board(m_currentBoard);
-
 	BEGIN_BACKUP;
 
+#ifndef NDEBUG
 	for (MoveNode* n = node->next(); n->isBeforeLineEnd(); n = n->next())
 	{
-		board.prepareUndo(n->move());
-		board.prepareForPrint(n->move(), m_variant, Board::InternalRepresentation);
-		board.doMove(n->move(), m_variant);
+		n->move().preparedForUndo();
+		n->move().isPrintable();
 	}
+#endif
 
 	MoveNode* varNode = node.release();
 	varNode->setFolded(false);
