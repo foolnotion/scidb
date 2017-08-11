@@ -128,6 +128,7 @@ proc twm {path args} {
 		-resizing {}
 		-borderwidth 0
 		-allowempty 0
+		-disableclose 0
 		-state "normal"
 	}
 	array set opts $args
@@ -136,6 +137,7 @@ proc twm {path args} {
 	set Vars(cmd:workarea) $opts(-workarea)
 	set Vars(cmd:resizing) $opts(-resizing)
 	set Vars(allow:empty) $opts(-allowempty)
+	set Vars(disable:close) $opts(-disableclose)
 	set Vars(state) $opts(-state)
 	set Vars(docking:recipient) ""
 	set Vars(docking:position) ""
@@ -1854,6 +1856,8 @@ proc Deiconify {twm toplevel width height x y force} {
 
 
 proc DoDeiconify {twm toplevel width height x y force} {
+	variable ${twm}::Vars
+
 	set x [expr {$x + [winfo rootx $twm]}]
 	set y [expr {$y + [winfo rooty $twm]}]
 	incr x -4	;# magic value, this works under KDE (TODO: find the reason)
@@ -1866,7 +1870,12 @@ proc DoDeiconify {twm toplevel width height x y force} {
 	wm geometry $toplevel ${width}x${height}+${x}+${y}
 	SetTitle $twm $toplevel [$twm get $toplevel name]
 	wm state $toplevel normal
-	wm protocol $toplevel WM_DELETE_WINDOW [list [namespace current]::Dock $twm $toplevel]
+	if {$Vars(disable:close)} {
+		set cmd {#}
+	} else {
+		set cmd [list [namespace current]::Dock $twm $toplevel]
+	}
+	wm protocol $toplevel WM_DELETE_WINDOW $cmd
 }
 
 

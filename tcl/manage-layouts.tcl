@@ -72,6 +72,7 @@ proc open {parent currentLayout} {
 		-resizing  [namespace current]::Resizing \
 		-borderwidth $Options(borderwidth) \
 		-state readonly \
+		-disableclose 1 \
 	]
 	pack $twm -padx $Options(padding) -pady $Options(padding)
 	[namespace parent]::loadInitialLayout $twm
