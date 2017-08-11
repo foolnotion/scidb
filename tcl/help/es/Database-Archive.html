@@ -19,7 +19,7 @@
   <meta name="generator"
      content="scidb.sourceforge.net" />
   <meta name="description"
-     content="Scidb Help Page" />
+     content="Scidb - Help Page" />
 
   <link rel="icon"
        href="http://scidb.sourceforge.net/favicon.ico"
@@ -29,9 +29,9 @@
   <link rel="stylesheet"
        type="text/css"
       media="screen"
-       href="../styles/help.css" />
+		 href="../styles/help.css" />
 
-  <title>Scidb Ayuda: Archivo de base de datos</title>
+  <title>Scidb - Ayuda: Archivo de base de datos</title>
 </head>
 
 <body>
@@ -84,19 +84,19 @@ Time        = Hour ":" Minute ":" Second ;<!--
 <p>
 <b><code>&lt;FileName&gt;</code></b> corresponde a cualquier nombre de archivo
 válido, independientemente de la plataforma, sin una ruta precedente. Un nombre
-de archivo independiente a la plataforma no puede contener los caracteres "&lt;" 
+de archivo independiente a la plataforma no puede contener los caracteres "&lt;"
 y "&gt;"
 </p>
 
 <p>
 <b><code>&lt;URI&gt;</code></b> es un identificador unificado de recursos,
 por ejemplo <code>http://www.chess-and-more.com/any-database.scv</code>, o
-<code>file:///home/chris/Chess/MyBase.sci</code>. Es una decisión del 
+<code>file:///home/chris/Chess/MyBase.sci</code>. Es una decisión del
 decodificador el modo en el que usará la especificación de ruta precedente.
 </p>
 
 <p>
-<b><code>&lt;Size&gt;</code></b> es el tamaño del documento contenido 
+<b><code>&lt;Size&gt;</code></b> es el tamaño del documento contenido
 dentro del Archivo.
 </p>
 
@@ -108,7 +108,7 @@ hacia la siguiente cabecera de archivo.
 
 <p>
 <b><code>&lt;TotalSize&gt;</code></b> contiene la suma de todos
-los archivos desempaquetados. Este atributo puede no estar 
+los archivos desempaquetados. Este atributo puede no estar
 disponible si la suma es desconocida.
 </p>
 
@@ -140,9 +140,9 @@ El modo predeterminado para el atributo <code>&lt;Compression&gt;</code> es
 <p>
 si <code>URI</code> es un enlace externo (por ejemplo <code>http://*</code>),
 <code>Size</code> puede que no esté disponible y <code>FileSize</code>
-también podría desconocerse (no estar disponible). En este caso, usualmente 
+también podría desconocerse (no estar disponible). En este caso, usualmente
 la sección de información se encuentra vacía (línea vacía). Pero la información
-de archivo podría estar disponible y  ser utilizada si no fuese posible 
+de archivo podría estar disponible y  ser utilizada si no fuese posible
 acceder al enlace externo. Así, el atributo <code>Size</code> debe especificarse
 de todos modos.
 </p>
@@ -162,7 +162,7 @@ de texto adecuado (que permita los datos binarios).
 </div>
 
 <p>
-En el formato "<abbr>.scv</abbr>" el atributo <b><code>UserInfo</code></b> tiene la 
+En el formato "<abbr>.scv</abbr>" el atributo <b><code>UserInfo</code></b> tiene la
 siguiente definición:
 </p>
 
@@ -180,8 +180,8 @@ Format      = 'sci' | 'si3' | 'si4' |
 --></code></pre></div>
 
 <p>
-<b><code>&lt;Count&gt;</code></b> es el número de partidas en la base de datos. 
-Si esta información se desconoce (por ejemplo, en el caso de archivos PGN), 
+<b><code>&lt;Count&gt;</code></b> es el número de partidas en la base de datos.
+Si esta información se desconoce (por ejemplo, en el caso de archivos PGN),
 entonces este atributo no está disponible.
 </p>
 
