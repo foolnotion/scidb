@@ -669,6 +669,7 @@ uci::Engine::parseBestMove(char const* msg)
 	{
 		s = ::skipSpaces(s + 6);
 
+		currentBoard().prepareUndo(move);
 		currentBoard().doMove(move, m_variant);
 		Move ponder(currentBoard().parseLAN(s));
 		currentBoard().undoMove(move, m_variant);
