@@ -84,12 +84,15 @@ array set Defaults {
 	floating:focusmodel			active
 	drag:color:snapping			red
 	drag:color:floating			black
-	icons:x11Hack					true
+	icons:x11Hack					false
 	dialog:class					*Dialog*
 	dialog:snapping:x				35
 	dialog:snapping:y				35
 }
 # button:selectcolor #d1dbe0
+if {[tk windowingsystem] eq "x11" && [info tclversion] <= "8.6"} {
+	set Defaults(icons:x11Hack) true
+}
 
 array set Options {
 	icons:size						medium
@@ -1877,7 +1880,7 @@ proc SetupIcons {toolbar w icons} {
 		set Specs($size:$w:$toolbar) [lindex $icons [incr i]]
 	}
 
-	if {[tk windowingsystem] eq "x11" && $Defaults(icons:x11Hack)} {
+	if {$Defaults(icons:x11Hack)} {
 		variable Images
 
 		# we need a hack to center the image inside a button:
@@ -1894,7 +1897,7 @@ proc SetupIcons {toolbar w icons} {
 					set wd [image width $img]
 					set ht [image height $img]
 					set ic [image create photo -width [expr {$wd + 2}] -height [expr {$ht + 2}]]
-					$ic blank	;# ensure alpha channel
+					$ic blank ;# ensure alpha channel
 					$ic copy $img -to 0 0 $wd $ht
 					set Images($img) $ic
 				}

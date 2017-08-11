@@ -94,5 +94,12 @@ enum { true = (int) 1, false = (int) 0 };
 # endif
 #endif
 
+extern Tcl_Obj *TkFontGetDescription(Tk_Font tkfont);
+
+#ifdef MAC_OSX_TK
+extern int TkpDrawingIsDisabled(Tk_Window tkwin);
+#else
+# define TkpDrawingIsDisabled(tkwin) 0
+#endif /* MAC_OSX_TK */
 #endif /* _TK_BOOL */
 /* vi:set ts=8 sw=4: */

@@ -9,6 +9,10 @@
 #include "tk.h"
 #include "tkInt.h"
 
+#if TCL_MAJOR_VERSION > 8 || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION >= 7)
+# include "tkFont.h"
+#endif
+
 
 typedef struct PixelRep {
     double value;
@@ -201,6 +205,116 @@ Tk_FontObjCmd(
 {
     return TCL_ERROR; /* not implemented */
 }
+
+
+#if TCL_MAJOR_VERSION > 8 || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION >= 7)
+
+#define GetFontAttributes(tkfont) \
+	((const TkFontAttributes *) &((TkFont *) (tkfont))->fa)
+
+#define FONT_FAMILY	0
+#define FONT_SIZE	1
+#define FONT_WEIGHT	2
+#define FONT_SLANT	3
+#define FONT_UNDERLINE	4
+#define FONT_OVERSTRIKE	5
+#define FONT_NUMFIELDS	6
+
+static const TkStateMap weightMap[] = {
+    {TK_FW_NORMAL,	"normal"},
+    {TK_FW_BOLD,	"bold"},
+    {TK_FW_UNKNOWN,	NULL}
+};
+
+static const TkStateMap slantMap[] = {
+    {TK_FS_ROMAN,	"roman"},
+    {TK_FS_ITALIC,	"italic"},
+    {TK_FS_UNKNOWN,	NULL}
+};
+
+static const TkStateMap underlineMap[] = {
+    {1,			"underline"},
+    {0,			NULL}
+};
+
+static const TkStateMap overstrikeMap[] = {
+    {1,			"overstrike"},
+    {0,			NULL}
+};
+
+Tcl_Obj *
+TkFontGetDescription(
+    Tk_Font tkfont)		/* Font whose description is desired. */
+{
+    const TkFontAttributes *faPtr = GetFontAttributes(tkfont);
+    Tcl_Obj *resultPtr = Tcl_NewObj();
+    const char *str;
+    int i;
+
+    for (i = 0; i < FONT_NUMFIELDS; i++) {
+	Tcl_Obj *valuePtr = NULL;
+	switch (i) {
+	case FONT_FAMILY:
+	    str = faPtr->family;
+	    valuePtr = Tcl_NewStringObj(str, str ? -1 : 0);
+	    break;
+
+	case FONT_SIZE:
+	    if (faPtr->size >= 0.0) {
+		valuePtr = Tcl_NewIntObj((int)(faPtr->size + 0.5));
+	    } else {
+		valuePtr = Tcl_NewIntObj(-(int)(-faPtr->size + 0.5));
+	    }
+	    break;
+
+	case FONT_WEIGHT:
+	    if (faPtr->weight != TK_FW_NORMAL) {
+		str = TkFindStateString(weightMap, faPtr->weight);
+		valuePtr = Tcl_NewStringObj(str, -1);
+	    }
+	    break;
+
+	case FONT_SLANT:
+	    if (faPtr->slant != TK_FS_ROMAN) {
+		str = TkFindStateString(slantMap, faPtr->slant);
+		valuePtr = Tcl_NewStringObj(str, -1);
+	    }
+	    break;
+
+	case FONT_UNDERLINE:
+	    if (faPtr->underline) {
+		str = TkFindStateString(underlineMap, faPtr->underline);
+		valuePtr = Tcl_NewStringObj(str, -1);
+	    }
+	    break;
+
+	case FONT_OVERSTRIKE:
+	    if (faPtr->overstrike) {
+		str = TkFindStateString(overstrikeMap, faPtr->overstrike);
+		valuePtr = Tcl_NewStringObj(str, -1);
+	    }
+	    break;
+	}
+	if (valuePtr) {
+	    Tcl_ListObjAppendElement(NULL, resultPtr, valuePtr);
+	}
+    }
+    return resultPtr;
+}
+
+# ifdef MAC_OSX_TK
+
+int
+TkpDrawingIsDisabled(
+   Tk_Window tkwin)
+{
+    MacDrawable *macWin = ((TkWindow *) tkwin)->privatePtr;
+    return macWin && !!(macWin->flags & TK_DO_NOT_DRAW);
+}
+
+# endif /* MAC_OSX_TK */
+#endif /* TCL_MAJOR_VERSION > 8 || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION >= 7) */
+
 
 #ifdef __unix__
 
