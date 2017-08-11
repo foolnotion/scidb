@@ -96,10 +96,13 @@ enum { true = (int) 1, false = (int) 0 };
 
 extern Tcl_Obj *TkFontGetDescription(Tk_Font tkfont);
 
-#ifdef MAC_OSX_TK
+#if !(TK_MAJOR_VERSION == 8 && TK_MINOR_VERSION < 7)
+# ifdef MAC_OSX_TK
 extern int TkpDrawingIsDisabled(Tk_Window tkwin);
-#else
+# else
 # define TkpDrawingIsDisabled(tkwin) 0
-#endif /* MAC_OSX_TK */
+# endif /* MAC_OSX_TK */
+#endif /*  TK_MAJOR_VERSION == 8 && TK_MINOR_VERSION < 7 */
+
 #endif /* _TK_BOOL */
 /* vi:set ts=8 sw=4: */
