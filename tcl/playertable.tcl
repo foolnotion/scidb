@@ -876,7 +876,7 @@ proc PopupMenu {table menu base variant index} {
 
 
 proc WriteOptions {chan} {
-	::options::writeList $chan [namespace current]::Find
+	::options::writeList $chan [namespace current]::History
 	::options::writeItem $chan [namespace current]::Options
 }
 

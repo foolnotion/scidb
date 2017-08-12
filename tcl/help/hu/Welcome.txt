@@ -51,17 +51,17 @@ Ez egy előzetes verzió tesztelés és ismerkedés céljaira. Az első teljes v
 </ol>
 
 <p><!-- NEW: replace 'three years' with 'four years' -->
-Jó szórakozást kívánunk a Scidb használatához, melynek fejlesztése immáron hét éve tart!
+Jó szórakozást kívánunk a Scidb használatához, melynek fejlesztése immáron kilenc éve tart!
 </p>
 
-<!-- END -->
 <h2>Links</h2>
 
-<ul>
-  <li><a href="Development-Roadmap.html">Development roadmap</a></li>
+<dir>
   <li><a href="Whats-New.html">What's new?</a></li>
-</ul>
+  <li><a href="Development-Roadmap.html">Development roadmap</a></li>
+</dir>
 
+<!-- END -->
 END
 
 # vi:set ts=2 sw=2 et filetype=html:

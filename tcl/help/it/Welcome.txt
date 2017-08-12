@@ -64,17 +64,17 @@ Scidb:
 </ol>
 
 <p>
-Divertitevi con Scidb, il cui sviluppo ha richiesto già sette anni!
+Divertitevi con Scidb, il cui sviluppo ha richiesto già nove anni!
 </p>
 
-<!-- END -->
 <h2>Links</h2>
 
-<ul>
-  <li><a href="Development-Roadmap.html">Piano di Sviluppo</a></li>
+<dir>
   <li><a href="Whats-New.html">Novità</a></li>
-</ul>
+  <li><a href="Development-Roadmap.html">Piano di Sviluppo</a></li>
+</dir>
 
+<!-- END -->
 END
 
 # vi:set ts=2 sw=2 et filetype=html:

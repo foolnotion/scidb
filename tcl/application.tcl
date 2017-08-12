@@ -1136,7 +1136,7 @@ proc Startup {main args} {
 	$nb select .application.nb.$tab
 
 	after idle [namespace code [list switchTab $tab]]
-	after idle [list ::beta::welcomeToScidb $app]
+	#after idle [list ::beta::welcomeToScidb $app]
 	::util::photos::checkForUpdate [namespace current]::InformAboutUpdates
 }
 

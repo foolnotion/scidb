@@ -60,17 +60,17 @@ Version sollte folgendes berücksichtigt werden:
 </ol>
 
 <p>
-Viel Freude mit Scidb, dessen Entwicklung bisher bereits sieben Jahre in Anspruch genommen hat!
+Viel Freude mit Scidb, dessen Entwicklung bisher bereits neun Jahre in Anspruch genommen hat!
 </p>
 
-<!-- END -->
 <h2>Links</h2>
 
-<ul>
-  <li><a href="Development-Roadmap.html">Entwicklungsplanung</a></li>
+<dir>
   <li><a href="Whats-New.html">Was ist neu?</a></li>
-</ul>
+  <li><a href="Development-Roadmap.html">Entwicklungsplanung</a></li>
+</dir>
 
+<!-- END -->
 END
 
 <!-- vi:set ts=2 sw=2 et filetype=html fileencoding=latin1: -->

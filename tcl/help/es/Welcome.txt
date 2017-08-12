@@ -61,10 +61,9 @@ tenga en cuenta al experimentar con Scidb:
 </ol>
 
 <p>
-¡Diviértase mucho con Scidb, cuyo desarrollo ya ha tomado siete años!
+¡Diviértase mucho con Scidb, cuyo desarrollo ya ha tomado nueve años!
 </p>
 
-<!-- END -->
 <h2>Links</h2>
 
 <dir>
@@ -72,6 +71,7 @@ tenga en cuenta al experimentar con Scidb:
   <li><a href="Whats-New.html">Novedades</a></li>
 </dir>
 
+<!-- END -->
 END
 
 # vi:set ts=2 sw=2 et filetype=html:
