@@ -1,0 +1,49 @@
+1. Previously I've emphasized that Scidb is not designed for large databases,
+	it was not recommended to use a database with more than about 1.5 million
+	games. The reason is the algorithm of the opening tree (below the board),
+	with large databases the update of the tree is quite time consuming, and
+	it makes no joy (when the tree is required).
+
+	With new algorithm this has changed, now even the opening tree of very
+	large databases can be computed quite fast. This means that Scidb now is
+	ready for the handling of huge databases. This is an important step to
+	become an adequate alternative for commercial database applications.
+
+	The advantage of Scidb's algorithm is the computation "on the fly", as
+	soon as a game will be saved the opening tree and the opening browser
+	will be updated immediately, it is not required to invoke an update
+	process. The antiquated method with boosters will not be used in Scidb.
+
+	The tree window now even detects unplayed move transpositions, see
+	this line: 1.e4 e6 2.d4 d5 3.Nc3 Bb4 4.a3 Bxc3+ 5.bxc3 Ne7 6.Qg4
+	0-0 7.e5. The chance that in such a game the move 10...b6 will be
+	played is relatively low, it's quite realistic that you don't have
+	a game with the line 1.e4 e6 2.d4 d5 3.Nc3 Bb4 4.a3 Bxc3+ 5.bxc3 Ne7
+	6.Qg4 0-0 7.e5 b6. On the other side it is quite realistic that playing
+	10...b6 will transpose into existing games with the line 1.e4 e6 2.d4
+	d5 3.Nc3 Bb4 4.e5 b6 5.a3 Bxc3+ 6.bxc3 Ne7 7.Qg4 O-O. Because a game
+	with the line 1.e4 e6 2.d4 d5 3.Nc3 Bb4 4.a3 Bxc3+ 5.bxc3 Ne7 6.Qg4
+	0-0 7.e5 b6 (normally) does not exists, the (old) opening tree cannot
+	provide the move 10...b6 (which transposes into other games). Try this
+	with an older version of Scidb. But Scidb's new algorithm is detecting
+	such unplayed transposition, and shows the move 10...b6, though with
+	frequency zero (because it is not played in a game - if so).
+
+2. With new algorithm, as a side effect, a very elaborated opening browser
+	can be provided. The update of the game list of the opening browser
+	happens on the fly, as soon as a game will be saved. This browser knows
+	more than 80,000 lines, about 4,200 lines are named. The opening tree
+	browser provides a very comfortable browsing, because (nearly) any move
+	transposition will be supported.
+
+3. The computation of the ECO code has been improved vastly. See this example:
+	1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.Nf3 d6 5.g3 O-O 6.Bg2 c5 7.d5 a6 8.a4 e6
+	9.h3 exd5 will be identified as E64. But after playing 10.cxd5 it transposes
+	to A62. Another example: 1.d4 d6 2.c4 e5 3.Nf3 exd4 4.Nxd4 g6 5.g3 Bg7 6.Bg2
+	will be identified as A41, but after 6...Nf6 it transposes into A51, and then
+	7.O-O transposes into E60. The previous version of Scidb couldn't recognize
+	those transpositions, it was far out of the scope.
+
+4. Last not least it might be worth to emphasize that I've worked about three
+   years on this algorithm. I had to solve a problem with exponential complexity
+	in time.
