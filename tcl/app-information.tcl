@@ -103,7 +103,7 @@ proc build {tab width height} {
 	$Priv(html) handler node a [namespace current]::A_NodeHandler
 	pack $Priv(html) -fill both -expand yes
 	set Priv(buttons) $btn
-	set Priv(welcome) $Options(welcome)
+	set Priv(welcome) [expr {$Options(welcome) || $::beta::WhatsNew}]
 
 	if {!$Options(welcome)} {
 		after idle [namespace code [list FetchNews $::mc::langID 0]]
