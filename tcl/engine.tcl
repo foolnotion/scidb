@@ -1628,7 +1628,7 @@ proc LanguageChanged {number list} {
 }
 
 
-proc SetMemory {} {
+proc SetMemory {number} {
 	variable Options
 	variable ${number}::Vars
 

@@ -638,7 +638,7 @@ Hyphenate::~Hyphenate()
 	}
 	else if (--i->second.first == 0 && m_keepInCache == DontKeepInCache)
 	{
-		M_ASSERT(m_hyphenator == i->second.second);
+		//M_ASSERT(m_hyphenator == i->second.second);
 		delete i->second.second;
 		::hyphenatorMap.erase(i);
 	}

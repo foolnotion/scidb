@@ -18,6 +18,13 @@
 
 namespace std { bool uncaught_exception() throw(); }
 
+namespace mstl {
+
+inline bool basic_exception::isEnabled()					{ return !m_isDisabled; }
+inline void basic_exception::setDisabled(bool flag)	{ m_isDisabled = flag; }
+
+}
+
 #ifndef __OPTIMIZE__
 
 #ifdef __clang__
@@ -26,10 +33,6 @@ class type_info; // because of a cyclic bug in gcc headers
 #include <typeinfo>
 
 namespace mstl {
-
-inline bool basic_exception::isEnabled()					{ return !m_isDisabled; }
-inline void basic_exception::setDisabled(bool flag)	{ m_isDisabled = flag; }
-
 namespace bits {
 
 void
