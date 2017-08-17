@@ -265,7 +265,7 @@ proc makeBasicFrame {path} {
 		$Vars(widget:coordinates) configure -state normal
 		::tooltip::tooltip \
 			$Vars(widget:coordinates) \
-			"${::mc::Color}: [extendColorName $colors(user,coordinates)]"
+			"${::mc::Color}: [extendColorName $colors(user,border-coords)]"
 	}
 	set Vars(widget:background) $f.background
 	set Vars(widget:erase_background) $f.erase_background
@@ -1061,10 +1061,10 @@ proc SetColorTooltips {} {
 				"[set [namespace current]::mc::SolidColor]: \
 				[extendColorName $colors(user,border-color)]"
 		}
-		if {[llength $colors(user,coordinates)]} {
+		if {[llength $colors(user,border-coords)]} {
 			::tooltip::tooltip \
 				$Vars(widget:coordinates) \
-				"${::mc::Color}: [extendColorName $colors(user,coordinates)]"
+				"${::mc::Color}: [extendColorName $colors(user,border-coords)]"
 		}
 	}
 }
@@ -1119,7 +1119,7 @@ proc ToggleShowCoords {} {
 	$Vars(widget:small) configure -state $state
 
 	if {$layout(coordinates) && $colors(locked)} {
-		set state normal; set tip "${::mc::Color}: extendColorName $colors(user,coordinates)]"
+		set state normal; set tip "${::mc::Color}: extendColorName $colors(user,border-coords)]"
 	} else {
 		set state disabled; set tip ""
 	}
@@ -1962,7 +1962,7 @@ proc SelectCoordsColor {which parent} {
 	if {[llength $selection]} {
 		addToList [namespace current]::RecentColors(coordinates) $colors(hint,border-coords)
 		set colors(hint,border-coords) $selection
-		if {$which eq "user"} { set colors(user,coordinates) $colors(hint,border-coords) }
+		if {$which eq "user"} { set colors(user,border-coords) $colors(hint,border-coords) }
 		::tooltip::tooltip $parent "${::mc::Color}: [extendColorName $selection]"
 		RefreshBoard
 	}
