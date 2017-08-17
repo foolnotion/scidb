@@ -158,7 +158,7 @@ proc DisplayAbout {w} {
 		<br/><br/>
 		<font style='font-family: $fam; font-size: 12pt;'>
 			$mc::Version $::scidb::version<br/>
-			Copyright &#x00A9; 2008-2015 Gregor Cramer<br/><br/>
+			Copyright &#x00A9; 2008-2017 Gregor Cramer<br/><br/>
 			[Url http://scidb.sourceforge.net]<br/><br/>
 			$mc::Distributed<br/><br/>
 			<font style='font-size: 10pt;'>$mc::Inspired</font>
