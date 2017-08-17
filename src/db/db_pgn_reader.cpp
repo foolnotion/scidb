@@ -3587,7 +3587,7 @@ PgnReader::doCastling(char const* castle)
 				board.tryCastleShort(side);
 		}
 
-		board.parseMove(castle, m_move, m_variant, move::MustBeUnambiguous, move::AllowIllegalMove);
+		board.parseMove(castle, m_move, m_variant, move::ResolveAmbiguity, move::AllowIllegalMove);
 
 		if (!m_move)
 		{
@@ -4560,7 +4560,7 @@ PgnReader::parseMove(Token prevToken, int c)
 	char const* e = board().parseMove(	m_linePos - 1,
 													m_move,
 													m_variant,
-													move::MustBeUnambiguous,
+													move::ResolveAmbiguity,
 													move::AllowIllegalMove);
 
 	if (__builtin_expect(e == 0, 0))
@@ -4570,7 +4570,7 @@ PgnReader::parseMove(Token prevToken, int c)
 			&& (e = board().parseMove(	m_linePos - 1,
 												m_move,
 												variant::Crazyhouse,
-												move::MustBeUnambiguous,
+												move::ResolveAmbiguity,
 												move::AllowIllegalMove)))
 		{
 			setupVariant(variant::Crazyhouse);

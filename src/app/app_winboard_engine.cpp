@@ -1342,7 +1342,7 @@ winboard::Engine::parseInfo(mstl::string const& msg)
 		s = ::skipMoveNumber(s);
 
 		Move move;
-		char const* t = board.parseMove(s, move, currentVariant());
+		char const* t = board.parseMove(s, move, currentVariant(), move::MustBeUnambiguous);
 
 		if (t)
 		{
@@ -1461,7 +1461,7 @@ winboard::Engine::parseCurrentMove(char const* s)
 		s = ::skipMoveNumber(::skipWords(s, 3));
 
 		Move move;
-		char const* t = currentBoard().parseMove(::skipDots(s), move, currentVariant());
+		char const* t = currentBoard().parseMove(::skipDots(s), move, currentVariant(), move::MustBeUnambiguous);
 
 		if (t == 0)
 			return true; // skip it anayway

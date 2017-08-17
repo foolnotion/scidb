@@ -945,7 +945,7 @@ uci::Engine::parseCurrentMove(char const* s)
 	if (!move.isLegal())
 	{
 		// Some engines (e.g. Gaviota) are sending SAN (not UCI conform)
-		if (!currentBoard().parseMove(s, move, m_variant))
+		if (!currentBoard().parseMove(s, move, m_variant, move::MustBeUnambiguous))
 		{
 			mstl::string msg("Illegal current move: ");
 			msg.append(s, ::skipNonSpaces(s));

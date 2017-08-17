@@ -1587,7 +1587,7 @@ cmdValid(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	Game const& game = Scidb->game();
 	mstl::string san(stringFromObj(objc, objv, 1));
-	setResult(bool(game.currentBoard().parseMove(san, game.variant())));
+	setResult(bool(game.currentBoard().parseMove(san, game.variant(), move::MustBeUnambiguous)));
 	return TCL_OK;
 }
 

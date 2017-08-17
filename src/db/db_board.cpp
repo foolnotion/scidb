@@ -5011,7 +5011,19 @@ Board::parseMove(	char const* algebraic,
 				if (validList.size() > 1 && ambuigity == move::MustBeUnambiguous)
 					return nullptr;
 
-				Move* m = validList.begin();
+				Move* m = nullptr;
+
+				for (unsigned i = 0; i < validList.size(); ++i)
+				{
+					if (validList[i].isLegal())
+					{
+						m = &validList[i];
+						break;
+					}
+				}
+
+				if (!m)
+					m = validList.begin();
 
 				fromSquare = m->from();
 				toSquare = m->to();
@@ -5219,6 +5231,15 @@ Board::parseMove(	char const* algebraic,
 		{
 			if (validList.size() > 1 && ambuigity == move::MustBeUnambiguous)
 				return nullptr;
+
+			for (unsigned i = 0; i < validList.size(); ++i)
+			{
+				if (validList[i].isLegal())
+				{
+					move = validList[i];
+					return s;
+				}
+			}
 
 			move = validList.front();
 			return s;

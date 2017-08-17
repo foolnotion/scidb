@@ -3254,6 +3254,10 @@ db_move_list.o: ../mstl/m_pointer_iterator.ipp
 db_move_list.o: ../mstl/m_iterator.h
 db_move_list.o: ../mstl/m_iterator.ipp
 db_move_list.o: db_move_list.ipp
+db_move_list.o: ../mstl/m_algorithm.h
+db_move_list.o: ../mstl/m_algobase.h
+db_move_list.o: ../mstl/m_algobase.ipp
+db_move_list.o: ../mstl/m_algorithm.ipp
 db_move_list.o: ../mstl/m_stdio.h
 db_move_node.o: db_move_node.h
 db_move_node.o: db_comment.h

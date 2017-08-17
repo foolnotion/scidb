@@ -1042,7 +1042,7 @@ Book::readScidMaskFile(mstl::ifstream& strm)
 
 				Move move;
 
-				if (board.parseMove(smove, move, variant::Normal))
+				if (board.parseMove(smove, move, variant::Normal, move::MustBeUnambiguous))
 				{
 					e.items.push_back();
 

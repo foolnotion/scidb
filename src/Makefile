@@ -751,6 +751,9 @@ cdb2sci.o: mstl/m_ostream.h
 cdb2sci.o: mstl/m_ostream.ipp
 cdb2sci.o: util/u_progress.h
 cdb2sci.o: util/u_progress.ipp
+cdb2sci.o: util/u_zstream.h
+cdb2sci.o: mstl/m_iostream.h
+cdb2sci.o: util/u_misc.h
 cdb2sci.o: sys/sys_utf8_codec.h
 cdb2sci.o: sys/sys_utf8_codec.ipp
 cdb2sci.o: sys/sys_file.h

@@ -882,6 +882,7 @@ tcl_database.o: ../mstl/m_range.h
 tcl_database.o: ../mstl/m_range.ipp
 tcl_database.o: ../util/u_rkiss.h
 tcl_database.o: ../app/app_application.ipp
+tcl_database.o: ../app/app_subscriber.h
 tcl_database.o: ../app/app_multi_cursor.h
 tcl_database.o: ../app/app_multi_cursor.ipp
 tcl_database.o: ../app/app_cursor.h
