@@ -558,60 +558,63 @@ PgnReader::sendError(Error code, Pos pos, mstl::string const& item)
 		throw Interruption(code, mstl::string::empty_string);
 	}
 
-	if (++m_countErrors[code] == MaxErrors)
-	{
-		warning(	MaximalErrorCountExceeded,
-					pos.line, 0, 0,
-					variant::Undetermined,
-					mstl::string::empty_string,
-					mstl::string::empty_string);
-	}
-	
-	if (m_countErrors[code] >= MaxErrors)
-		return;
-
-	variant::Type variant = getVariant();
-	unsigned gameNumber = this->gameNumber(variant);
-
-	mstl::string myItem = ::quote(item);
 	mstl::string msg;
 
-	// TODO i18n
-	switch (unsigned(code))
+	if (++m_countErrors[code] >= MaxErrors)
 	{
-		case InvalidToken:				msg += "Error parsing PGN file: invalid token " + myItem; break;
-		case UnexpectedSymbol:			msg += "Error parsing PGN file: unexpected symbol " + myItem; break;
-		case UnexpectedEndOfInput:		msg += "Error parsing PGN file: unexpected end of input"; break;
-		case UnexpectedTag:				msg += "Error parsing PGN file: unexpected tag inside game";break;
-		case UnexpectedEndOfGame:		msg += "Error parsing PGN file: unexpected end of game"; break;
-		case UnterminatedVariation:	msg += "Error parsing PGN file: unterminated variation"; break;
-		case InvalidMove:					msg += "Error parsing PGN file: illegal move " + myItem; break;
-		case InvalidFen:					gameNumber = 0; pos.column = 0; break;
-		default:								pos.column = 0; break;
+		if (m_countErrors[code] == MaxErrors)
+		{
+			warning(	MaximalErrorCountExceeded,
+						pos.line, 0, 0,
+						variant::Undetermined,
+						mstl::string::empty_string,
+						mstl::string::empty_string);
+		}
 	}
-
-	// do line pos correction
-	switch (unsigned(code))
+	else
 	{
-		case InvalidToken:
-		case UnexpectedSymbol:
-		case InvalidMove:
-		case UnexpectedTag:
-			if (m_linePos > m_line.begin() && !::equal(item, m_linePos, item.size()))
-			{
-				advanceLinePos(-1);
+		variant::Type variant = getVariant();
+		unsigned gameNumber = this->gameNumber(variant);
+
+		mstl::string myItem = ::quote(item);
+
+		// TODO i18n
+		switch (unsigned(code))
+		{
+			case InvalidToken:			msg += "Error parsing PGN file: invalid token " + myItem; break;
+			case UnexpectedSymbol:		msg += "Error parsing PGN file: unexpected symbol " + myItem; break;
+			case UnexpectedEndOfInput:	msg += "Error parsing PGN file: unexpected end of input"; break;
+			case UnexpectedTag:			msg += "Error parsing PGN file: unexpected tag inside game";break;
+			case UnexpectedEndOfGame:	msg += "Error parsing PGN file: unexpected end of game"; break;
+			case UnterminatedVariation:msg += "Error parsing PGN file: unterminated variation"; break;
+			case InvalidMove:				msg += "Error parsing PGN file: illegal move " + myItem; break;
+			case InvalidFen:				gameNumber = 0; pos.column = 0; break;
+			default:							pos.column = 0; break;
+		}
+
+		// do line pos correction
+		switch (unsigned(code))
+		{
+			case InvalidToken:
+			case UnexpectedSymbol:
+			case InvalidMove:
+			case UnexpectedTag:
 				if (m_linePos > m_line.begin() && !::equal(item, m_linePos, item.size()))
+				{
 					advanceLinePos(-1);
-			}
-			break;
+					if (m_linePos > m_line.begin() && !::equal(item, m_linePos, item.size()))
+						advanceLinePos(-1);
+				}
+				break;
+		}
+
+		mstl::string info;
+
+		if (m_tags.contains(White) && m_tags.contains(Black))
+			info = m_tags.value(White) + " - " + m_tags.value(Black);
+
+		error(code, pos.line, pos.column, gameNumber, variant, msg, info, myItem);
 	}
-
-	mstl::string info;
-
-	if (m_tags.contains(White) && m_tags.contains(Black))
-		info = m_tags.value(White) + " - " + m_tags.value(Black);
-
-	error(code, pos.line, pos.column, gameNumber, variant, msg, info, myItem);
 
 	if (code == InvalidMove || !m_move.isLegal())
 		m_move.clear();
