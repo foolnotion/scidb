@@ -1066,6 +1066,7 @@ proc PopupMenu {w} {
 		-label "$::board::options::mc::UseSmallLetters" \
 		-variable ::board::layout(coords-small) \
 		-command [namespace code RedrawCoordinates] \
+		-state [expr {$::board::layout(coordinates) ? "normal" : "disabled"}] \
 		;
 	::theme::configureCheckEntry $m
 	$m add checkbutton \

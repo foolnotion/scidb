@@ -1224,6 +1224,8 @@ proc useLanguage {lang} {
 		set graphic $langSet(graphic)
 		if {[string length $Options(figurine:lang)]} {
 			set lang $Options(figurine:lang)
+		} else {
+			set lang $::mc::langID
 		}
 		set figurine $langSet($lang)
 		for {set i 0} {$i < 5} {incr i} {
