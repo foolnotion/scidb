@@ -33,10 +33,6 @@
 using namespace db;
 
 
-NamebaseSite* NamebaseEvent::m_emptySite	= new NamebaseSite();
-NamebaseEntry* NamebaseEntry::m_emptyEntry	= new NamebaseEntry();
-
-
 NamebaseEntry::NamebaseEntry(mstl::string const& name) :m_name(name) {}
 //NamebaseEntry::~NamebaseEntry() throw() {}
 

@@ -113,6 +113,7 @@ Namebase::Namebase(Type type)
 	,m_isOriginal(true)
 	,m_isReadonly(false)
 	,m_emptyAnnotator(type == Annotator ? new Entry() : 0)
+	,m_emptySite(type == Site ? new SiteEntry() : 0)
 	,m_stringAllocator(32768)
 	,m_stringAllocator2(0)
 	,m_stringAllocator3(0)
@@ -147,6 +148,7 @@ Namebase::~Namebase() throw()
 	delete m_stringAllocator2;
 	delete m_stringAllocator3;
 	delete m_emptyAnnotator;
+	delete m_emptySite;
 }
 
 
@@ -798,6 +800,9 @@ Namebase::clear()
 
 	if (m_emptyAnnotator)
 		m_emptyAnnotator->setFrequency(0);
+
+	if (m_emptySite)
+		m_emptySite->setFrequency(0);
 
 	m_stringAllocator.clear();
 

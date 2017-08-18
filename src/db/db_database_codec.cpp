@@ -1086,7 +1086,7 @@ DatabaseCodec::saveGame(ByteStream const& gameData, TagSet const& tags, Provider
 								data.timeMode,
 								data.eventMode,
 								maxEventCount(),
-								siteEntry ? siteEntry : NamebaseEvent::emptySite());
+								siteEntry ? siteEntry : namebase(Namebase::Site).emptySite());
 
 	Entry annotatorEntry	= namebase(Namebase::Annotator).emptyAnnotator();
 
@@ -1106,8 +1106,9 @@ DatabaseCodec::saveGame(ByteStream const& gameData, TagSet const& tags, Provider
 
 	if (!failed && format() != format::Scidb)
 	{
-		M_ASSERT(format() == format::Scid3 || format() == format::Scid4);
+		M_ASSERT(isScidFormat(format()));
 		M_ASSERT(!m_db->m_memoryOnly);
+		M_ASSERT(maxAnnotatorCount == 0);
 
 		if (!info)
 		{
@@ -1264,7 +1265,7 @@ DatabaseCodec::addGame(ByteStream const& gameData, GameInfo const& info, Allocat
 							info.timeMode(),
 							info.eventMode(),
 							maxEventCount(),
-							siteEntry ?siteEntry : NamebaseEvent::emptySite());
+							siteEntry ? siteEntry : namebase(Namebase::Site).emptySite());
 
 	if (maxAnnotatorCount)
 		annotatorEntry = namebase(Namebase::Annotator).insert(annotator, maxAnnotatorCount);
@@ -1388,7 +1389,7 @@ DatabaseCodec::updateCharacteristics(unsigned index, TagSet const& tags)
 										data.timeMode,
 										data.eventMode,
 										maxEventCount(),
-										siteEntry ? siteEntry : NamebaseEvent::emptySite());
+										siteEntry ? siteEntry : namebase(Namebase::Site).emptySite());
 	Entry		annotatorEntry	= namebase(Namebase::Annotator).emptyAnnotator();
 
 	if (maxAnnotatorCount)

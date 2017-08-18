@@ -1363,7 +1363,7 @@ Codec::decodeIndex(ByteStream& strm, unsigned index)
 	else
 		date.clear();
 
-	if (event->site() == NamebaseEvent::emptySite())
+	if (event->site() == this->namebase(Namebase::Site).emptySite())
 	{
 		event::Mode mode = Reader::getEventMode(event->name(), site->name());
 
@@ -1979,7 +1979,7 @@ Codec::readNamebase(	ByteIStream& bstrm,
 				shadowBase.append(
 					str,
 					index,
-					base.insertEvent(name, index, limit, NamebaseEvent::emptySite()),
+					base.insertEvent(name, index, limit, namebase(Namebase::Site).emptySite()),
 					*m_codec);
 				break;
 

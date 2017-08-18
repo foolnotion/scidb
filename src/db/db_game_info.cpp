@@ -238,7 +238,7 @@ GameInfo::update(	NamebasePlayer* whitePlayer,
 	M_REQUIRE(annotator);
 	M_REQUIRE((reinterpret_cast<long>(annotator) & 1) == 0);
 
-	if (annotator != NamebaseEntry::emptyEntry())
+	if (annotator != namebases(Namebase::Annotator).emptyAnnotator())
 	{
 		m_annotator = annotator;
 		namebases(Namebase::Annotator).incrRef(m_annotator);
@@ -479,7 +479,7 @@ GameInfo::setup(	uint32_t gameOffset,
 	M_REQUIRE(annotator);
 	M_REQUIRE((reinterpret_cast<long>(annotator) & 1) == 0);
 
-	if (annotator == NamebaseEntry::emptyEntry())
+	if (annotator == namebases(Namebase::Annotator).emptyAnnotator())
 	{
 		setGameRecordLength(gameRecordLength);
 	}

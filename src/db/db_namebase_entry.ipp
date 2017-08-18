@@ -43,10 +43,9 @@ NamebaseEntry::NamebaseEntry()
 {}
 
 inline bool NamebaseEntry::used() const						{ return m_frequency > 0; }
-inline mstl::string const& NamebaseEntry::name() const		{ return m_name; }
+inline mstl::string const& NamebaseEntry::name() const	{ return m_name; }
 inline unsigned NamebaseEntry::frequency() const			{ return m_frequency; }
 inline unsigned NamebaseEntry::id() const						{ return m_id; }
-inline NamebaseEntry* NamebaseEntry::emptyEntry()			{ return m_emptyEntry; }
 
 inline void NamebaseEntry::incrRef()							{ ++m_frequency; }
 inline void NamebaseEntry::decrRef()							{ M_REQUIRE(frequency() > 0); --m_frequency; }
@@ -179,7 +178,7 @@ NamebaseEvent::Value::Value()
 	,m_dateMonth(0)
 	,m_dateDay(0)
 	,m_unused_(0)
-	,m_site(m_emptySite)
+	,m_site(nullptr)
 {
 }
 
@@ -291,7 +290,6 @@ inline uint16_t NamebaseEvent::dateMonth() const		{ return m_value.m_dateMonth; 
 inline uint16_t NamebaseEvent::dateDay() const			{ return m_value.m_dateDay; }
 inline country::Code NamebaseEvent::country() const	{ return m_value.m_site->country(); }
 inline NamebaseSite* NamebaseEvent::site() const		{ return m_value.m_site; }
-inline NamebaseSite* NamebaseEvent::emptySite()			{ return m_emptySite; }
 
 inline void NamebaseEvent::setType_(event::Type type)				{ m_value.m_type = type; }
 inline void NamebaseEvent::setTimeMode_(time::Mode timeMode)	{ m_value.m_timeMode = timeMode; }

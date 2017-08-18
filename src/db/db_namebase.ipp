@@ -328,6 +328,24 @@ Namebase::emptyAnnotator()
 
 
 inline
+NamebaseSite const*
+Namebase::emptySite() const
+{
+	M_REQUIRE(type() == Site);
+	return m_emptySite;
+}
+
+
+inline
+NamebaseSite*
+Namebase::emptySite()
+{
+	M_REQUIRE(type() == Site);
+	return m_emptySite;
+}
+
+
+inline
 Namebase::PlayerEntry*
 Namebase::player(unsigned index)
 {

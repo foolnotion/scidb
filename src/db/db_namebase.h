@@ -139,6 +139,9 @@ public:
 	Entry const* emptyAnnotator() const;
 	Entry* emptyAnnotator();
 
+	SiteEntry const* emptySite() const;
+	SiteEntry* emptySite();
+
 	SiteEntry* insertSite(mstl::string const& name);
 	SiteEntry* insertSite(mstl::string const& name, country::Code country, unsigned limit);
 	SiteEntry* insertSite(mstl::string const& name, unsigned id, country::Code country, unsigned limit);
@@ -282,6 +285,7 @@ private:
 	bool		m_isOriginal;
 	bool		m_isReadonly;
 	Entry*	m_emptyAnnotator;
+	NamebaseSite* m_emptySite;
 
 	union
 	{

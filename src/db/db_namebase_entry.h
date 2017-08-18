@@ -71,9 +71,6 @@ public:
 
 	static int compare(char const* lhs, char const* rhs);
 
-	// XXX not working; one instance per database is needed
-	static NamebaseEntry* emptyEntry();
-
 private:
 
 	friend class Namebase;
@@ -219,16 +216,11 @@ public:
 	void setCountry_(country::Code country);
 	void setSite_(NamebaseSite* site);
 
-	// XXX not working; one instance per database is needed
-	static NamebaseSite* emptySite();
-
 private:
 
 	friend class Namebase;
 
 	Value m_value;
-
-	static NamebaseSite* m_emptySite;
 };
 
 
