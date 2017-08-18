@@ -3006,7 +3006,7 @@ Game::addVariation(Move const& move, move::Position position)
 		board.undoMove(currentMove(), variant());
 
 	n->setNext(new MoveNode(board, move, m_variant));
-	n->setNext(new MoveNode);
+	n->next()->setNext(new MoveNode);
 	return addVariation(node, position);
 }
 
