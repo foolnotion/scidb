@@ -34,7 +34,7 @@ Fünfte öffentliche Vorschau-Version
   <li class="space">Zusätzliche Spalte "Zugliste" in den Partienlisten.</li>
   <li class="space">Die einzelnen Fenster auf dem Brettreiter sind nun frei konfigurierbar, sowohl in der Größe, als auch in der Position (Drag&amp;Dop).</li>
   <li class="space">Die Layouts des Brettreiters sind ladbar und speicherbar.</li>
-  <li class="space">Neuer Varianteneingabemodus mit <F5>.</li>
+  <li class="space">Neuer Varianteneingabemodus mit &lt;F5&gt;.</li>
   <li class="space">Schachmotor Sjeng-scidb: verwandelte Figuren erhalten nun einen höheren Wert (Einsetzschach).</li>
   <li class="space">Schachmotor Sjeng-scidb unterstützt nun verwandelte Figuren in FEN (Einsetzschach).</li>
   <li class="space">Neue Optionen in Brettkonfiguration: "Figurenschatten anzeigen" und "Figurenumrandungen anzeigen".</li>
