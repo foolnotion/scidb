@@ -437,9 +437,10 @@ cmdInfo(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	if (!m_dictionary)
 		return error(CmdInfo, nullptr, nullptr, "player dictionary is closed");
-
+	
 	tcl::player::Ratings ratings(rating::Elo, rating::DWZ);
 	organization::ID organization = organization::Fide; // organization::Scidb;
+	bool forWeb = false;
 #if 0
 	unsigned champFlags = 0;
 	bool titleYear = false;
@@ -452,7 +453,11 @@ cmdInfo(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		char const* arg = stringFromObj(objc, objv, objc - 2);
 
-		if (::strcmp(arg, "-ratings") == 0)
+		if (::strcmp(arg, "-web") == 0)
+		{
+			forWeb = true;
+		}
+		else if (::strcmp(arg, "-ratings") == 0)
 		{
 			ratings = ::convRatings(stringFromObj(objc, objv, objc - 1));
 		}
@@ -513,6 +518,9 @@ cmdInfo(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	}
 
 	Player const& player = m_dictionary->getPlayer(unsignedFromObj(objc, objv, 1));
+
+	if (forWeb)
+		return getInfo(nullptr, &player, ratings, organization, true, false, true);
 
 	Tcl_Obj* objs[11]; // [14];
 	Tcl_Obj* titles[2];

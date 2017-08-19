@@ -402,6 +402,7 @@ proc buildWebMenu {parent m info} {
 	set pndID     [lindex $info 17]
 	set cgdcID    [lindex $info 18]
 	set wikiLinks [lindex $info 19]
+puts "buildWebMenu: $info"
 
 	if {[string index $fideID 0] eq "-"} { set fideID [string range $fideID 1 end] }
 
