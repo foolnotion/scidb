@@ -41,8 +41,6 @@ Fünfte öffentliche Vorschau-Version
   <li class="space">Einsetzschach: verwandelte Figuren auf dem Brett werden markiert (optional).</li>
   <li class="space">In Schachform Dreimal-Schach (Three-check) werden die Anzahl Schachgebote grafisch neben dem Brett angezeigt.</li>
   <li class="space">Kleinbuchstaben für Brettkoordinaten (optional).</li>
-
-
   <li class="space">Revidiertes Tk Text Widget integriert, damit sind nun alle zeitliche Probleme mit langen Varianten im Partieeditor behoben.</li>
   <li class="space">Überarbeitete Partieeditorsteuerung, nun wird optimale Leistung beim Laden von Partien erreicht.</li>
   <li class="space">"Drag&amp;Dop" in Stellungseingabe nun möglich.</li>
