@@ -976,6 +976,8 @@ proc Display(state) {tree state} {
 			$Vars(move) delete 1.0 end
 			SetState $tree normal
 			$Vars(move) configure -state disabled
+			set Vars(engine:pause) 0
+			$Vars(button:close) configure -state normal
 		}
 	}
 }
