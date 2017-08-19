@@ -16,7 +16,7 @@
 * (at your option) any later version.
 ======================================================================= -->
 
-TITLE Tip des Tages
+TITLE Tip of the Day
 
 <!-- NEXT TIP ========================================================= -->
 <TIP number="001" level="1">
