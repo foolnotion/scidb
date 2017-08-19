@@ -4540,7 +4540,7 @@ FRA
 	Poitou-Charentes
 		= Poitevin-Saintongeais
 		= Poetou-Chérentes [1]
-		=  Peitau Charantas
+		= Peitau Charantas
 	Poitiers
 	Poligny
 	Pompignan
@@ -6579,7 +6579,7 @@ IRQ
 	al-ʿIrāq [3]
 		! Iraq
 		= Irak
-#		= Ǧumhūriyyat al-Irāq  [3]
+#		= Ǧumhūriyyat al-Irāq [3]
 #		= Komara Îraqê [1]
 #		= Republic of Iraq
 #--------------------------------------------------------
@@ -8058,7 +8058,7 @@ LUX
 		= Luxemburg
 		= Lëtzebuerg [1]
 		= Letzeburg
-#		= Groussherzogtum Lëtzebuerg  [1]
+#		= Groussherzogtum Lëtzebuerg [1]
 #		= Großherzogtum Luxemburg [1]
 #		= Grand-Duché de Luxembourg [1]
 #		= Grand Duchy of Luxembourg

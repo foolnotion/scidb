@@ -2554,9 +2554,9 @@ tcl::db::getTags(TagSet const& tags, bool userSuppliedOnly)
 {
 	Tcl_Obj* result = Tcl_NewListObj(0, 0);
 
-	for (tag::ID tag = tags.findFirst(); tag < tag::ExtraTag; tag = tags.findNext(tag))
+	for (tag::ID tag = tag::ID(0); tag < tag::ExtraTag; tag = tag::ID(tag + 1))
 	{
-		if (tags.isUserSupplied(tag))
+		if (tag::isMandatory(tag) || (tags.contains(tag) && tags.isUserSupplied(tag)))
 		{
 			Tcl_Obj* objs[2];
 
