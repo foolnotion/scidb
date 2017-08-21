@@ -1307,7 +1307,7 @@ cat <<EOF > testzziplib.c
 #include <zzip/zzip.h>
 int main()
 {
-    (void)zzip_get_default_io();
+    (void)zzip_error(NULL);
     return 0;
 }
 EOF
