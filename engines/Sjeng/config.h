@@ -27,5 +27,5 @@
 #define HAVE_LIBGDBM 1
 
 /* Version number of package */
-#define VERSION "11.2 scidb"
+#define VERSION "11.3 scidb"
 

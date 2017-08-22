@@ -2120,7 +2120,7 @@ void unmake (move_s moves[], int i) {
 	  moved[target-12]--;
 	  white_to_move ^= 1;
 	  squares[target-12] = path_x[ply].cap_num;
-          is_promoted[path_x[ply].cap_num] = path_x[ply].was_promoted;
+	  is_promoted[path_x[ply].cap_num] = path_x[ply].was_promoted;
 	  pieces[path_x[ply].cap_num] = target-12;
 	  squares[target] = 0;
 	  return;
