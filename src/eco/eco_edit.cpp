@@ -148,6 +148,12 @@ auto main(int argc, char const* const argv[]) -> int
 				M_RAISE("aborted due to conflicts");
 		}
 
+		if (cmd == "copy")
+		{
+			root->extend();
+			root->refineClassification();
+		}
+
 		if (cmd == "extend")
 		{
 			root->extend();

@@ -32,6 +32,8 @@
 
 namespace eco {
 
+class Branch;
+
 class LineWriter : public Writer
 {
 public:
@@ -44,6 +46,8 @@ public:
 	void print(Node const* root) override;
 
 private:
+
+	void printTransposition(Node const& node, Branch const& branch);
 
 	Id		m_eco;
 	bool	m_needHeader;

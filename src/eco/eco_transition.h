@@ -40,7 +40,7 @@ struct Transition
 	enum Type
 	{
 		NextMove,
-		Transposition,
+		Transposition
 	};
 
 	Transition();

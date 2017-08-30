@@ -35,8 +35,23 @@
 #include "m_assert.h"
 
 #include <time.h>
+#include <string.h>
 
 using namespace eco;
+
+
+static mstl::string
+strip(mstl::string const& str)
+{
+	if (char const* s = strchr(str.begin(), '('))
+	{
+		while (s > str.begin() && s[-1] == ' ')
+			--s;
+		return mstl::string(str, s - str.begin());
+	}
+
+	return str;
+}
 
 
 LineWriter::LineWriter(mstl::ostream& strm) :Writer(strm), m_eco("A00"), m_needHeader(true) {}
@@ -44,7 +59,41 @@ LineWriter::LineWriter(mstl::ostream& strm) :Writer(strm), m_eco("A00"), m_needH
 
 auto LineWriter::branch(Branch const& branch) -> bool
 {
-	return !branch.node->alreadyDone() && !branch.codes.empty() && branch.codes.test(m_eco.basic());
+	return	!branch.transposition
+			&& !branch.node->alreadyDone()
+			&& !branch.codes.empty()
+			&& branch.codes.test(m_eco.basic());
+}
+
+
+void LineWriter::printTransposition(Node const& node, Branch const& branch)
+{
+	Node const* succ = branch.node;
+
+	db::MoveLine line(node.line());
+	line.append(branch.move);
+	mstl::string s;
+	line.dump(s);
+
+	m_strm << m_eco.asShortString() << ' ' << s;
+	m_strm << (branch.exception ? " ---> " : " -> ");
+	m_strm << succ->id().asShortString();
+
+	if (succ->comment().empty())
+	{
+		Name const& name = succ->name();
+
+		m_strm << " #";
+		if (name.size() > 2)
+			m_strm << " \"" << ::strip(name.str(name.size() - 1)) << '\"';
+		m_strm << " \"" << ::strip(name.str(name.str(1).empty() ? 0 : 1)) << '\"';
+	}
+	else
+	{
+		m_strm << " # " << succ->comment();
+	}
+
+	m_strm << '\n';
 }
 
 
@@ -82,6 +131,15 @@ void LineWriter::visit(Node const& node)
 				m_strm << " **";
 		}
 
+		for (auto const& branch : node.successors())
+		{
+			if (branch.transposition && branch.node->id().basic() == m_eco.basic())
+			{
+				m_strm << " ++";
+				break;
+			}
+		}
+
 		Name const& name = node.name();
 		Name const& parentName = node.parentName();
 
@@ -106,12 +164,24 @@ void LineWriter::visit(Node const& node)
 
 		if (!node.comment().empty())
 			m_strm << " # " << node.comment();
+
 		if (node.sign())
-			m_strm << " #" << node.sign();
-		else if (node.isExtension())
-			m_strm << " #X";
+		{
+			if (node.sign() != '-' || node.successors().empty())
+				m_strm << " #" << node.sign();
+		}
 
 		m_strm << '\n';
+
+		for (auto const& branch : node.successors())
+		{
+			if (	branch.transposition
+				&& !branch.node->isExtension()
+				&& branch.node->id().basic() != m_eco.basic())
+			{
+				printTransposition(node, branch);
+			}
+		}
 	}
 }
 

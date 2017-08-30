@@ -49,10 +49,12 @@ public:
 
 	static constexpr char PreParsed	= 1;
 	static constexpr char Equal		= 2;
+	static constexpr char Skip			= 3;
 
 	Reader(Type type);
 	virtual ~Reader() = default;
 
+	auto isContinuation() const -> bool;
 	auto isLineReader() const -> bool;
 
 	auto lineNo() const -> unsigned;

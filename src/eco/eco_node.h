@@ -89,7 +89,6 @@ public:
 
 	auto alreadyDone() const -> bool;
 	auto isBypass() const -> bool;
-	auto isContinuation() const -> bool;
 	auto isFinal() const -> bool;
 	auto isEqual() const -> bool;
 	auto isRoot() const -> bool;
@@ -212,6 +211,7 @@ private:
 		Node const* root,
 		unsigned size,
 		unsigned weight) -> bool;
+	auto addTransition(Reader const& reader, db::Board& board, Transition const& trans) -> void;
 	void buildBypassSequence(Id eco, db::Board board, db::MoveLine& moves);
 	void generateBypassTransitions(db::Board& board);
 	void dumpGame(unsigned offset) const;
@@ -222,7 +222,7 @@ private:
 	void setOpeningFromParent(unsigned openingRef, Name const& name);
 	void extend(db::Board& board, db::MoveLine& line);
 	void renumber(Numbers& numbers);
-	void doTraversal(Visitor& visitor, unsigned& count) const;
+	void doTraversal(Visitor& visitor, mstl::bitset& keySet, mstl::stack<Node const*>& stack) const;
 	auto findUnresolvedNodes(BranchStack& stack) -> bool;
 	void computePathMaxima(db::MoveList& line) const;
 	void computePathMaxima(BranchStack& stack) const;

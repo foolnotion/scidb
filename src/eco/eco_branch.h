@@ -60,6 +60,7 @@ struct Branch
 	uint8_t			bits;
 	uint8_t			weight;
 	uint8_t			pathLength;
+	uint8_t			exception:1;
 	uint8_t			transposition:1;
 	uint8_t			bypass:1;
 	uint8_t			backlink:1; // not yet used

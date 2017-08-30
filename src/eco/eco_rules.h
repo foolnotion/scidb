@@ -42,9 +42,12 @@ class Rules
 {
 public:
 
+	enum Permission { NotAllowed, Allowed, NotForbidden };
+
 	auto isValid(Id id, db::MoveLine const& line) const -> bool;
-	auto transpositionIsAllowed(Id from, Id to, db::MoveLine const& line) const -> bool;
 	auto omit(Id id, db::MoveLine const& line) const -> bool;
+
+	auto testTransposition(Id from, Id to, db::MoveLine const& line) const -> Permission;
 
 	void add(Id id, db::MoveLine const& line);
 	void addExclusion(Id id, db::MoveLine const& line);

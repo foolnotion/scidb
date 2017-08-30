@@ -62,7 +62,7 @@ Rules::Line::Line(db::MoveLine const& line, unsigned lineNo)
 }
 
 
-auto Rules::transpositionIsAllowed(Id from, Id to, MoveLine const& line) const -> bool
+auto Rules::testTransposition(Id from, Id to, MoveLine const& line) const -> Permission
 {
 	Set const& set = m_set[from.basic()];
 
@@ -73,11 +73,14 @@ auto Rules::transpositionIsAllowed(Id from, Id to, MoveLine const& line) const -
 			unsigned length = mstl::min(exc.second.m_line.size(), line.size());
 
 			if (exc.second.m_line.match(line) == length)
-				return exc.second.m_used = true;
+			{
+				exc.second.m_used = true;
+				return Allowed;
+			}
 		}
 	}
 
-	return !set.m_unwanted.test(to.basic());
+	return set.m_unwanted.test(to.basic()) ? NotAllowed : NotForbidden;
 }
 
 

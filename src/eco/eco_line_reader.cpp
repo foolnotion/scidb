@@ -253,39 +253,54 @@ auto LineReader::readLine(
 
 				while (movP < movE)
 				{
-					if (movP[0] == '-' && movP[1] == '-' && movP[2] == '-' && movP[3] == '-')
+					if (movP[0] == '-' && movP[1] == '-' && movP[2] == '-')
 					{
-						movP = ::skipSpaces(movP + 4);
-						root->addOmission(Id(id.basic(), 0), line, m_lineNo);
-						skip = true;
-						break;
+						if (movP[3] == '-')
+						{
+							movP = ::skipSpaces(movP + 4);
+							root->addOmission(Id(id.basic(), 0), line, m_lineNo);
+							skip = true;
+							break;
+						}
+						if (movP[3] == '>')
+						{
+							movP = ::skipSpaces(movP + 4);
+
+							if (movP + 3 > buf.end())
+								M_RAISE("invalid ECO code %s (line %u)", movP, m_lineNo);
+
+							mstl::string eco(movP, movP + 3);
+							Id to;
+
+							try { to.setup(eco); }
+							catch (...) { M_RAISE("invalid ECO code %s (line %u)", eco.c_str(), m_lineNo); }
+
+							movP = ::skipSpaces(movP + 3);
+							root->addException(Id(id.basic(), 0), line, to, m_lineNo);
+							sign = Skip;
+							m_comment.clear();
+							return id;
+						}
 					}
-					else if (movP[0] == '-' && movP[1] == '>')
+					if (movP[0] == '-' && movP[1] == '>')
+					{
+						sign = Skip;
+						m_comment.clear();
+						return id;
+					}
+					if (movP[0] == '+' && movP[1] == '+')
 					{
 						movP = ::skipSpaces(movP + 2);
-
-						if (movP + 3 > buf.end())
-							M_RAISE("invalid ECO code %s (line %u)", movP, m_lineNo);
-
-						mstl::string eco(movP, movP + 3);
-						Id to;
-
-						try { to.setup(eco); }
-						catch (...) { M_RAISE("invalid ECO code %s (line %u)", eco.c_str(), m_lineNo); }
-
-						movP = ::skipSpaces(movP + 3);
-						root->addException(Id(id.basic(), 0), line, to, m_lineNo);
-						skip = true;
 						break;
 					}
-					else if (movP[0] == '!' && movP[1] == '!')
+					if (movP[0] == '!' && movP[1] == '!')
 					{
 						movP = ::skipSpaces(movP + 2);
 						isComment = true;
 						sign = PreParsed;
 						break;
 					}
-					else if (movP[0] == '*' && movP[1] == '*')
+					if (movP[0] == '*' && movP[1] == '*')
 					{
 						movP = ::skipSpaces(movP + 2);
 						sign = Equal;

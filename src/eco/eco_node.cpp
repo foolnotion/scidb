@@ -1609,7 +1609,7 @@ void Node::findTranspositions(Board& board)
 
 				if (e != m_nodeLookup.end())
 				{
-					newBranches.push_back(Branch(m, e->second, Branch::Transposition));
+					newBranches.emplace_back(m, e->second, Branch::Transposition);
 					m_nodeLookup[hash] = e->second;
 				}
 			}
@@ -1826,12 +1826,10 @@ void Node::extend(Board& board, MoveLine& line)
 				Lookup::const_iterator i = m_nodeLookup.find(hash);
 				Node *node = nullptr;
 
-				if (i != m_nodeLookup.end())
-					node = i->second;
-				else if ((i = m_nodeLookup2.find(hash)) != m_nodeLookup2.end())
+				if (i != m_nodeLookup.end() || (i = m_nodeLookup2.find(hash)) != m_nodeLookup2.end())
 					node = i->second;
 
-				if (node && node->m_parent != this)
+				if (node && !node->isParent(this))
 				{
 					MoveLine line(m_line);
 					line.append(move);
@@ -1842,10 +1840,13 @@ void Node::extend(Board& board, MoveLine& line)
 						{
 							if (::isGoodMove(board))
 							{
-								if (m_rules.transpositionIsAllowed(m_id, node->m_id, line))
+								Rules::Permission perm = m_rules.testTransposition(m_id, node->m_id, line);
+
+								if (perm != Rules::NotAllowed)
 								{
-									m_branches.push_back(Branch(move, node, Branch::Transposition));
+									m_branches.emplace_back(move, node, Branch::Transposition);
 									m_branches.back().setAll();
+									m_branches.back().exception = (perm == Rules::Allowed);
 
 									if (!m_final)
 										m_final = m_isExtension = true;
@@ -1868,7 +1869,7 @@ void Node::extend(Board& board, MoveLine& line)
 												node->m_line.dump(s2).c_str());
 								}
 							}
-							else if (m_rules.transpositionIsAllowed(m_id, node->m_id, line))
+							else if (m_rules.testTransposition(m_id, node->m_id, line) != Rules::NotAllowed)
 							{
 								mstl::string s1, s2;
 								fprintf(	stderr,
@@ -2186,7 +2187,7 @@ auto Node::checkTranspositions(bool extended) -> bool
 			MoveLine line(m_line);
 			line.append(branch.move);
 
-			if (!m_rules.transpositionIsAllowed(m_id, branch.node->m_id, line))
+			if (m_rules.testTransposition(m_id, branch.node->m_id, line) == Rules::NotAllowed)
 			{
 				unsigned match = m_line.match(branch.node->m_line);
 
@@ -2264,6 +2265,47 @@ void Node::relinkBranchesToEqualLines(Board& board)
 }
 
 
+auto Node::addTransition(Reader const& reader, Board& board, Transition const& trans) -> void
+{
+	Move move(trans.move);
+
+	board.prepareUndo(move);
+	board.prepareForPrint(move, Board::ExternalRepresentation);
+	board.doMove(move);
+
+	Node* succ = find(move);
+
+	if (!succ)
+	{
+		Node*& n = m_nodeLookup[board.hash()];
+
+		if (!n)
+		{
+			n = new Node(nullptr);
+			n->m_lineNo = reader.lineNo();
+			n->m_resolve = true;
+			n->m_id = trans.id;
+		}
+
+		M_ASSERT(!find(move));
+		M_ASSERT(::isValidMove(m_line, move));
+
+		m_branches.emplace_back(move, n, trans.transposition ? Branch::Transposition : Branch::NextMove);
+
+		if (trans.transposition)
+			n->addBacklink(this);
+
+		if (reader.isLineReader())
+			m_branches.back().setAll();
+	}
+
+	board.undoMove(move);
+
+	if (trans.transposition)
+		++m_transpositionCount;
+}
+
+
 auto Node::parse(Reader& reader, Node* root, unsigned flags) -> Node*
 {
 	MoveLine			line;
@@ -2273,6 +2315,7 @@ auto Node::parse(Reader& reader, Node* root, unsigned flags) -> Node*
 	mstl::string	comment;
 	char				sign('\0');
 	unsigned			color(0);
+	Id					continuation;
 	Id					id;
 
 	if (!root)
@@ -2280,401 +2323,367 @@ auto Node::parse(Reader& reader, Node* root, unsigned flags) -> Node*
 
 	while ((id = reader.readLine(line, transitions, name, prologue, comment, sign, root)))
 	{
-		Board board(Board::standardBoard(variant::Normal));
-
-		unsigned	nameRef	= Name::insert(name);
-		Node*		node		= root;
-
-		if (line.isEmpty())
-			m_nodeLookup[board.hash()] = root;
-
-		m_maxMainKey = ++m_nodeCount;
-
-		for (unsigned i = 0; i < line.size(); ++i)
+		if (sign != Reader::Skip)
 		{
-			Move& move = line[i];
+			Board board(Board::standardBoard(variant::Normal));
 
-			if (mstl::is_even(++color))
-				move.setColor(color::Black);
+			unsigned	nameRef	= Name::insert(name);
+			Node*		node		= root;
 
-			board.prepareForPrint(move, Board::ExternalRepresentation);
-			board.doMove(move);
+			if (line.isEmpty())
+				m_nodeLookup[board.hash()] = root;
 
-			Branch*	succ(node->findSuccessor(move, id));
-			Node*		nextNode(nullptr);
+			m_maxMainKey = ++m_nodeCount;
 
-			if (!succ || succ->node->m_resolve)
+			for (unsigned i = 0; i < line.size(); ++i)
 			{
-				uint64_t hash(board.hash());
-				Node*&	n(succ ? succ->node : m_nodeLookup[hash]);
+				Move& move = line[i];
 
-				if (!n || n->m_resolve)
+				if (mstl::is_even(++color))
+					move.setColor(color::Black);
+
+				board.prepareForPrint(move, Board::ExternalRepresentation);
+				board.doMove(move);
+
+				Branch*	succ(node->findSuccessor(move, id));
+				Node*		nextNode(nullptr);
+
+				if (!succ || succ->node->m_resolve)
 				{
-					if (!n)
-						m_nodeLookup[hash] = n = new Node(node);
-					else
-						n->m_parent = node;
+					uint64_t hash(board.hash());
+					Node*&	n(succ ? succ->node : m_nodeLookup[hash]);
 
-					if (flags & Merge_Line)
+					if (!n || n->m_resolve)
 					{
-						if (n->m_parent)
-							n->m_line.fill(n->m_parent->m_line, n->m_parent->m_line.size());
+						if (!n)
+							m_nodeLookup[hash] = n = new Node(node);
+						else
+							n->m_parent = node;
 
-						n->m_line.append(move);
-						n->m_isMerged = true;
-
-						if (flags & Inherit_Name)
-							n->m_isExtension = true;
-					}
-					else
-					{
-						n->m_line.fill(line, i + 1);
-					}
-
-					n->m_id = node->m_id;
-					n->m_key = m_nodeCount;
-					n->m_lineNo = reader.lineNo();
-					n->m_nameRef = node->m_nameRef;
-					n->m_resolve = false;
-
-					if (!succ)
-					{
-						M_ASSERT(!node->find(move));
-
-						node->m_branches.push_back(Branch(move, n, Branch::NextMove));
-
-						if (reader.isLineReader())
+						if (flags & Merge_Line)
 						{
-							if (i < line.size() - 1)
-								node->m_branches.back().setId(n->m_id);
+							if (n->m_parent)
+								n->m_line.fill(n->m_parent->m_line, n->m_parent->m_line.size());
 
-							node->m_branches.back().setId(id);
+							n->m_line.append(move);
+							n->m_isMerged = true;
+
+							if (flags & Inherit_Name)
+								n->m_isExtension = true;
+						}
+						else
+						{
+							n->m_line.fill(line, i + 1);
+						}
+
+						n->m_id = node->m_id;
+						n->m_key = m_nodeCount;
+						n->m_lineNo = reader.lineNo();
+						n->m_nameRef = node->m_nameRef;
+						n->m_resolve = false;
+
+						if (!succ)
+						{
+							M_ASSERT(!node->find(move));
+
+							node->m_branches.emplace_back(move, n, Branch::NextMove);
+
+							if (reader.isLineReader())
+							{
+								if (i < line.size() - 1)
+									node->m_branches.back().setId(n->m_id);
+
+								node->m_branches.back().setId(id);
+							}
 						}
 					}
-				}
-				else if (!succ && !(flags & Merge_Line) && ::isValidMove(node->m_line, move))
-				{
-					// We've found a transposition
-					M_ASSERT(!node->find(move));
-
-					node->m_branches.push_back(Branch(move, n, Branch::Transposition));
-					n->addBacklink(node);
-				}
-
-				static Id const D00 = Id("D00");
-
-				static Move const Ng8f6	= Move::genKnightMove(sq::g8, sq::f6, piece::None);
-				static Move const d7d5	= Move::genTwoForward(sq::d7, sq::d5);
-
-				//   D00 1.d4 d5
-				// should be dumped before
-				//   D00 1.d4 Nf6 2.Bg5 d5
-				// This does not happen without re-sorting because
-				//   A45 1.d4 Nf6
-				// is parsed prior to D00.
-				if (id == D00 && i == 1 && move == d7d5)
-				{
-					for (unsigned i = 0, n = node->m_branches.size() - 1; i < n; ++i)
+					else if (!succ && !(flags & Merge_Line) && ::isValidMove(node->m_line, move))
 					{
-						if (node->m_branches[i].move == Ng8f6)
-							mstl::swap(node->m_branches[i], node->m_branches.back());
+						// We've found a transposition
+						M_ASSERT(!node->find(move));
+
+						node->m_branches.emplace_back(move, n, Branch::Transposition);
+						n->addBacklink(node);
+					}
+
+					static Id const D00 = Id("D00");
+
+					static Move const Ng8f6	= Move::genKnightMove(sq::g8, sq::f6, piece::None);
+					static Move const d7d5	= Move::genTwoForward(sq::d7, sq::d5);
+
+					//   D00 1.d4 d5
+					// should be dumped before
+					//   D00 1.d4 Nf6 2.Bg5 d5
+					// This does not happen without re-sorting because
+					//   A45 1.d4 Nf6
+					// is parsed prior to D00.
+					if (id == D00 && i == 1 && move == d7d5)
+					{
+						for (unsigned i = 0, n = node->m_branches.size() - 1; i < n; ++i)
+						{
+							if (node->m_branches[i].move == Ng8f6)
+								mstl::swap(node->m_branches[i], node->m_branches.back());
+						}
+					}
+
+					nextNode = n;
+				}
+				else
+				{
+					nextNode = succ->node;
+				}
+
+				M_ASSERT(nextNode);
+
+				if (	(flags & Check_Ambiguity)
+					&& nextNode->m_key != m_nodeCount
+					&& !nextNode->m_conflict
+					&& mstl::is_even(i + 1) == mstl::is_even(nextNode->m_line.size())
+					&& (	nextNode->m_line.size() < i + 1
+						|| nextNode->m_line.match(line, i + 1) != i + 1))
+				{
+					if (nextNode->m_preParsed)
+					{
+						nextNode->m_checkLine = false;
+						nextNode->m_preParsed = false;
+					}
+					else if (nextNode->m_checkLine)
+					{
+						char const*		what(i == line.size() ? "duplicate" : "ambiguous");
+						mstl::string	s1, s2;
+
+						fprintf(	stderr,
+									"%s: %s (%u)\n           %s (%u)\n",
+									what,
+									line.dump(s1, 0, i + 1).c_str(),
+									reader.lineNo(),
+									nextNode->m_line.dump(s2).c_str(),
+									nextNode->m_lineNo);
+						reader.countConflict();
+						nextNode->m_conflict = true;
 					}
 				}
 
-				nextNode = n;
-			}
-			else
-			{
-				nextNode = succ->node;
+				m_maxBranches = mstl::max(m_maxBranches, unsigned(node->m_branches.size()));
+				node = nextNode;
 			}
 
-			M_ASSERT(nextNode);
+			node->m_final = sign != Reader::Equal;
+			node->m_enPassant = board.enPassantSquare() != sq::Null;
 
-			if (	(flags & Check_Ambiguity)
-				&& nextNode->m_key != m_nodeCount
-				&& !nextNode->m_conflict
-				&& mstl::is_even(i + 1) == mstl::is_even(nextNode->m_line.size())
-				&& (	nextNode->m_line.size() < i + 1
-					|| nextNode->m_line.match(line, i + 1) != i + 1))
 			{
-				if (nextNode->m_preParsed)
-				{
-					nextNode->m_checkLine = false;
-					nextNode->m_preParsed = false;
-				}
-				else if (nextNode->m_checkLine)
-				{
-					char const*		what(i == line.size() ? "duplicate" : "ambiguous");
-					mstl::string	s1, s2;
+				uint64_t hash(board.hashNoEP());
+				Node* n = nullptr;
 
-					fprintf(	stderr,
-								"%s: %s (%u)\n           %s (%u)\n",
-								what,
-								line.dump(s1, 0, i + 1).c_str(),
-								reader.lineNo(),
-								nextNode->m_line.dump(s2).c_str(),
-								nextNode->m_lineNo);
-					reader.countConflict();
-					nextNode->m_conflict = true;
-				}
-			}
-
-			m_maxBranches = mstl::max(m_maxBranches, unsigned(node->m_branches.size()));
-			node = nextNode;
-		}
-
-		node->m_final = sign != Reader::Equal;
-		node->m_enPassant = board.enPassantSquare() != sq::Null;
-
-		{
-			uint64_t hash(board.hashNoEP());
-			Node* n = nullptr;
-
-			if (sign == Reader::Equal)
-			{
-				auto i = m_nodeLookup2.find(hash);
-
-				if (i == m_nodeLookup2.end())
-				{
-					auto i = m_nodeLookup.find(hash);
-
-					if (i != m_nodeLookup.end())
-						n = i->second;
-				}
-				else
-				{
-					n = i->second;
-				}
-			}
-
-			if (!n)
-			{
-				if (board.hash() != hash)
-				{
-					Node*& nn(m_nodeLookup2[hash]);
-
-					if (!nn)
-						nn = node;
-					else
-						n = nn;
-				}
-				else
+				if (sign == Reader::Equal)
 				{
 					auto i = m_nodeLookup2.find(hash);
 
-					if (i != m_nodeLookup2.end())
-						n = i->second;
-				}
-			}
+					if (i == m_nodeLookup2.end())
+					{
+						auto i = m_nodeLookup.find(hash);
 
-			if (n)
-			{
-				if (sign == Reader::Equal)
+						if (i != m_nodeLookup.end())
+							n = i->second;
+					}
+					else
+					{
+						n = i->second;
+					}
+				}
+
+				if (!n)
 				{
-					if (n->m_equal)
+					if (board.hash() != hash)
+					{
+						Node*& nn(m_nodeLookup2[hash]);
+
+						if (!nn)
+							nn = node;
+						else
+							n = nn;
+					}
+					else
+					{
+						auto i = m_nodeLookup2.find(hash);
+
+						if (i != m_nodeLookup2.end())
+							n = i->second;
+					}
+				}
+
+				if (n)
+				{
+					if (sign == Reader::Equal)
+					{
+						if (n->m_equal)
+						{
+							mstl::string s1, s2;
+
+							fprintf(	stderr,
+										"Both lines are signed as equal: %s (%u)\n"
+										"                                %s (%u)\n",
+										node->m_line.dump(s1).c_str(),
+										node->m_lineNo,
+										n->m_line.dump(s2).c_str(),
+										n->m_lineNo);
+							n->m_conflict = node->m_conflict = true;
+						}
+						if (n != node)
+						{
+							if (node->m_enPassant)
+							{
+								Move null(Move::null());
+								board.prepareForPrint(null, Board::ExternalRepresentation);
+								node->m_branches.emplace_back(null, n, Branch::Transposition);
+							}
+							node->m_hasTwin = true;
+						}
+						m_nodeLookup2[hash] = n;
+					}
+					else if (n->m_equal)
+					{
+						if (n->m_enPassant)
+						{
+							Move null(Move::null());
+							board.prepareForPrint(null, Board::ExternalRepresentation);
+							n->m_branches.emplace_back(null, node, Branch::Transposition);
+						}
+						m_nodeLookup2[hash] = node;
+						n->m_hasTwin = true;
+					}
+					else
 					{
 						mstl::string s1, s2;
 
 						fprintf(	stderr,
-									"Both lines are signed as equal: %s (%u)\n"
-									"                                %s (%u)\n",
+									"Equal: %s (%u)\n"
+									"       %s (%u)\n",
 									node->m_line.dump(s1).c_str(),
 									node->m_lineNo,
 									n->m_line.dump(s2).c_str(),
 									n->m_lineNo);
-						n->m_conflict = node->m_conflict = true;
 					}
-					if (n != node)
-					{
-						if (node->m_enPassant)
-						{
-							Move null(Move::null());
-							board.prepareForPrint(null, Board::ExternalRepresentation);
-							node->m_branches.push_back(Branch(null, n, Branch::Transposition));
-						}
-						node->m_hasTwin = true;
-					}
-					m_nodeLookup2[hash] = n;
 				}
-				else if (n->m_equal)
+			}
+
+			for (auto const& trans : transitions)
+				node->addTransition(reader, board, trans);
+
+			if (::isprint(sign))
+			{
+				node->m_sign = sign;
+			}
+			else if (sign == Reader::PreParsed)
+			{
+				node->m_preParsed = true;
+				node->m_checkLine = false;
+			}
+			else if (sign == Reader::Equal)
+			{
+				node->m_equal = true;
+			}
+
+			if (!(flags & Merge_Line))
+				node->m_id = id;
+
+			if (flags & Merge_Line)
+			{
+				node->m_isBypass = false;
+
+				for (Node* p = node->m_parent; p && p->m_isBypass; p = p->m_parent)
 				{
-					if (n->m_enPassant)
+					Branch* branch = p->findSuccessor(node);
+					M_ASSERT(branch);
+
+					if (branch->bypass)
 					{
-						Move null(Move::null());
-						board.prepareForPrint(null, Board::ExternalRepresentation);
-						n->m_branches.push_back(Branch(null, node, Branch::Transposition));
+						branch->bypass = false;
+						--p->m_numBypasses;
 					}
-					m_nodeLookup2[hash] = node;
-					n->m_hasTwin = true;
+
+					p->m_isBypass = false;
+					node = p;
+				}
+			}
+
+			if (node->m_prologue.empty())
+				node->m_prologue.swap(prologue);
+			node->m_comment.swap(comment);
+
+			if (nameRef == Name::Invalid)
+			{
+				if (!node->m_parent)
+				{
+					fprintf(stderr, "Empty moves in line %u\n", reader.lineNo());
+					reader.countConflict();
+				}
+
+				nameRef = node->m_nameRef;
+			}
+
+			// TODO: we have to give a warning in these cases:
+			// --------------------------------------------------------------------
+			// 1.d3 					-> 1.d3					Mieses Opening
+			// 1.d3 Nf6				-> 1.d3 Nf6				Mieses Opening
+			//	1.d3 Nf6 2.c4		-> 1.c4 Nf6 2.d3		English: Anglo-Indian Defence
+			//	1.d3 Nf6 2.c4 d6	-> 1.d3 d6 2.c4 Nf6	Mieses Opening
+
+			if (node != root && node->m_key != m_nodeCount)
+			{
+				if ((flags & Merge_Line))
+				{
+					if (nameRef != Name::Invalid && nameRef != node->m_nameRef)
+					{
+						M_ASSERT(node->m_nameRef != Name::Invalid);
+
+						Name* myName = Name::lookup(node->m_nameRef);
+						Name const* newName = Name::lookup(nameRef);
+
+						if (!myName->hasMark() && newName->lastRef() != myName->lastRef())
+						{
+							fprintf(	stderr,
+										"Change of name in %s: %s (%u) -> %s (%u)\n",
+										id.asShortString().c_str(),
+										Name::lookup(node->m_nameRef)->opening().c_str(),
+										node->m_lineNo,
+										Name::lookup(nameRef)->opening().c_str(),
+										reader.lineNo());
+							myName->setMark();
+						}
+					}
 				}
 				else
 				{
 					mstl::string s1, s2;
+					line.dump(s1);
 
-					fprintf(	stderr,
-								"Equal: %s (%u)\n"
-								"       %s (%u)\n",
-								node->m_line.dump(s1).c_str(),
-								node->m_lineNo,
-								n->m_line.dump(s2).c_str(),
-								n->m_lineNo);
-				}
-			}
-		}
-
-		for (auto const& trans : transitions)
-		{
-			Move move(trans.move);
-
-			board.prepareUndo(move);
-			board.prepareForPrint(move, Board::ExternalRepresentation);
-			board.doMove(move);
-
-			Node* succ = node->find(move);
-
-			if (!succ)
-			{
-				Node*& n = m_nodeLookup[board.hash()];
-
-				if (!n)
-				{
-					n = new Node(nullptr);
-					n->m_lineNo = reader.lineNo();
-					n->m_resolve = true;
-					n->m_id = trans.id;
-				}
-
-				M_ASSERT(!node->find(move));
-				M_ASSERT(::isValidMove(node->m_line, move));
-
-				node->m_branches.push_back(
-					Branch(move, n, trans.transposition ? Branch::Transposition : Branch::NextMove));
-
-				if (trans.transposition)
-					n->addBacklink(node);
-
-				if (reader.isLineReader())
-					node->m_branches.back().setAll();
-			}
-
-			board.undoMove(move);
-
-			if (trans.transposition)
-				++m_transpositionCount;
-		}
-
-		if (::isprint(sign))
-		{
-			node->m_sign = sign;
-		}
-		else if (sign == Reader::PreParsed)
-		{
-			node->m_preParsed = true;
-			node->m_checkLine = false;
-		}
-		else if (sign == Reader::Equal)
-		{
-			node->m_equal = true;
-		}
-
-		if (!(flags & Merge_Line))
-			node->m_id = id;
-
-		if (flags & Merge_Line)
-		{
-			node->m_isBypass = false;
-
-			for (Node* p = node->m_parent; p && p->m_isBypass; p = p->m_parent)
-			{
-				Branch* branch = p->findSuccessor(node);
-				M_ASSERT(branch);
-
-				if (branch->bypass)
-				{
-					branch->bypass = false;
-					--p->m_numBypasses;
-				}
-
-				p->m_isBypass = false;
-				node = p;
-			}
-		}
-
-		if (node->m_prologue.empty())
-			node->m_prologue.swap(prologue);
-		node->m_comment.swap(comment);
-
-		if (nameRef == Name::Invalid)
-		{
-			if (!node->m_parent)
-			{
-				fprintf(stderr, "Empty moves in line %u\n", reader.lineNo());
-				reader.countConflict();
-			}
-
-			nameRef = node->m_nameRef;
-		}
-
-		// TODO: we have to give a warning in these cases:
-		// --------------------------------------------------------------------
-		// 1.d3 					-> 1.d3					Mieses Opening
-		// 1.d3 Nf6				-> 1.d3 Nf6				Mieses Opening
-		//	1.d3 Nf6 2.c4		-> 1.c4 Nf6 2.d3		English: Anglo-Indian Defence
-		//	1.d3 Nf6 2.c4 d6	-> 1.d3 d6 2.c4 Nf6	Mieses Opening
-
-		if (node != root && node->m_key != m_nodeCount)
-		{
-			if ((flags & Merge_Line))
-			{
-				if (nameRef != Name::Invalid && nameRef != node->m_nameRef)
-				{
-					M_ASSERT(node->m_nameRef != Name::Invalid);
-
-					Name* myName = Name::lookup(node->m_nameRef);
-					Name const* newName = Name::lookup(nameRef);
-
-					if (!myName->hasMark() && newName->lastRef() != myName->lastRef())
+					if (node->m_checkLine)
 					{
 						fprintf(	stderr,
-									"Change of name in %s: %s (%u) -> %s (%u)\n",
-									id.asShortString().c_str(),
-									Name::lookup(node->m_nameRef)->opening().c_str(),
-									node->m_lineNo,
-									Name::lookup(nameRef)->opening().c_str(),
-									reader.lineNo());
-						myName->setMark();
+									"conflict:  %s (%u)\n           %s (%u)\n",
+									s1.c_str(),
+									reader.lineNo(),
+									node->m_line.dump(s2).c_str(),
+									node->m_lineNo);
+						reader.countConflict();
+					}
+					else
+					{
+						node->m_id = id;
+						node->m_preParsed = false;
+
+						if (name.isEmpty())
+							name = node->m_parent->name();
+
+						node->setOpeningFromParent(name);
 					}
 				}
 			}
-			else
-			{
-				mstl::string s1, s2;
-				line.dump(s1);
 
-				if (node->m_checkLine)
-				{
-					fprintf(	stderr,
-								"conflict:  %s (%u)\n           %s (%u)\n",
-								s1.c_str(),
-								reader.lineNo(),
-								node->m_line.dump(s2).c_str(),
-								node->m_lineNo);
-					reader.countConflict();
-				}
-				else
-				{
-					node->m_id = id;
-					node->m_preParsed = false;
-
-					if (name.isEmpty())
-						name = node->m_parent->name();
-
-					node->setOpeningFromParent(name);
-				}
-			}
+			node->m_nameRef = nameRef;
 		}
 
-		node->m_nameRef = nameRef;
 		line.clear();
 		transitions.clear();
 		name.clear();
@@ -2690,17 +2699,23 @@ auto Node::parse(Reader& reader, Node* root, unsigned flags) -> Node*
 		root->m_epilogue.assign(reader.epilogue());
 	
 	Board board(Board::standardBoard(variant::Normal));
-	root->relinkBranchesToEqualLines(board);
 
 	return root;
 }
 
 
-void Node::doTraversal(Visitor& visitor, unsigned& count) const
+void Node::doTraversal(Visitor& visitor, mstl::bitset& keySet, mstl::stack<Node const*>& stack) const
 {
-	if (++count > 300000)
+	if (keySet.test_and_set(m_key))
 	{
-		fprintf(stderr, "overflow (due to an undetected cycle?)\n");
+		fprintf(stderr, "cycle detected in %s:\n", m_id.asShortString().c_str());
+		for (auto n : stack)
+		{
+			mstl::string s;
+			fprintf(stderr, "%s: %s\n", n->m_id.asShortString().c_str(), n->m_line.dump(s).c_str());
+		}
+		mstl::string s;
+		fprintf(stderr, "%s: %s\n", m_id.asShortString().c_str(), m_line.dump(s).c_str());
 		::exit(1);
 	}
 
@@ -2708,11 +2723,12 @@ void Node::doTraversal(Visitor& visitor, unsigned& count) const
 	{
 		fprintf(	stderr,
 					"maximal level exceeded in %s: %u\n",
-					m_id.asString().c_str(),
+					m_id.asShortString().c_str(),
 					unsigned(opening::Max_Line_Length));
 		::exit(1);
 	}
 
+	stack.push(this);
 	m_done = true;
 
 	for (auto const& branch : m_branches)
@@ -2731,22 +2747,24 @@ void Node::doTraversal(Visitor& visitor, unsigned& count) const
 		if (visitor.branch(branch))
 		{
 			visitor.doMove(const_cast<Move&>(branch.move));
-			branch.node->doTraversal(visitor, count);
+			branch.node->doTraversal(visitor, keySet, stack);
 			visitor.undoMove(branch.move);
 			visitor.finishBranch(branch);
 		}
 	}
 
+	stack.pop();
 	m_done = false;
 }
 
 
 void Node::traverse(Visitor& visitor) const
 {
-	unsigned count = 0;
+	mstl::bitset keySet(m_nodeCount + 1);
+	mstl::stack<Node const*> stack;
 
 	visitor.reset();
-	doTraversal(visitor, count);
+	doTraversal(visitor, keySet, stack);
 }
 
 // vi:set ts=3 sw=3:
