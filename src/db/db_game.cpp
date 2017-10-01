@@ -2170,13 +2170,13 @@ Game::moveTo(edit::Key const& key)
 	edit::Key wantedKey(key);
 	edit::Key currentKey(m_currentKey);
 
-	moveToMainlineStart();
-
 	if (!wantedKey.setPosition(*this))
 	{
 		currentKey.setPosition(*this);
 		DB_RAISE("invalid key '%s'", key.id().c_str());
 	}
+
+	m_currentKey = wantedKey;
 }
 
 
@@ -2650,7 +2650,7 @@ Game::updateLanguageSet()
 Move
 Game::parseMove(mstl::string const& san) const
 {
-	Move move = m_currentBoard.parseMove(san, m_variant, move::MustBeUnambiguous, move::AllowIllegalMove);
+	Move move = m_currentBoard.parseMove(san, m_variant, move::ResolveAmbiguity, move::AllowIllegalMove);
 
 	if (!move)
 	{
@@ -2660,7 +2660,7 @@ Game::parseMove(mstl::string const& san) const
 		board.tryCastleShort(side);
 		board.tryCastleLong(side);
 
-		move = board.parseMove(san, m_variant, move::MustBeUnambiguous, move::AllowIllegalMove);
+		move = board.parseMove(san, m_variant, move::ResolveAmbiguity, move::AllowIllegalMove);
 		move.setIllegalMove();
 	}
 
