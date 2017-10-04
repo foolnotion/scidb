@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2009-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -74,6 +74,8 @@ public:
 
 	bool stripMoveInformation(unsigned halfMoveCount, unsigned types);
 	bool stripTags(TagMap const& tags);
+
+	static bool validateGameData(unsigned char const* data, unsigned size);
 
 private:
 

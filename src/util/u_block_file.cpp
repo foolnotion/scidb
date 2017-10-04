@@ -6,7 +6,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2009-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -21,6 +21,7 @@
 
 #include "m_algorithm.h"
 #include "m_utility.h"
+#include "m_limits.h"
 #include "m_bit_functions.h"
 #include "m_fstream.h"
 #include "m_assert.h"
@@ -586,6 +587,56 @@ BlockFile::recordLength(unsigned offset)
 
 
 unsigned
+BlockFile::findFirstOffset(ValidityFunc func, unsigned nextKnownOffset)
+{
+	M_REQUIRE(m_mode == ReadWriteLength);
+	return findNextOffset(func, m_magic.empty() ? 0 : m_magic.size() + 1, nextKnownOffset);
+}
+
+
+unsigned
+BlockFile::findNextOffset(ValidityFunc func, unsigned offset, unsigned nextKnownOffset)
+{
+	M_REQUIRE(m_mode == ReadWriteLength);
+	M_REQUIRE(offset <= mstl::numeric_limits<unsigned>::max() - 3);
+
+	if (offset + 3 < nextKnownOffset)
+	{
+		unsigned length = recordLength(offset);
+
+		while (length == 0 && offset + 3 < nextKnownOffset)
+			length = recordLength(++offset);
+
+		if (length == 0 || offset + length > nextKnownOffset)
+			return nextKnownOffset;
+
+		unsigned char const* data = m_view.m_buffer.m_data + blockOffset(offset) + 3;
+
+		if (func(data, length))
+			return offset;
+
+		length = recordLength(++offset);
+
+		if (offset + length > nextKnownOffset)
+			return nextKnownOffset;
+
+		if (func(++data, length))
+			return offset;
+
+		length = recordLength(++offset);
+
+		if (offset + length > nextKnownOffset)
+			return nextKnownOffset;
+
+		if (func(++data, length))
+			return offset;
+	}
+
+	return nextKnownOffset;
+}
+
+
+unsigned
 BlockFile::put(ByteStream const& buf, unsigned offset, unsigned minSize)
 {
 	M_REQUIRE(isOpen());
@@ -695,11 +746,11 @@ BlockFile::put(ByteStream const& buf)
 
 	size_t nbytes = buf.size();
 
-	if (nbytes == 0)
-		return 0;
-
 	if (m_mode == ReadWriteLength)
 		nbytes += 3;
+
+	if (nbytes == 0)
+		return 0;
 
 	size_t span = countSpans(nbytes);
 
@@ -883,6 +934,9 @@ BlockFile::get(View& view, ByteStream& result, unsigned offset, unsigned size)
 	if (m_mode == ReadWriteLength)
 	{
 		size = retrieve(view, blockNumber(offset), blockOffset(offset));
+
+		if (size == 0)
+			return 0;
 
 		if (size <= MaxFileSize)	// otherwise it's an error code
 		{

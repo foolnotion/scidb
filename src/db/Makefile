@@ -4551,6 +4551,8 @@ db_reader.o: ../util/u_misc.h
 db_reader.o: ../sys/sys_file.h
 db_reader.o: ../sys/sys_time.h
 db_reader.o: ../sys/sys_file.ipp
+db_reader.o: ../sys/sys_utf8.h
+db_reader.o: ../sys/sys_utf8.ipp
 db_reader.o: ../sys/sys_utf8_codec.h
 db_reader.o: ../sys/sys_utf8_codec.ipp
 db_search.o: db_search.h

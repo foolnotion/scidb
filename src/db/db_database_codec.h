@@ -102,10 +102,6 @@ public:
 	enum Section		{ InfoTags, GameTags };
 	enum Allocation	{ Hook, Alloc };
 
-//	static unsigned const Decode_Tags		= 1 << 0;
-//	static unsigned const Decode_Comments	= 1 << 1;
-//	static unsigned const Decode_All			= Decode_Tags | Decode_Comments;
-
 	DatabaseCodec();
 	virtual ~DatabaseCodec() throw();
 
@@ -226,6 +222,9 @@ public:
 										mstl::string* description = 0);
 	static void getSuffixes(mstl::string const& filename, StringList& result);
 
+	// public for index recovering
+	Namebases& namebases();
+
 protected:
 
 	enum { Readonly = 1, Truncate = 2 };
@@ -278,15 +277,17 @@ protected:
 	virtual unsigned putGame(	util::ByteStream const& strm,
 										unsigned prevOffset,
 										unsigned prevRecordLength);
+	virtual void writeIndexProgressively(	mstl::string const& rootname,
+														GameInfo const& info,
+														unsigned index);
 
 	bool isReadonly() const;
 	bool shouldCompact() const;
 	GameInfoList& gameInfoList();
-	GameInfo& gameInfo(unsigned index);
 	mstl::string const& description() const;
 	DatabaseContent::Type type() const;
 	Namebase& namebase(Namebase::Type type);
-	Namebases& namebases();
+	GameInfo& gameInfo(unsigned index);
 
 	void setVariant(variant::Type variant);
 	void setType(DatabaseContent::Type type);

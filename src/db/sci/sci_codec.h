@@ -109,6 +109,9 @@ public:
 	void removeAllFiles(mstl::string const& rootname) override;
 	void writeNamebases(mstl::ostream& stream, util::Progress& progress) override;
 	void writeIndex(mstl::ostream& strm, util::Progress& progress);
+	void writeIndexProgressively(	mstl::string const& rootname,
+											GameInfo const& info,
+											unsigned index) override;
 	void writeGames(mstl::ostream& strm, util::Progress& progress);
 	void readIndexProgressive(unsigned index) override;
 	bool stripMoveInformation(GameInfo const& info, unsigned types) override;
@@ -149,6 +152,8 @@ public:
 									::util::BlockFileReader* reader) override;
 
 	static DatabaseCodec* makeCodec(mstl::string const& name);
+	util::BlockFile* getBlockFile() const;
+
 	static void rename(mstl::string const& oldName, mstl::string const& newName);
 	static void remove(mstl::string const& fileName);
 	static bool getAttributes(	mstl::string const& filename,
@@ -182,12 +187,12 @@ private:
 	void updateIndex(mstl::ostream& strm);
 	void writeIndex(mstl::ostream& strm, unsigned start, util::Progress& progress);
 	void writeIndexHeader(mstl::ostream& strm);
-	void writeNamebases(mstl::string const& filename);
 	void writeNamebase(util::ByteStream& bstrm, Namebase& base, util::Progress* progress);
 	void writeSitebase(util::ByteStream& bstrm, Namebase& base, util::Progress* progress);
 	void writeEventbase(util::ByteStream& bstrm, Namebase& base, util::Progress* progress);
 	void writePlayerbase(util::ByteStream& bstrm, Namebase& base, util::Progress* progress);
 	void writeNamebases(mstl::ostream& stream, util::Progress* progress = 0);
+	void writeNamebases(mstl::string const& filename);
 
 	void save(mstl::string const& rootname, unsigned start, util::Progress& progress, bool attach);
 	uint16_t readIndexHeader(mstl::fstream& fstrm, unsigned* retNumGames = 0);

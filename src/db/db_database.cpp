@@ -813,7 +813,6 @@ Database::reopen(mstl::string const& encoding, util::Progress& progress)
 	m_usedEncoding = m_encoding = encoding;
 
 	delete m_codec;
-
 	m_codec = DatabaseCodec::makeCodec(m_name, DatabaseCodec::Existing);
 	M_ASSERT(m_codec);
 
@@ -929,6 +928,34 @@ Database::loadGame(unsigned index, Game& game, mstl::string* encoding, mstl::str
 	setupTags(index, game.m_tags);
 
 	return state;
+}
+
+
+void
+Database::add(GameInfo const& info)
+{
+	M_REQUIRE(isOpen());
+	M_REQUIRE(!isReadonly());
+	M_REQUIRE(isWritable());
+	M_REQUIRE(!usingAsyncReader());
+
+	m_gameInfoList.push_back(info);
+	m_gameInfoList.back().setDirty(true);
+	m_lastChange = sys::time::timestamp();
+}
+
+
+void
+Database::replace(GameInfo const& info, unsigned index)
+{
+	M_REQUIRE(isOpen());
+	M_REQUIRE(!isReadonly());
+	M_REQUIRE(isWritable());
+	M_REQUIRE(!usingAsyncReader());
+	M_REQUIRE(index < size());
+
+	(m_gameInfoList[index] = info).setDirty(true);
+	m_lastChange = sys::time::timestamp();
 }
 
 

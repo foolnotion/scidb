@@ -264,6 +264,11 @@ public:
 	/// Update the move data of a game
 	save::State updateMoves(Game& game);
 
+	/// Append game information (for index recovering)
+	void add(GameInfo const& info);
+	/// Replace game information (for index recovering)
+	void replace(GameInfo const& info, unsigned index);
+
 	/// Removes all games from the database.
 	void clear();
 	/// Re-open the database.

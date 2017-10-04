@@ -53,7 +53,7 @@ public:
 	DatabaseContent(mstl::string const& filename, DatabaseContent const& content);
 	virtual ~DatabaseContent() throw();
 
-	unsigned size() const;
+	unsigned infoListSize() const;
 
 	Namebase& namebase(Namebase::Type type);
 	Namebase const& namebase(Namebase::Type type) const;

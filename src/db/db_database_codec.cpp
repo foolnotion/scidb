@@ -295,12 +295,17 @@ DatabaseCodec::CustomFlags::set(unsigned n, mstl::string const& text)
 }
 
 
-DatabaseCodec::DatabaseCodec() : m_db(0), m_customFlags(0), m_storedInfo(new GameInfo) {}
+DatabaseCodec::DatabaseCodec() : m_db(nullptr), m_customFlags(nullptr), m_storedInfo(new GameInfo) {}
 
 DatabaseCodec* DatabaseCodec::makeCodec()	{ return new sci::Codec; }
 
 
-DatabaseCodec::~DatabaseCodec() throw() { delete m_customFlags; }
+DatabaseCodec::~DatabaseCodec() throw()
+{
+	delete m_customFlags;
+	delete m_storedInfo;
+}
+
 
 bool DatabaseCodec::upgradeIndexOnly() { return sci::Codec::upgradeIndexOnly(); }
 
@@ -484,6 +489,15 @@ DatabaseCodec::writeNamebases(mstl::ostream&, util::Progress&)
 
 void
 DatabaseCodec::writeIndex(mstl::ostream&, util::Progress&)
+{
+	M_RAISE("should not be used");
+}
+
+
+void
+DatabaseCodec::writeIndexProgressively(mstl::string const& rootname,
+													GameInfo const& info,
+													unsigned index)
 {
 	M_RAISE("should not be used");
 }
@@ -743,6 +757,8 @@ DatabaseCodec::rename(mstl::string const& oldName, mstl::string const& newName)
 Time
 DatabaseCodec::modified() const
 {
+	M_REQUIRE(isOpen());
+
 	uint32_t time;
 	sys::file::changed(m_db->m_rootname + "." + m_db->m_suffix, time);
 	return Time(time);
@@ -919,13 +935,15 @@ DatabaseCodec::importGames(Producer& producer, Progress& progress, int startInde
 save::State
 DatabaseCodec::addGame(ByteStream& gameData, TagSet const& tags, Consumer& consumer)
 {
+	M_REQUIRE(isOpen());
+
 	save::State state;
 
 	int index = consumer.index();
 
 	if (index >= 0)
 	{
-		if (unsigned(index) < m_db->m_gameInfoList.size())
+		if (unsigned(index) < m_db->infoListSize())
 		{
 			state = saveGame(gameData, tags, consumer);
 			consumer.setIndex(index + 1);
@@ -1012,13 +1030,13 @@ DatabaseCodec::saveGame(ByteStream const& gameData, TagSet const& tags, Provider
 		*m_storedInfo = *info;
 		info->reset(m_db->m_namebases);
 	}
-	else if (m_db->size() == maxGameCount())
+	else if (m_db->infoListSize() == maxGameCount())
 	{
 		return save::TooManyGames;
 	}
 	else
 	{
-		index = m_db->m_gameInfoList.size();
+		index = m_db->infoListSize();
 	}
 
 	unsigned maxAnnotatorCount	= this->maxAnnotatorCount();
@@ -1200,7 +1218,7 @@ DatabaseCodec::addGame(ByteStream const& gameData, GameInfo const& info, Allocat
 {
 	M_REQUIRE(isOpen());
 
-	if (m_db->size() == maxGameCount())
+	if (m_db->infoListSize() == maxGameCount())
 		return save::TooManyGames;
 	if (gameData.size() > maxGameRecordLength() || info.plyCount() > maxGameLength())
 		return save::GameTooLong;
@@ -1283,10 +1301,10 @@ DatabaseCodec::addGame(ByteStream const& gameData, GameInfo const& info, Allocat
 		M_ASSERT(format() == format::Scid3 || format() == format::Scid4);
 		M_ASSERT(!m_db->m_memoryOnly);
 
-		if (!static_cast<si3::Codec*>(this)->saveRoundEntry(	m_db->m_gameInfoList.size(),
+		if (!static_cast<si3::Codec*>(this)->saveRoundEntry(	m_db->infoListSize(),
 																				info.roundAsString()))
 		{
-			static_cast<si3::Codec*>(this)->useOverflowEntry(m_db->m_gameInfoList.size());
+			static_cast<si3::Codec*>(this)->useOverflowEntry(m_db->infoListSize());
 			state = save::TooManyRoundNames;
 		}
 	}
@@ -1298,7 +1316,7 @@ DatabaseCodec::addGame(ByteStream const& gameData, GameInfo const& info, Allocat
 		if (format() != format::Scidb)
 		{
 			M_ASSERT(!m_db->m_memoryOnly);
-			static_cast<si3::Codec*>(this)->restoreRoundEntry(m_db->m_gameInfoList.size());
+			static_cast<si3::Codec*>(this)->restoreRoundEntry(m_db->infoListSize());
 		}
 
 		namebases().update();

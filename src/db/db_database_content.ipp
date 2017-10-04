@@ -26,12 +26,7 @@
 
 namespace db {
 
-inline
-unsigned
-DatabaseContent::size() const
-{
-	return m_gameInfoList.size();
-}
+inline unsigned DatabaseContent::infoListSize() const { return m_gameInfoList.size(); }
 
 
 inline

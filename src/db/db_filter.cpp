@@ -132,7 +132,7 @@ Filter::resize(unsigned newSize, ResizeMode mode)
 void
 Filter::search(Query const& query, DatabaseContent const& content)
 {
-	M_REQUIRE(content.size() == size());
+	M_REQUIRE(content.infoListSize() == size());
 
 	switch (query.op())
 	{

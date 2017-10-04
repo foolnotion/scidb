@@ -506,6 +506,14 @@ bool Codec::encodingFailed() const				{ return false; }
 void Codec::reset()									{}
 
 
+BlockFile*
+Codec::getBlockFile() const
+{
+	M_REQUIRE(isOpen());
+	return m_gameData;
+}
+
+
 unsigned
 Codec::maxGameCount() const
 {
@@ -786,6 +794,31 @@ Codec::update(mstl::string const& rootname, unsigned index, bool updateNamebase)
 
 
 void
+Codec::writeIndexProgressively(mstl::string const& rootname, GameInfo const& info, unsigned index)
+{
+	mstl::string indexFilename(rootname + ".sci");
+	checkPermissions(indexFilename);
+
+	if (isReadonly())
+		IO_RAISE(Index, Read_Only, "index file '%s' is read-only", indexFilename.c_str());
+
+	mstl::fstream indexStream;
+	indexStream.open(	sys::file::internalName(indexFilename),
+							mstl::ios_base::in | mstl::ios_base::out | mstl::ios_base::binary);
+
+	unsigned char buf[sizeof(IndexEntry)];
+	ByteStream bstrm(buf, sizeof(IndexEntry));
+	encodeIndex(gameInfoList()[0], bstrm);
+
+	if (	!indexStream.seekp(index*sizeof(IndexEntry) + ::HeaderSize)
+		|| !indexStream.write(buf, sizeof(IndexEntry)))
+	{
+		IO_RAISE(Index, Corrupted, "unexpected end of index file");
+	}
+}
+
+
+void
 Codec::updateHeader(mstl::string const& rootname)
 {
 	mstl::string indexFilename(rootname + ".sci");
@@ -1027,7 +1060,7 @@ Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding)
 unsigned
 Codec::doOpenProgressive(mstl::string const& rootname, mstl::string const& encoding)
 {
-	M_ASSERT(m_progressiveStream == 0);
+	M_ASSERT(m_progressiveStream == nullptr);
 
 	mstl::string indexFilename(rootname + ".sci");
 	mstl::string gameFilename(rootname + ".scg");
@@ -1478,7 +1511,7 @@ Codec::updateIndex(mstl::ostream& strm)
 			ByteStream bstrm(buf, sizeof(IndexEntry));
 			encodeIndex(info, bstrm);
 
-			if (!strm.seekp(i*sizeof(IndexEntry) + ::HeaderSize))
+			if (!strm.seekp(i*sizeof(IndexEntry) + ::HeaderSize, mstl::ios_base::beg))
 				IO_RAISE(Index, Corrupted, "unexpected end of index file");
 			if (!strm.write(buf, sizeof(IndexEntry)))
 				IO_RAISE(Index, Write_Failed, "error while writing index entry");

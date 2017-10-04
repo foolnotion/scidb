@@ -236,7 +236,7 @@ public:
 	void setStandardPosition();
 	/// Set initial chess game position on the board
 	void setStandardPosition(variant::Type variant);
-	/// Parse given FEN, return true if loaded properly otherwise false
+	/// Parse given FEN, return pointer if loaded properly otherwise null
 	char const* setup(char const* fen, variant::Type variant);
 	/// Setup board from given IDN (unique IDentification Number)
 	void setup(unsigned idn, variant::Type variant);
