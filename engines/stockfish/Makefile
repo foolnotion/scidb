@@ -6,8 +6,8 @@ include ../../Makefile.in
 
 EXE = stockfish-scidb
 
-SRC = benchmark.cpp bitbase.cpp bitboard.cpp book.cpp endgame.cpp evaluate.cpp main.cpp  \
-       material.cpp misc.cpp movegen.cpp movepick.cpp notation.cpp pawns.cpp position.cpp \
+SRC = benchmark.cpp bitbase.cpp bitboard.cpp endgame.cpp evaluate.cpp main.cpp  \
+       material.cpp misc.cpp movegen.cpp movepick.cpp pawns.cpp position.cpp \
        search.cpp thread.cpp timeman.cpp tt.cpp uci.cpp ucioption.cpp
 
 OBJS = $(SRC:.cpp=.o)
@@ -66,7 +66,7 @@ ifeq ($(ARCH),x86-32)
 	endif
 endif
 
-CXXFLAGS = $(SYS_CXXFLAGS) -O3 -Wall -Wcast-qual -fno-exceptions -fno-rtti -DHASHFULL -DTHREECHECK -DNDEBUG $(SIMD)
+CXXFLAGS = $(SYS_CXXFLAGS) -O3 -Wall -Wcast-qual -fno-exceptions -fno-rtti -DHASHFULL -DTHREECHECK -DKOTH -DNDEBUG $(SIMD)
 
 ifeq ($(ARCH),general-64)
 	arch = any
@@ -281,14 +281,6 @@ bitboard.o: platform.h
 bitboard.o: bitcount.h
 bitboard.o: misc.h
 bitboard.o: rkiss.h
-book.o: book.h
-book.o: position.h
-book.o: bitboard.h
-book.o: types.h
-book.o: platform.h
-book.o: rkiss.h
-book.o: misc.h
-book.o: movegen.h
 endgame.o: bitboard.h
 endgame.o: types.h
 endgame.o: platform.h
@@ -362,12 +354,6 @@ movepick.o: thread.h
 movepick.o: material.h
 movepick.o: endgame.h
 movepick.o: pawns.h
-notation.o: movegen.h
-notation.o: types.h
-notation.o: platform.h
-notation.o: notation.h
-notation.o: position.h
-notation.o: bitboard.h
 pawns.o: bitboard.h
 pawns.o: types.h
 pawns.o: platform.h
@@ -379,7 +365,6 @@ position.o: bitcount.h
 position.o: types.h
 position.o: platform.h
 position.o: movegen.h
-position.o: notation.h
 position.o: position.h
 position.o: bitboard.h
 position.o: psqtab.h
@@ -392,7 +377,6 @@ position.o: movepick.h
 position.o: search.h
 position.o: pawns.h
 position.o: tt.h
-search.o: book.h
 search.o: position.h
 search.o: bitboard.h
 search.o: types.h
@@ -403,7 +387,6 @@ search.o: movegen.h
 search.o: movepick.h
 search.o: search.h
 search.o: misc.h
-search.o: notation.h
 search.o: timeman.h
 search.o: thread.h
 search.o: material.h
@@ -440,7 +423,6 @@ tt.o: misc.h
 uci.o: evaluate.h
 uci.o: types.h
 uci.o: platform.h
-uci.o: notation.h
 uci.o: position.h
 uci.o: bitboard.h
 uci.o: search.h

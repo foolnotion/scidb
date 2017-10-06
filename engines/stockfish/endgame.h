@@ -1,7 +1,7 @@
 /*
   Stockfish, a UCI chess playing engine derived from Glaurung 2.1
   Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
-  Copyright (C) 2008-2013 Marco Costalba, Joona Kiiski, Tord Romstad
+  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
 
   Stockfish is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -42,18 +42,17 @@ enum EndgameType {
   KRKN,  // KR vs KN
   KQKP,  // KQ vs KP
   KQKR,  // KQ vs KR
-  KBBKN, // KBB vs KN
-  KmmKm, // K and two minors vs K and one or two minors
 
 
   // Scaling functions
-  SCALE_FUNS,
+  SCALING_FUNCTIONS,
 
-  KBPsK,   // KB+pawns vs K
-  KQKRPs,  // KQ vs KR+pawns
+  KBPsK,   // KB and pawns vs K
+  KQKRPs,  // KQ vs KR and pawns
   KRPKR,   // KRP vs KR
+  KRPKB,   // KRP vs KB
   KRPPKRP, // KRPP vs KRP
-  KPsK,    // King and pawns vs king
+  KPsK,    // K and pawns vs K
   KBPKB,   // KBP vs KB
   KBPPKB,  // KBPP vs KB
   KBPKN,   // KBP vs KN
@@ -63,9 +62,9 @@ enum EndgameType {
 };
 
 
-/// Endgame functions can be of two types according if return a Value or a
-/// ScaleFactor. Type eg_fun<int>::type equals to either ScaleFactor or Value
-/// depending if the template parameter is 0 or 1.
+/// Endgame functions can be of two types depending on whether they return a
+/// Value or a ScaleFactor. Type eg_fun<int>::type returns either ScaleFactor
+/// or Value depending on whether the template parameter is 0 or 1.
 
 template<int> struct eg_fun { typedef Value type; };
 template<> struct eg_fun<1> { typedef ScaleFactor type; };
@@ -77,26 +76,26 @@ template<typename T>
 struct EndgameBase {
 
   virtual ~EndgameBase() {}
-  virtual Color color() const = 0;
+  virtual Color strong_side() const = 0;
   virtual T operator()(const Position&) const = 0;
 };
 
 
-template<EndgameType E, typename T = typename eg_fun<(E > SCALE_FUNS)>::type>
+template<EndgameType E, typename T = typename eg_fun<(E > SCALING_FUNCTIONS)>::type>
 struct Endgame : public EndgameBase<T> {
 
-  explicit Endgame(Color c) : strongerSide(c), weakerSide(~c) {}
-  Color color() const { return strongerSide; }
+  explicit Endgame(Color c) : strongSide(c), weakSide(~c) {}
+  Color strong_side() const { return strongSide; }
   T operator()(const Position&) const;
 
 private:
-  Color strongerSide, weakerSide;
+  Color strongSide, weakSide;
 };
 
 
-/// Endgames class stores in two std::map the pointers to endgame evaluation
-/// and scaling base objects. Then we use polymorphism to invoke the actual
-/// endgame function calling its operator() that is virtual.
+/// The Endgames class stores the pointers to endgame evaluation and scaling
+/// base objects in two std::map. We use polymorphism to invoke the actual
+/// endgame function by calling its virtual operator().
 
 class Endgames {
 
@@ -115,8 +114,9 @@ public:
   Endgames();
  ~Endgames();
 
-  template<typename T> T probe(Key key, T& eg)
-  { return eg = map(eg).count(key) ? map(eg)[key] : NULL; }
+  template<typename T> T probe(Key key, T& eg) {
+    return eg = map(eg).count(key) ? map(eg)[key] : NULL;
+  }
 };
 
 #endif // #ifndef ENDGAME_H_INCLUDED
