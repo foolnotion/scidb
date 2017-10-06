@@ -4336,16 +4336,10 @@ variant::fromString(char const* identifier)
 			break;
 
 		case 'C':
-			if (	::strncasecmp(identifier, "Chess960", 8) == 0
-				|| ::strncasecmp(identifier, "Chess-960", 9) == 0
-				|| ::strncasecmp(identifier, "Chess 960", 9) == 0)
-			{
-				return Normal;
-			}
 			if (::strncasecmp(identifier, "Crazyhouse", 10) == 0)
-			{
 				return Crazyhouse;
-			}
+			if (::strncasecmp(identifier, "Chess", 5) == 0)
+				return Normal;
 			break;
 
 		case 'D':
