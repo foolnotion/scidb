@@ -128,9 +128,7 @@ set T_TimeMode				"Time Mode"
 
 set P_Name					"Name"
 set P_FideID				"Fide ID"
-set P_Rating1				"Rating Score"
-set P_Rating2				"Rating Score (Second Rating)"
-set P_RatingType			"Rating Type"
+set P_Rating				"Rating Score"
 set P_Country				"Country"
 set P_Title					"Title"
 set P_Type					"Type"
@@ -548,10 +546,9 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	lappend args -popupcmd [namespace code PopupMenu]
 	set Vars(table) [::scrolledtable::build $path $columns {*}$args]
 	pack $path -fill both -expand yes
-	set specialfont [list [list $::font::figurine(text:normal) 9812 9823]]
-	::scrolledtable::configure $path material -specialfont $specialfont
-	::scrolledtable::configure $path position -specialfont $specialfont
-	::scrolledtable::configure $path moveList -specialfont $specialfont
+	set secondfont [list [list $::font::figurine(text:normal) 9812 9823]]
+	::scrolledtable::configure $path material -secondfont $secondfont
+	::scrolledtable::configure $path position -secondfont $secondfont
 	RefreshEventType $path
 
 	::bind $path <<TableFill>>			[namespace code [list TableFill $path %d]]
@@ -571,9 +568,9 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	::bind $path <<LanguageChanged>> +[namespace code [list RefreshHeader $path 1]]
 	::bind $path <<LanguageChanged>> +[namespace code [list RefreshHeader $path 2]]
 
-	set specialfont [list [list $::font::figurine(text:normal) 9812 9823]]
+	set secondfont [list [list $::font::figurine(text:normal) 9812 9823]]
 	foreach col {white black event} {
-		::scrolledtable::configure $path $col -specialfont $specialfont
+		::scrolledtable::configure $path $col -secondfont $secondfont
 	}
 
 	if {[::scrolledtable::visible? $path moveList]} {
@@ -923,6 +920,7 @@ proc TableSelected {path index} {
 	set base [::scrolledtable::base $path]
 	set variant [::scrolledtable::variant $path]
 	set view [{*}$Vars(viewcmd) $base $variant]
+	# XXX index == -1 shoukd not happen
 	set info [::scidb::db::get gameInfo $index $view $base $variant]
 	set number [expr {[column $info number] - 1}]
 	set fen {}

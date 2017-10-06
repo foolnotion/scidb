@@ -1356,9 +1356,7 @@
 
 ::gametable::mc::P_Name						"Name"
 ::gametable::mc::P_FideID					"Fide ID"
-::gametable::mc::P_Rating1					"Wertungszahl"
-::gametable::mc::P_Rating2					"Wertungszahl (Zweite Wertung)"
-::gametable::mc::P_RatingType				"Wertungssystem"
+::gametable::mc::P_Rating					"Wertungszahl"
 ::gametable::mc::P_Country					"Land"
 ::gametable::mc::P_Title					"Titel"
 ::gametable::mc::P_Type						"Typus"

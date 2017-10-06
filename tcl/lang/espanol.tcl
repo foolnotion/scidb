@@ -1359,9 +1359,7 @@
 
 ::gametable::mc::P_Name						"Nombre"
 ::gametable::mc::P_FideID					"Fide ID"
-::gametable::mc::P_Rating1					"Puntaje de rating"
-::gametable::mc::P_Rating2					"Rating Score (Second Rating)" ;# NEW
-::gametable::mc::P_RatingType				"Tipo de rating"
+::gametable::mc::P_Rating					"Puntaje de rating"
 ::gametable::mc::P_Country					"País"
 ::gametable::mc::P_Title					"Título"
 ::gametable::mc::P_Type						"Tipo"
