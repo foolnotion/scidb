@@ -200,7 +200,7 @@ proc build {parent number {patternNumber 0}} {
 		-borderwidth 0 \
 		-background [::colors::lookup $GlobalOptions(background)] \
 	]
-	bind $mesg <<LanguageChanged>> [namespace code LanguageChanged]
+	bind $main <<LanguageChanged>> [namespace code LanguageChanged]
 	bind $mesg <ButtonPress-3> [namespace code [list PopupMenu $tree $number]]
 
 	$mw add $main -sticky nsew

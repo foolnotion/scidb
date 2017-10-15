@@ -154,7 +154,7 @@ proc build {parent width height} {
 	set mesg [tk::label $mw.mesg -borderwidth 0 -background $bg]
 	pack $mw -fill both -expand yes
 
-	bind $mesg <<LanguageChanged>> [namespace code SetMessage]
+	bind $mw <<LanguageChanged>> [namespace code SetMessage]
 
 	$mw add $info
 	$mw add $mesg
@@ -661,8 +661,11 @@ if {[::scidb::game::query mainvariant?] eq "Normal"} {
 			SetSwitcher $base $variant
 		}
 
-		if {$Options(search:automatic)} {
+		if {[::scidb::db::count games [::scidb::tree::get] $variant] == 0} {
+			ShowMessage NoGamesAvailable
+		} elseif {$Options(search:automatic)} {
 			after cancel $Vars(after)
+puts "Update: DoSearch"
 			set Vars(after) [after 250 [namespace code [list DoSearch $table]]]
 		}
 	} else {
