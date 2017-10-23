@@ -673,7 +673,11 @@ winboard::Engine::pongReceived()
 	m_pongCount = m_pingCount;
 
 	if (m_startAnalyzeIsPending)
-		startAnalysis(true);
+	{
+		// Catch a possible timing problem.
+		if (!currentGame()->currentBoard().gameIsOver(currentGame()->variant()))
+			startAnalysis(true);
+	}
 }
 
 
