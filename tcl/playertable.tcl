@@ -292,7 +292,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	::scrolledtable::bind $table <ButtonPress-3>		+[namespace code [list HideInfo $path]]
 
 	::scrolledtable::configure $table lastName \
-		-secondfont [list [list $::font::figurine(text:normal) 9812 9823]] \
+		-specialfont [list [list $::font::figurine(text:normal) 9812 9823]] \
 		;
 
 	if {$useFind} {

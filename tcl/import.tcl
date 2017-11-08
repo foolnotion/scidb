@@ -204,8 +204,8 @@ proc openEdit {parent position args} {
 	]
 	set main [tk::panedwindow $top.main -orient vertical -opaqueresize true]
 
-	set secondfont [list [list $::font::figurine(text:normal) 9812 9823]]
-	$fig addcol text  -id fig -font TkFixedFont -secondfont $secondfont
+	set specialfont [list [list $::font::figurine(text:normal) 9812 9823]]
+	$fig addcol text  -id fig -font TkFixedFont -specialfont $specialfont
 	$fig addcol image -id flag
 	$fig addcol text  -id lang
 	bind $fig <<ComboboxCurrent>> [namespace code [list ShowCountry $fig $position]]

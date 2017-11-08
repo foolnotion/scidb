@@ -346,7 +346,7 @@ proc WidgetProc {w command args} {
 				-expand		no
 				-foreground	{}
 				-font			{}
-				-secondfont	{}
+				-specialfont	{}
 				-squeeze		no
 				-steady		yes
 				-header		""
@@ -424,7 +424,7 @@ proc WidgetProc {w command args} {
 			lappend Priv(types) $type
 			set Priv(foreground:$id) $opts(-foreground)
 			set Priv(font:$id) $opts(-font)
-			set Priv(secondfont:$id) $opts(-secondfont)
+			set Priv(specialfont:$id) $opts(-specialfont)
 			set Priv(minwidth:$id) $opts(-minwidth)
 			switch -- $type {
 				image		{ set Priv(type:$id) elemImg }
@@ -499,7 +499,7 @@ proc WidgetProc {w command args} {
 				-highlight	no
 				-types		{}
 				-font			{}
-				-secondfont	{}
+				-specialfont	{}
 				-foreground	{}
 				-span			{}
 			}
@@ -569,10 +569,10 @@ proc WidgetProc {w command args} {
 					set font $opts(-font)
 				}
 				set textOpts [list -fill $fill -font $font]
-				if {[llength $opts(-secondfont)]} {
-					lappend textOpts -secondfont $opts(-secondfont)
-				} elseif {[llength $Priv(secondfont:$id)]} {
-					lappend textOpts -secondfont $Priv(secondfont:$id)
+				if {[llength $opts(-specialfont)]} {
+					lappend textOpts -specialfont $opts(-specialfont)
+				} elseif {[llength $Priv(specialfont:$id)]} {
+					lappend textOpts -specialfont $Priv(specialfont:$id)
 				}
 				switch -- $style {
 					elemImg - elemTxt {

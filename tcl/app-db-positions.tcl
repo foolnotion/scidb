@@ -110,7 +110,7 @@ proc build {parent} {
 
 	set table [::scrolledtable::build $lt $columns]
 	::scrolledtable::configure $lt backRank \
-		-secondfont [list [list $::font::figurine(text:normal) 9812 9823]] \
+		-specialfont [list [list $::font::figurine(text:normal) 9812 9823]] \
 		;
 	::scrolledtable::bind $lt <ButtonPress-2> [namespace code [list ShowBoard $top %x %y]]
 	::scrolledtable::bind $lt <ButtonRelease-2> [namespace code [list HideBoard $top]]

@@ -321,8 +321,8 @@ proc ConfigureItem {weight} {
 	variable Vars
 
 	set font [list [list $::font::text(editor:$weight)]]
-	set secondfont [list [list $::font::figurine(editor:$weight) 9812 9823]]
-	ConfigureElement $Vars(list) $Vars(current) elemMov -font $font -secondfont $secondfont
+	set specialfont [list [list $::font::figurine(editor:$weight) 9812 9823]]
+	ConfigureElement $Vars(list) $Vars(current) elemMov -font $font -specialfont $specialfont
 }
 
 
@@ -456,7 +456,7 @@ proc Layout {t} {
 	variable Pad
 
 	set font [list [list $::font::text(editor:bold)]]
-	set secondfont [list [list $::font::figurine(editor:bold) 9812 9823]]
+	set specialfont [list [list $::font::figurine(editor:bold) 9812 9823]]
 
 	if {[string match *horz* $t]} {
 		set count [expr {[$t column count]/2}]
@@ -465,7 +465,7 @@ proc Layout {t} {
 	}
 
 	for {set i 0} {$i < $count} {incr i} {
-		ConfigureElement $t $i elemMov -font $font -secondfont $secondfont
+		ConfigureElement $t $i elemMov -font $font -specialfont $specialfont
 	}
 
 	$t column optimize
@@ -558,10 +558,10 @@ proc Layout {t} {
 	$t configure -width $tw -height $th
 
 	set font [list [list $::font::text(editor:normal)]]
-	set secondfont [list [list $::font::figurine(editor:normal) 9812 9823]]
+	set specialfont [list [list $::font::figurine(editor:normal) 9812 9823]]
 
 	for {set i 0} {$i < $count} {incr i} {
-		ConfigureElement $t $i elemMov -font $font -secondfont $secondfont
+		ConfigureElement $t $i elemMov -font $font -specialfont $specialfont
 	}
 
 	return 1

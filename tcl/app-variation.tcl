@@ -145,7 +145,7 @@ proc build {parent menu width height} {
 		lappend Vars(styles) $id styTotal$id
 	}
 
-	::table::configure $tb line -secondfont [list [list $::font::figurine(text:normal) 9812 9823]]
+	::table::configure $tb line -specialfont [list [list $::font::figurine(text:normal) 9812 9823]]
 
 	::table::bind $tb <ButtonPress-1>	[namespace code [list Select $tb %x %y]]
 	::table::bind $tb <Button1-Motion>	[namespace code [list Motion1 $tb %x %y]]

@@ -320,7 +320,7 @@ proc build {parent number {patternNumber 0}} {
 	$tree element create elemTextFig text \
 		-lines $Options(engine:nlines) \
 		-wrap word \
-		-secondfont [list [list $::font::figurine(text:normal) 9812 9823]] \
+		-specialfont [list [list $::font::figurine(text:normal) 9812 9823]] \
 		;
 	$tree element create elemTextSym text \
 		-lines $Options(engine:nlines) \
