@@ -665,7 +665,6 @@ if {[::scidb::game::query mainvariant?] eq "Normal"} {
 			ShowMessage NoGamesAvailable
 		} elseif {$Options(search:automatic)} {
 			after cancel $Vars(after)
-puts "Update: DoSearch"
 			set Vars(after) [after 250 [namespace code [list DoSearch $table]]]
 		}
 	} else {

@@ -209,6 +209,16 @@ if {[string equal "x11" [tk windowingsystem]]} {
     }
 }
 
+# Touchpad Binding for Horizontal Scrolling
+# see http://wiki.tcl.tk/12696
+bind TreeCtrl <Button> {
+    if {"%b" eq 6} {
+	%W xview scroll -40 units
+    } elseif {"%b" eq 7} {
+	%W xview scroll +40 units
+    }
+}
+
 namespace eval ::TreeCtrl {
     variable Priv
     array set Priv {

@@ -88,8 +88,8 @@ proc Build {w args} {
 	$t state define hilite
 	$t column create -tags game
 	$t element create elemHdr text -font $boldFont -lines 1 -fill darkred
-	set specialfont [list [list $::font::figurine(text:normal) 9812 9823]]
-	$t element create elemTxt text -lines 1 -specialfont $specialfont
+	set secondfont [list [list $::font::figurine(text:normal) 9812 9823]]
+	$t element create elemTxt text -lines 1 -secondfont $secondfont
 	$t element create elemSel rect -fill [list                          \
 		[::colors::lookup gamehistory,selected:focus]  {selected focus}  \
 		[::colors::lookup gamehistory,selected:hilite] {selected hilite} \
@@ -242,7 +242,9 @@ proc OpenGame {t args} {
 	}
 
 	if {[info exists Map($sel)] && [llength $Map($sel)] > 1} {
-		::game::openGame $t [lindex $Map($sel) 0]
+		::widget::busyOperation { \
+			::game::openGame $t [lindex $Map($sel) 0]
+		}
 	}
 }
 

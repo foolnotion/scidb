@@ -1177,7 +1177,7 @@ proc UpdatePGN {position data {w {}}} {
 					set Vars(current) $key
 					if {[string length $Vars(previous)]} {
 						if {$Vars(active) eq $Vars(previous)} {
-							EnterMove $w $Vars(previous)
+							EnterMove $w $position $Vars(previous)
 						}
 					}
 					set Vars(previous) $key

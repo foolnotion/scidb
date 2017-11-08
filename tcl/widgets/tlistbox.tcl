@@ -342,18 +342,18 @@ proc WidgetProc {w command args} {
 				error "wrong # args: should be \"[namespace current] $command text|image ?options?\""
 			}
 			array set opts {
-				-justify			left
-				-expand			no
-				-foreground		{}
-				-font				{}
-				-specialfont	{}
-				-squeeze			no
-				-steady			yes
-				-header			""
-				-headervar		""
-				-minwidth		0
-				-ellipsis		0
-				-resize			no
+				-justify		left
+				-expand		no
+				-foreground	{}
+				-font			{}
+				-secondfont	{}
+				-squeeze		no
+				-steady		yes
+				-header		""
+				-headervar	""
+				-minwidth	0
+				-ellipsis	0
+				-resize		no
 			}
 			set opts(-id) [llength $Priv(columns)]
 			set opts(-background) $Priv(background:normal)
@@ -424,7 +424,7 @@ proc WidgetProc {w command args} {
 			lappend Priv(types) $type
 			set Priv(foreground:$id) $opts(-foreground)
 			set Priv(font:$id) $opts(-font)
-			set Priv(specialfont:$id) $opts(-specialfont)
+			set Priv(secondfont:$id) $opts(-secondfont)
 			set Priv(minwidth:$id) $opts(-minwidth)
 			switch -- $type {
 				image		{ set Priv(type:$id) elemImg }
@@ -494,14 +494,14 @@ proc WidgetProc {w command args} {
 
 		insert {
 			array set opts {
-				-index			-1
-				-enabled			yes
-				-highlight		no
-				-types			{}
-				-font				{}
-				-specialfont	{}
-				-foreground		{}
-				-span				{}
+				-index		-1
+				-enabled		yes
+				-highlight	no
+				-types		{}
+				-font			{}
+				-secondfont	{}
+				-foreground	{}
+				-span			{}
 			}
 			array set opts [lrange $args 1 end]
 			set args [lindex $args 0]
@@ -569,10 +569,10 @@ proc WidgetProc {w command args} {
 					set font $opts(-font)
 				}
 				set textOpts [list -fill $fill -font $font]
-				if {[llength $opts(-specialfont)]} {
-					lappend textOpts -specialfont $opts(-specialfont)
-				} elseif {[llength $Priv(specialfont:$id)]} {
-					lappend textOpts -specialfont $Priv(specialfont:$id)
+				if {[llength $opts(-secondfont)]} {
+					lappend textOpts -secondfont $opts(-secondfont)
+				} elseif {[llength $Priv(secondfont:$id)]} {
+					lappend textOpts -secondfont $Priv(secondfont:$id)
 				}
 				switch -- $style {
 					elemImg - elemTxt {
