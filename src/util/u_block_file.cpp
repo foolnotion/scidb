@@ -51,7 +51,7 @@ BlockFileReader::Buffer::Buffer()
 	,m_size(0)
 	,m_number(BlockFile::InvalidBlock)
 	,m_span(0)
-	,m_data(0)
+	,m_data(nullptr)
 {
 }
 
@@ -121,7 +121,7 @@ BlockFile::BlockFile(mstl::fstream* stream, unsigned blockSize, Mode mode, mstl:
 
 
 BlockFile::BlockFile(unsigned blockSize, Mode mode)
-	:m_stream(0)
+	:m_stream(nullptr)
 	,m_view(*this)
 	,m_mode(mode)
 	,m_blockSize(blockSize)
@@ -138,7 +138,7 @@ BlockFile::BlockFile(unsigned blockSize, Mode mode)
 
 
 BlockFile::BlockFile(unsigned blockSize, Mode mode, mstl::string const& magic)
-	:m_stream(0)
+	:m_stream(nullptr)
 	,m_view(*this)
 	,m_mode(mode)
 	,m_blockSize(blockSize)
@@ -158,9 +158,10 @@ BlockFile::BlockFile(unsigned blockSize, Mode mode, mstl::string const& magic)
 }
 
 
-BlockFile::~BlockFile() throw()
+BlockFile::~BlockFile()
 {
-	deallocate();
+	if (isOpen())
+		close();
 }
 
 
@@ -203,7 +204,7 @@ BlockFile::putMagic()
 
 	::memcpy(m_view.m_buffer.m_data, m_magic.c_str(), m_magic.size() + 1);
 
-	if (m_stream == 0)
+	if (!m_stream)
 		m_cache.push_back(m_view.m_buffer.m_data);
 
 	m_sizeInfo.push_back(m_magic.size() + 1);
@@ -245,12 +246,14 @@ BlockFile::computeCapacity(unsigned span) const
 
 
 void
-BlockFile::deallocate() throw()
+BlockFile::deallocate()
 {
+	M_ASSERT(!m_stream || !m_isDirty);
+
 	if (m_stream)
 	{
 		delete [] m_view.m_buffer.m_data;
-		m_view.m_buffer.m_data = 0;
+		m_view.m_buffer.m_data = nullptr;
 
 		for (unsigned i = 0; i < m_asyncViews.size(); ++i)
 			delete [] m_asyncViews[i]->m_buffer.m_data;
@@ -296,7 +299,7 @@ BlockFile::close()
 	if (m_stream)
 	{
 		m_stream->close();
-		m_stream = 0;
+		m_stream = nullptr;
 	}
 
 	return rc;
@@ -330,7 +333,7 @@ BlockFile::attach(mstl::fstream* stream, Progress* progress)
 	// we keep the current block, because it may be part of a span of blocks
 	Byte* data = new Byte[mstl::mul2(m_view.m_buffer.m_capacity)];
 	::memcpy(data, m_view.m_buffer.m_data, m_view.m_buffer.m_size);
-	m_view.m_buffer.m_data = 0;
+	m_view.m_buffer.m_data = nullptr;
 	deallocate();
 	m_view.m_buffer.m_data = data;
 	m_stream = stream;
@@ -437,25 +440,25 @@ BlockFile::sync()
 	M_REQUIRE(isOpen());
 	M_REQUIRE(isInSyncMode());
 
-	if (!m_stream || !m_isDirty || m_view.m_buffer.m_number == InvalidBlock)
-		return true;
-
-	M_ASSERT(m_view.m_buffer.m_data);
-
-	if (__builtin_expect(
-			m_stream->seek_and_write(
-				fileOffset(m_view.m_buffer.m_number),
-				m_view.m_buffer.m_data,
-				m_view.m_buffer.m_size).fail(),
-				0))
+	if (m_stream && m_isDirty && m_view.m_buffer.m_number != InvalidBlock)
 	{
-		return false;
+		M_ASSERT(m_view.m_buffer.m_data);
+
+		if (__builtin_expect(
+				m_stream->seek_and_write(
+					fileOffset(m_view.m_buffer.m_number),
+					m_view.m_buffer.m_data,
+					m_view.m_buffer.m_size).fail(),
+					0))
+		{
+			return false;
+		}
+
+		m_countWrites += countSpans(m_view.m_buffer.m_size);
+		m_mtime = m_stream->mtime();
 	}
 
-	m_countWrites += countSpans(m_view.m_buffer.m_size);
 	m_isDirty = false;
-	m_mtime = m_stream->mtime();
-
 	return true;
 }
 
@@ -494,7 +497,7 @@ BlockFile::fetch(View& view, unsigned blockNumber, unsigned span)
 	{
 		if (m_stream)
 		{
-			if (m_isDirty && !sync())
+			if (!sync())
 				return SyncFailed;
 
 			M_ASSERT(span > 0);
@@ -756,14 +759,14 @@ BlockFile::put(ByteStream const& buf)
 
 	if (m_view.m_buffer.m_number == InvalidBlock)
 	{
-		M_ASSERT(m_isDirty == false);
+		M_ASSERT(!m_isDirty);
 
 		// first call of put()
 		resize(m_view, span);
 
 		if (m_sizeInfo.empty())
 		{
-			if (m_stream == 0)
+			if (!m_stream)
 				m_cache.push_back(m_view.m_buffer.m_data);
 
 			m_sizeInfo.push_back(0);
@@ -820,7 +823,7 @@ BlockFile::put(ByteStream const& buf)
 		m_view.m_buffer.m_number = m_sizeInfo.size();
 		m_view.m_buffer.m_size = 0;
 
-		if (span >= 2)
+		if (span > 1)
 		{
 			m_sizeInfo.push_back(fileOffset(span));
 			m_sizeInfo.insert(m_sizeInfo.end(), SizeInfo::size_type(span - 2), m_blockSize);
@@ -985,7 +988,7 @@ BlockFile::openAsyncReader()
 void
 BlockFile::closeAsyncReader(Reader*& reader)
 {
-	M_REQUIRE(reader == 0 || viewIsActive(reader) || isClosed());
+	M_REQUIRE(!reader || viewIsActive(reader) || isClosed());
 
 	if (reader && !isClosed())
 	{
@@ -995,7 +998,7 @@ BlockFile::closeAsyncReader(Reader*& reader)
 		m_view.m_countReads += reader->m_countReads;
 		m_asyncViews.erase(mstl::find(m_asyncViews.begin(), m_asyncViews.end(), reader));
 		delete reader;
-		reader = 0;
+		reader = nullptr;
 	}
 }
 
