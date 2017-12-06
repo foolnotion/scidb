@@ -36,6 +36,20 @@
 
 #include "tkInt.h"
 
+#if TK_MAJOR_VERSION == 8 && TK_MINOR_VERSION == 5
+
+# define malloc(size)	((void *) (ckalloc(size)))
+# define free(ptr)	ckfree((char *) (ptr))
+
+Tcl_Obj *
+TkNewWindowObj(
+    Tk_Window tkwin)
+{
+    return Tcl_NewStringObj(Tk_PathName(tkwin), -1);
+}
+
+#endif
+
 /*
  * Defaults for panedwindows
  */
@@ -346,11 +360,11 @@ static const Tk_ObjCustomOption stickyOption = {
 static const Tk_OptionSpec optionSpecs[] = {
     {TK_OPTION_BORDER, "-background", "background", "Background",
 	 DEF_PANEDWINDOW_BG_COLOR, -1, Tk_Offset(PanedWindow, background), 0,
-	 DEF_PANEDWINDOW_BG_MONO, 0},
+	 (ClientData) DEF_PANEDWINDOW_BG_MONO, 0},
     {TK_OPTION_SYNONYM, "-bd", NULL, NULL,
-	 NULL, 0, -1, 0, "-borderwidth", 0},
+	 NULL, 0, -1, 0, (ClientData) "-borderwidth", 0},
     {TK_OPTION_SYNONYM, "-bg", NULL, NULL,
-	 NULL, 0, -1, 0, "-background", 0},
+	 NULL, 0, -1, 0, (ClientData) "-background", 0},
     {TK_OPTION_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
 	 DEF_PANEDWINDOW_BORDERWIDTH, -1, Tk_Offset(PanedWindow, borderWidth),
 	 0, 0, GEOMETRY},
@@ -371,7 +385,7 @@ static const Tk_OptionSpec optionSpecs[] = {
 	 Tk_Offset(PanedWindow, resizeOpaque), 0, 0, 0},
     {TK_OPTION_STRING_TABLE, "-orient", "orient", "Orient",
 	 DEF_PANEDWINDOW_ORIENT, -1, Tk_Offset(PanedWindow, orient),
-	 0, orientStrings, GEOMETRY},
+	 0, (ClientData) orientStrings, GEOMETRY},
     {TK_OPTION_BORDER, "-proxybackground", "proxyBackground", "ProxyBackground",
 	 0, -1, Tk_Offset(PanedWindow, proxyBackground), TK_OPTION_NULL_OK,
 	 (ClientData) DEF_PANEDWINDOW_BG_MONO},
@@ -424,7 +438,7 @@ static const Tk_OptionSpec slaveOptionSpecs[] = {
 	 DEF_PANEDWINDOW_PANE_PADY, -1, Tk_Offset(Slave, pady), 0, 0, 0},
     {TK_OPTION_CUSTOM, "-sticky", NULL, NULL,
 	 DEF_PANEDWINDOW_PANE_STICKY, -1, Tk_Offset(Slave, sticky), 0,
-	 &stickyOption, 0},
+	 (ClientData) &stickyOption, 0},
     {TK_OPTION_STRING_TABLE, "-stretch", "stretch", "Stretch",
 	DEF_PANEDWINDOW_PANE_STRETCH, -1, Tk_Offset(Slave, stretch), 0,
 	(ClientData) stretchStrings, 0},
@@ -484,7 +498,7 @@ Tk_PanedWindowObjCmd(
 	 * easy access to it in the future.
 	 */
 
-	pwOpts = (OptionTables*) ckalloc(sizeof(OptionTables));
+	pwOpts = (OptionTables*) malloc(sizeof(OptionTables));
 
 	/*
 	 * Set up an exit handler to free the optionTables struct.
@@ -507,7 +521,7 @@ Tk_PanedWindowObjCmd(
      * Allocate and initialize the widget record.
      */
 
-    pwPtr = (PanedWindow*) ckalloc(sizeof(PanedWindow));
+    pwPtr = (PanedWindow*) malloc(sizeof(PanedWindow));
     memset((void *)pwPtr, 0, (sizeof(PanedWindow)));
     pwPtr->tkwin = tkwin;
     pwPtr->display = Tk_Display(tkwin);
@@ -625,7 +639,7 @@ PanedWindowWidgetObjCmd(
 	return TCL_ERROR;
     }
 
-    if (Tcl_GetIndexFromObj(interp, objv[1], optionStrings, "command",
+    if (Tcl_GetIndexFromObj(interp, objv[1], (const char **) optionStrings, "command",
 	    0, &index) != TCL_OK) {
 	return TCL_ERROR;
     }
@@ -973,7 +987,7 @@ ConfigureSlaves(
      * structures may already have existed, some may be new.
      */
 
-    inserts = (Slave**) ckalloc(sizeof(Slave *) * (firstOptionArg - 2));
+    inserts = (Slave**) malloc(sizeof(Slave *) * (firstOptionArg - 2));
     insertIndex = 0;
 
     /*
@@ -1040,7 +1054,7 @@ ConfigureSlaves(
 	 * out with their "natural" dimensions.
 	 */
 
-	slavePtr = (Slave*) ckalloc(sizeof(Slave));
+	slavePtr = (Slave*) malloc(sizeof(Slave));
 	memset(slavePtr, 0, sizeof(Slave));
 	Tk_InitOptions(interp, (char *)slavePtr, pwPtr->slaveOpts,
 		pwPtr->tkwin);
@@ -1080,7 +1094,7 @@ ConfigureSlaves(
      */
 
     i = sizeof(Slave *) * (pwPtr->numSlaves + numNewSlaves);
-    newSlaves = (Slave**) ckalloc(i);
+    newSlaves = (Slave**) malloc(i);
     memset(newSlaves, 0, (size_t) i);
     if (index == -1) {
 	/*
@@ -1123,8 +1137,8 @@ ConfigureSlaves(
      * Make the new slaves array the paned window's slave array, and clean up.
      */
 
-    ckfree(pwPtr->slaves);
-    ckfree(inserts);
+    free(pwPtr->slaves);
+    free(inserts);
     pwPtr->slaves = newSlaves;
 
     /*
@@ -1178,7 +1192,7 @@ PanedWindowSashCommand(
 	return TCL_ERROR;
     }
 
-    if (Tcl_GetIndexFromObj(interp, objv[2], sashOptionStrings, "option", 0,
+    if (Tcl_GetIndexFromObj(interp, objv[2], (const char **) sashOptionStrings, "option", 0,
 	    &index) != TCL_OK) {
 	return TCL_ERROR;
     }
@@ -1651,11 +1665,11 @@ DestroyPanedWindow(
 	Tk_ManageGeometry(pwPtr->slaves[i]->tkwin, NULL, NULL);
 	Tk_FreeConfigOptions((char *) pwPtr->slaves[i], pwPtr->slaveOpts,
 		pwPtr->tkwin);
-	ckfree(pwPtr->slaves[i]);
+	free(pwPtr->slaves[i]);
 	pwPtr->slaves[i] = NULL;
     }
     if (pwPtr->slaves) {
-	ckfree(pwPtr->slaves);
+	free(pwPtr->slaves);
     }
 
     /*
@@ -1756,7 +1770,7 @@ PanedWindowLostSlaveProc(
 	    SlaveStructureProc, slavePtr);
     Tk_UnmapWindow(slavePtr->tkwin);
     slavePtr->tkwin = NULL;
-    ckfree(slavePtr);
+    free(slavePtr);
     ComputeGeometry(pwPtr);
 }
 
@@ -2236,7 +2250,7 @@ SlaveStructureProc(
     if (eventPtr->type == DestroyNotify) {
 	Unlink(slavePtr);
 	slavePtr->tkwin = NULL;
-	ckfree(slavePtr);
+	free(slavePtr);
 	ComputeGeometry(pwPtr);
     }
 }
@@ -2442,7 +2456,7 @@ DestroyOptionTables(
     ClientData clientData,	/* Pointer to the OptionTables struct */
     Tcl_Interp *interp)		/* Pointer to the calling interp */
 {
-    ckfree(clientData);
+    free(clientData);
 }
 
 /*
@@ -2934,7 +2948,7 @@ PanedWindowProxyCommand(
 	return TCL_ERROR;
     }
 
-    if (Tcl_GetIndexFromObj(interp, objv[2], optionStrings, "option", 0,
+    if (Tcl_GetIndexFromObj(interp, objv[2], (const char **) optionStrings, "option", 0,
 	    &index) != TCL_OK) {
 	return TCL_ERROR;
     }
