@@ -63,8 +63,10 @@ using namespace util;
 using namespace sys;
 
 
-struct DatabaseCodec::InfoData
+class DatabaseCodec::InfoData
 {
+public:
+
 	InfoData(TagSet const& tags);
 
 	mstl::string const& normalizeWhitePlayerName(mstl::string const& name, mstl::string& result);

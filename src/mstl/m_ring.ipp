@@ -6,7 +6,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2013 Gregor Cramer
+// Copyright: (C) 2013-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -77,7 +77,7 @@ ring<T>::iterator::operator->() const
 
 template <typename T>
 inline
-typename ring<T>::iterator::iterator&
+typename ring<T>::iterator&
 ring<T>::iterator::operator++()
 {
 	M_ASSERT(m_node);
@@ -89,7 +89,7 @@ ring<T>::iterator::operator++()
 
 template <typename T>
 inline
-typename ring<T>::iterator::iterator
+typename ring<T>::iterator
 ring<T>::iterator::operator++(int)
 {
 	M_ASSERT(m_node);
@@ -102,7 +102,7 @@ ring<T>::iterator::operator++(int)
 
 template <typename T>
 inline
-typename ring<T>::iterator::iterator&
+typename ring<T>::iterator&
 ring<T>::iterator::operator--()
 {
 	M_ASSERT(m_node);
@@ -114,7 +114,7 @@ ring<T>::iterator::operator--()
 
 template <typename T>
 inline
-typename ring<T>::iterator::iterator
+typename ring<T>::iterator
 ring<T>::iterator::operator--(int)
 {
 	M_ASSERT(m_node);
@@ -280,7 +280,7 @@ ring<T>::const_iterator::operator->() const
 
 template <typename T>
 inline
-typename ring<T>::const_iterator::const_iterator&
+typename ring<T>::const_iterator&
 ring<T>::const_iterator::operator++()
 {
 	M_ASSERT(m_node);
@@ -292,7 +292,7 @@ ring<T>::const_iterator::operator++()
 
 template <typename T>
 inline
-typename ring<T>::const_iterator::const_iterator
+typename ring<T>::const_iterator
 ring<T>::const_iterator::operator++(int)
 {
 	M_ASSERT(m_node);
@@ -305,7 +305,7 @@ ring<T>::const_iterator::operator++(int)
 
 template <typename T>
 inline
-typename ring<T>::const_iterator::const_iterator&
+typename ring<T>::const_iterator&
 ring<T>::const_iterator::operator--()
 {
 	M_ASSERT(m_node);
@@ -368,7 +368,7 @@ ring<T>::const_iterator::operator+(int n) const
 
 template <typename T>
 inline
-typename ring<T>::const_iterator::const_iterator
+typename ring<T>::const_iterator
 ring<T>::const_iterator::operator-(int n) const
 {
 	const_iterator i(*this);
@@ -379,7 +379,7 @@ ring<T>::const_iterator::operator-(int n) const
 
 template <typename T>
 inline
-typename ring<T>::const_iterator::const_iterator
+typename ring<T>::const_iterator
 ring<T>::const_iterator::operator--(int)
 {
 	M_ASSERT(m_node);

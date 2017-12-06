@@ -229,7 +229,7 @@ struct Collector : public Comment::Callback
 {
 	Collector(Comment::LanguageSet& set) :m_set(set), m_length(&m_langAll), m_langAll(0) {}
 
-	void start() {}
+	void start() override {}
 
 	void finish() override
 	{

@@ -199,7 +199,7 @@ private:
 		ByteStream* ref;
 	};
 
-	friend class ByRef;
+	friend struct ByRef;
 
 	ByteStream& operator=(ByteStream const&);
 

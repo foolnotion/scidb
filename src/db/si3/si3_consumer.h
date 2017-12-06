@@ -69,8 +69,8 @@ private:
 	typedef mstl::vector<Comment>	Comments;
 	typedef mstl::stack<Move>		MoveStack;
 
-	void start();
-	void finish();
+	void start() override;
+	void finish() override;
 
 	bool supportsVariant(variant::Type variant) const override;
 

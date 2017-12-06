@@ -37,8 +37,10 @@ namespace cql {
 
 namespace move {
 
-struct Match
+class Match
 {
+public:
+
 	typedef db::Board Board;
 	typedef db::Move Move;
 	typedef db::variant::Type Variant;

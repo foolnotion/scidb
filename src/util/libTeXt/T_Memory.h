@@ -29,8 +29,10 @@ namespace TeXt {
 
 class MemoryBlock;
 
-struct Memory
+class Memory
 {
+public:
+
 	static void* alloc(size_t n);
 	static void release(void* obj);
 	static void cleanup();

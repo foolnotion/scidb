@@ -6,7 +6,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2009-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -23,8 +23,8 @@
 
 namespace mstl {
 
-template <typename T> struct pointer_iterator;
-template <typename T> struct pointer_const_iterator;
+template <typename T> class pointer_iterator;
+template <typename T> class pointer_const_iterator;
 
 template<typename T> T* uninitialized_copy(T const* first, T const* last, T* result);
 template<typename T> T* uninitialized_move(T const* first, T const* last, T* result);

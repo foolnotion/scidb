@@ -37,8 +37,10 @@ class Designator;
 
 namespace relation {
 
-struct Match
+class Match
 {
+public:
+
 	typedef db::Board Board;
 
 	virtual ~Match() = 0;

@@ -6,7 +6,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2012-2013 Gregor Cramer
+// Copyright: (C) 2012-2017 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -78,7 +78,7 @@ list<T>::iterator::operator->() const
 
 template <typename T>
 inline
-typename list<T>::iterator::iterator&
+typename list<T>::iterator&
 list<T>::iterator::operator++()
 {
 	M_ASSERT(m_node);
@@ -90,7 +90,7 @@ list<T>::iterator::operator++()
 
 template <typename T>
 inline
-typename list<T>::iterator::iterator
+typename list<T>::iterator
 list<T>::iterator::operator++(int)
 {
 	M_ASSERT(m_node);
@@ -103,7 +103,7 @@ list<T>::iterator::operator++(int)
 
 template <typename T>
 inline
-typename list<T>::iterator::iterator&
+typename list<T>::iterator&
 list<T>::iterator::operator--()
 {
 	M_ASSERT(m_node);
@@ -115,7 +115,7 @@ list<T>::iterator::operator--()
 
 template <typename T>
 inline
-typename list<T>::iterator::iterator
+typename list<T>::iterator
 list<T>::iterator::operator--(int)
 {
 	M_ASSERT(m_node);
@@ -281,7 +281,7 @@ list<T>::const_iterator::operator->() const
 
 template <typename T>
 inline
-typename list<T>::const_iterator::const_iterator&
+typename list<T>::const_iterator&
 list<T>::const_iterator::operator++()
 {
 	M_ASSERT(m_node);
@@ -293,7 +293,7 @@ list<T>::const_iterator::operator++()
 
 template <typename T>
 inline
-typename list<T>::const_iterator::const_iterator
+typename list<T>::const_iterator
 list<T>::const_iterator::operator++(int)
 {
 	M_ASSERT(m_node);
@@ -306,7 +306,7 @@ list<T>::const_iterator::operator++(int)
 
 template <typename T>
 inline
-typename list<T>::const_iterator::const_iterator&
+typename list<T>::const_iterator&
 list<T>::const_iterator::operator--()
 {
 	M_ASSERT(m_node);
@@ -369,7 +369,7 @@ list<T>::const_iterator::operator+(int n) const
 
 template <typename T>
 inline
-typename list<T>::const_iterator::const_iterator
+typename list<T>::const_iterator
 list<T>::const_iterator::operator-(int n) const
 {
 	const_iterator i(*this);
@@ -380,7 +380,7 @@ list<T>::const_iterator::operator-(int n) const
 
 template <typename T>
 inline
-typename list<T>::const_iterator::const_iterator
+typename list<T>::const_iterator
 list<T>::const_iterator::operator--(int)
 {
 	M_ASSERT(m_node);

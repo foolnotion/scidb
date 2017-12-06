@@ -87,7 +87,7 @@ public:
 	unsigned countMoveInfo() const override;
 	unsigned countMarks() const override;
 	unsigned plyCount() const override;
-	unsigned langFlags() const;
+	unsigned langFlags() const override;
 	variant::Type variant() const override;
 	uint16_t idn() const override;
 	uint32_t gameFlags() const override;

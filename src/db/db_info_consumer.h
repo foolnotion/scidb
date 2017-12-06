@@ -45,7 +45,7 @@ public:
 						LanguageList const* languages = nullptr,
 						unsigned significantLanguages = 0);
 
-	void sendComment(Comment const& comment);
+	void sendComment(Comment const& comment) override;
 	bool preparseComment(mstl::string& comment) override;
 };
 

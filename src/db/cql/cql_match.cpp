@@ -76,8 +76,10 @@ struct MatchPair
 } // namespace
 
 
-struct Match::Logical
+class Match::Logical
 {
+public:
+
 	typedef mstl::vector<Match*> MatchList;
 
 	virtual ~Logical() { ::deleteAll(m_list.begin(), m_list.end()); }

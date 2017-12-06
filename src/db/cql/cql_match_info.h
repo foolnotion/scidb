@@ -38,8 +38,10 @@ namespace mstl { class bitset; }
 namespace cql {
 namespace info {
 
-struct Match
+class Match
 {
+public:
+
 	typedef db::GameInfo GameInfo;
 	typedef db::variant::Type Variant;
 

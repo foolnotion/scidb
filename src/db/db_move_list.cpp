@@ -274,7 +274,11 @@ MoveBuffer<N>::dump()
 }
 
 
+namespace db {
+
 template class MoveBuffer<position::Maximum_Moves>;
 template class MoveBuffer<opening::Max_Line_Length>;
+
+} // namespace db
 
 // vi:set ts=3 sw=3:

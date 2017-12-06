@@ -220,7 +220,7 @@ private:
 
 	void save(mstl::string const& rootname, unsigned start, util::Progress& progress, bool attach);
 
-	void Report(char const* charset);
+	void Report(char const* charset) override;
 
 	static void getRecodedDescription(	char const* description,
 													mstl::string& result,

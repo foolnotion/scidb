@@ -46,8 +46,10 @@ class PieceTypeDesignator;
 
 namespace board {
 
-struct Match
+class Match
 {
+public:
+
 	typedef db::GameInfo GameInfo;
 	typedef db::Board Board;
 	typedef db::variant::Type Variant;
@@ -380,8 +382,10 @@ private:
 };
 
 
-struct MatchRay : public MatchMinMax
+class MatchRay : public MatchMinMax
 {
+public:
+
 	typedef mstl::vector<Designator> Designators;
 
 	void add(Designator const& designator);

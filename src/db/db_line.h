@@ -37,8 +37,10 @@ namespace db {
 
 class Board;
 
-struct Line
+class Line
 {
+public:
+
 	Line();
 	Line(uint16_t const* moves, unsigned length = 0);
 

@@ -27,7 +27,7 @@ class FinalToken : public Token
 {
 public:
 
-	bool isFinal() const;
+	bool isFinal() const override;
 
 	void bind(Environment& env) override;
 	void resolve(Environment& env) override;

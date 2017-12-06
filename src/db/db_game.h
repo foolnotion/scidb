@@ -673,9 +673,6 @@ private:
 	};
 
 	struct Undo;
-	struct CleanUp;
-
-	friend class CleanUp;
 
 	typedef mstl::vector<Undo*> UndoList;
 	typedef termination::State FinalState;

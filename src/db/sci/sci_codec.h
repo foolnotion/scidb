@@ -108,11 +108,11 @@ public:
 	void compact(::util::Progress& progress);
 	void removeAllFiles(mstl::string const& rootname) override;
 	void writeNamebases(mstl::ostream& stream, util::Progress& progress) override;
-	void writeIndex(mstl::ostream& strm, util::Progress& progress);
+	void writeIndex(mstl::ostream& strm, util::Progress& progress) override;
 	void writeIndexProgressively(	mstl::string const& rootname,
 											GameInfo const& info,
 											unsigned index) override;
-	void writeGames(mstl::ostream& strm, util::Progress& progress);
+	void writeGames(mstl::ostream& strm, util::Progress& progress) override;
 	void readIndexProgressive(unsigned index) override;
 	bool stripMoveInformation(GameInfo const& info, unsigned types) override;
 	bool stripTags(GameInfo const& info, TagMap const& tags) override;
