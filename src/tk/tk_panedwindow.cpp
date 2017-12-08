@@ -36,18 +36,11 @@
 
 #include "tkInt.h"
 
-#if TK_MAJOR_VERSION == 8 && TK_MINOR_VERSION == 5
-
 # define malloc(size)	((void *) (ckalloc(size)))
 # define free(ptr)	ckfree((char *) (ptr))
 
-Tcl_Obj *
-TkNewWindowObj(
-    Tk_Window tkwin)
-{
-    return Tcl_NewStringObj(Tk_PathName(tkwin), -1);
-}
-
+#if TK_MAJOR_VERSION == 8 && TK_MINOR_VERSION == 5
+Tcl_Obj * TkNewWindowObj(Tk_Window tkwin) { return Tcl_NewStringObj(Tk_PathName(tkwin), -1); }
 #endif
 
 /*
