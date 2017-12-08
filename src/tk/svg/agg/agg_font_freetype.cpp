@@ -461,7 +461,7 @@ namespace agg
             y += bitmap.rows;
             pitch = -pitch;
         }
-        for(int i = 0; i < bitmap.rows; i++)
+        for(unsigned i = 0; i < bitmap.rows; i++)
         {
             sl.reset_spans();
             const int8u* p = buf;

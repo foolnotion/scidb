@@ -208,7 +208,6 @@ public:
 	bool isLeaf() const;
 	bool isHorz() const;
 	bool isVert() const;
-	bool isMulti() const;
 	bool containsOneOf(tcl::List const& childs) const;
 
 	Type type() const;
@@ -216,7 +215,6 @@ public:
 	unsigned numChilds() const;
 	unsigned depth() const;
 	const char* uid() const;
-	Tcl_Obj* uidObj() const;
 
 	Node const* child(unsigned i) const;
 	Node const* parent() const;
@@ -253,13 +251,11 @@ private:
 bool Node::isLeaf() const	{ return m_type == Leaf; }
 bool Node::isHorz() const	{ return m_type == Horz; }
 bool Node::isVert() const	{ return m_type == Vert; }
-bool Node::isMulti() const	{ return m_type == Multi; }
 
 Type Node::type() const { return m_type; }
 
 unsigned Node::numChilds() const	{ return m_childs.size(); }
 const char* Node::uid() const		{ M_ASSERT(isLeaf()); return tcl::asString(m_uid); }
-Tcl_Obj* Node::uidObj() const		{ M_ASSERT(isLeaf()); return m_uid; }
 
 Node const* Node::child(unsigned i) const	{ return m_childs[i]; }
 Node* Node::child(unsigned i)					{ return m_childs[i]; }
@@ -504,6 +500,7 @@ Node::load(Tcl_Obj* obj, Node* parent)
 
 #ifndef NDEBUG
 
+__attribute__((unused))
 void
 Node::dump()
 {
@@ -513,6 +510,7 @@ Node::dump()
 }
 
 
+__attribute__((unused))
 void
 Node::dump(unsigned level)
 {
@@ -698,23 +696,13 @@ struct Size
 	int area() const { return width*height; }
 
 	void zero() { width = height = 0; }
-	template <Orient D> void set(int size);
 };
 
 template <> int Size::dimen<Horz>() const { return width; }
 template <> int Size::dimen<Vert>() const { return height; }
 
-template <> void Size::set<Horz>(int size) { width = size; }
-template <> void Size::set<Vert>(int size) { height = size; }
-
 bool operator==(Size const& lhs, Size const& rhs)
 { return lhs.width == rhs.width && lhs.height == rhs.height; }
-
-bool operator<=(Size const& lhs, Size const& rhs)
-{ return lhs.width <= rhs.width && lhs.height <= rhs.height; }
-
-bool operator<(Size const& lhs, Size const& rhs)
-{ return lhs.width < rhs.width && lhs.height < rhs.height; }
 
 
 
@@ -824,7 +812,6 @@ public:
 
 	~Node();
 
-	bool isEmpty() const;
 	bool isRoot() const;
 	bool isContainer() const;
 	bool isPanedWindow() const;
@@ -838,8 +825,6 @@ public:
 	bool isLeaf() const;
 	bool isPacked() const;
 	bool isWithdrawn() const;
-	bool isDeleted() const;
-	bool isDestroyed() const;
 	bool isFloating() const;
 	bool isToplevel() const;
 	bool isLocked() const;
@@ -856,12 +841,10 @@ public:
 	template <Orient D> bool orientation() const;
 
 	unsigned numChilds() const;
-	unsigned descendantOf(Node const* child) const;
 	unsigned depth() const;
 	int sashSize() const;
 	int frameHeaderSize() const;
 	int notebookHeaderSize() const;
-	int multiwindowHeaderSize() const;
 	Tk_Window tkwin() const;
 	char const* uid() const;
 	char const* path() const;
@@ -885,7 +868,6 @@ public:
 	template <Enclosure Enc,Orient D> int maxSize() const;
 	template <Enclosure Enc,Orient D> int minSize() const;
 	Node* parent() const;
-	Node* root() const;
 	Node* toplevel() const;
 	Node* selected() const;
 	Node* clone(LeafMap const& leaves) __m_warn_unused;
@@ -918,7 +900,6 @@ public:
 
 	Node* findPath(char const* path);
 	Node* findUid(char const* uid);
-	Node const* findUid(char const* uid) const;
 	Node* getCurrent() const;
 	Node const* leftNeighbor(Node const* neighbor) const;
 	Node const* rightNeighbor(Node const* neighbor) const;
@@ -1200,12 +1181,9 @@ WindowEventProc(ClientData clientData, XEvent* event)
 
 namespace {
 
-Node* Node::root() const						{ return m_root; }
 Node const* Node::child(unsigned i) const { return m_childs[i]; }
 Node* Node::child(unsigned i)					{ return m_childs[i]; }
 Node const* Node::child() const				{ return const_cast<Node*>(this)->child(); }
-
-Node const* Node::findUid(char const* uid) const { return const_cast<Node*>(this)->findUid(uid); }
 
 unsigned Node::numChilds() const	{ return m_childs.size(); }
 Tk_Window Node::tkwin() const		{ return tk::window(m_path); }
@@ -1229,11 +1207,8 @@ bool Node::isPane() const							{ return m_type == Pane; }
 bool Node::isFrameOrMetaFrame() const			{ return isFrame() || isMetaFrame(); }
 bool Node::isNotebookOrMultiWindow() const	{ return isNotebook() || isMultiWindow(); }
 bool Node::isContainer() const					{ return isContainer(m_type); }
-bool Node::isEmpty() const							{ return m_childs.empty(); }
 bool Node::isPacked() const						{ return m_state == Packed; }
 bool Node::isWithdrawn() const					{ return m_state == Withdrawn; }
-bool Node::isDeleted() const						{ return m_isDeleted; }
-bool Node::isDestroyed() const					{ return m_isDestroyed; }
 bool Node::isFloating() const						{ return m_state == Floating; }
 bool Node::isToplevel() const						{ return m_parent == nullptr; }
 bool Node::isLocked() const						{ return m_root->m_isLocked; }
@@ -1277,8 +1252,6 @@ void Node::addFlag(unsigned flag)		{ m_flags |= flag; }
 void Node::delFlag(unsigned flag)		{ m_flags &= ~flag; }
 
 bool Node::testFlags(unsigned flag) const { return m_flags & flag; }
-
-unsigned Node::descendantOf(Node const* child) const { return descendantOf(child, 1); }
 
 Dimension const& Node::dimension() const { return m_dimen; }
 
@@ -1352,19 +1325,6 @@ Node::y() const
 }
 
 
-int
-Node::multiwindowHeaderSize() const
-{
-	unsigned i = 0;
-	Node const* node = child(i);
-
-	if (node->isPacked())
-		return frameHeaderSize();
-
-	return 0;
-}
-
-
 template <Orient D>
 int
 Node::contentSize(int size) const
@@ -1419,10 +1379,6 @@ template <> int Node::maxSize<Inner,Horz>() const { return maxWidth <Inner>(); }
 template <> int Node::maxSize<Inner,Vert>() const { return maxHeight<Inner>(); }
 template <> int Node::minSize<Inner,Horz>() const { return minWidth <Inner>(); }
 template <> int Node::minSize<Inner,Vert>() const { return minHeight<Inner>(); }
-template <> int Node::maxSize<Outer,Horz>() const { return maxWidth <Outer>(); }
-template <> int Node::maxSize<Outer,Vert>() const { return maxHeight<Outer>(); }
-template <> int Node::minSize<Outer,Horz>() const { return minWidth <Outer>(); }
-template <> int Node::minSize<Outer,Vert>() const { return minHeight<Outer>(); }
 
 template <Enclosure Enc,Orient D,Quantity Q>
 int Node::dimen() const { return frameSize<D,Enc>(m_dimen.dimen<D,Q>()); }
@@ -5859,6 +5815,7 @@ Node::perform(Node* toplevel)
 
 #ifndef NDEBUG
 
+__attribute__((unused))
 void
 Node::dump() const
 {
