@@ -356,7 +356,7 @@ getFormat(mstl::string& path)
 	if (ext == "gz")
 	{
 		ext = ::util::misc::file::suffix(::util::misc::file::basename(path));
-		if (ext = "pgn" || ext == "PGN")
+		if (ext == "pgn" || ext == "PGN")
 			fmt = format::Pgn;
 	}
 	else

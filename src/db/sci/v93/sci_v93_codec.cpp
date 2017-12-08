@@ -403,16 +403,6 @@ getPlayer(Namebase& base, unsigned index)
 
 
 inline static NamebaseEntry*
-getRound(Namebase& base, unsigned index)
-{
-	if (index >= base.size())
-		IO_RAISE(Index, Corrupted, "corrupted namebase index %u", index);
-
-	return base.entryAt(index);
-}
-
-
-inline static NamebaseEntry*
 getAnnotator(Namebase& base, unsigned index)
 {
 	if (index >= base.size())

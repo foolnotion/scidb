@@ -56,7 +56,6 @@ static sq::ID (*bflip)(sq::ID) = sq::flipRank;
 
 namespace bonus
 {
-	static int const BishopPair				= 13;
 	static int const RookHalfOpenFyle		= 10;
 	static int const WhiteToMove				= 5;
 	static int const RookOpenFyle				= 40;
@@ -89,18 +88,6 @@ namespace bonus
 		  2,   6,  12,  10,  10,  12,   6,   2,
 		  0,   8,   6,   8,   8,   6,   8,   0,
 		  0,   0,   2,   4,   4,   2,   0,   0,
-	};
-
-	static int8_t const RookSquare[64] =
-	{
-		 0,  2,  3,  4,  4,  3,  2,  0,
-		-4,  2,  3,  4,  4,  3,  2, -4,
-		-4,  2,  3,  4,  4,  3,  2, -4,
-		-4,  2,  3,  4,  4,  3,  2, -4,
-		 0,  2,  3,  4,  4,  3,  2,  0,
-		 0,  2,  3,  4,  4,  3,  2,  0,
-		 0,  2,  3,  4,  4,  3,  2,  0,
-		 0,  2,  3,  4,  4,  3,  2,  0,
 	};
 
 	static int8_t const QueenSquare[64] =
@@ -146,16 +133,6 @@ namespace pawn
 
 namespace safety
 {
-	static int const Safety[16] =
-	{
-		0, 7, 14, 21, 28, 35, 42, 49, 56, 63, 70, 77, 84, 91, 98, 105,
-	};
-
-	static int const Tropism[16] =
-	{
-		0, 1, 2, 3, 4, 5, 11, 20, 32, 47, 65, 86, 110, 137, 167, 200,
-	};
-
 	static int const KingSafety[16] =
 	{
 		0,   1,   3,   5,   7,   9,  19,  36,  57,  84, 117, 154, 198, 246, 300, 360,

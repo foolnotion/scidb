@@ -151,7 +151,8 @@ tcl::getElements(Tcl_Obj* obj)
 {
 	M_ASSERT(obj);
 	Tcl_Obj** objv;
-	return mstl::carray<Tcl_Obj*>(objv, getElements(obj, objv));
+	size_t n = getElements(obj, objv);
+	return mstl::carray<Tcl_Obj*>(objv, n);
 }
 
 

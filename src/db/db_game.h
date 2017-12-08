@@ -299,7 +299,7 @@ public:
 	/// Return game flags
 	uint32_t gameFlags() const override;
 	/// Return the language flags of this game.
-	unsigned langFlags() const;
+	unsigned langFlags() const override;
 	/// Return subscriber.
 	SubscriberP subscriber() const;
 	/// Print current move in given notation

@@ -674,7 +674,7 @@ void book_learning(int result)
 	  }
 
 		/* don't 'overlearn' */
-	  if (abs((ps->score)+pi) < (ps->played*5))
+	  if (labs((ps->score)+pi) < (ps->played*5))
 	  {
       
         printf("Learning opening %lu, played %lu, old score %ld, new score %ld\n", 

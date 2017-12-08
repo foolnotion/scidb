@@ -135,18 +135,6 @@ namespace bonus
 		  0,   0,   2,   4,   4,   2,   0,   0,
 	};
 
-	static int8_t const RookSquare[64] =
-	{
-		 0,  2,  3,  4,  4,  3,  2,  0,
-		-4,  2,  3,  4,  4,  3,  2, -4,
-		-4,  2,  3,  4,  4,  3,  2, -4,
-		-4,  2,  3,  4,  4,  3,  2, -4,
-		 0,  2,  3,  4,  4,  3,  2,  0,
-		 0,  2,  3,  4,  4,  3,  2,  0,
-		 0,  2,  3,  4,  4,  3,  2,  0,
-		 0,  2,  3,  4,  4,  3,  2,  0,
-	};
-
 	static int8_t const QueenSquare[64] =
 	{
 		0,  0,  0,  0,  0,  0,  0,  0,
@@ -242,7 +230,6 @@ namespace penalty
 {
 	static int const BishopTrapped			= 174;
 	static int const RookTrapped				=  60;
-	static int const KingSafetyMateThreat	= 600;
 	static int const LowerBishop				=  10;
 	static int const LowerKnight				=  16;
 	static int const LowerRook					=  16;

@@ -3005,10 +3005,10 @@ Node::descendantOf(Node const* child, unsigned level) const
 		if (this->child(i) == child)
 			return level;
 
-		unsigned level = this->child(i)->descendantOf(child, level + 1);
+		unsigned lvl = this->child(i)->descendantOf(child, level + 1);
 		
-		if (level < mstl::numeric_limits<unsigned>::max())
-			return level;
+		if (lvl < mstl::numeric_limits<unsigned>::max())
+			return lvl;
 	}
 
 	return mstl::numeric_limits<unsigned>::max();

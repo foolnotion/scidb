@@ -141,10 +141,6 @@ inline static square SqFindSecond(square const* squares, int piece)
 {
 	return squares[(piece >> Piece_Shift) + 1];
 }
-inline static square SqFindThird(square const* squares, int piece)
-{
-	return squares[(piece >> Piece_Shift) + 2];
-}
 
 #include <stdlib.h>				// must be included before we include egtb/tbindex.cpp
 #define exit(n) egtb_exit(n)	// because of this macro definition

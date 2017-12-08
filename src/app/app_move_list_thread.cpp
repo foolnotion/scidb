@@ -173,7 +173,7 @@ struct MoveListThread::Runnable
 						M_ASSERT(m_asyncReader);
 					}
 
-					unsigned idx(m_view >= 0 ? m_cursor.index(db::table::Games, index, m_view) : index);
+					unsigned idx(m_cursor.index(db::table::Games, index, m_view));
 					uint16_t moves[m_length];
 					unsigned length;
 					

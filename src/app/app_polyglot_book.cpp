@@ -361,7 +361,6 @@ static uint64_t const* const RandomThreeCheck	= Random64 + 791;
 
 
 inline static unsigned mul128(Byte b)    { return unsigned(b) << 7; }
-inline static unsigned div16(unsigned x) { return x >> 4; }
 inline static unsigned mul16(unsigned x) { return x << 4; }
 inline static unsigned div2 (unsigned x) { return x >> 1; }
 

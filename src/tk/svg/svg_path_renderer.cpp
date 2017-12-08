@@ -28,12 +28,6 @@
 using namespace svg;
 
 
-static inline double
-length(double x, double y)
-{
-	return ::sqrt(x*x + y*y);
-}
-
 inline static double min(double a, double b) { return a < b ? a : b; }
 inline static double max(double a, double b) { return a < b ? b : a; }
 

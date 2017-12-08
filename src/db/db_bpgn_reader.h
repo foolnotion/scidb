@@ -56,7 +56,7 @@ public:
 					ResultMode resultMode = UseResultTag);
 	virtual ~BpgnReader() throw();
 
-	unsigned process(util::Progress& progress);
+	unsigned process(util::Progress& progress) override;
 
 	unsigned estimateNumberOfGames() override;
 	static unsigned estimateNumberOfGames(unsigned fileSize);

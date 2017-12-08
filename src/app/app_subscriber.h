@@ -25,7 +25,7 @@
 // ======================================================================
 
 #ifndef _app_subscriber_included
-#define _app_subscriber_includedy
+#define _app_subscriber_included
 
 #include "db_common.h"
 

@@ -76,9 +76,6 @@ static tag::ID CommonTags[255 - Max_Tag_Length] =
 };
 
 
-inline static uint32_t min(uint32_t a, uint32_t b) { return mstl::min(a, b); }
-
-
 __attribute__((noreturn))
 inline static void
 throwCorruptData()

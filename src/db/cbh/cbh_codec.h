@@ -185,7 +185,7 @@ private:
 	void mapPlayerName(mstl::string& str);
 	void toUtf8(mstl::string& str);
 
-	void Report(char const* charset);
+	void Report(char const* charset) override;
 
 	static void readIniData(mstl::fstream& strm,
 									sys::utf8::Codec& codec,

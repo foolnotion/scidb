@@ -43,9 +43,6 @@ using namespace db;
 uint16_t HomePawnMask[2][64];
 
 
-inline static uint8_t flipRank(db::Square s) { return sq::flipRank(sq::ID(s)); }
-
-
 static void __attribute__((constructor)) initialize() { HomePawns::initialize(); }
 
 

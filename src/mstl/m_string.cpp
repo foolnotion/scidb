@@ -137,10 +137,6 @@ fill(T* dst, size_t n, T value)
 }
 
 
-inline static void copy(unsigned char* dst, unsigned char const* src, size_t n) { memcpy(dst, src, n); }
-inline static void move(unsigned char* dst, unsigned char const* src, size_t n) { memmove(dst, src, n); }
-inline static void fill(unsigned char* dst, size_t n, char value) { memset(dst, value, n); }
-
 inline static void copy(char* dst, char const* src, size_t n)	{ memcpy(dst, src, n); }
 inline static void move(char* dst, char const* src, size_t n)	{ memmove(dst, src, n); }
 inline static void fill(char* dst, size_t n, char value)			{ memset(dst, value, n); }

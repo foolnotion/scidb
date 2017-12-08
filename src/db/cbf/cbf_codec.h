@@ -116,7 +116,7 @@ private:
 	void decodeIndexData(GameInfo& info, unsigned offset, NamebaseSite* site);
 	void prepareDecoding(GameInfo const& info, unsigned gameIndex, util::ByteStream& strm);
 
-	void Report(char const* charset);
+	void Report(char const* charset) override;
 
 	void mapPlayerName(mstl::string& str);
 	void toUtf8(mstl::string& str);

@@ -39,7 +39,6 @@ namespace {
 		static int const Index		= 2;
 
 		// entry list
-		static int const RefID		= 0;
 		static int const Token		= 1;
 
 	} // namespace idx
