@@ -31,7 +31,7 @@ public:
 
 	BitStream(Byte const* buf, unsigned size);
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+#if HAVE_C11_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 	BitStream(BitStream&& strm);
 	BitStream& operator=(BitStream&& strm);
 #endif

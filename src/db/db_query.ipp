@@ -44,7 +44,7 @@ Query::match(GameInfo const& info) const
 }
 
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+#if HAVE_C11_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 
 inline
 Query::Query(Query&& query)

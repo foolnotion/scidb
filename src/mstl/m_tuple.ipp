@@ -107,7 +107,7 @@ tuple<T0,T1,T2,T3>::operator!=(tuple const& t) const
 }
 
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+#if HAVE_C11_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 
 template <typename T0, typename T1, typename T2, typename T3>
 inline

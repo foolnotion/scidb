@@ -24,7 +24,7 @@
 // (at your option) any later version.
 // ======================================================================
 
-#ifndef _db_hrml_writer_included
+#ifndef _db_html_writer_included
 #define _db_html_writer_included
 
 #include "db_writer.h"

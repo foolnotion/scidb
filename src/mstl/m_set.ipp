@@ -222,7 +222,7 @@ set<T>::assign(const_iterator first, const_iterator last)
 }
 
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+#if HAVE_C11_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 
 template <typename T>
 inline set<T>::set(set&& v) : m_v(mstl::move(v.m_v)) {}

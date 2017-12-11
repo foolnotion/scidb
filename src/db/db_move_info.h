@@ -152,7 +152,7 @@ private:
 	Type		m_content;
 	uint8_t	m_engine;
 
-#if HAVE_0X_UNRESTRICTED_UNIONS
+#if HAVE_C11_UNRESTRICTED_UNIONS
 	union
 	{
 #endif
@@ -162,7 +162,7 @@ private:
 		AnalysisInfo	m_analysis;
 		uint32_t			m_centiSeconds;
 
-#if HAVE_0X_UNRESTRICTED_UNIONS
+#if HAVE_C11_UNRESTRICTED_UNIONS
 	};
 #endif
 };

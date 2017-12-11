@@ -46,12 +46,12 @@ public:
 
 	Selector();
 
-#if HAVE_OX_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
+#if HAVE_C11_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
 	Selector(Selector const&) = default;
 	Selector& operator=(Selector const&) = default;
 #endif
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+#if HAVE_C11_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 	Selector(Selector&& sel);
 	Selector& operator=(Selector&& sel);
 #endif

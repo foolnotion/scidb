@@ -155,7 +155,7 @@ template <typename T> struct is_movable					{ enum { value = is_pod<T>::value };
 
 template <typename T> struct remove_reference			{ typedef T type; };
 template <typename T> struct remove_reference<T&>		{ typedef T type; };
-#if USE_0X_STANDARD
+#if USE_C11_STANDARD
 template <typename T> struct remove_reference<T&&>		{ typedef T type; };
 #endif
 

@@ -146,7 +146,7 @@ Line::print(mstl::string& result,
 }
 
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+#if HAVE_C11_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 
 inline
 Line::Line(Line&& line)

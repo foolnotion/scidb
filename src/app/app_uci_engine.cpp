@@ -41,7 +41,6 @@ using namespace db;
 
 
 inline bool isLan(char const* s)					{ return ::isalpha(s[0]) && ::isdigit(s[1]); }
-inline static mstl::string toStr(bool value)	{ return value ? "true" : "false"; }
 
 
 static mstl::string

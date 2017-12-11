@@ -644,7 +644,7 @@ Mark::skip(unsigned char const* stream, unsigned char const* eos)
 }
 
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+#if HAVE_C11_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 
 inline
 Mark::Mark(Mark&& mark)

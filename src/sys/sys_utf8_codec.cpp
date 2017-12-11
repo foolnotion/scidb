@@ -2434,7 +2434,7 @@ Codec::removeInvalidSequences(mstl::string& str, mstl::string const& replacement
 			{
 				fprintf(	stderr,
 							"invalid code point U+FFF%c in UTF-8 sequence detected\n",
-							s[2] == 0xbf ? 'E' : 'F');
+							static_cast<unsigned char>(s[2]) == 0xbf ? 'E' : 'F');
 				result.append(replacement);
 				removed += 1;
 			}

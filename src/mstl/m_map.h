@@ -55,7 +55,7 @@ public:
 	map(const_iterator first, const_iterator last);
 	map const& operator=(map const& v);
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+#if HAVE_C11_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 	map(map&& m);
 	map& operator=(map&& m);
 #endif

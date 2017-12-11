@@ -1752,7 +1752,7 @@ PanedWindowLostSlaveProc(
 				 * stolen away. */
     Tk_Window tkwin)		/* Tk's handle for the slave window. */
 {
-    register Slave *slavePtr = (Slave*) clientData;
+    Slave *slavePtr = (Slave*) clientData;
     PanedWindow *pwPtr = (PanedWindow *) slavePtr->masterPtr;
 
     if (pwPtr->tkwin != Tk_Parent(slavePtr->tkwin)) {
@@ -1791,8 +1791,8 @@ ArrangePanes(
     ClientData clientData)	/* Structure describing parent whose slaves
 				 * are to be re-layed out. */
 {
-    register PanedWindow *pwPtr = (PanedWindow*) clientData;
-    register Slave *slavePtr;
+    PanedWindow *pwPtr = (PanedWindow*) clientData;
+    Slave *slavePtr;
     int i, slaveWidth, slaveHeight, slaveX, slaveY;
     int paneWidth, paneHeight, paneSize, paneMinSize;
     int doubleBw;
@@ -2091,9 +2091,9 @@ ArrangePanes(
 
 static void
 Unlink(
-    register Slave *slavePtr)		/* Window to unlink. */
+    Slave *slavePtr)		/* Window to unlink. */
 {
-    register PanedWindow *masterPtr;
+    PanedWindow *masterPtr;
     int i, j;
 
     masterPtr = slavePtr->masterPtr;

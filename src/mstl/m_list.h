@@ -125,7 +125,7 @@ public:
 	list(list const& v);
 	~list();
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+#if HAVE_C11_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 	list(list&& v);
 	list& operator=(list&& v);
 #endif

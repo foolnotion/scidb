@@ -37,7 +37,7 @@ public:
 	byte_buf(byte_buf const& buf);
 	~byte_buf();
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+#if HAVE_C11_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 	byte_buf(byte_buf&& buf);
 	byte_buf& operator=(byte_buf&& buf);
 #endif

@@ -50,7 +50,7 @@ public:
 	Key(Key const& key, char prefix);
 	explicit Key(char const* key);
 
-#if HAVE_OX_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
+#if HAVE_C11_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
 	Key(Key const&) = default;
 	Key& operator=(Key const&) = default;
 #endif

@@ -62,7 +62,7 @@ protected:
 
 private:
 
-#if !HAVE_OX_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
+#if !HAVE_C11_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
 	basic_exception& operator=(basic_exception const&);
 #endif
 
@@ -82,7 +82,7 @@ public:
 	exception(exception const& exc);
 	~exception() throw();
 
-#if HAVE_OX_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
+#if HAVE_C11_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
 	exception& operator=(exception const&) = delete;
 #endif
 

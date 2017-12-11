@@ -78,7 +78,7 @@ TagSet::operator=(TagSet const& set)
 }
 
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+#if HAVE_C11_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 
 # include "m_utility.h"
 

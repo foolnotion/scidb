@@ -45,7 +45,7 @@ SearchAnnotator::SearchAnnotator(mstl::string const& name) :m_name(name) {}
 SearchPosition::SearchPosition(uint16_t idn) :m_idn(idn) {}
 
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+#if HAVE_C11_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 
 # include "m_utility.h"
 

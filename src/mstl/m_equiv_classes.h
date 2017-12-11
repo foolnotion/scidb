@@ -30,7 +30,7 @@ public:
 	equiv_classes(unsigned n);
 	~equiv_classes() throw();
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+#if HAVE_C11_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 	equiv_classes(equiv_classes&& eqcl);
 	equiv_classes& operator=(equiv_classes&& eqcl);
 #endif

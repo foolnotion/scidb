@@ -37,12 +37,12 @@ public:
 	tuple(T0 const& t0, T1 const& t1, T2 const& t2);
 	tuple(T0 const& t0, T1 const& t1, T2 const& t2, T3 const& t3);
 
-#if HAVE_OX_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
+#if HAVE_C11_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
 	tuple(tuple const&) = default;
 	tuple& operator=(tuple const&) = default;
 #endif
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+#if HAVE_C11_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 	tuple(tuple&& t);
 	tuple& operator=(tuple&& t);
 #endif

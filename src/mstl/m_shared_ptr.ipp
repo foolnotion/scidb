@@ -269,7 +269,7 @@ swap(shared_ptr<T>& lhs, shared_ptr<T>& rhs)
 	lhs.swap(rhs);
 }
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+#if HAVE_C11_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 
 template <class T>
 inline

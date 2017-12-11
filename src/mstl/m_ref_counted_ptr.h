@@ -42,7 +42,7 @@ public:
 	template <class U> ref_counted_ptr(ref_counted_ptr<U> const& sp);
 	~ref_counted_ptr();
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+#if HAVE_C11_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 	ref_counted_ptr(ref_counted_ptr&& p);
 	ref_counted_ptr& operator=(ref_counted_ptr&& p);
 #endif

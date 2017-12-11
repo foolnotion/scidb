@@ -263,13 +263,21 @@ Process::Process(Command const& command, mstl::string const& directory)
 		Tcl_Chdir(dir);
 
 	char const* argv[command.size()];
-	DString buf[command.size()];
+	DString buf[128];
 	unsigned i = 0;
+	unsigned n = 0;
 
 	for ( ; i < command.size() && file::access(command[i], file::Existence); ++i)
 	{
+		if (n == sizeof(buf)/sizeof(buf[0]))
+		{
+			for (unsigned k = 0; k < n; ++k)
+				Tcl_DStringFree(buf[k]);
+			TCL_RAISE("too many commands");
+		}
+
 		Tcl_TranslateFileName(::sys::tcl::interp(), command[i], buf[i]);
-		argv[i] = buf[i];
+		argv[i] = buf[n++];
 
 		if (file::access(command[i], file::Executable))
 			m_program.assign(command[i]);
@@ -281,6 +289,9 @@ Process::Process(Command const& command, mstl::string const& directory)
 	m_chan = Tcl_OpenCommandChannel(	::sys::tcl::interp(),
 												command.size(), argv,
 												TCL_STDIN | TCL_STDOUT | TCL_STDERR | TCL_ENFORCE_MODE);
+
+	for (unsigned k = 0; k < n; ++k)
+		Tcl_DStringFree(buf[k]);
 
 	if (cwd)
 		Tcl_Chdir(cwd);

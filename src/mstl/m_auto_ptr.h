@@ -38,7 +38,7 @@ public:
 	auto_ptr(auto_ptr& ap);
 	~auto_ptr();
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+#if HAVE_C11_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 	auto_ptr(auto_ptr&& p);
 	auto_ptr& operator=(auto_ptr&& p);
 #endif

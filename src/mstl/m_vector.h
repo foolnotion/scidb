@@ -55,7 +55,7 @@ public:
 	template <typename Iterator> vector(Iterator first, Iterator last);
 	~vector() throw();
 
-#if HAVE_OX_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+#if HAVE_C11_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 	vector(vector&& v);
 	vector& operator=(vector&& v);
 #endif

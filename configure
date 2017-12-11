@@ -1653,6 +1653,9 @@ proc checkClang {cc} {
                 puts "no."
             }
             flush stdout
+        } else {
+            # sse2 is not working with clang, and must be disabled
+            set compiler(sse2) -mno-sse2
         }
         Append option(EXTRA_CFLAGS) -Wno-gnu
         Append option(EXTRA_CFLAGS) -Wno-invalid-source-encoding

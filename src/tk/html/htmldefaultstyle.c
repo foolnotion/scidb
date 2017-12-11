@@ -593,14 +593,12 @@
     "htmldecode.c,v 1.6 2007/09/20 18:09:31 danielk1977 Exp\n" \
     "htmltagdb.c,v 1.10 2006/07/14 13:37:56 danielk1977 Exp\n" \
     "css.c,v 1.125 2007/10/03 17:46:37 danielk1977 Exp\n" \
-    "swproc.c,v 1.6 2006/06/10 12:38:38 danielk1977 Exp\n" \
     "htmlhash.c,v 1.22 2006/10/27 06:40:33 danielk1977 Exp\n" \
     "htmlfloat.c,v 1.21 2006/10/27 15:19:18 danielk1977 Exp\n" \
     "htmlstyle.c,v 1.57 2007/09/25 11:21:42 danielk1977 Exp\n" \
     "restrack.c,v 1.11 2007/01/27 12:53:15 danielk1977 Exp\n" \
     "htmlparse.c,v 1.117 2007/09/25 11:21:42 danielk1977 Exp\n" \
     "htmllayout.c,v 1.259 2007/09/28 14:14:56 danielk1977 Exp\n" \
-    "htmlimage.c,v 1.65 2007/09/25 11:21:42 danielk1977 Exp\n" \
     "htmlprop.c,v 1.122 2007/10/05 18:33:57 danielk1977 Exp\n" \
     "htmldraw.c,v 1.201 2007/10/06 10:11:51 danielk1977 Exp\n" \
     "htmltcl.c,v 1.191 2007/10/03 10:06:38 danielk1977 Exp\n" \

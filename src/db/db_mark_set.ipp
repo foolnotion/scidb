@@ -112,7 +112,7 @@ MarkSet::swap(MarkSet& marks)
 }
 
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+#if HAVE_C11_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 
 inline MarkSet::MarkSet(MarkSet&& set) : m_marks(mstl::move(set.m_marks)) {}
 

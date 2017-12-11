@@ -234,8 +234,7 @@ void Search::think() {
           checkers = true;
       else
 # endif
-      if (RootPos.checkers())
-          checkers = true;
+      checkers = RootPos.checkers();
 
       sync_cout << "info depth 0 score "
                 << UCI::value(checkers ? -VALUE_MATE : VALUE_DRAW)

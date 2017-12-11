@@ -40,7 +40,7 @@ inline Comment::operator mstl::string const& () const	{ return m_content; }
 inline bool Comment::operator==(Comment const& comment) const { return m_content == comment.m_content; }
 inline bool Comment::operator!=(Comment const& comment) const { return m_content != comment.m_content; }
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+#if HAVE_C11_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 
 inline
 Comment::Comment(Comment&& comment)

@@ -49,12 +49,12 @@ public:
 	Mark(mark::Type type, mark::Color color, Square square1, Square square2, char text = '\0');
 	explicit Mark(char const* s);
 
-#if HAVE_OX_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
+#if HAVE_C11_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
 	Mark(Mark const&) = default;
 	Mark& operator=(Mark const&) = default;
 #endif
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+#if HAVE_C11_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 	Mark(Mark&& mark);
 	Mark& operator=(Mark&& mark);
 #endif

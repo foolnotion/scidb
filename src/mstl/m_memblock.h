@@ -38,11 +38,11 @@ public:
 	size_type size() const;
 	size_type capacity() const;
 
-#if HAVE_OX_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
+#if HAVE_C11_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
 	memblock(memblock const&) = delete;
 	memblock& operator=(memblock const&) = delete;
 #endif
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+#if HAVE_C11_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 	memblock(memblock&& mb);
 	memblock& operator=(memblock&& mb);
 #endif
@@ -55,7 +55,7 @@ public:
 	T* m_finish;
 	T* m_end_of_storage;
 
-#if !HAVE_OX_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
+#if !HAVE_C11_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
 private:
 
 	memblock(memblock const&);

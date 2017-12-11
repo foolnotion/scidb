@@ -130,7 +130,7 @@ auto_ptr<T>::operator by_ref()
 	return by_ref(p);
 }
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+#if HAVE_C11_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 
 template <typename T>
 inline

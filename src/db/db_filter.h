@@ -44,12 +44,12 @@ public:
 	Filter();
 	Filter(unsigned size);
 
-#if HAVE_OX_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
+#if HAVE_C11_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
 	Filter(Filter const&) = default;
 	Filter& operator=(Filter const&) = default;
 #endif
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+#if HAVE_C11_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 	Filter(Filter&& filter);
 	Filter& operator=(Filter&& filter);
 #endif

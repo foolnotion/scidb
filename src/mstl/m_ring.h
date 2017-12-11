@@ -121,7 +121,7 @@ public:
 	ring(size_type n, const_reference v);
 	ring(ring const& v);
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+#if HAVE_C11_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 	ring(ring&& v);
 	ring& operator=(ring&& v);
 #endif

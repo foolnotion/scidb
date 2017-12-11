@@ -62,7 +62,7 @@ equiv_classes::get_group(unsigned a) const
 
 
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+#if HAVE_C11_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 
 inline
 equiv_classes::equiv_classes(equiv_classes&& eqcl)

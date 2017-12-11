@@ -20,6 +20,10 @@
 #ifndef POSITION_H_INCLUDED
 #define POSITION_H_INCLUDED
 
+#if __clang_major__ == 3 && __clang_minor__ == 3
+typedef long long max_align_t;
+#endif
+
 #include <cassert>
 #include <cstddef>  // For offsetof()
 #include <string>

@@ -38,7 +38,7 @@ public:
 	Path(mstl::string const& name);
 	explicit Path(char const* name);
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+#if HAVE_C11_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 	Path(Path&& p);
 	Path& operator=(Path&& p);
 #endif

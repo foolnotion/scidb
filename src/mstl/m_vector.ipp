@@ -776,7 +776,7 @@ vector<T>::operator+=(vector const& v)
 }
 
 
-#if HAVE_OX_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+#if HAVE_C11_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 
 template <typename T>
 inline vector<T>::vector(vector&& v) : memblock<T>(mstl::move(*this)) {}

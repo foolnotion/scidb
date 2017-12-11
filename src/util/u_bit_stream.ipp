@@ -63,7 +63,7 @@ BitStream::next(unsigned n)
 	return (m_bits >> (m_bitsLeft -= n)) & ((1 << n) - 1);
 }
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+#if HAVE_C11_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 
 inline
 BitStream::BitStream(BitStream&& strm)

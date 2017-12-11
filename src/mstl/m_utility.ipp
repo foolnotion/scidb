@@ -70,7 +70,7 @@ struct signed_arithmetic<0>
 } // namespace bits
 
 
-#if USE_0X_STANDARD
+#if USE_C11_STANDARD
 
 template<typename T>
 inline

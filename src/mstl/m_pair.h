@@ -33,7 +33,7 @@ public:
 	pair(T const& a, U const& b);
 	pair(pair const& p);
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+#if HAVE_C11_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 	pair(pair&& p);
 	pair& operator=(pair&& p);
 #endif

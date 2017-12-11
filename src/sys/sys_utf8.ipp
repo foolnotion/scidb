@@ -27,11 +27,26 @@ namespace utf8 {
 namespace bits {
 
 void append(mstl::string& result, uchar uc);
-
 unsigned charLength(char const* str);
-unsigned charLength(uchar uc);
-
 uchar toUniChar__(char const* s, unsigned charLen);
+
+
+inline
+unsigned
+charLength(uchar uc)
+{
+	M_ASSERT(uc >= 0x80);
+	M_ASSERT(sizeof(uchar) == 2);
+
+	if (uc < 0x0000800) return 2;
+
+#if 0 // only if sizeof(uchar) > 2
+	if (uc < 0x0010000) return 3;
+	if (uc < 0x0110000) return 4;
+#endif
+
+	return 3; // length of replacement character
+}
 
 
 inline

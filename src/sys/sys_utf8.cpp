@@ -346,23 +346,6 @@ sys::utf8::bits::charLength(char const* str)
 
 
 unsigned
-sys::utf8::bits::charLength(uchar uc)
-{
-	M_ASSERT(uc >= 0x80);
-
-	if (uc < 0x0000800) return 2;
-
-	if (sizeof(uc) > 2)
-	{
-		if (uc < 0x0010000) return 3;
-		if (uc < 0x0110000) return 4;
-	}
-
-	return 3; // length of replacement character
-}
-
-
-unsigned
 sys::utf8::byteLength(mstl::string const& str, unsigned numChars)
 {
 	M_REQUIRE(numChars <= countChars(str));

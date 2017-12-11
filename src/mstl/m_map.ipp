@@ -349,7 +349,7 @@ map<K,V>::operator+=(map const& m)
 }
 
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+#if HAVE_C11_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 
 template <typename K, typename V>
 inline
