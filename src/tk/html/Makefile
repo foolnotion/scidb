@@ -57,7 +57,7 @@ all: $(LIB).a
 
 clean:
 	@echo "Clean `pwd`"
-	@rm -f $(LIB).a $(OBJS) lempar.c lemon cssparse.out Makefile.bak
+	@rm -f $(LIB).a $(OBJS) lempar.c lemon cssparse.out Makefile.bak htmldefaultstyle.c
 
 depend:
 	makedepend -fMakefile -Y -- $(INCLUDE) -- -w1 $(SRC) 2>/dev/null
