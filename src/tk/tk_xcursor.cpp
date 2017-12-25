@@ -159,23 +159,23 @@ xcursor_init(Tcl_Interp* ti)
 	if (Tcl_PkgProvide(ti, "xcursor", "1.0") == TCL_ERROR)
 		return TCL_ERROR;
 
-	if (Tcl_Eval(ti, "namespace eval xcursor {}") == TCL_ERROR)
+	if (Tcl_Eval(ti, "namespace eval ::xcursor {}") == TCL_ERROR)
 		return TCL_ERROR;
 
 #if !defined(__WIN32__) && !defined(__MacOSX__)
 
 	// private functions
-	Tcl_CreateObjCommand(ti, "xcursor::DefineCursor", cmdSetCursor, 0, 0);
-	Tcl_CreateObjCommand(ti, "xcursor::LoadFromFile", cmdLoadCursorFromFile, 0, 0);
-	Tcl_CreateObjCommand(ti, "xcursor::FreeCursor", cmdFreeCursor, 0, 0);
+	Tcl_CreateObjCommand(ti, "::xcursor::DefineCursor", cmdSetCursor, 0, 0);
+	Tcl_CreateObjCommand(ti, "::xcursor::LoadFromFile", cmdLoadCursorFromFile, 0, 0);
+	Tcl_CreateObjCommand(ti, "::xcursor::FreeCursor", cmdFreeCursor, 0, 0);
 
 	// public functions
-	Tcl_CreateObjCommand(ti, "xcursor::getTheme", cmdGetTheme, 0, 0);
+	Tcl_CreateObjCommand(ti, "::xcursor::getTheme", cmdGetTheme, 0, 0);
 
 #endif
 
 	// public functions
-	Tcl_CreateObjCommand(ti, "xcursor::supported?", cmdIsARGBSupported, 0, 0);
+	Tcl_CreateObjCommand(ti, "::xcursor::supported?", cmdIsARGBSupported, 0, 0);
 
 	return TCL_OK;
 }
