@@ -497,7 +497,7 @@ BlockFile::fetch(View& view, unsigned blockNumber, unsigned span)
 	{
 		if (m_stream)
 		{
-			if (!sync())
+			if (isInSyncMode() && !sync())
 				return SyncFailed;
 
 			M_ASSERT(span > 0);

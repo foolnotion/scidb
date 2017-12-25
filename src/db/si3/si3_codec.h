@@ -47,7 +47,7 @@ namespace util
 
 namespace sys
 {
-	namespace utf8 { class Codec; };
+	namespace utf8 { class Codec; }
 };
 
 namespace db {
