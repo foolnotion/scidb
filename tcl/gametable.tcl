@@ -579,7 +579,16 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	set Vars(ranges) {}
 	set Vars(viewcmd) $getViewCmd
 
+	trace add variable [namespace current]::mc::P_Rating1 write [namespace current]::SetupRating
+	SetupRating
+
 	return $Vars(table)
+}
+
+
+proc SetupRating {args} {
+	set mc::P_Rating1 $mc::P_Rating
+	set mc::P_Rating2 $mc::P_Rating
 }
 
 
