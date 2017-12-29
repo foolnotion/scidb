@@ -538,6 +538,7 @@ Annotation::visit(Visitor& visitor) const
 
 States::States(MoveNode const& node)
 	:m_threefoldRepetition(node.threefoldRepetition())
+	,m_fivefoldRepetition(node.fivefoldRepetition())
 	,m_fiftyMoveRule(node.fiftyMoveRule())
 {
 }
@@ -551,14 +552,15 @@ States::operator==(Node const* node) const
 	States const* states = mstl::safe_cast_ptr<States const>(node);
 
 	return	m_threefoldRepetition == states->m_threefoldRepetition
-			&& m_fiftyMoveRule == static_cast<States const*>(node)->m_fiftyMoveRule;
+			&& m_fivefoldRepetition == states->m_fivefoldRepetition
+			&& m_fiftyMoveRule == states->m_fiftyMoveRule;
 }
 
 
 void
 States::visit(Visitor& visitor) const
 {
-	visitor.states(m_threefoldRepetition, m_fiftyMoveRule);
+	visitor.states(m_threefoldRepetition, m_fivefoldRepetition, m_fiftyMoveRule);
 }
 
 
@@ -1257,7 +1259,7 @@ Move::Move(Work& work, MoveNode const* move)
 	if (work.m_isFolded)
 		return;
 
-	if (move->threefoldRepetition() || move->fiftyMoveRule())
+	if (move->threefoldRepetition() || move->fivefoldRepetition() || move->fiftyMoveRule())
 	{
 		m_list.push_back(new States(*move));
 		work.pushSpace();

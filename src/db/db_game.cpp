@@ -113,15 +113,21 @@ isValidVariation(Board board, MoveNode const* node, variant::Type variant)
 
 
 static void
-checkThreefoldRepetitions(	Board board,
-									RepetitionMap map,
-									variant::Type variant,
-									MoveNode* node,
+checkRepetitions2(Board board,
 #ifdef CASTLING_RIGHTS_CHANGED_TEMPORARILY
-									castling::Rights currentCastlingRights,
+						castling::Rights currentCastlingRights,
 #endif
-									bool haveRepetition)
+						variant::Type variant,
+						MoveNode* node)
 {
+	enum ThreefoldState { None, Threefold, Fivefold };
+
+	ThreefoldState	flag = None;
+	RepetitionMap	map;
+
+	bool haveThreefoldRepetition	= false;
+	bool haveFivefoldRepetition	= false;
+
 	while (true)
 	{
 		M_ASSERT(node);
@@ -134,7 +140,6 @@ checkThreefoldRepetitions(	Board board,
 			board.doMove(node->move(), variant);
 
 			PositionBucket& bucket = map[board.hash()];
-			bool flag = false;
 
 			PositionBucket::iterator i = bucket.begin();
 			PositionBucket::iterator e = bucket.end();
@@ -145,7 +150,9 @@ checkThreefoldRepetitions(	Board board,
 			if (i == e)
 				bucket.push_back(board.exactZHPosition());
 			else if (++i->m_count == 3)
-				flag = true;
+				flag = Threefold;
+			else if (i->m_count == 5)
+				flag = Fivefold;
 
 #ifdef CASTLING_RIGHTS_CHANGED_TEMPORARILY
 			// Positions ... are considered the same, if the same player has the
@@ -164,15 +171,20 @@ checkThreefoldRepetitions(	Board board,
 				for (i = bucket.begin(), e = bucket.end(); i != e; ++i)
 					i->m_count = 1;
 
-				flag = false;
+				flag = None;
 			}
 #endif
 
-			node->setThreefoldRepetition(flag && !haveRepetition);
+			node->setThreefoldRepetition(flag == Threefold && !haveThreefoldRepetition);
+			node->setFivefoldRepetition(flag == Fivefold && !haveFivefoldRepetition);
 			node->setFiftyMoveRule(board.halfMoveClock() == 100);
 
-			if (flag)
-				haveRepetition = true;
+			if (flag == Threefold)
+				haveThreefoldRepetition = true;
+			else if (flag == Fivefold)
+				haveFivefoldRepetition = true;
+
+			flag = None;
 		}
 
 		node = node->next();
@@ -181,16 +193,14 @@ checkThreefoldRepetitions(	Board board,
 
 
 static void
-checkThreefoldRepetitions(Board const& startBoard, variant::Type variant, MoveNode* node)
+checkRepetitions(Board const& startBoard, variant::Type variant, MoveNode* node)
 {
-	checkThreefoldRepetitions(	startBoard,
-										RepetitionMap(),
-										variant,
-										node,
+	checkRepetitions2(startBoard,
 #ifdef CASTLING_RIGHTS_CHANGED_TEMPORARILY
-										startBoard.currentCastlingRights(),
+							startBoard.currentCastlingRights(),
 #endif
-										false);
+							variant,
+							node);
 }
 
 
@@ -848,6 +858,7 @@ Game::Game()
 	,m_isModified(false)
 	,m_wasModified(false)
 	,m_threefoldRepetionDetected(false)
+	,m_fivefoldRepetionDetected(false)
 	,m_termination(termination::None)
 	,m_line(m_lineBuf[0])
 	,m_changed(false)
@@ -913,6 +924,7 @@ Game::operator=(Game const& game)
 		m_isModified						= false;
 		m_wasModified						= false;
 		m_threefoldRepetionDetected	= game.m_threefoldRepetionDetected;
+		m_fivefoldRepetionDetected		= game.m_fivefoldRepetionDetected;
 		m_termination						= game.m_termination;
 		m_changed							= game.m_changed;
 		m_undoIndex							= 0;
@@ -1687,10 +1699,12 @@ Game::updateFinalBoard()
 
 	m_finalBoard = m_startBoard;
 	m_threefoldRepetionDetected = false;
+	m_fivefoldRepetionDetected = false;
 
 	for (MoveNode const* node = m_startNode->next(); node->isBeforeLineEnd(); node = node->next())
 	{
 		m_threefoldRepetionDetected = node->threefoldRepetition();
+		m_fivefoldRepetionDetected = node->fivefoldRepetition();
 		m_finalBoard.doMove(node->move(), m_variant);
 		hp.move(node->move());
 	}
@@ -4127,7 +4141,7 @@ Game::finishLoad(variant::Type variant, mstl::string const* fen)
 	m_currentBoard = m_startBoard;
 
 	moveToMainlineStart();
-	::checkThreefoldRepetitions(m_startBoard, m_variant, m_startNode);
+	::checkRepetitions(m_startBoard, m_variant, m_startNode);
 	updateLine();
 	updateLanguageSet();
 //	m_wantedLanguages = m_languageSet;
@@ -4298,6 +4312,10 @@ Game::updateLine()
 	else if (state & Board::Losing)
 	{
 		m_termination = termination::LostAllMaterial;
+	}
+	else if (m_fivefoldRepetionDetected)
+	{
+		m_termination = termination::FivefoldRepetition;
 	}
 	else if (m_threefoldRepetionDetected)
 	{
@@ -4623,7 +4641,7 @@ Game::updateSubscriber(unsigned action)
 				m_flags &= ~GameInfo::Flag_Illegal_Castling;
 		}
 
-		::checkThreefoldRepetitions(m_startBoard, m_variant, m_startNode);
+		::checkRepetitions(m_startBoard, m_variant, m_startNode);
 	}
 
 	updateLine();

@@ -421,6 +421,7 @@ public:
 			Tcl_IncrRefCount(m_equalMaterial	= Tcl_NewStringObj("equal-material",	-1));
 			Tcl_IncrRefCount(m_bishops			= Tcl_NewStringObj("bishops",				-1));
 			Tcl_IncrRefCount(m_threefold		= Tcl_NewStringObj("threefold",			-1));
+			Tcl_IncrRefCount(m_fivefold		= Tcl_NewStringObj("fivefold",			-1));
 			Tcl_IncrRefCount(m_fifty			= Tcl_NewStringObj("fifty",				-1));
 			Tcl_IncrRefCount(m_mating			= Tcl_NewStringObj("nomating",			-1));
 			Tcl_IncrRefCount(m_empty			= Tcl_NewStringObj("",						-1));
@@ -470,6 +471,7 @@ public:
 			case termination::DrawnByStalemate:						term = m_equalMaterial; break;
 			case termination::BishopsOfOppositeColor:				term = m_bishops; break;
 			case termination::ThreefoldRepetition:					term = m_threefold; break;
+			case termination::FivefoldRepetition:					term = m_fivefold; break;
 			case termination::FiftyMoveRuleExceeded:				term = m_fifty; break;
 			case termination::NeitherPlayerHasMatingMaterial:	term = m_mating; break;
 			case termination::WhiteCannotWin:						term = m_white; break;
@@ -744,10 +746,12 @@ public:
 		}
 	}
 
-	void states(bool threefoldRepetition, bool fiftyMoveRule) override
+	void states(bool threefoldRepetition, bool fivefoldRepetition, bool fiftyMoveRule) override
 	{
 		mstl::string states;
 
+		if (fivefoldRepetition)
+			states += '5';
 		if (threefoldRepetition)
 			states += '3';
 		if (fiftyMoveRule)
@@ -920,6 +924,7 @@ public:
 	static Tcl_Obj* m_equalMaterial;
 	static Tcl_Obj* m_bishops;
 	static Tcl_Obj* m_threefold;
+	static Tcl_Obj* m_fivefold;
 	static Tcl_Obj* m_fifty;
 	static Tcl_Obj* m_mating;
 	static Tcl_Obj* m_empty;
@@ -979,6 +984,7 @@ Tcl_Obj* Visitor::m_lessMaterial		= nullptr;
 Tcl_Obj* Visitor::m_equalMaterial	= nullptr;
 Tcl_Obj* Visitor::m_bishops			= nullptr;
 Tcl_Obj* Visitor::m_threefold			= nullptr;
+Tcl_Obj* Visitor::m_fivefold			= nullptr;
 Tcl_Obj* Visitor::m_fifty				= nullptr;
 Tcl_Obj* Visitor::m_mating				= nullptr;
 Tcl_Obj* Visitor::m_empty				= nullptr;

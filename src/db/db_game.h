@@ -784,6 +784,7 @@ private:
 	bool					m_isModified;
 	bool					m_wasModified;
 	mutable bool		m_threefoldRepetionDetected;
+	mutable bool		m_fivefoldRepetionDetected;
 	FinalState			m_termination;
 	uint16_t				m_lineBuf[opening::Max_Line_Length][2];
 	mutable Line		m_line;

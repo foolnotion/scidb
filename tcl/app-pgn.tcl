@@ -1573,7 +1573,10 @@ proc InsertMove {context position w level key data} {
 
 			states {
 				set states [lindex $node 1]
-				if {[string match *3* $states]} {
+				if {[string match *5* $states]} {
+					$w insert cur " "
+					$w insert cur "5\u00d7" {state fivefold}
+				} elseif {[string match *3* $states]} {
 					$w insert cur " "
 					$w insert cur "3\u00d7" {state threefold}
 				}

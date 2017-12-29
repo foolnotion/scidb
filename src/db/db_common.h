@@ -729,6 +729,7 @@ namespace termination
 		DrawnByStalemate,
 		BishopsOfOppositeColor,
 		ThreefoldRepetition,
+		FivefoldRepetition,
 		FiftyMoveRuleExceeded,
 		NeitherPlayerHasMatingMaterial,
 		WhiteCannotWin,

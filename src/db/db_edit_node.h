@@ -466,6 +466,7 @@ public:
 private:
 
 	unsigned m_threefoldRepetition;
+	unsigned m_fivefoldRepetition;
 	unsigned m_fiftyMoveRule;
 };
 
@@ -539,7 +540,7 @@ public:
 	virtual void position(db::Board const& board, color::ID fromColor) = 0;
 	virtual void comment(move::Position position, VarPos varPos, db::Comment const& comment) = 0;
 	virtual void annotation(db::Annotation const& annotation, Annotation::DisplayType type) = 0;
-	virtual void states(bool threefoldRepetition, bool fiftyMoveRule) = 0;
+	virtual void states(bool threefoldRepetition, bool fivefoldRepetition, bool fiftyMoveRule) = 0;
 	virtual void marks(bool hasMarks) = 0;
 	virtual void number(mstl::string const& number, bool isFirstVar) = 0;
 	virtual void space(Bracket bracket, unsigned number, unsigned count) = 0;
