@@ -1017,6 +1017,7 @@
 ::pgn::setup::mc::ResetSettings					"Torna alla configurazione di produzione"
 ::pgn::setup::mc::DiscardAllChanges				"Annulla tutte le modifiche applicate?"
 ::pgn::setup::mc::ThreefoldRepetition			"Triplice ripetizione"
+::pgn::setup::mc::FivefoldRepetition			"Fivefold repetition" ;# NEW
 ::pgn::setup::mc::FiftyMoveRule					"Regola delle 50 mosse"
 
 ::pgn::setup::mc::Setup(Appearance)				"Aspetto"
@@ -1368,6 +1369,7 @@
 ::gametable::mc::P_Name						"Nome"
 ::gametable::mc::P_FideID					"Fide ID"
 ::gametable::mc::P_Rating					"Punteggio"
+::gametable::mc::P_RatingType				"Tipo punteggio"
 ::gametable::mc::P_Country					"Nazione"
 ::gametable::mc::P_Title					"Titolo"
 ::gametable::mc::P_Type						"Tipo"
@@ -2224,6 +2226,7 @@
 ::terminationbox::mc::Termination(bishops)			"Partita patta per stallo (alfieri di colore opposto)"
 ::terminationbox::mc::Termination(fifty)				"Partita patta per la regola delle 50 mosse"
 ::terminationbox::mc::Termination(threefold)			"Partita patta per triplice ripetizione"
+::terminationbox::mc::Termination(fivefold)			"Game drawn by fivefold repetition" ;# NEW
 ::terminationbox::mc::Termination(nomating)			"Partita patta per insufficienza di materiale"
 ::terminationbox::mc::Termination(nocheck)			"Nessun giocatore può dare scacco"
 

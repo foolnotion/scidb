@@ -1019,6 +1019,7 @@
 ::pgn::setup::mc::ResetSettings				"Eredeti beállítások visszaállítása"
 ::pgn::setup::mc::DiscardAllChanges			"Elvet minden változtatást?"
 ::pgn::setup::mc::ThreefoldRepetition			"Háromszori ismétlés"
+::pgn::setup::mc::FivefoldRepetition			"Fivefold repetition" ;# NEW
 ::pgn::setup::mc::FiftyMoveRule				"50 lépéses szabály"
 
 ::pgn::setup::mc::Setup(Appearance)			"Megjelenítés"
@@ -1369,6 +1370,7 @@
 ::gametable::mc::P_Name						"Név"
 ::gametable::mc::P_FideID					"Fide ID"
 ::gametable::mc::P_Rating					"Rating Score"
+::gametable::mc::P_RatingType				"Rating Type" ;# NEW
 ::gametable::mc::P_Country					"Ország"
 ::gametable::mc::P_Title					"Cím"
 ::gametable::mc::P_Type						"Típus"
@@ -1433,7 +1435,7 @@
 
 ::playertable::mc::T_Federation			"Szövetség"
 ::playertable::mc::T_NativeCountry		"Native Country" ;# NEW
-::playertable::mc::T_RatingType			"Rating Type"
+::playertable::mc::T_RatingType			"Rating Type" ;# NEW
 ::playertable::mc::T_Type			"Típus"
 ::playertable::mc::T_Sex			"Neme"
 ::playertable::mc::T_PlayerInfo			"Info Flag"
@@ -2222,6 +2224,7 @@
 ::terminationbox::mc::Termination(bishops)		"Game drawn by stalemate (opposite color bishops)" ;# NEW
 ::terminationbox::mc::Termination(fifty)		"Game drawn by the 50 move rule" ;# NEW
 ::terminationbox::mc::Termination(threefold)		"Game drawn by threefold repetition" ;# NEW
+::terminationbox::mc::Termination(fivefold)		"Game drawn by fivefold repetition" ;# NEW
 ::terminationbox::mc::Termination(nomating)		"Neither player has mating material" ;# NEW
 ::terminationbox::mc::Termination(nocheck)		"Neither player can give check" ;# NEW
 

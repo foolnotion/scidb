@@ -1017,6 +1017,7 @@
 ::pgn::setup::mc::ResetSettings					"Återställ till fabriksinställningar"
 ::pgn::setup::mc::DiscardAllChanges				"Kasta bort alla ändringar?"
 ::pgn::setup::mc::ThreefoldRepetition			"Ställningsupprepning"
+::pgn::setup::mc::FivefoldRepetition			"Fivefold repetition" ;# NEW
 ::pgn::setup::mc::FiftyMoveRule					"50 dragsregeln"
 
 ::pgn::setup::mc::Setup(Appearance)				"Utseende"
@@ -1367,6 +1368,7 @@
 ::gametable::mc::P_Name						"Namn"
 ::gametable::mc::P_FideID					"Fide ID"
 ::gametable::mc::P_Rating					"Ratingpoäng"
+::gametable::mc::P_RatingType				"Ratingtyp"
 ::gametable::mc::P_Country					"Land"
 ::gametable::mc::P_Title					"Titel"
 ::gametable::mc::P_Type						"Typ"
@@ -2221,6 +2223,7 @@
 ::terminationbox::mc::Termination(bishops)			"Parti remi genom patt (olikfärgade löpare)"
 ::terminationbox::mc::Termination(fifty)				"Parti remi genom 50-dragsregeln"
 ::terminationbox::mc::Termination(threefold)			"Parti remi genom ställningsupprepning"
+::terminationbox::mc::Termination(fivefold)			"Game drawn by fivefold repetition" ;# NEW
 ::terminationbox::mc::Termination(nomating)			"Ingen spelare har mattsättande material"
 ::terminationbox::mc::Termination(nocheck)			"Ingen spelar kan schacka"
 
