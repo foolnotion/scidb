@@ -153,8 +153,13 @@ namespace tk {
 int
 xcursor_init(Tcl_Interp* ti)
 {
-	if (Tcl_InitStubs(ti, "8.5", 0) == 0 || Tk_InitStubs(ti, "8.5", 0) == 0)
+	if (	!Tcl_InitStubs(ti, "8.5", 0)
+		|| !Tcl_PkgRequire(ti, "Tcl", "8.5", 0)
+		|| !Tk_InitStubs(ti, "8.5", 0)
+		|| !Tcl_PkgRequire(ti, "Tk", "8.5", 0))
+	{
 		return TCL_ERROR;
+	}
 
 	if (Tcl_PkgProvide(ti, "xcursor", "1.0") == TCL_ERROR)
 		return TCL_ERROR;
