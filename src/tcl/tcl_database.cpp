@@ -2109,10 +2109,12 @@ tcl::db::getGameInfo(Database const& db, unsigned index, Ratings const& ratings,
 	if (db.format() == format::Scid4)
 		::mapScid4Flags(flags);
 
-	Tcl_Obj* openingVar[2] =
+	Tcl_Obj* openingVar[4] =
 	{
 		Tcl_NewStringObj(opening->part[0], opening->part[0].size()),
-		Tcl_NewStringObj(opening->part[1], opening->part[1].size())
+		Tcl_NewStringObj(opening->part[1], opening->part[1].size()),
+		Tcl_NewStringObj(opening->part[2], opening->part[2].size()),
+		Tcl_NewStringObj(opening->part[3], opening->part[3].size())
 	};
 
 	mstl::string material;
@@ -2179,7 +2181,7 @@ tcl::db::getGameInfo(Database const& db, unsigned index, Ratings const& ratings,
 	SET(Termination,          Tcl_NewStringObj(termination::toString(info.terminationReason()), -1));
 	SET(Mode,                 Tcl_NewStringObj(event::toString(info.eventMode()), -1));
 	SET(TimeMode,             Tcl_NewStringObj(::db::time::toString(info.timeMode()), -1));
-	SET(Opening,              Tcl_NewListObj(2, openingVar));
+	SET(Opening,              Tcl_NewListObj(U_NUMBER_OF(openingVar), openingVar));
 	SET(Variation,            Tcl_NewStringObj(opening->part[2], opening->part[2].size()));
 	SET(SubVariation,         Tcl_NewStringObj(opening->part[3], opening->part[3].size()));
 	SET(InternalEco,          Tcl_NewStringObj(eop.asString(), -1));

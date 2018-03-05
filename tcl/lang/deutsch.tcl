@@ -1292,6 +1292,7 @@
 
 ::gametable::mc::Long						"Lang"
 ::gametable::mc::Short						"Kurz"
+::gametable::mc::IncludeVars				"Inklusive Varianten"
 
 ::gametable::mc::Accel(browse)			"R"
 ::gametable::mc::Accel(overview)			"U"

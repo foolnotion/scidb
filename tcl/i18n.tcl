@@ -511,7 +511,7 @@ proc translateEco {str} {
 	if {[info exists $list]} {
 		foreach {key val} [set $list] {
 			if {$key eq $str} {
-				return $val
+				return [Encode $val]
 			}
 		}
 	}
@@ -530,7 +530,7 @@ proc translateEco {str} {
 		}
 	}
 
-	return [TranslateParen $str]
+	return [Encode [TranslateParen $str]]
 }
 
 
@@ -701,6 +701,12 @@ proc TranslateWord {str} {
 	}
 
 	return $str
+}
+
+
+proc Encode {str} {
+	variable encoding
+	return [encoding convertfrom $encoding $str]
 }
 
 

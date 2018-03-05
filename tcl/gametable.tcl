@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2013 Gregor Cramer
+# Copyright: (C) 2009-2017 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -63,6 +63,7 @@ set ShowTournamentTable "Show Tournament Table"
 
 set Long						"Long"
 set Short					"Short"
+set IncludeVars			"Include Variations"
 
 set Accel(browse)			"W"
 set Accel(overview)		"O"
@@ -262,19 +263,20 @@ variable columns {}
 foreach col $Columns { lappend columns [lindex $col 0] }
 
 array set Defaults {
-	monochrome			0
-	showIDN				0
-	relief				0
-	transparent			0
-	opening-index		0
-	exclude-elo			1
-	include-type		0
-	country-code		flags
-	eventtype-icon		1
-	rating:1				Elo
-	rating:2				DWZ
-	move:notation		san
-	movelist:delay		30
+	monochrome				0
+	showIDN					0
+	relief					0
+	transparent				0
+	opening-index			0
+	opening-variations	0
+	exclude-elo				1
+	include-type			0
+	country-code			flags
+	eventtype-icon			1
+	rating:1					Elo
+	rating:2					DWZ
+	move:notation			san
+	movelist:delay			30
 }
 
 array set GameFlags {}
@@ -461,6 +463,14 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 					]
 				}
 				lappend menu { separator }
+				lappend menu [list checkbutton \
+					-command [namespace code [list Refresh $path]] \
+					-labelvar [namespace current]::mc::IncludeVars \
+					-variable [namespace current]::${path}::Options(opening-variations) \
+					-onvalue 1 \
+					-offvalue 0 \
+				]
+				lappend menu { separator }
 			}
 
 			default {
@@ -550,6 +560,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	set specialfont [list [list $::font::figurine(text:normal) 9812 9823]]
 	::scrolledtable::configure $path material -specialfont $specialfont
 	::scrolledtable::configure $path position -specialfont $specialfont
+	::scrolledtable::configure $path moveList -specialfont $specialfont
 	RefreshEventType $path
 
 	::bind $path <<TableFill>>			[namespace code [list TableFill $path %d]]
@@ -1392,7 +1403,8 @@ proc TableFill {path args} {
 					opening {
 						lassign $item op(0) op(1) var(0) var(1)
 						set value [::mc::translateEco $op($Options(opening-index))]
-						if {$Options(opening-variations)} {
+						if {$Options(opening-variations) &&
+							([string length $var(0)] || [string length $var(1)])} {
 							set comma ": "
 							if {[string length $var(0)]} { append value $comma $var(0); set comma ", " }
 							if {[string length $var(1)]} { append value $comma $var(1) }

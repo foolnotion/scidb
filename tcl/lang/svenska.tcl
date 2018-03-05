@@ -1302,6 +1302,7 @@
 
 ::gametable::mc::Long						"Lång"
 ::gametable::mc::Short						"Kort"
+::gametable::mc::IncludeVars				"Include Variations" ;# NEW
 
 ::gametable::mc::Accel(browse)			"W"
 ::gametable::mc::Accel(overview)			"O"
