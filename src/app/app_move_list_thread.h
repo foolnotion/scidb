@@ -79,6 +79,7 @@ private:
 	typedef db::move::Notation Notation;
 
 	struct Runnable;
+	struct WatchLock;
 
 	Runnable*		m_runnable;
 	unsigned			m_databaseId;

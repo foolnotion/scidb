@@ -184,8 +184,6 @@ struct MoveListThread::Runnable
 					db::Line			line(moves, length);
 					mstl::string&	str(result.list.back());
 
-					//M_ASSERT(db::variant::toMainVariant(startBoard.variant()) == m_database.variant());
-
 					line.print(	str,
 									startBoard,
 									m_database.variant(),
