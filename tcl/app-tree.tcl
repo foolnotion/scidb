@@ -184,6 +184,7 @@ proc build {parent width height} {
 		-pady {1 0} \
 		-highlightcolor $Options(-emphasize) \
 		;
+	::widget::bindMouseWheel [::table::tablePath $tb] 1
 	::table::setColumnBackground $tb tail [::colors::lookup $Options(-stripes)] $bg
 	::table::setScrollCommand $tb [list $sb set]
 	::ttk::scrollbar $sb  \

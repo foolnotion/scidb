@@ -459,6 +459,7 @@
 ::application::mc::StayOnTop					"Stay on Top"
 ::application::mc::HideWhenLeavingTab		"Hide When Leaving Tab"
 ::application::mc::SaveLayout					"Save Layout"
+::application::mc::SaveLayoutAs				"Save Layout as %s"
 ::application::mc::RenameLayout				"Rename Layout"
 ::application::mc::LoadLayout					"Load Layout"
 ::application::mc::NewLayout					"New Layout"

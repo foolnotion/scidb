@@ -263,9 +263,10 @@ proc Delete {twm list} {
 	variable names_
 
 	set name [$list get [$list curselection]]
-	[namespace parent]::deleteLayout [winfo toplevel $twm] $name
-	set i [lsearch $names_ $name]
-	if {$i >= 0} { set names_ [lreplace $names_ $i $i] }
+	if {[[namespace parent]::deleteLayout [winfo toplevel $twm] $name]} {
+		set i [lsearch $names_ $name]
+		if {$i >= 0} { set names_ [lreplace $names_ $i $i] }
+	}
 }
 
 

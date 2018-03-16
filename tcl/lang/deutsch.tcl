@@ -460,6 +460,7 @@
 ::application::mc::StayOnTop					"Stets im Vordergrund"
 ::application::mc::HideWhenLeavingTab		"Verstecken beim Verlassen des Reiters"
 ::application::mc::SaveLayout					"Layout speichern"
+::application::mc::SaveLayoutAs				"Layout speichern unter %s"
 ::application::mc::RenameLayout				"Layout umbenennen"
 ::application::mc::LoadLayout					"Layout wiederherstellen"
 ::application::mc::NewLayout					"Neues Layout"

@@ -701,7 +701,7 @@ struct Size
 template <> int Size::dimen<Horz>() const { return width; }
 template <> int Size::dimen<Vert>() const { return height; }
 
-bool operator==(Size const& lhs, Size const& rhs)
+static bool operator==(Size const& lhs, Size const& rhs)
 { return lhs.width == rhs.width && lhs.height == rhs.height; }
 
 
@@ -760,10 +760,10 @@ template <> void Dimension::set<Horz,Max>(int size)		{ max.width = size; }
 template <> void Dimension::set<Vert,Max>(int size)		{ max.height = size; }
 
 
-bool operator==(Dimension const& lhs, Dimension const& rhs)
+static bool operator==(Dimension const& lhs, Dimension const& rhs)
 { return lhs.actual == rhs.actual && lhs.min == rhs.min && lhs.max == rhs.max; }
 
-bool operator!=(Dimension const& lhs, Dimension const& rhs)
+static bool operator!=(Dimension const& lhs, Dimension const& rhs)
 { return !operator==(lhs, rhs); }
 
 
@@ -1032,10 +1032,8 @@ private:
 	template <Orient D> void shrinkPanes(int computedSize, int space);
 	template <Orient D> void fitDimensions(int size);
 
-	template <Orient D>
-	int doExpandPanes(int space, bool expandable, int stage) __m_warn_unused;
-	template <Orient D>
-	int doShrinkPanes(int space, bool expandable, int stage) __m_warn_unused;
+	template <Orient D> int doExpandPanes(int space, bool expandable, int stage) __m_warn_unused;
+	template <Orient D> int doShrinkPanes(int space, bool expandable, int stage) __m_warn_unused;
 	template <Orient D> int computeExpand(int stage) const __m_warn_unused;
 	template <Orient D> int computeShrink(int stage) const __m_warn_unused;
 	template <Orient D> int computeUnderflow() const __m_warn_unused;
@@ -4063,6 +4061,7 @@ Node::doAdjustment(int size)
 {
 	if (orientation<D>())
 	{
+		// TODO:
 		// try to grow underflowing childs (not recursively!)
 		// try to shrink overflowing childs (not recursively!)
 	}
@@ -6684,6 +6683,11 @@ cmdGet(Base& base, int objc, Tcl_Obj* const objv[])
 		if (!node)
 			M_THROW(tcl::Exception("cannot find window '%s'", path));
 	}
+
+	bool ignoreMeta = cmd[::strlen(cmd) - 1] == '!';
+
+	if (ignoreMeta && node->isMetaFrame())
+		node = node->child();
 
 	Tcl_Obj* value = node->get(tcl::asString(objv[4]), cmd[::strlen(cmd) - 1] == '!');
 

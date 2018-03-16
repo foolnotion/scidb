@@ -223,6 +223,7 @@ proc build {parent number {patternNumber 0}} {
 		-cursor {} \
 		-takefocus 0 \
 	]
+	catch { $tscore configure -state readonly }
 	$tscore tag configure center -justify center
 	$tscore tag configure symbol -font $::font::symbol(text:normal)
 	pack $tscore -padx 2 -pady 2
@@ -240,6 +241,7 @@ proc build {parent number {patternNumber 0}} {
 		-cursor {} \
 		-takefocus 0 \
 	]
+	catch { $tmove configure -state readonly }
 	$tmove tag configure figurine -font $::font::figurine(text:normal)
 	$tmove tag configure center -justify center
 	$tmove tag configure stopped -foreground darkred
@@ -950,6 +952,7 @@ proc Display(state) {tree state} {
 		stop	{
 			SetState $tree disabled
 			::toolbar::childconfigure $Vars(button:close) -state disabled
+			Display(clear) $tree
 		}
 
 		start	{
@@ -959,23 +962,19 @@ proc Display(state) {tree state} {
 
 		pause {
 			if {!$Vars(paused)} {
-				$Vars(move) configure -state normal
 				$Vars(move) delete 1.0 end
 				if {[$Vars(mw) raise] eq $Vars(mesg)} {
 					ShowMessage $tree info $mc::EngineIsPausing
 				} else {
 					$Vars(move) insert end $mc::Stopped {stopped center}
 				}
-				$Vars(move) configure -state disabled
 				set Vars(paused) 1
 			}
 		}
 
 		resume {
-			$Vars(move) configure -state normal
 			$Vars(move) delete 1.0 end
 			SetState $tree normal
-			$Vars(move) configure -state disabled
 			set Vars(engine:pause) 0
 			$Vars(button:close) configure -state normal
 		}
@@ -990,14 +989,8 @@ proc Display(clear) {tree} {
 	$Vars(mesg) configure -text ""
 	$Vars(mw) raise $Vars(main)
 
-	$Vars(score) configure -state normal
 	$Vars(score) delete 1.0 end
-	$Vars(score) configure -state disabled
-
-	$Vars(move) configure -state normal
 	$Vars(move) delete 1.0 end
-	$Vars(move) configure -state disabled
-
 	$Vars(depth) configure -text ""
 	$Vars(time) configure -text ""
 
@@ -1041,7 +1034,6 @@ proc Display(suspended) {tree args} {
 proc Display(bestscore) {tree score mate bestLines} {
 	variable ${tree}::Vars
 
-	$Vars(score) configure -state normal
 	$Vars(score) delete 1.0 end
 	if {$mate} {
 		if {$mate < 0} { set stm White } else { set stm Black }
@@ -1055,7 +1047,6 @@ proc Display(bestscore) {tree score mate bestLines} {
 		$Vars(score) insert end $sym $tags
 	}
 	$Vars(score) insert end $scoreTxt center
-	$Vars(score) configure -state disabled
 
 	set line 0
 	foreach best $bestLines {
@@ -1100,13 +1091,11 @@ proc Display(move) {tree number count move} {
 		set Vars(maxMoves) $number
 	}
 
-	$Vars(move) configure -state normal
 	$Vars(move) delete 1.0 end
 	$Vars(move) insert end [::font::translate $move] {figurine center}
 	if {$number > 0} {
 		$Vars(move) insert end " ($number/$Vars(maxMoves))"
 	}
-	$Vars(move) configure -state disabled
 }
 
 

@@ -1895,7 +1895,7 @@ proc Undock {twm frame} {
 	# ensure existence of these attributes
 	$twm set! $toplevel stayontop [$twm get! $toplevel stayontop 0]
 	$twm set! $toplevel hide [$twm get! $toplevel hide 0]
-	if {[$twm get $frame stayontop]} {
+	if {[$twm get! $frame stayontop]} {
 		wm transient $toplevel [winfo toplevel $twm]
 		# NOTE: not every window manager is re-decorating the window.
 		catch { wm attributes $toplevel -type dialog }

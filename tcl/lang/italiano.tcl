@@ -460,6 +460,7 @@
 ::application::mc::StayOnTop					"Stay on Top" ;# NEW
 ::application::mc::HideWhenLeavingTab		"Hide When Leaving Tab" ;# NEW
 ::application::mc::SaveLayout					"Save Layout" ;# NEW
+::application::mc::SaveLayoutAs				"Save Layout as %s" ;# NEW
 ::application::mc::RenameLayout				"Rename Layout" ;# NEW
 ::application::mc::LoadLayout					"Load Layout" ;# NEW
 ::application::mc::NewLayout					"New Layout" ;# NEW
