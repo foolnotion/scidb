@@ -423,6 +423,10 @@ proc configureText {path {fontContext ""}} {
 		$w tag configure symbol    -font $::font::symbol($fontContext:normal)
 		$w tag configure symbolb   -font $::font::symbol($fontContext:bold)
 
+		$w tag raise italic m:comment
+		$w tag raise bold m:comment
+		$w tag raise bold-italic m:comment
+
 		for {set k 0} {$k <= 10} {incr k} {
 			set margin [expr {$k*$Options(indent:amount)}]
 #			set indent [expr {$margin + 1.3*$charwidth + $Options(show:varnumbers)*1.5*$charwidth}]
