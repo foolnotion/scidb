@@ -1870,7 +1870,12 @@ TextWidgetObjCmd(
 		    if (update) {
 			from = TkTextIndexGetLineNumber(&indexFrom, textPtr);
 			to = TkTextIndexGetLineNumber(&indexTo, textPtr);
-			UpdateLineMetrics(textPtr, from, to);
+			if (from != to) {
+			    if (from > to) {
+				int tmp = from; from = to; to = tmp;
+			    }
+			    UpdateLineMetrics(textPtr, from, to);
+			}
 		    }
 		    from = TkTextIndexYPixels(textPtr, &indexFrom);
 		    to = TkTextIndexYPixels(textPtr, &indexTo);
@@ -3867,7 +3872,7 @@ TkConfigureText(
     unsigned currentEpoch;
     TkSharedText *sharedTextPtr = textPtr->sharedTextPtr;
     TkTextBTree tree = sharedTextPtr->tree;
-    bool oldExport = textPtr->exportSelection;
+    bool oldExport = (textPtr->exportSelection) && (!Tcl_IsSafe(textPtr->interp));
     bool oldTextDebug = tkTextDebug;
     bool didHyphenate = textPtr->hyphenate;
     int oldHyphenRules = textPtr->hyphenRules;
@@ -4377,7 +4382,7 @@ TkConfigureText(
      * are tagged characters.
      */
 
-    if (textPtr->exportSelection && !oldExport) {
+    if (textPtr->exportSelection && (!oldExport) && (!Tcl_IsSafe(textPtr->interp))) {
 	TkTextSearch search;
 	TkTextIndex first, last;
 
@@ -5212,10 +5217,14 @@ InsertChars(
     }
 
     /*
-     * Invalidate any selection retrievals in progress.
+     * Invalidate any selection retrievals in progress, and send an event
+     * that the selection changed if that is the case.
      */
 
     for (tPtr = sharedTextPtr->peers; tPtr; tPtr = tPtr->next) {
+        if (TkBTreeCharTagged(index1Ptr, tPtr->selTagPtr)) {
+            TkTextSelectionEvent(tPtr);
+        }
 	tPtr->abortSelections = true;
     }
 
@@ -5990,7 +5999,7 @@ TextFetchSelection(
     Tcl_Obj *selTextPtr;
     int numBytes;
 
-    if (!textPtr->exportSelection) {
+    if ((!textPtr->exportSelection) || Tcl_IsSafe(textPtr->interp)) {
 	return -1;
     }
 
@@ -6136,7 +6145,7 @@ TkTextLostSelection(
     if (TkpAlwaysShowSelection(textPtr->tkwin)) {
 	TkTextIndex start, end;
 
-	if (!textPtr->exportSelection) {
+	if ((!textPtr->exportSelection) || Tcl_IsSafe(textPtr->interp)) {
 	    return;
 	}
 
@@ -6412,10 +6421,10 @@ TextSearchCmd(
 	"-strictlimits", NULL
     };
     enum SearchSwitches {
-	SEARCH_HIDDEN,
-	SEARCH_END, SEARCH_ALL, SEARCH_BACK, SEARCH_COUNT, SEARCH_DISCARDHYPHENS, SEARCH_ELIDE,
-	SEARCH_EXACT, SEARCH_FWD, SEARCH_NOCASE, SEARCH_NOLINESTOP, SEARCH_OVERLAP, SEARCH_REGEXP,
-	SEARCH_STRICTLIMITS
+	TK_TEXT_SEARCH_HIDDEN, TK_TEXT_SEARCH_END, TK_TEXT_SEARCH_ALL, TK_TEXT_SEARCH_BACK,
+	TK_TEXT_SEARCH_COUNT, TK_TEXT_SEARCH_DISCARDHYPHENS, TK_TEXT_SEARCH_ELIDE, TK_TEXT_SEARCH_EXACT,
+	TK_TEXT_SEARCH_FWD, TK_TEXT_SEARCH_NOCASE, TK_TEXT_SEARCH_NOLINESTOP, TK_TEXT_SEARCH_OVERLAP,
+	TK_TEXT_SEARCH_REGEXP, TK_TEXT_SEARCH_STRICTLIMITS
     };
 
     /*
@@ -6466,16 +6475,16 @@ TextSearchCmd(
 	}
 
 	switch ((enum SearchSwitches) index) {
-	case SEARCH_END:
+	case TK_TEXT_SEARCH_END:
 	    i += 1;
 	    goto endOfSwitchProcessing;
-	case SEARCH_ALL:
+	case TK_TEXT_SEARCH_ALL:
 	    searchSpec.all = true;
 	    break;
-	case SEARCH_BACK:
+	case TK_TEXT_SEARCH_BACK:
 	    searchSpec.backwards = true;
 	    break;
-	case SEARCH_COUNT:
+	case TK_TEXT_SEARCH_COUNT:
 	    if (i >= objc - 1) {
 		Tcl_SetObjResult(interp, Tcl_NewStringObj("no value given for \"-count\" option", -1));
 		Tcl_SetErrorCode(interp, "TK", "TEXT", "VALUE", NULL);
@@ -6490,32 +6499,32 @@ TextSearchCmd(
 
 	    searchSpec.varPtr = objv[i];
 	    break;
-	case SEARCH_DISCARDHYPHENS:
+	case TK_TEXT_SEARCH_DISCARDHYPHENS:
 	    searchSpec.searchHyphens = false;
 	    break;
-	case SEARCH_ELIDE:
-	case SEARCH_HIDDEN:
+	case TK_TEXT_SEARCH_ELIDE:
+	case TK_TEXT_SEARCH_HIDDEN:
 	    searchSpec.searchElide = true;
 	    break;
-	case SEARCH_EXACT:
+	case TK_TEXT_SEARCH_EXACT:
 	    searchSpec.exact = true;
 	    break;
-	case SEARCH_FWD:
+	case TK_TEXT_SEARCH_FWD:
 	    searchSpec.backwards = false;
 	    break;
-	case SEARCH_NOCASE:
+	case TK_TEXT_SEARCH_NOCASE:
 	    searchSpec.noCase = true;
 	    break;
-	case SEARCH_NOLINESTOP:
+	case TK_TEXT_SEARCH_NOLINESTOP:
 	    searchSpec.noLineStop = true;
 	    break;
-	case SEARCH_OVERLAP:
+	case TK_TEXT_SEARCH_OVERLAP:
 	    searchSpec.overlap = true;
 	    break;
-	case SEARCH_STRICTLIMITS:
+	case TK_TEXT_SEARCH_STRICTLIMITS:
 	    searchSpec.strictLimits = true;
 	    break;
-	case SEARCH_REGEXP:
+	case TK_TEXT_SEARCH_REGEXP:
 	    searchSpec.exact = false;
 	    break;
 	default:
@@ -8964,7 +8973,9 @@ GetCommand(
     const TkSharedText *sharedTextPtr,
     const TkTextUndoToken *token)
 {
+    assert(token);
     assert(token->undoType->commandProc);
+
     return token->undoType->commandProc(sharedTextPtr, token);
 }
 
@@ -9399,7 +9410,7 @@ MakeEditInfo(
 	    }
 	    if (tagPtr->recentChangePriorityToken && tagPtr->savedPriority != tagPtr->priority) {
 		Tcl_ListObjAppendElement(interp, listPtr,
-			GetCommand(sharedTextPtr, tagPtr->recentTagAddRemoveToken));
+			GetCommand(sharedTextPtr, tagPtr->recentChangePriorityToken));
 	    }
 	}
 

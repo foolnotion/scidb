@@ -287,12 +287,12 @@ UndoLinkSegmentDestroy(
     TkTextUndoToken *item,
     bool reused)
 {
-    UndoTokenLinkSegment *token = (UndoTokenLinkSegment *) item;
+    if (!reused) {
+	UndoTokenLinkSegment *token = (UndoTokenLinkSegment *) item;
 
-    assert(!reused);
-
-    if (--token->segPtr->refCount == 0) {
-	ReleaseEmbeddedWindow(token->segPtr);
+	if (--token->segPtr->refCount == 0) {
+	    ReleaseEmbeddedWindow(token->segPtr);
+	}
     }
 }
 
@@ -699,7 +699,8 @@ TkTextMakeWindow(
 {
     TkTextSegment *ewPtr;
     Tcl_Obj **objv;
-    int objc;
+    Tcl_Obj **argv;
+    int objc, i;
 
     assert(options);
 
@@ -707,9 +708,23 @@ TkTextMakeWindow(
 	return NULL;
     }
 
+    argv = malloc(objc*sizeof(argv[0]));
+    memcpy(argv, objv, objc*sizeof(argv[0]));
+    for (i = 0; i < objc; i += 2) {
+	if (strncmp(Tcl_GetString(argv[i]), "-w", 2) == 0) {
+	    if (!Tk_NameToWindow(textPtr->interp, Tcl_GetString(argv[i + 1]), textPtr->tkwin)) {
+		/*
+		 * The specified window (given with option -window) does not exist, so
+		 * set the value to NULL.
+		 */
+		argv[i + 1] = NULL;
+	    }
+	}
+    }
+
     ewPtr = MakeWindow(textPtr);
 
-    if (EmbWinConfigure(textPtr, ewPtr, false, objc, objv) == TCL_OK) {
+    if (EmbWinConfigure(textPtr, ewPtr, false, objc, argv) == TCL_OK) {
 	Tcl_ResetResult(textPtr->interp);
     } else {
 	TkTextWinFreeClient(NULL, ewPtr->body.ew.clients);
@@ -1371,12 +1386,14 @@ EmbWinLayoutProc(
     				 * TEXT_WRAPMODE_WORD, or TEXT_WRAPMODE_CODEPOINT. */
     TkTextSpaceMode spaceMode,	/* Not used. */
     TkTextDispChunk *chunkPtr)	/* Structure to fill in with information about this chunk. The x
-    				 * field has already been set by the caller. */
+    				 * field has already been set by the caller. This argument may be
+				 * NULL. */
 {
     int width, height;
     TkTextEmbWindowClient *client;
     TkText *textPtr = indexPtr->textPtr;
     bool cantEmbed = false;
+    int x;
 
     assert(indexPtr->textPtr);
     assert(offset == 0);
@@ -1523,31 +1540,44 @@ EmbWinLayoutProc(
 	width = Tk_ReqWidth(ewPtr->body.ew.tkwin) + 2*ewPtr->body.ew.padX;
 	height = Tk_ReqHeight(ewPtr->body.ew.tkwin) + 2*ewPtr->body.ew.padY;
     }
-    if (width > maxX - chunkPtr->x && !noCharsYet && textPtr->wrapMode != TEXT_WRAPMODE_NONE) {
+
+    x = chunkPtr ? chunkPtr->x : 0;
+
+    if (width > maxX - x && !noCharsYet && textPtr->wrapMode != TEXT_WRAPMODE_NONE) {
 	return 0;
     }
 
-    /*
-     * Fill in the chunk structure.
-     */
+    if (chunkPtr) {
+	/*
+	 * Fill in the chunk structure.
+	 */
 
-    chunkPtr->layoutProcs = &layoutWindowProcs;
-    chunkPtr->numBytes = 1;
-    if (ewPtr->body.ew.align == ALIGN_BASELINE) {
-	chunkPtr->minAscent = height - ewPtr->body.ew.padY;
-	chunkPtr->minDescent = ewPtr->body.ew.padY;
-	chunkPtr->minHeight = 0;
-    } else {
-	chunkPtr->minAscent = 0;
-	chunkPtr->minDescent = 0;
-	chunkPtr->minHeight = height;
+	chunkPtr->layoutProcs = &layoutWindowProcs;
+	chunkPtr->numBytes = 1;
+	if (ewPtr->body.ew.align == ALIGN_BASELINE) {
+	    chunkPtr->minAscent = height - ewPtr->body.ew.padY;
+	    chunkPtr->minDescent = ewPtr->body.ew.padY;
+	    chunkPtr->minHeight = 0;
+	} else {
+	    chunkPtr->minAscent = 0;
+	    chunkPtr->minDescent = 0;
+	    chunkPtr->minHeight = height;
+	}
+	chunkPtr->width = width;
+	chunkPtr->breakIndex = (wrapMode == TEXT_WRAPMODE_NONE) ? -1 : 1;
+	chunkPtr->clientData = ewPtr;
     }
-    chunkPtr->width = width;
-    chunkPtr->breakIndex = (wrapMode == TEXT_WRAPMODE_NONE) ? -1 : 1;
-    chunkPtr->clientData = ewPtr;
+    
     if (client) {
 	client->chunkCount += 1;
+
+	if (!chunkPtr) {
+	    TkTextDispChunk chunk;
+	    chunk.clientData = ewPtr;
+	    EmbWinUndisplayProc(textPtr, &chunk);
+	}
     }
+
     return 1;
 }
 
@@ -1644,14 +1674,6 @@ EmbWinDisplayProc(
 	    &lineX, &windowY, &width, &height);
     windowX = lineX - chunkPtr->x + x;
 
-    /*
-     * Mark the window as displayed so that it won't get unmapped.
-     * This needs to be done before the next instruction block because
-     * Tk_MaintainGeometry/Tk_MapWindow will run event handlers, in
-     * particular for the <Map> event, and if the bound script deletes
-     * the embedded window its clients will get freed.
-     */
-
     if (textPtr->tkwin == Tk_Parent(tkwin)) {
 	if (windowX != Tk_X(tkwin)
 		|| windowY != Tk_Y(tkwin)
@@ -1678,6 +1700,10 @@ EmbWinDisplayProc(
     } else {
 	Tk_MaintainGeometry(tkwin, textPtr->tkwin, windowX, windowY, width, height);
     }
+
+    /*
+     * Mark the window as displayed so that it won't get unmapped.
+     */
 
     client->displayed = true;
 }

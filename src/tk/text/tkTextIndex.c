@@ -1984,6 +1984,7 @@ IndexToSeg(
 	segPtr = linePtr->segPtr;
 	while (segPtr->size == 0) {
 	    segPtr = segPtr->nextPtr;
+	    assert(segPtr);
 	}
 	if (offsetPtr) {
 	    *offsetPtr = 0;
@@ -3125,6 +3126,9 @@ TkTextIndexForwChars(
 				while (*p == ' ') {
 				    ++p;
 				}
+				if (*p == '\n') {
+				    ++p;
+				}
 				if (p == end) {
 				    break;
 				}
@@ -3734,7 +3738,7 @@ TkTextIndexBackChars(
 			    charCount -= 1;
 			}
 		    } else {
-			skipSpaces = false;
+			skipSpaces = trimmed && *p == '\n';
 			charCount -= (type & COUNT_INDICES) ? q - p : 1;
 		    }
 		}

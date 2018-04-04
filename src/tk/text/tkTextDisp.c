@@ -529,6 +529,11 @@ typedef struct TkTextDispChunkSection {
 #define ASYNC_PENDING		(1 << 4)
 #define REPICK_NEEDED		(1 << 5)
 
+typedef struct LayoutPos {
+    TkTextSegment *segPtr;
+    int offset;
+} LayoutPos;
+
 typedef struct LayoutData {
     TkText *textPtr;
     DLine *dlPtr;		/* Current display line. */
@@ -540,15 +545,19 @@ typedef struct LayoutData {
     TkTextDispChunk *lastChunkPtr;
 				/* Pointer to the current chunk. */
     TkTextDispChunk *firstCharChunkPtr;
-				/* Pointer to the first char/window/image chunk in chain. */
+				/* Pointer to the first char/hyphen/window/image chunk in chain. */
     TkTextDispChunk *lastCharChunkPtr;
-				/* Pointer to the last char/window/image chunk in chain. */
+				/* Pointer to the last char/hyphen/window/image chunk in chain. */
     TkTextDispChunk *breakChunkPtr;
 				/* Chunk containing best word break point, if any. */
     TkTextDispChunk *cursorChunkPtr;
 				/* Pointer to the insert cursor chunk. */
     TkTextLine *logicalLinePtr;	/* Pointer to the logical line. */
     TkTextBreakInfo *breakInfo;	/* Line break information of logical line. */
+    LayoutPos decimalPointPos;	/* This character segment contains the decimal point. */
+    LayoutPos lastNumericalPos; /* This character segment contains the last part of a numerical tab. */
+    LayoutPos shiftToNextLinePos;
+    				/* Shift characters starting with this position to next line. */
     const char *brks;		/* Buffer for line break information (for TEXT_WRAPMODE_CODEPOINT). */
     TkTextIndex index;		/* Current index. */
     unsigned countChunks;	/* Number of chunks in current display line. */
@@ -566,9 +575,18 @@ typedef struct LayoutData {
     				 * on line. */
     int tabStyle;		/* One of TABULAR or WORDPROCESSOR. */
     int tabSize;		/* Number of pixels consumed by current tab stop. */
+    int tabX;			/* Position of next tab, needed for alignment of numerical tabs. */
+    int tabShift;		/* Position of first tab in display line, if first tab is LEFT,
+    				 * zero otherwise. */
     int tabIndex;		/* Index of the current tab stop. */
+    int tabOverhang;		/* Overhang from computed line break. */
+    TkTextTabAlign tabAlignment;/* Alignment of current active tab. */
     unsigned tabWidth;		/* Default tab width of this widget. */
     unsigned numSpaces;		/* Number of expandable space (needed for full justification). */
+    unsigned shiftToNextLine;	/* Shift this number of characters to next line for adjustment of
+    				 * numeric tabs, starting with shiftToNextLinePos. */
+    unsigned lengthOfFractional;/* Length of fractional part in numerical tabs, including decimal
+    				 * point. */
     TkTextJustify justify;	/* How to justify line: taken from style for the first character
     				 * in this display line. */
     TkWrapMode wrapMode;	/* Wrap mode to use for this chunk. */
@@ -580,6 +598,11 @@ typedef struct LayoutData {
     bool skipSpaces;		/* 'true' means that we have to gobble spaces at start of next
     				 * segment. */
     bool trimSpaces;		/* 'true' iff space mode is TEXT_SPACEMODE_TRIM. */
+    bool isNumericTab;		/* We are processing the integral part of a numeric tab. */
+    bool isRightTab;		/* We are processing a right tab. */
+    bool adjustFirstChunk;	/* Start adjustment of chunks with first chunk, needed for line wrapping
+    				 * with right tabs. */
+    bool tabApplied;		/* Current tab has been already applied? */
 
 #if TK_LAYOUT_WITH_BASE_CHUNKS
     /*
@@ -707,11 +730,22 @@ typedef enum {
 #define MAX_SECTIONS_PER_LINE 20
 
 /*
+ * Use U+2010 for hyphen code point.
+ */
+
+#define HYPHEN_LENGTH 3
+#define HYPHEN_STRING "\xe2\x80\x90"
+
+/*
  * Forward declarations for functions defined later in this file:
  */
 
 static void		AdjustForTab(LayoutData *data);
-static void		ComputeSizeOfTab(LayoutData *data);
+static void		ComputeSizeOfTab(LayoutData *data, TkTextSegment *segPtr, int offset);
+static void		ComputeShiftForNumericTab(LayoutData *data, TkTextSegment *firstSegPtr,
+			    int offset);
+static void		ComputeShiftForRightTab(LayoutData *data, TkTextSegment *segPtr, int offset);
+static bool		IsStartOfTab(TkTextSegment *segPtr, int offset);
 static void		ElideBboxProc(TkText *textPtr, TkTextDispChunk *chunkPtr, int index, int y,
 			    int lineHeight, int baseline, int *xPtr, int *yPtr, int *widthPtr,
 			    int *heightPtr);
@@ -779,7 +813,8 @@ static int		ComputeBreakIndex(TkText *textPtr, const TkTextDispChunk *chunkPtr,
 			    TkTextSegment *segPtr, int byteOffset, TkWrapMode wrapMode,
 			    TkTextSpaceMode spaceMode);
 static int		CharChunkMeasureChars(TkTextDispChunk *chunkPtr, const char *chars, int charsLen,
-			    int start, int end, int startX, int maxX, int flags, int *nextXPtr);
+			    int start, int end, int startX, int maxX, TkTextSpaceMode spaceMode,
+			    int flags, int *nextXPtr);
 static void		CharDisplayProc(TkText *textPtr, TkTextDispChunk *chunkPtr, int x, int y,
 			    int height, int baseline, Display *display, Drawable dst, int screenY);
 static void		CharUndisplayProc(TkText *textPtr, TkTextDispChunk *chunkPtr);
@@ -1020,6 +1055,7 @@ static void ClearRegion(DRegion* region) { region->y1 = region->y2 = 0; }
 static bool IsPowerOf2(unsigned n) { return !(n & (n - 1)); }
 
 static bool IsBlank(int ch) { return ch == ' ' || ch == '\t'; }
+static bool IsDecimalPoint(int ch) { return ch == '.' || ch == ','; }
 
 static unsigned
 NextPowerOf2(uint32_t n)
@@ -1268,8 +1304,8 @@ SetupHyphenChars(
     assert(segPtr->typePtr->group == SEG_GROUP_HYPHEN);
     assert(sizeof(doNotBreakAtAll) >= 6); /* we need this break array for hyphens */
 
-    memcpy(segPtr->body.chars + offset, "\xe2\x80\x90", 4); /* U+2010 */
-    segPtr->body.hyphen.textSize = 3 + offset;
+    memcpy(segPtr->body.chars + offset, HYPHEN_STRING, HYPHEN_LENGTH + 1);
+    segPtr->body.hyphen.textSize = HYPHEN_LENGTH + offset;
 }
 
 static bool
@@ -2443,7 +2479,9 @@ LayoutUpdateLineHeightInformation(
     DLine *dlPtr,
     TkTextLine *linePtr,	/* The corresponding logical line. */
     bool finished,		/* Did we finish the layout of a complete logical line? */
-    int hyphenRule)		/* Applied hyphen rule; zero if no rule has been applied. */
+    int hyphenRule,		/* Applied hyphen rule; zero if no rule has been applied. */
+    int tabIndex,		/* Tab index of last chunk in line; zero if no tab. */
+    bool tabApplied)		/* Tab index of last chunk in line has been already applied? */
 {
     TkText *textPtr = data->textPtr;
     unsigned epoch = textPtr->dInfoPtr->lineMetricUpdateEpoch;
@@ -2501,6 +2539,8 @@ LayoutUpdateLineHeightInformation(
 	dispLineEntry->pixels = (dispLineEntry - 1)->pixels + dlPtr->height;
 	dispLineEntry->byteOffset = data->byteOffset;
 	dispLineEntry->hyphenRule = hyphenRule;
+	dispLineEntry->tabIndex = tabIndex;
+	dispLineEntry->tabApplied = tabApplied;
     } else if (!finished) {
 	LayoutSetupDispLineInfo(pixelInfo);
 	dispLineInfo = pixelInfo->dispLineInfo;
@@ -2508,6 +2548,8 @@ LayoutUpdateLineHeightInformation(
 	dispLineInfo->entry[0].pixels = dlPtr->height;
 	dispLineInfo->entry[0].byteOffset = data->byteOffset;
 	dispLineInfo->entry[0].hyphenRule = hyphenRule;
+	dispLineInfo->entry[0].tabIndex = tabIndex;
+	dispLineInfo->entry[0].tabApplied = tabApplied;
 	dispLineInfo->entry[1].byteOffset = data->byteOffset + dlPtr->byteCount;
     }
 
@@ -3043,7 +3085,7 @@ LayoutDoWidthAdjustmentForContextDrawing(
     if (IsCharChunk(chunkPtr)) {
 	int newWidth;
 
-	CharChunkMeasureChars(chunkPtr, NULL, 0, 0, -1, 0, -1, 0, &newWidth);
+	CharChunkMeasureChars(chunkPtr, NULL, 0, 0, -1, 0, -1, data->textPtr->spaceMode, 0, &newWidth);
 	chunkPtr->xAdjustment = newWidth - chunkPtr->width;
 	chunkPtr->width = newWidth;
     }
@@ -3241,14 +3283,64 @@ LayoutSetupChunk(
 	data->wrapMode = sValuePtr->wrapMode;
 	data->x = data->paragraphStart ? sValuePtr->lMargin1 : sValuePtr->lMargin2;
 	data->width = dInfoPtr->maxX - dInfoPtr->x - data->rMargin;
-	data->maxX = data->wrapMode == TEXT_WRAPMODE_NONE ? -1 : MAX(data->width, data->x);
+	data->maxX = (data->wrapMode == TEXT_WRAPMODE_NONE) ? -1 : MAX(data->width, data->x);
 
 	chunkPtr->x = data->x;
 
+	if (data->tabIndex >= 0 && !data->tabApplied) {
+	    data->tabChunkPtr = chunkPtr;
+	}
 	if (data->cursorChunkPtr) {
 	    data->cursorChunkPtr->x = data->x;
 	}
     }
+}
+
+static bool
+AtEndOfLine(
+    TkTextSegment *segPtr,
+    int offset)
+{
+    if (offset < segPtr->size) {
+	return false;
+    }
+    while ((segPtr = segPtr->nextPtr)) {
+	switch (segPtr->typePtr->group) {
+	case SEG_GROUP_CHAR:
+	case SEG_GROUP_HYPHEN:
+	case SEG_GROUP_IMAGE:
+	case SEG_GROUP_WINDOW:
+	    return false;
+	case SEG_GROUP_BRANCH:
+	    if (segPtr->typePtr == &tkTextBranchType) {
+		segPtr = segPtr->body.branch.nextPtr;
+	    }
+	    break;
+	case SEG_GROUP_MARK:
+	case SEG_GROUP_PROTECT:
+	case SEG_GROUP_TAG:
+	    break;
+	}
+    }
+    return true;
+}
+
+static int
+IsDecimalPointPos(
+    LayoutData *data,
+    const TkTextSegment *segPtr,
+    int offset)
+{
+    return segPtr == data->decimalPointPos.segPtr && offset == data->decimalPointPos.offset;
+}
+
+static int
+IsNumericalEndPos(
+    LayoutData *data,
+    const TkTextSegment *segPtr,
+    int offset)
+{
+    return segPtr == data->lastNumericalPos.segPtr && offset == data->lastNumericalPos.offset;
 }
 
 static bool
@@ -3261,8 +3353,10 @@ LayoutChars(
     const char *base = segPtr->body.chars + byteOffset;
     TkTextDispChunk *chunkPtr;
     bool gotTab = false;
+    bool adjustForNumericTab = false;
     unsigned maxBytes;
     unsigned numBytes;
+    int maxX;
 
     assert(size - byteOffset > 0); /* this will ensure maxBytes > 0 */
     assert(byteOffset < size);
@@ -3278,7 +3372,7 @@ LayoutChars(
 	    && base[maxBytes - 1] == '\n'
 	    && (data->textPtr->showEndOfText
 		|| segPtr->sectionPtr->linePtr->nextPtr != TkBTreeGetLastLine(data->textPtr))) {
-	maxBytes -= 1; /* now may beome zero */
+	maxBytes -= 1; /* now may become zero */
     }
 
     if (maxBytes == 0) {
@@ -3447,11 +3541,84 @@ LayoutChars(
 	return true;
     }
 
+    maxX = data->maxX - data->tabSize;
+
+    if (data->isNumericTab) {
+	/*
+	 * Only compute layout until decimal point, otherwise we cannot determine
+	 * the correct line break position.
+	 */
+	
+	const char *p = base;
+	unsigned i;
+
+	chunkPtr->integralPart = IsDecimalPointPos(data, segPtr, byteOffset);
+
+	for (i = 0; i < maxBytes; ++i, ++p) {
+	    if (IsNumericalEndPos(data, segPtr, byteOffset + i)
+		    || IsDecimalPointPos(data, segPtr, byteOffset + i)) {
+		adjustForNumericTab = true;
+		data->isNumericTab = false;
+		data->tabSize = 0;
+		if (i > 0) {
+		    if (*p == '\n' || *p == '\t') {
+			i += 1;
+		    }
+		    maxBytes = i;
+		    gotTab = (*p == '\t');
+		}
+		break;
+	    }
+	}
+
+	if (data->shiftToNextLine
+	    	&& data->numBytesSoFar > 0
+		&& segPtr == data->shiftToNextLinePos.segPtr
+		&& (int) (maxBytes + byteOffset) > data->shiftToNextLinePos.offset) {
+	    int n = MIN(maxBytes + byteOffset - data->shiftToNextLinePos.offset, data->shiftToNextLine);
+
+	    if (n > 0) {
+		n = MIN(n, (int) maxBytes);
+		data->shiftToNextLine -= n;
+		if ((maxBytes -= n) == 0) {
+		    data->isNumericTab = false;
+		    return false;
+		}
+		gotTab = false;
+	    }
+	    maxX = data->maxX;
+	} else {
+	    maxX = data->maxX - data->x;
+	}
+    } else if (data->isRightTab) {
+	if (data->shiftToNextLine == 0) {
+	    return false;
+	}
+	if (data->numBytesSoFar > 0
+		&& segPtr == data->shiftToNextLinePos.segPtr
+		&& (int) (maxBytes + byteOffset) > data->shiftToNextLinePos.offset) {
+	    int n = MIN(maxBytes + byteOffset - data->shiftToNextLinePos.offset, data->shiftToNextLine);
+
+	    if (gotTab) {
+		n += 1;
+	    }
+	    if (n > 0) {
+		data->shiftToNextLine -= n;
+		n = MIN(n, (int) maxBytes);
+		if ((maxBytes -= n) == 0) {
+		    data->isRightTab = false;
+		    return false;
+		}
+		gotTab = false;
+	    }
+	}
+	maxX = data->maxX;
+    }
+
     numBytes = LayoutMakeCharInfo(data, segPtr, byteOffset, maxBytes);
 
-    if (segPtr->typePtr->layoutProc(&data->index, segPtr, byteOffset,
-	    data->maxX - data->tabSize, numBytes, data->countVisibleChunks == 0,
-	    data->wrapMode, data->textPtr->spaceMode, chunkPtr) == 0) {
+    if (segPtr->typePtr->layoutProc(&data->index, segPtr, byteOffset, maxX, numBytes,
+	    data->countVisibleChunks == 0, data->wrapMode, data->textPtr->spaceMode, chunkPtr) == 0) {
 	/*
 	 * No characters from this segment fit in the window: this means
 	 * we're at the end of the display line.
@@ -3491,12 +3658,26 @@ LayoutChars(
     data->countVisibleChunks += 1;
 
     if (chunkPtr->numBytes != maxBytes + chunkPtr->skipFirstChar) {
-	return false;
+	return AtEndOfLine(segPtr, byteOffset + chunkPtr->numBytes); /* end of line display reached */
     }
 
     assert(!chunkPtr->brks
 	    || (data->brks <= chunkPtr->brks
 		&& chunkPtr->brks + chunkPtr->numBytes <= data->brks + data->breakInfo->brksSize));
+
+    if (adjustForNumericTab) {
+	if (data->lastChunkPtr) {
+	    data->lastChunkPtr->nextPtr = data->chunkPtr; /* we need the complete chain. */
+	}
+	AdjustForTab(data);
+	if (data->lastChunkPtr) {
+	    data->lastChunkPtr->nextPtr = NULL; /* restore */
+	}
+	data->tabChunkPtr = NULL;
+	if ((data->x = chunkPtr->x + chunkPtr->width) == data->maxX) {
+	    return AtEndOfLine(segPtr, byteOffset + chunkPtr->numBytes);/* end of display line reached */
+	}
+    }
 
     /*
      * If we're at a new tab, adjust the layout for all the chunks pertaining to the
@@ -3505,16 +3686,51 @@ LayoutChars(
      */
 
     if (gotTab) {
+	data->isNumericTab = false;
+
 	if (data->tabIndex >= 0) {
-	    data->lastChunkPtr->nextPtr = data->chunkPtr; /* we need the complete chain. */
+	    if (data->lastChunkPtr) {
+		data->lastChunkPtr->nextPtr = data->chunkPtr; /* we need the complete chain. */
+	    }
 	    AdjustForTab(data);
-	    data->lastChunkPtr->nextPtr = NULL; /* restore */
+	    if (data->lastChunkPtr) {
+		data->lastChunkPtr->nextPtr = NULL; /* restore */
+	    }
+	    data->tabChunkPtr = NULL;
 	    data->x = chunkPtr->x + chunkPtr->width;
 	}
+
 	data->tabChunkPtr = chunkPtr;
-	ComputeSizeOfTab(data);
-	if (data->maxX >= 0 && data->tabSize >= data->maxX - data->x) {
-	    return false; /* end of line reached */
+	ComputeSizeOfTab(data, segPtr, chunkPtr->numBytes + byteOffset);
+
+	if (data->maxX >= 0) {
+	    switch (data->tabAlignment) {
+	    case LEFT:
+	    case CENTER:
+		if (data->tabSize >= data->maxX - data->x) {
+		    return false; /* end of display line reached */
+		}
+		break;
+	    case RIGHT:
+		if (data->tabSize > data->maxX - data->x) {
+		    return false; /* end of display line reached */
+		}
+		if (data->displayLineNo == 0 && data->tabX >= 2*data->maxX) {
+		    return false; /* end of display line reached */
+		}
+		if (data->tabX > data->maxX) {
+		    ComputeShiftForRightTab(data, segPtr, chunkPtr->numBytes + byteOffset);
+		}
+	    	break;
+	    case NUMERIC:
+		if (data->tabSize - data->maxX + data->x >= data->maxX) {
+		    return false; /* end of display line reached */
+		}
+		if (data->tabSize >= data->maxX - data->x) {
+		    ComputeShiftForNumericTab(data, segPtr, chunkPtr->numBytes + byteOffset);
+		}
+		break;
+	    }
 	}
     }
 
@@ -3559,14 +3775,16 @@ LayoutEmbedded(
     TkTextSegment *segPtr)
 {
     TkTextDispChunk *chunkPtr;
+    int maxX;
 
     assert(segPtr->typePtr->layoutProc);
 
     LayoutMakeNewChunk(data);
     chunkPtr = data->chunkPtr;
+    maxX = data->maxX - (data->isNumericTab ? data->x : data->tabSize);
 
-    if (segPtr->typePtr->layoutProc(&data->index, segPtr, 0, data->maxX - data->tabSize, 0,
-	    data->countVisibleChunks == 0, data->wrapMode, data->textPtr->spaceMode, chunkPtr) != 1) {
+    if (segPtr->typePtr->layoutProc(&data->index, segPtr, 0, maxX, 0, data->countVisibleChunks == 0,
+	    data->wrapMode, data->textPtr->spaceMode, chunkPtr) != 1) {
 	return false;
     }
 
@@ -3600,14 +3818,18 @@ LayoutMark(
     LayoutData *data,
     TkTextSegment *segPtr)
 {
+    int maxX;
+
     assert(segPtr->typePtr->layoutProc);
 
     if (segPtr != data->textPtr->insertMarkPtr) {
 	return false;
     }
     LayoutMakeNewChunk(data);
-    segPtr->typePtr->layoutProc(&data->index, segPtr, 0, data->maxX - data->tabSize, 0,
-	    data->countVisibleChunks == 0, data->wrapMode, data->textPtr->spaceMode, data->chunkPtr);
+
+    maxX = data->maxX - (data->isNumericTab ? data->x : data->tabSize);
+    segPtr->typePtr->layoutProc(&data->index, segPtr, 0, maxX, 0, data->countVisibleChunks == 0,
+	    data->wrapMode, data->textPtr->spaceMode, data->chunkPtr);
     return true;
 }
 
@@ -3623,56 +3845,113 @@ LayoutLogicalLine(
 
     byteIndex = TkTextIndexGetByteIndex(&data->index);
 
-    if (data->textPtr->hyphenate && data->displayLineNo > 0) {
-	const TkTextDispLineInfo *dispLineInfo;
-	int byteOffset;
-	int hyphenRule;
+    if (data->displayLineNo > 0) {
+	const TkTextDispLineInfo *dispLineInfo =
+		TkBTreeLinePixelInfo(data->textPtr, data->logicalLinePtr)->dispLineInfo;
+	const TkTextDispLineEntry *dispLineEntry = dispLineInfo->entry + (data->displayLineNo - 1);
 
-	segPtr = TkTextIndexGetContentSegment(&data->index, &byteOffset);
-	dispLineInfo = TkBTreeLinePixelInfo(data->textPtr, data->logicalLinePtr)->dispLineInfo;
-	assert(dispLineInfo);
-	hyphenRule = dispLineInfo->entry[data->displayLineNo - 1].hyphenRule;
+	if (dispLineEntry->tabIndex) {
+	    const TextDInfo *dInfoPtr = data->textPtr->dInfoPtr;
+	    const StyleValues *sValuePtr;
+	    TextStyle *stylePtr;
+	    int byteOffset;
 
-	switch (hyphenRule) {
-	case TK_TEXT_HYPHEN_REPEAT:
-	case TK_TEXT_HYPHEN_TREMA:
-	case TK_TEXT_HYPHEN_DOUBLE_DIGRAPH: {
-	    int numBytes = 0; /* prevents compiler warning */
-	    TkTextSegment *nextCharSegPtr;
-	    char buf[1];
-	    bool cont;
+	    segPtr = TkTextIndexGetContentSegment(&data->index, &byteOffset);
+	    stylePtr = GetStyle(data->textPtr, segPtr);
+	    sValuePtr = stylePtr->sValuePtr;
+	    data->tabArrayPtr = sValuePtr->tabArrayPtr;
+	    data->tabStyle = sValuePtr->tabStyle;
+	    data->tabIndex = dispLineEntry->tabIndex - 2;
+	    data->width = dInfoPtr->maxX - dInfoPtr->x - data->rMargin;
+	    data->x = data->paragraphStart ? sValuePtr->lMargin1 : sValuePtr->lMargin2;
+	    data->maxX = MAX(data->width, data->x);
+	    FreeStyle(data->textPtr, stylePtr);
+	    ComputeSizeOfTab(data, segPtr, byteOffset);
+	    data->tabApplied = dispLineEntry->tabApplied;
 
-	    /*
-	     * We have to realize spelling changes.
-	     */
+	    switch (data->tabAlignment) {
+	    case LEFT:
+		data->tabSize = 0;
+		data->tabApplied = true;
+		break;
+	    case CENTER:
+		if (data->tabApplied) {
+		    data->tabSize = 0;
+		}
+		break;
+	    case RIGHT:
+		data->tabSize = 0;
+		if (data->tabApplied) {
+		    data->adjustFirstChunk = false;
+		}
+		break;
+	    case NUMERIC:
+		if (!data->tabApplied) {
+		    if (IsDecimalPointPos(data, segPtr, byteOffset)) {
+			data->tabSize = 0;
+			data->isNumericTab = false;
+		    }
+		    if (data->maxX >= 0 && data->tabSize >= data->maxX - data->x) {
+			data->tabX += data->maxX;
+			ComputeShiftForNumericTab(data, segPtr, byteOffset);
+			if (data->lengthOfFractional == data->shiftToNextLine) {
+			    data->shiftToNextLine = 0;
+			}
+		    }
+		}
+		break;
+	    }
+	}
+
+	if (data->textPtr->hyphenate) {
+	    int byteOffset;
+	    int hyphenRule;
+
+	    segPtr = TkTextIndexGetContentSegment(&data->index, &byteOffset);
+	    hyphenRule = dispLineEntry->hyphenRule;
 
 	    switch (hyphenRule) {
 	    case TK_TEXT_HYPHEN_REPEAT:
-		buf[0] = '-';
-		numBytes = 1;
-		break;
 	    case TK_TEXT_HYPHEN_TREMA:
-		assert(UCHAR(segPtr->body.chars[byteOffset]) == 0xc3);
-		buf[0] = UmlautToVowel(ConvertC3Next(segPtr->body.chars[byteOffset + 1]));
-		numBytes = 2;
-		break;
-	    case TK_TEXT_HYPHEN_DOUBLE_DIGRAPH:
-		buf[0] = segPtr->body.chars[0];
-		numBytes = 1;
+	    case TK_TEXT_HYPHEN_DOUBLE_DIGRAPH: {
+		int numBytes = 0; /* prevents compiler warning */
+		TkTextSegment *nextCharSegPtr;
+		char buf[1];
+		bool cont;
+
+		/*
+		 * We have to realize spelling changes.
+		 */
+
+		switch (hyphenRule) {
+		case TK_TEXT_HYPHEN_REPEAT:
+		    buf[0] = '-';
+		    numBytes = 1;
+		    break;
+		case TK_TEXT_HYPHEN_TREMA:
+		    assert(UCHAR(segPtr->body.chars[byteOffset]) == 0xc3);
+		    buf[0] = UmlautToVowel(ConvertC3Next(segPtr->body.chars[byteOffset + 1]));
+		    numBytes = 2;
+		    break;
+		case TK_TEXT_HYPHEN_DOUBLE_DIGRAPH:
+		    buf[0] = segPtr->body.chars[0];
+		    numBytes = 1;
+		    break;
+		}
+		nextCharSegPtr = TkBTreeMakeCharSegment(buf, 1, segPtr->tagInfoPtr);
+		cont = LayoutChars(data, nextCharSegPtr, 1, 0);
+		TkBTreeFreeSegment(nextCharSegPtr);
+		data->chunkPtr->numBytes = numBytes;
+		if (!cont) {
+		    LayoutFinalizeChunk(data);
+		    return false;
+		}
+		TkTextIndexForwBytes(data->textPtr, &data->index,
+			data->chunkPtr->numBytes, &data->index);
+		byteIndex += data->chunkPtr->numBytes;
 		break;
 	    }
-	    nextCharSegPtr = TkBTreeMakeCharSegment(buf, 1, segPtr->tagInfoPtr);
-	    cont = LayoutChars(data, nextCharSegPtr, 1, 0);
-	    TkBTreeFreeSegment(nextCharSegPtr);
-	    data->chunkPtr->numBytes = numBytes;
-	    if (!cont) {
-		LayoutFinalizeChunk(data);
-		return false;
 	    }
-	    TkTextIndexForwBytes(data->textPtr, &data->index, data->chunkPtr->numBytes, &data->index);
-	    byteIndex += data->chunkPtr->numBytes;
-	    break;
-	}
 	}
     }
 
@@ -4248,7 +4527,7 @@ LayoutDLine(
 	    assert(!data.chunkPtr->nextPtr);
 	    dlPtr->byteCount = data.chunkPtr->numBytes;
 	    LayoutFreeChunk(&data);
-	    LayoutUpdateLineHeightInformation(&data, dlPtr, data.logicalLinePtr, true, 0);
+	    LayoutUpdateLineHeightInformation(&data, dlPtr, data.logicalLinePtr, true, 0, 0, false);
 	    return dlPtr;
 	}
     }
@@ -4310,7 +4589,6 @@ LayoutDLine(
      */
 
     if (data.tabIndex >= 0) {
-	assert(data.tabChunkPtr);
 	AdjustForTab(&data);
     }
 
@@ -4398,8 +4676,11 @@ LayoutDLine(
     /* line length may have changed because of justification */
     dlPtr->length = data.lastChunkPtr->x + jIndent + data.lastChunkPtr->width;
 
+    if (data.tabStyle == TK_TEXT_TABSTYLE_WORDPROCESSOR) {
+	data.tabIndex = -1;
+    }
     LayoutUpdateLineHeightInformation(&data, dlPtr, data.logicalLinePtr,
-	    endOfLogicalLine, data.hyphenRule);
+	    endOfLogicalLine, data.hyphenRule, data.tabIndex + 1, data.tabApplied);
 
     return dlPtr;
 }
@@ -8616,12 +8897,40 @@ DisplayText(
 		}
 		dlPtr->oldY = dlPtr->y;
 		dlPtr->flags &= ~(NEW_LAYOUT | OLD_Y_INVALID);
+#ifdef MAC_OSX_TK
+	    } else if (dInfoPtr->countWindows > 0 && dlPtr->chunkPtr != NULL) {
+		/*
+		 * On macOS we need to redisplay all embedded windows which
+		 * were moved by the call to TkScrollWindows above.  This is
+		 * not necessary on Unix or Windows because XScrollWindow will
+		 * have included the bounding rectangles of all of these
+		 * windows in the damage region.  The macosx implementation of
+		 * TkScrollWindow does not do this.  It simply generates a
+		 * damage region which is the scroll source rectangle minus
+		 * the scroll destination rectangle.  This is because there is
+		 * no efficient process available for iterating through the
+		 * subwindows which meet the scrolled area.  (On Unix this is
+		 * handled by GraphicsExpose events generated by XCopyArea and
+		 * on Windows by ScrollWindowEx.  On macOS the low level
+		 * scrolling is accomplished by calling [view scrollRect:by:].
+		 * This method does not provide any damage information and, in
+		 * any case, could not be aware of Tk windows which were not
+		 * based on NSView objects.
+		 *
+		 * On the other hand, this loop is already iterating through
+		 * all embedded windows which could possibly have been moved
+		 * by the scrolling.  So it is as efficient to redisplay them
+		 * here as it would have been if they had been redisplayed by
+		 * the call to TextInvalidateRegion above.
+		 */
+#else
 	    } else if (dInfoPtr->countWindows > 0
 		    && dlPtr->chunkPtr
 		    && (dlPtr->y < 0 || dlPtr->y + dlPtr->height > dInfoPtr->maxY)) {
-		TkTextDispChunk *chunkPtr;
 
 		/*
+		 * On platforms other than the Mac:
+		 *
 		 * It's the first or last DLine which are also overlapping the
 		 * top or bottom of the window, but we decided above it wasn't
 		 * necessary to display them (we were able to update them by
@@ -8635,6 +8944,8 @@ DisplayText(
 		 * So, we loop through all the chunks, calling the display
 		 * proc of embedded windows only.
 		 */
+#endif
+		TkTextDispChunk *chunkPtr;
 
 		for (chunkPtr = dlPtr->chunkPtr; chunkPtr; chunkPtr = chunkPtr->nextPtr) {
 		    int x;
@@ -8657,13 +8968,18 @@ DisplayText(
 
 			x = -chunkPtr->width;
 		    }
+		    if (tkTextDebug) {
+			char string[TK_POS_CHARS];
+
+			TkTextPrintIndex(textPtr, &dlPtr->index, string);
+			LOG("tk_textEmbWinDisplay", string);
+		    }
 		    chunkPtr->layoutProcs->displayProc(textPtr, chunkPtr, x,
 			    dlPtr->spaceAbove,
 			    dlPtr->height - dlPtr->spaceAbove - dlPtr->spaceBelow,
 			    dlPtr->baseline - dlPtr->spaceAbove, NULL,
 			    (Drawable) None, dlPtr->y + dlPtr->spaceAbove);
 		}
-
 	    }
 	}
 	Tk_FreePixmap(Tk_Display(textPtr->tkwin), pixmap);
@@ -12373,7 +12689,9 @@ CharMeasureProc(
     if (chunkPtr->endOfLineSymbol) {
 	return 0;
     }
-    return CharChunkMeasureChars(chunkPtr, NULL, 0, 0, chunkPtr->numBytes - 1, chunkPtr->x, x, 0, NULL);
+    assert(chunkPtr->dlPtr->index.textPtr);
+    return CharChunkMeasureChars(chunkPtr, NULL, 0, 0, chunkPtr->numBytes - 1, chunkPtr->x, x,
+	    chunkPtr->dlPtr->index.textPtr->spaceMode, 0, NULL);
 }
 
 /*
@@ -12416,7 +12734,7 @@ CharBboxProc(
     int maxX = chunkPtr->width + chunkPtr->x;
     int nextX;
 
-    CharChunkMeasureChars(chunkPtr, NULL, 0, 0, byteIndex, chunkPtr->x, -1, 0, xPtr);
+    CharChunkMeasureChars(chunkPtr, NULL, 0, 0, byteIndex, chunkPtr->x, -1, textPtr->spaceMode, 0, xPtr);
 
     if (byteIndex >= ciPtr->numBytes) {
 	/*
@@ -12434,7 +12752,8 @@ CharBboxProc(
 
 	*widthPtr = maxX - *xPtr;
     } else {
-	CharChunkMeasureChars(chunkPtr, NULL, 0, byteIndex, byteIndex + 1, *xPtr, -1, 0, &nextX);
+	CharChunkMeasureChars(chunkPtr, NULL, 0, byteIndex, byteIndex + 1, *xPtr, -1,
+		textPtr->spaceMode, 0, &nextX);
 
 	if (nextX >= maxX) {
 	    *widthPtr = maxX - *xPtr;
@@ -12493,42 +12812,6 @@ CharBboxProc(
  *----------------------------------------------------------------------
  */
 
-static TkTextDispChunk *
-FindEndOfTab(
-    TkTextDispChunk *chunkPtr,
-    int *decimalPtr)
-{
-    TkTextDispChunk *decimalChunkPtr = NULL;
-    bool gotDigit = false;
-
-    *decimalPtr = 0;
-
-    for ( ; chunkPtr; chunkPtr = chunkPtr->nextPtr) {
-	if (IsCharChunk(chunkPtr)) {
-	    CharInfo *ciPtr = chunkPtr->clientData;
-	    const char *s = ciPtr->u.chars + ciPtr->baseOffset;
-	    const char *p;
-	    int i;
-
-	    for (p = s, i = 0; i < ciPtr->numBytes; ++p, ++i) {
-		if (isdigit(*p)) {
-		    gotDigit = true;
-		} else if (*p == '.' || *p == ',') {
-		    *decimalPtr = p - s;
-		    decimalChunkPtr = chunkPtr;
-		} else if (gotDigit) {
-		    if (!decimalChunkPtr) {
-			*decimalPtr = p - s;
-			decimalChunkPtr = chunkPtr;
-		    }
-		    return decimalChunkPtr;
-		}
-	    }
-	}
-    }
-    return decimalChunkPtr;
-}
-
 static void
 AdjustForTab(
     LayoutData *data)
@@ -12538,23 +12821,27 @@ AdjustForTab(
     TkTextTabArray *tabArrayPtr;
     TkText *textPtr;
     int tabX, tabIndex;
-    TkTextTabAlign alignment;
 
     assert(data->tabIndex >= 0);
-    assert(data->tabChunkPtr);
 
-    chunkPtr = data->tabChunkPtr;
-    nextChunkPtr = chunkPtr->nextPtr;
+    if (!(chunkPtr = data->tabChunkPtr)) {
+	/* Part after decimal point, no action required. */
+	return;
+    }
 
-    if (!nextChunkPtr) {
+    if (data->adjustFirstChunk) {
+	nextChunkPtr = chunkPtr;
+    } else if (!(nextChunkPtr = chunkPtr->nextPtr) && data->lastChunkPtr) {
 	/* Nothing after the actual tab; just return. */
 	return;
     }
 
+    data->tabApplied = true;
+    tabX = data->tabX;
     tabIndex = data->tabIndex;
     textPtr = data->textPtr;
     tabArrayPtr = data->tabArrayPtr;
-    x = nextChunkPtr->x;
+    x = nextChunkPtr ? nextChunkPtr->x : 0;
 
     /*
      * If no tab information has been given, assuming tab stops are at 8
@@ -12577,27 +12864,27 @@ AdjustForTab(
 	} else {
 	    desired = NextTabStop(tabWidth, x, 0);
 	}
+
+	desired %= data->maxX;
     } else {
-	if (tabIndex < tabArrayPtr->numTabs) {
-	    alignment = tabArrayPtr->tabs[tabIndex].alignment;
-	    tabX = tabArrayPtr->tabs[tabIndex].location;
-	} else {
-	    /*
-	     * Ran out of tab stops; compute a tab position by extrapolating from
-	     * the last two tab positions.
-	     */
-
-	    tabX = (int) (tabArrayPtr->lastTab +
-		    (tabIndex + 1 - tabArrayPtr->numTabs)*tabArrayPtr->tabIncrement + 0.5);
-	    alignment = tabArrayPtr->tabs[tabArrayPtr->numTabs - 1].alignment;
-	}
-
-	switch (alignment) {
+	switch (data->tabAlignment) {
 	case LEFT:
 	    desired = tabX;
 	    break;
 
 	case CENTER:
+	    /*
+	     * Compute the width of all the information in the tab group, then use
+	     * it to pick a desired location.
+	     */
+
+	    width = 0;
+	    for (chPtr = nextChunkPtr; chPtr; chPtr = chPtr->nextPtr) {
+		width += chPtr->width;
+	    }
+	    desired = MIN(tabX, data->maxX) - width/2;
+	    break;
+
 	case RIGHT:
 	    /*
 	     * Compute the width of all the information in the tab group, then use
@@ -12608,39 +12895,25 @@ AdjustForTab(
 	    for (chPtr = nextChunkPtr; chPtr; chPtr = chPtr->nextPtr) {
 		width += chPtr->width;
 	    }
-	    desired = tabX - (alignment == CENTER ? width/2 : width);
+	    desired = MIN(tabX, data->maxX - data->tabOverhang) - width;
 	    break;
 
-	case NUMERIC: {
+	case NUMERIC:
 	    /*
-	     * Search through the text to be tabbed, looking for the last ',' or
-	     * '.' before the first character that isn't a number, comma, period,
-	     * or sign.
+	     * Right justify before decimal point.
 	     */
 
-	    int decimal;
-	    TkTextDispChunk *decimalChunkPtr = FindEndOfTab(nextChunkPtr, &decimal);
-
-	    if (decimalChunkPtr) {
-		int curX;
-
-		CharChunkMeasureChars(decimalChunkPtr, NULL, 0, 0, decimal,
-			decimalChunkPtr->x, -1, 0, &curX);
-		desired = tabX - (curX - x);
-	    } else {
-		/*
-		 * There wasn't a decimal point. Right justify the text.
-		 */
-
-		width = 0;
-		for (chPtr = nextChunkPtr; chPtr; chPtr = chPtr->nextPtr) {
-		    width += chPtr->width;
-		}
-		desired = tabX - width;
+	    width = 0;
+	    for (chPtr = nextChunkPtr; chPtr && !chPtr->integralPart; chPtr = chPtr->nextPtr) {
+		width += chPtr->width;
 	    }
-	}
+	    desired = MIN(tabX, data->maxX - data->tabOverhang) - width;
+	    data->tabApplied = false;
+	    break;
 	}
     }
+
+    desired += data->tabShift;
 
     /*
      * Shift all of the chunks to the right so that the left edge is at the
@@ -12649,10 +12922,315 @@ AdjustForTab(
      */
 
     delta = MAX(textPtr->spaceWidth, desired - x);
-    for (chPtr = nextChunkPtr; chPtr; chPtr = chPtr->nextPtr) {
-	chPtr->x += delta;
+
+    if (nextChunkPtr) {
+	for (chPtr = nextChunkPtr; chPtr; chPtr = chPtr->nextPtr) {
+	    chPtr->x += delta;
+	}
+	chunkPtr->width += delta;
+    } else {
+	chunkPtr->x = MAX(0, delta - chunkPtr->width);
     }
-    chunkPtr->width += delta;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * ComputeShiftForRightTab --
+ *
+ *	This estimates the amount of characters we have to shift to next
+ *	line for adjustment of right tabs. The computation is a bit tricky,
+ *	because we have to measure backwards.
+ *
+ * Results:
+ *	Store the number of characters for next line in 'data->shiftToNextLine'.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static void
+MeasureBackwards(
+    LayoutData *data,
+    TkTextSegment *firstSegPtr,
+    int offset,
+    TkTextSegment *lastSegPtr,
+    int lastOffset)
+{
+    TkTextSegment *segPtr;
+    int maxX = data->tabX % data->maxX;
+
+    data->shiftToNextLine = 0;
+    data->shiftToNextLinePos.segPtr = NULL;
+
+    for (segPtr = lastSegPtr; segPtr != firstSegPtr->prevPtr; segPtr = segPtr->prevPtr) {
+	switch (segPtr->typePtr->group) {
+	case SEG_GROUP_CHAR: {
+	    const char *p = segPtr->body.chars + (segPtr == firstSegPtr ? offset : 0);
+	    const char *e = segPtr->body.chars + (segPtr == lastSegPtr ? lastOffset : segPtr->size);
+	    unsigned length = e - p;
+
+	    if (e > p && e[-1] == '\n') {
+		e -= 1;
+		length -= 1;
+	    }
+
+	    if (length > 0) {
+		TextStyle *stylePtr = GetStyle(data->textPtr, segPtr);
+		char buffer[512];
+		char *str = buffer;
+		char *first;
+		char *last;
+		int nextX;
+		int fit;
+
+		if ((size_t) length > sizeof(buffer)) {
+		    str = malloc(length);
+		}
+		memcpy(str, p, length);
+
+		first = str;
+		last = str + length;
+		for (--last ; first < last; ++first, --last)
+		{
+		    char c = *first;
+		    *first = *last;
+		    *last = c;
+		}
+
+		fit = MeasureChars(stylePtr->sValuePtr->tkfont,
+			str, length, 0, length, 0, maxX, 0, &nextX);
+		FreeStyle(data->textPtr, stylePtr);
+
+		if (fit < (int) length && maxX - nextX > 0)
+		{
+		    int x;
+		    MeasureChars(stylePtr->sValuePtr->tkfont, str + fit, 1, 0, 1, 0, -1, 0, &x);
+		    data->tabOverhang = MAX(0, x - (maxX - nextX));
+		}
+		if (fit) {
+		    if (*e == '\n') {
+			fit += 1;
+			length += 1;
+		    }
+		    data->shiftToNextLine += fit;
+		    data->shiftToNextLinePos.segPtr = segPtr;
+		    data->shiftToNextLinePos.offset = (p - segPtr->body.chars) + length - fit;
+		    maxX -= nextX;
+		}
+		if (str != buffer) {
+		    free(str);
+		}
+		if (maxX <= 0) {
+		    return;
+		}
+	    }
+	    break;
+	}
+	case SEG_GROUP_HYPHEN:
+	    if (!data->textPtr->hyphenate) {
+		TextStyle *stylePtr;
+		int nextX, fit;
+
+		stylePtr = GetStyle(data->textPtr, segPtr);
+		fit = MeasureChars(stylePtr->sValuePtr->tkfont,
+			HYPHEN_STRING, HYPHEN_LENGTH, 0, HYPHEN_LENGTH, 0, maxX, 0, &nextX);
+		if (!fit) {
+		    return;
+		}
+		data->shiftToNextLine += fit;
+		data->shiftToNextLinePos.segPtr = segPtr;
+		data->shiftToNextLinePos.offset = 0;
+		maxX -= nextX;
+	    }
+	    break;
+	case SEG_GROUP_IMAGE:
+	case SEG_GROUP_WINDOW: {
+	    TkTextIndex index;
+
+	    TkTextIndexClear(&index, data->textPtr);
+	    TkTextIndexSetSegment(&index, segPtr);
+
+	    if (segPtr->typePtr->layoutProc(&index, segPtr, 0, maxX, 1, false, data->wrapMode,
+		    data->textPtr->spaceMode, NULL) == 0) {
+		return;
+	    }
+	    data->shiftToNextLine += 1;
+	    data->shiftToNextLinePos.segPtr = segPtr;
+	    data->shiftToNextLinePos.offset = 0;
+	    break;
+	}
+	case SEG_GROUP_BRANCH:
+	    if (segPtr->typePtr == &tkTextLinkType) {
+		segPtr = segPtr->body.link.prevPtr;
+	    }
+	    break;
+	case SEG_GROUP_MARK:
+	case SEG_GROUP_PROTECT:
+	case SEG_GROUP_TAG:
+	    break;
+	}
+    }
+}
+
+static TkTextSegment *
+FindEndOfTab(
+    LayoutData *data,
+    TkTextSegment *segPtr,
+    int offset,
+    int *lastOffset)
+{
+    TkTextSegment *firstSegPtr = segPtr;
+    TkTextSegment *lastSegPtr = segPtr;
+
+    *lastOffset = offset;
+
+    for ( ; segPtr; segPtr = segPtr->nextPtr) {
+	switch (segPtr->typePtr->group) {
+	case SEG_GROUP_CHAR: {
+	    const char *p = segPtr->body.chars + (segPtr == firstSegPtr ? offset : 0);
+	    const char *e = segPtr->body.chars + segPtr->size;
+
+	    for ( ; p < e; ++p) {
+		if (*p == '\t') {
+		    *lastOffset = p - segPtr->body.chars;
+		    return segPtr;
+		}
+	    }
+
+	    lastSegPtr = segPtr;
+	    *lastOffset = e - segPtr->body.chars;
+	    break;
+	}
+	case SEG_GROUP_HYPHEN: {
+	    if (data->textPtr->hyphenate) {
+		return lastSegPtr;
+	    }
+	    lastSegPtr = segPtr;
+	    *lastOffset = HYPHEN_LENGTH;
+	    break;
+	}
+	case SEG_GROUP_BRANCH:
+	    if (segPtr->typePtr == &tkTextBranchType) {
+		segPtr = segPtr->body.branch.nextPtr;
+	    }
+	    break;
+	case SEG_GROUP_IMAGE:
+	case SEG_GROUP_WINDOW:
+	    lastSegPtr = segPtr;
+	    *lastOffset = 1;
+	    break;
+	case SEG_GROUP_MARK:
+	case SEG_GROUP_PROTECT:
+	case SEG_GROUP_TAG:
+	    break;
+	}
+    }
+
+    return lastSegPtr;
+}
+
+static void
+ComputeShiftForRightTab(
+    LayoutData *data,
+    TkTextSegment *segPtr,
+    int offset)
+{
+    int lastOffset;
+    TkTextSegment *lastSegPtr = FindEndOfTab(data, segPtr, offset, &lastOffset);
+
+    assert(data->tabX > data->maxX);
+    MeasureBackwards(data, segPtr, offset, lastSegPtr, lastOffset);
+    if (data->shiftToNextLine) {
+	data->isRightTab = true;
+    }
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * IsStartOfTab --
+ *
+ *	Determine whether the given offset in segment is immediately after
+ *	tab character.
+ *
+ * Results:
+ *	Whether given offset in segment is immediately after tab character.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static bool
+IsStartOfTab(
+    TkTextSegment *segPtr,
+    int offset)
+{
+    if (offset > 0) {
+	return segPtr->body.chars[offset - 1] == '\t';
+    }
+    for ( ; segPtr; segPtr = segPtr->prevPtr) {
+	switch (segPtr->typePtr->group) {
+	case SEG_GROUP_CHAR:
+	    return segPtr->body.chars[segPtr->size - 1] == '\t';
+	case SEG_GROUP_HYPHEN:
+	case SEG_GROUP_IMAGE:
+	case SEG_GROUP_WINDOW:
+	    return false;
+	case SEG_GROUP_BRANCH:
+	    if (segPtr->typePtr == &tkTextLinkType) {
+		segPtr = segPtr->body.link.prevPtr;
+	    }
+	    break;
+	case SEG_GROUP_MARK:
+	case SEG_GROUP_PROTECT:
+	case SEG_GROUP_TAG:
+	    break;
+	}
+    }
+    return true;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * ComputeShiftForNumericTab --
+ *
+ *	This estimates the amount of characters we have to shift to next
+ *	line for adjustment of numeric tabs. The computation is a bit tricky,
+ *	because we have to measure backwards.
+ *
+ * Results:
+ *	Store the number of characters for next line in 'data->shiftToNextLine'.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+
+static void
+ComputeShiftForNumericTab(
+    LayoutData *data,
+    TkTextSegment *firstSegPtr,
+    int offset)
+{
+    TkTextSegment *lastSegPtr = data->lastNumericalPos.segPtr;
+
+    if (!lastSegPtr || !IsStartOfTab(firstSegPtr, offset)) {
+	return;
+    }
+
+    if (data->tabX < data->maxX) {
+	return; /* may happen with very small size */
+    }
+
+    MeasureBackwards(data, firstSegPtr, offset, lastSegPtr, data->lastNumericalPos.offset);
 }
 
 /*
@@ -12679,18 +13257,98 @@ AdjustForTab(
  *----------------------------------------------------------------------
  */
 
+static bool
+FindDecimalPointBackwards(
+    TkTextSegment *segPtr,
+    int offset)
+{
+    TkTextSegment *startSegPtr = segPtr;
+
+    for ( ; segPtr; segPtr = segPtr->prevPtr) {
+	if (segPtr->typePtr->group == SEG_GROUP_CHAR) {
+	    const char *p = segPtr->body.chars + (segPtr == startSegPtr ? offset : segPtr->size);
+
+	    for (--p; p >= segPtr->body.chars; --p) {
+		if (IsDecimalPoint(*p)) {
+		    return true;
+		}
+	    }
+	} else if (segPtr->typePtr->group == SEG_GROUP_BRANCH) {
+	    if (segPtr->typePtr == &tkTextLinkType) {
+		segPtr = segPtr->body.link.prevPtr;
+	    }
+	}
+    }
+    return false;
+}
+
+static void
+FindDecimalPoint(
+    LayoutData *data,
+    TkTextSegment *segPtr,
+    int offset)
+{
+    for ( ; segPtr; segPtr = segPtr->nextPtr) {
+	switch (segPtr->typePtr->group) {
+	case SEG_GROUP_CHAR: {
+	    const char *p = segPtr->body.chars + offset;
+	    const char *e = segPtr->body.chars + segPtr->size;
+
+	    for ( ; p < e; ++p) {
+		if (IsDecimalPoint(*p)) {
+		    data->lengthOfFractional = 0;
+		    data->decimalPointPos.segPtr = segPtr;
+		    data->decimalPointPos.offset = p - segPtr->body.chars;
+		} else if (*p == '\t' || *p == '\n') {
+		    return;
+		}
+		if (data->decimalPointPos.segPtr) {
+		    data->lengthOfFractional += 1;
+		}
+		data->lastNumericalPos.segPtr = segPtr;
+		data->lastNumericalPos.offset = p - segPtr->body.chars + 1;
+	    }
+
+	    offset = 0;
+	    break;
+	}
+	case SEG_GROUP_HYPHEN:
+	case SEG_GROUP_IMAGE:
+	case SEG_GROUP_WINDOW:
+	    if (data->decimalPointPos.segPtr) {
+		data->lengthOfFractional += segPtr->size;
+	    }
+	    data->lastNumericalPos.segPtr = segPtr;
+	    data->lastNumericalPos.offset = segPtr->size;
+	    break;
+	case SEG_GROUP_BRANCH:
+	    if (segPtr->typePtr == &tkTextBranchType) {
+		segPtr = segPtr->body.branch.nextPtr;
+	    }
+	    break;
+	case SEG_GROUP_MARK:
+	case SEG_GROUP_PROTECT:
+	case SEG_GROUP_TAG:
+	    break;
+	}
+    }
+}
+
 static void
 ComputeSizeOfTab(
-    LayoutData *data)
+    LayoutData *data,
+    TkTextSegment *segPtr,
+    int offset)
 {
     TkText *textPtr;
     TkTextTabArray *tabArrayPtr;
     unsigned tabWidth;
-    int tabX;
-    TkTextTabAlign alignment;
+    int min = 0; /* shut up the compiler */
 
     textPtr = data->textPtr;
     tabArrayPtr = data->tabArrayPtr;
+    data->tabApplied = false;
+    data->tabOverhang = 0;
 
     if (!tabArrayPtr || tabArrayPtr->numTabs == 0) {
 	/*
@@ -12714,20 +13372,20 @@ ComputeSizeOfTab(
 	     * We're using a default tab spacing calculated above.
 	     */
 
-	    tabX = tabWidth*(data->tabIndex + 1);
-	    alignment = LEFT;
+	    data->tabX = tabWidth*(data->tabIndex + 1);
+	    data->tabAlignment = LEFT;
 	} else if (data->tabIndex < tabArrayPtr->numTabs) {
-	    tabX = tabArrayPtr->tabs[data->tabIndex].location;
-	    alignment = tabArrayPtr->tabs[data->tabIndex].alignment;
+	    data->tabX = tabArrayPtr->tabs[data->tabIndex].location;
+	    data->tabAlignment = tabArrayPtr->tabs[data->tabIndex].alignment;
 	} else {
 	    /*
 	     * Ran out of tab stops; compute a tab position by extrapolating.
 	     */
 
-	    tabX = (int) (tabArrayPtr->lastTab
+	    data->tabX = (int) (tabArrayPtr->lastTab
 		    + (data->tabIndex + 1 - tabArrayPtr->numTabs)*tabArrayPtr->tabIncrement
 		    + 0.5);
-	    alignment = tabArrayPtr->tabs[tabArrayPtr->numTabs - 1].alignment;
+	    data->tabAlignment = tabArrayPtr->tabs[tabArrayPtr->numTabs - 1].alignment;
 	}
 
 	/*
@@ -12739,44 +13397,72 @@ ComputeSizeOfTab(
 	 *
 	 * With 'tabular' style tabs, we always use the data->tabIndex'th tab stop.
 	 */
-    } while (tabX <= data->x && data->tabStyle == TK_TEXT_TABSTYLE_WORDPROCESSOR);
+    } while (data->tabX <= data->x && data->tabStyle == TK_TEXT_TABSTYLE_WORDPROCESSOR);
+
+    if (data->displayLineNo > 0 && data->tabStyle != TK_TEXT_TABSTYLE_WORDPROCESSOR) {
+	int tabX = data->tabX - ((int) data->displayLineNo)*data->maxX;
+
+	if (data->tabAlignment == LEFT && data->x == 0) {
+	    data->tabShift = tabX;
+	}
+
+	data->tabX = MAX(0, tabX + data->tabShift);
+    }
 
     /*
      * Inform our caller of how many tab stops we've used up.
      */
 
-    switch (alignment) {
+    switch (data->tabAlignment) {
     case CENTER:
+	if (data->displayLineNo > 0 && data->x == 0) {
+	    data->tabSize = 0;
+	    return;
+	}
 	/*
 	 * Be very careful in the arithmetic below, because maxX may be the
 	 * largest positive number: watch out for integer overflow.
 	 */
-
-	if (data->maxX - tabX < tabX - data->x) {
-	    data->tabSize = data->maxX - data->x - 2*(data->maxX - tabX);
+	if (data->maxX - data->tabX < data->tabX - data->x) {
+	    data->tabSize = data->maxX - data->x - 2*(data->maxX - data->tabX);
+	    min = textPtr->spaceWidth;
 	} else {
-	    data->tabSize = 0;
+	    min = 0;
 	}
 	break;
 
     case RIGHT:
-	data->tabSize = 0;
+	data->isRightTab = false; /* will only be set when wrapping line */
+	data->tabSize = data->maxX - data->tabX - data->x;
+	min = (data->x == 0) ? 0 : textPtr->spaceWidth;
 	break;
 
-    case LEFT:
     case NUMERIC:
-	/*
-	 * Note: this treats NUMERIC alignment the same as LEFT alignment, which
-	 * is somewhat conservative. However, it's pretty tricky at this point to
-	 * figure out exactly where the damn decimal point will be.
+    	/*
+	 * We have to pre-compute the position of the last decimal point, and
+	 * the position of the first non-numerical character.
 	 */
+	data->isNumericTab = false;
+	data->decimalPointPos.segPtr = NULL;
+	data->shiftToNextLinePos.segPtr = NULL;
+	FindDecimalPoint(data, segPtr, offset);
+	if (data->decimalPointPos.segPtr) {
+	    data->lastNumericalPos = data->decimalPointPos;
+	    data->isNumericTab = true;
+	} else if (!FindDecimalPointBackwards(segPtr, offset)) {
+	    data->isNumericTab = true;
+	}
+	min = 0;
+	/* fallthru */
 
-	data->tabSize = tabX - data->x;
+    case LEFT:
+	data->tabSize = data->tabX - data->x;
 	assert(textPtr->spaceWidth > 0); /* ensure positive size */
+	min = (data->x == 0) ? 0 : textPtr->spaceWidth;
     	break;
     }
 
-    data->tabSize = MAX(data->tabSize, textPtr->spaceWidth);
+    data->tabSize = MAX(min, data->tabSize);
 }
 
 /*
@@ -13561,6 +14247,8 @@ CharChunkMeasureChars(
     				 * additional chars). */
     int startX,			/* Starting x coordinate where the measured span will begin. */
     int maxX,			/* Maximum pixel width of the span. May be -1 for unlimited. */
+    TkTextSpaceMode spaceMode,	/* How to handle displaying spaces. Must be TEXT_SPACEMODE_NONE,
+    				 * TEXT_SPACEMODE_EXACT, or TEXT_SPACEMODE_TRIM. */
     int flags,			/* Flags to pass to MeasureChars. */
     int *nextXPtr)		/* The function puts the newly calculated right border x-position of
     				 * the span here; can be NULL. */
@@ -13620,6 +14308,24 @@ CharChunkMeasureChars(
 
     if (end == -1) {
 	end = charsLen;
+    }
+
+    if (spaceMode == TEXT_SPACEMODE_TRIM && end > rangeStart) {
+	/*
+	 * Don't measure trimmed spaces.
+	 */
+	if (chars[end] == '\n') {
+	    end -= 1;
+	    while (end > rangeStart && IsBlank(chars[end - 1])) {
+		end -= 1;
+	    }
+	} else if (IsBlank(chars[end - 1])) {
+	    end -= 1;
+	    while (end > rangeStart && IsBlank(chars[end - 1])) {
+		end -= 1;
+	    }
+	    end += 1;
+	}
     }
 
     fit = MeasureChars(tkfont, chars, charsLen, rangeStart, end - rangeStart,
@@ -13720,12 +14426,7 @@ TkTextCharLayoutProc(
     p = segPtr->body.chars + byteOffset;
 
     bytesThatFit = CharChunkMeasureChars(chunkPtr, ciPtr->u.chars, ciPtr->baseOffset + maxBytes,
-	    ciPtr->baseOffset, -1, chunkPtr->x, maxX, TK_ISOLATE_END, &nextX);
-
-    /*
-     * NOTE: do not trim white spaces at the end of line, it would be impossible
-     * for the user to see typos like mistakenly typing two consecutive spaces.
-     */
+	    ciPtr->baseOffset, -1, chunkPtr->x, maxX, spaceMode, TK_ISOLATE_END, &nextX);
 
     if (bytesThatFit < maxBytes) {
 	if (bytesThatFit == 0 && noCharsYet) {
@@ -13755,7 +14456,7 @@ TkTextCharLayoutProc(
 	     */
 
 	    bytesThatFit = CharChunkMeasureChars(chunkPtr, ciPtr->u.chars, ciPtr->baseOffset + chLen,
-		    ciPtr->baseOffset, -1, chunkPtr->x, -1, 0, &nextX);
+		    ciPtr->baseOffset, -1, chunkPtr->x, -1, spaceMode, 0, &nextX);
 	}
 	if (spaceMode == TEXT_SPACEMODE_TRIM) {
 	    while (IsBlank(p[bytesThatFit])) {
@@ -14205,7 +14906,8 @@ DisplayChars(
      */
 
     offsetX = x;
-    offsetBytes = (x >= 0) ? CharChunkMeasureChars(chunkPtr, NULL, 0, 0, -1, x, 0, 0, &offsetX) : 0;
+    offsetBytes = (x >= 0) ? CharChunkMeasureChars(chunkPtr, NULL, 0, 0, -1, x, 0,
+	    textPtr->spaceMode, 0, &offsetX) : 0;
     DrawChars(textPtr, chunkPtr, x, y + baseline, offsetX, offsetBytes, display, dst);
 }
 
