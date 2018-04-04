@@ -294,6 +294,7 @@ public:
 	~ToList() throw();
 
 	Tcl_Obj* result();
+	unsigned countEmoticons() const;
 
 	void start() override;
 	void finish() override;
@@ -327,12 +328,14 @@ private:
 	mstl::string	m_space;
 	bool				m_detectEmoticons;
 	bool				m_expandEmoticons;
+	unsigned			m_countEmoticons;
 	Tcl_Obj*			m_first;
 	Tcl_Obj*			m_last;
 };
 
 
 Tcl_Obj* ToList::result() { return m_result; }
+unsigned ToList::countEmoticons() const { return m_countEmoticons; }
 
 
 ToList::ToList(mstl::string const& space, bool detectEmoticons, bool expandEmoticons)
@@ -340,6 +343,7 @@ ToList::ToList(mstl::string const& space, bool detectEmoticons, bool expandEmoti
 	,m_space(space)
 	,m_detectEmoticons(detectEmoticons)
 	,m_expandEmoticons(expandEmoticons)
+	,m_countEmoticons(0)
 	,m_first(0)
 	,m_last(0)
 {
@@ -484,7 +488,10 @@ ToList::putContent()
 					appendTag("str", str);
 
 				if (p < e)
+				{
 					appendTag("emo", util::emoticons::toAscii(emotion));
+					m_countEmoticons += 1;
+				}
 
 				s = q;
 			}
@@ -492,6 +499,26 @@ ToList::putContent()
 		else
 		{
 			appendTag("str", m_content);
+
+			// We have to count emoticons.
+
+			char const* s = m_content.begin();
+			char const* e = m_content.end();
+
+			while (s < e)
+			{
+				util::emoticons::Emotion emotion;
+
+				char const* q = s;
+				char const* p = util::emoticons::parseEmotion(q, e, emotion);
+
+				mstl::string str;
+
+				if (p < e)
+					m_countEmoticons += 1;
+
+				s = q;
+			}
 		}
 
 		m_content.clear();
@@ -592,6 +619,8 @@ ToList::emoticon(mstl::string const& s)
 			putContent();
 		appendTag("emo", s);
 	}
+
+	m_countEmoticons += 1;
 }
 
 
@@ -956,7 +985,9 @@ cmdXmlToList(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	ToList callback(space, detectEmoticons, expandEmoticons);
 	comment.parse(callback);
-	setResult(callback.result());
+
+	Tcl_Obj* objs[2] = { callback.result(), tcl::newObj(callback.countEmoticons()) };
+	setResult(2, objs);
 
 	return TCL_OK;
 }
