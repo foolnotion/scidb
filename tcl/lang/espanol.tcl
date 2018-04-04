@@ -2399,6 +2399,8 @@
 ::comment::mc::AppendContent			"Si \"no\" el texto se agregará al final."
 # Note for translators: "Emoticons" can be simply translated to "Smiley"
 ::comment::mc::DisplayEmoticons		"Display Emoticons" ;# NEW
+::comment::mc::ReallySwitch			"Really switch display mode?" ;# NEW
+::comment::mc::LosingChanges			"Switching the display mode will loose the history, this means you cannot undo the last edit operations." ;# NEW
 
 ::comment::mc::LanguageSelection		"Selección de idioma"
 ::comment::mc::Formatting				"Formateando"

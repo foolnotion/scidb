@@ -217,6 +217,9 @@ array set Colors {
 
 	lite:varslider,background				#ffdd76
 	lite:varslider,hilite					#ffc618
+
+	lite:comment,label:altered				#555555
+	lite:comment,label:foreground			white
 }
 # mapped from #ebf4f5
 array set Colors {

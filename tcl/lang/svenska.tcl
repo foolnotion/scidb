@@ -2405,6 +2405,8 @@
 ::comment::mc::AppendContent			"Ifall \"nej\" kommer texten att läggas till."
 # Note for translators: "Emoticons" can be simply translated to "Smiley"
 ::comment::mc::DisplayEmoticons		"Visa smiley"
+::comment::mc::ReallySwitch			"Really switch display mode?" ;# NEW
+::comment::mc::LosingChanges			"Switching the display mode will loose the history, this means you cannot undo the last edit operations." ;# NEW
 
 ::comment::mc::LanguageSelection		"Val av språk"
 ::comment::mc::Formatting				"Formaterar"

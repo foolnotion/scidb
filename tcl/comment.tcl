@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2013 Gregor Cramer
+# Copyright: (C) 2009-2017 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -41,6 +41,8 @@ set CopyText					"Copy text to"
 set OverwriteContent			"Overwrite existing content?"
 set AppendContent				"If \"no\" the text will be appended."
 set DisplayEmoticons			"Display Emoticons"
+set ReallySwitch				"Really switch display mode?"
+set LosingChanges				"Switching the display mode will loose the history, this means you cannot undo the last edit operations."
 
 set LanguageSelection		"Language selection"
 set Formatting					"Formatting"
@@ -61,7 +63,6 @@ namespace import ::dialog::choosecolor::rgb2hsv
 namespace import ::dialog::choosecolor::hsv2rgb
 
 array set Vars {
-	widget:text	{}
 	dialog		{}
 	key			{}
 	comment		{}
@@ -71,9 +72,10 @@ array set Vars {
 	format		{}
 	wantedLang	{}
 	countryList	{}
-	insert		1.0
+	insert		begin
 	lang			xx
 	count			0
+	emotions		0
 }
 
 array set Fonts {
@@ -111,7 +113,6 @@ set Symbols [join $::figurines::langSet(graphic) ""]
 proc open {parent pos lang} {
 	variable Annotations
 	variable Geometry
-	variable Fonts
 	variable Vars
 
 	set dlg $parent.__comment__
@@ -124,69 +125,27 @@ proc open {parent pos lang} {
 	destroy $top
 
 	set top [ttk::frame $dlg.top]
+	set main [::tk::multiwindow $top.main -borderwidth 0 -background white]
 	pack $dlg.top -fill both -expand yes
 	bind $dlg <<LanguageChanged>> [namespace code [list LanguageChanged $dlg %W]]
 	bind $dlg <Alt-Key> [list tk::AltKeyInDialog $dlg %A]
 
-	set Vars(widget:text) $top.text
+	set Vars(widget:main) $main
 	set Vars(key) [::scidb::game::position key]
 	set Vars(pos) $pos
-	set Vars(lang) xx
+	set Vars(lang) {}
 	set Vars(mc) $::mc::langID
 	set Vars(init) 0
-	set Vars(modified:cmd) [namespace code [list Modified $top.text]]
+	set Vars(background) $bg
 
-	# Currently the undo/redo mechanism of the text widget is not working properly
-	# (and quite useless). The Tk team does not like to handle this problem (see
-	# bug item #3192483). This comment widget has its own undo/redo implementation.
-	tk::text $top.text \
-		-height 6 \
-		-width 0 \
-		-background white \
-		-font $Fonts(normal) \
-		-wrap word \
-		-setgrid 1 \
-		-font $::font::text(text:normal) \
-		-yscrollcommand [list ::scrolledframe::sbset $top.sb] \
-		-undo no \
-		-maxundo 0 \
-		;
-	::scidb::tk::misc setClass $top.text Comment
-	ttk::scrollbar $top.sb -command [namespace code [list ::widget::textLineScroll $top.text]]
-
-	set font $Fonts(normal)
-	set fam [font configure $font -family]
-	set size [font configure $font -size]
-	foreach {attr args} {bold bold italic italic bold-italic {bold italic}} {
-		set f $Fonts($attr)
-		if {[llength $f] == 0} {
-			set f [list $fam $size {*}$args]
-		}
-		$top.text tag configure $attr -font $f
-		if {$attr eq "bold"} { $top.text tag configure codeb -font $f }
-	}
-	# XXX possibly we can use only {Scidb Symbol Traveller}
-	$top.text tag configure figurine -font $::font::figurine(text:normal)
-	$top.text tag configure figurineb -font $::font::figurine(text:bold)
-	$top.text tag configure symbol -font $::font::symbol(text:normal)
-	$top.text tag configure symbolb -font $::font::symbol(text:bold)
-	$top.text tag configure code -font [list $fam $size]
-	foreach tag {figurine figurineb symbol symbolb code codeb} {
-		$top.text tag configure underline -underline no
-	}
-	$top.text tag configure underline -underline yes
-
-	bind $top.text <ButtonPress-3>	 [namespace code [list PopupMenu $top.text]]
-	bind $top.text <Any-Button>		 [list $top.text configure -cursor xterm]
-	bind $top.text <Any-Button>		+[list ::tooltip::tooltip hide]
-	bind $top.text <<Modified>>		 $Vars(modified:cmd)
+	MakeEditor xx
 
 	set butts [ttk::frame $top.buttons]
 	ttk::button $butts.symbol \
 		-style aligned.TButton \
 		-compound left \
 		-image $::icon::iconBlackPawn \
-		-command [namespace code [list PopupSymbolTable $butts.symbol $top.text]] \
+		-command [namespace code [list PopupSymbolTable $butts.symbol]] \
 		;
 	ttk::button $butts.clear \
 		-style aligned.TButton \
@@ -204,7 +163,7 @@ proc open {parent pos lang} {
 	set Vars(lang:label) [LanguageName]
 	set Vars(widget:lang) $butts.lang
 	set Vars(widget:revert) $butts.revert
-	ttk::label $butts.lang \
+	ttk::label $Vars(widget:lang) \
 		-compound left \
 		-textvar [namespace current]::Vars(lang:label) \
 		-image $::country::icon::flag([::mc::countryForLang $lang]) \
@@ -217,14 +176,14 @@ proc open {parent pos lang} {
 	::widget::buttonSetText $butts.clear ::widget::mc::Clear
 	::widget::buttonSetText $butts.revert ::widget::mc::Revert
 
-	grid $top.text		-row 1 -column 1 -sticky ewns
-	grid $top.sb		-row 1 -column 2 -sticky ns
-	grid $top.buttons	-row 1 -column 4 -sticky ewns
+	grid $main	-row 1 -column 1 -sticky ewns
+	grid $butts	-row 1 -column 3 -sticky ewns
 
-	grid columnconfigure $top {0 3 5} -minsize $::theme::padding
-	grid columnconfigure $top 1 -weight 1
-	grid rowconfigure $top {0 2} -minsize $::theme::padding
+	grid rowconfigure $top {0 2} -minsize $::theme::pady
 	grid rowconfigure $top 1 -weight 1
+
+	grid columnconfigure $top 1 -weight 1
+	grid columnconfigure $top {0 2 4} -minsize $::theme::padx
 
 	grid $butts.lang		-row 1 -column 1 -sticky ew
 	grid $butts.symbol	-row 3 -column 1 -sticky ew
@@ -285,14 +244,14 @@ proc open {parent pos lang} {
 	::update idletasks
 	bind $dlg <Configure> [namespace code [list RecordGeometry $dlg $parent]]
 	bind $dlg <F1> [$dlg.hlp cget -command]
-	if {[scan [wm grid $dlg] "%d %d" w h] >= 2} {
-		incr h 3 ;# XXX why is it to small?
-		wm minsize $dlg $w $h
-	}
+
 	wm transient $dlg $parent
 	catch { wm attributes $dlg -type dialog }
 	wm resizable $dlg true true
 	wm protocol $dlg WM_DELETE_WINDOW [namespace code [list Close $dlg]]
+	# TODO need correction for minimal height, why?
+	wm minsize $dlg [winfo reqwidth $dlg] [expr {[winfo reqheight $dlg] + 40}]
+
 	if {[llength $Geometry] == 4} {
 		if {[scan [wm geometry [winfo toplevel $parent]] "%dx%d%d%d" tw th tx ty] == 4} {
 			set rx [expr {$tx + [lindex $Geometry 0]}]
@@ -311,10 +270,89 @@ proc open {parent pos lang} {
 
 	Init $parent $lang
 	wm deiconify $dlg
-	focus $top.text
+	focus [$main raise].text
 	ttk::grabWindow $dlg
 	tkwait window $dlg
 	ttk::releaseGrab $dlg
+}
+
+
+proc MakeEditor {lang} {
+	variable Fonts
+	variable Vars
+
+	if {	[info exists [namespace current]::Vars(widget:text:$lang)]
+		&& [winfo exists $Vars(widget:text:$lang)]} {
+		return $Vars(init:$lang)
+	}
+
+	if {![info exists Vars(init:$lang)]} { set Vars(init:$lang) 1 }
+
+	set f [tk::frame $Vars(widget:main).f-$lang -takefocus 0]
+	$Vars(widget:main) add $f
+
+	set t [tk::text $f.text \
+		-height 6 \
+		-width 0 \
+		-background white \
+		-font $Fonts(normal) \
+		-wrap word \
+		-font $::font::text(text:normal) \
+		-yscrollcommand [list ::scrolledframe::sbset $f.sb] \
+		-undo no \
+	]
+	set Vars(widget:text:$lang) $f
+	::scidb::tk::misc setClass $t Comment
+	set s [ttk::scrollbar $f.sb -command [namespace code [list ::widget::textLineScroll $t]]]
+	bind $t <<Altered>> [namespace code [list EditAltered $t]]
+
+	set font $Fonts(normal)
+	set fam [font configure $font -family]
+	set size [font configure $font -size]
+	foreach {attr args} {bold bold italic italic bold-italic {bold italic}} {
+		set ft $Fonts($attr)
+		if {[llength $ft] == 0} {
+			set ft [list $fam $size {*}$args]
+		}
+		$t tag configure $attr -font $ft
+		if {$attr eq "bold"} { $t tag configure codeb -font $ft }
+	}
+	# XXX possibly we can use only {Scidb Symbol Traveller}
+	$t tag configure figurine -font $::font::figurine(text:normal)
+	$t tag configure figurineb -font $::font::figurine(text:bold)
+	$t tag configure symbol -font $::font::symbol(text:normal)
+	$t tag configure symbolb -font $::font::symbol(text:bold)
+	$t tag configure code -font [list $fam $size]
+	foreach tag {figurine figurineb symbol symbolb code codeb} {
+		$t tag configure underline -underline no
+	}
+	$t tag configure underline -underline yes
+
+	bind $t <ButtonPress-3>	 [namespace code [list PopupMenu $t]]
+	bind $t <Any-Button>		 [list $t configure -cursor xterm]
+	bind $t <Any-Button>		+[list ::tooltip::tooltip hide]
+
+	grid $t -row 1 -column 1 -sticky ewns
+	grid $s -row 1 -column 2 -sticky ns
+
+	grid columnconfigure $f 1 -weight 1
+	grid rowconfigure $f 1 -weight 1
+
+	return 1
+}
+
+
+proc EditAltered {w} {
+	variable Vars
+
+	if {[$w edit altered]} {
+		set bg [::colors::lookup comment,label:altered]
+		set fg [::colors::lookup comment,label:foreground]
+	} else {
+		set bg $Vars(background)
+		set fg black
+	}
+	$Vars(widget:lang) configure -background $bg -foreground $fg
 }
 
 
@@ -360,10 +398,12 @@ proc MakeLanguageButtons {} {
 proc Accept {} {
 	variable Vars
 
-	SetUndoPoint $Vars(widget:text)
-	set Vars(content) [ParseContent $Vars(lang)]
-	set Vars(comment) [::scidb::misc::xml fromList $Vars(content) -replacewithspace \u2423]
+	set lang $Vars(lang)
+	SetUndoPoint $Vars(widget:text:$lang).text
+	set Vars(comment) [::scidb::misc::xml fromList [ParseContent $lang] -replacewithspace \u2423]
 	::scidb::game::update comment $Vars(key) $Vars(pos) $Vars(comment)
+	if {![info exists Vars(remember:$lang)]} { set Vars(remember:$lang) "" }
+	SetRevertState $lang
 }
 
 
@@ -379,28 +419,36 @@ proc Close {dlg} {
 proc Clear {} {
 	variable Vars
 
-	set w $Vars(widget:text)
+	set w $Vars(widget:text:$Vars(lang)).text
 
-	if {[$w count -chars 1.0 end] >= 1} {
+	if {![$w isempty]} {
 		SetUndoPoint $w
-		$w delete 1.0 end
+		$w delete begin end
 		focus $w
-		set lang $Vars(lang)
 		set Vars(count) 0
-		set Vars(content:$lang) {}
+		set Vars(emotions) 0
+		set Vars(content:$Vars(lang)) {}
+		set Vars(remember:$Vars(lang)) {}
+		SetRevertState $Vars(lang)
 	}
+}
+
+
+proc SetRevertState {lang} {
+	variable Vars
+
+	if {$Vars(remember:$lang) eq $Vars(content:$lang)} { set state disabled } else { set state normal }
+	$Vars(widget:revert) configure -state $state
 }
 
 
 proc Revert {dlg} {
 	variable Vars
 
-	set w $Vars(widget:text)
-	set comment [GetNormalizedComment]
+	set w $Vars(widget:text:$Vars(lang)).text
+	SetupComment $Vars(lang) $Vars(normalized:$Vars(lang))
 	SetUndoPoint $w
-	$w delete 1.0 end
-	SetupComment $Vars(lang) $comment
-	SetUndoPoint $w
+	$Vars(widget:revert) configure -state disabled
 	focus $w
 }
 
@@ -421,12 +469,15 @@ proc GetNormalizedComment {} {
 		-detectemoticons [DetectEmoticons] \
 		-replacespaces "\u2423" \
 	]
+	set content [lindex $content 0]
 
 	foreach entry $content {
 		lassign $entry lang comment
 		if {[string length $lang] == 0} { set lang xx }
 		if {$lang eq $Vars(lang)} { return $comment }
 	}
+
+	return ""
 }
 
 
@@ -434,8 +485,7 @@ proc Apply {} {
 	variable Vars
 
 	Accept
-	$Vars(widget:revert) configure -state disabled
-	focus $Vars(widget:text)
+	focus $Vars(widget:text:$Vars(lang)).text
 }
 
 
@@ -448,7 +498,6 @@ proc Ok {dlg} {
 proc RecordGeometry {dlg parent} {
 	variable Geometry
 
-	lassign $Geometry fx fy fw fh
 	if {[scan [wm geometry $dlg] "%dx%d%d%d" fw fh fx fy] == 4} {
 		if {[scan [wm geometry [winfo toplevel [winfo toplevel $parent]]] "%dx%d%d%d" tw th tx ty] == 4} {
 			set Geometry [list [expr {max(0, $fx) - $tx}] [expr {max(0, $fy) - $ty}] $fw $fh]
@@ -460,48 +509,65 @@ proc RecordGeometry {dlg parent} {
 proc Init {parent lang} {
 	variable Vars
 
-	LanguageChanged $Vars(dialog) $Vars(dialog)
+	foreach l [array names Vars content:*] {
+		set Vars(init:$l) 0
+	}
 
 	set Vars(comment) [GetComment]
-	set Vars(langSet) [lremove [::scidb::game::query langSet] ""]
-
-	SwitchLanguage $lang
-	MakeLanguageButtons
-	Update
-}
-
-
-proc Update {{setup 1}} {
-	variable Vars
-
-	set w $Vars(widget:text)
-	$w delete 1.0 end
-	set Vars(count) 0
-
+	set Vars(langSet) [::scidb::game::query langSet]
 	array unset Vars content:*
 	array unset Vars symbol:*
 
-	if {$setup} {
-		array unset Vars undoStack:*
-		array unset Vars undoStackIndex:*
-
-		set Vars(content) [::scidb::misc::xml toList $Vars(comment) \
-			-expandemoticons [ExpandEmoticons] \
-			-detectemoticons [DetectEmoticons] \
-			-replacespaces "\u2423" \
-		]
-	}
-
-	foreach entry $Vars(content) {
-		lassign $entry lang comment
-		SetupComment $lang $comment $setup
-		if {$setup && $lang eq $Vars(lang)} {
-			if {[string length $lang] == 0} { set lang xx }
-			SetUndoPoint $w $lang
+	foreach l $Vars(langSet) {
+		if {[info exists Vars(widget:text:$l).text]} {
+			set w $Vars(widget:text:$l).text
+			$w delete begin end
+			$w edit reset ;# XXX
 		}
 	}
 
-	UpdateFormatButtons $w
+	set Vars(langSet) [lremove $Vars(langSet) ""]
+
+	set content [::scidb::misc::xml toList $Vars(comment) \
+		-expandemoticons [ExpandEmoticons] \
+		-detectemoticons [DetectEmoticons] \
+		-replacespaces "\u2423" \
+	]
+
+	foreach comm [lindex $content 0] {
+		lassign $comm l value
+		if {[string length $l] == 0} { set l xx }
+		set Vars(content:$l) $value
+		set Vars(remember:$l) $value
+		set Vars(init:$l) 1
+	}
+
+	SwitchLanguage $lang yes
+	LanguageChanged $Vars(dialog) $Vars(dialog)
+	UpdateFormatButtons $Vars(widget:text:$lang).text
+	MakeLanguageButtons
+}
+
+
+proc SwitchLanguage {lang {setup no}} {
+	variable Vars
+
+	if {$lang eq $Vars(lang)} { return }
+
+	foreach fmt {bold italic underline} { set Vars(format:$fmt) 0 }
+	set Vars(format) ""
+	set Vars(lang) $lang
+
+	if {[MakeEditor $lang]} {
+		SetupComment $lang [GetNormalizedComment] $setup
+	}
+
+	set w $Vars(widget:text:$lang).text
+	set Vars(lang:label) [LanguageName]
+	$Vars(widget:lang) configure -image $::country::icon::flag([::mc::countryForLang $lang])
+	$Vars(widget:main) raise [winfo parent $w]
+	EditAltered $w
+	focus $w
 }
 
 
@@ -510,20 +576,30 @@ proc SetupComment {lang comment {setup 0}} {
 
 	if {$lang eq ""} { set lang xx }
 	set Vars(content:$lang) $comment
+	set Vars(init:$lang) 0
+	set Vars(normalized:$lang) $comment
+
+	set w $Vars(widget:text:$lang).text
+	$w delete begin end
+	$w configure -undo no
+
 	if {$lang eq $Vars(lang)} {
 		if {[info exists Vars(content:$lang)]} {
 			InsertComment $lang $Vars(content:$lang) $setup
 		}
 	}
+
+	$w configure -undo yes
 }
 
 
 proc InsertComment {lang content {setup 0}} {
 	variable Vars
 
-	set w $Vars(widget:text)
+	set w $Vars(widget:text:$lang).text
 	set Vars(symbols) {}
 	set Vars(count) 0
+	set Vars(emotions) 0
 	set Vars(init) 1
 
 	set fmt [list 0 [$w index current]]
@@ -554,10 +630,8 @@ proc InsertComment {lang content {setup 0}} {
 	set Vars(init) 0
 
 	if {$setup} {
-		set Vars(dump:$lang) [ParseDump [$Vars(widget:text) dump -tag -image -text 1.0 end]]
+		set Vars(dump:$lang) [ParseDump [$w dump -tag -image -text begin end]]
 		$Vars(widget:revert) configure -state disabled
-	} else {
-		Modified $w
 	}
 }
 
@@ -662,7 +736,6 @@ proc InsertEmoticon {w text {useFormatting yes}} {
 		if {$useFormatting} {
 			DoFormatting $w $mark $mark
 		}
-		Modified $w
 	} else {
 		InsertText $w [::emoticons::lookupCode $text] {} $useFormatting
 	}
@@ -670,6 +743,7 @@ proc InsertEmoticon {w text {useFormatting yes}} {
 
 
 proc InsertText {w text tags useFormatting} {
+	SetUndoPoint $w
 	set selrange [$w tag ranges sel]
 
 	if {	[llength $selrange]
@@ -685,6 +759,8 @@ proc InsertText {w text tags useFormatting} {
 	if {$useFormatting} {
 		DoFormatting $w $pos [$w index current]
 	}
+
+	SetUndoPoint $w
 }
 
 
@@ -732,6 +808,8 @@ proc PasteText {w {str ""}} {
 	}
 
 	SetUndoPoint $w
+
+	# TODO detect emoticons
 
 	set n [string length $str]
 	set i 0
@@ -848,76 +926,11 @@ proc ParseDump {dump} {
 }
 
 
-proc Modified {w} {
+proc SetUndoPoint {w args} {
 	variable Vars
 
-	# Work-around for Tk 8.6 bug.
-	bind $w <<Modified>> {#}
-	$w edit modified no
-	bind $w <<Modified>> $Vars(modified:cmd)
-
-	if {$Vars(init)} { return }
-
-	set lang $Vars(lang)
-
-	if {[info exists Vars(content:$lang)]} {
-		if {[string length $Vars(content:$lang)] == 0} {
-			$Vars(widget:revert) configure -state disabled
-		} else {
-			set content [DumpToComment [$Vars(widget:text) dump -tag -image -text 1.0 end]]
-			if {$Vars(content:$lang) ne $content} { set state normal } else { set state disabled }
-			$Vars(widget:revert) configure -state $state
-		}
-	}
-}
-
-
-proc SetUndoPoint {w {lang {}}} {
-	variable Vars
-
-	if {$Vars(init)} { return }
-	if {[string length $lang] == 0} { set lang $Vars(lang) }
-
-	set dump [$w dump -tag -image -text 1.0 end]
-	set text [ParseDump $dump]
-	set content [DumpToComment $dump]
-	set mark [$w index insert]
-
-	if {[info exists Vars(undoStack:$lang)]} {
-		set prevContent [lindex $Vars(undoStack:$lang) $Vars(undoStackIndex:$lang) 2]
-
-		if {$content eq [lindex $Vars(undoStack:$lang) $Vars(undoStackIndex:$lang) 2]} {
-			lset Vars(undoStack:$lang) $Vars(undoStackIndex:$lang) 0 $mark
-			return
-		}
-
-		set Vars(undoStack:$lang) [lrange $Vars(undoStack:$lang) 0 $Vars(undoStackIndex:$lang)]
-		incr Vars(undoStackIndex:$lang)
-	} else {
-		set Vars(undoStackIndex:$lang) 0
-	}
-
-	lappend Vars(undoStack:$lang) [list $mark $text $content]
-}
-
-
-proc CheckFormat {text} {
-	return $text
-}
-
-
-proc DoUndo {lang inc} {
-	variable Vars
-
-	set w $Vars(widget:text)
-	incr Vars(undoStackIndex:$lang) $inc
-	set currentText [ParseDump [$w dump -tag -image -text 1.0 end]]
-	lassign [lindex $Vars(undoStack:$lang) $Vars(undoStackIndex:$lang)] mark text content
-	$w delete 1.0 end
-	InsertComment $lang $content
-	if {$currentText ne $text} {
-		$w mark set insert $mark
-		$w see insert
+	if {!$Vars(init)} {
+		$w edit separator {*}$args
 	}
 }
 
@@ -925,27 +938,27 @@ proc DoUndo {lang inc} {
 proc EditUndo {} {
 	variable Vars
 
-	set lang $Vars(lang)
-	if {![info exists Vars(undoStack:$lang)]} { return }
-	SetUndoPoint $Vars(widget:text)
-	if {$Vars(undoStackIndex:$lang) == 0} { return }
-	DoUndo $lang -1
+	set w $Vars(widget:text:$Vars(lang)).text
+
+	if {[set [$w edit info](undodepth)]} {
+		SetUndoPoint $w
+		$w edit undo
+	}
 }
 
 
 proc EditRedo {} {
 	variable Vars
 
-	set lang $Vars(lang)
-	if {![info exists Vars(undoStack:$lang)]} { return }
-	if {$Vars(undoStackIndex:$lang) >= [llength $Vars(undoStack:$lang)] - 1} { return }
-	DoUndo $lang +1
+	set w $Vars(widget:text:$Vars(lang)).text
+
+	if {[set [$w edit info](redodepth)]} {
+		$w edit redo
+	}
 }
 
 
 proc TooltipShowNag {w key type value} {
-	variable Options
-
 	::tooltip::show $w "$::annotation::mc::Nag($value) (\$$value)"
 	$w configure -cursor question_arrow
 }
@@ -958,26 +971,24 @@ proc TooltipShowEmoticon {w emotion} {
 
 
 proc TooltipHide {w} {
-	variable Options
-
 	::tooltip::tooltip hide
 	$w configure -cursor xterm
 }
 
 
-proc LanguageChanged {dlg w} {
+proc LanguageChanged {dlg dialog} {
 	variable ::figurines::langSet
 	variable Vars
 
-	if {$dlg ne $w} { return }
+	if {$dlg ne $dialog} { return }
 
-	set t $Vars(widget:text)
+	set w $Vars(widget:text:$Vars(lang)).text
 	foreach fig $langSet($Vars(mc)) {
-		bind $t <Control-Shift-$fig> {#}
+		bind $w <Control-Shift-$fig> {#}
 	}
 	foreach fig $langSet($::mc::langID) eng $langSet(en) {
-		bind $t <Control-Shift-$fig> [namespace code [list InsertFigurine $t $eng]]
-		bind $t <Control-Shift-$fig> {+ break }
+		bind $w <Control-Shift-$fig> [namespace code [list InsertFigurine $w $eng]]
+		bind $w <Control-Shift-$fig> {+ break }
 	}
 	set Vars(mc) $::mc::langID
 
@@ -1005,25 +1016,7 @@ proc MakeCountryList {} {
 }
 
 
-proc SwitchLanguage {lang} {
-	variable Vars
-
-	foreach fmt {bold italic underline} { set Vars(format:$fmt) 0 }
-	set Vars(format) ""
-
-	if {$lang eq $Vars(lang)} { return }
-
-	SetUndoPoint $Vars(widget:text)
-	set Vars(content) [ParseContent $Vars(lang)]
-	set Vars(lang) $lang
-	set Vars(lang:label) [LanguageName]
-	$Vars(widget:lang) configure -image $::country::icon::flag([::mc::countryForLang $Vars(lang)])
-	Update 0
-}
-
-
 proc DumpToComment {dump} {
-	variable Options
 	variable Vars
 
 	set count 0
@@ -1034,6 +1027,7 @@ proc DumpToComment {dump} {
 	foreach {key value index} $dump {
 		switch $key {
 			text {
+				# TODO count emoticons
 				incr count $n
 				set lst 1
 				if {$fst == 0} { set fst 1 }
@@ -1166,8 +1160,8 @@ proc DumpToComment {dump} {
 	append newContent $content
 	append newContent "}}"
 	set newContent [::scidb::misc::xml fromList $newContent]
-	set newContent [::scidb::misc::xml toList $newContent \
-		-expandemoticons [ExpandEmoticons] -detectemoticons [DetectEmoticons]]
+	lassign [::scidb::misc::xml toList $newContent \
+		-expandemoticons [ExpandEmoticons] -detectemoticons [DetectEmoticons]] newContent Vars(emotions)
 	set content [lindex $newContent 0 1]
 
 	return $content
@@ -1189,8 +1183,8 @@ proc DetectEmoticons {} {
 proc ParseContent {lang} {
 	variable Vars
 
-	set w $Vars(widget:text)
-	set content [DumpToComment [$w dump -tag -image -text 1.0 end]]
+	set w $Vars(widget:text:$lang).text
+	set Vars(content:$lang) [DumpToComment [$w dump -tag -image -text begin end]]
 
 	set languages ""
 	foreach name [array names Vars content:*] {
@@ -1203,18 +1197,18 @@ proc ParseContent {lang} {
 	set result ""
 	foreach l $languages {
 		if {$l eq "xx"} { set code "" } else { set code $l }
-		if {$lang eq $l} { set value $content } else { set value $Vars(content:$l) }
-		lappend result [list $code $value]
+		lappend result [list $code $Vars(content:$l)]
 	}
 
 	return $result
 }
 
 
-proc PopupSymbolTable {w text} {
+proc PopupSymbolTable {w} {
 	variable NagSet
 	variable DingbatSet
 	variable Colors
+	variable Vars
 	variable _Symbol
 
 	set ncols 9
@@ -1400,6 +1394,7 @@ proc PopupSymbolTable {w text} {
 	ttk::releaseGrab $top
 	destroy $m
 	::tooltip::tooltip on
+	set text $Vars(widget:text:$Vars(lang)).text
 
 	if {[llength $_Symbol]} {
 		switch [lindex $_Symbol 0] {
@@ -1539,7 +1534,8 @@ proc PopupMenu {parent} {
 	}
 	$m add separator
 
-	if {$Vars(undoStackIndex:$lang) == 0} { set state disabled } else { set state normal }
+	set t $Vars(widget:text:$Vars(lang)).text
+	if {[set [$t edit info](undodepth)]} { set state normal } else { set state disabled }
 	$m add command \
 		-compound left \
 		-image $::icon::16x16::undo \
@@ -1548,11 +1544,7 @@ proc PopupMenu {parent} {
 		-command [namespace code EditUndo] \
 		-state $state \
 		;
-	if {$Vars(undoStackIndex:$lang) < [llength $Vars(undoStack:$lang)] - 1} {
-		set state normal
-	} else {
-		set state disabled
-	}
+	if {[set [$t edit info](redodepth)]} { set state normal } else { set state disabled }
 	$m add command \
 		-compound left \
 		-image $::icon::16x16::redo \
@@ -1561,13 +1553,13 @@ proc PopupMenu {parent} {
 		-command [namespace code EditRedo] \
 		-state $state \
 		;
-	if {[::widget::textIsEmpty? $Vars(widget:text)]} { set state disabled } else { set state normal }
+	set state [expr {[::widget::textIsEmpty? $t] ? "disabled" : "normal"}]
 	$m add command \
 		-compound left \
 		-image $::icon::16x16::selectAll \
 		-label " $::mc::SelectAll" \
 		-accelerator ${accel}A \
-		-command [list $Vars(widget:text) tag add sel 1.0 end] \
+		-command [list $t tag add sel begin end] \
 		-state $state \
 		;
 	$m add command \
@@ -1780,7 +1772,6 @@ proc PopupChooseLanguage {dlg} {
 
 proc PopupLanguageMenu {dlg} {
 	variable Vars
-	variable Options
 
 	MakeLanguageMenu $dlg.langMenu
 	catch { wm attributes $dlg.langMenu -type popup_menu }
@@ -1936,19 +1927,34 @@ proc DisplayEmoticons {} {
 	variable Options
 	variable Vars
 
-	set w $Vars(widget:text)
 	set lang $Vars(lang)
+	set w $Vars(widget:text:$lang).text
 	set mark [$w index current]
 
 	set comment "{xx {"
-	append comment [DumpToComment [$w dump -tag -image -text 1.0 end]]
+	append comment [DumpToComment [$w dump -tag -image -text begin end]]
 	append comment "}}"
+
+	if {$Vars(emotions) == 0} { return }
+
+	if {[set [$w edit info](undodepth)]} {
+		set reply [::dialog::question \
+			-parent [winfo toplevel $w] \
+			-title $::scidb::app \
+			-message $mc::ReallySwitch \
+			-detail $mc::LosingChanges \
+			-default no \
+		]
+		if {$reply eq "no"} {
+			set Options(showEmoticons) [expr {!$Options(showEmoticons)}]
+			return
+		}
+	}
 
 	if {$Options(showEmoticons)} { set opt -detectemoticons } else { set opt -expandemoticons }
 	set content [::scidb::misc::xml fromList $comment]
-	set content [::scidb::misc::xml toList $content $opt 1]
+	set content [lindex [::scidb::misc::xml toList $content $opt 1] 0]
 
-	$w delete 1.0 end
 	SetupComment $lang [lindex $content 0 1]
 	$w mark set insert $mark
 	$w see insert
@@ -1960,9 +1966,11 @@ proc NewLanguage {lang} {
 
 	if {$lang ni $Vars(langSet)} {
 		lappend Vars(langSet) $lang
-		SwitchLanguage $lang
+		set Vars(langSet) [lsort $Vars(langSet)]
+		SwitchLanguage $lang yes
 		MakeLanguageButtons
 		set Vars(content:$lang) ""
+		set Vars(remember:$lang) ""
 	}
 }
 
@@ -1985,12 +1993,12 @@ proc LanguageName {{lang {}}} {
 proc CopyText {fromLang toLang} {
 	variable Vars
 
-	SetUndoPoint $Vars(widget:text) $toLang
+	SetUndoPoint $Vars(widget:text:$toLang).text
 
 	if {[info exists Vars(content:$toLang)]} {
 		if {[string length $Vars(content:$toLang)]} {
 			set reply [::dialog::question \
-				-parent [winfo toplevel $Vars(widget:text)] \
+				-parent [winfo toplevel $Vars(widget:text:$toLang).text] \
 				-title $::scidb::app \
 				-message $mc::OverwriteContent \
 				-detail $mc::AppendContent \
@@ -2013,17 +2021,18 @@ proc CopyText {fromLang toLang} {
 proc ChangeFormat {format {toggle no}} {
 	variable Vars
 
-	set w $Vars(widget:text)
-	set content [DumpToComment [$w dump -tag -text 1.0 end]]
+	set w $Vars(widget:text:$Vars(lang)).text
+	set content [DumpToComment [$w dump -tag -text begin end]]
 	set selrange [$w tag ranges sel]
 	ToggleFormat $format $toggle
 	if {[llength $selrange] == 0} { return }
+	SetUndoPoint $w -immediately
 
 	lassign $selrange prevIndex lastIndex
 	array set flags {bold 0 italic 0 underline 0 code 0 codeb 0 symbol 0 symbolb 0 figurine 0 figurineb 0}
 	set flags($format) $Vars(format:$format)
 
-	foreach {key value index} [$w dump -tag 1.0 end] {
+	foreach {key value index} [$w dump -tag begin end] {
 		if {[$w compare $prevIndex <= $index] && [$w compare $index <= $lastIndex]} {
 			if {$prevIndex ne $index} {
 				set range [list $prevIndex $index]
@@ -2085,7 +2094,7 @@ proc ChangeFormat {format {toggle no}} {
 		}
 	}
 
-	Modified $Vars(widget:text)
+	SetUndoPoint $w -immediately
 }
 
 
@@ -2216,7 +2225,7 @@ proc TextSetCursorExt {w pos {dir -1}} {
 				$w mark set insert insert+1c
 				$w see insert
 			}
-		} elseif {[$w compare insert != 1.0]} {
+		} elseif {[$w compare insert != begin]} {
 			if {[$w get insert] eq "\n"} {
 				$w mark set insert insert-1c
 				$w see insert
@@ -2240,7 +2249,7 @@ proc TextUpDownLine {w n} {
 	variable ::tk::Priv
 
 	set pos [::tk::TextUpDownLine $w $n]
-	if {[$w compare $pos != 1.0]} {
+	if {[$w compare $pos != begin]} {
 		if {[$w get $pos] eq "\n"} { set pos [$w index $pos-1displayindices] }
 		set Priv(prevPos) $pos
 	}
@@ -2250,7 +2259,7 @@ proc TextUpDownLine {w n} {
 
 proc TextPrevPara {w pos} {
 	set pos [::tk::TextPrevPara $w $pos]
-	if {[$w compare $pos != 1.0]} {
+	if {[$w compare $pos != begin]} {
 		if {[$w get $pos] eq "\n"} { set pos [$w index $pos-1displayindices] }
 		set Priv(prevPos) $pos
 	}
@@ -2260,7 +2269,7 @@ proc TextPrevPara {w pos} {
 
 proc TextNextPara {w pos} {
 	set pos [::tk::TextNextPara $w $pos]
-	if {[$w compare $pos != 1.0]} {
+	if {[$w compare $pos != begin]} {
 		if {[$w get $pos] eq "\n"} { set pos [$w index $pos-1displayindices] }
 		set Priv(prevPos) $pos
 	}
@@ -2270,7 +2279,7 @@ proc TextNextPara {w pos} {
 
 proc TextNextPos {w start op} {
 	set pos [::tk::TextNextPos $w $start $op]
-	if {[$w compare $pos != 1.0]} {
+	if {[$w compare $pos != begin]} {
 		if {[$w get $pos] eq "\n"} { set pos [$w index $pos-1displayindices] }
 	}
 	return $pos
@@ -2279,7 +2288,7 @@ proc TextNextPos {w start op} {
 
 proc TextPrevPos {w start op} {
 	set pos [::tk::TextPrevPos $w $start $op]
-	if {[$w compare $pos != 1.0]} {
+	if {[$w compare $pos != begin]} {
 		if {[$w get $pos] eq "\n"} { set pos [$w index $pos-1displayindices] }
 	}
 	return $pos
@@ -2288,7 +2297,7 @@ proc TextPrevPos {w start op} {
 
 proc TextScrollPages {w count} {
 	set pos [::tk::TextScrollPages $w $count]
-	if {[$w compare $pos != 1.0]} {
+	if {[$w compare $pos != begin]} {
 		if {[$w get $pos] eq "\n"} { set pos [$w index $pos-1displayindices] }
 	}
 	return $pos
@@ -2296,16 +2305,16 @@ proc TextScrollPages {w count} {
 
 
 proc TextBackSpace {w} {
-	if {[$w tag nextrange sel 1.0 end] ne ""} {
+	if {[$w tag nextrange sel begin end] ne ""} {
 		set c [$w get sel.last]
 		if {$c eq "\u00b6"} { set incr +1c } else { set incr "" }
 		set c [$w get sel.first]
 		if {$c eq "\n" } { set decr -1c } else { set decr "" }
 		$w delete sel.first$decr sel.last$incr
-	} elseif {[$w compare insert != 1.0]} {
+	} elseif {[$w compare insert != begin]} {
 		set c [$w get insert-1c]
 		if {$c eq "\n"} {
-			if {	[$w compare insert-1c == 1.1]
+			if {	[$w compare insert-1c == [$w index begin+1c]]
 				|| [string is space [$w get insert-3c]]
 				|| [string is space [$w get insert]]} {
 				$w delete insert-2c insert
@@ -2313,7 +2322,7 @@ proc TextBackSpace {w} {
 				$w replace insert-2c insert " "
 			}
 		} elseif {$c eq "\u00b6"} {
-			if {	[$w compare insert == 1.1]
+			if {	[$w compare insert == [$w index begin+1c]]
 				|| [string is space [$w get insert-2c]]
 				|| [string is space [$w get insert+1c]]} {
 				$w delete insert-1c insert+1c
@@ -2334,7 +2343,7 @@ proc TextBackSpace {w} {
 proc TextDelete {w} {
 	SetUndoPoint $w
 
-	if {[$w tag nextrange sel 1.0 end] ne ""} {
+	if {[$w tag nextrange sel begin end] ne ""} {
 		set c [$w get sel.last-1c]
 		if {$c eq "\u00b6"} { set incr +1c } else { set incr "" }
 		set c [$w get sel.first]
@@ -2346,7 +2355,7 @@ proc TextDelete {w} {
 			if {[$w compare insert == end-1c]} {
 				# special case, seems to be a Tk bug
 				$w delete insert-2c insert
-			} elseif {	[$w compare insert == 1.1]
+			} elseif {	[$w compare insert == [$w index begin+1c]]
 						|| [string is space [$w get insert-2c]]
 						|| [string is space [$w get insert+1c]]} {
 				$w delete insert-1c insert+1c
@@ -2354,7 +2363,7 @@ proc TextDelete {w} {
 				$w replace insert-1c insert+1c " "
 			}
 		} elseif {$c eq "\u00b6"} {
-			if {	[$w compare insert == 1.0]
+			if {	[$w compare insert == begin]
 				|| [string is space [$w get insert-1c]]
 				|| [string is space [$w get insert+2c]]} {
 				$w delete insert insert+2c
@@ -2785,8 +2794,8 @@ bind Comment <Control-n>		{ comment::TextSetCursorExt %W [comment::TextUpDownLin
 bind Comment <Control-N>		{ comment::TextSetCursorExt %W [comment::TextUpDownLine %W 1] }
 bind Comment <Control-p>		{ comment::TextSetCursorExt %W [comment::TextUpDownLine %W -1] }
 bind Comment <Control-P>		{ comment::TextSetCursorExt %W [comment::TextUpDownLine %W -1] }
-bind Comment <Control-a>		{ %W tag add sel 1.0 end }
-bind Comment <Control-A>		{ %W tag add sel 1.0 end }
+bind Comment <Control-a>		{ %W tag add sel begin end }
+bind Comment <Control-A>		{ %W tag add sel begin end }
 bind Comment <Control-w>		{ %W delete insert [tk::TextNextWord %W insert] }
 bind Comment <Control-W>		{ %W delete insert [tk::TextNextWord %W insert] }
 bind Comment <Control-T>		{ tk::TextTranspose %W }

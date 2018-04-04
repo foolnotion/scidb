@@ -2393,6 +2393,8 @@
 ::comment::mc::OverwriteContent		"Vorhandenen Inhalt überschreiben?"
 ::comment::mc::AppendContent			"Falls \"nein\" wird der Text angefügt."
 ::comment::mc::DisplayEmoticons		"Smileys anzeigen"
+::comment::mc::ReallySwitch			"Anzeigemodus wirklich ändern?"
+::comment::mc::LosingChanges			"Die Änderungs des Anzeigemodus wird die Historie verlieren, daß heißt das keine Edieroperation rückgängig gemacht werden kann."
 
 ::comment::mc::LanguageSelection		"Sprachauswahl"
 ::comment::mc::Formatting				"Formatierung"

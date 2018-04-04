@@ -1747,7 +1747,7 @@ proc PrintComment {position w level key pos data} {
 	set lastChar ""
 	set paragraph 0
 
-	foreach entry [::scidb::misc::xml toList $data] {
+	foreach entry [lindex [::scidb::misc::xml toList $data] 0] {
 		lassign $entry lang comment
 		if {[string length $lang] == 0} {
 			set lang xx
@@ -1844,7 +1844,7 @@ proc PrintMoveInfo {position w level key data} {
 	set underline 0
 	set flags 0
 	set count 0
-	set moveInfo [lindex [::scidb::misc::xml toList $data] 0 1]
+	set moveInfo [lindex [::scidb::misc::xml toList $data] 0 0 1]
 
 	foreach pair $moveInfo {
 		lassign $pair code text

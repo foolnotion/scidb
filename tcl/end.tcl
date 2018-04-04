@@ -344,6 +344,15 @@ if {[catch {
 		::scidb::themes::update
 		set ::beta::WhatsNew 1
 	}
+
+	if {[llength $::comment::Geometry] == 4} {
+		lassign $::comment::Geometry w h x y
+		if {$w < 100 || $h < 50} {
+			set w [expr {$w*10}]
+			set h [expr {$h*10}]
+			set ::comment::Geometry [list $w $h $x $y]
+		}
+	}
 }]} {
 	puts "Start-up failed."
 	puts "Please try \"[file tail $nameofexecutable] --first-time\"."

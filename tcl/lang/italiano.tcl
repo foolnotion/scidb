@@ -2407,6 +2407,8 @@
 ::comment::mc::OverwriteContent		"Sovrascrivere contenuto esistente?"
 ::comment::mc::AppendContent			"Se \"no\" il testo sarà aggiunto."
 ::comment::mc::DisplayEmoticons		"Mostra Emoticons"
+::comment::mc::ReallySwitch			"Really switch display mode?" ;# NEW
+::comment::mc::LosingChanges			"Switching the display mode will loose the history, this means you cannot undo the last edit operations." ;# NEW
 
 ::comment::mc::LanguageSelection		"Selezione lingua"
 ::comment::mc::Formatting				"Formattazione"
