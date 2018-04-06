@@ -423,6 +423,9 @@ typedef struct TkDisplay {
     Atom windowAtom;		/* Atom for TK_WINDOW. */
     Atom clipboardAtom;		/* Atom for CLIPBOARD. */
     Atom utf8Atom;		/* Atom for UTF8_STRING. */
+#if TK_RELEASE_SERIAL >= 8
+    Atom atomPairAtom;          /* Atom for ATOM_PAIR. */
+#endif
 
     Tk_Window clipWindow;	/* Window used for clipboard ownership and to
 				 * retrieve selections between processes. NULL
@@ -508,6 +511,9 @@ typedef struct TkDisplay {
 
     int iconDataSize;		/* Size of default iconphoto image data. */
     unsigned char *iconDataPtr;	/* Default iconphoto image data, if set. */
+#ifdef TK_USE_INPUT_METHODS
+    int ximGeneration;          /* Used to invalidate XIC */
+#endif /* TK_USE_INPUT_METHODS */
 } TkDisplay;
 
 /*
@@ -808,6 +814,9 @@ typedef struct TkWindow {
     int minReqWidth;		/* Minimum requested width. */
     int minReqHeight;		/* Minimum requested height. */
     char *geometryMaster;
+#ifdef TK_USE_INPUT_METHODS
+    int ximGeneration;          /* Used to invalidate XIC */
+#endif /* TK_USE_INPUT_METHODS */
 } TkWindow;
 
 /*
@@ -1076,6 +1085,9 @@ MODULE_SCOPE int	Tk_ListboxObjCmd(ClientData clientData,
 MODULE_SCOPE int	Tk_LowerObjCmd(ClientData clientData,
 			    Tcl_Interp *interp, int objc,
 			    Tcl_Obj *const objv[]);
+MODULE_SCOPE int	Tk_MenuObjCmd(ClientData clientData,
+			    Tcl_Interp *interp, int objc,
+			    Tcl_Obj *const objv[]);
 MODULE_SCOPE int	Tk_MenubuttonObjCmd(ClientData clientData,
 			    Tcl_Interp *interp, int objc,
 			    Tcl_Obj *const objv[]);
@@ -1106,13 +1118,15 @@ MODULE_SCOPE int	Tk_RaiseObjCmd(ClientData clientData,
 MODULE_SCOPE int	Tk_ScaleObjCmd(ClientData clientData,
 			    Tcl_Interp *interp, int objc,
 			    Tcl_Obj *const objv[]);
-MODULE_SCOPE int	Tk_ScrollbarCmd(ClientData clientData,
-			    Tcl_Interp *interp, int argc, const char **argv);
+MODULE_SCOPE int	Tk_ScrollbarObjCmd(ClientData clientData,
+			    Tcl_Interp *interp, int objc,
+			    Tcl_Obj *const objv[]);
 MODULE_SCOPE int	Tk_SelectionObjCmd(ClientData clientData,
 			    Tcl_Interp *interp, int objc,
 			    Tcl_Obj *const objv[]);
-MODULE_SCOPE int	Tk_SendCmd(ClientData clientData,
-			    Tcl_Interp *interp, int argc, const char **argv);
+MODULE_SCOPE int	Tk_SendObjCmd(ClientData clientData,
+			    Tcl_Interp *interp,int objc,
+			    Tcl_Obj *const objv[]);
 MODULE_SCOPE int	Tk_SendObjCmd(ClientData clientData,
 			    Tcl_Interp *interp, int objc,
 			    Tcl_Obj *const objv[]);
@@ -1147,9 +1161,8 @@ MODULE_SCOPE void	TkFreeGeometryMaster(Tk_Window tkwin,
 
 MODULE_SCOPE void	TkEventInit(void);
 MODULE_SCOPE void	TkRegisterObjTypes(void);
-MODULE_SCOPE int	TkCreateMenuCmd(Tcl_Interp *interp);
-MODULE_SCOPE int	TkDeadAppCmd(ClientData clientData,
-			    Tcl_Interp *interp, int argc, const char **argv);
+MODULE_SCOPE int	TkDeadAppObjCmd(ClientData clientData,
+			    Tcl_Interp *interp, int objc, Tcl_Obj *const argv[]);
 MODULE_SCOPE int	TkCanvasGetCoordObj(Tcl_Interp *interp,
 			    Tk_Canvas canvas, Tcl_Obj *obj,
 			    double *doublePtr);
@@ -1191,7 +1204,7 @@ MODULE_SCOPE void	TkUnderlineCharsInContext(Display *display,
 			    const char *string, int numBytes, int x, int y,
 			    int firstByte, int lastByte);
 MODULE_SCOPE void	TkpGetFontAttrsForChar(Tk_Window tkwin, Tk_Font tkfont,
-			    Tcl_UniChar c, struct TkFontAttributes *faPtr);
+			    int c, struct TkFontAttributes *faPtr);
 MODULE_SCOPE Tcl_Obj *	TkNewWindowObj(Tk_Window tkwin);
 MODULE_SCOPE void	TkpShowBusyWindow(TkBusy busy);
 MODULE_SCOPE void	TkpHideBusyWindow(TkBusy busy);
@@ -1219,8 +1232,12 @@ MODULE_SCOPE int	TkInitTkCmd(Tcl_Interp *interp,
 MODULE_SCOPE int	TkInitFontchooser(Tcl_Interp *interp,
 			    ClientData clientData);
 MODULE_SCOPE void	TkpWarpPointer(TkDisplay *dispPtr);
+MODULE_SCOPE void	TkpCancelWarp(TkDisplay *dispPtr);
+MODULE_SCOPE int	TkListCreateFrame(ClientData clientData,
+			    Tcl_Interp *interp, Tcl_Obj *listObj,
+			    int toplevel, Tcl_Obj *nameObj);
 
-#ifdef __WIN32__
+#ifdef _WIN32
 #define TkParseColor XParseColor
 #else
 MODULE_SCOPE Status TkParseColor (Display * display,
@@ -1229,6 +1246,16 @@ MODULE_SCOPE Status TkParseColor (Display * display,
 #endif
 #ifdef HAVE_XFT
 MODULE_SCOPE void	TkUnixSetXftClipRegion(TkRegion clipRegion);
+#endif
+
+#if TK_MAJOR_VERSION == 8 && TK_MINOR_VERSION >= 7
+#if TCL_UTF_MAX > 4
+#   define TkUtfToUniChar Tcl_UtfToUniChar
+#   define TkUniCharToUtf Tcl_UniCharToUtf
+#else
+    MODULE_SCOPE int TkUtfToUniChar(const char *, int *);
+    MODULE_SCOPE int TkUniCharToUtf(int, char *);
+#endif
 #endif
 
 /*
@@ -1246,7 +1273,7 @@ MODULE_SCOPE int SquareObjCmd(ClientData clientData,
 			    Tcl_Interp *interp, int objc,
 			    Tcl_Obj * const objv[]);
 MODULE_SCOPE int	TkOldTestInit(Tcl_Interp *interp);
-#if !(defined(__WIN32__) || defined(MAC_OSX_TK))
+#if !(defined(_WIN32) || defined(MAC_OSX_TK))
 #define TkplatformtestInit(x) TCL_OK
 #else
 MODULE_SCOPE int	TkplatformtestInit(Tcl_Interp *interp);

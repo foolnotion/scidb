@@ -24,6 +24,7 @@
 
 #ifndef _TKMAC
 #include "tkMacOSX.h"
+#import <Cocoa/Cocoa.h>
 #endif
 
 /*
@@ -85,7 +86,8 @@ typedef struct TkWindowPrivate MacDrawable;
 #define TK_FOCUSED_VIEW		0x10
 #define TK_IS_PIXMAP		0x20
 #define TK_IS_BW_PIXMAP		0x40
-
+#define TK_DO_NOT_DRAW          0x80
+#define TK_USE_XIMAGE_ALPHA     0x100
 /*
  * I am reserving TK_EMBEDDED = 0x100 in the MacDrawable flags
  * This is defined in tk.h. We need to duplicate the TK_EMBEDDED flag in the
@@ -196,7 +198,7 @@ MODULE_SCOPE void TkpClipDrawableToRect(Display *display, Drawable d, int x,
 	int y, int width, int height);
 MODULE_SCOPE void TkpRetainRegion(TkRegion r);
 MODULE_SCOPE void TkpReleaseRegion(TkRegion r);
-
+MODULE_SCOPE void TkpShiftButton(NSButton *button, NSPoint delta);
 /*
  * Include the stubbed internal platform-specific API.
  */
