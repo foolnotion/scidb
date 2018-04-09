@@ -2312,7 +2312,7 @@ Application::saveGame(Cursor& cursor, bool replace)
 
 	if (replace)
 	{
-		M_ASSERT(cursor->name() == g.sink.cursor->name());
+		M_ASSERT(cursor.name() == g.sink.cursor->name());
 		M_ASSERT(g.sink.index < db.countGames());
 		g.data.game->setIndex(g.sink.index);
 		// TODO: should be transaction save
