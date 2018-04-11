@@ -47,6 +47,7 @@ public:
 	bool isWorkingOn(Cursor const& cursor) const;
 
 	virtual void signal(Signal signal) = 0;
+	void signal(Signal signal, Cursor const& cursor);
 
 protected:
 

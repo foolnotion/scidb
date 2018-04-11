@@ -112,7 +112,7 @@ struct TreeAdmin::Runnable
 };
 
 
-TreeAdmin::TreeAdmin() :m_runnable(0) {}
+TreeAdmin::TreeAdmin() :m_runnable(nullptr) {}
 
 
 TreeAdmin::~TreeAdmin()
@@ -155,7 +155,7 @@ TreeAdmin::destroy()
 		}
 
 		delete m_runnable;
-		m_runnable = 0;
+		m_runnable = nullptr;
 	}
 }
 
@@ -180,7 +180,7 @@ TreeAdmin::signal(Signal signal)
 		}
 
 		delete m_runnable;
-		m_runnable = 0;
+		m_runnable = nullptr;
 	}
 }
 
@@ -209,7 +209,7 @@ TreeAdmin::startUpdate(	Cursor& cursor,
 	if (!start(mstl::function<void ()>(&Runnable::operator(), m_runnable)))
 	{
 		delete m_runnable;
-		m_runnable = 0;
+		m_runnable = nullptr;
 		IO_RAISE(Unspecified, Cannot_Create_Thread, "start of tree update failed");
 	}
 
@@ -242,22 +242,22 @@ TreeAdmin::finishUpdate(Cursor const* cursor,
 		{
 			db::Tree::addToCache(tree.get());
 
-			db::Database const* referenceBase = cursor ? &cursor->database() : 0;
+			db::Database const* referenceBase = cursor ? &cursor->database() : nullptr;
 
-			if (	referenceBase == 0
+			if (	!referenceBase
 				|| referenceBase->countGames() != tree->filter().size()
 				|| !tree->isTreeFor(*referenceBase, game.currentBoard(), method, mode, ratingType))
 			{
 				tree->compressFilter();
-				tree.reset(0);	// tree is incomplete or outdated
+				tree.reset(nullptr);	// tree is incomplete or outdated
 			}
 		}
 
 		delete m_runnable;
-		m_runnable = 0;
+		m_runnable = nullptr;
 	}
 
-	if (cursor == 0)
+	if (!cursor)
 	{
 		m_currentTree.reset();
 	}
@@ -275,7 +275,7 @@ TreeAdmin::finishUpdate(Cursor const* cursor,
 					tree->setIncomplete();
 
 				if (!tree->isComplete())
-					tree.reset(0);
+					tree.reset(nullptr);
 			}
 		}
 

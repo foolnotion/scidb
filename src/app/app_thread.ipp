@@ -31,6 +31,15 @@ inline Thread::Thread() :m_cursor(0) {}
 inline bool Thread::isWorkingOn(Cursor const& cursor) const	{ return &cursor == m_cursor; }
 inline void Thread::setWorkingOn(Cursor const* cursor)		{ m_cursor = cursor; }
 
+
+inline
+void
+Thread::signal(Signal signal, Cursor const& cursor)
+{
+	if (isWorkingOn(cursor))
+		this->signal(signal);
+}
+
 } // namespace app
 
 // vi:set ts=3 sw=3:

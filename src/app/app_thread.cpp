@@ -26,6 +26,8 @@
 
 #include "app_thread.h"
 
-app::Thread::~Thread() {}
+using namespace app;
+
+Thread::~Thread() {}
 
 // vi:set ts=3 sw=3:

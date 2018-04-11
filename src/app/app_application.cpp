@@ -75,8 +75,8 @@ using namespace app;
 using namespace util;
 
 
-Application*	Application::m_instance		= 0;
-FAMService*		Application::m_famService	= 0;
+Application*	Application::m_instance		= nullptr;
+FAMService*		Application::m_famService	= nullptr;
 
 unsigned const Application::InvalidPosition;
 unsigned const Application::ReservedPosition;
@@ -157,8 +157,8 @@ struct Application::SwapTrialGame
 
 Application::EditGame::Data::Data()
 	:viewId(-1)
-	,game(0)
-	,backup(0)
+	,game(nullptr)
+	,backup(nullptr)
 	,refresh(0)
 {
 }
@@ -172,7 +172,7 @@ Application::EditGame::Data::~Data()
 
 
 Application::EditGame::Sink::Sink()
-	:cursor(0)
+	:cursor(nullptr)
 	,index(0)
 	,crcIndex(0)
 	,crcMoves(0)
@@ -194,7 +194,7 @@ Application::Iterator::Iterator(CursorMap::const_iterator begin, CursorMap::cons
 	,m_end(end)
 	,m_variant(0)
 {
-	if (m_current != m_end && (*m_current->second)[m_variant] == 0)
+	if (m_current != m_end && !(*m_current->second)[m_variant])
 		++(*this);
 }
 
@@ -243,16 +243,16 @@ Application::Iterator::operator++()
 			m_variant = 0;
 		}
 	}
-	while ((*m_current->second)[m_variant] == 0);
+	while (!(*m_current->second)[m_variant]);
 
 	return *this;
 }
 
 
 Application::Application()
-	:m_current(0)
-	,m_clipbase(0)
-	,m_referenceBase(0)
+	:m_current(nullptr)
+	,m_clipbase(nullptr)
+	,m_referenceBase(nullptr)
 	,m_switchReference(true)
 	,m_isUserSet(false)
 	,m_currentPosition(InvalidPosition)
@@ -263,7 +263,7 @@ Application::Application()
 	,m_isClosed(false)
 	,m_treeIsFrozen(false)
 	,m_allLanguages(false)
-	,m_subscriber(0)
+	,m_subscriber(nullptr)
 {
 	M_REQUIRE(!hasInstance());
 
@@ -287,8 +287,8 @@ Application::Application()
 Application::~Application() throw()
 {
 	delete m_famService;
-	m_famService = 0;
-	m_instance = 0;
+	m_famService = nullptr;
+	m_instance = nullptr;
 
 	for (EngineList::iterator i = m_engineList.begin(); i != m_engineList.end(); ++i)
 	{
@@ -560,7 +560,7 @@ Application::contains(mstl::string const& name, variant::Type variant) const
 bool
 Application::contains(char const* name, variant::Type variant) const
 {
-	if (name == 0)
+	if (!name)
 		return currentVariant() == variant;
 
 	return contains(mstl::string(name), variant);
@@ -604,7 +604,7 @@ Application::hasTrialMode(unsigned position) const
 	if (position == InvalidPosition)
 		position = m_currentPosition;
 
-	return m_gameMap.find(m_currentPosition)->second->data.backup != 0;
+	return bool(m_gameMap.find(m_currentPosition)->second->data.backup);
 }
 
 
@@ -789,7 +789,7 @@ Application::create(	mstl::string const& name,
 void
 Application::close()
 {
-	m_subscriber.reset(0);
+	m_subscriber.reset(nullptr);
 	closeAll(Including_Clipbase);
 	m_isClosed = true;
 }
@@ -853,7 +853,7 @@ void
 Application::closeAll(CloseMode mode)
 {
 	CursorMap map;
-	Cursor* refBase = 0;
+	Cursor* refBase = nullptr;
 
 	setActiveBase(clipbase(variant::Normal));
 
@@ -1140,9 +1140,9 @@ Application::player(unsigned index, unsigned view) const
 void
 Application::setReferenceBase(Cursor* cursor, bool isUserSet)
 {
-	M_REQUIRE(cursor == 0 || !cursor->isScratchbase());
-	M_REQUIRE(cursor == 0 || !format::isChessBaseFormat(cursor->format()));
-	M_REQUIRE(cursor == 0 || cursor->variant() == variant::Normal);
+	M_REQUIRE(!cursor || !cursor->isScratchbase());
+	M_REQUIRE(!cursor || !format::isChessBaseFormat(cursor->format()));
+	M_REQUIRE(!cursor || cursor->variant() == variant::Normal);
 
 	m_isUserSet = isUserSet;
 
@@ -2124,6 +2124,7 @@ Application::compactBase(Cursor& cursor, util::Progress& progress)
 
 		if (cursor.isReferenceBase() && !m_treeIsFrozen)
 		{
+			M_ASSERT(m_referenceBase);
 			clearTreeCache();
 			m_subscriber->updateTree(m_referenceBase->name(), m_referenceBase->variant());
 		}
@@ -2134,10 +2135,12 @@ Application::compactBase(Cursor& cursor, util::Progress& progress)
 bool
 Application::treeIsUpToDate(Tree::Key const& key) const
 {
-	if (m_treeIsFrozen || m_referenceBase == 0 || !haveCurrentGame())
+	if (m_treeIsFrozen || !m_referenceBase || !haveCurrentGame())
 		return true;
 
+	M_ASSERT(m_referenceBase);
 	M_ASSERT(m_referenceBase->hasTreeView());
+
 	return m_treeAdmin.isUpToDate(*m_referenceBase, game(), key);
 }
 
@@ -2148,7 +2151,7 @@ Application::updateTree(db::tree::Method method,
 								rating::Type ratingType,
 								PipedProgress& progress)
 {
-	if (m_referenceBase == 0 || !haveCurrentGame())
+	if (!m_referenceBase || !haveCurrentGame())
 		return true;
 
 	if (m_treeIsFrozen)
@@ -2196,10 +2199,7 @@ void
 Application::stopAllThreads(Cursor const& cursor)
 {
 	for (unsigned i = 0; i < m_threadList.size(); ++i)
-	{
-		if (m_threadList[i]->isWorkingOn(cursor))
-			m_threadList[i]->signal(Thread::Stop);
-	}
+		m_threadList[i]->signal(Thread::Stop, cursor);
 }
 
 
@@ -2207,10 +2207,7 @@ void
 Application::cancelAllThreads(Cursor const& cursor)
 {
 	for (unsigned i = 0; i < m_threadList.size(); ++i)
-	{
-		if (m_threadList[i]->isWorkingOn(cursor))
-			m_threadList[i]->signal(Thread::Cancel);
-	}
+		m_threadList[i]->signal(Thread::Cancel, cursor);
 }
 
 
@@ -2225,7 +2222,10 @@ void
 Application::startUpdateTree(Cursor& cursor)
 {
 	if (m_subscriber && cursor.isReferenceBase() && !m_treeIsFrozen)
+	{
+		M_ASSERT(m_referenceBase);
 		m_subscriber->updateTree(m_referenceBase->name(), m_referenceBase->variant());
+	}
 }
 
 
@@ -2300,13 +2300,11 @@ Application::saveGame(Cursor& cursor, bool replace)
 	M_REQUIRE(!hasTrialMode());
 
 	stopAllThreads(cursor);
+	M_ASSERT(!cursor.isReferenceBase() || !m_treeAdmin.isRunning());
 
 	EditGame& g = *m_gameMap.find(m_currentPosition)->second;
 
 	save::State	state;
-
-	if (cursor.isReferenceBase())
-		stopUpdateTree();
 
 	Database& db = cursor.base();
 
@@ -2489,7 +2487,7 @@ Application::updateCharacteristics(Cursor& cursor, unsigned index, TagSet const&
 	save::State	state		= cursor.base().updateCharacteristics(index, tags);
 	EditGame*	game		= findGame(&cursor, index, &position);
 
-	M_ASSERT(game == 0 || game->sink.index == index);
+	M_ASSERT(!game || game->sink.index == index);
 
 	if (game)
 	{
@@ -2808,7 +2806,7 @@ Application::addEngine(Engine* engine)
 
 	EngineList::iterator i = mstl::find(m_engineList.begin(),
 													m_engineList.end(),
-													static_cast<Engine const*>(0));
+													static_cast<Engine const*>(nullptr));
 
 	if (i == m_engineList.end())
 		i = m_engineList.insert(i, 0);
@@ -2832,7 +2830,7 @@ Application::removeEngine(unsigned id)
 	{
 		m_engineList[id]->deactivate();
 		delete m_engineList[id];
-		m_engineList[id] = 0;
+		m_engineList[id] = nullptr;
 		M_ASSERT(m_numEngines > 0);
 		--m_numEngines;
 	}
@@ -2947,7 +2945,7 @@ Application::save(mstl::string const& name,
 	MultiCursor&	multiCursor(*m_cursorMap.find(name)->second);
 	MultiBase&		multiBase(multiCursor.multiBase());
 	WriteGuard		guard(*this, multiBase);
-	Cursor*			referenceBase(0);
+	Cursor*			referenceBase(nullptr);
 
 	file::State state = multiBase.save(encoding, flags, progress);
 
@@ -3129,7 +3127,10 @@ Application::stripMoveInformation(View& view, unsigned types, Progress& progress
 		m_subscriber->updateDatabaseInfo(cursor.name(), cursor.variant());
 
 		if (cursor.isReferenceBase() && !m_treeIsFrozen)
+		{
+			M_ASSERT(m_referenceBase);
 			m_subscriber->updateTree(m_referenceBase->name(), m_referenceBase->variant());
+		}
 	}
 
 	return numGames;
@@ -3158,7 +3159,10 @@ Application::stripTags(View& view, TagMap const& tags, util::Progress& progress,
 		m_subscriber->updateDatabaseInfo(cursor.name(), cursor.variant());
 
 		if (cursor.isReferenceBase() && !m_treeIsFrozen)
+		{
+			M_ASSERT(m_referenceBase);
 			m_subscriber->updateTree(m_referenceBase->name(), m_referenceBase->variant());
+		}
 	}
 
 	return numGames;
@@ -3386,10 +3390,11 @@ Application::copyGame(MultiCursor& sink, unsigned position, copy::Source source)
 
 	if (m_subscriber)
 	{
-		m_subscriber->updateList(m_updateCount++, destination.name(), destination.variant());
+		if (m_current == &destination)
+			m_subscriber->updateList(m_updateCount++, destination.name(), destination.variant());
 		m_subscriber->updateDatabaseInfo(destination.name(), destination.variant());
 
-		if (!m_treeIsFrozen)
+		if (!m_treeIsFrozen && m_referenceBase)
 			m_subscriber->updateTree(m_referenceBase->name(), m_referenceBase->variant());
 	}
 }
