@@ -6007,6 +6007,19 @@ displayRetry:
 			DblBufWinDirty(tree, Tree_BorderLeft(tree), Tree_ContentTop(tree),
 				Tree_BorderRight(tree), Tree_ContentBottom(tree));
 		}
+	} else if (tree->doubleBuffer == DOUBLEBUFFER_ITEM) {
+		/* FIX by GC; original version is not redrawing exposed area when
+		 * scrolling horizontally. */
+		if (dInfo->xOrigin != tree->xOrigin) {
+			if (Tree_AreaBbox(tree, TREE_AREA_CONTENT, &minX, &minY, &maxX, &maxY)) {
+				if (tree->debug.enable && tree->debug.display && tree->debug.drawColor) {
+					XFillRectangle(tree->display, Tk_WindowId(tkwin),
+							tree->debug.gcDraw, minX, minY, maxX - minX, maxY - minY);
+					DisplayDelay(tree);
+				}
+				Tree_InvalidateItemArea(tree, minX, minY, maxX, maxY);
+			}
+		}
 	}
 
 	if (dInfo->flags & DINFO_DRAW_WHITESPACE) {
