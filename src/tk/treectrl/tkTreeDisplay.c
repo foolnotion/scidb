@@ -5619,15 +5619,11 @@ SetBuffering(
 		overlays = TRUE;
     }
 
-#if 1
-	tree->doubleBuffer = DOUBLEBUFFER_WINDOW;
-#else
     if (overlays) {
 		tree->doubleBuffer = DOUBLEBUFFER_WINDOW;
-    } else { /* XXX DOUBLEBUFFER_ITEM is not working properly */
+    } else {
 		tree->doubleBuffer = DOUBLEBUFFER_ITEM;
     }
-#endif
 
     if (overlays != dInfo->overlays) {
 		dInfo->flags |=
