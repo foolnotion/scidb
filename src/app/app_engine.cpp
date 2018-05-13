@@ -921,7 +921,7 @@ Engine::activate()
 		while (m_process && !m_process->isConnected() && !timer.expired())
 			timer.doNextEvent();
 
-		if (!m_process->isConnected())
+		if (m_process && !m_process->isConnected())
 		{
 			// Engine hasn't sent a message, so try to stimulate the engine.
 			m_engine->stimulate();
