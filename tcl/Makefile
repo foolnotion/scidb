@@ -46,6 +46,7 @@ SOURCES = \
 	contrib/tkmenu.tcl \
 	contrib/treectrl.tcl \
 	contrib/filelist-bindings.tcl \
+	contrib/http.tcl \
 	utils/locale.tcl \
 	utils/countries.tcl \
 	utils/web.tcl \
