@@ -1877,6 +1877,19 @@ Codec::convertFromDOS(mstl::string const& in, mstl::string& out)
 	char const* str	= in.begin();
 	char const* e		= in.end();
 
+	mstl::string  buf;
+	mstl::string* result;
+
+	if (in.c_str() == out.c_str())
+	{
+		result = &buf;
+		buf.reserve(out.capacity());
+	}
+	else
+	{
+		result = &out;
+	}
+
 	for ( ; str < e; ++str)
 	{
 		unsigned char c = *str;
@@ -1903,13 +1916,16 @@ Codec::convertFromDOS(mstl::string const& in, mstl::string& out)
 				0x00b0, 0x00a8, 0x00b7, 0x00b9, 0x00b3, 0x00b2, 0x25a0, 0x00a0, // f8 ... ff
 			};
 
-			utf8::append(out, CodeTable[c - 0x80]);
+			utf8::append(*result, CodeTable[c - 0x80]);
 		}
 		else
 		{
-			out.append(c);
+			result->append(c);
 		}
 	}
+
+	if (&in == &out)
+		out.assign(buf);
 }
 
 
@@ -1918,6 +1934,19 @@ Codec::convertFromWindows(mstl::string const& in, mstl::string& out)
 {
 	char const* str	= in.begin();
 	char const* e		= in.end();
+
+	mstl::string  buf;
+	mstl::string* result;
+
+	if (in.c_str() == out.c_str())
+	{
+		result = &buf;
+		buf.reserve(out.capacity());
+	}
+	else
+	{
+		result = &out;
+	}
 
 	for ( ; str < e; ++str)
 	{
@@ -1939,13 +1968,16 @@ Codec::convertFromWindows(mstl::string const& in, mstl::string& out)
 				c = CodeTable[c - 0x80];
 			}
 
-			utf8::append(out, c);
+			utf8::append(*result, c);
 		}
 		else
 		{
-			out.append(c);
+			result->append(c);
 		}
 	}
+
+	if (&in == &out)
+		out.assign(buf);
 }
 
 
@@ -2379,7 +2411,7 @@ Codec::removeInvalidSequences(mstl::string& str, mstl::string const& replacement
 	unsigned removed = 0;
 
 	mstl::string result;
-	result.reserve(str.size());
+	result.reserve(str.capacity());
 
 	while (s < e)
 	{
