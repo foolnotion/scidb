@@ -1283,7 +1283,7 @@ Board::setEnPassantSquare(Square sq)
 
 Board::Board(Board const& board)
 {
-	::memcpy(this, &board, sizeof(board));
+	::memcpy(static_cast<void*>(this), &board, sizeof(board));
 	m_partner = this;
 }
 
@@ -1293,7 +1293,7 @@ Board::operator=(Board const& board)
 {
 	if (this != &board)
 	{
-		::memcpy(this, &board, sizeof(board));
+		::memcpy(static_cast<void*>(this), &board, sizeof(board));
 		m_partner = this;
 	}
 	return *this;
@@ -7586,7 +7586,7 @@ Board::initialize()
 	m_initialHolding.pawn = 8;
 
 	// Empty board
-	::memset(&m_emptyBoard, 0, sizeof(m_emptyBoard));
+	::memset(static_cast<void*>(&m_emptyBoard), 0, sizeof(m_emptyBoard));
 	::memset(m_emptyBoard.m_destroyCastle, 0xff, sizeof(m_emptyBoard.m_destroyCastle));
 	::memset(m_emptyBoard.m_castleRookCurr, Null, U_NUMBER_OF(m_emptyBoard.m_castleRookCurr));
 	::memset(m_emptyBoard.m_castleRookAtStart, Null, U_NUMBER_OF(m_emptyBoard.m_castleRookAtStart));
