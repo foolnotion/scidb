@@ -382,7 +382,7 @@ void
 bitset::fill(size_type first, size_type last, unsigned char value)
 {
 	M_ASSERT(first <= last);
-	::memset(m_bits + first, value, sizeof(m_bits[0])*(last - first));
+	::memset(static_cast<void*>(m_bits + first), value, sizeof(m_bits[0])*(last - first));
 }
 
 

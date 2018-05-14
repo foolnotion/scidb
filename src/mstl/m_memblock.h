@@ -33,7 +33,7 @@ public:
 	memblock();
 	explicit memblock(size_t n);
 	explicit memblock(T* finish);
-	~memblock() throw();	// NOTE: we don't want a virtual destructor
+	~memblock(); // NOTE: we don't want a virtual destructor
 
 	size_type size() const;
 	size_type capacity() const;

@@ -42,7 +42,7 @@ memblock<T>::memblock(size_t n)
 
 template <typename T>
 inline
-memblock<T>::~memblock() throw()
+memblock<T>::~memblock()
 {
 	operator delete(m_start);
 }
