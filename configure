@@ -269,7 +269,7 @@ array set release {
     zenwalk         "Zenwalk"
 }
 
-set problematicGCCVersions {4.6 7.1}
+set problematicGCCVersions {4.6 7.1 8.1}
 
 set instableTkLibrary ""
 set x11Libraries " -lX11 -lSM -lICE"
