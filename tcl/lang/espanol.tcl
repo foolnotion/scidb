@@ -288,6 +288,10 @@
 ::menu::mc::Setup								"Configu&rar"
 ::menu::mc::Layout							"La&yout" ;# NEW
 
+# Font Size
+::menu::mc::IncrFontSize					"Increase All Font Sizes" ;# NEW
+::menu::mc::DecrFontSize					"Decrease All Font Sizes" ;# NEW
+
 # Contact
 ::menu::mc::ContactBugReport				"&Reporte de errores"
 ::menu::mc::ContactFeatureRequest		"&Solicitud de característica"

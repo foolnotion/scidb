@@ -935,7 +935,7 @@ proc TableSelected {path index} {
 	set base [::scrolledtable::base $path]
 	set variant [::scrolledtable::variant $path]
 	set view [{*}$Vars(viewcmd) $base $variant]
-	# XXX index == -1 shoukd not happen
+	# XXX index == -1 should not happen
 	set info [::scidb::db::get gameInfo $index $view $base $variant]
 	set number [expr {[column $info number] - 1}]
 	set fen {}

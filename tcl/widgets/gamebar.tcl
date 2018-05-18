@@ -107,15 +107,13 @@ proc gamebar {path} {
 	variable Specs
 	variable Defaults
 
-	set font TkTextFont
-	set bold [list [font configure $font -family] [font configure $font -size] bold]
 	set gamebar [tk::canvas $path -borderwidth 0]
 
 	$gamebar bind header <ButtonPress-3> [namespace code [list PopupMenu $gamebar]]
 
 	bind $gamebar <Destroy> [namespace code [list array unset Specs *:$gamebar]]
 	bind $gamebar <Configure> [namespace code { Configure %W %w }]
-	bind $gamebar <<LanguageChanged>> [namespace code [list LanguageChanged $gamebar]]
+	bind $gamebar <<LanguageChanged>> [namespace code [list update $gamebar]]
 	bind $gamebar <<ThemeChanged>> [namespace code [list Layout $gamebar]]
 
 	set Specs(height:$gamebar) 0
@@ -126,11 +124,8 @@ proc gamebar {path} {
 	set Specs(number:$gamebar) 1
 	set Specs(width:$gamebar) $Defaults(width)
 	set Specs(receiver:$gamebar) {}
-	set Specs(font:$gamebar) $font
-	set Specs(bold:$gamebar) $bold
 	set Specs(adjustment:$gamebar) {1 0 0 0}
 	set Specs(linewidth:$gamebar) 0
-	set Specs(spacewidth:$gamebar) [font measure $font " "]
 	set Specs(player:locked) 0
 	set Specs(event:locked) 0
 
@@ -141,6 +136,13 @@ proc gamebar {path} {
 	::scidb::db::subscribe gameInfo [namespace current]::Update $gamebar
 
 	return $path
+}
+
+
+proc update {gamebar} {
+	foreach id [getIdList $gamebar] {
+		Update $gamebar $id no
+	}
 }
 
 
@@ -161,7 +163,6 @@ proc insert {gamebar at id tags} {
 	set lighter [::colors::lookup $Defaults(background:lighter)]
 	set darker [::colors::lookup $Defaults(background:darker)]
 	set foreground [::colors::lookup $Defaults(foreground:normal)]
-	set bold $Specs(bold:$gamebar)
 
 	if {$at >= 0} {
 		set data [MakeData $gamebar $id $tags]
@@ -224,14 +225,14 @@ proc insert {gamebar at id tags} {
 #		;
 	$gamebar create text 0 0 \
 		-anchor nw \
-		-font $Specs(font:$gamebar) \
+		-font $::font::text(text:normal) \
 		-fill [::colors::lookup $Defaults(foreground:elo)] \
 		-tags [list whiteElo$id all$id] \
 		-state hidden \
 		;
 	$gamebar create text 0 0 \
 		-anchor nw \
-		-font $Specs(font:$gamebar) \
+		-font $::font::text(text:normal) \
 		-fill [::colors::lookup $Defaults(foreground:elo)] \
 		-tags [list blackElo$id all$id] \
 		-state hidden \
@@ -239,7 +240,7 @@ proc insert {gamebar at id tags} {
 	$gamebar create text 0 0 \
 		-anchor nw \
 		-justify left \
-		-font $Specs(font:$gamebar) \
+		-font $::font::text(text:normal) \
 		-tags [list hyphen$id all$id] \
 		-text " \u2013 " \
 		-state $state \
@@ -252,7 +253,7 @@ proc insert {gamebar at id tags} {
 		;
 	$gamebar create text 0 0 -anchor nw \
 		-justify left \
-		-font $Specs(font:$gamebar) \
+		-font $::font::text(text:normal) \
 		-tags [list white$id all$id] \
 		-text [lindex $data 0] \
 		-state $state \
@@ -272,7 +273,7 @@ proc insert {gamebar at id tags} {
 	$gamebar create text 0 0 \
 		-anchor nw \
 		-justify left \
-		-font $Specs(font:$gamebar) \
+		-font $::font::text(text:normal) \
 		-tags [list black$id all$id] \
 		-text [lindex $data 1] \
 		-fill $foreground \
@@ -293,7 +294,7 @@ proc insert {gamebar at id tags} {
 	$gamebar create text 0 0 \
 		-anchor nw \
 		-justify left \
-		-font $Specs(font:$gamebar) \
+		-font $::font::text(text:normal) \
 		-tags [list line1$id all$id] \
 		-text [lindex $data 2] \
 		-fill $foreground \
@@ -314,7 +315,7 @@ proc insert {gamebar at id tags} {
 	$gamebar create text 0 0 \
 		-anchor nw \
 		-justify left \
-		-font $Specs(font:$gamebar) \
+		-font $::font::text(text:normal) \
 		-tags [list line2$id all$id] \
 		-text [lindex $data 3] \
 		-fill $foreground \
@@ -814,13 +815,6 @@ proc UseSeparateColumn {gamebar} {
 }
 
 
-proc LanguageChanged {gamebar} {
-	foreach id [getIdList $gamebar] {
-		Update $gamebar $id no
-	}
-}
-
-
 proc Reset {gamebar id} {
 	variable Specs
 
@@ -1020,7 +1014,7 @@ proc ShowTags {gamebar id} {
 			$f.fram.link configure -font [list FontAwesome $size bold]
 			grid $f.fram.link -row 1 -column 1 -sticky e
 		}
-		tk::label $f.fram.nhdr -text $name -background $bg -foreground $fg -font $Specs(bold:$gamebar)
+		tk::label $f.fram.nhdr -text $name -background $bg -foreground $fg -font $::font::text(text:bold)
 		grid $f.fram.nhdr -row 1 -column 2 -sticky e
 		grid $f.fram -row 1 -column 1 -columnspan 3 -sticky ew
 		grid $f.sep  -row 2 -column 1 -columnspan 3 -sticky ew
@@ -1163,8 +1157,8 @@ proc PrepareAsSunkenButton {gamebar id} {
 	if {$Specs(size:$gamebar) > 1} {
 		$gamebar itemconfigure digit$id -state normal
 	}
-	$gamebar itemconfigure white$id -font $Specs(font:$gamebar)
-	$gamebar itemconfigure black$id -font $Specs(font:$gamebar)
+	$gamebar itemconfigure white$id -font $::font::text(text:normal)
+	$gamebar itemconfigure black$id -font $::font::text(text:normal)
 	$gamebar raise blackbg$id
 	$gamebar raise black$id
 	$gamebar raise digit$id
@@ -1202,8 +1196,8 @@ proc PrepareAsButton {gamebar id} {
 	foreach item {bg whitebg blackbg} {
 		$gamebar itemconfigure $item$id -fill $normal -outline $normal
 	}
-	$gamebar itemconfigure white$id -font $Specs(font:$gamebar)
-	$gamebar itemconfigure black$id -font $Specs(font:$gamebar)
+	$gamebar itemconfigure white$id -font $::font::text(text:normal)
+	$gamebar itemconfigure black$id -font $::font::text(text:normal)
 	$gamebar itemconfigure whiteCountry$id -state hidden
 	$gamebar itemconfigure blackCountry$id -state hidden
 #	$gamebar itemconfigure eventCountry$id -state hidden
@@ -1253,8 +1247,8 @@ proc PrepareAsHeader {gamebar id} {
 	foreach item {bg whitebg blackbg line1bg} {
 		$gamebar itemconfigure $item$id -fill $selected -outline $selected
 	}
-	$gamebar itemconfigure white$id -font $Specs(bold:$gamebar)
-	$gamebar itemconfigure black$id -font $Specs(bold:$gamebar)
+	$gamebar itemconfigure white$id -font $::font::text(text:bold)
+	$gamebar itemconfigure black$id -font $::font::text(text:bold)
 	if {$Options(separateLines)} { set state hidden } else { set state normal }
 	$gamebar itemconfigure hyphen$id -state $state
 	if {$Options(separateLines)} { set state normal } else { set state hidden }
@@ -2260,7 +2254,7 @@ proc Layout {gamebar} {
 			default	{ set scrollWidth 17 }
 		}
 
-		set spacewidth		$Specs(spacewidth:$gamebar)
+		set spacewidth		[font measure $::font::text(text:normal) " "]
 		set useSepColumn	[UseSeparateColumn $gamebar]
 		set line				$Specs(line:$gamebar)
 		set padx				$Defaults(padx)

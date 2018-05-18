@@ -287,14 +287,18 @@
 ::menu::mc::Setup							"&Inställningar"
 ::menu::mc::Layout						"La&yout" ;# NEW
 
+# Font Size
+::menu::mc::IncrFontSize				"Increase All Font Sizes" ;# NEW
+::menu::mc::DecrFontSize				"Decrease All Font Sizes" ;# NEW
+
 # Contact
-::menu::mc::ContactBugReport				"&Felrapport"
-::menu::mc::ContactFeatureRequest		"Ö&nskemål"
+::menu::mc::ContactBugReport			"&Felrapport"
+::menu::mc::ContactFeatureRequest	"Ö&nskemål"
 
 # Extras
-::menu::mc::InstallChessBaseFonts		"Installera ChessBase fonter"
-::menu::mc::OpenEngineLog					"Öppna &motorkonsol"
-::menu::mc::AssignFileTypes				"Assign File &Types" ;# NEW
+::menu::mc::InstallChessBaseFonts	"Installera ChessBase fonter"
+::menu::mc::OpenEngineLog				"Öppna &motorkonsol"
+::menu::mc::AssignFileTypes			"Assign File &Types" ;# NEW
 
 # Tools
 ::menu::mc::OpenEngineDictionary		"Öppna Engine &Dictionary"

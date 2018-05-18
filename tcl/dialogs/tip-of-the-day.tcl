@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2013-2017 Gregor Cramer
+# Copyright: (C) 2013-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -80,10 +80,6 @@ proc open {parent} {
 
 	::font::html::setupFonts tips
 	set css [DefaultCSS]
-	append css "div.body { margin-left: 140px; }\n"
-	append css "div.title { margin-left: 0; }\n"
-	append css "ol { padding-left: 5px; }\n"
-	append css "ul { padding-left: 5px; }\n"
 	set html $top.html
 
 	::html $html \
@@ -105,12 +101,17 @@ proc open {parent} {
 		-usehorzscroll no \
 		;
 	pack $html -fill both -expand yes
+	bind $html <<FontSizeChanged>> [namespace code { FontSizeChanged %W }]
+	# XXX not working, why?
+	::font::html::addChangeFontSizeBindings tips \
+		[winfo parent [$html drawable]] [namespace current]::ChangeFontSize
 
 	$html handler node a [namespace current]::A_NodeHandler
-
-	$html onmouseover [namespace current]::MouseEnter
-	$html onmouseout  [namespace current]::MouseLeave
-	$html onmouseup1  [namespace current]::Mouse1Up
+ 
+	$html onmouseover  [namespace current]::MouseEnter
+	$html onmouseout   [namespace current]::MouseLeave
+	$html onmouseup1   [namespace current]::Mouse1Up
+	$html onmousedown3 [namespace current]::Mouse3Down
 
 	set Priv(html) $html
 
@@ -453,6 +454,23 @@ proc Mouse1Up {nodes} {
 }
 
 
+proc Mouse3Down {{nodes {}}} {
+	variable Priv
+
+	::tooltip::hide
+
+	set menu $Priv(html).__menu__
+	catch { destroy $menu }
+	menu $menu
+	catch { wm attributes $m -type popup_menu }
+
+	::font::html::addChangeFontSizeToMenu tips $menu \
+		[namespace code ChangeFontSize] [::html::minFontSize] [::html::maxFontSize] no
+
+	tk_popup $menu {*}[winfo pointerxy $Priv(html)]
+}
+
+
 proc A_NodeHandler {node} {
 	variable Nodes
 	variable Links
@@ -486,7 +504,31 @@ proc A_NodeHandler {node} {
 proc DefaultCSS {} {
 	set fixedFonts [::font::html::defaultFixedFonts tips]
 	set textFonts [::font::html::defaultTextFonts tips]
-	return [::html::defaultCSS $fixedFonts $textFonts]
+	set css [::html::defaultCSS $fixedFonts $textFonts]
+	append css "div.body { margin-left: 140px; }\n"
+	append css "div.title { margin-left: 0; }\n"
+	append css "ol { padding-left: 5px; }\n"
+	append css "ul { padding-left: 5px; }\n"
+	return $css
+}
+
+
+proc FontSizeChanged {w} {
+	variable Priv
+
+	if {$w eq $Priv(html)} {
+		ChangeFontSize [::font::html::fontSize tips]
+	}
+}
+
+
+proc ChangeFontSize {size} {
+	variable Priv
+
+	$Priv(html) css [DefaultCSS]
+	$Priv(html) fontsize $size
+	$Priv(html) parse $Priv(content)
+	return $size
 }
 
 

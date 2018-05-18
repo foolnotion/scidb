@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2013 Gregor Cramer
+# Copyright: (C) 2009-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -171,6 +171,7 @@ proc build {top width height} {
 		bind $child <Button-3> $popupcmd
 		bind $child <Double-3> ;# catch double clicks
 	}
+	bind $main <<FontSizeChanged>> [namespace code { FontSizeChanged %W }]
 
 	set Vars(frame) $edit
 	set Vars(delta) 0
@@ -518,6 +519,10 @@ proc historyChanged {} {
 
 
 proc fontSizeChanged {} {
+	variable Vars
+
+	::gamebar::update $Vars(gamebar)
+	$Vars(hist) refresh
 	refresh
 	SetAlignment
 }
@@ -561,6 +566,12 @@ proc saveGame {mode {base ""}} {
 		replace	{ ::dialog::save::open $parent $base $variant $position $number }
 		moves		{ replaceMoves $parent $base $variant $position $number }
 	}
+}
+
+
+proc FontSizeChanged {w} {
+	variable Vars
+	if {$w eq $Vars(main)} { fontSizeChanged }
 }
 
 

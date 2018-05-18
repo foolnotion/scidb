@@ -287,6 +287,10 @@
 ::menu::mc::Setup								"Impos&ta"
 ::menu::mc::Layout							"La&yout" ;# NEW
 
+# Font Size
+::menu::mc::IncrFontSize					"Increase All Font Sizes" ;# NEW
+::menu::mc::DecrFontSize					"Decrease All Font Sizes" ;# NEW
+
 # Contact
 ::menu::mc::ContactBugReport				"&Segnala Bug"
 ::menu::mc::ContactFeatureRequest		"&Richiesta Funzione"

@@ -156,6 +156,14 @@ Auf der Kommandozeile stehen folgende Optionen bei Programmstart zur Verfügung:
   </tr>
   <tr>
     <td class="standard" style="white-space:nowrap;" valign="top">
+        <code>--reset-fonts</code>
+    </td>
+    <td class="standard-justification">
+      Alle Zeichensätze werden auf die Standardgröße zurückgesetzt.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
         <code>--force-grab</code>
     </td>
     <td class="standard-justification">

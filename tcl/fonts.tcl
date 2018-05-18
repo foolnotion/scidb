@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2013 Gregor Cramer
+# Copyright: (C) 2009-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -47,6 +47,7 @@ set DefaultFont								"Default font"
 } ;# namespace mc
 
 namespace import ::tcl::mathfunc::int
+namespace import ::tcl::mathfunc::abs
 
 array set mapCodeToNag {
 	"\u203c"				3
@@ -1141,10 +1142,17 @@ variable UnicodeMap {
 
 variable GraphicMap
 variable LangMap
+variable DefaultSize
 
 variable UseSymbols		0
 variable UseFigurines	0
 variable ContextList		{text}
+variable UpdateCommands	{}
+
+variable TkFonts {
+	TkDefaultFont TkTextFont TkFixedFont TkMenuFont TkHeadingFont
+	TkCaptionFont TkSmallCaptionFont TkIconFont TkTooltipFont
+}
 
 array set DefaultOptions {
 	figurine:use				1
@@ -1163,6 +1171,7 @@ array set DefaultOptions {
 }
 
 array set Options [array get DefaultOptions]
+array set Lock {}
 
 
 proc setupChessFonts {} {
@@ -1201,6 +1210,35 @@ proc setupChessFonts {} {
 	}
 
 	UseFigurines [expr {$UseFigurines && $Options(figurine:use)}]
+}
+
+
+proc setupDefaultFonts {} {
+	variable Options
+	variable DefaultOptions
+	variable TkFonts
+	variable DefaultSize
+
+	set DefaultSize [abs [font configure TkDefaultFont -size]]
+
+	if {[::process::testOption reset-fonts]} {
+		array unset Options *:size
+		::twm::resetFontSize
+	} else {
+		foreach f $TkFonts {
+			if {[info exists Options(default:$f:size)]} {
+				font configure $f -size [expr {-$Options(default:$f:size)}]
+			}
+		}
+	}
+}
+
+
+proc scaleFactor {} {
+	variable DefaultSize
+
+	set size [abs [font configure TkDefaultFont -size]]
+	return [expr {double($size)/double($DefaultSize)}]
 }
 
 
@@ -1269,26 +1307,54 @@ proc currentFontSize {context} {
 }
 
 
+proc changeFontSize {value} {
+	variable Options
+	variable TkFonts
+
+	foreach f $TkFonts {
+		array set vars [font configure $f]
+		set vars(-size) [abs $vars(-size)]
+		set size [::html::incrFontSize $vars(-size) $value]
+		if {$size != $vars(-size)} {
+			font configure $f -size [expr {-$size}]
+			set Options(default:$f:size) $size
+		}
+	}
+
+	foreach name [array names Options *:size] {
+		if {![string match {default:Tk*} $name]} {
+			if {[string match {*:html:size} $name]} {
+				set context [string range $name 0 end-10]
+				html::changeSize $context $value
+			} else {
+				set context [string range $name 0 end-5]
+				changeSize $context $value global
+			}
+		}
+	}
+
+	SendFontSizeChanged . $value
+}
+
+
 proc registerTextFonts {context {styles {normal}}} {
 	variable Options
-	variable figurine
-	variable symbol
+	variable Lock
 	variable text
 
 	set style [lindex $styles 0]
 	if {[info exists text($context:$style)]} { return }
+	set Lock($context) none
 
 	if {![info exists Options($context:size)]} {
 		array set fopts [font actual TkTextFont]
-		set family $fopts(-family)
-		set size $fopts(-size)
-		set Options($context:family) $family
+		set Options($context:family) [set family $fopts(-family)]
 		set Options($context:slant) [Slant $style]
-		set Options($context:size) [expr {abs($size)}]
+		set Options($context:size) [abs [set size $fopts(-size)]]
 	} else {
 		set family $Options($context:family)
 		set slant $Options($context:slant)
-		set size [expr {-($Options($context:size))}]
+		set size $Options($context:size)
 	}
 
 	foreach style $styles {
@@ -1351,7 +1417,7 @@ proc registerSymbolFonts {context} {
 	variable text
 
 	if {[info exists symbol($context:normal)]} { return }
-	set size [expr {-($Options($context:size))}]
+	set size $Options($context:size)
 
 	if {$UseSymbols} {
 		set ascent [font metrics $text($context:normal) -ascent]
@@ -1361,13 +1427,7 @@ proc registerSymbolFonts {context} {
 			-size $size \
 		]
 		while {[font metrics $symbol($context:normal) -ascent] > $ascent} {
-			incr size
-			font delete $symbol($context:normal)
-			set symbol($context:normal) [font create ::font::symbol($context:normal) \
-				-family $Options(symbol:family) \
-				-weight $Options(symbol:weight) \
-				-size $size \
-			]
+			font configure $symbol($context:normal) -size [decr size]
 		}
 		set symbol($context:bold) [font create ::font::symbol($context:bold) \
 			-family $Options(symbol:family) \
@@ -1431,7 +1491,7 @@ proc registerFigurineFonts {context} {
 	variable text
 
 	if {[info exists figurine($context:normal)]} { return }
-	set size [expr {-$Options($context:size)}]
+	set size $Options($context:size)
 
 	if {$UseFigurines} {
 		set ascent [font metrics $text($context:normal) -ascent]
@@ -1441,13 +1501,7 @@ proc registerFigurineFonts {context} {
 			-size $size \
 		]
 		while {[font metrics $figurine($context:normal) -ascent] > $ascent} {
-			incr size
-			font delete $figurine($context:normal)
-			set figurine($context:normal) [font create ::font::figurine($context:normal) \
-				-family $Options(figurine:family:normal) \
-				-weight $Options(figurine:weight:normal) \
-				-size $size \
-			]
+			font configure $figurine($context:normal) -size [decr size]
 		}
 		set figurine($context:bold) [font create ::font::figurine($context:bold) \
 			-family $Options(figurine:family:bold) \
@@ -1540,16 +1594,21 @@ proc decreaseSize {context} {
 }
 
 
-proc changeSize {context incr} {
+proc changeSize {context incr {scope local}} {
 	variable Options
 	variable figurine
 	variable symbol
 
-	set size [expr {$Options($context:size) + $incr}]
-	if {8 > $size || $size > 20} { return 0 }
+	set size [::html::incrFontSize $Options($context:size) $incr]
+	if {$size == $Options($context:size)} { return 0 }
+
+	if {$scope eq "global" && $context ne "text"} {
+		if {[expr {$incr > 0 ? $size > $Options(text:size) : $size < $Options(text:size)}]} {
+			return
+		}
+	}
 
 	set Options($context:size) $size
-
 	set styles [unregisterTextFonts $context]
 	registerTextFonts $context $styles
 
@@ -1560,6 +1619,11 @@ proc changeSize {context incr} {
 	if {[info exists symbol($context:normal)]} {
 		unregisterSymbolFonts $context
 		registerSymbolFonts $context
+	}
+
+	if {$scope eq "global"} {
+		variable UpdateCommands
+		foreach cmd $UpdateCommands { eval $cmd }
 	}
 
 	return 1
@@ -1714,10 +1778,10 @@ proc getFontFamilyName {font} {
 
 
 proc addChangeFontSizeBindings {context w {cmd {}}} {
-	bind $w <Control-plus>			[namespace code [list ChangeFontSize $context $cmd +1]]
-	bind $w <Control-KP_Add>		[namespace code [list ChangeFontSize $context $cmd +1]]
-	bind $w <Control-minus>			[namespace code [list ChangeFontSize $context $cmd -1]]
-	bind $w <Control-KP_Subtract>	[namespace code [list ChangeFontSize $context $cmd -1]]
+	set incrCmd [namespace code [list ChangeFontSize $context $cmd +1 %s]]
+	set decrCmd [namespace code [list ChangeFontSize $context $cmd -1 %s]]
+	foreach ev {<Control-plus> <Control-KP_Add>} { bind $w $ev $incrCmd }
+	foreach ev {<Control-minus> <Control-KP_Subtract>} { bind $w $ev $decrCmd }
 }
 
 
@@ -1730,7 +1794,7 @@ proc addChangeFontSizeToMenu {context m {cmd {}} {stateIncr normal} {stateDecr n
 		set decrCmd [namespace code [list ChangeFontSize $context $cmd -1]]
 	}
 	set accel {}
-	if {$useAccels} { set accel [list -accel "$::mc::Key(Ctrl) +"] }
+	if {$useAccels} { set accel [list -accel "$::mc::Key(Ctrl)\u2009+"] }
 	$m add command \
 		-command $incrCmd \
 		-label " $mc::IncreaseFontSize" \
@@ -1739,7 +1803,7 @@ proc addChangeFontSizeToMenu {context m {cmd {}} {stateIncr normal} {stateDecr n
 		-state $stateIncr \
 		{*}$accel \
 		;
-	if {$useAccels} { set accel [list -accel "$::mc::Key(Ctrl) \u2212"] }
+	if {$useAccels} { set accel [list -accel "$::mc::Key(Ctrl)\u2009\u2212"] }
 	$m add command \
 		-command $decrCmd \
 		-label " $mc::DecreaseFontSize" \
@@ -1751,10 +1815,27 @@ proc addChangeFontSizeToMenu {context m {cmd {}} {stateIncr normal} {stateDecr n
 }
 
 
-proc ChangeFontSize {context cmd incr} {
+proc ChangeFontSize {context cmd incr {state 0}} {
+	variable Options
+	variable Lock
+
+	if {[::util::shiftIsHeldDown? $state]} { return }
+
+	if {$Lock($context) eq "once"} {
+		set Lock($context) locked
+	} elseif {$Lock($context) eq "locked"} {
+		return
+	}
+
 	if {[changeSize $context $incr]} {
 		if {[llength $cmd]} { {*}$cmd }
 	}
+}
+
+
+proc SendFontSizeChanged {w value} {
+	event generate $w <<FontSizeChanged>> -data $value
+	foreach child [winfo children $w] { SendFontSizeChanged $child $value }
 }
 
 namespace export getFontFamilyName
@@ -1774,6 +1855,7 @@ namespace import [namespace parent]::getFontFamilyName
 
 proc setupFonts {context {font ""}} {
 	variable [namespace parent]::Options
+	variable [namespace parent]::Lock
 
 	if {![info exists Options($context:html:size)]} {
 		set Options($context:html:family) ""
@@ -1781,6 +1863,7 @@ proc setupFonts {context {font ""}} {
 		set Options($context:html:size) 11
 	}
 
+	set Lock($context:html) none
 	set defaultFonts [defaultFonts]
 
 	if {[string length $font]} {
@@ -2034,11 +2117,30 @@ proc textFonts {} {
 }
 
 
+proc changeSize {context incr} {
+	variable [namespace parent]::Options
+
+	set oldSize [fontSize $context]
+	set newSize [::html::incrFontSize $oldSize $incr]
+	if {$newSize != $oldSize} {
+		setupFontSize $context $newSize
+	}
+}
+
+
 proc addChangeFontSizeBindings {context w {cmd {}}} {
-	bind $w <Control-plus>			[namespace code [list ChangeFontSize $context $cmd +1]]
-	bind $w <Control-KP_Add>		[namespace code [list ChangeFontSize $context $cmd +1]]
-	bind $w <Control-minus>			[namespace code [list ChangeFontSize $context $cmd -1]]
-	bind $w <Control-KP_Subtract>	[namespace code [list ChangeFontSize $context $cmd -1]]
+	set incrCmd [namespace code [list ChangeFontSize $context $cmd +1 %s]]
+	set decrCmd [namespace code [list ChangeFontSize $context $cmd -1 %s]]
+	foreach ev {<Control-plus> <Control-KP_Add>} { bind $w $ev $incrCmd }
+	foreach ev {<Control-minus> <Control-KP_Subtract>} { bind $w $ev $decrCmd }
+
+#	set tl [winfo toplevel $w]
+#	if {$tl ne ".application"} {
+#		bind $tl <Control-Shift-plus> { ::font::changeFontSize +1 }
+#		bind $tl <Control-Shift-KP_Add> { ::font::changeFontSize +1 }
+#		bind $tl <Control-Shift-minus> { ::font::changeFontSize -1 }
+#		bind $tl <Control-Shift-KP_Subtract> { ::font::changeFontSize -1 }
+#	}
 }
 
 
@@ -2120,10 +2222,24 @@ proc addChangeFontToMenu {context m applycmd {textFontOnly no}} {
 }
 
 
-proc ChangeFontSize {context cmd incr} {
-	set size [expr {[fontSize $context] + $incr}]
-	if {[llength $cmd]} { set size [{*}$cmd $size] }
-	setupFontSize $context $size
+proc ChangeFontSize {context cmd incr {state 0}} {
+	variable [namespace parent]::Options
+	variable [namespace parent]::Lock
+
+	if {[::util::shiftIsHeldDown? $state]} { return }
+
+	if {$Lock($context:html) eq "once"} {
+		set Lock($context:html) locked
+	} elseif {$Lock($context:html) eq "locked"} {
+		return
+	}
+
+	set oldSize [fontSize $context]
+	set newSize [::html::incrFontSize $oldSize $incr]
+	if {[llength $cmd]} { set newSize [{*}$cmd $newSize] }
+	if {$newSize != $oldSize} {
+		setupFontSize $context $newSize
+	}
 }
 
 
@@ -2155,7 +2271,7 @@ proc SelectFont {context parent monospaced applycmd} {
 		-parent $parent \
 		-monospaced $monospaced \
 		-fixedsize $monospaced \
-		-sizelist {8 9 10 11 12 13 14} \
+		-sizelist [::html::sizeTable] \
 		-usestyle no \
 		-applycmd [namespace code [list ApplyFont $context $monospaced $applycmd]] \
 		;

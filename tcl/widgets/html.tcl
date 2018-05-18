@@ -6,7 +6,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2011-2017 Gregor Cramer
+# Copyright: (C) 2011-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -44,6 +44,9 @@ namespace import ::tcl::mathfunc::max
 
 variable Margin	8 ;# do not change!
 variable MaxWidth	12000
+
+namespace import ::tcl::mathfunc::min
+namespace import ::tcl::mathfunc::max
 
 
 
@@ -160,23 +163,53 @@ proc textStyle {families} {
 }
 
 
-proc minFontSize {} { return 8 }
-proc maxFontSize {} { return 14 }
+array set FontTables {
+	 8 {  5  6  7  8 10 12 14 }
+	 9 {  6  7  8  9 11 13 15 }
+	10 {  7  8  9 10 12 14 16 }
+	11 {  8  9 10 11 13 15 17 }
+	12 {  9 10 11 12 14 16 18 }
+	13 { 10 11 12 13 15 17 19 }
+	14 { 11 12 13 14 16 18 20 }
+	16 { 13 14 15 16 18 20 22 }
+	18 { 15 16 17 18 21 22 23 }
+	21 { 18 19 20 21 23 24 25 }
+	24 { 21 22 23 24 26 28 30 }
+	36 { 33 34 35 36 38 40 42 }
+}
+
+proc minFontSize {} { variable FontTables; return [min {*}[array names FontTables]] }
+proc maxFontSize {} { variable FontTables; return [max {*}[array names FontTables]] }
+proc sizeTable   {} { variable FontTables; return [array names FontTables] }
+
+
+proc incrFontSize {size incr} {
+	variable FontTables
+
+	set sizes [lsort -integer [array names FontTables]]
+	set min [lindex $sizes 0]
+	set max [lindex $sizes end]
+
+	if {$size == $min} { return $min }
+	if {$size == $max} { return $max }
+
+	set i [lsearch $sizes $size]
+	if {$i == -1} {
+		return [expr {[expr {max($min, min($max, $size + $incr))}]}]
+	}
+	set i [expr {$i + $incr}]
+	if {$i < 0} { set i 0 }
+	if {$i >= [llength $sizes]} { set i [expr {[llength $sizes] - 1}] }
+	return [lindex $sizes $i]
+}
 
 
 proc getFontTable {fontsize} {
-	if {8 > $fontsize || $fontsize > 14} {
-		error "unsupported font size '$fontsize': should be one of {8 9 10 11 12 13 14}"
+	variable FontTables
+	if {$fontsize ni [array names FontTables]} {
+		error "unsupported font size '$fontsize': should be one of [array names FontTables]"
 	}
-	switch $fontsize {
-		 8 { return { 5  6  7  8 10 12 14} }
-		 9 { return { 6  7  8  9 11 13 15} }
-		10 { return { 7  8  9 10 12 14 16} }
-		11 { return { 8  9 10 11 13 15 17} }
-		12 { return { 9 10 11 12 14 16 18} }
-		13 { return {10 11 12 13 15 17 19} }
-		14 { return {11 12 13 14 16 18 20} }
-	}
+	return $FontTables($fontsize)
 }
 
 
@@ -449,8 +482,8 @@ proc UrlHandler {w args} {
 
 proc ShowTooltip {html nodes} {
 	foreach node $nodes {
-		if {[string length [set tip [$node attribute -default "" title]]]} {
-			::tooltip::show $html $tip
+		if {![catch { set tip [$node attribute -default "" title] }]} {
+			if {[string length $tip]} { ::tooltip::show $html $tip }
 		}
 	}
 }

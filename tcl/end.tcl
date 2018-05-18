@@ -212,6 +212,8 @@ proc scrolledframe::MapWindow {w} { ::scidb::misc::mapWindow $w }
 proc twm::tr {tok} { return [set $tok] }
 proc twm::tooltip {args} { ::tooltip::tooltip {*}$args }
 proc twm::makeStateSpecificIcons {icon} { return [::icon::makeStateSpecificIcons $icon] }
+proc twm::WriteOptions {chan} { ::options::writeItem $chan [twm::nameOfOptionsArray] }
+::options::hookWriter twm::WriteOptions
 
 log::finishLayout
 
@@ -385,6 +387,7 @@ set ::scidb::revision [::scidb::misc::revision]
 ::menu::setup
 ::board::setup
 ::tooltip::init
+::font::setupDefaultFonts
 ::font::setupChessFonts
 #if {$beta::Welcome} { ::html::preload $mc::langID }
 application::open

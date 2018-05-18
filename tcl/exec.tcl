@@ -107,6 +107,7 @@ set ProgramOptions [list                                                        
 	                                "(will skip games from last session)"]                    \
 	[list "--single-process"        "Forcing a single process of $::scidb::app"               \
 	                                "(you shouldn't use this option; only for testing)"]      \
+	[list "--reset-fonts"           "Reset all fonts to default size"]                        \
 	[list "--update-themes"         "Update themes (from shared directory)"]                  \
 	[list "--update-player-photos"  "Update/install player photos"]                           \
 	[list "--force-grab"            "Do not suppress grabs in debug mode"                     \

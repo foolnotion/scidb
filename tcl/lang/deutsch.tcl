@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2017 Gregor Cramer
+# Copyright: (C) 2009-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -285,6 +285,10 @@
 ::menu::mc::Extras							"E&xtras"
 ::menu::mc::Setup								"&Einstellungen"
 ::menu::mc::Layout							"La&yout"
+
+# Font Size
+::menu::mc::IncrFontSize					"Alle Zeichensätze vergrößern"
+::menu::mc::DecrFontSize					"Alle Zeichensätze verkleinern"
 
 # Contact
 ::menu::mc::ContactBugReport				"&Fehlerbericht"

@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2011-2013 Gregor Cramer
+# Copyright: (C) 2011-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -50,26 +50,11 @@ proc Build {w args} {
 	set parent [::scrolledframe $w -fill both -background white -borderwidth 0 -wheelunits 1 {*}$args]
 	set f $parent.f
 	set t $f.t
-	set h $f.history
-
-	set font TkTextFont
-	set family [font configure $font -family]
-	set size [font configure $font -size]
-	set boldFont [list [list $family $size bold]]
 
 	::tk::frame $f -background white -borderwidth 0 {*}$args -takefocus 0
 	bind $f <Configure> [list $parent fit] ;# help the scrolled window
 	grid $f
 	grid anchor $parent center
-
-	set lbl [namespace current]::mc::GameHistory
-	::tk::label $h            \
-		-textvariable $lbl     \
-		-background white      \
-		-font $boldFont        \
-		-padx 6                \
-		-pady 4                \
-		;
 
 	treectrl $t              \
 		-class GHist          \
@@ -81,13 +66,13 @@ proc Build {w args} {
 		-showbuttons no       \
 		-showlines no         \
 		-selectmode single    \
-		-font $font           \
+		-font TkTextFont      \
 		-background white     \
 		;
 	::scrolledframe::bindMouseWheel $parent $t
 	$t state define hilite
 	$t column create -tags game
-	$t element create elemHdr text -font $boldFont -lines 1 -fill darkred
+	$t element create elemHdr text -font TkHeadingFont -lines 1 -fill darkred
 	set specialfont [list [list $::font::figurine(text:normal) 9812 9823]]
 	$t element create elemTxt text -lines 1 -specialfont $specialfont
 	$t element create elemSel rect -fill [list                          \
@@ -115,7 +100,6 @@ proc Build {w args} {
 	bind $t <Double-Button-1>	[namespace code [list OpenGame $t %x %y]]
 	bind $t <Key-space> [namespace code [list OpenGame $t]]
 
-	pack $h -side top -anchor w
 	pack $t -side top
 
 	set linespace [font metrics [$t cget -font] -linespace]
@@ -149,6 +133,7 @@ proc WidgetProc {w command args} {
 
 	switch -- $command {
 		rebuild	{ return [Rebuild $s.f.t] }
+		refresh  { return [Rebuild $s.f.t] }
 		empty?	{ return [expr {[$s.f.t item count] <= 1}] }
 
 		selection {
@@ -166,7 +151,6 @@ proc WidgetProc {w command args} {
 				error "wrong # args: should be \"[namespace current] bind <tag> ?<sequence>? ?<script?>\""
 			}
 			bind $s.f.t {*}$args
-			bind $s.f.history {*}$args
 			bind $s {*}$args
 			return
 		}
@@ -217,14 +201,13 @@ proc Rebuild {t} {
 	set width [$t column cget game -width]
 	if {[llength $width] == 0} { set width [$t column width game] }
 	incr width [expr {2*[$t cget -borderwidth]}]
-	$t configure -width $width
-
 	set height 0
 	foreach i [$t item children root] {
 		lassign [$t item bbox $i] x0 y0 x1 y1
 		incr height [expr {$y1 - $y0}]
 	}
-	$t configure -height $height
+	$t configure -width $width -height $height
+	[winfo parent [winfo parent $t]] fit
 }
 
 
@@ -280,11 +263,7 @@ proc ShowTooltip {t x y} {
 		grid [::tk::label $f.siline -background $background] -row 3 -column 1 -sticky w
 		grid rowconfigure $f {0 4} -minsize 2
 		grid columnconfigure $f {0 2} -minsize 2
-
-		set family [font configure [$f.coline cget -font] -family]
-		set size [font configure [$f.coline cget -font] -size]
-		set boldFont [list $family $size bold]
-		$f.coline configure -font $boldFont
+		$f.coline configure -font TkHeadingFont
 	}
 
 	if {[llength $Map($sel)] == 1} {

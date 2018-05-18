@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2013 Gregor Cramer
+# Copyright: (C) 2009-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -181,6 +181,7 @@ proc build {w width height} {
 	::bind $canv <FocusIn> [namespace code { GotFocus %W }]
 	::bind $canv <FocusOut> [namespace code LostFocus]
 	::bind $canv <Any-Button> { ::variation::hide; ::move::cancelVariation }
+	::bind $canv <<FontSizeChanged>> [list after idle [namespace code Redraw]]
 
 	foreach {bind canvas} [list ::bind $canv ::bind $border ::board::diagram::bind $board] {
 		if {[tk windowingsystem] eq "x11"} {
@@ -326,7 +327,8 @@ proc build {w width height} {
 			[::toolbar::add $tbControl button \
 				-state disabled \
 				-image [set ::icon::toolbarCtrl${action}] \
-				-command [namespace code [list Goto $key]]]
+				-command [namespace code [list Goto $key]] \
+			]
 	}
 
 	::toolbar::addSeparator $tbControl
@@ -1401,6 +1403,11 @@ proc ComputeLayout {canvWidth canvHeight {bordersize -1}} {
 		set Dim(offset) 0
 	}
 
+	if {$layout(border) && $layout(coordinates)} {
+		set Dim(borderthickness) [expr {int([::font::scaleFactor]*$Dim(borderthickness) + 0.5)}]
+		set Dim(offset) [expr {int([::font::scaleFactor]*$Dim(offset) + 0.5)}]
+	}
+
 	if {	$Vars(layout) eq "ThreeCheck"
 		&& $layout(coordinates)
 		&& !$layout(border)
@@ -1660,19 +1667,20 @@ proc ComputeCoordFont {w size} {
 	variable Defaults
 	variable Dim
 
-	set delta [expr {min(6, int(($size - 10)/3.0 + 0.5) + 2)}]
+	set factor [::font::scaleFactor]
+	set size [expr {max(6, int($factor*$size + 0.5))}]
 	if {$Dim(fontsize) == $size} { return $Dim(font) }
-	set size [max 6 $size]
+	set delta [expr {min(6, int(($size - 10)/3.0 + 0.5) + 2)}]
 	set Dim(fontsize) $size
 
 	while {$size >= 6} {
 		set Dim(font) [list $Defaults(coords-font-family) $size]
 		$w itemconfigure coordA -font $Dim(font)
 		lassign [$w bbox coordA] x1 y1 x2 y2
-		set Dim(font-width) [expr {$x2 - $x1}]
-		set Dim(font-height) [expr {$y2 - $y1}]
-		set dx [expr {$Dim(offset) - $Dim(font-width) - $delta}]
-		set dy [expr {$Dim(offset) - $Dim(font-height) - $delta}]
+		set width [expr {$x2 - $x1}]
+		set height [expr {$y2 - $y1}]
+		set dx [expr {$Dim(offset) - $width - $delta}]
+		set dy [expr {$Dim(offset) - $height - $delta}]
 		if {$dx >= 0 && $dy >= 0} { return $Dim(font) }
 		incr size [expr {min(-1, min($dx, $dy)/2)}]
 	}

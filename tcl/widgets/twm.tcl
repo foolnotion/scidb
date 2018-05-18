@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2010-2017 Gregor Cramer
+# Copyright: (C) 2010-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -145,14 +145,17 @@ proc twm {path args} {
 	set Vars(afterid:release) {}
 	set Vars(cross:showall) $Options(cross:showall)
 
-	set fam [font configure $Options(header:font) -family]
-	set headerFont [list $fam $Options(header:fontsize) bold]
+	set Vars(header:font) [font create ${path}::Vars(header:font) \
+		-family [font configure $Options(header:font) -family] \
+		-weight bold \
+		-size $Options(header:fontsize)
+	]
 	set background [ttk::style lookup $::ttk::currentTheme -background]
 	set tabbg [ttk::style lookup TNotebook.Tab -background]
 	ttk::style configure twm.TNotebook -borderwidth 0
-	ttk::style configure twm.TNotebook.Tab -font $headerFont -padding {2 2}
+	ttk::style configure twm.TNotebook.Tab -font $Vars(header:font) -padding {2 2}
 	ttk::style configure twm.TButton -padding {1 1 0 0}
-	ttk::style configure twm.TLabel -font $headerFont -background $tabbg
+	ttk::style configure twm.TLabel -font $Vars(header:font) -background $tabbg
 	#ttk::style map twm.TNotebook.Tab -background [list active $background selected $background]
 
 	ttk::frame $path -class TwmToplevel -borderwidth $opts(-borderwidth) -takefocus 0
@@ -167,6 +170,19 @@ proc twm {path args} {
 	proc ::$path {command args} "[namespace current]::WidgetProc $path \$command {*}\$args"
 
 	return $path
+}
+
+
+proc nameOfOptionsArray {} {
+	return [namespace current]::Options
+}
+
+
+proc resetFontSize {} {
+	variable Options
+	variable Defaults
+
+	set Options(header:fontsize) $Defaults(header:fontsize)
 }
 
 
@@ -210,6 +226,8 @@ proc WidgetProc {twm command args} {
 		get				{ return [::scidb::tk::twm get $twm {*}$args] }
 		get!				{ return [::scidb::tk::twm get! $twm {*}$args] }
 		header			{ UpdateHeader $twm {*}$args }
+		headerfontsize	{ return [HeaderFontSize $twm {*}$args] }
+		headerframes	{ return [::scidb::tk::twm headerframes $twm] }
 		hidden			{ return [::scidb::tk::twm hidden $twm {*}$args] }
 		hide				{ Hide $twm {*}$args }
 		id					{ return [::scidb::tk::twm id $twm {*}$args] }
@@ -224,8 +242,8 @@ proc WidgetProc {twm command args} {
 		ismetaframe		{ return [string equal "TwmMetaframe" [winfo class {*}$args]] }
 		ismultiwindow	{ return [string match {*Multiwindow} [winfo class {*}$args]] }
 		isnotebook		{ return [string match {*Notebook} [winfo class {*}$args]] }
-		ispanedwindow	{ return [string match {*Panedwindow} [winfo class {*}$args]] }
 		ispane			{ return [::scidb::tk::twm ispane $twm {*}$args] }
+		ispanedwindow	{ return [string match {*Panedwindow} [winfo class {*}$args]] }
 		isroot			{ return [string match $twm {*}$args] }
 		istoplevel		{ return [expr {[::scidb::tk::twm toplevel $twm {*}$args] eq $args}] }
 		leader			{ return [::scidb::tk::twm leader $twm {*}$args] }
@@ -250,8 +268,8 @@ proc WidgetProc {twm command args} {
 		resize			{ return [Resize $twm {*}$args] }
 		resizing			{ return [Resizing $twm {*}$args] }
 		sashsize			{ return $Options(sash:size) }
-		selected			{ return [::scidb::tk::twm selected $twm {*}$args] }
 		select			{ return [Select $twm {*}$args] }
+		selected			{ return [::scidb::tk::twm selected $twm {*}$args] }
 		set				{ ::scidb::tk::twm set $twm {*}$args }
 		set!				{ ::scidb::tk::twm set! $twm {*}$args }
 		show				{ ::scidb::tk::twm show $twm {*}$args }
@@ -270,6 +288,22 @@ proc WidgetProc {twm command args} {
 	}
 
 	return $twm
+}
+
+
+proc HeaderFontSize {twm {fontSize 0}} {
+	variable ${twm}::Vars
+	variable Options
+
+	if {$fontSize <= 0} { return $Options(header:fontsize) }
+	if {$fontSize == $Options(header:fontsize)} { return }
+
+	font configure $Vars(header:font) -size [set Options(header:fontsize) $fontSize]
+	$twm refresh
+
+	foreach frame [$twm headerframes] {
+		after idle [list [namespace current]::ConfigureLabelBar frame $twm $frame -1]
+	}
 }
 
 
@@ -736,9 +770,6 @@ proc UpdateHeader {twm frame panes} {
 	if {[$twm get! $frame flat 0]} { return }
 	ShowHeaderButtons $twm $frame
 
-	set fam [font configure $Options(header:font) -family]
-	set headerFont [list $fam $Options(header:fontsize) bold]
-
 	set n [llength $panes]
 	set parent [$twm parent $frame]
 	set labels {}
@@ -1015,7 +1046,7 @@ proc HeaderPress {twm frame x y} {
 proc HeaderMotion {twm frame x y} {
 	if {[grab status $frame] eq "none"} { return }
 
-	if {[catch { DoHeaderMotion $twm $frame $x $y } _ opts]} {
+	if {[catch { DoHeaderMotion $twm $frame $x $y } -> opts]} {
 		puts stderr "Error in HeaderMotion"
 		HeaderRelease $twm $frame
 		return {*}$opts -rethrow 1 0

@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2010-2017 Gregor Cramer
+// Copyright: (C) 2010-2018 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -875,6 +875,7 @@ public:
 	tcl::List collectFrames() const;
 	tcl::List collectPanes() const;
 	tcl::List collectPanesRecursively() const;
+	tcl::List collectHeaderFramesRecursively() const;
 	tcl::List collectLeaves() const;
 	tcl::List collectContainer() const;
 	tcl::List collectFloats() const;
@@ -986,6 +987,7 @@ private:
 	void collectLeaves(mstl::vector<mstl::string>& result) const;
 	void collectFramesRecursively(tcl::List& result) const;
 	void collectPanesRecursively(tcl::List& result) const;
+	void collectHeaderFramesRecursively(tcl::List& result) const;
 	void collectLeavesRecursively(tcl::List& result) const;
 	void collectVisibleRecursively(tcl::List& result) const;
 	void inspect(AttrSet const& exportList, tcl::DString& str) const;
@@ -1881,6 +1883,20 @@ Node::collectPanesRecursively(tcl::List& result) const
 
 
 void
+Node::collectHeaderFramesRecursively(tcl::List& result) const
+{
+	if (m_headerObj)
+		result.push_back(pathObj());
+
+	if (!isLeaf())
+	{
+		for (unsigned i = 0; i < numChilds(); ++i)
+			child(i)->collectHeaderFramesRecursively(result);
+	}
+}
+
+
+void
 Node::collectLeavesRecursively(tcl::List& result) const
 {
 	if (isLeaf())
@@ -1944,6 +1960,15 @@ Node::collectPanesRecursively() const
 {
 	tcl::List result;
 	collectPanesRecursively(result);
+	return result;
+}
+
+
+tcl::List
+Node::collectHeaderFramesRecursively() const
+{
+	tcl::List result;
+	collectHeaderFramesRecursively(result);
 	return result;
 }
 
@@ -6402,6 +6427,13 @@ cmdVisible(Base& base, int objc, Tcl_Obj* const objv[])
 
 
 static void
+cmdHeaderFrames(Base& base, int objc, Tcl_Obj* const objv[])
+{
+	tcl::setResult(base.root->collectHeaderFramesRecursively());
+}
+
+
+static void
 cmdHidden(Base& base, int objc, Tcl_Obj* const objv[])
 {
 	if (objc != 4)
@@ -6756,25 +6788,25 @@ cmdTwm(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		"clone",			"capture",		"changeuid",	"close",			"container",
 		"dimension",	"dock",			"find",			"floats",		"frames",
-		"get",			"get!",			"hidden",		"id",				"init",
-		"inspect",		"iscontainer",	"isdocked",		"ismetachild",	"ispane",
-		"leaf",			"leader",		"leaves",		"load",			"neighbors",
-		"new",			"orientation",	"panes",			"parent",		"refresh",
-		"release",		"resize",		"selected",		"set",			"set!",
-		"show",			"toggle",		"toplevel",		"uid",			"undock",
-		"visible",		nullptr
+		"get",			"get!",			"headerframes","hidden",		"id",
+		"init",			"inspect",		"iscontainer",	"isdocked",		"ismetachild",
+		"ispane",		"leaf",			"leader",		"leaves",		"load",
+		"neighbors",	"new",			"orientation",	"panes",			"parent",
+		"refresh",		"release",		"resize",		"selected",		"set",
+		"set!",			"show",			"toggle",		"toplevel",		"uid",
+		"undock",		"visible",		nullptr
 	};
 	enum
 	{
-		Cmd_Clone,			Cmd_Capture,		Cmd_ChangeUid,	Cmd_Close,			Cmd_Container,
-		Cmd_Dimension,		Cmd_Dock,			Cmd_Find,		Cmd_Floats,			Cmd_Frames,
-		Cmd_Get,				Cmd_Get_,			Cmd_Hidden,		Cmd_Id,				Cmd_Init,
-		Cmd_Inspect,		Cmd_IsContainer,	Cmd_IsDocked,	Cmd_IsMetaChild,	Cmd_IsPane,
-		Cmd_Leaf,			Cmd_Leader,			Cmd_Leaves,		Cmd_Load,			Cmd_Neighbors,
-		Cmd_New,				Cmd_Orientation,	Cmd_Panes,		Cmd_Parent,			Cmd_Refresh,
-		Cmd_Release,		Cmd_Resize,			Cmd_Selected,	Cmd_Set,				Cmd_Set_,
-		Cmd_Show,			Cmd_Toggle,			Cmd_Toplevel,	Cmd_Uid,				Cmd_Undock,
-		Cmd_Visible,		Cmd_NULL
+		Cmd_Clone,			Cmd_Capture,		Cmd_ChangeUid,		Cmd_Close,			Cmd_Container,
+		Cmd_Dimension,		Cmd_Dock,			Cmd_Find,			Cmd_Floats,			Cmd_Frames,
+		Cmd_Get,				Cmd_Get_,			Cmd_HeaderFrames,	Cmd_Hidden,			Cmd_Id,
+		Cmd_Init,			Cmd_Inspect,		Cmd_IsContainer,	Cmd_IsDocked,		Cmd_IsMetaChild,
+		Cmd_IsPane,			Cmd_Leaf,			Cmd_Leader,			Cmd_Leaves,			Cmd_Load,
+		Cmd_Neighbors,		Cmd_New,				Cmd_Orientation,	Cmd_Panes,			Cmd_Parent,
+		Cmd_Refresh,		Cmd_Release,		Cmd_Resize,			Cmd_Selected,		Cmd_Set,
+		Cmd_Set_,			Cmd_Show,			Cmd_Toggle,			Cmd_Toplevel,		Cmd_Uid,
+		Cmd_Undock,			Cmd_Visible,		Cmd_NULL
 	};
 
 	static_assert(sizeof(subcommands)/sizeof(subcommands[0]) == Cmd_NULL + 1, "initialization failed");
@@ -6802,6 +6834,7 @@ cmdTwm(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			case Cmd_Frames:			execute(cmdFrames, false, objc, objv); break;
 			case Cmd_Get:				// fallthru
 			case Cmd_Get_:				execute(cmdGet, false, objc, objv); break;
+			case Cmd_HeaderFrames:	execute(cmdHeaderFrames, false, objc, objv); break;
 			case Cmd_Hidden:			execute(cmdHidden, false, objc, objv); break;
 			case Cmd_Id:				execute(cmdId, false, objc, objv); break;
 			case Cmd_Init:				cmdInit(initBase(objv[2]), objc, objv); break;

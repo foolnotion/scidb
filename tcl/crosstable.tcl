@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2011-2013 Gregor Cramer
+# Copyright: (C) 2011-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -430,6 +430,7 @@ proc open {parent base variant index view source} {
 	::font::html::addChangeFontSizeBindings crosstable $dlg \
 		[list [namespace current]::ChangeFontSize $dlg]
 	bind $dlg <<LanguageChanged>> [namespace code [list LanguageChanged $dlg %W]]
+	bind $dlg <<FontSizeChanged>> [namespace code [list FontSizeChanged %W $dlg]]
 
 	if {$source eq "event"} {
 		::widget::dialogButtons $dlg {close previous next}
@@ -1431,6 +1432,11 @@ proc ApplyFont {dlg} {
 	$Vars(html) css [DefaultCSS]
 	$Vars(html) fontsize [::font::html::fontSize crosstable]
 	$Vars(html) parse $Vars(output:html)
+}
+
+
+proc FontSizeChanged {w dlg} {
+	if {$w eq $dlg} { after idle [namespace code [list ApplyFont $dlg]] }
 }
 
 

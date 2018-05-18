@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2017 Gregor Cramer
+# Copyright: (C) 2009-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -108,6 +108,8 @@ set BoardLayout {
 		}
 	}
 }
+
+set FontSizeActive 0
 
 array set Prios		{ analysis 200 board 500 editor 400 games 100 tree 300 }
 array set Options		{ docking:showall no layout:name "" layout:list {} }
@@ -226,7 +228,16 @@ proc open {} {
 	bind $main <<TwmMenu>>     [namespace code [list TwmMenu %d %x %y]]
 	bind $main <<TwmAfter>>    [namespace code board::afterTWM]
 
-	bind .application <<Fullscreen>> [namespace code { Fullscreen %d }]
+	set incrFontSize { ::font::changeFontSize +1 }
+	set decrFontSize { ::font::changeFontSize -1 }
+
+	bind .application <Control-Shift-plus>				$incrFontSize
+	bind .application <Control-Shift-KP_Add>			$incrFontSize
+	bind .application <Control-Shift-minus>			$decrFontSize
+	bind .application <Control-Shift-KP_Subtract>	$decrFontSize
+	bind .application <<FontSizeChanged>>				[namespace code { FontSizeChanged %W %d }]
+	bind .application <<Fullscreen>>						[namespace code { Fullscreen %d }]
+
 	::searchentry::bindShortcuts .application
 
 	set Vars(ready) 0
@@ -249,6 +260,9 @@ proc open {} {
 	$main load $Options(layout:list)
 	set Vars(loading) 0
 }
+
+
+proc twm {} { return [set [namespace current]::Vars(frame:main)] }
 
 
 proc loadInitialLayout {main} {
@@ -1145,6 +1159,15 @@ proc Startup {main args} {
 proc Fullscreen {flag} {
 #	variable Vars
 #	if {!$flag && [llength $Vars(geometry)} { Geometry $Vars(geometry) }
+}
+
+
+proc FontSizeChanged {w value} {
+	variable Vars
+
+	if {$w eq ".application"} {
+		$Vars(frame:main) headerfontsize [::html::incrFontSize [$Vars(frame:main) headerfontsize] $value]
+	}
 }
 
 

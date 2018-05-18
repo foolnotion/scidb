@@ -247,16 +247,20 @@ proc open {parent args} {
 		if {$id ne "firstName"} {
 			lappend menu [list command \
 				-command [namespace code [list SortColumn $table $id ascending]] \
-				-labelvar ::gametable::mc::SortAscending]
+				-labelvar ::gametable::mc::SortAscending] \
+				;
 			lappend menu [list command \
 				-command [namespace code [list SortColumn $table $id descending]] \
-				-labelvar ::gametable::mc::SortDescending]
+				-labelvar ::gametable::mc::SortDescending] \
+				;
 			lappend menu [list command \
 				-command [namespace code [list SortColumn $table $id reverse]] \
-				-labelvar ::gametable::mc::ReverseOrder]
+				-labelvar ::gametable::mc::ReverseOrder] \
+				;
 			lappend menu [list command \
 				-command [namespace code [list SortColumn $table $id cancel]] \
-				-labelvar ::gametable::mc::CancelSort]
+				-labelvar ::gametable::mc::CancelSort] \
+				;
 			lappend menu { separator }
 		}
 

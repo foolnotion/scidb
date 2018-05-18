@@ -6,7 +6,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2011-2013 Gregor Cramer
+# Copyright: (C) 2011-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -214,7 +214,6 @@ proc fsbox {w type args} {
 	variable ${w}::Vars
 
 	array set opts {
-		-font							TkTextFont
 		-background					white
 		-foreground					black
 		-bookmarkswidth			120
@@ -255,6 +254,7 @@ proc fsbox {w type args} {
 		-formattimecmd				{}
 		-actions						{delete rename copy new}
 	}
+	set opts(-font) TkTextFont
 	array set opts [array get Colors]
 
 	array set opts $args
@@ -2391,9 +2391,10 @@ proc EmbedFileList {fileList isdir w infoFont alertFont} {
 		} else {
 			set file [file tail $file]
 		}
-		grid [tk::label $w.l$row -text $file -font TkFixedFont] -column 1 -row $row -sticky w
+		set font TkFixedFont
+		grid [tk::label $w.l$row -text $file -font $font] -column 1 -row $row -sticky w
 		if {[incr row] == 10} {
-			grid [tk::label $w.l$row -text "..." -font TkFixedFont] -column 1 -row $row -sticky w
+			grid [tk::label $w.l$row -text "..." -font $font] -column 1 -row $row -sticky w
 			break
 		}
 	}

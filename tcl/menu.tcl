@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2013 Gregor Cramer
+# Copyright: (C) 2009-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -66,6 +66,10 @@ set Extras							"&Extras"
 set Setup							"Setu&p"
 set Layout							"La&yout"
 
+# Font Size
+set IncrFontSize					"Increase All Font Sizes"
+set DecrFontSize					"Decrease All Font Sizes"
+
 # Contact
 set ContactBugReport				"&Bug Report"
 set ContactFeatureRequest		"&Feature Request"
@@ -97,7 +101,7 @@ set FailedSettingDefaultApp	"Failed to set Scidb as a default application for %s
 set SuccessSettingDefaultApp	"Successfully set Scidb as a default application for %s."
 set CommandFailed					"Command '%s' failed."
 
-# do not need translation
+# does not need translation
 set SettingsEnglish				"&English"
 
 }
@@ -398,6 +402,24 @@ if {0} {
 		-image $::icon::16x16::none \
 		-command $cmd \
 		-state $state \
+		;
+
+	### font size ############################################################
+	$menu add separator
+
+	$menu add command \
+		-compound left \
+		-label " $mc::IncrFontSize" \
+		-image $::icon::16x16::plus \
+		-accelerator "$::mc::Key(Ctrl)-$::mc::Key(Shift)\u2009+" \
+		-command { after idle {::font::changeFontSize +1} } \
+		;
+	$menu add command \
+		-compound left \
+		-label " $mc::DecrFontSize" \
+		-image $::icon::16x16::minus \
+		-accelerator "$::mc::Key(Ctrl)-$::mc::Key(Shift)\u2009\u2212" \
+		-command { after idle {::font::changeFontSize -1} } \
 		;
 
 	### help #################################################################
