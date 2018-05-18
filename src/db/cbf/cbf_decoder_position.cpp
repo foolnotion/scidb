@@ -252,7 +252,7 @@ Position::doMove(unsigned moveNumber)
 									// ---------------------------------------------------
 									// Unbelievable! In case of an restored e.p. right (see below)
 									// en passant moves will be counted even if the target is occupied
-									// by an own piece. Try game #6813 from
+									// by a friendly piece. Try game #6813 from
 									// <ftp://ftp.pitt.edu/group/student-activities/chess/CB/Openings/sisch-cb.zip>.
 									++count;
 								}

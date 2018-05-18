@@ -209,7 +209,7 @@ proc open {parent base variant info view index {fen {}}} {
 		-image $::icon::22x22::help \
 		-command [list ::help::open .application Game-Browser -parent $dlg] \
 	]
-	::tooltip::tooltip $controls.help "$::help::mc::Help (F1)"
+	::tooltip::tooltip $controls.help "$::help::mc::Help <F1>"
 	grid $controls.help -row 0 -column 13
 
 	grid columnconfigure $controls {1 10} -minsize 10
@@ -853,7 +853,7 @@ proc SetupControlButtons {position} {
 	variable ${position}::Vars
 	variable Accelerator
 
-	::tooltip::tooltip $Vars(control:help) "$::help::mc::Help (F1)"
+	::tooltip::tooltip $Vars(control:help) "$::help::mc::Help <F1>"
 
 	foreach {control var} {	Home	GotoStartOfGame
 									Prior	GoBackFast
@@ -861,11 +861,11 @@ proc SetupControlButtons {position} {
 									Right	GoForward
 									Next	GoForwardFast
 									End	GotoEndOfGame} {
-		::tooltip::tooltip $Vars(control:$control) "[set mc::$var] ($::mc::Key($control))"
+		::tooltip::tooltip $Vars(control:$control) "[set mc::$var] <$::mc::Key($control)>"
 	}
 
 	::tooltip::tooltip $Vars(control:rotate) \
-		"$::overview::mc::RotateBoard ($::overview::mc::AcceleratorRotate)"
+		"$::overview::mc::RotateBoard <$::overview::mc::AcceleratorRotate>"
 
 	SetAutoPlayTooltip $position
 
@@ -1243,11 +1243,9 @@ proc FindKey {w attr} {
 
 
 proc FindRange {w key position} {
-	if {[::scidb::game::position $position startKey] eq $key} { return {end end} }
-	set range [$w tag nextrange m:move $key]
-	if {[llength $range] == 0} {
-		# should not happen, but who knows?
-		set range {end end}
+	if {	[::scidb::game::position $position startKey] eq $key
+		|| [llength [set range [$w tag nextrange m:move $key]]] == 0} { ;# shouldn't happen, but who knows?
+		return {end end}
 	}
 	return $range
 }
@@ -1329,7 +1327,7 @@ proc SetAutoPlayTooltip {position} {
 		set tooltipVar StopAutoplay
 	}
 
-	::tooltip::tooltip $Vars(control:autoplay) "[set mc::$tooltipVar] ($::mc::Key(Ctrl)-A)"
+	::tooltip::tooltip $Vars(control:autoplay) "[set mc::$tooltipVar] <$::mc::Key(Ctrl)-A>"
 }	
 
 
@@ -1752,7 +1750,7 @@ proc Resize {position mode board newSize delta ext} {
 			grid $Vars(control) -row 0 -column 0 -sticky ens
 			grid rowconfigure $dlg 0 -minsize $Priv(controls:height)
 			$Vars(control).minimize configure -command [list wm iconify $dlg]
-			$Vars(control).restore configure \
+			$Vars(control).restore configure 
 				-command [namespace code [list ViewFullscreen $position $board]] \
 				;
 			$Vars(control).close configure -command [list destroy $dlg]
