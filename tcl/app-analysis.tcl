@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2010-2017 Gregor Cramer
+# Copyright: (C) 2010-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -568,7 +568,7 @@ proc startAnalysis {number} {
 	set rc [::engine::startEngine $number $isReadyCmd $signalCmd $updateCmd $tree]
 
 	if {![string is integer -strict $rc] || $rc == -2} {
-		DisplayStartOfMotorFailed $tree
+		DisplayStartOfMotorFailed $tree $rc
 		set rc -1
 	}
 
@@ -929,7 +929,7 @@ proc DisplayPressEngineButton {tree} {
 }
 
 
-proc DisplayStartOfMotorFailed {tree} {
+proc DisplayStartOfMotorFailed {tree rc} {
 	variable ${tree}::Vars
 
 	set msg $mc::StartOfMotorFailed
@@ -940,7 +940,7 @@ proc DisplayStartOfMotorFailed {tree} {
 		append msg $mc::WineIsNotInstalled
 	}
 	append msg "."
-	set Vars(message) [list [namespace current]::DisplayStartOfMotorFailed $tree]
+	set Vars(message) [list [namespace current]::DisplayStartOfMotorFailed $tree $rc]
 	ShowMessage error $msg
 }
 
