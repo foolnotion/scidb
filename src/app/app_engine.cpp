@@ -927,7 +927,11 @@ Engine::activate()
 			m_engine->stimulate();
 		}
 	}
-	else if (!m_active && !m_probe)
+	else if (m_probe)
+	{
+		m_active = true;
+	}
+	else if (!m_active)
 	{
 		m_engine->protocolStart(false);
 
@@ -1174,19 +1178,24 @@ Engine::probe(unsigned timeout)
 	}
 
 	m_probe = false;
+	m_engine->currentBoard().setStandardPosition();
 
 	if (result == Probe_Successfull && !hasFeature(Feature_Analyze))
 	{
 		Result analyzeResult = Probe_Failed;
 		Game game;
 
+		timer.restart(timeout);
+		while (!isActive() && !timer.expired())
+			timer.doNextEvent();
+
 		m_probeAnalyze = true;
 		m_game = &game;
 		addFeature(Feature_Analyze);
 		m_engine->startAnalysis(true);
 		removeFeature(Feature_Analyze);
-		timer.restart(timeout);
 
+		timer.restart(timeout);
 		try
 		{
 			while (!hasFeature(Feature_Analyze) && !timer.expired())
@@ -1198,7 +1207,6 @@ Engine::probe(unsigned timeout)
 		catch (mstl::exception const& exc)
 		{
 			deactivate();
-			m_probe = false;
 			throw;
 		}
 
