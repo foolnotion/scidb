@@ -7060,20 +7060,25 @@ Board::toFen(mstl::string& result, variant::Type variant, Format format) const
 			{
 				int sq = m_castleRookAtStart[WhiteKS];
 
-				M_ASSERT(sq != sq::Null);
-
-				if (format == Shredder)
+				if (sq != sq::Null)
 				{
-					result += printFYLE(sq);
-				}
-				else
-				{
-					int rt = msb(rooks);
-
-					if (rt > sq || mstl::is_between(lsb(rooks), int(m_ksq[White]), rt - 1))
+					if (rooks == 0)
+					{
+						result += 'K'; // castling w/o rooks
+					}
+					else if (format == Shredder)
+					{
 						result += printFYLE(sq);
+					}
 					else
-						result += 'K';
+					{
+						int rt = msb(rooks);
+
+						if (rt > sq || mstl::is_between(lsb(rooks), int(m_ksq[White]), rt - 1))
+							result += printFYLE(sq);
+						else
+							result += 'K';
+					}
 				}
 			}
 
@@ -7083,20 +7088,25 @@ Board::toFen(mstl::string& result, variant::Type variant, Format format) const
 
 				int sq = m_castleRookAtStart[WhiteQS];
 
-				M_ASSERT(sq != sq::Null);
-
-				if (format == Shredder)
+				if (sq != sq::Null)
 				{
-					result += printFYLE(sq);
-				}
-				else
-				{
-					int lt = lsb(rooks);
-
-					if (lt < sq || mstl::is_between(msb(rooks), lt + 1, int(m_ksq[White])))
+					if (rooks == 0)
+					{
+						result += 'Q'; // castling w/o rooks
+					}
+					else if (format == Shredder)
+					{
 						result += printFYLE(sq);
+					}
 					else
-						result += 'Q';
+					{
+						int lt = lsb(rooks);
+
+						if (lt < sq || mstl::is_between(msb(rooks), lt + 1, int(m_ksq[White])))
+							result += printFYLE(sq);
+						else
+							result += 'Q';
+					}
 				}
 			}
 		}
@@ -7111,20 +7121,25 @@ Board::toFen(mstl::string& result, variant::Type variant, Format format) const
 			{
 				int sq = m_castleRookAtStart[BlackKS];
 
-				M_ASSERT(sq != sq::Null);
-
-				if (format == Shredder)
+				if (sq != sq::Null)
 				{
-					result += printFyle(sq);
-				}
-				else
-				{
-					int rt = msb(rooks);
-
-					if (rt > sq || mstl::is_between(lsb(rooks), int(m_ksq[Black]), rt - 1))
+					if (rooks == 0)
+					{
+						result += 'k'; // castling w/o rooks
+					}
+					else if (format == Shredder)
+					{
 						result += printFyle(sq);
+					}
 					else
-						result += 'k';
+					{
+						int rt = msb(rooks);
+
+						if (rt > sq || mstl::is_between(lsb(rooks), int(m_ksq[Black]), rt - 1))
+							result += printFyle(sq);
+						else
+							result += 'k';
+					}
 				}
 			}
 
@@ -7134,22 +7149,27 @@ Board::toFen(mstl::string& result, variant::Type variant, Format format) const
 
 				int sq = m_castleRookAtStart[BlackQS];
 
-				M_ASSERT(sq != sq::Null);
-
-				if (format == Shredder)
+				if (sq != sq::Null)
 				{
-					result += printFyle(sq);
-				}
-				else
-				{
-					int lt = lsb(rooks);
-
-					if (lt < sq || mstl::is_between(msb(rooks), lt + 1, int(m_ksq[Black])))
+					if (rooks == 0)
+					{
+						result += 'q'; // castling w/o rooks
+					}
+					else if (format == Shredder)
+					{
 						result += printFyle(sq);
+					}
 					else
-						result += 'q';
+					{
+						int lt = lsb(rooks);
+
+						if (lt < sq || mstl::is_between(msb(rooks), lt + 1, int(m_ksq[Black])))
+							result += printFyle(sq);
+						else
+							result += 'q';
+					}
 				}
-		}
+			}
 		}
 
 		result += ' ';
@@ -7189,6 +7209,23 @@ Board::toFen(variant::Type variant, Format format) const
 {
 	mstl::string fen;
 	return toFen(fen, variant, format);
+}
+
+
+mstl::string&
+Board::toValidFen(mstl::string& result, variant::Type variant, Format format) const
+{
+	Board board(*this);
+	board.fixBadCastlingRights();
+	return board.toFen(result, variant, format);
+}
+
+
+mstl::string
+Board::toValidFen(variant::Type variant, Format format) const
+{
+	mstl::string fen;
+	return toValidFen(fen, variant, format);
 }
 
 

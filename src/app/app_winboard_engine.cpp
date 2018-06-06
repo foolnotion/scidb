@@ -402,7 +402,7 @@ winboard::Engine::setupBoard(Board const& board)
 		// IMPORTANT NOTE:
 		// The "setboard" command might not be appropriate, because
 		// it might clear the hash tables.
-		mstl::string fen(board.toFen(currentVariant()));
+		mstl::string fen(board.toValidFen(currentVariant()));
 
 		::removeHolding(fen);
 		send("setboard " + fen);

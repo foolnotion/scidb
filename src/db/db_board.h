@@ -474,6 +474,10 @@ public:
 	mstl::string toFen(variant::Type variant, Format format = XFen) const;
 	/// Return a FEN string based on current board position
 	mstl::string& toFen(mstl::string& result, variant::Type variant, Format format = XFen) const;
+	/// Return a FEN string based on current board position, remove bad castling rights
+	mstl::string toValidFen(variant::Type variant, Format format = XFen) const;
+	/// Return a FEN string based on current board position, remove bad castling rights
+	mstl::string& toValidFen(mstl::string& result, variant::Type variant, Format format = XFen) const;
 	/// Return a position description based on current board position
 	mstl::string asString() const;
 	/// Prepare move for printing a SAN
