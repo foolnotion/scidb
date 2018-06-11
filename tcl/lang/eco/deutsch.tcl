@@ -255,6 +255,7 @@
 "Mexican Variation"											"Mexikanische Variante"
 "Modern (Steinitz) Attack"									"Moderner Angriff (Steinitz Angriff)"
 "Modern Benoni"												"Modernes Benoni"
+"Modern Benoni Defence"										"Moderne Benoni Verteidigung"
 "Modern Botvinnik Variation"								"Moderne Botwinnik Variante"
 "Modern Defence"												"Moderne Verteidigung"
 "Modern Exchange Variation"								"Moderne Abtauschvariante"

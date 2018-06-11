@@ -164,6 +164,10 @@ Position::doMove(unsigned moveNumber)
 					// any pawn from the 7th to the 5th rank during the last move
 					// (a4xh3ep similar).
 					if (	moveGen->epIndex
+						// XXX correct? because implementation differs from description
+						// do we need
+						//    (moveGen->df == -1 && fyle == sq::FyleA)
+						// || (moveGen->df == +1 && fyle == sq::FyleH)
 						&& moveGen->df == 1
 						&& fyle == sq::FyleA
 						&& rank == (sideToMove == color::White ? sq::Rank5 : sq::Rank4)
