@@ -228,6 +228,7 @@ proc openEdit {parent position args} {
 		-width 80 \
 		-height 20 \
 		-undo on \
+		-wrap word \
 		-maxundo 10 \
 		-yscroll [list $edit.ybar set] \
 		;

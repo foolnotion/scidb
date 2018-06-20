@@ -291,10 +291,11 @@ proc new {parent args} {
 }
 
 
-proc replace {parent} {
+proc replace {parent {overwrite ""}} {
 	variable MaxPosition
 
 	set replace 0
+	if {![string is bool -strict $overwrite]} { set overwrite no }
 
 	if {[::scidb::game::current] < $MaxPosition && (![locked?] || [import?])} {
 		set detail [format $mc::OverwriteCurrentGameDetail [::mc::stripAmpersand $::dialog::mc::No]]
@@ -308,7 +309,7 @@ proc replace {parent} {
 			-parent $parent \
 			-message $mc::OverwriteCurrentGame \
 			-detail $detail \
-			-default no
+			-default $overwrite \
 		]
 		if {$rc eq "yes"} { set replace 1 }
 	}

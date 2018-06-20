@@ -425,7 +425,8 @@ proc build {w width height} {
 	set Vars(cmd:replace-game)			[namespace code [list SaveGame replace]]
 	set Vars(cmd:replace-moves)		[namespace code [list SaveGame moves]]
 	set Vars(cmd:trial-mode)			[namespace parent]::pgn::flipTrialMode
-	set Vars(cmd:import-game)			[list [namespace parent]::pgn::importGame $tl]
+	set Vars(cmd:import-game)			[list [namespace parent]::pgn::importGame no]
+	set Vars(cmd:shift:import-game)	[list [namespace parent]::pgn::importGame yes]
 	set Vars(cmd:export-game)			[list ::gamebar::exportGame .application]
 
 	BuildBoard $canv
@@ -593,6 +594,8 @@ proc bindKeys {} {
 
 	bind <Control-Shift-[string tolower $Vars(key:edit-comment)]> {}
 	bind <Control-Shift-[string toupper $Vars(key:edit-comment)]> {}
+	bind <Control-Shift-[string tolower $Vars(key:import-game)]> {}
+	bind <Control-Shift-[string toupper $Vars(key:import-game)]> {}
 
 	foreach key [array names Accel] {
 		bind <Control-[string tolower $Accel($key)]> $Vars(cmd:$key)
@@ -602,6 +605,9 @@ proc bindKeys {} {
 
 	bind <Control-Shift-[string tolower $Accel(edit-comment)]> $Vars(cmd:shift:edit-comment)
 	bind <Control-Shift-[string toupper $Accel(edit-comment)]> $Vars(cmd:shift:edit-comment)
+
+	bind <Control-Shift-[string tolower $Accel(import-game)]> $Vars(cmd:shift:import-game)
+	bind <Control-Shift-[string toupper $Accel(import-game)]> $Vars(cmd:shift:import-game)
 
 	foreach {action key tipvar} {	GotoStart	Home	GotoStartOfGame
 											FastBack		Prior	GoBackFast

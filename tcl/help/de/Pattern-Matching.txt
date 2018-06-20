@@ -52,7 +52,7 @@ enthalten kann:
       <td class="l"><expr>(</expr></td>
       <td class="r">
         Diese Stelle im Suchmuster kann den Wortanfang, beginnend
-        mit einem Buchtstaben oder einer Ziffer, abgleichen.
+        mit einem Buchstaben oder einer Ziffer, abgleichen.
       </td>
     </tr>
     <tr valign="top">
@@ -60,6 +60,20 @@ enthalten kann:
       <td class="r">
         Diese Stellen im Suchmuster kann das Wortende, endend
         mit einem Buchstaben oder einer Ziffer, abgleichen.
+      </td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><expr>{</expr></td>
+      <td class="r">
+        Wie <expr>(</expr>, nur werden Leerzeichensonderregeln außer
+        Kraft gesetzt.
+      </td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><expr>)</expr></td>
+      <td class="r">
+        Wie <expr>)</expr>, nur werden Leerzeichensonderregeln außer
+        Kraft gesetzt.
       </td>
     </tr>
     <tr valign="top">
@@ -104,6 +118,12 @@ Wortabgleichs.
 Zweite Sonderregel: ein beidseitig geklammerter Ausdruck in geschweiften
 Klammern, wie z.B. <expr>{,}</expr>, setzt alle Leerzeichensonderregeln außer
 Kraft.
+</p>
+
+<p>
+Weiterhin gilt daß die Klammernpaare <expr>()</expr> und <expr>{}</expr>
+nicht gemischt werden können, d.h. <expr>"(...}"</expr> ist kein
+geklammerter Ausdruck.
 </p>
 
 <h2 id="examples">Beispiele</h2>

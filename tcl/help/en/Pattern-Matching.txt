@@ -61,6 +61,20 @@ A pattern is a string which may contain the following special characters:
       </td>
     </tr>
     <tr valign="top">
+      <td class="l"><expr>{</expr></td>
+      <td class="r">
+        Like <expr>(</expr>, but switching off all special rules
+        concerning blanks.
+      </td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><expr>)</expr></td>
+      <td class="r">
+        Like <expr>)</expr>, but switching off all special rules
+        concerning blanks.
+      </td>
+    </tr>
+    <tr valign="top">
       <td class="l"><expr>\x</expr></td>
       <td class="r">
         Matches the single character x. This provides a way of avoiding
@@ -102,6 +116,12 @@ Second special rule: a parenthetical expression with curly braces
 special rules concerning blanks.
 </p>
 
+<p>
+Furthermore it is not allowed to mix the brace pairs
+<expr>()</expr>, and <expr>{}</expr>, this means that
+<expr>"(...}"</expr> is not a parenthetical expression.
+</p>
+
 <h2 id="examples">Examples</h2>
 
 <verb>
@@ -109,7 +129,7 @@ Polgar, J*
 </verb>
 
 <p>
-This pattern can match the following strings: <expr>"Polgar, J"</expr>,
+This pattern will match the following strings: <expr>"Polgar, J"</expr>,
 and <expr>"Polgar, Judit"</expr>.
 </p>
 
@@ -118,7 +138,7 @@ A?erba?h
 </verb>
 
 <p>
-This can match the following names:
+This will match the following names:
 <expr>"Averbakh"</expr> (English spelling), and <expr>"Awerbach"</expr> 
 (German spelling).
 </p>
@@ -128,7 +148,7 @@ Kasparov*
 </verb>
 
 <p>
-This can match, among others, the following strings:
+This will match, among others, the following strings:
 <expr>"Kasparov"</expr>, <expr>"Kasparova"</expr>,
 <expr>"Kasparov, Garry"</expr>, and <expr>"Kasparova, Tatiana"</expr>.
 </p>
@@ -138,7 +158,7 @@ Kasparov*)
 </verb>
 
 <p>
-This can match the same strings as in the latter case, because all
+This will match the same strings as in the latter case, because all
 these strings are ending with a letter. But a string like
 <expr>"Kasparov, G."</expr> cannot match.
 </p>
@@ -148,7 +168,7 @@ these strings are ending with a letter. But a string like
 </verb>
 
 <p>
-This can match, among others, the strings <expr>"Kasparov"</expr>, and
+This will match, among others, the strings <expr>"Kasparov"</expr>, and
 <expr>"Kasparova"</expr>, but it cannot match <expr>"Kasparov, Garry"</expr>,
 or <expr>"Kasparova, Tatiana"</expr>. A parenthetical expression is
 excluding the match of blanks and separating characters.
@@ -159,7 +179,7 @@ excluding the match of blanks and separating characters.
 </verb>
 
 <p>
-This can match, among others, the strings <expr>"Kasparov"</expr>, and
+This will match, among others, the strings <expr>"Kasparov"</expr>, and
 <expr>"Kasparov, Garry"</expr>, but it cannot match <expr>"Kasparova"</expr>,
 or <expr>"Kasparova, Tatiana"</expr>.
 </p>
@@ -169,7 +189,7 @@ Kasparov*,*
 </verb>
 
 <p>
-This can match, among others, the strings <expr>"Kasparov, Garry"</expr>, and
+This will match, among others, the strings <expr>"Kasparov, Garry"</expr>, and
 <expr>"Kasparova, Tatiana"</expr>, but it cannot match <expr>"Kasparov"</expr>,
 or <expr>"Kasparova"</expr>.
 </p>
@@ -230,7 +250,7 @@ because the match is case-sensitive.
 </verb>
 
 <p>
-This can only match <epxr>"!!"</expr>. The first character has to be
+This will only match <epxr>"!!"</expr>. The first character has to be
 protected, otherwise it will be recognized as a switch for case insensitive
 search, and not as the character <expr>!</expr>.
 </p>
@@ -240,7 +260,7 @@ search, and not as the character <expr>!</expr>.
 </verb>
 
 <p>
-This can match the string <expr>"Germany (Berlin)"</expr>, among others.
+This will match the string <expr>"Germany (Berlin)"</expr>, among others.
 The characters <expr>(</expr>, and <expr>)</expr> do not have any special
 meaning, because they are protected by a backslash. This means that the
 string <expr>"Germany Berlin"</expr> cannot match.

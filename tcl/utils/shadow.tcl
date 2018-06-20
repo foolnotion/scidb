@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2012-2013 Gregor Cramer
+# Copyright: (C) 2012-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -128,10 +128,8 @@ proc map {w {checkIfGrabbed 0}} {
 
 
 proc unmap {w} {
-	variable Geometry
 	variable Mapped
 	variable Used
-	variable Wait
 
 	if {![info exists Mapped($w)]} { return }
 	set id $Mapped($w)
@@ -238,6 +236,7 @@ bind Menu <Map> {+
 	}
 }
 
+# XXX Binding the Unmap event is causing problems with exposures.
 bind Menu <Unmap> {+
 	if {![string match *#menu %W]} {
 		# IMPORTANT NOTE:
@@ -266,6 +265,7 @@ bind Menu <<MenuWillUnpost>> {+
 
 bind ComboboxPopdown <Configure>		{+ shadow::prepare %W %x %y %w %h }
 bind ComboboxPopdown <Map>				{+ after idle { shadow::map %W yes } }
+# XXX Binding the Unmap event is causing problems with exposures.
 bind ComboboxPopdown <Unmap>			{+ shadow::unmap %W }
 bind ComboboxPopdown <Destroy>		{+ shadow::unmap %W }
 bind ComboboxPopdown <Destroy>		{+ array unset ::shadow::Geometry %W }
@@ -281,6 +281,7 @@ bind AddLanguagePopdown <Destroy>	{+ array unset ::shadow::Geometry %W }
 
 bind TooltipPopup <Configure>			{+ shadow::prepare %W %x %y %w %h }
 bind TooltipPopup <Map>					{+ after idle { shadow::map %W no } }
+# XXX Binding the Unmap event is causing problems with exposures.
 bind TooltipPopup <Unmap>				{+ shadow::unmap %W }
 bind TooltipPopup <Destroy>			{+ shadow::unmap %W }
 bind TooltipPopup <Destroy>			{+ array unset ::shadow::Geometry %W }

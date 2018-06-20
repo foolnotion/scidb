@@ -124,8 +124,6 @@ proc build {top width height} {
 	set logo  [::tk::frame $main.logo -borderwidth 0 -background white -cursor left_ptr]
 	set hist  [::game::history $main.hist -cursor left_ptr]
 
-	# TODO: we need key bindings of board
-
 	pack $top -fill both -expand yes
 	pack $main -fill both -expand yes
 
@@ -235,7 +233,7 @@ proc build {top width height} {
 	set Vars(button:import) [::toolbar::add $tbGame button \
 		-image $::icon::toolbarPGN \
 		-tooltipvar ::import::mc::ImportPgnGame \
-		-command [namespace code [list importGame $Vars(main)]] \
+		-command [namespace code importGame] \
 	]
 	set tbGameHistory [::toolbar::toolbar $top \
 		-id editor-history \
@@ -528,9 +526,13 @@ proc fontSizeChanged {} {
 }
 
 
-proc importGame {parent} {
-	set pos [::game::replace $parent]
-	if {$pos >= 0} { ::import::openEdit $parent $pos }
+proc importGame {{overwrite ""}} {
+	variable Vars
+
+	set pos [::game::replace $Vars(main) $overwrite]
+	if {$pos >= 0} {
+		::import::openEdit $Vars(main) $pos
+	}
 }
 
 
