@@ -75,6 +75,7 @@ array set Defaults {
 	highlight:border				#0849c0
 	highlight:opacity				0.3
 	highlight:minsize				150
+	highlight:timeout				100
 	motion:busy						0
 	motion:overrideredirect		1
 	deiconify:timeout				50
@@ -150,13 +151,6 @@ proc twm {path args} {
 		-weight bold \
 		-size $Options(header:fontsize)
 	]
-	set background [ttk::style lookup $::ttk::currentTheme -background]
-	set tabbg [ttk::style lookup TNotebook.Tab -background]
-	ttk::style configure twm.TNotebook -borderwidth 0
-	ttk::style configure twm.TNotebook.Tab -font $Vars(header:font) -padding {2 2}
-	ttk::style configure twm.TButton -padding {1 1 0 0}
-	ttk::style configure twm.TLabel -font $Vars(header:font) -background $tabbg
-	#ttk::style map twm.TNotebook.Tab -background [list active $background selected $background]
 
 	ttk::frame $path -class TwmToplevel -borderwidth $opts(-borderwidth) -takefocus 0
 	bind $path <Destroy> [list [namespace current]::DestroyTWM %W]
@@ -168,6 +162,9 @@ proc twm {path args} {
 
 	rename ::$path $path.__twm_frame__
 	proc ::$path {command args} "[namespace current]::WidgetProc $path \$command {*}\$args"
+
+	SetupTheme $path
+	bind $path <<ThemeChanged>> [namespace code [list SetupTheme $path]]
 
 	return $path
 }
@@ -197,6 +194,27 @@ proc frozen? {{twm ""}} {
 }
 
 
+proc SetupTheme {twm} {
+	variable ${twm}::Vars
+
+	ttk::style configure twm.TLabel -background [ttk::style lookup TNotebook.Tab -background]
+	ttk::style configure twm.TNotebook -borderwidth 0
+	ttk::style configure twm.TNotebook.Tab -font $Vars(header:font) -padding {2 2}
+	ttk::style configure twm.TButton -padding {1 1 0 0} -relief raised
+	ttk::style map twm.TButton -relief [list {!disabled pressed} sunken] 
+	ttk::style layout twm.TButton \
+		{ Button.border -children { Button.padding -children { Button.label } } }
+
+#	set background [ttk::style lookup $::ttk::currentTheme -background]
+#	ttk::style map twm.TNotebook.Tab -background [list active $background selected $background]
+
+	if {[info exists Vars(theme)] && $Vars(theme) ne $::ttk::currentTheme} {
+		after idle [list $twm refresh]
+	}
+	set Vars(theme) $::ttk::currentTheme
+}
+
+
 proc WidgetProc {twm command args} {
 	variable Options
 	variable ${twm}::Vars
@@ -208,7 +226,7 @@ proc WidgetProc {twm command args} {
 		clone				{ return [::scidb::tk::twm clone $twm {*}$args] }
 		close				{ return [Close $twm {*}$args] }
 		cget				{ return [$twm.__twm_frame__ cget {*}$args] }
-		configure		{ $twm.__twm_frame__ configure {*}$args }
+		configure		{ return [$twm.__twm_frame__ configure {*}$args] }
 		container		{ return [::scidb::tk::twm container $twm {*}$args] }
 		deiconify		{ return [Deiconify $twm {*}$args] }
 		destroy			{ DestroyPane $twm {*}$args }
@@ -264,6 +282,7 @@ proc WidgetProc {twm command args} {
 		panes				{ return [::scidb::tk::twm panes $twm {*}$args] }
 		parent			{ return [::scidb::tk::twm parent $twm {*}$args] }
 		ready				{ event generate $twm <<TwmReady>> -data $args }
+		ready?			{ return [::scidb::tk::twm ready $twm] }
 		refresh			{ return [::scidb::tk::twm refresh $twm {*}$args] }
 		resize			{ return [Resize $twm {*}$args] }
 		resizing			{ return [Resizing $twm {*}$args] }
@@ -352,6 +371,10 @@ proc FrameHeaderSize {twm frame} {
 
 proc NotebookHeaderSize {twm {nb}} {
 	set padding [ttk::style lookup twm.TNotebook.Tab -padding]
+	if {[llength $padding] == 0} {
+		puts stderr "\[ttk::style lookup TNotebook.Tab -padding\] returns empty list"
+		set padding {2 2}
+	}
 	set size 3 ;# borderwidth=2 + one overlapping pixel
 	switch [llength $padding] {
 		2 { incr size [expr {2*[lindex $padding 1]}] }
@@ -367,7 +390,7 @@ proc NotebookHeaderSize {twm {nb}} {
 
 
 proc MakeMultiwindow {twm args} {
-	variable Counter
+	variable ${twm}::Counter
 
 	set w [tk::multiwindow $twm.__multiwindow__[incr Counter(multiwindow)] -takefocus 0]
 	if {[llength $args] == 1} { set args [lindex $args 0] }
@@ -380,7 +403,7 @@ proc MakeMultiwindow {twm args} {
 
 proc MakeNotebook {twm args} {
 	variable ${twm}::Vars
-	variable Counter
+	variable ${twm}::Counter
 
 	set w [ttk::notebook $twm.__notebook__[incr Counter(notebook)] -style twm.TNotebook -takefocus 0]
 	if {$Vars(state) eq "disabled"} { $w configure -state "disabled" }
@@ -394,7 +417,7 @@ proc MakeNotebook {twm args} {
 
 
 proc MakePanedWindow {twm args} {
-	variable Counter
+	variable ${twm}::Counter
 	variable Options
 
 	set w [tk::panedwindow $twm.__panedwindow__[incr Counter(panedwindow)]]
@@ -419,7 +442,7 @@ proc MakePane {twm id} {
 
 
 proc MakeFrame {twm type {id ""}} {
-	variable Counter
+	variable ${twm}::Counter
 
 	set frame $twm.__${type}__${id}__[incr Counter($type)]
 	set class Twm[string toupper $type 0 0]
@@ -1459,8 +1482,8 @@ proc DockingMotion {twm frame w canv mode x y} {
 			catch { after cancel $Vars(afterid:display) }
 			if {$Vars(docking:position) in {n s w e}} { set w [$twm selected $w] }
 			set Vars(docking:recipient) $w
-			set Vars(afterid:display) \
-				[after 100 [list [namespace current]::ShowHighlightRegion $twm $frame $w $canv]]
+			set Vars(afterid:display) [after $Options(highlight:timeout) \
+				[list [namespace current]::ShowHighlightRegion $twm $frame $w $canv]]
 			raise [winfo toplevel $w]
 			raise $frame
 			if {$Options(motion:overrideredirect)} {
@@ -1987,11 +2010,7 @@ proc Dock {twm toplevel} {
 
 
 proc Close {twm {frame ""}} {
-	if {[string length $frame] == 0} {
-		destroy $twm
-	} else {
-		destroy $frame
-	}
+	destroy [expr {[string length $frame] ? $frame : $twm}]
 }
 
 
@@ -2202,11 +2221,7 @@ proc Unpack {twm parent child} {
 
 
 proc Select {twm parent frame} {
-	if {[$twm isnotebook $parent]} {
-		$parent select $frame
-	} else {
-		$parent raise $frame
-	}
+	$parent [expr {[$twm isnotebook $parent] ? "select" : "raise"}] $frame
 }
 
 

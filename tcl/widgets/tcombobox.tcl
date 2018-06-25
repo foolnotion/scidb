@@ -6,7 +6,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2010-2013 Gregor Cramer
+# Copyright: (C) 2010-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -708,6 +708,10 @@ proc ConfigureListbox {cb} {
 	if {0 > $current || $current >= [$popdown.l size]} { set current 0 }
 
 	set padding [::ttk::style lookup TCombobox -padding]
+	if {[llength $padding] == 0} {
+		puts stderr "\[ttk::style lookup TCombobox -padding\] returns empty list"
+		set padding 0
+	}
 
 	if {[info tclversion] >= "8.6"} {
 		set borderwidth [::ttk::style lookup ComboboxPopdownFrame -borderwidth]

@@ -828,6 +828,7 @@ public:
 	bool isFloating() const;
 	bool isToplevel() const;
 	bool isLocked() const;
+	bool isReady() const;
 	bool isHorz() const;
 	bool isVert() const;
 	bool hasChilds() const;
@@ -1148,6 +1149,7 @@ private:
 	bool			m_isDeleted;
 	bool			m_isDestroyed;
 	bool			m_isLocked;
+	bool			m_isReady;
 	bool			m_temporary;
 
 	mutable bool m_dumpFlag;
@@ -1212,6 +1214,7 @@ bool Node::isWithdrawn() const					{ return m_state == Withdrawn; }
 bool Node::isFloating() const						{ return m_state == Floating; }
 bool Node::isToplevel() const						{ return m_parent == nullptr; }
 bool Node::isLocked() const						{ return m_root->m_isLocked; }
+bool Node::isReady() const							{ return m_root->m_isReady; }
 bool Node::isHorz() const							{ return m_orientation == Horz; }
 bool Node::isVert() const							{ return m_orientation == Vert; }
 bool Node::hasChilds() const						{ return !m_childs.empty(); }
@@ -1246,8 +1249,6 @@ void Node::remove(Node* node)				{ remove(find(node)); }
 void Node::setState(State state)			{ m_state = state; }
 void Node::load(Tcl_Obj* list)			{ load(list, nullptr, nullptr); }
 
-void Node::ready()							{ performReady(); }
-
 void Node::addFlag(unsigned flag)		{ m_flags |= flag; }
 void Node::delFlag(unsigned flag)		{ m_flags &= ~flag; }
 
@@ -1256,6 +1257,14 @@ bool Node::testFlags(unsigned flag) const { return m_flags & flag; }
 Dimension const& Node::dimension() const { return m_dimen; }
 
 void Node::makeSnapshotKey(mstl::string& key) const { makeSnapshot(key, nullptr); }
+
+
+void
+Node::ready()
+{
+	performReady();
+	m_isReady = true;
+}
 
 
 Node*
@@ -1584,6 +1593,7 @@ Node::Node(Node& parent, Type type, Tcl_Obj* uid)
 	,m_isDeleted(false)
 	,m_isDestroyed(false)
 	,m_isLocked(false)
+	,m_isReady(false)
 	,m_temporary(false)
 	,m_dumpFlag(false)
 {
@@ -1618,6 +1628,7 @@ Node::Node(Tcl_Obj* path, Node const* setup)
 	,m_isDeleted(false)
 	,m_isDestroyed(false)
 	,m_isLocked(false)
+	,m_isReady(false)
 	,m_temporary(false)
 	,m_dumpFlag(false)
 {
@@ -1666,6 +1677,7 @@ Node::Node(Node const& node)
 	,m_isDeleted(false)
 	,m_isDestroyed(false)
 	,m_isLocked(false)
+	,m_isReady(false)
 	,m_temporary(false)
 	,m_dumpFlag(false)
 {
@@ -2257,6 +2269,9 @@ Node::updateDimen(int x, int y, int width, int height)
 		width = contentSize<Horz>(width);
 		height = contentSize<Vert>(height);
 
+		if (this == m_root)
+			performGetWorkArea();
+
 		if (isLocked())
 		{
 			m_actual.actual.width = width;
@@ -2290,8 +2305,8 @@ Node::updateDimen(int x, int y, int width, int height)
 
 					if (node != this)
 					{
-						node->resizeFrame<Horz>(width);
-						node->resizeFrame<Vert>(height);
+						node->resizeFrame<Horz>(node->contentSize<Horz>(width));
+						node->resizeFrame<Vert>(node->contentSize<Vert>(height));
 					}
 				}
 			}
@@ -4071,7 +4086,7 @@ Node::resizeFrame(int reqSize)
 	M_ASSERT(reqSize >= 0);
 
 	if (!isToplevel())
-		m_dimen.set<D>(contentSize<D>(reqSize));
+		m_dimen.set<D>(reqSize); // is already content size
 
 	int size = actualSize<Inner,D>();
 	
@@ -5989,6 +6004,27 @@ Node::initialize()
 
 
 static void
+cmdExists(int objc, Tcl_Obj* const objv[])
+{
+	if (objc != 3)
+		M_THROW(tcl::Exception(2, objv, ""));
+
+	Base* base = Node::lookupBase(tcl::asString(objv[2]));
+	tcl::setResult(base && base->root->exists());
+}
+
+
+static void
+cmdReady(Base& base, int objc, Tcl_Obj* const objv[])
+{
+	if (objc != 3)
+		M_THROW(tcl::Exception(2, objv, ""));
+
+	tcl::setResult(base.root->isReady());
+}
+
+
+static void
 cmdCapture(int objc, Tcl_Obj* const objv[])
 {
 	if (objc != 3 && objc != 4)
@@ -6787,26 +6823,26 @@ cmdTwm(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	static char const* subcommands[] =
 	{
 		"clone",			"capture",		"changeuid",	"close",			"container",
-		"dimension",	"dock",			"find",			"floats",		"frames",
-		"get",			"get!",			"headerframes","hidden",		"id",
-		"init",			"inspect",		"iscontainer",	"isdocked",		"ismetachild",
-		"ispane",		"leaf",			"leader",		"leaves",		"load",
-		"neighbors",	"new",			"orientation",	"panes",			"parent",
-		"refresh",		"release",		"resize",		"selected",		"set",
-		"set!",			"show",			"toggle",		"toplevel",		"uid",
-		"undock",		"visible",		nullptr
+		"dimension",	"dock",			"exists",		"find",			"floats",
+		"frames",		"get",			"get!",			"headerframes","hidden",
+		"id",				"init",			"inspect",		"iscontainer",	"isdocked",
+		"ismetachild",	"ispane",		"leaf",			"leader",		"leaves",
+		"load",			"neighbors",	"new",			"orientation",	"panes",
+		"parent",		"ready",			"refresh",		"release",		"resize",
+		"selected",		"set",			"set!",			"show",			"toggle",
+		"toplevel",		"uid",			"undock",		"visible",		nullptr
 	};
 	enum
 	{
 		Cmd_Clone,			Cmd_Capture,		Cmd_ChangeUid,		Cmd_Close,			Cmd_Container,
-		Cmd_Dimension,		Cmd_Dock,			Cmd_Find,			Cmd_Floats,			Cmd_Frames,
-		Cmd_Get,				Cmd_Get_,			Cmd_HeaderFrames,	Cmd_Hidden,			Cmd_Id,
-		Cmd_Init,			Cmd_Inspect,		Cmd_IsContainer,	Cmd_IsDocked,		Cmd_IsMetaChild,
-		Cmd_IsPane,			Cmd_Leaf,			Cmd_Leader,			Cmd_Leaves,			Cmd_Load,
-		Cmd_Neighbors,		Cmd_New,				Cmd_Orientation,	Cmd_Panes,			Cmd_Parent,
-		Cmd_Refresh,		Cmd_Release,		Cmd_Resize,			Cmd_Selected,		Cmd_Set,
-		Cmd_Set_,			Cmd_Show,			Cmd_Toggle,			Cmd_Toplevel,		Cmd_Uid,
-		Cmd_Undock,			Cmd_Visible,		Cmd_NULL
+		Cmd_Dimension,		Cmd_Dock,			Cmd_Exists,			Cmd_Find,			Cmd_Floats,
+		Cmd_Frames,			Cmd_Get,				Cmd_Get_,			Cmd_HeaderFrames,	Cmd_Hidden,
+		Cmd_Id,				Cmd_Init,			Cmd_Inspect,		Cmd_IsContainer,	Cmd_IsDocked,
+		Cmd_IsMetaChild,	Cmd_IsPane,			Cmd_Leaf,			Cmd_Leader,			Cmd_Leaves,
+		Cmd_Load,			Cmd_Neighbors,		Cmd_New,				Cmd_Orientation,	Cmd_Panes,
+		Cmd_Parent,			Cmd_Ready,			Cmd_Refresh,		Cmd_Release,		Cmd_Resize,
+		Cmd_Selected,		Cmd_Set,				Cmd_Set_,			Cmd_Show,			Cmd_Toggle,
+		Cmd_Toplevel,		Cmd_Uid,				Cmd_Undock,			Cmd_Visible,		Cmd_NULL
 	};
 
 	static_assert(sizeof(subcommands)/sizeof(subcommands[0]) == Cmd_NULL + 1, "initialization failed");
@@ -6829,6 +6865,7 @@ cmdTwm(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			case Cmd_Container:		execute(cmdContainer, false, objc, objv); break;
 			case Cmd_Dimension:		execute(cmdDimension, false, objc, objv); break;
 			case Cmd_Dock:				execute(cmdDock, false, objc, objv); break;
+			case Cmd_Exists:			cmdExists(objc, objv); break;
 			case Cmd_Find:				execute(cmdFind, false, objc, objv); break;
 			case Cmd_Floats:			execute(cmdFloats, false, objc, objv); break;
 			case Cmd_Frames:			execute(cmdFrames, false, objc, objv); break;
@@ -6852,6 +6889,7 @@ cmdTwm(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			case Cmd_Orientation:	execute(cmdOrientation, false, objc, objv); break;
 			case Cmd_Panes:			execute(cmdPanes, false, objc, objv); break;
 			case Cmd_Parent:			execute(cmdParent, false, objc, objv); break;
+			case Cmd_Ready:			execute(cmdReady, false, objc, objv); break;
 			case Cmd_Refresh:			execute(cmdRefresh, false, objc, objv); break;
 			case Cmd_Resize:			execute(cmdResize, false, objc, objv); break;
 			case Cmd_Selected:		execute(cmdSelected, false, objc, objv); break;

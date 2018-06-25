@@ -5619,11 +5619,15 @@ SetBuffering(
 		overlays = TRUE;
     }
 
+#if 1 /* FIX by GX: DOUBLEBUFFER_ITEM is not working properly. */
+	tree->doubleBuffer = DOUBLEBUFFER_WINDOW;
+#else
     if (overlays) {
 		tree->doubleBuffer = DOUBLEBUFFER_WINDOW;
     } else {
 		tree->doubleBuffer = DOUBLEBUFFER_ITEM;
     }
+#endif
 
     if (overlays != dInfo->overlays) {
 		dInfo->flags |=
@@ -5999,18 +6003,13 @@ displayRetry:
 		numCopy = ScrollHorizontalComplex(tree);
 	}
 
+	if (tree->doubleBuffer == DOUBLEBUFFER_WINDOW) {
 	/* If we scrolled, then copy the entire pixmap, plus the header
 	 * if needed. */
-	if (tree->doubleBuffer == DOUBLEBUFFER_WINDOW) {
-		if ((dInfo->xOrigin != tree->xOrigin) ||
-				(dInfo->yOrigin != tree->yOrigin)) {
-			DblBufWinDirty(tree, Tree_BorderLeft(tree), Tree_ContentTop(tree),
-				Tree_BorderRight(tree), Tree_ContentBottom(tree));
-		}
-	} else if (tree->doubleBuffer == DOUBLEBUFFER_ITEM) {
-		/* FIX by GC; original version is not redrawing exposed area when
-		 * scrolling horizontally. */
+#if 1
 		if (dInfo->xOrigin != tree->xOrigin) {
+			/* FIX by GC; original version is not redrawing exposed area when
+			 * scrolling horizontally. */
 			if (Tree_AreaBbox(tree, TREE_AREA_CONTENT, &minX, &minY, &maxX, &maxY)) {
 				if (tree->debug.enable && tree->debug.display && tree->debug.drawColor) {
 					XFillRectangle(tree->display, Tk_WindowId(tkwin),
@@ -6019,7 +6018,17 @@ displayRetry:
 				}
 				Tree_InvalidateItemArea(tree, minX, minY, maxX, maxY);
 			}
+		} else if (dInfo->yOrigin != tree->yOrigin) {
+			DblBufWinDirty(tree, Tree_BorderLeft(tree), Tree_ContentTop(tree),
+				Tree_BorderRight(tree), Tree_ContentBottom(tree));
 		}
+#else
+		if ((dInfo->xOrigin != tree->xOrigin) ||
+				(dInfo->yOrigin != tree->yOrigin)) {
+			DblBufWinDirty(tree, Tree_BorderLeft(tree), Tree_ContentTop(tree),
+				Tree_BorderRight(tree), Tree_ContentBottom(tree));
+		}
+#endif
 	}
 
 	if (dInfo->flags & DINFO_DRAW_WHITESPACE) {

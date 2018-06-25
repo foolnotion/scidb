@@ -888,7 +888,7 @@ namespace eval ttk::theme::clearlooks {
         ## Combobox.
         #
         ttk::style configure TCombobox -selectbackground $colors(-selectbg)
-	ttk::style configure TCombobox -arrowsize 16 -padding 0
+        ttk::style configure TCombobox -arrowsize 16 -padding 0
 
         ttk::style element create Combobox.downarrow image \
             [list $I(comboarrow-n) \

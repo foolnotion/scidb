@@ -322,6 +322,10 @@ proc configureBackground {w} {
 
 proc notebookTabPaneSize {nb} {
 	set padding [ttk::style lookup TNotebook.Tab -padding]
+	if {[llength $padding] == 0} {
+		puts stderr "\[ttk::style lookup TNotebook.Tab -padding\] returns empty list"
+		set padding {2 2}
+	}
 	set size 3 ;# borderwidth=2 + one overlapping pixel
 	switch [llength $padding] {
 		2 { incr size [expr {2*[lindex $padding 1]}] }
@@ -958,7 +962,6 @@ namespace eval ttk {
 if {[info tclversion] < "8.6"} {
 
 	proc spinbox {args} { ::spinbox {*}$args }
-
 
 	# we don't like text selection while an arrow is pressed
 	bind Spinbox <1> {+

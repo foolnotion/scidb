@@ -146,6 +146,7 @@ proc open {} {
 	wm protocol $app WM_DELETE_WINDOW [namespace code shutdown]
 	set nb [::ttk::notebook $app.nb -takefocus 0] ;# otherwise board does not have focus
 	set Vars(control) [::widget::dialogFullscreenButtons $nb]
+	set Vars(notebook) $nb
 	bind $nb <Configure> [namespace code PlaceMenues]
 	bind $Vars(control) <Configure> +[namespace code PlaceMenues]
 	::theme::configureBackground $Vars(control).minimize
@@ -199,9 +200,6 @@ proc open {} {
 	::widget::notebookTextvarHook $nb $db   [namespace current]::mc::Database
 	::widget::notebookTextvarHook $nb $main [namespace current]::mc::Board
 
-#	bind $app <Tab> [namespace code [list SwitchTab $nb +1]]
-#	bind $app <Shift-Tab> [namespace code [list SwitchTab $nb -1]]
-#	bind $app <ISO_Left_Tab> [namespace code [list SwitchTab $nb -1]]
 	pack $nb -fill both -expand yes
 
 	bind $app <Destroy> [namespace code { Exit %W }]
@@ -980,6 +978,8 @@ proc MouseLeave {w node} {
 proc PlaceMenues {} {
 	variable Vars
 
+	set height [expr {[::theme::notebookTabPaneSize $Vars(notebook)] - 2}]
+
 	# place controls
 	set w $Vars(control)
 	set parent [winfo parent $w]
@@ -997,12 +997,13 @@ proc PlaceMenues {} {
 	if {$Vars(control) in [place slaves $parent]} {
 		set x [expr {$x - [winfo width $Vars(control)]}]
 	}
+	$m configure -height $height
 	place $m -x $x -y 0
 
 	# place update menu
 	set m $Vars(menu:updates)
 	if {[winfo exists $m]} {
-		$m configure -height [expr {[winfo height $Vars(menu:main)] - 2}]
+		$m configure -height $height
 		set x [expr {$x - [winfo width $m] - 5}]
 		place $m -x $x -y 0
 	}
@@ -1088,15 +1089,6 @@ proc Exit {w} {
 }
 
 
-# proc SwitchTab {nb dir} {
-# 	set index [expr {[$nb index [$nb select]] + $dir}]
-# 	set num [llength [$nb tabs]]
-# 	if {$index == -1} { set index [expr {$num - 1}] }
-# 	if {$index == $num} { set index 0 }
-# 	$nb select $index
-# }
-
-
 proc Startup {main args} {
 	variable Vars
 
@@ -1174,17 +1166,20 @@ proc FontSizeChanged {w value} {
 proc Geometry {data} {
 	variable Vars
 
-	set Vars(geometry) $data
 	if {[::menu::fullscreen?]} { return }
 
+	# TODO:
+	# Probably we should not resize the main pane after the theme has changed.
+
+	set Vars(geometry) $data
 	lassign $data width height minwidth minheight maxwidth maxheight expand
 
 	set incrH 2
 	set incrV [expr {[::theme::notebookTabPaneSize .application.nb] + 2}]
 	incr width  $incrH
 	incr height $incrV
-	if {$minwidth} { incr minwidth $incrH }
-	if {$maxwidth} { incr maxwidth $incrH }
+	if {$minwidth}  { incr minwidth $incrH }
+	if {$maxwidth}  { incr maxwidth $incrH }
 	if {$minheight} { incr minheight $incrV }
 	if {$maxheight} { incr maxheight $incrV }
 

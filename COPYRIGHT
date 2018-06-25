@@ -56,9 +56,6 @@ Copyright (C) 1995-2004 Mark Adler
 ** ZZIPLIB
 Copyright (C) 2000-2002 Guido Draheim
 
-** LZO
-Copyright (C) 1996-2008 Markus Franz Xaver Johannes Oberhumer
-
 ** http://code.google.com/p/schematrix/downloads/list/agg6explore.tar
 Copyright (C) 2010 by Chris Scaife
 
@@ -72,8 +69,11 @@ Copyright (C) 2008-2013 by Peter Wong
 Permissions for the use in Scidb by Peter Wrong per email on 16. Dec 2012.
 
 ** Stockfish (Scidb version)
-Copyright (C) 2008-2013 Marco Costalba, Joona Kiiski, Tord Romstad
+Copyright (C) 2008-2018 Marco Costalba, Joona Kiiski, Tord Romstad
 Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
 
 ** Sjeng (Scidb version)
 Copyright (C) 2000 Gian-Carlo Pascutto
+
+** scidblue (Scidb version)
+Copyright (C) 2018 Uwe Klimmek
