@@ -1275,6 +1275,8 @@ cmdNew(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		// currently we do not support charset detection for PGN files
 		if (encoding.empty() || encoding == sys::utf8::Codec::automatic())
 			encoding = sys::utf8::Codec::latin1();
+		if (type == ::db::type::Unspecific)
+			type = ::db::type::PGNFile;
 	}
 	else if (encoding.empty() || encoding == sys::utf8::Codec::automatic())
 	{

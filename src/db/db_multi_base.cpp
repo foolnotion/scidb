@@ -113,7 +113,7 @@ MultiBase::MultiBase(mstl::string const& name,
 							storage::Type storage,
 							Type type)
 	:m_singleBase(variant != variant::Undetermined)
-	,m_fileOffsets(0)
+	,m_fileOffsets(nullptr)
 {
 	M_REQUIRE(variant == variant::Undetermined || variant::isMainVariant(variant));
 
@@ -148,7 +148,7 @@ MultiBase::MultiBase(mstl::string const& name,
 							permission::ReadMode mode,
 							util::Progress& progress)
 	:m_singleBase(true)
-	,m_fileOffsets(0)
+	,m_fileOffsets(nullptr)
 {
 	::memset(m_bases, 0, sizeof(m_bases));
 	mstl::auto_ptr<Database> database(new Database(name, encoding, mode, progress));
@@ -337,6 +337,8 @@ MultiBase::close(variant::Type variant)
 void
 MultiBase::setup(FileOffsets* fileOffsets)
 {
+	M_REQUIRE(fileOffsets);
+
 	mstl::string ext = util::misc::file::suffix(m_leader->name());
 	bool isReadonly = true;
 
@@ -348,7 +350,7 @@ MultiBase::setup(FileOffsets* fileOffsets)
 	}
 
 	m_leader->setReadonly(isReadonly);
-	m_leader->setWritable(!isReadonly && m_fileOffsets != 0);
+	m_leader->setWritable(!isReadonly && m_fileOffsets);
 }
 
 
@@ -467,6 +469,14 @@ MultiBase::save(util::Progress& progress)
 }
 
 
+bool
+MultiBase::isTextFile() const
+{
+	mstl::string ext(misc::file::suffix(m_leader->name()));
+	return ext == "pgn" || ext == "PGN" || ext == "gz";
+}
+
+
 file::State
 MultiBase::save(mstl::string const& encoding, unsigned flags, util::Progress& progress)
 {
@@ -477,7 +487,8 @@ MultiBase::save(mstl::string const& encoding, unsigned flags, util::Progress& pr
 	if (!isUnsaved())
 		return file::IsUpTodate;
 
-	M_ASSERT(m_fileOffsets);
+	if (!m_fileOffsets)
+		m_fileOffsets = new FileOffsets;
 
 	if (!sys::file::access(m_leader->name(), sys::file::Existence))
 		return file::IsRemoved;
@@ -511,13 +522,16 @@ MultiBase::save(mstl::string const& encoding, unsigned flags, util::Progress& pr
 	mstl::string ext(misc::file::suffix(m_leader->name()));
 	mstl::string myEncoding(encoding);
 	ext.tolower();
-	M_ASSERT(ext == "pgn" || ext == "gz");
+	M_ASSERT(ext == "pgn" || ext == "PGN" || ext == "gz");
 	ZStream::Type fileType = ext == "gz" ? ZStream::GZip : ZStream::Text;
 
 	unsigned nextIndex[variant::NumberOfVariants];
 	::memset(nextIndex, 0, sizeof(nextIndex));
 
-	bool newFile = changedGames > 0 || deletedGames > 0 || m_leader->descriptionHasChanged();
+	bool newFile = changedGames > 0
+					|| deletedGames > 0
+					|| m_leader->descriptionHasChanged()
+					|| m_leader->countGames() == addedGames;
 	unsigned numberOfGamesToWrite = newFile ? totalGames : addedGames;
 
 	util::ProgressWatcher watcher(progress, numberOfGamesToWrite);
@@ -539,6 +553,8 @@ MultiBase::save(mstl::string const& encoding, unsigned flags, util::Progress& pr
 		if (myEncoding == sys::utf8::Codec::utf8())
 			myEncoding = sys::utf8::Codec::latin1();
 	}
+
+	m_leader->setUsedEncoding(myEncoding);
 
 	PgnWriter::LineEnding lineEnding = PgnWriter::Unix;
 
@@ -600,7 +616,7 @@ MultiBase::save(mstl::string const& encoding, unsigned flags, util::Progress& pr
 				ostrm->writenl(mstl::string::empty_string);
 			}
 		}
-		else
+		else if (!m_fileOffsets->isEmpty())
 		{
 			FileOffsets::Offset const& offs = m_fileOffsets->get(0);
 

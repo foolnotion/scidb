@@ -909,7 +909,7 @@ proc EmbedUnsavedFiles {unsaved w infoFont alertFont} {
 
 	array set font [font actual $infoFont]
 	set family $font(-family)
-	set size [expr {abs($font(-size))}]
+	set size [expr {abs($font(-size)) + 4}]
 
 	append content "<table style='font-family: ${family}; font-size: ${size}px;'>"
 
@@ -967,7 +967,7 @@ proc MouseEnter {w nodes} {
 }
 
 
-proc MouseLeave {w node} {
+proc MouseLeave {w nodes} {
 	foreach node $nodes {
 		set id [$node attribute -default {} id]
 		if {[llength $id]} { return [::tooltip::hide] }

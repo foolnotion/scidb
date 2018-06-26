@@ -126,8 +126,8 @@ inline
 unsigned
 FileOffsets::size() const
 {
-	M_REQUIRE(!isEmpty());
-	return m_offsets.size() - 1;
+	M_ASSERT(isEmpty() || m_offsets.size() > 0);
+	return isEmpty() ? 0 : m_offsets.size() - 1;
 }
 
 
@@ -143,7 +143,7 @@ inline
 FileOffsets::Offset const&
 FileOffsets::get(unsigned index) const
 {
-	M_REQUIRE(index <= size());
+	M_REQUIRE(index < size());
 	return m_offsets[index];
 }
 

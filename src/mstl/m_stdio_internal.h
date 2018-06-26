@@ -35,7 +35,7 @@
  */
 
 #ifndef _STDIO_H_
-#define	_STDIO_H_
+define	_STDIO_H_
 
 //#include "_ansi.h"
 /* Provide support for both ANSI and non-ANSI environments.  */

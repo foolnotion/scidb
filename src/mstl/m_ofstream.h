@@ -20,6 +20,7 @@
 #define _mstl_ofstream_included
 
 #include "m_ostream.h"
+#define M_INCLUDE_FILE
 #include "m_file.h"
 
 namespace mstl {

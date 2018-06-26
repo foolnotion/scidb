@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2013 Gregor Cramer
+# Copyright: (C) 2009-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -828,8 +828,13 @@ proc getPgnFlags {} {
 }
 
 
-proc Pow2 {x} { return [expr {1 << $x}] }
+proc testUTF8Flag {} {
+	variable Values
+	return $Values(pgn,flag,use_utf8_encoding)
+}
 
+
+proc Pow2 {x} { return [expr {1 << $x}] }
 namespace export Pow2
 
 

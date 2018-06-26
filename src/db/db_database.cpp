@@ -64,6 +64,7 @@
 #include "m_auto_ptr.h"
 #include "m_stdio.h"
 #include "m_hash.h"
+#include "m_file.h"
 
 using namespace db;
 using namespace sys;
@@ -426,17 +427,30 @@ Database::attach(mstl::string const& filename, util::Progress& progress)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(isMemoryOnly());
-	M_REQUIRE(codec().extension() == misc::file::suffix(filename));
 	M_REQUIRE(!usingAsyncReader());
+	M_REQUIRE(	misc::file::suffix(filename) == codec().extension()
+				|| misc::file::suffix(filename) == "pgn"
+				|| misc::file::suffix(filename) == "gz");
 
 	// NOTE: we assume normalized (unique) file names.
 
+	mstl::string ext(misc::file::suffix(filename));
 	m_rootname = misc::file::rootname(filename);
-	m_codec->attach(progress);
+	if (misc::file::suffix(filename) == codec().extension())
+	{
+		m_memoryOnly = false;
+		m_codec->attach(progress);
+	}
+	else
+	{
+		if (!sys::file::access(filename, sys::file::Existence))
+			mstl::ofstream(m_name.c_str(), mstl::ios_base::out);
+		if (!sys::file::access(filename, sys::file::Writeable))
+			IO_RAISE(PgnFile, Read_Only, "file is readonly");
+	}
 	M_ASSERT(m_codec->isWritable());
 	::sys::file::changed(m_name, m_fileTime);
 	m_readOnly = false;
-	m_memoryOnly = false;
 }
 
 

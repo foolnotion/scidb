@@ -19,6 +19,11 @@
 #ifndef _mstl_file_included
 #define _mstl_file_included
 
+#ifndef M_INCLUDE_FILE
+# error "m_file.h should not be included"
+#endif
+#undef M_INCLUDE_FILE
+
 #include "m_ios.h"
 #include "m_string.h"
 

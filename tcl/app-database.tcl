@@ -442,7 +442,6 @@ proc currentVariant {} {
 proc openBase {parent file byUser args} {
 	variable Vars
 	variable RecentFiles
-	variable Types
 
 	set file [file normalize $file]
 	if {[string length [set ext [file extension $file]]]} {
@@ -1604,21 +1603,27 @@ proc SaveChanges {parent {base ""}} {
 
 	wm withdraw [set dlg [tk::toplevel $parent.save -class Dialog]]
 	pack [set top [ttk::frame $dlg.top]] -fill both
+	set padY $::theme::pady
 
-	set text [format $mc::OverwriteOriginalFile [file tail $base]]
-	ttk::label $top.warning -wraplength 250 -text $text
-	set font [$top.warning cget -font]
-	if {[string length $font] == 0} { set font TkDefaultFont }
-	$top.warning configure -font [::font::makeBoldFont $font]
-	grid $top.warning -row 1 -column 1 -columnspan 3 -sticky w
+	if {[file size $base] > 0} {
+		set text [format $mc::OverwriteOriginalFile [file tail $base]]
+		ttk::label $top.warning -wraplength 250 -text $text
+		set font [$top.warning cget -font]
+		if {[string length $font] == 0} { set font TkDefaultFont }
+		$top.warning configure -font [::font::makeBoldFont $font]
+		grid $top.warning -row 1 -column 1 -columnspan 3 -sticky w
+		grid rowconfigure $top {0} -minsize $::theme::pady
+		set padY $::theme::padY
+	}
+
 	ttk::label $top.options -wraplength 250 -text $mc::SetupPgnOptions
 	set text [::mc::stripAmpersand $::menu::mc::PgnOptions]
 	ttk::button $top.setup -text "$text..." -command [list ::menu::setupPgnOptions $dlg]
 	grid $top.options -row 3 -column 1 -columnspan 3 -sticky w
 	grid $top.setup -row 5 -column 1 -columnspan 3 -sticky we
 	grid columnconfigure $top {0 2 4} -minsize $::theme::padx
-	grid rowconfigure $top {0 4 6} -minsize $::theme::pady
-	grid rowconfigure $top 2 -minsize $::theme::padY
+	grid rowconfigure $top 2 -minsize $padY
+	grid rowconfigure $top {4 6} -minsize $::theme::pady
 
 	::widget::dialogButtons $dlg {ok cancel}
 	$dlg.ok configure -command [namespace code [list DoSaveChanges $dlg $base]]
@@ -1626,7 +1631,7 @@ proc SaveChanges {parent {base ""}} {
 
 	update idletasks
 	set width [winfo reqwidth $top.setup]
-	$top.warning configure -wraplength $width
+	if {[winfo exists $top.warning]} { $top.warning configure -wraplength $width }
 	$top.options configure -wraplength $width
 
 	wm protocol $dlg WM_DELETE_WINDOW [$dlg.cancel cget -command]
@@ -1644,6 +1649,8 @@ proc SaveChanges {parent {base ""}} {
 
 
 proc DoSaveChanges {parent base} {
+	variable RecentFiles
+
 	if {![file exists $base]} {
 		set msg [format $mc::FileIsRemoved [file tail $base]]
 		::dialog::error -parent $parent -message $msg
@@ -1651,21 +1658,22 @@ proc DoSaveChanges {parent base} {
 		set msg [format $mc::FileIsNotWritable [file tail $base]]
 		::dialog::error -parent $parent -message $msg
 	} else {
-		set cmd [list scidb::db::savePGN $base "iso8859-1" [::export::getPgnFlags]]
+		set encoding [expr {[::export::testUTF8Flag] ? "utf-8" : "iso8859-1"}]
+		set cmd [list scidb::db::savePGN $base $encoding [::export::getPgnFlags]]
 		set options [list -message $mc::FileSaveChanges]
 		set result [::progress::start $parent $cmd {} $options]
 		CheckSaveState $base
 
+		set i [lsearch -exact -index 1 $RecentFiles $base]
+		if {$i >= 0} { lset RecentFiles $i 2 [::scidb::db::get usedencoding $base] }
+
+		# TODO
 		switch $result {
 			IsUpTodate	{ ;# cannot happen }
 			IsReadonly	{ ;# cannot happen }
 			IsRemoved	{ ;# cannot happen }
-
+			Updated		{ ;# succesfully saved }
 			HasChanged	{}
-
-			Updated {
-				;# succesfully saved
-			}
 		}
 	}
 

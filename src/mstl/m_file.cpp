@@ -16,6 +16,7 @@
 // (at your option) any later version.
 // ======================================================================
 
+#define M_INCLUDE_FILE
 #include "m_file.h"
 #include "m_stdio.h"
 #include "m_assert.h"
