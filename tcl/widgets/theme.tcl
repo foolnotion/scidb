@@ -6,7 +6,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2013 Gregor Cramer
+# Copyright: (C) 2009-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -361,6 +361,7 @@ proc SetupCurrentTheme {} {
 	# adjust padding of arrows in spinbox (the default padding is quite ugly)
 	switch "_[currentTheme]" {
 		_alt - _clam - _default { ttk::style configure TSpinbox -padding {2 0 2 0} }
+		_clearlooks - _scidblue { ttk::style configure TSpinbox -padding {2 0 2 0} }
 	}
 
 	# get current settings

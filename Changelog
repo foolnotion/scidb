@@ -3,7 +3,8 @@
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #1490)
 ------------------------------------------------------------------------------
-* New theme "scidblue", taken from project Scid.
+* New theme "scidblue", taken from project Scid, but slightly modified, the
+spinbox is unsatisfying.
 
 [Mai 2018] ===================================================================
 

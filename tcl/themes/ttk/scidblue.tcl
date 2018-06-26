@@ -4,9 +4,12 @@
 ###
 ### scidblue.tcl: modern gray blue theme
 ###
+##########################################################################################
+### I've replaced the images for spinarrowdown-* and spinarrowup-*, because this fits better
+### with other styles. (GC)
 namespace eval ttk::theme::scidblue {
 
-    package provide ttk::theme::scidblue 0.8
+    package provide ttk::theme::scidblue 0.9
 
     array set I [list \
 		arrowdown-a [image create photo -data { \
@@ -743,40 +746,28 @@ namespace eval ttk::theme::scidblue {
 			JGkaYbJqonrCbOyqco1X7VoAADs=
 		}] \
 		spinarrowdown-a [image create photo -data { \
-			R0lGODlhDAAGAIQTAAAAAMPDxcTDxcTExMjIycjJycrKysrKzMvLzM/Pz93d3d3d3uHh4eTk5efm
-			5+jn6Ojo6Ojp6e/v7////////////////////////////////////////////////////yH5BAEK
-			AB8ALAAAAAAMAAYAAAUq4Cc5DbMkiUEInwi88Bu0UhS/xixCTnwYA5rDwXglDgMC7VFSJBCGwiwE
-			ADs=
+			R0lGODlhDAAMAMIFAAAAAE5jqFtzxJem2u/r5////////////yH5BAEKAAcALAAAAAAMAAwAAAMl
+			GLXMJKq1F+WiIGtNy9ZF520XxIBl5U2mlbopIc+zMAh4rg9EAgA7
 		}] \
 		spinarrowdown-pa [image create photo -data { \
-			R0lGODlhDAAGAIQRAAAAAKqqrKuqrKurq6+vr7CwsLCwsrGxsrW1tcHBwcHBwsTExMfHyMrJysrK
-			ysrLy9HR0f///////////////////////////////////////////////////////////yH5BAEK
-			AB8ALAAAAAAMAAYAAAUt4Ac1zKIgSEEInwgBcBwELfQ8MVAUtOg0DZjBUBjUgIsFyjAg1BylBOKg
-			ooUAADs=
+			R0lGODlhDAAMAMIFAAAAAE5jqIGOu83Jxtvb2////////////yH5BAEKAAcALAAAAAAMAAwAAAMk
+			GLTME6q1F+WiBOgNCM7cBTGbM5LTaXmq9a3UIM9zIEB4bg8JADs=
 		}] \
 		spinarrowdown-p [image create photo -data { \
-			R0lGODlhDAAGAIQRAAAAAKqqrKuqrKurq6+vr7CwsLCwsrGxsrW1tcHBwcHBwsTExMfHyMrJysrK
-			ysrLy9HR0f///////////////////////////////////////////////////////////yH5BAEK
-			AB8ALAAAAAAMAAYAAAUp4Ac1zKIgSEEInwi88Bu00BO/xSw6TWwUA1qjsXghDAMCzVFKIA6qWQgA
-			Ow==
+			R0lGODlhDAAMAMIFAAAAAE5jqIGOu83Jxtvb2////////////yH5BAEKAAcALAAAAAAMAAwAAAMk
+			GLTME6q1F+WiIGtNydZE520XxIBl5U2mlbrpIM9zIEB4bg8JADs=
 		}] \
 		spinarrowup-a [image create photo -data { \
-			R0lGODlhDAAGAIQTAAAAAMPDxcTDxcTExMjIycjJycrKysrKzMvLzM/Pz93d3d3d3uHh4eTk5efm
-			5+jn6Ojo6Ojp6e/v7////////////////////////////////////////////////////yH5BAEK
-			AB8ALAAAAAAMAAYAAAUr4Cc9DaMkiFEEn+g4DAAkx0C0EuTI8mEMuAiPZ2CJhkOjxFFaJBIGguAT
-			AgA7
+			R0lGODlhDAAMAMIFAAAAAE5jqFtzxJem2u/r5////////////yH5BAEKAAcALAAAAAAMAAwAAAMm
+			KLo8FCRKKUYoOGcirtachwFglwHoZhZoi4Vs64ZyDX+qiN94wSUAOw==
 		}] \
 		spinarrowup-pa [image create photo -data { \
-			R0lGODlhDAAGAIQRAAAAAKqqrKuqrKurq6+vr7CwsLCwsrGxsrW1tcHBwcHBwsTExMfHyMrJysrK
-			ysrLy9HR0f///////////////////////////////////////////////////////////yH5BAEK
-			AB8ALAAAAAAMAAYAAAUt4Ac5zJIgR0EEn9g0y4IgxkC04wsAhlEMuMdjtysUWCIIkRhAQholxUwl
-			+IQAADs=
+			R0lGODlhDAAMAMIFAAAAAE5jqIGOu83Jxtvb2////////////yH5BAEKAAcALAAAAAAMAAwAAAMk
+			GLosEyNKGUQgOOd3tebep2iA2BFAuo1oqhKgK8NsSJ8haNMJADs=
 		}] \
 		spinarrowup-p [image create photo -data { \
-			R0lGODlhDAAGAIQRAAAAAKqqrKuqrKurq6+vr7CwsLCwsrGxsrW1tcHBwcHBwsTExMfHyMrJysrK
-			ysrLy9HR0f///////////////////////////////////////////////////////////yH5BAEK
-			AB8ALAAAAAAMAAYAAAUp4Ac5zJIgR0EEn9g0CwAgxkC0YyPLRjHgj92uwBIJhUVIo6RAIFSCTwgA
-			Ow==
+			R0lGODlhDAAMAMIFAAAAAE5jqIGOu83Jxtvb2////////////yH5BAEKAAcALAAAAAAMAAwAAAMl
+			GLosEyNKGUQgOOd3teYa8CkZYG4kYa4YuL4E986gh3Z2nOZPAgA7
 		}] \
 		tab-a [image create photo -data { \
 			R0lGODlhIAAYAOeBAKCgoN7d3t/f3t/f3+Df39/g3+Dg4ODg4eHg4OHg4eDh4ODh4eHh4OHh4eLh
