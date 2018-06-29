@@ -1512,12 +1512,10 @@ proc CopyDatabase {parent src dst variant x y} {
 
 
 proc LogCopyDb {sink arguments} {
-	set type [lindex $arguments 0]
-	set var  [string toupper $type 0 0]
-	set code [lindex $arguments 1]
-	set args [lindex $arguments 2]
+	lassign $arguments type code gameNo
+	set var [string toupper $type 0 0]
+	append line $::import::mc::GameNumber " " [::locale::formatNumber $gameNo] ": "
 	append line [set ::import::mc::${var}($code)]
-	if {[llength $args]} { append line ": $args" }
 	::log::${type} $line
 }
 
