@@ -1360,6 +1360,9 @@ proc ImportDatabases {parent uriFiles destination variant x y} {
 
 proc CopyDatabase {parent src dst variant x y} {
 	variable ::table::options
+	variable NumWarnings
+
+	set NumWarnings 0
 
 	set srcN [::util::databaseName $src]
 	set dstN [::util::databaseName $dst]
@@ -1507,11 +1510,14 @@ proc CopyDatabase {parent src dst variant x y} {
 	if {$rc == 1} { ::log::error $::import::mc::AbortedDueToIoError }
 	::progress::close
 	::log::close
-	::log::show
+	if {$NumWarnings} { ::log::show }
 }
 
 
 proc LogCopyDb {sink arguments} {
+	variable NumWarnings
+
+	incr NumWarnings
 	lassign $arguments type code gameNo
 	set var [string toupper $type 0 0]
 	append line $::import::mc::GameNumber " " [::locale::formatNumber $gameNo] ": "

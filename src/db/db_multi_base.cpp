@@ -799,6 +799,11 @@ MultiBase::save(mstl::string const& encoding, unsigned flags, util::Progress& pr
 
 			for (unsigned index = nextIndex[variant]; index < n; ++index)
 			{
+				if (reportAfter == count++)
+				{
+					progress.update(count);
+					reportAfter += frequency;
+				}
 				newFileOffsets->append(ostrm->tellp(), variant, index);
 				database->exportGame(index, *writer); // always returning save::Ok
 			}

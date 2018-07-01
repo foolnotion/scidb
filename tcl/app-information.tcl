@@ -162,6 +162,7 @@ proc activate {w flag} {
 			set icon [namespace parent]::database::icons::${type}(${size}x${size})
 			set name [file tail $name]
 			set ext [file extension $file]
+			if {[string match *.gz $ext]} { set ext .pgn }
 			if {[string match *$ext $name]} {
 				set name [string range $name 0 [expr {[string length $name] - [string length $ext] - 1}]]
 				set name [string trim $name]
