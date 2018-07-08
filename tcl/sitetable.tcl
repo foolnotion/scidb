@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2012-2013 Gregor Cramer
+# Copyright: (C) 2012-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -54,23 +54,32 @@ array set Defaults {
 	country-code	flags
 }
 
-array set Options {}
 variable History {}
 
 
 proc build {path getViewCmd {visibleColumns {}} {args {}}} {
-	namespace eval [namespace current]::$path {}
-	variable [namespace current]::${path}::Vars
 	variable columns
 	variable Columns
-	variable Options
 	variable Defaults
 
-	array set Vars { columns {} }
+	namespace eval $path {}
+	variable ${path}::Vars
+	variable ${path}::Options
 
-	array set options [array get Defaults]
-	array set options [array get Options]
-	array set Options [array get options]
+	array set Vars { columns {} usefind 0 }
+
+	array set options $args
+	foreach opt {id selectcmd usefind} {
+		if {[info exists options(-$opt)]} {
+			set Vars($opt) $options(-$opt)
+			unset options(-$opt)
+		}
+	}
+	set args [array get options]
+	lappend args -id $Vars(id)
+
+	array set Options [array get Defaults]
+	::scrolledtable::bindOptions $Vars(id) [namespace current]::${path}::Options [array names Defaults]
 
 	if {[llength $visibleColumns] == 0} { set visibleColumns $columns }
 
@@ -84,7 +93,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 				lappend menu [list radiobutton \
 					-command [namespace code [list Refresh $path]] \
 					-labelvar ::gametable::mc::$labelvar \
-					-variable [namespace current]::Options(country-code) \
+					-variable [namespace current]::${path}::Options(country-code) \
 					-value $value \
 				]
 			}
@@ -148,17 +157,8 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 		lappend Vars(columns) $id
 	}
 
-	set options(-usefind) 0
-	array set options $args
-	set useFind $options(-usefind)
-	unset options(-usefind)
-	if {[info exists options(-selectcmd)]} {
-		set Vars(selectcmd) $options(-selectcmd)
-		unset options(-selectcmd)
-		set args [array get options]
-	}
-#	lappend args -popupcmd [namespace code PopupMenu]
 	set Vars(table) [::scrolledtable::build $path $columns {*}$args]
+	::scrolledtable::bindOptions $Vars(id) [namespace current]::${path}::Options [array names Defaults]
 	pack $path -fill both -expand yes
 
 	::bind $path <<TableFill>>			[namespace code [list TableFill $path %d]]
@@ -167,7 +167,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 
 	set Vars(viewcmd) $getViewCmd
 
-	if {$useFind} {
+	if {$Vars(usefind)} {
 		set tbFind [::toolbar::toolbar $path \
 			-id sitetable-find \
 			-hide 1 \
@@ -269,16 +269,6 @@ proc selectedSite {path base variant} {
 }
 
 
-proc getOptions {path} {
-	return [::scrolledtable::getOptions $path]
-}
-
-
-proc setOptions {path options} {
-	::scrolledtable::setOptions $path $options
-}
-
-
 proc scroll {path position} {
 	::scrolledtable::scroll $path $position
 }
@@ -352,7 +342,7 @@ proc TableSelected {path index} {
 
 proc TableFill {path args} {
 	variable ${path}::Vars
-	variable Options
+	variable ${path}::Options
 
 	lassign [lindex $args 0] table base variant start first last columns
 
@@ -480,13 +470,6 @@ proc Find {path mode name} {
 		::scrolledtable::activate $path $i
 	}
 }
-
-
-proc WriteOptions {chan} {
-	options::writeItem $chan [namespace current]::Options
-}
-
-::options::hookWriter [namespace current]::WriteOptions
 
 } ;# namespace sitetable
 

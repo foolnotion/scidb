@@ -1330,7 +1330,6 @@ proc PopupMenu {table menu _ _ index} {
 proc WriteOptions {chan} {
 	::options::writeList $chan [namespace current]::History
 }
-
 ::options::hookWriter [namespace current]::WriteOptions
 
 

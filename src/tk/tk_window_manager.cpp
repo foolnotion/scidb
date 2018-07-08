@@ -567,8 +567,8 @@ getDefaultExtents(Rect& result)
 {
 	result.left = 3;
 	result.right = 3;
-	result.width = 30;
-	result.height = 3;
+	result.width = 16;
+	result.height = 6;
 
 	return false;
 }

@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2013 Gregor Cramer
+# Copyright: (C) 2009-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -51,119 +51,51 @@ array set Defaults {
 	sort 0
 }
 
+array set Prios { annotator 200 games 100 }
+
+array set FrameOptions {
+	annotator { -width 200 -height 640 -minwidth 200 -minheight 100 -expand both }
+	games     { -width 800 -height 640 -minwidth 200 -minheight 100 -expand both }
+}
+
+variable Layout {
+	root { -shrink none -grow none } {
+		panedwindow { -orient horz } {
+			frame annotator %annotator%
+			frame games %games%
+		}
+	}
+}
+
 variable Tables {}
-variable History {}
 
 
 proc build {parent} {
-	variable ::gametable::Defaults
-	variable Columns
 	variable Tables
+	variable Layout
+	variable FrameOptions
 
-	set top [tk::panedwindow $parent.top \
-		-orient horizontal \
-		-opaqueresize true \
-		-borderwidth 0]
-	pack $top -fill both -expand yes
-	lappend Tables $top
+	set twm $parent.twm
+	namespace eval [namespace current]::$twm {}
+	variable ${twm}::Vars
 
-	set lt ${top}.names
-	set rt ${top}.pairings
-
-	set columns {}
-	foreach col $Columns {
-		lassign $col id adjustment minwidth maxwidth width stretch removable ellipsis color
-
-		set ivar [namespace current]::I_[string toupper $id 0 0]
-		set fvar [namespace current]::mc::F_[string toupper $id 0 0]
-		set tvar [namespace current]::mc::T_[string toupper $id 0 0]
-		if {![info exists $tvar]} { set tvar {} }
-		if {![info exists $fvar]} { set fvar $tvar }
-		if {![info exists $ivar]} { set ivar {} } else { set ivar [set $ivar] }
-
-		set menu {}
-		lappend menu [list command \
-			-command [namespace code [list SortColumn $top $id ascending]] \
-			-labelvar ::gametable::mc::SortAscending \
-		]
-		lappend menu [list command \
-			-command [namespace code [list SortColumn $top $id descending]] \
-			-labelvar ::gametable::mc::SortDescending \
-		]
-		lappend menu { separator }
-
-		set opts {}
-		lappend opts -justify $adjustment
-		lappend opts -minwidth $minwidth
-		lappend opts -maxwidth $maxwidth
-		lappend opts -width $width
-		lappend opts -stretch $stretch
-		lappend opts -removable $removable
-		lappend opts -ellipsis $ellipsis
-		lappend opts -visible 1
-		lappend opts -foreground $color
-		lappend opts -menu $menu
-		lappend opts -image $ivar
-		lappend opts -textvar $fvar
-		lappend opts -tooltipvar $tvar
-
-		lappend columns $id $opts
-	}
-	set table [::scrolledtable::build $lt $columns]
-	::scidb::db::subscribe annotatorList \
-		[namespace current]::names::Update \
-		[namespace current]::Close \
-		$top
-
-	set columns {white whiteElo black blackElo event result date acv}
-	::gametable::build $rt [namespace code [list View $rt]] $columns -id db:annotators
-	::scidb::db::subscribe gameList \
-		[namespace current]::games::Update \
-		[namespace current]::Close \
-		$top
-	bind $rt <<TableMinSize>> [namespace code [list TableMinSize $rt %d]]
-	bind $rt <<TableOptions>> [namespace code [list games::TableOptions $rt]]
-
-	namespace eval [namespace current]::$top {}
-	variable [namespace current]::${top}::Vars
 	set Vars(active) 0
 	set Vars(base) ""
 
-	bind $lt <<TableMinSize>>	[namespace code [list TableMinSize $lt %d]]
-	bind $lt <<TableFill>>		[namespace code [list names::TableFill $top %d]]
-	bind $lt <<TableOptions>>	[namespace code [list names::TableOptions $top]]
-	bind $lt <<TableSelected>>	[namespace code [list names::TableSelected $top %d]]
-
-	$top add $lt -sticky nsew -stretch middle -width 260 ;# XXX
-	$top add $rt -sticky nsew -stretch always
-
-	set tbFind [::toolbar::toolbar $lt \
-		-id annotators-find \
-		-hide 1 \
-		-side bottom \
-		-alignment left \
-		-allow {top bottom} \
-		-tooltipvar ::playertable::mc::Find \
-	]
-	set cb [::toolbar::add $tbFind searchentry \
-		-float 0 \
-		-width 18 \
-		-parent $lt \
-		-history [namespace current]::History \
-		-ghosttextvar [namespace current]::mc::FindAnnotator \
-		-helpinfo ::playerdict::mc::HelpPatternMatching \
-		-mode key \
-	]
-	bind $cb <<Find>>			[namespace code [list Find $top first %d]]
-	bind $cb <<FindNext>>	[namespace code [list Find $top next %d]]
-	bind $cb <<Help>>			[list ::help::open .application Pattern-Matching]
-
-	return $table
+	::application::twm::make $twm annotator \
+		[namespace current]::MakeFrame \
+		[namespace current]::BuildFrame \
+		[array get FrameOptions] \
+		$Layout \
+		;
+	::application::twm::load $twm
+	lappend Tables $twm
+	return $twm
 }
 
 
 proc activate {w flag} {
-	set path $w.top
+	set path $w.twm
 	variable ${path}::Vars
 
 	set Vars(active) $flag
@@ -173,18 +105,24 @@ proc activate {w flag} {
 	names::UpdateTable $path $base $variant
 
 	if {[winfo toplevel $w] ne $w} {
-		::toolbar::activate $path.names $flag
+		::toolbar::activate $Vars(frame:annotator) $flag
 	}
 }
 
 
 proc overhang {parent} {
-	return [::scrolledtable::overhang $parent.top.names]
+	set path $parent.twm
+	variable ${path}::Vars
+
+	return [::scrolledtable::overhang $Vars(frame:annotator)]
 }
 
 
 proc linespace {parent} {
-	return [::scrolledtable::linespace $parent.top.names]
+	set path $parent.twm
+	variable ${path}::Vars
+
+	return [::scrolledtable::linespace $Vars(frame:annotator)]
 }
 
 
@@ -193,31 +131,103 @@ proc setActive {flag} {
 }
 
 
-proc Close {path base variant} {
-	variable ${path}::Vars
+proc MakeFrame {twm parent type uid} {
+	variable Prios
 
-	array unset Vars $base:$variant:*
-	::scrolledtable::forget $path.names $base $variant
-	::gametable::forget $path.pairings $base $variant
+	set frame [tk::frame $parent.$uid -borderwidth 0 -takefocus 1]
+	set nameVar ::application::twm::mc::Pane($uid)
+	return [list $frame $nameVar $Prios($uid) [expr {$uid ne "annotator"}] yes yes]
+}
 
-	if {$Vars(base) eq "$base:$variant"} {
-		::scrolledtable::clear $path.names
-		::gametable::clear $path.pairings
+
+proc BuildFrame {twm frame uid width height} {
+	variable ${twm}::Vars
+	set Vars(frame:$uid) $frame
+
+	switch $uid {
+		annotator {
+			variable Columns
+
+			set columns {}
+			foreach col $Columns {
+				lassign $col id adjustment minwidth maxwidth width stretch removable ellipsis color
+
+				set ivar [namespace current]::I_[string toupper $id 0 0]
+				set fvar [namespace current]::mc::F_[string toupper $id 0 0]
+				set tvar [namespace current]::mc::T_[string toupper $id 0 0]
+				if {![info exists $tvar]} { set tvar {} }
+				if {![info exists $fvar]} { set fvar $tvar }
+				if {![info exists $ivar]} { set ivar {} } else { set ivar [set $ivar] }
+
+				set menu {}
+				lappend menu [list command \
+					-command [namespace code [list SortColumn $twm $id ascending]] \
+					-labelvar ::gametable::mc::SortAscending \
+				]
+				lappend menu [list command \
+					-command [namespace code [list SortColumn $twm $id descending]] \
+					-labelvar ::gametable::mc::SortDescending \
+				]
+				lappend menu { separator }
+
+				set opts {}
+				lappend opts -justify $adjustment
+				lappend opts -minwidth $minwidth
+				lappend opts -maxwidth $maxwidth
+				lappend opts -width $width
+				lappend opts -stretch $stretch
+				lappend opts -removable $removable
+				lappend opts -ellipsis $ellipsis
+				lappend opts -visible 1
+				lappend opts -foreground $color
+				lappend opts -menu $menu
+				lappend opts -image $ivar
+				lappend opts -textvar $fvar
+				lappend opts -tooltipvar $tvar
+
+				lappend columns $id $opts
+			}
+			set table [::scrolledtable::build $frame $columns -id db:annotators:$uid]
+			::scidb::db::subscribe annotatorList \
+				[namespace current]::names::Update \
+				[namespace current]::Close \
+				$twm \
+				;
+			bind $frame <<TableFill>>		[namespace code [list names::TableFill $twm %d]]
+			bind $frame <<TableSelected>>	[namespace code [list names::TableSelected $twm %d]]
+		}
+		games {
+			set columns {white whiteElo black blackElo event result site date acv}
+			::gametable::build $frame [namespace code [list View $twm]] $columns -id db:annotators:$uid
+			::scidb::db::subscribe gameList \
+				[namespace current]::games::Update \
+				[namespace current]::Close \
+				$twm \
+				;
+		}
 	}
 }
 
 
-proc View {pane base variant} {
-	set path [winfo parent $pane]
+proc Close {path base variant} {
+	variable ${path}::Vars
+
+	array unset Vars $base:$variant:*
+	::scrolledtable::forget $Vars(frame:annotator) $base $variant
+	::gametable::forget $Vars(frame:games) $base $variant
+
+	if {$Vars(base) eq "$base:$variant"} {
+		::scrolledtable::clear $Vars(frame:annotator)
+		::gametable::clear $Vars(frame:games)
+	}
+}
+
+
+proc View {path base variant} {
 	variable ${path}::Vars
 
 	if {[string length $base] == 0} { return 0 }
 	return $Vars($base:$variant:view)
-}
-
-
-proc TableMinSize {pane minsize} {
-	[winfo parent $pane] paneconfigure $pane -minsize [lindex $minsize 0 0]
 }
 
 
@@ -229,12 +239,15 @@ proc InitBase {path base variant} {
 
 	if {![info exists Vars($base:$variant:view)]} {
 		set Vars($base:$variant:initializing) 1
-		set Vars($base:$variant:view) [::scidb::view::new $base $variant slave slave slave master slave slave]
+		set Vars($base:$variant:view) \
+			[::scidb::view::new $base $variant slave slave slave master slave slave]
 		set Vars($base:$variant:update) 1
 		set Vars($base:$variant:sort) $Defaults(sort)
 		set Vars($base:$variant:annotator) ""
 		set Vars($base:$variant:after:games) {}
 		set Vars($base:$variant:after:names) {}
+		set Vars($base:$variant:after:names) {}
+		set Vars($base:$variant:after:lastId) {}
 		set Vars($base:$variant:lastChange) [::scidb::db::get lastChange $base $variant]
 		set Vars($base:$variant:names:lastId) -1
 		set Vars($base:$variant:games:lastId) -1
@@ -280,13 +293,8 @@ proc Update2 {id path base variant} {
 		}
 	} else {
 		set n [::scidb::view::count games $base $variant $view]
-		after idle [list ::gametable::update $path.pairings $base $variant $n]
+		after idle [list ::gametable::update $Vars(frame:games) $base $variant $n]
 	}
-}
-
-
-proc TableOptions {path} {
-	# TODO
 }
 
 } ;# namespace games
@@ -297,9 +305,9 @@ namespace eval names {
 proc Reset {path base variant} {
 	variable [namespace parent]::${path}::Vars
 
-	::gametable::clear $path.pairings
-	::scrolledtable::select $path.names none
-	::scrolledtable::activate $path.names none
+	::gametable::clear $Vars(frame:games)
+	::scrolledtable::select $Vars(frame:annotator) none
+	::scrolledtable::activate $Vars(frame:annotator) none
 	set Vars($base:$variant:annotator) ""
 }
 
@@ -317,9 +325,12 @@ proc UpdateTable {path base variant} {
 		}
 		if {$Vars($base:$variant:update)} {
 			set n [::scidb::db::count annotators $base $variant]
-			after idle [list ::scrolledtable::update $path.names $base $variant $n]
-			after idle [list \
-				[namespace parent]::games::Update2 $Vars($base:$variant:names:lastId) $path $base $variant]
+			after cancel $Vars($base:$variant:after:names)
+			after cancel $Vars($base:$variant:after:lastId)
+			set Vars($base:$variant:after:names) [after idle [list \
+				::scrolledtable::update $Vars(frame:annotator) $base $variant $n]]
+			set Vars($base:$variant:after:lastId) [after idle [list \
+				[namespace parent]::games::Update2 $Vars($base:$variant:names:lastId) $path $base $variant]]
 			set Vars($base:$variant:update) 0
 		}
 	}
@@ -347,11 +358,6 @@ proc Update2 {id path base variant} {
 	set Vars($base:$variant:names:lastId) $id
 	set Vars($base:$variant:update) 1
 	UpdateTable $path $base $variant
-}
-
-
-proc TableOptions {path} {
-	# TODO
 }
 
 
@@ -396,7 +402,7 @@ proc TableSelected {path index} {
 	variable [namespace parent]::${path}::Vars
 
 	::widget::busyCursor on
-	set table $path.names
+	set table $Vars(frame:annotator)
 	set base [::scrolledtable::base $table]
 	set variant [::scrolledtable::variant $table]
 	set view $Vars($base:$variant:view)
@@ -411,9 +417,9 @@ proc TableSearch {path base variant view} {
 	variable [namespace parent]::${path}::Vars
 
 	::widget::busyCursor on
-	::gametable::activate $path.pairings none
-	::gametable::select $path.pairings none
-	::gametable::scroll $path.pairings home
+	::gametable::activate $Vars(frame:games) none
+	::gametable::select $Vars(frame:games) none
+	::gametable::scroll $Vars(frame:games) home
 	::scidb::view::search $base $variant $view null none [list annotator $Vars($base:$variant:annotator)]
 	::widget::busyCursor off
 }
@@ -425,13 +431,13 @@ proc SortColumn {path id dir} {
 	variable ${path}::Vars
 
 	::widget::busyCursor on
-	set base [::scrolledtable::base $path.names]
-	set variant [::scrolledtable::variant $path.names]
+	set base [::scrolledtable::base $Vars(frame:annotator)]
+	set variant [::scrolledtable::variant $Vars(frame:annotator)]
 	set view $Vars($base:$variant:view)
 	set see 0
 	if {[string length $Vars($base:$variant:annotator)]} {
-		set selection [::scrolledtable::selection $path.names]
-		if {$selection >= 0 && [::scrolledtable::selectionIsVisible? $path.names]} { set see 1 }
+		set selection [::scrolledtable::selection $Vars(frame:annotator)]
+		if {$selection >= 0 && [::scrolledtable::selectionIsVisible? $Vars(frame:annotator)]} { set see 1 }
 	} else {
 		set selection -1
 	}
@@ -443,7 +449,7 @@ proc SortColumn {path id dir} {
 		default {
 			set options {}
 			if {$dir eq "descending"} { lappend options -descending }
-			set columnNo [::scrolledtable::columnNo $path.names $id]
+			set columnNo [::scrolledtable::columnNo $Vars(frame:annotator) $id]
 			::scidb::db::sort annotator $base $variant $columnNo $view {*}$options
 		}
 	}
@@ -452,7 +458,7 @@ proc SortColumn {path id dir} {
 			[::scidb::db::get annotatorIndex $Vars($base:$variant:annotator) $view $base $variant]
 	}
 	::widget::busyCursor off
-	::scrolledtable::updateColumn $path.names $selection $see
+	::scrolledtable::updateColumn $Vars(frame:annotator) $selection $see
 }
 
 
@@ -462,31 +468,33 @@ proc Find {path mode name} {
 	set base [::scidb::db::get name]
 	set variant [::scidb::app::variant]
 	set view $Vars($base:$variant:view)
-	if {$mode eq "next"} { set lastIndex [::scrolledtable::active $path.names] } else { set lastIndex -1 }
+	if {$mode eq "next"} {
+		set lastIndex [::scrolledtable::active $Vars(frame:annotator)]
+	} else {
+		set lastIndex -1
+	}
 	set i [::scidb::view::find annotator $base $variant $view "$name*" $lastIndex]
 	if {$i >= 0} {
-		::scrolledtable::see $path.names $i
-		::scrolledtable::activate $path.names $i
+		::scrolledtable::see $Vars(frame:annotator) $i
+		::scrolledtable::activate $Vars(frame:annotator) $i
 	}
 }
 
 
-proc WriteOptions {chan} {
+proc WriteTableOptions {chan {id "annotator"}} {
 	variable Tables
 
-#	::options::writeItem $chan [namespace current]::Defaults
-	::options::writeList $chan [namespace current]::History
+	if {$id ne "annotator"} { return }
 
 	foreach table $Tables {
-		foreach type {names pairings} {
-			puts $chan "::scrolledtable::setOptions db:annotators {"
-			::options::writeArray $chan [::scrolledtable::getOptions $table.$type]
+		foreach attr {annotator games} {
+			puts $chan "::scrolledtable::setOptions db:annotators:$attr {"
+			::options::writeArray $chan [::scrolledtable::getOptions db:annotators:$attr]
 			puts $chan "}"
 		}
 	}
 }
-
-::options::hookWriter [namespace current]::WriteOptions
+::options::hookTableWriter [namespace current]::WriteTableOptions
 
 } ;# namespace annotators
 } ;# namespace database

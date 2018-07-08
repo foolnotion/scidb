@@ -611,10 +611,13 @@ proc WidgetProc {w command args} {
 
 		resize {
 			foreach arg $args {
-				if {$arg ni {-width -height -force -dontshrink}} { error "unknown option \"$arg\"" }
+				if {$arg ni {-width -height -force -dontshrink -fixed}} {
+					error "unknown option \"$arg\""
+				}
 			}
 			set checkScrollbar 0
 			set dontshrink [expr {"-dontshrink" in $args}]
+			set fixed [expr {"-fixed" in $args}]
 			if {"-height" in $args && "-width" ni $args} {
 				ComputeHeight $w $dontshrink
 				set checkScrollbar 1
@@ -636,10 +639,10 @@ proc WidgetProc {w command args} {
 			if {"-height" in $args && "-width" ni $args} {
 				# nothing to do
 			} elseif {"-width" in $args && "-height" ni $args} {
-				ComputeWidth $w $dontshrink
+				ComputeWidth $w $dontshrink $fixed
 				set Priv(resized) 1
 			} elseif {!$Priv(resized) || "-force" in $args} {
-				ComputeWidth $w $dontshrink
+				ComputeWidth $w $dontshrink $fixed
 				set Priv(resized) 1
 			}
 		}
@@ -1122,7 +1125,7 @@ proc FindMatch {w column code mapping} {
 }
 
 
-proc ComputeWidth {cb {dontshrink 0}} {
+proc ComputeWidth {cb {dontshrink 0} {fixed 0}} {
 	variable [namespace current]::${cb}::Priv
 
 	if {[llength $Priv(columns)] == 0} { return }
@@ -1143,22 +1146,26 @@ proc ComputeWidth {cb {dontshrink 0}} {
 			incr width [max $w $Priv(minwidth:$id)]
 		}
 		set neededwidth $width
-		set maxwidth $Priv(maxwidth)
-		set minwidth $Priv(minwidth)
-		if {$dontshrink} {
-			set w [expr {[winfo width $t] - 2*[$t cget -borderwidth] - 2}]
-			set minwidth [max $minwidth $w]
-		}
-		if {"$cb.vsb" in [grid slaves $cb]} {
-			if {$maxwidth} { set maxwidth [expr {$maxwidth - [winfo reqwidth $cb.vsb]}] }
-			if {$minwidth} { set minwidth [expr {$minwidth - [winfo reqwidth $cb.vsb]}] }
-		}
-		if {$maxwidth && $maxwidth < $width} { set width $maxwidth }
-		set width [max $width $minwidth]
-		set width [expr {$Priv(numcolumns)*$width}]
-		$t configure -width [expr {$width + 2*[$t cget -borderwidth]}]
-		if {$Priv(expand) eq [lindex $Priv(columns) end] && $Priv(numcolumns) == 1} {
-			$t column expand $Priv(expand)
+		if {$fixed} {
+			set width [winfo width $t]
+		} else {
+			set maxwidth $Priv(maxwidth)
+			set minwidth $Priv(minwidth)
+			if {$dontshrink} {
+				set w [expr {[winfo width $t] - 2*[$t cget -borderwidth] - 2}]
+				set minwidth [max $minwidth $w]
+			}
+			if {"$cb.vsb" in [grid slaves $cb]} {
+				if {$maxwidth} { set maxwidth [expr {$maxwidth - [winfo reqwidth $cb.vsb]}] }
+				if {$minwidth} { set minwidth [expr {$minwidth - [winfo reqwidth $cb.vsb]}] }
+			}
+			if {$maxwidth && $maxwidth < $width} { set width $maxwidth }
+			set width [max $width $minwidth]
+			set width [expr {$Priv(numcolumns)*$width}]
+			$t configure -width [expr {$width + 2*[$t cget -borderwidth]}]
+			if {$Priv(expand) eq [lindex $Priv(columns) end] && $Priv(numcolumns) == 1} {
+				$t column expand $Priv(expand)
+			}
 		}
 		if {$neededwidth > $width} {
 			grid $cb.hsb -row 1 -column 0 -sticky ew
@@ -1169,7 +1176,7 @@ proc ComputeWidth {cb {dontshrink 0}} {
 }
 
 
-proc ComputeHeight {cb {dontshrink 0}} {
+proc ComputeHeight {cb dontshrink} {
 	variable [namespace current]::${cb}::Priv
 
 	if {[llength $Priv(columns)] == 0} { return }

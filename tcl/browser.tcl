@@ -1875,7 +1875,6 @@ proc UseFullscreen? {} {
 proc WriteOptions {chan} {
 	options::writeItem $chan [namespace current]::Options
 }
-
 ::options::hookWriter [namespace current]::WriteOptions
 
 } ;# namespace browser

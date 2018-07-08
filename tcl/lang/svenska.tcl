@@ -435,9 +435,9 @@
 ::tips::mc::Choice(periodicallyWhenNew)   "Show periodically, but only new tips" ;# NEW
 ::tips::mc::Choice(neverShow)             "Don't show anymore" ;# NEW
 
-### twm ################################################################
-::twm::mc::Close				"Close" ;# NEW
-::twm::mc::Undock				"Undock" ;# NEW
+### twm - tiled window manager #########################################
+::twm::mc::Close				"Stäng"
+::twm::mc::Undock				"Avdocka"
 
 ::twm::mc::Timeout			"Timeout after eight seconds without mouse motions, the frame has been re-docked to old place." ;# NEW
 ::twm::mc::TimeoutDetail	"This safety handling is required to avoid frozen screens, as long as the tiling window management is in an experimental stage." ;# NEW
@@ -446,6 +446,7 @@
 ::application::layout::mc::Rename					"Rename" ;# NEW
 ::application::layout::mc::Delete					"Delete" ;# NEW
 ::application::layout::mc::Load						"Load" ;# NEW
+::application::layout::mc::Linked					"Linked with" ;# NEW
 ::application::layout::mc::CannotOpenFile			"Cannot read file '%s'." ;# NEW
 ::application::layout::mc::RestoreToOldLayout	"Restore to old layout" ;# NEW
 
@@ -455,38 +456,11 @@
 ::application::mc::Board						"&Bräde"
 ::application::mc::MainMenu					"&Huvudmeny"
 
-::application::mc::Notebook					"Notebook" ;# NEW
-::application::mc::Multiwindow				"Stack" ;# NEW
-::application::mc::FoldTitleBar				"Fold Titlebar" ;# NEW
-::application::mc::FoldAllTitleBars			"Fold all Titlebars" ;# NEW
-::application::mc::UnfoldAllTitleBars		"Unfold all Titlebars" ;# NEW
-::application::mc::MoveWindow					"Move Window" ;# NEW
-::application::mc::StayOnTop					"Stay on Top" ;# NEW
-::application::mc::HideWhenLeavingTab     "Hide When Leaving Tab" ;# NEW
-::application::mc::SaveLayout					"Save Layout" ;# NEW
-::application::mc::SaveLayoutAs				"Save Layout as %s" ;# NEW
-::application::mc::RenameLayout				"Rename Layout" ;# NEW
-::application::mc::LoadLayout					"Load Layout" ;# NEW
-::application::mc::NewLayout					"New Layout" ;# NEW
-::application::mc::ManageLayouts				"Manage Layouts" ;# NEW
-::application::mc::ShowAllDockingPoints	"Show all Docking Points" ;# NEW
-::application::mc::DockingArrowSize       "Docking Arrow Size" ;# NEW
-::application::mc::Windows						"Windows" ;# NEW
-
-::application::mc::Pane(analysis)			"Analysis" ;# NEW
-::application::mc::Pane(board)				"Board" ;# NEW
-::application::mc::Pane(editor)				"Notation" ;# NEW
-::application::mc::Pane(tree)					"Tree" ;# NEW
-::application::mc::Pane(games)				"Games" ;# NEW
-
 ::application::mc::ChessInfoDatabase		"Chess Information Data Base"
 ::application::mc::Shutdown					"Avstängning..."
 ::application::mc::QuitAnyway					"Vill du avsluta?"
 ::application::mc::CancelLogout				"Avbryt utloggning"
 ::application::mc::AbortWriteOperation		"Avbryt skrivningar"
-::application::mc::ConfirmOverwrite			"Overwrite existing layout '%s'?" ;# NEW
-::application::mc::ConfirmDelete				"Really delete layout '%s'?" ;# NEW
-
 ::application::mc::UpdatesAvailable			"Uppdateringar tillgängliga"
 
 ::application::mc::WriteOperationInProgress "Skrivningar pågår: närvarande modifierar / skriver Scidb databasen '% s'."
@@ -499,6 +473,43 @@
 ::application::mc::Changed						"Partier ändrade: %d"
 ::application::mc::Added						"Partier tillagda: %d"
 ::application::mc::DescriptionHasChanged	"Beskrivning har ändrats"
+
+### application::twm ###################################################
+::application::twm::mc::Notebook					"Notebook" ;# NEW
+::application::twm::mc::Multiwindow				"Stack" ;# NEW
+::application::twm::mc::FoldTitleBar			"Fold Titlebar" ;# NEW
+::application::twm::mc::FoldAllTitleBars		"Fold all Titlebars" ;# NEW
+::application::twm::mc::UnfoldAllTitleBars	"Unfold all Titlebars" ;# NEW
+::application::twm::mc::MoveWindow				"Move Window" ;# NEW
+::application::twm::mc::StayOnTop				"Stay on Top" ;# NEW
+::application::twm::mc::HideWhenLeavingTab	"Hide When Leaving Tab" ;# NEW
+::application::twm::mc::SaveLayout				"Save Layout" ;# NEW
+::application::twm::mc::SaveLayoutAs			"Save Layout as %s" ;# NEW
+::application::twm::mc::RenameLayout			"Rename Layout" ;# NEW
+::application::twm::mc::LoadLayout				"Load Layout" ;# NEW
+::application::twm::mc::NewLayout				"New Layout" ;# NEW
+::application::twm::mc::ManageLayouts			"Manage Layouts" ;# NEW
+::application::twm::mc::ShowAllDockingPoints	"Show all Docking Points" ;# NEW
+::application::twm::mc::DockingArrowSize		"Docking Arrow Size" ;# NEW
+::application::twm::mc::LinkLayout				"Link Layout '%s'" ;# NEW
+::application::twm::mc::UnlinkLayout			"Unlink Layout '%s'" ;# NEW
+::application::twm::mc::LinkLayoutTip			"Link With Board Layout" ;# NEW
+::application::twm::mc::Actual					"current" ;# NEW
+::application::twm::mc::Windows					"Windows" ;# NEW
+::application::twm::mc::ConfirmDelete			"Really delete layout '%s'?" ;# NEW
+::application::twm::mc::ConfirmOverwrite		"Overwrite existing layout '%s'?" ;# NEW
+::application::twm::mc::EnterName				"Enter Name" ;# NEW
+
+::application::twm::mc::Pane(analysis)			"Analysis" ;# NEW
+::application::twm::mc::Pane(board)				"Board" ;# NEW
+::application::twm::mc::Pane(editor)			"Notation" ;# NEW
+::application::twm::mc::Pane(tree)				"Tree" ;# NEW
+::application::twm::mc::Pane(games)				"Games" ;# NEW
+::application::twm::mc::Pane(player)			"Players" ;# NEW
+::application::twm::mc::Pane(event)				"Events" ;# NEW
+::application::twm::mc::Pane(annotator)		"Annotators" ;# NEW
+::application::twm::mc::Pane(site)				"Sites" ;# NEW
+::application::twm::mc::Pane(position)			"Start Positions" ;# NEW
 
 ### application::board #################################################
 ::application::board::mc::ShowCrosstable				"Visa turneringstabell för partiet"
@@ -1539,10 +1550,6 @@
 ::playercard::mc::OpenPndCatalog				"Öppna katalog i Deutsche Nationalbibliothek"
 ::playercard::mc::OpenChessgames				"chessgames.com partisamling"
 ::playercard::mc::SeachIn365ChessCom		"Sök i 365Chess.com"
-
-### twm - tiled window manager #########################################
-::twm::mc::Undock					"Avdocka"
-::twm::mc::Close					"Stäng"
 
 ### fonts ##############################################################
 ::font::mc::ChessBaseFontsInstalled				"ChessBasefonter har installerats."

@@ -733,7 +733,6 @@ proc InvokeLang {w lang} {
 proc WriteOptions {chan} {
 	::options::writeItem $chan [namespace current]::Language
 }
-
 ::options::hookWriter [namespace current]::WriteOptions
 
 } ;# namespace mc

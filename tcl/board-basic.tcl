@@ -1450,6 +1450,7 @@ proc WriteOptions {chan} {
 		::options::writeItem $chan [namespace current]::$what
 	}
 }
+::options::hookWriter [namespace current]::WriteOptions
 
 
 proc MakeBorderlines {} {
@@ -1505,9 +1506,6 @@ if {[llength $colors(hint,background-tile)]} {
 		set colors(hint,background-tile) {}
 	}
 }
-
-
-::options::hookWriter [namespace current]::WriteOptions
 
 namespace eval icon {
 namespace eval 12x12 {

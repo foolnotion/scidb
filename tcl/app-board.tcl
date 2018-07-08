@@ -116,7 +116,7 @@ proc build {w width height} {
 	set border [tk::canvas $canv.border -takefocus 0 -borderwidth 0]
 	$border xview moveto 0
 	$border yview moveto 0
-	Preload $width [expr {$height - [[winfo parent $w] get $w Extent 74] + 2}]
+	Preload $width [expr {$height - [[winfo parent $w] get $w Extent 74]}]
 	set board [::board::diagram::new $border.diagram $Dim(squaresize) \
 		-bordersize $Dim(edgethickness) \
 		-bordertype lines \
@@ -2122,7 +2122,6 @@ proc LanguageChanged {} {
 proc WriteOptions {chan} {
 	::options::writeItem $chan [namespace current]::Options
 }
-
 ::options::hookWriter [namespace current]::WriteOptions
 
 

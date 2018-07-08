@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2012-2017 Gregor Cramer
+# Copyright: (C) 2012-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -275,7 +275,7 @@ proc buildText {path context {forceSbSet 0}} {
 	if {$context ni $ContextList} { lappend ContextList $context }
 
 	set styles {normal bold}
-	if {$context ne "browser"} { lappend styles italic bold-italic }
+	if {$context ni {browser merge}} { lappend styles italic bold-italic }
 
 	::font::registerTextFonts $context $styles
 	::font::registerFigurineFonts $context
@@ -423,9 +423,11 @@ proc configureText {path {fontContext ""}} {
 		$w tag configure symbol    -font $::font::symbol($fontContext:normal)
 		$w tag configure symbolb   -font $::font::symbol($fontContext:bold)
 
-		$w tag raise italic m:comment
-		$w tag raise bold m:comment
-		$w tag raise bold-italic m:comment
+		if {$context ne "merge"} {
+			$w tag raise italic m:comment
+			$w tag raise bold m:comment
+			$w tag raise bold-italic m:comment
+		}
 
 		for {set k 0} {$k <= 10} {incr k} {
 			set margin [expr {$k*$Options(indent:amount)}]
@@ -1210,11 +1212,7 @@ proc BuildFrame(Diagrams) {w position context} {
 proc BuildFrame(MoveStyle) {w position context} {
 	variable	[namespace parent]::${context}::Options
 
-	if {[::font::useFigurines?]} {
-		set lang graphic
-	} else {
-		set lang $::font::Options(figurine:lang)
-	}
+	set lang [expr {[::font::useFigurines?] ? "graphic" : $::font::Options(figurine:lang)}]
 
 	ttk::frame $w -borderwidth 0 -takefocus 0
 
@@ -1575,11 +1573,7 @@ proc SelectionChanged {mw context position tag {blink yes}} {
 			set pane $tag 
 
 			if {$tag eq "MoveStyle"} {
-				if {[::font::useFigurines?]} {
-					set lang graphic
-				} else {
-					set lang $::font::Options(figurine:lang)
-				}
+				set lang [expr {[::font::useFigurines?] ? "graphic" : $::font::Options(figurine:lang)}]
 				$mw.sub-MoveStyle.notation select $Options(style:move)
 				$mw.sub-MoveStyle.figurines select $lang
 				set Options(show:moveinfo) 0
@@ -1947,7 +1941,6 @@ proc WriteOptions {chan} {
 
 	::options::writeItem $chan [namespace current]::ShowMoveInfo
 }
-
 ::options::hookWriter [namespace current]::WriteOptions
 
 

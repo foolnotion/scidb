@@ -243,7 +243,7 @@ proc build {tab width height} {
 	set contents [::ttk::notebook $tab.contents -class UndockingNotebook -takefocus 1]
 	::ttk::notebook::enableTraversal $contents
 	::theme::configurePanedWindow $main
-	set switcher [::database::::switcher $main.switcher \
+	set switcher [::database::switcher $main.switcher \
 		-switchcmd [namespace current]::Switch \
 		-updatecmd [namespace current]::UpdateVariants \
 		-popupcmd [namespace current]::PopupMenu \
@@ -263,14 +263,13 @@ proc build {tab width height} {
 		set Vars($tab) $contents.$tab
 		bind $contents.$tab <Destroy> [namespace code [list DestroyTab %W $contents.$tab]]
 	}
+	set Vars(twm) $Vars([lindex $Vars(taborder) 0]).twm
 
 	$main paneconfigure $switcher -sticky nsew -stretch never
 	$main paneconfigure $contents -sticky nsew -stretch always
 
 	bind $contents.games <<TableMinSize>> \
 		[namespace code [list TableMinSize $main $contents $switcher %d]]
-#	bind $contents.information <Configure> \
-#		[namespace code [list ConfigureList $main $contents $switcher %h]]
 	bind $contents.games <Configure> \
 		[namespace code [list ConfigureList $main $contents $switcher %h]]
 
@@ -378,6 +377,15 @@ proc build {tab width height} {
 }
 
 
+proc switcherSize {} {
+	variable Vars
+
+	if {![info exists Vars(main)]} { return 0 }
+	if {![winfo exists $Vars(main)]} { return 0 }
+	return [expr {[$Vars(main) cget -sashwidth] + [winfo height $Vars(switcher)]}]
+}
+
+
 proc finish {app} {
 	variable Positions
 	variable Vars
@@ -397,12 +405,14 @@ proc finish {app} {
 
 
 proc preOpen {parent} {
+	variable RecentFiles
 	variable PreOpen
 
 	if {![::process::testOption re-open]} { return }
 
-	foreach entry $PreOpen {
-		lassign $entry type file encoding readonly active
+	foreach file $PreOpen {
+		set i [FindRecentFile $file]
+		lassign [lindex $RecentFiles $i] type file encoding readonly active
 		if {[llength $encoding] && $encoding ni [encoding names]} {
 			set encoding $::encoding::defaultEncoding
 			::log::error $mc::Preload [format $mc::MissingEncoding $encoding $encoding]
@@ -420,17 +430,29 @@ proc preOpen {parent} {
 proc activate {w flag} {
 	variable Vars
 
-	set tab [lindex [split [$Vars(contents) select] .] end]
+	set w [$Vars(contents) select]
+	set tab [lindex [split $w .] end]
 	::toolbar::activate $Vars(switcher) $flag
 	[namespace current]::${tab}::activate $Vars($tab) $flag
 	::annotation::hide $flag
 	::marks::hide $flag
+
+	set twm $w.twm
+	if {[::scidb::tk::twm exists $twm]} {
+		set cmd [expr {$flag ? "show" : "hide"}]
+		foreach w [$twm floats] { if {[$twm get! $w hide 0]} { $twm $cmd $w } }
+	}
 }
 
 
 proc setActive {flag} {
 	variable Vars
 	${Vars(current:tab)}::setActive $flag
+}
+
+
+proc twm {} {
+	return [set [namespace current]::Vars(twm)]
 }
 
 
@@ -599,7 +621,7 @@ proc prepareClose {} {
 			if {$base eq $current} { set active 1 } else { set active 0 }
 			set encoding [$Vars(switcher) encoding $base]
 			set readonly [$Vars(switcher) readonly? $base]
-			lappend PreOpen [list $type $base $encoding $readonly $active]
+			lappend PreOpen $base
 		}
 	}
 }
@@ -632,7 +654,8 @@ proc newBase {parent variant file {encoding ""}} {
 		return 0
 	}
 	
-	set type Unspecific
+	set ext [string tolower [file extension $file]]
+	if {$ext in {.pgn .pgn.gz}} { set type PGNFile } else { set type Unspecific }
 	::widget::busyCursor on
 	::scidb::db::new $file $variant [lookupType $type] {*}$encoding
 	::scidb::db::attach $file $file
@@ -928,25 +951,36 @@ proc SetClipbaseDescription {} {
 proc TabChanged {} {
 	variable Vars
 
-	set tab [lindex [split [$Vars(contents) select] .] end]
-	set w $Vars($Vars(current:tab))
-	if {$tab ne $Vars(current:tab) && $w ne [winfo toplevel $w]} {
-		[namespace current]::[set Vars(current:tab)]::activate $w 0
-	}
-	[namespace current]::${tab}::activate $Vars($tab) 1
-	set Vars(current:tab) $tab
+	set newTab [lindex [split [$Vars(contents) select] .] end]
+	set curTab $Vars(current:tab)
+	if {$newTab eq $curTab} { return }
+	set w $Vars($curTab)
+	[namespace current]::${curTab}::activate $w 0
+	[namespace current]::${newTab}::activate $Vars($newTab) 1
+	set Vars(current:tab) $newTab
 
-	set tabs [$Vars(contents) tabs]
+	set w $Vars(contents)
+	set tabs [$w tabs]
 	foreach t $tabs {
-		if {[$Vars(contents) select] eq $t && [llength $tabs] > $Vars(mintabs)} {
+		if {[$w select] eq $t && [llength $tabs] > $Vars(mintabs)} {
 			set icon $icon::16x16::undock
 		} elseif {$Vars(showDisabled)} {
 			set icon $icon::16x16::undock_disabled
 		} else {
 			set icon {}
 		}
-		$Vars(contents) tab $t -image $icon
+		$w tab $t -image $icon
 	}
+
+	set twm $Vars($curTab).twm
+	if {[::scidb::tk::twm exists $twm]} {
+		foreach w [$twm floats] { if {[$twm get! $w hide 0]} { $twm hide $w } }
+	}
+	set twm $Vars($newTab).twm
+	if {[::scidb::tk::twm exists $twm]} {
+		foreach w [$twm floats] { if {[$twm get! $w hide 0]} { $twm show $w } }
+	}
+	set Vars(twm) $twm
 }
 
 
@@ -984,42 +1018,6 @@ proc ToolbarShow {pane} {
 		incr minheight [expr {2*[games::borderwidth $Vars(games)]}]
 		[winfo parent $pane] paneconfigure $pane -minsize $minheight
 	}
-}
-
-
-proc TableMinSize {main pane switcher sizeInfo} {
-	variable Vars
-
-	if {[llength $sizeInfo] != 3} { return }
-	lassign $sizeInfo minwidth minheight Vars(incr)
-	set height [winfo height $pane]
-	if {$height == 1} { return }
-
-	incr minheight $height
-	incr minheight [expr {-[winfo height $Vars(games)]}]
-	incr minheight [expr {2*[games::borderwidth $Vars(games)]}]
-
-	if {$Vars(current:tab) == "games"} {
-		if {!$Vars(lock:minsize)} {
-			$main paneconfigure $pane -minsize $minheight
-		}
-
-		set h [expr {(($height - $minheight)/$Vars(incr))*$Vars(incr)} + $minheight]
-		if {$h > $height} { incr h [expr {-$Vars(incr)}] }
-		if {$h < $height} {
-			incr Vars(pixels) $height
-			incr Vars(pixels) [expr {-$h}]
-			if {$Vars(pixels) >= $Vars(incr)} {
-				incr h $Vars(incr)
-				incr Vars(pixels) [expr {-$Vars(incr)}]
-			}
-			lassign [$main sash coord 0] x y
-			set y [expr {$y + $height - $h}]
-			$main sash place 0 $x $y
-		}
-	}
-
-	after idle [list $Vars(switcher) update]
 }
 
 
@@ -1094,7 +1092,7 @@ proc UpdateAfterSwitch {filename variant} {
 	} else {
 		switch [string tolower [file extension $filename]] {
 			.sci - .pgn - .pgn.gz {
-				if {[::scidb::db::get writable? $filename]} {
+				if {[::scidb::db::get writable? $filename] && ![::scidb::db::get unsaved? $filename]} {
 					set roState normal
 				} else {
 					set roState disabled
@@ -1236,22 +1234,56 @@ proc LanguageChanged {} {
 proc Close {path base variant} {}
 
 
+proc TableMinSize {main pane switcher sizeInfo} {
+	variable Vars
+
+	if {[llength $sizeInfo] != 3} { return }
+	lassign $sizeInfo minwidth minheight Vars(incr)
+	set height [winfo height $pane]
+	if {$height <= 1} { return }
+	if {$Vars(current:tab) ne "games"} { return }
+
+	incr minheight $height
+	incr minheight [expr {-[winfo height $Vars(games)]}]
+	incr minheight [expr {2*[games::borderwidth $Vars(games)]}]
+
+	if {!$Vars(lock:minsize)} {
+		$main paneconfigure $pane -minsize $minheight
+	}
+
+	set h [expr {(($height - $minheight)/$Vars(incr))*$Vars(incr)} + $minheight]
+	if {$h > $height} { incr h [expr {-$Vars(incr)}] }
+	if {$h < $height} {
+		incr Vars(pixels) $height
+		incr Vars(pixels) [expr {-$h}]
+		if {$Vars(pixels) >= $Vars(incr)} {
+			incr h $Vars(incr)
+			incr Vars(pixels) [expr {-$Vars(incr)}]
+		}
+		lassign [$main sash coord 0] x y
+		set y [expr {$y + $height - $h}]
+		$main sash place 0 $x $y
+	}
+
+	after idle [list $Vars(switcher) update]
+}
+
+
 proc ConfigureList {main contents switcher height} {
 	variable Vars
 
+	if {$height <= 1} { return }
 	if {[winfo toplevel $Vars(games)] eq $Vars(games)} { return }
 
-	if {[info exists Vars(incr)]} {
-		set overhang [games::overhang $Vars(games)]
-		set n [expr {($height - $overhang)/$Vars(incr)}]
-		set wantedHeight [expr {$n*$Vars(incr) + $overhang + 2}]
-		set offset [expr {$height - $wantedHeight}]
+	set overhang [games::overhang $Vars(games)]
+	set n [expr {($height - $overhang)/$Vars(incr)}]
+	set wantedHeight [expr {$n*$Vars(incr) + $overhang + 2}]
+	set offset [expr {$height - $wantedHeight}]
 
-		if {$offset != 0 || $Vars(minheight:switcher) == 0} {
-			after cancel $Vars(afterid)
-			set Vars(afterid) [after 50 [namespace code \
-				[list ResizeList $main $contents $switcher $wantedHeight $offset]]]
-		}
+	if {$offset != 0 || $Vars(minheight:switcher) == 0} {
+		after cancel $Vars(afterid)
+		set Vars(afterid) [after 50 [namespace code \
+			[list ResizeList $main $contents $switcher $wantedHeight $offset]]]
 	}
 }
 
@@ -1270,11 +1302,8 @@ proc ResizeList {main contents switcher wantedHeight offset} {
 		lassign [$main sash coord 0] x y
 		incr y $offset
 
-		if {$Vars(minheight:switcher) == 0} {
-			set minheight [expr {[$Vars(switcher) minheight] + [::toolbar::totalHeight $switcher] + 2}]
-			set Vars(minheight:switcher) $minheight
-		}
-
+		set minheight [expr {[$Vars(switcher) minheight] + [::toolbar::totalHeight $switcher] + 2}]
+		set Vars(minheight:switcher) $minheight
 		while {$Vars(minheight:switcher) > $y} { incr y $Vars(incr) }
 		$main sash place 0 $x $y
 	}
@@ -1473,7 +1502,11 @@ proc PopupMenu {parent x y {base ""}} {
 		if {!$isClipbase && ($ext eq "sci" || $ext eq "pgn" || $ext eq "pgn.gz")} {
 			variable ReadOnly_
 			set ReadOnly_ [::scidb::db::get readonly? $base]
-			if {![::scidb::db::get writable? $base]} { set state disabled } else { set state normal }
+			if {![::scidb::db::get writable? $base] || [::scidb::db::get unsaved? $base]} {
+				set state disabled
+			} else {
+				set state normal
+			}
 			set var [namespace current]::ReadOnly_
 			$menu add checkbutton \
 				-label " $::database::switcher::mc::ReadOnly" \
@@ -1664,7 +1697,7 @@ proc DoSaveChanges {parent base} {
 		set result [::progress::start $parent $cmd {} $options]
 		CheckSaveState $base
 
-		set i [lsearch -exact -index 1 $RecentFiles $base]
+		set i [FindRecentFile $base]
 		if {$i >= 0} { lset RecentFiles $i 2 [::scidb::db::get usedencoding $base] }
 
 		# TODO
@@ -2127,7 +2160,7 @@ proc ChangeIcon {parent file} {
 	variable Vars
 
 	set dlg [tk::toplevel $parent.changeIcon -class Dialog]
-	set ext [$Vars(switcher) extension $file]
+	set ext [string tolower [$Vars(switcher) extension $file]]
 	if {[winfo workareaheight $parent] >= 650} { set rows 10 } else { set rows 9 }
 	set cols [expr {([llength $Types($ext)] + $rows - 1)/$rows}]
 	set list [::tlistbox $dlg.list \
@@ -2296,7 +2329,6 @@ proc WriteOptions {chan} {
 	::options::writeList $chan [namespace current]::PreOpen
 	::options::writeItem $chan [namespace current]::Positions
 }
-
 ::options::hookWriter [namespace current]::WriteOptions
 
 

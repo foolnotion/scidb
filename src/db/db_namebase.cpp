@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2009-2018 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -37,7 +37,6 @@
 #include "m_assert.h"
 
 #include <string.h>
-#include <stdlib.h>
 #include <ctype.h>
 
 using namespace db;
@@ -96,7 +95,7 @@ template <typename T>
 static int
 compare(void const* lhs, void const* rhs)
 {
-	return **static_cast<T const* const*>(lhs) < **static_cast<T const* const*>(rhs);
+	return *static_cast<T const*>(rhs) < *static_cast<T const*>(lhs);
 }
 
 
@@ -112,11 +111,11 @@ Namebase::Namebase(Type type)
 	,m_isModified(false)
 	,m_isOriginal(true)
 	,m_isReadonly(false)
-	,m_emptyAnnotator(type == Annotator ? new Entry() : 0)
-	,m_emptySite(type == Site ? new SiteEntry() : 0)
+	,m_emptyAnnotator(type == Annotator ? new Entry() : nullptr)
+	,m_emptySite(type == Site ? new SiteEntry() : nullptr)
 	,m_stringAllocator(32768)
-	,m_stringAllocator2(0)
-	,m_stringAllocator3(0)
+	,m_stringAllocator2(nullptr)
+	,m_stringAllocator3(nullptr)
 {
 	static_assert(int(Player)		== int(table::Players),		"invalid enum");
 	static_assert(int(Event)		== int(table::Events),		"invalid enum");
@@ -307,7 +306,7 @@ Namebase::insertSite(mstl::string const& name,
 	db::Site const* p = Site::findSite(name);
 
 	if (country != country::Unknown && p && !p->containsCountry(country))
-		p = 0;
+		p = nullptr;
 
 	SiteEntry* entry;
 
@@ -321,7 +320,7 @@ Namebase::insertSite(mstl::string const& name,
 			return static_cast<SiteEntry*>(*i);
 
 		if (m_list.size() >= limit)
-			return 0;
+			return nullptr;
 
 		entry = makeSiteEntry(name, p);
 		entry->m_value = key.value;
@@ -379,7 +378,7 @@ Namebase::insertEvent(	mstl::string const& name,
 			return static_cast<EventEntry*>(*i);
 
 		if (m_list.size() >= limit)
-			return 0;
+			return nullptr;
 
 		entry = makeEventEntry(name);
 		entry->m_value = key.value;
@@ -454,7 +453,7 @@ Namebase::insertPlayer(	mstl::string const& name,
 	{
 		p = Player::findFidePlayer(fideID);
 
-		if (p == 0)
+		if (!p)
 		{
 			p = Player::insertPlayer(fideID, name);
 		}
@@ -476,7 +475,7 @@ Namebase::insertPlayer(	mstl::string const& name,
 		// TODO: strip prefix "Comp " for player search (used by ChessBase)
 		p = Player::findPlayer(name, federation, sex);
 
-		if (p == 0)
+		if (!p)
 		{
 			if (myType == species::Program)
 			{
@@ -535,7 +534,7 @@ Namebase::insertPlayer(	mstl::string const& name,
 		}
 		else
 		{
-			p = 0;
+			p = nullptr;
 		}
 	}
 
@@ -552,7 +551,7 @@ Namebase::insertPlayer(	mstl::string const& name,
 			return static_cast<PlayerEntry*>(*i);
 
 		if (m_list.size() >= limit)
-			return 0;
+			return nullptr;
 
 		entry = makePlayerEntry(name, p);
 		unsigned index = i - m_list.begin();
@@ -622,7 +621,7 @@ Namebase::insert(mstl::string const& name, unsigned id, unsigned limit)
 		return *i;
 
 	if (limit <= m_list.size())
-		return 0;
+		return nullptr;
 
 	Entry* entry = makeEntry(name);
 
@@ -756,7 +755,7 @@ Namebase::findSite(mstl::string const& name, country::Code country) const
 	if (i != m_list.end() && (*i)->frequency() > 0 && *static_cast<SiteEntry const*>(*i) == key)
 		return static_cast<NamebaseSite*>(*i);
 
-	return 0;
+	return nullptr;
 }
 
 
@@ -1060,12 +1059,15 @@ Namebase::rename(NamebaseEntry* entry, mstl::string const& name)
 	M_REQUIRE(entry);
 	M_REQUIRE(sys::utf8::validate(name));
 
-	if (m_stringAllocator2 == 0)
+	if (name == entry->m_name)
+		return;
+
+	if (!m_stringAllocator2)
 		m_stringAllocator2 = new StringAllocator(32768);
 
 	char* s = m_stringAllocator2->alloc(name.size() + 1);
 	::memcpy(s, name.c_str(), name.size() + 1);
-	M_ASSERT(entry->m_name.readonly());
+	M_ASSERT(entry->m_name.empty() || entry->m_name.readonly());
 	entry->m_name.hook(s);
 }
 
@@ -1075,9 +1077,9 @@ Namebase::finishRenaming()
 {
 	mstl::swap(m_stringAllocator2, m_stringAllocator3);
 	delete m_stringAllocator2;
-	m_stringAllocator2 = 0;
+	m_stringAllocator2 = nullptr;
 
-	int (*cmpFunc)(void const*, void const*) = 0; // prevent compiler warning
+	int (*cmpFunc)(void const*, void const*) = nullptr; // prevent compiler warning
 
 	switch (m_type)
 	{
@@ -1088,7 +1090,7 @@ Namebase::finishRenaming()
 		case Round:			cmpFunc = ::compare<NamebaseEntry>; break;
 	}
 
-	::qsort(m_list.begin(), m_list.size(), sizeof(List::value_type), cmpFunc);
+	m_list.qsort(cmpFunc);
 }
 
 // vi:set ts=3 sw=3:

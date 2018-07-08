@@ -460,8 +460,6 @@ proc LanguageChanged {dlg w} {
 proc WriteOptions {chan} {
 	::options::writeList $chan [namespace current]::Position
 }
-
-
 ::options::hookWriter [namespace current]::WriteOptions
 
 } ;# namespace marks

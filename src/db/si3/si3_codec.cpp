@@ -1916,7 +1916,7 @@ Codec::readNamebase(	ByteIStream& bstrm,
 			m_codec->forceValidUtf8(name);
 		}
 
-		if (name.readonly())
+		if (name.empty() || name.readonly())
 		{
 			char* p = base.alloc(name.size());
 			::memcpy(p, name.c_str(), name.size() + 1);

@@ -158,7 +158,6 @@ array set Defaults {
 	crosstableLimit	60
 }
 
-# fonttable: xxsmall xsmall small medium large xlarge xxlarge
 array set Options {
 	debug:log			0
 	debug:html			0
@@ -1538,7 +1537,6 @@ proc WriteOptions {chan} {
 	::options::writeItem $chan [namespace current]::RecentlyUsedScoring
 	::options::writeItem $chan [namespace current]::Options
 }
-
 ::options::hookWriter [namespace current]::WriteOptions
 
 

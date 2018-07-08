@@ -435,7 +435,7 @@
 ::tips::mc::Choice(periodicallyWhenNew)	"Periodisch anzeigen, aber nur neue Tips"
 ::tips::mc::Choice(neverShow)					"Nicht mehr anzeigen"
 
-### twm ################################################################
+### twm - tiled window manager #########################################
 ::twm::mc::Close				"Schliessen"
 ::twm::mc::Undock				"Abkopplen"
 
@@ -446,6 +446,7 @@
 ::application::layout::mc::Rename					"Umbenennen"
 ::application::layout::mc::Delete					"Löschen"
 ::application::layout::mc::Load						"Laden"
+::application::layout::mc::Linked					"Verknüpft mit"
 ::application::layout::mc::CannotOpenFile			"Die Datei '%s' konnte nicht gelesen werden."
 ::application::layout::mc::RestoreToOldLayout	"Das alte Layout wiederherstellen"
 
@@ -455,38 +456,11 @@
 ::application::mc::Board						"&Brett"
 ::application::mc::MainMenu					"&Hauptmenü"
 
-::application::mc::Notebook					"Kartei"
-::application::mc::Multiwindow				"Stapel"
-::application::mc::FoldTitleBar				"Titelleiste eingeklappt"
-::application::mc::FoldAllTitleBars			"Alle Titelleisten einklappen"
-::application::mc::UnfoldAllTitleBars		"Alle Titelleisten ausklappen"
-::application::mc::MoveWindow					"Fenster verschieben"
-::application::mc::StayOnTop					"Stets im Vordergrund"
-::application::mc::HideWhenLeavingTab		"Verstecken beim Verlassen des Reiters"
-::application::mc::SaveLayout					"Layout speichern"
-::application::mc::SaveLayoutAs				"Layout speichern unter %s"
-::application::mc::RenameLayout				"Layout umbenennen"
-::application::mc::LoadLayout					"Layout wiederherstellen"
-::application::mc::NewLayout					"Neues Layout"
-::application::mc::ManageLayouts				"Layouts verwalten"
-::application::mc::ShowAllDockingPoints	"Alle Andockpunkte zeigen"
-::application::mc::DockingArrowSize			"Andockpfeilgröße"
-::application::mc::Windows						"Fenster"
-
-::application::mc::Pane(analysis)			"Analyse"
-::application::mc::Pane(board)				"Brett"
-::application::mc::Pane(editor)				"Notation"
-::application::mc::Pane(tree)					"Struktur"
-::application::mc::Pane(games)				"Partien"
-
 ::application::mc::ChessInfoDatabase		"Schach-Informations-Datenbank"
 ::application::mc::Shutdown					"Schließung..."
 ::application::mc::QuitAnyway					"Trotzdem schliessen?"
 ::application::mc::CancelLogout				"Logout beenden"
 ::application::mc::AbortWriteOperation		"Schreiboperation abbrechen"
-::application::mc::ConfirmOverwrite			"Existierendes Layout '%s' ersetzen?"
-::application::mc::ConfirmDelete				"Wirklich das Layout '%s' löschen?"
-
 ::application::mc::UpdatesAvailable			"Updates verfügbar"
 
 ::application::mc::WriteOperationInProgress "Eine Schreiboperation ist im Fortgang: zur Zeit modfiziert/schreibt Scidb die Datenbank '%s'."
@@ -499,6 +473,43 @@
 ::application::mc::Changed						"Veränderte Partien: %d"
 ::application::mc::Added						"Hinzugefügte Partien: %d"
 ::application::mc::DescriptionHasChanged	"Die Beschreibung wurde verändert"
+
+### application::twm ###################################################
+::application::twm::mc::Notebook					"Kartei"
+::application::twm::mc::Multiwindow				"Stapel"
+::application::twm::mc::FoldTitleBar			"Titelleiste eingeklappt"
+::application::twm::mc::FoldAllTitleBars		"Alle Titelleisten einklappen"
+::application::twm::mc::UnfoldAllTitleBars	"Alle Titelleisten ausklappen"
+::application::twm::mc::MoveWindow				"Fenster verschieben"
+::application::twm::mc::StayOnTop				"Stets im Vordergrund"
+::application::twm::mc::HideWhenLeavingTab	"Verstecken beim Verlassen des Reiters"
+::application::twm::mc::SaveLayout				"Layout speichern"
+::application::twm::mc::SaveLayoutAs			"Layout speichern unter %s"
+::application::twm::mc::RenameLayout			"Layout umbenennen"
+::application::twm::mc::LoadLayout				"Layout wiederherstellen"
+::application::twm::mc::NewLayout				"Neues Layout"
+::application::twm::mc::ManageLayouts			"Layouts verwalten"
+::application::twm::mc::ShowAllDockingPoints	"Alle Andockpunkte zeigen"
+::application::twm::mc::DockingArrowSize		"Andockpfeilgröße"
+::application::twm::mc::LinkLayout				"Layout '%s' verknüpfen"
+::application::twm::mc::UnlinkLayout			"Verknüpfung von '%s' löschen"
+::application::twm::mc::LinkLayoutTip			"Mit Brett-Layout verknüpfen"
+::application::twm::mc::Actual					"aktuell"
+::application::twm::mc::Windows					"Fenster"
+::application::twm::mc::ConfirmDelete			"Wirklich das Layout '%s' löschen?"
+::application::twm::mc::ConfirmOverwrite		"Existierendes Layout '%s' ersetzen?"
+::application::twm::mc::EnterName				"Namen eingeben"
+
+::application::twm::mc::Pane(analysis)			"Analyse"
+::application::twm::mc::Pane(board)				"Brett"
+::application::twm::mc::Pane(editor)			"Notation"
+::application::twm::mc::Pane(tree)				"Struktur"
+::application::twm::mc::Pane(games)				"Partien"
+::application::twm::mc::Pane(player)			"Spieler"
+::application::twm::mc::Pane(event)				"Turniere"
+::application::twm::mc::Pane(annotator)		"Kommentatoren"
+::application::twm::mc::Pane(site)				"Orte"
+::application::twm::mc::Pane(position)			"Startpositionen"
 
 ### application::board #################################################
 ::application::board::mc::ShowCrosstable				"Zeige Turniertabelle zur aktuellen Partie"
@@ -1529,10 +1540,6 @@
 ::playercard::mc::OpenPndCatalog				"Katalog der Deutschen Nationalbibliothek"
 ::playercard::mc::OpenChessgames				"chessgames.com Partiensammlung"
 ::playercard::mc::SeachIn365ChessCom		"Suche in 365Chess.com"
-
-### twm - tiled window manager #########################################
-::twm::mc::Undock	"Abkopplen"
-::twm::mc::Close	"Schliessen"
 
 ### fonts ##############################################################
 ::font::mc::ChessBaseFontsInstalled				"Die ChessBase-Zeichensätze wurden erfolgreich installiert."

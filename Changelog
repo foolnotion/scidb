@@ -1,6 +1,15 @@
 [June 2018] ==================================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #1497)
+------------------------------------------------------------------------------
+* Handling of table options overworked, now should work properly.
+* Layout computation fixed, now it seems to be 100% correct.
+* All tabs (games, player, events, sites, annotators, positions) have
+configurable layouts (TWM), it's possible to link with a specific board
+layout.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #1493)
 ------------------------------------------------------------------------------
 * Scidb now allows to create PGN archives.

@@ -1657,7 +1657,6 @@ proc WriteOptions {chan} {
 	::options::writeItem $chan [namespace current]::Piece
 	::options::writeItem $chan [namespace current]::Layout
 }
-
 ::options::hookWriter [namespace current]::WriteOptions
 
 

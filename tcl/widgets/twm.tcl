@@ -122,16 +122,19 @@ proc twm {path args} {
 	variable ${path}::Vars
 	variable Options
 
-	array set opts {
-		-makepane {}
-		-buildpane {}
-		-workarea {}
-		-resizing {}
-		-borderwidth 0
-		-allowempty 0
-		-disableclose 0
-		-state "normal"
-	}
+	array set opts [list \
+		-makepane {} \
+		-buildpane {} \
+		-workarea {} \
+		-resizing {} \
+		-borderwidth 0 \
+		-allowempty 0 \
+		-disableclose 0 \
+		-state "normal" \
+		-frameborderwidth $Options(frame:borderwidth) \
+		-headerborderwidth $Options(header:borderwidth) \
+		-floatborderwidth $Options(float:borderwidth) \
+	]
 	array set opts $args
 	set Vars(cmd:makepane) $opts(-makepane)
 	set Vars(cmd:buildpane) $opts(-buildpane)
@@ -145,7 +148,11 @@ proc twm {path args} {
 	set Vars(docking:current) ""
 	set Vars(afterid:release) {}
 	set Vars(cross:showall) $Options(cross:showall)
+	set Vars(borderwidth:frame) $opts(-frameborderwidth)
+	set Vars(borderwidth:header) $opts(-headerborderwidth)
+	set Vars(borderwidth:float) $opts(-floatborderwidth)
 
+	catch { font delete ${path}::Vars(header:font) }
 	set Vars(header:font) [font create ${path}::Vars(header:font) \
 		-family [font configure $Options(header:font) -family] \
 		-weight bold \
@@ -205,6 +212,17 @@ proc SetupTheme {twm} {
 	ttk::style layout twm.TButton \
 		{ Button.border -children { Button.padding -children { Button.label } } }
 
+	if {[::scidb::tk::twm exists $twm]} {
+		set background [GetTroughColor]
+		foreach t [$twm toplevels] {
+			foreach w [$t container] {
+				if {[$t ispanedwindow $w]} {
+					$w configure -background $background
+				}
+			}
+		}
+	}
+
 #	set background [ttk::style lookup $::ttk::currentTheme -background]
 #	ttk::style map twm.TNotebook.Tab -background [list active $background selected $background]
 
@@ -222,10 +240,10 @@ proc WidgetProc {twm command args} {
 	switch -- $command {
 		adjacent			{ return [::scidb::tk::twm adjacent $twm {*}$args] }
 		build				{ return [BuildPane $twm {*}$args] }
+		cget				{ return [$twm.__twm_frame__ cget {*}$args] }
 		changeuid		{ return [::scidb::tk::twm changeuid $twm {*}$args] }
 		clone				{ return [::scidb::tk::twm clone $twm {*}$args] }
 		close				{ return [Close $twm {*}$args] }
-		cget				{ return [$twm.__twm_frame__ cget {*}$args] }
 		configure		{ return [$twm.__twm_frame__ configure {*}$args] }
 		container		{ return [::scidb::tk::twm container $twm {*}$args] }
 		deiconify		{ return [Deiconify $twm {*}$args] }
@@ -264,6 +282,7 @@ proc WidgetProc {twm command args} {
 		ispanedwindow	{ return [string match {*Panedwindow} [winfo class {*}$args]] }
 		isroot			{ return [string match $twm {*}$args] }
 		istoplevel		{ return [expr {[::scidb::tk::twm toplevel $twm {*}$args] eq $args}] }
+		isundockable	{ return [::scidb::tk::twm get $twm [::scidb::tk::twm leaf $twm {*}$args] undock 0]}
 		leader			{ return [::scidb::tk::twm leader $twm {*}$args] }
 		leaf				{ return [::scidb::tk::twm leaf $twm {*}$args] }
 		leaves			{ return [::scidb::tk::twm leaves $twm {*}$args] }
@@ -297,12 +316,12 @@ proc WidgetProc {twm command args} {
 		togglebar		{ return [ToggleHeaders $twm {*}$args] }
 		togglenotebook	{ return [::scidb::tk::twm toggle $twm {*}$args] }
 		toplevel			{ return [::scidb::tk::twm toplevel $twm {*}$args] }
+		toplevels		{ return [::scidb::tk::twm toplevels $twm {*}$args] }
 		uid				{ return [::scidb::tk::twm uid $twm {*}$args] }
 		undock			{ return [::scidb::tk::twm undock $twm {*}$args] }
 		unpack			{ return [Unpack $twm {*}$args] }
 		visible			{ return [::scidb::tk::twm visible $twm {*}$args] }
 		workarea			{ return [WorkArea $twm {*}$args] }
-
 		default			{ return -code error "unknown command '$command'" }
 	}
 
@@ -339,20 +358,23 @@ proc DestroyPane {twm pane} {
 
 proc BuildPane {twm frame id width height} {
 	variable ${twm}::Vars
-	variable Options
 
 	set pane $frame
 	if {![$twm ispane $pane]} { set pane [lindex [pack slaves $frame] end] }
-	set bd [expr {-2*$Options(frame:borderwidth)}]
-	incr width $bd
-	incr height $bd
-	$Vars(cmd:buildpane) $twm $pane $id $width $height
+	if {[llength $Vars(cmd:buildpane)]} {
+		set bd [expr {-2*$Vars(borderwidth:frame)}]
+		incr width $bd
+		incr height $bd
+		$Vars(cmd:buildpane) $twm $pane $id $width $height
+	}
 	$frame configure -background [$pane cget -background]
 }
 
 
 proc FrameHeaderSize {twm frame} {
+	variable ${twm}::Vars
 	variable Options
+
 	if {[$twm get! $frame flat 0]} {
 		set size $Options(flathandle:size)
 	} else {
@@ -361,7 +383,7 @@ proc FrameHeaderSize {twm frame} {
 		incr size [font metrics [ttk::style lookup twm.TLabel -font] -linespace]
 		incr size [expr {$size % 2}] ;# we have even sized headers
 	}
-	incr size [expr {2*$Options(header:borderwidth)}]
+	incr size [expr {2*$Vars(borderwidth:header)}]
 #	if {[set ht [winfo height $frame.__header__]] > 1 && $ht != $size} {
 #		puts stderr "FrameHeaderSize: computed=$size, but measured=$ht"
 #	}
@@ -375,7 +397,7 @@ proc NotebookHeaderSize {twm {nb}} {
 		puts stderr "\[ttk::style lookup TNotebook.Tab -padding\] returns empty list"
 		set padding {2 2}
 	}
-	set size 3 ;# borderwidth=2 + one overlapping pixel
+	set size [expr {2*[ttk::style lookup TNotebook -borderwidth] + 1}] ;# plus one overlapping pixel
 	switch [llength $padding] {
 		2 { incr size [expr {2*[lindex $padding 1]}] }
 		3 { incr size [lindex $padding 1] }
@@ -392,6 +414,7 @@ proc NotebookHeaderSize {twm {nb}} {
 proc MakeMultiwindow {twm args} {
 	variable ${twm}::Counter
 
+	# NOTE: Instead of tk::multiwindow another choice may be ttk::scrollbar w/o tab handles.
 	set w [tk::multiwindow $twm.__multiwindow__[incr Counter(multiwindow)] -takefocus 0]
 	if {[llength $args] == 1} { set args [lindex $args 0] }
 	foreach {name value} $args {
@@ -421,7 +444,7 @@ proc MakePanedWindow {twm args} {
 	variable Options
 
 	set w [tk::panedwindow $twm.__panedwindow__[incr Counter(panedwindow)]]
-	$w configure -sashwidth $Options(sash:size)
+	$w configure -sashwidth $Options(sash:size) -background [GetTroughColor]
 	if {[llength $args] == 1} { set args [lindex $args 0] }
 	foreach {name value} $args {
 		catch { $w configure $name $value }
@@ -432,10 +455,9 @@ proc MakePanedWindow {twm args} {
 
 proc MakePane {twm id} {
 	variable ${twm}::Vars
-	variable Options
 
 	lassign [$Vars(cmd:makepane) $twm $twm pane $id] w name priority
-	$w configure -borderwidth $Options(frame:borderwidth) -relief raised
+	$w configure -borderwidth $Vars(borderwidth:frame) -relief raised
 	$twm set $w name $name priority $priority
 	return $w
 }
@@ -457,7 +479,7 @@ proc MakeFrame2 {twm frame id} {
 	if {[$twm isframe $frame]} {
 		lassign [$Vars(cmd:makepane) $twm $frame frame $id] \
 			child name priority closable undockable moveable
-		$child configure -borderwidth $Options(frame:borderwidth) -relief raised
+		$child configure -borderwidth $Vars(borderwidth:frame) -relief raised
 	} elseif {[$twm iscontainer $id]} {
 		set child $id
 		set leader [$twm leader $id]
@@ -486,7 +508,7 @@ proc MakeFrame2 {twm frame id} {
 	}
 
 	set hdr [tk::frame $frame.__header__ \
-		-borderwidth $Options(header:borderwidth) \
+		-borderwidth $Vars(borderwidth:header) \
 		-relief raised \
 		-takefocus 0 \
 	]
@@ -549,14 +571,26 @@ proc MakeFrame2 {twm frame id} {
 }
 
 
+proc GetTroughColor {} {
+	variable Scale {}
+	if {[catch { ::ttk::style lookup $::ttk::currentTheme -troughcolor } result]} {
+		if {[llength $Scale] == 0} {
+			set Scale [ttk::scale .__hopefully_unique_widget_id__[clock milliseconds]]
+		}
+		set result [$Scale cget -troughcolor]
+	}
+	return $result
+}
+
+
 proc ShowHeaderButtons {twm frame} {
 	variable ${twm}::Vars
 
 	set hdr $frame.__header__
 
 	if {[$twm isframe $frame] && [llength [$twm panes $twm]] == 1} {
-		grid forget $hdr.close
-		grid forget $hdr.undock
+		catch { grid forget $hdr.close }
+		catch { grid forget $hdr.undock }
 	} else {
 		set undockable [$twm get $frame undock]
 		set closable   [$twm get $frame close]
@@ -861,13 +895,13 @@ proc UpdateHeader {twm frame panes} {
 
 
 proc ConfigureLabelBar {source twm frame width args} {
-	variable Options
+	variable ${twm}::Vars
 
 	if {![winfo exists $frame]} { return }
 
 	set hdr $frame.__header__
 	if {$hdr ni [pack slaves $frame]} { return }
-	set bd [expr {2*$Options(header:borderwidth)}]
+	set bd [expr {2*$Vars(borderwidth:header)}]
 	set see [expr {$width < 0}]
 	set force [expr {$width <= 0}]
 	set current [expr {$width >= 0}]
@@ -915,7 +949,7 @@ proc ConfigureLabelBar {source twm frame width args} {
 
 
 proc PlaceLabelBar {twm frame incr} {
-	variable Options
+	variable ${twm}::Vars
 
 	if {[$twm get! $frame flat 0]} { return }
 
@@ -923,7 +957,7 @@ proc PlaceLabelBar {twm frame incr} {
 	set maxoffset [$twm get $frame maxoffset 0]
 	set labels [$twm get $frame labels]
 	set width [$twm get $frame labelbarwidth]
-	set bd [expr {2*$Options(header:borderwidth)}]
+	set bd [expr {2*$Vars(borderwidth:header)}]
 	set hdr $frame.__header__
 
 	if {$incr eq "setup"} {
@@ -1149,7 +1183,6 @@ proc DoHeaderMotion {twm frame x y} {
 		WithdrawHiliteFrame $twm
 		wm geometry $frame +[expr {$x - $Vars(delta:x)}]+[expr {$y - $Vars(delta:y)}]
 	} elseif {abs($x - $Vars(init:x)) >= 5 || abs($y - $Vars(init:y)) >= 5} {
-		variable Options
 		variable Frozen
 
 		set Frozen $twm
@@ -1168,8 +1201,8 @@ proc DoHeaderMotion {twm frame x y} {
 		$frame configure -width $wd -height $ht
 		ttk::releaseGrab $frame
 		$twm undock -temporary $frame
-		$child configure -borderwidth $Options(float:borderwidth)
-		set bd [expr {$Options(float:borderwidth) - $bd}]
+		$child configure -borderwidth $Vars(borderwidth:float)
+		set bd [expr {$Vars(borderwidth:float) - $bd}]
 		incr wd $bd; incr ht $bd
 		wm geometry $frame ${wd}x${ht}+${x}+${y}
 		wm overrideredirect $frame $Options(motion:overrideredirect)
@@ -1967,7 +2000,6 @@ proc Undock {twm frame} {
 proc Dock {twm toplevel} {
 	variable ${twm}::Vars
 	variable ${twm}::Update
-	variable Options
 	variable DirMap
 	global errorInfo errorCode
 
@@ -2001,7 +2033,7 @@ proc Dock {twm toplevel} {
 
 	if {[llength [set slaves [pack slaves $frame]]] > 0} {
 		set bd 0
-		if {[$twm isframe $frame] || [$twm ispane $frame]} { set bd $Options(frame:borderwidth) }
+		if {[$twm isframe $frame] || [$twm ispane $frame]} { set bd $Vars(borderwidth:frame) }
 		[lindex $slaves end] configure -borderwidth $bd
 	}
 
@@ -2094,6 +2126,7 @@ proc Pack {twm parent child opts} {
 		*Panedwindow {
 			array set args $opts
 			set options {}
+			set stretch always
 
 			if {[info exists args(-after)]} {
 				lappend options -after $args(-after)
@@ -2107,13 +2140,15 @@ proc Pack {twm parent child opts} {
 				if {[info exists args(-minwidth)]} { lappend options -minsize $args(-minwidth) }
 				if {[info exists args(-maxwidth)]} { lappend options -maxsize $args(-minwidth) }
 				if {[info exists args(-width)]}    { lappend options -width $args(-width) }
+				if {[info exists args(-expand)] && $args(-expand) eq "y"} { set stretch never }
 			} else {
 				if {[info exists args(-minheight)]} { lappend options -minsize $args(-minheight) }
 				if {[info exists args(-maxheight)]} { lappend options -maxsize $args(-minheight) }
 				if {[info exists args(-height)]}    { lappend options -height $args(-height) }
+				if {[info exists args(-expand)] && $args(-expand) eq "x"} { set stretch never }
 			}
 
-			$parent add $child -stretch always {*}$options
+			$parent add $child -stretch $stretch {*}$options
 		}
 
 		*Notebook {

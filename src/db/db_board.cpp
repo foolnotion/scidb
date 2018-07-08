@@ -7216,7 +7216,9 @@ mstl::string&
 Board::toValidFen(mstl::string& result, variant::Type variant, Format format) const
 {
 	Board board(*this);
-	board.fixBadCastlingRights();
+
+	if (board.isStandardPosition(variant))
+		board.fixBadCastlingRights();
 	return board.toFen(result, variant, format);
 }
 

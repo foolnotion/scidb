@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2010-2013 Gregor Cramer
+# Copyright: (C) 2010-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -183,6 +183,7 @@ proc build {parent width height} {
 		-background $bg \
 		-pady {1 0} \
 		-highlightcolor $Options(-emphasize) \
+		-id db:tree \
 		;
 	::widget::bindMouseWheel [::table::tablePath $tb] 1
 	::table::setColumnBackground $tb tail [::colors::lookup $Options(-stripes)] $bg
@@ -377,6 +378,7 @@ proc build {parent width height} {
 	bind $tb <<TableScrollbar>>	 [namespace code [list Scrollbar $tb %d]]
 	bind $tb <<TableVisit>>			 [namespace code [list VisitItem $tb %d]]
 	bind $tb <<TableFill>>			 [namespace code [list FillTable $tb]]
+	bind $tb <<TableRebuild>>      [namespace code [list RebuildTable $tb]]
 	bind $tb <<TableMenu>>			 [namespace code [list PopupMenu $tb %X %Y]]
 	bind $tb <<LanguageChanged>>	 [namespace code [list FillTable $tb]]
 	bind $tb <<LanguageChanged>>	+[namespace code [list RefreshHeader $tb]]
@@ -1690,17 +1692,31 @@ proc PopupMenu {table x y} {
 # }
 
 
-proc WriteOptions {chan} {
-	variable Vars
+proc RebuildTable {table} {
+	variable Bars
 
-	::options::writeItem $chan [namespace current]::Options
+	RefreshCurrentItem $table
 
-	puts $chan "::table::setOptions $Vars(table) {"
-	::options::writeArray $chan [::table::getOptions $Vars(table)]
-	puts $chan "}"
+	foreach key [array names Bars] {
+		image delete $Bars($key)
+	}
+	array unset Bars
+
+	RefreshHeader table
+	FillTable $table
+	after idle [namespace code RefreshRatingLabel]
 }
 
-::options::hookWriter [namespace current]::WriteOptions
+
+proc WriteTableOptions {chan {id "board"}} {
+	if {$id ne "board"} { return }
+	# it's required to write options before writing tables
+	::options::writeItem $chan [namespace current]::Options
+	puts $chan "::table::setOptions db:tree {"
+	::options::writeArray $chan [::table::getOptions db:tree]
+	puts $chan "}"
+}
+::options::hookTableWriter [namespace current]::WriteTableOptions
 
 } ;# namespace tree
 } ;# namespace application

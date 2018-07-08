@@ -434,7 +434,7 @@
 ::tips::mc::Choice(periodicallyWhenNew)	"Show periodically, but only new tips"
 ::tips::mc::Choice(neverShow)					"Don't show anymore"
 
-### twm ################################################################
+### twm - tiled window manager #########################################
 ::twm::mc::Close				"Close"
 ::twm::mc::Undock				"Undock"
 
@@ -445,6 +445,7 @@
 ::application::layout::mc::Rename					"Rename"
 ::application::layout::mc::Delete					"Delete"
 ::application::layout::mc::Load						"Load"
+::application::layout::mc::Linked					"Linked with"
 ::application::layout::mc::CannotOpenFile			"Cannot read file '%s'."
 ::application::layout::mc::RestoreToOldLayout	"Restore to old layout"
 
@@ -454,38 +455,11 @@
 ::application::mc::Board						"&Board"
 ::application::mc::MainMenu					"&Main Menu"
 
-::application::mc::Notebook					"Notebook"
-::application::mc::Multiwindow				"Stack"
-::application::mc::FoldTitleBar				"Fold Titlebar"
-::application::mc::FoldAllTitleBars			"Fold all Titlebars"
-::application::mc::UnfoldAllTitleBars		"Unfold all Titlebars"
-::application::mc::MoveWindow					"Move Window"
-::application::mc::StayOnTop					"Stay on Top"
-::application::mc::HideWhenLeavingTab		"Hide When Leaving Tab"
-::application::mc::SaveLayout					"Save Layout"
-::application::mc::SaveLayoutAs				"Save Layout as %s"
-::application::mc::RenameLayout				"Rename Layout"
-::application::mc::LoadLayout					"Load Layout"
-::application::mc::NewLayout					"New Layout"
-::application::mc::ManageLayouts				"Manage Layouts"
-::application::mc::ShowAllDockingPoints	"Show all Docking Points"
-::application::mc::DockingArrowSize			"Docking Arrow Size"
-::application::mc::Windows						"Windows"
-
-::application::mc::Pane(analysis)			"Analysis"
-::application::mc::Pane(board)				"Board"
-::application::mc::Pane(editor)				"Notation"
-::application::mc::Pane(tree)					"Tree"
-::application::mc::Pane(games)				"Games"
-
 ::application::mc::ChessInfoDatabase		"Chess Information Data Base"
 ::application::mc::Shutdown					"Shutdown..."
 ::application::mc::QuitAnyway					"Quit anyway?"
 ::application::mc::CancelLogout				"Cancel Logout"
 ::application::mc::AbortWriteOperation		"Abort write operation"
-::application::mc::ConfirmOverwrite			"Overwrite existing layout '%s'?"
-::application::mc::ConfirmDelete				"Really delete layout '%s'?"
-
 ::application::mc::UpdatesAvailable			"Updates available"
 
 ::application::mc::WriteOperationInProgress "Write operation in progress: currently Scidb is modifying/writing database '%s'."
@@ -498,6 +472,43 @@
 ::application::mc::Changed						"Games changed: %d"
 ::application::mc::Added						"Games added: %d"
 ::application::mc::DescriptionHasChanged	"Description has changed"
+
+### application::twm ###################################################
+::application::twm::mc::Notebook					"Notebook"
+::application::twm::mc::Multiwindow				"Stack"
+::application::twm::mc::FoldTitleBar			"Fold Titlebar"
+::application::twm::mc::FoldAllTitleBars		"Fold all Titlebars"
+::application::twm::mc::UnfoldAllTitleBars	"Unfold all Titlebars"
+::application::twm::mc::MoveWindow				"Move Window"
+::application::twm::mc::StayOnTop				"Stay on Top"
+::application::twm::mc::HideWhenLeavingTab	"Hide When Leaving Tab"
+::application::twm::mc::SaveLayout				"Save Layout"
+::application::twm::mc::SaveLayoutAs			"Save Layout as %s"
+::application::twm::mc::RenameLayout			"Rename Layout"
+::application::twm::mc::LoadLayout				"Load Layout"
+::application::twm::mc::NewLayout				"New Layout"
+::application::twm::mc::ManageLayouts			"Manage Layouts"
+::application::twm::mc::ShowAllDockingPoints	"Show all Docking Points"
+::application::twm::mc::DockingArrowSize		"Docking Arrow Size"
+::application::twm::mc::LinkLayout				"Link Layout '%s'"
+::application::twm::mc::UnlinkLayout			"Unlink Layout '%s'"
+::application::twm::mc::LinkLayoutTip			"Link With Board Layout"
+::application::twm::mc::Actual					"current"
+::application::twm::mc::Windows					"Windows"
+::application::twm::mc::ConfirmDelete			"Really delete layout '%s'?"
+::application::twm::mc::ConfirmOverwrite		"Overwrite existing layout '%s'?"
+::application::twm::mc::EnterName				"Enter Name"
+
+::application::twm::mc::Pane(analysis)			"Analysis"
+::application::twm::mc::Pane(board)				"Board"
+::application::twm::mc::Pane(editor)			"Notation"
+::application::twm::mc::Pane(tree)				"Tree"
+::application::twm::mc::Pane(games)				"Games"
+::application::twm::mc::Pane(player)			"Players"
+::application::twm::mc::Pane(event)				"Events"
+::application::twm::mc::Pane(annotator)		"Annotators"
+::application::twm::mc::Pane(site)				"Sites"
+::application::twm::mc::Pane(position)			"Start Positions"
 
 ### application::board #################################################
 ::application::board::mc::ShowCrosstable				"Show tournament table for this game"
@@ -1528,10 +1539,6 @@
 ::playercard::mc::OpenPndCatalog				"Open catalog of Deutsche Nationalbibliothek"
 ::playercard::mc::OpenChessgames				"chessgames.com game collection"
 ::playercard::mc::SeachIn365ChessCom		"Search in 365Chess.com"
-
-### twm - tiled window manager #########################################
-::twm::mc::Undock	"Undock"
-::twm::mc::Close	"Close"
 
 ### fonts ##############################################################
 ::font::mc::ChessBaseFontsInstalled				"ChessBase fonts successfully installed."

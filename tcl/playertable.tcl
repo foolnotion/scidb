@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2010-2013 Gregor Cramer
+# Copyright: (C) 2010-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -106,36 +106,42 @@ array set Defaults {
 	rating2:type		DWZ
 }
 
-array set Options {}
 variable History {}
 
 
 proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	variable ::gametable::ratings
 	variable Columns
-	variable Options
 	variable Defaults
 	variable columns
 
-	namespace eval [namespace current]::$path {}
+	namespace eval $path {}
 	variable ${path}::Vars
-
-	array set options [array get Defaults]
-	array set options [array get Options]
-	array set Options [array get options]
-	unset options
-
-	set mc::F_Rating1 $Options(rating1:type)
-	set mc::F_Rating2 $Options(rating2:type)
-	set mc::F_FederationId [set mc::F_${Options(federation)}ID]
-
-	RefreshHeader 1
-	RefreshHeader 2
+	variable ${path}::Options
 
 	array set Vars {
 		columns		{}
 		selectcmd	{}
 	}
+
+	set options(-usefind) 0
+	array set options $args
+	foreach opt {id selectcmd usefind} {
+		if {[info exists options(-$opt)]} {
+			set Vars($opt) $options(-$opt)
+			unset options(-$opt)
+		}
+	}
+	set args [array get options]
+	lappend args -popupcmd [namespace code PopupMenu]
+	lappend args -id $Vars(id)
+
+	array set Options [array get Defaults]
+	::scrolledtable::bindOptions $Vars(id) [namespace current]::${path}::Options [array names Defaults]
+	set mc::F_Rating1 $Options(rating1:type)
+	set mc::F_Rating2 $Options(rating2:type)
+	set mc::F_FederationId [set mc::F_${Options(federation)}ID]
+	RefreshHeaders $path
 
 	if {[llength $visibleColumns] == 0} { set visibleColumns $columns }
 
@@ -170,7 +176,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 					lappend menu [list radiobutton \
 						-command [namespace code [list Refresh $path]] \
 						-labelvar ::gametable::mc::$labelvar \
-						-variable [namespace current]::Options(country-code) \
+						-variable [namespace current]::${path}::Options(country-code) \
 						-value $value \
 					]
 				}
@@ -182,7 +188,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 					lappend menu [list radiobutton \
 						-command [namespace code [list RefreshFederation $path]] \
 						-label [set mc::F_${value}ID] \
-						-variable [namespace current]::Options(federation) \
+						-variable [namespace current]::${path}::Options(federation) \
 						-value $value \
 					]
 				}
@@ -195,7 +201,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 					lappend menu [list radiobutton \
 						-command [namespace code [list RefreshRatings $path $number]] \
 						-label $ratType \
-						-variable [namespace current]::Options($id:type) \
+						-variable [namespace current]::${path}::Options($id:type) \
 						-value $ratType \
 					]
 				}
@@ -204,7 +210,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 					lappend menu [list radiobutton \
 						-command [namespace code [list Refresh $path]] \
 						-labelvar [namespace current]::mc::$labelvar \
-						-variable [namespace current]::Options($id:which) \
+						-variable [namespace current]::${path}::Options($id:which) \
 						-value $value \
 					]
 				}
@@ -215,7 +221,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 				lappend menu [list checkbutton \
 					-command [namespace code [list Refresh $path]] \
 					-labelvar ::gametable::mc::ExcludeElo \
-					-variable [namespace current]::Options(exclude-elo) \
+					-variable [namespace current]::${path}::Options(exclude-elo) \
 				]
 				lappend menu { separator }
 			}
@@ -224,7 +230,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 				lappend menu [list checkbutton \
 					-command [namespace code [list Refresh $path]] \
 					-labelvar ::gametable::mc::IncludePlayerType \
-					-variable [namespace current]::Options(include-type) \
+					-variable [namespace current]::${path}::Options(include-type) \
 				]
 				lappend menu { separator }
 			}
@@ -264,18 +270,9 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 		}
 	}
 
-	set options(-usefind) 0
-	array set options $args
-	set useFind $options(-usefind)
-	unset options(-usefind)
-	if {[info exists options(-selectcmd)]} {
-		set Vars(selectcmd) $options(-selectcmd)
-		unset options(-selectcmd)
+	if {![winfo exists $path]} {
+		ttk::frame $path -takefocus 0 -borderwidth 0
 	}
-	set args [array get options]
-	lappend args -popupcmd [namespace code PopupMenu]
-
-	ttk::frame $path -takefocus 0 -borderwidth 0
 	set table $path.table
 	set Vars(table) [::scrolledtable::build $table $columns {*}$args]
 	pack $table -fill both -expand yes
@@ -283,7 +280,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	::bind $table <<TableFill>>			[namespace code [list TableFill $path %d]]
 	::bind $table <<TableSelected>>		[namespace code [list TableSelected $path %d]]
 	::bind $table <<TableVisit>>			[namespace code [list TableVisit $path %d]]
-	::bind $table <<LanguageChanged>>	[namespace code RefreshHeaders]
+	::bind $table <<LanguageChanged>>	[namespace code [list RefreshHeaders $path]]
 
 	set Vars(viewcmd) $getViewCmd
 
@@ -295,7 +292,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 		-specialfont [list [list $::font::figurine(text:normal) 9812 9823]] \
 		;
 
-	if {$useFind} {
+	if {$Vars(usefind)} {
 		set tbFind [::toolbar::toolbar $path \
 			-id playertable-find \
 			-hide 1 \
@@ -327,7 +324,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 		]
 		set Vars(button:player-base) [::toolbar::add $tbOptions checkbutton \
 			-image $::icon::toolbarDatabase \
-			-variable [namespace current]::Options(use-player-base) \
+			-variable [namespace current]::${path}::Options(use-player-base) \
 			-tooltipvar [namespace current]::mc::EnablePlayerBase \
 			-command [namespace code [list Refresh $path]] \
 		]
@@ -413,16 +410,6 @@ proc selectedPlayer {path base variant} {
 }
 
 
-proc getOptions {path} {
-	return [::scrolledtable::getOptions $path.table]
-}
-
-
-proc setOptions {path options} {
-	::scrolledtable::setOptions $path.table $options
-}
-
-
 proc scroll {path position} {
 	::scrolledtable::scroll $path.table $position
 }
@@ -474,7 +461,7 @@ proc see {path position} {
 
 
 proc popupMenu {menu base variant info {playerCard {}}} {
-	variable Options
+	variable ${path}::Options
 
 	set parent [winfo toplevel $menu]
 
@@ -509,8 +496,8 @@ proc popupMenu {menu base variant info {playerCard {}}} {
 }
 
 
-proc RefreshHeader {number} {
-	variable Options
+proc RefreshHeader {path number} {
+	variable ${path}::Options
 
 	set tip $mc::TooltipRating
 	set mc::F_Rating$number $Options(rating$number:type)
@@ -518,20 +505,20 @@ proc RefreshHeader {number} {
 }
 
 
-proc RefreshHeaders {} {
-	RefreshHeader 1
-	RefreshHeader 2
+proc RefreshHeaders {path} {
+	RefreshHeader $path 1
+	RefreshHeader $path 2
 }
 
 
 proc RefreshRatings {path number} {
-	RefreshHeader $number
+	RefreshHeader $path $number
 	::scrolledtable::refresh $path.table
 }
 
 
 proc RefreshFederation {path} {
-	variable Options
+	variable ${path}::Options
 
 	set mc::F_FederationId [set mc::F_${Options(federation)}ID]
 	::scrolledtable::refresh $path.table
@@ -548,7 +535,7 @@ proc Refresh {path} {
 
 proc SetupPlayerBaseButton {path} {
 	variable ${path}::Vars
-	variable Options
+	variable ${path}::Options
 
 	if {$Options(use-player-base)} {
 		set var [namespace current]::mc::DisablePlayerBase
@@ -583,7 +570,7 @@ proc view {path} {
 proc TableFill {path args} {
 	variable icon::12x12::check
 	variable ${path}::Vars
-	variable Options
+	variable ${path}::Options
 
 	lassign [lindex $args 0] table base variant start first last columns
 
@@ -715,7 +702,7 @@ proc TableFill {path args} {
 
 proc TableVisit {path data} {
 	variable ${path}::Vars
-	variable Options
+	variable ${path}::Options
 
 	lassign $data base variant mode id row
 	if {[string length $base] == 0} { return }
@@ -766,7 +753,7 @@ proc TableVisit {path data} {
 
 proc SortColumn {path id dir} {
 	variable ${path}::Vars
-	variable Options
+	variable ${path}::Options
 
 	::widget::busyCursor on
 	set base [::scrolledtable::base $path.table]
@@ -844,7 +831,6 @@ proc HideInfo {path} {
 proc PopupMenu {table menu base variant index} {
 	set path [winfo parent $table]
 	variable ${path}::Vars
-	variable Options
 
 	if {![string is digit $index]} { return }
 
@@ -877,9 +863,7 @@ proc PopupMenu {table menu base variant index} {
 
 proc WriteOptions {chan} {
 	::options::writeList $chan [namespace current]::History
-	::options::writeItem $chan [namespace current]::Options
 }
-
 ::options::hookWriter [namespace current]::WriteOptions
 
 

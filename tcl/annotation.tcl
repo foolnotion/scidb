@@ -1017,8 +1017,6 @@ proc Focus {dlg mode} {
 proc WriteOptions {chan} {
 	::options::writeList $chan [namespace current]::Position
 }
-
-
 ::options::hookWriter [namespace current]::WriteOptions
 
 } ;# namespace annotation

@@ -3125,7 +3125,6 @@ proc WriteOptions {chan} {
 	options::writeItem $chan [namespace current]::History
 	options::writeItem $chan [namespace current]::Selection
 }
-
 ::options::hookWriter [namespace current]::WriteOptions
 
 

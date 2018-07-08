@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2012-2013 Gregor Cramer
+# Copyright: (C) 2012-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -35,66 +35,53 @@ array set Defaults {
 	sort:events	{}
 }
 
+array set Prios { site 200 event 100 }
+
+array set FrameOptions {
+	site  { -width 300 -height 640 -minwidth 200 -minheight 100 -expand both }
+	event { -width 700 -height 640 -minwidth 200 -minheight 100 -expand both }
+}
+
+variable Layout {
+	root { -shrink none -grow none } {
+		panedwindow { -orient horz } {
+			frame site %site%
+			frame event %event%
+		}
+	}
+}
+
 variable Tables {}
 
 
 proc build {parent} {
 	variable Tables
+	variable Layout
+	variable FrameOptions
 
-	set top [tk::panedwindow $parent.top \
-		-orient horizontal \
-		-opaqueresize true \
-		-borderwidth 0]
-	pack $top -fill both -expand yes
-	lappend Tables $top
-
-	set lt ${top}.sites
-	set rt ${top}.events
-
-	namespace eval [namespace current]::$top {}
-	variable ${top}::Vars
+	set twm $parent.twm
+	namespace eval [namespace current]::$twm {}
+	variable ${twm}::Vars
 
 	set Vars(after:sites) {}
 	set Vars(after:events) {}
 	set Vars(active) 0
 	set Vars(base) ""
 
-	::sitetable::build $lt [namespace code [list View $top]] {} \
-		-selectcmd [list [namespace current]::sites::Search $top] \
-		-usefind 1 \
+	::application::twm::make $twm site \
+		[namespace current]::MakeFrame \
+		[namespace current]::BuildFrame \
+		[array get FrameOptions] \
+		$Layout \
 		;
-
-	set columns {event eventType eventDate eventMode timeMode}
-	::eventtable::build $rt [namespace code [list View $top]] $columns \
-		-selectcmd [namespace code [list SelectEvent $top]] \
-		;
-
-	::scidb::db::subscribe siteList \
-		[namespace current]::sites::Update \
-		[namespace current]::Close \
-		$top \
-		;
-	::scidb::db::subscribe gameList \
-		[namespace current]::games::Update \
-		$top \
-		;
-	::scidb::db::subscribe eventList \
-		[namespace current]::events::Update \
-		$top \
-		;
-
-	bind $rt <<TableMinSize>> [namespace code [list TableMinSize $rt %d]]
-	bind $lt <<TableMinSize>> [namespace code [list TableMinSize $lt %d]]
-
-	$top add $lt -sticky nsew -stretch middle -width 320
-	$top add $rt -sticky nsew -stretch always
-
-	return $top
+	::application::twm::load $twm
+	lappend Tables $twm
+	return $twm
 }
 
 
 proc activate {w flag} {
-	set path $w.top
+	set path $w.twm
 	variable ${path}::Vars
 
 	set Vars(active) $flag
@@ -104,18 +91,24 @@ proc activate {w flag} {
 	sites::DoUpdate $path $base $variant
 
 	if {[winfo toplevel $w] ne $w} {
-		::toolbar::activate $path.sites $flag
+		::toolbar::activate $Vars(frame:site) $flag
 	}
 }
 
 
 proc overhang {parent} {
-	return [::sitetable::overhang $parent.top.sites]
+	set path $parent.twm
+	variable ${path}::Vars
+
+	return [::sitetable::overhang $Vars(frame:site)]
 }
 
 
 proc linespace {parent} {
-	return [::sitetable::linespace $parent.top.sites]
+	set path $parent.twm
+	variable ${path}::Vars
+
+	return [::sitetable::linespace $Vars(frame:site)]
 }
 
 
@@ -125,7 +118,7 @@ proc setActive {flag} {
 
 
 proc select {parent base variant index} {
-	set path $parent.top
+	set path $parent.twm
 	variable ${path}::Vars
 
 	if {$Vars(active)} {
@@ -136,14 +129,52 @@ proc select {parent base variant index} {
 }
 
 
+proc MakeFrame {twm parent type uid} {
+	variable Prios
+
+	set frame [tk::frame $parent.$uid -borderwidth 0 -takefocus 1]
+	set nameVar ::application::twm::mc::Pane($uid)
+	return [list $frame $nameVar $Prios($uid) [expr {$uid ne "site"}] yes yes]
+}
+
+
+proc BuildFrame {twm frame uid width height} {
+	variable ${twm}::Vars
+	set Vars(frame:$uid) $frame
+
+	switch $uid {
+		site {
+			::sitetable::build $frame [namespace code [list View $twm]] {} \
+				-selectcmd [list [namespace current]::sites::Search $twm] \
+				-id db:sites:site \
+				-usefind 1 \
+				;
+			::scidb::db::subscribe siteList \
+				[namespace current]::sites::Update \
+				[namespace current]::Close \
+				$twm \
+				;
+		}
+		event {
+			set columns {event eventType eventDate eventMode timeMode}
+			::eventtable::build $frame [namespace code [list View $twm]] $columns \
+				-selectcmd [namespace code [list SelectEvent $twm]] \
+				-id db:sites:event \
+				;
+			::scidb::db::subscribe eventList [namespace current]::events::Update $twm
+		}
+	}
+}
+
+
 proc Select {path base variant index} {
 	variable ${path}::Vars
 
 	set position [::scidb::db::get lookupSite $index $Vars($base:$variant:view) $base $variant]
-	::sitetable::see $path.sites $position
+	::sitetable::see $Vars(frame:site) $position
 	update idletasks
-	set row [::qsitetable::indexToRow $path.sites $position]
-	::sitetable::setSelection $path.sites $row
+	set row [::qsitetable::indexToRow $Vars(frame:site) $position]
+	::sitetable::setSelection $Vars(frame:site) $row
 }
 
 
@@ -159,12 +190,12 @@ proc Close {path base variant} {
 	variable ${path}::Vars
 
 	array unset Vars $base:$variant:*
-	::sitetable::forget $path.sites $base $variant
-	::eventtable::forget $path.events $base $variant
+	::sitetable::forget $Vars(frame:site) $base $variant
+	::eventtable::forget $Vars(frame:event) $base $variant
 
 	if {$Vars(base) eq "$base:$variant"} {
-		::sitetable::clear $path.sites
-		::eventtable::clear $path.events
+		::sitetable::clear $Vars(frame:site)
+		::eventtable::clear $Vars(frame:event)
 	}
 }
 
@@ -177,7 +208,8 @@ proc InitBase {path base variant} {
 
 	if {![info exists Vars($base:$variant:view)]} {
 		set Vars($base:$variant:initializing) 1
-		set Vars($base:$variant:view) [::scidb::view::new $base $variant slave master slave slave slave slave]
+		set Vars($base:$variant:view) \
+			[::scidb::view::new $base $variant slave master slave slave slave slave]
 		set Vars($base:$variant:update:sites) 1
 		set Vars($base:$variant:sort:sites) $Defaults(sort:sites)
 		set Vars($base:$variant:sort:events) $Defaults(sort:events)
@@ -186,8 +218,8 @@ proc InitBase {path base variant} {
 		set Vars($base:$variant:events:lastId) -1
 		set Vars($base:$variant:select) -1
 		set Vars($base:$variant:selected:key) {}
-		::sitetable::init $path.sites $base $variant
-		::eventtable::init $path.events $base $variant
+		::sitetable::init $Vars(frame:site) $base $variant
+		::eventtable::init $Vars(frame:event) $base $variant
 		::scidb::view::search $base $variant $Vars($base:$variant:view) null events
 	}
 }
@@ -199,7 +231,7 @@ proc TableMinSize {pane minsize} {
 
 
 proc SelectEvent {path base variant view} {
-	set index [::eventtable::selectedEvent $path.events $base $variant]
+	set index [::eventtable::selectedEvent $Vars(frame:event) $base $variant]
 	[namespace parent]::selectEvent $base $variant $index
 }
 
@@ -209,9 +241,9 @@ namespace eval sites {
 proc Reset {path base variant} {
 	variable [namespace parent]::${path}::Vars
 
-	::eventtable::clear $path.events
-	::sitetable::select $path.sites none
-	::sitetable::activate $path.events none
+	::eventtable::clear $Vars(frame:event)
+	::sitetable::select $Vars(frame:site) none
+	::sitetable::activate $Vars(frame:event) none
 	set Vars($base:$variant:selected:key) {}
 }
 
@@ -220,12 +252,12 @@ proc Search {path base variant view {selected -1}} {
 	variable [namespace parent]::${path}::Vars
 
 	::widget::busyCursor on
-	::eventtable::activate $path.events none
-	::eventtable::select $path.events none
+	::eventtable::activate $Vars(frame:event) none
+	::eventtable::select $Vars(frame:event) none
 	set index -1
 
 	if {$selected == -1} {
-		set selected [::sitetable::selectedSite $path.sites $base $variant]
+		set selected [::sitetable::selectedSite $Vars(frame:site) $base $variant]
 		if {$selected >= 0} {
 			set index [::scidb::db::get siteIndex $selected $view $base $variant]
 			set Vars($base:$variant:selected:key) [scidb::db::get siteKey $base $variant site $index]
@@ -235,7 +267,7 @@ proc Search {path base variant view {selected -1}} {
 	if {$selected >= 0} {
 		if {$index == -1} { set index [::scidb::db::get siteIndex $selected $view $base $variant] }
 		::scidb::view::search $base $variant $view null events [list site $index]
-		::eventtable::scroll $path.events home
+		::eventtable::scroll $Vars(frame:event) home
 	} else {
 		Reset $path $base $variant
 	}
@@ -280,7 +312,7 @@ proc DoUpdate {path base variant} {
 		}
 		if {$Vars($base:$variant:update:sites)} {
 			set n [::scidb::db::count sites $base $variant]
-			after idle [list ::sitetable::update $path.sites $base $variant $n]
+			after idle [list ::sitetable::update $Vars(frame:site) $base $variant $n]
 			after idle [namespace code [list [namespace parent]::events::Update2 \
 				$Vars($base:$variant:sites:lastId) $path $base $variant]]
 			set Vars($base:$variant:update:sites) 0
@@ -294,22 +326,6 @@ proc DoUpdate {path base variant} {
 }
 
 } ;# namespace sites
-
-namespace eval games {
-
-proc Update {path id base variant {view -1} {index -1}} {
-	variable [namespace parent]::${path}::Vars
-
-	[namespace parent]::InitBase $path $base $variant
-
-	if {$view == $Vars($base:$variant:view)} {
-		set n [::scidb::view::count events $base $variant $view]
-		after idle [list ::eventtable::update $path.events $base $variant $n]
-		set Vars($base:$variant:events:lastId) $id
-	}
-}
-
-} ;# namespace games
 
 namespace eval events {
 
@@ -344,7 +360,7 @@ proc DoUpdate {path base variant} {
 		}
 		if {$Vars($base:$variant:update:events)} {
 			set n [::scidb::view::count events $base $variant $Vars($base:$variant:view)]
-			after idle [list ::eventtable::update $path.events $base $variant $n]
+			after idle [list ::eventtable::update $Vars(frame:event) $base $variant $n]
 			set Vars($base:$variant:update:events) 0
 		}
 	}
@@ -353,20 +369,20 @@ proc DoUpdate {path base variant} {
 } ;# namespace events
 
 
-proc WriteOptions {chan} {
+proc WriteTableOptions {chan {id "site"}} {
 	variable Tables
 
+	if {$id ne "site"} { return }
+
 	foreach table $Tables {
-		puts $chan "::sitetable::setOptions $table.sites {"
-		::options::writeArray $chan [::sitetable::getOptions $table.sites]
-		puts $chan "}"
-		puts $chan "::eventtable::setOptions $table.events {"
-		::options::writeArray $chan [::eventtable::getOptions $table.events]
-		puts $chan "}"
+		foreach attr {site event} {
+			puts $chan "::scrolledtable::setOptions db:sites:$attr {"
+			::options::writeArray $chan [::scrolledtable::getOptions db:sites:$attr]
+			puts $chan "}"
+		}
 	}
 }
-
-::options::hookWriter [namespace current]::WriteOptions
+::options::hookTableWriter [namespace current]::WriteTableOptions
 
 } ;# namespace sites
 } ;# namespace database

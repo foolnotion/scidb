@@ -137,7 +137,7 @@ void setResult(unsigned result);
 void setResult(bool result);
 void setResult(long result);
 void setResult(unsigned long result);
-void setResult(mstl::vector<Tcl_Obj*> const& list);
+void setResult(List const& list);
 void
 __attribute__((__format__(__printf__, 1, 2)))
 setResultV(char const* format, ...);

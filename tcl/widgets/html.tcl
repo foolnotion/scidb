@@ -283,15 +283,21 @@ proc Build {w args} {
 	set htmlOptions {}
 	foreach name [array names opts] {
 		switch -- $name {
-			-delay - -css - -center - -fittowidth - -fittoheight - -importdir - -textalign - -cursor -
-			-usehorzscroll - -usevertscroll - -keephorzscroll - -keepvertscroll - -fontsize -
-			-backgroundimage - -fixedwidth {}
+			-delay - -css - -center - -fittowidth - -fittoheight - -importdir - -textalign -
+			-cursor - -usehorzscroll - -usevertscroll - -keephorzscroll - -keepvertscroll -
+			-fontsize - -backgroundimage - -fixedwidth {}
 
-			-class - -imagecmd - -doublebuffer - -latinligatures - -exportselection -
+			-imagecmd - -doublebuffer - -latinligatures - -exportselection -
 			-selectbackground - -selectforeground - -inactiveselectbackground -
 			-inactiveselectforeground - -width - -height - -fonttable {
 				set value $opts($name)
 				if {[llength $value]} { lappend htmlOptions $name $value }
+			}
+
+			-class {
+				# Must be first option in list.
+				set value $opts($name)
+				if {[llength $value]} { set htmlOptions [linsert $htmlOptions 0 $name $value] }
 			}
 
 			-showhyphens {

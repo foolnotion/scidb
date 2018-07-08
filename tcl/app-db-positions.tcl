@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2014-2017 Gregor Cramer
+# Copyright: (C) 2014-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -44,104 +44,60 @@ set F_Frequency	"Frequency"
 #	-------------------------------------------------------------------------------------
 set Columns {
 	{ position		right		 0		 0		 5			0			0			0			{}			}
-	{ description	left		10		 0		18			1			1			1			darkblue	}
+	{ description	left		10		 0		12			1			1			1			darkblue	}
 	{ backRank		left		 0		 0		13			0			1			0			{}			}
 	{ frequency		right		 4		12		 9			0			0			1			{}			}
 }
 
 variable columns {}
 foreach col $Columns { lappend columns [lindex $col 0] }
+unset col
+
+array set Prios { position 200 games 100 }
+
+array set FrameOptions {
+	position { -width 300 -height 640 -minwidth 100 -minheight 100 -expand both }
+	games    { -width 700 -height 640 -minwidth 200 -minheight 100 -expand both }
+}
+
+variable Layout {
+	root { -shrink none -grow none } {
+		panedwindow { -orient horz } {
+			frame position %position%
+			frame games %games%
+		}
+	}
+}
 
 variable Tables {}
 
+
 proc build {parent} {
 	variable Tables
-	variable Columns
+	variable Layout
+	variable FrameOptions
 
-	set top [tk::panedwindow $parent.top \
-		-orient horizontal \
-		-opaqueresize true \
-		-borderwidth 0 \
-	]
-	pack $top -fill both -expand yes
-	lappend Tables $top
+	set twm $parent.twm
+	namespace eval [namespace current]::$twm {}
+	variable ${twm}::Vars
 
-	set lt ${top}.positions
-	set rt ${top}.games
-
-	set columns {}
-	foreach column $Columns {
-		lassign $column id adjustment minwidth maxwidth width stretch removable ellipsis color
-		set menu {}
-
-		if {$id in {backRank frequency}} {
-			lappend menu [list command \
-				-command [namespace code [list positions::SortColumn $top $id ascending]] \
-				-labelvar ::gametable::mc::SortAscending \
-			]
-			lappend menu [list command \
-				-command [namespace code [list positions::SortColumn $top $id descending]] \
-				-labelvar ::gametable::mc::SortDescending \
-			]
-			lappend menu [list command \
-				-command [namespace code [list positions::SortColumn $top $id reverse]] \
-				-labelvar ::gametable::mc::ReverseOrder \
-			]
-		}
-		lappend menu [list command \
-			-command [namespace code [list positions::SortColumn $top $id cancel]] \
-			-labelvar ::gametable::mc::CancelSort \
-		]
-
-		set opts {}
-		lappend opts -justify $adjustment
-		lappend opts -minwidth $minwidth
-		lappend opts -maxwidth $maxwidth
-		lappend opts -width $width
-		lappend opts -stretch $stretch
-		lappend opts -removable $removable
-		lappend opts -ellipsis $ellipsis
-		lappend opts -foreground $color
-		lappend opts -textvar [namespace current]::mc::F_[string toupper $id 0 0]
-		lappend opts -menu $menu
-
-		lappend columns $id $opts
-	}
-
-	set table [::scrolledtable::build $lt $columns]
-	::scrolledtable::configure $lt backRank \
-		-specialfont [list [list $::font::figurine(text:normal) 9812 9823]] \
-		;
-	::scrolledtable::bind $lt <ButtonPress-2> [namespace code [list ShowBoard $top %x %y]]
-	::scrolledtable::bind $lt <ButtonRelease-2> [namespace code [list HideBoard $top]]
-
-	namespace eval [namespace current]::$top {}
-	variable [namespace current]::${top}::Vars
 	set Vars(active) 0
 	set Vars(base) ""
 
-	set columns {white whiteElo black blackElo event result date length}
-	::gametable::build $rt [namespace code [list View $top]] $columns -id db::positions
-
-	::scidb::db::subscribe positionList [namespace current]::positions::Update $top
-	::scidb::db::subscribe gameList [namespace current]::games::Update {} $top
-	::scidb::db::subscribe dbInfo [namespace current]::NoOp [namespace current]::Close $top
-
-	bind $lt <<TableMinSize>>		[namespace code [list TableMinSize $lt %d]]
-	bind $lt <<TableFill>>			[namespace code [list positions::TableFill $top %d]]
-	bind $lt <<TableOptions>>		[namespace code [list positions::TableOptions $top]]
-	bind $lt <<TableSelected>>		[namespace code [list positions::TableSelected $top %d]]
-	bind $lt <<LanguageChanged>>	[list ::scrolledtable::refresh $top.positions]
-
-	$top add $lt -sticky nsew -stretch middle -width 420
-	$top add $rt -sticky nsew -stretch always
-
-	return $table
+	::application::twm::make $twm position \
+		[namespace current]::MakeFrame \
+		[namespace current]::BuildFrame \
+		[array get FrameOptions] \
+		$Layout \
+		;
+	::application::twm::load $twm
+	lappend Tables $twm
+	return $twm
 }
 
 
 proc activate {w flag} {
-	set path $w.top
+	set path $w.twm
 	variable ${path}::Vars
 
 	set Vars(active) $flag
@@ -151,18 +107,25 @@ proc activate {w flag} {
 	positions::UpdateTable $path $base $variant
 
 	if {[winfo toplevel $w] ne $w} {
-		::toolbar::activate $path.positions $flag
+		::toolbar::activate $Vars(frame:position) $flag
 	}
 }
 
 
 proc overhang {parent} {
-	return [::scrolledtable::overhang $parent.top.positions]
+	set path $parent.twm
+	variable ${path}::Vars
+
+	return [::scrolledtable::overhang $Vars(frame:position)]
 }
 
 
+# XXX linespace not needed anymore?
 proc linespace {parent} {
-	return [::scrolledtable::linespace $parent.top.positions]
+	set path $parent.twm
+	variable ${path}::Vars
+
+	return [::scrolledtable::linespace $Vars(frame:position)]
 }
 
 
@@ -171,10 +134,89 @@ proc setActive {flag} {
 }
 
 
+proc MakeFrame {twmn parent type uid} {
+	variable Prios
+
+	set frame [tk::frame $parent.$uid -borderwidth 0 -takefocus 1]
+	set nameVar ::application::twm::mc::Pane($uid)
+	return [list $frame $nameVar $Prios($uid) [expr {$uid ne "position"}] yes yes]
+}
+
+
+proc BuildFrame {twm frame uid width height} {
+	variable ${twm}::Vars
+	set Vars(frame:$uid) $frame
+
+	switch $uid {
+		position {
+			variable Columns
+
+			set columns {}
+			foreach column $Columns {
+				lassign $column id adjustment minwidth maxwidth width stretch removable ellipsis color
+				set menu {}
+
+				if {$id in {backRank frequency}} {
+					lappend menu [list command \
+						-command [namespace code [list positions::SortColumn $twm $id ascending]] \
+						-labelvar ::gametable::mc::SortAscending \
+					]
+					lappend menu [list command \
+						-command [namespace code [list positions::SortColumn $twm $id descending]] \
+						-labelvar ::gametable::mc::SortDescending \
+					]
+					lappend menu [list command \
+						-command [namespace code [list positions::SortColumn $twm $id reverse]] \
+						-labelvar ::gametable::mc::ReverseOrder \
+					]
+				}
+				lappend menu [list command \
+					-command [namespace code [list positions::SortColumn $twm $id cancel]] \
+					-labelvar ::gametable::mc::CancelSort \
+				]
+
+				set opts {}
+				lappend opts -justify $adjustment
+				lappend opts -minwidth $minwidth
+				lappend opts -maxwidth $maxwidth
+				lappend opts -width $width
+				lappend opts -stretch $stretch
+				lappend opts -removable $removable
+				lappend opts -ellipsis $ellipsis
+				lappend opts -foreground $color
+				lappend opts -textvar [namespace current]::mc::F_[string toupper $id 0 0]
+				lappend opts -menu $menu
+
+				lappend columns $id $opts
+			}
+
+			set table [::scrolledtable::build $frame $columns -id db:positions:position]
+			::scrolledtable::configure $frame backRank \
+				-specialfont [list [list $::font::figurine(text:normal) 9812 9823]] \
+				;
+			::scrolledtable::bind $frame <ButtonPress-2> [namespace code [list ShowBoard $twm %x %y]]
+			::scrolledtable::bind $frame <ButtonRelease-2> [namespace code [list HideBoard $twm]]
+
+			bind $frame <<TableFill>>			[namespace code [list positions::TableFill $twm %d]]
+			bind $frame <<TableSelected>>		[namespace code [list positions::TableSelected $twm %d]]
+			bind $frame <<LanguageChanged>>	[list ::scrolledtable::refresh $Vars(frame:position)]
+
+			::scidb::db::subscribe positionList [namespace current]::positions::Update $twm
+			::scidb::db::subscribe dbInfo [namespace current]::NoOp [namespace current]::Close $twm
+		}
+		games {
+			set columns {white whiteElo black blackElo result event date length}
+			::gametable::build $frame [namespace code [list View $twm]] $columns -id db:positions:games
+			::scidb::db::subscribe gameList [namespace current]::games::Update {} $twm
+		}
+	}
+}
+
+
 proc ShowBoard {path x y} {
 	variable ${path}::Vars
 
-	set table $path.positions
+	set table $Vars(frame:position)
 	set index [::scrolledtable::at $table $y]
 	set base [::scrolledtable::base $table]
 	set variant [::scrolledtable::variant $table]
@@ -239,10 +281,10 @@ proc Close {path base variant} {
 	#if {$action ne "close"} { return }
 
 	array unset Vars $base:$variant:*
-	::scrolledtable::forget $path.positions $base $variant
-	::gametable::forget $path.games $base $variant
-	if {$Vars(base) eq "$base:$variant"} { ::scrolledtable::clear $path.positions }
-	if {$Vars(base) eq "$base:$variant"} { ::gametable::clear $path.games }
+	::scrolledtable::forget $Vars(frame:position) $base $variant
+	::gametable::forget $Vars(frame:games) $base $variant
+	if {$Vars(base) eq "$base:$variant"} { ::scrolledtable::clear $Vars(frame:position) }
+	if {$Vars(base) eq "$base:$variant"} { ::gametable::clear $Vars(frame:games) }
 }
 
 
@@ -283,7 +325,7 @@ proc Update2 {id path base variant} {
 		}
 	} else {
 		set n [::scidb::view::count games $base $variant $view]
-		after idle [list ::gametable::update $path.games $base $variant $n]
+		after idle [list ::gametable::update $Vars(frame:games) $base $variant $n]
 	}
 }
 
@@ -299,8 +341,8 @@ namespace eval positions {
 proc Reset {path base variant} {
 	variable [namespace parent]::${path}::Vars
 
-	::gametable::clear $path.games
-	::scrolledtable::select $path.positions none
+	::gametable::clear $Vars(frame:games)
+	::scrolledtable::select $Vars(frame:position) none
 	::scrolledtable::activate none
 	set Vars($base:$variant:position) ""
 }
@@ -312,7 +354,7 @@ proc UpdateTable {path base variant} {
 	if {$Vars(active)} {
 		if {$Vars($base:$variant:update)} {
 			set n [::scidb::db::count positions $base $variant]
-			after idle [list ::scrolledtable::update $path.positions $base $variant $n]
+			after idle [list ::scrolledtable::update $Vars(frame:position) $base $variant $n]
 			after idle [list [namespace parent]::games::Update2 \
 				$Vars($base:$variant:positions:lastId) $path $base $variant]
 			set Vars($base:$variant:update) 0
@@ -400,7 +442,7 @@ proc TableSelected {path index} {
 	variable [namespace parent]::${path}::Vars
 
 	::widget::busyCursor on
-	set table $path.positions
+	set table $Vars(frame:position)
 	set base [::scrolledtable::base $table]
 	set variant [::scrolledtable::variant $table]
 	set view $Vars($base:$variant:view)
@@ -415,9 +457,9 @@ proc TableSearch {path base variant view} {
 	variable [namespace parent]::${path}::Vars
 
 	::widget::busyCursor on
-	::gametable::activate $path.games none
-	::gametable::select $path.games none
-	::gametable::scroll $path.games home
+	::gametable::activate $Vars(frame:games) none
+	::gametable::select $Vars(frame:games) none
+	::gametable::scroll $Vars(frame:games) home
 	::scidb::view::search $base $variant $view null none [list position $Vars($base:$variant:position)]
 	::widget::busyCursor off
 }
@@ -427,7 +469,7 @@ proc SortColumn {path id dir} {
 	variable [namespace parent]::${path}::Vars
 
 	::widget::busyCursor on
-	set table $path.positions
+	set table $Vars(frame:position)
 	set base [::scrolledtable::base $table]
 	set variant [::scrolledtable::variant $table]
 	set view $Vars($base:$variant:view)
@@ -456,19 +498,21 @@ proc SortColumn {path id dir} {
 
 } ;# namespace positions
 
-proc WriteOptions {chan} {
+
+proc WriteTableOptions {chan {id "position"}} {
 	variable Tables
 
+	if {$id ne "position"} { return }
+
 	foreach table $Tables {
-		foreach type {positions games} {
-			puts $chan "::scrolledtable::setOptions db:positions {"
-			::options::writeArray $chan [::scrolledtable::getOptions $table.$type]
+		foreach attr {position games} {
+			puts $chan "::scrolledtable::setOptions db:positions:$attr {"
+			::options::writeArray $chan [::scrolledtable::getOptions db:positions:$attr]
 			puts $chan "}"
 		}
 	}
 }
-
-::options::hookWriter [namespace current]::WriteOptions
+::options::hookTableWriter [namespace current]::WriteTableOptions
 
 } ;# namespace positions
 } ;# namespace database

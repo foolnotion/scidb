@@ -3631,7 +3631,6 @@ proc WriteOptions {chan} {
 	::options::writeItem $chan [namespace current]::si3::Tags no
 	::options::writeItem $chan [namespace current]::sci::Tags no
 }
-
 ::options::hookWriter [namespace current]::WriteOptions
 
 namespace eval icon {

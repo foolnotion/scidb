@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2017 Gregor Cramer
+# Copyright: (C) 2009-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -273,10 +273,10 @@ array set Defaults {
 	include-type			0
 	country-code			flags
 	eventtype-icon			1
+	move:figurines			graphic
+	move:notation			san
 	rating:1					Elo
 	rating:2					DWZ
-	move:notation			san
-	movelist:delay			30
 }
 
 array set GameFlags {}
@@ -287,7 +287,13 @@ variable ratings {Elo DWZ ECF IPS USCF ICCF Rapid Rating Any}
 proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	variable Defaults
 	variable Columns
+	variable MoveStyle
 	variable ratings
+
+	if {![info exists MoveStyle]} {
+		trace add variable ::pgn::setup::mc::Setup(MoveStyle) write [namespace code UpdateMoveStyleLabel]
+		UpdateMoveStyleLabel
+	}
 
 	namespace eval $path {}
 	variable ${path}::Vars
@@ -304,24 +310,23 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 		selectcmd	{}
 		range			{}
 		afterID		{}
-		id				{}
 	}
 
-	RefreshHeader $path 1
-	RefreshHeader $path 2
-
 	array set options $args
-	foreach opt {positioncmd selectcmd mode sortable} {
+	foreach opt {id positioncmd selectcmd mode sortable} {
 		if {[info exists options(-$opt)]} {
 			set Vars($opt) $options(-$opt)
 			unset options(-$opt)
 		}
 	}
 	set args [array get options]
+	lappend args -popupcmd [namespace code PopupMenu]
+	lappend args -id $Vars(id)
 
-	foreach name [array names Defaults] {
-		if {![info exists Options($name)]} { set Options($name) $Defaults($name) }
-	}
+	array set Options [array get Defaults]
+	::scrolledtable::bindOptions $Vars(id) [namespace current]::${path}::Options [array names Defaults]
+	RefreshHeader $path 1
+	RefreshHeader $path 2
 
 	set columns {}
 	set index 0
@@ -447,6 +452,11 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 					[namespace current]::${path}::Options(move:notation) \
 				]
 				lappend menu { separator }
+				lappend menu [list command \
+					-command [namespace code [list SelectFigurines $path]] \
+					-labelvar [namespace current]::MoveStyle \
+				]
+				lappend menu { separator }
 			}
 		}
 
@@ -554,10 +564,10 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 		incr index
 	}
 
-	lappend args -popupcmd [namespace code PopupMenu]
 	set Vars(table) [::scrolledtable::build $path $columns {*}$args]
 	pack $path -fill both -expand yes
-	set specialfont [list [list $::font::figurine(text:normal) 9812 9823]]
+	::font::registerFigurineFonts movelist
+	set specialfont [list [list $::font::figurine(movelist:normal) 9812 9823]]
 	::scrolledtable::configure $path material -specialfont $specialfont
 	::scrolledtable::configure $path position -specialfont $specialfont
 	::scrolledtable::configure $path moveList -specialfont $specialfont
@@ -676,45 +686,6 @@ proc borderwidth {path} {
 
 proc identify {path x y} {
 	return [::scrolledtable::identify $path $x $y]
-}
-
-
-proc getOptions {path} {
-	variable ${path}::Options
-
-	set options [::scrolledtable::getOptions $path]
-	lappend options {*}[array get Options]
-	return $options
-}
-
-
-proc setOptions {id options} {
-	variable Defaults
-
-	array set myOptions $options
-
-### XXX upgrade
-	if {[info exists myOptions(move:notation)]} {
-		set myOptions(move:notation) [string map {alg can gsa gan inf man} $myOptions(move:notation)]
-	}
-### endif
-
-	foreach key [array names Defaults] {
-		if {![info exists myOptions($key)]} {
-			set myOptions($key) $Defaults($key)
-		}
-	}
-
-	set otions [array get myOptions]
-
-	if {[string match {.application.*} $id]} {
-		# XXX needed for upgrade
-		namespace eval [namespace current]::$id {}
-		variable ${id}::Options
-		::scrolledtable::setOptions $id $options
-	} else {
-		::scrolledtable::bindOptions $id $options
-	}
 }
 
 
@@ -976,12 +947,7 @@ proc Refresh {path} {
 proc RefreshEventType {path} {
 	variable ${path}::Options
 
-	if {$Options(eventtype-icon)} {
-		set justification center
-	} else {
-		set justification left
-	}
-
+	set justification [expr {$Options(eventtype-icon) ? "center" : "left"}]
 	::scrolledtable::clearColumn $path eventType
 	::scrolledtable::setColumnJustification $path eventType $justification
 	Refresh $path
@@ -989,9 +955,9 @@ proc RefreshEventType {path} {
 
 
 proc RefreshHeader {path number} {
-	variable Defaults
+	variable ${path}::Options
 
-	set rt $Defaults(rating:$number)
+	set rt $Options(rating:$number)
 	if {[info exists mc::RatingType($rt)]} { set rt $mc::RatingType($rt) }
 
 	set mc::F_WhiteFideID "$::playertable::mc::F_FideID \u26aa"
@@ -1098,7 +1064,6 @@ proc TableFill {path args} {
 	variable icon::12x12::Check
 	variable icon::12x12::NotAvailable
 	variable GameFlags
-	variable Defaults
 	variable ${path}::Vars
 	variable ${path}::Options
 
@@ -1114,7 +1079,7 @@ proc TableFill {path args} {
 	}
 
 	set last [expr {min($last, [scidb::view::count games $base $variant $view] - $start)}]
-	set ratings [list $Defaults(rating:1) $Defaults(rating:2)]
+	set ratings [list $Options(rating:1) $Options(rating:2)]
 	set gray [::scrolledtable::visible? $path deleted]
 	set delIdx [columnIndex deleted]
 
@@ -1515,6 +1480,7 @@ proc TableFill {path args} {
 
 proc FetchMoveList {path} {
 	variable ${path}::Vars
+	variable ${path}::Options
 
 	set firstRow [::scrolledtable::firstRow $path]
 	set lastRow [::scrolledtable::lastRow $path]
@@ -1530,7 +1496,11 @@ proc FetchMoveList {path} {
 
 		for {} {$lower < $upper} {incr lower} {
 			if {[string length [set moves [::scidb::app::moveList fetch $path $lower]]]} {
-				if {$moves == "*"} { set moves $mc::NoMoves }
+				if {$moves == "*"} {
+					set moves $mc::NoMoves
+				} else {
+					set moves [::figurines::mapToLocal $moves $Options(move:figurines)]
+				}
 				::table::setElement $Vars(table) [expr {$lower - $firstRow}] moveList $moves
 			} elseif {$nextStart == -1} {
 				set nextStart $lower
@@ -1572,7 +1542,6 @@ proc TableHide {table id flag} {
 proc TableVisit {table data} {
 	variable ${table}::Vars
 	variable ${table}::Options
-	variable Defaults
 	variable ratings
 
 	lassign $data base variant mode id row
@@ -1587,8 +1556,8 @@ proc TableVisit {table data} {
 		eco - eventMode - timeMode - flags {}
 		whiteType - blackType - whiteTitle - blackTitle - whiteCountry - blackCountry - eventCountry {}
 		whiteSex - blackSex { if {!$Options(include-type)} { return } }
-		whiteRating1 - blackRating1 { if {$Defaults(rating:1) ne [lindex $ratings end]} { return } }
-		whiteRating2 - blackRating2 { if {$Defaults(rating:2) ne [lindex $ratings end]} { return } }
+		whiteRating1 - blackRating1 { if {$Options(rating:1) ne [lindex $ratings end]} { return } }
+		whiteRating2 - blackRating2 { if {$Options(rating:2) ne [lindex $ratings end]} { return } }
 		deleted - changed - added {}
 		default { return }
 	}
@@ -1747,7 +1716,7 @@ proc TableVisit {table data} {
 
 proc SortColumn {path id dir {rating {}}} {
 	variable ${path}::Vars
-	variable Defaults
+	variable ${path}::Options
 
 	::widget::busyCursor on
 	set base [::scrolledtable::base $path]
@@ -1756,7 +1725,7 @@ proc SortColumn {path id dir {rating {}}} {
 	if {[string length $rating]} {
 		set ratings [list $rating $rating]
 	} else {
-		set ratings [list $Defaults(rating:1) $Defaults(rating:2)]
+		set ratings [list $Options(rating:1) $Options(rating:2)]
 	}
 	set options {}
 	set see 0
@@ -1908,7 +1877,7 @@ proc PopupMenu {path menu base variant index} {
 		}
 
 		if {!$Vars(sortable)} { return }
-	
+
 		if {![::scidb::db::get readonly? $base $variant]} {
 			$menu add separator
 			set flag [::scidb::db::get deleted? $index $view $base $variant]
@@ -2122,11 +2091,35 @@ proc SetupRating {args} {
 }
 
 
-proc WriteOptions {chan} {
-	options::writeItem $chan [namespace current]::Defaults
+proc SelectFigurines {path} {
+	variable ${path}::Options
+	variable MoveStyle
+
+	set lang $Options(move:figurines)
+	set dlg [tk::toplevel $path.figurines -class Scidb]
+	::widget::dialogButtons $dlg close
+	$dlg.close configure -command [list destroy $dlg]
+	pack [set f [::figurines::listbox $dlg.list -frametype frame]]
+	$f select $Options(move:figurines)
+	::bind $f <<ListboxSelect>> [list set [namespace current]::${path}::Options(move:figurines) %d]
+	wm withdraw $dlg
+	wm title $dlg "$::scidb::app - $MoveStyle"
+	wm resizable $dlg no no
+	::util::place $dlg -parent $path -position center
+	wm transient $dlg [winfo toplevel $path]
+	catch { wm attributes $dlg -type dialog }
+	wm deiconify $dlg
+	::ttk::grabWindow $dlg
+	::focus $dlg.list
+	tkwait window $dlg
+	::ttk::releaseGrab $dlg
+	if {$lang ne $Options(move:figurines)} { Refresh $path }
 }
 
-::options::hookWriter [namespace current]::WriteOptions
+
+proc UpdateMoveStyleLabel {args} {
+	set [namespace current]::MoveStyle "$::pgn::setup::mc::Setup(MoveStyle)..."
+}
 
 
 namespace eval icon {

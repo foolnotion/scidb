@@ -2267,7 +2267,7 @@ unsigned
 Codec::firstCharToUpper(mstl::string& name)
 {
 	M_REQUIRE(sys::utf8::validate(name));
-	M_REQUIRE(!name.readonly());
+	M_REQUIRE(name.writable());
 
 	// IMPORTANT NOTE:
 	// At this time, the case conversions are only defined for the ISO8859-1 characters.

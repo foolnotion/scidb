@@ -2151,8 +2151,6 @@ proc UpdateFormatButtons {w} {
 proc WriteOptions {chan} {
 	::options::writeList $chan [namespace current]::Geometry
 }
-
-
 ::options::hookWriter [namespace current]::WriteOptions
 
 

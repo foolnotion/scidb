@@ -1461,7 +1461,6 @@ proc WriteOptions {chan} {
 	::options::writeItem $chan [namespace current]::Options
 	::options::writeItem $chan [namespace current]::Selection
 }
-
 ::options::hookWriter [namespace current]::WriteOptions
 
 } ;# namespace game

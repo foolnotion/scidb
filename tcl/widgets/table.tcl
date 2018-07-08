@@ -6,7 +6,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2013 Gregor Cramer
+# Copyright: (C) 2009-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -64,6 +64,7 @@ namespace import ::tcl::mathfunc::max
 namespace import ::tcl::mathfunc::min
 
 event add <<TableFill>>			TableFill
+event add <<TableRebuild>>		TableRebuild
 event add <<TableResized>>		TableResized
 event add <<TableSelected>>	TableSelected
 event add <<TableInvoked>>		TableInvoked
@@ -146,6 +147,9 @@ variable Eraser [::icon::makeStateSpecificIcons $::colormenu::icon::16x16::erase
 variable Colors {black white gray50 darkviolet darkBlue blue2 blue darkGreen darkRed red2 red #68480a}
 variable RecentColors
 variable OptionMap
+variable WidgetMap
+variable IdMap
+variable Bindings
 
 set KeyFitColumns			<Control-Key-comma>
 set KeyOptimizeColumns	<Control-Key-period>
@@ -168,18 +172,25 @@ proc table {args} {
 	set parent [lindex $args 0]
 	set table [tk::frame $parent]
 
-	namespace eval [namespace current]::$table {}
+	namespace eval $table {}
 	variable ${table}::Vars
-	variable ${table}::Options
 	variable ColorLookup
+	variable WidgetMap
+	variable IdMap
 
-	set Vars(id) ""
+	set Vars(menucmd) {}
+	array set opts [lrange $args 1 end]
+	if {[info exists opts(-id)]} { set Vars(id) $opts(-id) } else { set Vars(id) $table }
+	if {[info exists opts(-menucmd)]} { set Vars(menucmd) $opts(-menucmd) }
+	namespace eval $Vars(id) {}
+	variable ${Vars(id)}::Options
+	set IdMap($table) $Vars(id)
+	set WidgetMap($Vars(id)) $table
 
 	if {![info exists Options]} {
 		array set Options [array get Defaults]
 		array set Options [lrange $args 1 end]
 		if {[info exists Options(-id)]} {
-			set Vars(id) $Options(-id)
 			array unset Options -id
 		}
 	} else {
@@ -363,52 +374,37 @@ proc table {args} {
 
 proc addcol {table id args} {
 	variable ${table}::Vars
-	variable ${table}::Options
+	variable IdMap
 
-	set index [llength $Vars(columns)]
+	set optId $IdMap($table)
+	variable ${optId}::Options
 
 	array set opts {
-		-text				{}
-		-textvar			{}
-		-image			{}
-		-tooltip			{}
-		-tooltipvar		{}
-		-nameingroup	{}
-		-associated		{}
-		-menu				{}
-		-group			{}
-		-groupvar		{}
+		-text						{}
+		-textvar					{}
+		-image					{}
+		-tooltip					{}
+		-tooltipvar				{}
+		-nameingroup			{}
+		-associated				{}
+		-menu						{}
+		-group					{}
+		-groupvar				{}
+		-checkbutton			0
+		-foreground				{}
+		-disabledforeground	{}
 	}
 
+	set keys [array names opts]
+	foreach {key val} $args {
+		if {$key in $keys} { set opts($key) $val }
+	}
 	if {[info exists Options(-visible:$id)]} {
-		array set opts $args
-		foreach {key val} [array get Options *:$id] {
-			set opts([lindex [split $key ":"] 0]) $val
+		foreach key $keys {
+			if {[info exists Options($key:$id)]} {
+				set opts($key) $Options($key:$id)
+			}
 		}
-	} else {
-		array set opts {
-			-visible					1
-			-minwidth				0
-			-maxwidth				0
-			-lastwidth				0
-			-stretch   				0
-			-removable				0
-			-ellipsis            0
-			-optimizable			1
-			-fixed					0
-			-pixels					0
-			-checkbutton			0
-			-width					10
-			-justify					left
-			-lock                none
-			-foreground				{}
-			-background				{}
-			-selectionforeground	{}
-			-disabledforeground	{}
-			-stripes					{}
-		}
-		set opts(-order) $index
-		array set opts $args
 	}
 
 	set labelText {}
@@ -425,68 +421,11 @@ proc addcol {table id args} {
 	} else {
 		set labelText $opts(-text)
 	}
-	if {$opts(-minwidth) == $opts(-maxwidth)} { set resizable no } else { set resizable yes }
-	if {$opts(-maxwidth) <= 0} { set maxwidth {} } else { set maxwidth $opts(-maxwidth) }
-	set opts(-pixels) [string match {*px} $opts(-width)]
-	if {$opts(-pixels)} {
-		set width [lindex [split $opts(-width) px] 0]
-		set minwidth $opts(-minwidth)
-		if {[string match {*px} $minwidth]} {
-			set minwidth [lindex [split $opts(-width) px] 0]
-		}
-		incr width 4
-		if {$minwidth} { incr minwidth 4 }
-		set opts(-ellipsis) 0
-		set squeeze 0
-	} else {
-		set width [expr {$Vars(charwidth)*$opts(-width)}]
-		set minwidth $opts(-minwidth)
-		if {[string match {*px} $minwidth]} {
-			set minwidth [lindex [split $opts(-minwidth) px] 0]
-			if {!$resizable} {
-				set minwidth [expr {max($minwidth, $opts(-width)*$Vars(charwidth))}]
-			}
-		} else {
-			if {!$resizable} {
-				set minwidth [expr {max($minwidth, $opts(-width))}]
-			}
-			set minwidth [expr {$Vars(charwidth)*$minwidth}]
-		}
-		if {[llength $maxwidth]} {
-			set maxwidth [expr {$Vars(charwidth)*$maxwidth}]
-		}
-		set width [expr {max($width, $minwidth)}]
-		set squeeze 1
-	}
-	if {[llength $maxwidth]} {
-		set maxwidth [expr {max($minwidth, $maxwidth)}]
-	}
-	if {$opts(-stretch)} { lassign {{} 1} width weight } else { set weight 0 }
-	if {[llength $opts(-lastwidth)] == 0} { set opts(-lastwidth) 0 }
-	if {$opts(-lastwidth) > 0} { set width $opts(-lastwidth) }
-	set stripes $opts(-stripes)
-	if {[llength $stripes] == 0} { set stripes $Options(-stripes) }
-	if {[llength $stripes]} {
-		set colors [list [lookupColor $stripes] [lookupColor $opts(-background)]]
-	} else {
-		set colors [lookupColor $opts(-background)]
-	}
-
-	set justify $opts(-justify)
-#	if {[llength $labelImage]} {
-#		set justify center
-#	} else {
-#		set justify left
-#	}
 
 	$table.t column create                                  \
 		-tag $id                                             \
 		-expand yes                                          \
 		-steady yes                                          \
-		-minwidth $minwidth                                  \
-		-maxwidth $maxwidth                                  \
-		-width $width                                        \
-		-lock $opts(-lock)                                   \
 		-image $labelImage                                   \
 		-text $labelText                                     \
 		-font $Options(-labelfont)                           \
@@ -496,21 +435,16 @@ proc addcol {table id args} {
 		-textpady $Options(-pady)                            \
 		-imagepadx $Options(-imagepadx)                      \
 		-imagepady $Options(-imagepady)                      \
-		-justify $justify                                    \
 		-borderwidth $Options(-labelborderwidth)             \
 		-button no                                           \
-		-itemjustify $opts(-justify)                         \
-		-resize $resizable                                   \
-		-squeeze $squeeze                                    \
-		-visible $opts(-visible)                             \
-		-weight $weight                                      \
 		-uniform uniform                                     \
-		-itembackground $colors                              \
 		;
 
 	if {$id eq $Vars(treecolumn)} {
 		$table.t configure -treecolumn $id
 	}
+
+	ConfigureColumn $table $id {*}$args
 
 	set foreground $opts(-foreground)
 	if {[llength $foreground] == 0} { set foreground $Options(-foreground) }
@@ -527,14 +461,6 @@ proc addcol {table id args} {
 	set Vars(tags:$id) {}
 	lappend Vars(styles) $id style$id
 	lappend Vars(columns) $id
-	if {$opts(-visible)} {
-		lappend Vars(visible) $id
-		if {$minwidth > 0} {
-			incr Vars(minwidth) $minwidth
-		} elseif {[llength $width]} {
-			incr Vars(minwidth) $width
-		}
-	}
 
 	set Vars(ellipsis:$id) 0
 	if {[llength $Vars(tooltip:$id)] == 0 && [llength $opts(-text)]} {
@@ -546,58 +472,24 @@ proc addcol {table id args} {
 		set Vars(ellipsis:$id) 1
 	}
 
-	set order $opts(-order)
-	while {$order >= [llength $Vars(order)]} { lappend Vars(order) {} }
-	if {[llength [lindex $Vars(order) $order]] == 0} {
-		lset Vars(order) $order $id
-	} else {
-		lappend Vars(order) $id
-	}
-	set columns {}
-	foreach i $Vars(order) {
-		if {[llength $i]} { lappend columns $i }
-	}
-	set n [llength $columns]
-	if {$n > 1} {
-		set next [lindex $columns end]
-		for {set i [expr {$n - 2}]} {$i >= 0} {incr i -1} {
-			set prev [lindex $columns $i]
-			# catch possible problem with locked columns
-			if {$prev ne $next} { catch { $table.t column move $prev $next } }
-			set next $prev
+	incr Vars(size)
+
+	foreach opt [array names opts] {
+		if {$opt eq "-foreground" || $opt ni $keys} {
+			set Options($opt:$id) $opts($opt)
 		}
 	}
-
-	unset opts(-text)
-	unset opts(-textvar)
-	unset opts(-tooltip)
-	unset opts(-tooltipvar)
-	unset opts(-nameingroup)
-	unset opts(-associated)
-	unset opts(-group)
-	unset opts(-groupvar)
-	unset opts(-image)
-	unset opts(-menu)
-
-	foreach opt [array names opts] { set Options($opt:$id) $opts($opt) }
-	incr Vars(size)
 
 	MakeStyles $table $id $foreground $disabledforeground $opts(-checkbutton)
 }
 
 
-proc itemconfigure {table index args} {
-	variable ${table}::Vars
-
-	if {$index < $Vars(height)} {
-		$table.t item configure $index {*}$args
-	}
-}
-
-
 proc insert {table index list} {
 	variable ${table}::Vars
-	variable ${table}::Options
+	variable IdMap
+
+	set optId $IdMap($table)
+	variable ${optId}::Options
 
 	if {$index >= $Vars(height)} { return }
 
@@ -635,6 +527,15 @@ proc setElement {table index id value} {
 }
 
 
+proc itemconfigure {table index args} {
+	variable ${table}::Vars
+
+	if {$index < $Vars(height)} {
+		$table.t item configure $index {*}$args
+	}
+}
+
+
 proc configureItem {table index id args} {
 	$table.t item element configure $index $id elemTxt$id {*}$args
 }
@@ -652,7 +553,11 @@ proc configureCheckEntry {m} { return $m }
 
 
 proc getFont {table} {
-	return [set ${table}::Options(-font)]
+	variable IdMap
+
+	set optId $IdMap($table)
+	variable ${optId}::Options
+	return [set ${optId}::Options(-font)]
 }
 
 
@@ -676,29 +581,77 @@ proc defaultStyles {table} {
 }
 
 
-proc getOptions {table} {
-	return [array get ${table}::Options]
+proc bindOptions {id arrName nameList} {
+	variable Bindings
+
+	set Bindings($id) [list $arrName $nameList]
+
+	if {[info exists ${id}::Options]} {
+		variable ${id}::Options
+		foreach attr $nameList {
+			catch { set ${arrName}($attr) $Options($attr) }
+		}
+	}
 }
 
 
-proc setOptions {table options} {
-	namespace eval [namespace current]::${table} {}
-	array set [namespace current]::${table}::Options $options
+proc getOptions {id} {
+	variable Bindings
+
+	set options [array get ${id}::Options]
+	if {[info exists Bindings($id)]} {
+		array set arr $options
+		lassign $Bindings($id) arrName nameList
+		foreach attr $nameList { set arr($attr) [set ${arrName}($attr)] }
+		set options [array get arr]
+	}
+	return $options
 }
 
 
-# XXX work-around because of a bug in older versions
-proc setOptions {args} {
-	if {[llength $args] != 2} { return }
-	lassign $args table options
-	namespace eval [namespace current]::${table} {}
-	array set [namespace current]::${table}::Options $options
-}
+proc setOptions {id options} {
+	variable WidgetMap
+	variable Bindings
 
+	if {![info exists WidgetMap($id)]} {
+		namespace eval ${id} {}
+		array set [namespace current]::${id}::Options $options
+		if {[info exists Bindings($id)]} {
+			lassign $Bindings($id) arrName nameList
+			array set opts $options
+			foreach attr $nameList {
+				catch { set Options($attr) $opts($attr) }
+			}
+		}
+	} else {
+		if {[info exists Bindings($id)]} {
+			lassign $Bindings($id) arrName nameList
+			array set opts $options
+			foreach attr $nameList {
+				catch { set ${arrName}($attr) $opts($attr) }
+			}
+		}
 
-proc bindOptions {id options} {
-	variable OptionMap
-	set OptionMap($id) $options
+		set table $WidgetMap($id)
+
+		if {![ArrayEqual [namespace current]::${id}::Options $options]} {
+			array set [namespace current]::${id}::Options $options
+			variable ${table}::Vars
+			set active $Vars(active)
+			set selection $Vars(selection)
+			Reconfigure $table $id
+			event generate $table <<TableFill>> -data [list 0 $Vars(height)]
+			if {$active >= 0} {
+				activate $table $active
+				see $table $active
+			}
+			if {$selection >= 0} {
+				select $table $selection
+			}
+		}
+
+		event generate $table <<TableRebuild>>
+	}
 }
 
 
@@ -744,7 +697,10 @@ proc setHeight {table height {cmd {}}} {
 
 proc setColumnMininumWidth {table id width} {
 	variable ${table}::Vars
-	variable ${table}::Options
+	variable IdMap
+
+	set optId $IdMap($table)
+	variable ${optId}::Options
 
 	if {[string match {*px} $width]} {
 		set width [lindex [split $width px] 0]
@@ -760,8 +716,11 @@ proc setColumnMininumWidth {table id width} {
 
 
 proc hideColumn {table id} {
-	variable ${table}::Options
 	variable ${table}::Vars
+	variable IdMap
+
+	set optId $IdMap($table)
+	variable ${optId}::Options
 
 	lappend ids $id {*}$Vars(associated:$id)
 	foreach id $ids {
@@ -778,8 +737,11 @@ proc hideColumn {table id} {
 
 
 proc showColumn {table id} {
-	variable ${table}::Options
 	variable ${table}::Vars
+	variable IdMap
+
+	set optId $IdMap($table)
+	variable ${optId}::Options
 
 	lappend ids $id {*}$Vars(associated:$id)
 	foreach id $ids {
@@ -805,7 +767,7 @@ proc doSelection {table} {
 	set x [expr {$x - [winfo rootx $table]}]
 	set y [expr {$y - [winfo rooty $table]}]
 	lassign [::table::identify $table $x $y] row
-	::table::activate $table $row true
+	activate $table $row true
 }
 
 
@@ -845,7 +807,10 @@ proc linespace {table} {
 
 
 proc borderwidth {table} {
-	return [set ${table}::Options(-borderwidth)]
+	variable IdMap
+
+	set optId $IdMap($table)
+	return [set ${optId}::Options(-borderwidth)]
 }
 
 
@@ -877,6 +842,8 @@ proc bind {table sequence script} {
 
 
 proc configure {table args} {
+	variable ${table}::Vars
+
 	if {[llength $args] % 2 == 0} {
 		$table.t configure {*}$args
 	} else {
@@ -971,7 +938,6 @@ proc clear {table {first -1} {last -1}} {
 	for {set row $first} {$row < $last} {incr row} {
 		set item [$t item id $row]
 		if {[llength $item]} {
-			# $t item reset $row XXX
 			foreach id $Vars(visible) {
 				catch {
 					$t item element configure $row $id elemIco -image {}
@@ -985,7 +951,10 @@ proc clear {table {first -1} {last -1}} {
 
 proc clearColumn {table id} {
 	variable ${table}::Vars
-	variable ${table}::Options
+	variable IdMap
+
+	set optId $IdMap($table)
+	variable ${optId}::Options
 
 	if {$Options(-visible:$id)} {
 		for {set row 0} {$row < $Vars(height)} {incr row} {
@@ -1002,7 +971,11 @@ proc clearColumn {table id} {
 
 
 proc visible? {table id} {
-	return [set [namespace current]::${table}::Options(-visible:$id)]
+	variable IdMap
+
+	set optId $IdMap($table)
+	variable ${optId}::Options
+	return [set ${optId}::Options(-visible:$id)]
 }
 
 
@@ -1121,8 +1094,11 @@ proc setColumnJustification {table id justification} {
 
 proc setDefaultLayout {table id style} {
 	variable ${table}::Vars
-	variable ${table}::Options
+	variable IdMap
 	variable options
+
+	set optId $IdMap($table)
+	variable ${optId}::Options
 
 	set padx $options(element:padding)
 	if {$Options(-ellipsis:$id)} { set squeeze "x" } else { set squeeze "" }
@@ -1137,6 +1113,141 @@ proc setDefaultLayout {table id style} {
 	# we don't use detach if it does not have a tree column, otherwise the item is not centering
 	$table.t style layout $style elemImg -union elemIco -iexpand nswe -indent no -detach $Vars(detach)
 	$table.t style layout $style elemIco -height $Vars(linespace) -indent no -detach $Vars(detach)
+}
+
+
+proc ConfigureColumn {table id args} {
+	variable ${table}::Vars
+	variable IdMap
+
+	set optId $IdMap($table)
+	variable ${optId}::Options
+
+	array set opts {
+		-visible					1
+		-minwidth				0
+		-maxwidth				0
+		-lastwidth				0
+		-stretch   				0
+		-removable				0
+		-ellipsis            0
+		-optimizable			1
+		-fixed					0
+		-pixels					0
+		-width					10
+		-justify					left
+		-lock                none
+		-background				{}
+		-selectionforeground	{}
+		-stripes					{}
+	}
+	set opts(-order) [llength $Vars(columns)]
+
+	set keys [array names opts]
+	foreach {key val} $args {
+		if {$key in $keys} { set opts($key) $val }
+	}
+	if {[info exists Options(-visible:$id)]} {
+		foreach key $keys {
+			if {[info exists Options($key:$id)]} {
+				set opts($key) $Options($key:$id)
+			}
+		}
+	}
+
+	if {$opts(-minwidth) == $opts(-maxwidth)} { set resizable no } else { set resizable yes }
+	if {$opts(-maxwidth) <= 0} { set maxwidth {} } else { set maxwidth $opts(-maxwidth) }
+	set opts(-pixels) [string match {*px} $opts(-width)]
+	if {$opts(-pixels)} {
+		set width [lindex [split $opts(-width) px] 0]
+		set minwidth $opts(-minwidth)
+		if {[string match {*px} $minwidth]} {
+			set minwidth [lindex [split $opts(-width) px] 0]
+		}
+		incr width 4
+		if {$minwidth} { incr minwidth 4 }
+		set opts(-ellipsis) 0
+		set squeeze 0
+	} else {
+		set width [expr {$Vars(charwidth)*$opts(-width)}]
+		set minwidth $opts(-minwidth)
+		if {[string match {*px} $minwidth]} {
+			set minwidth [lindex [split $opts(-minwidth) px] 0]
+			if {!$resizable} {
+				set minwidth [expr {max($minwidth, $opts(-width)*$Vars(charwidth))}]
+			}
+		} else {
+			if {!$resizable} {
+				set minwidth [expr {max($minwidth, $opts(-width))}]
+			}
+			set minwidth [expr {$Vars(charwidth)*$minwidth}]
+		}
+		if {[llength $maxwidth]} {
+			set maxwidth [expr {$Vars(charwidth)*$maxwidth}]
+		}
+		set width [expr {max($width, $minwidth)}]
+		set squeeze 1
+	}
+	if {[llength $maxwidth]} {
+		set maxwidth [expr {max($minwidth, $maxwidth)}]
+	}
+	if {$opts(-stretch)} { lassign {{} 1} width weight } else { set weight 0 }
+	if {[llength $opts(-lastwidth)] == 0} { set opts(-lastwidth) 0 }
+	if {$opts(-lastwidth) > 0} { set width $opts(-lastwidth) }
+	set stripes $opts(-stripes)
+	if {[llength $stripes] == 0} { set stripes $Options(-stripes) }
+	if {[llength $stripes]} {
+		set colors [list [lookupColor $stripes] [lookupColor $opts(-background)]]
+	} else {
+		set colors [lookupColor $opts(-background)]
+	}
+	set justify $opts(-justify)
+#	if {[llength $labelImage]} { set justify center } else { set justify left }
+
+	$table.t column configure $id                           \
+		-width $width                                        \
+		-lock $opts(-lock)                                   \
+		-justify $justify                                    \
+		-itemjustify $opts(-justify)                         \
+		-resize $resizable                                   \
+		-squeeze $squeeze                                    \
+		-visible $opts(-visible)                             \
+		-weight $weight                                      \
+		-itembackground $colors                              \
+		;
+
+	if {$opts(-visible)} {
+		lappend Vars(visible) $id
+		if {$minwidth > 0} {
+			incr Vars(minwidth) $minwidth
+		} elseif {[llength $width]} {
+			incr Vars(minwidth) $width
+		}
+	}
+
+	set order $opts(-order)
+	while {$order >= [llength $Vars(order)]} { lappend Vars(order) {} }
+	if {[llength [lindex $Vars(order) $order]] == 0} {
+		lset Vars(order) $order $id
+	} else {
+		lappend Vars(order) $id
+	}
+	set columns {}
+	foreach i $Vars(order) {
+		if {[llength $i]} { lappend columns $i }
+	}
+	set n [llength $columns]
+	if {$n > 1} {
+		set next [lindex $columns end]
+		for {set i [expr {$n - 2}]} {$i >= 0} {incr i -1} {
+			set prev [lindex $columns $i]
+			# catch possible problem with locked columns
+			if {$prev ne $next} { catch { $table.t column move $prev $next } }
+			set next $prev
+		}
+	}
+
+	foreach opt [array names opts] { set Options($opt:$id) $opts($opt) }
 }
 
 
@@ -1205,7 +1316,10 @@ proc ConfigureOnce {table w h} {
 
 proc UpdateColunnWidth {table column width} {
 	variable ${table}::Vars
-	variable ${table}::Options
+	variable IdMap
+
+	set optId $IdMap($table)
+	variable ${optId}::Options
 
 	set column [lindex $Vars(columns) $column]
 	set Options(-lastwidth:$column) $width
@@ -1217,7 +1331,10 @@ proc UpdateColunnWidths {table} {
 	if {![winfo exists $table]} { return }
 
 	variable ${table}::Vars
-	variable ${table}::Options
+	variable IdMap
+
+	set optId $IdMap($table)
+	variable ${optId}::Options
 
 	foreach id $Vars(columns) {
 		if {$Options(-visible:$id)} {
@@ -1268,8 +1385,11 @@ proc SetText {table id var args} {
 
 proc MakeStyles {table id foreground disabledForeground isCheckButton} {
 	variable ${table}::Vars
-	variable ${table}::Options
+	variable IdMap
 	variable options
+
+	set optId $IdMap($table)
+	variable ${optId}::Options
 
 	if {$isCheckButton} {
 		$table.t element create elemTxt$id text -lines 1 -font $Options(-font)
@@ -1290,13 +1410,15 @@ proc MakeStyles {table id foreground disabledForeground isCheckButton} {
 		setDefaultLayout $table $id style$id
 		$table.t style layout style$id elemSel -iexpand nswe -detach yes -indent no
 		$table.t style layout style$id elemBrd -iexpand xy -detach yes -indent no
-
 	}
 }
 
 
 proc ShowColumn {table id} {
-	variable ${table}::Options
+	variable IdMap
+
+	set optId $IdMap($table)
+	variable ${optId}::Options
 
 	if {$Options(-visible:$id)} {
 		showColumn $table $id
@@ -1308,7 +1430,10 @@ proc ShowColumn {table id} {
 
 proc MoveColumn {table column before} {
 	variable ${table}::Vars
-	variable ${table}::Options
+	variable IdMap
+
+	set optId $IdMap($table)
+	variable ${optId}::Options
 
 	$table.t column move $column $before
 	foreach id $Vars(columns) {
@@ -1582,8 +1707,11 @@ proc VisitItem {table mode column item member} {
 
 
 proc ToggleStretchable {table id} {
-	variable ${table}::Options
 	variable ${table}::Vars
+	variable IdMap
+
+	set optId $IdMap($table)
+	variable ${optId}::Options
 
 	set options {}
 	set weight [expr {$Options(-stretch:$id) ? 1 : 0}]
@@ -1601,12 +1729,18 @@ proc ToggleStretchable {table id} {
 
 
 proc Cleanup {table} {
+	variable IdMap
+
 	after idle [list namespace delete [namespace current]::$table]
+	after idle [list namespace delete [namespace current]::$IdMap($table)]
 }
 
 
 proc GetStripes {table id} {
-	variable ${table}::Options
+	variable IdMap
+
+	set optId $IdMap($table)
+	variable ${optId}::Options
 
 	if {[llength $Options(-stripes)] == 0} { return {} }
 	if {[llength $Options(-stripes:$id)] == 0} { return $Options(-stripes) }
@@ -1616,9 +1750,12 @@ proc GetStripes {table id} {
 
 proc PopupMenu {table x y X Y} {
 	variable ${table}::Vars
-	variable ${table}::Options
+	variable IdMap
 	variable Visible_
 	variable options
+
+	set optId $IdMap($table)
+	variable ${optId}::Options
 
 	set action [::TreeCtrl::CursorAction $table.t $x $y]
 	if {$action eq ""} {
@@ -1757,7 +1894,7 @@ proc PopupMenu {table x y X Y} {
 					$m add checkbutton \
 						-label $text \
 						-command [namespace code [list ShowColumn $table $cid]] \
-						-variable [namespace current]::${table}::Options(-visible:$cid) \
+						-variable [namespace current]::${optId}::Options(-visible:$cid) \
 						;
 					configureCheckEntry $m
 				}
@@ -1768,7 +1905,7 @@ proc PopupMenu {table x y X Y} {
 			$subm add checkbutton \
 				-label $mc::FillColumn \
 				-command [namespace code [list ShowColumn $table $id]] \
-				-variable [namespace current]::${table}::Options(-visible:$id) \
+				-variable [namespace current]::${optId}::Options(-visible:$id) \
 				;
 		}
 	}
@@ -1821,7 +1958,7 @@ proc PopupMenu {table x y X Y} {
 			if {[$menu type end] ne "separator"} { $menu add separator }
 			$menu add checkbutton \
 				-label $mc::AutoStretchColumn \
-				-variable [namespace current]::${table}::Options(-stretch:$id) \
+				-variable [namespace current]::${optId}::Options(-stretch:$id) \
 				-command [namespace code [list ToggleStretchable $table $id]] \
 				;
 			configureCheckEntry $menu
@@ -1865,6 +2002,8 @@ proc PopupMenu {table x y X Y} {
 	}
 
 	if {[$menu type end] eq "separator"} { $menu delete end }
+	if {[llength $Vars(menucmd)]} { {*}$Vars(menucmd) $menu }
+
 	::bind $menu <<MenuUnpost>> [list event generate $table <<TablePopdown>>]
 	tk_popup $menu $X $Y
 
@@ -1894,7 +2033,10 @@ proc FindActiveTableWindow {w} {
 
 proc FitColumns {table action} {
 	variable ${table}::Vars
-	variable ${table}::Options
+	variable IdMap
+
+	set optId $IdMap($table)
+	variable ${optId}::Options
 
 	if {$action eq "squeeze"} {
 		$table.t column squeeze
@@ -1917,7 +2059,10 @@ proc FitColumns {table action} {
 
 proc OpenConfigureDialog {table id header} {
 	variable ${table}::Vars
-	variable ${table}::Options
+	variable IdMap
+
+	set optId $IdMap($table)
+	variable ${optId}::Options
 
 	keepFocus $table true
 	foreach attr {	minwidth maxwidth foreground background
@@ -2148,8 +2293,11 @@ proc ChooseColor {parent title what initialColor previewColor background usedCol
 
 
 proc SelectTableColor {table id parent title which} {
-	variable ${table}::Options
 	variable ${table}::Vars
+	variable IdMap
+
+	set optId $IdMap($table)
+	variable ${optId}::Options
 
 	switch $which {
 		foreground - disabledforeground {
@@ -2242,8 +2390,11 @@ proc SelectTableColor {table id parent title which} {
 
 
 proc SelectColor {table id parent title which} {
-	variable ${table}::Options
 	variable ${table}::Vars
+	variable IdMap
+
+	set optId $IdMap($table)
+	variable ${optId}::Options
 
 	set previewColor {}
 	set usedColors {}
@@ -2311,8 +2462,11 @@ proc SelectColor {table id parent title which} {
 
 
 proc SelectTableStripes {table id parent} {
-	variable ${table}::Options
 	variable ${table}::Vars
+	variable IdMap
+
+	set optId $IdMap($table)
+	variable ${optId}::Options
 
 	if {[llength $Options(-stripes)]} { set eraser true } else { set eraser false }
 
@@ -2341,8 +2495,11 @@ proc SelectTableStripes {table id parent} {
 
 
 proc SelectStripes {table id parent} {
-	variable ${table}::Options
 	variable ${table}::Vars
+	variable IdMap
+
+	set optId $IdMap($table)
+	variable ${optId}::Options
 
 	set foreground $Options(-foreground:$id)
 	if {[llength $foreground] == 0} { set foreground $Options(-foreground) }
@@ -2375,8 +2532,11 @@ proc SelectStripes {table id parent} {
 
 
 proc ResetColors {table id} {
-	variable ${table}::Options
 	variable ${table}::Vars
+	variable IdMap
+
+	set optId $IdMap($table)
+	variable ${optId}::Options
 
 	foreach attr {	minwidth maxwidth foreground background
 						selectionforeground disabledforeground stripes} {
@@ -2399,7 +2559,10 @@ proc ResetColors {table id} {
 
 
 proc SetForeground {table id} {
-	variable ${table}::Options
+	variable IdMap
+
+	set optId $IdMap($table)
+	variable ${optId}::Options
 
 	foreach color {foreground selectionforeground disabledforeground} {
 		if {![info exists Options(-$color:$id)] || [llength $Options(-$color:$id)] == 0} {
@@ -2417,7 +2580,10 @@ proc SetForeground {table id} {
 
 
 proc SetBackground {table} {
-	variable ${table}::Options
+	variable IdMap
+
+	set optId $IdMap($table)
+	variable ${optId}::Options
 
 	foreach id [$table.t column list -visible] {
 		set id [$table.t column tag names $id]
@@ -2432,8 +2598,11 @@ proc SetBackground {table} {
 
 
 proc EraseStripes {table id parent} {
-	variable ${table}::Options
 	variable RecentColors
+	variable IdMap
+
+	set optId $IdMap($table)
+	variable ${optId}::Options
 
 	if {![info exists RecentColors(stripes)]} { set RecentColors(stripes) [lrepeat 6 {}] }
 	if {[lindex $data 0] eq "erase"} {
@@ -2456,12 +2625,45 @@ proc EraseStripes {table id parent} {
 }
 
 
+proc Reconfigure {table id} {
+	variable ${table}::Vars
+
+	set Vars(order) [lrepeat [llength $Vars(columns)] {}]
+	set Vars(visible) {}
+	set Vars(minwidth) 0
+	set Vars(maxwidth) 0
+
+	select $table none
+	activate $table none
+
+	foreach col $Vars(columns) {
+		ConfigureColumn $table $col {}
+	}
+}
+
+
 proc AcceptSettings {table id} {
 	variable ${table}::Vars
-	variable ${table}::Options
+	variable IdMap
+
+	set optId $IdMap($table)
+	variable ${optId}::Options
 
 	foreach which {minwidth maxwidth} { set Options(-$which:$id) $Vars($which:$id:menu) }
 	event generate $table <<TableOptions>>
+}
+
+
+proc ArrayEqual {lhs rhs} {
+	upvar 1 $lhs foo
+	array set bar $rhs
+
+	if {[array size foo] != [array size bar]} { return 0 }
+	if {[array size foo] == 0} { return 1 }
+	set keys [lsort -unique [concat [array names foo] [array names bar]]]
+	if {[llength $keys] != [array size foo]} { return 0 }
+	foreach key $keys { if {$foo($key) ne $bar($key)} { return 0 } }
+	return 1
 }
 
 namespace eval icon {

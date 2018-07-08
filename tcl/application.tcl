@@ -34,37 +34,11 @@ set Database					"&Database"
 set Board						"&Board"
 set MainMenu					"&Main Menu"
 
-set Notebook					"Notebook"
-set Multiwindow				"Multiwindow"
-set FoldTitleBar				"Fold Titlebar"
-set FoldAllTitleBars			"Fold all Titlebars"
-set UnfoldAllTitleBars		"Unfold all Titlebars"
-set MoveWindow					"Move Window"
-set StayOnTop					"Stay on Top"
-set HideWhenLeavingTab		"Hide When Leaving Tab"
-set SaveLayout					"Save Layout"
-set SaveLayoutAs				"Save Layout as %s"
-set RenameLayout				"Rename Layout"
-set LoadLayout					"Restore Layout"
-set NewLayout					"New Layout"
-set ManageLayouts				"Manage Layouts"
-set ShowAllDockingPoints	"Show all Docking Points"
-set DockingArrowSize			"Docking Arrow Size"
-set Windows						"Windows"
-
-set Pane(analysis)			"Analysis"
-set Pane(board)				"Board"
-set Pane(editor)				"Notation"
-set Pane(tree)					"Tree"
-set Pane(games)				"Games"
-
 set ChessInfoDatabase		"Chess Information Data Base"
 set Shutdown					"Shutdown..."
 set QuitAnyway					"Quit anyway?"
 set CancelLogout				"Cancel Logout"
 set AbortWriteOperation		"Abort write operation"
-set ConfirmOverwrite			"Overwrite existing layout '%s'?"
-set ConfirmDelete				"Really delete layout '%s'?"
 set UpdatesAvailable			"Updates available"
 
 set WriteOperationInProgress "Write operation in progress: currently Scidb is modifying/writing database '%s'."
@@ -112,7 +86,6 @@ set BoardLayout {
 set FontSizeActive 0
 
 array set Prios		{ analysis 200 board 500 editor 400 games 100 tree 300 }
-array set Options		{ docking:showall no layout:name "" layout:list {} }
 array set Defaults	{ menu:background #c3c3c3 }
 
 array set Vars {
@@ -132,8 +105,9 @@ array set MapAnalysisToTerminal {}
 
 
 proc open {} {
+	variable BoardLayout
+	variable PaneOptions
 	variable Defaults
-	variable Options
 	variable Vars
 
 	# setup
@@ -183,22 +157,21 @@ proc open {} {
 	bind $nb <<NotebookTabChanged>> [namespace code [list TabChanged $nb]]
 	set info [::ttk::frame $nb.information]
 	set db [::ttk::frame $nb.database]
-	set main [twm::twm $nb.board \
-		-makepane  [namespace current]::MakePane \
-		-buildpane [namespace current]::BuildPane \
-		-resizing  [namespace current]::Resizing \
-		-workarea  [namespace current]::workArea \
-	]
-	$main showall $Options(docking:showall)
+
+	set Vars(ready) 0
+	set Vars(terminal:number) 0
 	set Vars(frame:information) $info
 	set Vars(frame:database) $db
-	set Vars(frame:main) $main
-	$nb add $info -sticky nsew
-	$nb add $db   -sticky nsew
-	$nb add $main -sticky nsew
-	::widget::notebookTextvarHook $nb $info [namespace current]::mc::Information
-	::widget::notebookTextvarHook $nb $db   [namespace current]::mc::Database
-	::widget::notebookTextvarHook $nb $main [namespace current]::mc::Board
+
+	set main [twm::make $nb.board board \
+		[namespace current]::MakePane \
+		[namespace current]::BuildPane \
+		[array get PaneOptions] \
+		$BoardLayout \
+	]
+	bind $main <<TwmReady>> [namespace code [list Startup $main %d]]
+	bind $main <<TwmAfter>> [namespace code board::afterTWM]
+	twm::load $main
 
 	pack $nb -fill both -expand yes
 
@@ -221,11 +194,6 @@ proc open {} {
 			;
 	}
 
-	bind $main <<TwmReady>>    [namespace code [list Startup $main %d]]
-	bind $main <<TwmGeometry>> [namespace code [list Geometry %d]]
-	bind $main <<TwmMenu>>     [namespace code [list TwmMenu %d %x %y]]
-	bind $main <<TwmAfter>>    [namespace code board::afterTWM]
-
 	set incrFontSize { ::font::changeFontSize +1 }
 	set decrFontSize { ::font::changeFontSize -1 }
 
@@ -237,41 +205,17 @@ proc open {} {
 	bind .application <<Fullscreen>>						[namespace code { Fullscreen %d }]
 
 	::searchentry::bindShortcuts .application
-
-	set Vars(ready) 0
-	set Vars(terminal:number) 0
-
-	if {[::process::testOption initial-layout]} {
-		set Options(layout:name) ""
-		set Options(layout:list) {}
-		set Vars(layout) ""
-	} else {
-		if {	[string length $Options(layout:name)]
-			&& ![file exists [file join $::scidb::dir::layout "$Options(layout:name).layout"]]} {
-			set Options(layout:name) ""
-		}
-		set Vars(layout) $Options(layout:name)
-	}
-
-	set Vars(loading) 1
-	loadInitialLayout $main
-	$main load $Options(layout:list)
-	set Vars(loading) 0
 }
 
 
-proc twm {} { return [set [namespace current]::Vars(frame:main)] }
+proc twm {{id ""}} {
+	variable Vars
 
-
-proc loadInitialLayout {main} {
-	variable BoardLayout
-	variable PaneOptions
-
-	set layout $BoardLayout
-	foreach name [array names PaneOptions] {
-		set layout [string map [list %${name}% [list $PaneOptions($name)]] $layout]
-	}
-	$main init $layout
+	if {[string length $id]} { return $Vars(twm:$id) }
+	set tab [$Vars(notebook) select]
+	if {[string match {*.board} $tab]} { return $Vars(twm:board) }
+	if {[string match {*.database} $tab]} { return [database::twm] }
+	return -code error "[namespace current]::twm: no twm selected"
 }
 
 
@@ -285,11 +229,11 @@ proc nameVarFromUid {uid} {
 		set terminalNumber [NumberFromUid $uid]
 		set analysisNumber $MapTerminalToAnalysis($terminalNumber)
 		set nameVar [namespace current]::NameVar($analysisNumber)
-		trace add variable [namespace current]::mc::Pane($name) write \
+		trace add variable [namespace current]::twm::mc::Pane($name) write \
 			[namespace code [list UpdateNameVar $analysisNumber]]
 		UpdateNameVar $analysisNumber
 	} else {
-		set nameVar [namespace current]::mc::Pane($name)
+		set nameVar [namespace current]::twm::mc::Pane($name)
 	}
 	return $nameVar
 }
@@ -302,13 +246,11 @@ proc NumberFromUid {uid} { return [lindex [split $uid :] 1] }
 proc TabChanged {nb} {
 	variable Vars
 
-	set main $Vars(frame:main)
+	set twm $Vars(twm:board)
 	if {[string match {*.board} [$nb select]]} { set cmd show } else { set cmd hide }
 
-	foreach w [$main floats] {
-		if {[$main get! $w hide 0]} {
-			$main $cmd $w
-		}
+	foreach w [$twm floats] {
+		if {[$twm get! $w hide 0]} { $twm $cmd $w }
 	}
 }
 
@@ -342,7 +284,11 @@ proc MakePane {main parent type uid} {
 	set frame [tk::frame $parent.$uid -borderwidth 0 -takefocus $takefocus]
 	set result [list $frame $nameVar $prio]
 	if {$type ne "pane"} { lappend result [expr {$uid ne "editor"}] yes yes }
-	switch $name { games { set ns tree::games } editor { set ns pgn } default { set ns $name } }
+	switch $name {
+		games   { set ns tree::games }
+		editor  { set ns pgn }
+		default { set ns $name }
+	}
 	bind $frame <Map> [list [namespace current]::${ns}::activate $frame 1]
 	bind $frame <Unmap> [list [namespace current]::${ns}::activate $frame 0]
 	bind $frame <Destroy> [list [namespace current]::${ns}::closed $frame]
@@ -352,7 +298,7 @@ proc MakePane {main parent type uid} {
 }
 
 
-proc BuildPane {main frame uid width height} {
+proc BuildPane {twm frame uid width height} {
 	variable Vars
 
 	switch [NameFromUid $uid] {
@@ -373,7 +319,7 @@ proc BuildPane {main frame uid width height} {
 }
 
 
-proc DestroyPane {main uid analysisNumber} {
+proc DestroyPane {twm uid analysisNumber} {
 	variable Vars
 
 	if {$Vars(shutdown)} { return }
@@ -389,7 +335,7 @@ proc DestroyPane {main uid analysisNumber} {
 		for {set i [expr {$terminalNumber + 1}]} {$i <= $Vars(terminal:number)} {incr i} {
 			set newTerminalNumber [expr {$i - 1}]
 			set analysisNumber $MapTerminalToAnalysis($i)
-			$main changeuid analysis:$i analysis:$newTerminalNumber
+			$twm changeuid analysis:$i analysis:$newTerminalNumber
 			set MapTerminalToAnalysis($newTerminalNumber) $analysisNumber
 			set MapAnalysisToTerminal($analysisNumber) $newTerminalNumber
 			set Vars(frame:analysis:$newTerminalNumber) $vars(frame:analysis:$i)
@@ -412,7 +358,7 @@ proc UpdateNameVar {analysisNumber args} {
 		variable NameVar
 
 		set terminalNumber $MapAnalysisToTerminal($analysisNumber)
-		set NameVar($analysisNumber) $mc::Pane(analysis)
+		set NameVar($analysisNumber) $twm::mc::Pane(analysis)
 		if {$terminalNumber > 1} { append NameVar($analysisNumber) " ($terminalNumber)" }
 	}
 }
@@ -427,7 +373,7 @@ proc newAnalysisPane {analysisNumber} {
 	set highest $Vars(terminal:number)
 	set terminalNumber [expr {$highest + 1}]
 	set uid analysis:$terminalNumber
-	set main $Vars(frame:main)
+	set main $Vars(twm:board)
 	set MapTerminalToAnalysis($terminalNumber) $analysisNumber
 	set MapAnalysisToTerminal($analysisNumber) $terminalNumber
 
@@ -448,7 +394,7 @@ proc resizePaneHeight {analysisNumber minHeight} {
 	variable MapAnalysisToTerminal
 	variable Vars
 
-	set main $Vars(frame:main)
+	set main $Vars(twm:board)
 	set uid analysis:$MapAnalysisToTerminal($analysisNumber)
 	set pane [$main leaf $uid]
 
@@ -473,40 +419,6 @@ proc mapToTerminalNumber {analysisNumber} {
 }
 
 
-proc restoreLayout {name list} {
-	variable Options
-	variable Vars
-
-	set Vars(loading) 1
-	$Vars(frame:main) load $list
-	set Vars(loading) 0
-	set Vars(layout) $name
-	set Options(layout:name) $name
-	set Options(layout:list) $list
-}
-
-
-proc loadLayout {name} {
-	variable Vars
-
-	set fh [::open [file join $::scidb::dir::layout "$name.layout"] "r"]
-	set list [read $fh]
-	::close $fh
-	restoreLayout $name $list
-}
-
-
-proc inspectLayout {} {
-	variable Vars
-	return [$Vars(frame:main) inspect {Extent}]
-}
-
-
-proc currentLayout {} {
-	return [set [namespace current]::Vars(layout)]
-}
-
-
 proc activeTab {} {
 	return [lindex [split [.application.nb select] .] end]
 }
@@ -522,7 +434,7 @@ proc exists? {uid} {
 proc shutdown {} {
 	variable icon::32x32::shutdown
 	variable ::scidb::mergebaseName
-	variable Options
+	variable twm::Options
 	variable Vars
 
 	set dlg .application.shutdown
@@ -572,7 +484,7 @@ proc shutdown {} {
 
 	tk::toplevel $dlg -class Scidb
 	wm withdraw $dlg
-	pack [tk::frame $dlg.f -border 2 -relief raised]
+	pack [tk::frame $dlg.f -borderwidth 2 -relief raised]
 	pack [tk::label $dlg.f.text -compound left -image $shutdown -text " $mc::Shutdown"] -padx 10 -pady 10
 	wm resizable $dlg no no
 	wm transient $dlg .application
@@ -585,7 +497,10 @@ proc shutdown {} {
 
 	prepareExit $backup
 	if {[tk windowingsystem] eq "x11"} { ::scidb::tk::sm disconnect }
-	set Options(layout:list) [inspectLayout]
+
+	foreach twm $Vars(twm) {
+		set Options($Vars(id:$twm):layout:list) [twm::inspectLayout $twm]
+	}
 
 	::widget::busyCursor off
 	::ttk::releaseGrab $dlg
@@ -935,7 +850,10 @@ proc EmbedUnsavedFiles {unsaved w infoFont alertFont} {
 	append content "</table>"
 	lassign [$w.t parse $content] x0 y0 x1 y1
 	set margins [expr {2*[$w.t margin]}]
-	$w configure -width [expr {$x1 - $x0 + $margins + 10}] -height [expr {$y1 - $y0 + $margins}]
+	set width [expr {$x1 - $x0 + $margins + 10}]
+	set height [expr {$y1 - $y0 + $margins}]
+	$w configure -width $width -height $height
+	$w.t configure -width $width ;# prevent endless loop in Tk lib (Tk bug)
 }
 
 
@@ -1101,6 +1019,14 @@ proc Startup {main args} {
 	information::build $Vars(frame:information) $width $height
 	database::build $Vars(frame:database) $width $height
 
+	$nb add $Vars(frame:information) -sticky nsew
+	$nb add $Vars(frame:database) -sticky nsew
+	$nb add $main -sticky nsew
+
+	::widget::notebookTextvarHook $nb $Vars(frame:information) [namespace current]::mc::Information
+	::widget::notebookTextvarHook $nb $Vars(frame:database) [namespace current]::mc::Database
+	::widget::notebookTextvarHook $nb $main [namespace current]::mc::Board
+
 	foreach tab {information database board} {
 		bind $Vars(frame:$tab) <FocusIn>  [namespace code [list ${tab}::setActive yes]]
 		bind $Vars(frame:$tab) <FocusOut> [namespace code [list ${tab}::setActive no]]
@@ -1124,11 +1050,22 @@ proc Startup {main args} {
 	wm deiconify $app
 	database::finish $app
 	::splash::close
+	set Vars(ready) 1
+
+	# we need a small timeout for HTML widget;
+	# for any reason "update idletasks" is not sufficient
+	after 1 [namespace code [list Startup2 $tab]]
+}
+
+
+proc Startup2 {tab} {
+	set app .application
+	set nb $app.nb
+
 	ChooseLanguage $app
 	::load::writeLog
 	update idletasks
 	set ::scidb::intern::blocked 0
-	set Vars(ready) 1
 
 	database::preOpen $app
 
@@ -1143,14 +1080,15 @@ proc Startup {main args} {
 	$nb select .application.nb.$tab
 
 	after idle [namespace code [list switchTab $tab]]
+	after idle { ::tips::show .application }
 	#after idle [list ::beta::welcomeToScidb $app]
-	::util::photos::checkForUpdate [namespace current]::InformAboutUpdates
+	#::util::photos::checkForUpdate [namespace current]::InformAboutUpdates
 }
 
 
 proc Fullscreen {flag} {
 #	variable Vars
-#	if {!$flag && [llength $Vars(geometry)} { Geometry $Vars(geometry) }
+#	if {!$flag && [llength $twm::Geometry} { twm::geometry $twm::Geometry }
 }
 
 
@@ -1158,26 +1096,205 @@ proc FontSizeChanged {w value} {
 	variable Vars
 
 	if {$w eq ".application"} {
-		$Vars(frame:main) headerfontsize [::html::incrFontSize [$Vars(frame:main) headerfontsize] $value]
+		$Vars(twm:board) headerfontsize [::html::incrFontSize [$Vars(twm:board) headerfontsize] $value]
 	}
 }
 
 
-proc Geometry {data} {
-	variable Vars
+wm iconphoto .application -default $::icon::64x64::logo $::icon::16x16::logo
+
+
+namespace eval twm {
+namespace eval mc {
+
+set FoldTitleBar				"Fold Titlebar"
+set FoldAllTitleBars			"Fold all Titlebars"
+set UnfoldAllTitleBars		"Unfold all Titlebars"
+set Notebook					"Notebook"
+set Multiwindow				"Multiwindow"
+set MoveWindow					"Move Window"
+set StayOnTop					"Stay on Top"
+set HideWhenLeavingTab		"Hide When Leaving Tab"
+set SaveLayout					"Save Layout"
+set SaveLayoutAs				"Save Layout as %s"
+set RenameLayout				"Rename Layout"
+set LoadLayout					"Restore Layout"
+set NewLayout					"New Layout"
+set ManageLayouts				"Manage Layouts"
+set ShowAllDockingPoints	"Show all Docking Points"
+set DockingArrowSize			"Docking Arrow Size"
+set LinkLayout					"Link Layout '%s'"
+set UnlinkLayout				"Unlink Layout '%s'"
+set LinkLayoutTip				"Link With Board Layout"
+set Actual						"current"
+set Windows						"Windows"
+set ConfirmDelete				"Really delete layout '%s'?"
+set ConfirmOverwrite			"Overwrite existing layout '%s'?"
+set EnterName					"Enter Name"
+
+set Pane(analysis)			"Analysis"
+set Pane(board)				"Board"
+set Pane(editor)				"Notation"
+set Pane(tree)					"Tree"
+set Pane(games)				"Games"
+set Pane(player)				"Players"
+set Pane(event)				"Events"
+set Pane(annotator)			"Annotator"
+set Pane(site)					"Site"
+set Pane(position)			"Position"
+
+} ;# namespace mc
+
+
+array set Options {
+	board:docking:showall		no
+	board:layout:name				""
+	board:layout:list				{}
+	games:docking:showall		no
+	games:layout:name				""
+	games:layout:list				{}
+	player:docking:showall		yes
+	player:layout:name			""
+	player:layout:list			{}
+	event:docking:showall		yes
+	event:layout:name				""
+	event:layout:list				{}
+	site:docking:showall			yes
+	site:layout:name				""
+	site:layout:list				{}
+	annotator:docking:showall	yes
+	annotator:layout:name		""
+	annotator:layout:list		{}
+	position:docking:showall	yes
+	position:layout:name			""
+	position:layout:list			{}
+}
+
+variable SetupFunc {}
+
+
+proc make {twm id makePane buildPane options layout args} {
+	variable [namespace parent]::Vars
+	variable Options
+
+	twm::twm $twm \
+		-makepane  $makePane \
+		-buildpane $buildPane \
+		-resizing  [namespace current]::resizing \
+		-workarea  [namespace current]::workArea \
+		-frameborderwidth 0 \
+		{*}$args \
+		;
+	$twm showall $Options($id:docking:showall)
+	pack $twm -fill both -expand yes
+
+	if {$id eq "board"} { bind $twm <<TwmGeometry>> [namespace code [list geometry %d]] }
+	bind $twm <<TwmMenu>> [namespace code [list Menu $twm %d %x %y]]
+
+	set Vars($id:init:options) $options
+	set Vars($id:init:layout) $layout
+	set Vars(id:$twm) $id
+	set Vars(twm:$id) $twm
+	lappend Vars(twm) $twm
+
+	return $twm
+}
+
+
+proc load {twm} {
+	variable [namespace parent]::Vars
+
+	set id $Vars(id:$twm)
+	set Vars(loading) 1
+	loadInitialLayout $twm
+	$twm load [GetLayout $id]
+	set Vars(loading) 0
+	return $twm
+}
+
+
+proc loadInitialLayout {twm {origTWM ""}} {
+	variable [namespace parent]::Vars
+
+	set id $Vars(id:[expr {[string length $origTWM] ? $origTWM : $twm}])
+	array set opts $Vars($id:init:options)
+	set layout $Vars($id:init:layout)
+	foreach name [array names opts] {
+		set layout [string map [list %${name}% [list $opts($name)]] $layout]
+	}
+	$twm init $layout
+}
+
+
+proc workArea {twm} {
+	variable [namespace parent]::Vars
+
+	if {[::menu::fullscreen?]} {
+		set width [winfo screenwidth .application]
+		set height [winfo screenheight .application]
+	} else {
+		lassign [winfo workarea .application] _ _ ww wh
+		lassign [winfo extents .application] ew1 ew2 eh1 eh2
+		set width [expr {$ww - $ew1 - $ew2}]
+		set height [expr {$wh - $eh1 - $eh2}]
+	}
+	decr height [::theme::notebookTabPaneSize .application.nb]
+	if {$Vars(id:$twm) ne "board"} {
+# XXX problem: returns 0 because it is called too early
+		decr height [::application::database::switcherSize]
+	}
+	set bd [expr {2*[::theme::notebookBorderwidth]}]
+	decr width $bd
+	decr height $bd
+	return [list $width $height]
+}
+
+
+proc resizing {twm toplevel width height} {
+	variable [namespace parent]::Vars
+
+	if {[::menu::fullscreen?]} {
+		set maxwidth [winfo screenwidth .application]
+		set maxheight [winfo screenheight .application]
+	} else {
+		lassign [winfo workarea .application] _ _ ww wh
+		lassign [winfo extents .application] ew1 ew2 eh1 eh2
+		set maxwidth [expr {$ww - $ew1 - $ew2}]
+		set maxheight [expr {$wh - $eh1 - $eh2}]
+	}
+	set bd [expr {2*[::theme::notebookBorderwidth]}]
+	decr maxwidth $bd
+	decr maxheight $bd
+	decr maxheight [::theme::notebookTabPaneSize .application.nb]
+	if {$Vars(id:$twm) ne "board"} {
+# XXX problem: returns 0 because it is called too early
+		decr maxheight [::application::database::switcherSize]
+	}
+	set width [expr {min($width, $maxwidth)}]
+	set height [expr {min($height, $maxheight)}]
+	return [list $width $height]
+}
+
+
+proc geometry {data} {
+	variable [namespace parent]::Vars
+	variable Geometry
 
 	if {[::menu::fullscreen?]} { return }
 
 	# TODO:
 	# Probably we should not resize the main pane after the theme has changed.
 
-	set Vars(geometry) $data
+	set Geometry $data
 	lassign $data width height minwidth minheight maxwidth maxheight expand
 
-	set incrH 2
-	set incrV [expr {[::theme::notebookTabPaneSize .application.nb] + 2}]
+	set bd [expr {2*[::theme::notebookBorderwidth]}]
+	incr incrH $bd
+	incr incrV $bd
+	incr incrV [::theme::notebookTabPaneSize .application.nb]
 	incr width  $incrH
 	incr height $incrV
+
 	if {$minwidth}  { incr minwidth $incrH }
 	if {$maxwidth}  { incr maxwidth $incrH }
 	if {$minheight} { incr minheight $incrV }
@@ -1211,60 +1328,72 @@ proc Geometry {data} {
 
 	if {[::widget::checkIsKDE]} {
 		# We need a delay, otherwise resizing may not work, see above.
-		after 50 [list wm resizable .application $resizeW $resizeH]
+		after 250 [list wm resizable .application $resizeW $resizeH]
 	}
 }
 
 
-proc Resizing {twm toplevel width height} {
-	if {[::menu::fullscreen?]} {
-		set width [winfo screenwidth .application]
-		set height [winfo screenheight .application]
-		incr width -2	;# borders
-		incr height -2	;# borders
-	} else {
-		lassign [winfo workarea .application] _ _ ww wh
-		lassign [winfo extents .application] ew1 ew2 eh1 eh2
-		set width [expr {min($width, $ww - $ew1 - $ew2 - 2)}]	   ;# regard borders
-		set height [expr {min($height, $wh - $eh1 - $eh2 - 2)}]	;# regard borders
-	}
-	return [list $width $height]
-}
-
-
-proc workArea {main} {
-	if {[::menu::fullscreen?]} {
-		set width [winfo screenwidth .application]
-		set height [winfo screenheight .application]
-	} else {
-		lassign [winfo workarea .application] _ _ ww wh
-		lassign [winfo extents .application] ew1 ew2 eh1 eh2
-		set width [expr {$ww - $ew1 - $ew2}]
-		set height [expr {$wh - $eh1 - $eh2 - [::theme::notebookTabPaneSize .application.nb]}]
-	}
-	incr width -2	;# borders
-	incr height -2	;# borders
-	return [list $width $height]
-}
-
-
-proc TwmMenu {w x y} {
-	set menu .application.nb.board.__menu__
-	# Try to catch accidental double clicks.
-	if {[winfo exists $menu]} { return }
-	menu $menu
-	catch { wm attributes $menu -type popup_menu }
-	makeLayoutMenu $menu $w
-	bind $menu <<MenuUnpost>> [list after idle [list catch [list destroy $menu]]]
-	tk_popup $menu $x $y
-}
-
-
-proc currentLayoutIsEqTo {layout {ignoreFloatPositions false}} {
+proc restoreLayout {twm name list} {
+	variable [namespace parent]::Vars
 	variable Options
-	variable Vars
 
-	set currentLayout [inspectLayout]
+	set id $Vars(id:$twm)
+	set Vars(loading) 1
+	$Vars(twm:$id) load $list
+	set Vars(loading) 0
+	set Vars($id:layout) $name
+	set Options($id:layout:name) $name
+	set Options($id:layout:list) $list
+	LoadLinkedLayouts $id $name
+}
+
+
+proc setup {id layout} {
+	variable [namespace parent]::Vars
+	variable SetupFunc
+
+	if {[llength $SetupFunc]} {
+		{*}$SetupFunc $layout
+	} else {
+		restoreLayout $Vars(twm:$id) $Vars($id:layout) $layout
+	}
+}
+
+
+proc loadLayout {twm name} {
+	variable [namespace parent]::Vars
+
+	set id $Vars(id:$twm)
+	set layout $Vars($id:layout)
+	set Vars($id:layout) $name
+	# TODO: find directory for actual variant
+	set file [file join $::scidb::dir::layout $id "$name.layout"]
+	if {[catch { ::load::source $file -encoding utf-8 -throw 1 } -> opts]} {
+		set Vars($id:layout) $layout
+		return {*}$opts -rethrow 1
+	}
+	LoadLinkedLayouts $id $name
+}
+
+
+proc inspectLayout {twm} {
+	variable [namespace parent]::Vars
+
+	set id $Vars(id:$twm)
+	set list {}
+	if {$id eq "board"} { set list {Extent} }
+	return [$Vars(twm:$id) inspect {*}$list]
+}
+
+
+proc currentLayout {twm} {
+	variable [namespace parent]::Vars
+	return $Vars($Vars(id:$twm):layout)
+}
+
+
+proc currentLayoutIsEqTo {twm layout {ignoreFloatPositions false}} {
+	set currentLayout [inspectLayout $twm]
 	if {$ignoreFloatPositions} { set opts -all } else { set opts {} }
 	set lhs [regsub {*}$opts -- {[-][xy]\s\s*[0-9]*} $currentLayout ""]
 	set rhs [regsub {*}$opts -- {[-][xy]\s\s*[0-9]*} $layout ""]
@@ -1274,16 +1403,16 @@ proc currentLayoutIsEqTo {layout {ignoreFloatPositions false}} {
 }
 
 
-proc renameLayout {parent name} {
+proc renameLayout {twm name parent} {
 	variable layout_
 
-	SaveLayout $parent [list [namespace current]::RenameLayout $name] $name $mc::RenameLayout
+	SaveLayout $twm $parent [list [namespace current]::RenameLayout $twm $name] $name $mc::RenameLayout
 	return $layout_
 }
 
 
-proc deleteLayout {parent name} {
-	variable Vars
+proc deleteLayout {twm name parent} {
+	variable [namespace parent]::Vars
 	variable Options
 
 	if {[::dialog::question \
@@ -1291,87 +1420,152 @@ proc deleteLayout {parent name} {
 			-message [format $mc::ConfirmDelete $name] \
 			-default no \
 		] eq "yes"} {
-		set filename [file join $::scidb::dir::layout "$name.layout"]
+		set id $Vars(id:$twm)
+		# TODO: find directory for actual variant
+		set filename [file join $::scidb::dir::layout $id "$name.layout"]
 		file delete -force -- $filename
-		if {$Vars(layout) eq $name} { set Vars(layout) "" }
-		if {$Options(layout:name) eq $name} { set Options(layout:name) "" }
+		if {$Vars($id:layout) eq $name} { set Vars($id:layout) "" }
+		if {$Options($id:layout:name) eq $name} { set Options($id:layout:name) "" }
+		if {$id eq "board"} {
+			foreach attr [array names Options *:link] {
+				if {$Options($attr) eq $name} { array unset Options $attr }
+			}
+		} else {
+			array unset Options $id:$name:link
+		}
 		return 1
 	}
 	return 0
 }
 
 
-proc makeLayoutMenu {menu {w ""}} {
+proc getId {twm} {
+	variable [namespace parent]::Vars
+	return $Vars(id:$twm)
+}
+
+
+proc LoadLinkedLayouts {id name} {
+	variable [namespace parent]::Vars
+	variable Options
+	variable SetupFunc
+
+	if {$id ne "board"} { return }
+	if {[llength $SetupFunc]} { return }
+
+	foreach attr [array names Options *:link] {
+		if {$Options($attr) eq $name} {
+			lassign [split $attr :] id myName
+			if {$Options($id:layout:name) ne $myName} {
+				loadLayout $Vars(twm:$id) $myName
+			}
+		}
+	}
+}
+
+
+proc GetLayout {id} {
+	variable [namespace parent]::Vars
+	variable Options
+
+	if {[::process::testOption initial-layout]} {
+		set Options($id:layout:name) ""
+		set Options($id:layout:list) {}
+		set Vars($id:layout) ""
+	} else {
+		# TODO: find directory for actual variant
+		if {	[string length $Options($id:layout:name)]
+			&& ![file exists [file join $::scidb::dir::layout $id "$Options($id:layout:name).layout"]]} {
+			set Options($id:layout:name) ""
+		}
+		set Vars($id:layout) $Options($id:layout:name)
+	}
+	return $Options($id:layout:list)
+}
+
+
+proc Menu {twm w x y} {
+	set menu $twm.__menu__
+	# Try to catch accidental double clicks.
+	if {[winfo exists $menu]} { return }
+	menu $menu
+	catch { wm attributes $menu -type popup_menu }
+	makeLayoutMenu $twm $menu $w
+	bind $menu <<MenuUnpost>> +[list after idle [list catch [list destroy $menu]]]
+	tk_popup $menu $x $y
+}
+
+
+proc makeLayoutMenu {twm menu {w ""}} {
+	variable [namespace parent]::Vars
+	variable Options
 	variable flat_
 	variable ismultiwindow_
 	variable stayontop_
 	variable hide_
 	variable layout_
-	variable PaneOptions
-	variable Options
-	variable Vars
 
-	set main $Vars(frame:main)
+	set id $Vars(id:$twm)
 	set count 0
 
 	if {[string length $w]} {
-		set flat_ [$main get! $w flat -1]
+		set flat_ [$twm get! $w flat -1]
 
-		if {$flat_ != -1 && ![$main ismetachild $w]} {
+		if {$flat_ != -1 && ![$twm ismetachild $w]} {
 			$menu add checkbutton \
 				-label " $mc::FoldTitleBar" \
 				-variable [namespace current]::flat_ \
-				-command [list $main togglebar $w] \
+				-command [list $twm togglebar $w] \
 				;
 			::theme::configureCheckEntry $menu
 			incr count
 		}
 
 		set v $w
-		if {!([$main ismultiwindow $w] || [$main isnotebook $w])} { set v [$main parent $w] }
-		if {[$main ismultiwindow $v] || [$main isnotebook $v]} {
+		if {!([$twm ismultiwindow $w] || [$twm isnotebook $w])} { set v [$twm parent $w] }
+		if {[$twm ismultiwindow $v] || [$twm isnotebook $v]} {
 			if {$count} { $menu add separator }
-			set ismultiwindow_ [$main ismultiwindow $v]
+			set ismultiwindow_ [$twm ismultiwindow $v]
 			$menu add radiobutton \
 				-label " $mc::Multiwindow" \
 				-variable [namespace current]::ismultiwindow_ \
 				-value 1 \
-				-command [list $main togglenotebook $v] \
+				-command [list $twm togglenotebook $v] \
 				;
 			::theme::configureRadioEntry $menu
 			$menu add radiobutton \
 				-label " $mc::Notebook" \
 				-variable [namespace current]::ismultiwindow_ \
 				-value 0 \
-				-command [list $main togglenotebook $v] \
+				-command [list $twm togglenotebook $v] \
 				;
 			::theme::configureRadioEntry $menu
 			incr count
 		}
 	}
 
-	set unfolded [lmap v [$main find flat 0] { expr {[$main ismetachild $v] ? [continue] : $v}}]
-	set folded [lmap v [$main find flat 1] { expr {[$main ismetachild $v] ? [continue] : $v}}]
+	set unfolded [lmap v [$twm find flat 0] { expr {[$twm ismetachild $v] ? [continue] : $v}}]
+	set folded [lmap v [$twm find flat 1] { expr {[$twm ismetachild $v] ? [continue] : $v}}]
 	if {[llength $unfolded] || [llength $folded]} {
 		if {$count} { $menu add separator }
 		$menu add command \
 			-label " $mc::FoldAllTitleBars" \
 			-image $::icon::16x16::none \
 			-compound left \
-			-command [list [namespace current]::ToggleTitlebars $main $unfolded] \
+			-command [list [namespace current]::ToggleTitlebars $twm $unfolded] \
 			-state [expr {[llength $unfolded] ? "normal" : "disabled"}] \
 			;
 		$menu add command \
 			-label " $mc::UnfoldAllTitleBars" \
 			-image $::icon::16x16::none \
 			-compound left \
-			-command [list [namespace current]::ToggleTitlebars $main $folded] \
+			-command [list [namespace current]::ToggleTitlebars $twm $folded] \
 			-state [expr {[llength $folded] ? "normal" : "disabled"}] \
 			;
 		incr count
 	}
 
-	if {[llength [set floats [$main floats]]]} {
+	if {[llength [set floats [$twm floats]]]} {
 		if {$count} { $menu add separator }
 		menu $menu.stayontop
 		$menu add cascade \
@@ -1381,11 +1575,11 @@ proc makeLayoutMenu {menu {w ""}} {
 			-compound left \
 			;
 		foreach v $floats {
-			set stayontop_($v) [$main get! $v stayontop 0]
+			set stayontop_($v) [$twm get! $v stayontop 0]
 			$menu.stayontop add checkbutton \
-				-label [set [$main get [$main leader $v] name]] \
+				-label [set [$twm get [$twm leader $v] name]] \
 				-variable [namespace current]::stayontop_($v) \
-				-command [namespace code [list StayOnTop $main $v]] \
+				-command [namespace code [list StayOnTop $twm $v]] \
 				;
 			::theme::configureCheckEntry $menu.stayontop
 		}
@@ -1397,18 +1591,20 @@ proc makeLayoutMenu {menu {w ""}} {
 			-compound left \
 			;
 		foreach v $floats {
-			set hide_($v) [$main get! $v hide 0]
+			set hide_($v) [$twm get! $v hide 0]
 			$menu.hide add checkbutton \
-				-label [set [$main get [$main leader $v] name]] \
+				-label [set [$twm get [$twm leader $v] name]] \
 				-variable [namespace current]::hide_($v) \
-				-command [namespace code [list HideWhenLeavingTab $main $v]] \
+				-command [namespace code [list HideWhenLeavingTab $twm $v]] \
 				;
 			::theme::configureCheckEntry $menu.hide
 		}
-		set editor [$main leaf editor]
-		if {[$main ismetachild $editor]} { set editor [$main parent $editor] }
-		set i [lsearch $floats $editor]
-		if {$i >= 0} { set floats [lreplace $floats $i $i] }
+		if {"editor" in [$twm leaves]} {
+			set editor [$twm leaf editor]
+			if {[$twm ismetachild $editor]} { set editor [$twm parent $editor] }
+			set i [lsearch $floats $editor]
+			if {$i >= 0} { set floats [lreplace $floats $i $i] }
+		}
 		if {[llength $floats] > 0} {
 			menu $menu.close
 			$menu add cascade \
@@ -1419,68 +1615,72 @@ proc makeLayoutMenu {menu {w ""}} {
 				;
 			foreach v $floats {
 				$menu.close add command \
-					-label [set [$main get [$main leader $v] name]] \
+					-label [set [$twm get [$twm leader $v] name]] \
 					-image $::icon::16x16::none \
 					-compound left \
-					-command [list $main close $v] \
+					-command [list $twm close $v] \
 					;
 			}
 		}
 		incr count
 	}
 
-	if {$count} { $menu add separator }
-	menu $menu.windows
-	$menu add cascade \
-		-menu $menu.windows \
-		-label " $mc::Windows" \
-		-image $::icon::16x16::none \
-		-compound left \
-		;
-	foreach name [array names PaneOptions] {
-		if {$name ni {board analysis editor}} {
-			variable vis_${name}_ [$main isdocked $name]
+	array set opts $Vars($id:init:options)
+	set leaves1 [lmap uid [array names opts] {
+		expr {$uid ni {board analysis editor} && $uid ne $id ? $uid : [continue]}
+	}]
+	set leaves2 [lmap uid [$twm leaves] {
+		expr {[string match {analysis:*} $uid] && [$twm isdocked $uid] ? $uid : [continue]}
+	}]
+	if {[llength $leaves1] || [llength $leaves2]} {
+		if {$count} { $menu add separator }
+		menu $menu.windows
+		$menu add cascade \
+			-menu $menu.windows \
+			-label " $mc::Windows" \
+			-image $::icon::16x16::none \
+			-compound left \
+			;
+		foreach uid $leaves1 {
+			variable vis_${uid}_ [$twm isdocked $uid]
 			$menu.windows add checkbutton \
-				-label $mc::Pane($name) \
-				-variable [namespace current]::vis_${name}_ \
-				-command [namespace code [list ChangeState $main $name]] \
+				-label $mc::Pane($uid) \
+				-variable [namespace current]::vis_${uid}_ \
+				-command [namespace code [list ChangeState $twm $uid]] \
 				;
 			::theme::configureCheckEntry $menu.windows
 		}
-	}
-	foreach uid [$main leaves] {
-		if {[string match {analysis:*} $uid] && [$main isdocked $uid]} {
-			variable MapTerminalToAnalysis
-			variable NameVar
+		foreach uid $leaves2 {
+			variable [namespace parent]::MapTerminalToAnalysis
+			variable [namespace parent]::NameVar
 			variable vis_${uid}_ 1
 			$menu.windows add checkbutton \
-				-label $NameVar($MapTerminalToAnalysis([NumberFromUid $uid])) \
+				-label $NameVar($MapTerminalToAnalysis([[namespace parent]::NumberFromUid $uid])) \
 				-variable [namespace current]::vis_${uid}_ \
-				-command [namespace code [list ChangeState $main $uid]] \
+				-command [namespace code [list ChangeState $twm $uid]] \
 				;
 			::theme::configureCheckEntry $menu.windows
 		}
-	}
-	incr count
+		incr count
 
-#	if {[string length $w] && [$main get $w move 0]} {
-#		set hidden [$main hidden $w]
-#		if {[llength $hidden]} {
-#			menu $menu.move
-#			$menu add cascade -menu $menu.move -label $mc::MoveWindow
-#			foreach v $hidden {
-#				$menu.move add command \
-#					-label [set [$main get [$main leader $v] name]] \
-#					-command [namespace code [list MoveWindow $main $w $v]] \
-#					;
+#		if {[string length $w] && [$twm get $w move 0]} {
+#			set hidden [$twm hidden $w]
+#			if {[llength $hidden]} {
+#				menu $menu.move
+#				$menu add cascade -menu $menu.move -label $mc::MoveWindow
+#				foreach v $hidden {
+#					$menu.move add command \
+#						-label [set [$twm get [$twm leader $v] name]] \
+#						-command [namespace code [list MoveWindow $twm $w $v]] \
+#						;
+#				}
 #			}
+#			incr count
 #		}
-#		incr count
-#	}
+	}
 
 	if {$count} { $menu add separator }
-	set names [lmap f [glob -nocomplain -directory $::scidb::dir::layout *.layout] {
-		file tail [file rootname $f]}]
+	set names [glob $id]
 	if {[llength $names]} {
 		menu $menu.load
 		$menu add cascade \
@@ -1490,32 +1690,34 @@ proc makeLayoutMenu {menu {w ""}} {
 			-compound left \
 			;
 		foreach name $names {
+			set lbl $name
+			if {$name eq $Options($id:layout:name)} { append lbl " ($mc::Actual)" }
 			$menu.load add command \
-				-label $name \
+				-label $lbl \
 				-image $::icon::16x16::none \
 				-compound left \
-				-command [namespace code [list loadLayout $name]] \
+				-command [namespace code [list loadLayout $twm $name]] \
 				;
 		}
 	}
 	set labelName " $mc::SaveLayoutAs"
 	set state "disabled"
-	if {[string length $Vars(layout)]} {
-		if {$Vars(layout) ni $names} {
-			set Vars(layout) ""
-			set Options(layout:name) ""
+	if {[string length $Vars($id:layout)]} {
+		if {$Vars($id:layout) ni $names} {
+			set Vars($id:layout) ""
+			set Options($id:layout:name) ""
 		} else {
-			set labelName [string map [list "%s" "\"$Vars(layout)\""] $labelName]
-			if {![currentLayoutIsEqTo $Options(layout:list) false]} { set state "normal" }
+			set labelName [string map [list "%s" "\"$Vars($id:layout)\""] $labelName]
+			if {![currentLayoutIsEqTo $twm $Options($id:layout:list) false]} { set state "normal" }
 		}
 	}
-	set layout_ $Vars(layout)
-	if {[string length $Vars(layout)]} {
+	set layout_ $Vars($id:layout)
+	if {[string length $Vars($id:layout)]} {
 		$menu add command \
 			-label $labelName \
 			-image $::icon::16x16::save \
 			-compound left \
-			-command [namespace code [list DoSaveLayout $main $names]] \
+			-command [namespace code [list DoSaveLayout $twm $twm $names]] \
 			-state $state \
 			;
 	}
@@ -1524,72 +1726,161 @@ proc makeLayoutMenu {menu {w ""}} {
 		-image $::icon::16x16::saveAs \
 		-compound left \
 		-command [namespace code [list SaveLayout \
-				$main [namespace current]::DoSaveLayout "" $mc::SaveLayout]]
-		;
-	$menu add command \
-		-label " $mc::ManageLayouts..." \
-		-image $::icon::16x16::setup \
-		-compound left \
-		-command [list [namespace current]::layout::open $main $Vars(layout)] \
-		-state [expr {[llength $names] ? "normal" : "disabled"}] \
+				$twm $twm [namespace current]::DoSaveLayout "" $mc::SaveLayout]]
 		;
 
-	$menu add separator
-	$menu add checkbutton \
-		-label " $mc::ShowAllDockingPoints" \
-		-variable [namespace current]::Options(docking:showall) \
-		-command [namespace code [list ShowAllDockingPoints $main]] \
-		;
-	::theme::configureCheckEntry $menu
+	if {$id ne "board" && [string length [set current $Vars($id:layout)]] > 0} {
+		set names [glob board]
+		if {[llength $names]} {
+			menu $menu.link
+			$menu add cascade \
+				-menu $menu.link \
+				-label " [format $mc::LinkLayout $current]" \
+				-image $::icon::16x16::none \
+				-compound left \
+				;
+			tooltip::tooltip $menu -index [$menu index end] $mc::LinkLayoutTip
+			set state [expr {[info exists Options($id:$current:link)] ? "normal" : "disabled"}]
+			foreach name $names {
+				$menu.link add radiobutton \
+					-label $name \
+					-variable [namespace current]::Options($id:$current:link) \
+					-value $name \
+					;
+				::theme::configureRadioEntry $menu.link
+			}
+			$menu add command \
+				-label " [format $mc::UnlinkLayout $current]" \
+				-image $::icon::16x16::none \
+				-compound left \
+				-command [list array unset [namespace current]::Options $id:$current:link] \
+				-state $state \
+				;
+			bind $menu <<MenuUnpost>> [namespace code [list CheckLink $id:$current]]
+		}
+	}
 
-	$menu add separator
-	menu $menu.size
-	$menu add cascade \
-		-menu $menu.size \
-		-label " $mc::DockingArrowSize" \
-		-image $::icon::16x16::none \
-		-compound left \
-		;
-	foreach {size pixels} {Small 16 Medium 24 Large 32} {
-		$menu.size add radiobutton \
-			-label " [set ::toolbar::mc::$size]" \
-			-variable ::twm::Defaults(cross:size) \
-			-value $pixels \
+	set n 0
+	lmap uid [$twm leaves] { expr {[$twm isundockable $uid] ? [incr n] : [continue]} }
+	if {$n > 0} {
+		set link ""
+		set cur $Vars($id:layout)
+		if {[info exists Options($id:$cur:link)]} { set link $Options($id:$cur:link) }
+		set cmd [list [namespace parent]::layout::open $twm $id $cur $link]
+		$menu add command \
+			-label " $mc::ManageLayouts..." \
+			-image $::icon::16x16::setup \
+			-compound left \
+			-command $cmd \
+			-state [expr {[llength $names] ? "normal" : "disabled"}] \
 			;
+
+		$menu add separator
+		$menu add checkbutton \
+			-label " $mc::ShowAllDockingPoints" \
+			-variable [namespace parent]::Options($id:docking:showall) \
+			-command [namespace code [list ShowAllDockingPoints $twm]] \
+			;
+		::theme::configureCheckEntry $menu
+
+		$menu add separator
+		menu $menu.size
+		$menu add cascade \
+			-menu $menu.size \
+			-label " $mc::DockingArrowSize" \
+			-image $::icon::16x16::none \
+			-compound left \
+			;
+		foreach {size pixels} {Small 16 Medium 24 Large 32} {
+			$menu.size add radiobutton \
+				-label " [set ::toolbar::mc::$size]" \
+				-variable ::twm::Defaults(cross:size) \
+				-value $pixels \
+				;
+			::theme::configureRadioEntry $menu.size
+		}
 	}
 }
 
 
-proc ShowAllDockingPoints {main} {
+proc glob {id} {
+	# TODO: find directory for actual variant
+	set files [::glob -nocomplain -directory [file join $::scidb::dir::layout $id] *.layout]
+	return [lsort -dictionary [lmap f $files {file tail [file rootname $f]}]]
+}
+
+
+proc setLink {id name link} {
 	variable Options
-	$main showall $Options(docking:showall)
-}
 
-
-proc MoveWindow {main w recv} {
-	$main undock -temporary $w
-	$main dock $w $recv left
-}
-
-
-proc ChangeState {main uid} {
-	variable PaneOptions
-
-	if {[$main isdocked $uid]} {
-		destroy [$main leaf $uid]
+	if {[string length $link] == 0} {
+		array unset Options $id:$name:link
 	} else {
-		$main new frame $uid $PaneOptions($uid)
+		set Options($id:$name:link) $link
 	}
 }
 
 
-proc SaveLayout {parent cmd name title} {
+proc CheckLink {attr} {
+	variable Options
+
+	if {[info exists Options($attr:link)] && [string length $Options($attr:link)] == 0} {
+		array unset Options $attr:link
+	}
+}
+
+
+proc StayOnTop {twm w} {
+	variable stayontop_
+
+	$twm set! $w stayontop $stayontop_($w)
+	if {$stayontop_($w)} {
+		set master [winfo toplevel $twm]
+		wm transient $w $master
+		raise $w $master
+		# NOTE: not every window manager is re-decorating the window.
+		catch { wm attributes $w -type dialog }
+	} else {
+		wm transient $w ""
+	}
+}
+
+
+proc HideWhenLeavingTab {twm w} {
+	variable hide_
+	$twm set! $w hide $hide_($w)
+}
+
+
+# NOTE: unused
+proc MoveWindow {twm w recv} {
+	$twm undock -temporary $w
+	$twm dock $w $recv left
+}
+
+
+proc ChangeState {twm uid} {
+	variable [namespace parent]::Vars
+
+	if {[$twm isdocked $uid]} {
+		destroy [$twm leaf $uid]
+	} else {
+		set id $Vars(id:$twm)
+		array set opts $Vars($id:init:options)
+		$twm new frame $uid $opts($uid)
+	}
+}
+
+
+proc SaveLayout {twm parent cmd name title} {
+	variable [namespace parent]::Vars
 	variable layout_
 
-	if {[string length $name] == 0} { set name $mc::NewLayout }
+	set myName $name
 	set layout_ $name
-	set names [lmap f [glob -nocomplain -directory $::scidb::dir::layout *.layout] {
-		file tail [file rootname $f]}]
+	if {[string length $layout_] == 0} { set layout_ $mc::NewLayout }
+	set id $Vars(id:$twm)
+	set names [glob $id]
 	set dlg [tk::toplevel $parent.save -class Scidb]
 	pack [set top [ttk::frame $dlg.top -borderwidth 0 -takefocus 0]]
 	set cb [ttk::combobox $top.input \
@@ -1606,15 +1897,17 @@ proc SaveLayout {parent cmd name title} {
 
 	::widget::dialogButtons $dlg {ok cancel} -default ok
 	$dlg.cancel configure -command [list destroy $dlg]
-	$dlg.ok configure -command [namespace code [list Execute \
-		[list {*}$cmd $parent $names] \
+	$dlg.ok configure -command [namespace code [list IfThenElse \
+		[list {*}$cmd $parent $dlg $names] \
 		[list destroy $dlg] \
+		[list [namespace current]::ResetCB $cb $name] \
 	]]
 
 	wm withdraw $dlg
 	wm resizable $dlg no no
-	wm transient $dlg .application
+	wm transient $dlg [winfo toplevel $parent]
 	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
+	wm title $dlg $mc::EnterName
 	::util::place $dlg -parent .application -position center
 	wm deiconify $dlg
 	focus $cb
@@ -1624,17 +1917,26 @@ proc SaveLayout {parent cmd name title} {
 }
 
 
-proc Execute {args} { foreach cmd $args { {*}$cmd } }
+proc ResetCB {cb name} {
+	if {[string length [$cb get]] == 0 && [string length $name] == 0} {
+		$cb set $mc::NewLayout
+		$cb selection range 0 end
+	}
+	focus $cb
+}
 
 
-proc RenameLayout {oldName parent names} {
+proc IfThenElse {if then else} { if {[{*}$if]} { {*}$then } else { {*}$else } }
+
+
+proc RenameLayout {twm oldName parent - names} {
+	variable [namespace parent]::Vars
 	variable Options
-	variable Vars
 	variable layout_
 
-	if {$layout_ eq $oldName} { return }
+	if {$layout_ eq $oldName} { return 1 }
+	set id $Vars(id:$twm)
 	set newName $layout_
-	
 	if {$newName in $names} {
 		if {[::dialog::question \
 				-parent $parent \
@@ -1642,21 +1944,27 @@ proc RenameLayout {oldName parent names} {
 				-default no \
 			] ne "yes"} {
 			set layout_ ""
-			return
+			return [expr {$twm eq $parent}]
 		}
 	}
-	set source [file join $::scidb::dir::layout "$oldName.layout"]
-	set target [file join $::scidb::dir::layout "$newName.layout"]
+	if {![::fsbox::checkPath $parent $newName]} {
+		if {[string length $oldName]} { set layout_ "" }
+		return 0
+	}
+	# TODO: find directory for actual variant
+	set source [file join $::scidb::dir::layout $id "$oldName.layout"]
+	set target [file join $::scidb::dir::layout $id "$newName.layout"]
 	file rename -force -- $source $target
-	if {$Vars(layout) eq $oldName} { set Vars(layout) $oldName }
-	if {$Options(layout:name) eq $oldName} { set Options(layout:name) $newName }
+	if {$Vars($id:layout) eq $oldName} { set Vars($id:layout) $oldName }
+	if {$Options($id:layout:name) eq $oldName} { set Options($id:layout:name) $newName }
+	return 1
 }
 
 
-proc DoSaveLayout {parent names} {
-	variable layout_
+proc DoSaveLayout {twm parent names} {
+	variable [namespace parent]::Vars
 	variable Options
-	variable Vars
+	variable layout_
 
 	if {$layout_ in $names} {
 		if {[::dialog::question \
@@ -1665,53 +1973,42 @@ proc DoSaveLayout {parent names} {
 				-default no \
 			] ne "yes"} {
 			set layout_ ""
-			return
+			return [expr {$twm eq $parent}]
 		}
 	}
-	set fh [::open [file join $::scidb::dir::layout "$layout_.layout"] "w"]
-	puts $fh [inspectLayout]
+	if {![::fsbox::checkPath $parent $layout_]} { return 0 }
+	set id $Vars(id:$twm)
+	# TODO: find directory for actual variant
+	set dir [file join $::scidb::dir::layout $id]
+	file mkdir $dir
+	set fh [::open [file join $dir "$layout_.layout"] "w"]
+	fconfigure $fh -encoding utf-8
+	puts $fh "::application::twm::setup $id {[inspectLayout $twm]}"
+	::options::writeTableOptions $fh $id
 	close $fh
-	set Vars(layout) $layout_
-	set Options(layout:name) $layout_
+	set Vars($id:layout) $layout_
+	set Options($id:layout:name) $layout_
+	return 1
 }
 
 
-proc ToggleTitlebars {main windows} {
-	$main togglebar {*}$windows
+proc ShowAllDockingPoints {twm} {
+	variable Options
+	$twm showall $Options($id:docking:showall)
 }
 
 
-proc HideWhenLeavingTab {main w} {
-	variable hide_
-	$main set! $w hide $hide_($w)
-}
-
-
-proc StayOnTop {main w} {
-	variable stayontop_
-
-	$main set! $w stayontop $stayontop_($w)
-	if {$stayontop_($w)} {
-		set master [winfo toplevel $main]
-		wm transient $w $master
-		raise $w $master
-		# NOTE: not every window manager is re-decorating the window.
-		catch { wm attributes $w -type dialog }
-	} else {
-		wm transient $w ""
-	}
+proc ToggleTitlebars {twm windows} {
+	$twm togglebar {*}$windows
 }
 
 
 proc WriteOptions {chan} {
 	options::writeItem $chan [namespace current]::Options
 }
-
 ::options::hookWriter [namespace current]::WriteOptions
 
-
-wm iconphoto .application -default $::icon::64x64::logo $::icon::16x16::logo
-
+} ;# namespace twm
 
 namespace eval icon {
 namespace eval 16x12 {

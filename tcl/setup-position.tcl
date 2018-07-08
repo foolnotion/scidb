@@ -393,8 +393,6 @@ proc Accept {dlg} {
 proc WriteOptions {chan} {
 	::options::writeList $chan [namespace current]::Previous
 }
-
-
 ::options::hookWriter [namespace current]::WriteOptions
 
 } ;# namespace position

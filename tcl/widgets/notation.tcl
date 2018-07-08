@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2012-2013 Gregor Cramer
+# Copyright: (C) 2012-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -68,11 +68,12 @@ proc listbox {path args} {
 		-pady 1 \
 		-borderwidth 1 \
 		-usescroll 0 \
-		{*}$args]
+		{*}$args \
+	]
 	$selbox addcol text -id text -expand yes
 	foreach name $NotationList { $selbox insert [list $name] }
 	pack $selbox -anchor s -fill both -expand yes
-#	bind $list <Configure> [namespace code { ConfigureListbox %W %h }]
+	bind $selbox <Configure> [namespace code { ConfigureListbox %W %h }]
 	set text [tk::text $path.text \
 		-borderwidth 1 \
 		-relief sunken \
@@ -216,15 +217,16 @@ proc SetNotation {w text {send 0}} {
 }
 
 
-proc ConfigureListbox {list height} {
-	set n [$list.selection curselection]
-	set linespace [$list.selection cget -linespace]
-	set nrows [expr {$height/$linespace}]
-	if {$nrows > [$list.selection cget -height]} {
-		$list.selection configure -height $nrows
-	}
-	$list.selection see 0
-	after idle [list $list.selection see]
+proc ConfigureListbox {selbox height} {
+	after idle [list $selbox resize -fixed]
+#	set n [$selbox.selection curselection]
+#	set linespace [$selbox.selection cget -linespace]
+#	set nrows [expr {$height/$linespace}]
+#	if {$nrows > [$selbox.selection cget -height]} {
+#		$list.selection configure -height $nrows
+#	}
+#	$selbox.selection see 0
+#	after idle [list $selbox.selection see]
 }
 
 } ;# namespace notation

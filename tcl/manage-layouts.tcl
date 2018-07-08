@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2017 Gregor Cramer
+# Copyright: (C) 2017-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -33,6 +33,7 @@ namespace eval mc {
 set Rename					"Rename"
 set Delete					"Delete"
 set Load						"Load"
+set Linked					"Linked with"
 set CannotOpenFile		"Cannot read file '%s'."
 set RestoreToOldLayout	"Restore to old layout"
 
@@ -45,20 +46,22 @@ array set Options {
 }
 
 
-proc open {parent currentLayout} {
+proc open {twm id currentLayout link} {
 	variable Width
 	variable Height
 	variable Options
 	variable OldLayout
 	variable OldList
+	variable Twm
 	variable names_
 
-	set OldList [[namespace parent]::inspectLayout]
-	set OldLayout [[namespace parent]::currentLayout]
+	set OldList [[namespace parent]::twm::inspectLayout $twm]
+	set OldLayout [[namespace parent]::twm::currentLayout $twm]
 	set force $::twm::Options(deiconify:force)
 	set ::twm::Options(deiconify:force) 1
+	set Twm $twm
 
-	set dlg $parent.layout
+	set dlg $twm.layout
 	tk::toplevel $dlg -class Scidb
 	wm withdraw $dlg
 
@@ -66,7 +69,7 @@ proc open {parent currentLayout} {
 	set lt [ttk::frame $top.lt -borderwidth 0]
 	set rt [ttk::frame $top.rt -borderwidth 0]
 	set layout [tk::frame $rt.layout -background #0170cc]
-	set twm [twm::twm $layout.manage \
+	set myTWM [twm::twm $layout.manage \
 		-makepane  [namespace current]::MakePane \
 		-buildpane [namespace current]::BuildPane \
 		-resizing  [namespace current]::Resizing \
@@ -74,18 +77,16 @@ proc open {parent currentLayout} {
 		-state readonly \
 		-disableclose 1 \
 	]
-	pack $twm -padx $Options(padding) -pady $Options(padding)
-	[namespace parent]::loadInitialLayout $twm
+	pack $myTWM -padx $Options(padding) -pady $Options(padding)
+	[namespace parent]::twm::loadInitialLayout $myTWM $twm
 
-	set names_ [lmap f [glob -nocomplain -directory $::scidb::dir::layout *.layout] {
-		file tail [file rootname $f]}]
-	set names_ [lsort $names_]
-	set list [tk::listbox $lt.list -width 40 -listvariable [namespace current]::names_]
+	set names_ [[namespace parent]::twm::glob $id]
+	set list [tk::listbox $lt.list -width 30 -listvariable [namespace current]::names_]
 	set index [lsearch $names_ $currentLayout]
 	$list activate $index
 	if {$index >= 0} {
 		$list selection set $index
-		after idle [namespace code [list LoadLayout $twm $list $lt.res]]
+		after idle [namespace code [list LoadLayout $myTWM $twm $id $list $lt.res]]
 	}
 	$list see [expr {max(0,$index)}]
 
@@ -94,14 +95,14 @@ proc open {parent currentLayout} {
 		-text $mc::Rename \
 		-image $::icon::16x16::exchange \
 		-compound left \
-		-command [namespace code [list Rename $twm $list]] \
+		-command [namespace code [list Rename $twm [winfo toplevel $myTWM] $list]] \
 	]
 	set del [ttk::button $lt.del \
 		-style aligned.TButton \
 		-text $mc::Delete \
 		-image $::icon::16x16::delete \
 		-compound left \
-		-command [namespace code [list Delete  $twm $list]] \
+		-command [namespace code [list Delete $twm [winfo toplevel $myTWM] $list]] \
 	]
 	set res [ttk::button $lt.res \
 		-style aligned.TButton \
@@ -111,16 +112,40 @@ proc open {parent currentLayout} {
 		-command [namespace code [list Load $twm $list $dlg.revert]] \
 	]
 
-	bind $list <<ListboxSelect>> [namespace code [list LoadLayout $twm $list $res]]
+	if {$id ne "board"} {
+		set names [[namespace parent]::twm::glob board]
+		if {[llength $names]} {
+			variable link_
+			set link_ $link
+			if {[string length $link_] == 0} { set link_ "\u2014" }
+			set names [linsert $names 0 "\u2014"]
+			set linkframe [ttk::frame $lt.link -borderwidth 0]
+			ttk::label $linkframe.lbl -text "${mc::Linked}:"
+			ttk::combobox $linkframe.cb \
+				-values $names \
+				-textvariable [namespace current]::link_ \
+				-state readonly \
+				;
+			tooltip::tooltip $linkframe.lbl [namespace parent]::twm::mc::LinkLayoutTip
+			grid $linkframe.lbl -row 0 -column 0
+			grid $linkframe.cb  -row 0 -column 2 -sticky ew
+			grid columnconfigure $linkframe {1} -minsize $::theme::padx
+			grid columnconfigure $linkframe {2} -weight 1
+			bind $linkframe.cb <<ComboboxSelected>> \
+				[namespace code [list SetLink $id $currentLayout $linkframe.cb]]
+		}
+	}
 
-	lassign [[namespace parent]::workArea $parent] Width Height
+	bind $list <<ListboxSelect>> [namespace code [list LoadLayout $myTWM $twm $id $list $res]]
+
+	lassign [[namespace parent]::twm::workArea $twm] Width Height
 	set Width [expr {($Width*4)/9}]
 	set Height [expr {($Height*4)/9}]
 
 	grid $lt -row 1 -column 1 -sticky nsew
 	grid $rt -row 1 -column 3 -sticky nsew
 	grid columnconfigure $top {0 2 4} -minsize $::theme::padX
-	grid rowconfigure $top {0 2 4} -minsize $::theme::padY
+	grid rowconfigure $top {0 2} -minsize $::theme::padY
 
 	grid $list -row 1 -column 1 -sticky nswe
 	grid $ren  -row 3 -column 1 -sticky we
@@ -129,25 +154,38 @@ proc open {parent currentLayout} {
 	grid rowconfigure $lt {2 4 6} -minsize 2
 	grid rowconfigure $lt {1} -weight 1
 
+	if {[info exists linkframe]} {
+		grid $linkframe -row 9 -column 1 -sticky wes
+		grid rowconfigure $lt {8} -minsize $::theme::pady
+	}
+
 	grid $layout -row 1 -column 1 -sticky nsew
 	grid columnconfigure $rt {1} -minsize [expr {$Width + 2*($Options(borderwidth) + $Options(padding))}]
 	grid rowconfigure $rt {1} -minsize [expr {$Height + 2*($Options(borderwidth) + $Options(padding))}]
 
 	::widget::dialogButtons $dlg {close revert}
 	$dlg.close configure -command [list destroy $dlg]
-	$dlg.revert configure -state disabled -command [namespace code [list Revert $twm $res $dlg.revert]]
+	$dlg.revert configure -state disabled -command [namespace code [list Revert $myTWM $res $dlg.revert]]
 	::tooltip::tooltip $dlg.revert [namespace current]::mc::RestoreToOldLayout
 	wm resizable $dlg no no
 	wm transient $dlg .application
 	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
-	wm title $dlg [set [namespace parent]::mc::ManageLayouts]
-	::util::place $dlg -parent $parent -position center
+	wm title $dlg [set [namespace parent]::twm::mc::ManageLayouts]
+	::util::place $dlg -parent $twm -position center
 	wm deiconify $dlg
 	focus $list
 	::ttk::grabWindow $dlg
 	tkwait window $dlg
 	::ttk::releaseGrab $dlg
 	set ::twm::Options(deiconify:force) $force
+}
+
+
+proc SetLink {id name cb} {
+	variable link_
+
+	if {[$cb current] == 0} { set link "" } else { set link $link_ }
+	[namespace parent]::twm::setLink $id $name $link
 }
 
 
@@ -158,30 +196,30 @@ proc NumberFromUid {uid}	{ return [lindex [split $uid :] 1] }
 proc TitleFromUid {uid} {
 	set name [NameFromUid $uid]
 	if {$name eq "analysis"} {
-		set title [set [namespace parent]::mc::Pane($name)]
+		set title [set [namespace parent]::twm::mc::Pane($name)]
 		if {[set number [NumberFromUid $uid]] > 1} { append title " ($number)" }
 	} else {
-		set title [set [namespace parent]::mc::Pane($name)]
+		set title [set [namespace parent]::twm::mc::Pane($name)]
 	}
 	return $title
 }
 
 
-proc MakePane {twm parent type uid} {
-	variable [namespace parent]::Prios
-	variable Vars
+proc MakePane {myTWM parent type uid} {
+	variable Twm
 
 	set name [TitleFromUid $uid]
 	set frame [tk::frame $parent.$uid -borderwidth 0 -takefocus 0]
-	set result [list $frame $name $Prios([NameFromUid $uid])]
-	if {$type ne "pane"} { lappend result [expr {$uid ne "editor"}] yes yes }
+	set result [list $frame $name [$Twm get [$Twm leaf $uid] priority])]
+	if {$type ne "pane"} {
+		set closable [expr {$uid ne "editor" && $uid ne [[namespace parent]::twm::getId $Twm]}]
+		lappend result $closable yes yes
+	}
 	return $result
 }
 
 
-proc BuildPane {twm frame uid width height} {
-	variable Vars
-
+proc BuildPane {myTWM frame uid width height} {
 	switch [NameFromUid $uid] {
 		analysis	{ $frame configure -background [::colors::lookup #ffee75] }
 		editor	{ $frame configure -background [::colors::lookup pgn,background] }
@@ -207,9 +245,11 @@ proc BuildPane {twm frame uid width height} {
 			set y [expr {($height - ($size*8 + 2))/2}]
 			$w create window $x $y -anchor nw -window $w.diagram -tags board
 		}
+
+		default { $frame configure -background [::colors::lookup tree,stripes] }
 	}
 
-	::tooltip::tooltip $frame [namespace parent]::mc::Pane([NameFromUid $uid])
+	::tooltip::tooltip $frame [namespace parent]::twm::mc::Pane([NameFromUid $uid])
 }
 
 
@@ -222,7 +262,7 @@ proc ResizeBoard {w width height} {
 }
 
 
-proc Resizing {twm toplevel width height} {
+proc Resizing {myTWM toplevel width height} {
 	variable Width
 	variable Height
 
@@ -241,40 +281,40 @@ proc Resizing {twm toplevel width height} {
 }
 
 
-proc LoadLayout {twm list loadBtn} {
+proc LoadLayout {myTWM twm id list loadBtn} {
 	if {[llength [$list curselection]] == 0} { return }
 
 	set name [$list get [$list curselection]]
-	set filename [file join $::scidb::dir::layout "$name.layout"]
+	# TODO: find directory for actual variant
+	set filename [file join $::scidb::dir::layout $id "$name.layout"]
 	if {![file exists $filename]} {
 		set msg [format $mc::CannotOpenFile $filename]
 		return [dialog::error -parent $list -message $msg -topmost yes]
 	}
-	set fh [::open $filename "r"]
-	$twm load [set layout [read $fh]]
-	::close $fh
-
-	if {[[namespace parent]::currentLayout] eq $name} { set state disabled } else { set state normal }
+	set ::application::twm::SetupFunc [list $myTWM load]
+	after idle [list set ::application::twm::SetupFunc {}]
+	::load::source $filename -encoding utf-8 -throw 1
+	set state [expr {[[namespace parent]::twm::currentLayout $twm] eq $name ? "disabled" : "normal"}]
 	$loadBtn configure -state $state
 }
 
 
-proc Delete {twm list} {
+proc Delete {twm parent list} {
 	variable names_
 
 	set name [$list get [$list curselection]]
-	if {[[namespace parent]::deleteLayout [winfo toplevel $twm] $name]} {
+	if {[[namespace parent]::twm::deleteLayout $twm $name $parent]} {
 		set i [lsearch $names_ $name]
 		if {$i >= 0} { set names_ [lreplace $names_ $i $i] }
 	}
 }
 
 
-proc Rename {twm list} {
+proc Rename {twm parent list} {
 	variable names_
 
 	set name [$list get [$list curselection]]
-	set newName [[namespace parent]::renameLayout [winfo toplevel $twm] $name]
+	set newName [[namespace parent]::twm::renameLayout $twm $name $parent]
 	if {[string length $newName] > 0} {
 		set i [lsearch $names_ $name]
 		if {$i >= 0} {
@@ -288,8 +328,8 @@ proc Rename {twm list} {
 
 proc Load {twm list revertBtn} {
 	variable OldList
-	[namespace parent]::loadLayout [$list get [$list curselection]]
-	set eq [[namespace parent]::currentLayoutIsEqTo $OldList]
+	[namespace parent]::twm::loadLayout $twm [$list get [$list curselection]]
+	set eq [[namespace parent]::twm::currentLayoutIsEqTo $twm $OldList]
 	$revertBtn configure -state [expr {$eq ? "disabled" : "normal"}]
 }
 
@@ -298,7 +338,7 @@ proc Revert {twm loadBtn revertBtn} {
 	variable OldLayout
 	variable OldList
 
-	[namespace parent]::restoreLayout $OldLayout $OldList
+	[namespace parent]::twm::restoreLayout $twm $OldLayout $OldList
 	$loadBtn configure -state normal
 	$revertBtn configure -state disabled
 }

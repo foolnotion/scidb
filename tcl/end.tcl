@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2013 Gregor Cramer
+# Copyright: (C) 2009-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -75,11 +75,10 @@ proc Enc {s} { return [encoding convertfrom utf-8 $s] }
 
 
 proc WriteOptions {chan} {
-	::options::writeItem $chan [namespace current]::Welcome
-#	::options::writeItem $chan [namespace current]::NotYetImplemented
-	::options::writeItem $chan ::theme::useCustomStyleMenuEntries
+	::options::writeItem  $chan [namespace current]::Welcome
+#	::options::writeItem  $chan [namespace current]::NotYetImplemented
+	::options::writeItem  $chan ::theme::useCustomStyleMenuEntries
 }
-
 ::options::hookWriter [namespace current]::WriteOptions
 
 } ;# namespace beta
@@ -215,9 +214,26 @@ proc twm::makeStateSpecificIcons {icon} { return [::icon::makeStateSpecificIcons
 proc twm::WriteOptions {chan} { ::options::writeItem $chan [twm::nameOfOptionsArray] }
 ::options::hookWriter twm::WriteOptions
 
+rename ::table::setOptions ::table::setOptions_
+# XXX work-around because of a bug in older versions
+proc ::table::setOptions {args} {
+	lassign $args id options
+	setOptions_ $id $options
+}
+
 log::finishLayout
 
 # --- Read options -----------------------------------------------------
+
+# XXX preliminary for migration
+proc ::gametable::getOptions {id} { return [::scrolledtable::getOptions $id] }
+proc ::eventtable::getOptions {id} { return [::scrolledtable::getOptions $id] }
+proc ::playertable::getOptions {id} { return [::scrolledtable::getOptions $id] }
+proc ::sitetable::getOptions {id} { return [::scrolledtable::getOptions $id] }
+proc ::gametable::setOptions {id opts} { return [::scrolledtable::setOptions $id $opts] }
+proc ::eventtable::setOptions {id opts} { return [::scrolledtable::setOptions $id $opts] }
+proc ::playertable::setOptions {id opts} { return [::scrolledtable::setOptions $id $opts] }
+proc ::sitetable::setOptions {id opts} { return [::scrolledtable::setOptions $id $opts] }
 
 # prevent errors while parsing old config files (as long as we have a beta version)
 proc dialog::fsbox::setBookmarks {args} {}
@@ -341,6 +357,37 @@ if {[catch {
 					}
 				}
 			}
+		}
+
+		if {$::scidb::revision < 1493} {
+			foreach attr {docking:showall layout:list layout:name} {
+				if {[info exists ::application::Options($attr)]} {
+					set ::application::twm::Options(board:$attr) $::application::Options($attr)
+					array unset ::application::Options $attr
+				}
+			}
+			set files [glob -directory $::scidb::dir::layout -nocomplain *.layout]
+			if {[llength $files]} {
+				set dest [file join $::scidb::dir::layout board]
+				file mkdir $dest
+				foreach file $files {
+					set fd [open $file "r"]
+					set data [read -nonewline $fd]
+					close $fd
+					set fd [open [file join $dest [file tail $file]] "w"]
+					puts $fd "::application::twm::setup [file tail $dest] {$data}"
+					close $fd
+					file delete -force $file
+				}
+			}
+			if {[info exists application::database::PreOpen]} {
+				set list {}
+				foreach entry $application::database::PreOpen {
+					lappend list [lindex $entry 1]
+				}
+				set application::database::PreOpen $list
+			}
+			set ::twm::Options(deiconify:force) 0
 		}
 
 		::scidb::themes::update

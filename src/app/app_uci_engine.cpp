@@ -246,6 +246,7 @@ toId(mstl::string const& name)
 
 uci::Engine::Engine()
 	:m_state(None)
+	,m_variant(variant::Normal)
 	,m_uciok(false)
 	,m_isReady(false)
 	,m_hasMultiPV(false)
@@ -543,6 +544,12 @@ uci::Engine::processMessage(mstl::string const& message)
 
 					if (m_variant != currentVariant())
 					{
+						mstl::string variant(variant::identifier(currentVariant()));
+						if (variant.empty())
+						{
+							M_ASSERT(currentVariant() == variant::Normal);
+							variant.assign("Normal");
+						}
 						send("setoption name UCI_Variant value " + variant::identifier(currentVariant()));
 						m_variant = currentVariant();
 					}

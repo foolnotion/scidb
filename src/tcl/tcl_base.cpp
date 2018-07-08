@@ -468,7 +468,7 @@ tcl::setResult(mstl::string const& s)
 
 
 void
-tcl::setResult(mstl::vector<Tcl_Obj*> const& list)
+tcl::setResult(List const& list)
 {
 	Tcl_SetObjResult(interp(), Tcl_NewListObj(list.size(), list.data()));
 }

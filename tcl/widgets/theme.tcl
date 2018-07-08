@@ -320,13 +320,18 @@ proc configureBackground {w} {
 }
 
 
+proc notebookBorderwidth {} {
+	return [ttk::style lookup TNotebook -borderwidth]
+}
+
+
 proc notebookTabPaneSize {nb} {
 	set padding [ttk::style lookup TNotebook.Tab -padding]
 	if {[llength $padding] == 0} {
 		puts stderr "\[ttk::style lookup TNotebook.Tab -padding\] returns empty list"
 		set padding {2 2}
 	}
-	set size 3 ;# borderwidth=2 + one overlapping pixel
+	set size [expr {2*[notebookBorderwidth] + 1}] ;# plus one overlapping pixel
 	switch [llength $padding] {
 		2 { incr size [expr {2*[lindex $padding 1]}] }
 		3 { incr size [lindex $padding 1] }

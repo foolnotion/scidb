@@ -139,7 +139,6 @@ proc setup {} {
 
 
 proc build {menu} {
-	variable ::application::Options
 	variable Fullscreen
 	variable Theme
 	variable ColorScheme_
@@ -266,6 +265,7 @@ proc build {menu} {
 
 	### layout ###############################################################
 	set tab [::application::activeTab]
+	set state [expr {$tab eq "board" || $tab eq "database" ? "normal" : "disabled"}]
 	menu $menu.layout
 	lassign [::tk::UnderlineAmpersand $mc::Layout] text ul
 	$menu add cascade \
@@ -274,9 +274,9 @@ proc build {menu} {
 		-underline [IncrUL $ul] \
 		-image $::icon::16x16::layout \
 		-compound left \
-		-state [expr {$tab eq "board" ? "normal" : "disabled"}] \
+		-state $state \
 		;
-	if {$tab eq "board"} { ::application::makeLayoutMenu $menu.layout }
+	if {$state eq "normal"} { ::application::twm::makeLayoutMenu [::application::twm] $menu.layout }
 
 	### setup ################################################################
 	$menu add separator

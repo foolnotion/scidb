@@ -1910,7 +1910,7 @@ PgnReader::get(bool allowEndOfInput)
 
 			if (m_lineEnd > m_linePos && m_lineEnd[-1] == '\r')
 			{
-				M_ASSERT(m_line.readonly());
+				M_ASSERT(m_line.empty() || m_line.readonly());
 				m_line.hook(m_line.data(), m_line.size() - 1);
 				m_lineEnd = m_line.end();
 				m_lineEnd[0] = '\0';

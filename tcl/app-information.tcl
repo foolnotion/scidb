@@ -604,7 +604,6 @@ proc WriteOptions {chan} {
 	if {$Priv(checksum)} { set Options(checksum) $Priv(checksum) }
 	::options::writeItem $chan [namespace current]::Options
 }
-
 ::options::hookWriter [namespace current]::WriteOptions
 
 } ;# namespace information

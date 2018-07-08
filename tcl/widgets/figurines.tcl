@@ -130,6 +130,8 @@ proc mapToLocal {str lang} {
 	variable Map_
 	variable langSet
 
+	if {$lang eq "graphic"} { return $str }
+
 	if {![info exists Map_($lang)]} {
 		foreach loc $langSet($lang) uni $langSet(graphic) {
 			lappend Map_($lang) $uni $loc
@@ -160,6 +162,13 @@ proc listbox {path args} {
 		set Variable [namespace current]::langSet(user)
 	}
 
+	if {[info exists opts(-frametype)]} {
+		set frametype $opts(-frametype)
+		if {![string match ttk::* $frametype]} { set frametype ttk::$frametype }
+	} else {
+		set frametype ttk::labelframe
+	}
+
 	set Connect {}
 	set Figurines {}
 	foreach lang [array names langSet] {
@@ -173,7 +182,12 @@ proc listbox {path args} {
 	set FigurinesList {}
 	foreach entry $Figurines { lappend FigurinesList [lindex $entry 1] }
 
-	ttk::labelframe $path -text $mc::Figurines
+	if {$frametype eq "ttk::labelframe"} {
+		ttk::labelframe $path -text $mc::Figurines
+	} else {
+		$frametype $path
+	}
+
 	set list [ttk::frame $path.list -takefocus 0]
 	set selbox [::tlistbox $list.selection -exportselection 0 -pady 1 -borderwidth 1 {*}$args]
 	$selbox addcol image -id icon

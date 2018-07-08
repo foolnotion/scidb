@@ -873,6 +873,7 @@ public:
 	Node* selected() const;
 	Node* clone(LeafMap const& leaves) __m_warn_unused;
 
+	tcl::List collectToplevels() const;
 	tcl::List collectFrames() const;
 	tcl::List collectPanes() const;
 	tcl::List collectPanesRecursively() const;
@@ -986,6 +987,7 @@ private:
 	Node const* findRelation(structure::Node const* parent, tcl::List const& childs) const;
 	Position defaultPosition() const;
 	void collectLeaves(mstl::vector<mstl::string>& result) const;
+	void collectToplevels(tcl::List& result) const;
 	void collectFramesRecursively(tcl::List& result) const;
 	void collectPanesRecursively(tcl::List& result) const;
 	void collectHeaderFramesRecursively(tcl::List& result) const;
@@ -1755,6 +1757,9 @@ Node::get(char const* attribute, bool ignoreMeta) const
 
 	if (isMetaFrame() && ignoreMeta && !child())
 		ignoreMeta = false; // this may happen when destroying a metaframe
+	
+	if (tcl::equal(attribute, "priority"))
+		return tcl::newObj(m_priority);
 
 	AttrMap const& attrs = isMetaFrame() && ignoreMeta ? child()->m_attrMap : m_attrMap;
 	AttrMap::const_iterator i = attrs.find(attribute);
@@ -1861,6 +1866,17 @@ Node::find(Node const* node) const
 {
 	M_ASSERT(node);
 	return m_childs.find(node);
+}
+
+
+void
+Node::collectToplevels(tcl::List& result) const
+{
+	for (unsigned i = 0; i < m_toplevel.size(); ++i)
+	{
+		if (m_toplevel[i]->exists())
+			result.push_back(m_toplevel[i]->pathObj());
+	}
 }
 
 
@@ -1986,6 +2002,15 @@ Node::collectHeaderFramesRecursively() const
 
 
 tcl::List
+Node::collectToplevels() const
+{
+	tcl::List result;
+	collectToplevels(result);
+	return result;
+}
+
+
+tcl::List
 Node::collectFrames() const
 {
 	tcl::List result;
@@ -2077,7 +2102,7 @@ Node::collectContainer() const
 
 	for (unsigned i = 0; i < m_active.size(); ++i)
 	{
-		if (m_active[i]->isContainer())
+		if (m_active[i]->uidObj() && m_active[i]->isContainer())
 			result.push_back(m_active[i]->uidObj());
 	}
 
@@ -4086,12 +4111,12 @@ Node::resizeFrame(int reqSize)
 	M_ASSERT(reqSize >= 0);
 
 	if (!isToplevel())
-		m_dimen.set<D>(reqSize); // is already content size
+		m_dimen.set<D>(reqSize);
 
 	int size = actualSize<Inner,D>();
 	
 	for (unsigned i = 0; i < numChilds(); ++i)
-		child(i)->doAdjustment<D>(size);
+		child(i)->doAdjustment<D>(child(i)->contentSize<D>(size));
 }
 
 
@@ -6010,7 +6035,7 @@ cmdExists(int objc, Tcl_Obj* const objv[])
 		M_THROW(tcl::Exception(2, objv, ""));
 
 	Base* base = Node::lookupBase(tcl::asString(objv[2]));
-	tcl::setResult(base && base->root->exists());
+	tcl::setResult(base && base->root && base->root->exists());
 }
 
 
@@ -6336,6 +6361,16 @@ cmdToplevel(Base& base, int objc, Tcl_Obj* const objv[])
 
 
 static void
+cmdToplevels(Base& base, int objc, Tcl_Obj* const objv[])
+{
+	if (objc != 3)
+		M_THROW(tcl::Exception(2, objv));
+
+	tcl::setResult(base.root->collectToplevels());
+}
+
+
+static void
 cmdNeighbors(Base& base, int objc, Tcl_Obj* const objv[])
 {
 	if (objc != 4)
@@ -6567,7 +6602,7 @@ cmdInspect(Base& base, int objc, Tcl_Obj* const objv[])
 	tcl::setResult(base.root->inspect(attrSet));
 }
 
-	
+
 static void
 cmdDock(Base& base, int objc, Tcl_Obj* const objv[])
 {
@@ -6635,6 +6670,29 @@ cmdUndock(Base& base, int objc, Tcl_Obj* const objv[])
 	node->floating(temporary);
 	toplevel->perform(node->toplevel());
 	tcl::setResult(node->pathObj());
+}
+
+
+static void
+cmdDump(Base& base, int objc, Tcl_Obj* const objv[])
+{
+	if (objc != 3 && objc != 4)
+		M_THROW(tcl::Exception(3, objv, "?window?"));
+
+	if (objc == 3)
+	{
+		base.root->dump();
+	}
+	else
+	{
+		char const* path = tcl::asString(objv[3]);
+		Node* node = base.root->findPath(path);
+
+		if (!node)
+			M_THROW(tcl::Exception("cannot find window '%s'", path));
+
+		node->dump();
+	}
 }
 
 
@@ -6823,26 +6881,28 @@ cmdTwm(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	static char const* subcommands[] =
 	{
 		"clone",			"capture",		"changeuid",	"close",			"container",
-		"dimension",	"dock",			"exists",		"find",			"floats",
-		"frames",		"get",			"get!",			"headerframes","hidden",
-		"id",				"init",			"inspect",		"iscontainer",	"isdocked",
-		"ismetachild",	"ispane",		"leaf",			"leader",		"leaves",
-		"load",			"neighbors",	"new",			"orientation",	"panes",
-		"parent",		"ready",			"refresh",		"release",		"resize",
-		"selected",		"set",			"set!",			"show",			"toggle",
-		"toplevel",		"uid",			"undock",		"visible",		nullptr
+		"dimension",	"dock",			"dump",			"exists",		"find",
+		"floats",		"frames",		"get",			"get!",			"headerframes",
+		"hidden",		"id",				"init",			"inspect",		"iscontainer",
+		"isdocked",		"ismetachild",	"ispane",		"leaf",			"leader",
+		"leaves",		"load",			"neighbors",	"new",			"orientation",
+		"panes",			"parent",		"ready",			"refresh",		"release",
+		"resize",		"selected",		"set",			"set!",			"show",
+		"toggle",		"toplevel",		"toplevels",	"uid",			"undock",
+		"visible",		nullptr
 	};
 	enum
 	{
 		Cmd_Clone,			Cmd_Capture,		Cmd_ChangeUid,		Cmd_Close,			Cmd_Container,
-		Cmd_Dimension,		Cmd_Dock,			Cmd_Exists,			Cmd_Find,			Cmd_Floats,
-		Cmd_Frames,			Cmd_Get,				Cmd_Get_,			Cmd_HeaderFrames,	Cmd_Hidden,
-		Cmd_Id,				Cmd_Init,			Cmd_Inspect,		Cmd_IsContainer,	Cmd_IsDocked,
-		Cmd_IsMetaChild,	Cmd_IsPane,			Cmd_Leaf,			Cmd_Leader,			Cmd_Leaves,
-		Cmd_Load,			Cmd_Neighbors,		Cmd_New,				Cmd_Orientation,	Cmd_Panes,
-		Cmd_Parent,			Cmd_Ready,			Cmd_Refresh,		Cmd_Release,		Cmd_Resize,
-		Cmd_Selected,		Cmd_Set,				Cmd_Set_,			Cmd_Show,			Cmd_Toggle,
-		Cmd_Toplevel,		Cmd_Uid,				Cmd_Undock,			Cmd_Visible,		Cmd_NULL
+		Cmd_Dimension,		Cmd_Dock,			Cmd_Dump,			Cmd_Exists,			Cmd_Find,
+		Cmd_Floats,			Cmd_Frames,			Cmd_Get,				Cmd_Get_,			Cmd_HeaderFrames,
+		Cmd_Hidden,			Cmd_Id,				Cmd_Init,			Cmd_Inspect,		Cmd_IsContainer,
+		Cmd_IsDocked,		Cmd_IsMetaChild,	Cmd_IsPane,			Cmd_Leaf,			Cmd_Leader,
+		Cmd_Leaves,			Cmd_Load,			Cmd_Neighbors,		Cmd_New,				Cmd_Orientation,
+		Cmd_Panes,			Cmd_Parent,			Cmd_Ready,			Cmd_Refresh,		Cmd_Release,
+		Cmd_Resize,			Cmd_Selected,		Cmd_Set,				Cmd_Set_,			Cmd_Show,
+		Cmd_Toggle,			Cmd_Toplevel,		Cmd_Toplevels,		Cmd_Uid,				Cmd_Undock,	
+		Cmd_Visible,		Cmd_NULL
 	};
 
 	static_assert(sizeof(subcommands)/sizeof(subcommands[0]) == Cmd_NULL + 1, "initialization failed");
@@ -6865,6 +6925,7 @@ cmdTwm(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			case Cmd_Container:		execute(cmdContainer, false, objc, objv); break;
 			case Cmd_Dimension:		execute(cmdDimension, false, objc, objv); break;
 			case Cmd_Dock:				execute(cmdDock, false, objc, objv); break;
+			case Cmd_Dump:				execute(cmdDump, false, objc, objv); break;
 			case Cmd_Exists:			cmdExists(objc, objv); break;
 			case Cmd_Find:				execute(cmdFind, false, objc, objv); break;
 			case Cmd_Floats:			execute(cmdFloats, false, objc, objv); break;
@@ -6898,6 +6959,7 @@ cmdTwm(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			case Cmd_Show:				execute(cmdShow, false, objc, objv); break;
 			case Cmd_Toggle:			execute(cmdToggle, false, objc, objv); break;
 			case Cmd_Toplevel:		execute(cmdToplevel, false, objc, objv); break;
+			case Cmd_Toplevels:		execute(cmdToplevels, false, objc, objv); break;
 			case Cmd_Undock:			execute(cmdUndock, false, objc, objv); break;
 			case Cmd_Uid:				execute(cmdUid, false, objc, objv); break;
 			case Cmd_Visible:			execute(cmdVisible, false, objc, objv); break;

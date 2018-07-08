@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2013 Gregor Cramer
+# Copyright: (C) 2009-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -42,28 +42,37 @@ array set Defaults {
 	sort:events		{}
 }
 
+array set Prios { player 300 games 200 event 100 }
+
+array set FrameOptions {
+	player { -width 400 -height 640 -minwidth 200 -minheight 100 -expand both }
+	games	 { -width 600 -height 390 -minwidth 200 -minheight 100 -expand both }
+	event	 { -width 600 -height 230 -minwidth 200 -minheight 100 -expand both }
+}
+
+variable Layout {
+	root { -shrink none -grow none } {
+		panedwindow { -orient horz } {
+			frame player %player%
+			panedwindow { -orient vert } {
+				frame games %games%
+				frame event %event%
+			}
+		}
+	}
+}
+
 variable Tables {}
 
 
 proc build {parent} {
 	variable Tables
-#	variable ::icon::12x12::I_Federation
+	variable Layout
+	variable FrameOptions
 
-	set top [tk::panedwindow $parent.top \
-		-orient horizontal \
-		-opaqueresize true \
-		-borderwidth 0]
-	pack $top -fill both -expand yes
-	lappend Tables $top
-
-	set lt ${top}.players
-	set rt ${top}.info
-
-	set gl ${rt}.games
-	set ev ${rt}.events
-
-	namespace eval [namespace current]::$top {}
-	variable ${top}::Vars
+	set twm $parent.twm
+	namespace eval [namespace current]::$twm {}
+	variable ${twm}::Vars
 
 	set Vars(after:games) {}
 	set Vars(after:events) {}
@@ -71,55 +80,20 @@ proc build {parent} {
 	set Vars(active) 0
 	set Vars(base) ""
 
-	set columns {lastName firstName type sex rating1 federation title frequency}
-	::playertable::build $lt [namespace code [list View $top]] $columns \
-		-selectcmd [list [namespace current]::players::Search $top] \
-		-usefind 1 \
+	::application::twm::make $twm player \
+		[namespace current]::MakeFrame \
+		[namespace current]::BuildFrame \
+		[array get FrameOptions] \
+		$Layout \
 		;
-
-	tk::panedwindow $rt -orient vertical -opaqueresize true -borderwidth 0
-	set columns {white whiteElo black blackElo event result date length}
-	::gametable::build $gl [namespace code [list View $top]] $columns -id db:players
-	set columns {event eventType eventDate eventMode timeMode eventCountry site}
-	::eventtable::build $ev [namespace code [list View $top]] $columns \
-		-selectcmd [namespace code [list SelectEvent $top]] \
-		;
-
-	::scidb::db::subscribe playerList \
-		[namespace current]::players::Update \
-		[namespace current]::Close \
-		$top \
-		;
-	::scidb::db::subscribe gameList \
-		[namespace current]::games::Update \
-		$top \
-		;
-	::scidb::db::subscribe eventList \
-		[namespace current]::events::Update \
-		$top \
-		;
-
-	bind $rt <<TableMinSize>> [namespace code [list TableMinSize $rt %d]]
-	bind $lt <<TableMinSize>> [namespace code [list TableMinSize $lt %d]]
-
-	$top add $lt
-	$top add $rt
-
-	$rt add $gl
-	$rt add $ev
-
-	$top paneconfigure $lt -sticky nsew -stretch middle -minsize 420	;# XXX
-	$top paneconfigure $rt -sticky nsew -stretch always
-
-	$rt paneconfigure $gl -sticky nsew -stretch always
-	$rt paneconfigure $ev -sticky nsew -stretch always
-
-	return $top
+	::application::twm::load $twm
+	lappend Tables $twm
+	return $twm
 }
 
 
 proc activate {w flag} {
-	set path $w.top
+	set path $w.twm
 	variable ${path}::Vars
 
 	set Vars(active) $flag
@@ -129,18 +103,24 @@ proc activate {w flag} {
 	players::DoUpdate $path $base $variant
 
 	if {[winfo toplevel $w] ne $w} {
-		::toolbar::activate $path.players $flag
+		::toolbar::activate $Vars(frame:player) $flag
 	}
 }
 
 
 proc overhang {parent} {
-	return [::playertable::overhang $parent.top.players]
+	set path $parent.twm
+	variable ${path}::Vars
+
+	return [::playertable::overhang $Vars(frame:player)]
 }
 
 
 proc linespace {parent} {
-	return [::playertable::linespace $parent.top.players]
+	set path $parent.twm
+	variable ${path}::Vars
+
+	return [::playertable::linespace $Vars(frame:player)]
 }
 
 
@@ -150,7 +130,7 @@ proc setActive {flag} {
 
 
 proc select {parent base variant index} {
-	set path $parent.top
+	set path $parent.twm
 	variable ${path}::Vars
 
 	if {$Vars(active)} {
@@ -161,14 +141,58 @@ proc select {parent base variant index} {
 }
 
 
+proc MakeFrame {twm parent type uid} {
+	variable Prios
+
+	set frame [tk::frame $parent.$uid -borderwidth 0 -takefocus 1]
+	set nameVar ::application::twm::mc::Pane($uid)
+	return [list $frame $nameVar $Prios($uid) [expr {$uid ne "player"}] yes yes]
+}
+
+
+proc BuildFrame {twm frame uid width height} {
+	variable ${twm}::Vars
+	set Vars(frame:$uid) $frame
+
+	switch $uid {
+		player {
+			set columns {lastName firstName type sex rating1 federation title frequency}
+			::playertable::build $frame [namespace code [list View $twm]] $columns \
+				-selectcmd [list [namespace current]::players::Search $twm] \
+				-id db:players:$uid \
+				-usefind 1 \
+				;
+			::scidb::db::subscribe playerList \
+				[namespace current]::players::Update \
+				[namespace current]::Close \
+				$twm \
+				;
+		}
+		games {
+			set columns {white whiteElo black blackElo event result date length}
+			::gametable::build $frame [namespace code [list View $twm]] $columns -id db:players:$uid
+			::scidb::db::subscribe gameList [namespace current]::games::Update $twm
+		}
+		event {
+			set columns {event eventType eventDate eventMode timeMode eventCountry site}
+			::eventtable::build $frame [namespace code [list View $twm]] $columns \
+				-selectcmd [namespace code [list SelectEvent $twm]] \
+				-id db:players:$uid \
+				;
+			::scidb::db::subscribe eventList [namespace current]::events::Update $twm
+		}
+	}
+}
+
+
 proc Select {path base variant index} {
 	variable ${path}::Vars
 
 	set position [::scidb::db::get lookupPlayer $index $Vars($base:$variant:view) $base $variant]
-	::playertable::see $path.players $position
+	::playertable::see $Vars(frame:player) $position
 	update idletasks
-	set row [::playertable::indexToRow $path.players $position]
-	::playertable::setSelection $path.players $row
+	set row [::playertable::indexToRow $Vars(frame:player) $position]
+	::playertable::setSelection $Vars(frame:player) $row
 }
 
 
@@ -184,14 +208,14 @@ proc Close {path base variant} {
 	variable ${path}::Vars
 
 	array unset Vars $base:$variant:*
-	::playertable::forget $path.players $base $variant
-	::eventtable::forget $path.info.events $base $variant
-	::gametable::forget $path.info.games $base $variant
+	::playertable::forget $Vars(frame:player) $base $variant
+	::eventtable::forget $Vars(frame:event) $base $variant
+	::gametable::forget $Vars(frame:games) $base $variant
 
 	if {$Vars(base) eq "$base:$variant"} {
-		::playertable::clear $path.players
-		::eventtable::clear $path.info.events
-		::gametable::clear $path.info.games
+		::playertable::clear $Vars(frame:player)
+		::eventtable::clear $Vars(frame:event)
+		::gametable::clear $Vars(frame:games)
 	}
 }
 
@@ -204,7 +228,8 @@ proc InitBase {path base variant} {
 
 	if {![info exists Vars($base:$variant:view)]} {
 		set Vars($base:$variant:initializing) 1
-		set Vars($base:$variant:view) [::scidb::view::new $base $variant master slave slave slave slave slave]
+		set Vars($base:$variant:view) \
+			[::scidb::view::new $base $variant master slave slave slave slave slave]
 		set Vars($base:$variant:update:players) 1
 		set Vars($base:$variant:sort:players) $Defaults(sort:players)
 		set Vars($base:$variant:sort:events) $Defaults(sort:events)
@@ -214,21 +239,18 @@ proc InitBase {path base variant} {
 		set Vars($base:$variant:events:lastId) -1
 		set Vars($base:$variant:select) -1
 		set Vars($base:$variant:selected:key) {}
-		::playertable::init $path.players $base $variant
-		::gametable::init $path.info.games $base $variant
-		::eventtable::init $path.info.events $base $variant
+		::playertable::init $Vars(frame:player) $base $variant
+		::gametable::init $Vars(frame:games) $base $variant
+		::eventtable::init $Vars(frame:event) $base $variant
 		::scidb::view::search $base $variant $Vars($base:$variant:view) null events
 	}
 }
 
 
-proc TableMinSize {pane minsize} {
-	[winfo parent $pane] paneconfigure $pane -minsize [lindex $minsize 0 0]
-}
-
-
 proc SelectEvent {path base variant view} {
-	set index [::eventtable::selectedEvent $path.info.events $base $variant]
+	variable ${path}::Vars
+
+	set index [::eventtable::selectedEvent $Vars(frame:event) $base $variant]
 	[namespace parent]::selectEvent $base $variant $index
 }
 
@@ -254,7 +276,7 @@ proc Update2 {id path base variant} {
 	set Vars($base:$variant:games:lastId) $id
 	set lastChange $Vars($base:$variant:lastChange)
 	set Vars($base:$variant:lastChange) [::scidb::db::get lastChange $base $variant]
-	set selected [::playertable::selectedPlayer $path.players $base $variant]
+	set selected [::playertable::selectedPlayer $Vars(frame:player) $base $variant]
 	set view $Vars($base:$variant:view)
 
 	if {$selected >= 0 && $lastChange < $Vars($base:$variant:lastChange)} {
@@ -271,10 +293,10 @@ proc Update2 {id path base variant} {
 		set Vars($base:$variant:lastChange) $lastChange
 
 		set n [::scidb::view::count games $base $variant $view]
-		after idle [list ::gametable::update $path.info.games $base $variant $n]
+		after idle [list ::gametable::update $Vars(frame:games) $base $variant $n]
 
 		set n [::scidb::view::count events $base $variant $view]
-		after idle [list ::eventtable::update $path.info.events $base $variant $n]
+		after idle [list ::eventtable::update $Vars(frame:event) $base $variant $n]
 		set Vars($base:$variant:events:lastId) $id
 	}
 }
@@ -287,10 +309,10 @@ namespace eval players {
 proc Reset {path base variant} {
 	variable [namespace parent]::${path}::Vars
 
-	::eventtable::clear $path.info.events
-	::gametable::clear $path.info.games
-	::playertable::select $path.players none
-	::playertable::activate $path.players none
+	::eventtable::clear $Vars(frame:event)
+	::gametable::clear $Vars(frame:games)
+	::playertable::select $Vars(frame:player) none
+	::playertable::activate $Vars(frame:player) none
 	set Vars($base:$variant:selected:key) {}
 }
 
@@ -299,13 +321,13 @@ proc Search {path base variant view {selected -1}} {
 	variable [namespace parent]::${path}::Vars
 
 	::widget::busyCursor on
-	::gametable::activate $path.info.games none
-	::gametable::select $path.info.games none
-	::eventtable::activate $path.info.events none
-	::eventtable::select $path.info.events none
+	::gametable::activate $Vars(frame:games) none
+	::gametable::select $Vars(frame:games) none
+	::eventtable::activate $Vars(frame:event) none
+	::eventtable::select $Vars(frame:event) none
 
 	if {$selected == -1} {
-		set selected [::playertable::selectedPlayer $path.players $base $variant]
+		set selected [::playertable::selectedPlayer $Vars(frame:player) $base $variant]
 		if {$selected >= 0} {
 			set index [::scidb::db::get playerIndex $selected $view $base $variant]
 			set Vars($base:$variant:selected:key) [scidb::db::get playerKey $base $variant $index]
@@ -316,8 +338,8 @@ proc Search {path base variant view {selected -1}} {
 		# TODO: we do an exact search, but probably we like to seach only for player name!
 		set Vars($base:$variant:lastChange) [::scidb::db::get lastChange $base $variant]
 		::scidb::view::search $base $variant $view null events [list player $selected]
-		::eventtable::scroll $path.info.events home
-		::gametable::scroll $path.info.games home
+		::eventtable::scroll $Vars(frame:event) home
+		::gametable::scroll $Vars(frame:games) home
 	} else {
 		Reset $path $base $variant
 	}
@@ -362,7 +384,7 @@ proc DoUpdate {path base variant} {
 		}
 		if {$Vars($base:$variant:update:players)} {
 			set n [::scidb::db::count players $base $variant]
-			after idle [list ::playertable::update $path.players $base $variant $n]
+			after idle [list ::playertable::update $Vars(frame:player) $base $variant $n]
 			after idle [namespace code [list [namespace parent]::games::Update2 \
 				$Vars($base:$variant:players:lastId) $path $base $variant]]
 			set Vars($base:$variant:update:players) 0
@@ -411,7 +433,7 @@ proc DoUpdate {path base variant} {
 		}
 		if {$Vars($base:$variant:update:events)} {
 			set n [::scidb::view::count events $base $variant $Vars($base:$variant:view)]
-			after idle [list ::eventtable::update $path.info.events $base $variant $n]
+			after idle [list ::eventtable::update $Vars(frame:event) $base $variant $n]
 			set Vars($base:$variant:update:events) 0
 		}
 	}
@@ -420,23 +442,20 @@ proc DoUpdate {path base variant} {
 } ;# namespace events
 
 
-proc WriteOptions {chan} {
+proc WriteTableOptions {chan {id "player"}} {
 	variable Tables
 
+	if {$id ne "player"} { return }
+
 	foreach table $Tables {
-		puts $chan "::playertable::setOptions $table.players {"
-		::options::writeArray $chan [::playertable::getOptions $table.players]
-		puts $chan "}"
-		puts $chan "::gametable::setOptions db:players {"
-		::options::writeArray $chan [::gametable::getOptions $table.info.games]
-		puts $chan "}"
-		puts $chan "::eventtable::setOptions $table.info.events {"
-		::options::writeArray $chan [::eventtable::getOptions $table.info.events]
-		puts $chan "}"
+		foreach attr {player games event} {
+			puts $chan "::scrolledtable::setOptions db:players:$attr {"
+			::options::writeArray $chan [::scrolledtable::getOptions db:players:$attr]
+			puts $chan "}"
+		}
 	}
 }
-
-::options::hookWriter [namespace current]::WriteOptions
+::options::hookTableWriter [namespace current]::WriteTableOptions
 
 } ;# namespace players
 } ;# namespace database

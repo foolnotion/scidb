@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2013 Gregor Cramer
+# Copyright: (C) 2009-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -53,33 +53,97 @@ variable Columns {
 	number white whiteElo black blackElo event result site date round length eco deleted changed acv
 }
 
+array set FrameOptions {
+	games { -width 1000 -height 200 -minwidth 200 -minheight 100 -expand both }
+}
+
+variable Layout {
+	root { -shrink none -grow none } {
+		pane games %games%
+	}
+}
+
 variable Tables {}
-variable Layout bottom
 
 
 proc build {parent} {
-	variable Options
-	variable Columns
-	variable Tables
+	variable Layout
+	variable FrameOptions
 
-	set tb $parent.table
-	::gametable::build $tb \
-		[namespace code [list View $tb]] \
-		$Columns \
-		-id db:games \
-		-useScale 1 \
-		-layout $Options(layout) \
+	set twm $parent.twm
+	namespace eval [namespace current]::$twm {}
+	variable ${twm}::Priv
+
+	::application::twm::make $twm games \
+		[namespace current]::MakePane \
+		[namespace current]::BuildPane \
+		[array get FrameOptions] \
+		$Layout \
+		-frameborderwidth 0 \
 		;
+	bind $twm <<TwmAfter>> [namespace code [list AfterTWM $twm]]
+	bind $twm <<TwmReady>> [namespace code [list AfterTWM $twm]]
+	::application::twm::load $twm
+	set Priv(layout) 1
+	return $twm
+}
 
+
+proc activate {w flag} {
+	set twm $w.twm
+	variable ${twm}::Priv
+
+	if {[winfo toplevel $w] ne $w} {
+		::toolbar::activate $w $flag
+	}
+	if {$flag} {
+		::gametable::focus $w.twm.games.table
+		if {$Priv(layout)} {
+			set Priv(layout) 0
+			after idle [namespace code [list AfterTWM $twm]]
+		}
+	}
+}
+
+
+proc overhang {parent} {
+	return [::gametable::overhang $parent.twm.games.table]
+}
+
+
+proc linespace {parent} {
+	return [::gametable::linespace $parent.twm.games.table]
+}
+
+
+proc setActive {flag} {
+	# no action
+}
+
+
+proc borderwidth {parent} {
+	return [::gametable::borderwidth $parent.twm.games.table]
+}
+
+
+proc MakePane {twm parent type uid} {
+	set frame [tk::frame $parent.$uid -borderwidth 0 -takefocus 1]
+	set nameVar ::application::twm::mc::Pane($uid)
+	return [list $frame $nameVar 100]
+}
+
+
+proc BuildPane {twm frame uid width height} {
+	variable Tables
+	variable Columns
+	variable Options
+	variable ${twm}::Priv
+
+	set tb $frame.table
 	namespace eval [namespace current]::$tb {}
 	variable ${tb}::Vars
-	array set Vars {
-		minheight	0
-		minsize		{}
-		gameno		{}
-	}
+	set Priv(table) $tb
 
-#	set Vars(slider)		[$sc cget -sliderlength]
 	set Vars(layout)		$Options(layout)
 	set Vars(theme)		[::theme::currentTheme]
 	set Vars(toolbars)	{}
@@ -87,38 +151,52 @@ proc build {parent} {
 	set Vars(resizing)	0
 	set Vars(codec)		{}
 	set Vars(base)			""
+	set Vars(ready)		0
 
-	bind $tb <<TableMinSize>>		[namespace code [list TableMinSize $tb %d]]
-	bind $tb <<TableLayout>>		[namespace code [list TableLayout $tb]]
-	bind $tb <<TableResized>>		[namespace code [list TableResized $tb %d]]
+	set menucmd {}
+	if {[string match [::application::twm games].* $frame]} {
+		lappend menucmd -menucmd [namespace current]::HeaderMenu
+	}
+
+	::gametable::build $tb \
+		[namespace code [list View $tb]] \
+		$Columns \
+		-id db:games \
+		-useScale 1 \
+		-layout $Options(layout) \
+		{*}$menucmd \
+		;
+
+	bind $tb <<TableMinSize>>		 [namespace code [list TableMinSize $tb %d]]
+	bind $tb <<TableLayout>>		 [namespace code [list TableLayout $tb]]
 	bind $tb <<LanguageChanged>>	+[namespace code [list ::scrolledtable::refresh $tb]]
 
-	set tbGameNo [::toolbar::toolbar $parent \
+	set tbGameNo [::toolbar::toolbar $frame \
 		-id games-gameno \
 		-hide 1 \
 		-side bottom \
 		-alignment center \
 		-allow {top bottom} \
-		-tooltipvar [namespace current]::mc::GameNumber] \
-		;
+		-tooltipvar [namespace current]::mc::GameNumber \
+	]
 	lappend Vars(toolbars) $tbGameNo
-	set tbControl [::toolbar::toolbar $parent \
+	set tbControl [::toolbar::toolbar $frame \
 		-id games-control \
 		-hide 1 \
 		-side bottom \
 		-alignment center \
 		-allow {top bottom} \
-		-tooltipvar [namespace current]::mc::Control] \
-		;
+		-tooltipvar [namespace current]::mc::Control \
+	]
 	lappend Vars(toolbars) $tbControl
-	set tbLayout [::toolbar::toolbar $parent \
+	set tbLayout [::toolbar::toolbar $frame \
 		-id games-layout \
 		-hide 1 \
 		-side bottom \
 		-alignment center \
 		-allow {top bottom} \
-		-tooltipvar ::mc::Layout] \
-		;
+		-tooltipvar ::mc::Layout \
+	]
 	lappend Vars(toolbars) $tbLayout
 	
 	::toolbar::add $tbControl button \
@@ -166,15 +244,15 @@ proc build {parent} {
 		-variable [namespace current]::Options(layout) \
 		-value right \
 		-tooltipvar [namespace current]::mc::UseVerticalScrollbar \
-		-command [namespace code [list ChangeLayout $tb right]]
-		;
+		-command [namespace code [list ChangeLayout $tb right] \
+	]
 	::toolbar::add $tbLayout button \
 		-image $::icon::toolbarScrollbarBottom \
 		-variable [namespace current]::Options(layout) \
 		-value bottom \
 		-tooltipvar [namespace current]::mc::UseHorizontalScrollbar \
-		-command [namespace code [list ChangeLayout $tb bottom]] \
-		;
+		-command [namespace code [list ChangeLayout $tb bottom] \
+	]
 	
 	foreach w $Vars(toolbars) {
 		foreach event {ToolbarShow ToolbarHide ToolbarFlat ToolbarIcon} {
@@ -187,33 +265,9 @@ proc build {parent} {
 }
 
 
-proc activate {w flag} {
-	if {[winfo toplevel $w] ne $w} {
-		::toolbar::activate $w $flag
-	}
-	if {$flag} {
-		::gametable::focus $w.table
-	}
-}
-
-
-proc overhang {parent} {
-	return [::gametable::overhang $parent.table]
-}
-
-
-proc linespace {parent} {
-	return [::gametable::linespace $parent.table]
-}
-
-
-proc setActive {flag} {
-	# no action
-}
-
-
-proc borderwidth {parent} {
-	return [::gametable::borderwidth $parent.table]
+proc HeaderMenu {menu} {
+	if {[$menu index end] ne "none"} { $menu add separator }
+	::application::twm::makeLayoutMenu [::application::twm] $menu
 }
 
 
@@ -261,48 +315,35 @@ proc CodecChanged {path newCodec} {
 }
 
 
+proc AfterTWM {twm} {
+	variable ${twm}::Priv
+	variable ${Priv(table)}::Vars
+
+	if {[info exists Vars(minsize)]} {
+		GenerateTableMinSizeEvent $Priv(table)
+	}
+}
+
+
 proc ChangeLayout {table dir} {
 	variable ${table}::Vars
 	variable Options
 
 	if {$Options(layout) eq $dir} { return }
-	if {$Options(layout) eq "right"} { set Options(layout) bottom } else { set Options(layout) right }
+	set Options(layout) [expr {$Options(layout) eq "right" ? "bottom" : "right"}]
 	lassign [::gametable::changeLayout $table $Options(layout)] width height
 
 	if {[llength $width]} {
-		incr Vars(minwidth) $width
-		incr Vars(minheight) $height
-		set Vars(minsize) [list [lindex $Vars(minsize) 0] [expr {[lindex $Vars(minsize) 1] + $height}]]
-
-		set top [winfo toplevel $table]
-		if {$Vars(minwidth) > [winfo width $table]} {
-			[winfo parent $table] configure -width $Vars(minwidth)
-			wm minsize $top $Vars(minwidth) $Vars(minheight)
-		} else {
-#			# avoid resizing (multicolumn problem)
-#			wm geometry $top [wm geometry $top]
-			wm minsize $top $Vars(minwidth) $Vars(minheight)
-		}
-
+		lassign $Vars(minsize) minwidth minheight gridsize
+		incr minwidth $width
+		incr minheight $height
+		set Vars(minsize) [list $minwidth $minheight $gridsize]
 		GenerateTableMinSizeEvent $table
 	}
 }
 
 
-proc TableResized {table height} {
-	variable ${table}::Vars
-
-	set overhang [::gametable::overhang $table]
-	# TODO: grid table height (but avoid Configure [see table.tcl])
-	# NOTE: currently overhang is 2 pixels too large
-}
-
-
 proc ToolbarShow {table w} {
-	variable ${table}::Vars
-
-#	# avoid resizing (multicolumn problem)
-#	wm geometry [winfo toplevel $table] [wm geometry [winfo toplevel $table]]
 	GenerateTableMinSizeEvent $table
 }
 
@@ -310,12 +351,19 @@ proc ToolbarShow {table w} {
 proc GenerateTableMinSizeEvent {table} {
 	variable ${table}::Vars
 
-	# may invoked before configuration completed
-	if {![info exists Vars(minwidth)]} { return }
-
 	update idletasks
-	set data [list $Vars(minwidth) [ComputeMinHeight $table] $Vars(gridsize)]
-	event generate [winfo parent $table] <<TableMinSize>> -data $data
+	set parent [winfo parent [winfo parent [winfo parent $table]]]
+	event generate $parent <<TableMinSize>> -data $Vars(minsize) -when tail
+}
+
+
+proc TableMinSize {table minsize} {
+	variable ${table}::Vars
+
+	lassign $minsize minsize gridsize
+	lassign $minsize minwidth minheight
+	set Vars(minsize) [list $minwidth $minheight $gridsize]
+	GenerateTableMinSizeEvent $table
 }
 
 
@@ -323,7 +371,7 @@ proc TableLayout {table} {
 	variable ${table}::Vars
 
 	if {[llength $Vars(minsize)]} {
-		# its a trick, but it works!
+		# XXX its a trick, but it works!
 		ChangeLayout $table ""
 		ChangeLayout $table ""
 	}
@@ -361,59 +409,24 @@ proc Goto {table number} {
 }
 
 
-proc TableMinSize {table minsize} {
-	variable ${table}::Vars
-
-	lassign $minsize minsize gridsize
-	lassign $minsize minwidth minheight
-	set Vars(gridsize) $gridsize
-	set Vars(minsize) $minsize
-
-	update idletasks
-#	# avoid resizing (multicolumn problem)
-#	wm geometry [winfo toplevel $table] [wm geometry [winfo toplevel $table]]
-
-	set mintblwidth [winfo width $table]
-	if {$mintblwidth <= 1} { set mintblwidth [lindex $minsize 0] }
-
-	set top [winfo toplevel $table]
-	incr minwidth [winfo width $top]
-	incr minwidth [expr {-$mintblwidth}]
-	set Vars(minwidth) $minwidth
-	lassign [wm minsize $top] mw mh
-	wm minsize $top $minwidth $mh
-	set minheight [ComputeMinHeight $table]
-	set Vars(minheight) $minheight
-
-	event generate [winfo parent $table] <<TableMinSize>> -data [list $minwidth $minheight $gridsize]
-}
-
-
-proc ComputeMinHeight {table} {
-	variable ${table}::Vars
-
-	# TODO computation is incorrect!
-	set minheight [lindex $Vars(minsize) 1]
-	incr minheight [winfo height [winfo parent $table]]
-	incr minheight -[winfo height $table]
-
-	return $minheight
-}
-
-
-proc WriteOptions {chan} {
+proc WriteTableOptions {chan {id "games"}} {
 	variable Tables
 
-	::options::writeItem $chan [namespace current]::Options
+	if {$id ne "games"} { return }
 
 	foreach table $Tables {
 		variable ${table}::Vars
-		puts $chan "::gametable::setOptions db:games {"
-		::options::writeArray $chan [::gametable::getOptions $table]
+		puts $chan "::scrolledtable::setOptions db:games {"
+		::options::writeArray $chan [::scrolledtable::getOptions db:games]
 		puts $chan "}"
 	}
 }
+::options::hookTableWriter [namespace current]::WriteTableOptions
 
+
+proc WriteOptions {chan} {
+	::options::writeItem $chan [namespace current]::Options
+}
 ::options::hookWriter [namespace current]::WriteOptions
 
 } ;# namespace games

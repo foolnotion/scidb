@@ -896,6 +896,48 @@ proc verifyPath {path} {
 }
 
 
+proc checkPath {parent path} {
+	set message ""
+	set detail ""
+
+	switch [verifyPath $path] {
+		oneDot {
+			set message [format [Tr FilenameNotAllowed] $path]
+		}
+
+		twoDots {
+			set message [format [Tr FilenameNotAllowed] $path]
+			set detail [Tr ContainsTwoDots]
+		}
+
+		tooLong {
+			set message [format [Tr FilenameNotAllowed] $path]
+			set detail [Tr FilenameTooLong]
+		}
+
+		reservedChar {
+			variable reservedChars
+			set message [format [Tr FilenameNotAllowed] $path]
+			set detail [format [Tr ContainsReservedChars] [join $reservedChars " "]]
+		}
+
+		invalidName {
+			set message [format [Tr FilenameNotAllowed] $path]
+			set detail [Tr InvalidFileName]
+		}
+
+		reservedName {
+			set message [format [Tr FilenameNotAllowed] $path]
+			set detail [Tr IsReservedName]
+		}
+	}
+
+	if {[string length $message] == 0} { return 1 }
+	::dialog::error -parent $parent -message $message -detail $detail
+	return 0
+}
+
+
 proc isWindowsExecutable {path} {
 	global tcl_platform
 
@@ -1939,45 +1981,7 @@ proc SearchLastVisited {w dir} {
 
 proc CheckPath {w path} {
 	variable ${w}::Vars
-
-	set message ""
-	set detail ""
-
-	switch [verifyPath $path] {
-		oneDot {
-			set message [format [Tr FilenameNotAllowed] $path]
-		}
-
-		twoDots {
-			set message [format [Tr FilenameNotAllowed] $path]
-			set detail [Tr ContainsTwoDots]
-		}
-
-		tooLong {
-			set message [format [Tr FilenameNotAllowed] $path]
-			set detail [Tr FilenameTooLong]
-		}
-
-		reservedChar {
-			variable reservedChars
-			set message [format [Tr FilenameNotAllowed] $path]
-			set detail [format [Tr ContainsReservedChars] [join $reservedChars " "]]
-		}
-
-		invalidName {
-			set message [format [Tr FilenameNotAllowed] $path]
-			set detail [Tr InvalidFileName]
-		}
-
-		reservedName {
-			set message [format [Tr FilenameNotAllowed] $path]
-			set detail [Tr IsReservedName]
-		}
-	}
-
-	if {[string length $message] == 0} { return 1 }
-	::dialog::error -parent $Vars(widget:main) -message $message -detail $detail
-	return 0
+	return [checkPath $Vars(widget:main) $path]
 }
 
 

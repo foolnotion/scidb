@@ -546,11 +546,11 @@ proc Register {w arguments} {
 	while {[string match -* $key]} {
 		switch -- $key {
 			-index {
-				if {[catch {$w entrycget 1 -label}]} {
+				set index [lindex $arguments 1]
+				if {[catch {$w entrycget $index -label}]} {
 					return -code error "widget \"$w\" does not seem to be a menu, \
 												which is required for the -index switch"
 				}
-				set index [lindex $arguments 1]
 				set arguments [lreplace $arguments 0 1]
 			}
 

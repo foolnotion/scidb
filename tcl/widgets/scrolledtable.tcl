@@ -97,7 +97,9 @@ proc build {path columns args} {
 	if {$useScale} { set Vars(layout) $opts(-layout) } else { set Vars(layout) right }
 	foreach attr {-popupcmd -lock -useScale -layout -lineBasedMenu} { array unset opts $attr }
 
-	ttk::frame $path -takefocus 0
+	if {![winfo exists $path]} {
+		ttk::frame $path -takefocus 0
+	}
 	ttk::frame $top -takefocus 0
 	pack $top -fill both -expand yes
 
@@ -162,6 +164,7 @@ proc build {path columns args} {
 	}
 
 	::bind $tb <<TableFill>>					 [namespace code [list TableFill $tb %d]]
+	::bind $tb <<TableRebuild>>				 [namespace code [list TableRebuild $tb]]
 	::bind $tb <<TableResized>>				 [namespace code [list TableResized $tb %d]]
 	::bind $tb <<TableSelected>>				 [namespace code [list TableSelected $tb %d]]
 	::bind $tb <<TableInvoked>>				 [namespace code [list TableInvoked $tb %d]]
@@ -220,7 +223,6 @@ proc build {path columns args} {
 
 	TableResized $tb 0
 	::table::activate $tb $Vars(active)
-#	set Vars(options) [::table::getOptions $tb]
 	return $tb
 }
 
@@ -237,7 +239,7 @@ proc update {path base variant size} {
 		::table::activate $table none
 		::table::select $table none
 
-		if {[llength $Vars(base)]} {
+		if {[string length $Vars(base)]} {
 			set Vars(start:$Vars(base):$Vars(variant)) $Vars(start)
 			set Vars(active:$Vars(base):$Vars(variant)) $Vars(active)
 			set Vars(selection:$Vars(base):$Vars(variant)) $Vars(selection)
@@ -295,6 +297,11 @@ proc scrolledtablePath {table} {
 
 proc height {path} {
 	return [::table::height $path.top.table]
+}
+
+
+proc gridsize {path} {
+	return [::table::gridsize $path.top.table]
 }
 
 
@@ -494,30 +501,23 @@ proc at {path y} {
 }
 
 
-proc getOptions {path} {
-	set table $path.top.table
-	variable ${table}::Vars
+proc getOptions {id} {
+	return [::table::getOptions $id]
+}
 
-	if {![info exists Vars(options)]} {
-		set Vars(options) [::table::getOptions $table]
-	}
 
-	return $Vars(options)
+proc setOptions {id options} {
+	::table::setOptions $id $options
+}
+
+
+proc bindOptions {id arrName nameList} {
+	::table::bindOptions $id $arrName $nameList
 }
 
 
 proc setColumnMininumWidth {path id width} {
 	return [::table::setColumnMininumWidth $path.top.table $id $width]
-}
-
-
-proc setOptions {path options} {
-	::table::setOptions $path.top.table $options
-}
-
-
-proc bindOptions {id options} {
-	::table::bindOptions $id $options
 }
 
 
@@ -715,9 +715,6 @@ proc ScrollToStart {table} {
 
 
 proc TableOptions {table} {
-	variable ${table}::Vars
-
-	set Vars(options) [::table::getOptions $table]
 	event generate [winfo parent [winfo parent $table]] <<TableOptions>>
 }
 
@@ -828,6 +825,11 @@ proc TableSelected {table number} {
 
 	set Vars(selection) [expr {$number + $Vars(start)}]
 	event generate [winfo parent [winfo parent $table]] <<TableSelected>> -data $Vars(selection)
+}
+
+
+proc TableRebuild {table} {
+	event generate [winfo parent [winfo parent $table]] <<TableRebuild>>
 }
 
 
