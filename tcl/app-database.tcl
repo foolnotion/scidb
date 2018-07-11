@@ -217,6 +217,7 @@ variable PreOpen			{}
 variable RecentFiles		{}
 variable RecentURL		{}
 variable MaxHistory		10
+variable CurrentBase		""
 
 array set Positions		{}
 
@@ -373,7 +374,7 @@ proc build {tab width height} {
 	$Vars(switcher) current $::scidb::clipbaseName
 	SetClipbaseDescription
 	bind $contents <<LanguageChanged>> +[namespace code SetClipbaseDescription]
-	Switch $clipbaseName Normal
+	Switch $clipbaseName
 }
 
 
@@ -405,6 +406,7 @@ proc finish {app} {
 
 
 proc preOpen {parent} {
+	variable CurrentBase
 	variable RecentFiles
 	variable PreOpen
 
@@ -412,13 +414,14 @@ proc preOpen {parent} {
 
 	foreach file $PreOpen {
 		set i [FindRecentFile $file]
-		lassign [lindex $RecentFiles $i] type file encoding readonly active
+		lassign [lindex $RecentFiles $i] type file encoding readonly
 		if {[llength $encoding] && $encoding ni [encoding names]} {
 			set encoding $::encoding::defaultEncoding
 			::log::error $mc::Preload [format $mc::MissingEncoding $encoding $encoding]
 		}
 		if {[file readable $file]} {
 			::log::hide 1
+			set active [expr {$CurrentBase eq $file}]
 			openBase $parent $file no -encoding $encoding -readonly $readonly -switchToBase $active
 			if {$active} { set current $file }
 			::log::hide 0
@@ -457,7 +460,9 @@ proc twm {} {
 
 
 proc currentVariant {} {
-	return [set [namespace current]::Vars(variant)]
+	variable Vars
+	if {[info exists Vars(variant)]} { return $Vars(variant) }
+	return Normal
 }
 
 
@@ -596,6 +601,10 @@ proc openBase {parent file byUser args} {
 		}
 	}
 
+	if {$opts(-switchToBase) eq "last"} {
+		variable CurrentBase
+		set opts(-switchToBase) [expr {$CurrentBase eq $file}]
+	}
 	if {$opts(-switchToBase)} { Switch $file }
 
 	if {$opts(-variant) ne "Undetermined"} {
@@ -616,11 +625,7 @@ proc prepareClose {} {
 	set PreOpen {}
 
 	foreach base [$Vars(switcher) bases] {
-		set type [$Vars(switcher) type $base]
-		if {$type ne [::scidb::db::get clipbase type]} {
-			if {$base eq $current} { set active 1 } else { set active 0 }
-			set encoding [$Vars(switcher) encoding $base]
-			set readonly [$Vars(switcher) readonly? $base]
+		if {[$Vars(switcher) type $base] ne [::scidb::db::get clipbase type]} {
 			lappend PreOpen $base
 		}
 	}
@@ -663,7 +668,7 @@ proc newBase {parent variant file {encoding ""}} {
 	$Vars(switcher) add $file $type no $encoding
 	AddRecentFile $type $file $encoding no
 	::widget::busyCursor off
-	Switch $file $variant
+	Switch $file
 
 	return 1
 }
@@ -1062,18 +1067,14 @@ proc UpdateVariants {{variant ""}} {
 }
 
 
-proc Switch {filename {variant Undetermined}} {
+proc Switch {filename} {
 	variable Vars
-
-	if {$variant eq "Undetermined"} {
-		set variant $Vars(variant)
-	}
 
 	if {[catch { $Vars(switcher) current $filename }]} {
 		# may happen if open failed
 		return
 	}
-
+	[namespace parent]::twm::switchLayout $Vars(variant) db
 	::scidb::db::switch $filename $Vars(variant)
 	UpdateAfterSwitch $filename $Vars(variant)
 }
@@ -1083,6 +1084,7 @@ proc UpdateAfterSwitch {filename variant} {
 	variable ::scidb::clipbaseName
 	variable Vars
 
+	if {$filename ne $clipbaseName} { set CurrentBase $filename }
 	set readonly [::scidb::db::get readonly? $filename]
 
 	if {$filename eq $clipbaseName} { set closeState disabled } else { set closeState normal }
@@ -2328,6 +2330,7 @@ proc WriteOptions {chan} {
 	::options::writeList $chan [namespace current]::RecentFiles
 	::options::writeList $chan [namespace current]::PreOpen
 	::options::writeItem $chan [namespace current]::Positions
+	::options::writeItem $chan [namespace current]::CurrentBase
 }
 ::options::hookWriter [namespace current]::WriteOptions
 

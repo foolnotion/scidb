@@ -63,6 +63,7 @@ proc build {parent} {
 	namespace eval [namespace current]::$twm {}
 	variable ${twm}::Vars
 
+	if {$twm ni $Tables} { lappend Tables $twm }
 	set Vars(after:sites) {}
 	set Vars(after:events) {}
 	set Vars(active) 0
@@ -71,11 +72,11 @@ proc build {parent} {
 	::application::twm::make $twm site \
 		[namespace current]::MakeFrame \
 		[namespace current]::BuildFrame \
+		[namespace current]::Prios \
 		[array get FrameOptions] \
 		$Layout \
 		;
 	::application::twm::load $twm
-	lappend Tables $twm
 	return $twm
 }
 
@@ -141,12 +142,13 @@ proc MakeFrame {twm parent type uid} {
 proc BuildFrame {twm frame uid width height} {
 	variable ${twm}::Vars
 	set Vars(frame:$uid) $frame
+	set id [::application::twm::getId $twm]
 
 	switch $uid {
 		site {
 			::sitetable::build $frame [namespace code [list View $twm]] {} \
 				-selectcmd [list [namespace current]::sites::Search $twm] \
-				-id db:sites:site \
+				-id db:sites:$id:$uid \
 				-usefind 1 \
 				;
 			::scidb::db::subscribe siteList \
@@ -159,7 +161,7 @@ proc BuildFrame {twm frame uid width height} {
 			set columns {event eventType eventDate eventMode timeMode}
 			::eventtable::build $frame [namespace code [list View $twm]] $columns \
 				-selectcmd [namespace code [list SelectEvent $twm]] \
-				-id db:sites:event \
+				-id db:sites:$id:$uid \
 				;
 			::scidb::db::subscribe eventList [namespace current]::events::Update $twm
 		}
@@ -375,14 +377,59 @@ proc WriteTableOptions {chan {id "site"}} {
 	if {$id ne "site"} { return }
 
 	foreach table $Tables {
-		foreach attr {site event} {
-			puts $chan "::scrolledtable::setOptions db:sites:$attr {"
-			::options::writeArray $chan [::scrolledtable::getOptions db:sites:$attr]
-			puts $chan "}"
+		set id [::application::twm::getId $table]
+		foreach uid {site event} {
+			if {[::scrolledtable::countOptions db:sites:$id:$uid] > 0} {
+				puts $chan "::scrolledtable::setOptions db:sites:$id:$uid {"
+				::options::writeArray $chan [::scrolledtable::getOptions db:sites:$id:$uid]
+				puts $chan "}"
+			}
 		}
 	}
 }
 ::options::hookTableWriter [namespace current]::WriteTableOptions
+
+
+proc SaveOptions {twm variant} {
+	variable TableOptions
+
+	set id [::application::twm::getId $twm]
+	foreach uid {site event} {
+		set TableOptions($variant:$id:$uid) [::scrolledtable::getOptions db:sites:$id:$uid]
+	}
+}
+
+
+proc RestoreOptions {twm variant} {
+	variable TableOptions
+
+	set id [::application::twm::getId $twm]
+	foreach uid {site event} {
+		::scrolledtable::setOptions db:sites:$id:$uid $TableOptions($variant:$id:$uid)
+	}
+}
+
+
+proc CompareOptions {twm variant} {
+	variable TableOptions
+
+	set id [::application::twm::getId $twm]
+	foreach uid {site event} {
+		if {[::scrolledtable::countOptions db:sites:$id:$uid] > 0} {
+			set lhs $TableOptions($variant:$id:$uid)
+			set rhs [::scrolledtable::getOptions db:sites:$id:$uid]
+			if {![::arrayListEqual $lhs $rhs]} { return false }
+		}
+	}
+	return true
+}
+
+
+::options::hookSaveOptions \
+	[namespace current]::SaveOptions \
+	[namespace current]::RestoreOptions \
+	[namespace current]::CompareOptions \
+	;
 
 } ;# namespace sites
 } ;# namespace database

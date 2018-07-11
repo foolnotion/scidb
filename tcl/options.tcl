@@ -30,19 +30,22 @@ namespace eval options {
 
 namespace import ::tcl::mathfunc::max
 
-array set Callbacks {}
+array set WriteCallbacks {}
 array set TableCallbacks {}
+variable SaveCallbacks {}
+variable RestoreCallbacks {}
+variable CompareCallbacks {}
 
 
 proc hookWriter {callback {file options}} {
-	variable Callbacks
+	variable WriteCallbacks
 
-	if {![info exists Callbacks($file)]} {
+	if {![info exists WriteCallbacks($file)]} {
 		set i -1
 	} else {
-		set i [lsearch -exact $Callbacks($file) $callback]
+		set i [lsearch -exact $WriteCallbacks($file) $callback]
 	}
-	if {$i == -1} { lappend Callbacks($file) $callback }
+	if {$i == -1} { lappend WriteCallbacks($file) $callback }
 }
 
 
@@ -59,12 +62,24 @@ proc hookTableWriter {callback {file options}} {
 
 
 proc unhookWriter {callback {file options}} {
-	variable Callbacks
+	variable WriteCallbacks
 
-	if {[info exists Callbacks($file)]} {
-		set i [lsearch -exact $Callbacks($file) $callback]
-		if {$i >= 0} { set Callbacks($file) [lreplace $Callbacks($file) $i $i] }
+	if {[info exists WriteCallbacks($file)]} {
+		set i [lsearch -exact $WriteCallbacks($file) $callback]
+		if {$i >= 0} { set WriteCallbacks($file) [lreplace $WriteCallbacks($file) $i $i] }
 	}
+}
+
+
+proc hookTableWriter {callback {file options}} {
+	variable TableCallbacks
+
+	if {![info exists TableCallbacks($file)]} {
+		set i -1
+	} else {
+		set i [lsearch -exact $TableCallbacks($file) $callback]
+	}
+	if {$i == -1} { lappend TableCallbacks($file) $callback }
 }
 
 
@@ -77,16 +92,16 @@ proc writeHeader {chan file} {
 
 
 proc write {} {
-	variable Callbacks
+	variable WriteCallbacks
 	variable TableCallbacks
 
-	foreach file [array names Callbacks] {
-		if {$file eq "options" || [llength $Callbacks($file)] > 0} {
+	foreach file [array names WriteCallbacks] {
+		if {$file eq "options" || [llength $WriteCallbacks($file)] > 0} {
 			set filename [set ::scidb::file::$file]
 			set fd($file) [set chan [open $filename.tmp w]]
 			fconfigure $chan -encoding utf-8
 			writeHeader $chan $file
-			foreach callback $Callbacks($file) { $callback $chan }
+			foreach callback $WriteCallbacks($file) { $callback $chan }
 
 			if {$file eq "options"} {
 				foreach dialog [::toolbar::toolbarDialogs] {
@@ -173,6 +188,39 @@ proc writeArray {chan arr {lowercaseOnly 1}} {
 			}
 		}
 	}
+}
+
+
+proc hookSaveOptions {saveCallback restoreCallback compareCallback} {
+	variable SaveCallbacks
+	variable RestoreCallbacks 
+	variable CompareCallbacks
+
+	lappend SaveCallbacks $saveCallback
+	lappend RestoreCallbacks $restoreCallback
+	lappend CompareCallbacks $compareCallback
+}
+
+
+proc save {twm variant} {
+	variable SaveCallbacks
+	foreach callback $SaveCallbacks { $callback $twm $variant }
+}
+
+
+proc restore {twm variant} {
+	variable RestoreCallbacks
+	foreach callback $RestoreCallbacks { $callback $twm $variant }
+}
+
+
+proc compare {twm variant} {
+	variable CompareCallbacks
+
+	foreach callback $CompareCallbacks {
+		if {![$callback $twm $variant]} { return false }
+	}
+	return true
 }
 
 } ;# namespace options

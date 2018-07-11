@@ -225,9 +225,9 @@ proc OpenGame {t args} {
 	}
 
 	if {[info exists Map($sel)] && [llength $Map($sel)] > 1} {
-		::widget::busyOperation { \
+#		::widget::busyOperation {
 			::game::openGame $t [lindex $Map($sel) 0]
-		}
+#		}
 	}
 }
 

@@ -226,10 +226,6 @@ log::finishLayout
 # --- Read options -----------------------------------------------------
 
 # XXX preliminary for migration
-proc ::gametable::getOptions {id} { return [::scrolledtable::getOptions $id] }
-proc ::eventtable::getOptions {id} { return [::scrolledtable::getOptions $id] }
-proc ::playertable::getOptions {id} { return [::scrolledtable::getOptions $id] }
-proc ::sitetable::getOptions {id} { return [::scrolledtable::getOptions $id] }
 proc ::gametable::setOptions {id opts} { return [::scrolledtable::setOptions $id $opts] }
 proc ::eventtable::setOptions {id opts} { return [::scrolledtable::setOptions $id $opts] }
 proc ::playertable::setOptions {id opts} { return [::scrolledtable::setOptions $id $opts] }
@@ -375,7 +371,7 @@ if {[catch {
 					set data [read -nonewline $fd]
 					close $fd
 					set fd [open [file join $dest [file tail $file]] "w"]
-					puts $fd "::application::twm::setup [file tail $dest] {$data}"
+					puts $fd "::application::twm::setup normal [file tail $dest] {$data}"
 					close $fd
 					file delete -force $file
 				}
@@ -388,6 +384,13 @@ if {[catch {
 				set application::database::PreOpen $list
 			}
 			set ::twm::Options(deiconify:force) 0
+		}
+
+		foreach type {board games player event site annotator position} {
+			if {[info exists ::application::twm::Options($type:layout:list)]} {
+				set ::application::twm::Options($type:layout:list:normal) \
+					$::application::twm::Options($type:layout:list)
+			}
 		}
 
 		::scidb::themes::update

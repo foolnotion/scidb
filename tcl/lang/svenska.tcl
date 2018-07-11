@@ -498,6 +498,7 @@
 ::application::twm::mc::Windows					"Windows" ;# NEW
 ::application::twm::mc::ConfirmDelete			"Really delete layout '%s'?" ;# NEW
 ::application::twm::mc::ConfirmOverwrite		"Overwrite existing layout '%s'?" ;# NEW
+::application::twm::mc::LayoutSaved				"Layout '%s' successfully saved." ;# NEW
 ::application::twm::mc::EnterName				"Enter Name" ;# NEW
 
 ::application::twm::mc::Pane(analysis)			"Analysis" ;# NEW

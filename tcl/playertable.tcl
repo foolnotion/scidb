@@ -461,8 +461,6 @@ proc see {path position} {
 
 
 proc popupMenu {menu base variant info {playerCard {}}} {
-	variable ${path}::Options
-
 	set parent [winfo toplevel $menu]
 
 	if {[llength $playerCard]} {

@@ -44,7 +44,7 @@ set Columns {
 	{ timeMode		center	 0		 0		14px		0			1			1			{}			}
 	{ eventCountry	center	 4		 5		 5			0			1			0			{}			}
 	{ site			left		10		 0		14			1			1			1			{}			}
-	{ frequency		right		 4		 8		 5			0			1			1			{}			}
+	{ frequency		right		 4		 8		 6			0			1			1			{}			}
 }
 
 variable columns {}

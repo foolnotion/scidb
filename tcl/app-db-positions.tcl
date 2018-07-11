@@ -83,15 +83,16 @@ proc build {parent} {
 
 	set Vars(active) 0
 	set Vars(base) ""
+	if {$twm ni $Tables} { lappend Tables $twm }
 
 	::application::twm::make $twm position \
 		[namespace current]::MakeFrame \
 		[namespace current]::BuildFrame \
+		[namespace current]::Prios \
 		[array get FrameOptions] \
 		$Layout \
 		;
 	::application::twm::load $twm
-	lappend Tables $twm
 	return $twm
 }
 
@@ -146,6 +147,7 @@ proc MakeFrame {twmn parent type uid} {
 proc BuildFrame {twm frame uid width height} {
 	variable ${twm}::Vars
 	set Vars(frame:$uid) $frame
+	set id [::application::twm::getId $twm]
 
 	switch $uid {
 		position {
@@ -153,25 +155,25 @@ proc BuildFrame {twm frame uid width height} {
 
 			set columns {}
 			foreach column $Columns {
-				lassign $column id adjustment minwidth maxwidth width stretch removable ellipsis color
+				lassign $column cid adjustment minwidth maxwidth width stretch removable ellipsis color
 				set menu {}
 
-				if {$id in {backRank frequency}} {
+				if {$cid in {backRank frequency}} {
 					lappend menu [list command \
-						-command [namespace code [list positions::SortColumn $twm $id ascending]] \
+						-command [namespace code [list positions::SortColumn $twm $cid ascending]] \
 						-labelvar ::gametable::mc::SortAscending \
 					]
 					lappend menu [list command \
-						-command [namespace code [list positions::SortColumn $twm $id descending]] \
+						-command [namespace code [list positions::SortColumn $twm $cid descending]] \
 						-labelvar ::gametable::mc::SortDescending \
 					]
 					lappend menu [list command \
-						-command [namespace code [list positions::SortColumn $twm $id reverse]] \
+						-command [namespace code [list positions::SortColumn $twm $cid reverse]] \
 						-labelvar ::gametable::mc::ReverseOrder \
 					]
 				}
 				lappend menu [list command \
-					-command [namespace code [list positions::SortColumn $twm $id cancel]] \
+					-command [namespace code [list positions::SortColumn $twm $cid cancel]] \
 					-labelvar ::gametable::mc::CancelSort \
 				]
 
@@ -184,13 +186,13 @@ proc BuildFrame {twm frame uid width height} {
 				lappend opts -removable $removable
 				lappend opts -ellipsis $ellipsis
 				lappend opts -foreground $color
-				lappend opts -textvar [namespace current]::mc::F_[string toupper $id 0 0]
+				lappend opts -textvar [namespace current]::mc::F_[string toupper $cid 0 0]
 				lappend opts -menu $menu
 
-				lappend columns $id $opts
+				lappend columns $cid $opts
 			}
 
-			set table [::scrolledtable::build $frame $columns -id db:positions:position]
+			set table [::scrolledtable::build $frame $columns -id db:positions:$id:$uid]
 			::scrolledtable::configure $frame backRank \
 				-specialfont [list [list $::font::figurine(text:normal) 9812 9823]] \
 				;
@@ -206,7 +208,7 @@ proc BuildFrame {twm frame uid width height} {
 		}
 		games {
 			set columns {white whiteElo black blackElo result event date length}
-			::gametable::build $frame [namespace code [list View $twm]] $columns -id db:positions:games
+			::gametable::build $frame [namespace code [list View $twm]] $columns -id db:positions:$id:$uid
 			::scidb::db::subscribe gameList [namespace current]::games::Update {} $twm
 		}
 	}
@@ -505,14 +507,59 @@ proc WriteTableOptions {chan {id "position"}} {
 	if {$id ne "position"} { return }
 
 	foreach table $Tables {
-		foreach attr {position games} {
-			puts $chan "::scrolledtable::setOptions db:positions:$attr {"
-			::options::writeArray $chan [::scrolledtable::getOptions db:positions:$attr]
-			puts $chan "}"
+		set id [::application::twm::getId $table]
+		foreach uid {position games} {
+			if {[::scrolledtable::countOptions db:positions:$id:$uid] > 0} {
+				puts $chan "::scrolledtable::setOptions db:positions:$id:$uid {"
+				::options::writeArray $chan [::scrolledtable::getOptions db:positions:$id:$uid]
+				puts $chan "}"
+			}
 		}
 	}
 }
 ::options::hookTableWriter [namespace current]::WriteTableOptions
+
+
+proc SaveOptions {twm variant} {
+	variable TableOptions
+
+	set id [::application::twm::getId $twm]
+	foreach uid {position games} {
+		set TableOptions($variant:$id:$uid) [::scrolledtable::getOptions db:positions:$id:$uid]
+	}
+}
+
+
+proc RestoreOptions {twm variant} {
+	variable TableOptions
+
+	set id [::application::twm::getId $twm]
+	foreach uid {position games} {
+		::scrolledtable::setOptions db:positions:$id:$uid $TableOptions($variant:$id:$uid)
+	}
+}
+
+
+proc CompareOptions {twm variant} {
+	variable TableOptions
+
+	set id [::application::twm::getId $twm]
+	foreach uid {position games} {
+		if {[::scrolledtable::countOptions db:positions:$id:$uid] > 0} {
+			set lhs $TableOptions($variant:$id:$uid)
+			set rhs [::scrolledtable::getOptions db:positions:$id:$uid]
+			if {![::arrayListEqual $lhs $rhs]} { return false }
+		}
+	}
+	return true
+}
+
+
+::options::hookSaveOptions \
+	[namespace current]::SaveOptions \
+	[namespace current]::RestoreOptions \
+	[namespace current]::CompareOptions \
+	;
 
 } ;# namespace positions
 } ;# namespace database

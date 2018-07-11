@@ -79,17 +79,18 @@ proc build {parent} {
 	namespace eval [namespace current]::$twm {}
 	variable ${twm}::Vars
 
+	if {$twm ni $Tables} { lappend Tables $twm }
 	set Vars(active) 0
 	set Vars(base) ""
 
 	::application::twm::make $twm annotator \
 		[namespace current]::MakeFrame \
 		[namespace current]::BuildFrame \
+		[namespace current]::Prios \
 		[array get FrameOptions] \
 		$Layout \
 		;
 	::application::twm::load $twm
-	lappend Tables $twm
 	return $twm
 }
 
@@ -143,6 +144,7 @@ proc MakeFrame {twm parent type uid} {
 proc BuildFrame {twm frame uid width height} {
 	variable ${twm}::Vars
 	set Vars(frame:$uid) $frame
+	set id [::application::twm::getId $twm]
 
 	switch $uid {
 		annotator {
@@ -150,22 +152,22 @@ proc BuildFrame {twm frame uid width height} {
 
 			set columns {}
 			foreach col $Columns {
-				lassign $col id adjustment minwidth maxwidth width stretch removable ellipsis color
+				lassign $col cid adjustment minwidth maxwidth width stretch removable ellipsis color
 
-				set ivar [namespace current]::I_[string toupper $id 0 0]
-				set fvar [namespace current]::mc::F_[string toupper $id 0 0]
-				set tvar [namespace current]::mc::T_[string toupper $id 0 0]
+				set ivar [namespace current]::I_[string toupper $cid 0 0]
+				set fvar [namespace current]::mc::F_[string toupper $cid 0 0]
+				set tvar [namespace current]::mc::T_[string toupper $cid 0 0]
 				if {![info exists $tvar]} { set tvar {} }
 				if {![info exists $fvar]} { set fvar $tvar }
 				if {![info exists $ivar]} { set ivar {} } else { set ivar [set $ivar] }
 
 				set menu {}
 				lappend menu [list command \
-					-command [namespace code [list SortColumn $twm $id ascending]] \
+					-command [namespace code [list SortColumn $twm $cid ascending]] \
 					-labelvar ::gametable::mc::SortAscending \
 				]
 				lappend menu [list command \
-					-command [namespace code [list SortColumn $twm $id descending]] \
+					-command [namespace code [list SortColumn $twm $cid descending]] \
 					-labelvar ::gametable::mc::SortDescending \
 				]
 				lappend menu { separator }
@@ -185,9 +187,9 @@ proc BuildFrame {twm frame uid width height} {
 				lappend opts -textvar $fvar
 				lappend opts -tooltipvar $tvar
 
-				lappend columns $id $opts
+				lappend columns $cid $opts
 			}
-			set table [::scrolledtable::build $frame $columns -id db:annotators:$uid]
+			set table [::scrolledtable::build $frame $columns -id db:annotators:$id:$uid]
 			::scidb::db::subscribe annotatorList \
 				[namespace current]::names::Update \
 				[namespace current]::Close \
@@ -198,7 +200,7 @@ proc BuildFrame {twm frame uid width height} {
 		}
 		games {
 			set columns {white whiteElo black blackElo event result site date acv}
-			::gametable::build $frame [namespace code [list View $twm]] $columns -id db:annotators:$uid
+			::gametable::build $frame [namespace code [list View $twm]] $columns -id db:annotators:$id:$uid
 			::scidb::db::subscribe gameList \
 				[namespace current]::games::Update \
 				[namespace current]::Close \
@@ -487,14 +489,59 @@ proc WriteTableOptions {chan {id "annotator"}} {
 	if {$id ne "annotator"} { return }
 
 	foreach table $Tables {
-		foreach attr {annotator games} {
-			puts $chan "::scrolledtable::setOptions db:annotators:$attr {"
-			::options::writeArray $chan [::scrolledtable::getOptions db:annotators:$attr]
-			puts $chan "}"
+		set id [::application::twm::getId $table]
+		foreach uid {annotator games} {
+			if {[::scrolledtable::countOptions db:annotators:$id:$uid] > 0} {
+				puts $chan "::scrolledtable::setOptions db:annotators:$id:$uid {"
+				::options::writeArray $chan [::scrolledtable::getOptions db:annotators:$id:$uid]
+				puts $chan "}"
+			}
 		}
 	}
 }
 ::options::hookTableWriter [namespace current]::WriteTableOptions
+
+
+proc SaveOptions {twm variant} {
+	variable TableOptions
+
+	set id [::application::twm::getId $twm]
+	foreach uid {annotator games} {
+		set TableOptions($variant:$id:$uid) [::scrolledtable::getOptions db:annotators:$id:$uid]
+	}
+}
+
+
+proc RestoreOptions {twm variant} {
+	variable TableOptions
+
+	set id [::application::twm::getId $twm]
+	foreach uid {annotator games} {
+		::scrolledtable::setOptions db:annotators:$id:$uid $TableOptions($variant:$id:$uid)
+	}
+}
+
+
+proc CompareOptions {twm variant} {
+	variable TableOptions
+
+	set id [::application::twm::getId $twm]
+	foreach uid {annotator games} {
+		if {[::scrolledtable::countOptions db:annotators:$id:$uid] > 0} {
+			set lhs $TableOptions($variant:$id:$uid)
+			set rhs [::scrolledtable::getOptions db:annotators:$id:$uid]
+			if {![::arrayListEqual $lhs $rhs]} { return false }
+		}
+	}
+	return true
+}
+
+
+::options::hookSaveOptions \
+	[namespace current]::SaveOptions \
+	[namespace current]::RestoreOptions \
+	[namespace current]::CompareOptions \
+	;
 
 } ;# namespace annotators
 } ;# namespace database

@@ -406,6 +406,7 @@ proc WidgetProc {w command args} {
 				switch -- $name {
 					-height - -minwidth - -minheight {}
 					-width	{ $w.__combobox__ configure -width $value }
+					-class	{ ;# cannot change class }
 					default	{ $w configure $name $value }
 				}
 			}

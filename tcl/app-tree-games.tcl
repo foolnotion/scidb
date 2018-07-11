@@ -33,19 +33,20 @@ namespace eval games {
 variable Tables {}
 
 
-proc build {parent width height} {
+proc build {twm parent width height} {
 	variable Tables
 	variable Vars
 
+	set id [::application::twm::getId $twm]
 	set table $parent.treeGames
 	set columns {white whiteElo black blackElo event result date length}
 	set tb [::gametable::build $table [namespace code [list View $parent.treeGames]] $columns \
-		-id db:tree:games \
+		-id db:tree:games:$id \
 		-takefocus 0 \
 		-mode list \
 		-positioncmd ::scidb::tree::position \
 	]
-	lappend Tables $table
+	if {$twm ni $Tables} { lappend Tables $twm }
 
 	::bind $tb <<TableVisit>>		+[namespace code [list TableVisit $table %d]]
 	::bind $tb <<TablePopdown>>	+[namespace code [list ReleaseButton $table]]
@@ -67,6 +68,7 @@ proc build {parent width height} {
 	set Vars(update) {}
 	set Vars(parent) $parent
 	set Vars(table)  $table
+	set Vars(twm)    $twm
 
 	::scidb::db::subscribe gameList \
 		[namespace current]::TableUpdate \
@@ -92,8 +94,11 @@ proc activate {w flag} {
 
 
 proc closed {w} {
+	variable Tables
 	variable Vars
 
+#	set i [lsearch $Tables $Vars(twm)]
+#	set Tables [lreplace $Tables $i $i]
 	::scidb::db::unsubscribe gameList \
 		[namespace current]::TableUpdate \
 		[namespace current]::Close \
@@ -266,12 +271,49 @@ proc WriteTableOptions {chan {id "board"}} {
 	if {$id ne "board"} { return }
 
 	foreach table $Tables {
-		puts $chan "::scrolledtable::setOptions db:tree:games {"
-		::options::writeArray $chan [::scrolledtable::getOptions db:tree:games]
-		puts $chan "}"
+		if {[::scrolledtable::countOptions db:tree:games:$id] > 0} {
+			set id [::application::twm::getId $table]
+			puts $chan "::scrolledtable::setOptions db:tree:games:$id {"
+			::options::writeArray $chan [::scrolledtable::getOptions db:tree:games:$id]
+			puts $chan "}"
+		}
 	}
 }
 ::options::hookTableWriter [namespace current]::WriteTableOptions
+
+
+proc SaveOptions {twm variant} {
+	variable TableOptions
+
+	set id [::application::twm::getId $twm]
+	set TableOptions($variant:$id) [::scrolledtable::getOptions db:tree:games:$id]
+}
+
+
+proc RestoreOptions {twm variant} {
+	variable TableOptions
+
+	set id [::application::twm::getId $twm]
+	::scrolledtable::setOptions db:tree:games:$id $TableOptions($variant:$id)
+}
+
+
+proc CompareOptions {twm variant} {
+	variable TableOptions
+
+	set id [::application::twm::getId $twm]
+	if {[::scrolledtable::countOptions db:tree:games:$id] == 0} { return true }
+	set lhs $TableOptions($variant:$id)
+	set rhs [::scrolledtable::getOptions db:tree:games:$id]
+	return [::arrayListEqual $lhs $rhs]
+}
+
+
+::options::hookSaveOptions \
+	[namespace current]::SaveOptions \
+	[namespace current]::RestoreOptions \
+	[namespace current]::CompareOptions \
+	;
 
 } ;# namespace games
 } ;# namespace tree

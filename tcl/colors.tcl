@@ -55,6 +55,9 @@ array set Colors {
 	lite:analysis,best:foreground			darkgreen
 	lite:analysis,error:foreground		darkred
 	lite:analysis,active:background		#f5f5e4
+	lite:analysis,layout:background		#ffee75
+
+	lite:layout,background					#0170cc
 
 	lite:database,selected					#ffdd76
 
@@ -273,10 +276,10 @@ array set Colors {
 	dark:playerdict,stripes					#ecded0
 	lite:engine,stripes						#ecded0
 }
-# mapped from #ffffee
+# mapped from #f5f5e4
 array set Colors {
-	dark:analysis,info:background			#e7e7d8
-	dark:analysis,active:background		#e7e7d8
+	dark:analysis,info:background			#d9d9ca
+	dark:analysis,active:background		#d9d9ca
 }
 # mapped from #dfe7e8
 array set Colors {

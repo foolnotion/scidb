@@ -74,6 +74,7 @@ proc build {parent} {
 	namespace eval [namespace current]::$twm {}
 	variable ${twm}::Vars
 
+	if {$twm ni $Tables} { lappend Tables $twm }
 	set Vars(after:games) {}
 	set Vars(after:events) {}
 	set Vars(after:players) {}
@@ -83,11 +84,11 @@ proc build {parent} {
 	::application::twm::make $twm player \
 		[namespace current]::MakeFrame \
 		[namespace current]::BuildFrame \
+		[namespace current]::Prios \
 		[array get FrameOptions] \
 		$Layout \
 		;
 	::application::twm::load $twm
-	lappend Tables $twm
 	return $twm
 }
 
@@ -153,13 +154,14 @@ proc MakeFrame {twm parent type uid} {
 proc BuildFrame {twm frame uid width height} {
 	variable ${twm}::Vars
 	set Vars(frame:$uid) $frame
+	set id [::application::twm::getId $twm]
 
 	switch $uid {
 		player {
 			set columns {lastName firstName type sex rating1 federation title frequency}
 			::playertable::build $frame [namespace code [list View $twm]] $columns \
 				-selectcmd [list [namespace current]::players::Search $twm] \
-				-id db:players:$uid \
+				-id db:players:$id:$uid \
 				-usefind 1 \
 				;
 			::scidb::db::subscribe playerList \
@@ -170,14 +172,14 @@ proc BuildFrame {twm frame uid width height} {
 		}
 		games {
 			set columns {white whiteElo black blackElo event result date length}
-			::gametable::build $frame [namespace code [list View $twm]] $columns -id db:players:$uid
+			::gametable::build $frame [namespace code [list View $twm]] $columns -id db:players:$id:$uid
 			::scidb::db::subscribe gameList [namespace current]::games::Update $twm
 		}
 		event {
 			set columns {event eventType eventDate eventMode timeMode eventCountry site}
 			::eventtable::build $frame [namespace code [list View $twm]] $columns \
 				-selectcmd [namespace code [list SelectEvent $twm]] \
-				-id db:players:$uid \
+				-id db:players:$id:$uid \
 				;
 			::scidb::db::subscribe eventList [namespace current]::events::Update $twm
 		}
@@ -448,14 +450,59 @@ proc WriteTableOptions {chan {id "player"}} {
 	if {$id ne "player"} { return }
 
 	foreach table $Tables {
-		foreach attr {player games event} {
-			puts $chan "::scrolledtable::setOptions db:players:$attr {"
-			::options::writeArray $chan [::scrolledtable::getOptions db:players:$attr]
-			puts $chan "}"
+		set id [::application::twm::getId $table]
+		foreach uid {player games event} {
+			if {[::scrolledtable::countOptions db:players:$id:$uid] > 0} {
+				puts $chan "::scrolledtable::setOptions db:players:$id:$uid {"
+				::options::writeArray $chan [::scrolledtable::getOptions db:players:$id:$uid]
+				puts $chan "}"
+			}
 		}
 	}
 }
 ::options::hookTableWriter [namespace current]::WriteTableOptions
+
+
+proc SaveOptions {twm variant} {
+	variable TableOptions
+
+	set id [::application::twm::getId $twm]
+	foreach uid {player games event} {
+		set TableOptions($variant:$id:$uid) [::scrolledtable::getOptions db:players:$id:$uid]
+	}
+}
+
+
+proc RestoreOptions {twm variant} {
+	variable TableOptions
+
+	set id [::application::twm::getId $twm]
+	foreach uid {player games event} {
+		::scrolledtable::setOptions db:players:$id:$uid $TableOptions($variant:$id:$uid)
+	}
+}
+
+
+proc CompareOptions {twm variant} {
+	variable TableOptions
+
+	set id [::application::twm::getId $twm]
+	foreach uid {player games event} {
+		if {[::scrolledtable::countOptions db:players:$id:$uid] > 0} {
+			set lhs $TableOptions($variant:$id:$uid)
+			set rhs [::scrolledtable::getOptions db:players:$id:$uid]
+			if {![::arrayListEqual $lhs $rhs]} { return false }
+		}
+	}
+	return true
+}
+
+
+::options::hookSaveOptions \
+	[namespace current]::SaveOptions \
+	[namespace current]::RestoreOptions \
+	[namespace current]::CompareOptions \
+	;
 
 } ;# namespace players
 } ;# namespace database

@@ -102,7 +102,7 @@ set Columns {
 	{ frequentPlayer	left		6		 0		12			1			1			1			{}				}
 }
 
-array set Options {
+array set Defaults {
 	ratio:bar			1
 	score:bar			1
 	draws:bar			1
@@ -139,14 +139,22 @@ array set Vars {
 }
 
 array set Bars {}
+variable Tables {}
 
 
-proc build {parent width height} {
+proc build {twm parent width height} {
 	variable ::ratingbox::ratings
 	variable Columns
+	variable Defaults
 	variable Options
+	variable Tables
 	variable Priv
 	variable Vars
+
+	if {$twm ni $Tables} { lappend Tables $twm }
+	set id [::application::twm::getId $twm]
+	array set Options [array get Defaults]
+	::table::bindOptions db:tree:$id [namespace current]::Options [array names Defaults]
 
 	set bg [::colors::lookup $Options(-background)]
 	set mw [tk::multiwindow $parent.mw -borderwidth 0 -background $bg]
@@ -183,7 +191,7 @@ proc build {parent width height} {
 		-background $bg \
 		-pady {1 0} \
 		-highlightcolor $Options(-emphasize) \
-		-id db:tree \
+		-id db:tree:$id \
 		;
 	::widget::bindMouseWheel [::table::tablePath $tb] 1
 	::table::setColumnBackground $tb tail [::colors::lookup $Options(-stripes)] $bg
@@ -218,11 +226,11 @@ proc build {parent width height} {
 	RefreshHeader $tb
 
 	foreach col $Columns {
-		lassign $col id adjustment minwidth maxwidth width stretch removable ellipsis color
+		lassign $col cid adjustment minwidth maxwidth width stretch removable ellipsis color
 
-		set ivar [namespace current]::I_[string toupper $id 0 0]
-		set fvar [namespace current]::mc::F_[string toupper $id 0 0]
-		set tvar [namespace current]::mc::T_[string toupper $id 0 0]
+		set ivar [namespace current]::I_[string toupper $cid 0 0]
+		set fvar [namespace current]::mc::F_[string toupper $cid 0 0]
+		set tvar [namespace current]::mc::T_[string toupper $cid 0 0]
 		if {![info exists $tvar]} { set tvar {} }
 		if {![info exists $fvar]} { set fvar $tvar }
 		if {![info exists $ivar]} { set ivar {} } else { set ivar [set $ivar] }
@@ -232,7 +240,7 @@ proc build {parent width height} {
 		set stripes $Options(-stripes)
 		set visible 1
 
-		switch $id {
+		switch $cid {
 			number - move {
 				lappend menu [list checkbutton \
 					-command [namespace code [list RefreshCurrentItem $tb]] \
@@ -240,7 +248,7 @@ proc build {parent width height} {
 					-variable [namespace current]::Options(hilite:nextmove) \
 				]
 				lappend menu { separator }
-				if {$id eq "number"} {
+				if {$cid eq "number"} {
 					set var {}
 					set stripes $Options(-emphasize)
 					set lock left
@@ -249,7 +257,7 @@ proc build {parent width height} {
 					set stripes $Options(-emphasize)
 					set lock left
 				}
-				if {$id eq "number"} { set visible 0 }
+				if {$cid eq "number"} { set visible 0 }
 			}
 
 			eco {
@@ -259,7 +267,7 @@ proc build {parent width height} {
 			}
 
 			ratio - score - draws {
-				if {$id eq "score"} {
+				if {$cid eq "score"} {
 					lappend menu [list radiobutton \
 						-command [namespace code [list RefreshRatings $tb]] \
 						-labelvar [namespace current]::mc::FromWhitesPerspective \
@@ -283,13 +291,13 @@ proc build {parent width height} {
 				lappend menu [list radiobutton \
 					-command [namespace code [list FetchResult $tb true]] \
 					-labelvar [namespace current]::mc::Numeric \
-					-variable [namespace current]::Options($id:bar) \
+					-variable [namespace current]::Options($cid:bar) \
 					-value 0 \
 				]
 				lappend menu [list radiobutton \
 					-command [namespace code [list FetchResult $tb true]] \
 					-labelvar [namespace current]::mc::Bar \
-					-variable [namespace current]::Options($id:bar) \
+					-variable [namespace current]::Options($cid:bar) \
 					-value 1 \
 				]
 				lappend menu { separator }
@@ -322,7 +330,7 @@ proc build {parent width height} {
 		}
 
 		if {[llength $var]} {
-			if {$id eq "ratio"} { set value "frequency" } else { set value $id }
+			if {$cid eq "ratio"} { set value "frequency" } else { set value $cid }
 			lappend menu [list checkbutton \
 				-command [namespace code [list SortColumn $tb]] \
 				-labelvar $var \
@@ -332,7 +340,7 @@ proc build {parent width height} {
 			lappend menu { separator }
 		}
 
-		::table::addcol $tb $id \
+		::table::addcol $tb $cid \
 			-justify $adjustment \
 			-minwidth $minwidth \
 			-maxwidth $maxwidth \
@@ -352,11 +360,11 @@ proc build {parent width height} {
 
 		if {$ellipsis} { set squeeze "x" } else { set squeeze "" }
 
-		$tb.t style create styTotal$id
-		$tb.t style elements styTotal$id [list elemTotal elemImg elemIco elemTxt$id]
-		::table::setDefaultLayout $tb $id styTotal$id
-		$tb.t style layout styTotal$id elemTotal -union elemTxt$id -iexpand nswe
-		lappend Vars(styles) $id styTotal$id
+		$tb.t style create styTotal$cid
+		$tb.t style elements styTotal$cid [list elemTotal elemImg elemIco elemTxt$cid]
+		::table::setDefaultLayout $tb $cid styTotal$cid
+		$tb.t style layout styTotal$cid elemTotal -union elemTxt$cid -iexpand nswe
+		lappend Vars(styles) $cid styTotal$cid
 	}
 
 	::table::configure $tb move -specialfont [list [list $::font::figurine(text:normal) 9812 9823]]
@@ -482,6 +490,7 @@ proc build {parent width height} {
 	set Vars(stm) $stm
 	set Vars(side) {}
 	set Vars(show:tree) $Options(show:tree)
+	set Vars(twm) $twm
 ### VARIANTS ####################################
 set Vars(force) 0
 set Vars(switcher) $switcher
@@ -507,10 +516,13 @@ proc activate {w flag} {
 
 
 proc closed {w} {
+	variable Tables
 	variable Vars
 
 	catch { after cancel $Vars(after) }
 	::scidb::db::unsubscribe {*}$Vars(subscribe)
+#	set i [lsearch $Tables $Vars(twm)]
+#	set Tables [lreplace $Tables $i $i]
 }
 
 
@@ -713,8 +725,6 @@ if {[::scidb::game::query mainvariant?] ne "Normal"} { return }
 
 
 proc Close {table base variant} {
-	variable Vars
-
 	if {$base eq [::scidb::tree::get] && $variant eq [::scidb::app::variant]} {
 		return [ShowMessage NoGamesAvailable]	}
 }
@@ -762,7 +772,6 @@ proc InvalidateSearch {table} {
 
 proc AutomaticSearch {table} {
 	variable Options
-	variable Vars
 
 	if {$Options(search:automatic)} {
 		Update $table [::scidb::tree::get] [::scidb::app::variant]
@@ -968,6 +977,9 @@ proc FetchResult {table {force false}} {
 	variable Vars
 	variable Priv
 
+	# neccessary because of "after" effect
+	set table $Vars(table)
+
 ### VARIANTS ####################################
 if {[::scidb::game::query mainvariant?] ne "Normal"} { return }
 if {$Vars(force)} { set force true }
@@ -1082,7 +1094,8 @@ proc SetItemState {table index} {
 
 	if {$Vars(nextmove) != $index || !$Options(hilite:nextmove)} { append states ! }
 	append states next
-	$table.t item state set $index $states
+	# may fail, when switching variant
+	catch { $table.t item state set $index $states }
 }
 
 
@@ -1397,8 +1410,6 @@ proc Activate {table} {
 
 
 proc LoadFirstGame {table row move} {
-	variable Vars
-
 	set index [::scidb::tree::gameIndex $row]
 	set fen [::scidb::tree::position $move]
 	set base [::scidb::tree::get]
@@ -1709,14 +1720,56 @@ proc RebuildTable {table} {
 
 
 proc WriteTableOptions {chan {id "board"}} {
+	variable Tables
+	variable Vars
+
 	if {$id ne "board"} { return }
-	# it's required to write options before writing tables
-	::options::writeItem $chan [namespace current]::Options
-	puts $chan "::table::setOptions db:tree {"
-	::options::writeArray $chan [::table::getOptions db:tree]
-	puts $chan "}"
+
+	foreach table $Tables {
+		if {[::scrolledtable::countOptions db:tree:$id] > 0} {
+			set id [::application::twm::getId $table]
+			puts $chan "::table::setOptions db:tree:$id {"
+			::options::writeArray $chan [::table::getOptions db:tree:$id]
+			puts $chan "}"
+		}
+	}
 }
 ::options::hookTableWriter [namespace current]::WriteTableOptions
+
+
+proc SaveOptions {twm variant} {
+	variable TableOptions
+
+	set id [::application::twm::getId $twm]
+	set TableOptions($variant:$id) [::scrolledtable::getOptions db:tree:$id]
+}
+
+
+proc RestoreOptions {twm variant} {
+	variable TableOptions
+
+	set id [::application::twm::getId $twm]
+	::scrolledtable::setOptions db:tree:$id $TableOptions($variant:$id)
+}
+
+
+proc CompareOptions {twm variant} {
+	variable TableOptions
+
+	set id [::application::twm::getId $twm]
+	if {[::scrolledtable::countOptions db:tree:$id] == 0} { return true }
+	set lhs $TableOptions($variant:$id)
+	set rhs [::scrolledtable::getOptions db:tree:$id]
+	if {![::arrayListEqual $lhs $rhs]} { return false }
+	return true
+}
+
+
+::options::hookSaveOptions \
+	[namespace current]::SaveOptions \
+	[namespace current]::RestoreOptions \
+	[namespace current]::CompareOptions \
+	;
 
 } ;# namespace tree
 } ;# namespace application

@@ -146,7 +146,6 @@ array set Defaults {
 variable Eraser [::icon::makeStateSpecificIcons $::colormenu::icon::16x16::eraser]
 variable Colors {black white gray50 darkviolet darkBlue blue2 blue darkGreen darkRed red2 red #68480a}
 variable RecentColors
-variable OptionMap
 variable WidgetMap
 variable IdMap
 variable Bindings
@@ -167,7 +166,6 @@ proc table {args} {
 	variable KeyFitColumns
 	variable KeyOptimizeColumns
 	variable KeySqueezeColumns
-	variable OptionMap
 
 	set parent [lindex $args 0]
 	set table [tk::frame $parent]
@@ -208,10 +206,6 @@ proc table {args} {
 				set Options($key) $Defaults($key)
 			}
 		}
-	}
-
-	if {[info exists OptionMap($Vars(id))]} {
-		array set Options $OptionMap($Vars(id))
 	}
 
 	set Vars(charwidth)		[font measure $Options(-font) "0"]
@@ -595,6 +589,11 @@ proc bindOptions {id arrName nameList} {
 }
 
 
+proc countOptions {id} {
+	return [array size ${id}::Options]
+}
+
+
 proc getOptions {id} {
 	variable Bindings
 
@@ -615,7 +614,8 @@ proc setOptions {id options} {
 
 	if {![info exists WidgetMap($id)]} {
 		namespace eval ${id} {}
-		array set [namespace current]::${id}::Options $options
+		variable ${id}::Options
+		array set Options $options
 		if {[info exists Bindings($id)]} {
 			lassign $Bindings($id) arrName nameList
 			array set opts $options
@@ -624,9 +624,11 @@ proc setOptions {id options} {
 			}
 		}
 	} else {
+		variable ${id}::Options
+		array set opts $options
+
 		if {[info exists Bindings($id)]} {
 			lassign $Bindings($id) arrName nameList
-			array set opts $options
 			foreach attr $nameList {
 				catch { set ${arrName}($attr) $opts($attr) }
 			}
@@ -634,23 +636,33 @@ proc setOptions {id options} {
 
 		set table $WidgetMap($id)
 
-		if {![ArrayEqual [namespace current]::${id}::Options $options]} {
-			array set [namespace current]::${id}::Options $options
-			variable ${table}::Vars
-			set active $Vars(active)
-			set selection $Vars(selection)
-			Reconfigure $table $id
-			event generate $table <<TableFill>> -data [list 0 $Vars(height)]
-			if {$active >= 0} {
-				activate $table $active
-				see $table $active
+		if {![ArrayEqual Options $options]} {
+			if {[winfo exists $table]} {
+				foreach attr [array names opts -visible:*] {
+					if {$Options($attr) != $opts($attr)} {
+						set ev [expr {$Options($attr) ? "TableHide" : "TableShow"}]
+						event generate $table <<$ev>> -data [lindex [split $attr :] 1]
+					}
+				}
 			}
-			if {$selection >= 0} {
-				select $table $selection
+			array set Options $options
+			if {[winfo exists $table]} {
+				variable ${table}::Vars
+				set active $Vars(active)
+				set selection $Vars(selection)
+				Reconfigure $table $id
+				event generate $table <<TableFill>> -data [list 0 $Vars(height)]
+				if {$active >= 0} {
+					activate $table $active
+					see $table $active
+				}
+				if {$selection >= 0} {
+					select $table $selection
+				}
 			}
 		}
 
-		event generate $table <<TableRebuild>>
+		if {[winfo exists $table]} { event generate $table <<TableRebuild>> }
 	}
 }
 

@@ -108,7 +108,8 @@ array set Options {
 }
 
 array set Vars {
-	slots {}
+	slots		{}
+	preload	0
 }
 
 
@@ -1037,6 +1038,9 @@ proc reopenLockedGames {parent} {
 	set count [llength $Vars(slots)]
 	set bases {}
 	set Vars(slots) [lsort -integer -decreasing $Vars(slots)]
+	set Vars(preload) 1
+	# be sure in case of errors
+	after idle [list set [namespace current]::Vars(preload) 0]
 
 	foreach entry $lockedGames {
 		lassign $entry _ _ _ key encoding _
@@ -1082,6 +1086,8 @@ proc reopenLockedGames {parent} {
 		}
 	}
 
+	set Vars(preload) 0
+
 	if {$selection >= 0} {
 		::scidb::game::switch $selection
 		::application::pgn::select $selection
@@ -1089,6 +1095,9 @@ proc reopenLockedGames {parent} {
 
 	return $count
 }
+
+
+proc preloading? {} { return [set [namespace current]::Vars(preload)] }
 
 
 proc traverseHistory {headerScript gameScript} {
@@ -1224,10 +1233,10 @@ proc UnlockGames {} {
 proc OpenAssociatedDatabases {parent bases} {
 	foreach entry $bases {
 		lassign $entry base encoding
-
+		lappend args -encoding $encoding -switchToBase last
 		if {![file exists $base]} {
 			# Log problem
-		} elseif {![::application::database::openBase $parent $base no -encoding $encoding]} {
+		} elseif {![::application::database::openBase $parent $base no {*}$args]} {
 			# Log problem
 		}
 	}

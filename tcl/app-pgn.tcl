@@ -404,7 +404,7 @@ proc add {position base variant tags {at -1}} {
 		::gamebar::add $Vars(gamebar) $position $tags
 	}
 	ResetGame $Vars(pgn:$position) $position $tags
-	::scidb::game::switch $position
+	if {![::game::preloading?]} { ::scidb::game::switch $position }
 }
 
 
@@ -1053,6 +1053,7 @@ proc UpdateLanguages {position languageSet} {
 proc GameSwitched {position} {
 	variable Vars
 
+	[namespace parent]::twm::switchLayout [::scidb::game::query $position variant] game
 	if {![info exists Vars(virgin:$position)]} { return }
 
 	if {[info exists Vars(lang:set:$position)]} {

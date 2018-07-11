@@ -120,6 +120,7 @@ SOURCES = \
 	engine.tcl \
 	player-dict.tcl \
 	application.tcl \
+	app-twm.tcl \
 	app-information.tcl \
 	app-board.tcl \
 	app-database.tcl \

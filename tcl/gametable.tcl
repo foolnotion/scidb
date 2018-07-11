@@ -598,6 +598,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	if {[::scrolledtable::visible? $path moveList]} {
 		::scidb::app::moveList open $path [namespace current]::FetchMoveList
 	}
+
 	set Vars(ranges) {}
 	set Vars(viewcmd) $getViewCmd
 
@@ -1526,6 +1527,7 @@ proc FetchMoveList {path} {
 proc TableHide {table id flag} {
 	variable ${table}::Vars
 
+puts "TableHide($id): $flag"
 	if {$id eq "moveList"} {
 		if {$flag} {
 			::scidb::app::moveList close $table

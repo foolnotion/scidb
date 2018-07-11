@@ -501,6 +501,11 @@ proc at {path y} {
 }
 
 
+proc countOptions {id} {
+	return [::table::countOptions $id]
+}
+
+
 proc getOptions {id} {
 	return [::table::getOptions $id]
 }

@@ -396,6 +396,13 @@ proc arrayEqual {lhs rhs} {
 }
 
 
+proc arrayListEqual {lhs rhs} {
+	array set foo $lhs
+	array set bar $rhs
+	return [arrayEqual foo bar]
+}
+
+
 proc require {myNamespace requiredNamespaces} {
 	foreach ns $requiredNamespaces {
 		if {![namespace exists $ns]} {

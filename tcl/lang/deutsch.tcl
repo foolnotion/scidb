@@ -498,6 +498,7 @@
 ::application::twm::mc::Windows					"Fenster"
 ::application::twm::mc::ConfirmDelete			"Wirklich das Layout '%s' löschen?"
 ::application::twm::mc::ConfirmOverwrite		"Existierendes Layout '%s' ersetzen?"
+::application::twm::mc::LayoutSaved				"Layout '%s' wurde erfolgreich geschrieben."
 ::application::twm::mc::EnterName				"Namen eingeben"
 
 ::application::twm::mc::Pane(analysis)			"Analyse"
