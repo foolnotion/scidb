@@ -390,11 +390,9 @@ proc addcol {table id args} {
 	}
 
 	set keys [array names opts]
-	foreach {key val} $args {
-		if {$key in $keys} { set opts($key) $val }
-	}
+	array set opts $args
 	if {[info exists Options(-visible:$id)]} {
-		foreach key $keys {
+		foreach key [array names opts] {
 			if {[info exists Options($key:$id)]} {
 				set opts($key) $Options($key:$id)
 			}
@@ -814,7 +812,7 @@ proc overhang {table} {
 
 
 proc linespace {table} {
-	return [set ${table}::Vars(linespace)]
+	eturn [set ${table}::Vars(linespace)]
 }
 
 
@@ -1216,16 +1214,18 @@ proc ConfigureColumn {table id args} {
 	set justify $opts(-justify)
 #	if {[llength $labelImage]} { set justify center } else { set justify left }
 
-	$table.t column configure $id                           \
-		-width $width                                        \
-		-lock $opts(-lock)                                   \
-		-justify $justify                                    \
-		-itemjustify $opts(-justify)                         \
-		-resize $resizable                                   \
-		-squeeze $squeeze                                    \
-		-visible $opts(-visible)                             \
-		-weight $weight                                      \
-		-itembackground $colors                              \
+	$table.t column configure $id   \
+		-width $width                \
+		-minwidth $minwidth          \
+		-maxwidth $maxwidth          \
+		-lock $opts(-lock)           \
+		-justify $justify            \
+		-itemjustify $opts(-justify) \
+		-resize $resizable           \
+		-squeeze $squeeze            \
+		-visible $opts(-visible)     \
+		-weight $weight              \
+		-itembackground $colors      \
 		;
 
 	if {$opts(-visible)} {
