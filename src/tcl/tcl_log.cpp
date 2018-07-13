@@ -71,7 +71,7 @@ Log::error(db::save::State code, unsigned gameNumber)
 
 	Tcl_Obj* objv[3];
 
-	objv[0] = Tcl_NewStringObj(code == db::save::GameTooLong ? "warning" : "error", -1);
+	objv[0] = Tcl_NewStringObj("state", -1);
 	objv[1] = Tcl_NewStringObj(msg, -1);
 	objv[2] = Tcl_NewIntObj(gameNumber + 1);
 

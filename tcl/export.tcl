@@ -3607,12 +3607,14 @@ proc Log {unused arguments} {
 	append line $::import::mc::GameNumber " " [::locale::formatNumber $gameNo]
 	append line ": "
 
-	if {[info exists import::mc::$code]} {
-		append line [set ::import::mc::$code]
+	set arr ::import::mc::[string toupper $type 0]
+	if {[info exists ${arr}($code)]} {
+		append line [set ${arr}($code)]
 	} else {
 		append line $code
 	}
 
+	if {$type eq "state"} { set type error }
 	::log::$type $line
 	update idletasks
 }

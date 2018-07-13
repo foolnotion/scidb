@@ -6,7 +6,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2010-2017 Gregor Cramer
+# Copyright: (C) 2010-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -98,29 +98,26 @@ proc open {parent url} {
 
 
 proc downloadURL {parent url args} {
+	variable RetryCounter
    global env
 
 	array set opts {
-		-successcmd {}
-		-failedcmd  {}
-		-retrycmd   {}
-		-timeouts   {5000}
-		-filetypes  {}
+		-successcmd	{}
+		-failedcmd 	{}
+		-retrycmd  	{}
+		-timeouts  	{1000 3000}
+		-filetypes 	{}
 	}
 	array set opts $args
 
    if {[catch {package require http 2.7}]} {
-		if {[llength $opts(failedcmd)]} {
-			{*}$opts(failedcmd) $parent $url
+		if {[llength $opts(-failedcmd)]} {
+			{*}$opts(-failedcmd) $parent $url http
 		}
 		return
    }
 
-   if {[info exists env(http_proxy)]} {
-      set http_proxy $env(http_proxy)
-   } else {
-      set http_proxy ""
-   }
+	set http_proxy [expr {[info exists env(http_proxy)] ? $env(http_proxy) : ""}]
    set i [string last : $http_proxy]
    if {$i >= 0} {
       set host [string range $http_proxy 0 [expr {$i - 1}]]
@@ -133,28 +130,31 @@ proc downloadURL {parent url args} {
    ::http::config -urlencoding utf-8
    set ::http::defaultCharset utf-8
 
-	if {[llength $opts(successcmd)] == 0} {
-		set opts(successcmd) [namespace current]::SaveData
+	if {[llength $opts(-successcmd)] == 0} {
+		set opts(-successcmd) [namespace current]::SaveData
 	}
 
+	set RetryCounter 0
    return [GetURL $parent $url {*}[array get opts]]
 }
 
 
-proc GetURL {parent url opts} {
+proc GetURL {parent url args} {
 	array set opts $args
-	set timeout [lindex $opts(timeouts) 0]
+	set timeout [lindex $opts(-timeouts) 0]
 	if {[llength $timeout] == 0} { set timeout 5000 }
-	set opts(timeouts) [lrange $opts(timeouts) 1 end]
-   set cmd [list [namespace current]::DownLoadResponse $parent $url {*}[array get opts]] 
+	set opts(-timeouts) [lrange $opts(-timeouts) 1 end]
+   set cmd [list [namespace current]::DownLoadResponse $parent $url [array get opts]] 
 
-   if {[catch { ::http::geturl $url -command $cmd -timeout $timeout }] && [llength $opts(failedcmd)]} {
-		{*}$opts(failedcmd) $parent $url
+   if {[catch { ::http::geturl $url -command $cmd -timeout $timeout }] && [llength $opts(-failedcmd)]} {
+		{*}$opts(-failedcmd) $parent $url down
    }
 }
 
 
-proc DownLoadResponse {parent url args} {
+proc DownLoadResponse {parent url args token} {
+	variable RetryCounter
+
 	array set opts $args
    set code [::http::ncode $token]
    set state [::http::status $token]
@@ -175,8 +175,8 @@ proc DownLoadResponse {parent url args} {
             200 { ;# ok }
 
             default {
-					if {[llength $opts(failedcmd)]} {
-						{*}$opts(failedcmd) $parent $url
+					if {[llength $opts(-failedcmd)]} {
+						{*}$opts(-failedcmd) $parent $url $code
 					}
 					return
 				}
@@ -184,18 +184,24 @@ proc DownLoadResponse {parent url args} {
       }
    }
 
-   if {!$retry} {
-		if {[llength $opts(successcmd)]} {
-			{*}$opts(successcmd) $parent $url $data
+	if {$code == 404} {
+		if {[llength $opts(-failedcmd)]} {
+			{*}$opts(-failedcmd) $parent $url notfound
+		}
+	} elseif {!$retry} {
+		if {[llength $opts(-successcmd)]} {
+			{*}$opts(-successcmd) $parent $url $data
 		} else {
 			SaveData $parent $url $data {*}$args
 		}
-   } elseif {[llength $opts(timeouts)]} {
+   } elseif {[llength $opts(-timeouts)]} {
 		set timeout [lindex $trials 0]
-		set opts(timeouts) [lrange $opts(timeouts) 1 end]
-      after $timeout [list [namespace current]::GetURL $url {*}[array get opts]]
-   } else if {[llength $opts(failedcmd)]} {
-		{*}$opts(failedcmd) $parent $url
+		set opts(-timeouts) [lrange $opts(-timeouts) 1 end]
+      after $timeout [list [namespace current]::GetURL $parent $url {*}[array get opts]]
+   } elseif {[llength $opts(-retrycmd)]} {
+		{*}$opts(-retrycmd) $parent $url $retry [incr RetryCounter]
+   } elseif {[llength $opts(-failedcmd)]} {
+		{*}$opts(-failedcmd) $parent $url timeout
    }
 }
 
@@ -203,9 +209,10 @@ proc DownLoadResponse {parent url args} {
 proc SaveData {parent url data args} {
 	array set opts $args
 
+puts "SaveData: $args"
 	set result [::dialog::saveFile \
 		-parent $parent \
-		-filetypes $opts(filetypes) \
+		-filetypes $opts(-filetypes) \
 		-geometry last \
 		-title [set [namespace current]::mc::SaveFile] \
 	]

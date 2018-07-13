@@ -832,6 +832,7 @@
 ::application::tree::mc::LockReferenceBase				"Blocca il database di riferimento"
 ::application::tree::mc::SwitchReferenceBase				"Cambia database di riferimento"
 ::application::tree::mc::TransparentBar					"Barra trasparente"
+::application::tree::mc::MonochromeStyle					"Use monochrome style" ;# NEW
 ::application::tree::mc::NoGamesFound						"Nessuna partita trovata"
 ::application::tree::mc::NoGamesAvailable					"Nessuna partita disponibile"
 ::application::tree::mc::Searching							"Ricerca"
@@ -861,6 +862,7 @@
 ::application::tree::mc::F_Ratio								"Percentuale"
 ::application::tree::mc::F_Score								"Risultato"
 ::application::tree::mc::F_Draws								"Patte"
+::application::tree::mc::F_Result							"Risultato"
 ::application::tree::mc::F_Performance						"Performance"
 ::application::tree::mc::F_AverageYear						"\u00f8 Anno"
 ::application::tree::mc::F_LastYear							"Giocata per ultimo"

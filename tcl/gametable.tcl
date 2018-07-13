@@ -1527,7 +1527,6 @@ proc FetchMoveList {path} {
 proc TableHide {table id flag} {
 	variable ${table}::Vars
 
-puts "TableHide($id): $flag"
 	if {$id eq "moveList"} {
 		if {$flag} {
 			::scidb::app::moveList close $table

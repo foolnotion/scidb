@@ -812,7 +812,7 @@ proc overhang {table} {
 
 
 proc linespace {table} {
-	eturn [set ${table}::Vars(linespace)]
+	return [set ${table}::Vars(linespace)]
 }
 
 
@@ -925,6 +925,12 @@ proc used {table id} {
 		}
 	}
 	return $list
+}
+
+
+proc refresh {table} {
+	variable ${table}::Vars
+	event generate $table <<TableFill>> -data [list 0 $Vars(height)]
 }
 
 
@@ -1762,6 +1768,7 @@ proc GetStripes {table id} {
 
 proc PopupMenu {table x y X Y} {
 	variable ${table}::Vars
+	variable ColorLookup
 	variable IdMap
 	variable Visible_
 	variable options
@@ -1853,11 +1860,16 @@ proc PopupMenu {table x y X Y} {
 				set opts(-label) [set $opts(-labelvar)]
 				array unset opts -labelvar
 			}
-			incr count
-			$menu add $type {*}[array get opts]
-			switch $type {
-				radiobutton { ::theme::configureRadioEntry $menu }
-				checkbutton { ::theme::configureCheckEntry $menu }
+			if {![info exists opts(-state)] || [eval $opts(-state)] eq "normal"} {
+				if {$type ne "separator" || ($count > 0 && [$menu type end] ne "separator")} {
+					incr count
+					array unset opts -state
+					$menu add $type {*}[array get opts]
+					switch $type {
+						radiobutton { ::theme::configureRadioEntry $menu }
+						checkbutton { ::theme::configureCheckEntry $menu }
+					}
+				}
 			}
 			unset opts
 		}

@@ -84,6 +84,7 @@ public:
 	unsigned frequency() const;
 	unsigned score() const;
 	unsigned draws() const;
+	unsigned result(result::ID type) const;
 	unsigned averageRating() const;
 	int performance(rating::Type ratingType) const;
 	uint16_t bestRating() const;

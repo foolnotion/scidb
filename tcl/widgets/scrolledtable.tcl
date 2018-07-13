@@ -377,10 +377,7 @@ proc see {path position} {
 
 
 proc refresh {path} {
-	set table $path.top.table
-	variable ${table}::Vars
-
-	TableFill $table
+	TableFill $path.top.table
 }
 
 

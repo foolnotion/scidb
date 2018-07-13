@@ -225,6 +225,7 @@ proc fsbox {w type args} {
 		-checkexistence			1
 		-initialdir					{}
 		-initialfile				{}
+		-directory					{}
 		-showhidden					{}
 		-defaultextension			{}
 		-defaultencoding			{}
@@ -263,7 +264,7 @@ proc fsbox {w type args} {
 	foreach option {	selectionbackground selectionforeground font multiple savemode
 							activebackground activeforeground emphasizebackground defaultextension
 							defaultencoding inactivebackground inactiveforeground filetypes fileencodings
-							fileicons filecursors showhidden sizecommand selectencodingcommand
+							fileicons filecursors showhidden directory sizecommand selectencodingcommand
 							validatecommand deletecommand renamecommand duplicatecommand okcommand
 							cancelcommand inspectcommand filetypecommand initialfile bookmarkswidth
 							customcommand customicon customtooltip customfiletypes helpcommand helpicon

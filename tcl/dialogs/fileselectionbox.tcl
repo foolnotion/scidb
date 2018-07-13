@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2011-2013 Gregor Cramer
+# Copyright: (C) 2011-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -311,11 +311,14 @@ proc Open {type args} {
 
 	set opts(-initialdir) {}
 	set opts(-defaultencoding) {}
+	set opts(-directory) {}
 
 	array set data $args
 	array set opts $args
 
-	if {[string length $data(-class)] && [info exists LastFolders($class:$data(-class))]} {
+	if {[string length $opts(-directory)] > 0} {
+		set opts(-initialdir) $opts(-directory)
+	} elseif {[string length $data(-class)] > 0 && [info exists LastFolders($class:$data(-class))]} {
 		set opts(-initialdir) $LastFolders($class:$data(-class))
 	}
 
@@ -330,6 +333,7 @@ proc Open {type args} {
 	}
 
 	array unset opts -class
+	array unset opts -directory
 	array unset opts -embed
 	array unset opts -geometry
 	array unset opts -needencoding

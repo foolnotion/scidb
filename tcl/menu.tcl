@@ -659,6 +659,7 @@ proc dbCreateArchive {parent {base ""}} {
 		-needencoding 0 \
 		-geometry last \
 		-title $mc::CreateArchive \
+		-directory [file dirname $base] \
 		-initialfile [file tail [file rootname $name]] \
 		-customcommand {} \
 	]

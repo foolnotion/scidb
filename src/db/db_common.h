@@ -1707,6 +1707,7 @@ namespace attribute
 			Frequency,
 			Score,
 			Draws,
+			Result,
 			AverageRating,
 			Performance,
 			BestRating,

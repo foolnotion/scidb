@@ -34,6 +34,8 @@
 # include "db_selector.h"
 #endif
 
+#include "u_base.h"
+
 #include "m_utility.h"
 
 #include <string.h>
@@ -69,6 +71,12 @@ TreeInfo::TreeInfo()
 	,m_bestPlayer(&g_player)
 	,m_mostFrequentPlayer(&g_player)
 {
+	static_assert(int(result::White  ) < int(U_NUMBER_OF(m_scoreCount)), "array too small");
+	static_assert(int(result::Black  ) < int(U_NUMBER_OF(m_scoreCount)), "array too small");
+	static_assert(int(result::Draw   ) < int(U_NUMBER_OF(m_scoreCount)), "array too small");
+	static_assert(int(result::Lost   ) < int(U_NUMBER_OF(m_scoreCount)), "array too small");
+	static_assert(int(result::Unknown) < int(U_NUMBER_OF(m_scoreCount)), "array too small");
+
 	::memset(m_scoreCount, 0, sizeof(m_scoreCount));
 }
 
@@ -225,7 +233,7 @@ TreeInfo::add(TreeInfo const& info, rating::Type ratingType)
 	m_frequency							+= info.m_frequency;
 	m_scoreCount[result::Unknown]	+= info.m_scoreCount[result::Unknown];
 	m_scoreCount[result::White]	+= info.m_scoreCount[result::White];
-//	m_scoreCount[result::Black]	+= info.m_scoreCount[result::Black];
+	m_scoreCount[result::Black]	+= info.m_scoreCount[result::Black];
 	m_scoreCount[result::Draw]		+= info.m_scoreCount[result::Draw];
 	m_scoreCount[result::Lost]		+= info.m_scoreCount[result::Lost];
 	m_averageRating					+= info.m_averageRating;
@@ -270,10 +278,17 @@ TreeInfo::isLessThan(TreeInfo const& info, rating::Type ratingType, attribute::t
 			return performance(ratingType) > info.performance(ratingType);
 
 		case attribute::tree::Score:
+		case attribute::tree::Result:
 			return score() > info.score();
 
 		case attribute::tree::Draws:
 			return draws() > info.draws();
+
+			if (result(result::White) > info.result(result::White)) return true;
+			if (result(result::Black) < info.result(result::Black)) return true;
+			if (frequency() > info.frequency()) return true;
+			if (result(result::Lost) < info.result(result::Lost)) return true;
+			return false;
 
 		case attribute::tree::BestPlayer:
 			return m_bestPlayer->elo() && m_bestPlayer->elo() > info.m_bestPlayer->elo();

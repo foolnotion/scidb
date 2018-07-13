@@ -78,6 +78,12 @@ array set Colors {
 	lite:tree,draws:color					darkgreen
 	lite:tree,progress:color				darkred
 	lite:tree,progress:finished			forestgreen
+	lite:tree,result:mono:white			white
+	lite:tree,result:mono:black			black
+	lite:tree,result:mono:remis			#808080
+	lite:tree,result:color:white			darkred
+	lite:tree,result:color:black			darkgreen
+	lite:tree,result:color:remis			white
 
 	lite:variation,background				white
 	lite:variation,emphasize				linen

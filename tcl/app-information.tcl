@@ -511,80 +511,45 @@ proc RemoveRecentFile {id} {
 
 
 proc FetchNews {lang update} {
-	global env
-	variable Priv
-
-	if {[catch {package require http 2.7}]} { return 0 }
-	if {[info exists env(http_proxy)]} { set http_proxy $env(http_proxy) } else { set http_proxy "" }
-	set i [string last : $http_proxy]
-	if {$i >= 0} {
-		set host [string range $http_proxy 0 [expr {$i - 1}]]
-		set port [string range $http_proxy [expr {$i + 1}] end]
-		if {[string is integer -strict $port]} { ::http::config -proxyhost $host -proxyport $port }
-	}
-	::http::config -urlencoding utf-8
-	set ::http::defaultCharset utf-8
-	set Priv(retry) 0
-	GetUrl $lang $update
-}
-
-
-proc GetUrl {lang update} {
 	variable URL
 
-	if {[catch { ::http::geturl [format $URL $lang] \
-		-command [namespace code [list FetchNewsResponse $lang $update]] \
-		-timeout 5000 }]} {
-		# No internet available
-		variable Priv
-		variable Options
-		set Priv(connection) 0
-		set Priv(welcome) 1
-		update
-	}
+	::web::downloadURL .application [format $URL $lang] \
+		-successcmd [namespace code [list Response $lang $update]] \
+		-failedcmd [namespace code [list Failed $lang $update]] \
+		-timeouts {1000 3000 5000} \
+		;
 }
 
 
-proc FetchNewsResponse {lang update token} {
+proc Failed {lang update parent url reason} {
 	variable Priv
 
-	set code [::http::ncode $token]
-	set state [::http::status $token]
-	set data [::http::data $token]
-	set retry 0
-	::http::cleanup $token
-
-	switch $state {
-		error		{ return }
-		timeout	{ set retry 1 }
-		eof		{ set retry 1 }
-
-		ok {
-			if {[string length $code] == 0} { set code 100 }
-			switch $code {
-				404 {
-					if {$lang == "en" || $update} { return }
-					return [FetchNews "en" $update]
-				}
-				100 - 408 - 429 - 503 - 503 - 522 { set retry 1 }
-				200 { ;# ok }
-				default { return }
-			}
-		}
-	}
-
-	if {$retry} {
-		if {[incr Priv(retry)] == 3} {
+	switch $reason {
+		down - http {
+			# No internet available
+			set Priv(connection) 0
 			set Priv(welcome) 1
 			update
 		}
-		after [expr {$Priv(retry)*1000}] [namespace code [list GetUrl $lang $update]]
-	} else {
-		variable Counter
-		set Priv(news) $data
-		set Priv(checksum) [::zlib::crc $data]
-		update
+		notfound {
+			if {$lang != "en" && !$update} {
+				return [FetchNews "en" $update]
+			}
+		}
+		default { ;# this includes "timeout"
+			set Priv(welcome) 1
+			update
+		}
 	}
+}
+
+
+proc Response {lang update parent url data} {
+	variable Priv
+
+	set Priv(news) $data
+	set Priv(checksum) [::zlib::crc $data]
+	update
 }
 
 

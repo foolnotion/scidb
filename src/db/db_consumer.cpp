@@ -552,9 +552,11 @@ Consumer::afterSendMove(Entry& entry)
 
 	if (isMainline())
 	{
-		if (!m_sendTimeTable.isEmpty())
+		unsigned plyCount = this->plyCount();
+
+		if (plyCount < m_sendTimeTable.size())
 		{
-			MoveInfoSet const& m_moveInfoSet = m_sendTimeTable[plyCount()];
+			MoveInfoSet const& m_moveInfoSet = m_sendTimeTable[plyCount];
 			sendMoveInfo(m_moveInfoSet);
 			m_moveInfoCount += m_moveInfoSet.count();
 		}

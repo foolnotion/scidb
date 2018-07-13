@@ -1227,6 +1227,7 @@ proc Show {type line} {
 proc warning {line}	{ Show warning $line }
 proc error {line}		{ Show error $line }
 proc info {line}		{ Show info $line }
+proc state {line}		{ Show error $line }
 
 
 proc Log {sink arguments} {

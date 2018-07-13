@@ -834,6 +834,7 @@
 ::application::tree::mc::LockReferenceBase		"Referencia adatbázis zárolása"
 ::application::tree::mc::SwitchReferenceBase		"Referencia adatbázis váltás"
 ::application::tree::mc::TransparentBar			"Transparent bar"
+::application::tree::mc::MonochromeStyle		"Use monochrome style" ;# NEW
 ::application::tree::mc::NoGamesFound			"Nem található játszma"
 ::application::tree::mc::NoGamesAvailable		"Nincs elérhető játszma"
 ::application::tree::mc::Searching			"Keresés"
@@ -863,6 +864,7 @@
 ::application::tree::mc::F_Ratio			"Arány"
 ::application::tree::mc::F_Score			"Pont"
 ::application::tree::mc::F_Draws			"Döntetlenek"
+::application::tree::mc::F_Result			"Eredmény"
 ::application::tree::mc::F_Performance			"Teljesítmény"
 ::application::tree::mc::F_AverageYear			"\u00f8 Év"
 ::application::tree::mc::F_LastYear			"Utoljára játszva"

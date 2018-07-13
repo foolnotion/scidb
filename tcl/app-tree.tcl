@@ -45,6 +45,7 @@ set AutomaticSearch					"Automatic search"
 set LockReferenceBase				"Lock reference database"
 set SwitchReferenceBase				"Switch reference database"
 set TransparentBar					"Transparent bar"
+set MonochromeStyle					"Use monochrome style"
 set NoGamesFound						"No games found"
 set NoGamesAvailable					"No games available"
 set Searching							"Searching"
@@ -71,6 +72,7 @@ set F_Frequency						"Frequency"
 set F_Ratio								"Ratio"
 set F_Score								"Score"
 set F_Draws								"Draws"
+set F_Result							"Result"
 set F_Performance						"Performance"
 set F_AverageYear						"\u00f8 Year"
 set F_LastYear							"Last Played"
@@ -93,6 +95,7 @@ set Columns {
 	{ ratio				right		55px	 6		 6			0			1			0			{}				}
 	{ score				right		55px	 6		 6			0			1			0			darkred		}
 	{ draws				right		55px	 6		 6			0			1			0			{}				}
+	{ result				right		55px	 6		 6			0			1			0			{}				}
 	{ averageRating	right		5		 5		 5			0			1			0			darkblue		}
 	{ performance		right		5		 5		 5			0			1			0			{}				}
 	{ bestRating		right		5		 5		 5			0			1			0			{}				}
@@ -105,7 +108,9 @@ set Columns {
 array set Defaults {
 	ratio:bar			1
 	score:bar			1
+	score:side			white
 	draws:bar			1
+	result:style		mono
 	bar:transparent	1
 	search:automatic	1
 	search:mode			exact
@@ -113,7 +118,6 @@ array set Defaults {
 	base:lock			0
 	sort:column			frequency
 	rating:type			Elo
-	score:side			white
 	hilite:nextmove	0
 	show:tree			1
 
@@ -122,12 +126,18 @@ array set Defaults {
 	-stripes				tree,stripes
 }
 
-array set Priv {
-	ratio:color			tree,ratio:color
-	score:color			tree,score:color
-	draws:color			tree,draws:color
-	progress:color		tree,progress:color
-	progress:finished	tree,progress:finished
+array set Colors {
+	ratio:color				tree,ratio:color
+	score:color				tree,score:color
+	draws:color				tree,draws:color
+	progress:color			tree,progress:color
+	progress:finished		tree,progress:finished
+	result:white:mono		tree,result:mono:white
+	result:black:mono		tree,result:mono:black
+	result:remis:mono		tree,result:mono:remis
+	result:white:color	tree,result:color:white
+	result:black:color	tree,result:color:black
+	result:remis:color	tree,result:color:remis
 }
 
 array set Vars {
@@ -139,6 +149,7 @@ array set Vars {
 }
 
 array set Bars {}
+variable ThreeBars {}
 variable Tables {}
 
 
@@ -148,7 +159,7 @@ proc build {twm parent width height} {
 	variable Defaults
 	variable Options
 	variable Tables
-	variable Priv
+	variable Colors
 	variable Vars
 
 	if {$twm ni $Tables} { lappend Tables $twm }
@@ -237,7 +248,7 @@ proc build {twm parent width height} {
 
 		set menu {}
 		set lock none
-		set stripes $Options(-stripes)
+		set stripes [::colors::lookup $Options(-stripes)]
 		set visible 1
 
 		switch $cid {
@@ -306,8 +317,17 @@ proc build {twm parent width height} {
 					-labelvar [namespace current]::mc::TransparentBar \
 					-variable [namespace current]::Options(bar:transparent) \
 				]
-				lappend menu { separator }
 				set var ::gametable::mc::SortDescending
+			}
+
+			result {
+				lappend menu [list checkbutton \
+					-command [list ::table::refresh $tb] \
+					-labelvar [namespace current]::mc::MonochromeStyle \
+					-variable [namespace current]::Options(result:style) \
+					-onvalue mono \
+					-offvalue color \
+				]
 			}
 
 			averageRating {
@@ -388,6 +408,8 @@ proc build {twm parent width height} {
 	bind $tb <<TableFill>>			 [namespace code [list FillTable $tb]]
 	bind $tb <<TableRebuild>>      [namespace code [list RebuildTable $tb]]
 	bind $tb <<TableMenu>>			 [namespace code [list PopupMenu $tb %X %Y]]
+	bind $tb <<TableHide>>			 [namespace code [list HideColumn $tb %d 0]]
+	bind $tb <<TableShow>>			 [namespace code [list HideColumn $tb %d 1]]
 	bind $tb <<LanguageChanged>>	 [namespace code [list FillTable $tb]]
 	bind $tb <<LanguageChanged>>	+[namespace code [list RefreshHeader $tb]]
 
@@ -446,9 +468,7 @@ proc build {twm parent width height} {
 		-showcolumns {name} \
 	]
 	$switcher configure -postcommand [namespace code [list FillSwitcher $switcher]]
-	::toolbar::add $tbSwitcher frame -width 4
-	set stm [::toolbar::add $tbSwitcher label -image $Vars(whiteKnob)]
-	::toolbar::add $tbSwitcher frame -width 2
+	set stm [::toolbar::add $tbSwitcher label -image $Vars(whiteKnob) -padx 2]
 	foreach mode {exact fast} {
 		set Vars(widget:$mode) [::toolbar::add $tbControl button \
 			-image [set ::icon::toolbar[string toupper $mode 0 0]] \
@@ -467,7 +487,7 @@ proc build {twm parent width height} {
 		-allow {top bottom} \
 	]
 	set progress [::toolbar::add $tbProgress frame -width 130 -height 7 -borderwidth 1 -relief sunken]
-	tk::frame $progress.bar -background [::colors::lookup $Priv(progress:color)] -height 5
+	tk::frame $progress.bar -background [::colors::lookup $Colors(progress:color)] -height 5
 	$switcher addcol text -id name
 	bind $switcher <<LanguageChanged>> [namespace code LanguageChanged]
 	bind $switcher <<ComboboxCurrent>> [namespace code [list SetReferenceBase $switcher]]
@@ -488,9 +508,9 @@ proc build {twm parent width height} {
 	set Vars(current:variant) ""
 	set Vars(list) {}
 	set Vars(stm) $stm
+	set Vars(twm) $twm
 	set Vars(side) {}
 	set Vars(show:tree) $Options(show:tree)
-	set Vars(twm) $twm
 ### VARIANTS ####################################
 set Vars(force) 0
 set Vars(switcher) $switcher
@@ -521,6 +541,8 @@ proc closed {w} {
 
 	catch { after cancel $Vars(after) }
 	::scidb::db::unsubscribe {*}$Vars(subscribe)
+	DeleteBars
+	DeleteThreeBars
 #	set i [lsearch $Tables $Vars(twm)]
 #	set Tables [lreplace $Tables $i $i]
 }
@@ -701,7 +723,7 @@ set Vars(force) 1
 proc DoSearch {table} {
 	variable Vars
 	variable Options
-	variable Priv
+	variable Colors
 
 ### VARIANTS ####################################
 if {[::scidb::game::query mainvariant?] ne "Normal"} { return }
@@ -709,7 +731,7 @@ if {[::scidb::game::query mainvariant?] ne "Normal"} { return }
 
 	if {[::scidb::tree::update $Options(rating:type) $Options(search:mode) $Options(search:variations)]} {
 		if {$Vars(searching)} {
-			$Vars(progress) configure -background [::colors::lookup $Priv(progress:finished)]
+			$Vars(progress) configure -background [::colors::lookup $Colors(progress:finished)]
 			place $Vars(progress) -x 1 -y 1 -width 127
 			set Vars(searching) 0
 		}
@@ -718,7 +740,7 @@ if {[::scidb::game::query mainvariant?] ne "Normal"} { return }
 		if {[llength $Vars(data)] == 0} { ShowMessage Searching }
 		set Vars(searching) 1
 		ConfigSearchButton $table Stop
-		$Vars(progress) configure -background [::colors::lookup $Priv(progress:color)]
+		$Vars(progress) configure -background [::colors::lookup $Colors(progress:color)]
 		place forget $Vars(progress)
 	}
 }
@@ -733,14 +755,14 @@ proc Close {table base variant} {
 proc Tick {table n} {
 	variable Vars
 	variable Options
-	variable Priv
+	variable Colors
 
 	if {[llength [::scidb::tree::get]] == 0} { return }
 
 	if {$n == 0} {
 		if {$Vars(searching)} {
 			place forget $Vars(progress)
-			$Vars(progress) configure -background [::colors::lookup $Priv(progress:color)]
+			$Vars(progress) configure -background [::colors::lookup $Colors(progress:color)]
 			set Vars(searching) 0
 			ConfigSearchButton $table Start
 			# show "interrupted due to a database modification"
@@ -748,7 +770,7 @@ proc Tick {table n} {
 	} else {
 		if {!$Vars(searching)} {
 			ConfigSearchButton $table Stop
-			$Vars(progress) configure -background [::colors::lookup $Priv(progress:color)]
+			$Vars(progress) configure -background [::colors::lookup $Colors(progress:color)]
 			set Vars(searching) 1
 		}
 
@@ -757,7 +779,7 @@ proc Tick {table n} {
 		if {$n == 255} {
 			set Vars(searching) 0
 			ConfigSearchButton $table Start
-			$Vars(progress) configure -background [::colors::lookup $Priv(progress:finished)]
+			$Vars(progress) configure -background [::colors::lookup $Colors(progress:finished)]
 			after idle [namespace code [list SearchResultAvailable $table]]
 		}
 	}
@@ -803,6 +825,17 @@ proc DoSelection {table} {
 }
 
 
+proc HideColumn {table id flag} {
+	variable Vars
+
+	if {$id eq "draws"} {
+		set Vars(draws:visible) $flag
+		::toolbar::childconfigure $Vars(stm) -visible $Vars(draws:visible)
+		::table::refresh $table
+	}
+}
+
+
 proc VisitItem {table data} {
 	variable Options
 	variable Vars
@@ -841,6 +874,14 @@ proc VisitItem {table data} {
 				}
 			}
 
+			result {
+				lassign $value white black draws lost
+				lassign [ComputePercentages $white $black $draws] white black draws
+				append item "$::mc::White [Format $white]%  "
+				append item "$mc::F_Draws [Format $draws]%  "
+				append item "$::mc::Black [Format $black]%"
+			}
+
 			eco {
 				set opening [::scidb::app::lookup ecoCode $value]
 				lassign $opening long short
@@ -877,6 +918,30 @@ proc VisitItem {table data} {
 }
 
 
+proc ComputePercentages {white black draws} {
+	set total  [expr {double($white + $black + $draws)}]
+	set whiteF [expr {($white*1000.0)/$total}]
+	set drawsF [expr {($draws*1000.0)/$total}]
+	set blackF [expr {($black*1000.0)/$total}]
+	set whiteI [expr {int($whiteF + 0.5)}]
+	set drawsI [expr {int($drawsF + 0.5)}]
+	set blackI [expr {int($blackF + 0.5)}]
+	if {[expr {1000 - $whiteI - $drawsI - $blackI}] > 0} {
+		set whiteR [expr {$whiteF - $whiteI}]
+		set drawsR [expr {$drawsF - $drawsI}]
+		set blackR [expr {$blackF - $blackI}]
+		if {$whiteR > $blackR && $whiteR > $drawsR} {
+			incr whiteI
+		} elseif {$blackR > $drawsR} {
+			incr blackI
+		} else {
+			incr drawsI
+		}
+	}
+	return [list $whiteI $blackI $drawsI]
+}
+
+
 proc ShowPlayerInfo {table x y} {
 	variable Columns
 	variable Options
@@ -909,12 +974,7 @@ proc HideInfo {table} {
 
 
 proc ToggleTransparentBar {table} {
-	variable Bars
-
-	foreach key [array names Bars] {
-		image delete $Bars($key)
-	}
-	array unset Bars
+	DeleteBars
 	FetchResult $table true
 }
 
@@ -974,8 +1034,8 @@ proc SearchResultAvailable {table} {
 
 proc FetchResult {table {force false}} {
 	variable Options
+	variable Colors
 	variable Vars
-	variable Priv
 
 	# neccessary because of "after" effect
 	set table $Vars(table)
@@ -985,7 +1045,7 @@ if {[::scidb::game::query mainvariant?] ne "Normal"} { return }
 if {$Vars(force)} { set force true }
 #################################################
 
-	$Vars(progress) configure -background [::colors::lookup $Priv(progress:finished)]
+	$Vars(progress) configure -background [::colors::lookup $Colors(progress:finished)]
 
 	set options {}
 	if {[llength $Options(sort:column)]} {
@@ -1084,7 +1144,7 @@ proc ShowMessage {msg} {
 
 
 proc Format {value} {
-	return [expr {$value/10}],[expr {$value%10}]
+	return [expr {$value/10}][::locale::decimalPoint][expr {$value%10}]
 }
 
 
@@ -1100,12 +1160,12 @@ proc SetItemState {table index} {
 
 
 proc FillTable {table} {
+	variable ThreeBars
 	variable Options
-	variable Priv
 	variable Columns
 	variable Vars
-	variable Bars
 
+	DeleteThreeBars
 	if {[llength $Vars(data)] == 0} { return }
 
 	set total [lindex $Vars(data) end [columnIndex frequency]]
@@ -1167,24 +1227,16 @@ proc FillTable {table} {
 				ratio - score - draws {
 					set item [ComputeValue $id $item $total]
 					if {$Options($id:bar)} {
-						set color [::colors::lookup $Priv($id:color)]
-						set width [expr {($item + 10)/20}]
-						if {![info exists Bars($width:$color)]} {
-							set img [image create photo -width 51 -height 7]
-							::scidb::tk::image recolor #000000 $img -composite set
-							if {$Options(bar:transparent)} {
-								::scidb::tk::image alpha 0.0 $img -composite set -area 1 1 50 6
-							} else {
-								::scidb::tk::image recolor #ffffff $img -composite set -area 1 1 50 6
-							}
-							::scidb::tk::image recolor $color $img -composite set -area 1 1 $width 6 
-							set Bars($width) $img
-						}
-						lappend text [list @ $Bars($width)]
+						lappend text [list @ [MakeBar $table $id $item]]
 					} else {
 						lappend text [Format $item]
 					}
+					incr col
+				}
 
+				result {
+					lassign $item white black draws lost
+					lappend text [list @ [MakeThreeBar $table $white $black $draws]]
 					incr col
 				}
 
@@ -1225,6 +1277,57 @@ proc FillTable {table} {
 
 	catch { ::table::see $table 0 }
 	DoSelection $table
+}
+
+
+proc MakeBar {table id item} {
+	variable Options
+	variable Colors
+	variable Bars
+
+	set h [expr {max(8, [::table::linespace $table] - 6)}]
+	set color [::colors::lookup $Colors($id:color)]
+	set width [expr {($item + 10)/20}]
+	if {[info exists Bars($width:$color)]} { return }
+	set img [image create photo -width 51 -height [expr {$h + 1}]]
+	::scidb::tk::image recolor black $img -composite set
+	if {$Options(bar:transparent)} {
+		::scidb::tk::image alpha 0.0 $img -composite set -area 1 1 50 $h
+	} else {
+		::scidb::tk::image recolor white $img -composite set -area 1 1 50 $h
+	}
+	::scidb::tk::image recolor $color $img -composite set -area 1 1 $width $h 
+	return [set Bars($width) $img]
+}
+
+
+proc MakeThreeBar {table whiteResult blackResult drawResult} {
+	variable ThreeBars
+	variable Options
+	variable Colors
+
+	set h [expr {max(8, [::table::linespace $table] - 6)}]
+	set total [expr {double($whiteResult + $blackResult + $drawResult)}]
+	set white [expr {($whiteResult*49)/$total}]
+	set black [expr {($blackResult*49)/$total}]
+	set white [expr {int($white + 0.5) + 1}]
+	set draws [expr {50 - int($black + 0.5)}]
+	set img [image create photo -width 51 -height [expr {$h + 1}]]
+	::scidb::tk::image recolor black $img -composite set
+	if {$Options(bar:transparent)} {
+		::scidb::tk::image alpha 0.0 $img -composite set -area 1 1 50 $h
+	} else {
+		::scidb::tk::image recolor white $img -composite set -area 1 1 50 $h
+	}
+	set style $Options(result:style)
+	::scidb::tk::image recolor [::colors::lookup $Colors(result:white:$style)] $img \
+		-composite set -area 1 1 $white $h 
+	::scidb::tk::image recolor [::colors::lookup $Colors(result:remis:$style)] $img \
+		-composite set -area $white 1 $draws $h 
+	::scidb::tk::image recolor [::colors::lookup $Colors(result:black:$style)] $img \
+		-composite set -area $draws 1 50 $h 
+	lappend ThreeBars $img
+	return $img
 }
 
 
@@ -1669,7 +1772,7 @@ proc PopupMenu {table x y} {
 # 	} else {
 # 		wm withdraw [tk::toplevel $dlg -class Dialog]
 # 		set specialfont [list [list $::font::figurine(text:normal) 9812 9823]]
-# 		set stripes [::colors::lookup scrolledtable,stripes]
+# 		set stripes [::colors::lookup table,stripes]
 # 		pack [ttk::frame $top -borderwidth 0 -takefocus 0] -fill both -expand yes
 # 		pack [tlistbox $tb \
 # 			-setgrid 1 \
@@ -1706,16 +1809,25 @@ proc PopupMenu {table x y} {
 proc RebuildTable {table} {
 	variable Bars
 
+	DeleteBars
 	RefreshCurrentItem $table
-
-	foreach key [array names Bars] {
-		image delete $Bars($key)
-	}
-	array unset Bars
-
 	RefreshHeader table
 	FillTable $table
 	after idle [namespace code RefreshRatingLabel]
+}
+
+
+proc DeleteBars {} {
+	variable Bars
+	foreach key [array names Bars] { image delete $Bars($key) }
+	array set Bars {}
+}
+
+
+proc DeleteThreeBars {} {
+	variable ThreeBars
+	foreach img $ThreeBars { image delete $img }
+	set ThreeBars {}
 }
 
 
@@ -1726,7 +1838,7 @@ proc WriteTableOptions {chan {id "board"}} {
 	if {$id ne "board"} { return }
 
 	foreach table $Tables {
-		if {[::scrolledtable::countOptions db:tree:$id] > 0} {
+		if {[::table::countOptions db:tree:$id] > 0} {
 			set id [::application::twm::getId $table]
 			puts $chan "::table::setOptions db:tree:$id {"
 			::options::writeArray $chan [::table::getOptions db:tree:$id]
@@ -1741,7 +1853,7 @@ proc SaveOptions {twm variant} {
 	variable TableOptions
 
 	set id [::application::twm::getId $twm]
-	set TableOptions($variant:$id) [::scrolledtable::getOptions db:tree:$id]
+	set TableOptions($variant:$id) [::table::getOptions db:tree:$id]
 }
 
 
@@ -1749,7 +1861,7 @@ proc RestoreOptions {twm variant} {
 	variable TableOptions
 
 	set id [::application::twm::getId $twm]
-	::scrolledtable::setOptions db:tree:$id $TableOptions($variant:$id)
+	::table::setOptions db:tree:$id $TableOptions($variant:$id)
 }
 
 
@@ -1757,9 +1869,9 @@ proc CompareOptions {twm variant} {
 	variable TableOptions
 
 	set id [::application::twm::getId $twm]
-	if {[::scrolledtable::countOptions db:tree:$id] == 0} { return true }
+	if {[::table::countOptions db:tree:$id] == 0} { return true }
 	set lhs $TableOptions($variant:$id)
-	set rhs [::scrolledtable::getOptions db:tree:$id]
+	set rhs [::table::getOptions db:tree:$id]
 	if {![::arrayListEqual $lhs $rhs]} { return false }
 	return true
 }
