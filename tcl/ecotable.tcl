@@ -217,7 +217,6 @@ proc open {parent id} {
 proc activate {w flag} {
 	variable ${w}::
 
-puts "activate"
 	if {$(active) eq $flag} { return }
 	set (active) $flag
 
