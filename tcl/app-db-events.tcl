@@ -157,15 +157,14 @@ proc BuildFrame {twm frame uid width height} {
 				-id db:events:$id:$uid \
 				;
 			::scidb::db::subscribe eventList \
-				[namespace current]::players::Update \
-				[namespace current]::Close \
-				$twm \
+				[list [namespace current]::players::Update $twm] \
+				[list [namespace current]::Close $twm] \
 				;
 		}
 		games {
 			set columns {white whiteElo black blackElo result date round length}
 			::gametable::build $frame [namespace code [list View $twm]] $columns -id db:events:$id:$uid
-			::scidb::db::subscribe gameList [namespace current]::games::Update $twm
+			::scidb::db::subscribe gameList [list [namespace current]::games::Update $twm]
 		}
 		player {
 			set columns {lastName firstName type sex rating1 federation title}
@@ -173,7 +172,7 @@ proc BuildFrame {twm frame uid width height} {
 				-selectcmd [namespace code [list SelectPlayer $twm]] \
 				-id db:events:$id:$uid \
 				;
-			::scidb::db::subscribe playerList [namespace current]::events::Update $twm
+			::scidb::db::subscribe playerList [list [namespace current]::events::Update $twm]
 		}
 	}
 }

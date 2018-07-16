@@ -364,7 +364,7 @@ proc build {tab width height} {
 		]
 	}
 
-	::scidb::db::subscribe gameList [namespace current]::Update [namespace current]::Close {}
+	::scidb::db::subscribe gameList [namespace current]::Update
 	after idle [namespace code [list ToolbarShow $switcher]]
 
 	bind $contents <<NotebookTabChanged>> [namespace code TabChanged]
@@ -1167,7 +1167,7 @@ proc CheckTabState {} {
 }
 
 
-proc Update {path id base variant {view 0} {index -1}} {
+proc Update {id base variant {view 0} {index -1}} {
 	variable Vars
 
 	CheckSaveState $base
@@ -1231,9 +1231,6 @@ proc LanguageChanged {} {
 		::toolbar::childconfigure $Vars(widget:$variant) -tooltip $tip
 	}
 }
-
-
-proc Close {path base variant} {}
 
 
 proc TableMinSize {main pane switcher sizeInfo} {
@@ -1300,6 +1297,7 @@ proc ResizeList {main contents switcher wantedHeight offset} {
 
 	set Vars(pixels) $pixels
 
+set offset 0 ;# XXX we have a computation problem here
 	if {$offset != 0 || $Vars(minheight:switcher) == 0} {
 		lassign [$main sash coord 0] x y
 		incr y $offset

@@ -512,6 +512,13 @@
 ::application::twm::mc::Pane(annotator)		"Annotators" ;# NEW
 ::application::twm::mc::Pane(site)				"Sites" ;# NEW
 ::application::twm::mc::Pane(position)			"Start Positions" ;# NEW
+::application::twm::mc::Pane(eco)				"ECO-Table" ;# NEW
+
+### application::eco ###################################################
+::application::eco::mc::Mode(single)	"Per ply" ;# NEW
+::application::eco::mc::Mode(compact)	"Transitions only" ;# NEW
+
+::application::eco::mc::F_Line			"Line" ;# NEW
 
 ### application::board #################################################
 ::application::board::mc::ShowCrosstable				"Mostrar tabla de torneo para esta partida"

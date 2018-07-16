@@ -278,18 +278,17 @@ struct MySubscriber : public ::app::Subscriber
 		None					= 1 << (table::LAST + 8),
 	};
 
-	typedef mstl::tuple<Obj, Obj, Obj> Tuple;
+	typedef mstl::tuple<Obj, Obj> Tuple;
 
 	struct Args
 	{
-		Args() :m_type(GameList), m_tuple(0, 0, 0), m_ref(0) {}
+		Args() :m_type(GameList), m_tuple(nullptr, nullptr), m_ref(0) {}
 
-		Args(Type type, Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
+		Args(Type type, Tcl_Obj* updateCmd, Tcl_Obj* closeCmd)
 			:m_type(type)
 			,m_tuple(
 				updateCmd && *Tcl_GetString(updateCmd) ? updateCmd : nullptr,
-				closeCmd && *Tcl_GetString(closeCmd) ? closeCmd : nullptr,
-				arg ? arg : Tcl_NewListObj(0, 0))
+				closeCmd && *Tcl_GetString(closeCmd) ? closeCmd : nullptr)
 			,m_ref(0)
 		{
 		}
@@ -300,7 +299,6 @@ struct MySubscriber : public ::app::Subscriber
 			{
 				m_tuple.get<0>().ref();
 				m_tuple.get<1>().ref();
-				m_tuple.get<2>().ref();
 			}
 		}
 
@@ -312,10 +310,9 @@ struct MySubscriber : public ::app::Subscriber
 			{
 				m_tuple.get<0>().deref();
 				m_tuple.get<1>().deref();
-				m_tuple.get<2>().deref();
 
 				m_type = None;
-				m_tuple = Tuple(0, 0, 0);
+				m_tuple = Tuple(nullptr, nullptr);
 			}
 		}
 
@@ -330,7 +327,6 @@ struct MySubscriber : public ::app::Subscriber
 
 		Tcl_Obj* getUpdate() const	{ return m_tuple.get<0>(); }
 		Tcl_Obj* getClose() const	{ return m_tuple.get<1>(); }
-		Tcl_Obj* getArg() const		{ return m_tuple.get<2>(); }
 	};
 
 	typedef mstl::vector<Args> ArgsList;
@@ -339,9 +335,9 @@ struct MySubscriber : public ::app::Subscriber
 	mstl::bitset	m_used;
 	unsigned			m_last;
 
-	void setCmd(Type type, Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
+	void setCmd(Type type, Tcl_Obj* updateCmd, Tcl_Obj* closeCmd)
 	{
-		Args args(type, updateCmd, closeCmd, arg);
+		Args args(type, updateCmd, closeCmd);
 		ArgsList::iterator i = mstl::find(m_list.begin(), m_list.end(), args);
 
 		if (i == m_list.end())
@@ -366,18 +362,17 @@ struct MySubscriber : public ::app::Subscriber
 		}
 	}
 
-	void unsetCmd(Type type, Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
+	void unsetCmd(Type type, Tcl_Obj* updateCmd, Tcl_Obj* closeCmd)
 	{
-		Args args(type, updateCmd, closeCmd, arg);
+		Args args(type, updateCmd, closeCmd);
 		ArgsList::iterator i = mstl::find(m_list.begin(), m_list.end(), args);
 
 		if (i == m_list.end())
 		{
 			fprintf(	stderr,
-						"Warning: database::unsubscribe failed (%s, %s, %s)\n",
+						"Warning: database::unsubscribe failed (%s, %s)\n",
 						Tcl_GetString(updateCmd),
-						closeCmd ? Tcl_GetString(closeCmd) : "",
-						arg ? Tcl_GetString(arg) : "");
+						closeCmd ? Tcl_GetString(closeCmd) : "");
 		}
 		else
 		{
@@ -387,39 +382,49 @@ struct MySubscriber : public ::app::Subscriber
 		}
 	}
 
-	void setListCmd(table::Type type, Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
+	void setListCmd(table::Type type, Tcl_Obj* updateCmd, Tcl_Obj* closeCmd)
 	{
-		setCmd(Type(1 << type), updateCmd, closeCmd, arg);
+		setCmd(Type(1 << type), updateCmd, closeCmd);
 	}
 
 	void setGameSwitchedCmd(Tcl_Obj* updateCmd)
 	{
-		setCmd(GameSwitched, updateCmd, 0, 0);
+		setCmd(GameSwitched, updateCmd, nullptr);
 	}
 
 	void setGameClosedCmd(Tcl_Obj* updateCmd)
 	{
-		setCmd(GameClosed, updateCmd, 0, 0);
+		setCmd(GameClosed, updateCmd, nullptr);
 	}
 
 	void setDatabaseSwitchedCmd(Tcl_Obj* updateCmd)
 	{
-		setCmd(DatabaseSwitched, updateCmd, 0, 0);
+		setCmd(DatabaseSwitched, updateCmd, nullptr);
 	}
 
-	void unsetListCmd(table::Type type, Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
+	void unsetListCmd(table::Type type, Tcl_Obj* updateCmd, Tcl_Obj* closeCmd)
 	{
-		unsetCmd(Type(1 << type), updateCmd, closeCmd, arg);
+		unsetCmd(Type(1 << type), updateCmd, closeCmd);
 	}
 
-	void unsetTreeCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
+	void unsetTreeCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd)
 	{
-		unsetCmd(Tree, updateCmd, closeCmd, arg);
+		unsetCmd(Tree, updateCmd, closeCmd);
 	}
 
 	void unsetGameSwitchedCmd(Tcl_Obj* updateCmd)
 	{
-		unsetCmd(GameSwitched, updateCmd, 0, 0);
+		unsetCmd(GameSwitched, updateCmd, nullptr);
+	}
+
+	void unsetGameClosedCmd(Tcl_Obj* updateCmd)
+	{
+		unsetCmd(GameClosed, updateCmd, nullptr);
+	}
+
+	void unsetDatabaseSwitchedCmd(Tcl_Obj* updateCmd)
+	{
+		unsetCmd(DatabaseSwitched, updateCmd, nullptr);
 	}
 
 	void closeDatabase(mstl::string const& name, variant::Type variant) override
@@ -434,7 +439,7 @@ struct MySubscriber : public ::app::Subscriber
 			Args const& i = m_list[k];
 
 			if (i.getClose())
-				invoke(__func__, i.getClose(), i.getArg(), file, t, nullptr);
+				invoke(__func__, i.getClose(), file, t, nullptr);
 		}
 
 		Tcl_DecrRefCount(file);
@@ -451,8 +456,8 @@ struct MySubscriber : public ::app::Subscriber
 		{
 			Args const& i = m_list[k];
 
-			if (i.m_type & DatabaseInfo)
-				invoke(__func__, i.getUpdate(), i.getArg(), f, t, nullptr);
+			if ((i.m_type & DatabaseInfo) && i.getUpdate())
+				invoke(__func__, i.getUpdate(), f, t, nullptr);
 		}
 
 		Tcl_DecrRefCount(f);
@@ -480,8 +485,8 @@ struct MySubscriber : public ::app::Subscriber
 		{
 			Args const& i = m_list[k];
 
-			if (i.m_type & type)
-				invoke(__func__, i.getUpdate(), i.getArg(), n, f, t, v, w, nullptr);
+			if ((i.m_type & type) && i.getUpdate())
+				invoke(__func__, i.getUpdate(), n, f, t, v, w, nullptr);
 		}
 
 		Tcl_DecrRefCount(n);
@@ -526,8 +531,8 @@ struct MySubscriber : public ::app::Subscriber
 		{
 			Args const& i = m_list[k];
 
-			if (i.m_type == GameData)
-				invoke(__func__, i.getUpdate(), i.getArg(), pos, mainline, nullptr);
+			if ((i.m_type & GameData) && i.getUpdate())
+				invoke(__func__, i.getUpdate(), pos, mainline, nullptr);
 		}
 
 		Tcl_DecrRefCount(pos);
@@ -543,8 +548,8 @@ struct MySubscriber : public ::app::Subscriber
 		{
 			Args const& i = m_list[k];
 
-			if (i.m_type == GameInfo)
-				invoke(__func__, i.getUpdate(), i.getArg(), pos, nullptr);
+			if ((i.m_type & GameInfo) && i.getUpdate())
+				invoke(__func__, i.getUpdate(), pos, nullptr);
 		}
 
 		Tcl_DecrRefCount(pos);
@@ -563,28 +568,32 @@ struct MySubscriber : public ::app::Subscriber
 		{
 			Args const& i = m_list[k];
 
-			if (i.m_type == GameHistory)
-				invoke(__func__, i.getUpdate(), i.getArg(), f, t, w, nullptr);
+			if ((i.m_type & GameHistory) && i.getUpdate())
+				invoke(__func__, i.getUpdate(), f, t, w, nullptr);
 		}
 
 		Tcl_DecrRefCount(f);
 		Tcl_DecrRefCount(w);
 	}
 
-	void gameSwitched(unsigned position) override
+	void gameSwitched(unsigned oldPosition, unsigned newPosition) override
 	{
-		Tcl_Obj* pos = Tcl_NewIntObj(position);
-		Tcl_IncrRefCount(pos);
+		Tcl_Obj* oldPos = Tcl_NewIntObj(oldPosition);
+		Tcl_Obj* newPos = Tcl_NewIntObj(newPosition);
+
+		Tcl_IncrRefCount(oldPos);
+		Tcl_IncrRefCount(newPos);
 
 		for (unsigned k = 0; k < m_last; ++k)
 		{
 			Args const& i = m_list[k];
 
-			if (i.m_type == GameSwitched)
-				invoke(__func__, i.getUpdate(), pos, nullptr);
+			if ((i.m_type & GameSwitched) && i.getUpdate())
+				invoke(__func__, i.getUpdate(), oldPos, newPos, nullptr);
 		}
 
-		Tcl_DecrRefCount(pos);
+		Tcl_DecrRefCount(oldPos);
+		Tcl_DecrRefCount(newPos);
 	}
 
 	void gameClosed(unsigned position) override
@@ -596,7 +605,7 @@ struct MySubscriber : public ::app::Subscriber
 		{
 			Args const& i = m_list[k];
 
-			if (i.m_type == GameClosed)
+			if ((i.m_type & GameClosed) && i.getUpdate())
 				invoke(__func__, i.getUpdate(), pos, nullptr);
 		}
 
@@ -614,7 +623,7 @@ struct MySubscriber : public ::app::Subscriber
 		{
 			Args const& i = m_list[k];
 
-			if (i.m_type == DatabaseSwitched)
+			if ((i.m_type & DatabaseSwitched) && i.getUpdate())
 				invoke(__func__, i.getUpdate(), f, t, nullptr);
 		}
 
@@ -640,8 +649,8 @@ struct MySubscriber : public ::app::Subscriber
 		{
 			Args const& i = m_list[k];
 
-			if (i.m_type == Tree)
-				invoke(__func__, i.getUpdate(), i.getArg(), file, t, nullptr);
+			if ((i.m_type & Tree) && i.getUpdate())
+				invoke(__func__, i.getUpdate(), file, t, nullptr);
 		}
 
 		Tcl_DecrRefCount(file);
@@ -3519,8 +3528,8 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		Tcl_WrongNumArgs(
 			ti, 1, objv,
 			"dbInfo|gameList|playerList|annotatorList|positionList|eventList|siteList|gameInfo|"
-			"gameData|gameHistory|gameSwitch|gameClose|databaseSwitch|tree <update-cmd> ??"
-			"<close-cmd> ?<arg>?");
+			"gameData|gameHistory|gameSwitch|gameClose|databaseSwitch|tree <update-cmd> "
+			"?<close-cmd>?");
 		return TCL_ERROR;
 	}
 
@@ -3549,8 +3558,7 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	int index = tcl::uniqueMatchObj(objv[1], subcommands);
 
 	Tcl_Obj* updateCmd	= objv[2];
-	Tcl_Obj* closeCmd		= objc == 5 ? objv[3] : 0;
-	Tcl_Obj* arg			= objc == 5 ? objv[4] : (objc == 4 ? objv[3] : 0);
+	Tcl_Obj* closeCmd		= objc == 4 ? objv[3] : nullptr;
 
 	MySubscriber::Type type = MySubscriber::None;
 
@@ -3580,7 +3588,7 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	}
 
 	if (type != ::MySubscriber::None)
-		subscriber->setCmd(type, updateCmd, closeCmd, arg);
+		subscriber->setCmd(type, updateCmd, closeCmd);
 
 	return TCL_OK;
 }
@@ -3595,19 +3603,21 @@ cmdUnsubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			ti, 1, objv,
 			"dbInfo|gameList|playerList|annotatorList|eventList|"
 			"siteList|gameInfo|gameData|gameHistory|gameSwitch|tree "
-			"<update-cmd> ??" "<close-cmd>? <arg>?");
+			"<update-cmd> ?<close-cmd>?");
 		return TCL_ERROR;
 	}
 
 	static char const* subcommands[] =
 	{
 		"dbInfo", "gameList", "playerList", "eventList", "siteList",
-		"annotatorList", "gameInfo", "gameData", "gameHistory", "gameSwitch", "tree", 0
+		"annotatorList", "gameInfo", "gameData", "gameHistory", "gameSwitch",
+		"gameClose", "databaseSwitch", "tree", 0
 	};
 	enum
 	{
 		Cmd_DbInfo, Cmd_GameList, Cmd_PlayerList, Cmd_EventList, Cmd_SiteList,
-		Cmd_AnnotatorList, Cmd_GameInfo, Cmd_GameData, Cmd_GameHistory, Cmd_GameSwitch, Cmd_Tree
+		Cmd_AnnotatorList, Cmd_GameInfo, Cmd_GameData, Cmd_GameHistory, Cmd_GameSwitch,
+		Cmd_GameClose, Cmd_DatabaseSwitched, Cmd_Tree,
 	};
 
 	MySubscriber* subscriber = static_cast<MySubscriber*>(scidb->subscriber());
@@ -3618,61 +3628,64 @@ cmdUnsubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	int index = tcl::uniqueMatchObj(objv[1], subcommands);
 
 	Tcl_Obj* updateCmd	= objv[2];
-	Tcl_Obj* closeCmd		= objc == 5 ? objv[3] : 0;
-	Tcl_Obj* arg			= objc == 5 ? objv[4] : (objc == 4 ? objv[3] : 0);
+	Tcl_Obj* closeCmd		= objc == 4 ? objv[3] : nullptr;
 
 	switch (index)
 	{
 		case Cmd_DbInfo:
-			subscriber->unsetCmd(MySubscriber::DatabaseInfo, updateCmd, closeCmd, arg);
+			subscriber->unsetCmd(MySubscriber::DatabaseInfo, updateCmd, closeCmd);
 			break;
 
 		case Cmd_GameList:
-			subscriber->unsetListCmd(table::Games, updateCmd, closeCmd, arg);
+			subscriber->unsetListCmd(table::Games, updateCmd, closeCmd);
 			break;
 
 		case Cmd_PlayerList:
-			subscriber->unsetListCmd(table::Players, updateCmd, closeCmd, arg);
+			subscriber->unsetListCmd(table::Players, updateCmd, closeCmd);
 			break;
 
 		case Cmd_EventList:
-			subscriber->unsetListCmd(table::Events, updateCmd, closeCmd, arg);
+			subscriber->unsetListCmd(table::Events, updateCmd, closeCmd);
 			break;
 
 		case Cmd_SiteList:
-			subscriber->unsetListCmd(table::Sites, updateCmd, closeCmd, arg);
+			subscriber->unsetListCmd(table::Sites, updateCmd, closeCmd);
 			break;
 
 		case Cmd_AnnotatorList:
-			subscriber->unsetListCmd(table::Annotators, updateCmd, closeCmd, arg);
+			subscriber->unsetListCmd(table::Annotators, updateCmd, closeCmd);
 			break;
 
 		case Cmd_GameInfo:
-			subscriber->unsetCmd(MySubscriber::GameInfo, updateCmd, closeCmd, arg);
+			subscriber->unsetCmd(MySubscriber::GameInfo, updateCmd, closeCmd);
 			break;
 
 		case Cmd_GameData:
-			subscriber->unsetCmd(MySubscriber::GameData, updateCmd, closeCmd, arg);
+			subscriber->unsetCmd(MySubscriber::GameData, updateCmd, closeCmd);
 			break;
 
 		case Cmd_GameHistory:
-			subscriber->unsetCmd(MySubscriber::GameHistory, updateCmd, closeCmd, arg);
+			subscriber->unsetCmd(MySubscriber::GameHistory, updateCmd, closeCmd);
 			break;
 
 		case Cmd_GameSwitch:
 			subscriber->unsetGameSwitchedCmd(updateCmd);
 			break;
 
+		case Cmd_GameClose:
+			subscriber->unsetGameClosedCmd(updateCmd);
+			break;
+
+		case Cmd_DatabaseSwitched:
+			subscriber->unsetDatabaseSwitchedCmd(updateCmd);
+			break;
+
 		case Cmd_Tree:
-			subscriber->unsetTreeCmd(updateCmd, closeCmd, arg);
+			subscriber->unsetTreeCmd(updateCmd, closeCmd);
 			break;
 
 		default:
-			return error(	::CmdUnsubscribe,
-								nullptr,
-								nullptr,
-								"invalid argument %s",
-								Tcl_GetString(objv[1]));
+			return error(::CmdUnsubscribe, nullptr, nullptr, "invalid argument %s", Tcl_GetString(objv[1]));
 	}
 
 	return TCL_OK;

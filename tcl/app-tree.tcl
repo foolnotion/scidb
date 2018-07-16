@@ -192,13 +192,13 @@ proc build {twm parent width height} {
 		[list $::icon::22x22::blackKnob $::icon::16x16::blackKnob $::icon::32x32::blackKnob]
 
 	::table::table $tb \
-		-listmode 1 \
-		-fixedrows 1 \
-		-moveable 1 \
+		-listmode yes \
+		-fixedrows yes \
+		-moveable yes \
 		-takefocus 0 \
 		-fillcolumn end \
 		-stripes {} \
-		-fullstripes 0 \
+		-fullstripes no \
 		-background $bg \
 		-pady {1 0} \
 		-highlightcolor $Options(-emphasize) \
@@ -516,7 +516,8 @@ set Vars(force) 0
 set Vars(switcher) $switcher
 #################################################
 
-	set Vars(subscribe) [list tree [namespace current]::Update [namespace current]::Close $tb]
+	set Vars(subscribe) [list tree \
+		[list [namespace current]::Update $tb] [list [namespace current]::Close $tb]]
 	after idle [list ::scidb::db::subscribe {*}$Vars(subscribe)]
 	::scidb::tree::init [namespace current]::Tick $tb
 	::scidb::tree::switch [expr {!$Options(base:lock)}]
@@ -1160,7 +1161,6 @@ proc SetItemState {table index} {
 
 
 proc FillTable {table} {
-	variable ThreeBars
 	variable Options
 	variable Columns
 	variable Vars
@@ -1285,10 +1285,9 @@ proc MakeBar {table id item} {
 	variable Colors
 	variable Bars
 
-	set h [expr {max(8, [::table::linespace $table] - 6)}]
-	set color [::colors::lookup $Colors($id:color)]
 	set width [expr {($item + 10)/20}]
-	if {[info exists Bars($width:$color)]} { return }
+	if {[info exists Bars($width)]} { return $Bars($width) }
+	set h [expr {max(8, [::table::linespace $table] - 6)}]
 	set img [image create photo -width 51 -height [expr {$h + 1}]]
 	::scidb::tk::image recolor black $img -composite set
 	if {$Options(bar:transparent)} {
@@ -1296,6 +1295,7 @@ proc MakeBar {table id item} {
 	} else {
 		::scidb::tk::image recolor white $img -composite set -area 1 1 50 $h
 	}
+	set color [::colors::lookup $Colors($id:color)]
 	::scidb::tk::image recolor $color $img -composite set -area 1 1 $width $h 
 	return [set Bars($width) $img]
 }
@@ -1308,8 +1308,8 @@ proc MakeThreeBar {table whiteResult blackResult drawResult} {
 
 	set h [expr {max(8, [::table::linespace $table] - 6)}]
 	set total [expr {double($whiteResult + $blackResult + $drawResult)}]
-	set white [expr {($whiteResult*49)/$total}]
-	set black [expr {($blackResult*49)/$total}]
+	set white [expr {$total ? ($whiteResult*49)/$total : 0.0}]
+	set black [expr {$total ? ($blackResult*49)/$total : 0.0}]
 	set white [expr {int($white + 0.5) + 1}]
 	set draws [expr {50 - int($black + 0.5)}]
 	set img [image create photo -width 51 -height [expr {$h + 1}]]
@@ -1807,8 +1807,6 @@ proc PopupMenu {table x y} {
 
 
 proc RebuildTable {table} {
-	variable Bars
-
 	DeleteBars
 	RefreshCurrentItem $table
 	RefreshHeader table
@@ -1819,14 +1817,14 @@ proc RebuildTable {table} {
 
 proc DeleteBars {} {
 	variable Bars
-	foreach key [array names Bars] { image delete $Bars($key) }
-	array set Bars {}
+	foreach key [array names Bars] { catch { image delete $Bars($key) } }
+	array unset Bars
 }
 
 
 proc DeleteThreeBars {} {
 	variable ThreeBars
-	foreach img $ThreeBars { image delete $img }
+	foreach img $ThreeBars { catch { image delete $img } }
 	set ThreeBars {}
 }
 

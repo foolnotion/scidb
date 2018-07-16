@@ -184,8 +184,10 @@ proc listbox {path args} {
 
 	if {$frametype eq "ttk::labelframe"} {
 		ttk::labelframe $path -text $mc::Figurines
+		set configure 0
 	} else {
 		$frametype $path
+		set configure 1
 	}
 
 	set list [ttk::frame $path.list -takefocus 0]
@@ -198,7 +200,7 @@ proc listbox {path args} {
 		$selbox insert [list $img $name]
 	}
 	pack $selbox -anchor s -fill both -expand yes
-#	bind $list <Configure> [namespace code { ConfigureListbox %W %h }]
+	if {$configure} { bind $list <Configure> [namespace code { ConfigureListbox %W %h }] }
 	bind $path <FocusIn> { focus [tk_focusNext %W] }
 	bind $list <FocusIn> { focus [tk_focusNext %W] }
 	set sample [ttk::frame $path.sample -borderwidth 0 -takefocus 0]
@@ -258,6 +260,31 @@ proc listbox {path args} {
 	proc ::$path {command args} "[namespace current]::WidgetProc $path \$command {*}\$args"
 
 	return $path
+}
+
+
+proc openDialog {parent figurines} {
+	variable figurines_
+
+	set figurines_ $figurines
+	set dlg [tk::toplevel $parent.figurines -class Scidb]
+	::widget::dialogButtons $dlg close
+	$dlg.close configure -command [list destroy $dlg]
+	pack [set f [listbox $dlg.list -frametype frame]]
+	$f select $figurines
+	::bind $f <<ListboxSelect>> [list set [namespace current]::figurines_ %d]
+	wm withdraw $dlg
+	wm title $dlg "$::scidb::app - $::pgn::setup::mc::Setup(MoveStyle)"
+	wm resizable $dlg no no
+	::util::place $dlg -parent $parent -position center
+	wm transient $dlg [winfo toplevel $parent]
+	catch { wm attributes $dlg -type dialog }
+	wm deiconify $dlg
+	::ttk::grabWindow $dlg
+	::focus $dlg.list
+	tkwait window $dlg
+	::ttk::releaseGrab $dlg
+	return $figurines_
 }
 
 

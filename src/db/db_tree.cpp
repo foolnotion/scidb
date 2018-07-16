@@ -254,7 +254,7 @@ Tree::buildTree0(	unsigned myIdn,
 	unsigned	reportAfter = m_index + frequency;
 	EcoSet	reachable;
 
-	for (unsigned n = base.countGames(); m_index < n; ++m_index)
+	for (unsigned n = numGames; m_index < n; ++m_index)
 	{
 		if (reportAfter == m_index)
 		{

@@ -165,7 +165,7 @@ proc BuildPane {twm frame uid width height} {
 		[namespace code [list View $tb]] \
 		$Columns \
 		-id db:games:$id \
-		-useScale 1 \
+		-usescale yes \
 		-layout $Options(layout) \
 		{*}$menucmd \
 		;
@@ -263,7 +263,10 @@ proc BuildPane {twm frame uid width height} {
 		}
 	}
 
-	::scidb::db::subscribe gameList [namespace current]::Update [namespace current]::Close $tb
+	::scidb::db::subscribe gameList \
+		[list [namespace current]::Update $tb] \
+		[list [namespace current]::Close $tb] \
+		;
 }
 
 

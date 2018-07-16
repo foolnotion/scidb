@@ -1073,7 +1073,7 @@ static int
 cmdCrc32(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	char const* s = stringFromObj(objc, objv, 1);
-	setResult(crc::compute(0, s, ::strlen(s)));
+	setResult(int64_t(crc::compute(0, s, ::strlen(s))));
 	return TCL_OK;
 }
 

@@ -66,6 +66,7 @@ set Pane(event)				"Events"
 set Pane(annotator)			"Annotator"
 set Pane(site)					"Site"
 set Pane(position)			"Position"
+set Pane(eco)					"ECO-Table"
 
 } ;# namespace mc
 
@@ -120,6 +121,9 @@ array set Options {
 	position:docking:showall	yes
 	position:layout:name			""
 	position:layout:list			{}
+	eco:docking:showall			yes
+	eco:layout:name				""
+	eco:layout:list				{}
 }
 
 variable SetupFunc {}
@@ -366,6 +370,7 @@ proc prepareExit {} {
 		set id $Vars(id:$twm)
 		set Options($id:layout:list:$Vars($id:layout:variant)) [inspectLayout $twm]
 		set Options($id:layout:list) $Options($id:layout:list:normal)
+		array unset Options *:layout:saved:*
 	}
 }
 
@@ -390,7 +395,8 @@ proc loadLayout {twm name} {
 	set id $Vars(id:$twm)
 
 	if {![file exists [makeFilename $id normal $name]]} {
-		# TODO show error message, and clear Options($id:layout:name)
+		# TODO show error message
+		set Options($id:layout:name) ""
 	}
 
 	set layout $Vars($id:layout:name)

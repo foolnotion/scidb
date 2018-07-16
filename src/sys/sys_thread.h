@@ -78,6 +78,7 @@ public:
 
 	bool stop();
 	bool testCancel();
+	bool testRunning();
 
 	void sendSignal(int signal);
 

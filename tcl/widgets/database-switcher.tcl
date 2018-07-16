@@ -174,7 +174,7 @@ proc Build {w args} {
 	rename ::$w $w.__switcher__
 	proc ::$w {command args} "[namespace current]::WidgetProc $w \$command {*}\$args"
 
-	::scidb::db::subscribe dbInfo [namespace current]::UpdateInfo {} $w
+	::scidb::db::subscribe dbInfo [list [namespace current]::UpdateInfo $w]
 
 	return $w
 }

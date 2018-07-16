@@ -357,9 +357,10 @@ proc open {parent base variant info view index {fen {}}} {
 
 	set Vars(subscribe:board) [list $position [namespace current]::UpdateBoard]
 	set Vars(subscribe:pgn)   [list $position [namespace current]::UpdatePGN true]
-	set Vars(subscribe:info)  [list [namespace current]::UpdateInfo $position]
-	set Vars(subscribe:data)  [list [namespace current]::UpdateData $position]
-	set Vars(subscribe:list)  [list [namespace current]::Update [namespace current]::Close $position]
+	set Vars(subscribe:info)  [list [list [namespace current]::UpdateInfo $position]]
+	set Vars(subscribe:data)  [list [list [namespace current]::UpdateData $position]]
+	set Vars(subscribe:list)  [list [list [namespace current]::Update $position] \
+											[list [namespace current]::Close $position]]
 	set Vars(subscribe:close) [list [namespace current]::Close $base $variant $position]
 
 	::scidb::game::subscribe board {*}$Vars(subscribe:board)
@@ -370,8 +371,8 @@ proc open {parent base variant info view index {fen {}}} {
 	::scidb::db::subscribe gameData {*}$Vars(subscribe:data)
 
 	if {$variant == [::scidb::app::variant] && $view == [::scidb::tree::view $base]} {
-		set Vars(subscribe:tree) [list [namespace current]::UpdateTreeBase {} $position]
-		::scidb::db::subscribe tree {*}$Vars(subscribe:tree)
+		set Vars(subscribe:tree) [list [namespace current]::UpdateTreeBase $position]
+		::scidb::db::subscribe tree $Vars(subscribe:tree)
 	}
 
 	update idletasks
@@ -417,7 +418,7 @@ proc load {parent base variant info view index windowId} {
 
 
 proc showPosition {parent position flip key {state 0}} {
-	set w .application.showboard
+	set w .application.showboard:browser
 
 	if {![winfo exists $w]} {
 		variable Options
@@ -433,7 +434,7 @@ proc showPosition {parent position flip key {state 0}} {
 
 
 proc updatePosition {parent position flip key {state 0}} {
-	set w .application.showboard
+	set w .application.showboard:browser
 
 	if {![winfo exists $w]} { 
 		return [showPosition $parent $position $flip $key $state]
@@ -455,14 +456,14 @@ proc updatePosition {parent position flip key {state 0}} {
 
 
 proc hidePosition {parent} {
-	if {[winfo exists .application.showboard]} {
-		::tooltip::popdown .application.showboard
+	if {[winfo exists .application.showboard:browser]} {
+		::tooltip::popdown .application.showboard:browser
 	}
 }
 
 
 proc showPosition? {parent} {
-	return [winfo exists .application.showboard]
+	return [winfo exists .application.showboard:browser]
 }
 
 

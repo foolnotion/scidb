@@ -83,6 +83,13 @@ public:
 								move::Notation style,
 								protocol::ID protocol,
 								encoding::CharSet charSet = encoding::Latin1) const;
+	mstl::string& printMove(mstl::string& result,
+									Board const& startBoard,
+									variant::Type variant,
+									unsigned ply,
+									move::Notation style,
+									protocol::ID protocol,
+									encoding::CharSet charSet = encoding::Latin1) const;
 	void dump() const;
 
 	void copy(Line const& line);
@@ -90,6 +97,8 @@ public:
 	void copy(uint16_t const* line, unsigned maxLength);
 	Line& transpose(Line& dst) const;
 	Line& transpose();
+
+	void finalBoard(variant::Type variant, Board& startBoard) const;
 
 	uint16_t const*	moves;	// null terminated
 	unsigned 			length;	// w/o null terminator

@@ -106,6 +106,7 @@ SOURCES = \
 	playertable.tcl \
 	eventtable.tcl \
 	sitetable.tcl \
+	ecotable.tcl \
 	progress.tcl \
 	board-texture.tcl \
 	board-pieceset.tcl \

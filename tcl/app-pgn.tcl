@@ -1050,19 +1050,19 @@ proc UpdateLanguages {position languageSet} {
 }
 
 
-proc GameSwitched {position} {
+proc GameSwitched {oldPos newPos} {
 	variable Vars
 
-	[namespace parent]::twm::switchLayout [::scidb::game::query $position variant] game
-	if {![info exists Vars(virgin:$position)]} { return }
+	[namespace parent]::twm::switchLayout [::scidb::game::query $newPos variant] game
+	if {![info exists Vars(virgin:$newPos)]} { return }
 
-	if {[info exists Vars(lang:set:$position)]} {
-		UpdateLanguages $position $Vars(lang:set:$position)
+	if {[info exists Vars(lang:set:$newPos)]} {
+		UpdateLanguages $newPos $Vars(lang:set:$newPos)
 	}
-	if {$position < 9 && $Vars(setup:$position)} {
-		::widget::textLineScroll $Vars(pgn:$position) moveto 0
-		ProcessGoto $position [::scidb::game::position key] $Vars(successor:$position)
-		set Vars(setup:$position) 0
+	if {$newPos < 9 && $Vars(setup:$newPos)} {
+		::widget::textLineScroll $Vars(pgn:$newPos) moveto 0
+		ProcessGoto $newPos [::scidb::game::position key] $Vars(successor:$newPos)
+		set Vars(setup:$newPos) 0
 	}
 }
 

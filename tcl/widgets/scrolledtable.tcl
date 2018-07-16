@@ -46,17 +46,17 @@ proc build {path columns args} {
 	set opts(-stripes) $Defaults(stripes)
 
 	array set opts {
-		-useScale		0
-		-layout			bottom
+		-usescale		0
+		-layout			right
 		-lock				{}
 		-popupcmd		{}
 		-takefocus		1
-		-listmode		0
 		-sortable		1
 		-fixedrows		0
 		-lineBasedMenu	1
 		-configurable	no
 		-height			10
+		-hidebar			0
 	}
 	array set opts $args
 
@@ -92,10 +92,11 @@ proc build {path columns args} {
 	set Vars(takefocus)		$opts(-takefocus)
 	set Vars(theme)			[::theme::currentTheme]
 	set Vars(lineBasedMenu)	$opts(-lineBasedMenu)
-	set useScale				$opts(-useScale)
+	set Vars(hidebar)			$opts(-hidebar)
+	set useScale				$opts(-usescale)
 
-	if {$useScale} { set Vars(layout) $opts(-layout) } else { set Vars(layout) right }
-	foreach attr {-popupcmd -lock -useScale -layout -lineBasedMenu} { array unset opts $attr }
+	set Vars(layout) $opts(-layout)
+	foreach attr {-popupcmd -lock -usescale -layout -hidebar -lineBasedMenu} { array unset opts $attr }
 
 	if {![winfo exists $path]} {
 		ttk::frame $path -takefocus 0
@@ -969,6 +970,20 @@ proc Scroll {table action args} {
 	set start [expr {max(0, min($start, $Vars(size) - $Vars(height)))}]
 	set first [expr {$Vars(size) <= 1 ? 0.0 : double($start)/double($Vars(size) - 1)}]
 	set last  [expr {$Vars(size) <= 1 ? 1.0 : double($start + $Vars(height))/double($Vars(size))}]
+
+	if {$Vars(hidebar)} {
+		set parent [winfo parent $table]
+		if {$first <= 0 && $last >= 1} {
+			if {$Vars(scrollbar) in [grid slaves $parent]} {
+				grid remove $Vars(scrollbar)
+			}
+		} else {
+			if {$Vars(scrollbar) ni [grid slaves $parent]} {
+				after idle [list grid $Vars(scrollbar)]
+			}
+		}
+	}
+
 	$Vars(scrollbar) set $first $last
 
 	if {$force} {

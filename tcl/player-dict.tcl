@@ -438,7 +438,7 @@ proc open {parent args} {
 	set Priv(label:size) $count
 	UpdateCount
 
-	set Priv(subscribe) [list [namespace current]::UpdateDatabaseInfo {} $table]
+	set Priv(subscribe) [list [list [namespace current]::UpdateDatabaseInfo $table]]
 	::scidb::db::subscribe dbInfo {*}$Priv(subscribe)
 
 	set search [searchentry $top.search \

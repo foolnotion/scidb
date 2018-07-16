@@ -152,9 +152,8 @@ proc BuildFrame {twm frame uid width height} {
 				-usefind 1 \
 				;
 			::scidb::db::subscribe siteList \
-				[namespace current]::sites::Update \
-				[namespace current]::Close \
-				$twm \
+				[list [namespace current]::sites::Update $twm] \
+				[list [namespace current]::Close $twm] \
 				;
 		}
 		event {
@@ -163,7 +162,7 @@ proc BuildFrame {twm frame uid width height} {
 				-selectcmd [namespace code [list SelectEvent $twm]] \
 				-id db:sites:$id:$uid \
 				;
-			::scidb::db::subscribe eventList [namespace current]::events::Update $twm
+			::scidb::db::subscribe eventList [list [namespace current]::events::Update $twm]
 		}
 	}
 }

@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2009-2018 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -36,7 +36,6 @@
 #include "m_hash.h"
 #include "m_list.h"
 #include "m_string.h"
-#include "m_vector.h"
 #include "m_bitset.h"
 #include "m_chunk_allocator.h"
 
@@ -54,6 +53,8 @@ public:
 	enum { FileVersion = 90 };
 	enum { Max_Successors = 20 };
 	enum { Num_Name_Parts = 6 };
+
+	enum Mode { SinglePly, Compact };
 
 	class Node;
 	class StoredLineNode;
@@ -102,7 +103,25 @@ public:
 		unsigned		length;
 	};
 
-	struct Opening { Opening() {}; mstl::string part[Num_Name_Parts]; };
+	struct Opening
+	{
+		Opening();
+		bool operator==(const Opening& op) const;
+		bool operator!=(const Opening& op) const;
+		mstl::string part[Num_Name_Parts];
+	};
+
+	struct EcoOpening
+	{
+		EcoOpening();
+		EcoOpening(unsigned ply, Eco eco, Opening const& opening);
+
+		unsigned			ply;
+		Eco				eco;
+		Opening const&	opening;
+	};
+
+	typedef mstl::list<EcoOpening> Openings;
 
 	EcoTable();
 	~EcoTable();
@@ -121,6 +140,7 @@ public:
 	Opening const& getOpening(Eco code) const;
 	Line const& getLine(Eco code) const;
 	uint8_t getStoredLine(Eco key, Eco opening) const;
+	void getOpenings(Board const& startBoard, Line const& line, Openings& result, Mode mode) const;
 	Eco getEco(Board const& startBoard, Line const& line, EcoSet* reachable = 0) const;
 	Eco getEco(Board const& board) const;
 	Eco getEco(Line const& line) const;

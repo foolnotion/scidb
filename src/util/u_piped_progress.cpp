@@ -41,7 +41,7 @@ PipedProgress::PipedProgress(sys::Thread& thread)
 bool
 PipedProgress::interrupted()
 {
-	if (!m_thread.testCancel())
+	if (!m_thread.testCancel() || !m_thread.testRunning())
 		return false;
 
 	if (!m_interrupted)

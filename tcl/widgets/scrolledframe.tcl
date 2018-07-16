@@ -762,7 +762,7 @@ proc DoSbSet {sb first last} {
 			grid remove $sb
 		}
 	} else {
-		if {$sb ne [grid slaves $parent]} {
+		if {$sb ni [grid slaves $parent]} {
 			after idle [list grid $sb]
 		}
 	}

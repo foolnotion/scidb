@@ -49,6 +49,14 @@ Line::contains(uint16_t move) const
 }
 
 
+void
+Line::finalBoard(variant::Type variant, Board& startBoard) const
+{
+	for (unsigned i = 0; i < length; ++i)
+		startBoard.doMove(startBoard.makeMove(moves[i]), variant);
+}
+
+
 Line&
 Line::transpose(Line& dst) const
 {
@@ -123,6 +131,35 @@ Line::print(	mstl::string& result,
 					encoding::CharSet charSet) const
 {
 	return print(result, Board::standardBoard(variant), variant, style, protocol, charSet);
+}
+
+
+mstl::string&
+Line::printMove(	mstl::string& result,
+						Board const& startBoard,
+						variant::Type variant,
+						unsigned ply,
+						move::Notation style,
+						protocol::ID protocol,
+						encoding::CharSet charSet) const
+{
+	Board board(startBoard);
+
+	for (unsigned i = 0; i < length; ++i)
+	{
+		Move m = board.makeMove(moves[i]);
+
+		if (i == ply)
+		{
+			board.prepareForPrint(m, variant, Board::ExternalRepresentation);
+			m.print(result, style, protocol, charSet);
+			break;
+		}
+
+		board.doMove(m, variant);
+	}
+
+	return result;
 }
 
 

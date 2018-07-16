@@ -191,9 +191,8 @@ proc BuildFrame {twm frame uid width height} {
 			}
 			set table [::scrolledtable::build $frame $columns -id db:annotators:$id:$uid]
 			::scidb::db::subscribe annotatorList \
-				[namespace current]::names::Update \
-				[namespace current]::Close \
-				$twm \
+				[list [namespace current]::names::Update $twm] \
+				[list [namespace current]::Close $twm] \
 				;
 			bind $frame <<TableFill>>		[namespace code [list names::TableFill $twm %d]]
 			bind $frame <<TableSelected>>	[namespace code [list names::TableSelected $twm %d]]
@@ -202,9 +201,8 @@ proc BuildFrame {twm frame uid width height} {
 			set columns {white whiteElo black blackElo event result site date acv}
 			::gametable::build $frame [namespace code [list View $twm]] $columns -id db:annotators:$id:$uid
 			::scidb::db::subscribe gameList \
-				[namespace current]::games::Update \
-				[namespace current]::Close \
-				$twm \
+				[list [namespace current]::games::Update $twm] \
+				[list [namespace current]::Close $twm] \
 				;
 		}
 	}

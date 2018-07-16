@@ -253,7 +253,7 @@ variable Columns {
 	{ opening			opening	left		10		 0		15			1			1			1			{}				}
 	{ variation			opening	left		10		 0		10			1			1			1			{}				}
 	{ subvariation		opening	left		10		 0		10			1			1			1			{}				}
-	{ key					internal	left		 4		 9		 9			0			1			0			magenta4		}
+	{ key					internal	right		 4		 9		 9			0			1			0			magenta4		}
 }
 # alternative colors: darkgoldenrod
 
@@ -2094,27 +2094,11 @@ proc SetupRating {args} {
 
 proc SelectFigurines {path} {
 	variable ${path}::Options
-	variable MoveStyle
 
-	set lang $Options(move:figurines)
-	set dlg [tk::toplevel $path.figurines -class Scidb]
-	::widget::dialogButtons $dlg close
-	$dlg.close configure -command [list destroy $dlg]
-	pack [set f [::figurines::listbox $dlg.list -frametype frame]]
-	$f select $Options(move:figurines)
-	::bind $f <<ListboxSelect>> [list set [namespace current]::${path}::Options(move:figurines) %d]
-	wm withdraw $dlg
-	wm title $dlg "$::scidb::app - $MoveStyle"
-	wm resizable $dlg no no
-	::util::place $dlg -parent $path -position center
-	wm transient $dlg [winfo toplevel $path]
-	catch { wm attributes $dlg -type dialog }
-	wm deiconify $dlg
-	::ttk::grabWindow $dlg
-	::focus $dlg.list
-	tkwait window $dlg
-	::ttk::releaseGrab $dlg
-	if {$lang ne $Options(move:figurines)} { Refresh $path }
+	set lang [::figurines::openDialog $path $Options(move:figurines)]
+	if {$lang eq $Options(move:figurines)} { return }
+	set Options(move:figurines) $lang
+	Refresh $path
 }
 
 

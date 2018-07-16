@@ -37,6 +37,19 @@ inline EcoTable::Successors::Successor::Successor() : move(0) {}
 inline EcoTable::Successors::Successors() : length(0) {}
 
 
+inline EcoTable::Opening::Opening() {}
+
+
+inline
+EcoTable::EcoOpening::EcoOpening(unsigned ply, Eco eco, Opening const& opening)
+	:ply(ply), eco(eco), opening(opening)
+{
+}
+
+
+inline bool EcoTable::Opening::operator!=(const Opening& op) const { return !(*this == op); }
+
+
 inline
 EcoTable const&
 EcoTable::specimen(variant::Type variant)

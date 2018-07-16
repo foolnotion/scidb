@@ -1881,6 +1881,7 @@ Application::switchGame(unsigned position, ReferenceGames updateReferenceGames)
 	if (updateReferenceGames == UpdateReferenceGames)
 		m_treeAdmin.signal(Thread::Stop);
 
+	unsigned prevPosition = m_currentPosition;
 	m_currentPosition = position;
 
 	if (game.data.refresh)
@@ -1902,7 +1903,7 @@ Application::switchGame(unsigned position, ReferenceGames updateReferenceGames)
 
 	if (m_subscriber)
 	{
-		m_subscriber->gameSwitched(position);
+		m_subscriber->gameSwitched(prevPosition, position);
 
 		if (updateReferenceGames == UpdateReferenceGames && m_referenceBase && !m_treeIsFrozen)
 			m_subscriber->updateTree(m_referenceBase->name(), m_referenceBase->variant());

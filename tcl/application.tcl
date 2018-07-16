@@ -63,6 +63,7 @@ array set PaneOptions {
 	editor	{ -width 500 -height 520 -minwidth 150 -minheight 150 -expand y }
 	games		{ -width 500 -height 520 -minwidth 300 -minheight 150 -expand both }
 	analysis	{ -width 500 -height 120 -minwidth 300 -minheight 120 -expand x }
+	eco		{ -width 500 -height 520 -minwidth 150 -minheight 150 -expand both }
 }
 
 set BoardLayout {
@@ -85,7 +86,7 @@ set BoardLayout {
 
 set FontSizeActive 0
 
-array set Prios		{ analysis 200 board 500 editor 400 games 100 tree 300 }
+array set Prios		{ analysis 200 board 500 editor 400 games 100 tree 300 eco 90 }
 array set Defaults	{ menu:background #c3c3c3 }
 
 array set Vars {
@@ -163,16 +164,16 @@ proc open {} {
 	set Vars(frame:information) $info
 	set Vars(frame:database) $db
 
-	set main [twm::make $nb.board board \
+	set twm [twm::make $nb.board board \
 		[namespace current]::MakePane \
 		[namespace current]::BuildPane \
 		[namespace current]::Prios \
 		[array get PaneOptions] \
 		$BoardLayout \
 	]
-	bind $main <<TwmReady>> [namespace code [list Startup $main %d]]
-	bind $main <<TwmAfter>> [namespace code board::afterTWM]
-	twm::load $main
+	bind $twm <<TwmReady>> [namespace code [list Startup $twm %d]]
+	bind $twm <<TwmAfter>> [namespace code board::afterTWM]
+	twm::load $twm
 
 	pack $nb -fill both -expand yes
 
@@ -256,7 +257,7 @@ proc TabChanged {nb} {
 }
 
 
-proc MakePane {main parent type uid} {
+proc MakePane {twm parent type uid} {
 	variable Prios
 	variable Vars
 
@@ -293,7 +294,7 @@ proc MakePane {main parent type uid} {
 	bind $frame <Map> [list [namespace current]::${ns}::activate $frame 1]
 	bind $frame <Unmap> [list [namespace current]::${ns}::activate $frame 0]
 	bind $frame <Destroy> [list [namespace current]::${ns}::closed $frame]
-	bind $frame <Destroy> +[namespace code [list DestroyPane $main $uid $analysisNumber]]
+	bind $frame <Destroy> +[namespace code [list DestroyPane $twm $uid $analysisNumber]]
 	set Vars(frame:$uid) $frame
 	return $result
 }
@@ -312,10 +313,17 @@ proc BuildPane {twm frame uid width height} {
 			}
 			analysis::build $frame $analysisNumber $patterNumber
 		}
-		board		{ board::build $frame $width $height }
+		eco {
+			if {"editor" in [$twm leaves]} {
+				lassign [$twm dimension [$twm leaf editor]] width height _ _ _ _
+			}
+			eco::build $frame -id editor
+			$frame configure -width $width -height $height
+		}
 		editor	{ pgn::build $frame $width $height }
 		games		{ tree::games::build $twm $frame $width $height }
 		tree		{ tree::build $twm $frame $width $height }
+		default	{ ${uid}::build $frame $width $height }
 	}
 }
 
@@ -365,6 +373,11 @@ proc UpdateNameVar {analysisNumber args} {
 }
 
 
+proc setAnalysisTitle {analysisNumber title} {
+	set [namespace current]::NameVar($analysisNumber) $title
+}
+
+
 proc newAnalysisPane {analysisNumber} {
 	variable MapTerminalToAnalysis
 	variable MapAnalysisToTerminal
@@ -374,20 +387,15 @@ proc newAnalysisPane {analysisNumber} {
 	set highest $Vars(terminal:number)
 	set terminalNumber [expr {$highest + 1}]
 	set uid analysis:$terminalNumber
-	set main $Vars(twm:board)
+	set twm $Vars(twm:board)
 	set MapTerminalToAnalysis($terminalNumber) $analysisNumber
 	set MapAnalysisToTerminal($analysisNumber) $terminalNumber
 
 	if {$highest > 0} {
-		$main clone analysis:$highest $uid
+		$twm clone analysis:$highest $uid
 	} else {
-		$main new frame analysis:1 $PaneOptions(analysis)
+		$twm new frame analysis:1 $PaneOptions(analysis)
 	}
-}
-
-
-proc setAnalysisTitle {analysisNumber title} {
-	set [namespace current]::NameVar($analysisNumber) $title
 }
 
 
@@ -395,20 +403,20 @@ proc resizePaneHeight {analysisNumber minHeight} {
 	variable MapAnalysisToTerminal
 	variable Vars
 
-	set main $Vars(twm:board)
+	set twm $Vars(twm:board)
 	set uid analysis:$MapAnalysisToTerminal($analysisNumber)
-	set pane [$main leaf $uid]
+	set pane [$twm leaf $uid]
 
-	lassign [$main dimension $pane] _ height _ _ _ _
+	lassign [$twm dimension $pane] _ height _ _ _ _
 	set height [expr {max($height,$minHeight)}]
 
-	if {[$main isfloat [$main toplevel $pane]]} {
+	if {[$twm isfloat [$twm toplevel $pane]]} {
 		set height $minHeight
 		set maxHeight $minHeight
 	} else {
 		set maxHeight 0
 	}
-	$main resize $pane 0 $height 0 $minHeight 0 $maxHeight
+	$twm resize $pane 0 $height 0 $minHeight 0 $maxHeight
 }
 
 

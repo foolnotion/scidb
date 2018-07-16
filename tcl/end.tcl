@@ -214,6 +214,9 @@ proc twm::makeStateSpecificIcons {icon} { return [::icon::makeStateSpecificIcons
 proc twm::WriteOptions {chan} { ::options::writeItem $chan [twm::nameOfOptionsArray] }
 ::options::hookWriter twm::WriteOptions
 
+proc ecobox::tooltip {args} { ::tooltip {*}$args }
+proc ecobox::openEcoDialog {parent} { return [::application::eco::open $parent ecobox] }
+
 rename ::table::setOptions ::table::setOptions_
 # XXX work-around because of a bug in older versions
 proc ::table::setOptions {args} {

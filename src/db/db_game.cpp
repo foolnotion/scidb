@@ -4210,9 +4210,6 @@ Game::currentLine(Line& result)
 bool
 Game::updateLine()
 {
-	if (!isMainline())
-		return false;
-
 	unsigned length = m_startNode->countHalfMoves();
 
 	if (m_timeTable.size() > length)
@@ -4644,7 +4641,11 @@ Game::updateSubscriber(unsigned action)
 		::checkRepetitions(m_startBoard, m_variant, m_startNode);
 	}
 
-	updateLine();
+	{	// local scope
+		unsigned length = m_line.length;
+		if ((updateLine() || length != m_line.length) && (action & UpdateOpening))
+			m_subscriber->updateOpening();
+	}
 
 	if (action & (UpdatePgn | UpdateOpening | UpdateLanguageSet))
 	{

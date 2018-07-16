@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2017 Gregor Cramer
+// Copyright: (C) 2009-2018 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -78,10 +78,12 @@ using namespace tcl::app;
 
 static char const* CmdBoard			= "::scidb::game::board";
 static char const* CmdClear			= "::scidb::game::clear";
+static char const* CmdCodeToFen		= "::scidb::game::codeToFen";
 static char const* CmdCopy				= "::scidb::game::copy";
 static char const* CmdCount			= "::scidb::game::count";
 static char const* CmdCurrent			= "::scidb::game::current";
 static char const* CmdDump				= "::scidb::game::dump";
+static char const* CmdEcoTable		= "::scidb::game::ecotable";
 static char const* CmdExchange		= "::scidb::game::exchange";
 static char const* CmdExecute			= "::scidb::game::execute";
 static char const* CmdExport			= "::scidb::game::export";
@@ -216,26 +218,23 @@ stateToInt(load::State state)
 static unsigned
 getMoveInfoTypes(char const* cmd, char const* subcmd, Tcl_Obj* moveInfo, unsigned& moveInfoTypes)
 {
-	int nentries;
-	Tcl_Obj** objs;
-	if (Tcl_ListObjGetElements(nullptr, moveInfo, &nentries, &objs) != TCL_OK)
-		return error(cmd, subcmd, nullptr, "list of move info types expected");
+	Array elems = getElements(moveInfo);
 
 	moveInfoTypes = 0;
 
-	for (int i = 0; i < nentries; ++i)
+	for (unsigned i = 0; i < elems.size(); ++i)
 	{
-		char const* type = Tcl_GetString(objs[i]);
+		char const* type = asString(elems[i]);
 
-		if (::strcmp(type, "eval") == 0)
+		if (equal(type, "eval"))
 			moveInfoTypes |= moveinfo::Evaluation;
-		else if (::strcmp(type, "clk") == 0)
+		else if (equal(type, "clk"))
 			moveInfoTypes |= moveinfo::Clock;
-		else if (::strcmp(type, "emt") == 0)
+		else if (equal(type, "emt"))
 			moveInfoTypes |= moveinfo::ElapsedTime;
-		else if (::strcmp(type, "ccsnt") == 0)
+		else if (equal(type, "ccsnt"))
 			moveInfoTypes |= moveinfo::CorrSent;
-		else if (::strcmp(type, "video") == 0)
+		else if (equal(type, "video"))
 			moveInfoTypes |= moveinfo::Video;
 		else
 			return error(cmd, subcmd, nullptr, "unknown move info type '%s'", type);
@@ -254,38 +253,38 @@ makePromotionList(Board const& board)
 	uint64_t promoted = board.promoted();
 
 	while (promoted)
-		objs[n++] = Tcl_NewIntObj(::db::board::lsbClear(promoted));
+		objs[n++] = newObj(::db::board::lsbClear(promoted));
 
-	return Tcl_NewListObj(n, objs);
+	return newObj(n, objs);
 }
 
 
 ::db::move::Notation
 tcl::game::notationFromObj(Tcl_Obj* obj)
 {
-	char const* moveStyle = Tcl_GetString(obj);
+	char const* moveStyle = asString(obj);
 
-	if (strcmp(moveStyle, "can") == 0)
+	if (equal(moveStyle, "can"))
 		return move::CAN;
-	else if (strcmp(moveStyle, "san") == 0)
+	else if (equal(moveStyle, "san"))
 		return move::SAN;
-	else if (strcmp(moveStyle, "lan") == 0)
+	else if (equal(moveStyle, "lan"))
 		return move::LAN;
-	else if (strcmp(moveStyle, "gan") == 0)
+	else if (equal(moveStyle, "gan"))
 		return move::GAN;
-	else if (strcmp(moveStyle, "man") == 0)
+	else if (equal(moveStyle, "man"))
 		return move::MAN;
-	else if (strcmp(moveStyle, "ran") == 0)
+	else if (equal(moveStyle, "ran"))
 		return move::RAN;
-	else if (strcmp(moveStyle, "smi") == 0)
+	else if (equal(moveStyle, "smi"))
 		return move::Smith;
-	else if (strcmp(moveStyle, "edn") == 0)
+	else if (equal(moveStyle, "edn"))
 		return move::EDN;
-	else if (strcmp(moveStyle, "sdn") == 0)
+	else if (equal(moveStyle, "sdn"))
 		return move::SDN;
-	else if (strcmp(moveStyle, "cor") == 0)
+	else if (equal(moveStyle, "cor"))
 		return move::Numeric;
-	else if (strcmp(moveStyle, "tel") == 0)
+	else if (equal(moveStyle, "tel"))
 		return move::Alphabetic;
 
 	M_RAISE("unexpected move style '%s'", moveStyle);
@@ -303,18 +302,18 @@ tcl::game::notationFromObj(unsigned objc, Tcl_Obj* const objv[], unsigned index)
 ::db::variant::Type
 tcl::game::variantFromObj(Tcl_Obj* obj)
 {
-	char const* variant = Tcl_GetString(obj);
+	char const* variant = asString(obj);
 
 	switch (::toupper(*variant))
 	{
-		case 'N':	return ::db::variant::Normal;
-		case 'B':	return ::db::variant::Bughouse;
-		case 'C':	return ::db::variant::Crazyhouse;
-		case 'T':	return ::db::variant::ThreeCheck;
-		case 'S':	return ::db::variant::Suicide;
-		case 'G':	return ::db::variant::Giveaway;
-		case 'L':	return ::db::variant::Losers;
-		case 'A':	return ::db::variant::Antichess;
+		case 'N': return ::db::variant::Normal;
+		case 'B': return ::db::variant::Bughouse;
+		case 'C': return ::db::variant::Crazyhouse;
+		case 'T': return ::db::variant::ThreeCheck;
+		case 'S': return ::db::variant::Suicide;
+		case 'G': return ::db::variant::Giveaway;
+		case 'L': return ::db::variant::Losers;
+		case 'A': return ::db::variant::Antichess;
 	}
 
 	return ::db::variant::Undetermined;
@@ -338,7 +337,7 @@ tcl::game::objFromVariant(::db::variant::Type variant)
 
 	if (size_t(variant) >= m_variants.size() || m_variants[variant] == 0)
 	{
-		char const* s = 0;
+		char const* s = nullptr;
 
 		switch (variant)
 		{
@@ -354,8 +353,8 @@ tcl::game::objFromVariant(::db::variant::Type variant)
 		}
 
 		m_variants.resize(variant + 1, 0);
-		m_variants[variant] = Tcl_NewStringObj(s, -1);
-		Tcl_IncrRefCount(m_variants[variant]);
+		m_variants[variant] = newObj(s);
+		incrRef(m_variants[variant]);
 	}
 
 	return m_variants[variant];
@@ -381,84 +380,84 @@ public:
 		:m_objc(0)
 		,m_moveStyle(moveStyle)
 	{
-		if (m_action == 0)
+		if (!m_action)
 		{
-			Tcl_IncrRefCount(m_action			= Tcl_NewStringObj("action",				-1));
-			Tcl_IncrRefCount(m_clear			= Tcl_NewStringObj("clear",				-1));
-			Tcl_IncrRefCount(m_insert			= Tcl_NewStringObj("insert",				-1));
-			Tcl_IncrRefCount(m_replace			= Tcl_NewStringObj("replace",				-1));
-			Tcl_IncrRefCount(m_remove			= Tcl_NewStringObj("remove",				-1));
-			Tcl_IncrRefCount(m_finish			= Tcl_NewStringObj("finish",				-1));
-			Tcl_IncrRefCount(m_header			= Tcl_NewStringObj("header",				-1));
-			Tcl_IncrRefCount(m_idn				= Tcl_NewStringObj("idn",					-1));
-			Tcl_IncrRefCount(m_eco				= Tcl_NewStringObj("eco",					-1));
-			Tcl_IncrRefCount(m_position		= Tcl_NewStringObj("position",			-1));
-			Tcl_IncrRefCount(m_opening			= Tcl_NewStringObj("opening",				-1));
-			Tcl_IncrRefCount(m_languages		= Tcl_NewStringObj("languages",			-1));
-			Tcl_IncrRefCount(m_ply				= Tcl_NewStringObj("ply",					-1));
-			Tcl_IncrRefCount(m_white			= Tcl_NewStringObj("white",				-1));
-			Tcl_IncrRefCount(m_black			= Tcl_NewStringObj("black",				-1));
-			Tcl_IncrRefCount(m_legal			= Tcl_NewStringObj("legal",				-1));
-			Tcl_IncrRefCount(m_diagram			= Tcl_NewStringObj("diagram",				-1));
-			Tcl_IncrRefCount(m_color			= Tcl_NewStringObj("color",				-1));
-			Tcl_IncrRefCount(m_board			= Tcl_NewStringObj("board",				-1));
-			Tcl_IncrRefCount(m_comment			= Tcl_NewStringObj("comment",				-1));
-			Tcl_IncrRefCount(m_annotation		= Tcl_NewStringObj("annotation",			-1));
-			Tcl_IncrRefCount(m_states			= Tcl_NewStringObj("states",				-1));
-			Tcl_IncrRefCount(m_marks			= Tcl_NewStringObj("marks",				-1));
-			Tcl_IncrRefCount(m_space			= Tcl_NewStringObj("space",				-1));
-			Tcl_IncrRefCount(m_break			= Tcl_NewStringObj("break",				-1));
-			Tcl_IncrRefCount(m_begin			= Tcl_NewStringObj("begin",				-1));
-			Tcl_IncrRefCount(m_end				= Tcl_NewStringObj("end",					-1));
-			Tcl_IncrRefCount(m_move				= Tcl_NewStringObj("move",					-1));
-			Tcl_IncrRefCount(m_start			= Tcl_NewStringObj("start",				-1));
-			Tcl_IncrRefCount(m_result			= Tcl_NewStringObj("result",				-1));
-			Tcl_IncrRefCount(m_checkmate		= Tcl_NewStringObj("checkmate",			-1));
-			Tcl_IncrRefCount(m_stalemate		= Tcl_NewStringObj("stalemate",			-1));
-			Tcl_IncrRefCount(m_threeChecks	= Tcl_NewStringObj("three-checks",		-1));
-			Tcl_IncrRefCount(m_material		= Tcl_NewStringObj("material",			-1));
-			Tcl_IncrRefCount(m_lessMaterial	= Tcl_NewStringObj("less-material",		-1));
-			Tcl_IncrRefCount(m_equalMaterial	= Tcl_NewStringObj("equal-material",	-1));
-			Tcl_IncrRefCount(m_bishops			= Tcl_NewStringObj("bishops",				-1));
-			Tcl_IncrRefCount(m_threefold		= Tcl_NewStringObj("threefold",			-1));
-			Tcl_IncrRefCount(m_fivefold		= Tcl_NewStringObj("fivefold",			-1));
-			Tcl_IncrRefCount(m_fifty			= Tcl_NewStringObj("fifty",				-1));
-			Tcl_IncrRefCount(m_mating			= Tcl_NewStringObj("nomating",			-1));
-			Tcl_IncrRefCount(m_empty			= Tcl_NewStringObj("",						-1));
-			Tcl_IncrRefCount(m_number			= Tcl_NewStringObj("[",						-1));
-			Tcl_IncrRefCount(m_leave			= Tcl_NewStringObj("]",						-1));
-			Tcl_IncrRefCount(m_open				= Tcl_NewStringObj("(",						-1));
-			Tcl_IncrRefCount(m_close			= Tcl_NewStringObj(")",						-1));
-			Tcl_IncrRefCount(m_close_fold		= Tcl_NewStringObj("*",						-1));
-			Tcl_IncrRefCount(m_fold				= Tcl_NewStringObj("+",						-1));
-			Tcl_IncrRefCount(m_preceding		= Tcl_NewStringObj("preceding",			-1));
-			Tcl_IncrRefCount(m_trailing		= Tcl_NewStringObj("trailing",			-1));
-			Tcl_IncrRefCount(m_before			= Tcl_NewStringObj("before",				-1));
-			Tcl_IncrRefCount(m_after			= Tcl_NewStringObj("after",				-1));
-			Tcl_IncrRefCount(m_finally			= Tcl_NewStringObj("finally",				-1));
-			Tcl_IncrRefCount(m_e					= Tcl_NewStringObj("e",						-1));
-			Tcl_IncrRefCount(m_s					= Tcl_NewStringObj("s",						-1));
-			Tcl_IncrRefCount(m_blank			= Tcl_NewStringObj(" ",						-1));
-			Tcl_IncrRefCount(m_zero				= Tcl_NewIntObj(0));
+			incrRef(m_action			= newObj("action"));
+			incrRef(m_clear			= newObj("clear"));
+			incrRef(m_insert			= newObj("insert"));
+			incrRef(m_replace			= newObj("replace"));
+			incrRef(m_remove			= newObj("remove"));
+			incrRef(m_finish			= newObj("finish"));
+			incrRef(m_header			= newObj("header"));
+			incrRef(m_idn				= newObj("idn"));
+			incrRef(m_eco				= newObj("eco"));
+			incrRef(m_position		= newObj("position"));
+			incrRef(m_opening			= newObj("opening"));
+			incrRef(m_languages		= newObj("languages"));
+			incrRef(m_ply				= newObj("ply"));
+			incrRef(m_white			= newObj("white"));
+			incrRef(m_black			= newObj("black"));
+			incrRef(m_legal			= newObj("legal"));
+			incrRef(m_diagram			= newObj("diagram"));
+			incrRef(m_color			= newObj("color"));
+			incrRef(m_board			= newObj("board"));
+			incrRef(m_comment			= newObj("comment"));
+			incrRef(m_annotation		= newObj("annotation"));
+			incrRef(m_states			= newObj("states"));
+			incrRef(m_marks			= newObj("marks"));
+			incrRef(m_space			= newObj("space"));
+			incrRef(m_break			= newObj("break"));
+			incrRef(m_begin			= newObj("begin"));
+			incrRef(m_end				= newObj("end"));
+			incrRef(m_move				= newObj("move"));
+			incrRef(m_start			= newObj("start"));
+			incrRef(m_result			= newObj("result"));
+			incrRef(m_checkmate		= newObj("checkmate"));
+			incrRef(m_stalemate		= newObj("stalemate"));
+			incrRef(m_threeChecks	= newObj("three-checks"));
+			incrRef(m_material		= newObj("material"));
+			incrRef(m_lessMaterial	= newObj("less-material"));
+			incrRef(m_equalMaterial	= newObj("equal-material"));
+			incrRef(m_bishops			= newObj("bishops"));
+			incrRef(m_threefold		= newObj("threefold"));
+			incrRef(m_fivefold		= newObj("fivefold"));
+			incrRef(m_fifty			= newObj("fifty"));
+			incrRef(m_mating			= newObj("nomating"));
+			incrRef(m_empty			= newObj(""));
+			incrRef(m_number			= newObj("["));
+			incrRef(m_leave			= newObj("]"));
+			incrRef(m_open				= newObj("("));
+			incrRef(m_close			= newObj(")"));
+			incrRef(m_close_fold		= newObj("*"));
+			incrRef(m_fold				= newObj("+"));
+			incrRef(m_preceding		= newObj("preceding"));
+			incrRef(m_trailing		= newObj("trailing"));
+			incrRef(m_before			= newObj("before"));
+			incrRef(m_after			= newObj("after"));
+			incrRef(m_finally			= newObj("finally"));
+			incrRef(m_e					= newObj("e"));
+			incrRef(m_s					= newObj("s"));
+			incrRef(m_blank			= newObj(" "));
+			incrRef(m_zero				= newObj(0));
 		}
 
-		Tcl_IncrRefCount(m_list = Tcl_NewListObj(0, 0));
+		incrRef(m_list = newObj());
 	}
 
 	~Visitor() throw()
 	{
-		Tcl_DecrRefCount(m_list);
+		decrRef(m_list);
 	}
 
 	void start(result::ID) override
 	{
-		Tcl_ListObjAppendElement(0, m_list, m_start);
+		addElement(m_list, m_start);
 	}
 
 	void finish(result::ID result, termination::State termination, color::ID toMove) override
 	{
 		Tcl_Obj* objv[4];
-		Tcl_Obj* term = 0;
+		Tcl_Obj* term = nullptr;
 
 		switch (termination)
 		{
@@ -479,11 +478,11 @@ public:
 		}
 
 		objv[0] = m_result;
-		objv[1] = Tcl_NewStringObj(result::toString(result), -1);
-		objv[2] = Tcl_NewStringObj(color::printColor(toMove), -1);
+		objv[1] = newObj(result::toString(result));
+		objv[2] = newObj(color::printColor(toMove));
 		objv[3] = term;
 
-		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv), objv));
+		addElement(m_list, objv);
 	}
 
 	void clear() override
@@ -491,9 +490,9 @@ public:
 		Tcl_Obj* objv_1[2];
 
 		objv_1[0] = m_action;
-		objv_1[1] = Tcl_NewListObj(1, &m_clear);
+		objv_1[1] = newObj(1, &m_clear);
 
-		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv_1), objv_1));
+		addElement(m_list, objv_1);
 	}
 
 	void insert(unsigned level, edit::Key const& beforeKey) override
@@ -501,15 +500,15 @@ public:
 		Tcl_Obj* objv_1[3];
 
 		objv_1[0] = m_insert;
-		objv_1[1] = Tcl_NewIntObj(level);
-		objv_1[2] = Tcl_NewStringObj(beforeKey.id(), beforeKey.id().size());
+		objv_1[1] = newObj(level);
+		objv_1[2] = newObj(beforeKey.id());
 
 		Tcl_Obj* objv_2[2];
 
 		objv_2[0] = m_action;
-		objv_2[1] = Tcl_NewListObj(U_NUMBER_OF(objv_1), objv_1);
+		objv_2[1] = newObj(objv_1);
 
-		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv_2), objv_2));
+		addElement(m_list, objv_2);
 	}
 
 	void replace(unsigned level, edit::Key const& startKey, edit::Key const& endKey) override
@@ -517,16 +516,16 @@ public:
 		Tcl_Obj* objv_1[4];
 
 		objv_1[0] = m_replace;
-		objv_1[1] = Tcl_NewIntObj(level);
-		objv_1[2] = Tcl_NewStringObj(startKey.id(), startKey.id().size());
-		objv_1[3] = Tcl_NewStringObj(endKey.id(), endKey.id().size());
+		objv_1[1] = newObj(level);
+		objv_1[2] = newObj(startKey.id());
+		objv_1[3] = newObj(endKey.id());
 
 		Tcl_Obj* objv_2[2];
 
 		objv_2[0] = m_action;
-		objv_2[1] = Tcl_NewListObj(U_NUMBER_OF(objv_1), objv_1);
+		objv_2[1] = newObj(objv_1);
 
-		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv_2), objv_2));
+		addElement(m_list, objv_2);
 	}
 
 	void remove(unsigned level, edit::Key const& startKey, edit::Key const& endKey) override
@@ -534,16 +533,16 @@ public:
 		Tcl_Obj* objv_1[4];
 
 		objv_1[0] = m_remove;
-		objv_1[1] = Tcl_NewIntObj(level);
-		objv_1[2] = Tcl_NewStringObj(startKey.id(), startKey.id().size());
-		objv_1[3] = Tcl_NewStringObj(endKey.id(), endKey.id().size());
+		objv_1[1] = newObj(level);
+		objv_1[2] = newObj(startKey.id());
+		objv_1[3] = newObj(endKey.id());
 
 		Tcl_Obj* objv_2[2];
 
 		objv_2[0] = m_action;
-		objv_2[1] = Tcl_NewListObj(U_NUMBER_OF(objv_1), objv_1);
+		objv_2[1] = newObj(objv_1);
 
-		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv_2), objv_2));
+		addElement(m_list, objv_2);
 	}
 
 	void finish(unsigned level) override
@@ -551,14 +550,14 @@ public:
 		Tcl_Obj* objv_1[2];
 
 		objv_1[0] = m_finish;
-		objv_1[1] = Tcl_NewIntObj(level);
+		objv_1[1] = newObj(level);
 
 		Tcl_Obj* objv_2[2];
 
 		objv_2[0] = m_action;
-		objv_2[1] = Tcl_NewListObj(U_NUMBER_OF(objv_1), objv_1);
+		objv_2[1] = newObj(objv_1);
 
-		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv_2), objv_2));
+		addElement(m_list, objv_2);
 	}
 
 	void opening(Board const& startBoard, variant::Type variant, uint16_t idn, Eco const& eco) override
@@ -581,49 +580,49 @@ public:
 		Tcl_Obj* objv_1[2];
 
 		objv_1[0] = m_idn;
-		objv_1[1] = Tcl_NewIntObj(idn);
+		objv_1[1] = newObj(idn);
 
 		Tcl_Obj* objv_2[2];
 
 		objv_2[0] = m_eco;
-		objv_2[1] = Tcl_NewStringObj(eco.asShortString(), -1);
+		objv_2[1] = newObj(eco.asShortString());
 
 		Tcl_Obj* objv_3[4];
 		unsigned objc_3 = handicap == sq::Null ? 2 : 4;
 
 		objv_3[0] = m_position;
-		objv_3[1] = Tcl_NewStringObj(position, position.size());
+		objv_3[1] = newObj(position);
 
 		if (objc_3 == 4)
 		{
 			piece::Type piece = piece::type(Board::standardBoard(variant::Normal).pieceAt(handicap));
-			objv_3[2] = Tcl_NewStringObj(sq::printAlgebraic(handicap), -1);
-			objv_3[3] = Tcl_NewStringObj(piece::utf8::asString(piece), -1);
+			objv_3[2] = newObj(sq::printAlgebraic(handicap));
+			objv_3[3] = newObj(piece::utf8::asString(piece));
 		}
 
 		Tcl_Obj* objv_4[EcoTable::Num_Name_Parts + 1];
 		unsigned objc_4 = 3;
 
 		objv_4[0] = m_opening;
-		objv_4[1] = Tcl_NewStringObj(opening.part[0], opening.part[0].size());
-		objv_4[2] = Tcl_NewStringObj(opening.part[1], opening.part[1].size());
+		objv_4[1] = newObj(opening.part[0]);
+		objv_4[2] = newObj(opening.part[1]);
 
 		for ( ; objc_4 <= EcoTable::Num_Name_Parts && opening.part[objc_4 - 1].size(); ++objc_4)
-			objv_4[objc_4] = Tcl_NewStringObj(opening.part[objc_4 - 1], opening.part[objc_4 - 1].size());
+			objv_4[objc_4] = newObj(opening.part[objc_4 - 1]);
 
 		Tcl_Obj* objv_5[4];
 
-		objv_5[0] = Tcl_NewListObj(U_NUMBER_OF(objv_1), objv_1);
-		objv_5[1] = Tcl_NewListObj(U_NUMBER_OF(objv_2), objv_2);
-		objv_5[2] = Tcl_NewListObj(objc_3, objv_3);
-		objv_5[3] = Tcl_NewListObj(objc_4, objv_4);
+		objv_5[0] = newObj(objv_1);
+		objv_5[1] = newObj(objv_2);
+		objv_5[2] = newObj(objc_3, objv_3);
+		objv_5[3] = newObj(objc_4, objv_4);
 
 		Tcl_Obj* objv_6[2];
 
 		objv_6[0] = m_header;
-		objv_6[1] = Tcl_NewListObj(U_NUMBER_OF(objv_5), objv_5);
+		objv_6[1] = newObj(objv_5);
 
-		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv_6), objv_6));
+		addElement(m_list, objv_6);
 	}
 
 	void languages(LanguageSet const& languages) override
@@ -632,14 +631,14 @@ public:
 		Tcl_Obj** p(&objv_1[0]);
 
 		for (LanguageSet::const_iterator i = languages.begin(), e = languages.end(); i != e; ++i)
-			*p++ = Tcl_NewStringObj(i->first, i->first.size());
+			*p++ = newObj(i->first);
 
 		Tcl_Obj* objv_2[2];
 
 		objv_2[0] = m_languages;
-		objv_2[1] = Tcl_NewListObj(p - objv_1, objv_1);
+		objv_2[1] = newObj(p - objv_1, objv_1);
 
-		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv_2), objv_2));
+		addElement(m_list, objv_2);
 	}
 
 	void move(unsigned moveNo, Move const& move) override
@@ -649,18 +648,18 @@ public:
 
 		Tcl_Obj* objv_1[4];
 
-		objv_1[0] = Tcl_NewIntObj(moveNo);
+		objv_1[0] = newObj(moveNo);
 		objv_1[1] = color::isWhite(move.color()) ? m_white : m_black;
-		objv_1[2] = Tcl_NewStringObj(san, san.size());
-		objv_1[3] = Tcl_NewBooleanObj(move.isLegal() || move.isEmpty()); // hack
+		objv_1[2] = newObj(san);
+		objv_1[3] = newObj(move.isLegal() || move.isEmpty()); // hack
 
 		Tcl_Obj* objv_2[2];
 
 		objv_2[0] = m_ply;
-		objv_2[1] = Tcl_NewListObj(U_NUMBER_OF(objv_1), objv_1);
+		objv_2[1] = newObj(objv_1);
 
 		M_ASSERT(m_objc < U_NUMBER_OF(m_objv));
-		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv_2), objv_2);
+		m_objv[m_objc++] = newObj(objv_2);
 	}
 
 	void position(::db::Board const& board, color::ID fromColor) override
@@ -675,11 +674,11 @@ public:
 		Tcl_Obj* objv_2[2];
 
 		objv_2[0] = m_board;
-		objv_2[1] = Tcl_NewStringObj(position, position.size());
+		objv_2[1] = newObj(position);
 
 		M_ASSERT(m_objc + 1 < U_NUMBER_OF(m_objv));
-		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv_1), objv_1);
-		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv_2), objv_2);
+		m_objv[m_objc++] = newObj(objv_1);
+		m_objv[m_objc++] = newObj(objv_2);
 	}
 
 	void comment(move::Position position, VarPos varPos, Comment const& comment) override
@@ -694,10 +693,10 @@ public:
 			case edit::Comment::Inside:	objv[1] = (position == move::Ante) ? m_before: m_after; break;
 			case edit::Comment::Finally:	objv[1] = m_finally; break;
 		}
-		objv[2] = Tcl_NewStringObj(comment.content(), comment.content().size());
+		objv[2] = newObj(comment.content());
 
 		M_ASSERT(m_objc < U_NUMBER_OF(m_objv));
-		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
+		m_objv[m_objc++] = newObj(objv);
 	}
 
 	void annotation(Annotation const& annotation, edit::Annotation::DisplayType type) override
@@ -715,10 +714,10 @@ public:
 			Tcl_Obj* objv[2];
 
 			objv[0] = m_annotation;
-			objv[1] = Tcl_NewStringObj(textual, textual.size());
+			objv[1] = newObj(textual);
 
 			M_ASSERT(m_objc < U_NUMBER_OF(m_objv));
-			m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
+			m_objv[m_objc++] = newObj(objv);
 		}
 		else
 		{
@@ -736,13 +735,13 @@ public:
 			Tcl_Obj* objv[5];
 
 			objv[0] = m_annotation;
-			objv[1] = Tcl_NewStringObj(prefix, prefix.size());
-			objv[2] = Tcl_NewStringObj(infix, infix.size());
-			objv[3] = Tcl_NewStringObj(suffix, suffix.size());
-			objv[4] = Tcl_NewStringObj(textual, textual.size());
+			objv[1] = newObj(prefix);
+			objv[2] = newObj(infix);
+			objv[3] = newObj(suffix);
+			objv[4] = newObj(textual);
 
 			M_ASSERT(m_objc < U_NUMBER_OF(m_objv));
-			m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
+			m_objv[m_objc++] = newObj(objv);
 		}
 	}
 
@@ -760,10 +759,10 @@ public:
 		Tcl_Obj* objv[2];
 
 		objv[0] = m_states;
-		objv[1] = Tcl_NewStringObj(states, states.size());
+		objv[1] = newObj(states);
 
 		M_ASSERT(m_objc < U_NUMBER_OF(m_objv));
-		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
+		m_objv[m_objc++] = newObj(objv);
 	};
 
 	void marks(bool hasMarks) override
@@ -771,10 +770,10 @@ public:
 		Tcl_Obj* objv[2];
 
 		objv[0] = m_marks;
-		objv[1] = Tcl_NewBooleanObj(hasMarks);
+		objv[1] = newObj(hasMarks);
 
 		M_ASSERT(m_objc < U_NUMBER_OF(m_objv));
-		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
+		m_objv[m_objc++] = newObj(objv);
 	}
 
 	void number(mstl::string const& number, bool isFirstVar) override
@@ -783,11 +782,11 @@ public:
 
 		objv[0] = m_space;
 		objv[1] = m_number;
-		objv[2] = Tcl_NewBooleanObj(isFirstVar);
-		objv[3] = Tcl_NewStringObj(number, number.size());
+		objv[2] = newObj(isFirstVar);
+		objv[3] = newObj(number);
 
 		M_ASSERT(m_objc < U_NUMBER_OF(m_objv));
-		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
+		m_objv[m_objc++] = newObj(objv);
 	}
 
 	void space(Bracket bracket, unsigned number, unsigned count) override
@@ -808,10 +807,10 @@ public:
 			case edit::Node::End:			objv[1] = m_leave; break;
 		}
 
-		objv[2] = Tcl_NewIntObj(count);
-		objv[3] = Tcl_NewIntObj(number);
+		objv[2] = newObj(count);
+		objv[3] = newObj(number);
 		M_ASSERT(m_objc < U_NUMBER_OF(m_objv));
-		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
+		m_objv[m_objc++] = newObj(objv);
 	}
 
 	void linebreak(unsigned level) override
@@ -819,10 +818,10 @@ public:
 		Tcl_Obj* objv[2];
 
 		objv[0] = m_break;
-		objv[1] = Tcl_NewIntObj(level);
+		objv[1] = newObj(level);
 
 		M_ASSERT(m_objc < U_NUMBER_OF(m_objv));
-		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
+		m_objv[m_objc++] = newObj(objv);
 	}
 
 	void startVariation(edit::Key const& key, edit::Key const& startKey, edit::Key const& endKey) override
@@ -830,11 +829,11 @@ public:
 		Tcl_Obj* objv[4];
 
 		objv[0] = m_begin;
-		objv[1] = Tcl_NewStringObj(key.id(), key.id().size());
-		objv[2] = Tcl_NewStringObj(startKey.id(), startKey.id().size());
-		objv[3] = Tcl_NewIntObj(startKey.level());
+		objv[1] = newObj(key.id());
+		objv[2] = newObj(startKey.id());
+		objv[3] = newObj(startKey.level());
 
-		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv), objv));
+		addElement(m_list, objv);
 	}
 
 	void endVariation(edit::Key const& key, edit::Key const& startKey, edit::Key const& endKey) override
@@ -842,11 +841,11 @@ public:
 		Tcl_Obj* objv[4];
 
 		objv[0] = m_end;
-		objv[1] = Tcl_NewStringObj(key.id(), key.id().size());
-		objv[2] = Tcl_NewStringObj(endKey.id(), endKey.id().size());
-		objv[3] = Tcl_NewIntObj(startKey.level());
+		objv[1] = newObj(key.id());
+		objv[2] = newObj(endKey.id());
+		objv[3] = newObj(startKey.level());
 
-		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv), objv));
+		addElement(m_list, objv);
 	}
 
 	void startMove(edit::Key const& key) override
@@ -858,10 +857,10 @@ public:
 		Tcl_Obj* objv[3];
 
 		objv[0] = m_move;
-		objv[1] = Tcl_NewStringObj(key.id(), key.id().size());
-		objv[2] = Tcl_NewListObj(m_objc, m_objv);
+		objv[1] = newObj(key.id());
+		objv[2] = newObj(m_objc, m_objv);
 
-		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv), objv));
+		addElement(m_list, objv);
 		m_objc = 0;
 	}
 
@@ -874,10 +873,10 @@ public:
 		Tcl_Obj* objv[3];
 
 		objv[0] = m_diagram;
-		objv[1] = Tcl_NewStringObj(key.id(), key.id().size());
-		objv[2] = Tcl_NewListObj(m_objc, m_objv);
+		objv[1] = newObj(key.id());
+		objv[2] = newObj(m_objc, m_objv);
 
-		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv), objv));
+		addElement(m_list, objv);
 		m_objc = 0;
 	}
 
@@ -1005,17 +1004,21 @@ Tcl_Obj* Visitor::m_e					= nullptr;
 Tcl_Obj* Visitor::m_s					= nullptr;
 
 
-struct MySubscriber : public Game::Subscriber
+class MySubscriber : public Game::Subscriber
 {
+public:
+
 	typedef mstl::vector<Tcl_Obj*> CmdList;
 
 	CmdList	m_board;
 	CmdList	m_tree;
+	CmdList	m_opening;
 	Tcl_Obj*	m_pgn;
 	Tcl_Obj*	m_state;
 	Tcl_Obj*	m_position;
 	Tcl_Obj*	m_onlyThis;
 	bool		m_mainlineOnly;
+	unsigned	m_count;
 
 	static Tcl_Obj* m_action;
 	static Tcl_Obj* m_set;
@@ -1027,67 +1030,70 @@ struct MySubscriber : public Game::Subscriber
 	static Tcl_Obj* m_false;
 
 	MySubscriber(Tcl_Obj* position)
-		:m_pgn(0)
-		,m_state(0)
+		:m_pgn(nullptr)
+		,m_state(nullptr)
 		,m_position(position)
 		,m_mainlineOnly(false)
+		,m_count(0)
 	{
-		if (m_action == 0)
+		if (!m_action)
 		{
-			Tcl_IncrRefCount(m_action	= Tcl_NewStringObj("action", -1));
-			Tcl_IncrRefCount(m_set		= Tcl_NewStringObj("set", -1));
-			Tcl_IncrRefCount(m_goto		= Tcl_NewStringObj("goto", -1));
-			Tcl_IncrRefCount(m_move		= Tcl_NewStringObj("move", -1));
-			Tcl_IncrRefCount(m_marks	= Tcl_NewStringObj("marks", -1));
-			Tcl_IncrRefCount(m_merge	= Tcl_NewStringObj("merge", -1));
+			incrRef(m_action	= newObj("action"));
+			incrRef(m_set		= newObj("set"));
+			incrRef(m_goto		= newObj("goto"));
+			incrRef(m_move		= newObj("move"));
+			incrRef(m_marks	= newObj("marks"));
+			incrRef(m_merge	= newObj("merge"));
 
-			Tcl_IncrRefCount(m_true		= Tcl_NewBooleanObj(1));
-			Tcl_IncrRefCount(m_false	= Tcl_NewBooleanObj(0));
+			incrRef(m_true		= newObj(true));
+			incrRef(m_false	= newObj(false));
 
 			pos::resetMoveCache();
 		}
 
-		Tcl_IncrRefCount(m_position);
+		incrRef(m_position);
 	}
 
 	~MySubscriber() throw()
 	{
 		for (unsigned i = 0; i < m_board.size(); ++i)
-			Tcl_DecrRefCount(m_board[i]);
+			decrRef(m_board[i]);
 		for (unsigned i = 0; i < m_tree.size(); ++i)
-			Tcl_DecrRefCount(m_tree[i]);
-		if (m_pgn)
-			Tcl_DecrRefCount(m_pgn);
-		if (m_state)
-			Tcl_DecrRefCount(m_state);
+			decrRef(m_tree[i]);
+		for (unsigned i = 0; i < m_opening.size(); ++i)
+			decrRef(m_opening[i]);
+		decrRef(m_pgn);
+		decrRef(m_state);
 	}
 
-	void setBoardCmd(Tcl_Obj* obj)
-	{
-		m_board.push_back(obj);
-		Tcl_IncrRefCount(obj);
-	}
-
-	void setTreeCmd(Tcl_Obj* obj)
-	{
-		m_tree.push_back(obj);
-		Tcl_IncrRefCount(obj);
-	}
+	void setBoardCmd(Tcl_Obj* obj)	{ m_board.push_back(incrRef(obj)); m_count += 1; }
+	void setTreeCmd(Tcl_Obj* obj)		{ m_tree.push_back(incrRef(obj)); m_count += 1; }
+	void setOpeningCmd(Tcl_Obj* obj)	{ m_opening.push_back(incrRef(obj)); m_count += 1; }
 
 	void setPgnCmd(Tcl_Obj* obj, bool mainlineOnly = false)
 	{
 		if (!m_pgn)
 		{
-			Tcl_IncrRefCount(m_pgn = obj);
+			incrRef(m_pgn = obj);
 			m_mainlineOnly = mainlineOnly;
+			m_count += 1;
 		}
 	}
 
 	void setStateCmd(Tcl_Obj* obj)
 	{
 		if (!m_state)
-			Tcl_IncrRefCount(m_state = obj);
+		{
+			incrRef(m_state = obj);
+			m_count += 1;
+		}
 	}
+
+	unsigned unsetBoardCmd(Tcl_Obj* obj)	{ return unsetCmd(m_board, obj); }
+	unsigned unsetTreeCmd(Tcl_Obj* obj)		{ return unsetCmd(m_tree, obj); }
+	unsigned unsetOpeningCmd(Tcl_Obj* obj)	{ return unsetCmd(m_opening, obj); }
+	unsigned unsetPgnCmd(Tcl_Obj* obj)		{ return unsetCmd(m_pgn, obj); }
+	unsigned unsetStateCmd(Tcl_Obj* obj)	{ return unsetCmd(m_state, obj); }
 
 	bool mainlineOnly() override { return m_mainlineOnly; }
 
@@ -1095,6 +1101,12 @@ struct MySubscriber : public Game::Subscriber
 	{
 		if (m_state)
 			invoke(__func__, m_state, m_position, locked ? m_true : m_false, nullptr);
+	}
+
+	void updateOpening() override
+	{
+		for (unsigned i = 0; i < m_opening.size(); ++i)
+			invoke(__func__, m_opening[i], m_position, nullptr);
 	}
 
 	void updateEditor(edit::Root const* node, move::Notation moveStyle) override
@@ -1132,18 +1144,18 @@ struct MySubscriber : public Game::Subscriber
 
 			for (unsigned i = 0; i < mergeResults.size(); ++i)
 			{
-				objv[mstl::mul2(i)] = Tcl_NewStringObj(mergeResults[i].first.id().c_str(), -1);
-				objv[mstl::mul2(i) + 1] = Tcl_NewStringObj(mergeResults[i].second.id().c_str(), -1);
+				objv[mstl::mul2(i)] = newObj(mergeResults[i].first.id());
+				objv[mstl::mul2(i) + 1] = newObj(mergeResults[i].second.id());
 			}
 
 			Tcl_Obj* objv2[2];
 			Tcl_Obj* objv3[1];
 
 			objv2[0] = m_merge;
-			objv2[1] = Tcl_NewListObj(objc, objv);
-			objv3[0] = Tcl_NewListObj(U_NUMBER_OF(objv2), objv2);
+			objv2[1] = newObj(objc, objv);
+			objv3[0] = newObj(objv2);
 
-			invoke(__func__, m_pgn, m_position, Tcl_NewListObj(U_NUMBER_OF(objv3), objv3), nullptr);
+			invoke(__func__, m_pgn, m_position, newObj(objv3), nullptr);
 		}
 	}
 
@@ -1158,18 +1170,18 @@ struct MySubscriber : public Game::Subscriber
 			pos::dumpBoard(board, pos);
 
 			Tcl_Obj* promoted;
-			Tcl_Obj* b = Tcl_NewStringObj(pos, pos.size());
+			Tcl_Obj* b = newObj(pos);
 
 			promoted = (variant == variant::Crazyhouse) ? ::makePromotionList(board) : Tcl_NewObj();
 
-			Tcl_IncrRefCount(b);
-			Tcl_IncrRefCount(promoted);
+			incrRef(b);
+			incrRef(promoted);
 
 			for (unsigned i = 0; i < m_board.size(); ++i)
 				invoke(__func__, m_board[i], m_position, m_set, b, promoted, nullptr);
 
-			Tcl_DecrRefCount(b);
-			Tcl_DecrRefCount(promoted);
+			decrRef(b);
+			decrRef(promoted);
 		}
 
 		for (unsigned i = 0; i < m_tree.size(); ++i)
@@ -1210,12 +1222,12 @@ struct MySubscriber : public Game::Subscriber
 
 			Tcl_Obj* objv[11];
 
-			objv[0] = Tcl_NewStringObj(color::isWhite(move.color()) ? "w" : "b", 1);
-			objv[3] = Tcl_NewIntObj(squareCap);
-			objv[4] = Tcl_NewStringObj(&pieceFrom, 1);
-			objv[5] = Tcl_NewStringObj(&pieceTo, 1);
-			objv[6] = Tcl_NewStringObj(&pieceCap, 1);
-			objv[7] = Tcl_NewStringObj(&pieceHolding, 1);
+			objv[0] = newObj(color::isWhite(move.color()) ? "w" : "b", 1);
+			objv[3] = newObj(squareCap);
+			objv[4] = newObj(&pieceFrom, 1);
+			objv[5] = newObj(&pieceTo, 1);
+			objv[6] = newObj(&pieceCap, 1);
+			objv[7] = newObj(&pieceHolding, 1);
 
 			if (move.isCastling())
 			{
@@ -1241,17 +1253,17 @@ struct MySubscriber : public Game::Subscriber
 					}
 				}
 
-				objv[1] = Tcl_NewIntObj(move.castlingKingFrom());
-				objv[2] = Tcl_NewIntObj(move.castlingKingTo());
-				objv[8] = Tcl_NewIntObj(rookFrom);
-				objv[9] = Tcl_NewIntObj(rookTo);
+				objv[1] = newObj(move.castlingKingFrom());
+				objv[2] = newObj(move.castlingKingTo());
+				objv[8] = newObj(rookFrom);
+				objv[9] = newObj(rookTo);
 			}
 			else
 			{
-				objv[1] = Tcl_NewIntObj(move.from());
-				objv[2] = Tcl_NewIntObj(move.to());
-				objv[8] = Tcl_NewIntObj(-1);
-				objv[9] = Tcl_NewIntObj(-1);
+				objv[1] = newObj(move.from());
+				objv[2] = newObj(move.to());
+				objv[8] = newObj(-1);
+				objv[9] = newObj(-1);
 			}
 
 			if (!forward)
@@ -1261,19 +1273,19 @@ struct MySubscriber : public Game::Subscriber
 				mstl::swap(objv[8], objv[9]);
 			}
 
-			objv[10] = Tcl_NewBooleanObj(forward);
+			objv[10] = newObj(forward);
 
-			Tcl_Obj* list = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
-			Tcl_Obj* promoted = Tcl_NewListObj(0, 0);
+			Tcl_Obj* list = newObj(objv);
+			Tcl_Obj* promoted = newObj();
 
-			Tcl_IncrRefCount(list);
-			Tcl_IncrRefCount(promoted);
+			incrRef(list);
+			incrRef(promoted);
 
 			for (unsigned i = 0; i < m_board.size(); ++i)
 				invoke(__func__, m_board[i], m_position, m_move, list, promoted, nullptr);
 
-			Tcl_DecrRefCount(list);
-			Tcl_DecrRefCount(promoted);
+			decrRef(list);
+			decrRef(promoted);
 		}
 
 		pos::resetMoveCache();
@@ -1289,16 +1301,16 @@ struct MySubscriber : public Game::Subscriber
 			Tcl_Obj* objv_1[2];
 
 			objv_1[0] = m_marks;
-			objv_1[1] = Tcl_NewStringObj(marks, marks.size());
+			objv_1[1] = newObj(marks);
 
 			Tcl_Obj* objv_2[2];
 
 			objv_2[0] = m_action;
-			objv_2[1] = Tcl_NewListObj(U_NUMBER_OF(objv_1), objv_1);
+			objv_2[1] = newObj(objv_1);
 
-			Tcl_Obj* objv_3[1] = { Tcl_NewListObj(U_NUMBER_OF(objv_2), objv_2) };
+			Tcl_Obj* objv_3[1] = { newObj(objv_2) };
 
-			invoke(__func__, m_pgn, m_position, Tcl_NewListObj(1, objv_3), nullptr);
+			invoke(__func__, m_pgn, m_position, newObj(objv_3), nullptr);
 		}
 	}
 
@@ -1311,18 +1323,46 @@ struct MySubscriber : public Game::Subscriber
 			Tcl_Obj* objv_1[3];
 
 			objv_1[0] = m_goto;
-			objv_1[1] = Tcl_NewStringObj(key, key.size());
-			objv_1[2] = Tcl_NewStringObj(succKey, succKey.size());
+			objv_1[1] = newObj(key);
+			objv_1[2] = newObj(succKey);
 
 			Tcl_Obj* objv_2[2];
 
 			objv_2[0] = m_action;
-			objv_2[1] = Tcl_NewListObj(U_NUMBER_OF(objv_1), objv_1);
+			objv_2[1] = newObj(objv_1);
 
-			Tcl_Obj* objv_3[1] = { Tcl_NewListObj(U_NUMBER_OF(objv_2), objv_2) };
+			Tcl_Obj* objv_3[1] = { newObj(objv_2) };
 
-			invoke(__func__, m_pgn, m_position, Tcl_NewListObj(1, objv_3), nullptr);
+			invoke(__func__, m_pgn, m_position, newObj(objv_3), nullptr);
 		}
+	}
+
+private:
+
+	unsigned unsetCmd(Tcl_Obj*& var, Tcl_Obj* obj)
+	{
+		if (equal(var, obj))
+		{
+			M_ASSERT(m_count > 0);
+			zero(var);
+			m_count -= 1;
+		}
+		return m_count;
+	}
+
+	unsigned unsetCmd(CmdList& list, Tcl_Obj* obj)
+	{
+		for (CmdList::iterator i = list.begin(); i != list.end(); ++i)
+		{
+			if (equal(*i, obj))
+			{
+				M_ASSERT(m_count > 0);
+				decrRef(*i);
+				list.erase(i);
+				return --m_count;
+			}
+		}
+		return m_count;
 	}
 };
 
@@ -1359,7 +1399,7 @@ int
 		return error(	"save/update",
 							nullptr, nullptr,
 							"cannot convert to list object: %s",
-							Tcl_GetString(taglist));
+							asString(taglist));
 	}
 	if (objc % 2)
 		return error("save/update", nullptr, nullptr, "odd number of elements in tag list");
@@ -1444,6 +1484,84 @@ squareFromObj(int objc, Tcl_Obj* const objv[], unsigned index)
 
 
 static int
+cmdEcoTable(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	move::Notation	notation	= move::SAN;
+	EcoTable::Mode mode = EcoTable::SinglePly;
+
+	for ( ; objc > 4; objc -= 2)
+	{
+		char const* option	= asString(objv[objc - 2]);
+		Tcl_Obj*		value		= objv[objc - 1];
+
+		if (equal(option, "-notation"))
+			notation = game::notationFromObj(value);
+		else if (equal(option, "-mode"))
+			mode = equal(value, "compact") ? EcoTable::Compact : EcoTable::SinglePly;
+		else
+			return error(CmdEcoTable, nullptr, nullptr, "unknown option %s", option);
+	}
+
+	if (Scidb->haveCurrentGame())
+	{
+		Game const& game = Scidb->game();
+		Line const& line = game.openingLine();
+
+		EcoTable const& ecoTable = EcoTable::specimen(variant::toMainVariant(game.variant()));
+		EcoTable::Openings opList;
+
+		ecoTable.getOpenings(game.startBoard(), line, opList, mode);
+		M_ASSERT(line.length >= opList.size());
+
+		Tcl_Obj* result = newObj();
+
+		for (EcoTable::Openings::const_iterator i = opList.begin(); i != opList.end(); ++i)
+		{
+			mstl::string str;
+
+			if (mode == EcoTable::Compact)
+			{
+				line.print(	str,
+								game.startBoard(),
+								game.variant(),
+								0,
+								i->ply + 1,
+								i->ply + 1,
+								notation,
+								::db::protocol::Scidb,
+								::db::encoding::Utf8);
+			}
+			else
+			{
+				line.printMove(str,
+									game.startBoard(),
+									game.variant(),
+									i->ply,
+									notation,
+									::db::protocol::Scidb,
+									::db::encoding::Utf8);
+			}
+
+			Tcl_Obj* parts[EcoTable::Num_Name_Parts];
+
+			for (unsigned k = 0; k < EcoTable::Num_Name_Parts; ++k)
+				parts[k] = newObj(i->opening.part[k]);
+
+			Tcl_Obj* objs[4] =
+			{
+				newObj(str), newObj(i->eco.asShortString()), newObj(i->eco.code()), newObj(parts)
+			};
+			addElement(result, objs);
+		}
+
+		setResult(result);
+	}
+
+	return TCL_OK;
+}
+
+
+static int
 cmdDump(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	char const*		database	= stringFromObj(objc, objv, 1);
@@ -1471,12 +1589,12 @@ cmdDump(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		Tcl_Obj* objv[mstl::mul2(result.size()) + 1];
 
-		objv[0] = Tcl_NewIntObj(::stateToInt(state));
+		objv[0] = newObj(::stateToInt(state));
 
 		for (unsigned i = 0; i < result.size(); ++i)
 		{
-			objv[mstl::mul2(i) + 1] = Tcl_NewStringObj(result[i], result[i].size());
-			objv[mstl::mul2(i) + 2] = Tcl_NewStringObj(positions[i], positions[i].size());
+			objv[mstl::mul2(i) + 1] = newObj(result[i]);
+			objv[mstl::mul2(i) + 2] = newObj(positions[i]);
 		}
 
 		setResult(mstl::mul2(result.size()) + 1, objv);
@@ -1487,8 +1605,8 @@ cmdDump(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		load::State state = view.dumpGame(number, fen, result).first;
 
-		Tcl_Obj* objv[2] = { Tcl_NewIntObj(::stateToInt(state)), Tcl_NewStringObj(result, result.size()) };
-		setResult(2, objv);
+		Tcl_Obj* objv[2] = { newObj(::stateToInt(state)), newObj(result) };
+		setResult(objv);
 	}
 
 	return TCL_OK;
@@ -1500,11 +1618,11 @@ cmdLoad(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	int view = -1;
 
-	while (objc > 2 && *Tcl_GetString(objv[objc - 2]) == '-')
+	while (objc > 2 && *asString(objv[objc - 2]) == '-')
 	{
-		char const* option = Tcl_GetString(objv[objc - 2]);
+		char const* option = asString(objv[objc - 2]);
 
-		if (::strcmp(option, "-view") == 0)
+		if (equal(option, "-view"))
 		{
 			view = intFromObj(objc, objv, objc - 1);
 			objc -= 2;
@@ -1521,7 +1639,7 @@ cmdLoad(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	unsigned			number	= unsignedFromObj(objc, objv, 4);
 	mstl::string	fen;
 
-	mstl::string const* pfen = 0;
+	mstl::string const* pfen = nullptr;
 
 	if (objc >= 6)
 	{
@@ -1554,11 +1672,11 @@ cmdModified(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	bool flag = true;
 	bool irreversible = false;
 
-	while (objc > 3 && *Tcl_GetString(objv[objc - 2]) == '-')
+	while (objc > 3 && *asString(objv[objc - 2]) == '-')
 	{
 		char const* option = stringFromObj(objc, objv, objc - 2);
 
-		if (strcmp(option, "-irreversible") == 0)
+		if (equal(option, "-irreversible"))
 			irreversible = boolFromObj(objc, objv, objc - 1);
 		else
 			return error(::CmdSubscribe, nullptr, nullptr, "unexpected option '%s'", option);
@@ -1688,46 +1806,31 @@ cmdLayout(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	char const* what				= stringFromObj(objc, objv, 1);
-	unsigned		position			= unsignedFromObj(objc, objv, 2);
-	bool			mainlineOnly	= false;
+	char const*		what				= stringFromObj(objc, objv, 1);
+	unsigned			position			= unsignedFromObj(objc, objv, 2);
+	bool				mainlineOnly	= false;
+	Game&				game				= scidb->game(position);
+	MySubscriber*	subscriber		= static_cast<MySubscriber*>(game.subscriber().get());
+	Tcl_Obj*			arg				= objectFromObj(objc, objv, 3);
 
-	if (	strcmp(what, "pgn") != 0
-		&& strcmp(what, "board") != 0
-		&& strcmp(what, "tree") != 0
-		&& strcmp(what, "state") != 0)
-	{
+	if (!subscriber)
+		game.setSubscriber(Game::SubscriberP(subscriber = new MySubscriber(objv[2])));
+
+	if (equal(what, "pgn") && objc >= 5)
+		mainlineOnly = asBoolean(objv[4]);
+
+	if (equal(what, "board"))
+		subscriber->setBoardCmd(arg);
+	else if (equal(what, "tree"))
+		subscriber->setTreeCmd(arg);
+	else if (equal(what, "state"))
+		subscriber->setStateCmd(arg);
+	else if (equal(what, "pgn"))
+		subscriber->setPgnCmd(arg, mainlineOnly);
+	else if (equal(what, "opening"))
+		subscriber->setOpeningCmd(arg);
+	else
 		return error(::CmdSubscribe, nullptr, nullptr, "unexpected argument %s", what);
-	}
-
-	Game&				game			= scidb->game(position);
-	MySubscriber*	subscriber	= static_cast<MySubscriber*>(game.subscriber().get());
-
-	if (subscriber == 0)
-	{
-		subscriber = new MySubscriber(objv[2]);
-		game.setSubscriber(Game::SubscriberP(subscriber));
-	}
-
-	if (strcmp(what, "board") == 0)
-	{
-		subscriber->setBoardCmd(objv[3]);
-	}
-	else if (strcmp(what, "tree") == 0)
-	{
-		subscriber->setTreeCmd(objv[3]);
-	}
-	else if (strcmp(what, "state") == 0)
-	{
-		subscriber->setStateCmd(objv[3]);
-	}
-	else if (strcmp(what, "pgn") == 0)
-	{
-		if (objc >= 5)
-			mainlineOnly = boolFromObj(objc, objv, 4);
-
-		subscriber->setPgnCmd(objv[3], mainlineOnly);
-	}
 
 	return TCL_OK;
 }
@@ -1736,13 +1839,37 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdUnsubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	unsigned	position			= unsignedFromObj(objc, objv, 2);
+	unsigned	position = unsignedFromObj(objc, objv, 2);
 
-	Game&				game			= scidb->game(position);
-	MySubscriber*	subscriber	= static_cast<MySubscriber*>(game.subscriber().get());
+	if (!Scidb->containsGameAt(position))
+		return TCL_OK;
+ 
+	char const*	what	= stringFromObj(objc, objv, 1);
+	Game&			game	= scidb->game(position);
+	Tcl_Obj*		arg	= objectFromObj(objc, objv, 3);
 
-	if (subscriber)
-		game.setSubscriber(Game::SubscriberP(0));
+	MySubscriber* subscriber = static_cast<MySubscriber*>(game.subscriber().get());
+
+	if (!subscriber)
+		return error(::CmdUnsubscribe, nullptr, nullptr, "cannot unsubscribe");
+	
+	bool count;
+
+	if (equal(what, "board"))
+		count = subscriber->unsetBoardCmd(arg);
+	else if (equal(what, "tree"))
+		count = subscriber->unsetTreeCmd(arg);
+	else if (equal(what, "state"))
+		count = subscriber->unsetStateCmd(arg);
+	else if (equal(what, "pgn"))
+		count = subscriber->unsetPgnCmd(arg);
+	else if (equal(what, "opening"))
+		count = subscriber->unsetOpeningCmd(arg);
+	else
+		return error(::CmdUnsubscribe, nullptr, nullptr, "unexpected argument %s", what);
+	
+	if (count == 0)
+		game.releaseSubscriber();
 
 	return TCL_OK;
 }
@@ -1761,7 +1888,7 @@ cmdRefresh(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		{
 			char const* option = stringFromObj(objc, objv, objc - 1);
 
-			if (::strcmp(option, "-immediate") == 0)
+			if (equal(option, "-immediate"))
 			{
 				immediate = true;
 				--objc;
@@ -1995,7 +2122,7 @@ cmdNext(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		int position = -1;
 
-		if (objc > 2 && ::isdigit(*Tcl_GetString(objv[2])))
+		if (objc > 2 && ::isdigit(*asString(objv[2])))
 			position = intFromObj(objc, objv, 2);
 
 		Game::StringList result;
@@ -2023,7 +2150,7 @@ cmdNext(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		Game::StringList::const_iterator e = result.end();
 
 		for ( ; i != e; ++i)
-			objs[k++] = Tcl_NewStringObj(*i, -1);
+			objs[k++] = newObj(*i);
 
 		setResult(result.size(), objs);
 	}
@@ -2046,7 +2173,7 @@ cmdLangSet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	int position = objc < 2 ? -1 : intFromObj(objc, objv, 1);
 	Tcl_Obj* languages = objectFromObj(objc, objv, objc < 2 ? 1 : 2);
 
-	char const* s = Tcl_GetString(languages);
+	char const* s = asString(languages);
 
 	if (*s == '*')
 	{
@@ -2055,16 +2182,13 @@ cmdLangSet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	else if (*s)
 	{
 		Game::LanguageSet set;
-		int n;
-
-		if (Tcl_ListObjLength(ti, languages, &n) != TCL_OK)
-			return error(CmdLangSet, nullptr, nullptr, "list of languages expected");
+		int n = countElements(languages);
 
 		for (int i = 0; i < n; ++i)
 		{
 			Tcl_Obj* lang;
 			Tcl_ListObjIndex(ti, languages, i, &lang);
-			set[mstl::string(Tcl_GetString(lang))] = 1;
+			set[mstl::string(asString(lang))] = 1;
 		}
 
 		scidb->setupLanguageSet(set, position);
@@ -2129,7 +2253,7 @@ cmdVariation(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			{
 				Game::Force flag = Game::OnlyIfRemainsConsistent;
 
-				if (::strcmp(stringFromObj(objc, objv, objc - 1), "-force") == 0)
+				if (equal(stringFromObj(objc, objv, objc - 1), "-force"))
 					flag = Game::TruncateIfNeccessary;
 
 				setResult(game.insertMoves(unsignedFromObj(objc, objv, 2) - 1, flag));
@@ -2140,7 +2264,7 @@ cmdVariation(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			{
 				Game::Force flag = Game::OnlyIfRemainsConsistent;
 
-				if (::strcmp(stringFromObj(objc, objv, objc - 1), "-force") == 0)
+				if (equal(stringFromObj(objc, objv, objc - 1), "-force"))
 					flag = Game::TruncateIfNeccessary;
 
 				setResult(game.exchangeMoves(
@@ -2175,7 +2299,7 @@ cmdVariation(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case Cmd_Fold:
 			if (objc == 3)
 				scidb->game().setFolded(boolFromObj(objc, objv, 2));
-			else if (::strcmp(stringFromObj(objc, objv, 3), "toggle") == 0)
+			else if (equal(stringFromObj(objc, objv, 3), "toggle"))
 				scidb->game().toggleFolded(edit::Key(stringFromObj(objc, objv, 2)));
 			else
 				scidb->game().setFolded(edit::Key(stringFromObj(objc, objv, 2)), boolFromObj(objc, objv, 3));
@@ -2188,7 +2312,7 @@ cmdVariation(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case Cmd_Unfold:
 			if (objc > 2)
 			{
-				if (::strcmp(stringFromObj(objc, objv, 2), "-force") != 0)
+				if (!equal(stringFromObj(objc, objv, 2), "-force"))
 				{
 					error(CmdVariation,
 							nullptr,
@@ -2263,7 +2387,7 @@ cmdSave(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	if (objc == 10)
 	{
-		if (::strcmp(stringFromObj(objc, objv, 8), "-replace") != 0)
+		if (!equal(stringFromObj(objc, objv, 8), "-replace"))
 			return error(CmdSave, nullptr, nullptr, "unexpected argument %s", stringFromObj(objc, objv, 8));
 
 		replace = boolFromObj(objc, objv, 9);
@@ -2402,13 +2526,13 @@ cmdLink(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	unsigned position = objc == 1 ? Application::InvalidPosition : intFromObj(objc, objv, 1);
 	Tcl_Obj* objs[5];
 
-	objs[0] = Tcl_NewStringObj(Scidb->sourceName(position), -1);
+	objs[0] = newObj(Scidb->sourceName(position));
 	objs[1] = ::tcl::tree::variantToString(Scidb->variant(position));
-	objs[2] = Tcl_NewIntObj(Scidb->sourceIndex(position));
-	objs[3] = Tcl_NewWideIntObj(Scidb->sourceCrcIndex(position));
-	objs[4] = Tcl_NewWideIntObj(Scidb->sourceCrcMoves(position));
+	objs[2] = newObj(Scidb->sourceIndex(position));
+	objs[3] = newObj(int64_t(Scidb->sourceCrcIndex(position)));
+	objs[4] = newObj(int64_t(Scidb->sourceCrcMoves(position)));
 
-	setResult(Tcl_NewListObj(U_NUMBER_OF(objs), objs));
+	setResult(objs);
 	return TCL_OK;
 }
 
@@ -2438,11 +2562,11 @@ cmdSink_(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	unsigned position = objc == 1 ? Application::InvalidPosition : intFromObj(objc, objv, 1);
 	Tcl_Obj* objs[3];
 
-	objs[0] = Tcl_NewStringObj(Scidb->databaseName(position), -1);
+	objs[0] = newObj(Scidb->databaseName(position));
 	objs[1] = ::tcl::tree::variantToString(Scidb->variant(position));
-	objs[2] = Tcl_NewIntObj(Scidb->gameIndex(position));
+	objs[2] = newObj(Scidb->gameIndex(position));
 
-	setResult(Tcl_NewListObj(U_NUMBER_OF(objs), objs));
+	setResult(objs);
 	return TCL_OK;
 }
 
@@ -2486,7 +2610,7 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			break;
 
 		case 'v':
-			if (::strncmp(cmd, "varia", 5) == 0)
+			if (equal(cmd, "varia", 5))
 			{
 				switch (cmd[5])
 				{
@@ -2543,9 +2667,9 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 					case 'h':	// checksum
 						{
 							Tcl_Obj* objs[2];
-							objs[0] = Tcl_NewWideIntObj(Scidb->checksumIndex(pos));
-							objs[1] = Tcl_NewWideIntObj(Scidb->checksumMoves(pos));
-							setResult(2, objs);
+							objs[0] = newObj(int64_t(Scidb->checksumIndex(pos)));
+							objs[1] = newObj(int64_t(Scidb->checksumMoves(pos)));
+							setResult(objs);
 						}
 						break;
 
@@ -2676,11 +2800,11 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				Game const&	game = Scidb->game(pos);
 				Tcl_Obj*		objs[3];
 
-				objs[0] = Tcl_NewStringObj(game.prefix(s), -1);
-				objs[1] = Tcl_NewStringObj(game.infix(t),  -1);
-				objs[2] = Tcl_NewStringObj(game.suffix(u), -1);
+				objs[0] = newObj(game.prefix(s));
+				objs[1] = newObj(game.infix(t));
+				objs[2] = newObj(game.suffix(u));
 
-				setResult(3, objs);
+				setResult(objs);
 			}
 			break;
 
@@ -2706,7 +2830,7 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 						unsigned k = 0;
 
 						for (Game::LanguageSet::const_iterator i = langSet.begin(); i != langSet.end(); ++i)
-							objv[k++] = Tcl_NewStringObj(i->first, i->first.size());
+							objv[k++] = newObj(i->first);
 
 						setResult(k, objv);
 					}
@@ -2732,8 +2856,8 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 						mstl::string const& wr = rating::toString(info.ratingType(color::White));
 						mstl::string const& br = rating::toString(info.ratingType(color::Black));
 
-						Tcl_Obj* objs[2] = { Tcl_NewStringObj(wr, wr.size()), Tcl_NewStringObj(br, br.size())};
-						setResult(2, objs);
+						Tcl_Obj* objs[2] = { newObj(wr), newObj(br)};
+						setResult(objs);
 					}
 					break;
 
@@ -2902,15 +3026,15 @@ cmdMaterial(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	Tcl_Obj*	objs[6] =
 	{
-		Tcl_NewIntObj(matW.pawn   - matB.pawn  ),
-		Tcl_NewIntObj(matW.knight - matB.knight),
-		Tcl_NewIntObj(matW.bishop - matB.bishop),
-		Tcl_NewIntObj(matW.rook   - matB.rook  ),
-		Tcl_NewIntObj(matW.queen  - matB.queen ),
-		Tcl_NewIntObj(matW.king   - matB.king  ),
+		newObj(matW.pawn   - matB.pawn  ),
+		newObj(matW.knight - matB.knight),
+		newObj(matW.bishop - matB.bishop),
+		newObj(matW.rook   - matB.rook  ),
+		newObj(matW.queen  - matB.queen ),
+		newObj(matW.king   - matB.king  ),
 	};
 
-	setResult(U_NUMBER_OF(objs), objs);
+	setResult(objs);
 	return TCL_OK;
 }
 
@@ -2980,25 +3104,21 @@ cmdSetupStyle(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdSetupNags(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	Tcl_Obj** nags;
-	int numNags;
-
-	if (Tcl_ListObjGetElements(ti, objectFromObj(objc, objv, 1), &numNags, &nags) != TCL_OK)
-		return error(::CmdSetupNags, nullptr, nullptr, "list of NAGs expected");
+	Array elems = getElements(objectFromObj(objc, objv, 1));
 
 	::db::Annotation::unsetUnusualNags();
 
-	for (int i = 0; i < numNags; ++i)
+	for (unsigned i = 0; i < elems.size(); ++i)
 	{
-		int nag;
+		int nag = asInt(elems[i]);
 
-		if (Tcl_GetIntFromObj(ti, nags[i], &nag) != TCL_OK || nag >= ::db::nag::Scidb_Last)
-			return error(::CmdSetupNags, nullptr, nullptr, "invalid NAG '%s'", Tcl_GetString(nags[i]));
+		if (nag >= ::db::nag::Scidb_Last)
+			return error(::CmdSetupNags, nullptr, nullptr, "invalid NAG '%s'", asString(elems[i]));
 
 		::db::Annotation::setUnusualNag(nag::ID(nag));
 	}
 
-	if (numNags > 0)
+	if (!elems.empty())
 		::db::Annotation::flipUnusualNags();
 
 	return TCL_OK;
@@ -3027,7 +3147,7 @@ cmdTags(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		char const* opt = stringFromObj(objc, objv, 1);
 
-		if (::strcmp(opt, "-userSuppliedOnly") != 0)
+		if (!equal(opt, "-userSuppliedOnly"))
 		{
 			return error(	::CmdTags, nullptr, nullptr,
 								"unexpected option '%s'",
@@ -3226,9 +3346,9 @@ cmdUpdate(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	char const* figurine = 0;
+	char const* figurine = nullptr;
 	char const* encoding = sys::utf8::Codec::utf8();
-	char const* database	= 0;
+	char const* database	= nullptr;
 	char const* option;
 
 	int index = -1;
@@ -3243,11 +3363,11 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	while (objc > 2 && *(option = stringFromObj(objc, objv, objc - 2)) == '-')
 	{
-		if (::strcmp(option, "-encoding") == 0)
+		if (equal(option, "-encoding"))
 		{
 			encoding = stringFromObj(objc, objv, objc - 1);
 		}
-		else if (::strcmp(option, "-figurine") == 0)
+		else if (equal(option, "-figurine"))
 		{
 			figurine = stringFromObj(objc, objv, objc - 1);
 
@@ -3257,32 +3377,32 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 					return error(CmdImport, nullptr, nullptr, "invalid figurines '%s'", figurine);
 			}
 		}
-		else if (::strcmp(option, "-variation") == 0)
+		else if (equal(option, "-variation"))
 		{
 			asVariation = boolFromObj(objc, objv, objc - 1);
 		}
-		else if (::strcmp(option, "-trial") == 0)
+		else if (equal(option, "-trial"))
 		{
 			trialMode = boolFromObj(objc, objv, objc - 1);
 		}
-		else if (::strcmp(option, "-varno") == 0)
+		else if (equal(option, "-varno"))
 		{
 			varno = intFromObj(objc, objv, objc - 1);
 		}
-		else if (::strcmp(option, "-scidb") == 0)
+		else if (equal(option, "-scidb"))
 		{
 			if (boolFromObj(objc, objv, objc - 1))
 				modification = tcl::PgnReader::Raw;
 		}
-		else if (::strcmp(option, "-database") == 0)
+		else if (equal(option, "-database"))
 		{
 			database = stringFromObj(objc, objv, objc - 1);
 		}
-		else if (::strcmp(option, "-index") == 0)
+		else if (equal(option, "-index"))
 		{
 			index = intFromObj(objc, objv, objc - 1);
 		}
-		else if (::strcmp(option, "-variant") == 0)
+		else if (equal(option, "-variant"))
 		{
 			char const* v = stringFromObj(objc, objv, objc - 1);
 			variant = ::db::variant::fromString(v);
@@ -3305,7 +3425,7 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	if (database && index == -1)
 		error(CmdImport, nullptr, nullptr, "-database specified, but no -index");
-	if (index >= 0 && database == 0)
+	if (index >= 0 && !database)
 		error(CmdImport, nullptr, nullptr, "-index specified, but no -database");
 
 	Tcl_Obj* cmd = objc < 5 ? nullptr : objv[3];
@@ -3514,34 +3634,34 @@ cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	while (objc > 2 && *(option = stringFromObj(objc, objv, objc - 2)) == '-')
 	{
-		if (::strcmp(option, "-comment") == 0)
+		if (equal(option, "-comment"))
 		{
 			comment = stringFromObj(objc, objv, objc - 1);
 		}
-		else if (::strcmp(option, "-flags") == 0)
+		else if (equal(option, "-flags"))
 		{
 			flags = unsignedFromObj(objc, objv, objc - 1);
 		}
-		else if (::strcmp(option, "-encoding") == 0)
+		else if (equal(option, "-encoding"))
 		{
 			encoding = stringFromObj(objc, objv, objc - 1);
 		}
-		else if (::strcmp(option, "-languages") == 0)
+		else if (equal(option, "-languages"))
 		{
 			if ((significant = ::tcl::view::makeLangList(ti, CmdExport, objv[objc - 1], languages)) == -1)
 				return TCL_ERROR;
 		}
-		else if (::strcmp(option, "-position") == 0)
+		else if (equal(option, "-position"))
 		{
 			position = unsignedFromObj(objc, objv, objc - 1);
 		}
-		else if (::strcmp(option, "-mode") == 0)
+		else if (equal(option, "-mode"))
 		{
 			char const* fmode = stringFromObj(objc, objv, objc - 1);
 
-			if (::strcmp(fmode, "append") == 0)
+			if (equal(fmode, "append"))
 				mode = Application::Append;
-			else if (::strcmp(fmode, "create") == 0)
+			else if (equal(fmode, "create"))
 				mode = Application::Create;
 			else
 				return error (CmdExport, nullptr, nullptr, "unknown mode '%s'", fmode);
@@ -3583,9 +3703,9 @@ cmdToPGN(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	while (objc > 2 && *(option = stringFromObj(objc, objv, objc - 2)) == '-')
 	{
-		if (::strcmp(option, "-flags") == 0)
+		if (equal(option, "-flags"))
 			flags = unsignedFromObj(objc, objv, objc - 1);
-		else if (::strcmp(option, "-position") == 0)
+		else if (equal(option, "-position"))
 			position = unsignedFromObj(objc, objv, objc - 1);
 		else
 			return error (CmdExport, nullptr, nullptr, "unexpected option '%s'", option);
@@ -3596,9 +3716,9 @@ cmdToPGN(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	char const* arg = stringFromObj(objc, objv, 1);
 	copy::Source source;
 
-	if (::strcmp(arg, "original") == 0)
+	if (equal(arg, "original"))
 		source = copy::OriginalSource;
-	else if (::strcmp(arg, "modified") == 0)
+	else if (equal(arg, "modified"))
 		source = copy::ModifiedVersion;
 	else
 		return error(CmdCopy, nullptr, nullptr, "unexpected source '%s'", arg);
@@ -3646,15 +3766,15 @@ cmdPrint(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	while (objc > 6 && *(option = stringFromObj(objc, objv, objc - 2)) == '-')
 	{
-		if (::strcmp(option, "-flags") == 0)
+		if (equal(option, "-flags"))
 		{
 			flags = unsignedFromObj(objc, objv, objc - 1);
 		}
-		else if (::strcmp(option, "-options") == 0)
+		else if (equal(option, "-options"))
 		{
 			options = unsignedFromObj(objc, objv, objc - 1);
 		}
-		else if (::strcmp(option, "-nags") == 0)
+		else if (equal(option, "-nags"))
 		{
 			Tcl_Obj* mapObj = objv[objc - 1];
 
@@ -3678,12 +3798,12 @@ cmdPrint(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				nagMap[lhs] = rhs;
 			}
 		}
-		else if (::strcmp(option, "-languages") == 0)
+		else if (equal(option, "-languages"))
 		{
 			if ((significant = ::tcl::view::makeLangList(ti, CmdPrint, objv[objc - 1], languages)) == -1)
 				return TCL_ERROR;
 		}
-		else if (::strcmp(option, "-trace") == 0)
+		else if (equal(option, "-trace"))
 		{
 			trace = stringFromObj(objc, objv, objc - 1);
 		}
@@ -3725,7 +3845,7 @@ cmdPrint(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		if (!log.empty() && log.back() == '\n')
 			log.set_size(log.size() - 1);
 
-		Tcl_SetVar2Ex(ti, trace, 0, Tcl_NewStringObj(log, log.size()), TCL_GLOBAL_ONLY);
+		Tcl_SetVar2Ex(ti, trace, 0, newObj(log), TCL_GLOBAL_ONLY);
 	}
 
 	return TCL_OK;
@@ -3737,7 +3857,7 @@ cmdCopy(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	char const* cmd = stringFromObj(objc, objv, 1);
 
-	if (strcmp(cmd, "comments") == 0)
+	if (equal(cmd, "comments"))
 	{
 		char const* src = stringFromObj(objc, objv, 2);
 		char const* dst = stringFromObj(objc, objv, 3);
@@ -3748,7 +3868,7 @@ cmdCopy(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		{
 			char const* option = stringFromObj(objc, objv, 4);
 
-			if (::strcmp(option, "-strip") != 0)
+			if (!equal(option, "-strip"))
 				return error(CmdCopy, nullptr, nullptr, "unexpected option '%s'", option);
 
 			strip = boolFromObj(objc, objv, 5);
@@ -3756,15 +3876,15 @@ cmdCopy(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		scidb->game().copyComments(src, dst, strip);
 	}
-	else if (strcmp(cmd, "game") == 0)
+	else if (equal(cmd, "game"))
 	{
 		char const* database = stringFromObj(objc, objv, 2);
 		char const* arg = stringFromObj(objc, objv, 4);
 		copy::Source source;
 
-		if (::strcmp(arg, "original") == 0)
+		if (equal(arg, "original"))
 			source = copy::OriginalSource;
-		else if (::strcmp(arg, "modified") == 0)
+		else if (equal(arg, "modified"))
 			source = copy::ModifiedVersion;
 		else
 			return error(CmdCopy, nullptr, nullptr, "unexpected source '%s'", arg);
@@ -3805,7 +3925,7 @@ cmdView(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case Cmd_Random:	index = Scidb->getRandomGameIndex(position); break;
 
 		default:
-			return error(CmdView, nullptr, nullptr, "unexpected command '%s'", Tcl_GetString(objv[2]));
+			return error(CmdView, nullptr, nullptr, "unexpected command '%s'", asString(objv[2]));
 	}
 
 	setResult(index);
@@ -3818,7 +3938,7 @@ cmdPaste(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	char const* arg = stringFromObj(objc, objv, 1);
 
-	if (::strcmp(arg, "clipbase") == 0)
+	if (equal(arg, "clipbase"))
 	{
 		scidb->pasteLastClipbaseGame(unsignedFromObj(objc, objv, 2));
 	}
@@ -3854,16 +3974,16 @@ cmdMerge(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	position::ID	startPos;
 	move::Order		moveOrder;
 
-	if (::strcmp(pos, "initial") == 0)
+	if (equal(pos, "initial"))
 		startPos = position::Initial;
-	else if (::strcmp(pos, "current") == 0)
+	else if (equal(pos, "current"))
 		startPos = position::Current;
 	else
 		return error(CmdMerge, nullptr, nullptr, "unexpected position '%s'", pos);
 
-	if (::strcmp(trans, "ignore") == 0)
+	if (equal(trans, "ignore"))
 		moveOrder = move::Strict;
-	else if (::strcmp(trans, "consider") == 0)
+	else if (equal(trans, "consider"))
 		moveOrder = move::Transposition;
 	else
 		return error(CmdMerge, nullptr, nullptr, "unexpected order '%s'", trans);
@@ -3929,11 +4049,24 @@ cmdLines(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		mstl::string opening;
 		i->line().print(opening, game.variant(), move::SAN, protocol::Scidb, encoding::Utf8);
-		objs[index++] = Tcl_NewStringObj(opening, opening.size());
+		objs[index++] = newObj(opening);
 	}
 
 	setResult(lines.size(), objs);
 
+	return TCL_OK;
+}
+
+
+static int
+cmdCodeToFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	unsigned code(unsignedFromObj(objc, objv, 1));
+	::db::variant::Type variant(Scidb->game().variant());
+	::db::Line const& line(::db::EcoTable::specimen(variant).getLine(::db::Eco(code)));
+	::db::Board board(Scidb->game().startBoard());
+	line.finalBoard(variant, board);
+	setResult(board.toFen(variant));
 	return TCL_OK;
 }
 
@@ -3946,10 +4079,12 @@ init(Tcl_Interp* ti)
 {
 	createCommand(ti, CmdBoard,			cmdBoard);
 	createCommand(ti, CmdClear,			cmdClear);
+	createCommand(ti, CmdCodeToFen,		cmdCodeToFen);
 	createCommand(ti, CmdCopy,				cmdCopy);
 	createCommand(ti, CmdCount,			cmdCount);
 	createCommand(ti, CmdCurrent,			cmdCurrent);
 	createCommand(ti, CmdDump,				cmdDump);
+	createCommand(ti, CmdEcoTable,		cmdEcoTable);
 	createCommand(ti, CmdExchange,		cmdExchange);
 	createCommand(ti, CmdExecute,			cmdExecute);
 	createCommand(ti, CmdExport,			cmdExport);

@@ -1837,11 +1837,11 @@ proc UpdateControls {} {
 }
 
 
-proc GameSwitched {position} {
+proc GameSwitched {oldPos newPos} {
 	variable Vars
 
 	after cancel $Vars(afterid:switched)
-	set Vars(afterid:switched) [after 1 [namespace code [list GameSwitched2 $position]]]
+	set Vars(afterid:switched) [after 1 [namespace code [list GameSwitched2 $newPos]]]
 }
 
 
@@ -1885,7 +1885,7 @@ proc GameClosed {position} {
 }
 
 
-proc UpdateInfo {_ base variant} {
+proc UpdateInfo {base variant} {
 	if {$base eq [::scidb::db::get name]} {
 		DatabaseSwitched $base $variant
 	}
@@ -2053,7 +2053,7 @@ proc UpdateGameInfo {position id} {
 		if {[lindex $Vars(current:game) 0] == $position} {
 			Unsubscribe $position
 			set Vars(current:game) {}
-			#SwitchView base # not required
+			#SwitchView base ;# not required
 		}
 	}
 }
@@ -2062,12 +2062,12 @@ proc UpdateGameInfo {position id} {
 proc Subscribe {position base variant} {
 	variable Vars
 
-	set cmd [list [namespace current]::UpdateGameList {} $position]
-	after idle [list ::scidb::db::subscribe gameList {*}$cmd]
+	set cmd [list [namespace current]::UpdateGameList $position]
+	after idle [list ::scidb::db::subscribe gameList $cmd]
 	set Vars(subscribe:list) $cmd
 
 	set cmd [list [namespace current]::UpdateGameInfo $position]
-	after idle [list ::scidb::db::subscribe gameInfo {*}$cmd]
+	after idle [list ::scidb::db::subscribe gameInfo $cmd]
 	set Vars(subscribe:info) $cmd
 }
 

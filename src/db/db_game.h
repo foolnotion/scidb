@@ -181,6 +181,7 @@ public:
 		virtual void boardSetup(Board const& board, variant::Type variant) = 0;
 		virtual void boardMove(Board const& board, Move const& move, bool forward) = 0;
 
+		virtual void updateOpening() = 0;
 		virtual void updateEditor(	edit::Root const* node,
 											move::Notation moveStyle) = 0;
 		virtual void updateEditor(	DiffList const& nodes,

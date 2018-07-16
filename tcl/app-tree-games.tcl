@@ -71,9 +71,8 @@ proc build {twm parent width height} {
 	set Vars(twm)    $twm
 
 	::scidb::db::subscribe gameList \
-		[namespace current]::TableUpdate \
-		[namespace current]::Close \
-		$table \
+		[list [namespace current]::TableUpdate $table] \
+		[list [namespace current]::Close $table] \
 		;
 	bind $table <<TableMinSize>> [namespace code [list TableMinSize $table %d]]
 	after idle [namespace parent]::startSearch
@@ -100,9 +99,8 @@ proc closed {w} {
 #	set i [lsearch $Tables $Vars(twm)]
 #	set Tables [lreplace $Tables $i $i]
 	::scidb::db::unsubscribe gameList \
-		[namespace current]::TableUpdate \
-		[namespace current]::Close \
-		$Vars(table) \
+		[list [namespace current]::TableUpdate $Vars(table)] \
+		[list [namespace current]::Close $Vars(table)] \
 		;
 	catch { after cancel $Vars(after) }
 	catch { after cancel $Vars(timer) }

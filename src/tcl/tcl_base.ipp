@@ -94,14 +94,11 @@ tcl::newObj(unsigned objc, Tcl_Obj* const objv[])
 }
 
 
-inline
-Tcl_Obj*
-tcl::newObj(int value)
-{
-	return Tcl_NewIntObj(value);
-}
-
-
+inline Tcl_Obj* tcl::newObj(int value) { return Tcl_NewIntObj(value); }
+inline Tcl_Obj* tcl::newObj(unsigned value) { return Tcl_NewIntObj(value); }
+inline Tcl_Obj* tcl::newObj(int64_t value) { return Tcl_NewWideIntObj(value); }
+template <int N> inline Tcl_Obj* tcl::newObj(Tcl_Obj* (&objv)[N]) { return newObj(N, objv); }
+inline Tcl_Obj* tcl::newObj(Array const& list) { return newObj(list.size(), list.data()); }
 inline Tcl_Obj* tcl::newListObj(mstl::string const& s) { return newListObj(s.c_str(), s.size()); }
 
 
@@ -131,8 +128,56 @@ inline bool tcl::equal(Tcl_Obj* lhs, char const* rhs) { return equal(tcl::asStri
 inline bool tcl::equal(Tcl_Obj* lhs, Tcl_Obj* rhs)
 { return equal(tcl::asString(lhs), tcl::asString(rhs)); }
 
-inline bool tcl::eqOrNull(Tcl_Obj* lhs, Tcl_Obj* rhs)
-{ return !lhs ? !rhs : rhs && (tcl::equal(lhs, rhs)); }
+
+inline
+bool
+tcl::equal(char const* lhs, char const* rhs, unsigned n)
+{
+	M_ASSERT(lhs);
+	M_ASSERT(rhs);
+
+	return ::strncmp(lhs, rhs, n) == 0;
+}
+
+
+inline
+bool
+tcl::equal(char const* lhs, Tcl_Obj* rhs, unsigned n)
+{
+	return equal(lhs, tcl::asString(rhs), n);
+}
+
+
+inline
+bool
+tcl::equal(Tcl_Obj* lhs, char const* rhs, unsigned n)
+{
+	return equal(tcl::asString(lhs), rhs, n);
+}
+
+
+inline
+bool
+tcl::equal(Tcl_Obj* lhs, Tcl_Obj* rhs, unsigned n)
+{
+	return equal(tcl::asString(lhs), tcl::asString(rhs), n);
+}
+
+
+inline
+bool
+tcl::eqOrNull(Tcl_Obj* lhs, Tcl_Obj* rhs)
+{
+	return !lhs ? !rhs : rhs && (tcl::equal(lhs, rhs));
+}
+
+
+inline
+bool
+tcl::eqOrNull(Tcl_Obj* lhs, Tcl_Obj* rhs, unsigned n)
+{
+	return !lhs ? !rhs : rhs && (tcl::equal(lhs, rhs, n));
+}
 
 
 inline
@@ -153,6 +198,15 @@ tcl::getElements(Tcl_Obj* obj)
 	Tcl_Obj** objv;
 	size_t n = getElements(obj, objv);
 	return mstl::carray<Tcl_Obj*>(objv, n);
+}
+
+
+template <int N>
+inline
+Tcl_Obj*
+tcl::addElement(Tcl_Obj*& list, Tcl_Obj* (&objv)[N])
+{
+	return addElement(list, newObj(N, objv));
 }
 
 
@@ -183,6 +237,9 @@ tcl::wrongNumArgs(int objc, Tcl_Obj* const objv[], char const* args)
 }
 
 
+template <int N> inline void tcl::setResult(Tcl_Obj* (&objv)[N]) { setResult(N, objv); }
+
+
 inline
 int
 tcl::setError(char const* type)
@@ -192,12 +249,7 @@ tcl::setError(char const* type)
 }
 
 
-inline
-Tcl_Obj*
-tcl::result()
-{
-	return Tcl_GetObjResult(interp());
-}
+inline Tcl_Obj* tcl::result() { return Tcl_GetObjResult(interp()); }
 
 
 namespace tcl {

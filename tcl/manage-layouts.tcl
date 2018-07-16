@@ -242,6 +242,7 @@ proc BuildPane {myTWM frame uid width height} {
 		editor	{ $frame configure -background [::colors::lookup pgn,background] }
 		games		{ $frame configure -background [::colors::lookup scrolledtable,stripes] }
 		tree		{ $frame configure -background [::colors::lookup tree,emphasize] }
+		eco		{ $frame configure -background [::colors::lookup eco,stripes] }
 
 		board {
 			variable ::board::colors

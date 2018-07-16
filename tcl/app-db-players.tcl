@@ -165,15 +165,14 @@ proc BuildFrame {twm frame uid width height} {
 				-usefind 1 \
 				;
 			::scidb::db::subscribe playerList \
-				[namespace current]::players::Update \
-				[namespace current]::Close \
-				$twm \
+				[list [namespace current]::players::Update $twm] \
+				[list [namespace current]::Close $twm] \
 				;
 		}
 		games {
 			set columns {white whiteElo black blackElo event result date length}
 			::gametable::build $frame [namespace code [list View $twm]] $columns -id db:players:$id:$uid
-			::scidb::db::subscribe gameList [namespace current]::games::Update $twm
+			::scidb::db::subscribe gameList [list [namespace current]::games::Update $twm]
 		}
 		event {
 			set columns {event eventType eventDate eventMode timeMode eventCountry site}
@@ -181,7 +180,7 @@ proc BuildFrame {twm frame uid width height} {
 				-selectcmd [namespace code [list SelectEvent $twm]] \
 				-id db:players:$id:$uid \
 				;
-			::scidb::db::subscribe eventList [namespace current]::events::Update $twm
+			::scidb::db::subscribe eventList [list [namespace current]::events::Update $twm]
 		}
 	}
 }

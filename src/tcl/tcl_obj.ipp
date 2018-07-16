@@ -66,10 +66,10 @@ inline
 bool
 Obj::operator==(Obj const& obj) const
 {
-	if (m_obj == 0)
-		return obj.m_obj == 0;
+	if (!m_obj)
+		return !obj.m_obj;
 
-	if (obj.m_obj == 0)
+	if (!obj.m_obj)
 		return false;
 
 	if (m_obj == obj.m_obj)

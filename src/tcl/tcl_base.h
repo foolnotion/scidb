@@ -76,8 +76,12 @@ Tcl_Obj* newObj(char const* s, unsigned len);
 Tcl_Obj* newObj(mstl::string const& s);
 Tcl_Obj* newObj(Tcl_Obj* obj1, Tcl_Obj* obj2);
 Tcl_Obj* newObj(unsigned objc, Tcl_Obj* const objv[]);
-Tcl_Obj* newObj(mstl::vector<Tcl_Obj*> const& list);
+template <int N> Tcl_Obj* newObj(Tcl_Obj* (&objv)[N]);
+Tcl_Obj* newObj(List const& list);
+Tcl_Obj* newObj(Array const& list);
 Tcl_Obj* newObj(int value);
+Tcl_Obj* newObj(unsigned value);
+Tcl_Obj* newObj(int64_t value);
 
 Tcl_Obj* newListObj(char const* s);
 Tcl_Obj* newListObj(char const* s, unsigned len);
@@ -97,7 +101,13 @@ bool equal(Tcl_Obj* lhs, char const* rhs);
 bool equal(Tcl_Obj* lhs, Tcl_Obj* rhs);
 bool equal(char const* lhs, char const* rhs);
 
+bool equal(char const* lhs, Tcl_Obj* rhs, unsigned n);
+bool equal(Tcl_Obj* lhs, char const* rhs, unsigned n);
+bool equal(Tcl_Obj* lhs, Tcl_Obj* rhs, unsigned n);
+bool equal(char const* lhs, char const* rhs, unsigned n);
+
 bool eqOrNull(Tcl_Obj* lhs, Tcl_Obj* rhs);
+bool eqOrNull(Tcl_Obj* lhs, Tcl_Obj* rhs, unsigned n);
 
 void set(Tcl_Obj*& obj, Tcl_Obj* value);
 void zero(Tcl_Obj*& obj);
@@ -109,6 +119,7 @@ int countElements(Tcl_Obj* obj);
 unsigned getElements(Tcl_Obj* obj, Tcl_Obj**& objv);
 Array getElements(Tcl_Obj* obj);
 Tcl_Obj* addElement(Tcl_Obj*& list, Tcl_Obj* elem);
+template <int N> Tcl_Obj* addElement(Tcl_Obj*& list, Tcl_Obj* (&objv)[N]);
 
 Tcl_Obj* result();
 
@@ -131,12 +142,14 @@ appendResult(char const* format, ...);
 void setResult(char const* result);
 void setResult(Tcl_Obj* obj);
 void setResult(int objc, Tcl_Obj* const objv[]);
+template <int N> void setResult(Tcl_Obj* (&objv)[N]);
 void setResult(mstl::string const& s);
 void setResult(int result);
 void setResult(unsigned result);
 void setResult(bool result);
 void setResult(long result);
 void setResult(unsigned long result);
+void setResult(int64_t result);
 void setResult(List const& list);
 void
 __attribute__((__format__(__printf__, 1, 2)))
@@ -163,13 +176,11 @@ usage(
 	char const* cmd, char const* subcmd, char const* subsubcmd,
 	char const** options, char const** args = 0);
 
-int invoke(char const* callee, char const* cmd, ...);
 int invoke(char const* callee, Tcl_Obj* cmd, ...);
 int invoke(	char const* callee,
 				Tcl_Obj* cmd, Tcl_Obj* arg1, Tcl_Obj* arg2,
 				int objc, Tcl_Obj* const objv[]);
 
-Tcl_Obj* call(char const* callee, char const* cmd, ...);
 Tcl_Obj* call(char const* callee, Tcl_Obj* cmd, ...);
 Tcl_Obj* call(	char const* callee,
 					Tcl_Obj* cmd,

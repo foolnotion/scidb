@@ -229,6 +229,8 @@ array set Colors {
 
 	lite:comment,label:altered				#555555
 	lite:comment,label:foreground			white
+
+	lite:eco,stripes							linen
 }
 # mapped from #ebf4f5
 array set Colors {
@@ -280,7 +282,8 @@ array set Colors {
 	dark:gamebar,background:emphasize	#ecded0
 	dark:encoding,normal						#ecded0
 	dark:playerdict,stripes					#ecded0
-	lite:engine,stripes						#ecded0
+	dark:engine,stripes						#ecded0
+	dark:eco,stripes							#ecded0
 }
 # mapped from #f5f5e4
 array set Colors {

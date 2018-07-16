@@ -215,8 +215,8 @@ proc SetupTheme {twm} {
 	if {[::scidb::tk::twm exists $twm]} {
 		set background [GetTroughColor]
 		foreach t [$twm toplevels] {
-			foreach w [$t container] {
-				if {[$t ispanedwindow $w]} {
+			foreach w [$twm container $t] {
+				if {[$twm ispanedwindow $w]} {
 					$w configure -background $background
 				}
 			}

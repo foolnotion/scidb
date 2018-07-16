@@ -1749,8 +1749,8 @@ proc ToggleStretchable {table id} {
 proc Cleanup {table} {
 	variable IdMap
 
-	after idle [list namespace delete [namespace current]::$table]
-	after idle [list namespace delete [namespace current]::$IdMap($table)]
+	after idle [list catch [list namespace delete [namespace current]::$table]]
+	after idle [list catch [list namespace delete [namespace current]::$IdMap($table)]]
 }
 
 

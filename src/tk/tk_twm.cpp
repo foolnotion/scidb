@@ -2096,14 +2096,12 @@ Node::collectLeaves() const
 tcl::List
 Node::collectContainer() const
 {
-	M_ASSERT(isRoot());
-
 	tcl::List result;
 
-	for (unsigned i = 0; i < m_active.size(); ++i)
+	for (auto node : m_active)
 	{
-		if (m_active[i]->uidObj() && m_active[i]->isContainer())
-			result.push_back(m_active[i]->uidObj());
+		if (node->pathObj() && node->isContainer() && (this == node || node->hasAncestor(this)))
+			result.push_back(node->pathObj());
 	}
 
 	return result;
@@ -6233,28 +6231,17 @@ cmdContainer(Base& base, int objc, Tcl_Obj* const objv[])
 	if (objc != 3 && objc != 4)
 		M_THROW(tcl::Exception(3, objv, "window"));
 
+	Node const* node = base.root;
+
 	if (objc == 4)
 	{
 		char const* path = tcl::asString(objv[3]);
-		Node* node = base.root->findPath(path);
 
-		if (!node)
+		if (!(node = base.root->findPath(path)))
 			M_THROW(tcl::Exception("cannot find window '%s'", path));
-
-		node = node->parent();
-
-		if (node)
-		{
-			if (node->isMetaFrame())
-				node = node->parent();
-			if (node->isContainer())
-				tcl::setResult(node->pathObj());
-		}
 	}
-	else
-	{
-		tcl::setResult(base.root->collectContainer());
-	}
+
+	tcl::setResult(node->collectContainer());
 }
 
 

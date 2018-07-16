@@ -102,7 +102,7 @@ proc show {base variant args} {
 
 	::widget::busyCursor on
 
-	::scidb::db::subscribe dbInfo {} [namespace current]::Close $key
+	::scidb::db::subscribe dbInfo {} [list [namespace current]::Close $key]
 	set dlg [tk::toplevel .application.__card__[incr Counter] -class Scidb]
 	set Vars($key) $dlg
 	set Vars($key:open) 1
@@ -849,7 +849,7 @@ proc Destroy {dlg key w unsubscribe} {
 	catch { destroy $dlg.html }
 	catch { destroy $dlg.log }
 
-	::scidb::db::unsubscribe dbInfo {} [namespace current]::Close $key
+	::scidb::db::unsubscribe dbInfo {} [list [namespace current]::Close $key]
 }
 
 

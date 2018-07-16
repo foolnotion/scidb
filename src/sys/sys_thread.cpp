@@ -863,6 +863,21 @@ Thread::testCancel()
 }
 
 
+bool
+Thread::testRunning()
+{
+	M_REQUIRE(this != mainThread());
+
+#ifndef NDEBUG
+	if (::m_noThreads)
+		return false;
+#endif
+
+	// we do not need synchronization here
+	return atomic_read(&m_running);
+}
+
+
 void
 Thread::sleep()
 {

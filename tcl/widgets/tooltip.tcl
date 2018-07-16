@@ -60,7 +60,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright (c) 2008-2013 Gregor Cramer
+# Copyright (c) 2008-2018 Gregor Cramer
 # Made some enhancements and fixes.
 # ======================================================================
 
@@ -118,6 +118,8 @@ catch { package forget tooltip }
 
 package require Tk 8.5
 package provide tooltip 1.5.0
+
+proc tooltip {args} { return [::tooltip::tooltip {*}$args ] }
 
 namespace eval ::tooltip {
 

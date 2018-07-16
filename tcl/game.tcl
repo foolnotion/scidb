@@ -964,7 +964,7 @@ proc recover {parent} {
 						-index $index \
 						-variant $variant \
 						;
-					Update _ $count
+					Update $count
 					set tags [lindex $List $count 6]
 					::scidb::game::sink $count $base $index {*}$crcLink
 					::application::pgn::add $count $base $variant $tags
@@ -1073,7 +1073,7 @@ proc reopenLockedGames {parent} {
 
 			set tags [::scidb::game::tags $count]
 			lappend List [list $time 0 1 0 $key $crc $tags]
-			Update _ $count
+			Update $count
 			::application::pgn::add $count $base $variant $tags {*}$at
 			::application::pgn::lock $count
 			::scidb::game::go trykey $cursor
@@ -1356,7 +1356,7 @@ proc Log {_ arguments} {
 }
 
 
-proc Update {_ position} {
+proc Update {position} {
 	variable List
 	variable History
 	variable MaxPosition
@@ -1398,7 +1398,7 @@ proc Update {_ position} {
 }
 
 
-proc UpdateHistory {_ base variant index} {
+proc UpdateHistory {base variant index} {
 	variable History
 
 	for {set i 0} {$i < [llength $History]} {incr i} {

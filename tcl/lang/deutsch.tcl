@@ -511,6 +511,13 @@
 ::application::twm::mc::Pane(annotator)		"Kommentatoren"
 ::application::twm::mc::Pane(site)				"Orte"
 ::application::twm::mc::Pane(position)			"Startpositionen"
+::application::twm::mc::Pane(eco)				"ECO-Tabelle"
+
+### application::eco ###################################################
+::application::eco::mc::Mode(single)	"Pro Halbzug"
+::application::eco::mc::Mode(compact)	"Nur Übergänge"
+
+::application::eco::mc::F_Line			"Abspiel"
 
 ### application::board #################################################
 ::application::board::mc::ShowCrosstable				"Zeige Turniertabelle zur aktuellen Partie"

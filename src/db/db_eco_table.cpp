@@ -39,6 +39,7 @@
 #include "m_string.h"
 #include "m_vector.h"
 #include "m_map.h"
+#include "m_algobase.h"
 #include "m_assert.h"
 #include "m_stdio.h"
 
@@ -65,6 +66,24 @@ template <> struct hash_key<db::Eco>
 };
 
 } // namespace mstl
+
+
+static EcoTable::Opening m_emptyOpening;
+
+
+EcoTable::EcoOpening::EcoOpening() :ply(0), opening(m_emptyOpening) {}
+
+
+bool
+EcoTable::Opening::operator==(const Opening& op) const
+{
+	for (unsigned i = 0; i < Num_Name_Parts; ++i)
+	{
+		if (part[i] != op.part[i])
+			return false;
+	}
+	return true;
+}
 
 
 EcoTable::MoveOrder::MoveOrder(MoveOrder const& line)
@@ -1233,6 +1252,70 @@ EcoTable::getMoveOrders(Line const& line, Lines& result, EcoSet* relations) cons
 {
 	Eco code(getEco(Board::standardBoard(m_variant), line, relations));
 	getMoveOrders(line, code, result, relations);
+}
+
+
+void
+EcoTable::getOpenings(Board const& startBoard, Line const& line, Openings& result, Mode mode) const
+{
+	Board		board(startBoard);
+	MoveList	moves;
+	int		i;
+
+	for (i = 0; i < int(line.length); ++i)
+	{
+		Move move = board.makeMove(line[i]);
+
+		if (move.isNull() || move.isEmpty())
+			break;
+
+		if (!board.isValidMove(move, m_variant, move::DontAllowIllegalMove))
+			break;
+
+		board.prepareUndo(move);
+		board.doMove(move, m_variant);
+		moves.push(move);
+	}
+
+	EcoOpening const* last = nullptr;
+
+	for (i -= 1; i >= 0; --i)
+	{
+		Map::const_iterator k = m_map.find(board.hash());
+
+		if (k == m_map.end())
+		{
+			uint64_t hash = board.hashNoEP();
+
+			if (hash != board.hash())
+				k = m_map.find(board.hashNoEP());
+		}
+
+		if (k != m_map.end())
+		{
+			if (mode == SinglePly || result.empty())
+			{
+				result.push_front(EcoOpening(i, k->second->eco, getOpening(k->second->eco)));
+				last = &result.front();
+			}
+			else if (k->second->eco != result.front().eco)
+			{
+				Opening const& opening = getOpening(k->second->eco);
+
+				if (opening != result.front().opening)
+				{
+					result.push_front(EcoOpening(i, k->second->eco, opening));
+					last = &result.front();
+				}
+			}
+		}
+		else if (mode == SinglePly && last)
+		{
+			result.push_front(EcoOpening(i, last->eco, last->opening));
+		}
+
+		board.undoMove(moves[i], m_variant);
+	}
 }
 
 

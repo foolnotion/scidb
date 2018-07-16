@@ -647,7 +647,7 @@ proc Build {dlg base variant position number} {
 		-variable ::${dlg}::Priv(game-eco-flag) \
 		-command [namespace code [list UpdateEcoTag $top game-eco]] \
 		;
-	ecobox $top.game-eco -textvar ::${dlg}::Priv(game-eco)
+	ecobox $top.game-eco $variant -textvar ::${dlg}::Priv(game-eco)
 	SetEcoCodeText $top.game-eco-l
 
 	bind $top.game-eco-l <FocusIn> [namespace code [list ClearMatchList $top]]

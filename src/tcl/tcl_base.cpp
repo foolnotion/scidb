@@ -115,7 +115,7 @@ tcl::newObj(Tcl_Obj* obj1, Tcl_Obj* obj2)
 
 
 Tcl_Obj*
-tcl::newObj(mstl::vector<Tcl_Obj*> const& list)
+tcl::newObj(List const& list)
 {
 	return newObj(list.size(), list.data());
 }
@@ -454,6 +454,13 @@ tcl::setResult(unsigned long result)
 
 
 void
+tcl::setResult(int64_t result)
+{
+	Tcl_SetObjResult(interp(), Tcl_NewWideIntObj(result));
+}
+
+
+void
 tcl::setResult(bool result)
 {
 	Tcl_SetObjResult(interp(), Tcl_NewBooleanObj(result));
@@ -508,14 +515,20 @@ tcl::getGlobalVar(Tcl_Obj* var)
 
 
 static bool
-getCommandInfo(char const* cmd, Tcl_CmdInfo& info)
+getCommandInfo(Tcl_Obj* cmd, Tcl_CmdInfo& info)
 {
-	if (Tcl_GetCommandInfo(interp(), cmd, &info))
-		return true;
+	Tcl_Obj** objv;
+	int num = 0;
+
+	if (Tcl_ListObjGetElements(interp(), cmd, &num, &objv) == TCL_OK)
+	{
+		if (Tcl_GetCommandInfo(interp(), asString(objv[0]), &info))
+			return true;
+	}
 
 	mstl::string msg;
 	msg += "Tcl_GetCommandInfo failed: unknown command '";
-	msg += cmd;
+	msg += asString(num ? objv[0] : cmd);
 	msg += "'";
 	fprintf(stderr, "%s\n", msg.c_str());
 
@@ -524,7 +537,7 @@ getCommandInfo(char const* cmd, Tcl_CmdInfo& info)
 
 
 static int
-vinvoke(char const* callee, char const* cmd, va_list args)
+vinvoke(char const* callee, Tcl_Obj* cmd, va_list args)
 {
 	static unsigned const MaxArgs = 15;
 
@@ -537,59 +550,14 @@ vinvoke(char const* callee, char const* cmd, va_list args)
 	if (info.isNativeObjectProc)
 	{
 		Tcl_Obj*	objv[MaxArgs + 1];
-		unsigned	objc = 1;
+		Tcl_Obj** cmdObjs;
+		unsigned	objc = getElements(cmd, cmdObjs);
 
-		tcl::incrRef(objv[0] = tcl::newObj(cmd));
-		char const* arg = va_arg(args, char*);
+		M_ASSERT(objc < MaxArgs);
 
-		for ( ; arg; ++objc, arg = va_arg(args, char*))
-		{
-			M_ASSERT(objc < MaxArgs);
-			tcl::incrRef(objv[objc] = tcl::newObj(arg));
-		}
+		for (unsigned i = 0; i < objc; ++i)
+			tcl::incrRef(objv[i] = cmdObjs[i]);
 
-		objv[objc] = nullptr;
-		result = info.objProc(info.objClientData, interp(), objc, objv);
-		decrRefCount(objc, objv);
-	}
-	else
-	{
-		char const*	argv[MaxArgs + 1];
-		unsigned		argc = 1;
-
-		char const* arg = va_arg(args, char*);
-
-		for ( ; arg; ++argc, arg = va_arg(args, char*))
-		{
-			M_ASSERT(argc < MaxArgs);
-			argv[argc] = arg;
-		}
-
-		argv[argc] = nullptr;
-		result = info.proc(info.clientData, interp(), argc, argv);
-	}
-
-	return result;
-}
-
-
-static int
-vinvoke(char const* callee, Tcl_Obj* cmd, va_list args)
-{
-	static unsigned const MaxArgs = 15;
-
-	Tcl_CmdInfo info;
-	if (!getCommandInfo(Tcl_GetString(cmd), info))
-		return TCL_ERROR;
-
-	int result;
-
-	if (info.isNativeObjectProc)
-	{
-		Tcl_Obj*	objv[MaxArgs + 1];
-		unsigned	objc = 1;
-
-		tcl::incrRef(objv[0] = cmd);
 		Tcl_Obj* arg = va_arg(args, Tcl_Obj*);
 
 		for ( ; arg; ++objc, arg = va_arg(args, Tcl_Obj*))
@@ -613,8 +581,6 @@ vinvoke(char const* callee, Tcl_Obj* cmd, va_list args)
 
 		Tcl_Obj* arg = va_arg(args, Tcl_Obj*);
 
-		tcl::incrRef(cmd);
-
 		for ( ; arg; ++argc, arg = va_arg(args, Tcl_Obj*))
 		{
 			// simple check whether this is a Tcl object.
@@ -628,33 +594,9 @@ vinvoke(char const* callee, Tcl_Obj* cmd, va_list args)
 		argv[argc] = nullptr;
 		result = info.proc(info.clientData, interp(), argc, argv);
 		decrRefCount(argc, objv);
-		tcl::decrRef(cmd);
 	}
 
 	return result;
-}
-
-
-int
-tcl::invoke(char const* callee, char const* cmd, ...)
-{
-	M_REQUIRE(callee);
-	M_REQUIRE(cmd);
-
-	Tcl_SavedResult state;
-	Tcl_SaveResult(interp(), &state);
-
-	va_list args;
-	va_start(args, cmd);
-	int rc = ::vinvoke(callee, cmd, args);
-	va_end(args);
-
-	if (rc == TCL_OK)
-		Tcl_RestoreResult(interp(), &state);
-	else
-		M_THROW(tcl::Error());
-
-	return rc;
 }
 
 
@@ -707,21 +649,6 @@ tcl::invoke(char const* callee,
 		Tcl_RestoreResult(interp(), &state);
 
 	return rc;
-}
-
-
-Tcl_Obj*
-tcl::call(char const* callee, char const* cmd, ...)
-{
-	M_REQUIRE(callee);
-	M_REQUIRE(cmd);
-
-	va_list args;
-	va_start(args, cmd);
-	int rc = ::vinvoke(callee, cmd, args);
-	va_end(args);
-
-	return rc == TCL_OK ? tcl::incrRef(tcl::result()) : nullptr;
 }
 
 
@@ -838,7 +765,9 @@ tcl::call(	char const* callee,
 static void
 callRemoteUpdate(ClientData)
 {
-	invoke(__func__, "::remote::update", nullptr);
+	Tcl_Obj* cmd = tcl::incrRef(tcl::newObj("::remote::update"));
+	invoke(__func__, cmd, nullptr);
+	tcl::decrRef(cmd);
 }
 
 
