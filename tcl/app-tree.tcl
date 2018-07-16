@@ -149,7 +149,8 @@ array set Vars {
 }
 
 array set Bars {}
-variable ThreeBars {}
+array set ThreeBars {}
+
 variable Tables {}
 
 
@@ -543,7 +544,6 @@ proc closed {w} {
 	catch { after cancel $Vars(after) }
 	::scidb::db::unsubscribe {*}$Vars(subscribe)
 	DeleteBars
-	DeleteThreeBars
 #	set i [lsearch $Tables $Vars(twm)]
 #	set Tables [lreplace $Tables $i $i]
 }
@@ -1165,7 +1165,6 @@ proc FillTable {table} {
 	variable Columns
 	variable Vars
 
-	DeleteThreeBars
 	if {[llength $Vars(data)] == 0} { return }
 
 	set total [lindex $Vars(data) end [columnIndex frequency]]
@@ -1285,8 +1284,9 @@ proc MakeBar {table id item} {
 	variable Colors
 	variable Bars
 
+	set color [::colors::lookup $Colors($id:color)]
 	set width [expr {($item + 10)/20}]
-	if {[info exists Bars($width)]} { return $Bars($width) }
+	if {[info exists Bars($width:$color)]} { return $Bars($width:$color) }
 	set h [expr {max(8, [::table::linespace $table] - 6)}]
 	set img [image create photo -width 51 -height [expr {$h + 1}]]
 	::scidb::tk::image recolor black $img -composite set
@@ -1295,9 +1295,8 @@ proc MakeBar {table id item} {
 	} else {
 		::scidb::tk::image recolor white $img -composite set -area 1 1 50 $h
 	}
-	set color [::colors::lookup $Colors($id:color)]
 	::scidb::tk::image recolor $color $img -composite set -area 1 1 $width $h 
-	return [set Bars($width) $img]
+	return [set Bars($width:$color) $img]
 }
 
 
@@ -1306,12 +1305,13 @@ proc MakeThreeBar {table whiteResult blackResult drawResult} {
 	variable Options
 	variable Colors
 
-	set h [expr {max(8, [::table::linespace $table] - 6)}]
 	set total [expr {double($whiteResult + $blackResult + $drawResult)}]
 	set white [expr {$total ? ($whiteResult*49)/$total : 0.0}]
 	set black [expr {$total ? ($blackResult*49)/$total : 0.0}]
 	set white [expr {int($white + 0.5) + 1}]
 	set draws [expr {50 - int($black + 0.5)}]
+	if {[info exists ThreeBars($white:$draws)]} { return $ThreeBars($white:$draws) }
+	set h [expr {max(8, [::table::linespace $table] - 6)}]
 	set img [image create photo -width 51 -height [expr {$h + 1}]]
 	::scidb::tk::image recolor black $img -composite set
 	if {$Options(bar:transparent)} {
@@ -1326,8 +1326,7 @@ proc MakeThreeBar {table whiteResult blackResult drawResult} {
 		-composite set -area $white 1 $draws $h 
 	::scidb::tk::image recolor [::colors::lookup $Colors(result:black:$style)] $img \
 		-composite set -area $draws 1 50 $h 
-	lappend ThreeBars $img
-	return $img
+	return [set ThreeBars($white:$draws) $img]
 }
 
 
@@ -1816,16 +1815,13 @@ proc RebuildTable {table} {
 
 
 proc DeleteBars {} {
-	variable Bars
-	foreach key [array names Bars] { catch { image delete $Bars($key) } }
-	array unset Bars
-}
-
-
-proc DeleteThreeBars {} {
 	variable ThreeBars
-	foreach img $ThreeBars { catch { image delete $img } }
-	set ThreeBars {}
+	variable Bars
+
+	foreach key [array names Bars] { catch { image delete $Bars($key) } }
+	foreach key [array names ThreeBars] { catch { image delete $ThreeBars($key) } }
+	array unset Bars
+	array unset ThreeBars
 }
 
 
