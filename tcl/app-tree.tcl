@@ -1335,7 +1335,11 @@ proc ComputeValue {id value total} {
 
 	switch $id {
 		ratio {
-			set value [expr {int((1000.0*$value)/double($total) + 0.5)}]
+			if {$total == 0} {
+				set value 0
+			} else {
+				set value [expr {int((1000.0*$value)/double($total) + 0.5)}]
+			}
 		}
 		score {
 			switch $Options(score:side) {
