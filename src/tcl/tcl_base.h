@@ -147,8 +147,6 @@ void setResult(mstl::string const& s);
 void setResult(int result);
 void setResult(unsigned result);
 void setResult(bool result);
-void setResult(long result);
-void setResult(unsigned long result);
 void setResult(int64_t result);
 void setResult(List const& list);
 void

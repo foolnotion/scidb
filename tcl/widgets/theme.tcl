@@ -672,13 +672,13 @@ option add *TLabel.foreground black
 option add *TScale.foreground black
 option add *TNotebook.foreground black
 
-option add *TCombobox.exportSelection 0
+option add *TCombobox.exportSelection 0 ;# fixing a bug with -exportselection
 option add *TCombobox.foreground black
 
 option add *TSpinbox.wrap 0
 option add *TSpinbox.foreground black
 
-option add *TEntry.exportSelection 0
+option add *TEntry.exportSelection 0 ;# fixing a bug with -exportselection
 option add *TEntry.background white
 option add *TEntry.foreground black
 #option add *TEntry.selectBackground #678db2

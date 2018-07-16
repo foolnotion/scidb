@@ -440,20 +440,6 @@ tcl::setResult(unsigned result)
 
 
 void
-tcl::setResult(long result)
-{
-	Tcl_SetObjResult(interp(), Tcl_NewLongObj(result));
-}
-
-
-void
-tcl::setResult(unsigned long result)
-{
-	Tcl_SetObjResult(interp(), Tcl_NewWideIntObj(result));
-}
-
-
-void
 tcl::setResult(int64_t result)
 {
 	Tcl_SetObjResult(interp(), Tcl_NewWideIntObj(result));
