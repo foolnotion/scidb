@@ -45,14 +45,6 @@ set FileStripMoveInfo				"Strip Move Information"
 set FileStripPGNTags					"Strip PGN Tags"
 set HelpSwitcher						"Help for Database Switcher"
 
-set Information						"&Information"
-set Games								"&Games"
-set Players								"&Players"
-set Events								"&Events"
-set Sites								"&Sites"
-set Positions							"S&tart Positions"
-set Annotators							"&Annotators"
-
 set File									"File"
 set SymbolSize							"Symbol Size"
 set Large								"Large"
@@ -191,9 +183,9 @@ set MoveInfoAttrs {evaluation playersClock elapsedGameTime elapsedMoveTime
 							elapsedMilliSecs clockTime corrChessSent videoTime}
 
 set Variants {Normal ThreeCheck Bughouse Crazyhouse Antichess Losers}
+set Tabs {games player event site annotator position}
 
 array set Vars {
-	pixels			0
 	selection		0
 	icon				0
 	ignore-next		0
@@ -205,12 +197,11 @@ array set Vars {
 	pressed			0
 	dragging			0
 	mintabs			3
-	taborder			{games players events sites annotators positions}
 }
 
 
 array set Options {
-	visible			10
+	visible 10
 }
 
 variable PreOpen			{}
@@ -230,6 +221,7 @@ proc build {tab width height} {
 	variable ::scidb::clipbaseName
 	variable Variants
 	variable Vars
+	variable Tabs
 
 	set ::util::clipbaseName [set [namespace current]::mc::T_Clipbase]
 
@@ -237,7 +229,6 @@ proc build {tab width height} {
 		-orient vertical \
 		-opaqueresize true \
 		-borderwidth 0 \
-		-sashcmd [namespace code SashCmd] \
 	]
 	pack $main -fill both -expand yes
 
@@ -254,28 +245,29 @@ proc build {tab width height} {
 	$main add $switcher
 	$main add $contents
 
-	foreach tab $Vars(taborder) {
+	foreach tab $Tabs {
 		::ttk::frame $contents.$tab -class Scidb
-		set var [namespace current]::mc::[string toupper $tab 0 0]
+		set var [namespace parent]::mc::Tab($tab)
 		$contents add $contents.$tab -sticky nsew -compound right
 		if {$Vars(showDisabled)} { $contents tab $contents.$tab -image $icon::16x16::undock_disabled }
 		::widget::notebookSetLabel $contents $contents.$tab [set $var]
-		${tab}::build $contents.$tab
+		[TabToNamespace $tab]::build $contents.$tab
 		set Vars($tab) $contents.$tab
 		bind $contents.$tab <Destroy> [namespace code [list DestroyTab %W $contents.$tab]]
 	}
-	set Vars(twm) $Vars([lindex $Vars(taborder) 0]).twm
+	set Vars(twm) $Vars([lindex $Tabs 0]).twm
 
 	$main paneconfigure $switcher -sticky nsew -stretch never
 	$main paneconfigure $contents -sticky nsew -stretch always
 
 	bind $contents.games <<TableMinSize>> \
 		[namespace code [list TableMinSize $main $contents $switcher %d]]
-	bind $contents.games <Configure> \
-		[namespace code [list ConfigureList $main $contents $switcher %h]]
+	set Vars(configure) [namespace code [list Configure $main $contents $switcher %h]]
+	set Vars(configure:height) 0
+	bind $main <Configure> $Vars(configure)
 
-	bind $main <Double-Button-1>	{ break }
-	bind $main <Double-Button-2>	{ break }
+	bind $main <Double-Button-1> { break }
+	bind $main <Double-Button-2> { break }
 	bind $main <<FontSizeChanged>> [namespace code { FontSizeChanged %W }]
 
 	set tbFile [::toolbar::toolbar $switcher \
@@ -331,36 +323,23 @@ proc build {tab width height} {
 	set Vars(contents) $contents
 	set Vars(windows) [$contents tabs]
 	set Vars(main) $main
-#	set Vars(history) $history
-#	set Vars(blank) $blank
+	set Vars(first-tab-change) 1
 	set Vars(current:tab) games
+	set Vars(linespace) 0
+	set Vars(shift) 0
 	set Vars(after) {}
-	set Vars(lock:minsize) 0
-	set Vars(minheight:switcher) 0
 
 	set tbClipbase [::toolbar::toolbar $switcher \
 		-id database-clipbase \
 		-tooltipvar [namespace current]::mc::SelectVariant \
 	]
 	foreach variant $Variants {
-		switch $variant {
-			Losers {
-				set tip "$::mc::VariantName(Antichess) - $::mc::VariantName(Losers)"
-			}
-			Antichess {
-				set tip "$::mc::VariantName(Antichess) - "
-				append tip "$::mc::VariantName(Suicide)/$::mc::VariantName(Giveaway)"
-			}
-			default {
-				set tip $::mc::VariantName($variant)
-			}
-		}
 		set Vars(widget:$variant) [::toolbar::add $tbClipbase button \
 			-image $::icon::toolbarVariant($variant) \
 			-command [namespace code [list SwitchVariant $variant]] \
 			-variable [namespace current]::Vars(variant) \
 			-value $variant \
-			-tooltip $tip \
+			-tooltip [GetTip $variant] \
 		]
 	}
 
@@ -436,7 +415,7 @@ proc activate {w flag} {
 	set w [$Vars(contents) select]
 	set tab [lindex [split $w .] end]
 	::toolbar::activate $Vars(switcher) $flag
-	[namespace current]::${tab}::activate $Vars($tab) $flag
+	[namespace current]::[TabToNamespace $tab]::activate $Vars($tab) $flag
 	::annotation::hide $flag
 	::marks::hide $flag
 
@@ -450,7 +429,7 @@ proc activate {w flag} {
 
 proc setActive {flag} {
 	variable Vars
-	${Vars(current:tab)}::setActive $flag
+	[TabToNamespace $Vars(current:tab)]::setActive $flag
 }
 
 
@@ -721,12 +700,12 @@ proc removeRecentFile {index} {
 proc selectEvent {base variant index} {
 	variable Vars
 
-	events::select $Vars(events) $base $variant $index
+	events::select $Vars(event) $base $variant $index
 
-	if {[winfo toplevel $Vars(events)] eq $Vars(events)} {
-		events::activate $Vars(events) 1
-	} elseif {$Vars(contents) ne "events"} {
-		after 1 [list $Vars(contents) select $Vars(contents).events]
+	if {[winfo toplevel $Vars(event)] eq $Vars(event)} {
+		events::activate $Vars(event) 1
+	} elseif {$Vars(contents) ne "event"} {
+		after 1 [list $Vars(contents) select $Vars(contents).event]
 	}
 }
 
@@ -734,12 +713,12 @@ proc selectEvent {base variant index} {
 proc selectSite {base variant index} {
 	variable Vars
 
-	sites::select $Vars(sites) $base $variant $index
+	sites::select $Vars(site) $base $variant $index
 
-	if {[winfo toplevel $Vars(sites)] eq $Vars(sites)} {
-		sites::activate $Vars(sites) 1
-	} elseif {$Vars(contents) ne "sites"} {
-		after 1 [list $Vars(contents) select $Vars(contents).sites]
+	if {[winfo toplevel $Vars(site)] eq $Vars(site)} {
+		sites::activate $Vars(site) 1
+	} elseif {$Vars(contents) ne "site"} {
+		after 1 [list $Vars(contents) select $Vars(contents).site]
 	}
 }
 
@@ -747,12 +726,12 @@ proc selectSite {base variant index} {
 proc selectPlayer {base variant index} {
 	variable Vars
 
-	players::select $Vars(players) $base $variant $index
+	players::select $Vars(player) $base $variant $index
 
-	if {[winfo toplevel $Vars(players)] eq $Vars(players)} {
-		players::activate $Vars(players) 1
-	} elseif {$Vars(contents) ne "players"} {
-		after 1 [list $Vars(contents) select $Vars(contents).players]
+	if {[winfo toplevel $Vars(player)] eq $Vars(player)} {
+		players::activate $Vars(player) 1
+	} elseif {$Vars(contents) ne "player"} {
+		after 1 [list $Vars(contents) select $Vars(contents).player]
 	}
 }
 
@@ -953,15 +932,23 @@ proc SetClipbaseDescription {} {
 }
 
 
+proc TabToNamespace {id} {
+	set t $id
+	if {[string index $t end] ne "s"} { append t "s" }
+	return $t
+}
+
+
 proc TabChanged {} {
 	variable Vars
 
 	set newTab [lindex [split [$Vars(contents) select] .] end]
 	set curTab $Vars(current:tab)
-	if {$newTab eq $curTab} { return }
+	if {!$Vars(first-tab-change) && $newTab eq $curTab} { return }
+	set Vars(first-tab-change) 0
 	set w $Vars($curTab)
-	[namespace current]::${curTab}::activate $w 0
-	[namespace current]::${newTab}::activate $Vars($newTab) 1
+	[namespace current]::[TabToNamespace $curTab]::activate $w 0
+	[namespace current]::[TabToNamespace $newTab]::activate $Vars($newTab) 1
 	set Vars(current:tab) $newTab
 
 	set w $Vars(contents)
@@ -979,42 +966,20 @@ proc TabChanged {} {
 
 	set twm $Vars($curTab).twm
 	if {[::scidb::tk::twm exists $twm]} {
-		foreach w [$twm floats] { if {[$twm get! $w hide 0]} { $twm hide $w } }
+		foreach w [$twm collect floats] { $twm hide $w }
 	}
 	set twm $Vars($newTab).twm
 	if {[::scidb::tk::twm exists $twm]} {
-		foreach w [$twm floats] { if {[$twm get! $w hide 0]} { $twm show $w } }
+		foreach w [$twm collect floats] { $twm show $w }
 	}
 	set Vars(twm) $twm
-}
-
-
-proc SashCmd {w action x y} {
-	variable Vars
-
-	switch $action {
-		mark {
-			set Vars(y) [expr {$y + [games::overhang $Vars(games)]}]
-		}
-
-		drag {
-			if {$y > $Vars(y)} {
-				set y [expr {(($y - $Vars(y))/$Vars(incr))*$Vars(incr) + $Vars(y)}]
-			} else {
-				set y [expr {$Vars(y) - (($Vars(y) - $y)/$Vars(incr))*$Vars(incr)}]
-			}
-
-			set Vars(pixels) 0
-		}
-	}
-
-	return [list $x $y]
 }
 
 
 proc ToolbarShow {pane} {
 	variable Vars
 
+return
 	update idletasks
 	set minheight [::toolbar::totalHeight $pane]
 	if {$minheight == 1} {
@@ -1083,6 +1048,7 @@ proc Switch {filename} {
 proc UpdateAfterSwitch {filename variant} {
 	variable ::scidb::clipbaseName
 	variable Vars
+	variable Tabs
 
 	if {$filename ne $clipbaseName} { set CurrentBase $filename }
 	set readonly [::scidb::db::get readonly? $filename]
@@ -1124,9 +1090,9 @@ proc UpdateAfterSwitch {filename variant} {
 		}
 	}
 
-	foreach tab {players events sites annotators positions} {
-		if {[winfo toplevel $Vars($tab)] eq $Vars($tab)} {
-			[namespace current]::${tab}::activate $Vars($tab) 1
+	foreach tab $Tabs {
+		if {$tab ne "games" && [winfo toplevel $Vars($tab)] eq $Vars($tab)} {
+			[namespace current]::[TabToNamespace $tab]::activate $Vars($tab) 1
 		}
 	}
 }
@@ -1150,19 +1116,19 @@ proc CheckTabState {} {
 
 	set codec [::scidb::db::get codec]
 
-	if {[winfo toplevel $Vars(annotators)] ne $Vars(annotators)} {
+	if {[winfo toplevel $Vars(annotator)] ne $Vars(annotator)} {
 		if {$codec eq "sci" || $codec eq "cbh"} { set state normal } else { set state hidden }
-		$Vars(contents) tab $Vars(annotators) -state $state
+		$Vars(contents) tab $Vars(annotator) -state $state
 	}
 
-	if {[winfo toplevel $Vars(positions)] ne $Vars(positions)} {
+	if {[winfo toplevel $Vars(position)] ne $Vars(position)} {
 		if {$codec eq "sci"} { set state normal } else { set state hidden }
-		$Vars(contents) tab $Vars(positions) -state $state
+		$Vars(contents) tab $Vars(position) -state $state
 	}
 
-	if {[winfo toplevel $Vars(sites)] ne $Vars(sites)} {
+	if {[winfo toplevel $Vars(site)] ne $Vars(site)} {
 		if {$codec eq "cbf"} { set state hidden } else { set state normal }
-		$Vars(contents) tab $Vars(sites) -state $state
+		$Vars(contents) tab $Vars(site) -state $state
 	}
 }
 
@@ -1204,7 +1170,7 @@ proc LanguageChanged {} {
 	set [namespace current]::_Readonly [format $str $name]
 
 	foreach t $Vars(windows) {
-		set var [namespace current]::mc::[string toupper [lindex [split $t .] end] 0 0]
+		set var [namespace parent]::mc::Tab([lindex [split $t .] end])
 		if {[winfo toplevel $t] eq $t} {
 			wm title $t "$::scidb::app - [::mc::stripAmpersand [set $var]]"
 		} else {
@@ -1216,97 +1182,114 @@ proc LanguageChanged {} {
 		-tooltip "$mc::NewDatabase ($::mc::VariantName(Normal))..."
 
 	foreach variant $Variants {
-		switch $variant {
-			Losers {
-				set tip "$::mc::VariantName(Antichess) - $::mc::VariantName(Losers)"
-			}
-			Antichess {
-				set tip "$::mc::VariantName(Antichess) - "
-				append tip "$::mc::VariantName(Suicide)/$::mc::VariantName(Giveaway)"
-			}
-			default {
-				set tip $::mc::VariantName($variant)
-			}
-		}
-		::toolbar::childconfigure $Vars(widget:$variant) -tooltip $tip
+		::toolbar::childconfigure $Vars(widget:$variant) -tooltip [GetTip $variant]
 	}
 }
 
 
-proc TableMinSize {main pane switcher sizeInfo} {
-	variable Vars
-
-	if {[llength $sizeInfo] != 3} { return }
-	lassign $sizeInfo minwidth minheight Vars(incr)
-	set height [winfo height $pane]
-	if {$height <= 1} { return }
-	if {$Vars(current:tab) ne "games"} { return }
-
-	incr minheight $height
-	incr minheight [expr {-[winfo height $Vars(games)]}]
-	incr minheight [expr {2*[games::borderwidth $Vars(games)]}]
-
-	if {!$Vars(lock:minsize)} {
-		$main paneconfigure $pane -minsize $minheight
-	}
-
-	set h [expr {(($height - $minheight)/$Vars(incr))*$Vars(incr)} + $minheight]
-	if {$h > $height} { incr h [expr {-$Vars(incr)}] }
-	if {$h < $height} {
-		incr Vars(pixels) $height
-		incr Vars(pixels) [expr {-$h}]
-		if {$Vars(pixels) >= $Vars(incr)} {
-			incr h $Vars(incr)
-			incr Vars(pixels) [expr {-$Vars(incr)}]
+proc GetTip {variant} {
+	switch $variant {
+		Losers {
+			set tip "$::mc::VariantName(Antichess) - $::mc::VariantName(Losers)"
 		}
-		lassign [$main sash coord 0] x y
-		set y [expr {$y + $height - $h}]
-		$main sash place 0 $x $y
+		Antichess {
+			set tip "$::mc::VariantName(Antichess) - "
+			append tip "$::mc::VariantName(Suicide)/$::mc::VariantName(Giveaway)"
+		}
+		default {
+			set tip $::mc::VariantName($variant)
+		}
 	}
-
-	after idle [list $Vars(switcher) update]
+	return $tip
 }
 
 
-proc ConfigureList {main contents switcher height} {
+proc TableMinSize {main contents switcher sizeInfo} {
 	variable Vars
 
-	if {$height <= 1} { return }
 	if {[winfo toplevel $Vars(games)] eq $Vars(games)} { return }
+	set height [winfo height $contents]
+	if {$height <= 1} { return }
 
-	set overhang [games::overhang $Vars(games)]
-	set n [expr {($height - $overhang)/$Vars(incr)}]
-	set wantedHeight [expr {$n*$Vars(incr) + $overhang + 2}]
-	set offset [expr {$height - $wantedHeight}]
+	ConfList $main $contents $switcher [winfo height $main]
+	AlignList $main $contents $switcher
+	after idle [list $switcher update]
+}
 
-	if {$offset != 0 || $Vars(minheight:switcher) == 0} {
-		after cancel $Vars(afterid)
-		set Vars(afterid) [after 50 [namespace code \
-			[list ResizeList $main $contents $switcher $wantedHeight $offset]]]
+
+proc AlignList {main contents switcher} {
+	variable Vars
+
+	set zeroHeight [expr {[games::computeHeight $Vars(games) 0]}]
+	set tabbarSize [::theme::notebookTabPaneSize $contents]
+	set minsize [expr {$zeroHeight + $tabbarSize + 1}] ;# XXX any border?
+	set linespace [games::linespace $Vars(games)]
+	set height [winfo height $contents]
+
+	set h [expr {(($height - $minsize)/$linespace)*$linespace} + $minsize]
+	if {$h > $height} { decr h $linespace }
+	if {$h < $height} {
+		if {$height - $h > abs($Vars(shift))} { incr h $linespace }
+		set shift [expr {$height - $h}]
+		incr Vars(shift) $shift
+		lassign [$main sash coord 0] x y
+		$main sash place 0 $x [expr {$y + $shift}]
 	}
 }
 
 
-proc ResizeList {main contents switcher wantedHeight offset} {
+proc ConfList {main contents switcher height} {
 	variable Vars
 
-	set pixels [expr {$Vars(pixels) + $offset}]
-	set n [expr {$pixels/$Vars(incr)}]
-	set offset [expr {$offset - $n*$Vars(incr)}]
-	set pixels [expr {$pixels - $n*$Vars(incr)}]
+	set sashwidth [$main cget -sashwidth]
+	set linespace [games::linespace $Vars(games)]
+	set Vars(linespace) $linespace
+	set overhang [games::overhang $Vars(games)]
+	set topHeight [expr {$overhang + 4*$linespace + $sashwidth}]
+	set tabbarSize [::theme::notebookTabPaneSize $contents]
+	set toolbarSize [games::computeHeight $Vars(games)]
+	set minsize [expr {$tabbarSize + $topHeight + $toolbarSize}]
+	set minsize [expr {min($minsize, [[namespace parent]::twm::minHeight])}]
+	$main paneconfigure $contents -minsize $minsize -gridsize $linespace
+}
 
-	set Vars(pixels) $pixels
 
-set offset 0 ;# XXX we have a computation problem here
-	if {$offset != 0 || $Vars(minheight:switcher) == 0} {
-		lassign [$main sash coord 0] x y
-		incr y $offset
+proc InitList {main contents switcher height} {
+	variable Vars
 
-		set minheight [expr {[$Vars(switcher) minheight] + [::toolbar::totalHeight $switcher] + 2}]
-		set Vars(minheight:switcher) $minheight
-		while {$Vars(minheight:switcher) > $y} { incr y $Vars(incr) }
-		$main sash place 0 $x $y
+	if {$Vars(linespace) == 0} {
+		ConfList $main $contents $switcher $height
 	}
+
+	set sashwidth [$main cget -sashwidth]
+	set switcherHeight [expr {[$switcher minheight] + [::toolbar::totalHeight $switcher]}]
+	set zeroHeight [expr {[games::computeHeight $Vars(games) 0]}]
+	set tabbarSize [::theme::notebookTabPaneSize $contents]
+	set linespace [games::linespace $Vars(games)]
+	set n [expr {($height - $switcherHeight - $tabbarSize - $zeroHeight - $sashwidth + 1)/$linespace}]
+	set paneHeight [expr {[games::computeHeight $Vars(games) $n] + $tabbarSize}]
+	incr paneHeight 1 ;# XXX any border?
+	lassign [$main sash coord 0] x y
+	decr height $paneHeight
+	$main sash place 0 $x [expr {$height - $sashwidth}]
+	set Vars(shift) 0
+}
+
+
+proc Configure {main contents switcher height} {
+	variable Vars
+
+	if {[winfo toplevel $Vars(games)] eq $Vars(games)} { return }
+	if {$height <= 1} { return }
+
+	if {$Vars(configure:height) == 0} {
+		InitList $main $contents $switcher $height
+	} elseif {$height != $Vars(configure:height)} {
+		after cancel $Vars(afterid)
+		set Vars(afterid) [after 150 [namespace code [list AlignList $main $contents $switcher]]]
+	}
+
+	set Vars(configure:height) $height
 }
 
 
@@ -2511,8 +2494,8 @@ proc Undock {nb index {geometry {}}} {
 		wm geometry $w $geometry
 	}
 	set id [lindex [split $w .] end]
-	set overhang [${id}::overhang $Vars($id)]
-	set linespace [${id}::linespace $Vars($id)]
+	set overhang [[TabToNamespace $id]::overhang $Vars($id)]
+	set linespace [[TabToNamespace $id]::linespace $Vars($id)]
 	set minheight [expr {8*$linespace + $overhang}]
 #	wm transient $w [winfo toplevel $nb]
 	wm minsize $w 500 $minheight
@@ -2524,6 +2507,7 @@ proc Undock {nb index {geometry {}}} {
 
 proc Dock {nb w} {
 	variable Vars
+	variable Tabs
 
 	if {[llength [$nb tabs]] == $Vars(mintabs)} {
 		$nb tab [$nb select] -image $icon::16x16::undock
@@ -2532,19 +2516,19 @@ proc Dock {nb w} {
 	set id [lindex [split $w .] end]
 	set indices {}
 	foreach t [$nb tabs] {
-		set i [lsearch -exact $Vars(taborder) [lindex [split $t .] end]]
+		set i [lsearch -exact $Tabs [lindex [split $t .] end]]
 		lappend indices $i
 	}
 	set indices [lsort -integer $indices]
-	set i [lsearch -exact $Vars(taborder) $id]
+	set i [lsearch -exact $Tabs $id]
 	set k 0
 	while {$k < [llength $indices] && [lindex $indices $k] < $i} { incr k }
 	if {$k == [llength [$nb tabs]]} { set k end }
 	if {$Vars(showDisabled)} { set icon $icon::16x16::undock_disabled } else { set icon {} }
 	$nb insert $k $w -sticky nsew -compound right -image $icon
-	set var [namespace current]::mc::[string toupper $id 0 0]
+	set var [namespace parent]::mc::Tab($id)
 	::widget::notebookSetLabel $nb $w [set $var]
-	${id}::activate $Vars($id) 0
+	[TabToNamespace $id]::activate $Vars($id) 0
 	CheckTabState
 }
 

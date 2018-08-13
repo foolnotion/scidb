@@ -250,7 +250,7 @@ proc build {twm parent width height} {
 		set menu {}
 		set lock none
 		set stripes [::colors::lookup $Options(-stripes)]
-		set visible 1
+		set visible [expr {$cid ni {draws}}]
 
 		switch $cid {
 			number - move {
@@ -1829,17 +1829,17 @@ proc DeleteBars {} {
 }
 
 
-proc WriteTableOptions {chan {id "board"}} {
+proc WriteTableOptions {chan variant {id "board"}} {
+	variable TableOptions
 	variable Tables
-	variable Vars
 
 	if {$id ne "board"} { return }
 
 	foreach table $Tables {
-		if {[::table::countOptions db:tree:$id] > 0} {
+		if {[info exists TableOptions($variant:$id)]} {
 			set id [::application::twm::getId $table]
 			puts $chan "::table::setOptions db:tree:$id {"
-			::options::writeArray $chan [::table::getOptions db:tree:$id]
+			::options::writeArray $chan $TableOptions($variant:$id)
 			puts $chan "}"
 		}
 	}

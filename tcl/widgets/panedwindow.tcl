@@ -6,7 +6,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2010-2017 Gregor Cramer
+# Copyright: (C) 2010-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -19,11 +19,9 @@
 # ======================================================================
 # Providing a modified paned window:
 #	- cursor handling overworked (the original implementation is clumsy)
-#	- additional option -sashcmd
 #	- additional pane option "-maxsize"
 #	- Button-2 is unbound
-#	- option -gridsize added; in this case option -minsize is declaring
-#    the base size
+#	- option -gridsize added
 #
 # Issues:
 #	- option "-opaqueresize" will be ignored (always on)
@@ -32,8 +30,9 @@
 #	  they are added to the paned window
 #
 # Why not using ttk::panedwindow?
-#	- the design is quite halfhearted, for example no -minsize option, so
-#    this widget is somewhat useless
+#	- the design is quite halfhearted, for example no -minsize option,
+#    so this widget is somewhat useless
+#  - the cursor handling is clumsy
 # ======================================================================
 
 package provide panedwindow 1.0
@@ -63,23 +62,17 @@ proc panedwindow {args} { return [::panedwindow {*}$args] }
 
 namespace eval panedwindow {
 
-bind PanedWindowFrame <Destroy> [namespace code { DestroyHandler %W }]
-
-
 proc Build {w args} {
 	variable Initialized
 
 	array set opts {
 		-borderwidth	0
 		-cursor			{}
-		-sashcmd			{}
 		-state			"normal"
 	}
 
 	array set opts $args
-	set sashcmd $opts(-sashcmd)
-	unset -nocomplain opts(-opaqueresize)
-	unset -nocomplain opts(-sashcmd)
+	array unset opts -opaqueresize
 	set state $opts(-state)
 	array unset opts -state
 
@@ -92,10 +85,9 @@ proc Build {w args} {
 	}
 	
 	namespace eval [namespace current]::$w {}
-	variable [namespace current]::${w}::MaxSize
-	variable [namespace current]::${w}::SashCmd $sashcmd
-	variable [namespace current]::${w}::Cursor left_ptr
-	variable [namespace current]::${w}::State $state
+	variable [namespace current]::${w}::
+	set (cursor) left_ptr
+	set (state) $state
 
 	rename ::$w $w.__panedwindow__
 	proc ::$w {command args} "[namespace current]::WidgetProc $w \$command {*}\$args"
@@ -111,37 +103,29 @@ proc WidgetProc {w command args} {
 		}
 		set child [lindex $args 0]
 		array set opts [lrange $args 1 end]
+		variable [namespace current]::${w}::
 
-		variable [namespace current]::${w}::MaxSize
-		variable [namespace current]::${w}::GridSize
+		if {![info exists (maxsize:$child)]} { set (maxsize:$child) 32000 }
+		if {![info exists (gridsize:$child)]} { set (gridsize:$child) 0 }
 
-		if {![info exists MaxSize($child)]} {
-			set MaxSize($child) 32000
-		}
-		if {![info exists GridSize($child)]} {
-			set GridSize($child) 0
-		}
-		
 		if {[info exists opts(-maxsize)]} {
 			if {[string is integer -strict $opts(-maxsize)]} {
-				set maxSize $opts(-maxsize)
-				if {$maxSize <= 0} { set maxSize 32000 }
-				set MaxSize($child) $maxSize
+				set maxsize $opts(-maxsize)
+				if {$maxsize <= 0} { set maxsize 32000 }
+				set (maxsize:$child) $maxsize
 			} else {
 				error "bad screen distance \"$opts(-maxsize)\""
 			}
-
 			unset opts(-maxsize)
 		}
 		if {[info exists opts(-gridsize)]} {
 			if {[string is integer -strict $opts(-gridsize)]} {
 				set gridsize $opts(-gridsize)
 				if {$gridsize <= 0} { set gridsize 0 }
-				set GridSize($child) $gridsize
+				set (gridsize:$child) $gridsize
 			} else {
 				error "bad screen distance \"$opts(-gridsize)\""
 			}
-
 			unset opts(-gridsize)
 		}
 
@@ -151,16 +135,14 @@ proc WidgetProc {w command args} {
 
 	switch -- $command {
 		add {
-			variable ${w}::Cursor
-			variable ${w}::Parent
-			variable ${w}::State
+			variable ${w}::
 
 			set child [lindex $args 0]
 			
-			if {	$State ne "disabled"
+			if {	$(state) ne "disabled"
 				&& [llength [$child cget -cursor]] == 0
-				&& [$child cget -cursor] ne $Cursor} {
-				$child configure -cursor $Cursor
+				&& [$child cget -cursor] ne $(cursor)} {
+				$child configure -cursor $(cursor)
 			}
 		}
 
@@ -172,9 +154,9 @@ proc WidgetProc {w command args} {
 			foreach {key val} $args {
 				switch -- $key {
 					-cursor {
-						variable ${w}::Cursor
-						set Cursor $val
-						if {[llength $Cursor] == 0} { set Cursor left_ptr }
+						variable ${w}::
+						set (cursor) $val
+						if {[string length $(cursor)] == 0} { set (cursor) left_ptr }
 						unset opts($key)
 					}
 
@@ -189,12 +171,6 @@ proc WidgetProc {w command args} {
 					-opaqueresize {
 						unset opts($key)
 					}
-
-					-sashcmd {
-						variable ${w}::SashCmd
-						set SashCmd $val
-						unset opts($key)
-					}
 				}
 			}
 			set args [array get opts]
@@ -203,8 +179,8 @@ proc WidgetProc {w command args} {
 		cget {
 			switch -- [lindex $args 0] {
 				-cursor {
-					variable ${w}::Cursor
-					return $Cursor
+					variable ${w}::
+					return $(cursor)
 				}
 			}
 		}
@@ -215,10 +191,8 @@ proc WidgetProc {w command args} {
 
 
 proc DestroyHandler {w} {
-	if {[winfo class $w] eq "PanedWindowFrame"} {
-		namespace delete [namespace current]::$w
-		rename $w {}
-	}
+	namespace delete [namespace current]::$w
+	rename $w {}
 }
 
 } ;# namespace panedwindow
@@ -227,11 +201,12 @@ proc DestroyHandler {w} {
 bind Panedwindow <ButtonPress-1>		{ tk::panedwindow::MarkSash %W %x %y }
 bind Panedwindow <B1-Motion>			{ tk::panedwindow::DragSash %W %x %y }
 bind Panedwindow <ButtonRelease-1>	{ tk::panedwindow::ReleaseSash %W }
+bind PanedWindow <Destroy>				{ tk::panedwindow::DestroyHandler %W }
 
-bind Panedwindow <ButtonPress-2>		{ break }
-bind Panedwindow <B2-Motion>			{ break }
-bind Panedwindow <ButtonRelease-2>	{ break }
-bind Panedwindow <Leave>				{ break }
+bind Panedwindow <ButtonPress-2>		{#}
+bind Panedwindow <B2-Motion>			{#}
+bind Panedwindow <ButtonRelease-2>	{#}
+bind Panedwindow <Leave>				{#}
 
 
 namespace eval tk {
@@ -239,46 +214,42 @@ namespace eval panedwindow {
 
 proc MarkSash {w x y} {
 	variable ::tk::Priv
-	variable ::panedwindow::${w}::State
+	variable ::panedwindow::${w}::
 
-	if {$State eq "disabled"} { return }
+	if {$(state) eq "disabled"} { return }
 
 	set what [$w identify $x $y]
 	if {[llength $what] != 2} { return }
 	lassign $what index which
 	if {$::tk_strictMotif && $which ne "handle"} { return }
 
-	variable ::panedwindow::${w}::MaxSize
-	variable ::panedwindow::${w}::GridSize
-	variable ::panedwindow::${w}::SashCmd
-	variable ::panedwindow::${w}::Cursor
-
 	set panes [$w panes]
 	lassign {0 0 0 0} lhsMax rhsMax lhsMin rhsMin
-	if {[string match h* [$w cget -orient]]} { set which width } else { set which height }
+	set dimen [expr {[string match h* [$w cget -orient]] ? "width" : "height"}]
 	set npanes [llength $panes]
+	array unset {} gridsize
 
-	for {set i 0} {$i < $npanes} {incr i} {
-		set pane [lindex $panes $i]
-		set maxSize($pane) $MaxSize($pane)
-
-		if {$GridSize($pane) > 1} {
-			set f [expr {($maxSize($pane) - [$w panecget $pane -minsize])/$GridSize($pane)}]
-			set maxSize($pane) [expr {$f*$GridSize($pane) + [$w panecget $pane -minsize]}]
+	foreach pane $panes {
+		set maxsize($pane) $(maxsize:$pane)
+		if {$(gridsize:$pane) > 1} {
+			set (gridsize) $(gridsize:$pane)
+			set minsize [$w panecget $pane -minsize]
+			set f [expr {($maxsize($pane) - $minsize)/$(gridsize)}]
+			set maxsize($pane) [expr {$f*$(gridsize) + $minsize}]
 		}
 	}
 
 	for {set i 0} {$i <= $index} {incr i} {
 		set pane [lindex $panes $i]
-		set Priv(panesize:$pane) [expr {max($maxSize($pane), [winfo $which $pane])}]
-		set lhsMax [expr {$lhsMax + $Priv(panesize:$pane) - [winfo $which $pane]}]
+		set Priv(panesize:$pane) [expr {max($maxsize($pane), [winfo $dimen $pane])}]
+		set lhsMax [expr {$lhsMax + $Priv(panesize:$pane) - [winfo $dimen $pane]}]
 		set lhsMin [expr {$lhsMin + max(1, [$w panecget $pane -minsize])}]
 	}
 
 	for {set i [expr {$index + 1}]} {$i < $npanes} {incr i} {
 		set pane [lindex $panes $i]
-		set Priv(panesize:$pane) [expr {max($maxSize($pane), [winfo $which $pane])}]
-		set rhsMax [expr {$rhsMax + $Priv(panesize:$pane) - [winfo $which $pane]}]
+		set Priv(panesize:$pane) [expr {max($maxsize($pane), [winfo $dimen $pane])}]
+		set rhsMax [expr {$rhsMax + $Priv(panesize:$pane) - [winfo $dimen $pane]}]
 		set rhsMin [expr {$rhsMin + max(1, [$w panecget $pane -minsize])}]
 	}
 
@@ -293,19 +264,15 @@ proc MarkSash {w x y} {
 	set Priv(dx) [expr {$sx - $x}]
 	set Priv(dy) [expr {$sy - $y}]
 
-	if {[string match h* [$w cget -orient]]} {
-		set Priv(min) [expr {max($lhsMin, $sx - $rhsMax)}]
-		set Priv(max) [expr {min([winfo width $w] - $rhsMin, $sx + $lhsMax)}]
-	} else {
-		set Priv(min) [expr {max($lhsMin, $sy - $rhsMax)}]
-		set Priv(max) [expr {min([winfo height $w] - $rhsMin, $sy + $lhsMax)}]
-	}
+	set v [expr {[string match h* [$w cget -orient]] ? "x" : "y"}]
+	set Priv(min) [expr {max($lhsMin, [set s$v] - $rhsMax)}]
+	set Priv(max) [expr {min([winfo $dimen $w] - $rhsMin, [set s$v] + $lhsMax)}]
 
 	set Priv(min) [expr {$Priv(min) + $sashwidth}]
 	if {$Priv(min) >= $Priv(max)} { return }
 
-	if {[llength $SashCmd]} {
-		lassign [eval $SashCmd $w mark $sx $sy] sx sy
+	if {[info exists (gridsize)]} {
+		set (mark) [set s$v]
 	}
 	for {set i 0} {$i < $npanes - 1} {incr i} {
 		$w sash mark $i $sx $sy
@@ -318,9 +285,9 @@ proc MarkSash {w x y} {
 
 proc DragSash {w x y} {
 	variable ::tk::Priv
-	variable ::panedwindow::${w}::State
+	variable ::panedwindow::${w}::
 
-	if {$State eq "disabled"} { return }
+	if {$(state) eq "disabled"} { return }
 
 	if {[info exists Priv(sash)]} {
 		incr x $Priv(dx)
@@ -346,8 +313,7 @@ proc ReleaseSash {w} {
 
 
 proc MoveSash {w index x y offs} {
-	variable ::panedwindow::${w}::SashCmd
-	variable ::panedwindow::${w}::GridSize
+	variable ::panedwindow::${w}::
 	variable ::tk::Priv
 
 	set panes [$w panes]
@@ -355,68 +321,44 @@ proc MoveSash {w index x y offs} {
 	set cy [expr {$y - $offs}]
 
 	set pane [lindex $panes $index]
-	set gridsize $GridSize($pane)
+	set gridsize $(gridsize:$pane)
+	set v [expr {[string match h* [$w cget -orient]] ? "x" : "y"}]
 
 	if {$gridsize > 1} {
 		lassign [$w sash coord $index] x1 y1
-
-		if {[string match h* [$w cget -orient]]} {
-			set fx [expr {($cx - $x1 - $gridsize/2)/$gridsize}]
-			set cx [expr {$x1 + $fx*$gridsize}]
-		} else {
-			set fy [expr {($cy - $y1 + $gridsize/2)/$gridsize}]
-			set cy [expr {$y1 + $fy*$gridsize}]
-		}
+		set f  [expr {([set c$v] - [set ${v}1] - $gridsize/2)/$gridsize}]
+		set cx [expr {[set ${v}1] + $f*$gridsize}]
 	}
 
-	set sashSize [$w cget -sashwidth]
-	if {[llength $SashCmd]} {
-		lassign [eval $SashCmd $w drag $cx $cy] cx cy
+	if {[info exists (gridsize)]} {
+		if {[set c$v] > $(mark)} {
+			set c$v [expr {(([set c$v] - $(mark))/$(gridsize))*$(gridsize) + $(mark)}]
+		} else {
+			set c$v [expr {$(mark) - (($(mark) - [set c$v])/$(gridsize))*$(gridsize)}]
+		}
 	}
 
 	$w sash place $index $cx $cy
+	set sashSize [$w cget -sashwidth]
 
-	if {[string index [$w cget -orient] 0] == "h"} {
-		if {$index > 0} {
-			lassign [$w sash coord [expr {$index - 1}]] sx sy
-			incr sx $sashSize
-			set maxSize $Priv(panesize:$pane)
+	if {$index > 0} {
+		lassign [$w sash coord [expr {$index - 1}]] sx sy
+		incr s$v $sashSize
+		set maxsize $Priv(panesize:$pane)
 
-			if {$cx - $sx > $maxSize} {
-				MoveSash $w [expr {$index - 1}] $x $y [expr {$offs + $maxSize + $sashSize}]
-			}
+		if {[set c$v] - [set s$v] > $maxsize} {
+			MoveSash $w [expr {$index - 1}] $x $y [expr {$offs + $maxsize + $sashSize}]
 		}
+	}
 
-		if {$index < [llength $panes] - 2} {
-			set pane [lindex $panes [expr {$index + 1}]]
-			lassign [$w sash coord [expr {$index + 1}]] sx sy
-			incr sx -$sashSize
-			set maxSize $Priv(panesize:$pane)
+	if {$index < [llength $panes] - 2} {
+		set pane [lindex $panes [expr {$index + 1}]]
+		lassign [$w sash coord [expr {$index + 1}]] sx sy
+		incr s$v -$sashSize
+		set maxsize $Priv(panesize:$pane)
 
-			if {$sx - $cx > $maxSize} {
-				MoveSash $w [expr {$index + 1}] $x $y [expr {$offs - $maxSize - $sashSize}]
-			}
-		}
-	} else {
-		if {$index > 0} {
-			lassign [$w sash coord [expr {$index - 1}]] sx sy
-			incr sy $sashSize
-			set maxSize $Priv(panesize:$pane)
-
-			if {$cy - $sy > $maxSize} {
-				MoveSash $w [expr {$index - 1}] $x $y [expr {$offs + $maxSize + $sashSize}]
-			}
-		}
-
-		if {$index < [llength $panes] - 2} {
-			set pane [lindex $panes [expr {$index + 1}]]
-			lassign [$w sash coord [expr {$index + 1}]] sx sy
-			incr sy -$sashSize
-			set maxSize $Priv(panesize:$pane)
-
-			if {$sy - $cy > $maxSize} {
-				MoveSash $w [expr {$index + 1}] $x $y [expr {$offs - $maxSize - $sashSize}]
-			}
+		if {[set s$v] - [set c$v] > $maxsize} {
+			MoveSash $w [expr {$index + 1}] $x $y [expr {$offs - $maxsize - $sashSize}]
 		}
 	}
 }

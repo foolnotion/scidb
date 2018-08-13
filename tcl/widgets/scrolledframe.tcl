@@ -34,6 +34,7 @@ proc scrolledframe {path args} {
 	array set opts $args
 	set frameOpts {}
 	set scrollOpts {}
+	set sbOpts {}
 	foreach key [array names opts] {
 		switch -- $key {
 			-background - -padding {
@@ -49,6 +50,10 @@ proc scrolledframe {path args} {
 				lappend scrollOpts $key $opts($key)
 				array unset opts $key
 			}
+			-scrollbarcmd {
+				lappend sbOpts -sbcmd $opts($key)
+				array unset opts $key
+			}
 		}
 	}
 	ttk::frame $path {*}$frameOpts
@@ -57,13 +62,13 @@ proc scrolledframe {path args} {
 	set scrollopts {}
 	if {$opts(-expand) ne "y"} {
 		set v $path.__vs__
-		scrolledframe::scrollbar $v -command [list $f yview] -orient vertical
+		scrolledframe::scrollbar $v -command [list $f yview] -orient vertical {*}$sbOpts
 		lappend scrollOpts -yscrollcommand [list ::scrolledframe::MySbSet $v]
 		grid $v -row 0 -column 1 -sticky ns
 	}
 	if {$opts(-expand) ne "x"} {
 		set h $path.__hs__
-		scrolledframe::scrollbar $h -command [list $f xview] -orient horizontal
+		scrolledframe::scrollbar $h -command [list $f xview] -orient horizontal {*}$sbOpts
 		lappend scrollOpts -xscrollcommand [list ::scrolledframe::MySbSet $h]
 		grid $h -row 1 -column 0 -sticky ew
 	}
@@ -194,8 +199,11 @@ proc bindMouseWheel {w recv} {
 
 
 proc scrollbar {path args} {
+	variable {}
+	array set opts { -sbcmd ttk::scrollbar }
+	array set opts $args
 	tk::frame $path -borderwidth 0
-	ttk::scrollbar $path.sb {*}$args
+	$opts(-sbcmd) $path.sb {*}$args
 	if {[$path.sb cget -orient] eq "horizontal"} {
 		set dim column
 		set sticky we

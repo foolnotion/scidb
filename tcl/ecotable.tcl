@@ -71,6 +71,7 @@ proc build {parent args} {
 
 	set id $opts(-id)
 	if {$id ni $IdList} { lappend IdList $id }
+	set opts(-id) eco:$id
 
 	namespace eval $parent {}
 	variable ${parent}::
@@ -95,7 +96,6 @@ proc build {parent args} {
 		-visible 1 \
 		-foreground black \
 		-textvar [namespace current]::mc::F_Line \
-		-stripes eco,stripes \
 		;
 	lappend menu [list radiobutton \
 		-command [namespace code [list Update $parent]] \
@@ -132,7 +132,6 @@ proc build {parent args} {
 		-visible 1 \
 		-foreground darkgreen \
 		-textvar ::gametable::mc::F_Eco \
-		-stripes eco,stripes \
 		;
 	lappend columns eco $col2
 	lappend col3 \
@@ -146,7 +145,6 @@ proc build {parent args} {
 		-visible 0 \
 		-foreground magenta4 \
 		-textvar ::gametable::mc::F_Key \
-		-stripes eco,stripes \
 		;
 	lappend columns key $col3
 	lappend col4 \
@@ -160,7 +158,6 @@ proc build {parent args} {
 		-visible 1 \
 		-foreground black \
 		-textvar ::gametable::mc::F_Opening \
-		-stripes eco,stripes \
 		;
 	lappend columns opening $col4
 	::scrolledtable::build $tb $columns {*}[array get opts]
@@ -170,7 +167,7 @@ proc build {parent args} {
 	pack $tb -fill both -expand yes
 	bind $tb <<TableFill>> [namespace code [list FillTable $tb %d]]
 	bind $tb <<TableVisit>>	[namespace code [list TableVisit $parent $tb %d]]
-	bind $tb <<TableSelected>>	[namespace code [list TableSelected $parent $tb %d %s]]
+	bind $tb <<TableSelected>>	[namespace code [list TableSelected $parent $tb %d]]
 	bind $tb <<LanguageChanged>> [namespace code [list FillTable $tb %d]]
 	set path [::scrolledtable::tablePath $tb]
 	bind $path <ButtonPress-1> [namespace code [list TableShow $parent $tb %x %y %s]]
@@ -183,6 +180,7 @@ proc build {parent args} {
 	set (locked) 0
 	set (mode) $Options(move:mode)
 	set (update) [list [namespace current]::Update $parent]
+	set (listmode) $opts(-listmode)
 	return $tb
 }
 
@@ -193,23 +191,25 @@ proc open {parent id} {
 	set dlg [tk::toplevel $parent.__eco__]
 	set tb [build $dlg -id $id -listmode no -takefocus 1]
 	::widget::dialogButtons $dlg {ok cancel}
-	$dlg.ok configure -command [namespace code [list CurrentSelection $dlg]]
+	$dlg.ok configure -command [namespace code [list CurrentSelection $dlg]] -state disabled
 	$dlg.cancel configure -command [list set [namespace current]::eco_ ""]
 	pack $tb -expand yes -fill both
 	set path [::scrolledtable::tablePath $tb]
 	bind $tb <<TableSelected>>	[namespace code [list SelectEco $dlg %d]]
 	bind $tb <<TableActivated>> [namespace code [list HandleSelection $dlg %d]]
 	bind $dlg <Escape> [list $dlg.cancel invoke]
+	::widget::dialogGeometry $dlg $parent 600x400
 	wm transient $dlg [winfo toplevel $parent]
 	wm withdraw $dlg
 	wm title $dlg $mc::SelectEco
 	wm resizable $dlg true true
-	::util::place $dlg -parent $parent -position center
 	wm deiconify $dlg
-	focus $tb
+	Update $dlg yes
+	::scrolledtable::focus $tb
 	::ttk::grabWindow $dlg
-	tkwait variable eco_
+	tkwait variable [namespace current]::eco_
 	::ttk::releaseGrab $dlg
+	destroy $dlg
 	return $eco_
 }
 
@@ -246,10 +246,11 @@ proc HandleSelection {dlg row} {
 
 proc SelectEco {w row} {
 	variable ${w}::
+	variable eco_
 
 	HideBoard $w
-	set row [::scrolledtable::rowToIndex $w.table $row]
-	return [lindex $(data) $row 2]
+	set index [::scrolledtable::rowToIndex $w.table $row]
+	set eco_ [lindex $(data) $index 1]
 }
 
 
@@ -257,23 +258,19 @@ proc CurrentSelection {w} {
 	variable ${w}::
 
 	variable eco_
-	set row [::scrolledtable::index $w.table]
-	if {$row >= 0} { set eco_ [lindex $(data) $row 1] } else { set eco_ "" }
+	set index [::scrolledtable::activeIndex $w.table]
+	if {$index >= 0} { set eco_ [lindex $(data) $index 1] } else { set eco_ "" }
 }
 
 
-proc Update {w args} {
+proc Update {w {force no}} {
 	variable Options
 	variable ${w}::
 
 	HideBoard $w
-	if {$(mode) eq $Options(move:mode)} {
-		set (oldData) $(data)
-	} else {
-		set (oldData) {}
-	}
+	if {$(mode) eq $Options(move:mode)} { set (oldData) $(data) } else { set (oldData) {} }
 	set (data) [::scidb::game::ecotable -notation $Options(move:notation) -mode $Options(move:mode)]
-	if {$(active)} {
+	if {$(active) || $force} {
 		set variant [::scidb::game::query variant]
 		set base [::scidb::game::query database]
 		::scrolledtable::update $w.table $base $variant [llength $(data)]
@@ -309,21 +306,27 @@ proc SelectFigurines {path} {
 
 proc FillTable {path args} {
 	set w [winfo parent $path]
-	variable Options
 	variable ${w}::
 
 	if {$(data) eq $(oldData)} { return }
 	HideBoard $w
 	lassign [lindex $args 0] table base variant start first last columns
+	incr first $start
+	incr last $start
 	set lastRow [llength $(oldData)]
-	set row 0
 
-	foreach rowData $(data) {
+	for {set row $first} {$row < $last} {incr row} {
+		set rowData [lindex $(data) $row]
 		if {$row >= $lastRow || $rowData ne [lindex $(oldData) $row]} {
 			lassign $rowData line eco key names
-			table::insert $table $row [list $line $eco $key [MakeOpening $names]]
+			set index [expr {$row - $start}]
+			table::insert $table $index [list $line $eco $key [MakeOpening $names]]
 		}
-		incr row
+	}
+
+	if {!$(listmode)} {
+		::scrolledtable::see $path end
+		::scrolledtable::activate $path end
 	}
 }
 
@@ -351,19 +354,22 @@ proc TableVisit {w table data} {
 		set index [::scrolledtable::rowToIndex $table $row]
 		::tooltip::show $table [MakeOpening [lindex $(data) $index 3]] cursor
 	}
-	::scrolledtable::activate $table $row
+	if {$(listmode)} {
+		::scrolledtable::activate $table $row
+	}
 }
 
 
-proc TableSelected {w table row state} {
+proc TableSelected {w table index} {
 	variable ${w}::
 
 	if {$(locked)} {
 		return [::scrolledtable::select $table none]
 	}
 	HideBoard $w
+	set row [::scrolledtable::indexToRow $table $index]
+	::scrolledtable::select $table none
 	::scrolledtable::select $table $row
-	set index [::scrolledtable::rowToIndex $table $row]
 	set fen [::scidb::game::codeToFen [lindex $(data) $index 2]]
 	::scidb::game::go position $fen
 }
@@ -379,6 +385,11 @@ proc TableShow {w table x y state} {
 		set (locked) 1
 	} else {
 		HideBoard $w
+		if {!$(listmode)} {
+			lassign [::scrolledtable::identify $table $x $y] row col elem id
+			if {$row >= 0} { ::scrolledtable::activate $table $row }
+			$w.ok configure -state [expr {$row >= 0 ? "normal" : "disabled"}]
+		}
 	}
 }
 
@@ -417,7 +428,6 @@ proc UpdateBoard {parent fen} {
 	if {![winfo exists $w]} { 
 		return [ShowBoard $parent $fen]
 	}
-
 	::board::diagram::update $w.board [::scidb::board::fenToBoard $fen]
 }
 
@@ -433,15 +443,16 @@ proc HideBoard {w} {
 }
 
 
-proc WriteTableOptions {chan {id "eco"}} {
+proc WriteTableOptions {chan variant {id "board"}} {
+	variable TableOptions
 	variable IdList
 
-	if {$id ne "eco"} { return }
+	if {$id ne "board"} { return }
 
 	foreach uid $IdList {
-		if {[::scrolledtable::countOptions eco:$uid] > 0} {
+		if {[info exists TableOptions($variant:$id)]} {
 			puts $chan "::scrolledtable::setOptions eco:$uid {"
-			::options::writeArray $chan [::scrolledtable::getOptions eco:$uid]
+			::options::writeArray $chan $TableOptions($variant:$id)
 			puts $chan "}"
 		}
 	}
@@ -458,23 +469,25 @@ proc WriteOptions {chan} {
 proc SaveOptions {twm variant} {
 	variable TableOptions
 
-	set id [::application::twm::getId $twm]
-	set TableOptions($variant:$id) [::scrolledtable::getOptions eco:$id]
+	if {[set id [::application::twm::getId $twm]] eq "board"} {
+		set TableOptions($variant:$id) [::scrolledtable::getOptions eco:$id]
+	}
 }
 
 
 proc RestoreOptions {twm variant} {
 	variable TableOptions
 
-	set id [::application::twm::getId $twm]
-	::scrolledtable::setOptions eco:$id $TableOptions($variant:$id)
+	if {[::application::twm::getId $twm] eq "board"} {
+		::scrolledtable::setOptions eco:board $TableOptions($variant:board)
+	}
 }
 
 
 proc CompareOptions {twm variant} {
 	variable TableOptions
 
-	set id [::application::twm::getId $twm]
+	if {[set id [::application::twm::getId $twm]] ne "board"} { return true }
 	if {[::scrolledtable::countOptions eco:$id] == 0} { return true }
 	set lhs $TableOptions($variant:$id)
 	set rhs [::scrolledtable::getOptions eco:$id]

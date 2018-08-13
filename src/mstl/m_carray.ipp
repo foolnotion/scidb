@@ -28,6 +28,7 @@ namespace mstl {
 template <typename T>
 inline
 carray<T>::carray()
+	:m_size(0)
 {
 	static_assert(is_pod<T>::value, "value type must be POD");
 }

@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2012-2013 Gregor Cramer
+# Copyright: (C) 2012-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -252,12 +252,7 @@ proc get {name {info {}}} {
 	}
 
 	if {[string length $found] > 0} {
-		catch {
-			set fd [open $found rb]
-			set data [read $fd]
-			close $fd
-			catch {set img [image create photo -data $data]}
-		}
+		catch { set img [image create photo -data [::file::read $found -translation binary]] }
 	}
 
 	return $img
@@ -333,9 +328,7 @@ proc ReadTimestamp {dir} {
 	set timestamp ""
 	set file [file join $dir TIMESTAMP]
 	if {[file readable $file]} {
-		set f [open $file r]
-		set timestamp [string trim [read $f]]
-		close $f
+		set timestamp [string trim [::file::read $file]]
 	}
 	return $timestamp
 }
@@ -459,7 +452,6 @@ proc ProcessUpdate {parent} {
 
 	set data ""
 	catch { set data [gets $Priv(pipe)] }
-puts "ProcessUpdate: $data"
 
 	lassign {"" "" ""} reason arg url
 	lassign $data reason arg url
@@ -635,7 +627,7 @@ proc AskPassword {parent} {
 proc ReadPipe {pipe} {
 	variable Result_
 
-	# IMPORTANT NOTE: don't use 'append'
+	# IMPORTANT NOTE: don't use "append"
 	set Result_ "${Result_}[read $pipe]"
 }
 

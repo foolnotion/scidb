@@ -21,25 +21,24 @@
 namespace eval widget {
 namespace eval mc {
 
-set Ok			"&OK"
-set Cancel		"&Cancel"
-set Apply		"&Apply"
-set Reset		"&Reset"
-set Close		"&Close"
-set Clear		"C&lear"
-set Import		"&Import"
-set Revert		"&Revert"
-set Update		"&Update"
-set Previous	"&Previous"
-set Next			"&Next"
-set Last			"Las&t"
-set First		"&First"
-set Help			"&Help"
-set Start		"&Start"
-
-set New			"&New"
-set Save			"&Save"
-set Delete		"&Delete"
+set Label(ok)			"&OK"
+set Label(cancel)		"&Cancel"
+set Label(apply)		"&Apply"
+set Label(reset)		"&Reset"
+set Label(close)		"&Close"
+set Label(clear)		"C&lear"
+set Label(import)		"&Import"
+set Label(revert)		"&Revert"
+set Label(update)		"&Update"
+set Label(previous)	"&Previous"
+set Label(next)		"&Next"
+set Label(last)		"Las&t"
+set Label(first)		"&First"
+set Label(help)		"&Help"
+set Label(start)		"&Start"
+set Label(new)			"&New"
+set Label(save)		"&Save"
+set Label(delete)		"&Delete"
 
 set Control(minimize)	"Minimize"
 set Control(restore)		"Leave Full-screen"
@@ -207,6 +206,46 @@ proc dialogWatch {dlg} {
 }
 
 
+proc dialogGeometry {dlg parent {initValue ""}} {
+	uplevel 1 { set ::widget::ns_ [namespace current] }
+	variable ns_
+	set gvar ${ns_}::widget:Geometry
+	if {![info exists $gvar]} {
+		if {[scan $initValue "%dx%d%d%d" tw th tx ty] == 4} {
+			set $gvar [list $tx $ty $tw $th]
+		} elseif {[scan $initValue "%dx%d" tw th] == 2} {
+			set $gvar [list $tw $th]
+		} else {
+			set $gvar {}
+		}
+	}
+	bind $dlg <Configure> +[list ::widget::RecordGeometry $dlg [winfo toplevel $parent] $gvar]
+	if {[llength $gvar] == 0} { return }
+	if {[scan [wm geometry [winfo toplevel $parent]] "%dx%d%d%d" tw th tx ty] != 4} { return }
+	if {[llength [set $gvar]] == 4} {
+		lassign [set $gvar] gx gy gw gh
+		set rx [expr {$tx + $gx}]
+		set ry [expr {$ty + $gy}]
+		set rw [winfo reqwidth $dlg]
+		set rh [winfo reqheight $dlg]
+		set sw [winfo workareawidth $dlg]
+		set sh [winfo workareaheight $dlg]
+		set rx [expr {max(min($rx, $sw - $rw), 0)}]
+		set ry [expr {max(min($ry, $sh - $rh), 0)}]
+		set wd [expr {max(1, $gw)}]
+		set ht [expr {max(1, $gh)}]
+		wm geometry $dlg ${wd}x${ht}+${rx}+${ry}
+	} elseif {[llength [set $gvar]] == 2} {
+		lassign [set $gvar] gw gh
+		set wd [expr {max(1, $gw)}]
+		set ht [expr {max(1, $gh)}]
+		wm geometry $dlg ${wd}x${ht}
+	} else {
+		::util::place $dlg -parent $parent -position center
+	}
+}
+
+
 proc dialogRaise {dlg} {
 	variable Priv
 
@@ -285,34 +324,17 @@ proc dialogButtons {dlg buttons args} {
 					PackDialogButton $dlg $sep left
 					set Specs(justify:$sep) $opts(-justify)
 				}
-				set var [namespace current]::mc::Ok
+				set var [namespace current]::mc::Label(ok)
 			}
-
-			cancel	{ set var [namespace current]::mc::Cancel }
-			apply		{ set var [namespace current]::mc::Apply }
-			update	{ set var [namespace current]::mc::Update }
-			reset		{ set var [namespace current]::mc::Reset }
-			close		{ set var [namespace current]::mc::Close }
-			clear		{ set var [namespace current]::mc::Clear }
-			import	{ set var [namespace current]::mc::Import }
-			revert	{ set var [namespace current]::mc::Revert }
-			previous	{ set var [namespace current]::mc::Previous }
-			next		{ set var [namespace current]::mc::Next }
-			first		{ set var [namespace current]::mc::First }
-			last		{ set var [namespace current]::mc::Last }
-			new		{ set var [namespace current]::mc::New }
-			save		{ set var [namespace current]::mc::Save }
-			delete	{ set var [namespace current]::mc::Delete }
-			start		{ set var [namespace current]::mc::Start }
 
 			help - hlp {
 				set n [llength [pack slaves $dlg.__buttons]]
 				if {$n > 0} { dialogButtonAddSeparator $dlg }
-				set var [namespace current]::mc::Help
+				set var [namespace current]::mc::Label(help)
 			}
 
 			default {
-				return -code error "unknown button type $type"
+				set var [namespace current]::mc::Label($type)
 			}
 		}
 
@@ -484,11 +506,6 @@ proc dialogFullscreenButtons {parent} {
 }
 
 
-proc FullscreenSetupCloseButton {parent} {
-	::tooltip::tooltip $parent.__control__.close "$mc::Control(close) ($::mc::Key(Alt)+F4)"
-}
-
-
 proc buttonSetText {w var args} {
 	set type [lindex [split $w .] end]
 
@@ -618,6 +635,20 @@ proc menuItemHighlightSecond {menu} {
 			-background [option get $menu activeBackground Menu] \
 			-foreground [option get $menu activeForeground Menu]
 	}
+}
+
+
+proc RecordGeometry {dlg parent gvar} {
+	if {[scan [wm geometry $dlg] "%dx%d%d%d" fw fh fx fy] == 4} {
+		if {[scan [wm geometry [winfo toplevel $parent]] "%dx%d%d%d" tw th tx ty] == 4} {
+			set $gvar [list [expr {max(0, $fx) - $tx}] [expr {max(0, $fy) - $ty}] $fw $fh]
+		}
+	}
+}
+
+
+proc FullscreenSetupCloseButton {parent} {
+	::tooltip::tooltip $parent.__control__.close "$mc::Control(close) ($::mc::Key(Alt)+F4)"
 }
 
 
@@ -766,6 +797,20 @@ proc checkIsKDE {} {
 
 	return $IsKde_
 }
+
+
+proc WriteOptionsRecursive {chan ns} {
+	foreach ns [namespace children $ns] {
+		if {[namespace exists $ns]} {
+			if {[info exists ${ns}::widget:Geometry]} {
+				::options::writeList $chan ${ns}::widget:Geometry
+			}
+			WriteOptionsRecursive $chan $ns
+		}
+	}
+}
+proc WriteOptions {chan} { WriteOptionsRecursive $chan :: }
+::options::hookWriter [namespace current]::WriteOptions
 
 
 namespace eval icon {

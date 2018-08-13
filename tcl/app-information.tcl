@@ -199,12 +199,7 @@ proc activate {w flag} {
 		if {![file exists $file]} { set file [file join $::scidb::dir::help en Welcome.html] }
 		if {[file readable $file]} {
 			set fileContent ""
-			catch {
-				set fd [::open $file r]
-				chan configure $fd -encoding utf-8
-				set fileContent [read $fd]
-				close $fd
-			}
+			catch { set fileContent [::file::read $file -encoding utf-8] }
 			foreach line [split $fileContent \n] {
 				if {[string match {*-- END --*} $line]} { break }
 				append content $line " "
@@ -554,11 +549,7 @@ proc Response {lang update parent url data} {
 
 
 proc LanguageChanged {} {
-	variable Priv
-
-	if {$Priv(connection)} {
-		FetchNews $::mc::langID 1
-	}
+	FetchNews $::mc::langID 1
 }
 
 

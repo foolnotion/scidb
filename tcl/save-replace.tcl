@@ -279,8 +279,10 @@ variable Characteristics -1
 
 
 proc open {parent base variant position {number 0}} {
-	variable TagOrder
 	variable DefaultTagOrder
+	variable TagOrder
+	variable Lookup
+	variable Item
 
 	if {![checkIfWriteable $parent $base $variant $position $number]} { return }
 	incr number -1
@@ -295,13 +297,17 @@ proc open {parent base variant position {number 0}} {
 	}
 	set dlg [winfo toplevel $parent].saveReplace_${characteristics}_${codec}
 
-	Destroy $dlg
-
 	if {![winfo exists $dlg]} {
 		namespace eval ::$dlg {}
 	}
 	variable ::${dlg}::Priv
 
+	array unset Lookup
+	array unset Item
+	array unset TagOrder
+	if {![winfo exists $dlg]} {
+		array unset Priv ;# removes all "trace add" bindings
+	}
 	array set TagOrder [array get DefaultTagOrder]
 
 	if {$characteristicsOnly} {
@@ -330,6 +336,7 @@ proc open {parent base variant position {number 0}} {
 
 	if {![winfo exists $dlg]} {
 		Build $dlg $base $variant $position $number
+		bind $dlg <<FontSizeChanged>> [namespace code [list DestroyIfUnmapped $dlg]]
 	}
 
 	foreach attr {player event site annotator} {
@@ -397,6 +404,11 @@ proc checkIfWriteable {parent base variant position number} {
 		return 0
 	}
 	return 1
+}
+
+
+proc DestroyIfUnmapped {dlg} {
+	if {![winfo viewable $dlg]} { destroy $dlg }
 }
 
 
@@ -1109,17 +1121,6 @@ proc Build {dlg base variant position number} {
 
 	# Finalization ############################################
 	set Priv(disabled) $disabled
-}
-
-
-proc Destroy {dlg} {
-	variable Lookup
-	variable Item
-	variable TagOrder
-
-	array unset Lookup
-	array unset Item
-	array unset TagOrder
 }
 
 
@@ -2773,13 +2774,11 @@ proc TruncateValue {top tag value {field ""}} {
 
 proc MakeMessage {top tag msg {field ""}} {
 	if {[string length $field] > 0} {
-		set tag [$top.$field-l cget -text]
 		set sec $mc::Section([lindex [split $field -] 0])
 	} else {
-		set tag $tag
 		set sec [string trim [lindex [split $mc::Section(tags) /] 1]]
 	}
-	append str [format $mc::TagName $tag] " (" [format $mc::InSection $sec] "):\n\n" $msg
+	append str "[format $mc::InSection $sec]\n\n" $msg
 	return $str
 }
 

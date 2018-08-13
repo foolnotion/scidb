@@ -39,6 +39,18 @@ set OpenEcoDialog "Open ECO dialog"
 }
 
 
+bind EcoBoxFrame <Destroy>		[list namespace delete [namespace current]::%W]
+bind EcoBoxFrame <Destroy>		{+ rename %W {} }
+bind EcoBoxFrame <FocusIn>		{ focus [tk_focusNext %W] }
+
+bind EcoBoxFrame <<TraverseIn>> {
+	%W.entry instate {!readonly !disabled} {
+		%W.entry selection range 0 3
+		%W.entry icursor 3
+	}
+}
+
+
 proc Build {w variant args} {
 	namespace eval [namespace current]::${w} {}
 	variable ${w}::Content
@@ -56,7 +68,7 @@ proc Build {w variant args} {
 		set opts(-textvariable) [namespace current]::${w}::Content
 	}
 
-	ttk::frame $w -borderwidth 0
+	ttk::frame $w -borderwidth 0 -takefocus 0 -class EcoBoxFrame
 	ttk::entry $w.entry \
 		-textvariable $opts(-textvariable) \
 		-exportselection no \
@@ -64,22 +76,23 @@ proc Build {w variant args} {
 		-validate key \
 		-validatecommand [namespace code { ValidateEco %P %S }] \
 		-invalidcommand { bell } \
+		-cursor xterm \
 		;
 	grid $w.entry -row 0 -column 0 -sticky ew
 	grid columnconfigure $w {0} -weight 1
-	# XXX currently not working
-	if {$variant eq "xormal" && [llength [namespace which openEcoDialog]]} {
+	if {$variant eq "Normal" && [llength [namespace which -command openEcoDialog]]} {
+		set linespace [font metrics [$w.entry cget -font] -linespace]
+		set size [expr {$linespace >= 16 ? 16 : 12}]
 		ttk::button $w.eco \
 			-style icon.TButton \
-			-image $::icon::16x16::lines \
+			-image [set icon::${size}x${size}::dialog] \
 			-command [namespace code [list OpenEcoDialog $w]] \
 			;
-		grid $w.eco -row 0 -column 2
+		grid $w.eco -row 0 -column 2 -sticky wns
 		grid columnconfigure $w {1} -minsize $::theme::padx
 		tooltip $w.eco [namespace current]::mc::OpenEcoDialog
 	}
 
-	bind $w.entry <Destroy> [list catch [list namespace delete [namespace current]::${w}]]
 	bind $w.entry <Any-Key> [namespace code [list Completion $w.entry %A %K $opts(-textvariable)]]
 	bind $w.entry <<LanguageChanged>> \
 		[namespace code [list LanguageChanged $w.entry $opts(-textvariable)]]
@@ -96,7 +109,7 @@ proc tooltip {args} {}
 
 proc OpenEcoDialog {w} {
 	set eco [openEcoDialog $w]
-	if {[string length $eco]} { $w.entry set $eco }
+	if {[string length $eco]} { $w set $eco }
 }
 
 
@@ -174,9 +187,12 @@ proc ValidateEco {eco key} {
 
 proc Completion {w code sym var} {
 	if {$sym eq "Tab"} {
-		after idle [namespace code [list Completion2 $w.entry $var no]]
+		after idle [namespace code [list Completion2 $w $var no]]
+	} elseif {$sym in {BackSpace Delete}} {
+		$w delete 3 end
 	} elseif {[string is alnum -strict $code] || $code eq " "} {
-		after idle [namespace code [list Completion2 $w.entry $var yes]]
+		$w delete 3 end
+		after idle [namespace code [list Completion2 $w $var yes]]
 	}
 }
 
@@ -195,20 +211,51 @@ proc Completion2 {w var selection} {
 		append content " \u2013 "
 		if {[llength $vars]} {
 			append content [::mc::translateEco $short]
-			foreach var $vars { append content ", " [::mc::translateEco $var] }
+			append content ", " [::mc::translateEco [lindex $vars end]]
 		} else {
 			append content [::mc::translateEco $long]
 		}
 		set $var $content
-
-		if {$selection} {
-			$w.entry selection clear
-			$w.entry selection range 3 end
-		}
+		if {$selection} { $w selection clear }
 	} else {
 		set $var [string range $content 0 2]
 	}
 }
+
+
+namespace eval icon {
+namespace eval 12x12 {
+
+set dialog [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAMAAABhq6zVAAABJlBMVEUAAAAAAAAJe7UIcacHerQI
+	erQIe7QJe7QKfLUNZLkOfrYQf7YRZ7wTab4Tar8UgbYVgbYVgbcWgrgXgrg3nds4nds5ndt5en17
+	fX9+gIN/goSBgoSBg4WEhoiEhoqFh4mGh4qHiYuHiYyHioyJio2JjI6Ki46KjJCLjZGMjpGNkJOO
+	kJKPkJSQkZSQkpSQk5aTlZmUlZmVl5iVl5qYmpyZm52Zzeyazeye0O+23fW/vbzIxsbQzMzW1NLg
+	3d3h3tzh4eHj4uDj4uLj4+Pk4d7k4+Pk5OTn5ebr5uTs6+rv7Ojw8fHx8PD09PP18e/18/D19PP1
+	9fX19vb28ez29/b3+Pf49fL5+vn7+fn8/fz9+/j9/v39/v7/+vX/+vj//v3///z///+pwotmAAAA
+	c0lEQVQI12NgEhbkF4AAJgYhCzMzcwgQYuAWgwNuBo5EOOBgYLN3cXRydQOCRDYGNg8+KxVZSXEJ
+	aRDHK9jfNygkNDQExPHjtdZVl5OSUQJyWMNioyJjwAawMrDE8dgY6ajJKmgksjCwIIxmYWDmYmeB
+	AQDbNRr4oMGO8QAAAABJRU5ErkJggg==
+}]
+
+} ;# namespace 12x12
+namespace eval 16x16 {
+
+set dialog [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAABJlBMVEUAAAAAAAAJe7UIcacHerQI
+	erQIe7QJe7QKfLUNZLkOfrYQf7YRZ7wTab4Tar8UgbYVgbYVgbcWgrgXgrg3nds4nds5ndt5en17
+	fX9+gIN/goSBgoSBg4WEhoiEhoqFh4mGh4qHiYuHiYyHioyJio2JjI6Ki46KjJCLjZGMjpGNkJOO
+	kJKPkJSQkZSQkpSQk5aTlZmUlZmVl5iVl5qYmpyZm52Zzeyazeye0O+23fW/vbzIxsbQzMzW1NLg
+	3d3h3tzh4eHj4uDj4uLj4+Pk4d7k4+Pk5OTn5ebr5uTs6+rv7Ojw8fHx8PD09PP18e/18/D19PP1
+	9fX19vb28ez29/b3+Pf49fL5+vn7+fn8/fz9+/j9/v39/v7/+vX/+vj//v3///z///+pwotmAAAA
+	s0lEQVQYGQXBIU4DQRQA0Dczf2nrINwA2qQCCKIHwOAxJD0iigNwACweUYXCkCBadrMzw3spX7SW
+	AD3nnzjfNAnQ5c8Y0yElQO+bMep2CwAf0RyGmkpCre26Bav3m+9xbqlErAny43w55KTXqRHE293v
+	dJrz2SJdEd3yqfYyYJpHPbrl6/1xmk5luUhbPcjPABpBetn9zdMxVkO6JQp7AJQovOy+AA9KYG8N
+	QCqLWgGUMv4Doyw/M/TPkLwAAAAASUVORK5CYII=
+}]
+
+} ;# namespace 16x16
+} ;# namespace icon
 
 } ;# namespace ecobox
 

@@ -54,8 +54,8 @@ array set Defaults {
 array set Prios { annotator 200 games 100 }
 
 array set FrameOptions {
-	annotator { -width 200 -height 640 -minwidth 200 -minheight 100 -expand both }
-	games     { -width 800 -height 640 -minwidth 200 -minheight 100 -expand both }
+	annotator { -width 200 -height 100% -minwidth 200 -minheight 100 -expand both }
+	games     { -width 800 -height 100% -minwidth 200 -minheight 100 -expand both }
 }
 
 variable Layout {
@@ -137,7 +137,7 @@ proc MakeFrame {twm parent type uid} {
 
 	set frame [tk::frame $parent.$uid -borderwidth 0 -takefocus 1]
 	set nameVar ::application::twm::mc::Pane($uid)
-	return [list $frame $nameVar $Prios($uid) [expr {$uid ne "annotator"}] yes yes]
+	return [list $frame $nameVar $Prios($uid) no [expr {$uid ne "annotator"}] yes yes]
 }
 
 
@@ -481,7 +481,8 @@ proc Find {path mode name} {
 }
 
 
-proc WriteTableOptions {chan {id "annotator"}} {
+proc WriteTableOptions {chan variant {id "annotator"}} {
+	variable TableOptions
 	variable Tables
 
 	if {$id ne "annotator"} { return }
@@ -489,9 +490,9 @@ proc WriteTableOptions {chan {id "annotator"}} {
 	foreach table $Tables {
 		set id [::application::twm::getId $table]
 		foreach uid {annotator games} {
-			if {[::scrolledtable::countOptions db:annotators:$id:$uid] > 0} {
+			if {[info exists TableOptions($variant:$id:$uid)]} {
 				puts $chan "::scrolledtable::setOptions db:annotators:$id:$uid {"
-				::options::writeArray $chan [::scrolledtable::getOptions db:annotators:$id:$uid]
+				::options::writeArray $chan $TableOptions($variant:$id:$uid)
 				puts $chan "}"
 			}
 		}

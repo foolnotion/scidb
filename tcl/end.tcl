@@ -228,25 +228,20 @@ log::finishLayout
 
 # --- Read options -----------------------------------------------------
 
-# XXX preliminary for migration
-proc ::gametable::setOptions {id opts} { return [::scrolledtable::setOptions $id $opts] }
-proc ::eventtable::setOptions {id opts} { return [::scrolledtable::setOptions $id $opts] }
-proc ::playertable::setOptions {id opts} { return [::scrolledtable::setOptions $id $opts] }
-proc ::sitetable::setOptions {id opts} { return [::scrolledtable::setOptions $id $opts] }
+# START OF MIGRATION ################################################################
+# preliminary for migration
+proc gametable::setOptions {id opts} { return [::scrolledtable::setOptions $id $opts] }
+proc eventtable::setOptions {id opts} { return [::scrolledtable::setOptions $id $opts] }
+proc playertable::setOptions {id opts} { return [::scrolledtable::setOptions $id $opts] }
+proc sitetable::setOptions {id opts} { return [::scrolledtable::setOptions $id $opts] }
+# END OF MIGRATION ##################################################################
 
 # prevent errors while parsing old config files (as long as we have a beta version)
 proc dialog::fsbox::setBookmarks {args} {}
 
-if {[file readable $::scidb::file::options]} {
-#	if {[catch {
-			::load::source $::scidb::file::options -message $::load::mc::ReadingFile(options) -encoding utf-8 -throw 1
-#		}]} {
-#		unset ::setup::board::History
-#		set ::setup::board::History {}
-#		catch { source -encoding utf-8 $::scidb::file::options }
-#	}
-}
+options::sourceFile
 
+# START OF MIGRATION ################################################################
 if {[catch {
 	file mkdir [file join $::scidb::dir::user layout] ;# this is new
 
@@ -400,7 +395,7 @@ if {[catch {
 		set ::beta::WhatsNew 1
 	}
 
-	if {[llength $::comment::Geometry] == 4} {
+	if {[info exists ::comment::Geometry] && [llength $::comment::Geometry] == 4} {
 		lassign $::comment::Geometry w h x y
 		if {$w < 100 || $h < 50} {
 			set w [expr {$w*10}]
@@ -428,20 +423,21 @@ if {$::application::board::Options(promoted:mark) eq "1"} {
 } elseif {$::application::board::Options(promoted:mark) eq "0"} {
 	set ::application::board::Options(promoted:mark) none
 }
+# END OF MIGRATION ##################################################################
 
-set ::scidb::revision [::scidb::misc::revision]
+set scidb::revision [::scidb::misc::revision]
 
 # --- Initalization ----------------------------------------------------
 
-::splash::print "$load::mc::Startup..."
-::mc::setup
-::font::useLanguage $mc::langID
-::theme::setTheme $menu::Theme
-::menu::setup
-::board::setup
-::tooltip::init
-::font::setupDefaultFonts
-::font::setupChessFonts
+splash::print "$load::mc::Startup..."
+mc::setup
+font::useLanguage $mc::langID
+theme::setTheme $menu::Theme
+menu::setup
+board::setup
+tooltip::init
+font::setupDefaultFonts
+font::setupChessFonts
 #if {$beta::Welcome} { ::html::preload $mc::langID }
 application::open
 

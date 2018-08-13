@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2017 Gregor Cramer
+// Copyright: (C) 2009-2018 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -92,6 +92,8 @@ bool isUnsigned(Tcl_Obj* obj);
 bool isBoolean(Tcl_Obj* obj);
 
 char const* asString(Tcl_Obj* obj);
+char const* asString(Tcl_Obj* obj, int& len);
+char const* asString(Tcl_Obj* obj, unsigned& len);
 int asInt(Tcl_Obj* obj);
 unsigned asUnsigned(Tcl_Obj* obj);
 bool asBoolean(Tcl_Obj* obj);
@@ -115,11 +117,39 @@ void zero(Tcl_Obj*& obj);
 Tcl_Obj* getGlobalVar(Tcl_Obj* var);
 void setGlobalVar(Tcl_Obj* var, Tcl_Obj* value);
 
-int countElements(Tcl_Obj* obj);
+unsigned countElements(Tcl_Obj* obj);
 unsigned getElements(Tcl_Obj* obj, Tcl_Obj**& objv);
 Array getElements(Tcl_Obj* obj);
 Tcl_Obj* addElement(Tcl_Obj*& list, Tcl_Obj* elem);
 template <int N> Tcl_Obj* addElement(Tcl_Obj*& list, Tcl_Obj* (&objv)[N]);
+Tcl_Obj* insertElement(Tcl_Obj*& list, Tcl_Obj* elem, unsigned position);
+template <int N> Tcl_Obj* insertElement(Tcl_Obj*& list, Tcl_Obj* (&objv)[N], unsigned position);
+Tcl_Obj* removeElement(Tcl_Obj*& list, unsigned position);
+
+int findElement(Tcl_Obj* obj, mstl::string const& what);
+int findElement(Tcl_Obj* obj, char const* what);
+int findElement(Tcl_Obj* obj, Tcl_Obj* what);
+int findElement(List const& list, mstl::string const& what);
+int findElement(List const& list, char const* what);
+int findElement(List const& list, Tcl_Obj* what);
+int findElement(Array const& list, mstl::string const& what);
+int findElement(Array const& list, char const* what);
+int findElement(Array const& list, Tcl_Obj* what);
+
+bool containsElement(Tcl_Obj* obj, mstl::string const& what);
+bool containsElement(Tcl_Obj* obj, char const* what);
+bool containsElement(Tcl_Obj* obj, Tcl_Obj* what);
+bool containsElement(List const& list, mstl::string const& what);
+bool containsElement(List const& list, char const* what);
+bool containsElement(List const& list, Tcl_Obj* what);
+bool containsElement(Array const& list, mstl::string const& what);
+bool containsElement(Array const& list, char const* what);
+bool containsElement(Array const& list, Tcl_Obj* what);
+
+List& sort(List& list);
+
+// NOTE: both arguments must be sorted
+bool removeElements(List& list, List const& toRemove);
 
 Tcl_Obj* result();
 

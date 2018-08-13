@@ -1424,13 +1424,17 @@ MultiWindowWidgetObjCmd(ClientData clientData,	// Information about square widge
 {
 	static const char *optionStrings[] =
 	{
+		// NOTE: "select" is for compatibility with ttk::notebook
+		// NOTE: "tabs" is for compatibility with ttk::notebook
 		"add", "cget", "configure", "forget", "next", "panecget",
-		"paneconfigure", "panes", "previous", "raise", "unmap", nullptr,
+		"paneconfigure", "panes", "previous", "raise", "select",
+		"tabs", "unmap", nullptr,
 	};
 	enum options
 	{
 		MW_ADD, MW_CGET, MW_CONFIGURE, MW_FORGET, MW_NEXT, MW_PANECGET,
-		MW_PANECONFIGURE, MW_PANES, MW_PREVIOUS, MW_RAISE, MW_UNMAP,
+		MW_PANECONFIGURE, MW_PANES, MW_PREVIOUS, MW_RAISE, MW_SELECT,
+		MW_TABS, MW_UNMAP,
 	};
 
 	MultiWindow*	mw				= (MultiWindow*)clientData;
@@ -1673,6 +1677,7 @@ MultiWindowWidgetObjCmd(ClientData clientData,	// Information about square widge
 			break;
 
 		case MW_PANES:
+		case MW_TABS:
 			resultObj = Tcl_NewObj();
 			Tcl_IncrRefCount(resultObj);
 
@@ -1711,6 +1716,7 @@ MultiWindowWidgetObjCmd(ClientData clientData,	// Information about square widge
 			break;
 
 		case MW_RAISE:
+		case MW_SELECT:
 			if (objc != 3)
 			{
 				if (mw->numSlaves)

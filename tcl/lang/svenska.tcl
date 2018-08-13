@@ -92,6 +92,7 @@
 ::mc::Number				"Nummer"
 ::mc::OK						"OK"
 ::mc::Order					"Ordning"
+::mc::Page					"Page" ;#NEW
 ::mc::Paste					"Klistra in"
 ::mc::PieceSet				"Pjäser"
 ::mc::Preview				"Förhandsgranska"
@@ -100,6 +101,7 @@
 ::mc::Reset					"Återställ"
 ::mc::Right					"Höger"
 ::mc::SelectAll			"Markera allt"
+::mc::Tab					"Tab" ;# NEW
 ::mc::Texture				"Texture"
 ::mc::Theme					"Tema"
 ::mc::To						"Till"
@@ -167,6 +169,14 @@
 ### themes #############################################################
 ::scidb::themes::mc::CannotOverwriteTheme	"Kan inte skriva över tema %s."
 
+### file ###############################################################
+::file::mc::CheckPermissions	"Check file permissions." ;# NEW
+::file::mc::NotAvailable		"Either this file is not available anymore, or the file permissions are not allowing access." ;# NEW
+
+::file::mc::DoesNotExist(readable)		"File '%s' is not readable." ;# NEW
+::file::mc::DoesNotExist(writable)		"File '%s' is not writable." ;# NEW
+::file::mc::DoesNotExist(executable)	"File '%s' is not executable." ;# NEW
+
 ### locale #############################################################
 ::locale::Pattern(decimalPoint)	","
 ::locale::Pattern(thousandsSep)	" "
@@ -179,25 +189,24 @@
 ::locale::Pattern(normal:dateD)	"Y-M-D"
 
 ### widget #############################################################
-::widget::mc::Apply		"&Verkställ"
-::widget::mc::Cancel		"&Avbryt"
-::widget::mc::Clear		"&Rensa"
-::widget::mc::Close		"S&täng"
-::widget::mc::Ok			"&OK"
-::widget::mc::Reset		"Å&terställ"
-::widget::mc::Update		"&Updatera"
-::widget::mc::Import		"&Importera"
-::widget::mc::Revert		"&Återgå"
-::widget::mc::Previous	"&Föregående"
-::widget::mc::Next		"&Nästa"
-::widget::mc::First		"&Första"
-::widget::mc::Last		"&Sista"
-::widget::mc::Help		"&Hjälp"
-::widget::mc::Start		"&Start" ;# NEW
-
-::widget::mc::New			"&Ny"
-::widget::mc::Save		"&Spara"
-::widget::mc::Delete		"&Radera"
+::widget::mc::Label(apply)			"&Verkställ"
+::widget::mc::Label(cancel)		"&Avbryt"
+::widget::mc::Label(clear)			"&Rensa"
+::widget::mc::Label(close)			"S&täng"
+::widget::mc::Label(ok)				"&OK"
+::widget::mc::Label(reset)			"Å&terställ"
+::widget::mc::Label(update)		"&Updatera"
+::widget::mc::Label(import)		"&Importera"
+::widget::mc::Label(revert)		"&Återgå"
+::widget::mc::Label(previous)		"&Föregående"
+::widget::mc::Label(next)			"&Nästa"
+::widget::mc::Label(first)			"&Första"
+::widget::mc::Label(last)			"&Sista"
+::widget::mc::Label(help)			"&Hjälp"
+::widget::mc::Label(start)			"&Start" ;# NEW
+::widget::mc::Label(new)			"&Ny"
+::widget::mc::Label(save)			"&Spara"
+::widget::mc::Label(delete)		"&Radera"
 
 ::widget::mc::Control(minimize)	"Minimera"
 ::widget::mc::Control(restore)	"Lämna helskärm"
@@ -438,6 +447,8 @@
 ### twm - tiled window manager #########################################
 ::twm::mc::Close				"Stäng"
 ::twm::mc::Undock				"Avdocka"
+::twm::mc::Amalgamate		"Amalgamate" ;# NEW
+::twm::mc::Separate			"Separate" ;# NEW
 
 ::twm::mc::Timeout			"Timeout after eight seconds without mouse motions, the frame has been re-docked to old place." ;# NEW
 ::twm::mc::TimeoutDetail	"This safety handling is required to avoid frozen screens, as long as the tiling window management is in an experimental stage." ;# NEW
@@ -451,9 +462,15 @@
 ::application::layout::mc::RestoreToOldLayout	"Restore to old layout" ;# NEW
 
 ### application ########################################################
-::application::mc::Information				"&Information" ;# NEW
-::application::mc::Database					"&Databas"
-::application::mc::Board						"&Bräde"
+::application::mc::Tab(information)			"&Information" ;# NEW
+::application::mc::Tab(database)				"&Databas"
+::application::mc::Tab(board)					"&Bräde"
+::application::mc::Tab(games)					"&Partier"
+::application::mc::Tab(player)				"&Spelare"
+::application::mc::Tab(event)					"&Tävlingar"
+::application::mc::Tab(site)					"&Platser"
+::application::mc::Tab(position)				"S&tart Positions"
+::application::mc::Tab(annotator)			"&Kommentatorer"
 ::application::mc::MainMenu					"&Huvudmeny"
 
 ::application::mc::ChessInfoDatabase		"Chess Information Data Base"
@@ -475,45 +492,62 @@
 ::application::mc::DescriptionHasChanged	"Beskrivning har ändrats"
 
 ### application::twm ###################################################
-::application::twm::mc::Notebook					"Notebook" ;# NEW
-::application::twm::mc::Multiwindow				"Stack" ;# NEW
-::application::twm::mc::FoldTitleBar			"Fold Titlebar" ;# NEW
-::application::twm::mc::FoldAllTitleBars		"Fold all Titlebars" ;# NEW
-::application::twm::mc::UnfoldAllTitleBars	"Unfold all Titlebars" ;# NEW
-::application::twm::mc::MoveWindow				"Move Window" ;# NEW
-::application::twm::mc::StayOnTop				"Stay on Top" ;# NEW
-::application::twm::mc::HideWhenLeavingTab	"Hide When Leaving Tab" ;# NEW
-::application::twm::mc::SaveLayout				"Save Layout" ;# NEW
-::application::twm::mc::SaveLayoutAs			"Save Layout as %s" ;# NEW
-::application::twm::mc::RenameLayout			"Rename Layout" ;# NEW
-::application::twm::mc::LoadLayout				"Load Layout" ;# NEW
-::application::twm::mc::NewLayout				"New Layout" ;# NEW
-::application::twm::mc::ManageLayouts			"Manage Layouts" ;# NEW
-::application::twm::mc::ShowAllDockingPoints	"Show all Docking Points" ;# NEW
-::application::twm::mc::DockingArrowSize		"Docking Arrow Size" ;# NEW
-::application::twm::mc::LinkLayout				"Link Layout '%s'" ;# NEW
-::application::twm::mc::UnlinkLayout			"Unlink Layout '%s'" ;# NEW
-::application::twm::mc::LinkLayoutTip			"Link With Board Layout" ;# NEW
-::application::twm::mc::Actual					"current" ;# NEW
-::application::twm::mc::Windows					"Windows" ;# NEW
-::application::twm::mc::ConfirmDelete			"Really delete layout '%s'?" ;# NEW
-::application::twm::mc::ConfirmOverwrite		"Overwrite existing layout '%s'?" ;# NEW
-::application::twm::mc::LayoutSaved				"Layout '%s' successfully saved." ;# NEW
-::application::twm::mc::EnterName				"Enter Name" ;# NEW
+::application::twm::mc::Notebook						"Notebook" ;# NEW
+::application::twm::mc::Multiwindow					"Stack" ;# NEW
+::application::twm::mc::FoldTitleBar				"Fold Titlebar" ;# NEW
+::application::twm::mc::FoldAllTitleBars			"Fold all Titlebars" ;# NEW
+::application::twm::mc::UnfoldAllTitleBars		"Unfold all Titlebars" ;# NEW
+::application::twm::mc::AmalgamateTitleBar		"Amalgamate Titlebar" ;# NEW
+::application::twm::mc::AmalgamateAllTitleBars	"Amalgamate all Titlebars" ;# NEW
+::application::twm::mc::SeparateAllTitleBars		"Separate all Titlebars" ;# NEW
+::application::twm::mc::MoveWindow					"Move Window" ;# NEW
+::application::twm::mc::StayOnTop					"Stay on Top" ;# NEW
+::application::twm::mc::HideWhenLeavingTab		"Hide When Leaving Tab" ;# NEW
+::application::twm::mc::SaveLayout					"Save Layout" ;# NEW
+::application::twm::mc::SaveLayoutAs				"Save Layout as %s" ;# NEW
+::application::twm::mc::RenameLayout				"Rename Layout" ;# NEW
+::application::twm::mc::LoadLayout					"Load Layout" ;# NEW
+::application::twm::mc::NewLayout					"New Layout" ;# NEW
+::application::twm::mc::ManageLayouts				"Manage Layouts" ;# NEW
+::application::twm::mc::ShowAllDockingPoints		"Show all Docking Points" ;# NEW
+::application::twm::mc::DockingArrowSize			"Docking Arrow Size" ;# NEW
+::application::twm::mc::LinkLayout					"Link Layout '%s'" ;# NEW
+::application::twm::mc::UnlinkLayout				"Delete Link to '%s'" ;# NEW
+::application::twm::mc::LinkLayoutTip				"Link With Board Layout" ;# NEW
+::application::twm::mc::Actual						"current" ;# NEW
+::application::twm::mc::Changed						"changed" ;# NEW
+::application::twm::mc::Windows						"Windows" ;# NEW
+::application::twm::mc::ConfirmDelete				"Really delete layout '%s'?" ;# NEW
+::application::twm::mc::ConfirmOverwrite			"Overwrite existing layout '%s'?" ;# NEW
+::application::twm::mc::LayoutSaved					"Layout '%s' successfully saved." ;# NEW
+::application::twm::mc::EnterName					"Enter Name" ;# NEW
+::application::twm::mc::UnsavedLayouts				"At least one layout has been changed. Either cancel the termination of the application, or commit the selected actions." ;# NEW
+::application::twm::mc::LinkWithLayout				"Link with eponymous board layout '%s'?" ;# NEW
+::application::twm::mc::CopyLayoutFrom				"Copy layout from" ;# NEW
+::application::twm::mc::ApplyToAllLayouts			"Apply this action to all changed layouts?" ;# NEW
+::application::twm::mc::KeepEnginesOpen			"Current layout has more analysis windows than selected layout. Keep all additional analysis windows open?" ;# NEW
+::application::twm::mc::ErrorInOptionFile			"Option file for layout variant '%s' is corrupted." ;# NEW
 
-::application::twm::mc::Pane(analysis)			"Analysis" ;# NEW
-::application::twm::mc::Pane(board)				"Board" ;# NEW
-::application::twm::mc::Pane(editor)			"Notation" ;# NEW
-::application::twm::mc::Pane(tree)				"Tree" ;# NEW
-::application::twm::mc::Pane(games)				"Games" ;# NEW
-::application::twm::mc::Pane(player)			"Players" ;# NEW
-::application::twm::mc::Pane(event)				"Events" ;# NEW
-::application::twm::mc::Pane(annotator)		"Annotators" ;# NEW
-::application::twm::mc::Pane(site)				"Sites" ;# NEW
-::application::twm::mc::Pane(position)			"Start Positions" ;# NEW
-::application::twm::mc::Pane(eco)				"ECO-Table" ;# NEW
+::application::twm::mc::Pane(analysis)		"Analysis" ;# NEW
+::application::twm::mc::Pane(board)			"Board" ;# NEW
+::application::twm::mc::Pane(editor)		"Notation" ;# NEW
+::application::twm::mc::Pane(tree)			"Tree" ;# NEW
+::application::twm::mc::Pane(games)			"Games" ;# NEW
+::application::twm::mc::Pane(player)		"Players" ;# NEW
+::application::twm::mc::Pane(event)			"Events" ;# NEW
+::application::twm::mc::Pane(annotator)	"Annotators" ;# NEW
+::application::twm::mc::Pane(site)			"Sites" ;# NEW
+::application::twm::mc::Pane(position)		"Start Positions" ;# NEW
+::application::twm::mc::Pane(eco)			"ECO-Table" ;# NEW
+
+::application::twm::mc::UnsavedAction(discard)		"Discard changes (start next time with unchanged layout)" ;# NEW
+::application::twm::mc::UnsavedAction(overwrite)	"Overwrite existing layout with changed layout" ;# NEW
+::application::twm::mc::UnsavedAction(disconnect)	"Disconnect from original layout, but retain the changes" ;# NEW
+::application::twm::mc::UnsavedAction(retain)		"Retain changes, and do not disconnect" ;# NEW
 
 ### application::eco ###################################################
+::application::eco::mc::SelectEco		"Select ECO code" ;# NEW
+
 ::application::eco::mc::Mode(single)	"Per ply" ;# NEW
 ::application::eco::mc::Mode(compact)	"Transitions only" ;# NEW
 
@@ -584,13 +618,6 @@
 ::application::database::mc::FileStripMoveInfo				"Rensa draginformation"
 ::application::database::mc::FileStripPGNTags				"Rensa PGN-taggar"
 ::application::database::mc::HelpSwitcher						"Hjälp om databasväljare"
-
-::application::database::mc::Games								"&Partier"
-::application::database::mc::Players							"&Spelare"
-::application::database::mc::Events								"&Tävlingar"
-::application::database::mc::Sites								"&Platser"
-::application::database::mc::Positions							"S&tart Positions"
-::application::database::mc::Annotators						"&Kommentatorer"
 
 ::application::database::mc::File								"Fil"
 ::application::database::mc::SymbolSize						"Symbol storlek"
@@ -2194,6 +2221,9 @@
 ### languagebox ########################################################
 ::languagebox::mc::AllLanguages	"Alla språk"
 ::languagebox::mc::None				"Inget"
+
+### ecobox #############################################################
+::ecobox::mc::OpenEcoDialog "Open ECO dialog" ;# NEW
 
 ### datebox ############################################################
 ::datebox::mc::Today		"Idag"

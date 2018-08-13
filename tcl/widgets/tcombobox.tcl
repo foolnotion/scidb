@@ -490,7 +490,7 @@ proc ButtonPress {w c x y} {
 
 
 proc DestroyHandler {w} {
-	if {[winfo class $w] ne "TCombobox"} {
+	if {[winfo class $w] eq "TTCombobox"} {
 		variable Priv
 		unset Priv $w:*
 		rename $w {}
@@ -642,7 +642,7 @@ proc LBSearch {lb code sym} {
 
 
 proc PlacePopdown {cb popdown} {
-	if {[winfo class $cb] eq "TCombobox"} {
+	if {[winfo class $cb] ne "TTCombobox"} {
 		return [PlacePopdown_tcb_orig_ $cb $popdown]
 	}
 
@@ -684,15 +684,15 @@ proc Unpost {cb} {
 		unset Priv($cb:focus)
 	}
 
-	if {[winfo class $cb] ne "TCombobox"} {
+	if {[winfo class $cb] eq "TTCombobox"} {
 		event generate $cb <<ComboboxUnposted>> -when mark
 	}
 }
 
 
 proc PopdownWindow {cb} {
-	if {[winfo class $cb] eq "TCombobox"} {
-		PopdownWindow_tcb_orig_ $cb
+	if {[winfo class $cb] ne "TTCombobox"} {
+		return [PopdownWindow_tcb_orig_ $cb]
 	}
 
 	return $cb.popdown
@@ -700,7 +700,7 @@ proc PopdownWindow {cb} {
 
 
 proc ConfigureListbox {cb} {
-	if {[winfo class $cb] eq "TCombobox"} {
+	if {[winfo class $cb] ne "TTCombobox"} {
 		return [ConfigureListbox_tcb_orig_ $cb]
 	}
 

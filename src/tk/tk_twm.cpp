@@ -40,6 +40,7 @@
 #include "m_assert.h"
 
 #include <string.h>
+#include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -147,6 +148,7 @@ static Tcl_Obj* m_objOptBefore				= nullptr;
 static Tcl_Obj* m_objOptExpand				= nullptr;
 static Tcl_Obj* m_objOptGrow					= nullptr;
 static Tcl_Obj* m_objOptHeight				= nullptr;
+static Tcl_Obj* m_objOptHWeight				= nullptr;
 static Tcl_Obj* m_objOptMaxHeight			= nullptr;
 static Tcl_Obj* m_objOptMaxWidth				= nullptr;
 static Tcl_Obj* m_objOptMinHeight			= nullptr;
@@ -158,6 +160,7 @@ static Tcl_Obj* m_objOptSnapshots			= nullptr;
 static Tcl_Obj* m_objOptStructures			= nullptr;
 static Tcl_Obj* m_objOptState					= nullptr;
 static Tcl_Obj* m_objOptSticky				= nullptr;
+static Tcl_Obj* m_objOptVWeight				= nullptr;
 static Tcl_Obj* m_objOptWidth					= nullptr;
 static Tcl_Obj* m_objOptX						= nullptr;
 static Tcl_Obj* m_objOptY						= nullptr;
@@ -170,6 +173,7 @@ static Tcl_Obj* m_objResizingCmd				= nullptr;
 static Tcl_Obj* m_objRoot						= nullptr;
 static Tcl_Obj* m_objSashSizeCmd				= nullptr;
 static Tcl_Obj* m_objSelectCmd				= nullptr;
+static Tcl_Obj* m_objSelectedCmd				= nullptr;
 static Tcl_Obj* m_objTitleCmd					= nullptr;
 static Tcl_Obj* m_objUnpackCmd				= nullptr;
 static Tcl_Obj* m_objVert						= nullptr;
@@ -182,7 +186,6 @@ static Tcl_Obj* m_objY							= nullptr;
 
 // IMPORTANT NOTE: order of Type should never change!
 enum Type		{ Root, MetaFrame, Frame, Pane, PanedWindow, Notebook, MultiWindow, LAST = MultiWindow };
-
 enum State		{ Packed, Floating, Withdrawn };
 enum Sticky		{ West = 1, East = 2, North = 4, South = 8 };
 enum Position	{ Center = 0, Left = West, Right = East, Top = North, Bottom = South };
@@ -190,11 +193,15 @@ enum Orient		{ Horz = Left|Right, Vert = Top|Bottom };
 enum Expand		{ None = 0, X = Horz, Y = Vert, Both = X|Y };
 enum Quantity	{ Actual, Min, Max };
 enum Enclosure	{ Inner, Outer };
+enum Mode		{ Abs, Rel };
+
+
+static constexpr Orient operator~(Orient orientation) { return orientation == Horz ? Vert : Horz; }
 
 
 namespace structure {
 
-enum Type { Leaf, Vert, Horz, Multi };
+enum Type { Leaf, Horz, Vert, Multi };
 
 
 class Node
@@ -218,7 +225,9 @@ public:
 
 	Node const* child(unsigned i) const;
 	Node const* parent() const;
-	Node const* find(tcl::List const& leaves, int& level) const;
+	Node const* findBest(tcl::List const& dockable, unsigned& count, tcl::List const& visible) const;
+
+	int findIndex(tcl::List const& leaves) const;
 
 	void add(Node* node);
 	void collectLeaves(tcl::List& leaves) const;
@@ -236,8 +245,11 @@ private:
 
 	Node* child(unsigned i);
 
-	Node const* find(Tcl_Obj* uid, int& level) const;
+	int findDepth(tcl::List const& childs, unsigned depth) const;
+	int getIndex(Node const* node) const;
+
 	Node const* commonAncestor(Node const* node) const;
+	Node const* dfs(tcl::List const& leaves, unsigned& count) const;
 
 	void dump(unsigned level);
 
@@ -335,27 +347,48 @@ Node::collectLeaves(mstl::vector<mstl::string>& leaves) const
 }
 
 
-bool
-Node::containsOneOf(tcl::List const& childs) const
+int
+Node::findDepth(tcl::List const& childs, unsigned depth) const
 {
 	if (isLeaf())
 	{
 		for (unsigned i = 0; i < childs.size(); ++i)
 		{
 			if (tcl::equal(m_uid, childs[i]))
-				return true;
+				return depth;
 		}
 	}
 	else
 	{
 		for (unsigned i = 0; i < numChilds(); ++i)
 		{
-			if (child(i)->containsOneOf(childs))
-				return true;
+			int d = child(i)->findDepth(childs, depth + 1);
+
+			if (d >= 0)
+				return d;
 		}
 	}
 
-	return false;
+	return -1;
+}
+
+
+bool
+Node::containsOneOf(tcl::List const& childs) const
+{
+	return findDepth(childs, 0) >= 0;
+}
+
+
+int
+Node::findIndex(tcl::List const& leaves) const
+{
+	for (unsigned i = 0; i < numChilds(); ++i)
+	{
+		if (child(i)->containsOneOf(leaves))
+			return i;
+	}
+	return -1;
 }
 
 
@@ -398,43 +431,77 @@ Node::commonAncestor(Node const* node) const
 
 
 Node const*
-Node::find(Tcl_Obj* uid, int& level) const
+Node::dfs(tcl::List const& leaves, unsigned& count) const
 {
-	level += 1;
-
 	if (isLeaf())
-		return tcl::equal(m_uid, uid) ? this : nullptr;
-
-	for (unsigned i = 0; i < numChilds(); ++i)
 	{
-		if (Node const* node = child(i)->find(uid, level))
-			return node;
+		if (tcl::containsElement(leaves, m_uid))
+		{
+			count += 1;
+			return this;
+		}
 	}
+	else
+	{
+		unsigned countNodes = 0;
 
-	level -= 1;
+		for (unsigned i = 0; i < numChilds(); ++i)
+		{
+			if (Node const* node = child(i)->dfs(leaves, count))
+			{
+				if (count == leaves.size())
+					return countNodes ? this : node;
+
+				countNodes += 1;
+			}
+		}
+
+		if (countNodes)
+			return this;
+	}
 	return nullptr;
 }
 
 
-Node const*
-Node::find(tcl::List const& leaves, int& level) const
+int
+Node::getIndex(Node const* node) const
 {
-	Node const* commonAncestor = nullptr;
-
-	for (unsigned i = 0; i < leaves.size(); ++i)
+	for (unsigned i = 0; i < numChilds(); ++i)
 	{
-		int myLevel = -1;
+		if (child(i) == node)
+			return i;
+	}
+	return -1;
+}
 
-		if (Node const* node = find(leaves[i], myLevel))
+
+Node const*
+Node::findBest(tcl::List const& dockable, unsigned& count, tcl::List const& visible) const
+{
+	Node const* node = dfs(dockable, count);
+
+	if (node)
+	{
+		for ( ; node->m_parent; node = node->m_parent)
 		{
-			if (level < 0 || myLevel < level)
-				level = myLevel;
+			unsigned i = node->m_parent->getIndex(node);
+			M_ASSERT(int(i) != -1);
 
-			commonAncestor = commonAncestor ? this->commonAncestor(node) : node;
+			for (unsigned k = i + 1; k < node->m_parent->numChilds(); ++k)
+			{
+				if (node->m_parent->child(k)->containsOneOf(visible))
+					return node->m_parent->child(k);
+			}
+
+			for (int k = i - 1; k >= 0; --k)
+			{
+				if (node->m_parent->child(k)->containsOneOf(visible))
+					return node->m_parent->child(k);
+			}
 		}
 	}
 
-	return commonAncestor;
+	return node;
 }
 
 
@@ -537,6 +604,275 @@ class Node;
 typedef mstl::vector<Node*> Childs;
 
 
+struct Terminated {};
+
+
+struct Coord
+{
+	Coord() :x(0), y(0) {}
+
+	template <Orient D> int value() const;
+
+	void zero() { x = y = 0; }
+
+	int x;
+	int y;
+};
+
+template <> int Coord::value<Horz>() const { return x; }
+template <> int Coord::value<Vert>() const { return y; }
+
+
+struct Size
+{
+	Size() :width(0), height(0) {}
+	Size(int w, int h) :width(w), height(h) {}
+
+	int width;
+	int height;
+
+	template <Orient D> int dimen() const;
+
+	int area() const { return width*height; }
+
+	void zero() { width = height = 0; }
+	template <Orient D> void set(int value);
+};
+
+template <> int Size::dimen<Horz>() const { return width; }
+template <> int Size::dimen<Vert>() const { return height; }
+
+template <> void Size::set<Horz>(int value) { width = value; }
+template <> void Size::set<Vert>(int value) { height = value; }
+
+static bool operator==(Size const& lhs, Size const& rhs)
+{ return lhs.width == rhs.width && lhs.height == rhs.height; }
+
+
+struct Dimen
+{
+	Dimen() { m[0] = m[1] = Abs; }
+	Dimen(int width, int height) :abs(width, height) { m[0] = m[1] = Abs; }
+
+	template <Orient D> Mode mode() const;
+	template <Orient D,Mode M = Abs> int dimen() const;
+	template <Orient D> int computeRelativeSize(int size) const;
+	template <Orient D> int computePercentage(int size) const;
+
+	void zero() { abs.zero(); rel.zero(); }
+	template <Orient D> void setup(int value, Mode mode = Abs);
+	template <Orient D> void set(int value, Mode mode = Abs);
+
+	Size abs;
+	Size rel;
+	Mode m[2];
+};
+
+template <> int Dimen::dimen<Horz,Abs>() const { return abs.dimen<Horz>(); }
+template <> int Dimen::dimen<Vert,Abs>() const { return abs.dimen<Vert>(); }
+template <> int Dimen::dimen<Horz,Rel>() const { return rel.dimen<Horz>(); }
+template <> int Dimen::dimen<Vert,Rel>() const { return rel.dimen<Vert>(); }
+
+template <> Mode Dimen::mode<Horz>() const { return m[0]; }
+template <> Mode Dimen::mode<Vert>() const { return m[1]; }
+
+static bool operator==(Dimen const& lhs, Dimen const& rhs)
+{ return lhs.abs == rhs.abs && lhs.rel == rhs.rel; } // ignore mode
+
+
+template <Orient D>
+int
+Dimen::computeRelativeSize(int size) const
+{
+	M_ASSERT(rel.dimen<D>() > 0);
+	return int((double(size)*double(rel.dimen<D>()))/100.0 + 0.5);
+}
+
+
+template <Orient D>
+int
+Dimen::computePercentage(int size) const
+{
+	return size ? int(((double(abs.dimen<D>())*10000.0)/double(size)) + 0.5) : rel.dimen<D>();
+}
+
+
+template <Orient D>
+void
+Dimen::set(int value, Mode mode)
+{
+	if (mode == Abs)
+		abs.set<D>(value);
+	else
+		rel.set<D>(value);
+}
+
+
+template <Orient D>
+void
+Dimen::setup(int value, Mode mode)
+{
+	if ((this->m[D == Horz ? 0 : 1] = mode) == Abs)
+		abs.set<D>(value);
+	else
+		rel.set<D>(value);
+}
+
+
+typedef mstl::map<mstl::string,Size> SizeMap;
+
+struct Snapshot
+{
+	Size		size;
+	SizeMap	sizeMap;
+};
+
+
+struct Quants
+{
+	Dimen min;
+	Dimen max;
+	Dimen actual;
+
+	Quants() {}
+	Quants(
+		int width,    int height,
+		int minWidth, int minHeight,
+		int maxWidth, int maxHeight);
+
+	template <Orient D,Quantity Q = Actual> Mode mode() const;
+	template <Orient D,Quantity Q = Actual,Mode M = Abs> int dimen() const;
+
+	template <Orient D,Quantity Q = Actual> int computeRelativeSize(int size) const;
+	template <Orient D,Quantity Q = Actual> int computePercentage(int size) const;
+
+	template <Orient D,Quantity Q = Actual,Mode M = Abs> void set(int size);
+	void setActual(int width, int height);
+	void zero();
+};
+
+Quants::Quants(
+	int width,     int height,
+	int minWidth,  int minHeight,
+	int maxWidth,  int maxHeight)
+	:min(minWidth, minHeight)
+	,max(maxWidth, maxHeight)
+	,actual(width, height)
+{
+}
+
+
+template <> Mode Quants::mode<Horz,Actual>() const			{ return actual.mode<Horz>(); }
+template <> Mode Quants::mode<Vert,Actual>() const			{ return actual.mode<Vert>(); }
+template <> Mode Quants::mode<Horz,Min>() const				{ return min.mode<Horz>(); }
+template <> Mode Quants::mode<Vert,Min>() const				{ return min.mode<Vert>(); }
+template <> Mode Quants::mode<Horz,Max>() const				{ return max.mode<Horz>(); }
+template <> Mode Quants::mode<Vert,Max>() const				{ return max.mode<Vert>(); }
+
+template <> int Quants::dimen<Horz,Actual,Abs>() const	{ return actual.abs.dimen<Horz>(); }
+template <> int Quants::dimen<Vert,Actual,Abs>() const	{ return actual.abs.dimen<Vert>(); }
+template <> int Quants::dimen<Horz,Actual,Rel>() const	{ return actual.rel.dimen<Horz>(); }
+template <> int Quants::dimen<Vert,Actual,Rel>() const	{ return actual.rel.dimen<Vert>(); }
+template <> int Quants::dimen<Horz,Min,Abs>() const		{ return min.abs.dimen<Horz>(); }
+template <> int Quants::dimen<Vert,Min,Abs>() const		{ return min.abs.dimen<Vert>(); }
+template <> int Quants::dimen<Horz,Min,Rel>() const		{ return min.rel.dimen<Horz>(); }
+template <> int Quants::dimen<Vert,Min,Rel>() const		{ return min.rel.dimen<Vert>(); }
+template <> int Quants::dimen<Horz,Max,Abs>() const		{ return max.abs.dimen<Horz>(); }
+template <> int Quants::dimen<Vert,Max,Abs>() const		{ return max.abs.dimen<Vert>(); }
+template <> int Quants::dimen<Horz,Max,Rel>() const		{ return max.rel.dimen<Horz>(); }
+template <> int Quants::dimen<Vert,Max,Rel>() const		{ return max.rel.dimen<Vert>(); }
+
+template <> void Quants::set<Horz,Actual,Abs>(int size)	{ actual.setup<Horz>(size, Abs); }
+template <> void Quants::set<Vert,Actual,Abs>(int size)	{ actual.setup<Vert>(size, Abs); }
+template <> void Quants::set<Horz,Actual,Rel>(int size)	{ actual.setup<Horz>(size, Rel); }
+template <> void Quants::set<Vert,Actual,Rel>(int size)	{ actual.setup<Vert>(size, Rel); }
+template <> void Quants::set<Horz,Min,Abs>(int size)		{ min.setup<Horz>(size, Abs); }
+template <> void Quants::set<Vert,Min,Abs>(int size)		{ min.setup<Vert>(size, Abs); }
+template <> void Quants::set<Horz,Min,Rel>(int size)		{ min.setup<Horz>(size, Rel); }
+template <> void Quants::set<Vert,Min,Rel>(int size)		{ min.setup<Vert>(size, Rel); }
+template <> void Quants::set<Horz,Max,Abs>(int size)		{ max.setup<Horz>(size, Abs); }
+template <> void Quants::set<Vert,Max,Abs>(int size)		{ max.setup<Vert>(size, Abs); }
+template <> void Quants::set<Horz,Max,Rel>(int size)		{ max.setup<Horz>(size, Rel); }
+template <> void Quants::set<Vert,Max,Rel>(int size)		{ max.setup<Vert>(size, Rel); }
+
+static bool operator==(Quants const& lhs, Quants const& rhs)
+{ return lhs.actual == rhs.actual && lhs.min == rhs.min && lhs.max == rhs.max; }
+
+static bool operator!=(Quants const& lhs, Quants const& rhs)
+{ return !operator==(lhs, rhs); }
+
+template <> int Quants::computeRelativeSize<Horz,Min>(int size) const
+{ return min.computeRelativeSize<Horz>(size); }
+
+template <> int Quants::computeRelativeSize<Vert,Min>(int size) const
+{ return min.computeRelativeSize<Vert>(size); }
+
+template <> int Quants::computeRelativeSize<Horz,Max>(int size) const
+{ return max.computeRelativeSize<Horz>(size); }
+
+template <> int Quants::computeRelativeSize<Vert,Max>(int size) const
+{ return max.computeRelativeSize<Horz>(size); }
+
+template <> int Quants::computeRelativeSize<Horz,Actual>(int size) const
+{ return actual.computeRelativeSize<Horz>(size); }
+
+template <> int Quants::computeRelativeSize<Vert,Actual>(int size) const
+{ return actual.computeRelativeSize<Vert>(size); }
+
+template <> int Quants::computePercentage<Horz,Min>(int size) const
+{ return min.computePercentage<Horz>(size); }
+
+template <> int Quants::computePercentage<Vert,Min>(int size) const
+{ return min.computePercentage<Vert>(size); }
+
+template <> int Quants::computePercentage<Horz,Max>(int size) const
+{ return max.computePercentage<Horz>(size); }
+
+template <> int Quants::computePercentage<Vert,Max>(int size) const
+{ return max.computePercentage<Horz>(size); }
+
+template <> int Quants::computePercentage<Horz,Actual>(int size) const
+{ return actual.computePercentage<Horz>(size); }
+
+template <> int Quants::computePercentage<Vert,Actual>(int size) const
+{ return actual.computePercentage<Vert>(size); }
+
+
+void
+Quants::setActual(int width, int height)
+{
+	if (min.abs.width)
+		width = mstl::max(width, min.abs.width);
+	if (max.abs.width)
+		width = mstl::min(width, min.abs.width);
+	if (min.abs.height)
+		height = mstl::max(height, min.abs.height);
+	if (max.abs.height)
+		height = mstl::min(height, min.abs.height);
+
+	actual.abs.width = width;
+	actual.abs.height = height;
+}
+
+
+void
+Quants::zero()
+{
+	actual.zero();
+	min.zero();
+	max.zero();
+}
+
+
+struct Base
+{
+	Base() :root(nullptr), setup(nullptr) {}
+
+	Node* root;
+	Node* setup;
+};
+
+
 static Position
 parsePositionOption(const char* s)
 {
@@ -552,8 +888,57 @@ parsePositionOption(const char* s)
 }
 
 
+template <Orient D>
+static Mode
+parseDimension(Tcl_Obj* obj, Dimen& dim)
+{
+	Mode mode;
+	char* e = nullptr;
+	int value = ::strtol(tcl::asString(obj), &e, 10);
+	int fract = 0;
+
+	if (e && *e == '.')
+		fract = ::strtol(e + 1, &e, 10);
+
+	if (e && *e == '%')
+	{
+		dim.setup<D>(value*100 + fract, Rel);
+		e += 1;
+		mode = Rel;
+	}
+	else
+	{
+		dim.setup<D>(value, Abs);
+		mode = Abs;
+	}
+
+	if (!e || *e != '\0')
+		M_THROW(tcl::Exception("invalid dimension '%s'", tcl::asString(obj)));
+	
+	return mode;
+}
+
+
+static void
+parseExpandOption(Tcl_Obj* obj, Coord& weight)
+{
+	M_ASSERT(obj);
+
+	weight.zero();
+
+	if (tcl::equal(obj, m_objBoth))
+		weight.x = weight.y = 1;
+	else if (tcl::equal(obj, m_objX))
+		weight.x = 1;
+	else if (tcl::equal(obj, m_objY))
+		weight.y = 1;
+	else if (!tcl::equal(obj, m_objNone))
+		M_THROW(tcl::Exception("invalid expand option '%s'", tcl::asString(obj)));
+}
+
+
 static int
-parseExpandOption(Tcl_Obj* obj)
+parseResizeOption(Tcl_Obj* obj)
 {
 	M_ASSERT(obj);
 
@@ -562,11 +947,20 @@ parseExpandOption(Tcl_Obj* obj)
 	if (tcl::equal(obj, m_objY))		return Y;
 	if (tcl::equal(obj, m_objNone))	return 0;
 
-	M_THROW(tcl::Exception("invalid expand option '%s'", tcl::asString(obj)));
+	M_THROW(tcl::Exception("invalid resize option '%s'", tcl::asString(obj)));
 }
 
 
-static int parseResizeOption(Tcl_Obj* obj) { return parseExpandOption(obj); }
+static int
+parseWeightOption(Tcl_Obj* obj)
+{
+	M_ASSERT(obj);
+
+	if (!tcl::isUnsigned(obj))
+		M_THROW(tcl::Exception("invalid weight option '%s'", tcl::asString(obj)));
+	
+	return tcl::asUnsigned(obj);
+}
 
 
 static int
@@ -660,7 +1054,7 @@ makeOrientationOptionValue(int orientation)
 
 
 static char const*
-makeExpandOptionValue(int expand)
+makeResizeOptionValue(int expand)
 {
 	if ((expand & (X|Y)) == (X|Y)) return tcl::asString(m_objBoth);
 	if (expand & X) return tcl::asString(m_objX);
@@ -668,146 +1062,13 @@ makeExpandOptionValue(int expand)
 	return tcl::asString(m_objNone);
 }
 
-static char const* makeResizeOptionValue(int resize) { return makeExpandOptionValue(resize); }
-
-
-struct Terminated {};
-
-
-struct Coord
-{
-	Coord() :x(0), y(0) {}
-
-	int x;
-	int y;
-};
-
-
-struct Size
-{
-	Size() :width(0), height(0) {}
-	Size(int w, int h) :width(w), height(h) {}
-
-	int width;
-	int height;
-
-	template <Orient D> int dimen() const;
-
-	int area() const { return width*height; }
-
-	void zero() { width = height = 0; }
-};
-
-template <> int Size::dimen<Horz>() const { return width; }
-template <> int Size::dimen<Vert>() const { return height; }
-
-static bool operator==(Size const& lhs, Size const& rhs)
-{ return lhs.width == rhs.width && lhs.height == rhs.height; }
-
-
-
-typedef mstl::map<mstl::string,Size> SizeMap;
-
-struct Snapshot
-{
-	Size		size;
-	SizeMap	sizeMap;
-};
-
-
-struct Dimension
-{
-	Size min;
-	Size max;
-	Size actual;
-
-	Dimension() {}
-	Dimension(
-		int width,int height,
-		int minWidth, int minHeight,
-		int maxWidth, int maxHeight);
-
-	template <Orient D,Quantity Q = Actual> int dimen() const;
-	template <Orient D,Quantity Q = Actual> void set(int size);
-
-	void setActual(int width, int height);
-	void zero();
-};
-
-Dimension::Dimension(
-	int width,int height,
-	int minWidth, int minHeight,
-	int maxWidth, int maxHeight)
-	:min(minWidth, minHeight)
-	,max(maxWidth, maxHeight)
-	,actual(width, height)
-{
-}
-
-
-template <> int Dimension::dimen<Horz,Actual>() const		{ return actual.dimen<Horz>(); }
-template <> int Dimension::dimen<Vert,Actual>() const		{ return actual.dimen<Vert>(); }
-template <> int Dimension::dimen<Horz,Min>() const			{ return min.dimen<Horz>(); }
-template <> int Dimension::dimen<Vert,Min>() const			{ return min.dimen<Vert>(); }
-template <> int Dimension::dimen<Horz,Max>() const			{ return max.dimen<Horz>(); }
-template <> int Dimension::dimen<Vert,Max>() const			{ return max.dimen<Vert>(); }
-
-template <> void Dimension::set<Horz,Actual>(int size)	{ actual.width = size; }
-template <> void Dimension::set<Vert,Actual>(int size)	{ actual.height = size; }
-template <> void Dimension::set<Horz,Min>(int size)		{ min.width = size; }
-template <> void Dimension::set<Vert,Min>(int size)		{ min.height = size; }
-template <> void Dimension::set<Horz,Max>(int size)		{ max.width = size; }
-template <> void Dimension::set<Vert,Max>(int size)		{ max.height = size; }
-
-
-static bool operator==(Dimension const& lhs, Dimension const& rhs)
-{ return lhs.actual == rhs.actual && lhs.min == rhs.min && lhs.max == rhs.max; }
-
-static bool operator!=(Dimension const& lhs, Dimension const& rhs)
-{ return !operator==(lhs, rhs); }
-
-
-void
-Dimension::setActual(int width, int height)
-{
-	if (min.width)
-		width = mstl::max(width, min.width);
-	if (max.width)
-		width = mstl::min(width, min.width);
-	if (min.height)
-		height = mstl::max(height, min.height);
-	if (max.height)
-		height = mstl::min(height, min.height);
-
-	actual.width = width;
-	actual.height = height;
-}
-
-
-void
-Dimension::zero()
-{
-	actual.zero();
-	min.zero();
-	max.zero();
-}
-
-
-struct Base
-{
-	Base() :root(nullptr), setup(nullptr) {}
-
-	Node* root;
-	Node* setup;
-};
-
 
 class Node
 {
 public:
 
 	typedef mstl::vector<mstl::string> AttrSet;
-	typedef mstl::vector<Dimension*> DimList;
+	typedef mstl::vector<Quants*> QuantList;
 	typedef mstl::map<mstl::string,Node*> LeafMap;
 
 	~Node();
@@ -815,6 +1076,7 @@ public:
 	bool isRoot() const;
 	bool isContainer() const;
 	bool isPanedWindow() const;
+	bool isPanedWindow(Orient orientation) const;
 	bool isMultiWindow() const;
 	bool isNotebook() const;
 	bool isNotebookOrMultiWindow() const;
@@ -827,22 +1089,29 @@ public:
 	bool isWithdrawn() const;
 	bool isFloating() const;
 	bool isToplevel() const;
+	bool isPreserved() const;
 	bool isLocked() const;
 	bool isReady() const;
 	bool isHorz() const;
 	bool isVert() const;
-	bool hasChilds() const;
+	template <Orient D> bool hasOrientation() const;
+	bool hasPackedChilds() const;
 	bool hasAncestor(Node const* node) const;
 	bool contains(Node const* node) const;
 	bool exists() const;
+	bool amalgamate() const;
 	bool isAlreadyDead() const;
+	bool canAmalgamate() const;
+	bool needsUpdate() const;
 
 	template <Orient D> bool grow() const;
 	template <Orient D> bool shrink() const;
 	template <Orient D> bool orientation() const;
+	template <Orient D> bool compare(int lhsPerc, int rhsPerc) const;
 
 	unsigned numChilds() const;
 	unsigned depth() const;
+	unsigned countStableChilds() const;
 	int sashSize() const;
 	int frameHeaderSize() const;
 	int notebookHeaderSize() const;
@@ -854,24 +1123,27 @@ public:
 	Tcl_Obj* pathObj() const;
 	Tcl_Obj* typeObj() const;
 	int expand() const;
+	template <Orient D> int weight() const;
 	int sticky() const;
 	int x() const;
 	int y() const;
-	Dimension const& dimension() const;
+	Quants const& quants() const;
 	template <Enclosure Enc> int width() const;
 	template <Enclosure Enc> int height() const;
 	template <Enclosure Enc> int minWidth() const;
 	template <Enclosure Enc> int minHeight() const;
 	template <Enclosure Enc> int maxWidth() const;
 	template <Enclosure Enc> int maxHeight() const;
-	template <Enclosure Enc,Orient D,Quantity Q = Actual> int dimen() const;
+	template <Enclosure Enc,Orient D,Quantity Q = Actual,Mode M = Abs> int dimen() const;
 	template <Enclosure Enc,Orient D> int actualSize() const;
 	template <Enclosure Enc,Orient D> int maxSize() const;
 	template <Enclosure Enc,Orient D> int minSize() const;
+	template <Orient D,Quantity Q = Actual,Mode M = Abs> int value() const;
 	Node* parent() const;
 	Node* toplevel() const;
 	Node* selected() const;
 	Node* clone(LeafMap const& leaves) __m_warn_unused;
+	Node const* stableChild() const;
 
 	tcl::List collectToplevels() const;
 	tcl::List collectFrames() const;
@@ -894,32 +1166,33 @@ public:
 	Node* child();
 
 	void refresh();
-	void resize(Dimension const& maxHeight, bool perform = true);
+	void resize(Quants const& maxHeight, bool perform = true);
 	void setState(State state);
 	void updateDimen(int x, int y, int width, int height);
 	void perform(Node* toplevel = nullptr);
 	void show();
 	void ready();
 
-	Node* findPath(char const* path);
-	Node* findUid(char const* uid);
+	Node* findPath(char const* path) const;
+	Node* findUid(char const* uid) const;
 	Node* getCurrent() const;
 	Node const* leftNeighbor(Node const* neighbor) const;
 	Node const* rightNeighbor(Node const* neighbor) const;
 	Node const* findLeader() const;
+	Node const* findAmalgamated() const;
 
-	void set(char const* attribute, Tcl_Obj* value, bool ignoreMeta);
+	void set(char const* attribute, Tcl_Obj* value, bool ignoreMeta = false);
 	Tcl_Obj* get(char const* attribute, bool ignoreMeta) const;
 
 	void load(Tcl_Obj* list);
 	void load(Tcl_Obj* list, LeafMap const* leaves, Node const* sRoot);
-	void saveLeaves(LeafMap& leaves);
+	void saveLeaves(LeafMap& leaves, tcl::Array const& preserved);
 	void create();
 	void destroy();
 	void pack();
 	void reparentChildsRecursively(Tk_Window topLevel);
 	void select();
-	void isSelected();
+	void setSelected();
 	void withdraw();
 	void unpack();
 	void packChilds();
@@ -930,8 +1203,8 @@ public:
 	void toggle();
 	void destroyed(bool finalize);
 	void makeMetaFrame();
-	void setShowBar(bool flag);
 	void setUid(Tcl_Obj* uidObj);
+	void setPreserved(bool flag);
 	void dump() const;
 
 	Node* dock(Node*& recv, Position position, Node const* setup);
@@ -977,6 +1250,7 @@ private:
 	Node(Node const& node);
 
 	bool fits(Size size, Position position) const;
+	template <Orient D,Quantity Q> bool canComputeDimensions() const;
 
 	Childs::const_iterator begin() const;
 	Childs::const_iterator end() const;
@@ -995,6 +1269,7 @@ private:
 	void collectVisibleRecursively(tcl::List& result) const;
 	void inspect(AttrSet const& exportList, tcl::DString& str) const;
 	void inspectAttrs(AttrSet const& exportList, tcl::DString& str) const;
+	template <Orient D,Quantity Q> void inspectDimen(Tcl_Obj* attr, tcl::DString& str) const;
 	void inspect(tcl::DString& str, Structures const& structures) const;
 	static void inspect(tcl::DString& str, SnapshotMap const& snapshots);
 
@@ -1005,8 +1280,8 @@ private:
 	void parseStructures(Tcl_Obj* obj);
 
 	void load(Tcl_Obj* list, LeafMap const* leaves);
-	void finishLoad(LeafMap const* leaves, Node const* sRoot = nullptr);
-	void makeStructure();
+	void finishLoad(LeafMap const* leaves, Node const* sRoot, bool deleteTempStruct);
+	bool makeStructure();
 	structure::Node* makeStructure(structure::Node* parent) const __m_warn_unused;
 	void releaseStructures();
 
@@ -1014,6 +1289,7 @@ private:
 	void add(Node* node, Node const* before = nullptr);
 
 	void computeDimensionsRecursively();
+	template <Orient D,Quantity Q> void computeDimensionsRecursively(int size);
 	void adjustDimensions();
 	void resizeDimensions();
 	void unframe();
@@ -1049,14 +1325,16 @@ private:
 	Node* insertPanedWindow(Position position, Node* child, Node const* beforeChild = nullptr);
 	Node* clone(LeafMap const& leaves, Node* parent) const __m_warn_unused;
 	Node* clone(Node* parent, Tcl_Obj* uid) const __m_warn_unused;
-	Node* findDockingNode(Position& position, Node const*& after, Node const* setup);
+	Node* findDockingNode(Position& position, Node const*& before, Node const* setup);
 	Node* dock(Node* node, Position position, Node const* before, bool newParent);
-	Node* findBestPlace(Dimension const& dimen, int& bestDistance);
+	Node* findBestPlace(Quants const& quant, int& bestDistance);
 	Node* findBest(tcl::List const& childs);
 	unsigned findBest(tcl::List const& childs, Node*& bestNode, unsigned& bestCount);
+	Node* findHeaderWindow();
 
 	void insertNode(Node* node, Node const* before = nullptr);
 	void remove(Childs::iterator pos);
+	void updateHeadersRecursively();
 	void updateAllHeaders();
 	void updateHeader();
 
@@ -1101,6 +1379,7 @@ private:
 	void performUpdateDimensions();
 	void performRaiseRecursively(bool needed = false);
 	void performSelectRecursively(bool needed = false);
+	void performQuerySelected() const;
 	int performQuerySashSize() const;
 	int performQueryFrameHeaderSize() const;
 	int performQueryNotebookHeaderSize() const;
@@ -1124,12 +1403,12 @@ private:
 	Node*			m_parent;
 	Node*			m_savedParent;
 	Node*			m_selected;
-	Dimension	m_dimen;
-	Dimension	m_actual;
+	Quants		m_dimen;
+	Quants		m_actual;
 	Coord			m_coord;
+	Coord			m_weight;
 	Size			m_workArea;
 	int			m_orientation;
-	int			m_expand;
 	int			m_sticky;
 	int			m_shrink;
 	int			m_grow;
@@ -1141,22 +1420,28 @@ private:
 	Childs		m_toplevel;
 	Childs		m_deleted;
 	AttrMap		m_attrMap;
-	DimList		m_afterPerform;
+	QuantList	m_afterPerform;
 	Node*			m_current;
 	unsigned		m_flags;
 	SnapshotMap	m_snapshotMap;
 	Structures	m_structures;
+	bool			m_amalgamate;
 	bool			m_initialStructure;
+	bool			m_isAmalgamated;
+	bool			m_wasAmalgamatable;
+	bool			m_isTransient;
 	bool			m_isClone;
 	bool			m_isDeleted;
 	bool			m_isDestroyed;
 	bool			m_isLocked;
 	bool			m_isReady;
+	bool			m_isPreserved;
 	bool			m_temporary;
+	bool			m_finished;
 
 	mutable bool m_dumpFlag;
 
-	typedef mstl::map<mstl::string,Base> Lookup;
+	typedef mstl::map<mstl::string,Base*> Lookup;
 	static Lookup m_lookup;
 };
 
@@ -1166,19 +1451,31 @@ Node::Lookup Node::m_lookup;
 
 
 static void
+Perform(ClientData clientData)
+{
+	Node* node = static_cast<Node*>(clientData);
+
+	if (node->exists())
+		node->perform();
+}
+
+
+static void
 WindowEventProc(ClientData clientData, XEvent* event)
 {
 	switch (event->type)
 	{
 		case ConfigureNotify:
+		{
 			static_cast<Node*>(clientData)->updateDimen(
 				event->xconfigure.x, event->xconfigure.y,
 				event->xconfigure.width, event->xconfigure.height);
 			break;
+		}
 
 		case DestroyNotify:	static_cast<Node*>(clientData)->destroyed(false); break;
 		case UnmapNotify:		static_cast<Node*>(clientData)->destroyed(true); break;
-		case MapNotify:		static_cast<Node*>(clientData)->isSelected(); break;
+		case MapNotify:		static_cast<Node*>(clientData)->setSelected(); break;
 	}
 }
 
@@ -1215,11 +1512,16 @@ bool Node::isPacked() const						{ return m_state == Packed; }
 bool Node::isWithdrawn() const					{ return m_state == Withdrawn; }
 bool Node::isFloating() const						{ return m_state == Floating; }
 bool Node::isToplevel() const						{ return m_parent == nullptr; }
+bool Node::isPreserved() const					{ return m_isPreserved; }
 bool Node::isLocked() const						{ return m_root->m_isLocked; }
 bool Node::isReady() const							{ return m_root->m_isReady; }
 bool Node::isHorz() const							{ return m_orientation == Horz; }
 bool Node::isVert() const							{ return m_orientation == Vert; }
-bool Node::hasChilds() const						{ return !m_childs.empty(); }
+bool Node::amalgamate() const						{ return m_amalgamate; }
+bool Node::needsUpdate() const					{ return m_root->isReady() && testFlags(unsigned(-1)); }
+
+template <> bool Node::hasOrientation<Horz>() const { return isHorz(); }
+template <> bool Node::hasOrientation<Vert>() const { return isVert(); }
 
 int Node::sticky() const { return m_sticky; }
 
@@ -1236,46 +1538,56 @@ template <Orient D> bool Node::grow() const			{ return m_grow & D; }
 template <Orient D> bool Node::shrink() const		{ return m_shrink & D; }
 template <Orient D> bool Node::orientation() const	{ return m_orientation & D; }
 
-char const* Node::uid() const				{ return tcl::asString(m_uid); }
-char const* Node::path() const			{ return tcl::asString(m_path); }
-char const* Node::id() const				{ return m_uid ? uid() : (m_path ? path() : "null"); }
+char const* Node::uid() const			{ return tcl::asString(m_uid); }
+char const* Node::path() const		{ return tcl::asString(m_path); }
+char const* Node::id() const			{ return m_uid ? uid() : (m_path ? path() : "null"); }
 
-Tcl_Obj* Node::uidObj() const				{ return m_uid; }
-Tcl_Obj* Node::pathObj() const			{ return m_path ? m_path : nullptr; }
+Tcl_Obj* Node::uidObj() const			{ return m_uid; }
+Tcl_Obj* Node::pathObj() const		{ return m_path; }
 
-int Node::sashSize() const					{ return performQuerySashSize(); }
-int Node::frameHeaderSize() const		{ return m_headerObj ? performQueryFrameHeaderSize() : 0; }
-int Node::notebookHeaderSize() const	{ return performQueryNotebookHeaderSize(); }
+int Node::sashSize() const				{ return performQuerySashSize(); }
 
-void Node::remove(Node* node)				{ remove(find(node)); }
-void Node::setState(State state)			{ m_state = state; }
-void Node::load(Tcl_Obj* list)			{ load(list, nullptr, nullptr); }
+void Node::remove(Node* node)			{ remove(find(node)); }
+void Node::setState(State state)		{ m_state = state; }
+void Node::load(Tcl_Obj* list)		{ load(list, nullptr, nullptr); }
+void Node::setPreserved(bool flag)	{ m_isPreserved = flag; }
 
-void Node::addFlag(unsigned flag)		{ m_flags |= flag; }
-void Node::delFlag(unsigned flag)		{ m_flags &= ~flag; }
+void Node::addFlag(unsigned flag)	{ m_flags |= flag; }
+void Node::delFlag(unsigned flag)	{ m_flags &= ~flag; }
 
 bool Node::testFlags(unsigned flag) const { return m_flags & flag; }
 
-Dimension const& Node::dimension() const { return m_dimen; }
+Quants const& Node::quants() const { return m_dimen; }
 
 void Node::makeSnapshotKey(mstl::string& key) const { makeSnapshot(key, nullptr); }
+
+
+int
+Node::frameHeaderSize() const
+{
+	return m_headerObj && exists() ? performQueryFrameHeaderSize() : 0;
+}
+
+
+int
+Node::notebookHeaderSize() const
+{
+	return m_headerObj && exists() ? performQueryNotebookHeaderSize() : 0;
+}
+
+
+bool
+Node::isPanedWindow(Orient orientation) const
+{
+	return m_type == PanedWindow && m_orientation == orientation;
+}
 
 
 void
 Node::ready()
 {
-	performReady();
 	m_isReady = true;
-}
-
-
-Node*
-Node::selected() const
-{
-	M_ASSERT(isNotebookOrMultiWindow());
-	M_ASSERT(m_selected);
-
-	return m_selected;
+	performReady();
 }
 
 
@@ -1288,6 +1600,13 @@ Node::child()
 			return child(i);
 	}
 	return nullptr;
+}
+
+
+bool
+Node::hasPackedChilds() const
+{
+	return child();
 }
 
 
@@ -1320,6 +1639,57 @@ Node::hasAncestor(Node const* node) const
 }
 
 
+unsigned
+Node::countStableChilds() const
+{
+	unsigned count = 0;
+
+	for (unsigned i = 0; i < numChilds(); ++i)
+	{
+		if (!child(i)->m_isTransient)
+			count += 1;
+	}
+
+	return count;
+}
+
+
+Node const*
+Node::stableChild() const
+{
+	for (unsigned i = 0; i < numChilds(); ++i)
+	{
+		if (!child(i)->m_isTransient)
+			return child(i);
+	}
+
+	return nullptr;
+}
+
+
+template <Orient D>
+bool
+Node::compare(int lhsPerc, int rhsPerc) const
+{
+	M_ASSERT(isToplevel());
+
+	if (lhsPerc == 0)
+		return rhsPerc == 0;
+	if (rhsPerc == 0)
+		return lhsPerc == 0;
+
+	Dimen lhs, rhs;
+
+	lhs.set<D>(lhsPerc, Rel);
+	rhs.set<D>(rhsPerc, Rel);
+
+	int lhsSize = lhs.computeRelativeSize<D>(m_root->m_workArea.dimen<D>());
+	int rhsSize = rhs.computeRelativeSize<D>(m_root->m_workArea.dimen<D>());
+
+	return lhsSize == rhsSize;
+}
+
+
 int
 Node::x() const
 {
@@ -1338,13 +1708,123 @@ Node::y() const
 
 template <Orient D>
 int
+Node::weight() const
+{
+	if (isMetaFrame())
+		return child()->weight<D>();
+
+	if (!isContainer())
+		return m_weight.value<D>();
+
+	unsigned count = 0;
+	unsigned total = 0;
+
+	for (unsigned i = 0; i < numChilds(); ++i)
+	{
+		if (child(i)->isPacked())
+		{
+			total += child(i)->weight<D>();
+			count += 1;
+		}
+	}
+
+	if (hasOrientation<D>())
+		return total;
+
+	return count ? (total + count - 1)/count : 0;
+}
+
+
+Node*
+Node::selected() const
+{
+	M_ASSERT(isNotebookOrMultiWindow());
+
+	if (!m_selected)
+	{
+		// It may happen that we don't know yet the
+		// selected frame, so we have to ask about it.
+		if (exists())
+			performQuerySelected();
+		if (!m_selected)
+			const_cast<Node*>(this)->m_selected = const_cast<Node*>(this)->child();
+	}
+
+	return m_selected;
+}
+
+
+bool
+Node::canAmalgamate() const
+{
+	if (!isToplevel() && (isFrame() || isMultiWindow()))
+	{
+		Node const* node		= this;
+		Node const* parent	= m_parent;
+
+		while (!parent->isToplevel())
+		{
+			if (parent->isMetaFrame() && parent->m_parent->isMultiWindow())
+			{
+				return true;
+			}
+			else if (parent->isPanedWindow(Vert))
+			{
+				if (parent->child() != node)
+					return false;
+			}
+			else if (!parent->isMultiWindow())
+			{
+				return false;
+			}
+
+			node = parent;
+			parent = parent->m_parent;
+		}
+	}
+
+	return false;
+}
+
+
+Node const*
+Node::findAmalgamated() const
+{
+	for (Node const* node = this; true; node = node->child())
+	{
+		if (node->m_isAmalgamated)
+		{
+			return node;
+		}
+		else if (node->isFrame() || node->isPane() || node->isPanedWindow(Horz) || node->isNotebook())
+		{
+			return nullptr;
+		}
+		else if (node->isMetaFrame())
+		{
+			if (!node->child()->isPanedWindow(Vert))
+				return nullptr;
+		}
+		else if (node->isMultiWindow())
+		{
+			if (node->child() != node->selected())
+				return nullptr;
+		}
+	}
+
+	return nullptr;
+}
+
+
+template <Orient D>
+int
 Node::contentSize(int size) const
 {
-	if (D == Vert && size > 0)
+	if (D == Vert && size > 0 && m_headerObj)
 	{
 		if (isNotebook())
 			size = mstl::max(0, size - notebookHeaderSize());
-		else if (m_headerObj && !isMultiWindow())
+		else if (!isMultiWindow())
 			size = mstl::max(0, size - frameHeaderSize());
 	}
 
@@ -1356,11 +1836,11 @@ template <Orient D,Enclosure Enc>
 int
 Node::frameSize(int size) const
 {
-	if (Enc == Outer && D == Vert && size > 0)
+	if (Enc == Outer && D == Vert && size > 0 && m_headerObj)
 	{
 		if (isNotebook())
 			size += notebookHeaderSize();
-		else if (m_headerObj && !isMultiWindow())
+		else if (!isMultiWindow())
 			size += frameHeaderSize();
 	}
 
@@ -1391,10 +1871,14 @@ template <> int Node::maxSize<Inner,Vert>() const { return maxHeight<Inner>(); }
 template <> int Node::minSize<Inner,Horz>() const { return minWidth <Inner>(); }
 template <> int Node::minSize<Inner,Vert>() const { return minHeight<Inner>(); }
 
-template <Enclosure Enc,Orient D,Quantity Q>
-int Node::dimen() const { return frameSize<D,Enc>(m_dimen.dimen<D,Q>()); }
+template <Enclosure Enc,Orient D,Quantity Q,Mode M>
+int Node::dimen() const { return frameSize<D,Enc>(m_dimen.dimen<D,Q,M>()); }
 
-template <Enclosure Enc,Orient D> int Node::actualSize() const { return dimen<Enc,D>(); }
+template <Enclosure Enc,Orient D>
+int Node::actualSize() const { return dimen<Enc,D>(); }
+
+template <Orient D,Quantity Q,Mode M>
+int Node::value() const { return m_dimen.dimen<D,Q,M>(); }
 
 
 void
@@ -1461,6 +1945,24 @@ Node::findLeader() const
 }
 
 
+Node*
+Node::findHeaderWindow()
+{
+	M_ASSERT(!isToplevel());
+
+	Node* node = m_parent;
+
+	while (node->m_amalgamate || node->isContainer())
+	{
+		if (node->isToplevel())
+			return this;
+		node = node->parent();
+	}
+	
+	return node;
+}
+
+
 void
 Node::create()
 {
@@ -1523,7 +2025,7 @@ Node::unpack()
 
 
 void
-Node::isSelected()
+Node::setSelected()
 {
 	if (!m_parent || !m_parent->isNotebookOrMultiWindow())
 		return;
@@ -1548,9 +2050,11 @@ Node::select()
 	{
 		if (parent->isNotebookOrMultiWindow())
 		{
-			parent->addFlag(F_Select);
-			node->isSelected();
-			return;
+			if (parent->selected() != node)
+			{
+				parent->addFlag(F_Select);
+				node->setSelected();
+			}
 		}
 	}
 }
@@ -1580,7 +2084,6 @@ Node::Node(Node& parent, Type type, Tcl_Obj* uid)
 	,m_savedParent(nullptr)
 	,m_selected(nullptr)
 	,m_orientation(0)
-	,m_expand(None)
 	,m_sticky(0)
 	,m_shrink(0)
 	,m_grow(0)
@@ -1590,13 +2093,19 @@ Node::Node(Node& parent, Type type, Tcl_Obj* uid)
 	,m_oldTitleObj(nullptr)
 	,m_current(nullptr)
 	,m_flags(0)
+	,m_amalgamate(false)
 	,m_initialStructure(false)
+	,m_isAmalgamated(false)
+	,m_wasAmalgamatable(false)
+	,m_isTransient(false)
 	,m_isClone(false)
 	,m_isDeleted(false)
 	,m_isDestroyed(false)
 	,m_isLocked(false)
 	,m_isReady(false)
+	,m_isPreserved(false)
 	,m_temporary(false)
+	,m_finished(false)
 	,m_dumpFlag(false)
 {
 	M_ASSERT(type != Root);
@@ -1615,7 +2124,6 @@ Node::Node(Tcl_Obj* path, Node const* setup)
 	,m_savedParent(nullptr)
 	,m_selected(nullptr)
 	,m_orientation(0)
-	,m_expand(None)
 	,m_sticky(0)
 	,m_shrink(0)
 	,m_grow(0)
@@ -1625,13 +2133,19 @@ Node::Node(Tcl_Obj* path, Node const* setup)
 	,m_oldTitleObj(nullptr)
 	,m_current(nullptr)
 	,m_flags(0)
+	,m_amalgamate(false)
 	,m_initialStructure(false)
+	,m_isAmalgamated(false)
+	,m_wasAmalgamatable(false)
+	,m_isTransient(false)
 	,m_isClone(false)
 	,m_isDeleted(false)
 	,m_isDestroyed(false)
 	,m_isLocked(false)
 	,m_isReady(false)
+	,m_isPreserved(false)
 	,m_temporary(false)
+	,m_finished(false)
 	,m_dumpFlag(false)
 {
 	M_ASSERT(path);
@@ -1642,10 +2156,10 @@ Node::Node(Tcl_Obj* path, Node const* setup)
 	{
 		m_type = setup->m_type;
 		m_orientation = setup->m_orientation;
-		m_expand = setup->m_expand;
 		m_sticky = setup->m_sticky;
 		m_shrink = setup->m_shrink;
 		m_grow = setup->m_grow;
+		m_weight = setup->m_weight;
 		tcl::incrRef(m_uid = setup->m_uid);
 	}
 }
@@ -1663,8 +2177,8 @@ Node::Node(Node const& node)
 	,m_selected(nullptr)
 	,m_dimen(node.m_dimen)
 	,m_actual(node.m_actual)
+	,m_weight(node.m_weight)
 	,m_orientation(node.m_orientation)
-	,m_expand(node.m_expand)
 	,m_sticky(node.m_sticky)
 	,m_shrink(node.m_shrink)
 	,m_grow(node.m_grow)
@@ -1674,13 +2188,19 @@ Node::Node(Node const& node)
 	,m_oldTitleObj(nullptr)
 	,m_current(nullptr)
 	,m_flags(0)
+	,m_amalgamate(node.m_amalgamate)
 	,m_initialStructure(false)
+	,m_isAmalgamated(false)
+	,m_wasAmalgamatable(false)
+	,m_isTransient(false)
 	,m_isClone(false)
 	,m_isDeleted(false)
 	,m_isDestroyed(false)
 	,m_isLocked(false)
 	,m_isReady(false)
+	,m_isPreserved(false)
 	,m_temporary(false)
+	,m_finished(false)
 	,m_dumpFlag(false)
 {
 	tcl::incrRef(m_path);
@@ -1742,8 +2262,29 @@ Node::set(char const* attribute, Tcl_Obj* value, bool ignoreMeta)
 	AttrMap& attrs = isMetaFrame() && ignoreMeta ? child()->m_attrMap : m_attrMap;
 	Tcl_Obj*& obj = attrs[attribute];
 
-	if (tcl::equal(attribute, "priority") && tcl::isInt(value))
-		m_priority = tcl::asInt(value);
+	if (tcl::equal(attribute, "transient"))
+	{
+		if (tcl::isBoolean(value))
+			m_isTransient = tcl::asBoolean(value);
+	}
+	else if (tcl::equal(attribute, "priority"))
+	{
+		if (tcl::isInt(value))
+			m_priority = tcl::asInt(value);
+	}
+	else if (tcl::equal(attribute, "amalgamate"))
+	{
+		if (tcl::isBoolean(value))
+		{
+			m_amalgamate = tcl::asBoolean(value);
+
+			if (exists() && !isToplevel())
+			{
+				addFlag(F_Header);
+				findHeaderWindow()->addFlag(F_Header);
+			}
+		}
+	}
 
 	tcl::decrRef(obj);
 	obj = tcl::incrRef(value);
@@ -1758,8 +2299,12 @@ Node::get(char const* attribute, bool ignoreMeta) const
 	if (isMetaFrame() && ignoreMeta && !child())
 		ignoreMeta = false; // this may happen when destroying a metaframe
 	
+	if (tcl::equal(attribute, "transient"))
+		return tcl::newObj(m_isTransient);
 	if (tcl::equal(attribute, "priority"))
 		return tcl::newObj(m_priority);
+	if (tcl::equal(attribute, "amalgamate"))
+		return tcl::newObj(m_amalgamate);
 
 	AttrMap const& attrs = isMetaFrame() && ignoreMeta ? child()->m_attrMap : m_attrMap;
 	AttrMap::const_iterator i = attrs.find(attribute);
@@ -1768,59 +2313,59 @@ Node::get(char const* attribute, bool ignoreMeta) const
 
 
 void
-Node::resize(Dimension const& dim, bool perform)
+Node::resize(Quants const& quant, bool perform)
 {
 	if (isLocked())
 	{
-		m_afterPerform.push_back(new Dimension(dim));
+		m_afterPerform.push_back(new Quants(quant));
 	}
 	else
 	{
-		if (dim.actual.width > 0)
+		if (quant.actual.abs.width > 0)
 		{
-			if (m_dimen.actual.width != dim.actual.width)
+			if (m_dimen.actual.abs.width != quant.actual.abs.width)
 			{
-				m_dimen.actual.width = dim.actual.width;
+				m_dimen.actual.abs.width = quant.actual.abs.width;
 				addFlag(F_Config);
 			}
 		}
-		if (dim.actual.height > 0)
+		if (quant.actual.abs.height > 0)
 		{
-			if (m_dimen.actual.height != dim.actual.height)
+			if (m_dimen.actual.abs.height != quant.actual.abs.height)
 			{
-				m_dimen.actual.height = dim.actual.height;
+				m_dimen.actual.abs.height = quant.actual.abs.height;
 				addFlag(F_Config);
 			}
 		}
-		if (dim.min.width > 0)
+		if (quant.min.abs.width > 0)
 		{
-			if (m_dimen.min.width != dim.min.width)
+			if (m_dimen.min.abs.width != quant.min.abs.width)
 			{
-				m_dimen.min.width = dim.min.width;
+				m_dimen.min.abs.width = quant.min.abs.width;
 				addFlag(F_Config);
 			}
 		}
-		if (dim.min.height > 0)
+		if (quant.min.abs.height > 0)
 		{
-			if (m_dimen.min.height != dim.min.height)
+			if (m_dimen.min.abs.height != quant.min.abs.height)
 			{
-				m_dimen.min.height = dim.min.height;
+				m_dimen.min.abs.height = quant.min.abs.height;
 				addFlag(F_Config);
 			}
 		}
-		if (dim.max.width > 0)
+		if (quant.max.abs.width > 0)
 		{
-			if (m_dimen.max.width != dim.max.width)
+			if (m_dimen.max.abs.width != quant.max.abs.width)
 			{
-				m_dimen.max.width = dim.max.width;
+				m_dimen.max.abs.width = quant.max.abs.width;
 				addFlag(F_Config);
 			}
 		}
-		if (dim.max.height > 0)
+		if (quant.max.abs.height > 0)
 		{
-			if (m_dimen.max.height != dim.max.height)
+			if (m_dimen.max.abs.height != quant.max.abs.height)
 			{
-				m_dimen.max.height = dim.max.height;
+				m_dimen.max.abs.height = quant.max.abs.height;
 				addFlag(F_Config);
 			}
 		}
@@ -2170,7 +2715,7 @@ Node::createBase(Tcl_Obj* path)
 	M_ASSERT(path);
 
 	initialize();
-	return &m_lookup[tcl::asString(path)];
+	return m_lookup[tcl::asString(path)] = new Base;
 }
 
 
@@ -2180,7 +2725,7 @@ Node::lookupBase(char const* path)
 	M_ASSERT(path);
 
 	Lookup::iterator i = m_lookup.find(path);
-	return i == m_lookup.end() ? nullptr : &i->second;
+	return i == m_lookup.end() ? nullptr : i->second;
 }
 
 
@@ -2191,20 +2736,24 @@ Node::removeBase(char const* path)
 
 	if (i != m_lookup.end())
 	{
-		delete i->second.root;
-		delete i->second.setup;
+		delete i->second->root;
+		delete i->second->setup;
+		delete i->second;
 		m_lookup.erase(i);
 	}
 }
 
 
-void
+bool
 Node::makeStructure()
 {
 	M_ASSERT(isRoot());
 
-	if (child() && child()->isContainer())
-		m_structures.push_back(child()->makeStructure(nullptr));
+	if (!child() || !child()->isContainer())
+		return false;
+
+	m_structures.push_back(child()->makeStructure(nullptr));
+	return true;
 }
 
 
@@ -2256,9 +2805,14 @@ Node::releaseStructures()
 		leaves2.bubblesort();
 
 		if (::isSubset(leaves2, leaves1))
+		{
+			delete *i;
 			i = m_structures.erase(i);
+		}
 		else
+		{
 			i += 1;
+		}
 	}
 }
 
@@ -2270,7 +2824,7 @@ Node::expand() const
 		return m_grow | m_shrink;
 	
 	if (isLeaf())
-		return m_expand;
+		return (weight<Horz>() ? Horz : 0) | (weight<Vert>() ? Vert : 0);
 	
 	int result = None;
 
@@ -2297,8 +2851,8 @@ Node::updateDimen(int x, int y, int width, int height)
 
 		if (isLocked())
 		{
-			m_actual.actual.width = width;
-			m_actual.actual.height = height;
+			m_actual.actual.abs.width = width;
+			m_actual.actual.abs.height = height;
 		}
 		else
 		{
@@ -2317,7 +2871,15 @@ Node::updateDimen(int x, int y, int width, int height)
 			m_dimen.set<Horz>(width);
 			m_dimen.set<Vert>(height);
 
-			if (m_parent && m_parent->isNotebookOrMultiWindow())
+			if (this == m_root)
+			{
+				if (!m_isReady)
+				{
+					addFlag(F_Config);
+					Tcl_DoWhenIdle(Perform, this);
+				}
+			}
+			else if (m_parent && m_parent->isNotebookOrMultiWindow())
 			{
 				width = this->width<Outer>();
 				height = this->height<Outer>();
@@ -2406,19 +2968,22 @@ Node::computeDimen() const
 {
 	M_ASSERT(!isWithdrawn());
 
-	if (!hasChilds())
+	if (!hasPackedChilds())
 		return actualSize<Inner,D>();
 	
 	int totalSize = 0;
 
 	for (unsigned i = 0; i < numChilds(); ++i)
 	{
-		int size = child(i)->frameSize<D>(child(i)->computeDimen<D>());
+		if (child(i)->isPacked())
+		{
+			int size = child(i)->frameSize<D>(child(i)->computeDimen<D>());
 
-		if (orientation<D>())
-			totalSize += size + (totalSize ? sashSize() : 0);
-		else
-			totalSize = mstl::max(totalSize, size);
+			if (hasOrientation<D>())
+				totalSize += size + (totalSize ? sashSize() : 0);
+			else
+				totalSize = mstl::max(totalSize, size);
+		}
 	}
 
 	return totalSize;
@@ -2430,38 +2995,100 @@ void
 Node::addDimen(Node const* node)
 {
 	M_ASSERT(!isWithdrawn());
-
-	static_assert(Q != Max, "not working for Maxima");
+	M_ASSERT(Q != Max); // not working for Maxima
 
 	if (Q == Actual || node->dimen<Inner,D,Q>())
 	{
 		int nodeSize = node->dimen<Outer,D,Q>();
 		int mySize = dimen<Inner,D,Q>();
 
-		m_dimen.set<D,Q>(orientation<D>()
+		m_dimen.set<D,Q>(hasOrientation<D>()
 			? mySize + nodeSize + (mySize ? sashSize() : 0)
 			: mstl::max(mySize, nodeSize));
 	}
 }
 
 
-void
-Node::computeDimensionsRecursively()
+template <Orient D,Quantity Q>
+bool
+Node::canComputeDimensions() const
 {
 	M_ASSERT(!isWithdrawn());
 
-	if (!hasChilds())
-		return;
-	
-	bool needComputedWidth  = (!isToplevel() || width<Inner>() == 0);
-	bool needComputedHeight = (!isToplevel() || height<Inner>() == 0);
+	if (value<D,Q,Abs>())
+		return true;
 
-	if (needComputedWidth)
-		m_dimen.actual.width = 0;
-	if (needComputedHeight)
-		m_dimen.actual.height = 0;
-	m_dimen.min.zero();
-	m_dimen.max.zero();
+	if (isLeaf())
+		return false;
+
+	if (isToplevel())
+	{
+		if (value<D,Q,Rel>())
+			return true;
+	}
+
+	if (isPanedWindow())
+	{
+		for (unsigned i = 0; i < numChilds(); ++i)
+		{
+			Node const* node = child(i);
+
+			if (node->isPacked() && !node->canComputeDimensions<D,Q>())
+				return false;
+		}
+
+		return true;
+	}
+
+	if (isNotebookOrMultiWindow())
+	{
+		if (!hasPackedChilds())
+			return true;
+
+		for (unsigned i = 0; i < numChilds(); ++i)
+		{
+			Node const* node = child(i);
+
+			if (node->isPacked() && node->canComputeDimensions<D,Q>())
+				return true;
+		}
+
+		return false;
+	}
+
+	return child()->canComputeDimensions<D,Q>();
+}
+
+
+template <Orient D,Quantity Q>
+void
+Node::computeDimensionsRecursively(int size)
+{
+	M_ASSERT(!isWithdrawn());
+	//M_ASSERT(canComputeDimensions<D,Q>());
+
+	if (isContainer())
+	{
+		m_dimen.set<D,Q>(0);
+	}
+	else if (value<D,Q>() == 0 && value<D,Q,Rel>() > 0)
+	{
+		if (isToplevel())
+		{
+			m_dimen.set<D,Q>(m_dimen.computeRelativeSize<D,Q>(m_root->m_workArea.dimen<D>()));
+		}
+		else
+		{
+			int mySize = toplevel()->dimen<Inner,D,Q>();
+
+			mySize = contentSize<D>(mySize);
+			mySize = m_dimen.computeRelativeSize<D,Q>(mySize);
+			mySize = frameSize<D>(mySize);
+			m_dimen.set<D,Q>(mySize);
+		}
+	}
+
+	bool needComputedSize = (value<D,Q>() == 0);
 
 	for (unsigned i = 0; i < numChilds(); ++i)
 	{
@@ -2469,36 +3096,117 @@ Node::computeDimensionsRecursively()
 
 		if (node->isPacked())
 		{
-			node->computeDimensionsRecursively();
+			int childSize;
 
-			if (needComputedWidth)
-				addDimen<Horz>(node);
-			if (needComputedHeight)
-				addDimen<Vert>(node);
+			if (Q == Max)
+				childSize = 0;
+			else if (Q == Min || hasOrientation<D>())
+				childSize = node->dimen<Inner,D,Min>();
+			else
+				childSize = node->dimen<Inner,D,Actual>();
 
-			addDimen<Horz,Min>(node);
-			addDimen<Vert,Min>(node);
+			node->computeDimensionsRecursively<D,Q>(childSize);
 
-			if (m_dimen.max.width >= 0)
+			if (needComputedSize)
 			{
-				if (isHorz() && node->dimen<Inner,Horz,Max>() == 0)
-					m_dimen.max.width = -1;
-				else
-					m_dimen.max.width = mstl::max(m_dimen.max.width, node->dimen<Outer,Horz,Max>());
-			}
-
-			if (m_dimen.max.height >= 0)
-			{
-				if (isVert() && node->dimen<Inner,Vert,Max>() == 0)
-					m_dimen.max.height = -1;
-				else
-					m_dimen.max.height = mstl::max(m_dimen.max.height, node->dimen<Outer,Vert,Max>());
+				if (Q != Max)
+				{
+					addDimen<D,Q>(node);
+				}
+				else if (m_dimen.dimen<D,Max>() >= 0)
+				{
+					if (hasOrientation<D>() && node->value<D,Max>() == 0)
+						m_dimen.set<D,Max>(-1);
+					else
+						m_dimen.set<D,Max>(mstl::max(m_dimen.dimen<D,Max>(), node->dimen<Outer,D,Max>()));
+				}
 			}
 		}
 	}
 
-	m_dimen.max.width = mstl::max(0, m_dimen.max.width);
-	m_dimen.max.height = mstl::max(0, m_dimen.max.height);
+	if (value<D,Q>() == 0)
+		m_dimen.set<D,Q>(size);
+
+	if (Q == Actual)
+		m_dimen.set<D>(mstl::max(m_dimen.dimen<D,Min>(), m_dimen.dimen<D>()));
+	else if (Q == Max)
+		m_dimen.set<D,Max>(mstl::max(0, m_dimen.dimen<D,Max>()));
+
+	if (Q == Actual)
+	{
+		if (isNotebookOrMultiWindow())
+		{
+			int size = dimen<Inner,D,Q>();
+
+			for (unsigned i = 0; i < numChilds(); ++i)
+			{
+				Node* node = child(i);
+
+				if (node->isPacked())
+					node->m_dimen.set<D,Q>(node->contentSize<D>(size));
+			}
+		}
+		else if (hasOrientation<~D>())
+		{
+			int size = dimen<Inner,D,Q>();
+
+			for (unsigned i = 0; i < numChilds(); ++i)
+			{
+				Node* node = child(i);
+
+				if (node->isPacked())
+					node->m_dimen.set<D,Q>(node->contentSize<D>(size));
+			}
+		}
+	}
+}
+
+
+void
+Node::computeDimensionsRecursively()
+{
+	M_ASSERT(isToplevel());
+
+	int count = 0;
+
+	bool horz = false;
+	bool vert = false;
+
+	if (canComputeDimensions<Horz,Min>())
+	{
+		computeDimensionsRecursively<Horz,Min>(0);
+		count += 1;
+	}
+	if (canComputeDimensions<Vert,Min>())
+	{
+		computeDimensionsRecursively<Vert,Min>(0);
+		count += 1;
+	}
+	if (canComputeDimensions<Horz,Actual>())
+	{
+		computeDimensionsRecursively<Horz,Actual>(0);
+		count += 1;
+		horz = true;
+	}
+	if (canComputeDimensions<Vert,Actual>())
+	{
+		computeDimensionsRecursively<Vert,Actual>(0);
+		count += 1;
+		vert = true;
+	}
+	if (horz || canComputeDimensions<Horz,Max>())
+	{
+		computeDimensionsRecursively<Horz,Max>(0);
+		count += 1;
+	}
+	if (vert || canComputeDimensions<Vert,Max>())
+	{
+		computeDimensionsRecursively<Vert,Max>(0);
+		count += 1;
+	}
+
+	if (count == 6)
+		m_finished = true;
 }
 
 
@@ -2568,7 +3276,7 @@ Node::destroyed(bool finalize)
 			m_parent->m_isDeleted = true;
 			m_parent->m_state = Withdrawn;
 		}
-		
+
 		if (m_parent && !m_parent->isToplevel())
 		{
 			Node* toplevel = this->toplevel();
@@ -2641,13 +3349,13 @@ Node::toplevel() const
 
 
 Node*
-Node::findPath(char const* path)
+Node::findPath(char const* path) const
 {
 	M_ASSERT(path);
 	M_ASSERT(isRoot());
 
 	if (tcl::equal(m_path, path))
-		return this;
+		return const_cast<Node*>(this);
 
 	for (unsigned i = 0; i < m_active.size(); ++i)
 	{
@@ -2662,7 +3370,7 @@ Node::findPath(char const* path)
 
 
 Node*
-Node::findUid(char const* uid)
+Node::findUid(char const* uid) const
 {
 	M_ASSERT(uid);
 	M_ASSERT(isRoot());
@@ -2691,10 +3399,13 @@ Node::clone(Node* parent, Tcl_Obj* uid) const
 	node->m_parent = parent;
 	node->m_orientation = m_orientation;
 	node->m_priority = m_priority;
-	node->m_expand = m_expand;
+	node->m_isTransient = m_isTransient;
+	node->m_amalgamate = m_amalgamate;
+	node->m_weight = m_weight;
 	node->m_sticky = m_sticky;
 	node->m_root = parent->m_root;
 	node->m_root->m_active.push_back(node);
+	node->m_dimen = m_dimen;
 	tcl::set(node->m_uid, uid);
 	tcl::set(node->m_path, nullptr);
 
@@ -2707,10 +3418,16 @@ Node::clone(LeafMap const& leaves)
 {
 	M_ASSERT(isRoot());
 
+	structure::Node* structure = nullptr;
+	if (child() && child()->isContainer())
+		structure = child()->makeStructure(nullptr);
+
 	Node* root = clone(leaves, nullptr);
 	root->create();
 	root->setState(Packed);
-	root->finishLoad(&leaves, this);
+	if (structure)
+		root->m_structures.push_back(structure);
+	root->finishLoad(&leaves, this, !!structure);
 	return root;
 }
 
@@ -2799,7 +3516,7 @@ Node::unframe()
 		return;
 
 	M_ASSERT(numChilds() >= 1);
-	
+
 	Node* child = this->child();
 	State state = m_state;
 	unsigned flags = m_flags;
@@ -2814,6 +3531,8 @@ Node::unframe()
 	mstl::swap(m_path, child->m_path);
 	mstl::swap(m_uid, child->m_uid);
 	mstl::swap(m_priority, child->m_priority);
+	mstl::swap(m_isTransient, child->m_isTransient);
+	mstl::swap(m_amalgamate, child->m_amalgamate);
 	mstl::swap(m_childs, child->m_childs);
 	// child->m_root
 	child->m_parent = this;
@@ -2824,7 +3543,7 @@ Node::unframe()
 	// child->m_coord
 	// child->m_workArea
 	mstl::swap(m_orientation, child->m_orientation);
-	mstl::swap(m_expand, child->m_expand);
+	mstl::swap(m_weight, child->m_weight);
 	mstl::swap(m_sticky, child->m_sticky);
 	mstl::swap(m_shrink, child->m_shrink);
 	mstl::swap(m_grow, child->m_grow);
@@ -2843,6 +3562,7 @@ Node::unframe()
 	mstl::swap(m_isDeleted, child->m_isDeleted);
 	// child->m_isDestroyed
 	// child->m_isLocked
+	// child->m_isReady
 	// child->m_temporary
 	// child->m_dumpFlag
 
@@ -2898,6 +3618,8 @@ Node::makeMetaFrame()
 	// child->m_path
 	// child->m_uid
 	// child->m_priority
+	// child->m_isTransient
+	// child->m_amalgamate
 	child->m_childs.swap(m_childs);
 	child->m_root = m_root;
 	child->m_parent = this;
@@ -2908,7 +3630,7 @@ Node::makeMetaFrame()
 	// child->m_coord
 	// child->m_workArea
 	// child->m_orientation
-	// child->m_expand
+	// child->m_weight
 	// child->m_sticky
 	// child->m_shrink
 	// child->m_grow
@@ -2927,6 +3649,7 @@ Node::makeMetaFrame()
 	// child->m_isDeleted
 	// child->m_isDestroyed
 	// child->m_isLocked
+	// child->m_isReady
 	// child->m_temporary
 	// child->m_dumpFlag
 
@@ -2937,6 +3660,8 @@ Node::makeMetaFrame()
 	tcl::zero(m_path);
 	tcl::zero(m_uid);
 	m_priority = 0;
+	m_isTransient = false;
+	m_amalgamate = false;
 	m_childs.push_back(child);
 	// m_root
 	// m_parent
@@ -2947,7 +3672,7 @@ Node::makeMetaFrame()
 	// m_coord
 	// m_workArea
 	m_orientation = 0;
-	// m_expand
+	// m_weight
 	// m_sticky
 	// m_shrink
 	// m_grow
@@ -2966,6 +3691,8 @@ Node::makeMetaFrame()
 	// m_isDeleted
 	// m_isDestroyed
 	// m_isLocked
+	// m_isReady
+	// m_amalgamate
 	// m_temporary
 	// m_dumpFlag
 
@@ -3003,8 +3730,8 @@ Node::insertNotebook(Node* newChild, Type type, Node const* beforeChild)
 
 	m_root->m_active.push_back(nb);
 	nb->m_parent->add(nb, before);
-	nb->m_dimen.actual.width = width<Outer>();
-	nb->m_dimen.actual.height = height<Outer>();
+	nb->m_dimen.actual.abs.width = width<Outer>();
+	nb->m_dimen.actual.abs.height = height<Outer>();
 	nb->create();
 	if (isPacked)
 		unpack();
@@ -3031,20 +3758,20 @@ Node::insertPanedWindow(Position position, Node* newChild, Node const* beforeChi
 	pw->m_orientation = (position == Left || position == Right) ? Horz : Vert;
 	if (position & Horz)
 	{
-		pw->m_dimen.actual.height = height<Outer>();
-		pw->m_dimen.actual.width = width<Inner>();
+		pw->m_dimen.actual.abs.height = height<Outer>();
+		pw->m_dimen.actual.abs.width = width<Inner>();
 	}
 	else
 	{
-		pw->m_dimen.actual.height = height<Inner>();
-		pw->m_dimen.actual.width = width<Outer>();
+		pw->m_dimen.actual.abs.height = height<Inner>();
+		pw->m_dimen.actual.abs.width = width<Outer>();
 	}
 	pw->create();
 	unpack();
 	if (beforeChild || position == Right || position == Bottom)
-		{ pw->move(this); pw->move(newChild, beforeChild); }
+	{ pw->move(this); pw->move(newChild, beforeChild); }
 	else
-		{ pw->move(newChild); pw->move(this); }
+	{ pw->move(newChild); pw->move(this); }
 	pw->packChilds();
 	pw->pack();
 	return pw;
@@ -3067,7 +3794,7 @@ Node::descendantOf(Node const* child, unsigned level) const
 			return level;
 
 		unsigned lvl = this->child(i)->descendantOf(child, level + 1);
-		
+
 		if (lvl < mstl::numeric_limits<unsigned>::max())
 			return lvl;
 	}
@@ -3077,17 +3804,17 @@ Node::descendantOf(Node const* child, unsigned level) const
 
 
 Node*
-Node::findBestPlace(Dimension const& dimen, int& bestDistance)
+Node::findBestPlace(Quants const& quant, int& bestDistance)
 {
 	Node* node = nullptr;
-	
+
 	for (unsigned i = 0; i < numChilds(); ++i)
 	{
 		if (child(i)->isPacked())
 		{
 			int distance = bestDistance;
 
-			if (Node* n = child(i)->findBestPlace(dimen, distance))
+			if (Node* n = child(i)->findBestPlace(quant, distance))
 			{
 				node = n;
 				bestDistance = distance;
@@ -3097,7 +3824,7 @@ Node::findBestPlace(Dimension const& dimen, int& bestDistance)
 
 	if (!node)
 	{
-		int distance = mstl::abs(m_dimen.actual.area() - dimen.actual.area());
+		int distance = mstl::abs(m_dimen.actual.abs.area() - quant.actual.abs.area());
 
 		if (distance < bestDistance)
 		{
@@ -3118,7 +3845,7 @@ Node::findBest(tcl::List const& childs)
 
 	if (childs.size() == 1)
 		return findUid(tcl::asString(childs[0]));
-		
+
 	Node* bestNode = nullptr;
 	unsigned bestCount = 0;
 
@@ -3215,12 +3942,14 @@ Node::findRelation(structure::Node const* parent, tcl::List const& childs) const
 
 		for (unsigned k = 0; k < leaves2.size(); ++k)
 		{
-			if (Node* node = m_root->findUid(tcl::asString(leaves2[k])))
+			if (Node const* node = m_root->findUid(tcl::asString(leaves2[k])))
 			{
 				if (node->hasAncestor(m_parent->m_parent ? m_parent->m_parent : m_parent))
 				{
 					while (node->m_parent != m_parent)
 						node = node->m_parent;
+					if (parent->findIndex(childs) > int(i))
+						node = node->findAfter();
 					return node;
 				}
 			}
@@ -3232,78 +3961,45 @@ Node::findRelation(structure::Node const* parent, tcl::List const& childs) const
 
 
 Node*
-Node::findDockingNode(Position& position, Node const*& after, Node const* setup)
+Node::findDockingNode(Position& position, Node const*& before, Node const* setup)
 {
 	if (isMetaFrame())
-		return child()->findDockingNode(position, after, setup);
+		return child()->findDockingNode(position, before, setup);
 
 	// 1. Search in saved structures.
 
-	int bestLevel = mstl::numeric_limits<int>::min();
-	structure::Type bestType = structure::Leaf;
-	structure::Node const* bestNode = nullptr;
+	tcl::List dockable, visible;
+	collectLeavesRecursively(dockable);
+	m_root->collectLeavesRecursively(visible);
 
-	tcl::List leaves;
-	collectLeavesRecursively(leaves);
+	unsigned bestCount = 0;
+	unsigned bestDepth = 0;
+	structure::Node const* bestNode = nullptr;
+	Node* node = nullptr;
 
 	for (int i = m_root->m_structures.size() - 1; i >= 0; --i)
 	{
-		int level = -1;
-		structure::Node const* sNode = m_root->m_structures[i]->find(leaves, level);
-
-		if (sNode && level >= bestLevel)
+		if (!m_root->m_initialStructure || i > 0 || !bestNode)
 		{
-			for (	structure::Node const* sParent = sNode->parent();
-					sParent && level >= bestLevel;
-					sParent = sParent->parent(), level -= 1)
+			unsigned count = 0;
+
+			if (structure::Node const* sNode = m_root->m_structures[i]->findBest(dockable, count, visible))
 			{
-				switch (sParent->type())
+				if (sNode->parent())
 				{
-					case structure::Horz:	position = Left; break;
-					case structure::Vert:	position = Top; break;
-					default:						position = Center;
-				}
+					unsigned depth = sNode->depth();
 
-				for (unsigned k = 0; k < sParent->numChilds(); ++k)
-				{
-					structure::Node const* sChild = sParent->child(k);
-
-					if (sChild != sNode)
+					if (count > bestCount || (count == bestCount && depth > bestDepth))
 					{
-						int myLevel = level;
+						tcl::List leaves;
+						sNode->collectLeaves(leaves);
 
-						tcl::List leaves2;
-						sChild->collectLeaves(leaves2);
-
-						if (!sChild->isLeaf())
-							myLevel -= 1;
-						if (sChild->containsOneOf(leaves))
-							myLevel += 1;
-
-						if (myLevel > bestLevel)
+						if (Node* n = m_root->findBest(leaves))
 						{
-							for (unsigned j = 0; j < leaves2.size(); ++j)
-							{
-								Node* node = m_root->findUid(tcl::asString(leaves2[j]));
-
-								if (	node
-									&& node != this
-									&& node->toplevel() == m_root
-									&& node->fits(m_dimen.min, position))
-								{
-									M_ASSERT(sNode->parent());
-
-									myLevel -= mstl::abs(int(node->depth()) - int(sNode->depth()));
-
-									if (	myLevel > bestLevel
-										|| (myLevel == bestLevel && sParent->type() > bestType))
-									{
-										bestType = sParent->type();
-										bestLevel = level;
-										bestNode = sChild;
-									}
-								}
-							}
+							bestNode = sNode;
+							bestCount = count;
+							bestDepth = depth;
+							node = n;
 						}
 					}
 				}
@@ -3311,42 +4007,46 @@ Node::findDockingNode(Position& position, Node const*& after, Node const* setup)
 		}
 	}
 
-	if (bestNode)
+	if (node)
 	{
-		tcl::List leaves2;
-		bestNode->collectLeaves(leaves2);
+		structure::Node const* parent = bestNode->parent();
+		M_ASSERT(parent);
 
-		Node* node = m_root->findBest(leaves2);
-
-		M_ASSERT(node);
-
-		switch (bestNode->parent()->type())
+		switch (parent->type())
 		{
 			case structure::Horz:	position = Right; break;
 			case structure::Vert:	position = Bottom; break;
 			default:						position = Center; break;
 		}
 
-		if (!node->m_parent->isToplevel() && (bestNode->isHorz() || bestNode->isVert()) && node->isLeaf())
+		if (	node->m_parent
+			&& !node->m_parent->isToplevel()
+			&& (bestNode->isHorz() || bestNode->isVert())
+			&& node->isLeaf())
+		{
 			node = node->m_parent;
+		}
+
 		if (node->isMetaFrame())
 			node = node->m_parent;
 
 		if (	node->m_parent
 			&& !node->m_parent->isToplevel()
-			&& (	(	(bestNode->parent()->isHorz() || bestNode->parent()->isVert())
+			&& (	(	(parent->isHorz() || parent->isVert())
 					&& !node->isContainer()
 					&& node->m_parent->isNotebookOrMultiWindow())
-				|| (bestNode->isHorz() && bestNode->parent()->isVert())
-				|| (bestNode->isVert() && bestNode->parent()->isHorz())))
+				|| (bestNode->isHorz() && parent->isVert())
+				|| (bestNode->isVert() && parent->isHorz())))
 		{
-			node = node->m_parent;
+			if ((node = node->m_parent)->isMetaFrame())
+				node = node->m_parent;
 		}
 
-		if (node->m_parent->isMetaFrame())
-			node = node->m_parent;
-		after = node->findRelation(bestNode->parent(), leaves);
-		return node;
+		if (node->fits(m_dimen.min.abs, position))
+		{
+			before = node->findRelation(parent, dockable);
+			return node;
+		}
 	}
 
 	// 3. Find best place.
@@ -3361,7 +4061,7 @@ Node::findDockingNode(Position& position, Node const*& after, Node const* setup)
 		if ((parent = m_root)->child())
 			parent = m_root->child();
 	}
-	
+
 	position = parent->defaultPosition();
 	return parent;
 }
@@ -3437,7 +4137,7 @@ Node::parseAttributes(Tcl_Obj* obj)
 		M_THROW(tcl::Exception("odd attribute list '%s'", tcl::asString(obj)));
 
 	for (unsigned i = 0; i < elems.size(); i += 2)
-		tcl::incrRef(m_attrMap[tcl::asString(elems[i])] = elems[i + 1]);
+		set(tcl::asString(elems[i]), elems[i + 1]);
 }
 
 
@@ -3455,7 +4155,7 @@ Node::parseSnapshot(Tcl_Obj* obj)
 		M_THROW(tcl::Exception("empty snapshot list"));
 	if (elems.size() % 2)
 		M_THROW(tcl::Exception("odd snapshot list '%s'", tcl::asString(obj)));
-	
+
 	for (unsigned i = 0; i < elems.size(); i += 2)
 	{
 		Tcl_Obj* structure	= elems[i];
@@ -3499,25 +4199,29 @@ Node::parseOptions(Tcl_Obj* opts)
 		else if (tcl::equal(name, m_objOptY))
 			m_coord.y = tcl::asUnsigned(value);
 		else if (tcl::equal(name, m_objOptWidth))
-			m_dimen.actual.width = tcl::asUnsigned(value);
+			::parseDimension<Horz>(value, m_dimen.actual);
 		else if (tcl::equal(name, m_objOptHeight))
-			m_dimen.actual.height = tcl::asUnsigned(value);
+			::parseDimension<Vert>(value, m_dimen.actual);
 		else if (tcl::equal(name, m_objOptMinWidth))
-			m_dimen.min.width = tcl::asUnsigned(value);
+			::parseDimension<Horz>(value, m_dimen.min);
 		else if (tcl::equal(name, m_objOptMinHeight))
-			m_dimen.min.height = tcl::asUnsigned(value);
+			::parseDimension<Vert>(value, m_dimen.min);
 		else if (tcl::equal(name, m_objOptMaxWidth))
-			m_dimen.max.width = tcl::asUnsigned(value);
+			::parseDimension<Horz>(value, m_dimen.max);
 		else if (tcl::equal(name, m_objOptMaxHeight))
-			m_dimen.max.height = tcl::asUnsigned(value);
+			::parseDimension<Vert>(value, m_dimen.max);
 		else if (tcl::equal(name, m_objOptExpand))
-			m_expand = ::parseExpandOption(value);
+			::parseExpandOption(value, m_weight);
 		else if (tcl::equal(name, m_objOptSticky))
 			m_sticky = ::parseStickyOption(tcl::asString(value));
 		else if (tcl::equal(name, m_objOptShrink))
 			m_shrink = ::parseResizeOption(value);
 		else if (tcl::equal(name, m_objOptGrow))
 			m_grow = ::parseResizeOption(value);
+		else if (tcl::equal(name, m_objOptHWeight))
+			m_weight.x = ::parseWeightOption(value);
+		else if (tcl::equal(name, m_objOptVWeight))
+			m_weight.y = ::parseWeightOption(value);
 		else if (tcl::equal(name, m_objOptOrient))
 			m_orientation = parseOrientOption(value);
 		else if (tcl::equal(name, m_objOptSnapshots))
@@ -3530,10 +4234,10 @@ Node::parseOptions(Tcl_Obj* opts)
 			M_THROW(tcl::Exception("invalid option '%s'", name));
 	}
 
-	if (m_dimen.min.width && m_dimen.max.width)
-		m_dimen.max.width = mstl::max(m_dimen.min.width, m_dimen.max.width);
-	if (m_dimen.min.height && m_dimen.max.height)
-		m_dimen.max.height = mstl::max(m_dimen.min.height, m_dimen.max.height);
+	if (m_dimen.min.abs.width && m_dimen.max.abs.width)
+		m_dimen.max.abs.width = mstl::max(m_dimen.min.abs.width, m_dimen.max.abs.width);
+	if (m_dimen.min.abs.height && m_dimen.max.abs.height)
+		m_dimen.max.abs.height = mstl::max(m_dimen.min.abs.height, m_dimen.max.abs.height);
 }
 
 
@@ -3730,8 +4434,8 @@ void
 Node::resizeToParent(int dir)
 {
 	m_dimen.setActual(
-		(dir & X) ? m_parent->width<Inner>() : width<Inner>(),
-		(dir & Y) ? m_parent->height<Inner>() : height<Inner>());
+			(dir & X) ? m_parent->width<Inner>() : width<Inner>(),
+			(dir & Y) ? m_parent->height<Inner>() : height<Inner>());
 }
 
 
@@ -3745,20 +4449,20 @@ Node::dock(Node*& recv, Position position, Node const* setup)
 
 	if (!recv)
 		recv = findDockingNode(position, before, setup);
-	
+
 	M_ASSERT(recv);
 
 	if (isFloating())
 		unfloat(recv->toplevel());
-	else if (isWithdrawn())
+	else if (!exists()) // XXX isWithdrawn()
 		create();
-	
+
 	if (recv->isRoot() && recv->child())
 	{
 		recv = recv->child();
 		position = Center;
 	}
-	
+
 	return recv->dock(this, position, before, newParent);
 }
 
@@ -3947,7 +4651,7 @@ Node::doExpandPanes(int space, bool expandable, int stage)
 		Node const* child = this->child(i);
 
 		if (child->isPacked() && (expandable == child->isExpandable<D>()))
-			available += child->computeExpand<D>(stage);
+			available += child->weight<D>()*child->computeExpand<D>(stage);
 	}
 
 	if (available > 0)
@@ -3960,7 +4664,7 @@ Node::doExpandPanes(int space, bool expandable, int stage)
 
 			if (child->isPacked() && (expandable == child->isExpandable<D>()))
 			{
-				int expand = child->computeExpand<D>(stage);
+				int expand = child->weight<D>()*child->computeExpand<D>(stage);
 				int share = mstl::min(remaining, int((double(expand)/available)*space + 0.5));
 
 				if (int maxSize = child->maxSize<Inner,D>())
@@ -3997,7 +4701,7 @@ Node::expandPanes(int computedSize, int space)
 		Node* child = this->child(i);
 
 		if (child->isPacked())
-			available += mstl::max(0, child->computeUnderflow<D>());
+			available += mstl::max(0, child->weight<D>()*child->computeUnderflow<D>());
 	}
 
 	if (available > 0)
@@ -4010,7 +4714,7 @@ Node::expandPanes(int computedSize, int space)
 
 			if (child->isPacked())
 			{
-				int expand = child->computeUnderflow<D>();
+				int expand = child->weight<D>()*child->computeUnderflow<D>();
 
 				if (int share = mstl::min(remaining, int((double(expand)/available)*space + 0.5)))
 				{
@@ -4048,7 +4752,7 @@ Node::doShrinkPanes(int space, bool expandable, int stage)
 		Node const* child = this->child(i);
 
 		if (child->isPacked() && (expandable == child->isExpandable<D>()))
-			available += child->computeShrink<D>(stage);
+			available += child->weight<D>()*child->computeShrink<D>(stage);
 	}
 
 	if (available > 0)
@@ -4061,7 +4765,7 @@ Node::doShrinkPanes(int space, bool expandable, int stage)
 
 			if (child->isPacked() && (expandable == child->isExpandable<D>()))
 			{
-				int shrink = child->computeShrink<D>(stage);
+				int shrink = child->weight<D>()*child->computeShrink<D>(stage);
 				int share = mstl::min(remaining, int((double(shrink)/available)*space + 0.5));
 
 				if (child->minSize<Inner,D>())
@@ -4112,9 +4816,12 @@ Node::resizeFrame(int reqSize)
 		m_dimen.set<D>(reqSize);
 
 	int size = actualSize<Inner,D>();
-	
+
 	for (unsigned i = 0; i < numChilds(); ++i)
-		child(i)->doAdjustment<D>(child(i)->contentSize<D>(size));
+	{
+		if (child(i)->isPacked())
+			child(i)->doAdjustment<D>(child(i)->contentSize<D>(size));
+	}
 }
 
 
@@ -4122,6 +4829,8 @@ template <Orient D>
 void
 Node::doAdjustment(int size)
 {
+	M_ASSERT(isPacked() || isToplevel());
+
 	if (orientation<D>())
 	{
 		// TODO:
@@ -4246,9 +4955,9 @@ Node::makeSnapshot(mstl::string& structure, SizeMap* sizeMap) const
 
 	if (m_priority < 0)
 		return false;
-	
+
 	if (sizeMap && isLeaf())
-		sizeMap->insert(SizeMap::value_type(tcl::asString(m_uid), m_dimen.actual));
+		sizeMap->insert(SizeMap::value_type(tcl::asString(m_uid), m_dimen.actual.abs));
 
 	if (!isRoot() && !isMetaFrame())
 	{
@@ -4325,7 +5034,7 @@ Node::floating(bool temporary)
 
 	if (!isWithdrawn())
 		withdraw();
-	
+
 	if (!whileLoading)
 	{
 		remove();
@@ -4373,6 +5082,7 @@ Node::unfloat(Node* toplevel)
 		toplevel = this->toplevel();
 
 	m_temporary = false;
+	m_amalgamate = false;
 	performUnpackChildsRecursively();
 	::captureWindow(path(), toplevel->path());
 	setState(Withdrawn);
@@ -4464,11 +5174,68 @@ Node::inspectAttrs(AttrSet const& exportList, tcl::DString& str) const
 }
 
 
+template <Orient D,Quantity Q>
+void
+Node::inspectDimen(Tcl_Obj* attr, tcl::DString& str) const
+{
+#if TWM_MIGRATE_LAYOUT
+	if (	D == Vert
+		&& Q == Actual
+		&& m_root->exists()
+		&& !tcl::equal(m_root->pathObj(), ".application.nb.board", 21)
+		&& m_dimen.mode<D,Q>() == Abs)
+	{
+		Quants dim(m_dimen);
+
+		dim.set<D,Q>(dimen<Outer,D,Q>());
+		int size = isToplevel() ? m_root->m_workArea.dimen<D>() : toplevel()->dimen<Inner,D,Q>();
+		const_cast<Node*>(this)->m_dimen.set<D,Q,Rel>(dim.computePercentage<D,Q>(size));
+		M_ASSERT((m_dimen.mode<D,Q>() == Rel));
+		M_ASSERT((m_dimen.dimen<D,Q,Rel>()));
+	}
+#endif
+	if (m_dimen.mode<D,Q>() == Abs)
+	{
+		if (dimen<Inner,D,Q,Abs>())
+		{
+			str.append(attr);
+			str.append(dimen<Inner,D,Q>());
+		}
+	}
+	else if (dimen<Inner,D,Q,Rel>())
+	{
+		char buf[200];
+		Quants dim(m_dimen);
+
+		dim.set<D,Q>(dimen<Outer,D,Q>());
+		int percentage = dim.computePercentage<D,Q>(toplevel()->dimen<Inner,D,Q>());
+		int fract = percentage % 100;
+		percentage = percentage/100;
+
+		str.append(attr);
+		if (fract == 0)
+			::snprintf(buf, sizeof(buf), "%d%%", percentage);
+		else
+			::snprintf(buf, sizeof(buf), "%d.%d%%", percentage, fract);
+		str.append(buf);
+	}
+}
+
+
 void
 Node::inspect(AttrSet const& exportList, tcl::DString& str) const
 {
 	if (isMetaFrame())
 		return child()->inspect(exportList, str);
+	
+	if (isContainer())
+	{
+		switch (countStableChilds())
+		{
+			case 0: return;
+			case 1: return stableChild()->inspect(exportList, str);
+		}
+	}
 
 	str.append(::makeTypeID(m_type));
 	if (isLeaf())
@@ -4511,32 +5278,22 @@ Node::inspect(AttrSet const& exportList, tcl::DString& str) const
 
 		case Pane:
 		case Frame:
-			str.append(m_objOptWidth);
-			str.append(width<Inner>());
-			str.append(m_objOptHeight);
-			str.append(height<Inner>());
-			if (minWidth<Inner>())
+			inspectDimen<Horz,Actual>(m_objOptWidth, str);
+			inspectDimen<Vert,Actual>(m_objOptHeight, str);
+			inspectDimen<Horz,Min>(m_objOptMinWidth, str);
+			inspectDimen<Vert,Min>(m_objOptMinHeight, str);
+			inspectDimen<Horz,Max>(m_objOptMaxWidth, str);
+			inspectDimen<Vert,Max>(m_objOptMaxHeight, str);
+			if (weight<Horz>())
 			{
-				str.append(m_objOptMinWidth);
-				str.append(minWidth<Inner>());
+				str.append(m_objOptHWeight);
+				str.append(weight<Horz>());
 			}
-			if (minHeight<Inner>())
+			if (weight<Vert>())
 			{
-				str.append(m_objOptMinHeight);
-				str.append(minHeight<Inner>());
+				str.append(m_objOptVWeight);
+				str.append(weight<Vert>());
 			}
-			if (maxWidth<Inner>())
-			{
-				str.append(m_objOptMaxWidth);
-				str.append(maxWidth<Inner>());
-			}
-			if (maxHeight<Inner>())
-			{
-				str.append(m_objOptMaxHeight);
-				str.append(maxHeight<Inner>());
-			}
-			str.append(m_objOptExpand);
-			str.append(::makeExpandOptionValue(m_expand));
 			str.append(m_objOptAttrs);
 			inspectAttrs(exportList, str);
 			break;
@@ -4574,7 +5331,10 @@ Node::inspect(AttrSet const& exportList, tcl::DString& str) const
 		str.startList();
 
 		for (unsigned i = 0; i < numChilds(); ++i)
-			child(i)->inspect(exportList, str);
+		{
+			if (!isContainer() || !child(i)->m_isTransient)
+				child(i)->inspect(exportList, str);
+		}
 
 		str.endList();
 	}
@@ -4642,7 +5402,7 @@ Node::makeNew(Tcl_Obj* typeObj, Tcl_Obj* uidObj, Tcl_Obj* optObj, Node const* se
 
 
 void
-Node::saveLeaves(LeafMap& leaves)
+Node::saveLeaves(LeafMap& leaves, tcl::Array const& preserved)
 {
 	M_ASSERT(isRoot());
 
@@ -4657,6 +5417,7 @@ Node::saveLeaves(LeafMap& leaves)
 
 		if (node->isLeaf())
 		{
+			node->setPreserved(tcl::containsElement(preserved, node->uidObj()));
 			leaves[node->uid()] = node;
 			node->remove();
 			i = m_active.erase(i);
@@ -4680,12 +5441,12 @@ Node::saveLeaves(LeafMap& leaves)
 	{
 		Node* node = k->second;
 
-		node->m_priority = 0;
+		node->m_amalgamate = false;
 		node->m_root = nullptr;
 		node->m_parent = nullptr;
 		node->m_savedParent = nullptr;
 		node->m_selected = nullptr;
-		node->m_expand = 0;
+		node->m_weight.zero();
 		node->m_sticky = 0;
 		tcl::zero(node->m_headerObj);
 		tcl::zero(node->m_oldHeaderObj);
@@ -4805,20 +5566,21 @@ Node::load(Tcl_Obj* list, LeafMap const* leaves, Node const* sRoot)
 	M_ASSERT(list);
 	M_ASSERT(isRoot());
 
-	load(list, leaves);
+	bool haveTempStruct = false;
 
+	if (leaves && sRoot)
+		haveTempStruct = makeStructure();
+	load(list, leaves);
 	if (sRoot)
-		finishLoad(leaves, sRoot);
+		finishLoad(leaves, sRoot, haveTempStruct);
 }
 
 
 void
-Node::finishLoad(LeafMap const* leaves, Node const* sRoot)
+Node::finishLoad(LeafMap const* leaves, Node const* sRoot, bool deleteTempStruct)
 {
 	M_ASSERT(sRoot);
 	M_ASSERT(isRoot());
-
-	m_dimen.zero();
 
 	if (leaves)
 	{
@@ -4826,23 +5588,38 @@ Node::finishLoad(LeafMap const* leaves, Node const* sRoot)
 		{
 			Node* node = k->second;
 
+			node->delFlag(F_Unpack);
+
 			if (node->isWithdrawn())
 			{
-				m_active.push_back(node);
-				node->m_parent = this;
 				node->m_root = this;
-				node->destroy();
-			}
+				m_active.push_back(node);
 
-			node->delFlag(F_Unpack);
+				if (node->isPreserved())
+				{
+					Node* null = nullptr;
+					node->dock(null, Center, sRoot);
+				}
+				else
+				{
+					node->m_parent = this;
+					node->destroy();
+				}
+			}
 		}
+	}
+
+	if (deleteTempStruct)
+	{
+		M_ASSERT(!m_structures.empty());
+		delete m_structures.back();
+		m_structures.pop_back();
 	}
 
 	if (sRoot->child() && sRoot->child()->isContainer())
 	{
 		m_initialStructure = true;
-		structure::Node* node = sRoot->child()->makeStructure(nullptr);
-		m_structures.push_front(node);
+		m_structures.push_front(sRoot->child()->makeStructure(nullptr));
 	}
 }
 
@@ -4915,6 +5692,26 @@ Node::performQueryFrameHeaderSize() const
 	int size = tcl::asInt(result);
 	tcl::decrRef(result);
 	return size;
+}
+
+
+void
+Node::performQuerySelected() const
+{
+	Tcl_Obj*	result;
+	
+	result = tcl::call(__func__, m_root->pathObj(), m_objSelectedCmd, pathObj(), nullptr);
+	if (!result)
+		M_THROW(tcl::Error());
+	Node* selected = m_root->findPath(tcl::asString(result));
+	if (!selected && *tcl::asString(result))
+	{
+		tcl::decrRef(result);
+		M_THROW(tcl::Exception("invalid widget %s", tcl::asString(result)));
+	}
+	tcl::decrRef(result);
+	if (selected && contains(selected))
+		const_cast<Node*>(this)->m_selected = selected;
 }
 
 
@@ -5032,18 +5829,22 @@ Node::performCreate()
 	M_ASSERT(!isRoot());
 
 	Tcl_Obj* opts = isContainer() ? makeOptions(F_Create) : (isLeaf() ? m_uid : nullptr);
+	Tcl_Obj* result;
 
 	m_root->m_current = this;
 
 	if (opts)
-		m_path = tcl::call(__func__, m_root->pathObj(), typeObj(), opts, nullptr);
+		result = tcl::call(__func__, m_root->pathObj(), typeObj(), opts, nullptr);
 	else
-		m_path = tcl::call(__func__, m_root->pathObj(), typeObj(), nullptr);
+		result = tcl::call(__func__, m_root->pathObj(), typeObj(), nullptr);
 
 	m_root->m_current = nullptr;
 
-	if (!m_path)
+	if (!result)
 		M_THROW(tcl::Error());
+
+	tcl::set(m_path, result);
+	tcl::decrRef(result);
 
 	if (!isToplevel() && toplevel()->isFloating())
 		tk::reparent(tkwin(), toplevel()->tkwin());
@@ -5114,6 +5915,7 @@ Node::performResizeDimensions(int& width, int& height)
 		M_THROW(tcl::Error());
 
 	tcl::Array elems = tcl::getElements(result);
+	tcl::decrRef(result);
 
 	if (elems.size() == 0)
 		return;
@@ -5204,10 +6006,10 @@ Node::performGeometry()
 							pathObj(),
 							tcl::newObj(newWidth),
 							tcl::newObj(newHeight),
-							tcl::newObj(m_actual.min.width),
-							tcl::newObj(m_actual.min.height),
-							tcl::newObj(m_actual.max.width),
-							tcl::newObj(m_actual.max.height),
+							tcl::newObj(m_actual.min.abs.width),
+							tcl::newObj(m_actual.min.abs.height),
+							tcl::newObj(m_actual.max.abs.width),
+							tcl::newObj(m_actual.max.abs.height),
 							(h && v) ? m_objBoth : (h ? m_objX : (v ? m_objY : m_objNone)),
 							nullptr);
 		}
@@ -5258,12 +6060,27 @@ Node::performUpdateHeader()
 	M_ASSERT(exists());
 	M_ASSERT(isFrameOrMetaFrame());
 
-	tcl::invoke(__func__,
-					m_root->pathObj(),
-					m_objHeaderCmd,
-					pathObj(),
-					m_headerObj ? m_headerObj : m_obj,
-					nullptr);
+	Node const* node = findAmalgamated();
+
+	if (node && node->m_selected)
+	{
+		tcl::invoke(__func__,
+						m_root->pathObj(),
+						m_objHeaderCmd,
+						pathObj(),
+						m_headerObj ? m_headerObj : m_obj,
+						node->m_selected->pathObj(),
+						nullptr);
+	}
+	else
+	{
+		tcl::invoke(__func__,
+						m_root->pathObj(),
+						m_objHeaderCmd,
+						pathObj(),
+						m_headerObj ? m_headerObj : m_obj,
+						nullptr);
+	}
 }
 
 
@@ -5308,28 +6125,69 @@ Node::updateHeader()
 {
 	M_ASSERT(!isWithdrawn());
 
+	bool canAmalgamate = this->canAmalgamate();
+
+	if (m_amalgamate && !canAmalgamate)
+	{
+		m_amalgamate = false;
+		addFlag(F_Header);
+	}
+
+	if (!m_amalgamate && canAmalgamate)
+		m_wasAmalgamatable = true;
+
 	if (isMultiWindow())
 	{
-		Tcl_Obj* list = nullptr;
-
-		for (unsigned i = 0; i < numChilds(); ++i)
+		if (m_amalgamate && canAmalgamate)
 		{
-			if (child(i)->isPacked())
-				tcl::addElement(list, child(i)->pathObj());
+			Node* headerWindow = findHeaderWindow();
+			Tcl_Obj*& list = headerWindow->m_headerObj;
+
+			M_ASSERT(list);
+
+			int k = tcl::countElements(list);
+
+			if (headerWindow->m_path)
+			{
+				int j = tcl::findElement(list, headerWindow->m_path);
+				if (j >= 0)
+					tcl::removeElement(list, k = j);
+			}
+
+			for (unsigned i = 0; i < numChilds(); ++i)
+			{
+				Node* node = child(i);
+
+				if (node->isPacked())
+					tcl::insertElement(list, node->pathObj(), k++);
+			}
+
+			tcl::zero(m_headerObj);
+			m_isAmalgamated = true;
 		}
-
-		tcl::incrRef(list);
-		tcl::set(m_headerObj, list);
-
-		for (unsigned i = 0; i < numChilds(); ++i)
+		else
 		{
-			Node* node = child(i);
+			Tcl_Obj* list = nullptr;
 
-			if (node->isPacked() && node->isFrameOrMetaFrame())
-				tcl::set(node->m_headerObj, list);
+			for (unsigned i = 0; i < numChilds(); ++i)
+			{
+				if (child(i)->isPacked())
+					tcl::addElement(list, child(i)->pathObj());
+			}
+
+			tcl::incrRef(list);
+			tcl::set(m_headerObj, list);
+
+			for (unsigned i = 0; i < numChilds(); ++i)
+			{
+				Node* node = child(i);
+
+				if (node->isPacked() && node->isFrameOrMetaFrame())
+					tcl::set(node->m_headerObj, list);
+			}
+
+			tcl::decrRef(list);
 		}
-
-		tcl::decrRef(list);
 	}
 	else if (isNotebook())
 	{
@@ -5351,17 +6209,49 @@ Node::updateHeader()
 				tcl::set(node->m_headerObj, node->pathObj());
 		}
 	}
-	else if (isFloating())
+	else
 	{
-		if (isMetaFrame() && child()->isFrame())
-			tcl::zero(child()->m_headerObj);
+		if (isFloating())
+		{
+			if (isMetaFrame() && child()->isFrame())
+				tcl::zero(child()->m_headerObj);
 
-		tcl::zero(m_headerObj);
-		tcl::set(m_titleObj, findLeader()->pathObj());
-	}
-	else if (isFrame() && m_parent->isRoot())
-	{
-		tcl::set(m_headerObj, pathObj());
+			tcl::zero(m_headerObj);
+			tcl::set(m_titleObj, findLeader()->pathObj());
+		}
+		else if (isLeaf() && m_parent->isRoot())
+		{
+			tcl::set(m_headerObj, pathObj());
+		}
+
+		if (isFrameOrMetaFrame() && !isToplevel())
+		{
+			if (canAmalgamate)
+			{
+				if (m_amalgamate)
+				{
+					findHeaderWindow()->addFlag(F_Header); // because we have no change in labels
+					tcl::zero(m_headerObj);
+					m_isAmalgamated = true;
+				}
+				else
+				{
+					addFlag(F_Header); // because we have no change in labels
+				}
+			}
+			else if (	m_parent->isContainer()
+						&& m_parent->findAmalgamated()
+						&& m_parent->child()->m_headerObj)
+			{
+				tcl::set(m_headerObj, m_parent->child()->m_headerObj);
+				addFlag(F_Header);
+			}
+			else if (m_wasAmalgamatable)
+			{
+				addFlag(F_Header); // because we have no change in labels
+				m_wasAmalgamatable = false;
+			}
+		}
 	}
 }
 
@@ -5369,7 +6259,7 @@ Node::updateHeader()
 void
 Node::updateAllHeaders()
 {
-	M_ASSERT(isRoot());
+	M_REQUIRE(isRoot());
 
 	for (unsigned i = 0; i < m_active.size(); ++i)
 	{
@@ -5379,14 +6269,45 @@ Node::updateAllHeaders()
 		tcl::set(node->m_oldTitleObj, node->m_titleObj);
 		tcl::zero(node->m_headerObj);
 		tcl::zero(node->m_titleObj);
+		node->m_isAmalgamated = false;
+
+		if (node->isMultiWindow())
+		{
+			unsigned amalgamated = 0;
+
+			for (unsigned k = 0; k < node->numChilds(); ++k)
+			{
+				if (node->child(k)->m_amalgamate)
+					amalgamated += 1;
+			}
+
+			if (amalgamated > 0 && amalgamated != node->numChilds())
+			{
+				// Force update of metaframe header.
+				if (node->m_parent && node->m_parent->m_parent && node->m_parent->m_parent->isMetaFrame())
+					node->m_parent->m_parent->addFlag(F_Header);
+
+				// Either all or none have to be amalgamated, in this case none.
+				for (unsigned k = 0; k < node->numChilds(); ++k)
+					node->child(k)->m_amalgamate = false;
+			}
+		}
 	}
 
-	for (unsigned i = 0; i < m_active.size(); ++i)
-	{
-		Node* node = m_active[i];
+	for (unsigned i = 0; i < m_toplevel.size(); ++i)
+		m_toplevel[i]->updateHeadersRecursively();
+}
 
-		if (!node->isWithdrawn())
-			node->updateHeader();
+
+void
+Node::updateHeadersRecursively()
+{
+	if (!isWithdrawn())
+	{
+		updateHeader();
+
+		for (unsigned i = 0; i < numChilds(); ++i)
+			m_childs[i]->updateHeadersRecursively();
 	}
 }
 
@@ -5542,6 +6463,8 @@ Node::performUpdateHeaderRecursively(bool force)
 			performUpdateTitle();
 	}
 
+	delFlag(F_Header);
+
 	for (unsigned i = 0; i < numChilds(); ++i)
 		child(i)->performUpdateHeaderRecursively(force);
 }
@@ -5565,7 +6488,8 @@ Node::performAllActiveNodes(Flag flag)
 					M_ASSERT(node->m_savedParent);
 					if (node->m_savedParent->m_selected == this)
 						node->m_savedParent->m_selected = nullptr;
-					node->performUnpack(node->m_savedParent);
+					if (node->m_parent->exists())
+						node->performUnpack(node->m_savedParent);
 					node->m_savedParent = nullptr;
 					break;
 
@@ -5600,7 +6524,7 @@ Node::performUpdateDimensions()
 {
 	M_ASSERT(isRoot());
 
-	if (m_actual.actual.width > 0 && m_actual.actual.height > 0)
+	if (m_actual.actual.abs.width > 0 && m_actual.actual.abs.height > 0)
 	{
 		m_dimen.actual = m_actual.actual;
 		m_actual.actual.zero();
@@ -5610,7 +6534,7 @@ Node::performUpdateDimensions()
 	{
 		Node* node = m_active[i];
 
-		if (node->m_actual.actual.width > 0 && node->m_actual.actual.height > 0)
+		if (node->m_actual.actual.abs.width > 0 && node->m_actual.actual.abs.height > 0)
 		{
 			node->m_dimen.actual = node->m_actual.actual;
 			node->m_actual.actual.zero();
@@ -5624,7 +6548,7 @@ Node::performUpdateDimensions()
 		for (unsigned i = 0; i < m_active.size(); ++i)
 		{
 			Node* node = m_active[i];
-			DimList& afterPerformList = node->m_afterPerform;
+			QuantList& afterPerformList = node->m_afterPerform;
 
 			if (!afterPerformList.empty())
 			{
@@ -5709,8 +6633,10 @@ Node::performDeiconifyFloats()
 			toplevel->performRestructureRecursively();
 			toplevel->performCreateRecursively();
 			toplevel->performFinalizeCreateRecursively();
+			toplevel->updateAllHeaders();
 			toplevel->computeDimensionsRecursively();
-			toplevel->adjustDimensions();
+			if (toplevel->m_finished)
+				toplevel->adjustDimensions();
 			toplevel->performPackRecursively();
 			toplevel->performUpdateHeaderRecursively(true);
 			toplevel->setState(Withdrawn);
@@ -5719,7 +6645,8 @@ Node::performDeiconifyFloats()
 			toplevel->performSelectRecursively();
 			toplevel->performBuildRecursively();
 			toplevel->performDeiconify();
-			toplevel->performGeometry();
+			if (toplevel->m_finished)
+				toplevel->performGeometry();
 		}
 	}
 }
@@ -5795,19 +6722,22 @@ Node::perform(Node* toplevel)
 					toplevel->computeDimensionsRecursively();
 			}
 
-			m_root->resizeDimensions();
-			if (toplevel)
+			if (m_finished)
+				m_root->resizeDimensions();
+			if (toplevel && toplevel->m_finished)
 				toplevel->resizeDimensions();
 
-			if (flags & (F_Pack|F_Unpack|F_Config))
+			if (!m_isReady || (flags & (F_Pack|F_Unpack|F_Config)))
 			{
-				adjustDimensions();
-				if (toplevel)
+				if (m_finished)
+					adjustDimensions();
+				if (toplevel && toplevel->m_finished)
 					toplevel->adjustDimensions();
 			}
 
-			performGeometry();
-			if (toplevel)
+			if (m_finished)
+				performGeometry();
+			if (toplevel && toplevel->m_finished)
 				toplevel->performGeometry();
 
 			if (flags & F_Pack)
@@ -5828,7 +6758,7 @@ Node::perform(Node* toplevel)
 					toplevel->performRaiseRecursively(toplevel->testFlags(F_Raise));
 			}
 
-			if (flags & (F_Pack|F_Unpack|F_Create))
+			if (flags & (F_Pack|F_Unpack|F_Create|F_Select))
 			{
 				performSelectRecursively();
 				if (toplevel)
@@ -5846,7 +6776,9 @@ Node::perform(Node* toplevel)
 				m_root->performAllActiveNodes(F_Destroy);
 
 			m_root->performDeleteInactiveNodes();
-			m_root->performUpdateDimensions();
+
+			if (m_finished)
+				m_root->performUpdateDimensions();
 
 			if (flags & F_Build)
 			{
@@ -5860,7 +6792,6 @@ Node::perform(Node* toplevel)
 
 			m_root->m_isLocked = false;
 			m_root->clearAllFlags();
-			m_root->performUpdateDimensions();
 		}
 	}
 	catch (Terminated)
@@ -5873,6 +6804,9 @@ Node::perform(Node* toplevel)
 		m_root->clearAllFlags();
 		throw;
 	}
+
+	if (isRoot() && !m_isReady && m_finished)
+		ready();
 }
 
 #ifndef NDEBUG
@@ -5929,6 +6863,8 @@ Node::dump(unsigned level, bool parentIsWithdrawn) const
 		printf("%s", m_uid ? uid() : (m_path ? path() : "<null>"));
 		if (isLeaf())
 			printf(" {%u}", m_priority);
+		if (amalgamate())
+			printf(" {amalgamate}");
 		if (isPanedWindow())
 			printf(" [%s]", isHorz() ? "h" : "v");
 		if (m_parent && m_parent->isMetaFrame())
@@ -5990,6 +6926,7 @@ Node::initialize()
 	m_objOptExpand = tcl::incrRef(tcl::newObj("-expand"));
 	m_objOptGrow = tcl::incrRef(tcl::newObj("-grow"));
 	m_objOptHeight = tcl::incrRef(tcl::newObj("-height"));
+	m_objOptHWeight = tcl::incrRef(tcl::newObj("-hweight"));
 	m_objOptMaxHeight = tcl::incrRef(tcl::newObj("-maxheight"));
 	m_objOptMaxWidth = tcl::incrRef(tcl::newObj("-maxwidth"));
 	m_objOptMinHeight = tcl::incrRef(tcl::newObj("-minheight"));
@@ -6001,6 +6938,7 @@ Node::initialize()
 	m_objOptStructures = tcl::incrRef(tcl::newObj("-structures"));
 	m_objOptState = tcl::incrRef(tcl::newObj("-state"));
 	m_objOptSticky = tcl::incrRef(tcl::newObj("-sticky"));
+	m_objOptVWeight = tcl::incrRef(tcl::newObj("-vweight"));
 	m_objOptWidth = tcl::incrRef(tcl::newObj("-width"));
 	m_objOptX = tcl::incrRef(tcl::newObj("-x"));
 	m_objOptY = tcl::incrRef(tcl::newObj("-y"));
@@ -6013,6 +6951,7 @@ Node::initialize()
 	m_objRoot = tcl::incrRef(tcl::newObj("root"));
 	m_objSashSizeCmd = tcl::incrRef(tcl::newObj("sashsize"));
 	m_objSelectCmd = tcl::incrRef(tcl::newObj("select"));
+	m_objSelectedCmd = tcl::incrRef(tcl::newObj("selected"));
 	m_objTitleCmd = tcl::incrRef(tcl::newObj("title"));
 	m_objUnpackCmd = tcl::incrRef(tcl::newObj("unpack"));
 	m_objVert = tcl::incrRef(tcl::newObj("vert"));
@@ -6083,8 +7022,17 @@ cmdInit(Base& base, int objc, Tcl_Obj* const objv[])
 static void
 cmdLoad(Base& base, int objc, Tcl_Obj* const objv[])
 {
-	if (objc != 3 && objc != 4)
-		M_THROW(tcl::Exception(3, objv, "?list?"));
+	Tcl_Obj* preserved = nullptr;
+	int index = 2;
+
+	if (objc > 4 && tcl::equal(objv[3], "-preserve"))
+	{
+		preserved = objv[4];
+		index += 2;
+	}
+
+	if (objc != index + 1 && objc != index + 2)
+		M_THROW(tcl::Exception(3, objv, "?-preserve list-of-uids? ?list?"));
 
 	M_ASSERT(base.setup);
 
@@ -6092,23 +7040,22 @@ cmdLoad(Base& base, int objc, Tcl_Obj* const objv[])
 
 	if (base.root)
 	{
-		base.root->saveLeaves(leaves);
+		base.root->saveLeaves(leaves, preserved ? tcl::getElements(preserved) : tcl::Array());
 		delete base.root;
 		base.root = nullptr;
 	}
 
-	if (objc > 3 && tcl::countElements(objv[3]) > 0)
+	if (objc > index + 1 && tcl::countElements(objv[index + 1]) > 0)
 	{
 		base.root = Node::makeRoot(objv[2]);
-		base.root->load(objv[3], &leaves, base.setup);
+		base.root->load(objv[index + 1], &leaves, base.setup);
 	}
-	else // if (objc == 3)
+	else // if (objc == index + 1 || tcl::countElements(objv[index + 1]) == 0)
 	{
 		base.root = base.setup->clone(leaves);
 	}
 
-	base.root->perform(nullptr);
-	base.root->ready();
+	base.root->perform();
 }
 
 
@@ -6145,6 +7092,39 @@ cmdClose(Base& base, int objc, Tcl_Obj* const objv[])
 		M_THROW(tcl::Exception(3, objv));
 
 	Node::removeBase(tcl::asString(objv[2]));
+}
+
+
+static void
+cmdAmalgamatable(Base& base, int objc, Tcl_Obj* const objv[])
+{
+	if (objc != 4)
+		M_THROW(tcl::Exception(3, objv, "window"));
+
+	char const* path = tcl::asString(objv[3]);
+	Node const* node = base.root->findPath(path);
+
+	if (!node)
+		M_THROW(tcl::Exception("cannot find window '%s'", path));
+
+	tcl::setResult(node->canAmalgamate());
+}
+
+
+static void
+cmdAmalgamated(Base& base, int objc, Tcl_Obj* const objv[])
+{
+	if (objc != 4)
+		M_THROW(tcl::Exception(3, objv, "window"));
+
+	char const* path = tcl::asString(objv[3]);
+	Node const* node = base.root->findPath(path);
+
+	if (!node)
+		M_THROW(tcl::Exception("cannot find window '%s'", path));
+
+	Node const* child = node->findAmalgamated();
+	tcl::setResult(child ? child->pathObj() : nullptr);
 }
 
 
@@ -6258,6 +7238,62 @@ cmdFloats(Base& base, int objc, Tcl_Obj* const objv[])
 static void
 cmdDimension(Base& base, int objc, Tcl_Obj* const objv[])
 {
+	if (objc != 3 && objc != 4)
+		M_THROW(tcl::Exception(3, objv, "?window?"));
+
+	Node* node = base.root;
+
+	if (objc == 4)
+	{
+		char const* path = tcl::asString(objv[3]);
+
+		if (!(node = base.root->findPath(path)))
+			M_THROW(tcl::Exception("cannot find window '%s'", path));
+	}
+
+	Quants const& quant = node->quants();
+	tcl::List result(6);
+	result[0] = tcl::newObj(quant.actual.abs.width);
+	result[1] = tcl::newObj(quant.actual.abs.height);
+	result[2] = tcl::newObj(quant.min.abs.width);
+	result[3] = tcl::newObj(quant.min.abs.height);
+	result[4] = tcl::newObj(quant.max.abs.width);
+	result[5] = tcl::newObj(quant.max.abs.height);
+	tcl::setResult(result);
+}
+
+
+static void
+cmdEqP(Base& base, int objc, Tcl_Obj* const objv[])
+{
+	static char const* Usage = "horz|vert percentage percentage";
+
+	if (objc != 6)
+		M_THROW(tcl::Exception(3, objv, Usage));
+
+	Orient orient = parseOrientOption(objv[3]);
+	Dimen lhs, rhs;
+
+	if (orient == Horz)
+	{
+		if (parseDimension<Horz>(objv[4], lhs) != Rel || parseDimension<Horz>(objv[5], lhs) != Rel)
+			M_THROW(tcl::Exception(3, objv, Usage));
+
+		tcl::setResult(base.root->compare<Horz>(lhs.dimen<Horz>(), rhs.dimen<Horz>()));
+	}
+	else
+	{
+		if (parseDimension<Vert>(objv[4], lhs) != Rel || parseDimension<Vert>(objv[5], lhs) != Rel)
+			M_THROW(tcl::Exception(3, objv, Usage));
+
+		tcl::setResult(base.root->compare<Vert>(lhs.dimen<Vert>(), rhs.dimen<Vert>()));
+	}
+}
+
+
+static void
+cmdSee(Base& base, int objc, Tcl_Obj* const objv[])
+{
 	if (objc != 4)
 		M_THROW(tcl::Exception(3, objv, "window"));
 
@@ -6267,15 +7303,8 @@ cmdDimension(Base& base, int objc, Tcl_Obj* const objv[])
 	if (!node)
 		M_THROW(tcl::Exception("cannot find window '%s'", path));
 
-	Dimension const& dim = node->dimension();
-	tcl::List result(6);
-	result[0] = tcl::newObj(dim.actual.width);
-	result[1] = tcl::newObj(dim.actual.height);
-	result[2] = tcl::newObj(dim.min.width);
-	result[3] = tcl::newObj(dim.min.height);
-	result[4] = tcl::newObj(dim.max.width);
-	result[5] = tcl::newObj(dim.max.height);
-	tcl::setResult(result);
+	node->select();
+	node->toplevel()->perform();
 }
 
 
@@ -6619,8 +7648,11 @@ cmdDock(Base& base, int objc, Tcl_Obj* const objv[])
 	}
 
 	Node* parent = node->dock(recv, position, base.setup);
-
 	node->toplevel()->perform(recv->toplevel());
+
+	// consider that flatten() might have been withdrawn this parent
+	while (parent->isWithdrawn())
+		parent = parent->parent();
 	tcl::setResult(parent->pathObj());
 }
 
@@ -6743,11 +7775,11 @@ cmdResize(Base& base, int objc, Tcl_Obj* const objv[])
 	if (!node)
 		M_THROW(tcl::Exception("cannot find window '%s'", path));
 
-	Dimension dim(
+	Quants quant(
 		tcl::asInt(objv[4]), tcl::asInt(objv[5]),
 		tcl::asInt(objv[6]), tcl::asInt(objv[7]),
 		tcl::asInt(objv[8]), tcl::asInt(objv[9]));
-	node->resize(dim);
+	node->resize(quant);
 }
 
 
@@ -6800,7 +7832,8 @@ cmdGet(Base& base, int objc, Tcl_Obj* const objv[])
 	bool ignoreMeta = cmd[::strlen(cmd) - 1] == '!';
 
 	if (ignoreMeta && node->isMetaFrame())
-		node = node->child();
+		node = node->child(0);
+	M_ASSERT(node);
 
 	Tcl_Obj* value = node->get(tcl::asString(objv[4]), cmd[::strlen(cmd) - 1] == '!');
 
@@ -6867,29 +7900,31 @@ cmdTwm(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	static char const* subcommands[] =
 	{
-		"clone",			"capture",		"changeuid",	"close",			"container",
-		"dimension",	"dock",			"dump",			"exists",		"find",
-		"floats",		"frames",		"get",			"get!",			"headerframes",
-		"hidden",		"id",				"init",			"inspect",		"iscontainer",
-		"isdocked",		"ismetachild",	"ispane",		"leaf",			"leader",
-		"leaves",		"load",			"neighbors",	"new",			"orientation",
-		"panes",			"parent",		"ready",			"refresh",		"release",
-		"resize",		"selected",		"set",			"set!",			"show",
-		"toggle",		"toplevel",		"toplevels",	"uid",			"undock",
-		"visible",		nullptr
+		"amalgamatable",	"amalgamated",		"clone",				"capture",			"changeuid",
+		"close",				"container",		"dimension",		"dock",				"dump",
+		"eqp",				"exists",			"find",				"floats",			"frames",
+		"get",				"get!",				"headerframes",	"hidden",			"id",
+		"init",				"inspect",			"iscontainer",		"isdocked",			"ismetachild",
+		"ispane",			"leaf",				"leader",			"leaves",			"load",
+		"neighbors",		"new",				"orientation",		"panes",				"parent",
+		"ready",				"refresh",			"release",			"resize",			"see",
+		"selected",			"set",				"set!",				"show",				"toggle",
+		"toplevel",			"toplevels",		"uid",				"undock",			"visible",
+		nullptr
 	};
 	enum
 	{
-		Cmd_Clone,			Cmd_Capture,		Cmd_ChangeUid,		Cmd_Close,			Cmd_Container,
-		Cmd_Dimension,		Cmd_Dock,			Cmd_Dump,			Cmd_Exists,			Cmd_Find,
-		Cmd_Floats,			Cmd_Frames,			Cmd_Get,				Cmd_Get_,			Cmd_HeaderFrames,
-		Cmd_Hidden,			Cmd_Id,				Cmd_Init,			Cmd_Inspect,		Cmd_IsContainer,
-		Cmd_IsDocked,		Cmd_IsMetaChild,	Cmd_IsPane,			Cmd_Leaf,			Cmd_Leader,
-		Cmd_Leaves,			Cmd_Load,			Cmd_Neighbors,		Cmd_New,				Cmd_Orientation,
-		Cmd_Panes,			Cmd_Parent,			Cmd_Ready,			Cmd_Refresh,		Cmd_Release,
-		Cmd_Resize,			Cmd_Selected,		Cmd_Set,				Cmd_Set_,			Cmd_Show,
-		Cmd_Toggle,			Cmd_Toplevel,		Cmd_Toplevels,		Cmd_Uid,				Cmd_Undock,	
-		Cmd_Visible,		Cmd_NULL
+		Cmd_Amalgamatable,	Cmd_Amalgamated,		Cmd_Clone,				Cmd_Capture,		Cmd_ChangeUid,
+		Cmd_Close,				Cmd_Container,			Cmd_Dimension,			Cmd_Dock,			Cmd_Dump,
+		Cmd_EqP,					Cmd_Exists,				Cmd_Find,				Cmd_Floats,			Cmd_Frames,
+		Cmd_Get,					Cmd_Get_,				Cmd_HeaderFrames,		Cmd_Hidden,			Cmd_Id,
+		Cmd_Init,				Cmd_Inspect,			Cmd_IsContainer,		Cmd_IsDocked,		Cmd_IsMetaChild,
+		Cmd_IsPane,				Cmd_Leaf,				Cmd_Leader,				Cmd_Leaves,			Cmd_Load,
+		Cmd_Neighbors,			Cmd_New,					Cmd_Orientation,		Cmd_Panes,			Cmd_Parent,
+		Cmd_Ready,				Cmd_Refresh,			Cmd_Release,			Cmd_Resize,			Cmd_See,
+		Cmd_Selected,			Cmd_Set,					Cmd_Set_,				Cmd_Show,			Cmd_Toggle,
+		Cmd_Toplevel,			Cmd_Toplevels,			Cmd_Uid,					Cmd_Undock,			Cmd_Visible,
+		Cmd_NULL
 	};
 
 	static_assert(sizeof(subcommands)/sizeof(subcommands[0]) == Cmd_NULL + 1, "initialization failed");
@@ -6906,6 +7941,8 @@ cmdTwm(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		switch (index)
 		{
+			case Cmd_Amalgamatable:	execute(cmdAmalgamatable, false, objc, objv); break;
+			case Cmd_Amalgamated:	execute(cmdAmalgamated, false, objc, objv); break;
 			case Cmd_Clone:			execute(cmdClone, false, objc, objv); break;
 			case Cmd_Close:			execute(cmdClose, true, objc, objv); break;
 			case Cmd_ChangeUid:		execute(cmdChangeUid, true, objc, objv); break;
@@ -6913,6 +7950,7 @@ cmdTwm(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			case Cmd_Dimension:		execute(cmdDimension, false, objc, objv); break;
 			case Cmd_Dock:				execute(cmdDock, false, objc, objv); break;
 			case Cmd_Dump:				execute(cmdDump, false, objc, objv); break;
+			case Cmd_EqP:				execute(cmdEqP, false, objc, objv); break;
 			case Cmd_Exists:			cmdExists(objc, objv); break;
 			case Cmd_Find:				execute(cmdFind, false, objc, objv); break;
 			case Cmd_Floats:			execute(cmdFloats, false, objc, objv); break;
@@ -6940,6 +7978,7 @@ cmdTwm(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			case Cmd_Ready:			execute(cmdReady, false, objc, objv); break;
 			case Cmd_Refresh:			execute(cmdRefresh, false, objc, objv); break;
 			case Cmd_Resize:			execute(cmdResize, false, objc, objv); break;
+			case Cmd_See:				execute(cmdSee, false, objc, objv); break;
 			case Cmd_Selected:		execute(cmdSelected, false, objc, objv); break;
 			case Cmd_Set:				// fallthru
 			case Cmd_Set_:				execute(cmdSet, false, objc, objv); break;

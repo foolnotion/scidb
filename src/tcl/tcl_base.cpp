@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2017 Gregor Cramer
+// Copyright: (C) 2009-2018 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -171,6 +171,18 @@ tcl::isBoolean(Tcl_Obj* obj)
 }
 
 
+char const*
+tcl::asString(Tcl_Obj* obj, unsigned& len)
+{
+	M_REQUIRE(obj);
+
+	int size;
+	char const* str = Tcl_GetStringFromObj(obj, &size);
+	len = size;
+	return str;
+}
+
+
 int
 tcl::asInt(Tcl_Obj* obj)
 {
@@ -244,6 +256,130 @@ tcl::addElement(Tcl_Obj*& list, Tcl_Obj* elem)
 	
 	return list;
 }
+
+
+Tcl_Obj*
+tcl::insertElement(Tcl_Obj*& list, Tcl_Obj* elem, unsigned position)
+{
+	M_REQUIRE(elem);
+	M_REQUIRE(position <= (list ? countElements(list) : 0u));
+
+	if (!list)
+	{
+		list = newObj(1, &elem);
+	}
+	else
+	{
+		Tcl_Obj** objv;
+		unsigned objc = getElements(list, objv);
+		Tcl_Obj* objs[objc + 1];
+
+		memcpy(objs, objv, position*sizeof(Tcl_Obj*));
+		memcpy(objs + position + 1, objv + position, (objc - position)*sizeof(Tcl_Obj*));
+		objs[position] = elem;
+		set(list, newObj(objc + 1, objs));
+	}
+	
+	return list;
+}
+
+
+Tcl_Obj*
+tcl::removeElement(Tcl_Obj*& list, unsigned position)
+{
+	M_REQUIRE(list);
+	M_REQUIRE(position < countElements(list));
+
+	Tcl_Obj** objv;
+	unsigned objc = getElements(list, objv);
+	Tcl_Obj* objs[objc];
+
+	memcpy(objs, objv, position*sizeof(Tcl_Obj*));
+	memcpy(objs + position, objv + position + 1, (objc - position - 1)*sizeof(Tcl_Obj*));
+	set(list, newObj(objc - 1, objs));
+	return list;
+}
+
+
+int
+tcl::findElement(Tcl_Obj* obj, mstl::string const& what)
+{
+	if (obj)
+	{
+		Tcl_Obj** objv;
+		unsigned n = getElements(obj, objv);
+
+		for (unsigned i = 0; i < n; ++i)
+		{
+			if (equal(objv[i], what))
+				return i;
+		}
+	}
+	return -1;
+}
+
+
+int
+tcl::findElement(Tcl_Obj* obj, char const* what)
+{
+	M_REQUIRE(what);
+
+	if (obj)
+	{
+		Tcl_Obj** objv;
+		unsigned n = getElements(obj, objv);
+
+		for (unsigned i = 0; i < n; ++i)
+		{
+			if (equal(objv[i], what))
+				return i;
+		}
+	}
+	return -1;
+}
+
+
+int
+tcl::findElement(Tcl_Obj* obj, Tcl_Obj* what)
+{
+	M_REQUIRE(what);
+
+	if (obj)
+	{
+		Tcl_Obj** objv;
+		unsigned n = getElements(obj, objv);
+
+		for (unsigned i = 0; i < n; ++i)
+		{
+			if (equal(objv[i], what))
+				return i;
+		}
+	}
+	return -1;
+}
+
+
+template <typename T, typename String>
+static int
+findElement(T const& list, String const& str)
+{
+	M_REQUIRE(str);
+
+	for (unsigned i = 0; i < list.size(); ++i)
+	{
+		if (tcl::equal(list[i], str))
+			return i;
+	}
+	return -1;
+}
+
+
+int tcl::findElement(List const& list, mstl::string const& what)	{ return ::findElement(list, what); }
+int tcl::findElement(List const& list, char const* what)				{ return ::findElement(list, what); }
+int tcl::findElement(List const& list, Tcl_Obj* what)					{ return ::findElement(list, what); }
+int tcl::findElement(Array const& arr, mstl::string const& what)	{ return ::findElement(arr, what); }
+int tcl::findElement(Array const& arr, char const* what)				{ return ::findElement(arr, what); }
+int tcl::findElement(Array const& arr, Tcl_Obj* what)					{ return ::findElement(arr, what); }
 
 
 int
@@ -411,8 +547,7 @@ tcl::appendResult(char const* format, ...)
 void
 tcl::setResult(Tcl_Obj* obj)
 {
-	M_REQUIRE(obj);
-	Tcl_SetObjResult(interp(), obj);
+	Tcl_SetObjResult(interp(), obj ? obj : newObj());
 }
 
 
@@ -1106,6 +1241,51 @@ tcl::boolFromObj(unsigned objc, Tcl_Obj* const objv[], unsigned index)
 		TCL_RAISE("boolean value expected as %u. argument to %s", index, Tcl_GetString(objv[0]));
 
 	return value;
+}
+
+
+static int
+less(Tcl_Obj* lhs, Tcl_Obj* rhs)
+{
+	return ::strcmp(asString(lhs), asString(rhs)) < 0;
+}
+
+
+tcl::List&
+tcl::sort(List& list)
+{
+	list.bubblesort(::less);
+	return list;
+}
+
+
+bool
+tcl::removeElements(List& list, List const& toRemove)
+{
+	unsigned lhsNum = list.size();
+	unsigned rhsNum = toRemove.size();
+	unsigned lhs = 0, rhs = 0;
+
+	List result;
+
+	while (lhs < lhsNum && rhs < rhsNum)
+	{
+		int cmp = ::strcmp(asString(list[lhs]), asString(toRemove[rhs]));
+
+		if (cmp < 0)
+			result.push_back(list[lhs++]);
+		if (cmp >= 0)
+			rhs += 1;
+	}
+
+	if (result.size() == lhs)
+		return false;
+
+	for ( ; lhs < lhsNum; ++lhs)
+		result.push_back(list[lhs]);
+
+	list.swap(result);
+	return true;
 }
 
 

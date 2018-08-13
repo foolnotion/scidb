@@ -733,6 +733,7 @@ proc DoAddMove {sq1 sq2 allowIllegalMove} {
 		}
 		set Leave 0
 		variable trigger_ 0
+		# XXX <<MenuUnpost>> only available under X11.
 		bind $board.popup_promotion <<MenuUnpost>> [list set [namespace current]::trigger_ 1]
 		tk_popup $board.popup_promotion {*}[winfo pointerxy $board]
 		vwait [namespace current]::trigger_

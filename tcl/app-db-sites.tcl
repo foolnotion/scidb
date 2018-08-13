@@ -38,8 +38,8 @@ array set Defaults {
 array set Prios { site 200 event 100 }
 
 array set FrameOptions {
-	site  { -width 300 -height 640 -minwidth 200 -minheight 100 -expand both }
-	event { -width 700 -height 640 -minwidth 200 -minheight 100 -expand both }
+	site  { -width 300 -height 100% -minwidth 200 -minheight 100 -expand both }
+	event { -width 700 -height 100% -minwidth 200 -minheight 100 -expand both }
 }
 
 variable Layout {
@@ -135,7 +135,7 @@ proc MakeFrame {twm parent type uid} {
 
 	set frame [tk::frame $parent.$uid -borderwidth 0 -takefocus 1]
 	set nameVar ::application::twm::mc::Pane($uid)
-	return [list $frame $nameVar $Prios($uid) [expr {$uid ne "site"}] yes yes]
+	return [list $frame $nameVar $Prios($uid) no [expr {$uid ne "site"}] yes yes]
 }
 
 
@@ -232,6 +232,7 @@ proc TableMinSize {pane minsize} {
 
 
 proc SelectEvent {path base variant view} {
+	variable ${path}::Vars
 	set index [::eventtable::selectedEvent $Vars(frame:event) $base $variant]
 	[namespace parent]::selectEvent $base $variant $index
 }
@@ -370,7 +371,8 @@ proc DoUpdate {path base variant} {
 } ;# namespace events
 
 
-proc WriteTableOptions {chan {id "site"}} {
+proc WriteTableOptions {chan variant {id "site"}} {
+	variable TableOptions
 	variable Tables
 
 	if {$id ne "site"} { return }
@@ -378,9 +380,9 @@ proc WriteTableOptions {chan {id "site"}} {
 	foreach table $Tables {
 		set id [::application::twm::getId $table]
 		foreach uid {site event} {
-			if {[::scrolledtable::countOptions db:sites:$id:$uid] > 0} {
+			if {[info exists TableOptions($variant:$id:$uid)]} {
 				puts $chan "::scrolledtable::setOptions db:sites:$id:$uid {"
-				::options::writeArray $chan [::scrolledtable::getOptions db:sites:$id:$uid]
+				::options::writeArray $chan $TableOptions($variant:$id:$uid)
 				puts $chan "}"
 			}
 		}

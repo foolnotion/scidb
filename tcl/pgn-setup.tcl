@@ -230,7 +230,6 @@ set RecentColors { {} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {
 set ContextList {}
 
 namespace import ::dialog::choosecolor::addToList
-namespace import ::dialog::choosecolor::getActualColor
 
 
 # proc mytext {w args} {
@@ -1824,7 +1823,8 @@ proc HiliteTags {context position} {
 		background:current - background:nextmove { set compl white }
 		default {
 			variable [namespace parent]::${context}::Colors
-			scan [getActualColor [::colors::lookup $Colors($Priv(color:attr))]] "\#%2x%2x%2x" r g b
+			scan [::colors::getActualColor [::colors::lookup $Colors($Priv(color:attr))]] \
+				"\#%2x%2x%2x" r g b
 			set r [expr {255 - $r}]; set g [expr {255 - $g}]; set b [expr {255 - $b}]
 			set compl [format "\#%02x%02x%02x" $r $g $b]
 			if {$compl eq "#ffffff"} { set compl yellow }

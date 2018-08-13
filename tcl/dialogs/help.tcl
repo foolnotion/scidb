@@ -966,13 +966,8 @@ proc Search {t} {
 		set file [file tail $path]
 
 		if {$file ne "Overview.html" && [file readable $path]} {
-			set fd [::open $path r]
-			chan configure $fd -encoding utf-8
-			set content [read $fd]
-			close $fd
-
+			set content [::file::read $path -encoding utf-8]
 			lassign [::scidb::misc::html search {*}$options $search $content] rc exceeded title positions
-
 			if {!$rc} {
 				::log::error [format [set [namespace parent]::mc::ParserError] [file join $lang $file]]
 			}
@@ -1563,12 +1558,7 @@ proc ImportHandler {parentid uri} {
 	variable _StyleCount
 	variable Priv
 
-	set file [FullPath $uri]
-	set fd [::open $file r]
-	chan configure $fd -encoding utf-8
-	set content [read $fd]
-	close $fd
-
+	set content [::file::read [FullPath $uri] -encoding utf-8]
 	set id "$parentid.[format %.4d [incr _StyleCount]]"
 	set handler [namespace code [list ImportHandler $id]]
 	$Priv(html) style -id $id.9999 -importcmd $handler $content
@@ -1974,12 +1964,7 @@ proc Parse {file {wantedFile {}} {match {}} {position {}}} {
 
 	if {[file readable $file]} {
 		set Priv(current:lang) [lindex [file split $file] end-1]
-		catch {
-			set fd [::open $file r]
-			chan configure $fd -encoding utf-8
-			set content [read $fd]
-			close $fd
-		}
+		set content [::file::read $file -encoding utf-8]
 	}
 
 	if {$content eq "<>"} {

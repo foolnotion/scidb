@@ -243,11 +243,11 @@ proc open {parent base variant info view index {fen {}}} {
 
 	# PGN buttons
 	set buttons [tk::frame $bot.buttons -takefocus 0]
-	foreach {cmd var column} {backward Previous 0 forward Next 2 close Close 4} {
+	foreach {cmd var column} {backward previous 0 forward next 2 close close 4} {
 		set w $buttons.$cmd
 		::ttk::button $w -class TButton
 		$w configure -compound left -image [set ::icon::icon[string toupper $cmd 0 0]]
-		::widget::dialogButtonsSetup $buttons $cmd ::widget::mc::$var close
+		::widget::dialogButtonsSetup $buttons $cmd ::widget::mc::Label($var) close
 		grid $w -row 0 -column $column -sticky ns
 	}
 	grid columnconfigure $buttons {1 3} -minsize $::theme::padding
@@ -1624,6 +1624,7 @@ proc ConfigureBrowser {parent} {
 	set Vars(next) {}
 	set Vars(next:move) {}
 	set Vars(current) {}
+	set Vars(previous) {}
 	::scidb::game::new 11
 	::pgn::setup::openSetupDialog [winfo toplevel $parent] browser 11
 	::scidb::game::release 11
@@ -1751,7 +1752,7 @@ proc Resize {position mode board newSize delta ext} {
 			grid $Vars(control) -row 0 -column 0 -sticky ens
 			grid rowconfigure $dlg 0 -minsize $Priv(controls:height)
 			$Vars(control).minimize configure -command [list wm iconify $dlg]
-			$Vars(control).restore configure 
+			$Vars(control).restore configure \
 				-command [namespace code [list ViewFullscreen $position $board]] \
 				;
 			$Vars(control).close configure -command [list destroy $dlg]

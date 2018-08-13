@@ -38,9 +38,9 @@ array set Defaults {
 array set Prios { event 300 games 200 player 100 }
 
 array set FrameOptions {
-	event	 { -width 400 -height 640 -minwidth 200 -minheight 100 -expand both }
-	games	 { -width 600 -height 310 -minwidth 200 -minheight 100 -expand both }
-	player { -width 600 -height 310 -minwidth 200 -minheight 100 -expand both }
+	event	 { -width 400 -height 100% -minwidth 200 -minheight 100 -expand both }
+	games	 { -width 600 -height  50% -minwidth 200 -minheight 100 -expand both }
+	player { -width 600 -height  50% -minwidth 200 -minheight 100 -expand both }
 }
 
 variable Layout {
@@ -140,7 +140,7 @@ proc MakeFrame {twm parent type uid} {
 
 	set frame [tk::frame $parent.$uid -borderwidth 0 -takefocus 1]
 	set nameVar ::application::twm::mc::Pane($uid)
-	return [list $frame $nameVar $Prios($uid) [expr {$uid ne "event"}] yes yes]
+	return [list $frame $nameVar $Prios($uid) no [expr {$uid ne "event"}] yes yes]
 }
 
 
@@ -435,7 +435,8 @@ proc DoUpdate {path base variant} {
 } ;# namespace players
 
 
-proc WriteTableOptions {chan {id "event"}} {
+proc WriteTableOptions {chan variant {id "event"}} {
+	variable TableOptions
 	variable Tables
 
 	if {$id ne "event"} { return }
@@ -443,9 +444,9 @@ proc WriteTableOptions {chan {id "event"}} {
 	foreach table $Tables {
 		set id [::application::twm::getId $table]
 		foreach uid {event games player} {
-			if {[::scrolledtable::countOptions db:events:$id:$uid] > 0} {
+			if {[info exists TableOptions($variant:$id:$uid)]} {
 				puts $chan "::scrolledtable::setOptions db:events:$id:$uid {"
-				::options::writeArray $chan [::scrolledtable::getOptions db:events:$id:$uid]
+				::options::writeArray $chan $TableOptions($variant:$id:$uid)
 				puts $chan "}"
 			}
 		}

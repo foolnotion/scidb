@@ -29,9 +29,9 @@
 namespace eval application {
 namespace eval mc {
 
-set Information				"&Information"
-set Database					"&Database"
-set Board						"&Board"
+set Tab(information)			"&Information"
+set Tab(database)				"&Database"
+set Tab(board)					"&Board"
 set MainMenu					"&Main Menu"
 
 set ChessInfoDatabase		"Chess Information Data Base"
@@ -60,14 +60,14 @@ namespace import ::tcl::mathfunc::max
 array set PaneOptions {
 	board		{ -width 500 -height 540 -minwidth 300 -minheight 300 -expand both }
 	tree		{ -width 500 -height 120 -minwidth 250 -minheight 120 -expand y }
-	editor	{ -width 500 -height 520 -minwidth 150 -minheight 150 -expand y }
+	editor	{ -width 500 -height 520 -minwidth 150 -minheight 250 -expand y }
 	games		{ -width 500 -height 520 -minwidth 300 -minheight 150 -expand both }
 	analysis	{ -width 500 -height 120 -minwidth 300 -minheight 120 -expand x }
 	eco		{ -width 500 -height 520 -minwidth 150 -minheight 150 -expand both }
 }
 
 set BoardLayout {
-	root { -shrink none -grow none } {
+	root { -shrink none -grow none -width 1005 -height 689 } {
 		panedwindow { -orient vert } {
 			panedwindow { -orient horz } {
 				pane board %board%
@@ -164,6 +164,7 @@ proc open {} {
 	set Vars(frame:information) $info
 	set Vars(frame:database) $db
 
+	# IMPORTANT NOTE: this layout has to be loaded before any other layout will be loaded.
 	set twm [twm::make $nb.board board \
 		[namespace current]::MakePane \
 		[namespace current]::BuildPane \
@@ -213,9 +214,9 @@ proc open {} {
 proc twm {{id ""}} {
 	variable Vars
 
-	if {[string length $id]} { return $Vars(twm:$id) }
+	if {[string length $id]} { return $Vars($id:twm) }
 	set tab [$Vars(notebook) select]
-	if {[string match {*.board} $tab]} { return $Vars(twm:board) }
+	if {[string match {*.board} $tab]} { return $Vars(board:twm) }
 	if {[string match {*.database} $tab]} { return [database::twm] }
 	return -code error "[namespace current]::twm: no twm selected"
 }
@@ -233,7 +234,7 @@ proc nameVarFromUid {uid} {
 		set nameVar [namespace current]::NameVar($analysisNumber)
 		trace add variable [namespace current]::twm::mc::Pane($name) write \
 			[namespace code [list UpdateNameVar $analysisNumber]]
-		UpdateNameVar $analysisNumber
+		UpdateAnalysisTitle $analysisNumber
 	} else {
 		set nameVar [namespace current]::twm::mc::Pane($name)
 	}
@@ -248,7 +249,7 @@ proc NumberFromUid {uid} { return [lindex [split $uid :] 1] }
 proc TabChanged {nb} {
 	variable Vars
 
-	set twm $Vars(twm:board)
+	set twm $Vars(board:twm)
 	if {[string match {*.board} [$nb select]]} { set cmd show } else { set cmd hide }
 
 	foreach w [$twm floats] {
@@ -264,6 +265,7 @@ proc MakePane {twm parent type uid} {
 	set name [NameFromUid $uid]
 	set prio $Prios($name)
 	set analysisNumber 0
+	set transient 0
 
 	if {[string match {analysis:*} $uid]} {
 		variable MapTerminalToAnalysis
@@ -279,13 +281,14 @@ proc MakePane {twm parent type uid} {
 		}
 
 		set analysisNumber $MapTerminalToAnalysis($number)
+		set Vars(title:$analysisNumber) ""
+		if {$analysisNumber > 1} { set transient 1 }
 	}
 
 	set nameVar [nameVarFromUid $uid]
 	set takefocus [expr {$uid eq "board"}]
 	set frame [tk::frame $parent.$uid -borderwidth 0 -takefocus $takefocus]
-	set result [list $frame $nameVar $prio]
-	if {$type ne "pane"} { lappend result [expr {$uid ne "editor"}] yes yes }
+	set result [list $frame $nameVar $prio $transient [expr {$uid ne "editor"}] yes yes]
 	switch $name {
 		games   { set ns tree::games }
 		editor  { set ns pgn }
@@ -307,23 +310,28 @@ proc BuildPane {twm frame uid width height} {
 		analysis	{
 			variable MapTerminalToAnalysis
 			set analysisNumber $MapTerminalToAnalysis([NumberFromUid $uid])
-			set patterNumber 0
-			if {!$Vars(loading) && [set patterNumber [expr {$Vars(terminal:number) - 1}]] > 0} {
-				set patterNumber $MapTerminalToAnalysis($patterNumber)
+			set patternNumber 0
+			if {!$Vars(loading) && [set patternNumber [expr {$Vars(terminal:number) - 1}]] > 0} {
+				set patternNumber $MapTerminalToAnalysis($patternNumber)
 			}
-			analysis::build $frame $analysisNumber $patterNumber
+			analysis::build $frame $analysisNumber $patternNumber
 		}
 		eco {
 			if {"editor" in [$twm leaves]} {
 				lassign [$twm dimension [$twm leaf editor]] width height _ _ _ _
 			}
-			eco::build $frame -id editor
+			eco::build $frame -id board
 			$frame configure -width $width -height $height
 		}
-		editor	{ pgn::build $frame $width $height }
-		games		{ tree::games::build $twm $frame $width $height }
-		tree		{ tree::build $twm $frame $width $height }
-		default	{ ${uid}::build $frame $width $height }
+		board			{ board::build $frame $width $height }
+		editor		{ pgn::build $frame $width $height }
+		games			{ tree::games::build $twm $frame $width $height }
+		tree			{ tree::build $twm $frame $width $height }
+		player		{ players::build $frame $width $height }
+		event			{ events::build $frame $width $height }
+		annotator	{ annotators::build $frame $width $height }
+		position		{ positions::build $frame $width $height }
+		default		{ return -code error "BuildPane: unknown pane $uid" }
 	}
 }
 
@@ -343,12 +351,12 @@ proc DestroyPane {twm uid analysisNumber} {
 
 		for {set i [expr {$terminalNumber + 1}]} {$i <= $Vars(terminal:number)} {incr i} {
 			set newTerminalNumber [expr {$i - 1}]
-			set analysisNumber $MapTerminalToAnalysis($i)
+			set number $MapTerminalToAnalysis($i)
 			$twm changeuid analysis:$i analysis:$newTerminalNumber
-			set MapTerminalToAnalysis($newTerminalNumber) $analysisNumber
-			set MapAnalysisToTerminal($analysisNumber) $newTerminalNumber
+			set MapTerminalToAnalysis($newTerminalNumber) $number
+			set MapAnalysisToTerminal($number) $newTerminalNumber
 			set Vars(frame:analysis:$newTerminalNumber) $vars(frame:analysis:$i)
-			UpdateNameVar $analysisNumber
+			UpdateAnalysisTitle $number
 		}
 
 		array unset Vars frame:analysis:$Vars(terminal:number)
@@ -361,20 +369,32 @@ proc DestroyPane {twm uid analysisNumber} {
 
 
 proc UpdateNameVar {analysisNumber args} {
-	variable MapAnalysisToTerminal
-
-	if {[info exists MapAnalysisToTerminal($analysisNumber)] && ![analysis::active? $analysisNumber]} {
-		variable NameVar
-
-		set terminalNumber $MapAnalysisToTerminal($analysisNumber)
-		set NameVar($analysisNumber) $twm::mc::Pane(analysis)
-		if {$terminalNumber > 1} { append NameVar($analysisNumber) " ($terminalNumber)" }
-	}
+	UpdateAnalysisTitle $analysisNumber
 }
 
 
-proc setAnalysisTitle {analysisNumber title} {
-	set [namespace current]::NameVar($analysisNumber) $title
+proc UpdateAnalysisTitle {analysisNumber {title ""}} {
+	variable Vars
+
+	if {[string length $title] == 0} {
+		set title $Vars(title:$analysisNumber)
+	}
+	updateAnalysisTitle $analysisNumber $title
+}
+
+
+proc updateAnalysisTitle {analysisNumber {title ""}} {
+	variable MapAnalysisToTerminal
+	variable NameVar
+	variable Vars
+
+	set Vars(title:$analysisNumber) $title
+	if {[string length $title] == 0} { set title $twm::mc::Pane(analysis) }
+	if {[info exists MapAnalysisToTerminal($analysisNumber)]} {
+		set terminalNumber $MapAnalysisToTerminal($analysisNumber)
+		if {$terminalNumber > 1} { append title " ($terminalNumber)" }
+	}
+	set NameVar($analysisNumber) $title
 }
 
 
@@ -387,7 +407,7 @@ proc newAnalysisPane {analysisNumber} {
 	set highest $Vars(terminal:number)
 	set terminalNumber [expr {$highest + 1}]
 	set uid analysis:$terminalNumber
-	set twm $Vars(twm:board)
+	set twm $Vars(board:twm)
 	set MapTerminalToAnalysis($terminalNumber) $analysisNumber
 	set MapAnalysisToTerminal($analysisNumber) $terminalNumber
 
@@ -403,7 +423,7 @@ proc resizePaneHeight {analysisNumber minHeight} {
 	variable MapAnalysisToTerminal
 	variable Vars
 
-	set twm $Vars(twm:board)
+	set twm $Vars(board:twm)
 	set uid analysis:$MapAnalysisToTerminal($analysisNumber)
 	set pane [$twm leaf $uid]
 
@@ -476,10 +496,13 @@ proc shutdown {} {
 			-parent .application \
 			-message $msg \
 			-default no \
+			-topmost yes \
 			-embed [namespace code [list EmbedUnsavedFiles $unsavedFiles]] \
 		]
 		if {$reply ne "yes"} { return }
 	}
+
+	if {![twm::saveLayouts]} { return }
 
 	switch [::game::queryCloseApplication .application] {
 		restore	{ set backup 1 }
@@ -504,7 +527,6 @@ proc shutdown {} {
 	::ttk::grabWindow $dlg
 	::widget::busyCursor on
 	prepareExit $backup
-	twm::prepareExit
 	if {[tk windowingsystem] eq "x11"} { ::scidb::tk::sm disconnect }
 	::widget::busyCursor off
 	::ttk::releaseGrab $dlg
@@ -1004,7 +1026,10 @@ proc Exit {w} {
 	if {$w eq ".application"} {
 		set ::remote::blocking 1
 		set ::remote::postponed 0
-		::options::write
+		::options::startTransaction
+		::options::saveOptionsFile
+		twm::saveTableOptions
+		::options::endTransaction
 		::load::write
 		exit
 	}
@@ -1027,9 +1052,9 @@ proc Startup {main args} {
 	$nb add $Vars(frame:database) -sticky nsew
 	$nb add $main -sticky nsew
 
-	::widget::notebookTextvarHook $nb $Vars(frame:information) [namespace current]::mc::Information
-	::widget::notebookTextvarHook $nb $Vars(frame:database) [namespace current]::mc::Database
-	::widget::notebookTextvarHook $nb $main [namespace current]::mc::Board
+	::widget::notebookTextvarHook $nb $Vars(frame:information) [namespace current]::mc::Tab(information)
+	::widget::notebookTextvarHook $nb $Vars(frame:database) [namespace current]::mc::Tab(database)
+	::widget::notebookTextvarHook $nb $main [namespace current]::mc::Tab(board)
 
 	foreach tab {information database board} {
 		bind $Vars(frame:$tab) <FocusIn>  [namespace code [list ${tab}::setActive yes]]
@@ -1048,7 +1073,7 @@ proc Startup {main args} {
 	::splash::close
 	set Vars(ready) 1
 
-	# we need a small timeout for HTML widget;
+	# we need a small timeout for HTML widget (tab "Information");
 	# for any reason "update idletasks" is not sufficient
 	after 1 [namespace code Startup2]
 }
@@ -1098,7 +1123,7 @@ proc FontSizeChanged {w value} {
 	variable Vars
 
 	if {$w eq ".application"} {
-		$Vars(twm:board) headerfontsize [::html::incrFontSize [$Vars(twm:board) headerfontsize] $value]
+		$Vars(board:twm) headerfontsize [::html::incrFontSize [$Vars(board:twm) headerfontsize] $value]
 	}
 }
 
@@ -1176,7 +1201,9 @@ set shutdown [image create photo -data {
 rename ::tk::PostOverPoint ::tk::_PostOverPoint_application
 
 proc ::tk::PostOverPoint {menu x y {entry {}}} {
-	if {[string match ".application.nb.menu_*.entries" $menu]} {
+	variable ::application::Vars
+
+	if {$Vars(menu:main) eq $menu} {
 		set rx [winfo rootx .application]
 		set mw [winfo reqwidth $menu]
 		set x [expr {min($rx + [winfo width .application] - $mw, $x)}]

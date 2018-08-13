@@ -6,7 +6,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2013 Gregor Cramer
+# Copyright: (C) 2009-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -67,15 +67,15 @@ proc build {path columns args} {
 	set sq  $top.square
 
 	namespace eval [namespace current]::$tb {}
-	variable [namespace current]::${tb}::Vars
+	variable [namespace current]::${tb}::
 
-	array set Vars {
+	array set {} {
 		start					0
 		height				0
 		size					0
 		minheight			0
-		selection			-1
 		active				-1
+		selection			{}
 		minsize				{}
 		columns				{}
 		base					{}
@@ -85,17 +85,17 @@ proc build {path columns args} {
 		mousewheel:list	{}
 	}
 
-	set Vars(scale)			$sc
-	set Vars(scrollbar)		$sb
-	set Vars(popupcmd)		$opts(-popupcmd)
-	set Vars(lock)				$opts(-lock)
-	set Vars(takefocus)		$opts(-takefocus)
-	set Vars(theme)			[::theme::currentTheme]
-	set Vars(lineBasedMenu)	$opts(-lineBasedMenu)
-	set Vars(hidebar)			$opts(-hidebar)
-	set useScale				$opts(-usescale)
+	set (scale)				$sc
+	set (scrollbar)		$sb
+	set (popupcmd)			$opts(-popupcmd)
+	set (lock)				$opts(-lock)
+	set (takefocus)		$opts(-takefocus)
+	set (theme)				[::theme::currentTheme]
+	set (lineBasedMenu)	$opts(-lineBasedMenu)
+	set (hidebar)			$opts(-hidebar)
+	set (usescale)			$opts(-usescale)
 
-	set Vars(layout) $opts(-layout)
+	set (layout) $opts(-layout)
 	foreach attr {-popupcmd -lock -usescale -layout -hidebar -lineBasedMenu} { array unset opts $attr }
 
 	if {![winfo exists $path]} {
@@ -114,7 +114,7 @@ proc build {path columns args} {
 		;
 	::bind $tb <Destroy> [namespace code [list TableOptions $tb]]
 	
-	if {$useScale} {
+	if {$(usescale)} {
 		tk::scale $sc                                    \
 			-orient horizontal                            \
 			-from 0                                       \
@@ -125,7 +125,7 @@ proc build {path columns args} {
 			;
 		::bind $sc <ButtonRelease-1> [list ::table::focus $tb]
 		::bind $sc <ButtonPress-1> [namespace code [list StopMouseWheel $tb]]
-		set Vars(slider) [$sc cget -sliderlength]
+		set (slider) [$sc cget -sliderlength]
 	}
 	
 	ttk::scrollbar $sb  \
@@ -135,12 +135,12 @@ proc build {path columns args} {
 		;
 	::bind $sb <Any-Button> [list ::tooltip::hide]
 	::bind $sb <ButtonPress-1> [namespace code [list StopMouseWheel $tb]]
-	if {$Vars(takefocus)} {
+	if {$(takefocus)} {
 		::bind $sb <ButtonPress-1> +[list ::table::focus $tb]
 	}
 	ttk::frame $sq -borderwidth 1 -relief sunken
 
-	if {$Vars(layout) eq "right"} {
+	if {$(layout) eq "right"} {
 		grid $sb -column 1 -row 0 -rowspan 2 -sticky ns
 		grid rowconfigure $top {2 4} -minsize 0
 	} else {
@@ -159,9 +159,9 @@ proc build {path columns args} {
 	grid rowconfigure $top 0 -weight 1
 
 	foreach {id args} $columns {
-		if {$Vars(lock) eq $id} { lappend args -lock left }
+		if {$(lock) eq $id} { lappend args -lock left }
 		::table::addcol $tb $id {*}$args
-		lappend Vars(columns) $id
+		lappend (columns) $id
 	}
 
 	::bind $tb <<TableFill>>					 [namespace code [list TableFill $tb %d]]
@@ -181,7 +181,7 @@ proc build {path columns args} {
 #	::bind $sb <<ThemeChanged>>				 [namespace code [list GenerateTableMinSizeEvent $tb]]
 #	::bind $sb <Destroy>							+[list namespace delete [namespace current]::$tb]
 	::bind $sb <Configure>						 [namespace code [list ConfigureScrollbar $tb]]
-	if {$useScale} {
+	if {$(usescale)} {
 		::bind $tb <<TableScroll>>				+[namespace code [list ConfigureScale $tb]]
 		::bind $sc <Configure>					 [namespace code [list ConfigureScale $tb]]
 	}
@@ -218,71 +218,78 @@ proc build {path columns args} {
 		::table::bind $tb $seq {+ break }
 	}
 
-	if {[llength $Vars(popupcmd)]} {
+	if {[llength $(popupcmd)]} {
 		::table::bind $tb <ButtonPress-3> +[namespace code [list PopupMenu $tb %y]]
 	}
 
 	TableResized $tb 0
-	::table::activate $tb $Vars(active)
+	ShowActive $tb
 	return $tb
 }
 
 
 proc update {path base variant size} {
 	set table $path.top.table
-	variable ${table}::Vars
+	variable ${table}::
 
-	if {![info exists Vars(variant)]} {
-		set Vars(variant) $variant
-		set Vars(base) $base
+	if {![info exists (variant)]} {
+		set (variant) $variant
+		set (base) $base
 	}
-	if {$Vars(base) ne $base || $Vars(variant) ne $variant} {
+	if {$(base) ne $base || $(variant) ne $variant} {
 		::table::activate $table none
 		::table::select $table none
 
-		if {[string length $Vars(base)]} {
-			set Vars(start:$Vars(base):$Vars(variant)) $Vars(start)
-			set Vars(active:$Vars(base):$Vars(variant)) $Vars(active)
-			set Vars(selection:$Vars(base):$Vars(variant)) $Vars(selection)
+		if {[string length $(base)]} {
+			set (start:$(base):$(variant)) $(start)
+			set (active:$(base):$(variant)) $(active)
+			set (selection:$(base):$(variant)) $(selection)
 		}
 	} else {
-		set Vars(start:$Vars(base):$Vars(variant)) $Vars(start)
-		set Vars(active:$Vars(base):$Vars(variant)) $Vars(active)
-		set Vars(selection:$Vars(base):$Vars(variant)) $Vars(selection)
+		set (start:$(base):$(variant)) $(start)
+		set (active:$(base):$(variant)) $(active)
+		set (selection:$(base):$(variant)) $(selection)
 	}
-	if {![info exists Vars(start:$base:$variant)]} {
-		set Vars(start:$base:$variant) 0
-		set Vars(active:$base:$variant) -1
-		set Vars(selection:$base:$variant) -1
+	if {![info exists (start:$base:$variant)]} {
+		set (start:$base:$variant) 0
+		set (active:$base:$variant) -1
+		set (selection:$base:$variant) {}
 	}
-	set oldSize $Vars(size)
-	set Vars(size) $size
-	::table::clear $table $Vars(size) $Vars(height)
+	set oldSize $(size)
+	set (size) $size
+	::table::clear $table $(size) $(height)
 
-	set Vars(start) [expr {max(0, min($Vars(start:$base:$variant), $Vars(size) - $Vars(height)))}]
-	if {[string is integer -strict $Vars(active:$base:$variant)]} {
-		set Vars(active) [expr {min($size - 1, $Vars(active:$base:$variant))}]
-	}
-	if {[string is integer -strict $Vars(selection:$base:$variant)]} {
-		set Vars(selection) [expr {min($size - 1, $Vars(selection:$base:$variant))}]
-	}
-	set Vars(base) $base
-	set Vars(variant) $variant
+	set (start) [expr {max(0, min($(start:$base:$variant), $(size) - $(height)))}]
+	set (active) $(active:$base:$variant)
+	set (selection) $(selection:$base:$variant)
+	set (base) $base
+	set (variant) $variant
 
-	set height [expr {min([::table::height $table], $Vars(height))}]
+	if {$(active) >= 0} {
+		set (active) [expr {min($(start) + $size - 1, $(active))}]
+	}
+	if {[llength $(selection)]} {
+		if {$size == 0} {
+			set (selection) {}
+		else
+			set (selection) [expr {min($(start) + $size - 1, $(selection))}]
+		}
+	}
+
+	set height [expr {min([::table::height $table], $(height))}]
 	TableResized $table $height
 	# if not already done by TableResized
-	if {$Vars(start) + $height < $Vars(size)} { TableFill $table }
+	if {$(start) + $height < $(size)} { TableFill $table }
 }
 
 
 proc base {path} {
-	return [set [namespace current]::${path}.top.table::Vars(base)]
+	return [set [namespace current]::${path}.top.table::(base)]
 }
 
 
 proc variant {path} {
-	return [set [namespace current]::${path}.top.table::Vars(variant)]
+	return [set [namespace current]::${path}.top.table::(variant)]
 }
 
 
@@ -313,43 +320,43 @@ proc visibleColumns {path} {
 
 proc forget {path base variant} {
 	set table $path.top.table
-	variable ${table}::Vars
+	variable ${table}::
 
-	if {$Vars(base) eq $base && $Vars(variant) eq $variant} {
-		array unset Vars *:$base:$variant
-		set Vars(base) {}
-		set Vars(variant) {}
-		set Vars(size) 0
+	if {$(base) eq $base && $(variant) eq $variant} {
+		array unset {} *:$base:$variant
+		set (base) {}
+		set (variant) {}
+		set (size) 0
 	}
 }
 
 
 proc scroll {path position {units 1}} {
 	set table $path.top.table
-	variable ${table}::Vars
+	variable ${table}::
 
-	if {$Vars(size) == 0} { return }
+	if {$(size) == 0} { return }
 
 	switch $position {
-		back			{ SetStart $table [expr {$Vars(start) - $Vars(height)}] }
-		forward		{ SetStart $table [expr {$Vars(start) + $Vars(height)}] }
-		selection	{ if {$Vars(selection) != -1} { TableScroll $table see } }
+		back			{ SetStart $table [expr {$(start) - $(height)}] }
+		forward		{ SetStart $table [expr {$(start) + $(height)}] }
+		selection	{ if {[llength $(selection)]} { TableScroll $table see } }
 		home			{ TableScroll $table home }
 		end			{ TableScroll $table end }
 
 		up - down	{
-#			if {$units > $Vars(height)/2} { set units [expr {max(1, $Vars(height)/2)}] }
+#			if {$units > $(height)/2} { set units [expr {max(1, $(height)/2)}] }
 			if {$position eq "up"} { set dir [expr {-$units}] } else { set dir $units }
-			set start [expr {max(0, min($Vars(size) - 1, $Vars(start) + $dir))}]
-			if {$start == $Vars(start)} { return }
+			set start [expr {max(0, min($(size) - 1, $(start) + $dir))}]
+			if {$start == $(start)} { return }
 			::tooltip::hide
 			SetStart $table $start
 		}
 
 		default		{
 			if {[string is integer -strict $position]} {
-				set start [expr {max(0, min($Vars(size) - 1, $position))}]
-				if {$start == $Vars(start)} { return }
+				set start [expr {max(0, min($(size) - 1, $position))}]
+				if {$start == $(start)} { return }
 				::tooltip::hide
 				SetStart $table $start
 			} else {
@@ -364,16 +371,25 @@ proc scroll {path position {units 1}} {
 
 proc see {path position} {
 	set table $path.top.table
-	variable ${table}::Vars
+	variable ${table}::
 
-	if {$Vars(size) == 0} { return }
-	if {![expr {$Vars(start) <= $position && $position <= $Vars(start) + $Vars(height)}]} {
-		set Vars(start) [expr {min($Vars(size) - $Vars(height), $position)}]
-		TableFill $table
-		ConfigureScrollbar $table
-		ConfigureScale $table
+	if {$(size) == 0} { return }
+	if {$position eq "end"} {
+		if {$(size) == 0} { return }
+		set position [expr {$(size) - 1}]
 	}
-	activate $path [expr {$position - $Vars(start)}]
+	if {![expr {$(start) <= $position && $position <= $(start) + $(height)}]} {
+		set start [expr {min($(size) - $(height), $position)}]
+		if {$start != $(start)} {
+			::table::select $table none
+			set (start) $start
+			TableFill $table
+			ShowSelection $table
+			ConfigureScrollbar $table
+			ConfigureScale $table
+		}
+	}
+	activate $path [expr {$position - $(start)}]
 }
 
 
@@ -384,7 +400,7 @@ proc refresh {path} {
 
 proc clear {path {first -1} {last -1}} {
 	set table $path.top.table
-	variable ${table}::Vars
+	variable ${table}::
 
 	::table::clear $table $first $last
 	ConfigureScrollbar $table
@@ -399,68 +415,69 @@ proc clearColumn {path id} {
 
 proc fill {path first {last -1}} {
 	set table $path.top.table
-	variable ${table}::Vars
+	variable ${table}::
 
 	if {$last == -1} { set last $first }
-	set start $Vars(start)
+	set start $(start)
 	TableFill $table [list [expr {$first - $start}] [expr {$last - $start}]] false
 }
 
 
 proc selection {path} {
 	set table $path.top.table
-	variable ${table}::Vars
+	variable ${table}::
 
-	return $Vars(selection)
+	if {[llength $(selection)] == 0} { return -1 }
+	return [expr {$(selection) - $(start)}]
 }
 
 
 proc active {path} {
 	set table $path.top.table
-	variable ${table}::Vars
+	variable ${table}::
 
-	return $Vars(active)
+	return $(active)
 }
 
 
 proc index {path} {
 	set table $path.top.table
-	variable ${table}::Vars
+	variable ${table}::
 
-	if {$Vars(selection) == -1} { return -1 }
-	return [expr {$Vars(start) + $Vars(selection)}]
+	if {[llength $(selection)] == 0} { return -1 }
+	return $(selection)
 }
 
 
 proc firstRow {path} {
 	set table $path.top.table
-	variable ${table}::Vars
+	variable ${table}::
 
-	return $Vars(start)
+	return $(start)
 }
 
 
 proc lastRow {path} {
 	set table $path.top.table
-	variable ${table}::Vars
+	variable ${table}::
 
-	return [expr {$Vars(start) + $Vars(height)}]
+	return [expr {$(start) + $(height)}]
 }
 
 
 proc indexToRow {path index} {
 	set table $path.top.table
-	variable ${table}::Vars
+	variable ${table}::
 
-	return [expr {$index - $Vars(start)}]
+	return [expr {$index - $(start)}]
 }
 
 
 proc rowToIndex {path row} {
 	set table $path.top.table
-	variable ${table}::Vars
+	variable ${table}::
 
-	return [expr {$row + $Vars(start)}]
+	return [expr {$row + $(start)}]
 }
 
 
@@ -491,11 +508,11 @@ proc configure {path args} {
 
 proc at {path y} {
 	set table $path.top.table
-	variable ${table}::Vars
+	variable ${table}::
 
 	set row [::table::at $table $y]
 	if {![string is digit -strict $row]} { return $row }
-	return [expr {$row + $Vars(start)}]
+	return [expr {$row + $(start)}]
 }
 
 
@@ -514,6 +531,11 @@ proc setOptions {id options} {
 }
 
 
+proc loadOptions {id options} {
+	::table::loadOptions $id $options false
+}
+
+
 proc bindOptions {id arrName nameList} {
 	::table::bindOptions $id $arrName $nameList
 }
@@ -526,37 +548,38 @@ proc setColumnMininumWidth {path id width} {
 
 proc setState {path row state} {
 	set table $path.top.table
-	variable ${table}::Vars
+	variable ${table}::
 
-	::table::setState $table [expr {$row + $Vars(start)}] $state
+	::table::setState $table [expr {$row + $(start)}] $state
 }
 
 
 proc columnNo {path id} {
 	set table $path.top.table
-	variable ${table}::Vars
+	variable ${table}::
 
-	return [lsearch -exact $Vars(columns) $id]
+	return [lsearch -exact $(columns) $id]
 }
 
 
 proc selectionIsVisible? {path} {
 	set table $path.top.table
-	variable ${table}::Vars
+	variable ${table}::
 
-	return [expr {$Vars(start) <= $Vars(selection) && $Vars(selection) <= $Vars(start) + $Vars(height)}]
+	if {[llength $(selection)] == 0} { return false }
+	return [expr {$(start) <= $(selection) && $(selection) < $(start) + $(height)}]
 }
 
 
 proc updateColumn {path selection {see 0}} {
 	set table $path.top.table
-	variable ${table}::Vars
+	variable ${table}::
 
-	set Vars(active) -1
-	set Vars(selection) $selection
+	if {$selection < 0} { return }
+	set (selection) $selection
 
 	if {$see} {
-		SetStart $table [expr {max(0, $Vars(selection) - $Vars(height)/2)}]
+		SetStart $table [expr {max(0, $selection - $(height)/2)}]
 		ConfigureScale $table
 		SetHighlighting $table
 	} else {
@@ -572,11 +595,11 @@ proc doSelection {path} {
 
 proc changeLayout {path dir} {
 	set table $path.top.table
-	variable ${table}::Vars
+	variable ${table}::
 	variable Defaults
 
-	if {$Vars(layout) eq $dir} { return }
-	set Vars(layout) $dir
+	if {$(layout) eq $dir} { return }
+	set (layout) $dir
 	set parent [winfo parent $table]
 	set sc ${parent}.scale
 	set sb ${parent}.scrollbar
@@ -616,7 +639,18 @@ proc overhang {path} {
 
 
 proc computeHeight {path rows} {
-	return [::table::computeHeight $path.top.table $rows]
+	set table $path.top.table
+	variable ${table}::
+	variable Defaults
+
+	set parent ${path}.top
+	set sc ${parent}.scale
+	set height [::table::computeHeight $parent.table $rows]
+	if {$sc in [grid slaves $parent]} {
+		incr height [winfo reqheight $sc]
+		incr height [expr {2*$Defaults(scale:pady)}]
+	}
+	return $height
 }
 
 
@@ -632,13 +666,17 @@ proc borderwidth {path} {
 
 proc activate {path row} {
 	set table $path.top.table
-	variable ${table}::Vars
+	variable ${table}::
 
-	if {$row eq "none" || $row == -1} {
-		set Vars(active) $row
-		::table::activate $table $row true
-	} elseif {$row < $Vars(height)} {
-		set Vars(active) [expr {$row + $Vars(start)}]
+	switch -- $row {
+		end  { set row [expr {$(height) - 1}] }
+		none { set row -1 }
+	}
+	if {$row == -1 || 0 > $row || $row >= $(size)} {
+		set (active) -1
+		::table::activate $table -1 true
+	} else {
+		set (active) [expr {$row + $(start)}]
 		::table::activate $table $row true
 	}
 }
@@ -646,27 +684,45 @@ proc activate {path row} {
 
 proc select {path row} {
 	set table $path.top.table
-	variable ${table}::Vars
+	variable ${table}::
 
-	set Vars(selection) -1
-	::table::select $table $row
+	switch -- $row {
+		end  { set row [expr {$(height) - 1}] }
+		none { set row -1 }
+	}
+	if {$row < 0} {
+		set (selection) {}
+		::table::select $table none
+	} else {
+		set (selection) [expr {$(start) + $row}]
+		::table::select $table $row
+	}
 }
 
 
 proc setSelection {path row} {
 	set table $path.top.table
-	variable ${table}::Vars
+	variable ${table}::
 
-	set Vars(selection) -1
-	::table::setSelection $table $row
+	switch -- $row {
+		end  { set row [expr {$(height) - 1}] }
+		none { set row -1 }
+	}
+	if {$row < 0} {
+		set (selection) {}
+		::table::setSelection $table none
+	} else {
+		set (selection) [expr {$(start) + $row}]
+		::table::setSelection $table $row
+	}
 }
 
 
 proc focus {path} {
 	set table $path.top.table
-	variable ${table}::Vars
+	variable ${table}::
 
-	if {$Vars(takefocus)} {
+	if {$(takefocus)} {
 		::table::focus $table
 	}
 }
@@ -683,25 +739,25 @@ proc keepFocus {path {flag {}}} {
 
 
 proc GenerateTableMinSizeEvent {table} {
-	variable ${table}::Vars
+	variable ${table}::
 
-	if {$Vars(theme) ne [::theme::currentTheme]} {
+	if {$(theme) ne [::theme::currentTheme]} {
 		after idle [event generate $table <<TableLayout>>]
-		set Vars(theme) [::theme::currentTheme]
+		set (theme) [::theme::currentTheme]
 	}
 }
 
 
 proc ConfigureScale {table} {
-	variable ${table}::Vars
+	variable ${table}::
 
-	if {![winfo exists $Vars(scale)]} { return }
-	set len [expr {[winfo width $Vars(scale)] - 4}]
-	if {$Vars(height) > 0 && $Vars(size) > 0} {
-		set len [expr {max($Vars(slider), min($len, $len*double($Vars(height))/double($Vars(size))))}]
+	if {![winfo exists $(scale)]} { return }
+	set len [expr {[winfo width $(scale)] - 4}]
+	if {$(height) > 0 && $(size) > 0} {
+		set len [expr {max($(slider), min($len, $len*double($(height))/double($(size))))}]
 	}
-	$Vars(scale) configure -sliderlength $len
-	$Vars(scale) set $Vars(start)
+	$(scale) configure -sliderlength $len
+	$(scale) set $(start)
 }
 
 
@@ -712,8 +768,8 @@ proc ConfigureScrollbar {table} {
 
 proc ScrollToStart {table} {
 	if {![winfo exists $table]} { return }
-	variable ${table}::Vars
-	Scroll $table set $Vars(start) false
+	variable ${table}::
+	Scroll $table set $(start) false
 }
 
 
@@ -723,9 +779,9 @@ proc TableOptions {table} {
 
 
 proc TableVisit {table data} {
-	variable ${table}::Vars
+	variable ${table}::
 
-	set data [list $Vars(base) $Vars(variant) {*}$data]
+	set data [list $(base) $(variant) {*}$data]
 	event generate [winfo parent [winfo parent $table]] <<TableVisit>> -data $data
 }
 
@@ -741,15 +797,15 @@ proc TableShow {table data} {
 
 
 proc TableMinSize {table minsize} {
-	variable ${table}::Vars
+	variable ${table}::
 	variable Defaults
 
 	if {[llength $minsize] == 0} { return }
 	lassign $minsize minwidth minheight
-	if {$Vars(layout) eq "right"} {
-		incr minwidth [winfo width $Vars(scrollbar)]
+	if {$(layout) eq "right"} {
+		incr minwidth [winfo width $(scrollbar)]
 	} else {
-		incr minheight [expr {[winfo height $Vars(scale)] + 2*$Defaults(scale:pady)}]
+		incr minheight [expr {[winfo height $(scale)] + 2*$Defaults(scale:pady)}]
 	}
 	set minsize [list $minwidth $minheight]
 	set parent [winfo parent [winfo parent $table]]
@@ -758,76 +814,99 @@ proc TableMinSize {table minsize} {
 
 
 proc TableScroll {table action} {
-	variable ${table}::Vars
+	variable ${table}::
 
 	::tooltip::hide
-	if {$Vars(size) == 0} { return }
-	set active $Vars(active)
+	if {$(size) == 0} { return }
+	set active $(active)
 
-	switch $action {
-		home	{ set active 0 }
-		end	{ set active [expr {$Vars(size) - 1}] }
-		up		{ incr active -1 }
-		down	{ incr active }
-		prior	{ set active [expr {$Vars(active) - $Vars(height)}] }
-		next	{ incr active $Vars(height) }
-		see	{ set active $Vars(selection) }
-	}
+	if {$active == -1} { 
+		switch $action {
+			home				{ set active 0 }
+			end				{ set active [expr {$(start) + $(size) - 1}] }
+			up - next		{ set active [expr {$(start) + $(height) - 1}] }
+			down - prior	{ set active $(start) }
+			see				{ set active [expr {[llength $(selection)] ? $(selection) : 0}] }
+		}
+		set active [expr {max(0, min($active, $(size) - 1))}]
+		switch $action {
+			home	{ set start $active }
+			end	{ set start [expr $active - $(height) + 1] }
 
-	set active [expr {max(0, min($active, $Vars(size) - 1))}]
+			up - down - next - prior { set start $(start) }
 
-	if {$Vars(active) >= 0} {
-		set Vars(active) $active
-		event generate [winfo parent [winfo parent $table]] <<TableActivated>> -data $Vars(active)
-	}
-
-	switch $action {
-		home - prior - up { set start $active }
-		end - next - down { set start [expr $active - $Vars(height) + 1] }
-		
-		see {
-			if {[::table::selection $table] == -1} {
-				set start [expr {$Vars(selection) - $Vars(height)/2}]
-			} else {
-				set start $Vars(start)
+			see {
+				if {[::table::selection $table] == -1 && [llength $(selection)]} {
+					set start [expr {$(selection) - $(height)/2}]
+				} else {
+					set start $(start)
+				}
+			}
+		}
+	} else {
+		switch $action {
+			home	{ set active 0 }
+			end	{ set active [expr {$(start) + $(size) - 1}] }
+			up		{ incr active -1 }
+			down	{ incr active }
+			prior	{ set active [expr {max(0, $(active)) - $(height)}] }
+			next	{ incr active $(height) }
+			see	{ set active [expr {[llength $(selection)] ? $(selection) : 0}] }
+		}
+		set active [expr {max(0, min($active, $(size) - 1))}]
+		switch $action {
+			home - prior - up { set start $active }
+			end - next - down { set start [expr $active - $(height) + 1] }
+			
+			see {
+				if {[::table::selection $table] == -1 && [llength $(selection)]} {
+					set start [expr {$(selection) - $(height)/2}]
+				} else {
+					set start $(start)
+				}
 			}
 		}
 	}
 
-	if {$start != $Vars(start)} {
+	if {$start != $(start)} {
 		SetStart $table $start
+	}
+	if {$active != $(active)} {
+		set (active) $active
+		::table::activate $table [expr {$active - $start}]
+		event generate [winfo parent [winfo parent $table]] <<TableActivated>> -data $active
 	}
 }
 
 
 proc TableActivated {table number} {
 	if {![winfo exists $table.t]} { return }
-	variable ${table}::Vars
+	variable ${table}::
 
-	set active $Vars(active)
+	set active $(active)
 
 	if {$number == -1} {
-		set Vars(active) -1
+		set (active) -1
 	} else {
-		incr number $Vars(start)
-		set Vars(active) $number
+		incr number $(start)
+		set (active) $number
 
-		if {$number < $Vars(start) || $Vars(start) + $Vars(height) < $number} {
-			SetStart $table [expr {max(0, min($number, $Vars(size) - $Vars(height)))}]
+		if {$(start) > $number || $number >= $(start) + $(height)} {
+			SetStart $table [expr {max(0, min($number, $(size) - $(height)))}]
 		}
 	}
 
-	if {$active != $Vars(active)} {
-		event generate [winfo parent [winfo parent $table]] <<TableActivated>> -data $Vars(active)
+	if {$active != $(active)} {
+		event generate [winfo parent [winfo parent $table]] <<TableActivated>> -data $(active)
 	}
 }
 
 
 proc TableSelected {table number} {
-	variable ${table}::Vars
+	variable ${table}::
 
-	set Vars(selection) [expr {$number + $Vars(start)}]
-	event generate [winfo parent [winfo parent $table]] <<TableSelected>> -data $Vars(selection)
+	set (selection) [expr {$number + $(start)}]
+	event generate [winfo parent [winfo parent $table]] <<TableSelected>> -data $(selection)
 }
 
 
@@ -837,35 +916,35 @@ proc TableRebuild {table} {
 
 
 proc TableToggleButton {table number} {
-	variable ${table}::Vars
+	variable ${table}::
 
-	set number [expr {$number + $Vars(start)}]
+	set number [expr {$number + $(start)}]
 	event generate [winfo parent [winfo parent $table]] <<TableToggleButton>> -data $number
 }
 
 
 proc TableInvoked {table shiftIsHeldDown} {
-	variable ${table}::Vars
+	variable ${table}::
 	event generate [winfo parent [winfo parent $table]] <<TableInvoked>> -data $shiftIsHeldDown
 }
 
 
 proc TableResized {table height} {
-	variable ${table}::Vars
+	variable ${table}::
 
-	set Vars(height) $height
-	if {[winfo exists $Vars(scale)]} {
-		$Vars(scale) configure \
+	set (height) $height
+	if {[winfo exists $(scale)]} {
+		$(scale) configure \
 			-bigincrement $height \
-			-to [expr {$Vars(size) - $height}]
+			-to [expr {$(size) - $height}]
 		ConfigureScale $table
 	}
 	ConfigureScrollbar $table
 	::table::select $table none
-	::table::setRows $table [expr {min($height, $Vars(size))}]
+	::table::setRows $table [expr {min($height, $(size))}]
 
-	if {$Vars(start) + $height >= $Vars(size)} {
-		SetStart $table $Vars(start) yes
+	if {$(start) + $height >= $(size)} {
+		SetStart $table $(start) yes
 	} else {
 		SetHighlighting $table
 	}
@@ -875,6 +954,15 @@ proc TableResized {table height} {
 
 
 proc SetStart {table start {force no}} {
+	variable ${table}::
+
+	if {!$force} {
+		if {$(start) - $start == 1} {
+			return [Scroll $table up]
+		} elseif {$(start) - $start == -1} {
+			return [Scroll $table down]
+		}
+	}
 	Scroll $table set $start $force
 }
 
@@ -887,31 +975,31 @@ proc ShiftScroll {table action} {
 
 
 proc StopMouseWheel {table} {
-	variable ${table}::Vars
+	variable ${table}::
 
-	after cancel $Vars(mousewheel:after)
-	set Vars(mousewheel:after) {}
+	after cancel $(mousewheel:after)
+	set (mousewheel:after) {}
 }
 
 
 proc MouseWheel {path dir {units 0} {state 0}} {
 	set table $path.top.table
-	variable ${table}::Vars
+	variable ${table}::
 	variable ::table::shiftMask
 
 	# vertical scrolling is a slow operation, so we have to collect the operations
 
-	after cancel $Vars(mousewheel:after)
-	set Vars(mousewheel:after) {}
+	after cancel $(mousewheel:after)
+	set (mousewheel:after) {}
 
 	if {$dir eq "stop"} {
-		set Vars(mousewheel:list) {}
+		set (mousewheel:list) {}
 	} elseif {[expr {($state & $shiftMask) != 0}]} {
-		set Vars(mousewheel:list) {}
+		set (mousewheel:list) {}
 		$path.top.table.t xview scroll [expr {$dir == "up" ? -10 : 10}] units
 	} else {
-		lappend Vars(mousewheel:list) [list $dir $units]
-		set Vars(mousewheel:after) [after 5 [namespace code [list DoMouseWheel $path]]]
+		lappend (mousewheel:list) [list $dir $units]
+		set (mousewheel:after) [after 5 [namespace code [list DoMouseWheel $path]]]
 	}
 }
 
@@ -919,24 +1007,24 @@ proc MouseWheel {path dir {units 0} {state 0}} {
 proc DoMouseWheel {path} {
 	set table $path.top.table
 	if {![winfo exists $table]} { return }
-	variable ${table}::Vars
+	variable ${table}::
 
-	if {[llength $Vars(mousewheel:list)] == 0} { return }
+	if {[llength $(mousewheel:list)] == 0} { return }
 
-	lassign [lindex $Vars(mousewheel:list) 0] position units
-	set Vars(mousewheel:list) [lreplace $Vars(mousewheel:list) end end]
+	lassign [lindex $(mousewheel:list) 0] position units
+	set (mousewheel:list) [lreplace $(mousewheel:list) end end]
 
 	switch $position {
 		up - back {
-			if {$Vars(start) == 0} { return [MouseWheel $path stop] }
+			if {$(start) == 0} { return [MouseWheel $path stop] }
 		}
 		down - forward {
-			if {$Vars(start) + $Vars(height) == $Vars(size)} { return [MouseWheel $path stop] }
+			if {$(start) + $(height) == $(size)} { return [MouseWheel $path stop] }
 		}
 	}
 
-	if {[llength $Vars(mousewheel:list)] > 0} {
-		set Vars(mousewheel:after) [after 5 [namespace code [list DoMouseWheel $path]]]
+	if {[llength $(mousewheel:list)] > 0} {
+		set (mousewheel:after) [after 5 [namespace code [list DoMouseWheel $path]]]
 	}
 
 	scroll $path $position $units
@@ -944,120 +1032,100 @@ proc DoMouseWheel {path} {
 
 
 proc Scroll {table action args} {
-	variable ${table}::Vars
+	variable ${table}::
 
-	if {![winfo exists $Vars(scrollbar)]} { return }
+	if {![winfo exists $(scrollbar)]} { return }
 
 	set force no
 
 	switch $action {
 		set		{ lassign $args start force }
-		moveto	{ set start [expr {int($args*$Vars(size) + 0.5)}] }
-		up			{ set start [expr {$Vars(start) - 1}] }
-		down		{ set start [expr {$Vars(start) + 1}] }
-		prior		{ set start [expr {$Vars(start) - $Vars(height)}] }
-		next		{ set start [expr {$Vars(start) + $Vars(height)}] }
+		moveto	{ set start [expr {int($args*$(size) + 0.5)}] }
+		up			{ set start [expr {$(start) - 1}] }
+		down		{ set start [expr {$(start) + 1}] }
+		prior		{ set start [expr {$(start) - $(height)}] }
+		next		{ set start [expr {$(start) + $(height)}] }
 
 		scroll {
 			lassign $args number unit
 			switch $unit {
-				units { set start [expr {$Vars(start) + $number}] }
-				pages { set start [expr {$Vars(start) + $number*$Vars(height)}] }
+				units { set start [expr {$(start) + $number}] }
+				pages { set start [expr {$(start) + $number*$(height)}] }
 			}
 		}
 	}
 
-	set start [expr {max(0, min($start, $Vars(size) - $Vars(height)))}]
-	set first [expr {$Vars(size) <= 1 ? 0.0 : double($start)/double($Vars(size) - 1)}]
-	set last  [expr {$Vars(size) <= 1 ? 1.0 : double($start + $Vars(height))/double($Vars(size))}]
+	set start [expr {max(0, min($start, $(size) - $(height)))}]
+	set first [expr {$(size) <= 1 ? 0.0 : double($start)/double($(size) - 1)}]
+	set last  [expr {$(size) <= 1 ? 1.0 : double($start + $(height))/double($(size))}]
 
-	if {$Vars(hidebar)} {
+	if {$(hidebar)} {
 		set parent [winfo parent $table]
 		if {$first <= 0 && $last >= 1} {
-			if {$Vars(scrollbar) in [grid slaves $parent]} {
-				grid remove $Vars(scrollbar)
+			if {$(scrollbar) in [grid slaves $parent]} {
+				grid remove $(scrollbar)
 			}
 		} else {
-			if {$Vars(scrollbar) ni [grid slaves $parent]} {
-				after idle [list grid $Vars(scrollbar)]
+			if {$(scrollbar) ni [grid slaves $parent]} {
+				after idle [list grid $(scrollbar)]
 			}
 		}
 	}
+	$(scrollbar) set $first $last
 
-	$Vars(scrollbar) set $first $last
+	set oldStart $(start)
+	if {$start == $oldStart && !$force} { return }
+	set (start) $start
+	::table::select $table none
 
-	if {$force} {
-		set Vars(start) $start
+	if {$force || abs($oldStart - $start) != 1} {
 		TableFill $table
-	} elseif {$start != $Vars(start)} {
-		if {abs($Vars(start) - $start) == 1} {
-			::table::activate $table none
-			if {$start < $Vars(start)} {
-				::table::scroll $table down
-				set Vars(start) $start
-				TableFill $table {0 1}
-			} else {
-				::table::scroll $table up
-				set Vars(start) $start
-				TableFill $table [list [expr {$Vars(height) - 1}] $Vars(height)]
-			}
-		} else {
-			set Vars(start) $start
-			TableFill $table
-		}
+	} elseif {$start < $oldStart} {
+		::table::scroll $table down
+		TableFill $table {0 1}
+	} else {
+		::table::scroll $table up
+		TableFill $table [list [expr {$(height) - 1}] $(height)]
 	}
 
-	event generate [winfo parent [winfo parent $table]] <<TableScroll>> -data $start
+	ShowSelection $table
+	ShowActive $table
+
+	if {$force || $start != $oldStart} {
+		event generate [winfo parent [winfo parent $table]] <<TableScroll>> -data $start
+	}
 }
 
 
 proc TableFill {table {range {0 100000}} {hilite true}} {
-	variable ${table}::Vars
+	variable ${table}::
 
-	if {$Vars(size) == 0} { return }
-	::table::select $table none
+	if {$(size) == 0} { return }
 	lassign $range first last
-	set last [min $last $Vars(height)]
+	set last [min $last $(height)]
 	if {$first < 0} { set first 0 }
 	if {$last < $first} { return }
-	if {$Vars(start) + $first >= $Vars(size)} { return }
-	set last [expr {min($last, $Vars(size))}]
+	if {$(start) + $first >= $(size)} { return }
+	set last [expr {min($last, $(size))}]
 	event generate [winfo parent [winfo parent $table]] <<TableFill>> \
-		-data [list $table $Vars(base) $Vars(variant) $Vars(start) $first $last $Vars(columns)]
+		-data [list $table $(base) $(variant) $(start) $first $last $(columns)]
 	if {$hilite} { SetHighlighting $table }
 }
 
 
 proc SetHighlighting {table} {
-	variable ${table}::Vars
+	variable ${table}::
 
-	set start $Vars(start)
-
-	if {	$Vars(active) >= 0
-		&& $start <= $Vars(active)
-		&& $Vars(active) < $start + $Vars(height)} {
-
-		::table::activate $table [expr {$Vars(active) - $start}]
-	} else {
-		::table::activate $table none
-	}
-
-	if {	$Vars(selection) >= 0
-		&& $start <= $Vars(selection)
-		&& $Vars(selection) < $start + $Vars(height)} {
-
-		::table::select $table [expr {$Vars(selection) - $start}]
-	} else {
-		::table::select $table none
-	}
+	if {$(start) > $(active) || $(active) >= $(start) + $(height)} { set active -1 }
+	ShowSelection $table
 }
 
 
 proc PopupMenu {table y} {
-	variable ${table}::Vars
+	variable ${table}::
 
 	::tooltip::hide
-	if {![info exists Vars(variant)]} { return }
+	if {![info exists (variant)]} { return }
 	set row [::table::at $table $y]
 
 	switch $row {
@@ -1065,24 +1133,24 @@ proc PopupMenu {table y} {
 		outside	{ set index outside }
 
 		default {
-			set index [expr {$Vars(start) + $row}]
-			if {$Vars(lineBasedMenu)} {
-				set Vars(active) $row
+			set index [expr {$(start) + $row}]
+			if {$(lineBasedMenu)} {
+				set (active) $index
 				::table::activate $table $row
 			}
 		}
 	}
 
-	if {$Vars(takefocus)} {
+	if {$(takefocus)} {
 		::table::focus $table
 	}
 	::update idletasks
 	set menu $table.menu
 	catch { destroy $menu }
 	menu $menu -tearoff false
-	set base $Vars(base)
-	set variant $Vars(variant)
-	{*}$Vars(popupcmd) [winfo parent [winfo parent $table]] $menu $base $variant $index
+	set base $(base)
+	set variant $(variant)
+	{*}$(popupcmd) [winfo parent [winfo parent $table]] $menu $base $variant $index
 
 	if {[$menu index 0] ne "none"} {
 		::table::keepFocus $table true
@@ -1099,9 +1167,9 @@ proc Popdown {table} {
 
 
 proc TableScrollbar {table state} {
-	variable ${table}::Vars
+	variable ${table}::
 
-	if {$Vars(layout) ne "right"} { return }
+	if {$(layout) ne "right"} { return }
 
 	set parent [winfo parent $table]
 	set sq $parent.square
@@ -1120,42 +1188,42 @@ proc TableScrollbar {table state} {
 
 
 proc ScanMark {table x y} {
-	variable ${table}::Vars
+	variable ${table}::
 
 	lassign [::table::identify $table $x $y] row _
 
 	if {$row >= 0} {
-		set Vars(drag:click:x) $x
-		set Vars(drag:click:y) $y
-		set Vars(drag:x) [$table.t canvasx $x]
-		set Vars(drag:y) [$table.t canvasy $y]
-		set Vars(drag:motion) 0
-		set Vars(drag:drop) {}
-		set Vars(drag:row) $row
+		set (drag:click:x) $x
+		set (drag:click:y) $y
+		set (drag:x) [$table.t canvasx $x]
+		set (drag:y) [$table.t canvasy $y]
+		set (drag:motion) 0
+		set (drag:drop) {}
+		set (drag:row) $row
 	}
 }
 
 
 proc ScanDrag {table x y} {
-	variable ${table}::Vars
+	variable ${table}::
 
-	if {![info exists Vars(drag:x)]} { return }
+	if {![info exists (drag:x)]} { return }
 
-	if {!$Vars(drag:motion)} {
-		if {abs($x - $Vars(drag:click:x)) > 4 || abs($y - $Vars(drag:click:y)) > 4} {
-			set Vars(drag:motion) 1
-			set Vars(drag:selection) [$table.t selection get]
+	if {!$(drag:motion)} {
+		if {abs($x - $(drag:click:x)) > 4 || abs($y - $(drag:click:y)) > 4} {
+			set (drag:motion) 1
+			set (drag:selection) [$table.t selection get]
 			$table.t dragimage clear
 			foreach col [::table::columns $table] {
-				catch { $table.t dragimage add i$Vars(drag:row) $col elemBrd }
+				catch { $table.t dragimage add i$(drag:row) $col elemBrd }
 			}
 			$table.t dragimage configure -visible yes
 		}
 	}
 
-	if {$Vars(drag:motion)} {
-		set x [expr {[$table.t canvasx $x] - $Vars(drag:x)}]
-		set y [expr {[$table.t canvasx $y] - $Vars(drag:y)}]
+	if {$(drag:motion)} {
+		set x [expr {[$table.t canvasx $x] - $(drag:x)}]
+		set y [expr {[$table.t canvasx $y] - $(drag:y)}]
 
 		$table.t dragimage offset $x $y
 	}
@@ -1163,19 +1231,43 @@ proc ScanDrag {table x y} {
 
 
 proc MoveRow {table x y} {
-	variable ${table}::Vars
+	variable ${table}::
 
-	if {![info exists Vars(drag:x)]} { return }
+	if {![info exists (drag:x)]} { return }
 
-	if {$Vars(drag:motion)} {
+	if {$(drag:motion)} {
 		$table.t dragimage configure -visible no
 		$table.t dragimage clear
 
 		lassign [::table::identify $table $x $y] row _
-		event generate [winfo parent $table] <<TableDropRow>> -data [list $Vars(drag:row) $row]
+		event generate [winfo parent $table] <<TableDropRow>> -data [list $(drag:row) $row]
 	}
 
-	array unset Vars drag:*
+	array unset drag:*
+}
+
+
+proc ShowSelection {table} {
+	variable ${table}::
+
+	if {[llength $(selection)] == 0} { return }
+	if {$(start) <= $(selection) && $(selection) < $(start) + $(height)} {
+		::table::select $table [expr {$(selection) - $(start)}]
+	}
+}
+
+
+proc ShowActive {table} {
+	variable ${table}::
+
+	if {$(active) >= 0} {
+		if {$(start) <= $(active) && $(active) < $(start) + $(height)} {
+			::table::activate $table [expr {$(active) - $(start)}]
+		} else {
+			set (active) -1
+			::table::activate $table none
+		}
+	}
 }
 
 } ;# namespace scrolledtable

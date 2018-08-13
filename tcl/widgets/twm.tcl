@@ -35,6 +35,8 @@ namespace eval mc {
 
 set Close			"Close"
 set Undock			"Undock"
+set Amalgamate		"Amalgamate"
+set Separate		"Separate"
 
 set Timeout			"Timeout after eight seconds without mouse motions,\
 						the frame has been re-docked to old place."
@@ -65,6 +67,8 @@ array set Defaults {
 	flathandle:color:dark		#0e62a8
 	flathandle:color:lite		#a6ceef
 	flathandle:color:gray		#74aedf
+	panedwindow:relief			flat
+	panedwindow:background		""
 	sash:size						5
 	cross:color:1					black
 	cross:color:2					#24a249
@@ -134,6 +138,8 @@ proc twm {path args} {
 		-frameborderwidth $Options(frame:borderwidth) \
 		-headerborderwidth $Options(header:borderwidth) \
 		-floatborderwidth $Options(float:borderwidth) \
+		-panedwindowrelief $Options(panedwindow:relief) \
+		-panedwindowbackground $Options(panedwindow:background) \
 	]
 	array set opts $args
 	set Vars(cmd:makepane) $opts(-makepane)
@@ -148,9 +154,11 @@ proc twm {path args} {
 	set Vars(docking:current) ""
 	set Vars(afterid:release) {}
 	set Vars(cross:showall) $Options(cross:showall)
-	set Vars(borderwidth:frame) $opts(-frameborderwidth)
-	set Vars(borderwidth:header) $opts(-headerborderwidth)
-	set Vars(borderwidth:float) $opts(-floatborderwidth)
+	set Vars(frame:borderwidth) $opts(-frameborderwidth)
+	set Vars(header:borderwidth) $opts(-headerborderwidth)
+	set Vars(float:borderwidth) $opts(-floatborderwidth)
+	set Vars(panedwindow:relief) $opts(-panedwindowrelief)
+	set Vars(panedwindow:background) $opts(-panedwindowbackground)
 
 	catch { font delete ${path}::Vars(header:font) }
 	set Vars(header:font) [font create ${path}::Vars(header:font) \
@@ -172,6 +180,7 @@ proc twm {path args} {
 
 	SetupTheme $path
 	bind $path <<ThemeChanged>> [namespace code [list SetupTheme $path]]
+	bind $path <<ThemeChanged>> {+ break }
 
 	return $path
 }
@@ -201,19 +210,152 @@ proc frozen? {{twm ""}} {
 }
 
 
+proc extractLeaves {layout} {
+	set length [llength $layout]
+	set result {}
+
+	for {set i 0} {$i < $length} {incr i 3} {
+		set type [lindex $layout $i]
+
+		if {$type in {pane frame}} {
+			lappend result [lindex $layout [expr {$i + 1}]]
+		} else {
+			set result [concat $result [extractLeaves [lindex $layout [expr {$i + 2}]]]]
+		}
+	}
+
+	return $result
+}
+
+
+proc layoutContainsOnlyOnePane {layout} {
+	if {[llength $layout] != 3} { return false }
+	lassign $layout type - body
+	if {$type eq "root"} { return [layoutContainsOnlyOnePane $body] }
+	if {$type ne "pane"} { return false }
+	return true
+}
+
+
+proc compareLayouts {twm lhs rhs {ignoreCoords no}} {
+	return [CompareLayouts $twm $lhs $rhs $ignoreCoords 0]
+}
+
+
+proc CompareLayouts {twm lhs rhs ignoreCoords level} {
+	set length [llength $lhs]
+	if {$length != [llength $rhs]} { return false }
+
+	for {set i 0} {$i < $length} {incr i} {
+		set typeL [lindex $lhs $i]
+		set typeR [lindex $rhs $i]
+
+		if {$typeL ne $typeR} { return false }
+		incr i
+
+		if {$typeL in {pane frame}} {
+			if {[lindex $lhs $i] ne [lindex $rhs $i]} { return false }
+			incr i
+		}
+
+		if {![CompareOptions $twm [lindex $lhs $i] [lindex $rhs $i] $ignoreCoords $level]} { return false }
+
+		if {$typeL ni {pane frame}} {
+			incr i
+			if {![CompareLayouts \
+						$twm \
+						[lindex $lhs $i] \
+						[lindex $rhs $i] \
+						$ignoreCoords \
+						[expr {$level + 1}] \
+			]} {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
+
+proc CompareOptions {twm lhs rhs ignoreCoords level} {
+	array set optionsL $lhs
+	array set optionsR $rhs
+	if {$ignoreCoords || $level == 0} {
+		array unset optionsL -x; array unset optionsL -y
+		array unset optionsR -x; array unset optionsR -y
+	}
+	array unset optionsL -snapshots; array unset optionsL -structures
+	array unset optionsR -snapshots; array unset optionsR -structures
+	return [ArrayEqual $twm optionsL optionsR $level]
+}
+
+
+proc ArrayEqual {twm lhs rhs level} {
+	upvar 1 $lhs foo $rhs bar
+
+	if {[array size foo] != [array size bar]} { return false }
+	if {[array size foo] == 0} { return true }
+
+	set keys [lsort -unique [concat [array names foo] [array names bar]]]
+	if {[llength $keys] != [array size foo]} { return false }
+
+	foreach key $keys {
+		if {$key eq "-attrs" && $level > 0} {
+			array set a $foo($key)
+			array set b $bar($key)
+			array unset a hide; array unset a stayontop
+			array unset b hide; array unset b stayontop
+			if {![ArrayEqual $twm a b $level]} { return false }
+		} elseif {[string match {*%} $foo($key)] && [string match {*%} $bar($key)]} {
+			set orient [expr {[string match {*height} $key] ? "vert" : "horz"}]
+			return [$twm eqp? $orient $foo($key) $bar($key)]
+		} elseif {$foo($key) ne $bar($key)} {
+			return false
+		}
+	}
+	return true
+}
+
+
+proc Collect {twm what} {
+	switch -- $what {
+		amalgamate {
+			return [lmap v [$twm find amalgamate 1] \
+				{expr {[llength [$twm amalgamated $v]] ? $v : [continue]}}]
+		}
+		!amalgamate {
+			return [lmap v [$twm find amalgamate 0] {expr {[$twm amalgamatable $v] ? $v : [continue]}}]
+		}
+		flat {
+			return [lmap v [$twm find flat 1] {expr {[$twm ismetachild $v] ? [continue] : $v}}]
+		}
+		!flat {
+			return [lmap v [$twm find flat 0] {expr {[$twm ismetachild $v] ? [continue] : $v}}]
+		}
+		floats {
+			return [lmap v [$twm floats] {expr {[$twm get! $w hide 0] ? $v : [continue]}}]
+		}
+	}
+}
+
+
 proc SetupTheme {twm} {
 	variable ${twm}::Vars
 
 	ttk::style configure twm.TLabel -background [ttk::style lookup TNotebook.Tab -background]
 	ttk::style configure twm.TNotebook -borderwidth 0
-	ttk::style configure twm.TNotebook.Tab -font $Vars(header:font) -padding {2 2}
+#	ttk::style configure twm.TNotebook.Tab -font $Vars(header:font)
+	ttk::style configure twm.TNotebook.Tab -padding {2 2}
 	ttk::style configure twm.TButton -padding {1 1 0 0} -relief raised
 	ttk::style map twm.TButton -relief [list {!disabled pressed} sunken] 
 	ttk::style layout twm.TButton \
 		{ Button.border -children { Button.padding -children { Button.label } } }
 
 	if {[::scidb::tk::twm exists $twm]} {
-		set background [GetTroughColor]
+		if {[string length [set background $Vars(panedwindow:background)]] == 0} {
+			set background [GetBackground background]
+		}
 		foreach t [$twm toplevels] {
 			foreach w [$twm container $t] {
 				if {[$twm ispanedwindow $w]} {
@@ -225,11 +367,11 @@ proc SetupTheme {twm} {
 
 #	set background [ttk::style lookup $::ttk::currentTheme -background]
 #	ttk::style map twm.TNotebook.Tab -background [list active $background selected $background]
+	set Vars(theme) $::ttk::currentTheme
 
 	if {[info exists Vars(theme)] && $Vars(theme) ne $::ttk::currentTheme} {
-		after idle [list $twm refresh]
+		$twm refresh
 	}
-	set Vars(theme) $::ttk::currentTheme
 }
 
 
@@ -239,11 +381,16 @@ proc WidgetProc {twm command args} {
 
 	switch -- $command {
 		adjacent			{ return [::scidb::tk::twm adjacent $twm {*}$args] }
+		amalgamatable	{ return [::scidb::tk::twm amalgamatable $twm {*}$args] }
+		amalgamate		{ return [Amalgamate $twm 1 {*}$args] }
+		amalgamated		{ return [::scidb::tk::twm amalgamated $twm {*}$args] }
 		build				{ return [BuildPane $twm {*}$args] }
 		cget				{ return [$twm.__twm_frame__ cget {*}$args] }
 		changeuid		{ return [::scidb::tk::twm changeuid $twm {*}$args] }
 		clone				{ return [::scidb::tk::twm clone $twm {*}$args] }
 		close				{ return [Close $twm {*}$args] }
+		collect			{ return [Collect $twm {*}$args] }
+		compare			{ return [compareLayouts $twm {*}$args] }
 		configure		{ return [$twm.__twm_frame__ configure {*}$args] }
 		container		{ return [::scidb::tk::twm container $twm {*}$args] }
 		deiconify		{ return [Deiconify $twm {*}$args] }
@@ -251,8 +398,11 @@ proc WidgetProc {twm command args} {
 		dimension		{ return [::scidb::tk::twm dimension $twm {*}$args] }
 		geometry			{ return [Geometry $twm {*}$args] }
 		dock				{ return [::scidb::tk::twm dock $twm {*}$args] }
+		dump				{ return [::scidb::tk::twm dump $twm {*}$args] }
+		eqp?				{ return [::scidb::tk::twm eqp $twm {*}$args] }
 		exists			{ return [::scidb::tk::twm exists $twm {*}$args] }
 		find				{ return [::scidb::tk::twm find $twm {*}$args] }
+		flat?				{ return [HasFlatHeader $twm {*}$args] }
 		floats			{ return [::scidb::tk::twm floats $twm] }
 		frame				{ return [MakeFrame $twm frame {*}$args] }
 		frame2			{ MakeFrame2 $twm {*}$args }
@@ -268,7 +418,7 @@ proc WidgetProc {twm command args} {
 		hide				{ Hide $twm {*}$args }
 		id					{ return [::scidb::tk::twm id $twm {*}$args] }
 		init				{ ::scidb::tk::twm init $twm {*}$args }
-		inspect			{ return [::scidb::tk::twm inspect $twm flat hide stayontop {*}$args] }
+		inspect			{ return [::scidb::tk::twm inspect $twm flat hide stayontop amalgamate {*}$args] }
 		iscontainer		{ return [::scidb::tk::twm iscontainer $twm {*}$args] }
 		isdocked			{ return [::scidb::tk::twm isdocked $twm {*}$args] }
 		isfloat			{ return [expr {$args in [$twm floats]}] }
@@ -306,12 +456,15 @@ proc WidgetProc {twm command args} {
 		resize			{ return [Resize $twm {*}$args] }
 		resizing			{ return [Resizing $twm {*}$args] }
 		sashsize			{ return $Options(sash:size) }
+		see				{ ::scidb::tk::twm see $twm {*}$args }
 		select			{ return [Select $twm {*}$args] }
-		selected			{ return [::scidb::tk::twm selected $twm {*}$args] }
+		selected			{ return [QuerySelected $twm {*}$args] }
+		separate			{ return [Amalgamate $twm 0 {*}$args] }
 		set				{ ::scidb::tk::twm set $twm {*}$args }
 		set!				{ ::scidb::tk::twm set! $twm {*}$args }
 		show				{ ::scidb::tk::twm show $twm {*}$args }
 		showall			{ return [ShowAll $twm {*}$args] }
+		stayontop		{ StayOnTop $twm {*}$args }
 		title				{ UpdateTitle $twm {*}$args }
 		togglebar		{ return [ToggleHeaders $twm {*}$args] }
 		togglenotebook	{ return [::scidb::tk::twm toggle $twm {*}$args] }
@@ -362,7 +515,7 @@ proc BuildPane {twm frame id width height} {
 	set pane $frame
 	if {![$twm ispane $pane]} { set pane [lindex [pack slaves $frame] end] }
 	if {[llength $Vars(cmd:buildpane)]} {
-		set bd [expr {-2*$Vars(borderwidth:frame)}]
+		set bd [expr {-2*$Vars(frame:borderwidth)}]
 		incr width $bd
 		incr height $bd
 		$Vars(cmd:buildpane) $twm $pane $id $width $height
@@ -383,7 +536,7 @@ proc FrameHeaderSize {twm frame} {
 		incr size [font metrics [ttk::style lookup twm.TLabel -font] -linespace]
 		incr size [expr {$size % 2}] ;# we have even sized headers
 	}
-	incr size [expr {2*$Vars(borderwidth:header)}]
+	incr size [expr {2*$Vars(header:borderwidth)}]
 #	if {[set ht [winfo height $frame.__header__]] > 1 && $ht != $size} {
 #		puts stderr "FrameHeaderSize: computed=$size, but measured=$ht"
 #	}
@@ -403,7 +556,18 @@ proc NotebookHeaderSize {twm {nb}} {
 		3 { incr size [lindex $padding 1] }
 		4 { incr size [lindex $padding 1]; incr size [lindex $padding 3] }
 	}
-	incr size [font metrics [ttk::style lookup twm.TNotebook.Tab -font] -linespace]
+	set linespace [font metrics [ttk::style lookup TNotebook.Tab -font] -linespace]
+	set haveImage 0
+	if {[string length $nb]} {
+		foreach tab [$nb tabs] {
+			if {[string length [set img [$nb tab $tab -image]]]} {
+				set linespace [expr {max($linespace, [image height $img])}]
+				set haveImage 1
+			}
+		}
+	}
+	incr size $haveImage
+	incr size $linespace
 #	if {	[string length [$nb select]]
 #		&& [set ht [expr {[winfo height $nb] - [winfo height [$nb select]]}]] > 1
 #		&& $ht != $size} { puts stderr "NotebookHeaderSize: computed=$size, but measured=$ht" }
@@ -420,6 +584,8 @@ proc MakeMultiwindow {twm args} {
 	foreach {name value} $args {
 		catch { $w configure $name $value }
 	}
+	# ensure existence of this attribute
+	$twm set! $w amalgamate [$twm get! $w amalgamate 0]
 	return $w
 }
 
@@ -441,10 +607,18 @@ proc MakeNotebook {twm args} {
 
 proc MakePanedWindow {twm args} {
 	variable ${twm}::Counter
+	variable ${twm}::Vars
 	variable Options
 
 	set w [tk::panedwindow $twm.__panedwindow__[incr Counter(panedwindow)]]
-	$w configure -sashwidth $Options(sash:size) -background [GetTroughColor]
+	if {[string length [set background $Vars(panedwindow:background)]] == 0} {
+		set background [GetBackground background]
+	}
+	$w configure \
+		-sashwidth $Options(sash:size) \
+		-background $background \
+		-sashrelief $Vars(panedwindow:relief) \
+		;
 	if {[llength $args] == 1} { set args [lindex $args 0] }
 	foreach {name value} $args {
 		catch { $w configure $name $value }
@@ -456,9 +630,9 @@ proc MakePanedWindow {twm args} {
 proc MakePane {twm id} {
 	variable ${twm}::Vars
 
-	lassign [$Vars(cmd:makepane) $twm $twm pane $id] w name priority
-	$w configure -borderwidth $Vars(borderwidth:frame) -relief raised
-	$twm set $w name $name priority $priority
+	lassign [$Vars(cmd:makepane) $twm $twm pane $id] w name priority transient
+	$w configure -borderwidth $Vars(frame:borderwidth) -relief raised
+	$twm set $w name $name priority $priority transient $transient
 	return $w
 }
 
@@ -468,7 +642,10 @@ proc MakeFrame {twm type {id ""}} {
 
 	set frame $twm.__${type}__${id}__[incr Counter($type)]
 	set class Twm[string toupper $type 0 0]
-	return [tk::frame $frame -class $class -borderwidth 0 -takefocus 0]
+	tk::frame $frame -class $class -borderwidth 0 -takefocus 0
+	# ensure existence of this attribute
+	$twm set! $frame amalgamate [$twm get! $frame amalgamate 0]
+	return $frame
 }
 
 
@@ -478,13 +655,14 @@ proc MakeFrame2 {twm frame id} {
 
 	if {[$twm isframe $frame]} {
 		lassign [$Vars(cmd:makepane) $twm $frame frame $id] \
-			child name priority closable undockable moveable
-		$child configure -borderwidth $Vars(borderwidth:frame) -relief raised
+			child name priority transient closable undockable moveable
+		$child configure -borderwidth $Vars(frame:borderwidth) -relief raised
 	} elseif {[$twm iscontainer $id]} {
 		set child $id
 		set leader [$twm leader $id]
 		set name [$twm get $leader name]
 		set priority [$twm get $leader priority]
+		set transient [$twm get $leader transient]
 		set panes [lmap w [$twm panes $child] {expr {[$twm ispane $w] ? $w : [continue]}}]
 		if {[llength $panes] > 0} {
 			lassign {0 0 0} closable undockable moveable
@@ -500,6 +678,7 @@ proc MakeFrame2 {twm frame id} {
 		set child $id
 		lassign {0 0 0} closable undockable moveable
 		set priority [$twm get $id priority]
+		set transient [$twm get $id transient]
 		set name [$twm get $id name]
 	}
 
@@ -508,7 +687,7 @@ proc MakeFrame2 {twm frame id} {
 	}
 
 	set hdr [tk::frame $frame.__header__ \
-		-borderwidth $Vars(borderwidth:header) \
+		-borderwidth $Vars(header:borderwidth) \
 		-relief raised \
 		-takefocus 0 \
 	]
@@ -519,11 +698,15 @@ proc MakeFrame2 {twm frame id} {
 		set bg [ttk::style lookup $::ttk::currentTheme -background]
 	}
 	$hdr configure -background $bg
-	if {![$twm ismetachild $frame] && $Vars(state) ne "disabled"} {
+	if {![$twm ismetachild $frame] && $Vars(state) eq "normal"} {
 		bind $hdr <Double-Button-1> [list [namespace current]::ToggleHeaders $twm $frame]
 	}
 
 	pack $child -side top -fill both -expand yes -in $frame
+
+	ttk::button $hdr.join -style twm.TButton -takefocus 0
+	MouseWheelBindings $twm $frame $hdr.join
+	MenuBindings $twm $frame $hdr.join
 
 	if {$closable} {
 		ttk::button $hdr.close \
@@ -561,6 +744,7 @@ proc MakeFrame2 {twm frame id} {
 		close $closable \
 		undock $undockable \
 		priority $priority \
+		transient $transient \
 		;
 
 	# ensure existence of this attribute
@@ -571,13 +755,16 @@ proc MakeFrame2 {twm frame id} {
 }
 
 
-proc GetTroughColor {} {
+proc GetBackground {option} { ;# use with "background" or "troughcolor"
 	variable Scale {}
-	if {[catch { ::ttk::style lookup $::ttk::currentTheme -troughcolor } result]} {
+	if {[catch { ::ttk::style lookup $::ttk::currentTheme -$option } result]} {
 		if {[llength $Scale] == 0} {
 			set Scale [ttk::scale .__hopefully_unique_widget_id__[clock milliseconds]]
 		}
-		set result [$Scale cget -troughcolor]
+		set result [$Scale cget -$option]
+	}
+	if {[string length $result] == 0} {
+		set result #d9d9d9
 	}
 	return $result
 }
@@ -591,18 +778,44 @@ proc ShowHeaderButtons {twm frame} {
 	if {[$twm isframe $frame] && [llength [$twm panes $twm]] == 1} {
 		catch { grid forget $hdr.close }
 		catch { grid forget $hdr.undock }
+		catch { grid forget $hdr.join }
 	} else {
 		set undockable [$twm get $frame undock]
 		set closable   [$twm get $frame close]
 
-		if {$undockable} { grid $hdr.undock -column 1 -row 0 }
-		if {$closable}   { grid $hdr.close  -column 3 -row 0 }
+		set w $frame
+		if {[$twm ismetaframe $w]} {
+			if {[string length [set w [$twm amalgamated $w]]] == 0} {
+				set w $frame
+			}
+		}
+		set amalgamate [$twm get! $w amalgamate]
+
+		if {[$twm amalgamatable $w] && $amalgamate == [$twm ismetaframe $frame]} {
+			grid $hdr.join -column 1 -row 0
+			grid columnconfigure $hdr 2 -minsize 3
+			set dir [expr {$amalgamate ? "down" : "up"}]
+			$hdr.join configure -image $icon::12x12::arrow($dir)
+			if {$Vars(state) eq "normal"} {
+				set cmd [expr {$amalgamate ? "separate" : "amalgamate"}]
+				$hdr.join configure -command [list $twm $cmd $w]
+				set tip [expr {$amalgamate ? "Separate" : "Amalgamate"}]
+				tooltip $hdr.join [tr [namespace current]::mc::$tip]
+			}
+		} else {
+			grid $hdr.join -column 1 -row 0
+			catch { grid forget $hdr.join }
+			grid columnconfigure $hdr 2 -minsize 0
+		}
+
+		if {$undockable} { grid $hdr.undock -column 3 -row 0 }
+		if {$closable}   { grid $hdr.close  -column 5 -row 0 }
 
 		grid columnconfigure $hdr 0 -weight 1 -minsize 5
 		if {$closable && $undockable} {
-			grid columnconfigure $hdr 2 -minsize 3
+			grid columnconfigure $hdr 4 -minsize 3
 		}
-		grid columnconfigure $hdr 4 -minsize 2
+		grid columnconfigure $hdr 6 -minsize 2
 	}
 }
 
@@ -702,6 +915,16 @@ proc SetTitle {twm frame title} {
 }
 
 
+proc Amalgamate {twm flag args} {
+	foreach frame $args {
+		set t [$twm parent $frame]
+		if {![$twm ismultiwindow $t]} { set t $frame }
+		$twm set! $t amalgamate $flag
+	}
+	$twm refresh
+}
+
+
 proc ToggleHeaders {twm args} {
 	foreach frame $args {
 		ToggleHeader $twm $frame
@@ -711,6 +934,7 @@ proc ToggleHeaders {twm args} {
 
 
 proc ToggleHeader {twm frame} {
+	variable ${twm}::Vars
 	variable Options
 
 	if {![winfo exists $frame]} { return }
@@ -725,7 +949,10 @@ proc ToggleHeader {twm frame} {
 		HeaderBindings $twm $frame $frame
 		HeaderBindings $twm $frame $hdr
 		UpdateHeader $twm $frame [$twm get $frame panes]
-		bind $hdr <Double-Button-1> [list [namespace current]::ToggleHeaders $twm $frame]
+		if {$Vars(state) eq "normal"} {
+			bind $hdr <Double-Button-1> [list [namespace current]::ToggleHeaders $twm $frame]
+		}
+		event generate $twm <<TwmHeader>> -data $frame
 	} else {
 		MakeFlatHeader $twm $frame
 	}
@@ -753,13 +980,21 @@ proc MakeFlatHeader {twm frame} {
 	foreach w [place slaves $hdr] { place forget $w }
 	$twm set $frame labels {}
 	pack $decor -fill x -side top -expand yes
-	if {$Vars(state) ne "disabled"} {
+	if {$Vars(state) eq "normal"} {
 		bind $decor <ButtonRelease-1> [list [namespace current]::ToggleHeaders $twm $frame]
 		bind $decor <ButtonRelease-1> {+ break }
 		bind $hdr <Double-Button-1> {#}
 	}
 	UnbindHeader $frame
 	UnbindHeader $hdr
+	event generate $twm <<TwmHeader>> -data $frame
+}
+
+
+proc HasFlatHeader {twm frame} {
+	set hdr $frame.__header__
+	set decor $hdr.__flat__
+	return [expr {[winfo exists $hdr] && $decor in [pack slaves $hdr]}]
 }
 
 
@@ -785,7 +1020,7 @@ proc ConfigureFlatHandle {canv w h} {
 }
 
 
-proc UpdateHeader {twm frame panes} {
+proc UpdateHeader {twm frame panes {selection ""}} {
 	variable ${twm}::Vars
 	variable Options
 
@@ -816,7 +1051,7 @@ proc UpdateHeader {twm frame panes} {
 	if {$flat != [$twm get! $frame flat 0]} {
 		if {$flat} {
 			pack forget {*}[pack slaves $hdr]
-			if {![$twm ismetachild $frame] && $Vars(state) ne "disabled"} {
+			if {![$twm ismetachild $frame] && $Vars(state) eq "normal"} {
 				bind $hdr <Double-Button-1> [list [namespace current]::ToggleHeaders $twm $frame]
 			}
 		} else {
@@ -849,7 +1084,7 @@ proc UpdateHeader {twm frame panes} {
 		if {$var eq "var"} { bind $lbl <Destroy> [list trace remove variable $name write $confCmd] }
 		place $lbl -x 0 -y 0
 		lappend labels $lbl
-		if {$f eq $frame} {
+		if {$f eq $frame || $f eq $selection} {
 			HeaderBindings $twm $frame $lbl
 			$twm set $frame mine $lbl
 			set index $i
@@ -901,7 +1136,7 @@ proc ConfigureLabelBar {source twm frame width args} {
 
 	set hdr $frame.__header__
 	if {$hdr ni [pack slaves $frame]} { return }
-	set bd [expr {2*$Vars(borderwidth:header)}]
+	set bd [expr {2*$Vars(header:borderwidth)}]
 	set see [expr {$width < 0}]
 	set force [expr {$width <= 0}]
 	set current [expr {$width >= 0}]
@@ -918,10 +1153,13 @@ proc ConfigureLabelBar {source twm frame width args} {
 	set showButtons [expr {!([$twm isframe $frame] && [llength [$twm panes $twm]] == 1)}]
 	set haveClose [expr {$showButtons && [winfo exists $hdr.close]}]
 	set haveUndock [expr {$showButtons && [winfo exists $hdr.undock]}]
+	set haveJoin [expr {$showButtons && [winfo exists $hdr.Join]}]
 	if {$haveClose} { incr width -[winfo width $hdr.close] }
 	if {$haveUndock} { incr width -[winfo width $hdr.undock] }
+	if {$haveJoin} { incr width -[winfo width $hdr.Join] }
 	if {$haveClose || $haveUndock} { incr width -8 }
-	if {$haveClose && $haveUndock} { incr width -3 }
+	if {$haveJoin} { incr width -8 }
+	if {!!$haveClose && !!$haveUndock && !!$haveJoin >= 2} { incr width -3 }
 	incr width -$bd
 
 	foreach w $labels { incr totalWidth [winfo reqwidth $w] }
@@ -957,7 +1195,7 @@ proc PlaceLabelBar {twm frame incr} {
 	set maxoffset [$twm get $frame maxoffset 0]
 	set labels [$twm get $frame labels]
 	set width [$twm get $frame labelbarwidth]
-	set bd [expr {2*$Vars(borderwidth:header)}]
+	set bd [expr {2*$Vars(header:borderwidth)}]
 	set hdr $frame.__header__
 
 	if {$incr eq "setup"} {
@@ -1156,7 +1394,7 @@ proc DoHeaderMotion {twm frame x y} {
 						if {[set curr [$w index [$w select]]] == 0} { set curr [llength [$w tabs]] }
 						$w select [expr {$curr - 1}]
 					}
-					HideDockingPoints $twm
+					HideDockingPoints $twm no
 					ComputeDockingPoints $twm $frame
 					return
 				}
@@ -1171,7 +1409,7 @@ proc DoHeaderMotion {twm frame x y} {
 					} else { ;# [$twm isnotebook $w]
 						$w select [expr {([$w index [$w select]] + 1) % [llength [$w tabs]]}]
 					}
-					HideDockingPoints $twm
+					HideDockingPoints $twm no
 					ComputeDockingPoints $twm $frame
 					return
 				}
@@ -1191,7 +1429,8 @@ proc DoHeaderMotion {twm frame x y} {
 			::scidb::tk::busy hold $child
 			::scidb::tk::busy configure $child -cursor hand2
 		}
-		set Vars(docking:container) [FindNotebooks $twm $frame]
+		set Vars(docking:container) [lmap v [$twm container] \
+			{expr {[$twm ismultiwindow $v] || [$twm isnotebook $v] ? $v : [continue]}}]
 		bind $frame <Button1-Motion> {#}
 		bind $frame <ButtonRelease-1> {#}
 		set wd [winfo width $frame]
@@ -1201,8 +1440,8 @@ proc DoHeaderMotion {twm frame x y} {
 		$frame configure -width $wd -height $ht
 		ttk::releaseGrab $frame
 		$twm undock -temporary $frame
-		$child configure -borderwidth $Vars(borderwidth:float)
-		set bd [expr {$Vars(borderwidth:float) - $bd}]
+		$child configure -borderwidth $Vars(float:borderwidth)
+		set bd [expr {$Vars(float:borderwidth) - $bd}]
 		incr wd $bd; incr ht $bd
 		wm geometry $frame ${wd}x${ht}+${x}+${y}
 		wm overrideredirect $frame $Options(motion:overrideredirect)
@@ -1272,20 +1511,6 @@ proc HeaderRelease {twm frame {timeout 0}} {
 	}
 
 	event generate $twm <<TwmAfter>>
-}
-
-
-proc FindNotebooks {twm w} {
-	variable ${twm}::Vars
-
-	set container {}
-	while {![$twm isroot $w]} {
-		if {[$twm ismultiwindow $w] || [$twm isnotebook $w]} {
-			lappend container $w
-		}
-		set w [$twm parent $w]
-	}
-	return $container
 }
 
 
@@ -1645,13 +1870,13 @@ proc ShowHighlightRegion {twm frame w canv} {
 }
 
 
-proc HideDockingPoints {twm} {
+proc HideDockingPoints {twm {includesArrows yes}} {
 	variable ${twm}::Vars
 
 	foreach name [array names Vars docking:hover:*] {
 		HideDockingPoint $twm [lindex [split $name :] 2]
 	}
-	if {[info exists Vars(docking:arrows)]} {
+	if {$includesArrows && [info exists Vars(docking:arrows)]} {
 		foreach entry $Vars(docking:arrows) {
 			set w [lindex $entry 0]
 			# NOTE: do not destroy immediately, because of a Tk bug
@@ -2033,7 +2258,7 @@ proc Dock {twm toplevel} {
 
 	if {[llength [set slaves [pack slaves $frame]]] > 0} {
 		set bd 0
-		if {[$twm isframe $frame] || [$twm ispane $frame]} { set bd $Vars(borderwidth:frame) }
+		if {[$twm isframe $frame] || [$twm ispane $frame]} { set bd $Vars(frame:borderwidth) }
 		[lindex $slaves end] configure -borderwidth $bd
 	}
 
@@ -2104,6 +2329,7 @@ proc WorkArea {twm} {
 
 proc PaneConfigure {twm parent child opts} {
 	array set args $opts
+	set options {}
 
 	if {[$parent cget -orient] eq "horizontal"} {
 		if {[info exists args(-minwidth)]} { lappend options -minsize $args(-minwidth) }
@@ -2256,7 +2482,43 @@ proc Unpack {twm parent child} {
 
 
 proc Select {twm parent frame} {
-	$parent [expr {[$twm isnotebook $parent] ? "select" : "raise"}] $frame
+	if {$frame ni [$parent tabs]} {
+		# This frame is contained in another container, as a result of an amalgamation.
+		set container [$twm parent $frame]
+		set child $container
+		while {![$twm isroot $child]} {
+			set parent [$twm parent $child]
+			if {[$twm ismultiwindow $parent] || [$twm isnotebook $parent]} {
+				if {$child ne [$parent select]} {
+					$parent select $child
+				}
+				set metaframe $child
+			}
+			set child $parent
+		}
+		set parent $container
+		UpdateHeader $twm $metaframe [$twm get $metaframe panes] $frame
+	}
+	$parent select $frame
+}
+
+
+proc QuerySelected {twm container} {
+	return [$container select]
+}
+
+
+proc StayOnTop {twm toplevel flag} {
+	$twm set! $toplevel stayontop $flag
+	if {$flag} {
+		set master [winfo toplevel $twm]
+		wm transient $toplevel $master
+		raise $toplevel $master
+		# NOTE: not every window manager is re-decorating the window.
+		catch { wm attributes $toplevel -type dialog }
+	} else {
+		wm transient $toplevel ""
+	}
 }
 
 
@@ -2298,6 +2560,22 @@ set undock [image create photo -data {
 	QxIJqKts/P9fEwVBokQyj7ZKoEvefa5zmRy0rB0Dnj5aGAmgHH67UgBA7hnlWGoye53dAZRN
 	0sc7YzveAGQPQkN07Y/Y3BiCru/v3vBj2gBorqpTSm7Ra22lClwiogJ/VrotRDILsaYAAAAA
 	SUVORK5CYII=
+}]
+
+set arrow(up) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAAxklEQVQoz5WRvQ4BURCFv7m5fnZX
+	/CSIRrYjWUrRaESh8h7CE+g8gk6l8RAKhd4TiEgUEoVOoaDAVUgk7Ip1ujmTL3NORhgf5mBKhJJZ
+	a8y9jOCGBK4K8dtKQKtgJNCeNFNMW+lAQH8a7WKMjhtHBLyMZnW8fr8gwLCWIGcpsnHFqJH0JX4D
+	elWbej76mhuFKP2qHQxYWuhVnLeyTkToejaWFn8HY2C2u7DYyysewPn23PmAy80wWJ5+fkJh+Esa
+	2ICEw4TtA63hJ4iAwLwOAAAAAElFTkSuQmCC
+}]
+
+set arrow(down) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAMAAABhq6zVAAAAY1BMVEUAluYAl+YAlugAleYAluUA
+	lucAleYAluYAluYBluYCl+YEmOYImecJmucqp+pGs+1qwvBrwvCIzvOIzvSQ0fSR0fSe1/Wl2va5
+	4vjF5/nS7PrT7fvq9v3r9/30+v77/f////9/odhyAAAACHRSTlO3uLm629/g4JYIg9EAAABJSURB
+	VAgdBcGBAYIwDACwdBT5/1dF6WA1iUgAK7cNQAwARJLH0FbdkjhemJPB/C76Mxn4FXUh0efeZyOh
+	qi9I8G6Q4AEddgDPH0wAHsNVuURWAAAAAElFTkSuQmCC
 }]
 
 } ;# namespace 12x12

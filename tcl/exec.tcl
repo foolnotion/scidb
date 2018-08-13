@@ -94,20 +94,21 @@ set ProgramOptions [list                                                        
 	[list "--version"               "Print version information and exit"]                     \
 	[list "--full-screen"           "Start program with full-screen modus"]                   \
 	[list "--initial-layout"        "Start program with intitial layout"]                     \
+	[list "--reset-fonts"           "Reset all fonts to default size"]                        \
 	[list "--show-board"            "Switch to board tab immediately after startup"]          \
 	[list "--re-open"               "Re-open databases from last session"]                    \
 	[list "--fast-load"             "Do only load the mandatory files at startup"]            \
 	[list "--first-time"            "Delete option file and recovery files at startup"        \
 	                                "(starting $::scidb::app as it would be the first time)"] \
+	[list "--recover-options"       "Recover option files deleted with last '--first-time'"]  \
 	[list "--elo-only"              "Do not load rating files except ELO rating"]             \
 	[list "--print-recovery-files"  "Print recovery files from last session and exit"]        \
 	[list "--delete-recovery-files" "Delete recovery files and exit"]                         \
-	[list "--dont-recover"          "Do not recover unsaved games from last session"]         \
-	[list "--recover-old"           "Recover games from older sessions"                       \
+	[list "--dont-recover-files"    "Do not recover unsaved games from last session"]         \
+	[list "--recover-old-files"     "Recover games from older sessions"                       \
 	                                "(will skip games from last session)"]                    \
 	[list "--single-process"        "Forcing a single process of $::scidb::app"               \
 	                                "(you shouldn't use this option; only for testing)"]      \
-	[list "--reset-fonts"           "Reset all fonts to default size"]                        \
 	[list "--update-themes"         "Update themes (from shared directory)"]                  \
 	[list "--update-player-photos"  "Update/install player photos"]                           \
 	[list "--force-grab"            "Do not suppress grabs in debug mode"                     \

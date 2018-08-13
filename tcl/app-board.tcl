@@ -102,7 +102,6 @@ proc build {w width height} {
 	variable Options
 	variable Layouts
 	variable board
-	variable mc::Accel
 
 	set Vars(variant) Normal
 	set Vars(layout) Normal
@@ -244,11 +243,11 @@ proc build {w width height} {
 #	::toolbar::add $tbTools button -image $::icon::toolbarEcoBrowser		-command {}
 #	::toolbar::add $tbTools button -image $::icon::toolbarTreeWindow		-command {}
 
-	set Vars(crossTable) [::toolbar::add $tbTools button \
-		-image $::icon::toolbarCrossTable \
-		-command [namespace code [list ShowCrossTable [winfo toplevel $board]]] \
-		-tooltipvar [namespace current]::mc::ShowCrosstable \
-	]
+#	set Vars(crossTable) [::toolbar::add $tbTools button \
+#		-image $::icon::toolbarCrossTable \
+#		-command [namespace code [list ShowCrossTable [winfo toplevel $board]]] \
+#		-tooltipvar [namespace current]::mc::ShowCrosstable \
+#	]
 	::toolbar::add $tbTools button \
 		-image $::icon::toolbarEngine \
 		-command [list ::engine::openSetup .application] \
@@ -415,22 +414,10 @@ proc build {w width height} {
 	}
 
 	set Vars(after) {}
-	foreach key [array names Accel] { set Vars(key:$key) $Accel($key) }
-
-	set Vars(cmd:edit-annotation)		[namespace parent]::pgn::editAnnotation
-	set Vars(cmd:edit-comment)			[list [namespace parent]::pgn::editComment after]
-	set Vars(cmd:shift:edit-comment)	[list [namespace parent]::pgn::editComment before]
-	set Vars(cmd:edit-marks)			[namespace parent]::pgn::openMarksPalette
-	set Vars(cmd:add-new-game)			[namespace code [list SaveGame add]]
-	set Vars(cmd:replace-game)			[namespace code [list SaveGame replace]]
-	set Vars(cmd:replace-moves)		[namespace code [list SaveGame moves]]
-	set Vars(cmd:trial-mode)			[namespace parent]::pgn::flipTrialMode
-	set Vars(cmd:import-game)			[list [namespace parent]::pgn::importGame no]
-	set Vars(cmd:shift:import-game)	[list [namespace parent]::pgn::importGame yes]
-	set Vars(cmd:export-game)			[list ::gamebar::exportGame .application]
 
 	BuildBoard $canv
 	ConfigureBoard $canv
+	SetupToolbar
 
 	::scidb::db::subscribe gameSwitch [namespace current]::GameSwitched
 	::scidb::db::subscribe gameClose [namespace current]::GameClosed
@@ -587,6 +574,22 @@ proc bindKeys {} {
 	variable Vars
 	variable mc::Accel
 
+	if {![info exists Vars(cmd:export-game)]} {
+		foreach key [array names Accel] { set Vars(key:$key) $Accel($key) }
+
+		set Vars(cmd:edit-annotation)		[namespace parent]::pgn::editAnnotation
+		set Vars(cmd:edit-comment)			[list [namespace parent]::pgn::editComment after]
+		set Vars(cmd:shift:edit-comment)	[list [namespace parent]::pgn::editComment before]
+		set Vars(cmd:edit-marks)			[namespace parent]::pgn::openMarksPalette
+		set Vars(cmd:add-new-game)			[namespace code [list SaveGame add]]
+		set Vars(cmd:replace-game)			[namespace code [list SaveGame replace]]
+		set Vars(cmd:replace-moves)		[namespace code [list SaveGame moves]]
+		set Vars(cmd:trial-mode)			[namespace parent]::pgn::flipTrialMode
+		set Vars(cmd:import-game)			[list [namespace parent]::pgn::importGame no]
+		set Vars(cmd:shift:import-game)	[list [namespace parent]::pgn::importGame yes]
+		set Vars(cmd:export-game)			[list ::gamebar::exportGame .application]
+	}
+
 	foreach key [array names Accel] {
 		bind <Control-[string tolower $Vars(key:$key)]> {}
 		bind <Control-[string toupper $Vars(key:$key)]> {}
@@ -608,6 +611,11 @@ proc bindKeys {} {
 
 	bind <Control-Shift-[string tolower $Accel(import-game)]> $Vars(cmd:shift:import-game)
 	bind <Control-Shift-[string toupper $Accel(import-game)]> $Vars(cmd:shift:import-game)
+}
+
+
+proc SetupToolbar {} {
+	variable Vars
 
 	foreach {action key tipvar} {	GotoStart	Home	GotoStartOfGame
 											FastBack		Prior	GoBackFast
@@ -1863,7 +1871,7 @@ proc GameSwitched2 {position} {
 		Subscribe $position $base $variant
 	}
 
-	UpdateCrossTableButton
+#	UpdateCrossTableButton
 	UpdateGameControls $position
 	UpdateGameButtonState(list) $position
 	UpdateGameButtonState(base) [::scidb::db::get name] [::scidb::app::variant]
@@ -1896,18 +1904,18 @@ proc DatabaseSwitched {base variant} {
 	UpdateGameButtonState(list) [::scidb::game::current]
 	UpdateGameButtonState(base) $base $variant
 	UpdateSaveButton
-	UpdateCrossTableButton
+#	UpdateCrossTableButton
 }
 
 
-proc UpdateCrossTableButton {} {
-	variable ::scidb::scratchbaseName
-	variable Vars
-
-	set base [lindex [::scidb::game::sink?] 0]
-	if {$base eq $scratchbaseName} { set state disabled } else { set state normal }
-	::toolbar::childconfigure $Vars(crossTable) -state $state
-}
+#proc UpdateCrossTableButton {} {
+#	variable ::scidb::scratchbaseName
+#	variable Vars
+#
+#	set base [lindex [::scidb::game::sink?] 0]
+#	if {$base eq $scratchbaseName} { set state disabled } else { set state normal }
+#	::toolbar::childconfigure $Vars(crossTable) -state $state
+#}
 
 
 proc UpdateSaveButton {} {
@@ -2076,20 +2084,20 @@ proc Unsubscribe {position} {
 	variable Vars
 
 	if {[llength $Vars(subscribe:list)]} {
-		after idle [list ::scidb::db::unsubscribe gameList {*}$Vars(subscribe:list)]
-		after idle [list ::scidb::db::unsubscribe gameInfo {*}$Vars(subscribe:info)]
+		after idle [list ::scidb::db::unsubscribe gameList $Vars(subscribe:list)]
+		after idle [list ::scidb::db::unsubscribe gameInfo $Vars(subscribe:info)]
 		set Vars(subscribe:list) {}
 		set Vars(subscribe:info) {}
 	}
 }
 
 
-proc ShowCrossTable {parent} {
-	set base [::scidb::game::query database]
-	set variant [::scidb::app::variant]
-	set index [::scidb::game::index]
-	::crosstable::open .application $base $variant $index -1 game
-}
+#proc ShowCrossTable {parent} {
+#	set base [::scidb::game::query database]
+#	set variant [::scidb::app::variant]
+#	set index [::scidb::game::index]
+#	::crosstable::open .application $base $variant $index -1 game
+#}
 
 
 proc SaveGame {{mode ""}} {
@@ -2115,6 +2123,7 @@ proc SaveGame {{mode ""}} {
 
 proc LanguageChanged {} {
 	bindKeys
+	SetupToolbar
 	UpdateSaveButton
 }
 

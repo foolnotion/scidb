@@ -319,9 +319,9 @@ proc build {top width height} {
 	[namespace parent]::board::needBinding $main
 	[namespace parent]::board::bindKeys
 
+	InitScratchGame ;# before subscribing
 	::scidb::db::subscribe gameSwitch [namespace current]::GameSwitched
 	::pgn::setup::setupNags editor
-	InitScratchGame
 	Raise history
 }
 
@@ -1017,7 +1017,7 @@ proc UpdateLanguages {position languageSet} {
 	if {$position >= 9} { return }
 
 	if {"" in $languageSet} {
-		set languageSet [lremove $languageSet ""]
+		lremove languageSet ""
 		set languageSet [linsert $languageSet 0 "xx"]
 	}
 
@@ -1082,28 +1082,38 @@ proc Edit {position ns {key {}} {pos {}} {lang {}}} {
 }
 
 
+proc ResetVars {position} {
+	variable Vars
+
+	array set Vars [list       \
+		current:$position		{} \
+		successor:$position	{} \
+		previous:$position	{} \
+		active:$position		{} \
+		see:$position			1  \
+		dirty:$position		0  \
+		comment:$position		"" \
+		last:$position			{} \
+		virgin:$position		1  \
+		result:$position		"" \
+		header:$position		"" \
+		tags:$position			{} \
+		after:$position		{} \
+		setup:$position		1  \
+		lang:set:$position	{} \
+	]
+}
+
+
 proc ConfigureEditor {} {
 	variable Vars
 
 	set position $Vars(position)
 	::scidb::tree::freeze 1
 	::scidb::game::new 10
-	set Vars(current:10) {}
-	set Vars(successor:10) {}
-	set Vars(previous:10) {}
-	set Vars(active:10) {}
+	ResetVars $position
 	set Vars(lang:set:10) [list {} $::mc::langID]
-	set Vars(see:10) 1
-	set Vars(dirty:10) 0
-	set Vars(comment:10) ""
-	set Vars(last:10) {}
-	set Vars(virgin:10) 1
-	set Vars(result:10) ""
-	set Vars(header:10) ""
-	set Vars(tags:10) {}
-	set Vars(after:10) {}
-	set Vars(setup:10) 1
-	set Vars(position) 10
+	set Vars(position) $position
 	::scidb::game::switch 10
 	::pgn::setup::openSetupDialog [winfo toplevel $Vars(main)] editor 10
 	set Vars(position) $position
@@ -1515,7 +1525,12 @@ proc InsertMove {context position w level key data} {
 						}
 					}
 
-					" " { $w insert cur " " }
+					" " {
+						# TODO postpone this, because no space needed if
+						# next comment is starting with punctuation, and
+						# comment is not at start of line
+						$w insert cur " "
+					}
 
 					"]" {
 						if {$count == $number && $level > $Options(indent:max)} {
@@ -2233,22 +2248,8 @@ proc ResetGame {w position {tags {}}} {
 		Raise $position
 	}
 
-	set Vars(current:$position) {}
-	set Vars(successor:$position) {}
-	set Vars(previous:$position) {}
-	set Vars(active:$position) {}
-	set Vars(lang:set:$position) {}
-	set Vars(see:$position) 1
-	set Vars(dirty:$position) 0
-	set Vars(comment:$position) ""
-	set Vars(result:$position) ""
-	set Vars(virgin:$position) 1
-	set Vars(setup:$position) 1
-	set Vars(header:$position) ""
-	set Vars(last:$position) ""
+	ResetVars $position
 	set Vars(tags:$position) $tags
-	set Vars(after:$position) {}
-
 	SetLanguages $position
 
 	if {$position <= 10} {
@@ -3200,12 +3201,8 @@ proc LanguageChanged {} {
 	variable Vars 
 
 	foreach position [::game::usedPositions?] {
-		if {[::scidb::game::query $position length] == 0} {
-			::scidb::game::refresh $position
-		} else {
-			set w $Vars(pgn:$position)
-			UpdateHeader editor $position $w $Vars(header:$position)
-		}
+		# needed for updating header and reason (of result)
+		::scidb::game::refresh $position
 	}
 
 	::toolbar::childconfigure $Vars(button:new) \

@@ -58,9 +58,6 @@ set Figurine					"Figurine"
 
 } ;# namespace mc
 
-namespace import ::dialog::choosecolor::getActualColor
-namespace import ::dialog::choosecolor::rgb2hsv
-namespace import ::dialog::choosecolor::hsv2rgb
 
 array set Vars {
 	dialog		{}
@@ -91,8 +88,6 @@ array set Options {
 	showEmoticons	1
 }
 
-variable Geometry {}
-
 array set NagSet {
 	prefix	{	140 141 142 143}
 	suffix	{	  3   4   5   6   7   8
@@ -112,7 +107,6 @@ set Symbols [join $::figurines::langSet(graphic) ""]
 
 proc open {parent pos lang} {
 	variable Annotations
-	variable Geometry
 	variable Vars
 
 	set dlg $parent.__comment__
@@ -173,8 +167,8 @@ proc open {parent pos lang} {
 		-padding {2 2 2 2} \
 		;
 	::widget::buttonSetText $butts.symbol [namespace current]::mc::InsertSymbol
-	::widget::buttonSetText $butts.clear ::widget::mc::Clear
-	::widget::buttonSetText $butts.revert ::widget::mc::Revert
+	::widget::buttonSetText $butts.clear ::widget::mc::Label(Clear)
+	::widget::buttonSetText $butts.revert ::widget::mc::Label(revert)
 
 	grid $main	-row 1 -column 1 -sticky ewns
 	grid $butts	-row 1 -column 3 -sticky ewns
@@ -242,32 +236,14 @@ proc open {parent pos lang} {
 		;
 	
 	::update idletasks
-	bind $dlg <Configure> [namespace code [list RecordGeometry $dlg $parent]]
 	bind $dlg <F1> [$dlg.hlp cget -command]
-
 	wm transient $dlg $parent
 	catch { wm attributes $dlg -type dialog }
 	wm resizable $dlg true true
 	wm protocol $dlg WM_DELETE_WINDOW [namespace code [list Close $dlg]]
 	# TODO need correction for minimal height, why?
 	wm minsize $dlg [winfo reqwidth $dlg] [expr {[winfo reqheight $dlg] + 40}]
-
-	if {[llength $Geometry] == 4} {
-		if {[scan [wm geometry [winfo toplevel $parent]] "%dx%d%d%d" tw th tx ty] == 4} {
-			set rx [expr {$tx + [lindex $Geometry 0]}]
-			set ry [expr {$ty + [lindex $Geometry 1]}]
-			set rw [winfo reqwidth $dlg]
-			set rh [winfo reqheight $dlg]
-			set sw [winfo workareawidth $dlg]
-			set sh [winfo workareaheight $dlg]
-			set rx [expr {max(min($rx, $sw - $rw), 0)}]
-			set ry [expr {max(min($ry, $sh - $rh), 0)}]
-			set x0 [expr {max(0, [lindex $Geometry 2])}]
-			set y0 [expr {max(0, [lindex $Geometry 3])}]
-			wm geometry $dlg ${x0}x${y0}+${rx}+${ry}
-		}
-	}
-
+	::widget::dialogGeometry $dlg $parent
 	Init $parent $lang
 	wm deiconify $dlg
 	focus [$main raise].text
@@ -495,17 +471,6 @@ proc Ok {dlg} {
 }
 
 
-proc RecordGeometry {dlg parent} {
-	variable Geometry
-
-	if {[scan [wm geometry $dlg] "%dx%d%d%d" fw fh fx fy] == 4} {
-		if {[scan [wm geometry [winfo toplevel [winfo toplevel $parent]]] "%dx%d%d%d" tw th tx ty] == 4} {
-			set Geometry [list [expr {max(0, $fx) - $tx}] [expr {max(0, $fy) - $ty}] $fw $fh]
-		}
-	}
-}
-
-
 proc Init {parent lang} {
 	variable Vars
 
@@ -526,7 +491,7 @@ proc Init {parent lang} {
 		}
 	}
 
-	set Vars(langSet) [lremove $Vars(langSet) ""]
+	lremove Vars(langSet) ""
 
 	set content [::scidb::misc::xml toList $Vars(comment) \
 		-expandemoticons [ExpandEmoticons] \
@@ -1565,14 +1530,14 @@ proc PopupMenu {parent} {
 	$m add command \
 		-compound left \
 		-image $::icon::16x16::clear \
-		-label " [::mc::stripAmpersand $::widget::mc::Clear]" \
+		-label " [::mc::stripAmpersand $::widget::mc::Label(clear)]" \
 		-command [namespace code Clear] \
 		-state $state \
 		;
 	$m add command \
 		-compound left \
 		-image $::icon::16x16::reset \
-		-label " [::mc::stripAmpersand $::widget::mc::Revert]" \
+		-label " [::mc::stripAmpersand $::widget::mc::Label(revert)]" \
 		-command [namespace code [list Revert [winfo toplevel $parent]]] \
 		-state [$Vars(widget:revert) cget -state] \
 		;
@@ -2146,12 +2111,6 @@ proc UpdateFormatButtons {w} {
 		}
 	}
 }
-
-
-proc WriteOptions {chan} {
-	::options::writeList $chan [namespace current]::Geometry
-}
-::options::hookWriter [namespace current]::WriteOptions
 
 
 proc InvokeDefaultButton {} {

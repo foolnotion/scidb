@@ -162,7 +162,7 @@ Kasparov*)
 </verb>
 
 <p>
-Dies kann die gleichen Zeichenketten ersetzen wie im letzen Fall
+Dies kann die gleichen Zeichenketten ersetzen wie im letzten Fall
 aufgezählt, denn alle endeten mit Buchstaben. Aber eine Zeichenkette wie
 z.B. <expr>"Kasparov, G."</expr> würde hier nicht ersetzt werden.
 </p>

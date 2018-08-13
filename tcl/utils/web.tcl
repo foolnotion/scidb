@@ -209,7 +209,6 @@ proc DownLoadResponse {parent url args token} {
 proc SaveData {parent url data args} {
 	array set opts $args
 
-puts "SaveData: $args"
 	set result [::dialog::saveFile \
 		-parent $parent \
 		-filetypes $opts(-filetypes) \

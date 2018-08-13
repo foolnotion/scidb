@@ -2342,6 +2342,10 @@ if {[string length $gxxVer]} {
     # of static objects).
     Append option(EXTRA_CXXFLAGS) "-DBROKEN_LINKER_HACK=1"
 
+    # For a short period we will migrate automatically old layout coordinates
+    # (absolute height) to new layout coordinates (relative height).
+    Append option(EXTRA_CXXFLAGS) "-DTWM_MIGRATE_LAYOUT=1"
+
     if {[dontUsePtrace]} {
         # What a shame, some systems do not allow the debugging of own processes.
         Append option(EXTRA_CXXFLAGS) "-DDONT_USE_GDB"

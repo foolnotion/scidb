@@ -1837,7 +1837,9 @@ proc ChangeFontSize {context cmd incr {state 0}} {
 
 
 proc SendFontSizeChanged {w value} {
+	if {![winfo exists $w]} { return }
 	event generate $w <<FontSizeChanged>> -data $value
+	if {![winfo exists $w]} { return }
 	foreach child [winfo children $w] { SendFontSizeChanged $child $value }
 }
 

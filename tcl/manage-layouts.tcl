@@ -53,6 +53,7 @@ proc open {twm id layoutVariant currentLayout link} {
 	variable Options
 	variable OldLayout
 	variable OldList
+	variable ID
 	variable Twm
 	variable names_
 
@@ -61,6 +62,7 @@ proc open {twm id layoutVariant currentLayout link} {
 	set force $::twm::Options(deiconify:force)
 	set ::twm::Options(deiconify:force) 1
 	set Twm $twm
+	set ID $id
 
 	set dlg $twm.layout
 	tk::toplevel $dlg -class Scidb
@@ -79,6 +81,7 @@ proc open {twm id layoutVariant currentLayout link} {
 		-disableclose 1 \
 	]
 	pack $myTWM -padx $Options(padding) -pady $Options(padding)
+	bind $myTWM <<TwmHeader>> [namespace code [list HeaderChanged $myTWM %d]]
 	[namespace parent]::twm::loadInitialLayout $myTWM $twm
 
 	set names_ [[namespace parent]::twm::glob $id]
@@ -131,7 +134,7 @@ proc open {twm id layoutVariant currentLayout link} {
 				-textvariable [namespace current]::link_ \
 				-state readonly \
 				;
-			tooltip::tooltip $linkframe.lbl [namespace parent]::twm::mc::LinkLayoutTip
+			::tooltip $linkframe.lbl [namespace parent]::twm::mc::LinkLayoutTip
 			grid $linkframe.lbl -row 0 -column 0
 			grid $linkframe.cb  -row 0 -column 2 -sticky ew
 			grid columnconfigure $linkframe {1} -minsize $::theme::padx
@@ -141,12 +144,22 @@ proc open {twm id layoutVariant currentLayout link} {
 		}
 	}
 
-	bind $list <<ListboxSelect>> \
-		[namespace code [list LoadLayout $myTWM $twm $id $layoutVariant $list $res]]
+	set loadCmd [namespace code [list LoadLayout $myTWM $twm $id $layoutVariant $list $res]]
+	bind $list <<ListboxSelect>> $loadCmd
 
 	lassign [[namespace parent]::twm::workArea $twm] Width Height
-	set Width [expr {($Width*4)/9}]
-	set Height [expr {($Height*4)/9}]
+	if {$id ne "board"} {
+		set mainTWM [[namespace parent]::twm::getTWM games]
+		lassign [$mainTWM dimension] width height
+		set h [expr {$height*($Width/$width)}]
+		if {$h > $Height} {
+			set Width [expr {$Width*($Height/$h)}]
+		} else {
+			set Height $h
+		}
+	}
+	set Width [expr {int(($Width*4.0)/9.0 + 0.5)}]
+	set Height [expr {int(($Height*4.0)/9.0 + 0.5)}]
 
 	grid $lt -row 1 -column 1 -sticky nsew
 	grid $rt -row 1 -column 3 -sticky nsew
@@ -180,7 +193,7 @@ proc open {twm id layoutVariant currentLayout link} {
 		-state disabled \
 		-command [namespace code [list Revert $twm $layoutVariant $res $dlg.revert]] \
 		;
-	::tooltip::tooltip $dlg.revert [namespace current]::mc::RestoreToOldLayout
+	::tooltip $dlg.revert [namespace current]::mc::RestoreToOldLayout
 	wm resizable $dlg no no
 	wm transient $dlg .application
 	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
@@ -189,9 +202,7 @@ proc open {twm id layoutVariant currentLayout link} {
 	wm deiconify $dlg
 	focus $list
 	::ttk::grabWindow $dlg
-	if {$index >= 0} {
-		after idle [namespace code [list LoadLayout $myTWM $twm $id $layoutVariant $list $lt.res]]
-	}
+	if {$index >= 0} { after idle $loadCmd }
 	tkwait window $dlg
 	::ttk::releaseGrab $dlg
 	set ::twm::Options(deiconify:force) $force
@@ -264,10 +275,21 @@ proc BuildPane {myTWM frame uid width height} {
 			$w create window $x $y -anchor nw -window $w.diagram -tags board
 		}
 
-		default { $frame configure -background [::colors::lookup tree,stripes] }
+		default {
+			$frame configure -background [::colors::lookup tree,stripes]
+		}
 	}
 
-	::tooltip::tooltip $frame [namespace parent]::twm::mc::Pane([NameFromUid $uid])
+	if {[$myTWM ispane [$myTWM leaf $uid]]} {
+		::tooltip $frame [namespace parent]::twm::mc::Pane([NameFromUid $uid])
+	}
+}
+
+
+proc HeaderChanged {myTWM frame} {
+	if {[$myTWM flat? $frame]} {
+		::tooltip $frame [namespace parent]::twm::mc::Pane([NameFromUid [$myTWM id $frame]])
+	}
 }
 
 
@@ -283,11 +305,17 @@ proc ResizeBoard {w width height} {
 proc Resizing {myTWM toplevel width height} {
 	variable Width
 	variable Height
+	variable ID
 
-	lassign [winfo workarea .application] _ _ ww wh
-	lassign [winfo extents .application] ew1 ew2 eh1 eh2
-	set adjustedWidth [expr {min($width, $ww - $ew1 - $ew2)}]
-	set adjustedHeight [expr {min($height, $wh - $eh1 - $eh2)}]
+	if {$ID eq "board"} {
+		lassign [winfo workarea .application] _ _ ww wh
+		lassign [winfo extents .application] ew1 ew2 eh1 eh2
+		set adjustedWidth [expr {min($width, $ww - $ew1 - $ew2)}]
+		set adjustedHeight [expr {min($height, $wh - $eh1 - $eh2)}]
+	} else {
+		set adjustedWidth $width
+		set adjustedHeight $height
+	}
 
 	set fh [expr {double($Width)/double($adjustedWidth)}]
 	set fv [expr {double($Height)/double($adjustedHeight)}]
@@ -313,8 +341,18 @@ proc LoadLayout {myTWM twm id layoutVariant list loadBtn} {
 	}
 	set ::application::twm::SetupFunc [list $myTWM load]
 	after idle [list set ::application::twm::SetupFunc {}]
-	::load::source $filename -encoding utf-8 -throw 1
-	set state [expr {[[namespace parent]::twm::currentLayout $twm] eq $name ? "disabled" : "normal"}]
+
+	set chan [::open $filename r]
+	fconfigure $chan -encoding utf-8
+	set line [gets $chan]
+	close $chan
+	$myTWM load [lindex $line 3]
+
+	set state normal
+	if {	[[namespace parent]::twm::currentLayout $twm] eq $name
+		&& [[namespace parent]::twm::testLayoutStatus $twm]} {
+		set state disabled
+	}
 	$loadBtn configure -state $state
 }
 
@@ -325,7 +363,13 @@ proc Delete {twm parent list} {
 	set name [$list get [$list curselection]]
 	if {[[namespace parent]::twm::deleteLayout $twm $name $parent]} {
 		set i [lsearch $names_ $name]
-		if {$i >= 0} { set names_ [lreplace $names_ $i $i] }
+		if {$i >= 0} {
+			set names_ [lreplace $names_ $i $i]
+			set i [expr {$i > 0 ? $i - 1 : 0}]
+			$list selection clear 0 end
+			$list selection set $i
+			$list see $i
+		}
 	}
 }
 
@@ -340,7 +384,10 @@ proc Rename {twm parent list} {
 		if {$i >= 0} {
 			set names_ [lreplace $names_ $i $i $newName]
 			set names_ [lsort $names_]
+			set i [lsearch $names_ $newName]
+			$list selection clear 0 end
 			$list selection set $i
+			$list see $i
 		}
 	}
 }
@@ -349,7 +396,7 @@ proc Rename {twm parent list} {
 proc Load {twm list layoutVariant loadBtn revertBtn} {
 	variable OldList
 	[namespace parent]::twm::loadLayout $twm [$list get [$list curselection]]
-	set eq [[namespace parent]::twm::currentLayoutIsEqTo $twm $OldList $layoutVariant ignore]
+	set eq [[namespace parent]::twm::actualLayoutIsEqTo $twm $OldList]
 	$revertBtn configure -state [expr {$eq ? "disabled" : "normal"}]
 	$loadBtn configure -state disabled
 }

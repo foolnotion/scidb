@@ -56,8 +56,8 @@ unset col
 array set Prios { position 200 games 100 }
 
 array set FrameOptions {
-	position { -width 300 -height 640 -minwidth 100 -minheight 100 -expand both }
-	games    { -width 700 -height 640 -minwidth 200 -minheight 100 -expand both }
+	position { -width 300 -height 100% -minwidth 100 -minheight 100 -expand both }
+	games    { -width 700 -height 100% -minwidth 200 -minheight 100 -expand both }
 }
 
 variable Layout {
@@ -140,7 +140,7 @@ proc MakeFrame {twmn parent type uid} {
 
 	set frame [tk::frame $parent.$uid -borderwidth 0 -takefocus 1]
 	set nameVar ::application::twm::mc::Pane($uid)
-	return [list $frame $nameVar $Prios($uid) [expr {$uid ne "position"}] yes yes]
+	return [list $frame $nameVar $Prios($uid) no [expr {$uid ne "position"}] yes yes]
 }
 
 
@@ -498,7 +498,8 @@ proc SortColumn {path id dir} {
 } ;# namespace positions
 
 
-proc WriteTableOptions {chan {id "position"}} {
+proc WriteTableOptions {chan variant {id "position"}} {
+	variable TableOptions
 	variable Tables
 
 	if {$id ne "position"} { return }
@@ -506,9 +507,9 @@ proc WriteTableOptions {chan {id "position"}} {
 	foreach table $Tables {
 		set id [::application::twm::getId $table]
 		foreach uid {position games} {
-			if {[::scrolledtable::countOptions db:positions:$id:$uid] > 0} {
+			if {[info exists TableOptions($variant:$id:$uid)]} {
 				puts $chan "::scrolledtable::setOptions db:positions:$id:$uid {"
-				::options::writeArray $chan [::scrolledtable::getOptions db:positions:$id:$uid]
+				::options::writeArray $chan $TableOptions($variant:$id:$uid)
 				puts $chan "}"
 			}
 		}

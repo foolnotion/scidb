@@ -6,7 +6,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2017 Gregor Cramer
+// Copyright: (C) 2009-2018 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -112,6 +112,15 @@ tcl::asString(Tcl_Obj* obj)
 
 
 inline
+char const*
+tcl::asString(Tcl_Obj* obj, int& len)
+{
+	M_REQUIRE(obj);
+	return Tcl_GetStringFromObj(obj, &len);
+}
+
+
+inline
 bool
 tcl::equal(char const* lhs, char const* rhs)
 {
@@ -181,11 +190,12 @@ tcl::eqOrNull(Tcl_Obj* lhs, Tcl_Obj* rhs, unsigned n)
 
 
 inline
-int
+unsigned
 tcl::countElements(Tcl_Obj* obj)
 {
-	int count = -1;
-	Tcl_ListObjLength(nullptr, obj, &count);
+	int count = 0;
+	if (obj)
+		Tcl_ListObjLength(nullptr, obj, &count);
 	return count;
 }
 
@@ -207,6 +217,87 @@ Tcl_Obj*
 tcl::addElement(Tcl_Obj*& list, Tcl_Obj* (&objv)[N])
 {
 	return addElement(list, newObj(N, objv));
+}
+
+
+template <int N>
+inline
+Tcl_Obj*
+tcl::insertElement(Tcl_Obj*& list, Tcl_Obj* (&objv)[N], unsigned position)
+{
+	return addElement(list, newObj(N, objv), position);
+}
+
+
+inline
+bool
+tcl::containsElement(Tcl_Obj* obj, mstl::string const& what)
+{
+	return findElement(obj, what) >= 0;
+}
+
+
+inline
+bool
+tcl::containsElement(Tcl_Obj* obj, char const* what)
+{
+	return findElement(obj, what) >= 0;
+}
+
+
+inline
+bool
+tcl::containsElement(Tcl_Obj* obj, Tcl_Obj* what)
+{
+	return findElement(obj, what) >= 0;
+}
+
+
+inline
+bool
+tcl::containsElement(List const& list, mstl::string const& what)
+{
+	return findElement(list, what) >= 0;
+}
+
+
+inline
+bool
+tcl::containsElement(List const& list, char const* what)
+{
+	return findElement(list, what) >= 0;
+}
+
+
+inline
+bool
+tcl::containsElement(List const& list, Tcl_Obj* what)
+{
+	return findElement(list, what) >= 0;
+}
+
+
+inline
+bool
+tcl::containsElement(Array const& arr, mstl::string const& what)
+{
+	return findElement(arr, what) >= 0;
+}
+
+
+inline
+bool
+tcl::containsElement(Array const& arr, char const* what)
+{
+	return findElement(arr, what) >= 0;
+}
+
+
+inline
+bool
+tcl::containsElement(Array const& arr, Tcl_Obj* what)
+{
+	return findElement(arr, what) >= 0;
 }
 
 

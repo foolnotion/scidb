@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2013 Gregor Cramer
+# Copyright: (C) 2009-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -32,9 +32,45 @@ namespace import ::tcl::mathfunc::max
 
 array set WriteCallbacks {}
 array set TableCallbacks {}
+
 variable SaveCallbacks {}
 variable RestoreCallbacks {}
 variable CompareCallbacks {}
+variable TempSuffix "927568377322.tmp"
+
+
+proc sourceFile {{variant ""}} {
+	set filename [MakeFilename $variant]
+	if {![file readable $filename]} { return 0 }
+	::load::source $filename \
+		-message $::load::mc::ReadingFile(options) \
+		-encoding utf-8 \
+		-throw 1 \
+		;
+	return 1
+}
+
+
+proc deleteFiles {} {
+	set filename [MakeFilename]
+	if {[file exists $filename]} { file rename -force $filename $filename.bak }
+
+	foreach variant $::layoutVariants {
+		set filename [MakeFilename $variant]
+		if {[file exists $filename]} { file rename -force $filename $filename.bak }
+	}
+}
+
+
+proc recoverFiles {} {
+	set filename [MakeFilename]
+	if {[file exists $filename.bak]} { file rename -force $filename.bak $filename }
+
+	foreach variant $::layoutVariants {
+		set filename [MakeFilename $variant]
+		if {[file exists $filename.bak]} { file rename -force $filename.bak $filename }
+	}
+}
 
 
 proc hookWriter {callback {file options}} {
@@ -71,18 +107,6 @@ proc unhookWriter {callback {file options}} {
 }
 
 
-proc hookTableWriter {callback {file options}} {
-	variable TableCallbacks
-
-	if {![info exists TableCallbacks($file)]} {
-		set i -1
-	} else {
-		set i [lsearch -exact $TableCallbacks($file) $callback]
-	}
-	if {$i == -1} { lappend TableCallbacks($file) $callback }
-}
-
-
 proc writeHeader {chan file} {
 	puts $chan "# Scidb $file file"
 	puts $chan "# Version: $::scidb::version"
@@ -91,49 +115,66 @@ proc writeHeader {chan file} {
 }
 
 
-proc write {} {
-	variable WriteCallbacks
-	variable TableCallbacks
+proc startTransaction {} {
+	variable fd_
+	array unset fd_
+}
 
-	foreach file [array names WriteCallbacks] {
-		if {$file eq "options" || [llength $WriteCallbacks($file)] > 0} {
-			set filename [set ::scidb::file::$file]
-			set fd($file) [set chan [open $filename.tmp w]]
-			fconfigure $chan -encoding utf-8
-			writeHeader $chan $file
-			foreach callback $WriteCallbacks($file) { $callback $chan }
 
-			if {$file eq "options"} {
-				foreach dialog [::toolbar::toolbarDialogs] {
-					puts $chan "::toolbar::setOptions $dialog {"
-					::options::writeArray $chan [::toolbar::getOptions $dialog]
-					puts $chan "}"
-				}
-			}
-		}
-	}
+proc endTransaction {} {
+	variable TempSuffix
+	variable fd_
 
-	foreach file [array names TableCallbacks] {
-		if {$file eq "options" || [llength $TableCallbacks($file)] > 0} {
-			set filename [set ::scidb::file::$file]
-			set chan $fd($file)
-			foreach callback $TableCallbacks($file) { $callback $chan }
-		}
-	}
-
-	foreach file [array names fd] {
-		close $fd($file)
-		set filename [set ::scidb::file::$file]
-		file rename -force $filename.tmp $filename
+	foreach filename [array names fd_] {
+		close $fd_($filename)
+		file rename -force $filename.$TempSuffix $filename
 	}
 }
 
 
-proc writeTableOptions {chan id} {
+proc saveOptionsFile {} {
+	variable TempSuffix
+	variable WriteCallbacks
+	variable fd_
+
+	foreach file [array names WriteCallbacks] {
+		set filename [set ::scidb::file::$file]
+		set chan [set fd_($filename) [set chan [open $filename.$TempSuffix w]]]
+		fconfigure $chan -encoding utf-8
+		writeHeader $chan $file
+		foreach callback $WriteCallbacks($file) { $callback $chan }
+
+		if {$file eq "options"} {
+			foreach dialog [::toolbar::toolbarDialogs] {
+				puts $chan "::toolbar::setOptions $dialog {"
+				::options::writeArray $chan [::toolbar::getOptions $dialog]
+				puts $chan "}"
+			}
+		}
+	}
+}
+
+
+proc saveTableOptionsFile {variant} {
+	variable TempSuffix
+	variable TableCallbacks
+	variable fd_
+
+	foreach file [array names TableCallbacks] {
+		set filename [MakeFilename $variant]
+		file mkdir [file dirname $filename]
+		set chan [set fd_($filename) [set chan [open $filename.$TempSuffix w]]]
+		fconfigure $chan -encoding utf-8
+		foreach callback $TableCallbacks($file) { $callback $chan $variant }
+	}
+}
+
+
+proc writeTableOptions {chan id variant} {
 	variable TableCallbacks
 
 	if {[info exists TableCallbacks(options)]} {
-		foreach callback $TableCallbacks(options) { $callback $chan $id }
+		foreach callback $TableCallbacks(options) { $callback $chan $variant $id }
 	}
 }
 
@@ -223,6 +264,33 @@ proc compare {twm variant} {
 	return true
 }
 
+
+proc MakeFilename {{variant ""}} {
+	set filename $::scidb::file::options
+	if {[string length $variant]} {
+		set dir [file join [file dirname $::scidb::file::options] $variant]
+		set filename [file join $dir [file tail $::scidb::file::options]]
+	}
+	return $filename
+}
+
+
+proc ProcessFiles {script {suffix ""}} {
+	set filename [MakeFilename]${suffix}
+	if {[file exists $filename]} { uplevel { eval $script } }
+
+	foreach variant $::layoutVariants {
+		set filename [MakeFilename $variant]${suffix}
+		if {[file exists $filename]} { uplevel { eval $script } }
+	}
+}
+
 } ;# namespace options
 
+
+if {[::process::testOption recover-options]} {
+	::options::recoverFiles
+} elseif {[::process::testOption first-time]} {
+	::options::deleteFiles
+}
 # vi:set ts=3 sw=3:

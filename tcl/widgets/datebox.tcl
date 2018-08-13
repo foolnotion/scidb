@@ -42,7 +42,8 @@ set Day			"Day"
 
 bind DateBoxFrame <Configure> [namespace code { Configure %W }]
 bind DateBoxFrame <Destroy>	[list namespace delete [namespace current]::%W]
-bind DateBoxFrame <Destroy>	[list rename %W {}]
+bind DateBoxFrame <Destroy>	{+ rename %W {} }
+bind DateBoxFrame <FocusIn>	{ focus [tk_focusNext %W] }
 
 
 proc validate {y m d {minYear 0} {maxYear 9999}} {
@@ -93,7 +94,6 @@ proc Build {w args} {
 	array set opts $args
 
 	ttk::frame $w -borderwidth 0 -takefocus 0 -class DateBoxFrame
-	bind $w <FocusIn> { focus [tk_focusNext %W] }
 
 	namespace eval [namespace current]::$w {}
 	variable [namespace current]::${w}::Priv

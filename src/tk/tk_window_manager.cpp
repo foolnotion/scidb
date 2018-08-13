@@ -616,6 +616,8 @@ handleDesktopProperties(ClientData clientData, XEvent* xev)
 static void
 requestDesktopProperties(Tcl_Interp* ti, Tk_Window tkwin)
 {
+	// TODO: see gdkdisplay-x11.c
+
 	Display*	display	= Tk_Display(tkwin);
 	Window	window	= Tk_WindowId(tkwin);
 	Atom		extents;

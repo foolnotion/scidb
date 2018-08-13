@@ -904,7 +904,7 @@ proc recover {parent} {
 
 	set count 0
 	set pattern game-*.pgn
-	if {[::process::testOption recover-old]} { append pattern .bak }
+	if {[::process::testOption recover-old-files]} { append pattern .bak }
 
 	log::open $mc::Recovery
 	set files [lsort -dictionary [glob -directory $::scidb::dir::backup -nocomplain $pattern]]
@@ -912,14 +912,10 @@ proc recover {parent} {
 	set selection 0
 
 	foreach file $files {
-		if {![::process::testOption dont-recover]} {
+		if {![::process::testOption dont-recover-files]} {
 			if {[file readable $file]} {
 				set position [string range [file tail $file] 5 5]
-				set chan [open $file r]
-				fconfigure $chan -encoding utf-8
-				set content [read $chan]
-				close $chan
-
+				set content [::file::read $file -encoding utf-8]
 				set header [split $content "\n"]
 				lassign {"" "" "" ""} line1 line2 line3 line4
 				lassign $header line1 line2 line3 line4
@@ -983,7 +979,7 @@ proc recover {parent} {
 			}
 		}
 
-		if {![::process::testOption recover-old]} {
+		if {![::process::testOption recover-old-files]} {
 			file rename -force $file $file.bak
 		}
 	}
@@ -992,13 +988,13 @@ proc recover {parent} {
 
 	if {$count > 0} {
 		if {$count == 1} {
-			if {[::process::testOption recover-old]} {
+			if {[::process::testOption recover-old-files]} {
 				set msg $mc::OldGameRestored
 			} else {
 				set msg $mc::GameRestored
 			}
 		} else {
-			if {[::process::testOption recover-old]} {
+			if {[::process::testOption recover-old-files]} {
 				set msg [format $mc::OldGamesRestored $count]
 			} else {
 				set msg [format $mc::GamesRestored $count]
@@ -1193,7 +1189,7 @@ proc embedReleaseMessage {positions w infoFont alertFont} {
 	set list [lsort -index 1 -integer $list]
 
 	set row 0
-	grid columnconfigure $w {1 3} -minsize 5
+	grid columnconfigure $w {1 3} -minsize $::theme::padx
 
 	foreach entry $list {
 		lassign $entry pos index

@@ -21,6 +21,7 @@ SOURCES = \
 	exec.tcl \
 	utils/place.tcl \
 	start.tcl \
+	options.tcl \
 	colors.tcl \
 	utils/tcl_bugs.tcl \
 	splash.tcl \
@@ -33,7 +34,6 @@ SOURCES = \
 	dialogs/choosefont.tcl \
 	widgets/theme.tcl \
 	widgets/misc.tcl \
-	options.tcl \
 	board-basic.tcl \
 	load.tcl \
 	i18n.tcl \
@@ -121,7 +121,6 @@ SOURCES = \
 	engine.tcl \
 	player-dict.tcl \
 	application.tcl \
-	app-twm.tcl \
 	app-information.tcl \
 	app-board.tcl \
 	app-database.tcl \
@@ -137,6 +136,7 @@ SOURCES = \
 	app-tree-games.tcl \
 	app-variation.tcl \
 	app-analysis.tcl \
+	app-twm.tcl \
 	manage-layouts.tcl \
 	pgn-setup.tcl \
 	save-replace.tcl \

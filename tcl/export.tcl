@@ -2014,7 +2014,7 @@ proc FontColor {color} {
 	variable [namespace parent]::Info
 
 	set type $Values(Type)
-	set color [::dialog::choosecolor::getActualColor $color]
+	set color [::colors::getActualColor $color]
 	if {$color eq $Info($type,font,color)} { set color {} }
 	lset Styles($type,$Info(fontstyle)) 4 $color
 }
@@ -2096,8 +2096,8 @@ proc BuildFrame {pane} {
 	### Choose Languages ####################################################################
 	set sel [ttk::frame $lt.selection -borderwidth 0]
 	if {[info exists Info(languages)]} {
-		set Info(languages) [lremove $Info(languages) ""]
-		set Info(preferred) [lremove $Info(preferred) ""]
+		lremove Info(languages) ""
+		lremove Info(preferred) ""
 		set elem $Values(Type),comments,languages
 		set Values($elem) {}
 		set row 1

@@ -30,104 +30,73 @@ namespace eval application {
 namespace eval twm {
 namespace eval mc {
 
-set FoldTitleBar				"Fold Titlebar"
-set FoldAllTitleBars			"Fold all Titlebars"
-set UnfoldAllTitleBars		"Unfold all Titlebars"
-set Notebook					"Notebook"
-set Multiwindow				"Multiwindow"
-set MoveWindow					"Move Window"
-set StayOnTop					"Stay on Top"
-set HideWhenLeavingTab		"Hide When Leaving Tab"
-set SaveLayout					"Save Layout"
-set SaveLayoutAs				"Save Layout as %s"
-set RenameLayout				"Rename Layout"
-set LoadLayout					"Restore Layout"
-set NewLayout					"New Layout"
-set ManageLayouts				"Manage Layouts"
-set ShowAllDockingPoints	"Show all Docking Points"
-set DockingArrowSize			"Docking Arrow Size"
-set LinkLayout					"Link Layout '%s'"
-set UnlinkLayout				"Unlink Layout '%s'"
-set LinkLayoutTip				"Link With Board Layout"
-set Actual						"current"
-set Windows						"Windows"
-set ConfirmDelete				"Really delete layout '%s'?"
-set ConfirmOverwrite			"Overwrite existing layout '%s'?"
-set LayoutSaved				"Layout '%s' successfully saved"
-set EnterName					"Enter Name"
+set FoldTitleBar					"Fold Titlebar"
+set FoldAllTitleBars				"Fold all Titlebars"
+set UnfoldAllTitleBars			"Unfold all Titlebars"
+set AmalgamateTitleBar			"Amalgamate Titlebar"
+set AmalgamateAllTitleBars		"Amalgamate all Titlebars"
+set SeparateAllTitleBars		"Separate all Titlebars"
+set Notebook						"Notebook"
+set Multiwindow					"Multiwindow"
+set MoveWindow						"Move Window"
+set StayOnTop						"Stay on Top"
+set HideWhenLeavingTab			"Hide When Leaving Tab"
+set SaveLayout						"Save Layout"
+set SaveLayoutAs					"Save Layout as %s"
+set RenameLayout					"Rename Layout"
+set LoadLayout						"Restore Layout"
+set NewLayout						"New Layout"
+set ManageLayouts					"Manage Layouts"
+set ShowAllDockingPoints		"Show all Docking Points"
+set DockingArrowSize				"Docking Arrow Size"
+set LinkLayout						"Link Layout '%s'"
+set UnlinkLayout					"Delete Link to '%s'"
+set LinkLayoutTip					"Link With Board Layout"
+set Actual							"current"
+set Changed							"changed"
+set Windows							"Windows"
+set ConfirmDelete					"Really delete layout '%s'?"
+set ConfirmOverwrite				"Overwrite existing layout '%s'?"
+set LayoutSaved					"Layout '%s' successfully saved"
+set EnterName						"Enter Name"
+set UnsavedLayouts				"At least one layout has been changed. Either cancel the termination of the application, or commit the selected actions."
+set LinkWithLayout				"Link with eponymous board layout '%s'?"
+set CopyLayoutFrom				"Copy layout from"
+set ApplyToAllLayouts			"Apply this action to all changed layouts?"
+set KeepEnginesOpen				"Current layout has more analysis windows than selected layout. Keep all additional analysis windows open?"
+set ErrorInOptionFile			"Option file for layout variant '%s' is corrupted."
 
-set Pane(analysis)			"Analysis"
-set Pane(board)				"Board"
-set Pane(editor)				"Notation"
-set Pane(tree)					"Tree"
-set Pane(games)				"Games"
-set Pane(player)				"Players"
-set Pane(event)				"Events"
-set Pane(annotator)			"Annotator"
-set Pane(site)					"Site"
-set Pane(position)			"Position"
-set Pane(eco)					"ECO-Table"
+set Pane(analysis)				"Analysis"
+set Pane(board)					"Board"
+set Pane(editor)					"Notation"
+set Pane(tree)						"Tree"
+set Pane(games)					"Games"
+set Pane(player)					"Players"
+set Pane(event)					"Events"
+set Pane(annotator)				"Annotator"
+set Pane(site)						"Site"
+set Pane(position)				"Position"
+set Pane(eco)						"ECO-Table"
+
+set UnsavedAction(discard)		"Discard changes (start next time with unchanged layout)"
+set UnsavedAction(overwrite)	"Overwrite existing layout with changed layout"
+set UnsavedAction(disconnect)	"Disconnect from original layout, but retain the changes"
+set UnsavedAction(retain)		"Retain changes, and do not disconnect"
 
 } ;# namespace mc
 
-# ---------------------------------------------------------------------
-# Start of Scidb:
-# Load board:layout:list, board:layout:list:* from option file,
-# setup twm with board:layout:list.
-# ---------------------------------------------------------------------
-# Saving layout:
-# Set board:layout:list:$variant from board:layout:list.
-# Save board:layout:list:$variant, and save board:layout:list:normal
-# if not yet existing. Also set board:layout:saved:$variant from
-# board:layout:list:$variant.
-# ---------------------------------------------------------------------
-# Restoring layout:
-# Load board:layout:list:* for all saved variants, and set
-# board:layout:list from board:layout:list:$variant, or set
-# from board:layout:list:normal if former is not existing. Also
-# set board:layout:saved:$variant from board:layout:list:$variant.
-# ---------------------------------------------------------------------
-# Switching variant:
-# Set board:layout:list:$variant from board:layout:list.
-# Set board:layout:list from board:layout:list:$variant, or set from
-# board:layout:list:normal if latter is not existing.
-# ------------------------------------------------------------------
-# Closing Scidb:
-# Set board:layout:list:$variant from board:layout:list, and set
-# board:layout:list from board:layout:list:normal, if current
-# layout variant is not "normal". Save board:layout:list and all
-# board:layout:list:* to option file. Also save all
-# board:layout:saved:* to option file.
-# ---------------------------------------------------------------------
-array set Options {
-	board:docking:showall		no
-	board:layout:name				""
-	board:layout:list				{}
-	games:docking:showall		no
-	games:layout:name				""
-	games:layout:list				{}
-	player:docking:showall		yes
-	player:layout:name			""
-	player:layout:list			{}
-	event:docking:showall		yes
-	event:layout:name				""
-	event:layout:list				{}
-	site:docking:showall			yes
-	site:layout:name				""
-	site:layout:list				{}
-	annotator:docking:showall	yes
-	annotator:layout:name		""
-	annotator:layout:list		{}
-	position:docking:showall	yes
-	position:layout:name			""
-	position:layout:list			{}
-	eco:docking:showall			yes
-	eco:layout:name				""
-	eco:layout:list				{}
-}
 
+variable MaxPerPage 3
 variable SetupFunc {}
-variable LayoutVariants {dropchess antichess}
+
+foreach tab [concat board $::application::database::Tabs] {
+	set Options($tab:docking:showall)	no
+	set Options($tab:layout:name)			""
+	set Options($tab:layout:list)			{}
+}
+unset tab
+
+variable layoutVariants $::layoutVariants
 
 
 proc make {twm id makePane buildPane prioArr options layout args} {
@@ -140,6 +109,7 @@ proc make {twm id makePane buildPane prioArr options layout args} {
 		-resizing  [namespace current]::resizing \
 		-workarea  [namespace current]::workArea \
 		-frameborderwidth 0 \
+		-panedwindowrelief raised \
 		{*}$args \
 		;
 	$twm showall $Options($id:docking:showall)
@@ -151,8 +121,8 @@ proc make {twm id makePane buildPane prioArr options layout args} {
 	set Vars($id:prioArr) $prioArr
 	set Vars($id:init:options) $options
 	set Vars($id:init:layout:name) $layout
-	set Vars(id:$twm) $id
-	set Vars(twm:$id) $twm
+	set Vars($twm:id) $id
+	set Vars($id:twm) $twm
 	lappend Vars(twm) $twm
 
 	return $twm
@@ -161,14 +131,20 @@ proc make {twm id makePane buildPane prioArr options layout args} {
 
 proc load {twm} {
 	variable [namespace parent]::Vars
+	variable Options
 
-	set id $Vars(id:$twm)
-	set Vars(loading) 1
+	set id $Vars($twm:id)
 	loadInitialLayout $twm
-	$twm load [GetLayout $id]
-	::options::save $twm $Vars($id:layout:variant)
-	set Vars(saved:$id:$Vars($id:layout:variant)) 1
-	set Vars(loading) 0
+	set layoutVariant [GetLayout $id]
+	LoadOptionFile $layoutVariant
+	set layout $Options($id:layout:list:$layoutVariant)
+	if {[llength $layout] > 0 || ![LoadLayout $twm $layoutVariant $Options($id:layout:name) load]} {
+		set Vars(loading) 1
+		$twm load $layout
+		set Vars(loading) 0
+		after idle [list ::options::save $twm $layoutVariant]
+		set Vars($id:options:saved:$layoutVariant) 1
+	}
 	return $twm
 }
 
@@ -176,7 +152,7 @@ proc load {twm} {
 proc loadInitialLayout {twm {origTWM ""}} {
 	variable [namespace parent]::Vars
 
-	set id $Vars(id:[expr {[string length $origTWM] ? $origTWM : $twm}])
+	set id $Vars([expr {[string length $origTWM] ? $origTWM : $twm}]:id)
 	array set opts $Vars($id:init:options)
 	set layout $Vars($id:init:layout:name)
 	foreach name [array names opts] {
@@ -189,7 +165,7 @@ proc loadInitialLayout {twm {origTWM ""}} {
 proc priority {twm uid} {
 	variable [namespace parent]::Vars
 
-	set arrName $Vars($Vars(id:$twm):prioArr)
+	set arrName $Vars($Vars($twm:id):prioArr)
 	return [set ${arrName}([lindex [split $uid :] 0])]
 }
 
@@ -224,6 +200,18 @@ proc makeFilename {id layoutVariant name} {
 }
 
 
+proc minHeight {} {
+	variable [namespace parent]::Vars
+
+	set max 0
+	foreach twm $Vars(twm) {
+		lassign [$twm dimension] - - - minheight - -
+		set max [expr {max($max, $minheight)}]
+	}
+	return $max
+}
+
+
 proc workArea {twm} {
 	variable [namespace parent]::Vars
 
@@ -237,7 +225,7 @@ proc workArea {twm} {
 		set height [expr {$wh - $eh1 - $eh2}]
 	}
 	decr height [::theme::notebookTabPaneSize .application.nb]
-	if {$Vars(id:$twm) ne "board"} {
+	if {$Vars($twm:id) ne "board"} {
 # XXX problem: returns 0 because it is called too early
 		decr height [::application::database::switcherSize]
 	}
@@ -264,7 +252,7 @@ proc resizing {twm toplevel width height} {
 	decr maxwidth $bd
 	decr maxheight $bd
 	decr maxheight [::theme::notebookTabPaneSize .application.nb]
-	if {$Vars(id:$twm) ne "board"} {
+	if {$Vars($twm:id) ne "board"} {
 # XXX problem: returns 0 because it is called too early
 		decr maxheight [::application::database::switcherSize]
 	}
@@ -339,148 +327,238 @@ proc switchLayout {variant reason} {
 
 	foreach twm $Vars(twm) {
 		if {[winfo exists $twm]} {
-			set id $Vars(id:$twm)
+			set id $Vars($twm:id)
 			if {$reason eq "game" ? $id ne "board" : $id eq "board"} { continue }
-			if {$newLayoutVariant ne $Vars($id:layout:variant)} {
-				set Options($id:layout:list:$Vars($id:layout:variant)) [inspectLayout $twm]
-				if {![info exists Options($id:layout:list:$newLayoutVariant)]} {
-					set Options($id:layout:list:$newLayoutVariant) $Options($id:layout:list:normal)
+			set oldLayoutVariant $Vars($id:layout:variant)
+			if {$newLayoutVariant ne $oldLayoutVariant} {
+				set loaded 0
+				TestLayoutStatus $twm
+				if {![compareTableOptions $twm $oldLayoutVariant]} {
+					::options::save $twm $oldLayoutVariant
+					set Vars($id:options:saved:$oldLayoutVariant) 1
 				}
-				set Options($id:layout:list) $Options($id:layout:list:$newLayoutVariant)
-				if {![currentLayoutIsEqTo $twm $Options($id:layout:list) $newLayoutVariant options]} {
-					::options::save $twm $Vars($id:layout:variant)
-					set Vars(saved:$id:$Vars($id:layout:variant)) 1
-					$twm load $Options($id:layout:list)
-					if {[info exists Vars(saved:$id:$newLayoutVariant)]} {
-						::options::restore $twm $newLayoutVariant
+				set Options($id:layout:list:$oldLayoutVariant) [inspectLayout $twm]
+				set Vars($id:layout:variant) $newLayoutVariant ;# must be set before loading
+				if {![info exists Options($id:layout:list:$newLayoutVariant)]} {
+					if {[string length $Options($id:layout:name)]} {
+						LoadOptionFile $newLayoutVariant
+						set loaded [LoadLayout $twm $newLayoutVariant $Options($id:layout:name) switch]
+					}
+					if {!$loaded} {
+						if {[info exists Options($id:layout:list:normal)]} {
+							set Options($id:layout:list:$newLayoutVariant) $Options($id:layout:list:normal)
+						} else {
+							set Options($id:layout:list:$newLayoutVariant) {}
+						}
+						set Options($id:layout:saved:$newLayoutVariant) $Options($id:layout:list:normal)
+						set Options($id:layout:changed:$newLayoutVariant) 0
 					}
 				}
-				set Vars($id:layout:variant) $newLayoutVariant
+				set Options($id:layout:list) $Options($id:layout:list:$newLayoutVariant)
+				if {!$loaded} {
+					# load options before applying layout
+					if {[info exists Vars($id:options:saved:$newLayoutVariant)]} {
+						::options::restore $twm $newLayoutVariant
+					} else {
+						after idle [list ::options::save $twm $newLayoutVariant]
+						set Vars($id:options:saved:$newLayoutVariant) 1
+					}
+					if {![actualLayoutIsEqTo $twm $Options($id:layout:list) true]} {
+						set Vars(loading) 1
+						$twm load $Options($id:layout:list)
+						set Vars(loading) 0
+					}
+				}
 			}
 		}
 	}
 }
 
 
-proc prepareExit {} {
+proc saveLayouts {} {
 	variable [namespace parent]::Vars
+	variable layoutVariants
+	variable MaxPerPage
 	variable Options
+	variable action_
+	variable variants_
+
+	array unset variants_
+	set unsaved {}
+	set showVariants 0
+	set Vars(first:selection) 1
 
 	foreach twm $Vars(twm) {
-		set id $Vars(id:$twm)
-		set Options($id:layout:list:$Vars($id:layout:variant)) [inspectLayout $twm]
-		set Options($id:layout:list) $Options($id:layout:list:normal)
-		array unset Options *:layout:saved:*
+		TestLayoutStatus $twm
+		set id $Vars($twm:id)
+		foreach v $layoutVariants {
+			if {[info exists Vars($id:layout:changed:$v)]} {
+				if {$id in $unsaved || $v ne "normal"} { set showVariants 1 }
+				if {$id ni $unsaved} { lappend unsaved $id }
+				lappend variants_($id) $v
+			}
+		}
 	}
+
+	if {[llength $unsaved]} {
+		set buttonCmd {}
+		if {[llength $unsaved] > $MaxPerPage} {
+			set buttonCmd [namespace code [list EmbedButtons [llength $unsaved]]]
+		}
+		append msg $mc::UnsavedLayouts <embed>
+		set reply [::dialog::info \
+			-parent .application \
+			-message $msg \
+			-default cancel \
+			-buttons {ok cancel} \
+			-addbuttons $buttonCmd \
+			-embed [namespace code [list EmbedUnsavedLayouts $unsaved $showVariants]] \
+		]
+		if {$reply ne "ok"} { return false }
+
+		foreach id $unsaved {
+			foreach v $variants_($id) {
+				switch $action_($id) {
+					disconnect {
+						set Options($id:layout:changed:$v) no
+						if {$v eq $Vars($id:layout:variant)} {
+							set Options($id:layout:name) ""
+							set Options($id:layout:list:$v) [inspectLayout $Vars($id:twm)]
+						}
+					}
+					retain {
+						if {$v eq $Vars($id:layout:variant)} {
+							set Options($id:layout:list:$v) [inspectLayout $Vars($id:twm)]
+						}
+					}
+					discard {
+						set Options($id:layout:changed:$v) no
+						set Options($id:layout:list:$v) $Options($id:layout:saved:$v)
+					}
+					overwrite {
+						WriteLayout $Vars($id:twm) $id $Options($id:layout:name) $v
+					}
+				}
+			}
+		}
+	}
+
+	foreach twm $Vars(twm) {
+		set id $Vars($twm:id)
+		if {$id ni $unsaved} {
+			set Options($id:layout:list:$Vars($id:layout:variant)) [inspectLayout $twm]
+		}
+		if {[info exists Options($id:layout:list:normal)]} {
+			set Options($id:layout:list) $Options($id:layout:list:normal)
+		} else {
+			set Options($id:layout:list) {}
+		}
+	}
+
+	return true
 }
 
 
 proc setup {layoutVariant id layout} {
-	variable [namespace parent]::Vars
-	variable SetupFunc
-
-	if {[llength $SetupFunc]} {
-		{*}$SetupFunc $layout
-	} else {
-		RestoreLayout $Vars(twm:$id) $layoutVariant $Vars($id:layout:name) $layout
-	}
+	set [namespace current]::Options($id:layout:list:$layoutVariant) $layout
 }
 
 
 proc loadLayout {twm name} {
 	variable [namespace parent]::Vars
 	variable Options
-	variable LayoutVariants
 
-	set id $Vars(id:$twm)
+	set id $Vars($twm:id)
 
-	if {![file exists [makeFilename $id normal $name]]} {
-		# TODO show error message
+	if {![::file::test [makeFilename $id normal $name]]} {
 		set Options($id:layout:name) ""
+		return
 	}
 
-	set layout $Vars($id:layout:name)
-	set Vars($id:layout:name) $name
-	set loadVariant [CurrentLayoutVariant $id]
-	if {$loadVariant ne "normal" && ![file exists [makeFilename $id $loadVariant $name]]} {
-		set loadVariant "normal"
-	}
-	set Vars($id:layout:variant) $loadVariant
-
-	foreach layoutVariant [list normal {*}$LayoutVariants] {
-		set file [makeFilename $id $layoutVariant $name]
-		if {[file exists $file]} {
-			if {[catch { ::load::source $file -encoding utf-8 -throw 1 } -> opts]} {
-				return {*}$opts -rethrow 1
-			}
-		}
-	}
-
-	LoadLinkedLayouts $id $name
+	set Options($id:layout:name) $name
+	set layoutVariant [CurrentLayoutVariant $id]
+	set Vars($id:layout:variant) $layoutVariant
+	LoadLayout $twm $layoutVariant $name load
 }
 
 
 proc inspectLayout {twm} {
 	variable [namespace parent]::Vars
 
-	set id $Vars(id:$twm)
+	set id $Vars($twm:id)
 	set list {}
 	if {$id eq "board"} { set list {Extent} }
-	return [$Vars(twm:$id) inspect {*}$list]
+	return [$Vars($id:twm) inspect {*}$list]
 }
 
 
 proc currentLayout {twm} {
 	variable [namespace parent]::Vars
-	return $Vars($Vars(id:$twm):layout:name)
+	variable Options
+
+	return $Options($Vars($twm:id):layout:name)
 }
 
 
-proc currentLayoutIsEqTo {twm layout layoutVariant mode} {
+proc testLayoutStatus {twm} {
+	variable [namespace parent]::Vars
+	variable Options
+
+	set id $Vars($twm:id)
+	if {[string length $Options($id:layout:name)] == 0} { return false }
+	set layoutVariant $Vars($id:layout:variant)
+	if {![info exists Options($id:layout:saved:$layoutVariant)]} { return false }
+	set list $Options($id:layout:saved:$layoutVariant)
+	return [actualLayoutIsEqTo $twm $list true]
+}
+
+
+proc actualLayoutIsEqTo {twm layout {ignoreCoords false}} {
+	set actualLayout [inspectLayout $twm]
+	if {	[::twm::layoutContainsOnlyOnePane $layout]
+		&& [::twm::layoutContainsOnlyOnePane $actualLayout]} {
+		# Special case: if both layouts contain only one pane, then comparison is always true.
+		# Note that we do not consider the names of the panes (not required here).
+		return true
+	}
+	return [$twm compare $actualLayout $layout $ignoreCoords]
+}
+
+
+proc compareTableOptions {twm layoutVariant} {
 	variable [namespace parent]::Vars
 
-	set currentLayout [inspectLayout $twm]
-	# probably ignore float positions
-	if {$mode eq "ignore"} { set opts -all } else { set opts {} }
-	# TODO: possibly strip "-snapshots {...}" and "-structures {...}",
-	# also strip "-x <coord>" and "-y <coord>"
-	set lhs [regsub {*}$opts -- {[-][xy]\s\s*[0-9][0-9]*} $currentLayout ""]
-	set rhs [regsub {*}$opts -- {[-][xy]\s\s*[0-9][0-9]*} $layout ""]
-	set lhs [string map {"  " " "} [string trim $lhs]]
-	set rhs [string map {"  " " "} [string trim $rhs]]
-
-	return [expr {	$lhs eq $rhs
-					&& (	$mode ne "options"
-						|| ![info exists Vars(saved:$Vars(id:$twm):$layoutVariant)]
-						|| [::options::compare $twm $layoutVariant])}]
+	if {![info exists Vars($Vars($twm:id):options:saved:$layoutVariant)]} { return true }
+	return [::options::compare $twm $layoutVariant]
 }
 
 
 proc renameLayout {twm name parent} {
-	variable layout_
+	variable name_
 
 	SaveLayout $twm $parent [list [namespace current]::RenameLayout $twm $name] $name $mc::RenameLayout
-	return $layout_
+	return $name_
 }
 
 
 proc deleteLayout {twm name parent} {
 	variable [namespace parent]::Vars
 	variable Options
-	variable LayoutVariants
+	variable layoutVariants
 
 	if {[::dialog::question \
 			-parent $parent \
 			-message [format $mc::ConfirmDelete $name] \
 			-default no \
 		] eq "yes"} {
-		set id $Vars(id:$twm)
+		set id $Vars($twm:id)
 		set filename [makeFilename $id normal $name]
 		file delete $filename
-		foreach layoutVariant $LayoutVariants {
-			file delete [makeFilename $id $layoutVariant $name]
+		foreach layoutVariant $layoutVariants {
+			if {$layoutVariants ne "normal"} {
+				file delete [makeFilename $id $layoutVariant $name]
+			}
 		}
-		if {$Vars($id:layout:name) eq $name} { set Vars($id:layout:name) "" }
 		if {$Options($id:layout:name) eq $name} { set Options($id:layout:name) "" }
 		if {$id eq "board"} {
 			foreach attr [array names Options *:link] {
@@ -496,40 +574,56 @@ proc deleteLayout {twm name parent} {
 
 
 proc getId {twm} {
+	return [set [namespace parent]::Vars($twm:id)]
+}
+
+
+proc getTWM {id} {
+	return [set [namespace parent]::Vars($id:twm)]
+}
+
+
+proc saveTableOptions {} {
 	variable [namespace parent]::Vars
-	return $Vars(id:$twm)
+	variable layoutVariants
+
+	foreach twm $Vars(twm) {
+		set id $Vars($twm:id)
+		set layoutVariant $Vars($id:layout:variant)
+		::options::save $twm $layoutVariant
+		set Vars($id:options:saved:$layoutVariant) 1
+	}
+
+	foreach layoutVariant $layoutVariants {
+		if {[llength [array names Vars *:options:saved:$layoutVariant]]} {
+			::options::saveTableOptionsFile $layoutVariant
+		}
+	}
 }
 
 
 proc makeLayoutMenu {twm menu {w ""}} {
 	variable [namespace parent]::Vars
 	variable Options
+	variable layoutVariants
 	variable flat_
 	variable ismultiwindow_
 	variable stayontop_
 	variable hide_
-	variable layout_
+	variable name_
+	variable amalgamate_
 
-	set id $Vars(id:$twm)
+	set myID $Vars($twm:id)
+	set myName $Options($myID:layout:name)
 	set count 0
+	set hideDisabled [::table::isTableMenu $menu]
 
 	if {[string length $w]} {
-		set flat_ [$twm get! $w flat -1]
-
-		if {$flat_ != -1 && ![$twm ismetachild $w]} {
-			$menu add checkbutton \
-				-label " $mc::FoldTitleBar" \
-				-variable [namespace current]::flat_ \
-				-command [list $twm togglebar $w] \
-				;
-			::theme::configureCheckEntry $menu
-			incr count
-		}
-
 		set v $w
-		if {!([$twm ismultiwindow $w] || [$twm isnotebook $w])} { set v [$twm parent $w] }
+		if {!([$twm ismultiwindow $w] || [$twm isnotebook $w])} {
+			set v [$twm parent $w]
+		}
 		if {[$twm ismultiwindow $v] || [$twm isnotebook $v]} {
-			if {$count} { $menu add separator }
 			set ismultiwindow_ [$twm ismultiwindow $v]
 			$menu add radiobutton \
 				-label " $mc::Multiwindow" \
@@ -547,25 +641,79 @@ proc makeLayoutMenu {twm menu {w ""}} {
 			::theme::configureRadioEntry $menu
 			incr count
 		}
+
+		if {![$twm ismetachild $w]} {
+			set flat_ [$twm get! $w flat -1]
+
+			if {$flat_ != -1} {
+				if {$count} { $menu add separator }
+				$menu add checkbutton \
+					-label " $mc::FoldTitleBar" \
+					-variable [namespace current]::flat_ \
+					-command [list $twm togglebar $w] \
+					;
+				::theme::configureCheckEntry $menu
+				incr count
+			}
+		}
+
+		set v ""
+		if {[$twm amalgamatable $w]} {
+			set amalgamate_ [$twm get! $w amalgamate 0]
+			set v $w
+		} elseif {[string length [set v [$twm amalgamated $w]]]} {
+			set amalgamate_ 1
+		}
+		if {[string length $v]} {
+			if {$count && [$menu type end] ne "checkbutton"} { $menu add separator }
+			$menu add checkbutton \
+				-label " $mc::AmalgamateTitleBar" \
+				-variable [namespace current]::amalgamate_ \
+				-command [namespace code [list Amalgamate $twm $v]] \
+				;
+			::theme::configureCheckEntry $menu
+			incr count
+		}
 	}
 
-	set unfolded [lmap v [$twm find flat 0] { expr {[$twm ismetachild $v] ? [continue] : $v}}]
-	set folded [lmap v [$twm find flat 1] { expr {[$twm ismetachild $v] ? [continue] : $v}}]
+	set folded [$twm collect flat]
+	set unfolded [$twm collect !flat]
 	if {[llength $unfolded] || [llength $folded]} {
 		if {$count} { $menu add separator }
 		$menu add command \
 			-label " $mc::FoldAllTitleBars" \
 			-image $::icon::16x16::none \
 			-compound left \
-			-command [list [namespace current]::ToggleTitlebars $twm $unfolded] \
-			-state [expr {[llength $unfolded] ? "normal" : "disabled"}] \
+			-command [list $twm togglebar {*}$unfolded] \
+			-state [::makeState [llength $unfolded]] \
 			;
+		set state [expr {[llength $folded] ? "normal" : "disabled"}]
 		$menu add command \
 			-label " $mc::UnfoldAllTitleBars" \
 			-image $::icon::16x16::none \
 			-compound left \
-			-command [list [namespace current]::ToggleTitlebars $twm $folded] \
-			-state [expr {[llength $folded] ? "normal" : "disabled"}] \
+			-command [list $twm togglebar {*}$folded] \
+			-state [::makeState [llength $folded]] \
+			;
+		incr count
+	}
+
+	set separated [$twm collect !amalgamate]
+	set amalgamated [$twm collect amalgamate]
+	if {[llength $separated] || [llength $amalgamated]} {
+		$menu add command \
+			-label " $mc::AmalgamateAllTitleBars" \
+			-image $::icon::16x16::none \
+			-compound left \
+			-command [list $twm amalgamate {*}$separated] \
+			-state [::makeState [llength $separated]] \
+			;
+		$menu add command \
+			-label " $mc::SeparateAllTitleBars" \
+			-image $::icon::16x16::none \
+			-compound left \
+			-command [list $twm separate {*}$amalgamated] \
+			-state [::makeState [llength $amalgamated]] \
 			;
 		incr count
 	}
@@ -630,9 +778,9 @@ proc makeLayoutMenu {twm menu {w ""}} {
 		incr count
 	}
 
-	array set opts $Vars($id:init:options)
+	array set opts $Vars($myID:init:options)
 	set leaves1 [lmap uid [array names opts] {
-		expr {$uid ni {board analysis editor} && $uid ne $id ? $uid : [continue]}
+		expr {$uid ni {board analysis editor} && $uid ne $myID ? $uid : [continue]}
 	}]
 	set leaves2 [lmap uid [$twm leaves] {
 		expr {[string match {analysis:*} $uid] && [$twm isdocked $uid] ? $uid : [continue]}
@@ -684,9 +832,9 @@ proc makeLayoutMenu {twm menu {w ""}} {
 #		}
 	}
 
+	foreach v $layoutVariants { set names($v) [glob $myID $v] }
 	if {$count} { $menu add separator }
-	set names [glob $id]
-	if {[llength $names]} {
+	if {[llength $names(normal)]} {
 		menu $menu.load
 		$menu add cascade \
 			-menu $menu.load \
@@ -694,9 +842,12 @@ proc makeLayoutMenu {twm menu {w ""}} {
 			-image $::icon::16x16::layout \
 			-compound left \
 			;
-		foreach name $names {
+		foreach name $names(normal) {
 			set lbl $name
-			if {$name eq $Options($id:layout:name)} { append lbl " ($mc::Actual)" }
+			if {$name eq $myName} {
+				set status [expr {[testLayoutStatus $twm] ? "Actual" : "Changed"}]
+				append lbl " \[[set mc::$status]\]"
+			}
 			$menu.load add command \
 				-label $lbl \
 				-image $::icon::16x16::none \
@@ -707,28 +858,35 @@ proc makeLayoutMenu {twm menu {w ""}} {
 	}
 	set labelName " $mc::SaveLayoutAs"
 	set state "disabled"
-	if {[string length $Vars($id:layout:name)]} {
-		if {$Vars($id:layout:name) ni $names} {
-			set Vars($id:layout:name) ""
-			set Options($id:layout:name) ""
+	if {[string length $myName]} {
+		if {$myName ni $names(normal)} {
+			set myName [set Options($myID:layout:name) ""]
 		} else {
-			set layoutVariant $Vars($id:layout:variant)
-			if {![info exists Options($id:layout:list:$layoutVariant)]} { set layoutVariant normal }
-			set list $Options($id:layout:list:$layoutVariant)
-			if {![currentLayoutIsEqTo $twm $list $layoutVariant options]} { set state normal }
-			set labelName [string map [list "%s" "\"$Vars($id:layout:name)\""] $labelName]
+			set layoutVariant $Vars($myID:layout:variant)
+			if {![info exists Options($myID:layout:list:$layoutVariant)]} { set layoutVariant normal }
+			if {[TestIfChanged $myID $layoutVariant]} {
+				set state normal
+			} elseif {[info exists Options($myID:layout:saved:$layoutVariant)]} {
+				set list $Options($myID:layout:saved:$layoutVariant)
+				if {![actualLayoutIsEqTo $twm $list true] || ![compareTableOptions $twm $layoutVariant]} {
+					set state normal
+				}
+			} else {
+				set state normal
+			}
+			set labelName [string map [list "%s" "\"$myName\""] $labelName]
 			if {$layoutVariant ne "normal"} {
 				append labelName " \[$::mc::VariantName([toVariant $layoutVariant])\]"
 			}
 		}
 	}
-	set layout_ $Vars($id:layout:name)
-	if {[string length $layout_]} {
+	set name_ $myName
+	if {[string length $name_] && (!$hideDisabled || $state eq "normal")} {
 		$menu add command \
 			-label $labelName \
 			-image $::icon::16x16::save \
 			-compound left \
-			-command [namespace code [list DoSaveLayout $twm $twm $layoutVariant $names]] \
+			-command [namespace code [list DoSaveLayout $twm $twm $layoutVariant $names(normal)]] \
 			-state $state \
 			;
 	}
@@ -740,9 +898,61 @@ proc makeLayoutMenu {twm menu {w ""}} {
 				$twm $twm [namespace current]::DoSaveLayout "" $mc::SaveLayout]]
 		;
 
-	if {$id ne "board" && [string length [set current $Vars($id:layout:name)]] > 0} {
-		set names [glob board]
-		if {[llength $names]} {
+	set sources {}
+	if {[string length $myName]} {
+		foreach v $layoutVariants {
+			if {$v ne $Vars($myID:layout:variant)} {
+				if {	[info exists Options($myID:layout:list:$v)]
+					&& [llength [set rhs $Options($myID:layout:list:$v)]]
+					&& ![$twm compare $Options($myID:layout:list:$layoutVariant) $rhs]} {
+					lappend sources $v $myName
+				} else {
+					set fname [makeFilename $myID $v $myName]
+					if {[file exists $fname]} { lappend sources $v $myName }
+				}
+			}
+		}
+	}
+	set layoutVariant $Vars($myID:layout:variant)
+	foreach name $names(normal) {
+		if {$name ne $myName} {
+			foreach v $layoutVariants {
+				if {$name in $names($v)} { lappend sources $v $name }
+			}
+		}
+	}
+	set state [::makeState [llength $sources]]
+	if {!$hideDisabled || $state eq "normal"} {
+		menu $menu.copy
+		$menu add cascade \
+			-menu $menu.copy \
+			-label " $mc::CopyLayoutFrom..." \
+			-image $::icon::16x16::copy \
+			-compound left \
+			-state $state \
+			;
+		set separator 1
+		foreach {v name} $sources {
+			if {$name eq $myName} {
+				set text "$::mc::Variant $::mc::VariantName([toVariant $v])"
+			} else {
+				if {$separator && [$menu.copy index end] ne "none"} {
+					$menu.copy add separator
+				}
+				set separator 0
+				set text "$::mc::Layout '$name' \[$::mc::VariantName([toVariant $v])\]"
+			}
+			$menu.copy add command \
+				-label $text \
+				-command [namespace code [list CopyLayout $myID $v $name]] \
+				;
+		}
+	}
+
+	if {$myID ne "board" && [string length [set current $myName]] > 0} {
+		set bnames [glob board]
+		if {[llength $bnames]} {
+			variable Link_
 			menu $menu.link
 			$menu add cascade \
 				-menu $menu.link \
@@ -751,23 +961,29 @@ proc makeLayoutMenu {twm menu {w ""}} {
 				-compound left \
 				;
 			tooltip::tooltip $menu -index [$menu index end] $mc::LinkLayoutTip
-			set state [expr {[info exists Options($id:$current:link)] ? "normal" : "disabled"}]
-			foreach name $names {
+			set Link_ ""
+			if {[info exists Options($myID:$current:link)]} {
+				set Link_ $Options($myID:$current:link)
+			}
+			foreach name $bnames {
 				$menu.link add radiobutton \
 					-label $name \
-					-variable [namespace current]::Options($id:$current:link) \
+					-variable [namespace current]::Link_ \
 					-value $name \
+					-command [namespace code [list UpdateLink $myID $current]] \
 					;
 				::theme::configureRadioEntry $menu.link
 			}
-			$menu add command \
-				-label " [format $mc::UnlinkLayout $current]" \
-				-image $::icon::16x16::none \
-				-compound left \
-				-command [list array unset [namespace current]::Options $id:$current:link] \
-				-state $state \
-				;
-			bind $menu <<MenuUnpost>> [namespace code [list CheckLink $id:$current]]
+			set state [::makeState [info exists Options($myID:$current:link)]]
+			if {$state eq "normal"} {
+				$menu add command \
+					-label " [format $mc::UnlinkLayout $Link_]" \
+					-image $::icon::16x16::none \
+					-compound left \
+					-command [list array unset [namespace current]::Options $myID:$current:link] \
+					-state $state \
+					;
+			}
 		}
 	}
 
@@ -775,21 +991,21 @@ proc makeLayoutMenu {twm menu {w ""}} {
 	lmap uid [$twm leaves] { expr {[$twm isundockable $uid] ? [incr n] : [continue]} }
 	if {$n > 0} {
 		set link ""
-		set cur $Vars($id:layout:name)
-		if {[info exists Options($id:$cur:link)]} { set link $Options($id:$cur:link) }
-		set cmd [list [namespace parent]::layout::open $twm $id $Vars($id:layout:variant) $cur $link]
+		set cur $myName
+		if {[info exists Options($myID:$cur:link)]} { set link $Options($myID:$cur:link) }
+		set cmd [list [namespace parent]::layout::open $twm $myID $Vars($myID:layout:variant) $cur $link]
 		$menu add command \
 			-label " $mc::ManageLayouts..." \
 			-image $::icon::16x16::setup \
 			-compound left \
 			-command $cmd \
-			-state [expr {[llength $names] ? "normal" : "disabled"}] \
+			-state [::makeState [llength $names(normal)]] \
 			;
 
 		$menu add separator
 		$menu add checkbutton \
 			-label " $mc::ShowAllDockingPoints" \
-			-variable [namespace parent]::Options($id:docking:showall) \
+			-variable [namespace parent]::Options($myID:docking:showall) \
 			-command [namespace code [list ShowAllDockingPoints $twm]] \
 			;
 		::theme::configureCheckEntry $menu
@@ -805,7 +1021,7 @@ proc makeLayoutMenu {twm menu {w ""}} {
 		foreach {size pixels} {Small 16 Medium 24 Large 32} {
 			$menu.size add radiobutton \
 				-label " [set ::toolbar::mc::$size]" \
-				-variable ::twm::Defaults(cross:size) \
+				-variable ::twm::Options(cross:size) \
 				-value $pixels \
 				;
 			::theme::configureRadioEntry $menu.size
@@ -814,8 +1030,8 @@ proc makeLayoutMenu {twm menu {w ""}} {
 }
 
 
-proc glob {id} {
-	set files [::glob -nocomplain -directory [makeDir $id normal] *.layout]
+proc glob {id {layoutVariant normal}} {
+	set files [::glob -nocomplain -directory [makeDir $id $layoutVariant] *.layout]
 	return [lsort -dictionary [lmap f $files {file tail [file rootname $f]}]]
 }
 
@@ -835,34 +1051,295 @@ proc restoreLayout {twm layoutVariant name list} {
 	variable [namespace parent]::Vars
 	variable Options
 
-	set id $Vars(id:$twm)
+	set id $Vars($twm:id)
 	set Vars(loading) 1
-	$Vars(twm:$id) load $list
-	if {[info exists Vars(saved:$id:$layoutVariant)]} {
+	$Vars($id:twm) load $list
+	if {[info exists Vars($id:options:saved:$layoutVariant)]} {
 		::options::restore $twm $layoutVariant
 	}
 	set Vars(loading) 0
-	set Vars($id:layout:name) $name
 	set Options($id:layout:name) $name
 	set Options($id:layout:list) $list
 	set Options($id:layout:list:$layoutVariant) $list
-	set Options($id:layout:saved:$layoutVariant) $list
+}
+
+
+proc LoadLayout {twm layoutVariant name mode} {
+	variable [namespace parent]::Vars
+	variable layoutVariants
+	variable Options
+
+	if {[string length $name] == 0} { return false }
+
+	set id $Vars($twm:id)
+	set file [makeFilename $id $layoutVariant $name]
+
+	if {$layoutVariant ne "normal" && ![file exists $file]} {
+		if {$mode eq "switch"} { return false }
+		# Note that this file should always exist.
+		set file [makeFilename $id normal $name]
+	}
+
+	if {[file exists $file]} {
+		if {[catch { ::load::source $file -encoding utf-8 -throw 1 } -> opts]} {
+			puts stderr "error while loading $file"
+			if {$mode eq "switch"} { return false }
+			return {*}$opts -rethrow 1
+		}
+	} elseif {$mode eq "switch"} {
+		return false
+	}
+
+	set Options($id:layout:list) $Options($id:layout:list:$layoutVariant)
+	set Vars($id:options:saved:$layoutVariant) 1
+	set Options($id:layout:saved:$layoutVariant) $Options($id:layout:list:$layoutVariant)
+	set Options($id:layout:changed:$layoutVariant) 0
+	set Options($id:layout:name) $name
+	array unset Vars $id:layout:changed:$layoutVariant
+	set preserve {}
+
+	if {$id eq "board"} {
+		foreach uid [$twm leaves] {
+			if {[string match {analysis:*} $uid]} { lappend preserve $uid }
+		}
+		set preserve [lsub $preserve [::twm::extractLeaves $Options($id:layout:list)]]
+		if {$mode eq "load" && [llength $preserve] > 0} {
+			set reply [::dialog::question \
+				-parent .application \
+				-message $mc::KeepEnginesOpen \
+				-default yes \
+				-buttons {yes no} \
+			]
+			if {$reply eq "no"} { set preserve {} }
+		}
+	}
+
+	set Vars(loading) 1
+	$Vars($id:twm) load -preserve $preserve $Options($id:layout:list)
+	set Vars(loading) 0
+	after idle [list ::options::save $twm $layoutVariant]
+
+	if {$mode eq "load"} {
+		foreach v $layoutVariants {
+			if {$v ne $layoutVariant} {
+				array unset Options $id:layout:*:$v
+				array unset Vars $id:layout:changed:$v
+			}
+		}
+	}
+
+	LoadLinkedLayouts $twm $name
+	return true
+}
+
+
+proc LoadLinkedLayouts {twm name} {
+	variable [namespace parent]::Vars
+	variable Options
+
+	set id $Vars($twm:id)
+	if {$id ne "board"} { return }
+
+	foreach attr [array names Options *:link] {
+		if {$Options($attr) eq $name} {
+			lassign [split $attr :] id myName
+			loadLayout $Vars($id:twm) $myName
+		}
+	}
+}
+
+
+proc EmbedButtons {numEntries w} {
+	variable MaxPerPage
+	variable buttons_
+	variable colors_
+	variable current_
+
+	set l [tk::label $w.page -text $mc::Page]
+	grid $l -row 1 -column 1 -sticky s
+	grid columnconfigure $w 2 -minsize $::theme::padx
+	set numPages [expr {($numEntries + $MaxPerPage - 1)/$MaxPerPage}]
+	set colors_(background) [::theme::getColor background]
+	set colors_(hilitebackground) [::dropdownbutton::activebackground]
+	set colors_(activebackground) [::colors::makeActiveColor $colors_(hilitebackground)]
+	set current_ 1
+	for {set i 1} {$i <= $numPages} {incr i} {
+		set color [expr {$i == $current_ ? "hilite" : ""}]
+		set b [tk::button $w.p$i \
+			-text $i \
+			-background $colors_(${color}background) \
+			-activebackground $colors_(activebackground) \
+			-command [namespace code [list SelectPane $i]] \
+		]
+		set buttons_($i) $b
+		grid $b -row 1 -column [expr {$i + 2}] -sticky s
+	}
+}
+
+
+proc SelectPane {pageno} {
+	variable multiwindow_
+	variable panes_
+	variable buttons_
+	variable colors_
+	variable current_
+
+	$multiwindow_ raise $panes_($pageno)
+	$buttons_($current_) configure -background $colors_(background)
+	$buttons_($pageno) configure -background $colors_(hilitebackground)
+	set current_ $pageno
+}
+
+
+proc EmbedUnsavedLayouts {unsaved showVariants w infoFont alertFont} {
+	variable [namespace parent]::Vars
+	variable MaxPerPage
+	variable Options
+	variable multiwindow_
+	variable panes_
+	variable action_
+	variable variants_
+
+	array unset panes_
+	array unset action_
+
+	set multi [expr {[llength $unsaved] > $MaxPerPage}]
+	if {$multi} {
+		set multiwindow_ [tk::multiwindow $w.mw -borderwidth 0]
+		pack $multiwindow_
+		set pageno 1
+	}
+
+	set frow 0
+	set count 0
+
+	foreach id $unsaved {
+		if {$multi && ![info exists panes_($pageno)]} {
+			set w [tk::frame $multiwindow_.p$pageno -borderwidth 0]
+			$multiwindow_ add $w -sticky new
+			set panes_($pageno) $w
+		}
+		set top [ttk::frame $w.$id -borderwidth 1 -relief raised]
+		set description ""
+		if {$showVariants} {
+			set variants {}
+			set comma ""
+			append description " ("
+			foreach v $variants_($id) {
+				append description $comma $::mc::VariantName([toVariant $v])
+				set comma ", "
+			}
+			append description ")"
+		}
+
+		set hdr [ttk::frame $top.hdr -borderwidth 0]
+		grid $hdr -row 1 -column 1 -sticky ew
+		set tab [::mc::stripAmpersand [set [namespace parent]::mc::Tab($id)]]
+		set l0 [ttk::label $hdr.l0-${id} -font $infoFont  -text "${mc::Tab}: "]
+		set l1 [ttk::label $hdr.l1-${id} -font $alertFont -text $tab]
+		set l2 [ttk::label $hdr.l2-${id} -font $infoFont  -text " \u2212 $mc::Layout: "]
+		set l3 [ttk::label $hdr.l3-${id} -font $alertFont -text $Options($id:layout:name)]
+		pack $l0 $l1 $l2 $l3 -side left
+		if {[string length $description]} {
+			pack [ttk::label $hdr.l4-${id} -font $infoFont -text $description] -side left
+		}
+		set action_($id) disconnect
+		set row 3
+
+		foreach action {disconnect retain discard overwrite} {
+			set rb [ttk::radiobutton $top.${action}-${id} \
+				-style message.TRadiobutton \
+				-text $mc::UnsavedAction($action) \
+				-variable [namespace current]::action_($id) \
+				-value $action \
+				-command [namespace code [list PropagateSelection $top $action $unsaved]] \
+			]
+			grid $rb -row $row -column 1 -sticky ew
+			incr row 1
+		}
+
+		grid rowconfigure $top {0 2 7} -minsize $::theme::pady
+		grid columnconfigure $top {0 2} -minsize $::theme::padx
+		grid columnconfigure $top 1 -weight 1
+
+		grid $top -row $frow -column 1 -sticky ew
+		grid columnconfigure $w 1 -weight 1
+		incr frow 2
+		incr count
+
+		set wrap [expr {$multi && ($count % $MaxPerPage) == 0 && [llength $unsaved] > $count}]
+		if {$wrap || $count == [llength $unsaved]} {
+			incr frow -2
+			for {set row 1} {$row < $frow} {incr row 2} {
+				grid rowconfigure $w $row -minsize $::theme::padY
+			}
+		}
+		if {$wrap} {
+			incr pageno
+			set frow 0
+		}
+	}
+
+	if {$multi} { $multiwindow_ select $panes_(1) }
+}
+
+
+proc PropagateSelection {w action unsaved} {
+	variable [namespace parent]::Vars
+	variable action_
+
+	if {!$Vars(first:selection)} { return }
+	if {[llength $unsaved] <= 1} { return }
+	set Vars(first:selection) 0
+
+	set reply [::dialog::question \
+		-parent $w \
+		-message $mc::ApplyToAllLayouts \
+		-default yes \
+		-buttons {yes no} \
+	]
+	if {$reply eq "yes"} {
+		foreach id $unsaved {
+			if {$action_($id) != $action} { set action_($id) $action }
+		}
+	}
+}
+
+
+proc UpdateLink {id name} {
+	variable Link_
+	setLink $id $name $Link_
+}
+
+
+proc TestIfChanged {id variant} {
+	variable Options
+
+	return [expr {	[info exists Options($id:layout:changed:$variant)]
+					&& $Options($id:layout:changed:$variant)}]
+}
+
+
+proc TestLayoutStatus {twm} {
+	variable [namespace parent]::Vars
+	variable Options
+
+	set id $Vars($twm:id)
+	if {[string length $Options($id:layout:name)] == 0} { return }
+	set layoutVariant $Vars($id:layout:variant)
+	if {[TestIfChanged $id $layoutVariant]} { return }
+	if {![info exists Options($id:layout:saved:$layoutVariant)]} { return }
+	set list $Options($id:layout:saved:$layoutVariant)
+	if {![actualLayoutIsEqTo $twm $list true] || ![compareTableOptions $twm $layoutVariant]} {
+		set Options($id:layout:changed:$layoutVariant) 1
+		set Vars($id:layout:changed:$layoutVariant) 1
+	}
 }
 
 
 proc StayOnTop {twm w} {
 	variable stayontop_
-
-	$twm set! $w stayontop $stayontop_($w)
-	if {$stayontop_($w)} {
-		set master [winfo toplevel $twm]
-		wm transient $w $master
-		raise $w $master
-		# NOTE: not every window manager is re-decorating the window.
-		catch { wm attributes $w -type dialog }
-	} else {
-		wm transient $w ""
-	}
+	$twm stayontop $v $stayontop_($w)
 }
 
 
@@ -885,7 +1362,7 @@ proc ChangeState {twm uid} {
 	if {[$twm isdocked $uid]} {
 		destroy [$twm leaf $uid]
 	} else {
-		set id $Vars(id:$twm)
+		set id $Vars($twm:id)
 		array set opts $Vars($id:init:options)
 		$twm new frame $uid $opts($uid)
 	}
@@ -896,22 +1373,7 @@ proc RestoreLayout {twm layoutVariant name list} {
 	variable [namespace parent]::Vars
 	variable Options
 
-	set id $Vars(id:$twm)
-
-	if {$layoutVariant eq $Vars($id:layout:variant)} {
-		set Vars(loading) 1
-		::options::save $twm $layoutVariant
-		set Vars(saved:$id:$layoutVariant) 1
-		$Vars(twm:$id) load $list
-		# here we don't have to restore
-		set Vars(loading) 0
-		set Vars($id:layout:name) $name
-		set Options($id:layout:name) $name
-		set Options($id:layout:list) $list
-	}
-
-	set Options($id:layout:list:$layoutVariant) $list
-	set Options($id:layout:saved:$layoutVariant) $list
+	set Options($Vars($twm:id):layout:list:$layoutVariant) $list
 }
 
 
@@ -926,19 +1388,27 @@ proc CheckLink {attr} {
 
 proc SaveLayout {twm parent cmd name title} {
 	variable [namespace parent]::Vars
-	variable layout_
+	variable Options
+	variable name_
 
 	set myName $name
-	set layout_ $name
-	if {[string length $layout_] == 0} { set layout_ $mc::NewLayout }
-	set id $Vars(id:$twm)
+	set name_ $name
+	set id $Vars($twm:id)
+	if {[string length $name_] == 0} {
+		if {	[string length $Options(board:layout:name)]
+			&& $Options(board:layout:name) ne $Options($id:layout:name)} {
+			set name_ $Options(board:layout:name)
+		} else {
+			set name_ $mc::NewLayout
+		}
+	}
 	set names [glob $id]
 	set dlg [tk::toplevel $parent.save -class Scidb]
 	pack [set top [ttk::frame $dlg.top -borderwidth 0 -takefocus 0]]
 	set cb [ttk::combobox $top.input \
 		-height 10 \
 		-width 40 \
-		-textvariable [namespace current]::layout_ \
+		-textvariable [namespace current]::name_ \
 		-values $names \
 	]
 	$cb selection range 0 end
@@ -983,38 +1453,45 @@ proc IfThenElse {if then else} { if {[{*}$if]} { {*}$then } else { {*}$else } }
 
 proc RenameLayout {twm oldName parent - - names} {
 	variable [namespace parent]::Vars
-	variable LayoutVariants
+	variable layoutVariants
 	variable Options
-	variable layout_
+	variable name_
 
-	if {$layout_ eq $oldName} { return 1 }
-	set id $Vars(id:$twm)
-	set newName $layout_
+	if {$name_ eq $oldName} { return 1 }
+	set id $Vars($twm:id)
+	set newName $name_
 	if {$newName in $names} {
 		if {[::dialog::question \
 				-parent $parent \
 				-message [format $mc::ConfirmOverwrite $newName] \
 				-default no \
 			] ne "yes"} {
-			set layout_ ""
+			set name_ ""
 			return [expr {$twm eq $parent}]
 		}
 	}
 	if {![::fsbox::checkPath $parent $newName]} {
-		if {[string length $oldName]} { set layout_ "" }
+		if {[string length $oldName]} { set name_ "" }
 		return 0
 	}
 
-	foreach layoutVariant [list normal {*}$LayoutVariants] {
+	foreach layoutVariant $layoutVariants {
 		set source [makeFilename $id $layoutVariant $oldName]
 		if {[file exists $source]} {
 			set target [makeFilename $id $layoutVariant $newName]
 			file rename -force $source $target
+
+			if {$id eq "board"} {
+				foreach attr [array names Options *:link] {
+					if {$Options($attr) eq $oldName} { set Options($attr) $newName }
+				}
+			}
 		}
 	}
 
-	if {$Vars($id:layout:name) eq $oldName} { set Vars($id:layout:name) $newName }
-	if {$Options($id:layout:name) eq $oldName} { set Options($id:layout:name) $newName }
+	if {$Options($id:layout:name) eq $oldName} {
+		set Options($id:layout:name) $newName
+	}
 	return 1
 }
 
@@ -1022,14 +1499,14 @@ proc RenameLayout {twm oldName parent - - names} {
 proc DoSaveLayout {twm parent layoutVariant names} {
 	variable [namespace parent]::Vars
 	variable Options
-	variable layout_
+	variable name_
 
-	if {![::fsbox::checkPath $parent $layout_]} { return 0 }
-	set id $Vars(id:$twm)
+	if {![::fsbox::checkPath $parent $name_]} { return 0 }
+	set id $Vars($twm:id)
 	set variants {}
 	if {[string length $layoutVariant] == 0} {
 		set layoutVariant [CurrentLayoutVariant $id]
-		if {$layoutVariant eq "normal" || ![file exists [makeFilename $id normal $layout_]]} {
+		if {$layoutVariant eq "normal" || ![file exists [makeFilename $id normal $name_]]} {
 			lappend variants "normal"
 		}
 		if {$layoutVariant ne "normal"} {
@@ -1038,44 +1515,94 @@ proc DoSaveLayout {twm parent layoutVariant names} {
 	} else {
 		lappend variants $layoutVariant
 	}
-	if {$layout_ in $names} {
-		set confirm 0
+	set confirm 0
+	if {$name_ in $names} {
 		foreach v $variants {
-			if {[file exists [makeFilename $id $v $layout_]]} { set confirm 1; break }
+			if {[file exists [makeFilename $id $v $name_]]} { set confirm 1; break }
 		}
 		if {$confirm} {
 			if {[::dialog::question \
 					-parent $parent \
-					-message [format $mc::ConfirmOverwrite $layout_] \
+					-message [format $mc::ConfirmOverwrite $name_] \
 					-default no \
 				] ne "yes"} {
-				set layout_ ""
+				set name_ ""
 				return [expr {$twm eq $parent}]
 			}
 		}
 	}
 	if {[llength $variants]} {
-		foreach v $variants { WriteLayout $twm $id $v }
-		::dialog::info -parent $parent -message [format $mc::LayoutSaved $layout_]
+		foreach v $variants { WriteLayout_ $twm $id $v }
 	}
-	set Vars($id:layout:name) $layout_
-	set Options($id:layout:name) $layout_
+	if {	!$confirm
+		&& $id ne "board"
+		&& ![info exists Options($id:$name_:link)]
+		&& $name_ in [glob board]} {
+		if {[::dialog::question \
+				-parent $parent \
+				-message [format $mc::LinkWithLayout $name_] \
+				-default no \
+			] eq "yes"} {
+			setLink $id $name_ $name_
+		}
+	}
+	set Options($id:layout:name) $name_
+	::dialog::info -parent $parent -message [format $mc::LayoutSaved $name_]
 	return 1
 }
 
 
-proc WriteLayout {twm id layoutVariant} {
+proc CopyLayout {id layoutVariant name} {
+	variable [namespace parent]::Vars
 	variable Options
-	variable layout_
+
+	set myLayoutVariant $Vars($id:layout:variant)
+
+	if {	$layoutVariant eq $myLayoutVariant
+		|| ![info exists Options($id:layout:list:$layoutVariant)]
+		|| ![llength $Options($id:layout:list:$layoutVariant)]} {
+		set file [makeFilename $id $layoutVariant $name]
+		if {[catch { ::load::source $file -encoding utf-8 -throw 1 } -> opts]} {
+			puts stderr "error while loading $file"
+			return {*}$opts -rethrow 1
+		}
+	} else {
+		set Options($id:layout:list:$myLayoutVariant) $Options($id:layout:list:$layoutVariant)
+		::options::restore $Vars($id:twm) $layoutVariant
+	}
+
+	set Options($id:layout:list) $Options($id:layout:list:$layoutVariant)
+	set Options($id:layout:changed:$myLayoutVariant) 1
+	set Vars($id:layout:changed:$myLayoutVariant) 1
+
+	set Vars(loading) 1
+	$Vars($id:twm) load $Options($id:layout:list)
+	set Vars(loading) 0
+}
+
+
+proc WriteLayout_ {twm id layoutVariant} {
+	variable name_
+	WriteLayout $twm $id $name_ $layoutVariant
+}
+
+
+proc WriteLayout {twm id name layoutVariant} {
+	variable [namespace parent]::Vars
+	variable Options
 
 	set dir [makeDir $id $layoutVariant]
 	file mkdir $dir
-	set fh [::open [makeFilename $id $layoutVariant $layout_] "w"]
+	set fh [::open [makeFilename $id $layoutVariant $name] "w"]
 	fconfigure $fh -encoding utf-8
 	set Options($id:layout:list:$layoutVariant) [inspectLayout $twm]
 	set Options($id:layout:saved:$layoutVariant) $Options($id:layout:list:$layoutVariant)
+	set Options($id:layout:changed:$layoutVariant) 0
+	array unset Vars $id:layout:changed:$layoutVariant
 	puts $fh "::application::twm::setup $layoutVariant $id {$Options($id:layout:list:$layoutVariant)}"
-	::options::writeTableOptions $fh $id
+	::options::save $twm $layoutVariant
+	set Vars($id:options:saved:$layoutVariant) 1
+	::options::writeTableOptions $fh $id $layoutVariant
 	close $fh
 }
 
@@ -1086,8 +1613,9 @@ proc ShowAllDockingPoints {twm} {
 }
 
 
-proc ToggleTitlebars {twm windows} {
-	$twm togglebar {*}$windows
+proc Amalgamate {twm frame} {
+	variable amalgamate_
+	$twm [expr {$amalgamate_ ? "amalgamate" : "separate"}] $frame
 }
 
 
@@ -1103,26 +1631,8 @@ proc CurrentLayoutVariant {id} {
 }
 
 
-proc LoadLinkedLayouts {id name} {
-	variable [namespace parent]::Vars
-	variable Options
-
-	if {$id ne "board"} { return }
-
-	foreach attr [array names Options *:link] {
-		if {$Options($attr) eq $name} {
-			lassign [split $attr :] id myName
-			if {$Options($id:layout:name) ne $myName} {
-				loadLayout $Vars(twm:$id) $myName
-			}
-		}
-	}
-}
-
-
 proc GetLayout {id} {
 	variable [namespace parent]::Vars
-	variable LayoutVariants
 	variable Options
 
 	if {[::process::testOption initial-layout]} {
@@ -1131,26 +1641,30 @@ proc GetLayout {id} {
 		set Options($id:layout:name) ""
 		set Options($id:layout:list) {}
 		set Options($id:layout:list:normal) {}
-		set Vars($id:layout:name) ""
-	} else {
+	} elseif {![info exists Vars($id:options:saved:normal)]} {
 		if {	[string length $Options($id:layout:name)]
 			&& ![file exists [makeFilename $id normal $Options($id:layout:name)]]} {
 			set Options($id:layout:name) ""
 		}
-		set Vars($id:layout:name) $Options($id:layout:name)
+		if {![info exists Options($id:layout:list:normal)]} {
+			set Options($id:layout:list:normal) []
+		}
 	}
 	set layoutVariant [CurrentLayoutVariant $id]
 	if {![info exists Options($id:layout:list:$layoutVariant)]} {
 		set layoutVariant normal
 	}
-	if {![info exists Options($id:layout:list:$layoutVariant)]} {
+	if {[info exists Options($id:layout:list:$layoutVariant)]} {
+		set Options($id:layout:list) $Options($id:layout:list:$layoutVariant)
+	} else {
 		set Options($id:layout:list:$layoutVariant) $Options($id:layout:list)
 	}
 	if {![info exists Options($id:layout:list:normal)]} {
 		set Options($id:layout:list:normal) $Options($id:layout:list:$layoutVariant)
 	}
 	set Vars($id:layout:variant) $layoutVariant
-	return $Options($id:layout:list:$layoutVariant)
+	set Vars($id:options:saved:normal) 1
+	return $layoutVariant
 }
 
 
@@ -1163,6 +1677,19 @@ proc Menu {twm w x y} {
 	makeLayoutMenu $twm $menu $w
 	bind $menu <<MenuUnpost>> +[list after idle [list catch [list destroy $menu]]]
 	tk_popup $menu $x $y
+}
+
+
+proc LoadOptionFile {layoutVariant} {
+	variable [namespace parent]::Vars
+	variable Options
+
+	if {[info exists Vars(options:loaded:$layoutVariant)]} { return }
+	set Vars(options:loaded:$layoutVariant) 1
+	if {[catch { ::options::sourceFile $layoutVariant } rc]} {
+		set message [format $mc::ErrorInOptionFile $::mc::VariantName([toVariant $layoutVariant])]
+		::dialog::error -parent .application -message $message
+	}
 }
 
 

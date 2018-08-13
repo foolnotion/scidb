@@ -685,6 +685,11 @@ proc borderwidth {path} {
 }
 
 
+proc computeHeight {path nrows} {
+	return [::scrolledtable::computeHeight $path $nrows]
+}
+
+
 proc identify {path x y} {
 	return [::scrolledtable::identify $path $x $y]
 }
@@ -907,7 +912,6 @@ proc TableSelected {path index} {
 	set base [::scrolledtable::base $path]
 	set variant [::scrolledtable::variant $path]
 	set view [{*}$Vars(viewcmd) $base $variant]
-	# XXX index == -1 should not happen
 	set info [::scidb::db::get gameInfo $index $view $base $variant]
 	set number [expr {[column $info number] - 1}]
 	set fen {}
@@ -917,13 +921,7 @@ proc TableSelected {path index} {
 		{*}$Vars(selectcmd) $base $variant $number $fen
 	} else {
 		::widget::busyOperation {
-			::game::new $path \
-				-base $base \
-				-variant $variant \
-				-view $view \
-				-number $number \
-				-fen $fen \
-				;
+			::game::new $path -base $base -variant $variant -view $view -number $number -fen $fen
 		}
 	}
 }

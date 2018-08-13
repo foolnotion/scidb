@@ -6,7 +6,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2013 Gregor Cramer
+# Copyright: (C) 2013-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -28,6 +28,7 @@ array set Options {
 	background ""
 	activebackground ""
 	activeforeground ""
+	disabledforeground ""
 }
 array set Icons {}
 
@@ -35,18 +36,11 @@ set Locked 0
 set Active ""
 
 
-proc activebackground {} {
-	variable Options
-	InitActiveColors
-	return $Options(arrowactivebackground)
-}
-
-
-proc activeforeground {} {
-	variable Options
-	InitActiveColors
-	return $Options(arrowactiveforeground)
-}
+proc background			{} { return [GetColor background] }
+proc foreground			{} { return [GetColor foreground] }
+proc activebackground	{} { return [GetColor activebackground] }
+proc activeforeground	{} { return [GetColor activeforeground] }
+proc disabledforeground	{} { return [GetColor disabledforeground] }
 
 
 proc Build {w args} {
@@ -76,7 +70,7 @@ proc Build {w args} {
 	tk::frame $w -borderwidth 0 -takefocus 0 -class DropdownButton
 	bind $w <FocusIn> { focus [tk_focusNext %W] }
 
-	InitActiveColors
+	InitColors
 
 	foreach opt {activebackground activeforeground background foreground disabledforeground} {
 		if {[string length $opts(-arrow$opt)] == 0} {
@@ -243,6 +237,13 @@ proc Setup {w} {
 }
 
 
+proc GetColor {type} {
+	variable Options
+	InitColors
+	return $Options(arrow$type)
+}
+
+
 proc SetIcon {w height} {
 	variable ${w}::Priv
 	variable Icons
@@ -353,6 +354,7 @@ proc ReleaseMenu {w unpost} {
 	variable Locked
 	variable Active
 
+	# TODO: this only works with X11, so we need a platform independent proc.
 	if {$unpost} { ::tk::MenuUnpost $w.m.__dropdownbutton__ }
 
 	$w.m configure \
@@ -424,7 +426,7 @@ proc LeaveArrow {w {force 0}} {
 }
 
 
-proc InitActiveColors {} {
+proc InitColors {} {
 	variable Options
 
 	if {[string length $Options(activebackground)] == 0} {

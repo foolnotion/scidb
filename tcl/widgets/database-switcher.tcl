@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2012-2013 Gregor Cramer
+# Copyright: (C) 2012-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -99,6 +99,7 @@ array set Defaults {
 	symbol-padding			4
 	background				switcher,background
 	selected:background	switcher,selected:background
+	modified:foreground	switcher,modified:foreground
 	normal:background		switcher,normal:background
 	normal:foreground		switcher,normal:foreground
 	hidden:background		switcher,hidden:background
@@ -317,6 +318,7 @@ proc ComputeMinHeight {w} {
 	set ipad 2
 	set minheight $Options(iconsize)
 	incr minheight $Defaults(symbol-padding)
+	incr minheight $Defaults(symbol-padding)
 	incr minheight [expr {2*$ipad + 6}]
 
 	if {$Options(iconsize) < 32} {
@@ -325,7 +327,7 @@ proc ComputeMinHeight {w} {
 		set minheight [expr {max($minheight, 2*$textHeight + 6)}]
 	}
 
-	return $minheight
+	return [expr {$minheight + 2*[$w cget -borderwidth]}]
 }
 
 
@@ -344,7 +346,6 @@ proc UpdateIconSize {w args} {
 		$canv itemconfigure name$id -font $symFont
 		$canv itemconfigure suff$id -font $symFont
 		$canv itemconfigure size$id -font $symFont
-		UpdateIcon $w $id
 	}
 
 	update idletasks
@@ -471,46 +472,12 @@ proc UpdateBase {w id} {
 }
 
 
-proc UpdateIcon {w id} {
-	variable ${w}::Vars
-	variable Options
-
-	lassign [lindex $Vars(bases) $Vars(map:$id)] _ type file
-
-	if {[::scidb::db::get writable? $file]} {
-		set ext [string tolower [file extension $file]]
-
-		if {$ext eq ".pgn" || $ext eq ".gz" || $ext eq ".zip"} {
-			set unsaved [::scidb::db::get unsaved? $file]
-			set size $Options(iconsize)
-			set icon [set ::application::database::icons::${type}(${size}x${size})]
-
-			if {$unsaved} {
-				variable UnsavedIcon
-
-				if {![info exists UnsavedIcon($type,$size)]} {
-					set img [image create photo -width 0 -height 0]
-					$img copy $icon
-					::scidb::tk::image colorize darkred 1 $img
-					set UnsavedIcon($type,$size) $img
-				}
-
-				set icon $UnsavedIcon($type,$size)
-			}
-
-			$w.content itemconfigure icon$id -image $icon
-		}
-	}
-}
-
-
 proc UpdateSwitcher {w file {variant ""}} {
 	variable ${w}::Vars
 
 	if {[string length $variant] == 0 || $variant eq "Undetermined" || $variant eq $Vars(variant)} {
 		if {[info exists Vars(id:$file)]} {
 			UpdateBase $w $Vars(id:$file)
-			UpdateIcon $w $Vars(id:$file)
 			LayoutSwitcher $w
 		}
 	}
@@ -921,14 +888,25 @@ proc LayoutSwitcher {w args} {
 		} else {
 			set state hidden
 		}
+
 		$canv itemconfigure content$id -fill [::colors::lookup $Defaults($state:background)]
 
 		if {$id in $Vars(subset)} { set state emph } else { set state hidden }
 		$canv itemconfigure suff$id -fill [::colors::lookup $Defaults($state:foreground)]
 
 		if {$id in $Vars(subset)} { set state normal } else { set state hidden }
+		set sizeState $state
+		if {$state ne "hidden"} {
+			lassign [lindex $Vars(bases) $Vars(map:$id)] _ type file
+			if {[::scidb::db::get writable? $file]} {
+				set ext [string tolower [file extension $file]]
+				if {$ext eq ".pgn" || $ext eq ".pgn.gz" || $ext eq ".zip"} {
+					if {[::scidb::db::get unsaved? $file]} { set sizeState modified }
+				}
+			}
+		}
 		$canv itemconfigure name$id -fill [::colors::lookup $Defaults($state:foreground)]
-		$canv itemconfigure size$id -fill [::colors::lookup $Defaults($state:foreground)]
+		$canv itemconfigure size$id -fill [::colors::lookup $Defaults($sizeState:foreground)]
 
 		if {[incr r] == $cols} {
 			incr y $minheight

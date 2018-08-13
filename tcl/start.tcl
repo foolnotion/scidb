@@ -110,8 +110,10 @@ set engines [file join [set [namespace parent]::dir::config] engines.dat]
 
 namespace eval themes {
 namespace eval mc {
-	set CannotOverwriteTheme "Cannot overwrite theme %s."
-}
+
+set CannotOverwriteTheme "Cannot overwrite theme %s."
+
+} ;# namespace mc
 
 variable Updated 0
 
@@ -298,7 +300,6 @@ proc util::place::getWmFrameExtents {w} { return [::scidb::tk::wm extents $w] }
 proc util::place::getWmWorkArea {w} { return [::scidb::tk::wm workarea $w] }
 # ------------------------------------------------------------------------------
 
-
 if {[::process::testOption version]} {
 	puts "$::scidb::app version $::scidb::version"
 	if {[file readable $::scidb::file::options]} {
@@ -308,7 +309,6 @@ if {[::process::testOption version]} {
 	puts "share directory: $::scidb::dir::share"
 	exit 0
 }
-
 
 if {[::process::testOption print-recovery-files]} {
 	foreach file [glob -directory $::scidb::dir::backup -nocomplain game-*.pgn] {
@@ -324,10 +324,13 @@ if {[::process::testOption delete-recovery-files]} {
 	exit 0
 }
 
-if {[::process::testOption first-time]} {
-	file delete $::scidb::file::options
-	::process::setOption dont-recover
+if {[::process::testOption recover-options]} {
+	# recovering will be processed in options.tcl
+} elseif {[::process::testOption first-time]} {
+	# deletion will be processed in options.tcl
+	::process::setOption dont-recover-files
 	::process::setOption initial-layout
+	::process::setOption reset-fonts
 	set ::scidb::dir::setup 1
 }
 
@@ -353,7 +356,10 @@ if {[::scidb::misc::debug?]} {
 namespace eval menu {}
 namespace eval menu::mc {}
 
-### some useful commands #############################################
+### some useful commands/constants ###################################
+
+variable layoutVariants {normal dropchess antichess}
+
 
 # 'do {...} while {<condition>}' command
 proc do {cmds while expr} {
@@ -403,6 +409,11 @@ proc arrayListEqual {lhs rhs} {
 }
 
 
+proc makeState {cond} {
+	return [expr {$cond ? "normal" : "disabled"}]
+}
+
+
 proc require {myNamespace requiredNamespaces} {
 	foreach ns $requiredNamespaces {
 		if {![namespace exists $ns]} {
@@ -413,10 +424,14 @@ proc require {myNamespace requiredNamespaces} {
 
 
 proc lremove {list elem} {
+	upvar $list l
 	set result {}
-	foreach k $list {
-		if {$k ne $elem} { lappend result $k }
+	if {[info exists l]} {
+		foreach k $l {
+			if {$k ne $elem} { lappend result $k }
+		}
 	}
+	set l $result
 	return $result
 }
 
@@ -424,12 +439,75 @@ proc lremove {list elem} {
 proc lsubst {list elem arg} {
 	upvar $list l
 	set result {}
-	foreach k $l {
-		if {$k eq $elem} { lappend result $arg } else { lappend result $k }
+	if {[info exists l]} {
+		foreach k $l {
+			if {$k eq $elem} { lappend result $arg } else { lappend result $k }
+		}
 	}
 	set l $result
 	return $result
 }
+
+
+proc lsub {list remove} {
+	set list [lsort $list]
+	set remove [lsort $remove]
+	set result {}
+	set ii [llength $list]
+	set kk [llength $remove]
+	set i 0
+	set k 0
+	while {$i < $ii && $k < $kk} {
+		set lhs [lindex $list $i]
+		set cmp [string compare $lhs [lindex $remove $k]]
+		if {$cmp <  0} { lappend result $lhs }
+		if {$cmp >= 0} { incr k }
+		if {$cmp <= 0} { incr i }
+	}
+	return $result
+}
+
+
+namespace eval file {
+namespace eval mc {
+
+set CheckPermissions	"Check file permissions."
+set NotAvailable		"Either this file is not available anymore, or the file permissions are not allowing access."
+
+set DoesNotExist(readable)		"File '%s' is not readable."
+set DoesNotExist(writable)		"File '%s' is not writable."
+set DoesNotExist(executable)	"File '%s' is not executable."
+
+} ;# namespace mc
+
+
+proc test {fname {access r}} {
+	switch $access {
+		r				{ set cmd readable }
+		w - rw - wr	{ set cmd writable }
+		x				{ set cmd executable }
+	}
+	if {![file $cmd $fname]} {
+		set message [format $mc::DoesNotExist($cmd) $fname]
+		set details [expr {[file exists $fname] ? $mc::CheckPermissions : $mc::NotAvailable }]
+		::dialog::error -parent .application -message $message -details $details
+		return 0
+	}
+	return 1
+}
+
+
+proc read {fname args} {
+	set fd [open $fname r]
+	if {[llength $args]} {
+		fconfigure $fd {*}$args
+	}
+	set data [read $fd]
+	close $fd
+	return $data
+}
+
+} ;# namespace file
 
 namespace eval util {
 namespace eval mc {

@@ -29,10 +29,6 @@
 namespace eval board {
 namespace eval diagram {
 
-namespace import ::dialog::choosecolor::hsv2rgb
-namespace import ::dialog::choosecolor::rgb2hsv
-namespace import ::dialog::choosecolor::getActualColor
-
 namespace export drawBorderlines
 
 namespace import ::tcl::mathfunc::max
@@ -846,7 +842,7 @@ proc drawText {canv squareSize color x y text} {
 	if {$squareSize % 2} { incr size }
 	set x0 [expr {$x + $squareSize/2}]
 	set y0 [expr {$y + $squareSize/2}]
-	scan [getActualColor $color] "\#%2x%2x%2x" r g b
+	scan [::colors::getActualColor $color] "\#%2x%2x%2x" r g b
 	set luma	[expr {$r*0.2125 + $g*0.7154 + $b*0.0721}]
 	set font [list [font configure TkFixedFont -family] $size bold]
 	set x1 [expr {$x0 + 1}]
@@ -936,9 +932,9 @@ proc HiliteArrow {w rows cols color index type} {
 
 
 proc GetHiliteColor {color} {
-	scan [getActualColor $color] "\#%2x%2x%2x" r g b
-	lassign [rgb2hsv $r $g $b] h s v
-	return [format "#%02x%02x%02x" {*}[hsv2rgb $h 1.0 1.0]]
+	scan [::colors::getActualColor $color] "\#%2x%2x%2x" r g b
+	lassign [::colors::rgb2hsv $r $g $b] h s v
+	return [format "#%02x%02x%02x" {*}[::colors::hsv2rgb $h 1.0 1.0]]
 }
 
 
@@ -1571,15 +1567,15 @@ proc MakeArrow {size rows cols color type} {
 	set q(5,x) [expr {$p(5,x) - $delta}]; set q(5,y) [expr {$p(5,y) - $delta}]
 	lassign [geometry::intersection $q06 $q56] q(6,x) q(6,y)
 
-	scan [getActualColor $color] "\#%2x%2x%2x" r g b
+	scan [::colors::getActualColor $color] "\#%2x%2x%2x" r g b
 	set lite [list $r $g $b]
-	lassign [rgb2hsv {*}$lite] h s v
-	set dark [hsv2rgb $h $s [expr {min(1.0,$v*0.70)}]]
+	lassign [::colors::rgb2hsv {*}$lite] h s v
+	set dark [::colors::hsv2rgb $h $s [expr {min(1.0,$v*0.70)}]]
 	set lite [format "#%02x%02x%02x" {*}$lite]
 	set dark [format "#%02x%02x%02x" {*}$dark]
 
 	if {$type eq "arrow"} {
-		set edge [hsv2rgb $h $s [expr {min(1.0,$v*0.15)}]]
+		set edge [::colors::hsv2rgb $h $s [expr {min(1.0,$v*0.15)}]]
 		set edge [format "#%02x%02x%02x" {*}$edge]
 	} else {
 		set edge #000000

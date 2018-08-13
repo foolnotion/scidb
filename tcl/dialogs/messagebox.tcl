@@ -7,7 +7,7 @@
 
 # =================================================================
 # Modifications by Gregor Cramer
-# Copyright: (C) 2009-2013 Gregor Cramer
+# Copyright: (C) 2009-2018 Gregor Cramer
 # =================================================================
 
 # ======================================================================
@@ -58,6 +58,7 @@ namespace eval messagebox {
 variable ButtonOrder {ok continue cancel abort retry ignore yes no}
 variable Current ""
 
+# TODO: -check is unused
 variable Specs {
 	{ -parent			"" "" "" }
 	{ -message			"" "" "" }
@@ -70,6 +71,8 @@ variable Specs {
 	{ -topmost			"" "" "" }
 	{ -centeronscreen	"" "" "" }
 	{ -embed				"" "" "" }
+	{ -addbuttons		"" "" "" }
+	{ -width				"" "" "" }
 }
 
 
@@ -106,9 +109,11 @@ proc messageBox {args} {
 		-title				$data(-title)   \
 		-check				{}              \
 		-type					info            \
-		-topmost				0               \
-		-centeronscreen	0               \
+		-topmost				no              \
+		-centeronscreen	no              \
 		-embed				$data(-embed)   \
+		-addbuttons			{}              \
+		-width				$data(-width)   \
 	]
 
 	switch $data(-type) {
@@ -164,9 +169,11 @@ proc error {args} {
 		-title	""
 		-check	""
 		-type		error
-		-topmost	false
-		-centeronscreen 0
+		-topmost	no
+		-centeronscreen no
 		-embed   {}
+		-addbuttons {}
+		-width	384
 	}
 	upvar [namespace current]::Data data
 	tclParseConfigSpec [namespace current]::Data [set [namespace current]::messagebox::Specs] "" $args
@@ -185,9 +192,11 @@ proc warning {args} {
 		-title	""
 		-check	""
 		-type		warning
-		-topmost	false
-		-centeronscreen 0
+		-topmost	no
+		-centeronscreen no
 		-embed   {}
+		-addbuttons {}
+		-width	384
 	}
 	upvar [namespace current]::Data data
 	tclParseConfigSpec [namespace current]::Data [set [namespace current]::messagebox::Specs] "" $args
@@ -206,9 +215,11 @@ proc question {args} {
 		-title	""
 		-check	""
 		-type		question
-		-topmost	false
-		-centeronscreen 0
+		-topmost	no
+		-centeronscreen no
 		-embed   {}
+		-addbuttons {}
+		-width	384
 	}
 	upvar [namespace current]::Data data
 	tclParseConfigSpec [namespace current]::Data [set [namespace current]::messagebox::Specs] "" $args
@@ -227,9 +238,11 @@ proc info {args} {
 		-title	""
 		-check	""
 		-type		info
-		-topmost	false
-		-centeronscreen 0
+		-topmost	no
+		-centeronscreen no
 		-embed   {}
+		-addbuttons {}
+		-width	384
 	}
 	upvar [namespace current]::Data data
 	tclParseConfigSpec [namespace current]::Data [set [namespace current]::messagebox::Specs] "" $args
@@ -254,9 +267,11 @@ proc alert {args} {
 		-title	""
 		-check	""
 		-type		info
-		-topmost	false
-		-centeronscreen 0
+		-topmost	no
+		-centeronscreen no
 		-embed   {}
+		-addbuttons {}
+		-width	384
 	}
 	upvar [namespace current]::Data data
 	tclParseConfigSpec [namespace current]::Data [set [namespace current]::messagebox::Specs] "" $args
@@ -298,6 +313,8 @@ proc alert {args} {
 	set alertBox [tk::frame $w.alert]
 	set infoFont [list [font configure TkDefaultFont -family] [font configure TkDefaultFont -size]]
 	set alertFont [list {*}$infoFont bold]
+	set infoFont [font actual $infoFont]
+	set alertFont [font actual $alertFont]
 
 	if {[llength $opts(-embed)]} {
 		set k [string first <embed> $opts(-message)]
@@ -305,7 +322,8 @@ proc alert {args} {
 		set post [string trim [string range $opts(-message) [expr {$k + 7}] end]]
 
 		if {[llength $ante]} {
-			grid [tk::message $alertBox.ante -font $alertFont -text $ante -width 384 -justify left] \
+			grid [tk::message $alertBox.ante \
+				-font $alertFont -text $ante -justify left -width $opts(-width)] \
 				-row 0 -column 0 -sticky w
 			grid rowconfigure $alertBox 1 -minsize 10
 		}
@@ -316,7 +334,8 @@ proc alert {args} {
 		bind $alertBox <Configure> [namespace code [list messagebox::Resize $alertBox %w]]
 
 		if {[llength $post]} {
-			grid [tk::message $alertBox.post -font $alertFont -text $post -width 384 -justify left] \
+			grid [tk::message $alertBox.post \
+				-font $alertFont -text $post -justify left -width $opts(-width)] \
 				-row 4 -column 0 -sticky w
 			grid rowconfigure $alertBox 3 -minsize 10
 		}
@@ -350,19 +369,25 @@ proc alert {args} {
 
 			set font [list $family $size $weight]
 			if {$row > 0} { grid rowconfigure $alertBox [expr {$row - 1}] -minsize 5 }
-			grid [tk::message $alertBox.m$row -font $font -text $str -width 384 -justify left -padx $padx] \
+			grid [tk::message $alertBox.m$row \
+				-font $font -text $str -justify left -padx $padx -width $opts(-width)] \
 				-row $row -column 0 -sticky w
 			incr row 2
 		}
 	}
 
 	if {[string length $opts(-detail)]} {
-		set infoText 	[tk::message $w.info -font $infoFont -text $opts(-detail) -width 384]
+		set infoText [tk::message $w.info -font $infoFont -text $opts(-detail) -width $opts(-width)]
 	} else {
-		set infoText	[tk::frame $w.info -width 1 -height 1]
+		set infoText [tk::frame $w.info -width 1 -height 1]
 	}
-	set iconLabel		[tk::label $w.icon -image [set [namespace current]::icon::64x64::$opts(-type)]]
-	set buttonFrame	[tk::frame $w.buttonFrame]
+	set iconLabel [tk::label $w.icon -image [set [namespace current]::icon::64x64::$opts(-type)]]
+	set buttonFrame [tk::frame $w.buttonFrame]
+	if {[string length $opts(-addbuttons)]} {
+		set f [tk::frame $buttonFrame.embed -borderwidth 0]
+		eval $opts(-addbuttons) $f
+		grid $f -column 0 -row 0 -sticky sw
+	}
 
 	set entries {}
 	foreach entry $opts(-buttons) {
@@ -372,7 +397,7 @@ proc alert {args} {
 	}
 	set entries [lsort -integer -index 3 $entries]
 	set defaultButton {}
-	set col 0
+	set col 1
 
 	foreach entry $entries {
 		lassign $entry type text icon
@@ -400,7 +425,7 @@ proc alert {args} {
 			}
 		}
 
-		set cmd [list set ::dialog::Reply $type]
+		set cmd [list set ::dialog::Reply($w) $type]
 		set button [::tk::AmpWidget ::ttk::button $buttonFrame.bt-$type -text " $text" -command $cmd]
 
 		if {$type eq $opts(-default)} {
@@ -417,14 +442,15 @@ proc alert {args} {
 			focus %W
 			event generate %W <Key-space>
 		}
-		grid $button -column [incr col] -row 0 -padx [list 12 0] -sticky se
+		grid $button -column [incr col] -row 0 -padx {12 0} -sticky se
 	}
 
 	set n [lsearch -exact $entries abort]
 	if {$n == -1} { set n [lsearch -exact $entries cancel] }
 	if {$n == -1} { set n [lsearch -exact $entries no] }
 	if {$n == -1 && [llength $entries] == 1} { set n 0 }
-	if {$n == 1 && [llength $entries] == 0} { wm protocol $w WM_DELETE_WINDOW { set ::dialog::Reply "" } }
+	if {$n == 1 && [llength $entries] == 0} {
+		wm protocol $w WM_DELETE_WINDOW [list set ::dialog::Reply($w) ""] }
 
 	if {$n >= 0} {
 		bind escCmd [list $buttonFrame.bt-[lindex $entries $n] invoke]
@@ -435,19 +461,26 @@ proc alert {args} {
 		}
 	}
 
-	grid columnconfigure $buttonFrame 0 -weight 1
+	grid columnconfigure $buttonFrame 1 -weight 1
+	if {[string length $opts(-addbuttons)]} {
+		grid columnconfigure $buttonFrame 1 -minsize 20
+	}
 
 	# grid elements following guidlines from Apple HIG:
 	# http://developer.apple.com/documentation/UserExperience/Conceptual/OSXHIGuidelines/index.html
 
 	grid $iconLabel $alertBox
 	grid ^ $infoText
-	grid $buttonFrame - -sticky news
+	if {[string length $opts(-addbuttons)]} {
+		grid ^ $buttonFrame -sticky news
+	} else {
+		grid $buttonFrame - -sticky news
+	}
 
-	grid configure $iconLabel -padx [list 24 8] -pady 15 -sticky n
-	grid configure $alertBox -padx [list 8 24] -pady [list 15 4] -sticky w
-	grid configure $infoText -padx [list 8 24] -pady [list 4 5] -sticky w
-	grid configure $buttonFrame -padx 24 -pady [list 5 20]
+	grid configure $iconLabel -padx {24 8} -pady 15 -sticky n
+	grid configure $alertBox -padx {8 24} -pady {15 4} -sticky w
+	grid configure $infoText -padx {8 24} -pady {4 5} -sticky w
+	grid configure $buttonFrame -padx {8 24} -pady {5 20}
 
 	set Current $opts(-type)
 	wm withdraw $w
@@ -503,13 +536,13 @@ proc alert {args} {
 	::ttk::grabWindow $w
 	tkwait visibility $w
 	focus -force $focus
-	vwait ::dialog::Reply
+	vwait ::dialog::Reply($w)
 	::ttk::releaseGrab $w
 	destroy $w
 #	update idletasks
 	set Current ""
 
-	return $::dialog::Reply
+	return $::dialog::Reply($w)
 }
 
 

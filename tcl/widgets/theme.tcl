@@ -32,6 +32,7 @@ variable useCustomStyleMenuEntries 1
 variable Settings
 variable Setup 1
 variable ActiveBackground {}
+variable DisabledMenu {}
 
 
 # this should be already done in tk8.x.x/library/tk.tcl,
@@ -196,7 +197,7 @@ proc configureCanvas {canv} {
 
 
 proc configurePanedWindow {win} {
-	ConfigurePanedWindowBackground $win
+	$win configure -background [GetTroughColor]
 }
 
 
@@ -328,7 +329,7 @@ proc notebookBorderwidth {} {
 proc notebookTabPaneSize {nb} {
 	set padding [ttk::style lookup TNotebook.Tab -padding]
 	if {[llength $padding] == 0} {
-		puts stderr "\[ttk::style lookup TNotebook.Tab -padding\] returns empty list"
+		puts stderr "\[ttk::style lookup TNotebook.Tab -padding\] returns empty list for '[currentTheme]'"
 		set padding {2 2}
 	}
 	set size [expr {2*[notebookBorderwidth] + 1}] ;# plus one overlapping pixel
@@ -337,7 +338,19 @@ proc notebookTabPaneSize {nb} {
 		3 { incr size [lindex $padding 1] }
 		4 { incr size [lindex $padding 1]; incr size [lindex $padding 3] }
 	}
-	incr size [font metrics [ttk::style lookup TNotebook.Tab -font] -linespace]
+	set linespace [font metrics [ttk::style lookup TNotebook.Tab -font] -linespace]
+	set haveImage 0
+	foreach tab [$nb tabs] {
+		if {[string length [set img [$nb tab $tab -image]]]} {
+			set linespace [expr {max($linespace, [image height $img])}]
+			set haveImage 1
+		}
+	}
+	incr size $haveImage
+	incr size $linespace
+#	if {	[string length [$nb select]]
+#		&& [set ht [expr {[winfo height $nb] - [winfo height [$nb select]]}]] > 1
+#		&& $ht != $size} { puts stderr "notebookTabPaneSize($nb): computed=$size, but measured=$ht" }
 	return $size
 }
 
@@ -414,11 +427,6 @@ proc ConfigureListbox {list} {
 		-disabledforeground [::ttk::style lookup [currentTheme] -foreground disabled]
 #		-selectbackground [::ttk::style lookup [currentTheme] -selectbackground]
 #		-selectforeground [::ttk::style lookup [currentTheme] -selectforeground]
-}
-
-
-proc ConfigurePanedWindowBackground {win} {
-	$win configure -background [GetTroughColor]
 }
 
 
@@ -783,7 +791,7 @@ bind TVertScale <Button-1>				{+ focus %W }
 bind Spinbox		<<ThemeChanged>> [namespace code [list ConfigureSpinboxBackground %W]]
 bind Scale			<<ThemeChanged>> [namespace code [list ConfigureScaleBackground %W]]
 bind Listbox		<<ThemeChanged>> [namespace code [list ConfigureListbox %W]]
-bind Panedwindow	<<ThemeChanged>> [namespace code [list ConfigurePanedWindowBackground %W]]
+bind Panedwindow	<<ThemeChanged>> [namespace code [list configurePanedWindow %W]]
 
 
 scrollbar .__scrollbar__

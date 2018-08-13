@@ -7,19 +7,19 @@ namespace eval ttk::theme::clearlooks {
     variable colors
 
     array set colors {
-        -frame          "#efebe7"
-        -lighter        "#f5f3f0"
-        -dark           "#cfcdc8"
+        -frame          "#edeceb"
+        -lighter        "#f3f3f2"
+        -dark           "#c8c6c3"
         -darker         "#9e9a9e"
         -darkest        "#d4cfca"
         -selectbg       "#7c99ad"
         -selectfg       "#ffffff"
-        -disabledfg     "#b5b3ac"
+        -disabledfg     "#b0a7a3"
         -entryfocus     "#6f9dc6"
-        -tabbg          "#c9c1bc"
-        -tabborder      "#b5aca7"
-        -troughcolor    "#d7cbbe"
-        -troughborder   "#ae9e8e"
+        -tabbg          "#d1cfc9"
+        -tabborder      "#a4a09d"
+        -troughcolor    "#d4d6d2"
+        -troughborder   "#8c8a87"
         -checklight     "#f5f3f0"
     }
 
@@ -781,7 +781,7 @@ namespace eval ttk::theme::clearlooks {
 
         ## Buttons.
         #
-        ttk::style configure TButton -padding {10 0}
+        ttk::style configure TButton -padding {3 3}
         ttk::style layout TButton {
             Button.button -children {
                 Button.focus -children {

@@ -136,7 +136,7 @@ set FreeNumbers {}
 # array set Informant { !? 0.5 ? 1.5 ?? 3.0 ?! 0.5 }
 
 
-proc build {parent number {patternNumber 0}} {
+proc build {parent number patternNumber} {
 	variable ScoreEdgeValues
 	variable GlobalOptions
 	variable Defaults
@@ -156,11 +156,26 @@ proc build {parent number {patternNumber 0}} {
 	namespace eval $tree {}
 	variable ${tree}::Vars
 
-	array set Vars { engine:locked 0 engine:pause 0 engine:opponent 0 }
-
-	if {$patternNumber > 0} {
-		array set Options [array get ${patternNumber}::Options]
+	array set Vars {
+		after:id				{}
+		best:0				black
+		best:1				black
+		current:item		0
+		current:message	{}
+		engine:locked		0
+		engine:opponent	0
+		engine:opponent	0
+		engine:pause		0
+		engine:state		normal
+		info:height			0
+		keep:active			0
+		moves:max			0
+		state:paused		0
+		toolbar:childs		{}
+		toolbar:height		0
 	}
+
+	array set Options [array get ${patternNumber}::Options]
 	foreach name [array names Defaults] {
 		if {![info exists Options($name)]} { set Options($name) $Defaults($name) }
 	}
@@ -169,24 +184,11 @@ proc build {parent number {patternNumber 0}} {
 	set fg [::colors::lookup $GlobalOptions(info:foreground)]
 	set mw [tk::multiwindow $mw -borderwidth 0 -background $bg -takefocus 0]
 
-	set Vars(best:0) black
-	if {$Options(engine:bestFirst) || $Options(engine:singlePV)} {
-		set Vars(best:1) black
-	} else {
+	if {!$Options(engine:bestFirst) && !$Options(engine:singlePV)} {
 		set Vars(best:1) $GlobalOptions(best:foreground)
 	}
-	set Vars(maxMoves) 0
-	set Vars(after) {}
-	set Vars(state) normal
-	set Vars(mode) normal
-	set Vars(message) {}
-	set Vars(title) ""
-	set Vars(paused) 0
-	set Vars(engine:opponent) 0
-	set Vars(number) $number
 	set Vars(linespace) [font metrics $GlobalOptions(engine:font) -linespace]
-	set Vars(keepActive) 0
-	set Vars(current:item) 0
+	set Vars(number) $number
 	set Vars(main) $main
 	set Vars(mesg) $mesg
 	set Vars(mw) $mw
@@ -368,9 +370,6 @@ proc build {parent number {patternNumber 0}} {
 	set Vars(move) $info.move.t
 	set Vars(time) $info.time.t
 	set Vars(depth) $info.depth.t
-	set Vars(toolbar:childs) {}
-	set Vars(toolbar:height) 0
-	set Vars(info:height) 0
 
 	set tbControl [::toolbar::toolbar $parent \
 		-id analysis-control \
@@ -535,11 +534,11 @@ proc update {args} {
 	foreach number [array names NumberToTree] {
 		variable [set [namespace current]::NumberToTree($number)]::Vars
 
-		if {[info exists Vars(after)]} {
-			after cancel $Vars(after)
+		if {[info exists Vars(after:id)]} {
+			after cancel $Vars(after:id)
 		}
 		if {[::engine::active? $number] && !$Vars(engine:locked)} {
-			set Vars(after) [after $GlobalOptions(engine:delay) [list ::engine::startAnalysis $number]]
+			set Vars(after:id) [after $GlobalOptions(engine:delay) [list ::engine::startAnalysis $number]]
 		}
 	}
 }
@@ -555,10 +554,10 @@ proc startAnalysis {number} {
 	variable ${tree}::Vars
 	variable ${Vars(number)}::Options
 
-	set Vars(message) {}
+	set Vars(current:message) {}
 	$Vars(mesg) configure -text ""
 	::engine::kill $number
-	after cancel $Vars(after)
+	after cancel $Vars(after:id)
 
 	set isReadyCmd [namespace current]::IsReady
 	set signalCmd [namespace current]::Signal
@@ -572,7 +571,7 @@ proc startAnalysis {number} {
 		set rc -1
 	}
 
-	::application::setAnalysisTitle $number [set Vars(title) [::engine::engineName $number]]
+	::application::updateAnalysisTitle $number [::engine::engineName $number]
 	set Vars(engine:pause) [expr {![engine::active? $number]}]
 
 	if {!$Vars(engine:pause)} {
@@ -590,10 +589,10 @@ proc restartAnalysis {number} {
 	variable ${tree}::Vars
 	variable ${Vars(number)}::Options
 	
-	after cancel $Vars(after)
+	after cancel $Vars(after:id)
 	if {$Options(engine:singlePV)} { set multiPV 1 } else { set multiPV $Options(engine:multiPV) }
 	::engine::restartAnalysis $number $Vars(engine:opponent) [list multiPV $multiPV]
-	::application::setAnalysisTitle $number [set Vars(title) [::engine::engineName $number]]
+	::application::updateAnalysisTitle $number [::engine::engineName $number]
 }
 
 
@@ -609,7 +608,7 @@ proc closed {w} {
 	set tree ${w}.mw.main.tree
 	variable ${tree}::Vars
 
-	after cancel $Vars(after)
+	after cancel $Vars(after:id)
 	array unset NumberToTree $Vars(number)
 	lappend FreeNumbers $Vars(number)
 	::engine::forget $Vars(number)
@@ -630,6 +629,7 @@ proc CloseEngine {tree} {
 
 	::engine::kill $Vars(number)
 	::toolbar::childconfigure $Vars(button:close) -state disabled
+	::application::updateAnalysisTitle $Vars(number)
 	after idle [namespace code [list DisplayPressEngineButton $tree]]
 }
 
@@ -640,7 +640,7 @@ proc Pause {tree} {
 	set Vars(engine:pause) [expr {!$Vars(engine:pause)}]
 
 	if {$Vars(engine:pause)} {
-		after cancel $Vars(after)
+		after cancel $Vars(after:id)
 		::engine::pause $Vars(number)
 	} else {
 		::engine::resume $Vars(number)
@@ -741,7 +741,7 @@ proc EngineLock {tree} {
 	variable ${tree}::Vars
 
 	if {[::engine::active? $Vars(number)] && !$Vars(engine:locked)} {
-		after cancel $Vars(after)
+		after cancel $Vars(after:id)
 		after idle [list :::engine::startAnalysis $Vars(number)]
 	}
 }
@@ -850,12 +850,12 @@ proc ResizePane {tree height} {
 proc SetState {tree state} {
 	variable ${tree}::Vars
 
-	set Vars(paused) 0
+	set Vars(state:paused) 0
 
 	if {![winfo exists $tree]} { return }
-	if {$Vars(state) eq $state} { return }
+	if {$Vars(engine:state) eq $state} { return }
 
-	set Vars(state) $state
+	set Vars(engine:state) $state
 
 	foreach child $Vars(toolbar:childs) {
 		::toolbar::childconfigure $child -state $state
@@ -924,7 +924,7 @@ proc ShowMessage {tree type txt} {
 proc DisplayPressEngineButton {tree} {
 	variable ${tree}::Vars
 
-	set Vars(message) [list [namespace current]::DisplayPressEngineButton $tree]
+	set Vars(current:message) [list [namespace current]::DisplayPressEngineButton $tree]
 	ShowMessage $tree info $mc::PressEngineButton
 }
 
@@ -940,7 +940,7 @@ proc DisplayStartOfMotorFailed {tree rc} {
 		append msg $mc::WineIsNotInstalled
 	}
 	append msg "."
-	set Vars(message) [list [namespace current]::DisplayStartOfMotorFailed $tree $rc]
+	set Vars(current:message) [list [namespace current]::DisplayStartOfMotorFailed $tree $rc]
 	ShowMessage error $msg
 }
 
@@ -961,14 +961,14 @@ proc Display(state) {tree state} {
 		}
 
 		pause {
-			if {!$Vars(paused)} {
+			if {!$Vars(state:paused)} {
 				$Vars(move) delete 1.0 end
 				if {[$Vars(mw) raise] eq $Vars(mesg)} {
 					ShowMessage $tree info $mc::EngineIsPausing
 				} else {
 					$Vars(move) insert end $mc::Stopped {stopped center}
 				}
-				set Vars(paused) 1
+				set Vars(state:paused) 1
 			}
 		}
 
@@ -985,7 +985,7 @@ proc Display(state) {tree state} {
 proc Display(clear) {tree} {
 	variable ${tree}::Vars
 
-	set Vars(message) {}
+	set Vars(current:message) {}
 	$Vars(mesg) configure -text ""
 	$Vars(mw) raise $Vars(main)
 
@@ -997,7 +997,7 @@ proc Display(clear) {tree} {
 	[::toolbar::lookupChild $Vars(widget:hashfullness)] configure -text ""
 	[::toolbar::lookupChild $Vars(widget:nps)] configure -text ""
 	[::toolbar::lookupChild $Vars(widget:tbhits)] configure -text ""
-	set Vars(maxMoves) 0
+	set Vars(moves:max) 0
 
 	ClearLines $tree 0 1 2 3 4 5 6 7
 	$tree activate 0
@@ -1077,7 +1077,7 @@ proc DisplayStartOfMotor {tree number} {
 proc Display(over) {tree state color} {
 	variable ${tree}::Vars
 
-	set Vars(message) [list [namespace current]::Display(over) $tree $state $color]
+	set Vars(current:message) [list [namespace current]::Display(over) $tree $state $color]
 	ShowMessage $tree info [format $mc::Status($state) [set ::mc::[string toupper $color 0 0]]]
 }
 
@@ -1086,15 +1086,15 @@ proc Display(move) {tree number count move} {
 	variable ${tree}::Vars
 
 	if {$count > 0} {
-		set Vars(maxMoves) $count
-	} elseif {$Vars(maxMoves) < $number} {
-		set Vars(maxMoves) $number
+		set Vars(moves:max) $count
+	} elseif {$Vars(moves:max) < $number} {
+		set Vars(moves:max) $number
 	}
 
 	$Vars(move) delete 1.0 end
 	$Vars(move) insert end [::font::translate $move] {figurine center}
 	if {$number > 0} {
-		$Vars(move) insert end " ($number/$Vars(maxMoves))"
+		$Vars(move) insert end " ($number/$Vars(moves:max))"
 	}
 }
 
@@ -1171,7 +1171,7 @@ proc Display(error) {tree code} {
 		}
 	}
 
-	set Vars(message) [list [namespace current]::Display(error) $tree $code]
+	set Vars(current:message) [list [namespace current]::Display(error) $tree $code]
 	ShowMessage $tree error $msg
 }
 
@@ -1196,7 +1196,7 @@ proc Signal {tree id code} {
 	if {![winfo exists $tree]} { return }
 	variable ${tree}::Vars
 
-	after cancel $Vars(after)
+	after cancel $Vars(after:id)
 	set parent [winfo toplevel $tree]
 	SetState $tree disabled
 
@@ -1226,7 +1226,7 @@ proc Signal {tree id code} {
 proc VisitItem {tree mode column item {x {}} {y {}}} {
 	variable ${tree}::Vars
 
-	if {$Vars(keepActive)} { return }
+	if {$Vars(keep:active)} { return }
 	if {[string length $column] == 0} { return }
 	if {![::engine::active? $Vars(number)]} { return }
 
@@ -1309,7 +1309,7 @@ proc LanguageChanged {} {
 
 	foreach number [array names NumberToTree] {
 		variable [set [namespace current]::NumberToTree($number)]::Vars
-		if {[llength $Vars(message)]} { {*}$Vars(message) }
+		if {[llength $Vars(current:message)]} { {*}$Vars(current:message) }
 	}
 }
 
@@ -1493,7 +1493,7 @@ proc PopupMenu {tree number args} {
 			}
 		}
 
-		set Vars(keepActive) 1
+		set Vars(keep:active) 1
 		rename [namespace current]::Display(pv) [namespace current]::Display_
 		rename [namespace current]::Display(suspended) [namespace current]::Display(pv)
 		::bind $menu <<MenuUnpost>> [namespace code [list RevertDisplay $tree]]
@@ -1514,7 +1514,7 @@ proc RevertDisplay {tree} {
 	}
 
 	array unset Vars suspended,*
-	set Vars(keepActive) 0
+	set Vars(keep:active) 0
 	after idle [namespace code [list ActivateCurrent $tree]]
 }
 

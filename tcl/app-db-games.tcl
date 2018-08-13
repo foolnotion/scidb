@@ -54,7 +54,7 @@ variable Columns {
 }
 
 array set FrameOptions {
-	games { -width 1000 -height 200 -minwidth 200 -minheight 100 -expand both }
+	games { -width 1000 -height 100% -minwidth 200 -minheight 100 -expand both }
 }
 
 variable Layout {
@@ -119,6 +119,21 @@ proc linespace {parent} {
 }
 
 
+proc computeHeight {parent {nrows -1}} {
+	set frame $parent.twm.games
+	set result [::toolbar::totalHeight $frame]
+	if {$nrows >= 0} {
+		incr result [::gametable::computeHeight $parent.twm.games.table $nrows]
+	}
+	return $result
+}
+
+
+proc layout {} {
+	return [set [namespace current]::Options(layout)]
+}
+
+
 proc setActive {flag} {
 	# no action
 }
@@ -132,7 +147,7 @@ proc borderwidth {parent} {
 proc MakePane {twm parent type uid} {
 	set frame [tk::frame $parent.$uid -borderwidth 0 -takefocus 1]
 	set nameVar ::application::twm::mc::Pane($uid)
-	return [list $frame $nameVar 100]
+	return [list $frame $nameVar 100 yes yes yes]
 }
 
 
@@ -146,7 +161,6 @@ proc BuildPane {twm frame uid width height} {
 	variable ${tb}::Vars
 	set Priv(table) $tb
 
-	set Vars(layout)		$Options(layout)
 	set Vars(theme)		[::theme::currentTheme]
 	set Vars(toolbars)	{}
 	set Vars(after)		{}
@@ -414,16 +428,17 @@ proc Goto {table number} {
 }
 
 
-proc WriteTableOptions {chan {id "games"}} {
+proc WriteTableOptions {chan variant {id "games"}} {
+	variable TableOptions
 	variable Tables
 
 	if {$id ne "games"} { return }
 
 	foreach table $Tables {
 		set id [::application::twm::getId $table]
-		if {[::scrolledtable::countOptions db:games:$id] > 0} {
+		if {[info exists TableOptions($variant:$id)]} {
 			puts $chan "::scrolledtable::setOptions db:games:$id {"
-			::options::writeArray $chan [::scrolledtable::getOptions db:games:$id]
+			::options::writeArray $chan $TableOptions($variant:$id)
 			puts $chan "}"
 		}
 	}

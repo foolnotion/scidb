@@ -777,9 +777,7 @@ proc checkForNewEngines {} {
 
 	set list {}
 	foreach file $detected {
-		set fp [open $file r]
-		set data [read $fp]
-		close $fp
+		set data [::file::read $fp -encoding utf-8]
 		set cmdline [lindex [split $data "\n"] 1]
 		set engine [lindex $cmdline 0]
 		set parameters [lrange $cmdline 1 end]
@@ -3424,9 +3422,7 @@ proc ProbeEngine {parent entry protocols} {
 		set sharedir [file join $::scidb::dir::share engines]
 		set script [file join $::scidb::dir::share engines $engine(ShortId).dat]
 		if {[file readable $script]} {
-			set f [open $script "r"]
-			lset engine(Profiles:WB) 1 [read $f]
-			close $f
+			lset engine(Profiles:WB) 1 [::file::read $script -encoding utf-8]
 		}
 	}
 

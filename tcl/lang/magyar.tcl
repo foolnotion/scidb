@@ -91,6 +91,7 @@
 ::mc::Number			"Szám"
 ::mc::OK			"OK"
 ::mc::Order			"Rendezés"
+::mc::Page			"Page" ;#NEW
 ::mc::Paste			"Beillesztés"
 ::mc::PieceSet			"Bábukészlet"
 ::mc::Preview			"Előnézet"
@@ -99,6 +100,7 @@
 ::mc::Reset			"Reset"
 ::mc::Right			"Jobb"
 ::mc::SelectAll			"Mindent kijelöl"
+::mc::Tab			"Tab" ;# NEW
 ::mc::Texture			"Textúra"
 ::mc::Theme			"Téma"
 ::mc::To			"To" ;# NEW
@@ -167,6 +169,14 @@
 ### themes #############################################################
 ::scidb::themes::mc::CannotOverwriteTheme	"A %s témát nem lehet felülírni."
 
+### file ###############################################################
+::file::mc::CheckPermissions	"Check file permissions." ;# NEW
+::file::mc::NotAvailable	"Either this file is not available anymore, or the file permissions are not allowing access." ;# NEW
+
+::file::mc::DoesNotExist(readable)	"File '%s' is not readable." ;# NEW
+::file::mc::DoesNotExist(writable)	"File '%s' is not writable." ;# NEW
+::file::mc::DoesNotExist(executable)	"File '%s' is not executable." ;# NEW
+
 ### locale #############################################################
 ::locale::Pattern(decimalPoint)	"."
 ::locale::Pattern(thousandsSep)	","
@@ -179,25 +189,24 @@
 ::locale::Pattern(normal:dateD)	"Y/M/D"
 
 ### widget #############################################################
-::widget::mc::Apply		"&Alkalmaz"
-::widget::mc::Cancel		"&Mégse"
-::widget::mc::Clear		"&Törlés"
-::widget::mc::Close		"&Bezárás"
-::widget::mc::Ok		"&OK"
-::widget::mc::Reset		"A&lapbeállítás"
-::widget::mc::Update		"&Frissítés"
-::widget::mc::Import		"&Importálás"
-::widget::mc::Revert		"&Vissza"
-::widget::mc::Previous		"Elő&ző"
-::widget::mc::Next		"&Következő"
-::widget::mc::First		"&Első"
-::widget::mc::Last		"&Utolsó"
-::widget::mc::Help		"&Súgó"
-::widget::mc::Start		"&Start"  ;#NEW
-
-::widget::mc::New		"&Új"
-::widget::mc::Save		"Menté&s"
-::widget::mc::Delete		"&Töröl"
+::widget::mc::Label(apply)	"&Alkalmaz"
+::widget::mc::Label(cancel)	"&Mégse"
+::widget::mc::Label(clear)	"&Törlés"
+::widget::mc::Label(close)	"&Bezárás"
+::widget::mc::Label(ok)		"&OK"
+::widget::mc::Label(reset)	"A&lapbeállítás"
+::widget::mc::Label(update)	"&Frissítés"
+::widget::mc::Label(import)	"&Importálás"
+::widget::mc::Label(revert)	"&Vissza"
+::widget::mc::Label(previous)	"Elő&ző"
+::widget::mc::Label(next)	"&Következő"
+::widget::mc::Label(first)	"&Első"
+::widget::mc::Label(last)	"&Utolsó"
+::widget::mc::Label(help)	"&Súgó"
+::widget::mc::Label(start)	"&Start"  ;#NEW
+::widget::mc::Label(new)	"&Új"
+::widget::mc::Label(save)	"Menté&s"
+::widget::mc::Label(delete)	"&Töröl"
 
 ::widget::mc::Control(minimize)	"Minimálizálás" ;#"Minimize"
 ::widget::mc::Control(restore)	"Teljes képernyő bezárása"
@@ -440,6 +449,8 @@
 ### twm - tiled window manager #########################################
 ::twm::mc::Close	"Bezár"
 ::twm::mc::Undock	"Undock" ;# NEW
+::twm::mc::Amalgamate	"Amalgamate" ;# NEW
+::twm::mc::Separate	"Separate" ;# NEW
 
 ::twm::mc::Timeout		"Timeout after eight seconds without mouse motions, the frame has been re-docked to old place." ;# NEW
 ::twm::mc::TimeoutDetail	"This safety handling is required to avoid frozen screens, as long as the tiling window management is in an experimental stage." ;# NEW
@@ -453,9 +464,15 @@
 ::application::layout::mc::RestoreToOldLayout	"Restore to old layout" ;# NEW
 
 ### application ########################################################
-::application::mc::Information			"&Information" ;# NEW
-::application::mc::Database			"&Adatbázis"
-::application::mc::Board			"&Tábla"
+::application::mc::Tab(information)		"&Information" ;# NEW
+::application::mc::Tab(database)		"&Adatbázis"
+::application::mc::Tab(board)			"&Tábla"
+::application::mc::Tab(games)			"&Játszmák"
+::application::mc::Tab(player)			"Já&tékosok"
+::application::mc::Tab(event)			"&Versenyek"
+::application::mc::Tab(site)			"&Helyszín"  ;#NEW
+::application::mc::Tab(position)		"S&tart Positions"
+::application::mc::Tab(annotator)		"&Elemző"
 ::application::mc::MainMenu			"Fő&menü"
 
 ::application::mc::ChessInfoDatabase		"Chess Information Data Base"
@@ -482,6 +499,9 @@
 ::application::twm::mc::FoldTitleBar		"Fold Titlebar" ;# NEW
 ::application::twm::mc::FoldAllTitleBars	"Fold all Titlebars" ;# NEW
 ::application::twm::mc::UnfoldAllTitleBars	"Unfold all Titlebars" ;# NEW
+::application::twm::mc::AmalgamateTitleBar	"Amalgamate Titlebar" ;# NEW
+::application::twm::mc::AmalgamateAllTitleBars	"Amalgamate all Titlebars" ;# NEW
+::application::twm::mc::SeparateAllTitleBars	"Separate all Titlebars" ;# NEW
 ::application::twm::mc::MoveWindow		"Move Window" ;# NEW
 ::application::twm::mc::StayOnTop		"Stay on Top" ;# NEW
 ::application::twm::mc::HideWhenLeavingTab	"Hide When Leaving Tab" ;# NEW
@@ -494,14 +514,21 @@
 ::application::twm::mc::ShowAllDockingPoints	"Show all Docking Points" ;# NEW
 ::application::twm::mc::DockingArrowSize	"Docking Arrow Size" ;# NEW
 ::application::twm::mc::LinkLayout		"Link Layout '%s'" ;# NEW
-::application::twm::mc::UnlinkLayout		"Unlink Layout '%s'" ;# NEW
+::application::twm::mc::UnlinkLayout		"Delete Link to '%s'" ;# NEW
 ::application::twm::mc::LinkLayoutTip		"Link With Board Layout" ;# NEW
 ::application::twm::mc::Actual			"current" ;# NEW
+::application::twm::mc::Changed			"changed" ;# NEW
 ::application::twm::mc::Windows			"Windows" ;# NEW
 ::application::twm::mc::ConfirmDelete		"Really delete layout '%s'?" ;# NEW
 ::application::twm::mc::ConfirmOverwrite	"Overwrite existing layout '%s'?" ;# NEW
 ::application::twm::mc::LayoutSaved		"Layout '%s' successfully saved." ;# NEW
 ::application::twm::mc::EnterName		"Enter Name" ;# NEW
+::application::twm::mc::UnsavedLayouts		"At least one layout has been changed. Either cancel the termination of the application, or commit the selected actions." ;# NEW
+::application::twm::mc::LinkWithLayout		"Link with eponymous board layout '%s'?" ;# NEW
+::application::twm::mc::CopyLayoutFrom		"Copy layout from" ;# NEW
+::application::twm::mc::ApplyToAllLayouts	"Apply this action to all changed layouts?" ;# NEW
+::application::twm::mc::KeepEnginesOpen		"Current layout has more analysis windows than selected layout. Keep all additional analysis windows open?" ;# NEW
+::application::twm::mc::ErrorInOptionFile	"Option file for layout variant '%s' is corrupted." ;# NEW
 
 ::application::twm::mc::Pane(analysis)		"Analysis" ;# NEW
 ::application::twm::mc::Pane(board)		"Board" ;# NEW
@@ -515,7 +542,14 @@
 ::application::twm::mc::Pane(position)		"Start Positions" ;# NEW
 ::application::twm::mc::Pane(eco)		"ECO-Table" ;# NEW
 
+::application::twm::mc::UnsavedAction(discard)		"Discard changes (start next time with unchanged layout)" ;# NEW
+::application::twm::mc::UnsavedAction(overwrite)	"Overwrite existing layout with changed layout" ;# NEW
+::application::twm::mc::UnsavedAction(disconnect)	"Disconnect from original layout, but retain the changes" ;# NEW
+::application::twm::mc::UnsavedAction(retain)		"Retain changes, and do not disconnect" ;# NEW
+
 ### application::eco ###################################################
+::application::eco::mc::SelectEco	"Select ECO code" ;# NEW
+
 ::application::eco::mc::Mode(single)	"Per ply" ;# NEW
 ::application::eco::mc::Mode(compact)	"Transitions only" ;# NEW
 
@@ -586,13 +620,6 @@
 ::application::database::mc::FileStripMoveInfo		"Strip Move Information" ;# NEW
 ::application::database::mc::FileStripPGNTags		"Strip PGN Tags" ;# NEW
 ::application::database::mc::HelpSwitcher		"Adatbázis váltó(?) Súgó"
-
-::application::database::mc::Games			"&Játszmák"
-::application::database::mc::Players			"Já&tékosok"
-::application::database::mc::Events			"&Versenyek"
-::application::database::mc::Sites			"&Helyszín"  ;#NEW
-::application::database::mc::Positions			"S&tart Positions"
-::application::database::mc::Annotators			"&Elemző"
 
 ::application::database::mc::File			"Fájl"
 ::application::database::mc::SymbolSize			"Szimvólum méret"
@@ -2195,6 +2222,9 @@
 ### languagebox ########################################################
 ::languagebox::mc::AllLanguages	"Összes nyelv"
 ::languagebox::mc::None				"Egyik sem"
+
+### ecobox #############################################################
+::ecobox::mc::OpenEcoDialog "Open ECO dialog" ;# NEW
 
 ### datebox ############################################################
 ::datebox::mc::Today		"Ma"

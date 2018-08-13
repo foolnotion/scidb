@@ -470,7 +470,7 @@ proc ImportHandler {w parentid uri} {
 	if {[file readable $file]} {
 		set fd [::open $file r]
 		chan configure $fd -encoding utf-8
-		set contents [read $fd]
+		set contents [::read $fd]
 		close $fd
 
 		incr Priv(styleCount)

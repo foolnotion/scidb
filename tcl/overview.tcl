@@ -134,8 +134,8 @@ proc open {parent base variant info view index {fen {}}} {
 	bind $nb <<NotebookTabChanged>> [namespace code [list TabChanged $nb]]
 	bind $nb <<LanguageChanged>> [namespace code [list LanguageChanged $nb]]
 
-	set Vars(subscribe:list)  [list [list [namespace current]::Update $tb] \
-											[[list namespace current]::Close $nb]]
+	set Vars(subscribe:list)  [list  [list [namespace current]::Update $nb] \
+												[list [list namespace current]::Close $nb]]
 	set Vars(subscribe:close) [list [namespace current]::Close $base $variant $nb]
 	set Vars(subscribe:data)  [list [list [namespace current]::UpdateData $nb]]
 

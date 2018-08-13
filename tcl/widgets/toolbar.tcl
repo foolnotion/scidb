@@ -784,7 +784,7 @@ proc totalHeight {parent} {
 
 	foreach side {top bottom flat} {
 		set tbf [Join $parent __tbf__$side]
-		if {$tbf in $slaves && [winfo exists  $tbf.frame.scrolled]} {
+		if {$tbf in $slaves && [winfo exists $tbf.frame.scrolled]} {
 			incr height [winfo reqheight $tbf.frame.scrolled]
 		}
 	}
