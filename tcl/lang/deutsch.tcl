@@ -454,12 +454,14 @@
 ::twm::mc::TimeoutDetail	"Diese Sicherheitsmaßnahme is erforderlich um einen eingeforenen Bidschirm zu vermeiden, solange sich das flexible Fenstermanagement im Experimentierstadium befindet."
 
 ### application::layout ################################################
-::application::layout::mc::Rename					"Umbenennen"
-::application::layout::mc::Delete					"Löschen"
-::application::layout::mc::Load						"Laden"
-::application::layout::mc::Linked					"Verknüpft mit"
-::application::layout::mc::CannotOpenFile			"Die Datei '%s' konnte nicht gelesen werden."
-::application::layout::mc::RestoreToOldLayout	"Das alte Layout wiederherstellen"
+::application::layout::mc::Rename				"Umbenennen"
+::application::layout::mc::Delete				"Löschen"
+::application::layout::mc::Replace				"Ersetzen"
+::application::layout::mc::Load					"Laden"
+::application::layout::mc::Linked				"Verknüpft mit"
+::application::layout::mc::CannotOpenFile		"Die Datei '%s' konnte nicht gelesen werden."
+::application::layout::mc::RestoreOldLayout	"Das alte Layout wiederherstellen"
+::application::layout::mc::ReplaceTip			"Das aktuelle Layout durch dieses ersetzen"
 
 ### application ########################################################
 ::application::mc::Tab(information)			"&Information"
@@ -518,6 +520,7 @@
 ::application::twm::mc::Changed						"verändert"
 ::application::twm::mc::Windows						"Fenster"
 ::application::twm::mc::ConfirmDelete				"Wirklich das Layout '%s' löschen?"
+::application::twm::mc::ConfirmDeleteDetails		"Dies wird nur das Layout für Schachform '%s' löschen. Soll das gesamte Layout gelöscht werden so geschieht dies mit Löschen unter der Schachform '%s'."
 ::application::twm::mc::ConfirmOverwrite			"Existierendes Layout '%s' ersetzen?"
 ::application::twm::mc::LayoutSaved					"Layout '%s' wurde erfolgreich geschrieben."
 ::application::twm::mc::EnterName					"Namen eingeben"

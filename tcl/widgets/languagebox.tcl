@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2011-2013 Gregor Cramer
+# Copyright: (C) 2011-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -78,6 +78,7 @@ proc Build {w args} {
 		-disabledbackground white \
 		-disabledforeground grey60 \
 		-state $opts(-state) \
+		-placeicon yes \
 		;
 
 	$w addcol image -id flag -width 20 -justify center
@@ -86,7 +87,6 @@ proc Build {w args} {
 	bind $w <Destroy> [list catch [list namespace delete [namespace current]::${w}]]
 	bind $w <Any-Key> [namespace code [list Completion $w %A %K $opts(-textvariable)]]
 	bind $w <<ComboBoxUnposted>> +[list set [namespace current]::${w}::Key ""]
-	bind $w <<ComboboxCurrent>> [namespace code [list ShowCountry $w]]
 	bind $w <<LanguageChanged>> [namespace code [list LanguageChanged $w]]
 
 	SetupList $w
@@ -134,7 +134,7 @@ proc WidgetProc {w command args} {
 			set var [$w.__w__ cget -textvariable]
 			set $var $lang
 			Search $w $var 1
-			ShowCountry $w
+			$w placeicon
 			return $w
 		}
 
@@ -220,14 +220,13 @@ proc Completion {w code sym var} {
 		Tab {
 			set $var [string trimleft [set $var]]
 			Search $w $var 1
-			ShowCountry $w
+			$w placeicon
 		}
 
 		default {
+			$w forgeticon
 			if {[string is alnum -strict $code] || [string is punct -strict $code] || $code eq " "} {
 				after idle [namespace code [list Completion2 $w $var [set $var]]]
-			} else {
-				after idle [namespace code [list ShowCountry $w]]
 			}
 		}
 	}
@@ -240,8 +239,6 @@ proc Completion2 {w var prevContent} {
 	if {[string length $content] && [string range $content 0 end-1] eq $prevContent} {
 		Search $w $var 0
 	}
-
-	ShowCountry $w
 }
 
 
@@ -278,27 +275,6 @@ proc Search {w var full} {
 			}
 		}
 	}
-}
-
-
-proc ShowCountry {cb} {
-	variable ${cb}::Values
-	variable ${cb}::None
-
-	set content [$cb get]
-	if {[string length $content] > 1} {
-		set n [lsearch -exact -index 1 $Values $content]
-		if {$n >= 1 || (!$None && $n == 0)} {
-			set code [::mc::countryForLang [lindex $Values $n 2]]
-			if {[info exists ::country::icon::flag($code)]} {
-				if {[$cb placeicon $::country::icon::flag($code)]} {
-					return
-				}
-			}
-		}
-	}
-
-	$cb forgeticon
 }
 
 } ;# namespace languagebox

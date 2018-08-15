@@ -167,7 +167,7 @@ proc open {parent pos lang} {
 		-padding {2 2 2 2} \
 		;
 	::widget::buttonSetText $butts.symbol [namespace current]::mc::InsertSymbol
-	::widget::buttonSetText $butts.clear ::widget::mc::Label(Clear)
+	::widget::buttonSetText $butts.clear ::widget::mc::Label(clear)
 	::widget::buttonSetText $butts.revert ::widget::mc::Label(revert)
 
 	grid $main	-row 1 -column 1 -sticky ewns
@@ -905,7 +905,7 @@ proc EditUndo {} {
 
 	set w $Vars(widget:text:$Vars(lang)).text
 
-	if {[set [$w edit info](undodepth)]} {
+	if {[$w edit info -undodepth]} {
 		SetUndoPoint $w
 		$w edit undo
 	}
@@ -917,7 +917,7 @@ proc EditRedo {} {
 
 	set w $Vars(widget:text:$Vars(lang)).text
 
-	if {[set [$w edit info](redodepth)]} {
+	if {[$w edit info -redodepth]} {
 		$w edit redo
 	}
 }
@@ -1500,7 +1500,7 @@ proc PopupMenu {parent} {
 	$m add separator
 
 	set t $Vars(widget:text:$Vars(lang)).text
-	if {[set [$t edit info](undodepth)]} { set state normal } else { set state disabled }
+	if {[$t edit info -undodepth]} { set state normal } else { set state disabled }
 	$m add command \
 		-compound left \
 		-image $::icon::16x16::undo \
@@ -1509,7 +1509,7 @@ proc PopupMenu {parent} {
 		-command [namespace code EditUndo] \
 		-state $state \
 		;
-	if {[set [$t edit info](redodepth)]} { set state normal } else { set state disabled }
+	if {[$t edit info -redodepth]} { set state normal } else { set state disabled }
 	$m add command \
 		-compound left \
 		-image $::icon::16x16::redo \
@@ -1902,7 +1902,7 @@ proc DisplayEmoticons {} {
 
 	if {$Vars(emotions) == 0} { return }
 
-	if {[set [$w edit info](undodepth)]} {
+	if {[$w edit info -undodepth]} {
 		set reply [::dialog::question \
 			-parent [winfo toplevel $w] \
 			-title $::scidb::app \

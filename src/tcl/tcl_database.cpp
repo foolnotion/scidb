@@ -1214,7 +1214,7 @@ cmdOpen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	mstl::auto_ptr< ::db::FileOffsets> fileOffsets;
 
-	if (ext == "pgn" || ext == "PGN" || ext == "gz")
+	if (ext == "pgn" || ext == "PGN" || ext == "gz" || ext == "ZIP" || ext == "zip")
 		fileOffsets.reset(new ::db::FileOffsets);
 
 	tcl::PgnReader	reader(	stream,

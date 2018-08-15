@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2010-2013 Gregor Cramer
+# Copyright: (C) 2010-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -91,6 +91,7 @@ proc Build {w args} {
 		-validatecommand { return [string is alpha %P] || [regexp {[-]*} %P] } \
 		-state $opts(-state) \
 		-width $width \
+		-placeicon yes \
 		;
 	$w.__w__ addcol image -id icon -justify center
 	$w.__w__ addcol text -id sex
@@ -105,7 +106,6 @@ proc Build {w args} {
 	bind $w <Destroy> [list catch [list namespace delete [namespace current]::${w}]]
 	bind $w.keys <<LanguageChanged>> [namespace code [list LanguageChanged $w]]
 	bind $w.__w__ <Any-Key> [list after idle [namespace code [list Select $w %A]]]
-	bind $w.__w__ <<ComboboxCurrent>> [namespace code [list ShowIcon $w]]
 
 	$w.__w__ current 0
 
@@ -170,7 +170,7 @@ proc WidgetProc {w command args} {
 			} else {
 				$w.__w__ current 0
 			}
-			ShowIcon $w
+			$w placeicon
 			return $w
 		}
 
@@ -244,6 +244,8 @@ proc Select {w key} {
 	if {[$w popdown?]} { return }
 	if {![info exists ${w}::Male]} { return }
 
+	$w forgeticon
+
 	variable ${w}::Male
 	variable ${w}::Female
 	variable ${w}::Computer
@@ -284,26 +286,6 @@ proc Select {w key} {
 			}
 		}
 	}
-
-	ShowIcon $w
-}
-
-
-proc ShowIcon {w} {
-	variable types
-
-	set content [$w get]
-	if {[string length $content] > 1} {
-		set idx [$w.__w__ find $content]
-		if {$idx >= 1} {
-			set img $icon::12x12::Gender([lindex $types [expr {$idx - 1}]])
-			if {[$w.__w__ placeicon $img]} {
-				return
-			}
-		}
-	}
-
-	$w.__w__ forgeticon
 }
 
 

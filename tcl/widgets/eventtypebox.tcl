@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2010-2013 Gregor Cramer
+# Copyright: (C) 2010-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -91,6 +91,7 @@ proc Build {w args} {
 		-column type \
 		-state $opts(-state) \
 		-width $width \
+		-placeicon yes \
 		;
 	$w.__w__ addcol image -id icon
 	$w.__w__ addcol text -id type
@@ -101,7 +102,6 @@ proc Build {w args} {
 	bind $w <Destroy> [list catch [list namespace delete [namespace current]::${w}]]
 	bind $w.__w__ <Any-Key> [namespace code [list Completion $w %A %K $opts(-textvariable)]]
 	bind $w.__w__ <<LanguageChanged>> [namespace code [list LanguageChanged $w]]
-	bind $w.__w__ <<ComboboxCurrent>> [namespace code [list ShowIcon $w]]
 
 	$w.__w__ current 0
 
@@ -153,7 +153,7 @@ proc WidgetProc {w command args} {
 			} else {
 				$w.__w__ current 0
 			}
-			ShowIcon $w
+			$w placeicon
 			return $w
 		}
 
@@ -207,14 +207,13 @@ proc Completion {w code sym var} {
 		Tab {
 			set $var [string trimleft [set $var]]
 			Search $w $var 1
-			ShowIcon $w
+			$w placeicon
 		}
 
 		default {
+			$w forgeticon
 			if {[string is alnum -strict $code] || $code eq " "} {
 				after idle [namespace code [list Completion2 $w $var [set $var]]]
-			} else {
-				after idle [namespace code [list ShowIcon $w]]
 			}
 		}
 	}
@@ -242,8 +241,6 @@ proc Completion2 {w var prevContent} {
 	} elseif {[string equal -nocase -length [expr {$len - 1}] $content $prevContent]} {
 		Search $w $var 0
 	}
-
-	ShowIcon $w
 }
 
 
@@ -278,24 +275,6 @@ proc Search {w var full} {
 			$w.__w__ selection range $k end
 		}
 	}
-}
-
-
-proc ShowIcon {w} {
-	variable types
-
-	set content [$w get]
-	if {[string length $content] > 1} {
-		set idx [$w.__w__ find $content]
-		if {$idx >= 1} {
-			set img $icon::12x12::Type([lindex $types [expr {$idx - 1}]])
-			if {[$w.__w__ placeicon $img]} {
-				return
-			}
-		}
-	}
-
-	$w.__w__ forgeticon
 }
 
 

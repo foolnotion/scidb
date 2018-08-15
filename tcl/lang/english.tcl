@@ -453,12 +453,14 @@
 ::twm::mc::TimeoutDetail	"This safety handling is required to avoid frozen screens, as long as the tiling window management is in an experimental stage."
 
 ### application::layout ################################################
-::application::layout::mc::Rename					"Rename"
-::application::layout::mc::Delete					"Delete"
-::application::layout::mc::Load						"Load"
-::application::layout::mc::Linked					"Linked with"
-::application::layout::mc::CannotOpenFile			"Cannot read file '%s'."
-::application::layout::mc::RestoreToOldLayout	"Restore to old layout"
+::application::layout::mc::Rename				"Rename"
+::application::layout::mc::Delete				"Delete"
+::application::layout::mc::Replace				"Replace"
+::application::layout::mc::Load					"Load"
+::application::layout::mc::Linked				"Linked with"
+::application::layout::mc::CannotOpenFile		"Cannot read file '%s'."
+::application::layout::mc::RestoreOldLayout	"Restore to old layout"
+::application::layout::mc::ReplaceTip			"Overwrite current layout with this one"
 
 ### application ########################################################
 ::application::mc::Tab(information)			"&Information"
@@ -517,6 +519,7 @@
 ::application::twm::mc::Changed						"changed"
 ::application::twm::mc::Windows						"Windows"
 ::application::twm::mc::ConfirmDelete				"Really delete layout '%s'?"
+::application::twm::mc::ConfirmDeleteDetails		"This will only delete the layout of variant '%s'. If you want to delete the complete layout, then you have to delete the layout of variant '%s'."
 ::application::twm::mc::ConfirmOverwrite			"Overwrite existing layout '%s'?"
 ::application::twm::mc::LayoutSaved					"Layout '%s' successfully saved."
 ::application::twm::mc::EnterName					"Enter Name"

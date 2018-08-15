@@ -6,7 +6,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2010-2013 Gregor Cramer
+# Copyright: (C) 2010-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -494,14 +494,14 @@ proc WidgetProc {w command args} {
 
 		insert {
 			array set opts {
-				-index		-1
-				-enabled		yes
-				-highlight	no
-				-types		{}
-				-font			{}
+				-index			-1
+				-enabled			yes
+				-highlight		no
+				-types			{}
+				-font				{}
 				-specialfont	{}
-				-foreground	{}
-				-span			{}
+				-foreground		{}
+				-span				{}
 			}
 			array set opts [lrange $args 1 end]
 			set args [lindex $args 0]
@@ -652,7 +652,7 @@ proc WidgetProc {w command args} {
 		}
 
 		get {
-			if {[llength $args] == 0 || [llength $args] > 2} {
+			if {[llength $args] != 1 && [llength $args] != 2} {
 				error "wrong # args: should be \"[namespace current] get ?<index>? <column>\""
 			}
 			if {[llength $args] == 1} {
@@ -670,13 +670,13 @@ proc WidgetProc {w command args} {
 				}
 				incr index
 			}
+			if {![$t item enabled $index]} { return " " }
 			if {![string is integer $column]} {
 				set column [lsearch -exact $Priv(columns) $column]
 				if {$column == -1} {
 					error "invalid column \"[lindex $args 1]\""
 				}
 			}
-			if {![$t item enabled $index]} { return " " }
 			set result ""
 			if {[lindex $Priv(types) $column] ne "text"} {
 				set result [$t item image $index $column]
@@ -685,6 +685,31 @@ proc WidgetProc {w command args} {
 				set result [$t item text $index $column]
 			}
 			return $result
+		}
+
+		geticon {
+			if {[llength $args] == 0} {
+				set index $Priv(selected)
+				if {$index == 0} { return "" }
+			} elseif {[llength $args] == 1} {
+				set index [lindex $args 0]
+				if {![string is integer -strict $index]} {
+					error "wrong argument: index should be integer ('$index' is given)"
+				}
+				if {$index < 0} { return "" }
+				if {$index >= $Priv(last)} {
+					error "index '$index' out of range"
+				}
+				incr index
+			} else {
+				error "wrong # args: should be \"[namespace current] get ?<index>? <column>\""
+			}
+			if {![$t item enabled $index]} { return "" }
+			if {[llength $Priv(columns)] == 0} { return "" }
+			foreach type $Priv(types) column $Priv(columns) {
+				if {$type eq "image"} { break }
+			}
+			return [$t item image $index $column]
 		}
 
 		set {
@@ -807,9 +832,6 @@ proc WidgetProc {w command args} {
 			if {[llength $args] != 1} {
 				error "wrong # args: should be \"[namespace current] select <index>\""
 			}
-			switch [$t cget -selectmode] {
-				single - browse { $t selection clear }
-			}
 			set index [lindex $args 0]
 			if {[llength $index] == 0} { return }
 			if {[string is integer -strict $index]} {
@@ -818,22 +840,32 @@ proc WidgetProc {w command args} {
 				set Priv(selected) 0
 				return
 			} else {
-				set index [$t item id $index]
-			}
-			if {$index <= $Priv(last) && [$t item enabled $index]} {
-				if {[$t cget -selectmode] eq "multiple" && $index in [$t selection get]} {
-					$t selection clear $index $index
-					set Priv(selected) 0
-				} else {
-					$t selection add $index
-					set Priv(selected) $index
+				set idx [$t item id $index]
+				if {[llength $idx] == 0} {
+					error "bad index description \"$index\""
 				}
-				$t activate $index
-				$t see $index
-				event generate $w <<ListboxSelect>> -data [expr {$index - 1}]
-			} else {
-				set Priv(selected) 0
+				set index $idx
 			}
+			if {$Priv(selected) != $index} {
+				switch [$t cget -selectmode] {
+					single - browse { $t selection clear }
+				}
+				if {$index <= $Priv(last) && [$t item enabled $index]} {
+					if {[$t cget -selectmode] eq "multiple" && $index in [$t selection get]} {
+						$t selection clear $index $index
+						set Priv(selected) 0
+					} else {
+						$t selection add $index
+						set Priv(selected) $index
+					}
+					$t activate $index
+					$t see $index
+					event generate $w <<ListboxSelect>> -data [expr {$index - 1}]
+				} else {
+					set Priv(selected) 0
+				}
+			}
+			return
 		}
 
 		curselection {
@@ -1032,6 +1064,17 @@ proc WidgetProc {w command args} {
 				$w yview scroll 1 unit
 				$w see $i
 			}
+		}
+
+		find {
+			if {[llength $args] != 2} {
+				error "wrong # args: should be \"[namespace current] $command <column> <content>\""
+			}
+			lassign $args column content
+			for {set i 1} {$i <= $Priv(last)} {incr i} {
+				if {$content eq [$t item text $i $column]} { return [expr {$i - 1}] }
+			}
+			return -1
 		}
 
 		clone {

@@ -458,10 +458,12 @@
 ### application::layout ################################################
 ::application::layout::mc::Rename		"Rename" ;# NEW
 ::application::layout::mc::Delete		"Delete" ;# NEW
+::application::layout::mc::Replace		"Replace" ;# NEW
 ::application::layout::mc::Load			"Load" ;# NEW
 ::application::layout::mc::Linked		"Linked with" ;# NEW
 ::application::layout::mc::CannotOpenFile	"Cannot read file '%s'." ;# NEW
-::application::layout::mc::RestoreToOldLayout	"Restore to old layout" ;# NEW
+::application::layout::mc::RestoreOldLayout	"Restore to old layout" ;# NEW
+::application::layout::mc::ReplaceTip		"Overwrite current layout with this one" ;# NEW
 
 ### application ########################################################
 ::application::mc::Tab(information)		"&Information" ;# NEW
@@ -520,6 +522,7 @@
 ::application::twm::mc::Changed			"changed" ;# NEW
 ::application::twm::mc::Windows			"Windows" ;# NEW
 ::application::twm::mc::ConfirmDelete		"Really delete layout '%s'?" ;# NEW
+::application::twm::mc::ConfirmDeleteDetails	"This will only delete the layout of variant '%s'. If you want to delete the complete layout then you have to delete the layout of variant '%s'." ;# NEW
 ::application::twm::mc::ConfirmOverwrite	"Overwrite existing layout '%s'?" ;# NEW
 ::application::twm::mc::LayoutSaved		"Layout '%s' successfully saved." ;# NEW
 ::application::twm::mc::EnterName		"Enter Name" ;# NEW

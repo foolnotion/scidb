@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2010-2017 Gregor Cramer
+# Copyright: (C) 2010-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -58,7 +58,7 @@ proc Build {w args} {
 	set bold [list [font configure $f -family] [font configure $f -size] bold]
 
 	ttk::tcombobox $w \
-		-class TCountryBox \
+		-class TTCountryBox \
 		-height $opts(-height) \
 		-showcolumns {name code} \
 		-format "%1 (%2)" \
@@ -71,6 +71,7 @@ proc Build {w args} {
 		-disabledforeground [::colors::lookup default,disabledforeground] \
 		-disabledfont $bold \
 		-state $opts(-state) \
+		-placeicon yes \
 		;
 
 	$w addcol text  -id code -foreground darkgreen -font TkFixedFont -width 3 -justify center
@@ -81,7 +82,6 @@ proc Build {w args} {
 	bind $w <Destroy> [list catch [list namespace delete [namespace current]::${w}]]
 	bind $w <Any-Key> [namespace code [list Completion $w %A %K $opts(-textvariable)]]
 	bind $w <<ComboBoxUnposted>> +[list set [namespace current]::${w}::Key ""]
-	bind $w <<ComboboxCurrent>> [namespace code [list ShowCountry $w]]
 	bind $w <<LanguageChanged>> [namespace code [list LanguageChanged $w]]
 
 	SetupList $w
@@ -119,7 +119,7 @@ proc WidgetProc {w command args} {
 			set var [$w.__w__ cget -textvariable]
 			set $var [lindex $args 0]
 			Search $w $var 1
-			ShowCountry $w
+			$w placeicon
 			return $w
 		}
 
@@ -207,14 +207,13 @@ proc Completion {w code sym var} {
 		Tab {
 			set $var [string trimleft [set $var]]
 			Search $w $var 1
-			ShowCountry $w
+			$w placeicon
 		}
 
 		default {
+			$w forgeticon
 			if {[string is alnum -strict $code] || [string is punct -strict $code] || $code eq " "} {
 				after idle [namespace code [list Completion2 $w $var [set $var]]]
-			} else {
-				after idle [namespace code [list ShowCountry $w]]
 			}
 		}
 	}
@@ -231,8 +230,6 @@ proc Completion2 {w var prevContent} {
 				|| [string match {*([A-Z][A-Z][A-Z])} $prevContent]} {
 		Search $w $var 0
 	}
-
-	ShowCountry $w
 }
 
 
@@ -280,23 +277,6 @@ proc Search {w var full} {
 }
 
 
-proc ShowCountry {cb} {
-	set content [$cb get]
-	if {[string length $content]} {
-		if {[$cb find $content] >= 0} {
-			set code [string range $content end-3 end-1]
-			if {[info exists ::country::icon::flag($code)]} {
-				if {[$cb placeicon $::country::icon::flag($code)]} {
-					return
-				}
-			}
-		}
-	}
-
-	$cb forgeticon
-}
-
-
 proc Scroll {cb dir} {
 	$cb instate disabled { return }
 	set values [$cb cget -values]
@@ -316,9 +296,9 @@ proc Scroll {cb dir} {
 } ;# namespace countrybox
 
 
-ttk::copyBindings Entry TCountryBox
-ttk::copyBindings TCombobox TCountryBox
-ttk::bindMouseWheel TCountryBox { countrybox::Scroll %W }
-bind TCountryBox <B1-Leave> { break } ;# avoid AutoScroll (bug in Tk)
+ttk::copyBindings Entry TTCountryBox
+ttk::copyBindings TCombobox TTCountryBox
+ttk::bindMouseWheel TTCountryBox { countrybox::Scroll %W }
+bind TTCountryBox <B1-Leave> { break } ;# avoid AutoScroll (bug in Tk)
 
 # vi:set ts=3 sw=3:

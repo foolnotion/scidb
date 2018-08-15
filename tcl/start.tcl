@@ -502,7 +502,18 @@ proc read {fname args} {
 	if {[llength $args]} {
 		fconfigure $fd {*}$args
 	}
-	set data [read $fd]
+	set data [::read $fd]
+	close $fd
+	return $data
+}
+
+
+proc gets {fname args} {
+	set fd [open $fname r]
+	if {[llength $args]} {
+		fconfigure $fd {*}$args
+	}
+	set data [::gets $fd]
 	close $fd
 	return $data
 }

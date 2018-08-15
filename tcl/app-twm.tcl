@@ -56,6 +56,7 @@ set Actual							"current"
 set Changed							"changed"
 set Windows							"Windows"
 set ConfirmDelete					"Really delete layout '%s'?"
+set ConfirmDeleteDetails		"This will only delete the layout of variant '%s'. If you want to delete the complete layout, then you have to delete the layout of variant '%s'."
 set ConfirmOverwrite				"Overwrite existing layout '%s'?"
 set LayoutSaved					"Layout '%s' successfully saved"
 set EnterName						"Enter Name"
@@ -541,23 +542,32 @@ proc renameLayout {twm name parent} {
 }
 
 
-proc deleteLayout {twm name parent} {
+proc deleteLayout {twm name parent layoutVariant} {
 	variable [namespace parent]::Vars
 	variable Options
 	variable layoutVariants
 
+	set details ""
+	if {$layoutVariant ne "normal"} {
+		set details [format $mc::ConfirmDeleteDetails \
+			$::mc::VariantName([toVariant $layoutVariant]) $::mc::VariantName([toVariant "normal"])]
+	}
 	if {[::dialog::question \
 			-parent $parent \
 			-message [format $mc::ConfirmDelete $name] \
+			-detail $details \
 			-default no \
-		] eq "yes"} {
-		set id $Vars($twm:id)
-		set filename [makeFilename $id normal $name]
-		file delete $filename
-		foreach layoutVariant $layoutVariants {
-			if {$layoutVariants ne "normal"} {
-				file delete [makeFilename $id $layoutVariant $name]
-			}
+		] eq "no"} {
+		return 0
+	}
+
+	set id $Vars($twm:id)
+	set filename [makeFilename $id $layoutVariant $name]
+	file delete $filename
+
+	if {$layoutVariant eq "normal"} {
+		foreach v $layoutVariants {
+			if {$v ne "normal"} { file delete [makeFilename $id $v $name] }
 		}
 		if {$Options($id:layout:name) eq $name} { set Options($id:layout:name) "" }
 		if {$id eq "board"} {
@@ -567,9 +577,9 @@ proc deleteLayout {twm name parent} {
 		} else {
 			array unset Options $id:$name:link
 		}
-		return 1
 	}
-	return 0
+
+	return 1
 }
 
 
@@ -832,9 +842,9 @@ proc makeLayoutMenu {twm menu {w ""}} {
 #		}
 	}
 
-	foreach v $layoutVariants { set names($v) [glob $myID $v] }
+	set names [glob $myID]
 	if {$count} { $menu add separator }
-	if {[llength $names(normal)]} {
+	if {[llength $names]} {
 		menu $menu.load
 		$menu add cascade \
 			-menu $menu.load \
@@ -842,7 +852,7 @@ proc makeLayoutMenu {twm menu {w ""}} {
 			-image $::icon::16x16::layout \
 			-compound left \
 			;
-		foreach name $names(normal) {
+		foreach name $names {
 			set lbl $name
 			if {$name eq $myName} {
 				set status [expr {[testLayoutStatus $twm] ? "Actual" : "Changed"}]
@@ -859,7 +869,7 @@ proc makeLayoutMenu {twm menu {w ""}} {
 	set labelName " $mc::SaveLayoutAs"
 	set state "disabled"
 	if {[string length $myName]} {
-		if {$myName ni $names(normal)} {
+		if {$myName ni $names} {
 			set myName [set Options($myID:layout:name) ""]
 		} else {
 			set layoutVariant $Vars($myID:layout:variant)
@@ -886,7 +896,7 @@ proc makeLayoutMenu {twm menu {w ""}} {
 			-label $labelName \
 			-image $::icon::16x16::save \
 			-compound left \
-			-command [namespace code [list DoSaveLayout $twm $twm $layoutVariant $names(normal)]] \
+			-command [namespace code [list DoSaveLayout $twm $twm $layoutVariant $names]] \
 			-state $state \
 			;
 	}
@@ -897,57 +907,6 @@ proc makeLayoutMenu {twm menu {w ""}} {
 		-command [namespace code [list SaveLayout \
 				$twm $twm [namespace current]::DoSaveLayout "" $mc::SaveLayout]]
 		;
-
-	set sources {}
-	if {[string length $myName]} {
-		foreach v $layoutVariants {
-			if {$v ne $Vars($myID:layout:variant)} {
-				if {	[info exists Options($myID:layout:list:$v)]
-					&& [llength [set rhs $Options($myID:layout:list:$v)]]
-					&& ![$twm compare $Options($myID:layout:list:$layoutVariant) $rhs]} {
-					lappend sources $v $myName
-				} else {
-					set fname [makeFilename $myID $v $myName]
-					if {[file exists $fname]} { lappend sources $v $myName }
-				}
-			}
-		}
-	}
-	set layoutVariant $Vars($myID:layout:variant)
-	foreach name $names(normal) {
-		if {$name ne $myName} {
-			foreach v $layoutVariants {
-				if {$name in $names($v)} { lappend sources $v $name }
-			}
-		}
-	}
-	set state [::makeState [llength $sources]]
-	if {!$hideDisabled || $state eq "normal"} {
-		menu $menu.copy
-		$menu add cascade \
-			-menu $menu.copy \
-			-label " $mc::CopyLayoutFrom..." \
-			-image $::icon::16x16::copy \
-			-compound left \
-			-state $state \
-			;
-		set separator 1
-		foreach {v name} $sources {
-			if {$name eq $myName} {
-				set text "$::mc::Variant $::mc::VariantName([toVariant $v])"
-			} else {
-				if {$separator && [$menu.copy index end] ne "none"} {
-					$menu.copy add separator
-				}
-				set separator 0
-				set text "$::mc::Layout '$name' \[$::mc::VariantName([toVariant $v])\]"
-			}
-			$menu.copy add command \
-				-label $text \
-				-command [namespace code [list CopyLayout $myID $v $name]] \
-				;
-		}
-	}
 
 	if {$myID ne "board" && [string length [set current $myName]] > 0} {
 		set bnames [glob board]
@@ -999,7 +958,7 @@ proc makeLayoutMenu {twm menu {w ""}} {
 			-image $::icon::16x16::setup \
 			-compound left \
 			-command $cmd \
-			-state [::makeState [llength $names(normal)]] \
+			-state [::makeState [llength $names]] \
 			;
 
 		$menu add separator

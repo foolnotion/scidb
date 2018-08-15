@@ -3286,7 +3286,7 @@ namespace eval 16x16 {
 		S/xDzUUSgn/t+Uc/AKA5H7Io0djQAAAAAElFTkSuQmCC
 	}]
 
-	set variant(Crazyhouse) [image create photo -data {
+	set variant(DropChess) [image create photo -data {
 		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAA
 		CXBIWXMAAABIAAAASABGyWs+AAAC50lEQVQ4y32TO2xbZRTHf9/n79q+cRI3DzeNHUoc05Za
 		bYrUAAKBgpoimFAlQIIBIfEYWBkRMwyAGBDMIERaiYUBKE+VFrKAQEAiV6mqBDmNkzgGfGtf
@@ -3305,6 +3305,8 @@ namespace eval 16x16 {
 		xw9Xfqmsf/4PWSc8NZd04AEAAAAielRYdFNvZnR3YXJlAAB42nNMyU9KVfDMTUxPDUpNTKkE
 		AC+cBdSuDKlNAAAAAElFTkSuQmCC
 	}]
+
+	set variant(Crazyhouse) $variant(DropChess)
 
 	set variant(Antichess) [image create photo -data {
 		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACfElEQVQ4y5WT20uTARjGf9s3d/D7
@@ -5291,7 +5293,7 @@ namespace eval 22x22 {
 		B+9kyW71rOEAAAAASUVORK5CYII=
 	}]
 
-	set variant(Crazyhouse) [image create photo -data {
+	set variant(DropChess) [image create photo -data {
 		iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAAABmJLR0QA/wD/AP+gvaeTAAAE
 		nElEQVQ4y7WVa2jVZRzHP8//cs7O2Tm7qLtrzq2tprnmrRuBZiFGkCBqVrhXvYigtwWBIEQg
 		9KakQMOyUFSICLESI2iloLJNzfva1Onc3P2cnZ2dc/Y//+f59WKb29ze9sCPh+fC9/n+vs/v
@@ -5317,6 +5319,8 @@ namespace eval 22x22 {
 		uz1stBGlFMqyUErha9EDfV1tgDeTmQsEAJt5esSMEQSqLYjMaE0TigopAzeB2H8ueh9Q6E5h
 		uwAAAABJRU5ErkJggg==
 	}]
+
+	set variant(Crazyhouse) $variant(DropChess)
 
 	set variant(Antichess) [image create photo -data {
 		iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAAEHklEQVQ4y6WVb2hbVRjGr01tGpOa
@@ -7895,7 +7899,7 @@ namespace eval 32x32 {
 		AElFTkSuQmCC
 	}]
 
-	set variant(Crazyhouse) [image create photo -data {
+	set variant(DropChess) [image create photo -data {
 		iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAI
 		BElEQVRYw8WXWWxc1RmAv3PX8dhje+xx7NhxCMF2VkKakISwBQJJQFWBJm2hFEEkKlSpoD60
 		fWrFQ1tVFFpVQlWpIlFFAVpaFFLWFlIRSFyIKcEVxrFjJ2biOPEyHs9MZjzLXc7pw4yDndgx
@@ -7937,6 +7941,8 @@ namespace eval 32x32 {
 		BaxaTdOF9It9qNA0hBCqBCClZDKWzB5MpLJ/1HQtP1t3PL0pFf9hExoA7Dm+m2pSnVJzKgH+
 		DffbukAlKIleAAAAAElFTkSuQmCC
 	}]
+
+	set variant(Crazyhouse) $variant(DropChess)
 
 	set variant(Antichess) [image create photo -data {
 		iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAG9ElEQVRYw71Xe2xa1x1GtsdDgHgM
