@@ -115,7 +115,11 @@ proc open {twm id layoutVariant currentLayout link} {
 
 	set (load:cmd) [namespace code [list LoadLayout $myTWM]]
 	set (var:names) [[namespace parent]::twm::glob $id $layoutVariant]
-	tk::listbox $(list:names) -width $Options(width) -listvariable [namespace current]::(var:names)
+	tk::listbox $(list:names) \
+		-width $Options(width) \
+		-height 0 \
+		-listvariable [namespace current]::(var:names) \
+		;
 	SelectLayout
 
 	set (button:ren) $lt.ren
@@ -166,7 +170,7 @@ proc open {twm id layoutVariant currentLayout link} {
 	if {$id ne "board"} {
 		set names [[namespace parent]::twm::glob board]
 		if {[llength $names]} {
-			set (var:link) $opts(-link)
+			set (var:link) $link
 			if {[string length $(var:link)] == 0} { set (var:link) "\u2014" }
 			set names [linsert $names 0 "\u2014"]
 			set linkframe [ttk::frame $lt.link -borderwidth 0]
@@ -192,9 +196,9 @@ proc open {twm id layoutVariant currentLayout link} {
 	if {$id ne "board"} {
 		set mainTWM [[namespace parent]::twm::getTWM games]
 		lassign [$mainTWM dimension] width height
-		set h [expr {$height*($(width)/$width)}]
+		set h [expr {int(double($height)*(double($(width))/double($width)))}]
 		if {$h > $(height)} {
-			set (width) [expr {$(width)*($(height)/$h)}]
+			set (width) [expr {double($(width))*(double($(height))/$h)}]
 		} else {
 			set (height) $h
 		}
@@ -367,18 +371,20 @@ proc Resizing {myTWM toplevel width height} {
 		lassign [winfo extents .application] ew1 ew2 eh1 eh2
 		set adjustedWidth [expr {min($width, $ww - $ew1 - $ew2)}]
 		set adjustedHeight [expr {min($height, $wh - $eh1 - $eh2)}]
+		set fh [expr {double($(width))/double($adjustedWidth)}]
+		set fv [expr {double($(height))/double($adjustedHeight)}]
+		set f  [expr {min($fh, $fv)}]
+		set fh [expr {$f*(double($adjustedWidth)/double($width))}]
+		set fv [expr {$f*(double($adjustedHeight)/double($height))}]
+		set w  [expr {int($fh*double($width) + 0.5)}]
+		set h  [expr {int($fv*double($height) + 0.5)}]
 	} else {
-		set adjustedWidth $width
-		set adjustedHeight $height
+		set f [expr {double($(width))/double($width)}]
+		set w [expr {int($f*double($width) + 0.5)}]
+		set h $height
 	}
 
-	set fh [expr {double($(width))/double($adjustedWidth)}]
-	set fv [expr {double($(height))/double($adjustedHeight)}]
-	set f  [expr {min($fh, $fv)}]
-	set fh [expr {$f*(double($adjustedWidth)/double($width))}]
-	set fv [expr {$f*(double($adjustedHeight)/double($height))}]
-
-	return [list [expr {int($fh*double($width) + 0.5)}] [expr {int($fv*double($height) + 0.5)}]]
+	return [list $w $h]
 }
 
 

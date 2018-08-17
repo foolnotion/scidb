@@ -131,7 +131,7 @@ memblock<T>::operator=(memblock&& mb)
 {
 	if (this != &mb)
 	{
-		memblock::~memblock();
+		memblock<T>::~memblock();
 		*this = mstl::move(mb);
 	}
 	return *this;

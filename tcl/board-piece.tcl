@@ -218,7 +218,6 @@ proc ConfigureTextureFrame {which} {
 }
 
 
-
 proc ShowCurrentTexture {which xc yc} {
 	variable [namespace parent]::texture
 	variable style

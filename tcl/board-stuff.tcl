@@ -923,18 +923,11 @@ proc HiliteArrow {w rows cols color index type} {
 	set size $Board(size)
 
 	if {![info exists Board(image,$type,$rows,$cols,$size,$color)]} {
-		if {$type eq "click"} { set hilite [GetHiliteColor $color] } else { set hilite $color }
+		if {$type eq "click"} { set hilite [::colors::makeHiliteColor $color] } else { set hilite $color }
 		set Board(image,$type,$rows,$cols,$size,$color) [MakeArrow $size $rows $cols $hilite click]
 	}
 
 	$w.c itemconfigure alternative:$index -image $Board(image,$type,$rows,$cols,$size,$color)
-}
-
-
-proc GetHiliteColor {color} {
-	scan [::colors::getActualColor $color] "\#%2x%2x%2x" r g b
-	lassign [::colors::rgb2hsv $r $g $b] h s v
-	return [format "#%02x%02x%02x" {*}[::colors::hsv2rgb $h 1.0 1.0]]
 }
 
 

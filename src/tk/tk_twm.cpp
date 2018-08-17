@@ -651,9 +651,10 @@ static bool operator==(Size const& lhs, Size const& rhs)
 
 struct Dimen
 {
-	Dimen() { m[0] = m[1] = Abs; }
-	Dimen(int width, int height) :abs(width, height) { m[0] = m[1] = Abs; }
+	Dimen();
+	Dimen(int width, int height);
 
+	template <Orient D> bool reliable() const;
 	template <Orient D> Mode mode() const;
 	template <Orient D,Mode M = Abs> int dimen() const;
 	template <Orient D> int computeRelativeSize(int size) const;
@@ -662,19 +663,30 @@ struct Dimen
 	void zero() { abs.zero(); rel.zero(); }
 	template <Orient D> void setup(int value, Mode mode = Abs);
 	template <Orient D> void set(int value, Mode mode = Abs);
+	template <Orient D> void setReliable();
 
 	Size abs;
 	Size rel;
 	Mode m[2];
+	bool r[2];
 };
+
+Dimen::Dimen() { m[0] = m[1] = Abs; r[0] = r[1] = false; }
+Dimen::Dimen(int width, int height) :abs(width, height) { m[0] = m[1] = Abs; r[0] = r[1] = false; }
 
 template <> int Dimen::dimen<Horz,Abs>() const { return abs.dimen<Horz>(); }
 template <> int Dimen::dimen<Vert,Abs>() const { return abs.dimen<Vert>(); }
 template <> int Dimen::dimen<Horz,Rel>() const { return rel.dimen<Horz>(); }
 template <> int Dimen::dimen<Vert,Rel>() const { return rel.dimen<Vert>(); }
 
+template <> bool Dimen::reliable<Horz>() const { return r[0]; }
+template <> bool Dimen::reliable<Vert>() const { return r[1]; }
+
 template <> Mode Dimen::mode<Horz>() const { return m[0]; }
 template <> Mode Dimen::mode<Vert>() const { return m[1]; }
+
+template <> void Dimen::setReliable<Horz>() { r[0] = true; }
+template <> void Dimen::setReliable<Vert>() { r[1] = true; }
 
 static bool operator==(Dimen const& lhs, Dimen const& rhs)
 { return lhs.abs == rhs.abs && lhs.rel == rhs.rel; } // ignore mode
@@ -740,12 +752,14 @@ struct Quants
 		int minWidth, int minHeight,
 		int maxWidth, int maxHeight);
 
+	template <Orient D,Quantity Q = Actual> bool reliable() const;
 	template <Orient D,Quantity Q = Actual> Mode mode() const;
 	template <Orient D,Quantity Q = Actual,Mode M = Abs> int dimen() const;
 
 	template <Orient D,Quantity Q = Actual> int computeRelativeSize(int size) const;
 	template <Orient D,Quantity Q = Actual> int computePercentage(int size) const;
 
+	template <Orient D,Quantity Q = Actual,Mode M = Abs> void setReliable();
 	template <Orient D,Quantity Q = Actual,Mode M = Abs> void set(int size);
 	void setActual(int width, int height);
 	void zero();
@@ -761,6 +775,12 @@ Quants::Quants(
 {
 }
 
+template <> bool Quants::reliable<Horz,Actual>() const	{ return actual.reliable<Horz>(); }
+template <> bool Quants::reliable<Vert,Actual>() const	{ return actual.reliable<Vert>(); }
+template <> bool Quants::reliable<Horz,Min>() const		{ return min.reliable<Horz>(); }
+template <> bool Quants::reliable<Vert,Min>() const		{ return min.reliable<Vert>(); }
+template <> bool Quants::reliable<Horz,Max>() const		{ return max.reliable<Horz>(); }
+template <> bool Quants::reliable<Vert,Max>() const		{ return max.reliable<Vert>(); }
 
 template <> Mode Quants::mode<Horz,Actual>() const			{ return actual.mode<Horz>(); }
 template <> Mode Quants::mode<Vert,Actual>() const			{ return actual.mode<Vert>(); }
@@ -794,6 +814,13 @@ template <> void Quants::set<Horz,Max,Abs>(int size)		{ max.setup<Horz>(size, Ab
 template <> void Quants::set<Vert,Max,Abs>(int size)		{ max.setup<Vert>(size, Abs); }
 template <> void Quants::set<Horz,Max,Rel>(int size)		{ max.setup<Horz>(size, Rel); }
 template <> void Quants::set<Vert,Max,Rel>(int size)		{ max.setup<Vert>(size, Rel); }
+
+template <> void Quants::setReliable<Horz,Actual>()		{ actual.setReliable<Horz>(); }
+template <> void Quants::setReliable<Vert,Actual>()		{ actual.setReliable<Vert>(); }
+template <> void Quants::setReliable<Horz,Min>()			{ min.setReliable<Horz>(); }
+template <> void Quants::setReliable<Vert,Min>()			{ min.setReliable<Vert>(); }
+template <> void Quants::setReliable<Horz,Max>()			{ max.setReliable<Horz>(); }
+template <> void Quants::setReliable<Vert,Max>()			{ max.setReliable<Vert>(); }
 
 static bool operator==(Quants const& lhs, Quants const& rhs)
 { return lhs.actual == rhs.actual && lhs.min == rhs.min && lhs.max == rhs.max; }
@@ -1205,6 +1232,7 @@ public:
 	void makeMetaFrame();
 	void setUid(Tcl_Obj* uidObj);
 	void setPreserved(bool flag);
+	void adjustDimensions();
 	void dump() const;
 
 	Node* dock(Node*& recv, Position position, Node const* setup);
@@ -1249,6 +1277,8 @@ private:
 	Node(Node& parent, Type type, Tcl_Obj* uid = nullptr);
 	Node(Node const& node);
 
+	bool finished() const;
+	bool containsDeadWindows() const;
 	bool fits(Size size, Position position) const;
 	template <Orient D,Quantity Q> bool canComputeDimensions() const;
 
@@ -1290,7 +1320,6 @@ private:
 
 	void computeDimensionsRecursively();
 	template <Orient D,Quantity Q> void computeDimensionsRecursively(int size);
-	void adjustDimensions();
 	void resizeDimensions();
 	void unframe();
 	void flatten();
@@ -1437,7 +1466,6 @@ private:
 	bool			m_isReady;
 	bool			m_isPreserved;
 	bool			m_temporary;
-	bool			m_finished;
 
 	mutable bool m_dumpFlag;
 
@@ -1456,7 +1484,10 @@ Perform(ClientData clientData)
 	Node* node = static_cast<Node*>(clientData);
 
 	if (node->exists())
+	{
+		node->adjustDimensions();
 		node->perform();
+	}
 }
 
 
@@ -1607,6 +1638,30 @@ bool
 Node::hasPackedChilds() const
 {
 	return child();
+}
+
+
+bool
+Node::containsDeadWindows() const
+{
+	for (unsigned i = 0; i < numChilds(); ++i)
+	{
+		if (child(i)->isAlreadyDead())
+			return true;
+	}
+	return false;
+}
+
+
+bool
+Node::finished() const
+{
+	return	m_dimen.reliable<Horz,Actual>()
+			&& m_dimen.reliable<Vert,Actual>()
+			&& m_dimen.reliable<Horz,Min>()
+			&& m_dimen.reliable<Vert,Min>()
+			&& m_dimen.reliable<Horz,Max>()
+			&& m_dimen.reliable<Vert,Max>();
 }
 
 
@@ -2105,7 +2160,6 @@ Node::Node(Node& parent, Type type, Tcl_Obj* uid)
 	,m_isReady(false)
 	,m_isPreserved(false)
 	,m_temporary(false)
-	,m_finished(false)
 	,m_dumpFlag(false)
 {
 	M_ASSERT(type != Root);
@@ -2145,7 +2199,6 @@ Node::Node(Tcl_Obj* path, Node const* setup)
 	,m_isReady(false)
 	,m_isPreserved(false)
 	,m_temporary(false)
-	,m_finished(false)
 	,m_dumpFlag(false)
 {
 	M_ASSERT(path);
@@ -2200,7 +2253,6 @@ Node::Node(Node const& node)
 	,m_isReady(false)
 	,m_isPreserved(false)
 	,m_temporary(false)
-	,m_finished(false)
 	,m_dumpFlag(false)
 {
 	tcl::incrRef(m_path);
@@ -2977,7 +3029,8 @@ Node::computeDimen() const
 	{
 		if (child(i)->isPacked())
 		{
-			int size = child(i)->frameSize<D>(child(i)->computeDimen<D>());
+			// ensure that the header will be added
+			int size = child(i)->frameSize<D>(child(i)->computeDimen<D>() + 1) - 1;
 
 			if (hasOrientation<D>())
 				totalSize += size + (totalSize ? sashSize() : 0);
@@ -3131,6 +3184,8 @@ Node::computeDimensionsRecursively(int size)
 		m_dimen.set<D>(mstl::max(m_dimen.dimen<D,Min>(), m_dimen.dimen<D>()));
 	else if (Q == Max)
 		m_dimen.set<D,Max>(mstl::max(0, m_dimen.dimen<D,Max>()));
+	
+	m_dimen.setReliable<D,Q>();
 
 	if (Q == Actual)
 	{
@@ -3167,46 +3222,18 @@ Node::computeDimensionsRecursively()
 {
 	M_ASSERT(isToplevel());
 
-	int count = 0;
-
-	bool horz = false;
-	bool vert = false;
-
 	if (canComputeDimensions<Horz,Min>())
-	{
 		computeDimensionsRecursively<Horz,Min>(0);
-		count += 1;
-	}
 	if (canComputeDimensions<Vert,Min>())
-	{
 		computeDimensionsRecursively<Vert,Min>(0);
-		count += 1;
-	}
 	if (canComputeDimensions<Horz,Actual>())
-	{
 		computeDimensionsRecursively<Horz,Actual>(0);
-		count += 1;
-		horz = true;
-	}
 	if (canComputeDimensions<Vert,Actual>())
-	{
 		computeDimensionsRecursively<Vert,Actual>(0);
-		count += 1;
-		vert = true;
-	}
-	if (horz || canComputeDimensions<Horz,Max>())
-	{
+	if (m_dimen.reliable<Horz,Actual>() || canComputeDimensions<Horz,Max>())
 		computeDimensionsRecursively<Horz,Max>(0);
-		count += 1;
-	}
-	if (vert || canComputeDimensions<Vert,Max>())
-	{
+	if (m_dimen.reliable<Vert,Actual>() || canComputeDimensions<Vert,Max>())
 		computeDimensionsRecursively<Vert,Max>(0);
-		count += 1;
-	}
-
-	if (count == 6)
-		m_finished = true;
 }
 
 
@@ -3257,10 +3284,9 @@ Node::destroyed(bool finalize)
 		m_isDestroyed = true;
 		m_isDeleted = true;
 
-		if (toplevel() == m_root)
+		if (toplevel() == m_root && m_parent && !m_parent->containsDeadWindows())
 		{
-			if (m_parent)
-				m_parent->makeSnapshot();
+			m_parent->makeSnapshot();
 			m_root->makeStructure();
 		}
 
@@ -3290,7 +3316,7 @@ Node::destroyed(bool finalize)
 				toplevel->perform();
 			}
 		}
-		else
+		else if (!toplevel()->isAlreadyDead())
 		{
 			toplevel()->perform();
 		}
@@ -4288,22 +4314,22 @@ Node::makeOptions(Flag flags, Node const* before) const
 
 		if (isPane() || isFrame() || (m_parent && m_parent->isPanedWindow()))
 		{
-			if ((value = minWidth<Outer>()) > 0)
+			if ((value = minWidth<Outer>()) > 0 && m_dimen.reliable<Horz,Min>())
 			{
 				optList.push_back(m_objOptMinWidth);
 				optList.push_back(tcl::newObj(value));
 			}
-			if ((value = minHeight<Outer>()) > 0)
+			if ((value = minHeight<Outer>()) > 0 && m_dimen.reliable<Vert,Min>())
 			{
 				optList.push_back(m_objOptMinHeight);
 				optList.push_back(tcl::newObj(value));
 			}
-			if ((value = maxWidth<Outer>()) > 0)
+			if ((value = maxWidth<Outer>()) > 0 && m_dimen.reliable<Horz,Max>())
 			{
 				optList.push_back(m_objOptMaxWidth);
 				optList.push_back(tcl::newObj(value));
 			}
-			if ((value = maxHeight<Outer>()) > 0)
+			if ((value = maxHeight<Outer>()) > 0 && m_dimen.reliable<Vert,Min>())
 			{
 				optList.push_back(m_objOptMaxHeight);
 				optList.push_back(tcl::newObj(value));
@@ -4320,12 +4346,12 @@ Node::makeOptions(Flag flags, Node const* before) const
 		}
 	}
 
-	if ((value = width<Outer>()) > 0)
+	if ((value = width<Outer>()) > 0 && m_dimen.reliable<Horz,Actual>())
 	{
 		optList.push_back(m_objOptWidth);
 		optList.push_back(tcl::newObj(value));
 	}
-	if ((value = height<Outer>()) > 0)
+	if ((value = height<Outer>()) > 0 && m_dimen.reliable<Vert,Actual>())
 	{
 		optList.push_back(m_objOptHeight);
 		optList.push_back(tcl::newObj(value));
@@ -4718,8 +4744,8 @@ Node::expandPanes(int computedSize, int space)
 
 				if (int share = mstl::min(remaining, int((double(expand)/available)*space + 0.5)))
 				{
+					share = mstl::min(space - spread, share);
 					spread += share;
-					M_ASSERT(spread <= space);
 					M_ASSERT(remaining >= 0);
 					child->doAdjustment<D>(child->actualSize<Inner,D>() + share);
 				}
@@ -4974,8 +5000,6 @@ Node::makeSnapshot(mstl::string& structure, SizeMap* sizeMap) const
 
 	for (unsigned i = 0; i < numChilds(); ++i)
 	{
-		M_ASSERT(child(i)->isPacked());
-
 		if (child(i)->m_parent == this)
 		{
 			keyList.push_back();
@@ -6113,10 +6137,12 @@ Node::clearAllFlags()
 {
 	M_ASSERT(isToplevel());
 
-	m_flags = 0;
+	unsigned flags = finished() ? 0 : F_Config;
+
+	m_flags = flags;
 
 	for (unsigned i = 0; i < m_active.size(); ++i)
-		m_active[i]->m_flags = 0;
+		m_active[i]->m_flags = flags;
 }
 
 
@@ -6434,7 +6460,7 @@ Node::performRestructureRecursively()
 void
 Node::performConfigRecursively()
 {
-	if (m_parent && m_parent->isPanedWindow() && !isToplevel())
+	if (m_parent && (m_parent->isPanedWindow() && !isToplevel()))
 		performConfig();
 	
 	for (unsigned i = 0; i < numChilds(); ++i)
@@ -6635,7 +6661,7 @@ Node::performDeiconifyFloats()
 			toplevel->performFinalizeCreateRecursively();
 			toplevel->updateAllHeaders();
 			toplevel->computeDimensionsRecursively();
-			if (toplevel->m_finished)
+			if (toplevel->finished())
 				toplevel->adjustDimensions();
 			toplevel->performPackRecursively();
 			toplevel->performUpdateHeaderRecursively(true);
@@ -6645,7 +6671,7 @@ Node::performDeiconifyFloats()
 			toplevel->performSelectRecursively();
 			toplevel->performBuildRecursively();
 			toplevel->performDeiconify();
-			if (toplevel->m_finished)
+			if (toplevel->finished())
 				toplevel->performGeometry();
 		}
 	}
@@ -6722,22 +6748,21 @@ Node::perform(Node* toplevel)
 					toplevel->computeDimensionsRecursively();
 			}
 
-			if (m_finished)
-				m_root->resizeDimensions();
-			if (toplevel && toplevel->m_finished)
+			m_root->resizeDimensions();
+			if (toplevel)
 				toplevel->resizeDimensions();
 
 			if (!m_isReady || (flags & (F_Pack|F_Unpack|F_Config)))
 			{
-				if (m_finished)
+				if (finished())
 					adjustDimensions();
-				if (toplevel && toplevel->m_finished)
+				if (toplevel && toplevel->finished())
 					toplevel->adjustDimensions();
 			}
 
-			if (m_finished)
+			if (finished())
 				performGeometry();
-			if (toplevel && toplevel->m_finished)
+			if (toplevel && toplevel->finished())
 				toplevel->performGeometry();
 
 			if (flags & F_Pack)
@@ -6747,8 +6772,9 @@ Node::perform(Node* toplevel)
 					toplevel->performPackRecursively();
 			}
 
-			performConfigRecursively();
-			if (toplevel)
+			if (finished())
+				performConfigRecursively();
+			if (toplevel && toplevel->finished())
 				toplevel->performConfigRecursively();
 
 			if (flags & F_Raise)
@@ -6777,7 +6803,7 @@ Node::perform(Node* toplevel)
 
 			m_root->performDeleteInactiveNodes();
 
-			if (m_finished)
+			if (finished())
 				m_root->performUpdateDimensions();
 
 			if (flags & F_Build)
@@ -6805,7 +6831,7 @@ Node::perform(Node* toplevel)
 		throw;
 	}
 
-	if (isRoot() && !m_isReady && m_finished)
+	if (isRoot() && !m_isReady && finished())
 		ready();
 }
 

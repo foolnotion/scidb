@@ -131,6 +131,7 @@ proc Build {w args} {
 	set Priv($w:scrollcolumn) $opts(-scrollcolumn)
 	set Priv($w:mapping1) {}
 	set Priv($w:mapping2) {}
+	set Priv($w:after) {}
 
 	set cbopts {}
 	foreach key {	-class -cursor -style -takefocus -exportselection -justify
@@ -262,7 +263,9 @@ proc WidgetProc {w command args} {
 				$w.popdown.l select $index
 				event generate $w <<ComboboxCurrent>> -when mark
 				if {$Priv($w:placeicon)} {
-					after idle [namespace code [list PlaceIcon $w]]
+					variable Priv
+					after cancel $Priv($w:after)
+					set Priv($w:after) [after idle [namespace code [list PlaceIcon $w]]]
 				}
 			}
 		}
@@ -325,12 +328,28 @@ proc WidgetProc {w command args} {
 			return [$w.popdown.l columns {*}$args]
 		}
 
+		testicon {
+			if {[$w get] ni [$w cget -values]} {
+				catch { place forget $w.__image__ }
+				return 0
+			}
+			return 1
+		}
+
 		placeicon {
-			return [PlaceIcon $w [expr {[llength $args] == 1 ? [lindex $args 0] : ""}]]
+			variable Priv
+			after cancel $Priv($w:after)
+			set icon [expr {[llength $args] == 1 ? [lindex $args 0] : ""}]
+			set Priv($w:after) [after idle [namespace code [list PlaceIcon $w $icon]]]
+			return $w
 		}
 
 		forgeticon {
-			after idle [list place forget $w.__image__]
+			if {[winfo exists $w.__image__]} {
+				variable Priv
+				after cancel $Priv($w:after)
+				after idle [list place forget $w.__image__]
+			}
 			return $w
 		}
 
@@ -384,7 +403,8 @@ proc WidgetProc {w command args} {
 			set index [$w.popdown.l find $column [lindex $args 0]]
 			$w.popdown.l select $index
 			if {$Priv($w:placeicon)} {
-				after idle [namespace code [list PlaceIcon $w]]
+				after cancel $Priv($w:after)
+				set Priv($w:after) [after idle [namespace code [list PlaceIcon $w]]]
 			}
 		}
 	}
@@ -472,42 +492,47 @@ proc Unposted {w focus} {
 proc PlaceIcon {w {img ""} {counter 0}} {
 	variable Priv
 
+	if {![winfo exists $w]} { return }
+
 	if {[string length $img] == 0} {
 		set img [$w.popdown.l geticon]
 	}
 
 	if {[string length $img] > 0} {
 		if {![winfo ismapped $w]} {
-			bind $w <Map> [list after idle [namespace code [list PlaceIconWhenMapped $w $img]]]
+			bind $w <Map> [namespace code [list PlaceIconWhenMapped $w $img]]
 		} else {
-			lassign [$w bbox [expr {[string length [$w get]] - 1}]] x y _ h
-			if {$y == 0} {
-				if {$counter < 10} {
-					after 20 [namespace code [list PlaceIcon $w $img [expr {$counter + 1}]]]
-				}
-			} else {
-				if {[$w.__image__ itemcget image -image] ne $img} {
-					$w.__image__ delete image
-					$w.__image__ create image 0 0 -image $img -tag image -anchor nw
-					$w.__image__ configure -width [image width $img]
-					$w.__image__ configure -height [image height $img]
-				}
-				set x1 [expr {$x + 12}]
-				set y1 [expr {$y + ($h - [image height $img])/2}]
-				set x2 [expr {$x1 + [image width $img] + 2}]
-				set y2 [expr {$y1 + [image height $img] - 2}]
+			lassign [$w bbox [expr {[string length [$w get]] - 1}]] x y wd ht
+			if {$wd > 0} {
+				if {$y == 0} {
+					if {$counter < 10} {
+						set Priv($w:after) [after 20 \
+							[namespace code [list PlaceIcon $w $img [expr {$counter + 1}]]]]
+					}
+				} else {
+					if {[$w.__image__ itemcget image -image] ne $img} {
+						$w.__image__ delete image
+						$w.__image__ create image 0 0 -image $img -tag image -anchor nw
+						$w.__image__ configure -width [image width $img]
+						$w.__image__ configure -height [image height $img]
+					}
+					set x1 [expr {$x + 12}]
+					set y1 [expr {$y + ($ht - [image height $img])/2}]
+					set x2 [expr {$x1 + [image width $img] + 2}]
+					set y2 [expr {$y1 + [image height $img] - 2}]
 
-				if {$x2 <= [winfo width $w]} {
-					set area [$w identify $x2 $y2]
-					if {[string match *textarea $area]} {
-						place $w.__image__ -x $x1 -y $y1
-						return 1
+					if {$x2 <= [winfo width $w]} {
+						set area [$w identify $x2 $y2]
+						if {[string match *textarea $area]} {
+							place $w.__image__ -x $x1 -y $y1
+							return 1
+						}
 					}
 				}
 			}
 		}
 	}
-	place forget $w.__image__
+	catch { place forget $w.__image__ }
 	return 0
 }
 
@@ -515,7 +540,7 @@ proc PlaceIcon {w {img ""} {counter 0}} {
 proc PlaceIconWhenMapped {w icon} {
 	if {![winfo exists $w]} { return }
 	update idletasks
-	$w placeicon $icon
+	PlaceIcon $w $icon
 	bind $w <Map> {#}
 }
 
@@ -585,7 +610,7 @@ bind TComboboxListbox <ButtonPress-5> {
 
 switch -- [tk windowingsystem] {
 	win32 {
-		bind TComboboxListbox <FocusOut>		[namespace code { LBCancel %W }]
+		bind TComboboxListbox <FocusOut> [namespace code { LBCancel %W }]
 	}
 }
 
@@ -650,6 +675,7 @@ proc LBSelected {lb} {
 		}
 
 		Unpost $cb
+		$cb placeicon
 
 		if {$Priv($cb:focusmodel) eq "passive"} {
 			focus $cb
@@ -658,13 +684,14 @@ proc LBSelected {lb} {
 }
 
 
-proc LBHover {w x y} {
-	if {[winfo class $w] eq "ListBox"} {
-		return [LBHover_tcb_orig_ $w $x $y]
+proc LBHover {lb x y} {
+	if {[winfo class $lb] eq "Listbox"} {
+		return [LBHover_tcb_orig_ $lb $x $y]
 	} else {
-		set w [winfo parent $w]
-		$w activate [list nearest $x $y]
-		$w select [list nearest $x $y]
+		set w [winfo parent $lb]
+		set index [list nearest $x $y]
+		$w activate $index
+		$w select $index
 	}
 }
 
@@ -683,7 +710,7 @@ proc LBSearch {lb code sym} {
 
 
 proc PlacePopdown {cb popdown} {
-	if {[winfo class $popdown] eq "ListBox"} {
+	if {[winfo class $popdown] eq "ComboboxPopdownFrame"} {
 		return [PlacePopdown_tcb_orig_ $cb $popdown]
 	}
 

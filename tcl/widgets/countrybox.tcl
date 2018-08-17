@@ -207,15 +207,27 @@ proc Completion {w code sym var} {
 		Tab {
 			set $var [string trimleft [set $var]]
 			Search $w $var 1
-			$w placeicon
+			if {[$w testicon]} {
+				$w placeicon
+			} else {
+				$w select none
+			}
 		}
 
 		default {
-			$w forgeticon
 			if {[string is alnum -strict $code] || [string is punct -strict $code] || $code eq " "} {
 				after idle [namespace code [list Completion2 $w $var [set $var]]]
+			} else {
+				after idle [namespace code [list TestEntry $w]]
 			}
 		}
+	}
+}
+
+
+proc TestEntry {w} {
+	if {[winfo exists $w] && ![$w testicon]} {
+		$w select none
 	}
 }
 
@@ -230,6 +242,7 @@ proc Completion2 {w var prevContent} {
 				|| [string match {*([A-Z][A-Z][A-Z])} $prevContent]} {
 		Search $w $var 0
 	}
+	$w testicon
 }
 
 
@@ -296,8 +309,8 @@ proc Scroll {cb dir} {
 } ;# namespace countrybox
 
 
-ttk::copyBindings Entry TTCountryBox
-ttk::copyBindings TCombobox TTCountryBox
+ttk::copyBindings TEntry TTCountryBox
+ttk::copyBindings TTCombobox TTCountryBox
 ttk::bindMouseWheel TTCountryBox { countrybox::Scroll %W }
 bind TTCountryBox <B1-Leave> { break } ;# avoid AutoScroll (bug in Tk)
 

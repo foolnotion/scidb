@@ -325,8 +325,14 @@ proc getActualColor {color} { return [::dialog::choosecolor::getActualColor $col
 proc makeActiveColor {color} {
 	scan [getActualColor $color] "\#%2x%2x%2x" r g b
 	lassign [rgb2hsv $r $g $b] h s v
-	set v [expr {min(1.0, $v + 0.1)}]
-	return [format "#%02x%02x%02x" {*}[hsv2rgb $h $s $v]]
+	return [format "#%02x%02x%02x" {*}[hsv2rgb $h $s [expr {min(1.0, $v + 0.1)}]]]
+}
+
+
+proc makeHiliteColor {color} {
+	scan [getActualColor $color] "\#%2x%2x%2x" r g b
+	lassign [rgb2hsv $r $g $b] h s v
+	return [format "#%02x%02x%02x" {*}[hsv2rgb $h 1.0 1.0]]
 }
 
 } ;# namespace colors

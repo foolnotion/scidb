@@ -2286,8 +2286,9 @@ proc Resizing {twm toplevel width height} {
 	variable ${twm}::Vars
 
 	if {[llength $Vars(cmd:resizing)]} {
-		{*}$Vars(cmd:resizing) $twm $toplevel $width $height
+		return [{*}$Vars(cmd:resizing) $twm $toplevel $width $height]
 	}
+	return [list $width $height]
 }
 
 
@@ -2334,12 +2335,13 @@ proc PaneConfigure {twm parent child opts} {
 	if {[$parent cget -orient] eq "horizontal"} {
 		if {[info exists args(-minwidth)]} { lappend options -minsize $args(-minwidth) }
 		if {[info exists args(-maxwidth)]} { lappend options -maxsize $args(-minwidth) }
-		if {[info exists args(-width)]}    { lappend options -width $args(-width) }
 	} else {
 		if {[info exists args(-minheight)]} { lappend options -minsize $args(-minheight) }
 		if {[info exists args(-maxheight)]} { lappend options -maxsize $args(-minheight) }
-		if {[info exists args(-height)]}    { lappend options -height $args(-height) }
 	}
+
+	if {[info exists args(-width)]}  { lappend options -width $args(-width) }
+	if {[info exists args(-height)]} { lappend options -height $args(-height) }
 
 	$parent paneconfigure $child {*}$options
 }

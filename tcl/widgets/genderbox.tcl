@@ -244,45 +244,44 @@ proc Select {w key} {
 	if {[$w popdown?]} { return }
 	if {![info exists ${w}::Male]} { return }
 
-	$w forgeticon
-
 	variable ${w}::Male
 	variable ${w}::Female
 	variable ${w}::Computer
 
-	if {[string length [$w get]] == 1} {
-		if {[string is digit -strict $key]} {
-			if {$key <= 3} {
-				$w.__w__ current $key
-				$w.__w__ icursor end
-				$w.__w__ selection clear
-				$w.__w__ selection range 0 end
-			} else {
-				$w.__w__ set ""
-				bell
-			}
+	$w testicon
+	if {[string length [$w get]] != 1} { return }
+
+	if {[string is digit -strict $key]} {
+		if {$key <= 3} {
+			$w.__w__ current $key
+			$w.__w__ icursor end
+			$w.__w__ selection clear
+			$w.__w__ selection range 0 end
 		} else {
-			set index -1
+			$w.__w__ set ""
+			bell
+		}
+	} else {
+		set index -1
 
-			if {[string equal -nocase $Male $key]} {
-				set index 1
-			} elseif {[string equal -nocase $Female $key]} {
-				set index 2
-			} elseif {[string equal -nocase $Computer $key]} {
-				set index 3
-			} elseif {$key eq "*" || $key eq " " || $key eq "-" || $key eq "?"} {
-				set index 0
-			}
+		if {[string equal -nocase $Male $key]} {
+			set index 1
+		} elseif {[string equal -nocase $Female $key]} {
+			set index 2
+		} elseif {[string equal -nocase $Computer $key]} {
+			set index 3
+		} elseif {$key eq "*" || $key eq " " || $key eq "-" || $key eq "?"} {
+			set index 0
+		}
 
-			if {$index >= 0} {
-				$w.__w__ current $index
+		if {$index >= 0} {
+			$w.__w__ current $index
 
-				if {[string is alpha $key]} {
-					$w.__w__ selection clear
-					$w.__w__ selection range insert end
-				} else {
-					$w.__w__ icursor end
-				}
+			if {[string is alpha $key]} {
+				$w.__w__ selection clear
+				$w.__w__ selection range insert end
+			} else {
+				$w.__w__ icursor end
 			}
 		}
 	}

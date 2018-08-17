@@ -736,7 +736,7 @@ bind TTSearchEntry <Return>			{+ break }
 bind TTSearchEntry <<TraverseIn>>	{}
 
 ::ttk::copyBindings TEntry TTSearchBox
-::ttk::copyBindings TCombobox TTSearchBox
+::ttk::copyBindings TTCombobox TTSearchBox
 
 bind TTSearchBox <FocusIn>			{ ::tooltip::hide }
 bind TTSearchBox <FocusIn>			+[namespace code { FocusIn %W }]

@@ -211,7 +211,7 @@ set dots(clam)		$14x16::open
 } ;# namespace ttk
 
 ttk::copyBindings TEntry TEntryButtonBox
-ttk::copyBindings TCombobox TEntryButtonBox
+ttk::copyBindings TTCombobox TEntryButtonBox
 
 bind TEntryButtonBox <KeyPress-Down>	{ {*}[set ttk::entrybuttonbox::%W::Vars(-command)] }
 bind TEntryButtonBox <KeyPress-space>	{ {*}[set ttk::entrybuttonbox::%W::Vars(-command)] }

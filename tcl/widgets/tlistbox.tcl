@@ -304,7 +304,6 @@ proc Build {w args} {
 	set Priv(colwidth) {}
 	set Priv(last) -1
 	set Priv(index) 0
-	set Priv(selected) 0
 	set Priv(resized) 0
 	set Priv(charwidth) [font measure $opts(-font) "0"]
 	set Priv(expand) ""
@@ -656,8 +655,8 @@ proc WidgetProc {w command args} {
 				error "wrong # args: should be \"[namespace current] get ?<index>? <column>\""
 			}
 			if {[llength $args] == 1} {
-				set index $Priv(selected)
-				if {$index == 0} { return "" }
+				set index [$t selection get]
+				if {[llength $index] == 0} { return }
 				set column [lindex $args 0]
 			} else {
 				lassign $args index column
@@ -689,20 +688,10 @@ proc WidgetProc {w command args} {
 
 		geticon {
 			if {[llength $args] == 0} {
-				set index $Priv(selected)
-				if {$index == 0} { return "" }
-			} elseif {[llength $args] == 1} {
-				set index [lindex $args 0]
-				if {![string is integer -strict $index]} {
-					error "wrong argument: index should be integer ('$index' is given)"
-				}
-				if {$index < 0} { return "" }
-				if {$index >= $Priv(last)} {
-					error "index '$index' out of range"
-				}
-				incr index
+				set index [$t selection get]
+				if {[llength $index] == 0} { return "" }
 			} else {
-				error "wrong # args: should be \"[namespace current] get ?<index>? <column>\""
+				error "wrong # args: should be \"[namespace current] geticon\""
 			}
 			if {![$t item enabled $index]} { return "" }
 			if {[llength $Priv(columns)] == 0} { return "" }
@@ -717,8 +706,8 @@ proc WidgetProc {w command args} {
 				error "wrong # args: should be \"[namespace current] set ?<index>? <content>...\""
 			}
 			if {[llength $args] == 1} {
-				set index $Priv(selected)
-				if {$index == 0} { return }
+				set index [$t selection get]
+				if {[llength $index] == 0} { return }
 				set content [lindex $args 0]
 			} else {
 				set index [lindex $args 0]
@@ -784,7 +773,8 @@ proc WidgetProc {w command args} {
 					incr index
 				}
 			} elseif {$Priv(selected) > 1} {
-				set index $Priv(selected)
+			} elseif {[$t selection get] > 0} {
+				set index [$t selection get]
 			} else {
 				return
 			}
@@ -837,7 +827,7 @@ proc WidgetProc {w command args} {
 			if {[string is integer -strict $index]} {
 				incr index
 			} elseif {$index eq "none"} {
-				set Priv(selected) 0
+				$t selection clear
 				return
 			} else {
 				set idx [$t item id $index]
@@ -846,38 +836,40 @@ proc WidgetProc {w command args} {
 				}
 				set index $idx
 			}
-			if {$Priv(selected) != $index} {
+			if {[$t selection get] ne $index} {
 				switch [$t cget -selectmode] {
 					single - browse { $t selection clear }
 				}
 				if {$index <= $Priv(last) && [$t item enabled $index]} {
 					if {[$t cget -selectmode] eq "multiple" && $index in [$t selection get]} {
 						$t selection clear $index $index
-						set Priv(selected) 0
 					} else {
 						$t selection add $index
-						set Priv(selected) $index
 					}
 					$t activate $index
 					$t see $index
 					event generate $w <<ListboxSelect>> -data [expr {$index - 1}]
 				} else {
-					set Priv(selected) 0
+					$t selection clear
 				}
 			}
-			return
+			return $w
 		}
 
 		curselection {
-			return [expr {$Priv(selected) - 1}]
+			return [expr {[$t selection get] - 1}]
 		}
 
 		selection {
-			set result {}
-			foreach i [$t selection get] {
-				if {$i > 0} { lappend result [expr {$i - 1}] }
+			if {[llength $args] == 0} {
+				set result {}
+				foreach i [$t selection get] {
+					if {$i > 0} { lappend result [expr {$i - 1}] }
+				}
+				return $result
+			} else {
+				error "wrong # args: should be \"[namespace current] selection ?<index>?\""
 			}
-			return $result
 		}
 
 		enabled? {
@@ -1140,7 +1132,8 @@ proc FindMatch {w column code mapping} {
 
 	set n $Priv(last)
 	set c [string toupper $code]
-	set k [expr {$Priv(selected) - 1}]
+	set t $w.__tlistbox__
+	set k [$t selection get]
 
 	set i [expr {$k + 1}]
 	set d [string toupper [string index [$w get $k $column] 0]]
@@ -1368,15 +1361,12 @@ proc SetActive {t index select {isDoubleClick 0}} {
 		$t selection add $index
 		$t activate $index
 		if {$isDoubleClick} { set data "" } else { set data [expr {$index - 1}] }
-		set Priv(selected) $index
 		event generate [winfo parent $t] <<ListboxSelect>> -data $data
 	} elseif {$select && [$t cget -selectmode] eq "multiple"} {
 		if {$index in [$t selection get]} {
 			$t selection clear $index $index
-			set Priv(selected) 0
 		} else {
 			$t selection add $index
-			set Priv(selected) $index
 		}
 		$t activate $index
 		if {$isDoubleClick} { set data "" } else { set data [expr {$index - 1}] }
@@ -1571,15 +1561,12 @@ proc SelectActive {t} {
 			browse - single {
 				$t selection clear
 				$t selection add $active
-				set Priv(selected) $active
 			}
 			multiple {
 				if {$active in [$t selection get]} {
 					$t selection clear $active $active
-					set Priv(selected) 0
 				} else {
 					$t selection add $active
-					set Priv(selected) $active
 				}
 			}
 		}
