@@ -85,11 +85,19 @@ proc build {parent args} {
 	::scrolledtable::bindOptions eco:$id [namespace current]::Options [array names Defaults]
 	set tb $parent.table
 
+	if {[info exists opts(-mode)]} {
+		set (mode) $opts(-mode)
+		set (mode:fixed) 1
+	} else {
+		set (mode) $Options(move:mode)
+		set (mode:fixed) 0
+	}
+
 	lappend col1 \
 		-justify left \
 		-minwidth 5 \
 		-maxwidth 0 \
-		-width 10 \
+		-width [expr {$(mode) eq "move" ? 10 : 50}] \
 		-stretch 0 \
 		-removable 0 \
 		-ellipsis 1 \
@@ -97,19 +105,21 @@ proc build {parent args} {
 		-foreground black \
 		-textvar [namespace current]::mc::F_Line \
 		;
-	lappend menu [list radiobutton \
-		-command [namespace code [list Update $parent]] \
-		-labelvar [namespace current]::mc::Mode(single) \
-		-variable [namespace current]::Options(move:mode) \
-		-value single \
-	]
-	lappend menu [list radiobutton \
-		-command [namespace code [list Update $parent]] \
-		-labelvar [namespace current]::mc::Mode(compact) \
-		-variable [namespace current]::Options(move:mode) \
-		-value compact \
-	]
-	lappend menu { separator }
+	if {!$(mode:fixed)} {
+		lappend menu [list radiobutton \
+			-command [namespace code [list Update $parent]] \
+			-labelvar [namespace current]::mc::Mode(single) \
+			-variable [namespace current]::Options(move:mode) \
+			-value single \
+		]
+		lappend menu [list radiobutton \
+			-command [namespace code [list Update $parent]] \
+			-labelvar [namespace current]::mc::Mode(compact) \
+			-variable [namespace current]::Options(move:mode) \
+			-value compact \
+		]
+		lappend menu { separator }
+	}
 	lappend menu {*}[::notation::buildMenuForShortNotation \
 		[namespace code [list ::scrolledtable::refresh $tb]] \
 		[namespace current]::Options(move:notation) \
@@ -178,18 +188,17 @@ proc build {parent args} {
 	set (active) 0
 	set (afterid) {}
 	set (locked) 0
-	set (mode) $Options(move:mode)
 	set (update) [list [namespace current]::Update $parent]
 	set (listmode) $opts(-listmode)
 	return $tb
 }
 
 
-proc open {parent id} {
+proc open {parent args} {
 	variable eco_
 
 	set dlg [tk::toplevel $parent.__eco__]
-	set tb [build $dlg -id $id -listmode no -takefocus 1]
+	set tb [build $dlg -listmode no -takefocus 1 {*}$args]
 	::widget::dialogButtons $dlg {ok cancel}
 	$dlg.ok configure -command [namespace code [list CurrentSelection $dlg]] -state disabled
 	$dlg.cancel configure -command [list set [namespace current]::eco_ ""]
@@ -198,7 +207,7 @@ proc open {parent id} {
 	bind $tb <<TableSelected>>	[namespace code [list SelectEco $dlg %d]]
 	bind $tb <<TableActivated>> [namespace code [list HandleSelection $dlg %d]]
 	bind $dlg <Escape> [list $dlg.cancel invoke]
-	::widget::dialogGeometry $dlg $parent 600x400
+	::widget::dialogGeometry $dlg $parent 800x400
 	wm transient $dlg [winfo toplevel $parent]
 	wm withdraw $dlg
 	wm title $dlg $mc::SelectEco
@@ -268,8 +277,15 @@ proc Update {w {force no}} {
 	variable ${w}::
 
 	HideBoard $w
-	if {$(mode) eq $Options(move:mode)} { set (oldData) $(data) } else { set (oldData) {} }
-	set (data) [::scidb::game::ecotable -notation $Options(move:notation) -mode $Options(move:mode)]
+	if {$(mode:fixed) || $(mode) eq $Options(move:mode)} {
+		set (oldData) $(data)
+	} else {
+		set (oldData) {}
+	}
+	if {!$(mode:fixed)} {
+		set (mode) $Options(move:mode)
+	}
+	set (data) [::scidb::game::ecotable -notation $Options(move:notation) -mode $(mode)]
 	if {$(active) || $force} {
 		set variant [::scidb::game::query variant]
 		set base [::scidb::game::query database]
@@ -402,7 +418,7 @@ proc TableShow_ {w table x y} {
 	if {$row == -1} { return }
 	set index [::scrolledtable::rowToIndex $table $row]
 	set fen [::scidb::game::codeToFen [lindex $(data) $index 2]]
-	ShowBoard $w $fen
+	ShowBoard $table $fen
 }
 
 

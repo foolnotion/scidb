@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2011-2013 Gregor Cramer
+// Copyright: (C) 2011-2018 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -69,7 +69,7 @@ public:
 		TPly, TAnnotation, TStates, TMarks, TGameLink, TLink, TComment, TSpace,	// move level
 	};
 
-	enum Bracket { Blank, Open, Close, CloseFold, End, Fold, Empty, Start };
+	enum Bracket { Blank, Delimiter, Open, Close, CloseFold, End, Fold, Empty, Start };
 
 	typedef mstl::vector<Node const*> List;
 	typedef mstl::map<mstl::string,unsigned> LanguageSet;

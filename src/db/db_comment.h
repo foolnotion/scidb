@@ -94,6 +94,7 @@ public:
 	bool isXml() const;
 	bool containsLanguage(mstl::string const& lang) const;
 	bool containsAnyLanguageOf(LanguageSet const& langSet) const;
+	bool startsWithPunctuation() const;
 
 	unsigned size() const;
 	unsigned length() const;

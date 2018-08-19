@@ -1908,7 +1908,7 @@ proc MakeMatchEntry {top index entry attr} {
 
 	switch $attr {
 		player {
-			if {$federation eq "UNK"} {
+			if {$federation eq "UNK" || $federation eq ""} {
 				set federation ""
 			} elseif {[string length $federation]} {
 				set federation $::country::icon::flag($federation)

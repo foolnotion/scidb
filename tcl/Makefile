@@ -91,6 +91,7 @@ SOURCES = \
 	widgets/ecobox.tcl \
 	widgets/organizationbox.tcl \
 	widgets/labelbar.tcl \
+	widgets/keybar.tcl \
 	widgets/html.tcl \
 	widgets/choosedir.tcl \
 	widgets/fsbox.tcl \

@@ -438,6 +438,7 @@ public:
 			incrRef(m_e					= newObj("e"));
 			incrRef(m_s					= newObj("s"));
 			incrRef(m_blank			= newObj(" "));
+			incrRef(m_delim			= newObj("|"));
 			incrRef(m_zero				= newObj(0));
 		}
 
@@ -804,6 +805,7 @@ public:
 			case edit::Node::Empty:			objv[1] = m_e; break;
 			case edit::Node::Start:			objv[1] = m_s; break;
 			case edit::Node::Blank:			objv[1] = m_blank; break;
+			case edit::Node::Delimiter:	objv[1] = m_delim; break;
 			case edit::Node::End:			objv[1] = m_leave; break;
 		}
 
@@ -934,6 +936,7 @@ public:
 	static Tcl_Obj* m_close_fold;
 	static Tcl_Obj* m_fold;
 	static Tcl_Obj* m_blank;
+	static Tcl_Obj* m_delim;
 	static Tcl_Obj* m_zero;
 	static Tcl_Obj* m_preceding;
 	static Tcl_Obj* m_trailing;
@@ -994,6 +997,7 @@ Tcl_Obj* Visitor::m_close				= nullptr;
 Tcl_Obj* Visitor::m_close_fold		= nullptr;
 Tcl_Obj* Visitor::m_fold				= nullptr;
 Tcl_Obj* Visitor::m_blank				= nullptr;
+Tcl_Obj* Visitor::m_delim				= nullptr;
 Tcl_Obj* Visitor::m_zero				= nullptr;
 Tcl_Obj* Visitor::m_preceding			= nullptr;
 Tcl_Obj* Visitor::m_trailing			= nullptr;

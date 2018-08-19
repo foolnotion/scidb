@@ -857,7 +857,9 @@ proc WidgetProc {w command args} {
 		}
 
 		curselection {
-			return [expr {[$t selection get] - 1}]
+			set sel [$t selection get]
+			if {[llength $sel] == 0} { return -1 }
+			return [expr {$sel - 1}]
 		}
 
 		selection {

@@ -52,6 +52,8 @@
 ::mc::Key(Space)		"\u2423"
 ::mc::Key(Up)			"\u2191"
 
+::mc::KeyDescr(Space)		"Space" ;# NEW
+
 ::mc::Alignment			"Sorba rendezés(?)"
 ::mc::Apply			"Alkalmaz"
 ::mc::Archive			"Archive" ;# NEW
@@ -106,6 +108,7 @@
 ::mc::To			"To" ;# NEW
 ::mc::Top			"Felső"  ;# felül
 ::mc::Undo			"Visszavonás"
+::mc::Unknown			"Unknown" ;# NEW
 ::mc::Variant			"Variant" ;# NEW different from "Variation"
 ::mc::Variation			"Variáció"
 ::mc::Volume			"Volume" ;# NEW
@@ -1124,6 +1127,7 @@
 
 ::pgn::setup::mc::Section(Display)			"Megjelenítés"
 ::pgn::setup::mc::Display(numbering)			"Változatok számozása"
+::pgn::setup::mc::Display(markers)			"Show Square Markers" ;# NEW
 ::pgn::setup::mc::Display(moveinfo)			"Lépés információ kijelzése"
 ::pgn::setup::mc::Display(nagtext)			"Show text for unusual NAG comments"  ;#NEW
 
@@ -2236,10 +2240,16 @@
 ::datebox::mc::Month		"Hónap"
 ::datebox::mc::Day		"Nap"
 
+::datebox::mc::Hint(Space)	"Clear" ;# NEW
+::datebox::mc::Hint(?)		"Open calendar" ;# NEW
+::datebox::mc::Hint(!)		"Set to game date" ;# NEW
+::datebox::mc::Hint(=)		"Skip entering" ;# NEW
+
 ### genderbox ##########################################################
 ::genderbox::mc::Gender(m) "Férfi"
 ::genderbox::mc::Gender(f) "Nő"
 ::genderbox::mc::Gender(c) "Számítógép"
+::genderbox::mc::Gender(?) "Unspecified" ;# NEW
 
 ### terminationbox #####################################################
 ::terminationbox::mc::Normal				"Normál"

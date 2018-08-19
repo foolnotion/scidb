@@ -457,6 +457,7 @@ proc UpdateHistory {w} {
 
 proc Search {w key} {
 	set cb [winfo parent [::ttk::combobox::LBMaster $w]]
+	if {[winfo class $cb] ni {TTSearchEntry TTSearchBox}} { return }
 	set ns [set ${cb}::NS]
 	variable ::searchentry::${ns}::Vars
 	variable ::searchentry::${ns}::Priv

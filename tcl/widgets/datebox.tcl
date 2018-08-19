@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2010-2013 Gregor Cramer
+# Copyright: (C) 2010-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -36,6 +36,11 @@ set Calendar	"Calendar..."
 set Year			"Year"
 set Month		"Month"
 set Day			"Day"
+
+set Hint(Space)	"Clear"
+set Hint(?)			"Open calendar"
+set Hint(!)			"Set to game date"
+set Hint(=)			"Skip entering"
 
 } ;# namespace mc
 
@@ -87,6 +92,24 @@ proc validate {y m d {minYear 0} {maxYear 9999}} {
 }
 
 
+proc keybar {w keys} {
+	set myText ""
+	set myTip ""
+	set nl ""
+	foreach {key tip} $keys {
+		append myText $key
+		append myTip "${nl}${key}  [set $tip]"
+		set nl "\n"
+	}
+	ttk::label $w -relief flat -text "($myText)"
+	bind $w <Enter> [list [namespace current]::tooltip show $w $myTip]
+	bind $w <Leave> [list [namespace current]::tooltip hide]
+}
+
+
+proc tooltip {args} {}
+
+
 proc Build {w args} {
 	array set opts [list -minYear [::scidb::misc::minYear] -maxYear [::scidb::misc::maxYear]]
 	set opts(-tooltip) [namespace current]::mc::Today
@@ -104,6 +127,8 @@ proc Build {w args} {
 	set Priv(init) $Priv(today)
 	set Priv(overhang1) {}
 	set Priv(overhang2) {}
+	set Priv(last) cal
+	set Priv(year) ""
 
 	ttk::entry $w.y \
 		-exportselection no \
@@ -111,9 +136,13 @@ proc Build {w args} {
 		-width 5 \
 		-textvariable [namespace current]::${w}::Priv(y) \
 		-validate key \
-		-validatecommand [namespace code [list ValidateYear $w %P]] \
+		-validatecommand [namespace code [list ValidateYear $w %P %S %s]] \
 		-invalidcommand { bell } \
 		;
+	bind $w.y <FocusIn> [namespace code [list SetYear $w]]
+	bind $w.y <Any-Key> [list after idle [namespace code [list CheckKey $w %A]]]
+	bind $w.y <Tab> [namespace code [list CheckFocus $w y]]
+	bind $w.y <Tab> {+ break }
 	ttk::label $w.dot1 \
 		-text "." \
 		-relief flat
@@ -128,6 +157,8 @@ proc Build {w args} {
 		-invalidcommand { bell } \
 		-cursor xterm \
 		;
+	bind $w.m <Tab> [namespace code [list CheckFocus $w m]]
+	bind $w.m <Tab> {+ break }
 	ttk::label $w.dot2 \
 		-text "." \
 		-relief flat \
@@ -142,18 +173,26 @@ proc Build {w args} {
 		-invalidcommand { bell } \
 		-cursor xterm \
 		;
+	bind $w.m <Tab> [namespace code [list CheckFocus $w d]]
+	bind $w.m <Tab> {+ break }
 	ttk::button $w.cal \
 		-style icon.TButton \
 		-image $icon::16x16::calendar \
-		-command [namespace code [list Choose $w.cal]] \
+		-command [namespace code [list Choose $w]] \
 		;
+	set hint {Space "?"}
 	if {$opts(-usetoday)} {
 		ttk::button $w.today \
 			-style icon.TButton \
 			-image $icon::16x16::today \
-			-command [namespace code [list Today $w.today]] \
+			-command [namespace code [list Today $w]] \
 			;
+		set Priv(last) today
+		lappend hint "!"
 	}
+	lappend hint "="
+	foreach key $hint { lappend hints $key [namespace current]::mc::Hint($key) }
+	keybar $w.hint $hints
 	
 	grid $w.y		-row 0 -column 0
 	grid $w.dot1	-row 0 -column 1
@@ -164,11 +203,15 @@ proc Build {w args} {
 
 	if {$opts(-usetoday)} {
 		grid $w.today -row 0 -column 8 -sticky ns
+		grid $w.hint -row 0 -column 10
+		grid columnconfigure $w 7 -minsize 3
+		grid columnconfigure $w 9 -minsize 5
 		::tooltip::tooltip $w.today $opts(-tooltip)
+	} else {
+		grid $w.hint -row 0 -column 8
+		grid columnconfigure $w 7 -minsize 5
 	}
-
 	grid columnconfigure $w 5 -minsize 5
-	grid columnconfigure $w 7 -minsize 3
 
 	::tooltip::tooltip $w.y		[namespace current]::mc::Year
 	::tooltip::tooltip $w.m		[namespace current]::mc::Month
@@ -244,6 +287,58 @@ proc WidgetProc {w command args} {
 }
 
 
+proc SetYear {w} {
+	set [namespace current]::${w}::Priv(year) [$w.y get]
+}
+
+
+proc CheckFocus {w which} {
+	variable ${w}::Priv
+
+	if {$which eq "d"} {
+		if {[string length [$w.d get]]} {
+			set which $Priv(last)
+		}
+	} elseif {[string length [${w}.${which} get]] == 0} {
+		if {$which eq "y"} { $w.m delete 0 end }
+		$w.d delete 0 end
+		set which $Priv(last)
+	} ; #elseif {$which eq "y" && [string length [$w.y get]]} {
+#		set which [test? [winfo exists $w.today] today cal]
+#	}
+	tk::TabToWindow [tk_focusNext ${w}.${which}]
+}
+
+
+proc CheckKey {w key} {
+	variable ${w}::Priv
+
+	switch $key {
+		"?" {
+			$w.y delete 0 end
+			$w.m delete 0 end
+			$w.d delete 0 end
+			focus $w.cal
+			$w.cal invoke
+		}
+		"!" {
+			if {[winfo exists $w.today]} {
+				$w.today invoke
+			}
+		}
+		" " {
+			$w.y delete 0 end
+			$w.m delete 0 end
+			$w.d delete 0 end
+			tk::TabToWindow [tk_focusNext ${w}.$Priv(last)]
+		}
+		"=" {
+			tk::TabToWindow [tk_focusNext ${w}.$Priv(last)]
+		}
+	}
+}
+
+
 proc Configure {w} {
 	variable ${w}::Priv
 
@@ -271,18 +366,22 @@ proc CheckDate {w} {
 
 
 proc Choose {w} {
-	variable [winfo parent $w]::Priv
+	variable ${w}::Priv
 
-	set date [::calendar::popup $w -minYear $Priv(minYear) -maxYear $Priv(maxYear) -weekStart 1]
+	set date [::calendar::popup $w.cal -minYear $Priv(minYear) -maxYear $Priv(maxYear) -weekStart 1]
 
 	if {[llength $date] == 3} {
-		SetDate [winfo parent $w] $date
+		SetDate $w $date
+		after 1 [list tk::TabToWindow [tk_focusNext ${w}.$Priv(last)]]
 	}
 }
 
 
 proc Today {w} {
-	SetDate [winfo parent $w] [set [namespace current]::[winfo parent $w]::Priv(today)]
+	variable ${w}::Priv
+
+	SetDate $w $Priv(today)
+	tk::TabToWindow [tk_focusNext ${w}.$Priv(last)]
 }
 
 
@@ -314,7 +413,18 @@ proc Normalize {v} {
 }
 
 
-proc ValidateYear {w value} {
+proc ValidateYear {w value key current} {
+	variable ${w}::Priv
+
+	if {$key eq "="} {
+		if {[string length $current] == 0} {
+			$w.y insert end $Priv(year)
+		}
+		return 0
+	}
+	if {$key eq " "} {
+		return 0
+	}
 	event generate $w <<DateChanged>> -when tail
 	set value [string trim $value]
 	if {[string length $value] > 4} { return 0 }

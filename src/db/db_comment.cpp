@@ -1805,6 +1805,31 @@ Comment::Comment(mstl::string const& content, unsigned langFlags)
 }
 
 
+bool
+Comment::startsWithPunctuation() const
+{
+	char const* str = m_content.c_str();
+
+	if (::strncmp(str, "<xml>", 5) == 0)
+	{
+		while (*str == '<')
+		{
+			str += 1;
+			
+			for ( ; *str != '>'; ++str)
+			{
+				if (!*str)
+					return false;
+			}
+
+			str += 1;
+		}
+	}
+
+	return ::sys::utf8::isPunct(str);
+}
+
+
 Comment::LanguageSet const&
 Comment::languageSet() const
 {

@@ -54,6 +54,8 @@
 ::mc::Key(Space)			"\u2423"
 ::mc::Key(Up)				"\u2191"
 
+::mc::KeyDescr(Space)	"Space" ;# NEW
+
 ::mc::Alignment			"Allineamento"
 ::mc::Apply					"Applica"
 ::mc::Archive				"Archivio"
@@ -108,6 +110,7 @@
 ::mc::To						"A"
 ::mc::Top					"Alto"
 ::mc::Undo					"Indietro"
+::mc::Unknown				"Unknown" ;# NEW
 ::mc::Variant				"Variante Eterodossa"
 ::mc::Variation			"Variante"
 ::mc::Volume				"Volume" ;# NEW
@@ -1122,6 +1125,7 @@
 
 ::pgn::setup::mc::Section(Display)				"Visualizzazione"
 ::pgn::setup::mc::Display(numbering)			"Mostra Numerazione Varianti"
+::pgn::setup::mc::Display(markers)				"Show Square Markers" ;# NEW
 ::pgn::setup::mc::Display(moveinfo)				"Mostra Informazioni Mossa"
 ::pgn::setup::mc::Display(nagtext)				"Mostra testo per commenti NAG inusitati"
 
@@ -2233,10 +2237,16 @@
 ::datebox::mc::Month		"Mese"
 ::datebox::mc::Day		"Giorno"
 
+::datebox::mc::Hint(Space)	"Clear" ;# NEW
+::datebox::mc::Hint(?)		"Open calendar" ;# NEW
+::datebox::mc::Hint(!)		"Set to game date" ;# NEW
+::datebox::mc::Hint(=)		"Skip entering" ;# NEW
+
 ### genderbox ##########################################################
 ::genderbox::mc::Gender(m) "Maschio"
 ::genderbox::mc::Gender(f) "Femmina"
 ::genderbox::mc::Gender(c) "Computer"
+::genderbox::mc::Gender(?) "Unspecified" ;# NEW
 
 ### terminationbox #####################################################
 ::terminationbox::mc::Normal								"Normale"

@@ -328,8 +328,17 @@ proc WidgetProc {w command args} {
 			return [$w.popdown.l columns {*}$args]
 		}
 
+		testentry {
+			if {[$w.__combobox__ get] ni [$w.__combobox__ cget -values]} {
+				catch { place forget $w.__image__ }
+				$w select none
+				return 0
+			}
+			return 1
+		}
+
 		testicon {
-			if {[$w get] ni [$w cget -values]} {
+			if {[$w.__combobox__ get] ni [$w.__combobox__ cget -values]} {
 				catch { place forget $w.__image__ }
 				return 0
 			}
@@ -583,6 +592,7 @@ rename ttk::combobox::Post					ttk::combobox::Post_tcb_orig_
 rename ttk::combobox::Unpost				ttk::combobox::Unpost_tcb_orig_
 rename ttk::combobox::PopdownWindow		ttk::combobox::PopdownWindow_tcb_orig_
 rename ttk::combobox::ConfigureListbox	ttk::combobox::ConfigureListbox_tcb_orig_
+rename ttk::combobox::Scroll				ttk::combobox::Scroll_tcb_orig_
 
 
 namespace eval ttk {
@@ -769,7 +779,10 @@ proc PopdownWindow {cb} {
 
 proc ConfigureListbox {cb} {
 	if {![winfo exists $cb.popdown.l] || [winfo class $cb.popdown.l] ne "TListBoxFrame"} {
-		return [ConfigureListbox_tcb_orig_ $cb]
+		ConfigureListbox_tcb_orig_ $cb
+		# a little correction		
+		[PopdownWindow $cb].f.l configure -width [expr {[$cb cget -width] + 2}]
+		return
 	}
 
 	set popdown [PopdownWindow $cb]
@@ -799,6 +812,34 @@ proc ConfigureListbox {cb} {
 	$popdown.l see $current
 
 	event generate $cb <<ComboBoxConfigured>>
+}
+
+
+proc Strip {str} {
+	regsub -all {[^A-Za-z0-9_]} $str "" result
+	return $result
+}
+
+
+proc Scroll {cb dir} {
+	if {![winfo exists $cb.popdown.l] || [winfo class $cb.popdown.l] ne "TListBoxFrame"} {
+		return [Scroll_tcb_orig_ $cb]
+	}
+
+	$cb instate disabled { return }
+	set values [$cb cget -values]
+	set max [llength $values]
+	if {	$max > 0
+		&& [string length [$cb get]] == 0
+		&& [string length [Strip [lindex $values 0]]] == 0} {
+		set current 0
+	} else {
+		set current [$cb current]
+	}
+	incr current $dir
+	if {$max != 0 && $current == $current % $max} {
+		SelectEntry $cb $current
+	}
 }
 
 } ;# namespace combobox

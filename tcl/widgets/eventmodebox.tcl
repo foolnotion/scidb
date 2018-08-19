@@ -101,6 +101,7 @@ proc Build {w args} {
 	bind $w <Destroy> [list catch [list namespace delete [namespace current]::${w}]]
 	bind $w.__w__ <Any-Key> [namespace code [list Completion $w %A %K $opts(-textvariable)]]
 	bind $w.__w__ <<LanguageChanged>> [namespace code [list LanguageChanged $w]]
+	bind $w.__w__ <<ComboboxSelected>> [namespace code [list CheckEntry $w]]
 
 	$w.__w__ current 0
 
@@ -156,6 +157,7 @@ proc WidgetProc {w command args} {
 			} else {
 				$w.__w__ current 0
 			}
+			CheckEntry $w
 			$w placeicon
 			return $w
 		}
@@ -189,6 +191,7 @@ proc LanguageChanged {w} {
 proc Setup {w} {
 	variable modes
 
+	set current [$w.__w__ current]
 	$w.__w__ listinsert [list "" "\u2014"] -index 0
 	set index 0
 	foreach mode $modes {
@@ -196,6 +199,11 @@ proc Setup {w} {
 	}
 	$w.__w__ resize
 	$w.__w__ mapping [::mc::mappingForSort] [::mc::mappingToAscii]
+
+	if {$current >= 0} {
+		$w.__w__ current $current
+		CheckEntry $w
+	}
 }
 
 
@@ -206,13 +214,18 @@ proc Completion {w code sym var} {
 		Tab {
 			set $var [string trimleft [set $var]]
 			Search $w $var 1
-			$w placeicon
+			if {[$w testicon]} {
+				$w placeicon
+			} else {
+				$w select none
+			}
 		}
 
 		default {
-			$w forgeticon
 			if {[string is alnum -strict $code] || $code eq " "} {
 				after idle [namespace code [list Completion2 $w $var [set $var]]]
+			} elseif {$sym ne "Down"} {
+				after idle [list $w testentry]
 			}
 		}
 	}
@@ -227,17 +240,20 @@ proc Completion2 {w var prevContent} {
 
 	if {$len == 0} {
 		$w.__w__ current 0
+		CheckEntry $w
 	} elseif {$len == 1 && [string is digit -strict $content]} {
 		if {$content <= [llength $modes]} {
 			$w.__w__ current $content
 			$w.__w__ icursor end
 			$w.__w__ selection clear
 			$w.__w__ selection range 0 end
+			CheckEntry $w
 		} else {
 			$w.__w__ set ""
 			bell
 		}
 	} elseif {[string equal -nocase -length [expr {$len - 1}] $content $prevContent]} {
+		$w testicon
 		Search $w $var 0
 	}
 }
@@ -272,7 +288,15 @@ proc Search {w var full} {
 			$w.__w__ icursor $k
 			$w.__w__ selection clear
 			$w.__w__ selection range $k end
+			CheckEntry $w
 		}
+	}
+}
+
+
+proc CheckEntry {w} {
+	if {[$w get] eq "\u2014"} {
+		$w.__w__ set ""
 	}
 }
 

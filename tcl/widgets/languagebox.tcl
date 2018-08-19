@@ -237,6 +237,7 @@ proc Completion2 {w var prevContent} {
 	set content [string trimleft [set $var]]
 
 	if {[string length $content] && [string range $content 0 end-1] eq $prevContent} {
+		$w testicon
 		Search $w $var 0
 	}
 }

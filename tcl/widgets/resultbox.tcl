@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2010-2013 Gregor Cramer
+# Copyright: (C) 2010-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -63,11 +63,21 @@ proc Build {w args} {
 	}
 
 	if {$opts(-excludelost)} {
-		set keys "(1,=,0,*)"
+		set keys {1 = 0 *}
 		set values [lrange $results 0 end-1]
 	} else {
-		set keys "(1,=,0,\u2013,*)"
+		set keys {1 = 0 \u2013 *}
 		set values $results
+	}
+	foreach key $keys {
+		switch $key {
+			1			{ set tip ::terminationbox::mc::Result(1-0) }
+			0			{ set tip ::terminationbox::mc::Result(0-1) }
+			=			{ set tip ::terminationbox::mc::Result(1/2-1/2) }
+			\u2013	{ set tip ::terminationbox::mc::Result(0-0) }
+			*			{ set tip ::mc::Unknown }
+		}
+		lappend hints $key $tip
 	}
 
 	ttk::frame $w -borderwidth 0 -takefocus 0
@@ -82,14 +92,15 @@ proc Build {w args} {
 		-invalidcommand bell \
 		;
 	$w.__w__ current 0
-	ttk::label $w.keys -borderwidth 0 -text $keys
+	keybar $w.hint $hints
 
 	grid $w.__w__ -column 0 -row 0 -sticky ns
-	grid $w.keys -column 2 -row 0 -sticky ns
+	grid $w.hint  -column 2 -row 0 -sticky ns
 	grid columnconfigure $w 1 -minsize $::theme::padding
 
 	bind $w <Destroy> [list catch [list namespace delete [namespace current]::${w}]]
 	bind $w.__w__ <Any-Key> [list after idle [namespace code { Select %W %A }]]
+	#bind $w.__w__ <<ComboboxSelected>> [namespace code [list CheckEntry $w]]
 
 	catch { rename ::$w $w.__resultbox__ }
 	proc ::$w {command args} "[namespace current]::WidgetProc $w \$command {*}\$args"
@@ -143,7 +154,9 @@ proc WidgetProc {w command args} {
 				set args [join $results ", "]
 				error "wrong arg '$result'; should be one of \{$args\}"
 			}
-			return [$w.__w__ current $index]
+			$w.__w__ current $index
+			#CheckEntry $w
+			return $w
 		}
 
 		instate {
@@ -181,11 +194,19 @@ proc Select {w key} {
 		if {$key eq "0" || $key eq "1"} {
 			$w selection clear
 			$w selection range insert end
+			#CheckEntry $w
 		} else {
 			$w icursor end
 		}
 	}
 }
+
+
+# proc CheckEntry {w} {
+# 	if {[$w get] eq "*"} {
+# 		$w.__w__ set ""
+# 	}
+# }
 
 } ;# namespace resultbox
 

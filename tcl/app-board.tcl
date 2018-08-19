@@ -531,10 +531,23 @@ proc updateMarks {marks} {
 	variable board
 	variable Vars
 
-	::board::diagram::updateMarks $board $marks
-	if {!$Vars(autoplay)} {
-		::move::leaveSquare
-		::move::enterSquare
+	if {[[namespace parent]::pgn::showMarkers]} {
+		::board::diagram::updateMarks $board $marks
+		if {!$Vars(autoplay)} {
+			::move::leaveSquare
+			::move::enterSquare
+		}
+	}
+}
+
+
+proc toggleShowMarkers {flag} {
+	variable board
+
+	if {[[namespace parent]::pgn::showMarkers]} {
+		::scidb::game::go current
+	} else {
+		::board::diagram::clearMarks $board
 	}
 }
 

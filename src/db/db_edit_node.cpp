@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2011-2013 Gregor Cramer
+// Copyright: (C) 2011-2018 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -60,7 +60,7 @@ struct Node::Spacing
 {
 	enum Type
 	{
-		Zero, Space, Open, Close, Break, Para
+		Zero, Space, Delim, Open, Close, Break, Para
 	};
 
 	enum Context
@@ -115,6 +115,7 @@ struct Node::Spacing
 	void incrPlyCount();
 
 	void pushSpace();
+	void pushDelim();
 	void pushOpen(unsigned number, unsigned count);
 	void pushClose(unsigned number, unsigned count);
 	void pushBreak();
@@ -203,6 +204,15 @@ Node::Spacing::pushSpace()
 {
    if (!m_isVirgin && m_tokenList.size() == 1)
    	m_tokenList.push(Token(m_level, Space));
+}
+
+
+void
+Node::Spacing::pushDelim()
+{
+	if (!m_tokenList.empty() && m_tokenList.top().level == m_level && m_tokenList.top().space == Space)
+		m_tokenList.pop();
+	m_tokenList.push(Token(m_level, Delim));
 }
 
 
@@ -297,6 +307,7 @@ Node::Spacing::pop(List& list)
 		{
 			case None:	/* skip */ break;
 			case Space:	list.push_back(new edit::Space); break;
+			case Delim:	list.push_back(new edit::Space(edit::Node::Delimiter)); break;
 			case Close:	/* skip */ break;
 			case Para:	list.push_back(new edit::Space(token.level)); // fallthru
 			case Break:	list.push_back(new edit::Space(token.level)); break;
@@ -1141,16 +1152,19 @@ Move::Move(Work& work, MoveNode const* move, bool isEmptyGame, unsigned varNo, u
 
 	if (needSpace)
 	{
-//		work.pushParagraph(Spacing::PreComment);
 		if (move->hasComment(move::Post))
 		{
 			work.pushSpaceOrParagraph(Spacing::Comment);
 			work.m_needMoveNo = true;
 		}
 		else if (!info.empty())
+		{
 			work.pushSpaceOrParagraph(Spacing::Comment);
+		}
 		else
+		{
 			work.pushSpace();
+		}
 	}
 
 	if (!(work.m_displayStyle & display::ShowDiagrams) && move->hasAnnotation())
@@ -1289,16 +1303,19 @@ Move::Move(Work& work, MoveNode const* move)
 			bool isShort =		info.empty()
 								&& comment.length() <= work.m_linebreakMinCommentLength
 								&& bool(work.m_displayStyle & display::CompactStyle);
+			bool pushPara = !isShort && work.m_level == 0;
 
-			if (isShort)
-				work.pushSpace();
+			if (pushPara)
+				work.pushParagraph(context = Spacing::Comment);
+			else if (comment.startsWithPunctuation())
+				work.pushDelim();
 			else
-				work.pushSpaceOrParagraph(context = Spacing::Comment);
+				work.pushSpace();
 
 			work.pop(m_list);
 			m_list.push_back(new Comment(comment, move::Post));
 
-			if (isShort)
+			if (!pushPara)
 				work.pushSpace();
 		}
 	}

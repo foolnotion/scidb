@@ -52,6 +52,8 @@
 ::mc::Key(Space)			"\u2423"
 ::mc::Key(Up)				"\u2191"
 
+::mc::KeyDescr(Space)	"Leertaste"
+
 ::mc::Alignment			"Ausrichtung"
 ::mc::Apply					"Anwenden"
 ::mc::Archive				"Archiv"
@@ -106,6 +108,7 @@
 ::mc::To						"Nach"
 ::mc::Top					"Oben"
 ::mc::Undo					"Rückgängig"
+::mc::Unknown				"Unbekannt"
 ::mc::Variant				"Schachform"
 ::mc::Variation			"Variante"
 ::mc::Volume				"Hauptgruppe"
@@ -1117,7 +1120,8 @@
 ::pgn::setup::mc::Variations(level)				"Einrückungstiefe"
 
 ::pgn::setup::mc::Section(Display)				"Anzeige"
-::pgn::setup::mc::Display(numbering)			"Variantennummerierung anzeigen"
+::pgn::setup::mc::Display(numbering)			"Variantennummerierung einschalten"
+::pgn::setup::mc::Display(markers)				"Feldmarkierungen anzeigen"
 ::pgn::setup::mc::Display(moveinfo)				"Zuginformationen anzeigen"
 ::pgn::setup::mc::Display(nagtext)				"Text anzeigen für unübliche NAG-Kommentare"
 
@@ -2072,8 +2076,8 @@
 ::dialog::save::mc::ReplaceGame					"Partie ersetzen"
 ::dialog::save::mc::EditCharacteristics		"Kenndaten bearbeiten"
 	
-::dialog::save::mc::PressToSelect				"Drücke Strg-0 bis Strg-9 zur Auswahl (oder linker Mausklick)"
-::dialog::save::mc::PressForWhole				"Drücke Alt-0 bis Alt-9 für ganzen Datensatz (oder mittlerer Mausklick)"
+::dialog::save::mc::PressToSelect				"Strg-0 bis Strg-9 zur Auswahl (oder linker Mausklick)"
+::dialog::save::mc::PressForWhole				"Alt-0 bis Alt-9 für ganzen Datensatz (oder mittlerer Mausklick)"
 ::dialog::save::mc::EditTags						"Tags bearbeiten"
 ::dialog::save::mc::RemoveThisTag				"Tag '%s' entfernen?"
 ::dialog::save::mc::TagAlreadyExists			"Der Tag-Name '%s' existiert bereits."
@@ -2224,10 +2228,16 @@
 ::datebox::mc::Month		"Monat"
 ::datebox::mc::Day		"Tag"
 
+::datebox::mc::Hint(Space)	"Löschen"
+::datebox::mc::Hint(?)		"Kalender öffnen"
+::datebox::mc::Hint(!)		"Partiedatum setzen"
+::datebox::mc::Hint(=)		"Eingabe überspringen"
+
 ### genderbox ##########################################################
 ::genderbox::mc::Gender(m) "Männlich"
 ::genderbox::mc::Gender(f) "Weiblich"
 ::genderbox::mc::Gender(c) "Computer"
+::genderbox::mc::Gender(?) "Unbekannt"
 
 ### terminationbox #####################################################
 ::terminationbox::mc::Normal								"Normal"

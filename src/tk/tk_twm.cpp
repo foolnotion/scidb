@@ -6514,7 +6514,7 @@ Node::performAllActiveNodes(Flag flag)
 					M_ASSERT(node->m_savedParent);
 					if (node->m_savedParent->m_selected == this)
 						node->m_savedParent->m_selected = nullptr;
-					if (node->m_parent->exists())
+					if (node->m_savedParent->exists())
 						node->performUnpack(node->m_savedParent);
 					node->m_savedParent = nullptr;
 					break;

@@ -270,6 +270,13 @@ proc build {top width height} {
 		-variable ::pgn::editor::Options(spacing:paragraph) \
 		-padx 1 \
 		;
+#	set Vars(button:show:markers) [::toolbar::add $tbDisplay checkbutton \
+#		-image $::icon::toolbarDisk \
+#		-command [namespace code [list Refresh show:markers]] \
+#		-tooltipvar ::pgn::setup::mc::Display(markers) \
+#		-variable ::pgn::editor::Options(show:markers) \
+#		-padx 1 \
+#	]
 	set Vars(button:show:moveinfo) [::toolbar::add $tbDisplay checkbutton \
 		-image $::icon::toolbarClock \
 		-command [namespace code [list Refresh show:moveinfo]] \
@@ -323,6 +330,11 @@ proc build {top width height} {
 	::scidb::db::subscribe gameSwitch [namespace current]::GameSwitched
 	::pgn::setup::setupNags editor
 	Raise history
+}
+
+
+proc showMarkers {} {
+	return $::pgn::editor::Options(show:markers)
 }
 
 
@@ -1111,7 +1123,7 @@ proc ConfigureEditor {} {
 	set position $Vars(position)
 	::scidb::tree::freeze 1
 	::scidb::game::new 10
-	ResetVars $position
+	ResetVars 10
 	set Vars(lang:set:10) [list {} $::mc::langID]
 	set Vars(position) $position
 	::scidb::game::switch 10
@@ -1526,10 +1538,11 @@ proc InsertMove {context position w level key data} {
 					}
 
 					" " {
-						# TODO postpone this, because no space needed if
-						# next comment is starting with punctuation, and
-						# comment is not at start of line
-						$w insert cur " "
+						$w insert cur " " ;# normal space
+					}
+
+					"|" {
+						# this space is before a punctuation letter, ignore it
 					}
 
 					"]" {
@@ -1678,7 +1691,8 @@ proc InsertDiagram {context position w level key data} {
 				set index 0
 				set key [string map {d m} $key]
 				set emb $w.[string map {. :} $key]
-				board::diagram::new $emb $size -bordersize $borderSize
+				if {[winfo exists $emb]} { set cmd resize } else { set cmd new }
+				board::diagram::$cmd $emb $size -bordersize $borderSize
 				if {2*$pady < $alignment} {
 					board::diagram::alignBoard $emb [::colors::lookup $Colors(background)] 
 				}
@@ -2254,6 +2268,8 @@ proc ResetGame {w position {tags {}}} {
 
 	if {$position <= 10} {
 		::pgn::setup::setupStyle editor $position
+	}
+	if {$position <= 9} {
 		::scidb::game::subscribe pgn $position [namespace current]::DoLayout
 		::scidb::game::subscribe board $position [namespace parent]::board::update
 		::scidb::game::subscribe tree $position [namespace parent]::tree::update
@@ -2710,6 +2726,7 @@ proc PopupMenu {parent position} {
 	foreach {label var} {ParLayout(column-style) style:column
 								ParLayout(use-spacing) spacing:paragraph
 								Display(numbering) show:varnumbers
+								Display(markers) show:markers
 								Display(moveinfo) show:moveinfo
 								Display(nagtext) show:nagtext
 								Diagrams(show) show:diagram
@@ -3143,20 +3160,22 @@ proc VerifyNumberOfMoves {dlg length} {
 
 
 proc Refresh {var} {
+	variable ::pgn::editor::Options
 	variable Vars
 
 	switch -glob $var {
 		weight:mainline {
 			variable _BoldTextForMainlineMoves
-			variable ::pgn::editor::Options
 			set Options(weight:mainline) [expr {$_BoldTextForMainlineMoves ? "bold" : "normal"}]
 		}
 		show:nagtext {
 			::pgn::setup::setupNags editor
 		}
+		show:markers {
+			[namespace parent]::board::toggleShowMarkers $Options(show:markers)
+		}
 		moveinfo:* {
 			variable ::pgn::setup::ShowMoveInfo
-			variable ::pgn::editor::Options
 			set type [lindex [split $var :] 1]
 			if {$ShowMoveInfo($type) && [HasMoveInfo]} { set Options(show:moveinfo) 1 }
 		}

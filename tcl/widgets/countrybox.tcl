@@ -217,17 +217,10 @@ proc Completion {w code sym var} {
 		default {
 			if {[string is alnum -strict $code] || [string is punct -strict $code] || $code eq " "} {
 				after idle [namespace code [list Completion2 $w $var [set $var]]]
-			} else {
-				after idle [namespace code [list TestEntry $w]]
+			} elseif {$sym ne "Down"} {
+				after idle [list $w testentry]
 			}
 		}
-	}
-}
-
-
-proc TestEntry {w} {
-	if {[winfo exists $w] && ![$w testicon]} {
-		$w select none
 	}
 }
 
@@ -240,6 +233,7 @@ proc Completion2 {w var prevContent} {
 		$w.__w__ current 0
 	} elseif {	[string range $content 0 end-1] eq $prevContent
 				|| [string match {*([A-Z][A-Z][A-Z])} $prevContent]} {
+		$w testicon
 		Search $w $var 0
 	}
 	$w testicon

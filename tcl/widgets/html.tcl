@@ -520,6 +520,7 @@ proc WidgetProc {w command args} {
 	switch -glob -- $command {
 		clear {
 			$w.sub.html reset
+			return $w
 		}
 
 		parse {
@@ -567,6 +568,10 @@ proc WidgetProc {w command args} {
 				after idle [namespace code [list Place $w.sub]]
 			}
 			return $Priv(minbbox)
+		}
+
+		content {
+			return $Priv(script)
 		}
 
 		minbbox {
@@ -800,6 +805,7 @@ proc WidgetProc {w command args} {
 			}
 			if {[info exists opts(-height)]} {
 				$w.sub configure -height $opts(-height)
+				$w.sub.html configure -height $opts(-height)
 			}
 		}
 	}
