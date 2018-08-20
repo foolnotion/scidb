@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2010-2013 Gregor Cramer
+# Copyright: (C) 2010-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -43,6 +43,7 @@ proc Build {w args} {
 		-textvar {}
 		-textvariable {}
 		-width 0
+		-skipspace no
 	}
 	array set opts $args
 
@@ -64,6 +65,11 @@ proc Build {w args} {
 		-textvariable $opts(-textvariable) \
 		-command [namespace code [list Focus $w.__w__]] \
 		;
+	if {$opts(-skipspace)} {
+		bind $w.__w__ <Key-space> [list after idle [namespace code { SkipSpace %W }]]
+	}
+	bind $w.__w__ <<Increment>> { %W selection clear }
+	bind $w.__w__ <<Decrement>> { %W selection clear }
 	::validate::spinboxInt $w.__w__
 	::theme::configureSpinbox $w.__w__
 	pack $w.__w__ -side left
@@ -127,11 +133,19 @@ proc WidgetProc {w command args} {
 }
 
 
+proc SkipSpace {w} {
+	if {[$w get] == " " || [string length [$w get]] == 0} {
+		$w delete 0 end
+		tk::TabToWindow [tk_focusNext $w]
+	}
+}
+
+
 proc Focus {w} {
 	if {[focus] ne $w} {
 		focus $w
-		update idletasks
-		$w selection clear
+#		update idletasks
+#		$w selection clear
 	}
 }
 

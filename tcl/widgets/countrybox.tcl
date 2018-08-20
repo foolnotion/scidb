@@ -44,6 +44,7 @@ proc Build {w args} {
 		-textvar			{}
 		-textvariable	{}
 		-state			normal
+		-skipspace		no
 	}
 	array set opts $args
 
@@ -73,6 +74,9 @@ proc Build {w args} {
 		-state $opts(-state) \
 		-placeicon yes \
 		;
+	if {$opts(-skipspace)} {
+		bind $w <Key-space> [list after idle [namespace code { SkipSpace %W }]]
+	}
 
 	$w addcol text  -id code -foreground darkgreen -font TkFixedFont -width 3 -justify center
 	$w addcol text  -id iso  -foreground darkred -font TkFixedFont -width 3 -justify center
@@ -196,6 +200,14 @@ proc LanguageChanged {w} {
 	}
 
 	$w icursor end
+}
+
+
+proc SkipSpace {w} {
+	if {[$w get] == " " || [string length [$w get]] == 0} {
+		$w delete 0 end
+		tk::TabToWindow [tk_focusNext $w]
+	}
 }
 
 

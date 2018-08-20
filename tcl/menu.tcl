@@ -729,15 +729,16 @@ proc dbImport {parent base fileTypes} {
 				[list $mc::ScidbBases			{.sci}]           \
 				[list $mc::ScidBases				{.si4 .si3}]      \
 			]
+#				[list $mc::Archives				{.ccif .cif}]     \
 		}
 		pgn {
-#				[list $mc::BPGNFilesArchives	{.bpgn .bpgn.gz .zip} {.ZIP}]
-#				[list $mc::BPGNFiles				{.bpgn .bpgn.gz}]
 			set filetypes [list                                               \
 				[list $mc::PGNFilesArchives	{.pgn .pgn.gz .zip} {.PGN .ZIP}] \
 				[list $mc::PGNFiles				{.pgn .pgn.gz} {.PGN}]           \
 				[list $mc::PGNArchives			{.zip} {.ZIP}]                   \
 			]
+#				[list $mc::BPGNFilesArchives	{.bpgn .bpgn.gz .zip} {.ZIP}]
+#				[list $mc::BPGNFiles				{.bpgn .bpgn.gz}]
 		}
 	}
 	set title $::application::database::mc::FileImport($fileTypes)
@@ -884,9 +885,8 @@ if {[tk windowingsystem] eq "x11" && [string length [auto_execok xdg-mime]]} {
 			::widget::dialogButtons $dlg {close}
 			$dlg.close configure -command [list set [namespace current]::Action_ close]
 		} else {
-			::widget::dialogButtons $dlg {cancel ok}
+			::widget::dialogButtons $dlg {ok}
 			$dlg.ok configure -command [list set [namespace current]::Action_ ok]
-			$dlg.cancel configure -command [list set [namespace current]::Action_ cancel]
 		}
 
 		wm withdraw $dlg
@@ -989,6 +989,7 @@ proc getName {file} {
 #		.scg - .sg3 - .sg4 - .cbg - .cbf	{ return $mc::Data(game) }
 #		.scn - .sn3 - .sn4					{ return $mc::Data(namebase) }
 #		.ssc										{ return $mc::Data(sorting) }
+#		.ccif .cif								{ return $mc::Data(archive) }
 #		.pgn - .pgn.gz - .zip				{ return $mc::Data(game) }
 #		.bpgn - .bpgn.gz						{ return $mc::Data(game) }
 #		.cba										{ return $mc::Index(annotation) }

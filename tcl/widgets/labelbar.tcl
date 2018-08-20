@@ -30,13 +30,14 @@ namespace eval labelbar {
 proc Build {w text} {
 	::frame $w -borderwidth 0
 	::frame $w.top -height 1 -background black
-	::label $w.lbl -borderwidth 0 -background grey52 -foreground white
+	::label $w.lbl -borderwidth 0 -background grey52 -foreground white -font TkCaptionFont
 	if {[info exists $text]} {
 		$w.lbl configure -textvar $text
 	} else {
-		$w.lbl configure .text $text
+		$w.lbl configure -text $text
 	}
-	::ttk::separator $w.bot
+	::frame $w.bot -height 1 -background black
+	#::ttk::separator $w.bot
 
 	grid $w.top -sticky ew -row 0 -column 0
 	grid $w.lbl -sticky ew -row 1 -column 0

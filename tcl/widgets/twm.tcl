@@ -306,6 +306,10 @@ proc ArrayEqual {twm lhs rhs level} {
 			array set b $bar($key)
 			array unset a hide; array unset a stayontop
 			array unset b hide; array unset b stayontop
+			if {[info exists a(flat)] && !$a(flat)} { array unset a flat }
+			if {[info exists b(flat)] && !$b(flat)} { array unset b flat }
+			if {[info exists a(amalgamate)] && !$a(amalgamate)} { array unset a amalgamate }
+			if {[info exists b(amalgamate)] && !$b(amalgamate)} { array unset b amalgamate }
 			if {![ArrayEqual $twm a b $level]} { return false }
 		} elseif {[string match {*%} $foo($key)] && [string match {*%} $bar($key)]} {
 			set orient [expr {[string match {*height} $key] ? "vert" : "horz"}]

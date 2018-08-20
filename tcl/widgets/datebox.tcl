@@ -48,7 +48,6 @@ set Hint(=)			"Skip entering"
 bind DateBoxFrame <Configure> [namespace code { Configure %W }]
 bind DateBoxFrame <Destroy>	[list namespace delete [namespace current]::%W]
 bind DateBoxFrame <Destroy>	{+ rename %W {} }
-bind DateBoxFrame <FocusIn>	{ focus [tk_focusNext %W] }
 
 
 proc validate {y m d {minYear 0} {maxYear 9999}} {
@@ -114,6 +113,7 @@ proc Build {w args} {
 	array set opts [list -minYear [::scidb::misc::minYear] -maxYear [::scidb::misc::maxYear]]
 	set opts(-tooltip) [namespace current]::mc::Today
 	set opts(-usetoday) 0
+	set opts(-skipspace) 0
 	array set opts $args
 
 	ttk::frame $w -borderwidth 0 -takefocus 0 -class DateBoxFrame
@@ -140,7 +140,7 @@ proc Build {w args} {
 		-invalidcommand { bell } \
 		;
 	bind $w.y <FocusIn> [namespace code [list SetYear $w]]
-	bind $w.y <Any-Key> [list after idle [namespace code [list CheckKey $w %A]]]
+	bind $w.y <Any-Key> [list after idle [namespace code [list CheckKey $w %A $opts(-skipspace)]]]
 	bind $w.y <Tab> [namespace code [list CheckFocus $w y]]
 	bind $w.y <Tab> {+ break }
 	ttk::label $w.dot1 \
@@ -159,6 +159,9 @@ proc Build {w args} {
 		;
 	bind $w.m <Tab> [namespace code [list CheckFocus $w m]]
 	bind $w.m <Tab> {+ break }
+	if {$opts(-skipspace)} {
+		bind $w.m <Key-space> [list after idle [namespace code [list SkipSpace $w m]]]
+	}
 	ttk::label $w.dot2 \
 		-text "." \
 		-relief flat \
@@ -173,8 +176,9 @@ proc Build {w args} {
 		-invalidcommand { bell } \
 		-cursor xterm \
 		;
-	bind $w.m <Tab> [namespace code [list CheckFocus $w d]]
-	bind $w.m <Tab> {+ break }
+	if {$opts(-skipspace)} {
+		bind $w.d <Key-space> [list after idle [namespace code [list SkipSpace $w d]]]
+	}
 	ttk::button $w.cal \
 		-style icon.TButton \
 		-image $icon::16x16::calendar \
@@ -193,6 +197,7 @@ proc Build {w args} {
 	lappend hint "="
 	foreach key $hint { lappend hints $key [namespace current]::mc::Hint($key) }
 	keybar $w.hint $hints
+	bind $w.hint <<KeybarPress>> [namespace code [list Invoke $w %d $opts(-skipspace)]]
 	
 	grid $w.y		-row 0 -column 0
 	grid $w.dot1	-row 0 -column 1
@@ -280,7 +285,7 @@ proc WidgetProc {w command args} {
 			if {[lindex $args 0] eq "-state"} { return "normal" }
 		}
 
-		icursor - selection { return }
+		icursor - selection { return [$w.y $command {*}$args] }
 	}
 
 	return [$w.__w__ $command {*}$args]
@@ -292,25 +297,40 @@ proc SetYear {w} {
 }
 
 
+proc SkipSpace {w which} {
+	variable ${w}::Priv
+
+	if {[${w}.${which} get] == " " || [string length [${w}.${which} get]] == 0} {
+		${w}.${which} delete 0 end
+		if {$which eq "m"} { $w.d delete 0 end }
+		tk::TabToWindow [tk_focusNext ${w}.${Priv(last)}]
+	}
+}
+
+
 proc CheckFocus {w which} {
 	variable ${w}::Priv
 
-	if {$which eq "d"} {
-		if {[string length [$w.d get]]} {
-			set which $Priv(last)
+	switch $which {
+		y {
+			if {[string length [${w}.${which} get]] == 0} {
+				$w.m delete 0 end
+				$w.d delete 0 end
+				set which $Priv(last)
+			}
 		}
-	} elseif {[string length [${w}.${which} get]] == 0} {
-		if {$which eq "y"} { $w.m delete 0 end }
-		$w.d delete 0 end
-		set which $Priv(last)
-	} ; #elseif {$which eq "y" && [string length [$w.y get]]} {
-#		set which [test? [winfo exists $w.today] today cal]
-#	}
+		m {
+			if {[string length [${w}.${which} get]] == 0} {
+				$w.d delete 0 end
+				set which $Priv(last)
+			}
+		}
+	}
 	tk::TabToWindow [tk_focusNext ${w}.${which}]
 }
 
 
-proc CheckKey {w key} {
+proc CheckKey {w key skipSpace} {
 	variable ${w}::Priv
 
 	switch $key {
@@ -330,12 +350,23 @@ proc CheckKey {w key} {
 			$w.y delete 0 end
 			$w.m delete 0 end
 			$w.d delete 0 end
-			tk::TabToWindow [tk_focusNext ${w}.$Priv(last)]
+			if {$skipSpace} {
+				tk::TabToWindow [tk_focusNext ${w}.$Priv(last)]
+			}
 		}
 		"=" {
-			tk::TabToWindow [tk_focusNext ${w}.$Priv(last)]
+			if {$skipSpace} {
+				tk::TabToWindow [tk_focusNext ${w}.$Priv(last)]
+			}
 		}
 	}
+}
+
+
+proc Invoke {w key skipSpace} {
+	update idle ;# required for popup
+	if {$key eq "Space"} { set key " " }
+	CheckKey $w $key $skipSpace
 }
 
 

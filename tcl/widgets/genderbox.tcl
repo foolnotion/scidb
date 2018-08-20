@@ -71,6 +71,7 @@ proc Build {w args} {
 		-textvariable	{}
 		-width			0
 		-state			normal
+		-skipspace		no
 	}
 	array set opts $args
 
@@ -94,10 +95,14 @@ proc Build {w args} {
 		-width $width \
 		-placeicon yes \
 		;
+	if {$opts(-skipspace)} {
+		bind $w.__w__ <Key-space> [list after idle [namespace code { SkipSpace %W }]]
+	}
 	$w.__w__ addcol image -id icon -justify center
 	$w.__w__ addcol text -id sex
 
 	keybar $w.hint
+	bind $w.hint <<KeybarPress>> [namespace code [list Invoke $w %d]]
 	Setup $w
 
 	grid $w.__w__ -column 0 -row 0 -sticky ns
@@ -203,6 +208,7 @@ proc Setup {w} {
 	variable ${w}::Male
 	variable ${w}::Female
 	variable ${w}::Computer
+	variable ${w}::Map
 	variable ${w}::types
 	variable types
 
@@ -240,9 +246,11 @@ proc Setup {w} {
 		CheckEntry $w
 	}
 
-	foreach key {m f c} {
+	set Map(?) "?"
+	foreach key $types {
 		set ch [string tolower [string index $mc::Gender($key) 0]]
 		lappend hints $ch [namespace current]::mc::Gender($key)
+		set Map($ch) $key
 	}
 	lappend hints "?" [namespace current]::mc::Gender(?)
 	$w.hint keys $hints
@@ -298,9 +306,32 @@ proc Select {w key} {
 }
 
 
+proc Invoke {w key} {
+	variable ${w}::Map
+
+	focus $w
+	$w delete 0 end
+	if {$key eq "?"} {
+		$w current 0
+		$w.__w__ set ""
+	} else {
+		set index [lsearch [$w cget -values] $mc::Gender($Map($key))]
+		$w current $index
+	}
+}
+
+
 proc CheckEntry {w} {
 	if {[$w get] eq "\u2014"} {
 		$w.__w__ set ""
+	}
+}
+
+
+proc SkipSpace {w} {
+	if {[$w get] == " " || [string length [$w get]] == 0} {
+		$w delete 0 end
+		tk::TabToWindow [tk_focusNext $w]
 	}
 }
 

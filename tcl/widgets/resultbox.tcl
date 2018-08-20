@@ -46,12 +46,14 @@ proc Build {w args} {
 
 	namespace eval [namespace current]::${w} {}
 	variable ${w}::Content ""
+	variable ${w}::Map
 
 	array set opts {
-		-textvar {}
-		-textvariable {}
-		-width 0
-		-excludelost 0
+		-textvar			{}
+		-textvariable	{}
+		-width			0
+		-excludelost	no
+		-skipspace		no
 	}
 	array set opts $args
 
@@ -69,7 +71,7 @@ proc Build {w args} {
 		set keys {1 = 0 \u2013 *}
 		set values $results
 	}
-	foreach key $keys {
+	foreach key $keys value $results {
 		switch $key {
 			1			{ set tip ::terminationbox::mc::Result(1-0) }
 			0			{ set tip ::terminationbox::mc::Result(0-1) }
@@ -78,6 +80,7 @@ proc Build {w args} {
 			*			{ set tip ::mc::Unknown }
 		}
 		lappend hints $key $tip
+		set Map($key) $value
 	}
 
 	ttk::frame $w -borderwidth 0 -takefocus 0
@@ -91,8 +94,12 @@ proc Build {w args} {
 		-validatecommand { return [regexp {^[*012/=-]*$} %P] } \
 		-invalidcommand bell \
 		;
+	if {$opts(-skipspace)} {
+		bind $w.__w__ <Key-space> [list after idle [namespace code { SkipSpace %W }]]
+	}
 	$w.__w__ current 0
 	keybar $w.hint $hints
+	bind $w.hint <<KeybarPress>> [namespace code [list Invoke $w %d]]
 
 	grid $w.__w__ -column 0 -row 0 -sticky ns
 	grid $w.hint  -column 2 -row 0 -sticky ns
@@ -100,7 +107,6 @@ proc Build {w args} {
 
 	bind $w <Destroy> [list catch [list namespace delete [namespace current]::${w}]]
 	bind $w.__w__ <Any-Key> [list after idle [namespace code { Select %W %A }]]
-	#bind $w.__w__ <<ComboboxSelected>> [namespace code [list CheckEntry $w]]
 
 	catch { rename ::$w $w.__resultbox__ }
 	proc ::$w {command args} "[namespace current]::WidgetProc $w \$command {*}\$args"
@@ -155,7 +161,6 @@ proc WidgetProc {w command args} {
 				error "wrong arg '$result'; should be one of \{$args\}"
 			}
 			$w.__w__ current $index
-			#CheckEntry $w
 			return $w
 		}
 
@@ -172,6 +177,16 @@ proc WidgetProc {w command args} {
 	}
 
 	return [$w.__w__ $command {*}$args]
+}
+
+
+proc Invoke {w key} {
+	variable ${w}::Map
+	variable results
+
+	focus $w
+	set i [lsearch $results $Map($key)]
+	$w current [expr {($i + 1) % [llength [$w cget -values]]}]
 }
 
 
@@ -194,7 +209,6 @@ proc Select {w key} {
 		if {$key eq "0" || $key eq "1"} {
 			$w selection clear
 			$w selection range insert end
-			#CheckEntry $w
 		} else {
 			$w icursor end
 		}
@@ -202,11 +216,13 @@ proc Select {w key} {
 }
 
 
-# proc CheckEntry {w} {
-# 	if {[$w get] eq "*"} {
-# 		$w.__w__ set ""
-# 	}
-# }
+proc SkipSpace {w} {
+	if {[$w get] == " " || [string length [$w get]] == 0} {
+		$w delete 0 end
+		$w insert end "*"
+		tk::TabToWindow [tk_focusNext $w]
+	}
+}
 
 } ;# namespace resultbox
 

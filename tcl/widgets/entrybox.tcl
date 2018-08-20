@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2010-2013 Gregor Cramer
+# Copyright: (C) 2010-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -30,11 +30,22 @@ proc entrybox {w args} {
 	return [::entrybox::Build $w {*}$args]
 }
 
-
 namespace eval entrybox {
 
 proc Build {w args} {
-	ttk::entry $w -exportselection no {*}$args
+	array set opts $args
+	set skipSpace 0
+	if {[info exists opts(-skipspace)]} {
+		set skipSpace 1
+		array unset opts -skipspace
+	}
+	if {![info exists opts(-exportselection)]} {
+		set opts(-exportselection) no
+	}
+	ttk::entry $w {*}[array get opts]
+	if {$skipSpace} {
+		bind $w <Key-space> [list after idle [namespace code { SkipSpace %W }]]
+	}
 	catch { rename ::$w $w.__w__ }
 	proc ::$w {command args} "[namespace current]::WidgetProc $w \$command {*}\$args"
 	return $w
@@ -73,9 +84,21 @@ proc WidgetProc {w command args} {
 				}
 			}
 		}
+
+		focus {
+			return [focus $w]
+		}
 	}
 
 	return [$w.__w__ $command {*}$args]
+}
+
+
+proc SkipSpace {w} {
+	if {[$w get] == " " || [string length [$w get]] == 0} {
+		$w delete 0 end
+		tk::TabToWindow [tk_focusNext $w]
+	}
 }
 
 } ;# namespace entrybox

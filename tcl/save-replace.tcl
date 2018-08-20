@@ -477,6 +477,7 @@ proc Build {dlg base variant position number} {
 	foreach {side row col} {white ltrow 1 black rtrow 5} {
 		set color [string toupper $side 0 0]
 		ttk::labelbar $top.$side [namespace current]::mc::Section($side)
+		set Priv($side:next) $top.$side-name
 
 		ttk::label $top.$side-player-l
 		bind $top.$side-player-l <<LanguageChanged>> \
@@ -488,7 +489,7 @@ proc Build {dlg base variant position number} {
 		}
 
 		ttk::frame $top.$side-player -borderwidth 0 -takefocus 0
-		entrybox $top.$side-name -textvar ::${dlg}::Priv(${side}-name)
+		entrybox $top.$side-name -textvar ::${dlg}::Priv(${side}-name) -skipspace yes
 		if {$state eq "normal"} {
 			fideidbox $top.$side-fideID -textvar ::${dlg}::Priv(${side}-fideID) -state $state
 		}
@@ -501,22 +502,24 @@ proc Build {dlg base variant position number} {
 		ttk::frame $top.$side-rating -borderwidth 0 -takefocus 0
 		if {$twoRatings} {
 			ttk::label $top.$side-rating.l-elo -text "Elo"
-			scorebox $top.$side-rating.elo -textvar ::${dlg}::Priv(${side}-elo)
+			scorebox $top.$side-rating.elo -textvar ::${dlg}::Priv(${side}-elo) -skipspace yes
 		}
 		ratingbox $top.$side-rating.type -format $Priv(format) -textvar ::${dlg}::Priv(${side}-rating)
-		scorebox $top.$side-rating.score -textvar ::${dlg}::Priv(${side}-score)
+		scorebox $top.$side-rating.score -textvar ::${dlg}::Priv(${side}-score) -skipspace yes
 		titlebox $top.$side-title \
 			-width $maxlen \
 			-textvar ::${dlg}::Priv(${side}-title) \
 			-state $state \
+			-skipspace yes \
 			;
 		countrybox $top.$side-federation \
 			-height 20 \
 			-width $maxlen \
 			-textvar ::${dlg}::Priv(${side}-federation) \
 			-state $state \
+			-skipspace yes \
 			;
-		genderbox $top.$side-sex -textvar ::${dlg}::Priv(${side}-sex) -state $state
+		genderbox $top.$side-sex -textvar ::${dlg}::Priv(${side}-sex) -state $state -skipspace yes
 
 		if {$state eq "disabled"} {
 			lappend disabled ${side}-fideID ${side}-title ${side}-federation ${side}-sex
@@ -638,13 +641,14 @@ proc Build {dlg base variant position number} {
 
 	# Game Data ###############################################
 	ttk::labelbar $top.game [namespace current]::mc::Section(game)
+	set Priv(game:next) $top.game-date
 
 	foreach attr {date result round termination annotator} {
 		ttk::label $top.game-$attr-l -textvar [namespace current]::mc::Label($attr)
 	}
 
-	datebox $top.game-date -minYear $minYear -maxYear $maxYear -usetoday yes
-	resultbox $top.game-result -excludelost $excludelost -textvar ::${dlg}::Priv(game-result)
+	datebox $top.game-date -minYear $minYear -maxYear $maxYear -usetoday yes -skipspace yes
+	resultbox $top.game-result -excludelost $excludelost -textvar ::${dlg}::Priv(game-result) -skipspace 1
 	roundbox $top.game-round -width 10 -textvar ::${dlg}::Priv(event-round) -useString $useStringForRound
 	terminationbox $top.game-termination \
 		-textvar ::${dlg}::Priv(game-termination) \
@@ -654,6 +658,7 @@ proc Build {dlg base variant position number} {
 		-width $maxlen \
 		-textvar ::${dlg}::Priv(game-annotator) \
 		-state $state \
+		-skipspace yes \
 		;
 	ttk::checkbutton $top.game-eco-l \
 		-variable ::${dlg}::Priv(game-eco-flag) \
@@ -711,30 +716,31 @@ proc Build {dlg base variant position number} {
 
 	lappend rows $ltrow
 
-	set Priv(select:annotator) [list \
-		name entrybox Annotator game-annotator \
-	]
+	set Priv(select:annotator) [list name entrybox Annotator game-annotator]
 	BindMatchKeys $top annotator
 
 	# Event Data ##############################################
 	ttk::labelbar $top.event [namespace current]::mc::Section(event)
+	set Priv(event:next) $top.event-title
 
 	foreach attr {title site country eventDate eventMode eventType timeMode} {
 		ttk::label $top.event-$attr-l -textvar [namespace current]::mc::Label($attr)
 	}
 
-	entrybox $top.event-title -width $maxlen -textvar ::${dlg}::Priv(event-title)
-	entrybox $top.event-site -width $maxlen -textvar ::${dlg}::Priv(event-site)
+	entrybox $top.event-title -width $maxlen -textvar ::${dlg}::Priv(event-title) -skipspace yes
+	entrybox $top.event-site -width $maxlen -textvar ::${dlg}::Priv(event-site) -skipspace yes
 	countrybox $top.event-country \
 		-height 20 \
 		-width $maxlen \
 		-textvar ::${dlg}::Priv(event-country) \
 		-state $state \
+		-skipspace yes \
 		;
 	datebox $top.event-eventDate \
 		-minYear $minYear \
 		-maxYear $maxYear \
 		-usetoday yes \
+		-skipspace yes \
 		-tooltip [namespace current]::mc::SetToGameDate \
 		;
 	set width 0
@@ -1109,9 +1115,12 @@ proc Build {dlg base variant position number} {
 	$dlg.cancel configure -command [namespace code [list Withdraw $dlg]]
 #	bind $dlg.ok <FocusIn> [namespace code [list ClearMatchList $top]]
 #	bind $dlg.cancel <FocusIn> [namespace code [list ClearMatchList $top]]
-	bind $dlg <Escape> [list $dlg.cancel invoke]
+#	bind $dlg <Escape> [list $dlg.cancel invoke] ;# too dangerous
 	::widget::focusNext [$top.event-timeMode path] $dlg.ok
 	::widget::focusPrev $dlg.ok [$top.event-timeMode path]
+	set Priv(section:keys) {}
+	SetupSectionKeys $top
+	bind $top.game <<LanguageChanged>> [namespace code [list SetupSectionKeys $dlg]]
 
 	# Tracing #################################################
 	foreach attr {white-name black-name event-title event-site game-annotator} {
@@ -1121,6 +1130,32 @@ proc Build {dlg base variant position number} {
 
 	# Finalization ############################################
 	set Priv(disabled) $disabled
+}
+
+
+proc SetupSectionKeys {top} {
+	set dlg [winfo toplevel $top]
+	variable ::${dlg}::Priv
+
+	foreach key $Priv(section:keys) {
+		bind $dlg <Alt-[string tolower $key]> {#}
+		bind $dlg <Alt-[string toupper $key]> {#}
+	}
+	set Priv(section:keys) {}
+	foreach section {white black game event} {
+		set key [string index $mc::Section($section) 0]
+		append Priv(section:keys) $key
+		set cmd [namespace code [list NextSection $Priv($section:next)]]
+		bind $dlg <Alt-[string tolower $key]> $cmd
+		bind $dlg <Alt-[string toupper $key]> $cmd
+	}
+}
+
+
+proc NextSection {w} {
+	$w focus
+	$w selection range 0 end
+	$w icursor 0
 }
 
 

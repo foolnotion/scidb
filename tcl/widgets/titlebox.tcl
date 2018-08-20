@@ -71,6 +71,7 @@ proc Build {w args} {
 		-textvar 		{}
 		-textvariable	{}
 		-state			normal
+		-skipspace		no
 	}
 	array set opts $args
 
@@ -99,6 +100,9 @@ proc Build {w args} {
 		-highlightbackground whitesmoke \
 		-highlightforeground black \
 		;
+	if {$opts(-skipspace)} {
+		bind $w <Key-space> [list after idle [namespace code { SkipSpace %W }]]
+	}
 
 	$w addcol text  -id title -width 4
 	$w addcol text  -id descr -foreground darkgreen
@@ -196,6 +200,14 @@ proc LanguageChanged {w} {
 		$w set $content
 	}
 	$w icursor end
+}
+
+
+proc SkipSpace {w} {
+	if {[$w get] == " " || [string length [$w get]] == 0} {
+		$w delete 0 end
+		tk::TabToWindow [tk_focusNext $w]
+	}
 }
 
 
