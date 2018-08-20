@@ -697,7 +697,7 @@ int
 Dimen::computeRelativeSize(int size) const
 {
 	M_ASSERT(rel.dimen<D>() > 0);
-	return int((double(size)*double(rel.dimen<D>()))/100.0 + 0.5);
+	return int((double(size)*double(rel.dimen<D>()))/10000.0 + 0.5);
 }
 
 
@@ -802,18 +802,18 @@ template <> int Quants::dimen<Vert,Max,Abs>() const		{ return max.abs.dimen<Vert
 template <> int Quants::dimen<Horz,Max,Rel>() const		{ return max.rel.dimen<Horz>(); }
 template <> int Quants::dimen<Vert,Max,Rel>() const		{ return max.rel.dimen<Vert>(); }
 
-template <> void Quants::set<Horz,Actual,Abs>(int size)	{ actual.setup<Horz>(size, Abs); }
-template <> void Quants::set<Vert,Actual,Abs>(int size)	{ actual.setup<Vert>(size, Abs); }
-template <> void Quants::set<Horz,Actual,Rel>(int size)	{ actual.setup<Horz>(size, Rel); }
-template <> void Quants::set<Vert,Actual,Rel>(int size)	{ actual.setup<Vert>(size, Rel); }
-template <> void Quants::set<Horz,Min,Abs>(int size)		{ min.setup<Horz>(size, Abs); }
-template <> void Quants::set<Vert,Min,Abs>(int size)		{ min.setup<Vert>(size, Abs); }
-template <> void Quants::set<Horz,Min,Rel>(int size)		{ min.setup<Horz>(size, Rel); }
-template <> void Quants::set<Vert,Min,Rel>(int size)		{ min.setup<Vert>(size, Rel); }
-template <> void Quants::set<Horz,Max,Abs>(int size)		{ max.setup<Horz>(size, Abs); }
-template <> void Quants::set<Vert,Max,Abs>(int size)		{ max.setup<Vert>(size, Abs); }
-template <> void Quants::set<Horz,Max,Rel>(int size)		{ max.setup<Horz>(size, Rel); }
-template <> void Quants::set<Vert,Max,Rel>(int size)		{ max.setup<Vert>(size, Rel); }
+template <> void Quants::set<Horz,Actual,Abs>(int size)	{ actual.set<Horz>(size, Abs); }
+template <> void Quants::set<Vert,Actual,Abs>(int size)	{ actual.set<Vert>(size, Abs); }
+template <> void Quants::set<Horz,Actual,Rel>(int size)	{ actual.set<Horz>(size, Rel); }
+template <> void Quants::set<Vert,Actual,Rel>(int size)	{ actual.set<Vert>(size, Rel); }
+template <> void Quants::set<Horz,Min,Abs>(int size)		{ min.set<Horz>(size, Abs); }
+template <> void Quants::set<Vert,Min,Abs>(int size)		{ min.set<Vert>(size, Abs); }
+template <> void Quants::set<Horz,Min,Rel>(int size)		{ min.set<Horz>(size, Rel); }
+template <> void Quants::set<Vert,Min,Rel>(int size)		{ min.set<Vert>(size, Rel); }
+template <> void Quants::set<Horz,Max,Abs>(int size)		{ max.set<Horz>(size, Abs); }
+template <> void Quants::set<Vert,Max,Abs>(int size)		{ max.set<Vert>(size, Abs); }
+template <> void Quants::set<Horz,Max,Rel>(int size)		{ max.set<Horz>(size, Rel); }
+template <> void Quants::set<Vert,Max,Rel>(int size)		{ max.set<Vert>(size, Rel); }
 
 template <> void Quants::setReliable<Horz,Actual>()		{ actual.setReliable<Horz>(); }
 template <> void Quants::setReliable<Vert,Actual>()		{ actual.setReliable<Vert>(); }
@@ -1233,6 +1233,7 @@ public:
 	void setUid(Tcl_Obj* uidObj);
 	void setPreserved(bool flag);
 	void adjustDimensions();
+	void computeDimensionsRecursively();
 	void dump() const;
 
 	Node* dock(Node*& recv, Position position, Node const* setup);
@@ -1318,7 +1319,6 @@ private:
 	void move(Node* node, Node const* before = nullptr);
 	void add(Node* node, Node const* before = nullptr);
 
-	void computeDimensionsRecursively();
 	template <Orient D,Quantity Q> void computeDimensionsRecursively(int size);
 	void resizeDimensions();
 	void unframe();
@@ -1485,6 +1485,7 @@ Perform(ClientData clientData)
 
 	if (node->exists())
 	{
+		node->computeDimensionsRecursively();
 		node->adjustDimensions();
 		node->perform();
 	}
@@ -3133,10 +3134,8 @@ Node::computeDimensionsRecursively(int size)
 		else
 		{
 			int mySize = toplevel()->dimen<Inner,D,Q>();
-
-			mySize = contentSize<D>(mySize);
 			mySize = m_dimen.computeRelativeSize<D,Q>(mySize);
-			mySize = frameSize<D>(mySize);
+			mySize = contentSize<D>(mySize);
 			m_dimen.set<D,Q>(mySize);
 		}
 	}

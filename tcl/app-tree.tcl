@@ -171,7 +171,7 @@ proc build {twm parent width height} {
 	set bg [::colors::lookup $Options(-background)]
 	set mw [tk::multiwindow $parent.mw -borderwidth 0 -background $bg]
 	set info [tk::frame $mw.info -background $bg -borderwidth 0 -takefocus 0]
-	set mesg [tk::label $mw.mesg -borderwidth 0 -background $bg]
+	set mesg [tk::label $mw.mesg -borderwidth 0 -background $bg -foreground darkgreen]
 	pack $mw -fill both -expand yes
 
 	bind $mw <<LanguageChanged>> [namespace code SetMessage]
