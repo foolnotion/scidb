@@ -131,7 +131,11 @@ memblock<T>::operator=(memblock&& mb)
 {
 	if (this != &mb)
 	{
-		memblock<T>::~memblock();
+#if 0 // NOTE: since compiler version 8.1 this is not compiling anymore
+		memblock::~memblock();
+#else
+		this->memblock::~memblock();
+#endif
 		*this = mstl::move(mb);
 	}
 	return *this;

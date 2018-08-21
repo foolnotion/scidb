@@ -929,12 +929,14 @@ parseDimension(Tcl_Obj* obj, Dimen& dim)
 
 	if (e && *e == '%')
 	{
+		dim.set<D>(0, Abs);
 		dim.setup<D>(value*100 + fract, Rel);
 		e += 1;
 		mode = Rel;
 	}
 	else
 	{
+		dim.set<D>(0, Rel);
 		dim.setup<D>(value, Abs);
 		mode = Abs;
 	}
@@ -1197,6 +1199,7 @@ public:
 	void setState(State state);
 	void updateDimen(int x, int y, int width, int height);
 	void perform(Node* toplevel = nullptr);
+	void setupDimensions(Quants const& dimen);
 	void show();
 	void ready();
 
@@ -1232,6 +1235,7 @@ public:
 	void makeMetaFrame();
 	void setUid(Tcl_Obj* uidObj);
 	void setPreserved(bool flag);
+	void setConfigured();
 	void adjustDimensions();
 	void computeDimensionsRecursively();
 	void dump() const;
@@ -1298,11 +1302,14 @@ private:
 	void collectHeaderFramesRecursively(tcl::List& result) const;
 	void collectLeavesRecursively(tcl::List& result) const;
 	void collectVisibleRecursively(tcl::List& result) const;
-	void inspect(AttrSet const& exportList, tcl::DString& str) const;
+	void inspect(AttrSet const& exportList, tcl::DString& str, int horzGap, int vertGap) const;
 	void inspectAttrs(AttrSet const& exportList, tcl::DString& str) const;
-	template <Orient D,Quantity Q> void inspectDimen(Tcl_Obj* attr, tcl::DString& str) const;
+	template <Orient D,Quantity Q> void inspectDimen(Tcl_Obj* attr, tcl::DString& str, int gapSize) const;
 	void inspect(tcl::DString& str, Structures const& structures) const;
 	static void inspect(tcl::DString& str, SnapshotMap const& snapshots);
+
+	template <Orient D> int computeGapRecursively() const;
+	template <Orient D> int computeGap() const;
 
 	Tcl_Obj* makeOptions(Flag flags, Node const* before = nullptr) const __m_warn_unused;
 	void parseOptions(Tcl_Obj* opts);
@@ -1319,7 +1326,7 @@ private:
 	void move(Node* node, Node const* before = nullptr);
 	void add(Node* node, Node const* before = nullptr);
 
-	template <Orient D,Quantity Q> void computeDimensionsRecursively(int size);
+	template <Orient D,Quantity Q> void computeDimensionsRecursively(int size, int gapSize);
 	void resizeDimensions();
 	void unframe();
 	void flatten();
@@ -1481,14 +1488,10 @@ Node::Lookup Node::m_lookup;
 static void
 Perform(ClientData clientData)
 {
-	Node* node = static_cast<Node*>(clientData);
+	Node* root = static_cast<Node*>(clientData);
 
-	if (node->exists())
-	{
-		node->computeDimensionsRecursively();
-		node->adjustDimensions();
-		node->perform();
-	}
+	if (root->exists())
+		root->perform();
 }
 
 
@@ -1724,6 +1727,35 @@ Node::stableChild() const
 
 
 template <Orient D>
+int
+Node::computeGapRecursively() const
+{
+	int size = 0;
+
+	switch (m_type)
+	{
+		case Root:
+			return 0;
+
+		case Notebook:
+		case MultiWindow:
+		case PanedWindow:
+			size = computeGap<D>();
+			break;
+
+		case Frame:
+			if (D == Vert)
+				size = frameHeaderSize();
+			break;
+
+		default: break;
+	}
+
+	return size + m_parent->computeGapRecursively<D>();
+}
+
+
+template <Orient D>
 bool
 Node::compare(int lhsPerc, int rhsPerc) const
 {
@@ -1736,11 +1768,15 @@ Node::compare(int lhsPerc, int rhsPerc) const
 
 	Dimen lhs, rhs;
 
-	lhs.set<D>(lhsPerc, Rel);
-	rhs.set<D>(rhsPerc, Rel);
+	lhs.setup<D>(lhsPerc, Rel);
+	rhs.setup<D>(rhsPerc, Rel);
 
-	int lhsSize = lhs.computeRelativeSize<D>(m_root->m_workArea.dimen<D>());
-	int rhsSize = rhs.computeRelativeSize<D>(m_root->m_workArea.dimen<D>());
+	int size = m_root->m_workArea.dimen<D>();
+	if (m_parent)
+		size -= m_parent->computeGapRecursively<D>();
+
+	int lhsSize = lhs.computeRelativeSize<D>(size);
+	int rhsSize = rhs.computeRelativeSize<D>(size);
 
 	return lhsSize == rhsSize;
 }
@@ -2892,6 +2928,16 @@ Node::expand() const
 
 
 void
+Node::setupDimensions(Quants const& dimen)
+{
+	if (!canComputeDimensions<Horz,Actual>())
+		m_dimen.set<Horz,Actual>(dimen.dimen<Horz,Actual>());
+	if (!canComputeDimensions<Vert,Actual>())
+		m_dimen.set<Vert,Actual>(dimen.dimen<Vert,Actual>());
+}
+
+
+void
 Node::updateDimen(int x, int y, int width, int height)
 {
 	if (width > 1 && height > 1 && exists())
@@ -3074,9 +3120,17 @@ Node::canComputeDimensions() const
 
 	if (isLeaf())
 		return false;
+	
+#if !TWM_MIGRATE_LAYOUT
+	if (isRoot())
+		return false;
+#endif
 
 	if (isToplevel())
 	{
+#if TWM_MIGRATE_LAYOUT
+		if (!isRoot())
+#endif
 		if (value<D,Q,Rel>())
 			return true;
 	}
@@ -3114,12 +3168,34 @@ Node::canComputeDimensions() const
 }
 
 
+template <Orient D>
+int
+Node::computeGap() const
+{
+	int size = 0;
+
+	if (isPanedWindow() && hasOrientation<D>())
+	{
+		for (unsigned i = 1; i < numChilds(); ++i)
+			size += child(i)->sashSize();
+	}
+	else if (D == Vert && isNotebook())
+	{
+		size += notebookHeaderSize();
+	}
+
+	return size;
+}
+
+
 template <Orient D,Quantity Q>
 void
-Node::computeDimensionsRecursively(int size)
+Node::computeDimensionsRecursively(int size, int gapSize)
 {
 	M_ASSERT(!isWithdrawn());
 	//M_ASSERT(canComputeDimensions<D,Q>());
+
+	gapSize += computeGap<D>();
 
 	if (isContainer())
 	{
@@ -3133,7 +3209,7 @@ Node::computeDimensionsRecursively(int size)
 		}
 		else
 		{
-			int mySize = toplevel()->dimen<Inner,D,Q>();
+			int mySize = toplevel()->dimen<Inner,D,Q>() - gapSize;
 			mySize = m_dimen.computeRelativeSize<D,Q>(mySize);
 			mySize = contentSize<D>(mySize);
 			m_dimen.set<D,Q>(mySize);
@@ -3157,7 +3233,7 @@ Node::computeDimensionsRecursively(int size)
 			else
 				childSize = node->dimen<Inner,D,Actual>();
 
-			node->computeDimensionsRecursively<D,Q>(childSize);
+			node->computeDimensionsRecursively<D,Q>(childSize, gapSize);
 
 			if (needComputedSize)
 			{
@@ -3222,17 +3298,17 @@ Node::computeDimensionsRecursively()
 	M_ASSERT(isToplevel());
 
 	if (canComputeDimensions<Horz,Min>())
-		computeDimensionsRecursively<Horz,Min>(0);
+		computeDimensionsRecursively<Horz,Min>(0, 0);
 	if (canComputeDimensions<Vert,Min>())
-		computeDimensionsRecursively<Vert,Min>(0);
+		computeDimensionsRecursively<Vert,Min>(0, 0);
 	if (canComputeDimensions<Horz,Actual>())
-		computeDimensionsRecursively<Horz,Actual>(0);
+		computeDimensionsRecursively<Horz,Actual>(0, 0);
 	if (canComputeDimensions<Vert,Actual>())
-		computeDimensionsRecursively<Vert,Actual>(0);
+		computeDimensionsRecursively<Vert,Actual>(0, 0);
 	if (m_dimen.reliable<Horz,Actual>() || canComputeDimensions<Horz,Max>())
-		computeDimensionsRecursively<Horz,Max>(0);
+		computeDimensionsRecursively<Horz,Max>(0, 0);
 	if (m_dimen.reliable<Vert,Actual>() || canComputeDimensions<Vert,Max>())
-		computeDimensionsRecursively<Vert,Max>(0);
+		computeDimensionsRecursively<Vert,Max>(0, 0);
 }
 
 
@@ -4259,6 +4335,20 @@ Node::parseOptions(Tcl_Obj* opts)
 			M_THROW(tcl::Exception("invalid option '%s'", name));
 	}
 
+	if (isRoot())
+#if TWM_MIGRATE_LAYOUT
+	if (!tcl::equal(pathObj(), ".application.nb.board", 21))
+#endif
+	{
+#if TWM_MIGRATE_LAYOUT
+		if (0)
+#endif
+		if (!m_dimen.actual.abs.width)
+			m_dimen.actual.setup<Horz>(10000, Rel);
+		if (!m_dimen.actual.abs.height)
+			m_dimen.actual.setup<Vert>(10000, Rel);
+	}
+
 	if (m_dimen.min.abs.width && m_dimen.max.abs.width)
 		m_dimen.max.abs.width = mstl::max(m_dimen.min.abs.width, m_dimen.max.abs.width);
 	if (m_dimen.min.abs.height && m_dimen.max.abs.height)
@@ -5126,7 +5216,7 @@ Node::inspect(AttrSet const& exportList) const
 	tcl::DString str;
 
 	for (unsigned i = 0; i < m_toplevel.size(); ++i)
-		m_toplevel[i]->inspect(exportList, str);
+		m_toplevel[i]->inspect(exportList, str, 0, 0);
 
 	return str.toObj();
 }
@@ -5199,7 +5289,7 @@ Node::inspectAttrs(AttrSet const& exportList, tcl::DString& str) const
 
 template <Orient D,Quantity Q>
 void
-Node::inspectDimen(Tcl_Obj* attr, tcl::DString& str) const
+Node::inspectDimen(Tcl_Obj* attr, tcl::DString& str, int gapSize) const
 {
 #if TWM_MIGRATE_LAYOUT
 	if (	D == Vert
@@ -5212,7 +5302,8 @@ Node::inspectDimen(Tcl_Obj* attr, tcl::DString& str) const
 
 		dim.set<D,Q>(dimen<Outer,D,Q>());
 		int size = isToplevel() ? m_root->m_workArea.dimen<D>() : toplevel()->dimen<Inner,D,Q>();
-		const_cast<Node*>(this)->m_dimen.set<D,Q,Rel>(dim.computePercentage<D,Q>(size));
+		size -= gapSize;
+		const_cast<Node*>(this)->m_dimen.actual.setup<D>(dim.computePercentage<D,Q>(size), Rel);
 		M_ASSERT((m_dimen.mode<D,Q>() == Rel));
 		M_ASSERT((m_dimen.dimen<D,Q,Rel>()));
 	}
@@ -5228,10 +5319,15 @@ Node::inspectDimen(Tcl_Obj* attr, tcl::DString& str) const
 	else if (dimen<Inner,D,Q,Rel>())
 	{
 		char buf[200];
-		Quants dim(m_dimen);
+		int percentage = m_dimen.dimen<D,Q,Rel>();
 
-		dim.set<D,Q>(dimen<Outer,D,Q>());
-		int percentage = dim.computePercentage<D,Q>(toplevel()->dimen<Inner,D,Q>());
+		if (dimen<Inner,D,Q>())
+		{
+			Quants dim(m_dimen);
+			dim.set<D,Q>(dimen<Outer,D,Q>());
+			percentage = dim.computePercentage<D,Q>(toplevel()->dimen<Inner,D,Q>() - gapSize);
+		}
+
 		int fract = percentage % 100;
 		percentage = percentage/100;
 
@@ -5246,18 +5342,21 @@ Node::inspectDimen(Tcl_Obj* attr, tcl::DString& str) const
 
 
 void
-Node::inspect(AttrSet const& exportList, tcl::DString& str) const
+Node::inspect(AttrSet const& exportList, tcl::DString& str, int horzGap, int vertGap) const
 {
 	if (isMetaFrame())
-		return child()->inspect(exportList, str);
+		return child()->inspect(exportList, str, horzGap, vertGap + frameHeaderSize());
 	
 	if (isContainer())
 	{
 		switch (countStableChilds())
 		{
 			case 0: return;
-			case 1: return stableChild()->inspect(exportList, str);
+			case 1: return stableChild()->inspect(exportList, str, horzGap, vertGap);
 		}
+
+		horzGap += computeGap<Horz>();
+		vertGap += computeGap<Vert>();
 	}
 
 	str.append(::makeTypeID(m_type));
@@ -5277,6 +5376,11 @@ Node::inspect(AttrSet const& exportList, tcl::DString& str) const
 	switch (m_type)
 	{
 		case Root:
+			if (m_dimen.mode<Horz,Actual>() == Abs)
+				inspectDimen<Horz,Actual>(m_objOptWidth, str, 0);
+			if (m_dimen.mode<Vert,Actual>() == Abs)
+				inspectDimen<Vert,Actual>(m_objOptHeight, str, 0);
+
 			str.append(m_objOptX);
 			str.append(x());
 			str.append(m_objOptY);
@@ -5301,12 +5405,12 @@ Node::inspect(AttrSet const& exportList, tcl::DString& str) const
 
 		case Pane:
 		case Frame:
-			inspectDimen<Horz,Actual>(m_objOptWidth, str);
-			inspectDimen<Vert,Actual>(m_objOptHeight, str);
-			inspectDimen<Horz,Min>(m_objOptMinWidth, str);
-			inspectDimen<Vert,Min>(m_objOptMinHeight, str);
-			inspectDimen<Horz,Max>(m_objOptMaxWidth, str);
-			inspectDimen<Vert,Max>(m_objOptMaxHeight, str);
+			inspectDimen<Horz,Actual>(m_objOptWidth, str, horzGap);
+			inspectDimen<Vert,Actual>(m_objOptHeight, str, vertGap);
+			inspectDimen<Horz,Min>(m_objOptMinWidth, str, horzGap);
+			inspectDimen<Vert,Min>(m_objOptMinHeight, str, vertGap);
+			inspectDimen<Horz,Max>(m_objOptMaxWidth, str, horzGap);
+			inspectDimen<Vert,Max>(m_objOptMaxHeight, str, vertGap);
 			if (weight<Horz>())
 			{
 				str.append(m_objOptHWeight);
@@ -5349,6 +5453,9 @@ Node::inspect(AttrSet const& exportList, tcl::DString& str) const
 
 	str.endList();
 
+	if (isLeaf())
+		vertGap += frameHeaderSize();
+
 	if (!isLeaf())
 	{
 		str.startList();
@@ -5356,7 +5463,7 @@ Node::inspect(AttrSet const& exportList, tcl::DString& str) const
 		for (unsigned i = 0; i < numChilds(); ++i)
 		{
 			if (!isContainer() || !child(i)->m_isTransient)
-				child(i)->inspect(exportList, str);
+				child(i)->inspect(exportList, str, horzGap, vertGap);
 		}
 
 		str.endList();
@@ -7062,9 +7169,11 @@ cmdLoad(Base& base, int objc, Tcl_Obj* const objv[])
 	M_ASSERT(base.setup);
 
 	Node::LeafMap leaves;
+	Quants dimen;
 
 	if (base.root)
 	{
+		dimen = base.root->quants();
 		base.root->saveLeaves(leaves, preserved ? tcl::getElements(preserved) : tcl::Array());
 		delete base.root;
 		base.root = nullptr;
@@ -7080,6 +7189,7 @@ cmdLoad(Base& base, int objc, Tcl_Obj* const objv[])
 		base.root = base.setup->clone(leaves);
 	}
 
+	base.root->setupDimensions(dimen);
 	base.root->perform();
 }
 
@@ -7301,17 +7411,17 @@ cmdEqP(Base& base, int objc, Tcl_Obj* const objv[])
 
 	if (orient == Horz)
 	{
-		if (parseDimension<Horz>(objv[4], lhs) != Rel || parseDimension<Horz>(objv[5], lhs) != Rel)
+		if (parseDimension<Horz>(objv[4], lhs) != Rel || parseDimension<Horz>(objv[5], rhs) != Rel)
 			M_THROW(tcl::Exception(3, objv, Usage));
 
-		tcl::setResult(base.root->compare<Horz>(lhs.dimen<Horz>(), rhs.dimen<Horz>()));
+		tcl::setResult(base.root->compare<Horz>(lhs.dimen<Horz,Rel>(), rhs.dimen<Horz,Rel>()));
 	}
 	else
 	{
-		if (parseDimension<Vert>(objv[4], lhs) != Rel || parseDimension<Vert>(objv[5], lhs) != Rel)
+		if (parseDimension<Vert>(objv[4], lhs) != Rel || parseDimension<Vert>(objv[5], rhs) != Rel)
 			M_THROW(tcl::Exception(3, objv, Usage));
 
-		tcl::setResult(base.root->compare<Vert>(lhs.dimen<Vert>(), rhs.dimen<Vert>()));
+		tcl::setResult(base.root->compare<Vert>(lhs.dimen<Vert,Rel>(), rhs.dimen<Vert,Rel>()));
 	}
 }
 
