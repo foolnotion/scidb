@@ -201,13 +201,29 @@ proc makeFilename {id layoutVariant name} {
 }
 
 
-proc minHeight {} {
+proc minHeight {} { ;# but not including "board"
 	variable [namespace parent]::Vars
 
 	set max 0
 	foreach twm $Vars(twm) {
-		lassign [$twm dimension] - - - minheight - -
-		set max [expr {max($max, $minheight)}]
+		if {$twm ne $Vars(board:twm)} {
+			set minheight [lindex [$twm dimension] 3]
+			set max [expr {max($max, $minheight)}]
+		}
+	}
+	return $max
+}
+
+
+proc minWidth {} { ;# but not including "board"
+	variable [namespace parent]::Vars
+
+	set max 0
+	foreach twm $Vars(twm) {
+		if {$twm ne $Vars(board:twm)} {
+			set minwidth [lindex [$twm dimension] 2]
+			set max [expr {max($max, $minwidth)}]
+		}
 	}
 	return $max
 }

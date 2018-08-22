@@ -979,7 +979,7 @@ proc TabChanged {} {
 proc ToolbarShow {pane} {
 	variable Vars
 
-return
+return ;# TODO
 	update idletasks
 	set minheight [::toolbar::totalHeight $pane]
 	if {$minheight == 1} {
@@ -1222,7 +1222,7 @@ proc AlignList {main contents switcher} {
 
 	set zeroHeight [expr {[games::computeHeight $Vars(games) 0]}]
 	set tabbarSize [::theme::notebookTabPaneSize $contents]
-	set minsize [expr {$zeroHeight + $tabbarSize + 1}] ;# XXX any border?
+	set minsize [expr {$zeroHeight + $tabbarSize + 1}] ;# XXX any border, probably in tabbar?
 	set linespace [games::linespace $Vars(games)]
 	set height [winfo height $contents]
 
@@ -1240,6 +1240,7 @@ proc AlignList {main contents switcher} {
 
 proc ConfList {main contents switcher height} {
 	variable Vars
+	variable Tabs
 
 	set sashwidth [$main cget -sashwidth]
 	set linespace [games::linespace $Vars(games)]
@@ -1248,8 +1249,8 @@ proc ConfList {main contents switcher height} {
 	set topHeight [expr {$overhang + 4*$linespace + $sashwidth}]
 	set tabbarSize [::theme::notebookTabPaneSize $contents]
 	set toolbarSize [games::computeHeight $Vars(games)]
-	set minsize [expr {$tabbarSize + $topHeight + $toolbarSize}]
-	set minsize [expr {min($minsize, [[namespace parent]::twm::minHeight])}]
+	set minsize [[namespace parent]::twm::minHeight]
+	set minsize [expr {max($topHeight + $toolbarSize, $minsize) + $tabbarSize}]
 	$main paneconfigure $contents -minsize $minsize -gridsize $linespace
 }
 
@@ -1268,7 +1269,7 @@ proc InitList {main contents switcher height} {
 	set linespace [games::linespace $Vars(games)]
 	set n [expr {($height - $switcherHeight - $tabbarSize - $zeroHeight - $sashwidth + 1)/$linespace}]
 	set paneHeight [expr {[games::computeHeight $Vars(games) $n] + $tabbarSize}]
-	incr paneHeight 1 ;# XXX any border?
+	incr paneHeight 1 ;# XXX any border, probably in tabbar?
 	lassign [$main sash coord 0] x y
 	decr height $paneHeight
 	$main sash place 0 $x [expr {$height - $sashwidth}]
@@ -2257,54 +2258,6 @@ proc FindRecentFile {file} {
 	variable RecentFiles
 	return [lsearch -index 1 $RecentFiles $file]
 }
-
-
-# proc MakePhoto {path} {
-# 	set parent [join [lrange [split $path .] 0 end-1] .]
-# 	if {[winfo width $parent] <= 1} { return }
-# 	pack [::tk::canvas $path -borderwidth 0]
-# 	set src [image create photo -file "SunergosGreyWallpaper-0.0.1-full.jpg"]
-# 	set dst [image create photo -width  [winfo width $parent] -height [winfo height $parent]]
-# 	::scidb::tk::image copy $src $dst
-# 	$path create image 0 0 -anchor nw -image $dst
-# 	$path configure -width [image width $dst] -height [image height $dst]
-# 	bind [winfo parent $path] <Configure> {#}
-# }
-# 
-# 
-# proc MakePhoto {path} {
-# 	pack [::tk::canvas $path -borderwidth 0]
-# 	set img [::splash::picture]
-# 	$path create image 0 0 -anchor nw -image $img
-# 	$path configure -width [image width $img] -height [image height $img]
-# 	bind [winfo parent $path] <Configure> {#}
-# }
-# 
-# 
-# proc MakeBackground {path} {
-# 	variable Vars
-# 
-# 	if {[winfo exists $path]} {
-# 		set img $Vars(tile)
-# 	} else {
-# 		pack [::tk::canvas $path] -fill both -expand yes
-# 		set img [image create photo -file "chessboard-tile.png"]
-# 		set Vars(tile) $img
-# 	}
-# 
-# 	set ih [image height $img]
-# 	set iw [image width  $img]
-# 	set ch [winfo height [winfo parent $path]]
-# 	set cw [winfo width  [winfo parent $path]]
-# 
-# 	for {set x 0} {$x < $cw} {incr x $iw} {
-# 		for {set y 0} {$y < $ch} {incr y $ih} {
-# 			if {[llength [$path find withtag tile:$x:$y]] == 0} {
-# 				$path create image $x $y -anchor nw -image $img -tags [list tile tile:$x:$y]
-# 			}
-# 		}
-# 	}
-# }
 
 
 proc WriteOptions {chan} {

@@ -21,18 +21,24 @@
 #	- cursor handling overworked (the original implementation is clumsy)
 #	- additional pane option "-maxsize"
 #	- Button-2 is unbound
-#	- option -gridsize added
+#	- option -gridsize added, global (will be applied to all childs),
+#	  and for specific childs (paneconfigure)
 #
 # Issues:
 #	- option "-opaqueresize" will be ignored (always on)
 #	- "-cursor" option should not be changed with "configure"
 #	- the cursor of the panes should not be set to "" after
-#	  they are added to the paned window
+#	  they the pane is added to panedwindow
 #
 # Why not using ttk::panedwindow?
 #	- the design is quite halfhearted, for example no -minsize option,
 #    so this widget is somewhat useless
 #  - the cursor handling is clumsy
+#	- no support of -gridsize
+#	- the tk version looks better than the ttk version
+#
+# IMPORTANT NOTE:
+# This version of panedwindow is part of TWM (tiled window managemant).
 # ======================================================================
 
 package provide panedwindow 1.0
@@ -44,11 +50,9 @@ proc panedwindow {args} {
 	if {[llength $args] == 0} {
 		return error -code "wrong # args: should be \"panedwindow pathName ?options?\""
 	}
-
 	if {[winfo exists [lindex $args 0]]} {
 		return error -code "window name \"[lindex $args 0]\" already exists"
 	}
-
 	return [panedwindow::Build {*}$args]
 }
 
@@ -67,28 +71,30 @@ proc Build {w args} {
 
 	array set opts {
 		-borderwidth	0
+		-gridsize		0
 		-cursor			{}
 		-state			"normal"
 	}
 
+	namespace eval [namespace current]::$w {}
+	variable [namespace current]::${w}::
+	set (cursor) left_ptr
+
 	array set opts $args
 	array unset opts -opaqueresize
-	set state $opts(-state)
+	set (state) $opts(-state)
 	array unset opts -state
+	set (gridsize) $opts(-gridsize)
+	array unset opts -gridsize
 
 	tk::panedwindow_old $w {*}[array get opts] -opaqueresize 1
-	if {$state ne "disabled"} {
+	if {$(state) ne "disabled"} {
 		set cursor sb_[string index [$w cget -orient] 0]_double_arrow
 		if {[$w cget -cursor] ne $cursor} {
 			$w configure -cursor $cursor
 		}
 	}
 	
-	namespace eval [namespace current]::$w {}
-	variable [namespace current]::${w}::
-	set (cursor) left_ptr
-	set (state) $state
-
 	rename ::$w $w.__panedwindow__
 	proc ::$w {command args} "[namespace current]::WidgetProc $w \$command {*}\$args"
 
@@ -110,9 +116,7 @@ proc WidgetProc {w command args} {
 
 		if {[info exists opts(-maxsize)]} {
 			if {[string is integer -strict $opts(-maxsize)]} {
-				set maxsize $opts(-maxsize)
-				if {$maxsize <= 0} { set maxsize 32000 }
-				set (maxsize:$child) $maxsize
+				set (maxsize:$child) [expr {$maxsize > 0 ? $maxsize : 32000}]
 			} else {
 				error "bad screen distance \"$opts(-maxsize)\""
 			}
@@ -120,9 +124,7 @@ proc WidgetProc {w command args} {
 		}
 		if {[info exists opts(-gridsize)]} {
 			if {[string is integer -strict $opts(-gridsize)]} {
-				set gridsize $opts(-gridsize)
-				if {$gridsize <= 0} { set gridsize 0 }
-				set (gridsize:$child) $gridsize
+				set (gridsize:$child) [expr {max(0, $opts(-gridsize))}]
 			} else {
 				error "bad screen distance \"$opts(-gridsize)\""
 			}
@@ -171,6 +173,28 @@ proc WidgetProc {w command args} {
 					-opaqueresize {
 						unset opts($key)
 					}
+
+					-gridsize {
+						if {[string is integer -strict $val]} {
+							variable ${w}::
+							set (gridsize) [expr {max(0, $val)}]
+						} else {
+							error "bad screen distance \"$opts(-gridsize)\""
+						}
+						unset opts($key)
+					}
+
+					-state {
+						if {$state eq "disabled"} {
+							variable ${w}::
+							set cursor $(cursor)
+						} else {
+							set cursor sb_[string index [$w cget -orient] 0]_double_arrow
+						}
+						if {[$w cget -cursor] ne $cursor} {
+							$w configure -cursor $cursor
+						}
+					}
 				}
 			}
 			set args [array get opts]
@@ -182,6 +206,24 @@ proc WidgetProc {w command args} {
 					variable ${w}::
 					return $(cursor)
 				}
+				-gridsize {
+					variable ${w}::
+					return $(gridsize)
+				}
+			}
+		}
+
+		panecget {
+			if {[llength $args] != 2} {
+				error "wrong # args: should be \"[namespace current] $command <window> <option>\""
+			}
+			lassign $args pane option
+			if {$option eq "-gridsize"} {
+				variable ${w}::
+				if {$pane ni [$w panes]} {
+					error "\"$pane\" is not child of panedwindow"
+				}
+				return $(gridsize:$pane)
 			}
 		}
 	}
@@ -370,7 +412,7 @@ proc SetCursor {childs cursor} {
 	foreach child $childs {
 		catch {
 			set cur [$child cget -cursor]
-			if {$cur eq "sb_h_double_arrow" || $cur eq "sb_v_double_arrow"} { set cur "" }
+			if {[string match {*_double_arrow} $cur]} { set cur "" }
 			if {[$child cget -cursor] ne $cursor]} {
 				$child configure -cursor $cursor
 			}

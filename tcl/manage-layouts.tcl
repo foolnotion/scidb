@@ -103,9 +103,9 @@ proc open {twm id layoutVariant currentLayout link} {
 	foreach v $layoutVariants {
 		if {$v eq $layoutVariant || [llength [[namespace parent]::twm::glob $id $v]] > 0} {
 			set variant [[namespace parent]::twm::toVariant $v]
-			$(list:variants) listinsert \
-				[list $::icon::16x16::variant($variant) $::mc::VariantName($variant)]
-			lappend (variants:values) [list $v $::mc::VariantName($variant)]
+			set name $::mc::VariantName($variant)
+			$(list:variants) listinsert [list $::icon::16x16::variant($variant) $name]
+			lappend (variants:values) [list $v $name]
 		}
 	}
 	$(list:variants) resize -force
@@ -284,11 +284,9 @@ proc NumberFromUid {uid}	{ return [lindex [split $uid :] 1] }
 
 proc TitleFromUid {uid} {
 	set name [NameFromUid $uid]
-	if {$name eq "analysis"} {
-		set title [set [namespace parent]::twm::mc::Pane($name)]
-		if {[set number [NumberFromUid $uid]] > 1} { append title " ($number)" }
-	} else {
-		set title [set [namespace parent]::twm::mc::Pane($name)]
+	set title [set [namespace parent]::twm::mc::Pane($name)]
+	if {$name eq "analysis" && [set number [NumberFromUid $uid]] > 1} {
+		append title " ($number)"
 	}
 	return $title
 }
@@ -330,7 +328,7 @@ proc BuildPane {myTWM frame uid width height} {
 			$w xview moveto 0
 			$w yview moveto 0
 			set size [expr {max(1, (min($width,$height) - 20)/8)}]
-			board::diagram::new $w.diagram $size -empty 1 -bordersize 2 -bordertype lines -bordercolor white
+			board::diagram::new $w.diagram $size -empty 1 -bordersize 2 -bordertype lines
 			set x [expr {($width - ($size*8 + 2))/2}]
 			set y [expr {($height - ($size*8 + 2))/2}]
 			$w create window $x $y -anchor nw -window $w.diagram -tags board
@@ -355,6 +353,7 @@ proc HeaderChanged {myTWM frame} {
 
 
 proc ResizeBoard {w width height} {
+	# TODO: support DropChess
 	set size [expr {max(1, (min($width,$height) - 20)/8)}]
 	board::diagram::resize $w.diagram $size
 	set x [expr {($width - ($size*8 + 2))/2}]
@@ -364,6 +363,7 @@ proc ResizeBoard {w width height} {
 
 
 proc Resizing {myTWM toplevel width height} {
+	variable Options
 	variable {}
 
 	if {$(id) eq "board"} {
@@ -381,7 +381,7 @@ proc Resizing {myTWM toplevel width height} {
 	} else {
 		set f [expr {double($(width))/double($width)}]
 		set w [expr {int($f*double($width) + 0.5)}]
-		set h $height
+		set h $(height)
 	}
 
 	return [list $w $h]
@@ -444,7 +444,7 @@ proc Delete {parent} {
 		set i [lsearch $(var:names) $name]
 		if {$i >= 0} {
 			set (var:names) [lreplace $(var:names) $i $i]
-			set i [expr {$i > 0 ? $i - 1 : 0}]
+			set i [expr {max(0, $i - 1)}]
 			$(list:names) selection clear 0 end
 			$(list:names) selection set $i
 			$(list:names) see $i

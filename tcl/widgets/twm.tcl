@@ -164,7 +164,7 @@ proc twm {path args} {
 	set Vars(header:font) [font create ${path}::Vars(header:font) \
 		-family [font configure $Options(header:font) -family] \
 		-weight bold \
-		-size $Options(header:fontsize)
+		-size $Options(header:fontsize) \
 	]
 
 	ttk::frame $path -class TwmToplevel -borderwidth $opts(-borderwidth) -takefocus 0
