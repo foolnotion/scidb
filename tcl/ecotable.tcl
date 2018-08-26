@@ -171,7 +171,7 @@ proc build {parent args} {
 		;
 	lappend columns opening $col4
 	::scrolledtable::build $tb $columns {*}[array get opts]
-	::font::registerTextFonts movelist
+	::font::registerTextFonts movelist {normal bold}
 	::font::registerFigurineFonts movelist
 	set specialfont [list [list $::font::figurine(movelist:normal) 9812 9823]]
 	::scrolledtable::configure $tb line -specialfont $specialfont
