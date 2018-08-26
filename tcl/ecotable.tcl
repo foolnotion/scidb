@@ -171,6 +171,7 @@ proc build {parent args} {
 		;
 	lappend columns opening $col4
 	::scrolledtable::build $tb $columns {*}[array get opts]
+	::font::registerTextFonts movelist
 	::font::registerFigurineFonts movelist
 	set specialfont [list [list $::font::figurine(movelist:normal) 9812 9823]]
 	::scrolledtable::configure $tb line -specialfont $specialfont
@@ -323,6 +324,7 @@ proc SelectFigurines {path} {
 proc FillTable {path args} {
 	set w [winfo parent $path]
 	variable ${w}::
+	variable Options
 
 	if {$(data) eq $(oldData)} { return }
 	HideBoard $w
@@ -335,6 +337,7 @@ proc FillTable {path args} {
 		set rowData [lindex $(data) $row]
 		if {$row >= $lastRow || $rowData ne [lindex $(oldData) $row]} {
 			lassign $rowData line eco key names
+			set line [::figurines::mapToLocal $line $Options(move:figurines)]
 			set index [expr {$row - $start}]
 			table::insert $table $index [list $line $eco $key [MakeOpening $names]]
 		}

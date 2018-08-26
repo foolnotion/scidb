@@ -566,6 +566,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 
 	set Vars(table) [::scrolledtable::build $path $columns {*}$args]
 	pack $path -fill both -expand yes
+	::font::registerTextFonts movelist
 	::font::registerFigurineFonts movelist
 	set specialfont [list [list $::font::figurine(movelist:normal) 9812 9823]]
 	::scrolledtable::configure $path material -specialfont $specialfont
