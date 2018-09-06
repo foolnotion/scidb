@@ -293,6 +293,11 @@ proc variant {path} {
 }
 
 
+proc table {path} {
+	return $path.top.table
+}
+
+
 proc tablePath {path} {
 	return [::table::tablePath $path.top.table]
 }

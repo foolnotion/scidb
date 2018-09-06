@@ -245,7 +245,7 @@ log::finishLayout
 
 # START OF MIGRATION ################################################################
 # preliminary for migration
-proc gametable::setOptions {id opts} { return [::scrolledtable::setOptions $id $opts] }
+proc gamestable::setOptions {id opts} { return [::scrolledtable::setOptions $id $opts] }
 proc eventtable::setOptions {id opts} { return [::scrolledtable::setOptions $id $opts] }
 proc playertable::setOptions {id opts} { return [::scrolledtable::setOptions $id $opts] }
 proc sitetable::setOptions {id opts} { return [::scrolledtable::setOptions $id $opts] }

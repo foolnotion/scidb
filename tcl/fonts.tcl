@@ -1670,14 +1670,15 @@ proc deleteFonts {context} {
 }
 
 
-proc translate {move} {
+proc translate {moves} {
 	variable UseFigurines
 	variable Options
 
-	if {$UseFigurines && $Options(figurine:use)} { return $move }
+	if {$UseFigurines && $Options(figurine:use)} { return $moves }
 
+	# TODO: use proc mapToLocal in widget/figurines.tcl
 	variable GraphicMap
-	return [string map $GraphicMap $move]
+	return [string map $GraphicMap $moves]
 }
 
 
@@ -1706,6 +1707,7 @@ proc splitMoves {text {tag figurine}} {
 			}
 		}
 	} else {
+		# TODO: use proc mapToLocal in widget/figurines.tcl
 		variable GraphicMap
 		set result [list [string map $GraphicMap $text] {}]
 	}

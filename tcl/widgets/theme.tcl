@@ -234,9 +234,11 @@ proc configureCheckEntry {menu {index end}} {
 	if {$useCustomStyleMenuEntries} {
 		set img [$menu entrycget $entry -image]
 		if {[string length $img] == 0} {
+			# TODO: using 14x14 is only a work-around, because the menu is adding
+			# an extra pixel, otherwise 16x16 should be preferred.
 			$menu entryconfigure $entry \
-				-image $icon::16x16::checkNo \
-				-selectimage $icon::16x16::checkYes \
+				-image $icon::14x14::checkNo \
+				-selectimage $icon::14x14::checkYes \
 				-compound left \
 				-indicatoron no \
 				;
@@ -272,10 +274,12 @@ proc configureRadioEntry {menu {index end}} {
 		}
 		set img [$menu entrycget $entry -image]
 		if {[string length $img] == 0} {
+			# TODO: using 14x14 is only a work-around, because the menu is adding
+			# an extra pixel, otherwise 16x16 should be preferred.
 			$menu entryconfigure $entry \
 				-indicatoron off \
-				-image $icon::16x16::radioOff \
-				-selectimage $icon::16x16::radioOn \
+				-image $icon::14x14::radioOff \
+				-selectimage $icon::14x14::radioOn \
 				-compound left \
 				;
 		} else {
@@ -801,6 +805,52 @@ destroy .__scrollbar__
 
 
 namespace eval icon {
+namespace eval 14x14 {
+
+set checkYes [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAQAAAC1QeVaAAABQUlEQVQY003JPSwDcRjA4d/7v6se
+	7tB2YFCDUINEGMVXJDbpYiEMxGIxCAsDK1NXi8FgEJvNYJCIsJEwiKlIk2r0gzhUXV+LhDzjI42x
+	87lY2g0CgDqDNhrenh4tcZMHcrbQ3e/PVhEULShBRgk53mkuX7qxE/5r0iCAIFGwokLhszTdfn9y
+	bdxAo8ofIUfK2XM+uypx8yX/S3lnm2NcnEurwWApBvNbsMsR48xQ01fK28YNuMLQg2BxyB69LBOi
+	Chh5e2afFU5RLkgRZx2PLxSwv4Pm4mQkzSYvbNPEGu0UUQCMvlciw6zisUWZRQbJAwqEHbsYEgqM
+	8MoOo0yQxaAI5WytZ590JO9KiRxjtNFJFiHAIvKR/rbUvvVaMn0JB2GAD+oBqHCbffBbfQl3z08V
+	Gsq2qCIAVGkKx/wha2njB7TmgujKPNHYAAAAAElFTkSuQmCC
+}]
+
+set checkNo [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAQAAAC1QeVaAAAA20lEQVQY02MskTC3lJLk+v/zMysn
+	AxT8Yvr4S/qb2EEW5wgl9x8WjAJcDAjAziCw4z/z829MHO9/eTAJMDIgw/8Mvz0YP10VYuL9/RfI
+	QYf/GISCP8uy/GMEcdDBf4a/75i4WRgYsEuCxICS/4C2oIN/YJIFJPUPi04Ghu9fmFg5/3z4j8VJ
+	jEIfPrIwMYCchKkTZBXLJ1Y2LA5iZPgFFGW6psB3l4HhLwr8zyDA8PQDHyvLnR+i33UYOJF0g3Q9
+	Y3hwQ/UTI69qcf495j9sTEje+PNF7q/WnVnzATQiZnzWNkXcAAAAAElFTkSuQmCC
+}]
+
+set radioOn [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAACkUlEQVQoz03Sy29UVQCA8e+ce+fe
+	ufNghspKCEimMSSNmILRgK+VxJUr3FgT2LhpgpGda4OWxBSYNHHXDbKeyNKtiZagkxjb0oRJKuhi
+	nvb2znTuua9zjgtc+PsXvg9ekEB1fX39tb+ePbsXx/EfWhc2SRI1mUx2er1eu9PpvAo4/I8DNHu9
+	3g2l4ng2PbST8ciORn07Ho/sNDq0SaLsYRiqvb29zwEXQADN7e3t661W6+58NsUaA0IghMBaC9aC
+	EFRrddIso9/vf7G0tLQhb968ca7Van1zNI3QRiOkJKiUsdZSqQQIKTHWMD+a4Xse9XrtdqfTWXQ2
+	Nze/rFUrl/MsQ0qHeTxno73Bg+8f8Gu3y/L58/iBjzEGgQBwK9WqcF85c/b92SwCwPc82u02D394
+	SJambO/skKcpa7fXiOOYJEs4VjvGaDj8QHq+t6i1BmOZJ4qnT3tkaYqUEqM1u7tPiJXCGIvRGtdz
+	yXVxVqYqASvQ1lAplzl95jSlUulFIylpLbYIggBrDRJIkwytNc4nKyufNur1E0VRUBQ577z7HsPR
+	kFgpli8s89Wtr8kShTWWkudxEIZE02jf3dr65fePr149l2UKXRjcEqzfuYsxBiklk+GQpNAIIXHd
+	Ev3BgESpn5woOnAuXbr80cLCCVfrnCzPOJpGJEoRhf+Q5RkCQTkIGI7HhOFB+lu3+5nz/PnfWfN4
+	wzt58tSbCwsv4TgSXWh0kQMCz/PwywH9/oD9/X0Oo+jW6upqxwHU48c//1mv1bHwukU49UaToFLF
+	CsFgMGBn9wmj4SALo3Dt2rXr3wKp+G+7su/z8ltvvH3xyodXVpqNxgXfD05JKXKL6Od5vrX16NF3
+	93+832VIDNh/ATYUWOuu70eXAAAAAElFTkSuQmCC
+}]
+
+set radioOff [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAQAAAC1QeVaAAABG0lEQVQY02XKvUrDUAAG0O/2JoXS
+	DNVB3EUKooPUJ6g4F0Sok4gBn6CDi4M+SHWVKqgVAlUHoaP4BIppmyb3pv7USkzBwOciQixnPQCQ
+	Qb5d9S9ilSRjpc/bVViQAABIFPx6zBFfGHLAD8YM6piCAQAF9/iLIRU1NTUVNSP2jjCNDE63Y2qq
+	FM2Il1uw8Ngc0meQ4vONT03MIlIB+/RT+gz4qUQR34lHj/0Ujx7HibmMkfLYm+BxqMwV3Dua3Qma
+	D45ZQm3vnV12/nnlfk0swCi3GgN2+Ez3j+bdibGKGWBeVq7ONIPf4DNkqyErWIQJ5LJLct0+dG7d
+	MEy6+vrGPpAbZgkWBCCQy86JsqwaO5ldwxabYg3FQh4C+AGj2AxdwPoCiQAAAABJRU5ErkJggg==
+}]
+
+} ;# namespace 14x14
 namespace eval 15x15 {
 
 set None [image create photo -width 15 -height 15]

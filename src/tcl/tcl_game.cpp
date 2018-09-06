@@ -1493,7 +1493,7 @@ cmdEcoTable(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	move::Notation	notation	= move::SAN;
 	EcoTable::Mode mode = EcoTable::SinglePly;
 
-	for ( ; objc > 4; objc -= 2)
+	for ( ; objc > 2; objc -= 2)
 	{
 		char const* option	= asString(objv[objc - 2]);
 		Tcl_Obj*		value		= objv[objc - 1];

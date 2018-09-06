@@ -92,7 +92,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 			foreach {labelvar value} {Flags flags PGN_CountryCode PGN ISO_CountryCode ISO} {
 				lappend menu [list radiobutton \
 					-command [namespace code [list Refresh $path]] \
-					-labelvar ::gametable::mc::$labelvar \
+					-labelvar ::gamestable::mc::$labelvar \
 					-variable [namespace current]::${path}::Options(country-code) \
 					-value $value \
 				]
@@ -102,27 +102,27 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 
 		lappend menu [list command \
 			-command [namespace code [list SortColumn $path $id ascending]] \
-			-labelvar ::gametable::mc::SortAscending \
+			-labelvar ::gamestable::mc::SortAscending \
 		]
 		lappend menu [list command \
 			-command [namespace code [list SortColumn $path $id descending]] \
-			-labelvar ::gametable::mc::SortDescending \
+			-labelvar ::gamestable::mc::SortDescending \
 		]
 		lappend menu [list command \
 			-command [namespace code [list SortColumn $path $id reverse]] \
-			-labelvar ::gametable::mc::ReverseOrder \
+			-labelvar ::gamestable::mc::ReverseOrder \
 		]
 		lappend menu [list command \
 			-command [namespace code [list SortColumn $path $id cancel]] \
-			-labelvar ::gametable::mc::CancelSort \
+			-labelvar ::gamestable::mc::CancelSort \
 		]
 		lappend menu { separator }
 
 		set ivar [namespace current]::icon::12x12::I_[string toupper $id 0 0]
 		switch $id {
 			site {
-				set fvar ::gametable::mc::F_Site
-				set tvar ::gametable::mc::T_Site
+				set fvar ::gamestable::mc::F_Site
+				set tvar ::gamestable::mc::T_Site
 			}
 			frequency {
 				set fvar ::playertable::mc::F_Frequency
@@ -255,6 +255,11 @@ proc overhang {path} {
 
 proc linespace {path} {
 	return [::scrolledtable::linespace $path]
+}
+
+
+proc computeHeight {path} {
+	return [expr {[::toolbar::totalHeight $path] + [::scrolledtable::computeHeight $path 0]}]
 }
 
 

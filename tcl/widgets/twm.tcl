@@ -69,6 +69,7 @@ array set Defaults {
 	flathandle:color:gray		#74aedf
 	panedwindow:relief			flat
 	panedwindow:background		""
+	panedwindow:timeout			50
 	sash:size						5
 	cross:color:1					black
 	cross:color:2					#24a249
@@ -131,10 +132,12 @@ proc twm {path args} {
 		-buildpane {} \
 		-workarea {} \
 		-resizing {} \
+		-adjustcmd {} \
 		-borderwidth 0 \
 		-allowempty 0 \
 		-disableclose 0 \
-		-state "normal" \
+		-state normal \
+		-panedwindowaligntimeout 50 \
 		-frameborderwidth $Options(frame:borderwidth) \
 		-headerborderwidth $Options(header:borderwidth) \
 		-floatborderwidth $Options(float:borderwidth) \
@@ -145,6 +148,7 @@ proc twm {path args} {
 	set Vars(cmd:makepane) $opts(-makepane)
 	set Vars(cmd:buildpane) $opts(-buildpane)
 	set Vars(cmd:workarea) $opts(-workarea)
+	set Vars(cmd:adjustcmd) $opts(-adjustcmd)
 	set Vars(cmd:resizing) $opts(-resizing)
 	set Vars(allow:empty) $opts(-allowempty)
 	set Vars(disable:close) $opts(-disableclose)
@@ -159,6 +163,7 @@ proc twm {path args} {
 	set Vars(float:borderwidth) $opts(-floatborderwidth)
 	set Vars(panedwindow:relief) $opts(-panedwindowrelief)
 	set Vars(panedwindow:background) $opts(-panedwindowbackground)
+	set Vars(panedwindow:timeout) $opts(-panedwindowaligntimeout)
 
 	catch { font delete ${path}::Vars(header:font) }
 	set Vars(header:font) [font create ${path}::Vars(header:font) \
@@ -322,23 +327,35 @@ proc ArrayEqual {twm lhs rhs level} {
 }
 
 
-proc Collect {twm what} {
+proc Collect {twm what args} {
 	switch -- $what {
 		amalgamate {
-			return [lmap v [$twm find amalgamate 1] \
-				{expr {[llength [$twm amalgamated $v]] ? $v : [continue]}}]
+			return [lmap w [$twm find amalgamate 1] \
+				{expr {[llength [$twm amalgamated $w]] ? $w : [continue]}}]
 		}
 		!amalgamate {
-			return [lmap v [$twm find amalgamate 0] {expr {[$twm amalgamatable $v] ? $v : [continue]}}]
+			return [lmap w [$twm find amalgamate 0] {expr {[$twm amalgamatable $w] ? $w : [continue]}}]
 		}
 		flat {
-			return [lmap v [$twm find flat 1] {expr {[$twm ismetachild $v] ? [continue] : $v}}]
+			return [lmap w [$twm find flat 1] {expr {[$twm ismetachild $w] ? [continue] : $w}}]
 		}
 		!flat {
-			return [lmap v [$twm find flat 0] {expr {[$twm ismetachild $v] ? [continue] : $v}}]
+			return [lmap w [$twm find flat 0] {expr {[$twm ismetachild $w] ? [continue] : $w}}]
 		}
 		floats {
-			return [lmap v [$twm floats] {expr {[$twm get! $w hide 0] ? $v : [continue]}}]
+			return [lmap w [$twm floats] {expr {[$twm get! $w hide 0] ? $w : [continue]}}]
+		}
+		visible {
+			set w ""
+			if {[llength $args]} {
+				set w [lindex $args 0]
+				if {[string length [set v [$twm amalgamated $w]]]} { set w $v }
+			}
+			set result {}
+			foreach entry [$twm visible {*}$w] {
+				lappend result [lindex $entry 0]
+			}
+			return $result
 		}
 	}
 }
@@ -385,12 +402,14 @@ proc WidgetProc {twm command args} {
 
 	switch -- $command {
 		adjacent			{ return [::scidb::tk::twm adjacent $twm {*}$args] }
+		adjust			{ return [Adjust $twm {*}$args] }
 		amalgamatable	{ return [::scidb::tk::twm amalgamatable $twm {*}$args] }
 		amalgamate		{ return [Amalgamate $twm 1 {*}$args] }
 		amalgamated		{ return [::scidb::tk::twm amalgamated $twm {*}$args] }
 		build				{ return [BuildPane $twm {*}$args] }
 		cget				{ return [$twm.__twm_frame__ cget {*}$args] }
 		changeuid		{ return [::scidb::tk::twm changeuid $twm {*}$args] }
+		childconfigure	{ return [ChildConfigure $twm {*}$args] }
 		clone				{ return [::scidb::tk::twm clone $twm {*}$args] }
 		close				{ return [Close $twm {*}$args] }
 		collect			{ return [Collect $twm {*}$args] }
@@ -421,7 +440,7 @@ proc WidgetProc {twm command args} {
 		hidden			{ return [::scidb::tk::twm hidden $twm {*}$args] }
 		hide				{ Hide $twm {*}$args }
 		id					{ return [::scidb::tk::twm id $twm {*}$args] }
-		init				{ ::scidb::tk::twm init $twm {*}$args }
+		init				{ ::scidb::tk::twm init $twm -aligntimeout $Vars(panedwindow:timeout) {*}$args }
 		inspect			{ return [::scidb::tk::twm inspect $twm flat hide stayontop amalgamate {*}$args] }
 		iscontainer		{ return [::scidb::tk::twm iscontainer $twm {*}$args] }
 		isdocked			{ return [::scidb::tk::twm isdocked $twm {*}$args] }
@@ -619,9 +638,10 @@ proc MakePanedWindow {twm args} {
 		set background [GetBackground background]
 	}
 	$w configure \
-		-sashwidth $Options(sash:size) \
 		-background $background \
+		-sashwidth $Options(sash:size) \
 		-sashrelief $Vars(panedwindow:relief) \
+		-state [expr {$Vars(state) eq "normal" ? "normal" : "disabled"}] \
 		;
 	if {[llength $args] == 1} { set args [lindex $args 0] }
 	foreach {name value} $args {
@@ -880,16 +900,20 @@ proc MouseWheelBindings {twm frame w} {
 }
 
 
-proc Resize {twm pane width height minWidth minHeight maxWidth maxHeight} {
+proc Resize {twm pane width height args} {
 	set bd [expr {2*[$pane cget -borderwidth]}]
 	if {$width > 0} { set width [expr {$width + $bd}] }
 	if {$height > 0} { set height [expr {$height + $bd}] }
-	if {$minWidth > 0} { set minWidth [expr {$minWidth + $bd}] }
-	if {$minHeight > 0} { set minHeight [expr {$minHeight + $bd}] }
-	if {$maxWidth > 0} { set maxWidth [expr {$maxWidth + $bd}] }
-	if {$maxHeight > 0} { set maxHeight [expr {$maxHeight + $bd}] }
-
-	::scidb::tk::twm resize $twm $pane $width $height $minWidth $minHeight $maxWidth $maxHeight
+	if {[llength $args] == 4} {
+		lassign $args minWidth minHeight maxWidth maxHeight
+		if {$minWidth > 0} { set minWidth [expr {$minWidth + $bd}] }
+		if {$minHeight > 0} { set minHeight [expr {$minHeight + $bd}] }
+		if {$maxWidth > 0} { set maxWidth [expr {$maxWidth + $bd}] }
+		if {$maxHeight > 0} { set maxHeight [expr {$maxHeight + $bd}] }
+		::scidb::tk::twm resize $twm $pane $width $height $minWidth $minHeight $maxWidth $maxHeight
+	} else {
+		::scidb::tk::twm resize $twm $pane $width $height
+	}
 }
 
 
@@ -926,6 +950,14 @@ proc Amalgamate {twm flag args} {
 		$twm set! $t amalgamate $flag
 	}
 	$twm refresh
+}
+
+
+proc Adjust {twm frame id dimensions} {
+	variable ${twm}::Vars
+
+	if {[llength $Vars(cmd:adjustcmd)] == 0} { return {} }
+	return [{*}$Vars(cmd:adjustcmd) $twm $frame $id $dimensions]
 }
 
 
@@ -1884,6 +1916,7 @@ proc HideDockingPoints {twm {includesArrows yes}} {
 		foreach entry $Vars(docking:arrows) {
 			set w [lindex $entry 0]
 			# NOTE: do not destroy immediately, because of a Tk bug
+			# NOTE: destroy separately for safety reasons
 			after idle [list catch [list destroy $w.__left__]]
 			after idle [list catch [list destroy $w.__right__]]
 		}
@@ -1894,6 +1927,7 @@ proc HideDockingPoints {twm {includesArrows yes}} {
 proc HideDockingPoint {twm w} {
 	foreach dir {l r t b m n s e w} {
 		# NOTE: do not destroy immediately, because of a Tk bug
+		# NOTE: destroy separately for safety reasons
 		after idle [list catch [list destroy $w.__${dir}__]]
 	}
 }
@@ -2333,21 +2367,25 @@ proc WorkArea {twm} {
 
 
 proc PaneConfigure {twm parent child opts} {
+	$parent paneconfigure $child {*}$opts
+}
+
+
+proc ChildConfigure {twm parent child opts} {
 	array set args $opts
-	set options {}
 
-	if {[$parent cget -orient] eq "horizontal"} {
-		if {[info exists args(-minwidth)]} { lappend options -minsize $args(-minwidth) }
-		if {[info exists args(-maxwidth)]} { lappend options -maxsize $args(-minwidth) }
-	} else {
-		if {[info exists args(-minheight)]} { lappend options -minsize $args(-minheight) }
-		if {[info exists args(-maxheight)]} { lappend options -maxsize $args(-minheight) }
+	if {[info exists args(-width)]} {
+		$child configure -width $args(-width)
 	}
-
-	if {[info exists args(-width)]}  { lappend options -width $args(-width) }
-	if {[info exists args(-height)]} { lappend options -height $args(-height) }
-
-	$parent paneconfigure $child {*}$options
+	if {[info exists args(-height)]} {
+		$child configure -height $args(-height)
+	}
+	if {[info exists args(-minwidth)]} {
+		grid columnconfigure $parent 1 -minsize $args(-minwidth)
+	}
+	if {[info exists args(-minheight)]} {
+		grid rowconfigure $parent 1 -minsize $args(-minheight)
+	}
 }
 
 
@@ -2370,12 +2408,12 @@ proc Pack {twm parent child opts} {
 			}
 			if {[$parent cget -orient] eq "horizontal"} {
 				if {[info exists args(-minwidth)]} { lappend options -minsize $args(-minwidth) }
-				if {[info exists args(-maxwidth)]} { lappend options -maxsize $args(-minwidth) }
+				if {[info exists args(-maxwidth)]} { lappend options -maxsize $args(-maxwidth) }
 				if {[info exists args(-width)]}    { lappend options -width $args(-width) }
 				if {[info exists args(-expand)] && $args(-expand) eq "y"} { set stretch never }
 			} else {
 				if {[info exists args(-minheight)]} { lappend options -minsize $args(-minheight) }
-				if {[info exists args(-maxheight)]} { lappend options -maxsize $args(-minheight) }
+				if {[info exists args(-maxheight)]} { lappend options -maxsize $args(-maxheight) }
 				if {[info exists args(-height)]}    { lappend options -height $args(-height) }
 				if {[info exists args(-expand)] && $args(-expand) eq "x"} { set stretch never }
 			}

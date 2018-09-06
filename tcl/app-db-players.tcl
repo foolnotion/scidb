@@ -28,7 +28,7 @@
 
 namespace eval application {
 namespace eval database {
-namespace eval players {
+namespace eval player {
 namespace eval mc {
 
 set EditPlayer	"Edit Player"
@@ -82,11 +82,12 @@ proc build {parent} {
 	set Vars(base) ""
 
 	::application::twm::make $twm player \
-		[namespace current]::MakeFrame \
-		[namespace current]::BuildFrame \
 		[namespace current]::Prios \
 		[array get FrameOptions] \
 		$Layout \
+		-makepane [namespace current]::MakeFrame \
+		-buildpane [namespace current]::BuildFrame \
+		-adjustcmd [namespace parent]::event::adjustFrame \
 		;
 	::application::twm::load $twm
 	return $twm
@@ -101,7 +102,7 @@ proc activate {w flag} {
 	set base [::scidb::db::get name]
 	set variant [::scidb::app::variant]
 	set Vars($base:$variant:update:players) 1
-	players::DoUpdate $path $base $variant
+	player::DoUpdate $path $base $variant
 
 	if {[winfo toplevel $w] ne $w} {
 		::toolbar::activate $Vars(frame:player) $flag
@@ -160,18 +161,18 @@ proc BuildFrame {twm frame uid width height} {
 		player {
 			set columns {lastName firstName type sex rating1 federation title frequency}
 			::playertable::build $frame [namespace code [list View $twm]] $columns \
-				-selectcmd [list [namespace current]::players::Search $twm] \
+				-selectcmd [list [namespace current]::player::Search $twm] \
 				-id db:players:$id:$uid \
 				-usefind 1 \
 				;
 			::scidb::db::subscribe playerList \
-				[list [namespace current]::players::Update $twm] \
+				[list [namespace current]::player::Update $twm] \
 				[list [namespace current]::Close $twm] \
 				;
 		}
 		games {
 			set columns {white whiteElo black blackElo event result date length}
-			::gametable::build $frame [namespace code [list View $twm]] $columns -id db:players:$id:$uid
+			::gamestable::build $frame [namespace code [list View $twm]] $columns -id db:players:$id:$uid
 			::scidb::db::subscribe gameList [list [namespace current]::games::Update $twm]
 		}
 		event {
@@ -180,7 +181,7 @@ proc BuildFrame {twm frame uid width height} {
 				-selectcmd [namespace code [list SelectEvent $twm]] \
 				-id db:players:$id:$uid \
 				;
-			::scidb::db::subscribe eventList [list [namespace current]::events::Update $twm]
+			::scidb::db::subscribe eventList [list [namespace current]::event::Update $twm]
 		}
 	}
 }
@@ -211,12 +212,12 @@ proc Close {path base variant} {
 	array unset Vars $base:$variant:*
 	::playertable::forget $Vars(frame:player) $base $variant
 	::eventtable::forget $Vars(frame:event) $base $variant
-	::gametable::forget $Vars(frame:games) $base $variant
+	::gamestable::forget $Vars(frame:games) $base $variant
 
 	if {$Vars(base) eq "$base:$variant"} {
 		::playertable::clear $Vars(frame:player)
 		::eventtable::clear $Vars(frame:event)
-		::gametable::clear $Vars(frame:games)
+		::gamestable::clear $Vars(frame:games)
 	}
 }
 
@@ -241,7 +242,7 @@ proc InitBase {path base variant} {
 		set Vars($base:$variant:select) -1
 		set Vars($base:$variant:selected:key) {}
 		::playertable::init $Vars(frame:player) $base $variant
-		::gametable::init $Vars(frame:games) $base $variant
+		::gamestable::init $Vars(frame:games) $base $variant
 		::eventtable::init $Vars(frame:event) $base $variant
 		::scidb::view::search $base $variant $Vars($base:$variant:view) null events
 	}
@@ -285,16 +286,16 @@ proc Update2 {id path base variant} {
 			set index [::scidb::db::find player $base $variant $Vars($base:$variant:selected:key)]
 			if {$index >= 0} {
 				set selected [::scidb::db::get lookupPlayer $index $view $base $variant]
-				[namespace parent]::players::Search $path $base $variant $view $selected
+				[namespace parent]::player::Search $path $base $variant $view $selected
 			} else {
-				[namespace parent]::players::Reset $path $base $variant
+				[namespace parent]::player::Reset $path $base $variant
 			}
 		}
 	} else {
 		set Vars($base:$variant:lastChange) $lastChange
 
 		set n [::scidb::view::count games $base $variant $view]
-		after idle [list ::gametable::update $Vars(frame:games) $base $variant $n]
+		after idle [list ::gamestable::update $Vars(frame:games) $base $variant $n]
 
 		set n [::scidb::view::count events $base $variant $view]
 		after idle [list ::eventtable::update $Vars(frame:event) $base $variant $n]
@@ -305,13 +306,13 @@ proc Update2 {id path base variant} {
 } ;# namespace games
 
 
-namespace eval players {
+namespace eval player {
 
 proc Reset {path base variant} {
 	variable [namespace parent]::${path}::Vars
 
 	::eventtable::clear $Vars(frame:event)
-	::gametable::clear $Vars(frame:games)
+	::gamestable::clear $Vars(frame:games)
 	::playertable::select $Vars(frame:player) none
 	::playertable::activate $Vars(frame:player) none
 	set Vars($base:$variant:selected:key) {}
@@ -322,8 +323,8 @@ proc Search {path base variant view {selected -1}} {
 	variable [namespace parent]::${path}::Vars
 
 	::widget::busyCursor on
-	::gametable::activate $Vars(frame:games) none
-	::gametable::select $Vars(frame:games) none
+	::gamestable::activate $Vars(frame:games) none
+	::gamestable::select $Vars(frame:games) none
 	::eventtable::activate $Vars(frame:event) none
 	::eventtable::select $Vars(frame:event) none
 
@@ -340,7 +341,7 @@ proc Search {path base variant view {selected -1}} {
 		set Vars($base:$variant:lastChange) [::scidb::db::get lastChange $base $variant]
 		::scidb::view::search $base $variant $view null events [list player $selected]
 		::eventtable::scroll $Vars(frame:event) home
-		::gametable::scroll $Vars(frame:games) home
+		::gamestable::scroll $Vars(frame:games) home
 	} else {
 		Reset $path $base $variant
 	}
@@ -398,9 +399,9 @@ proc DoUpdate {path base variant} {
 	}
 }
 
-} ;# namespace players
+} ;# namespace player
 
-namespace eval events {
+namespace eval event {
 
 proc Update {path id base variant {view -1} {index -1}} {
 	variable [namespace parent]::${path}::Vars
@@ -440,7 +441,7 @@ proc DoUpdate {path base variant} {
 	}
 }
 
-} ;# namespace events
+} ;# namespace event
 
 
 proc WriteTableOptions {chan variant {id "player"}} {
@@ -504,7 +505,7 @@ proc CompareOptions {twm variant} {
 	[namespace current]::CompareOptions \
 	;
 
-} ;# namespace players
+} ;# namespace player
 } ;# namespace database
 } ;# namespace application
 

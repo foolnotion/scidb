@@ -724,29 +724,25 @@ proc open {parent} {
 	}
 
 	# panel ###################################################
-	set pieces {k q r b n p}
 	set bcanv [::board::diagram::canvas $board]
-	set wp [::board::holding::new $canv.w w $squareSize $pieces $canv $bcanv $canv.b]
-	set bp [::board::holding::new $canv.b b $squareSize $pieces $canv $bcanv $canv.w]
-	::theme::configureCanvas $wp
-	::theme::configureCanvas $bp
-	::board::holding::setHeight $canv.w $boardHeight
-	::board::holding::setHeight $canv.b $boardHeight
-	::board::holding::update $canv.w {1 1 1 1 1 1}
-	::board::holding::update $canv.b {1 1 1 1 1 1}
+	set piecetypes {k q r b n p}
+	foreach color {w b} {
+		set c $canv.$color
+		set opponent [expr {$color eq "w" ? "b" : "w"}]
+		set ${color}p [::board::holding::new $c $color $squareSize \
+			-piecetypes $piecetypes -targets [list $canv $bcanv $canv.$opponent]]
+		::theme::configureCanvas [set ${color}p]
+		::board::holding::setHeight $c $boardHeight
+		::board::holding::update $c {1 1 1 1 1 1}
+		bind $c <<InHandSelection>> [namespace code { SelectPiece %W %d }]
+		bind $c <<InHandPieceDrop>> [namespace code { DropPiece %W %x %y %s %d }]
+		bind $c <<InHandDropPosition>> [list $bcanv raise drag-piece]
+		bind $c <<InHandButtonPress>> [namespace code DropPress]
+		bind $c <<InHandButtonRelease>> [namespace code DropRelease]
+	}
 	set x [expr {[::board::holding::computeWidth $squareSize] + 5}]
 	$canv create window  0 $BorderThickness -window $wp -anchor nw -tag w
 	$canv create window $x $BorderThickness -window $bp -anchor nw -tag b
-	bind $canv.w <<InHandSelection>> [namespace code { SelectPiece %W %d }]
-	bind $canv.b <<InHandSelection>> [namespace code { SelectPiece %W %d }]
-	bind $canv.w <<InHandPieceDrop>> [namespace code { DropPiece %W %x %y %s %d }]
-	bind $canv.b <<InHandPieceDrop>> [namespace code { DropPiece %W %x %y %s %d }]
-	bind $canv.w <<InHandDropPosition>> [list $bcanv raise drag-piece]
-	bind $canv.b <<InHandDropPosition>> [list $bcanv raise drag-piece]
-	bind $canv.w <<InHandButtonPress>> [namespace code DropPress]
-	bind $canv.b <<InHandButtonPress>> [namespace code DropPress]
-	bind $canv.w <<InHandButtonRelease>> [namespace code DropRelease]
-	bind $canv.b <<InHandButtonRelease>> [namespace code DropRelease]
 	::board::diagram::setTargets $Vars(board) $canv.w $canv.b $canv
 	bind $Vars(board) <Map> [namespace code [list SetupCursor %W $Vars(piece)]]
 	set Vars(panel) $canv

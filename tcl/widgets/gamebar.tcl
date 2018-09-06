@@ -1965,10 +1965,10 @@ proc BuildMenu {gamebar id side menu} {
 				$menu add command \
 					-compound left \
 					-image $::icon::16x16::remove \
-					-label " [set ::gametable::mc::$var]" \
-					-command [namespace code [list ::gametable::deleteGame $base $variant $index]] \
+					-label " [set ::gamestable::mc::$var]" \
+					-command [namespace code [list ::gamestable::deleteGame $base $variant $index]] \
 					;
-				::gametable::addGameFlagsMenuEntry $menu $base $variant -1 $index
+				::gamestable::addGameFlagsMenuEntry $menu $base $variant -1 $index
 				set addsep [list $menu add separator]
 			}
 		}

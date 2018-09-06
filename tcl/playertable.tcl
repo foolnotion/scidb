@@ -110,7 +110,7 @@ variable History {}
 
 
 proc build {path getViewCmd {visibleColumns {}} {args {}}} {
-	variable ::gametable::ratings
+	variable ::gamestable::ratings
 	variable Columns
 	variable Defaults
 	variable columns
@@ -153,19 +153,19 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 		if {$id ne "firstName"} {
 			lappend menu [list command \
 				-command [namespace code [list SortColumn $path $id ascending]] \
-				-labelvar ::gametable::mc::SortAscending \
+				-labelvar ::gamestable::mc::SortAscending \
 			]
 			lappend menu [list command \
 				-command [namespace code [list SortColumn $path $id descending]] \
-				-labelvar ::gametable::mc::SortDescending \
+				-labelvar ::gamestable::mc::SortDescending \
 			]
 			lappend menu [list command \
 				-command [namespace code [list SortColumn $path $id reverse]] \
-				-labelvar ::gametable::mc::ReverseOrder \
+				-labelvar ::gamestable::mc::ReverseOrder \
 			]
 			lappend menu [list command \
 				-command [namespace code [list SortColumn $path $id cancel]] \
-				-labelvar ::gametable::mc::CancelSort \
+				-labelvar ::gamestable::mc::CancelSort \
 			]
 			lappend menu { separator }
 		}
@@ -175,7 +175,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 				foreach {labelvar value} {Flags flags PGN_CountryCode PGN ISO_CountryCode ISO} {
 					lappend menu [list radiobutton \
 						-command [namespace code [list Refresh $path]] \
-						-labelvar ::gametable::mc::$labelvar \
+						-labelvar ::gamestable::mc::$labelvar \
 						-variable [namespace current]::${path}::Options(country-code) \
 						-value $value \
 					]
@@ -220,7 +220,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 			ratingType {
 				lappend menu [list checkbutton \
 					-command [namespace code [list Refresh $path]] \
-					-labelvar ::gametable::mc::ExcludeElo \
+					-labelvar ::gamestable::mc::ExcludeElo \
 					-variable [namespace current]::${path}::Options(exclude-elo) \
 				]
 				lappend menu { separator }
@@ -229,7 +229,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 			sex {
 				lappend menu [list checkbutton \
 					-command [namespace code [list Refresh $path]] \
-					-labelvar ::gametable::mc::IncludePlayerType \
+					-labelvar ::gamestable::mc::IncludePlayerType \
 					-variable [namespace current]::${path}::Options(include-type) \
 				]
 				lappend menu { separator }
@@ -397,6 +397,11 @@ proc overhang {path} {
 
 proc linespace {path} {
 	return [::scrolledtable::linespace $path.table]
+}
+
+
+proc computeHeight {path} {
+	return [::scrolledtable::computeHeight $path.table 0]
 }
 
 
@@ -732,11 +737,11 @@ proc TableVisit {path data} {
 	switch $id {
 		federation	{ set tip [::country::name $item] }
 		title			{ set tip $::titlebox::mc::Title([lindex $item 0]) }
-		type			{ set tip $::gametable::mc::PlayerType($item) }
+		type			{ set tip $::gamestable::mc::PlayerType($item) }
 
 		sex { 
 			if {$item eq "program"} {
-				set tip $::gametable::mc::PlayerType(program)
+				set tip $::gamestable::mc::PlayerType(program)
 			} else {
 				set tip ""
 			}
@@ -843,7 +848,7 @@ proc PopupMenu {table menu base variant index} {
 	set visible [::scrolledtable::visibleColumns $table]
 	foreach dir {ascending descending} {
 		set m [menu $menu.$dir]
-		$menu add cascade -label [set ::gametable::mc::Sort[string toupper $dir 0 0]] -menu $m
+		$menu add cascade -label [set ::gamestable::mc::Sort[string toupper $dir 0 0]] -menu $m
 		foreach id $visible {
 			set idl [string toupper $id 0 0]
 			set fvar [namespace current]::mc::F_$idl

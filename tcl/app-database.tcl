@@ -236,7 +236,7 @@ proc build {tab width height} {
 	::ttk::notebook::enableTraversal $contents
 	::theme::configurePanedWindow $main
 	set switcher [::database::switcher $main.switcher \
-		-switchcmd [namespace current]::Switch \
+		-switchcmd [namespace current]::switchToBase \
 		-updatecmd [namespace current]::UpdateVariants \
 		-popupcmd [namespace current]::PopupMenu \
 		-opencmd [namespace current]::OpenBase \
@@ -251,7 +251,7 @@ proc build {tab width height} {
 		$contents add $contents.$tab -sticky nsew -compound right
 		if {$Vars(showDisabled)} { $contents tab $contents.$tab -image $icon::16x16::undock_disabled }
 		::widget::notebookSetLabel $contents $contents.$tab [set $var]
-		[TabToNamespace $tab]::build $contents.$tab
+		${tab}::build $contents.$tab
 		set Vars($tab) $contents.$tab
 		bind $contents.$tab <Destroy> [namespace code [list DestroyTab %W $contents.$tab]]
 	}
@@ -353,7 +353,7 @@ proc build {tab width height} {
 	$Vars(switcher) current $::scidb::clipbaseName
 	SetClipbaseDescription
 	bind $contents <<LanguageChanged>> +[namespace code SetClipbaseDescription]
-	Switch $clipbaseName
+	switchToBase $clipbaseName
 }
 
 
@@ -415,7 +415,7 @@ proc activate {w flag} {
 	set w [$Vars(contents) select]
 	set tab [lindex [split $w .] end]
 	::toolbar::activate $Vars(switcher) $flag
-	[namespace current]::[TabToNamespace $tab]::activate $Vars($tab) $flag
+	${tab}::activate $Vars($tab) $flag
 	::annotation::hide $flag
 	::marks::hide $flag
 
@@ -429,7 +429,7 @@ proc activate {w flag} {
 
 proc setActive {flag} {
 	variable Vars
-	[TabToNamespace $Vars(current:tab)]::setActive $flag
+	${Vars(current:tab)}::setActive $flag
 }
 
 
@@ -469,7 +469,7 @@ proc openBase {parent file byUser args} {
 	if {[file type $file] eq "link"} { set file [file normalize [file readlink $file]] }
 
 	if {[file extension $file] eq ".scv"} {
-		# TODO: check if alreay opened
+		# TODO: check if already open
 		return [::remote::busyOperation { OpenArchive $parent $file $byUser {*}$args }]
 	}
 
@@ -584,7 +584,7 @@ proc openBase {parent file byUser args} {
 		variable CurrentBase
 		set opts(-switchToBase) [expr {$CurrentBase eq $file}]
 	}
-	if {$opts(-switchToBase)} { Switch $file }
+	if {$opts(-switchToBase)} { switchToBase $file }
 
 	if {$opts(-variant) ne "Undetermined"} {
 		 SwitchVariant $opts(-variant)
@@ -647,7 +647,7 @@ proc newBase {parent variant file {encoding ""}} {
 	$Vars(switcher) add $file $type no $encoding
 	AddRecentFile $type $file $encoding no
 	::widget::busyCursor off
-	Switch $file
+	switchToBase $file
 
 	return 1
 }
@@ -664,6 +664,19 @@ proc refreshBase {base} {
 
 	::scidb::db::switch $base [$Vars(switcher) variant?]
 	$Vars(switcher) update $base
+}
+
+
+proc switchToBase {filename} {
+	variable Vars
+
+	if {[catch { $Vars(switcher) current $filename }]} {
+		# may happen if open failed
+		return
+	}
+	[namespace parent]::twm::switchLayout $Vars(variant) db
+	::scidb::db::switch $filename $Vars(variant)
+	UpdateAfterSwitch $filename $Vars(variant)
 }
 
 
@@ -700,10 +713,10 @@ proc removeRecentFile {index} {
 proc selectEvent {base variant index} {
 	variable Vars
 
-	events::select $Vars(event) $base $variant $index
+	event::select $Vars(event) $base $variant $index
 
 	if {[winfo toplevel $Vars(event)] eq $Vars(event)} {
-		events::activate $Vars(event) 1
+		event::activate $Vars(event) 1
 	} elseif {$Vars(contents) ne "event"} {
 		after 1 [list $Vars(contents) select $Vars(contents).event]
 	}
@@ -713,10 +726,10 @@ proc selectEvent {base variant index} {
 proc selectSite {base variant index} {
 	variable Vars
 
-	sites::select $Vars(site) $base $variant $index
+	site::select $Vars(site) $base $variant $index
 
 	if {[winfo toplevel $Vars(site)] eq $Vars(site)} {
-		sites::activate $Vars(site) 1
+		site::activate $Vars(site) 1
 	} elseif {$Vars(contents) ne "site"} {
 		after 1 [list $Vars(contents) select $Vars(contents).site]
 	}
@@ -726,10 +739,10 @@ proc selectSite {base variant index} {
 proc selectPlayer {base variant index} {
 	variable Vars
 
-	players::select $Vars(player) $base $variant $index
+	player::select $Vars(player) $base $variant $index
 
 	if {[winfo toplevel $Vars(player)] eq $Vars(player)} {
-		players::activate $Vars(player) 1
+		player::activate $Vars(player) 1
 	} elseif {$Vars(contents) ne "player"} {
 		after 1 [list $Vars(contents) select $Vars(contents).player]
 	}
@@ -932,13 +945,6 @@ proc SetClipbaseDescription {} {
 }
 
 
-proc TabToNamespace {id} {
-	set t $id
-	if {[string index $t end] ne "s"} { append t "s" }
-	return $t
-}
-
-
 proc TabChanged {} {
 	variable Vars
 
@@ -947,8 +953,8 @@ proc TabChanged {} {
 	if {!$Vars(first-tab-change) && $newTab eq $curTab} { return }
 	set Vars(first-tab-change) 0
 	set w $Vars($curTab)
-	[namespace current]::[TabToNamespace $curTab]::activate $w 0
-	[namespace current]::[TabToNamespace $newTab]::activate $Vars($newTab) 1
+	${curTab}::activate $w 0
+	${newTab}::activate $Vars($newTab) 1
 	set Vars(current:tab) $newTab
 
 	set w $Vars(contents)
@@ -1032,19 +1038,6 @@ proc UpdateVariants {{variant ""}} {
 }
 
 
-proc Switch {filename} {
-	variable Vars
-
-	if {[catch { $Vars(switcher) current $filename }]} {
-		# may happen if open failed
-		return
-	}
-	[namespace parent]::twm::switchLayout $Vars(variant) db
-	::scidb::db::switch $filename $Vars(variant)
-	UpdateAfterSwitch $filename $Vars(variant)
-}
-
-
 proc UpdateAfterSwitch {filename variant} {
 	variable ::scidb::clipbaseName
 	variable Vars
@@ -1092,7 +1085,7 @@ proc UpdateAfterSwitch {filename variant} {
 
 	foreach tab $Tabs {
 		if {$tab ne "games" && [winfo toplevel $Vars($tab)] eq $Vars($tab)} {
-			[namespace current]::[TabToNamespace $tab]::activate $Vars($tab) 1
+			${tab}::activate $Vars($tab) 1
 		}
 	}
 }
@@ -2447,8 +2440,9 @@ proc Undock {nb index {geometry {}}} {
 		wm geometry $w $geometry
 	}
 	set id [lindex [split $w .] end]
-	set overhang [[TabToNamespace $id]::overhang $Vars($id)]
-	set linespace [[TabToNamespace $id]::linespace $Vars($id)]
+	# TODO: use [computeHeight $Vars($id) 8] instead
+	set overhang [${id}::overhang $Vars($id)]
+	set linespace [${id}::linespace $Vars($id)]
 	set minheight [expr {8*$linespace + $overhang}]
 #	wm transient $w [winfo toplevel $nb]
 	wm minsize $w 500 $minheight
@@ -2481,7 +2475,7 @@ proc Dock {nb w} {
 	$nb insert $k $w -sticky nsew -compound right -image $icon
 	set var [namespace parent]::mc::Tab($id)
 	::widget::notebookSetLabel $nb $w [set $var]
-	[TabToNamespace $id]::activate $Vars($id) 0
+	${id}::activate $Vars($id) 0
 	CheckTabState
 }
 

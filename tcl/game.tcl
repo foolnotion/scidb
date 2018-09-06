@@ -1074,7 +1074,11 @@ proc reopenLockedGames {parent} {
 			::application::pgn::lock $count
 			::scidb::game::go trykey $cursor
 			::process::setOption "show-board"
-			if {$position == $Selection} { set selection $count }
+			if {$position == $Selection} {
+				set selection $count
+				set selectedBase $base
+			}
+			set lastBase $base
 			incr count
 		} else {
 			# Log: couldn't load game
@@ -1087,6 +1091,9 @@ proc reopenLockedGames {parent} {
 	if {$selection >= 0} {
 		::scidb::game::switch $selection
 		::application::pgn::select $selection
+		::application::database::switchToBase $selectedBase
+	} elseif {$count > 0} {
+		::application::database::switchToBase $lastBase
 	}
 
 	return $count

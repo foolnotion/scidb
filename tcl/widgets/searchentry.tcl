@@ -6,7 +6,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2014-2017 Gregor Cramer
+# Copyright: (C) 2014-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -51,9 +51,9 @@ proc makeStateSpecificIcons {img} { return $img }
 
 
 proc bindShortcuts {w} {
-	bind $w <Control-F> [namespace code [list TriggerFindNext focus]]
-	bind $w <Control-f> [namespace code [list TriggerFindNext focus]]
-	bind $w <F3> [namespace code [list TriggerFindNext findnext]]
+	bind $w <Control-F> [namespace code [list TriggerFindNext $w focus]]
+	bind $w <Control-f> [namespace code [list TriggerFindNext $w focus]]
+	bind $w <F3> [namespace code [list TriggerFindNext $w findnext]]
 }
 
 
@@ -321,17 +321,23 @@ proc WidgetProc {w command args} {
 		}
 
 		focus {
-			set focus [focus]
-			if {$focus ne "$w.e"} {
-				variable [set ${w}::NS]::Priv
-				set Priv(focus) [focus]
-				::focus $w.e
-			}
-			return $w
+			return [SetFocus $w]
 		}
 	}
 
 	return [$w.e $command {*}$args]
+}
+
+
+proc SetFocus {w} {
+	set focus [focus]
+	if {$focus ne "$w.e"} {
+		variable [set ${w}::NS]::Priv
+		set Priv(focus) [focus]
+		::focus $w.e
+	}
+	$w.e selection range 0 end
+	return $w
 }
 
 
@@ -368,14 +374,19 @@ proc Clear {w} {
 	variable ::searchentry::${ns}::Priv
 	variable ::searchentry::${ns}::Vars
 
-	set Priv(search) ""
 	set $Vars(textvar) ""
-	set Priv(content) [set $Vars(ghosttextvar)]
+	set Priv(search) ""
+	set Priv(search) ""
 	set Priv(current) 1
 	set Priv(empty) 1
-	$w configure -foreground $Vars(ghostcolor)
+	if {[focus] eq $w} {
+		set Priv(content) ""
+	} else {
+		set Priv(content) [set $Vars(ghosttextvar)]
+		$w configure -foreground $Vars(ghostcolor)
+		focus $w
+	}
 	SetupButtons [winfo parent $w]
-	focus $w
 }
 
 
@@ -540,7 +551,7 @@ proc FindNext {w} {
 	set ns [set ${w}::NS]
 	variable ::searchentry::${ns}::Priv
 
-	if {$Priv(empty)} { return }
+	if {$Priv(empty)} { return [SetFocus $w] }
 	UpdateHistory $w
 
 	if {[string length $Priv(content)]} {
@@ -626,12 +637,17 @@ proc Post {w} {
 }
 
 
-proc TriggerFindNext {cmd} {
+proc TriggerFindNext {w cmd} {
 	variable Visited
 
-	if {[string length [set w [focus]]] == 0} { return }
 	array unset Visited *
 	set Visited(.) 1
+	if {[winfo toplevel $w] eq $w} {
+		foreach child [winfo children $w] {
+			if {[TriggerFindNextRecursively $child $cmd]} { return 1 }
+		}
+		return 0
+	}
 	TriggerFindNextRecursively $w $cmd
 }
 
@@ -642,25 +658,15 @@ proc TriggerFindNextRecursively {w cmd} {
 	if {[info exists Visited($w)]} { return 0 }
 	if {[winfo toplevel $w] eq $w} { return 0 }
 	if {![winfo ismapped $w]} { return 0 }
-
 	if {[winfo class $w] eq "TSearchEntry"} {
 		$w $cmd
 		return 1
 	}
-
 	set Visited($w) 1
-
-	foreach child [pack slaves $w] {
+	foreach child [winfo children $w] {
 		if {[TriggerFindNextRecursively $child $cmd]} { return 1 }
 	}
-	foreach child [grid slaves $w] {
-		if {[TriggerFindNextRecursively $child $cmd]} { return 1 }
-	}
-	foreach child [place slaves $w] {
-		if {[TriggerFindNextRecursively $child $cmd]} { return 1 }
-	}
-
-	return [TriggerFindNextRecursively [winfo parent $w] $cmd]
+	return 0
 }
 
 

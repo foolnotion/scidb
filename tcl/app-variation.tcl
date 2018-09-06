@@ -113,7 +113,7 @@ proc build {parent menu width height} {
 		set menu {}
 		lappend menu [list checkbutton \
 			-command [namespace code [list SortColumn $tb]] \
-			-labelvar ::gametable::mc::SortAscending \
+			-labelvar ::gamestable::mc::SortAscending \
 			-variable [namespace current]::Options(sort:column) \
 			-onvalue $value \
 			]

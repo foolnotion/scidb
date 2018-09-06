@@ -164,7 +164,6 @@ proc build {parent number patternNumber} {
 		current:message	{}
 		engine:locked		0
 		engine:opponent	0
-		engine:opponent	0
 		engine:pause		0
 		engine:state		normal
 		info:height			0
@@ -189,9 +188,10 @@ proc build {parent number patternNumber} {
 	}
 	set Vars(linespace) [font metrics $GlobalOptions(engine:font) -linespace]
 	set Vars(number) $number
-	set Vars(main) $main
-	set Vars(mesg) $mesg
-	set Vars(mw) $mw
+	set Vars(widget:main) $main
+	set Vars(widget:mesg) $mesg
+	set Vars(widget:mw) $mw
+	set menuCmd [namespace code [list PopupMenu $tree $number]]
 
 	set charwidth [font measure $GlobalOptions(engine:font) "0"]
 	set minsize [expr {12*$charwidth}]
@@ -203,7 +203,7 @@ proc build {parent number patternNumber} {
 		-background [::colors::lookup $GlobalOptions(background)] \
 	]
 	bind $main <<LanguageChanged>> [namespace code LanguageChanged]
-	bind $mesg <ButtonPress-3> [namespace code [list PopupMenu $tree $number]]
+	bind $mesg <ButtonPress-3> $menuCmd
 
 	$mw add $main -sticky nsew
 	$mw add $mesg
@@ -213,6 +213,8 @@ proc build {parent number patternNumber} {
 		-borderwidth 0 \
 		-takefocus 0 \
 	]
+	bind $info <ButtonPress-3> $menuCmd
+
 	set score [tk::frame $info.score -background $bg -borderwidth 1 -relief raised -takefocus 0]
 	set tscore [tk::text $info.score.t \
 		-font $::font::text(text:normal) \
@@ -229,7 +231,7 @@ proc build {parent number patternNumber} {
 	$tscore tag configure center -justify center
 	$tscore tag configure symbol -font $::font::symbol(text:normal)
 	pack $tscore -padx 2 -pady 2
-	set Vars(info) $main.info
+	set Vars(widget:info) $main.info
 
 	set move [tk::frame $info.move -background $bg -borderwidth 1 -relief raised -takefocus 0]
 	set tmove [tk::text $info.move.t \
@@ -271,14 +273,16 @@ proc build {parent number patternNumber} {
 	]
 	pack $tdepth -padx 2 -pady 2
 
+	bind $info <ButtonPress-3> [namespace code [list PopupMenu $tree $number]]
+
 	set col 1
 	foreach type {score move time depth} {
 		grid [set $type] -column $col -row 0 -sticky ew -pady 2
 		grid columnconfigure [set $type] 0 -weight 1
 		grid [set t$type] -column 0 -row 1 -padx 2 -sticky ew
 		incr col 2
-		bind [set  $type] <ButtonPress-3> [namespace code [list PopupMenu $tree $number]]
-		bind [set t$type] <ButtonPress-3> [namespace code [list PopupMenu $tree $number]]
+		bind [set  $type] <ButtonPress-3> $menuCmd
+		bind [set t$type] <ButtonPress-3> $menuCmd
 	}
 
 	::tooltip::tooltip $score  [namespace current]::mc::BestScore
@@ -366,10 +370,10 @@ proc build {parent number patternNumber} {
 
 	pack $mw -fill both -expand yes
 
-	set Vars(score) $info.score.t
-	set Vars(move) $info.move.t
-	set Vars(time) $info.time.t
-	set Vars(depth) $info.depth.t
+	set Vars(widget:score) $info.score.t
+	set Vars(widget:move) $info.move.t
+	set Vars(widget:time) $info.time.t
+	set Vars(widget:depth) $info.depth.t
 
 	set tbControl [::toolbar::toolbar $parent \
 		-id analysis-control \
@@ -380,34 +384,34 @@ proc build {parent number patternNumber} {
 		-tooltipvar [namespace current]::mc::Control \
 		-avoidconfigurehack 1 \
 	]
-	set Vars(button:pause) [::toolbar::add $tbControl button \
+	set Vars(widget:button:pause) [::toolbar::add $tbControl button \
 		-image $::icon::toolbarPause \
 		-tooltipvar [namespace current]::mc::Pause \
 		-command [namespace code [list Pause $tree]] \
 	]
 	trace add variable [namespace current]::${tree}::Vars(engine:pause) write \
 		[namespace code [list ConfigurePause $tree]]
-	lappend Vars(toolbar:childs) $Vars(button:pause)
-	set Vars(button:lock) [::toolbar::add $tbControl checkbutton \
+	lappend Vars(widget:toolbar:childs) $Vars(widget:button:pause)
+	set Vars(widget:button:lock) [::toolbar::add $tbControl checkbutton \
 		-image $::icon::toolbarLock \
 		-variable [namespace current]::${tree}::Vars(engine:locked) \
 		-tooltipvar [namespace current]::mc::LockEngine \
 		-command [namespace code [list EngineLock $tree]] \
 	]
-	lappend Vars(toolbar:childs) $Vars(button:lock)
-	set Vars(button:opponent) [::toolbar::add $tbControl checkbutton \
+	lappend Vars(widget:toolbar:childs) $Vars(widget:button:lock)
+	set Vars(widget:button:opponent) [::toolbar::add $tbControl checkbutton \
 		-image $::icon::toolbarRotateBoard \
 		-variable [namespace current]::${tree}::Vars(engine:opponent) \
 		-command [namespace code [list restartAnalysis $Vars(number)]] \
 		-tooltipvar [namespace current]::mc::OpponentsView \
 	]
-	lappend Vars(toolbar:childs) $Vars(button:opponent)
+	lappend Vars(widget:toolbar:childs) $Vars(widget:button:opponent)
 	::toolbar::add $tbControl button \
 		-image $::icon::toolbarEngine \
 		-command [namespace code [list Setup $tree $number]] \
 		-tooltipvar [::mc::var [namespace current]::mc::SetupEngine "..."] \
 		;
-	set Vars(button:close) [::toolbar::add $tbControl button \
+	set Vars(widget:button:close) [::toolbar::add $tbControl button \
 		-image $::icon::toolbarStop \
 		-tooltipvar [namespace current]::mc::CloseEngine \
 		-command [namespace code [list CloseEngine $tree]] \
@@ -422,14 +426,14 @@ proc build {parent number patternNumber} {
 		-tooltipvar [namespace current]::mc::MultipleVariations \
 		-command [namespace code [list SetMultiPV $tree]] \
 	]
-	#lappend Vars(toolbar:childs) $tbw
+	#lappend Vars(widget:toolbar:childs) $tbw
 	set Vars(widget:ordering) [::toolbar::add $tbControl checkbutton \
 		-image $::icon::toolbarSort(descending) \
 		-variable [namespace current]::${number}::Options(engine:bestFirst) \
 		-tooltipvar [namespace current]::mc::BestFirstOrder \
 		-command [namespace code [list SetOrdering $tree]] \
 	]
-	#lappend Vars(toolbar:childs) $Vars(widget:ordering)
+	#lappend Vars(widget:toolbar:childs) $Vars(widget:ordering)
 	::toolbar::addSeparator $tbControl
 	::toolbar::add $tbControl label -textvar [namespace current]::mc::Lines
 	set lpv [::toolbar::add $tbControl ::ttk::spinbox \
@@ -449,7 +453,7 @@ proc build {parent number patternNumber} {
 	::theme::configureSpinbox $lpv
 	set Vars(widget:linesPerPV) $lpv
 	::toolbar::add $tbControl frame -width 3
-	set Vars(toolbar:control) $tbControl
+	set Vars(widget:toolbar:control) $tbControl
 	bind $tbControl <Configure> [list set [namespace current]::${tree}::Vars(toolbar:height) %h]
 
 	set tbInfo [::toolbar::toolbar $parent \
@@ -555,7 +559,7 @@ proc startAnalysis {number} {
 	variable ${Vars(number)}::Options
 
 	set Vars(current:message) {}
-	$Vars(mesg) configure -text ""
+	$Vars(widget:mesg) configure -text ""
 	::engine::kill $number
 	after cancel $Vars(after:id)
 
@@ -571,6 +575,8 @@ proc startAnalysis {number} {
 		set rc -1
 	}
 
+	# TODO: in case that the user is starting more than one Stockfish engine
+	# we have to show the more detailed name.
 	::application::updateAnalysisTitle $number [::engine::engineName $number]
 	set Vars(engine:pause) [expr {![engine::active? $number]}]
 
@@ -613,8 +619,8 @@ proc closed {w} {
 	lappend FreeNumbers $Vars(number)
 	::engine::forget $Vars(number)
 
-	if {[winfo exists $Vars(button:close)]} {
-		::toolbar::childconfigure $Vars(button:close) -state disabled
+	if {[winfo exists $Vars(widget:button:close)]} {
+		::toolbar::childconfigure $Vars(widget:button:close) -state disabled
 	}
 }
 
@@ -628,7 +634,7 @@ proc CloseEngine {tree} {
 	variable ${tree}::Vars
 
 	::engine::kill $Vars(number)
-	::toolbar::childconfigure $Vars(button:close) -state disabled
+	::toolbar::childconfigure $Vars(widget:button:close) -state disabled
 	::application::updateAnalysisTitle $Vars(number)
 	after idle [namespace code [list DisplayPressEngineButton $tree]]
 }
@@ -659,7 +665,7 @@ proc ConfigurePause {tree args} {
 		set icon $::icon::toolbarPause
 		set tip [namespace current]::mc::Pause
 	}
-	::toolbar::childconfigure $Vars(button:pause) -image $icon -tooltipvar $tip
+	::toolbar::childconfigure $Vars(widget:button:pause) -image $icon -tooltipvar $tip
 }
 
 
@@ -783,7 +789,6 @@ proc SetMultiPV {tree {number 0}} {
 
 
 proc SetLinesPerPV {tree} {
-	variable ${tree}::Vars
 	variable ${Vars(number)}::Options
 
 	set Options(engine:nlines) [$Vars(widget:linesPerPV) get]
@@ -841,7 +846,7 @@ proc ResizePane {tree height} {
 
 	if {$height <= 1 || $Vars(toolbar:height) <= 1} { return }
 	incr height $Vars(toolbar:height)
-	incr height [winfo height $Vars(info)]
+	incr height [winfo height $Vars(widget:info)]
 	incr height 5 ;# borders
 	[namespace parent]::resizePaneHeight $Vars(number) $height
 }
@@ -857,7 +862,7 @@ proc SetState {tree state} {
 
 	set Vars(engine:state) $state
 
-	foreach child $Vars(toolbar:childs) {
+	foreach child $Vars(widget:toolbar:childs) {
 		::toolbar::childconfigure $child -state $state
 	}
 }
@@ -908,16 +913,16 @@ proc FormatScore {score} {
 
 
 proc ShowMessage {tree type txt} {
-	variable GlobalOptions
 	variable ${tree}::Vars
+	variable GlobalOptions
 
-	set width [expr {[winfo width $Vars(mw)] - 50}]
-	$Vars(mesg) configure \
+	set width [expr {[winfo width $Vars(widget:mw)] - 50}]
+	$Vars(widget:mesg) configure \
 		-text $txt \
 		-wraplength $width \
 		-foreground [::colors::lookup $GlobalOptions($type:foreground)] \
 		;
-	$Vars(mw) raise $Vars(mesg)
+	$Vars(widget:mw) raise $Vars(widget:mesg)
 }
 
 
@@ -951,32 +956,32 @@ proc Display(state) {tree state} {
 	switch $state {
 		stop	{
 			SetState $tree disabled
-			::toolbar::childconfigure $Vars(button:close) -state disabled
+			::toolbar::childconfigure $Vars(widget:button:close) -state disabled
 			Display(clear) $tree
 		}
 
 		start	{
 			SetState $tree normal
-			::toolbar::childconfigure $Vars(button:close) -state normal
+			::toolbar::childconfigure $Vars(widget:button:close) -state normal
 		}
 
 		pause {
 			if {!$Vars(state:paused)} {
-				$Vars(move) delete 1.0 end
-				if {[$Vars(mw) raise] eq $Vars(mesg)} {
+				$Vars(widget:move) delete begin end
+				if {[$Vars(widget:mw) raise] eq $Vars(widget:mesg)} {
 					ShowMessage $tree info $mc::EngineIsPausing
 				} else {
-					$Vars(move) insert end $mc::Stopped {stopped center}
+					$Vars(widget:move) insert end $mc::Stopped {stopped center}
 				}
 				set Vars(state:paused) 1
 			}
 		}
 
 		resume {
-			$Vars(move) delete 1.0 end
+			$Vars(widget:move) delete begin end
 			SetState $tree normal
 			set Vars(engine:pause) 0
-			$Vars(button:close) configure -state normal
+			$Vars(widget:button:close) configure -state normal
 		}
 	}
 }
@@ -986,13 +991,13 @@ proc Display(clear) {tree} {
 	variable ${tree}::Vars
 
 	set Vars(current:message) {}
-	$Vars(mesg) configure -text ""
-	$Vars(mw) raise $Vars(main)
+	$Vars(widget:mesg) configure -text ""
+	$Vars(widget:mw) raise $Vars(widget:main)
 
-	$Vars(score) delete 1.0 end
-	$Vars(move) delete 1.0 end
-	$Vars(depth) configure -text ""
-	$Vars(time) configure -text ""
+	$Vars(widget:score) delete begin end
+	$Vars(widget:move) delete begin end
+	$Vars(widget:depth) configure -text ""
+	$Vars(widget:time) configure -text ""
 
 	[::toolbar::lookupChild $Vars(widget:hashfullness)] configure -text ""
 	[::toolbar::lookupChild $Vars(widget:nps)] configure -text ""
@@ -1034,7 +1039,7 @@ proc Display(suspended) {tree args} {
 proc Display(bestscore) {tree score mate bestLines} {
 	variable ${tree}::Vars
 
-	$Vars(score) delete 1.0 end
+	$Vars(widget:score) delete begin end
 	if {$mate} {
 		if {$mate < 0} { set stm White } else { set stm Black }
 		set color [string index [set ::mc::$stm] 0]
@@ -1044,9 +1049,9 @@ proc Display(bestscore) {tree score mate bestLines} {
 		append scoreTxt [FormatScore $score]
 		lassign [::font::splitAnnotation [EvalText $score $mate]] value sym tags
 		lappend tags center
-		$Vars(score) insert end $sym $tags
+		$Vars(widget:score) insert end $sym $tags
 	}
-	$Vars(score) insert end $scoreTxt center
+	$Vars(widget:score) insert end $scoreTxt center
 
 	set line 0
 	foreach best $bestLines {
@@ -1091,10 +1096,10 @@ proc Display(move) {tree number count move} {
 		set Vars(moves:max) $number
 	}
 
-	$Vars(move) delete 1.0 end
-	$Vars(move) insert end [::font::translate $move] {figurine center}
+	$Vars(widget:move) delete begin end
+	$Vars(widget:move) insert end [::font::translate $move] {figurine center}
 	if {$number > 0} {
-		$Vars(move) insert end " ($number/$Vars(moves:max))"
+		$Vars(widget:move) insert end " ($number/$Vars(moves:max))"
 	}
 }
 
@@ -1106,7 +1111,7 @@ proc Display(time) {tree time depth seldepth nodes nps tbhits} {
 		set txt $depth
 		if {$seldepth} { append txt " (" $seldepth ")" }
 		append txt " " $mc::Ply
-		$Vars(depth) configure -text $txt
+		$Vars(widget:depth) configure -text $txt
 	}
 
 	if {$time > 0.0} {
@@ -1121,7 +1126,7 @@ proc Display(time) {tree time depth seldepth nodes nps tbhits} {
 		} elseif {$seconds} {
 			append txt $seconds " " $mc::Seconds
 		}
-		$Vars(time) configure -text $txt
+		$Vars(widget:time) configure -text $txt
 	}
 
 	if {$nps} {

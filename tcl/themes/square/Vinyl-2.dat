@@ -10,7 +10,7 @@
   dark,x2                  {150}
   dark,y1                  {0}
   dark,y2                  {150}
-  hilite,selected          {#5de05b}
+  hilite,selected          {#9ee03c}
   hilite,suggested         {#ee0500}
   hint,background-color    {}
   hint,background-coords   {#000000}
@@ -19,7 +19,7 @@
   hint,border-color        {}
   hint,border-coords       {#ffffff}
   hint,border-rotation     {0}
-  hint,border-tile         {misc denim.jpg}
+  hint,border-tile         {wood DarkMaple.jpg}
   identifier               {Vinyl 2|1423677444276|purple|gregor}
   lite,rotation            {0}
   lite,solid               {#d0d0d0}

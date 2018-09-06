@@ -28,7 +28,7 @@
 
 namespace eval application {
 namespace eval database {
-namespace eval annotators {
+namespace eval annotator {
 namespace eval mc {
 
 set F_Annotator	"Annotator"
@@ -54,8 +54,8 @@ array set Defaults {
 array set Prios { annotator 200 games 100 }
 
 array set FrameOptions {
-	annotator { -width 200 -height 100% -minwidth 200 -minheight 100 -expand both }
-	games     { -width 800 -height 100% -minwidth 200 -minheight 100 -expand both }
+	annotator { -width 200 -height 100% -minwidth 200 -minheight 3u -expand both }
+	games     { -width 800 -height 100% -minwidth 200 -minheight 3u -expand both }
 }
 
 variable Layout {
@@ -84,11 +84,12 @@ proc build {parent} {
 	set Vars(base) ""
 
 	::application::twm::make $twm annotator \
-		[namespace current]::MakeFrame \
-		[namespace current]::BuildFrame \
 		[namespace current]::Prios \
 		[array get FrameOptions] \
 		$Layout \
+		-makepane [namespace current]::MakeFrame \
+		-buildpane [namespace current]::BuildFrame \
+		-adjustcmd [namespace parent]::event::adjustFrame \
 		;
 	::application::twm::load $twm
 	return $twm
@@ -164,11 +165,11 @@ proc BuildFrame {twm frame uid width height} {
 				set menu {}
 				lappend menu [list command \
 					-command [namespace code [list SortColumn $twm $cid ascending]] \
-					-labelvar ::gametable::mc::SortAscending \
+					-labelvar ::gamestable::mc::SortAscending \
 				]
 				lappend menu [list command \
 					-command [namespace code [list SortColumn $twm $cid descending]] \
-					-labelvar ::gametable::mc::SortDescending \
+					-labelvar ::gamestable::mc::SortDescending \
 				]
 				lappend menu { separator }
 
@@ -199,7 +200,7 @@ proc BuildFrame {twm frame uid width height} {
 		}
 		games {
 			set columns {white whiteElo black blackElo event result site date acv}
-			::gametable::build $frame [namespace code [list View $twm]] $columns -id db:annotators:$id:$uid
+			::gamestable::build $frame [namespace code [list View $twm]] $columns -id db:annotators:$id:$uid
 			::scidb::db::subscribe gameList \
 				[list [namespace current]::games::Update $twm] \
 				[list [namespace current]::Close $twm] \
@@ -214,11 +215,11 @@ proc Close {path base variant} {
 
 	array unset Vars $base:$variant:*
 	::scrolledtable::forget $Vars(frame:annotator) $base $variant
-	::gametable::forget $Vars(frame:games) $base $variant
+	::gamestable::forget $Vars(frame:games) $base $variant
 
 	if {$Vars(base) eq "$base:$variant"} {
 		::scrolledtable::clear $Vars(frame:annotator)
-		::gametable::clear $Vars(frame:games)
+		::gamestable::clear $Vars(frame:games)
 	}
 }
 
@@ -293,7 +294,7 @@ proc Update2 {id path base variant} {
 		}
 	} else {
 		set n [::scidb::view::count games $base $variant $view]
-		after idle [list ::gametable::update $Vars(frame:games) $base $variant $n]
+		after idle [list ::gamestable::update $Vars(frame:games) $base $variant $n]
 	}
 }
 
@@ -305,7 +306,7 @@ namespace eval names {
 proc Reset {path base variant} {
 	variable [namespace parent]::${path}::Vars
 
-	::gametable::clear $Vars(frame:games)
+	::gamestable::clear $Vars(frame:games)
 	::scrolledtable::select $Vars(frame:annotator) none
 	::scrolledtable::activate $Vars(frame:annotator) none
 	set Vars($base:$variant:annotator) ""
@@ -417,9 +418,9 @@ proc TableSearch {path base variant view} {
 	variable [namespace parent]::${path}::Vars
 
 	::widget::busyCursor on
-	::gametable::activate $Vars(frame:games) none
-	::gametable::select $Vars(frame:games) none
-	::gametable::scroll $Vars(frame:games) home
+	::gamestable::activate $Vars(frame:games) none
+	::gamestable::select $Vars(frame:games) none
+	::gamestable::scroll $Vars(frame:games) home
 	::scidb::view::search $base $variant $view null none [list annotator $Vars($base:$variant:annotator)]
 	::widget::busyCursor off
 }
@@ -542,8 +543,21 @@ proc CompareOptions {twm variant} {
 	[namespace current]::CompareOptions \
 	;
 
-} ;# namespace annotators
+} ;# namespace annotator
 } ;# namespace database
 } ;# namespace application
+
+namespace eval annotatortable {
+
+proc linespace {path} {
+	return [::scrolledtable::linespace $path]
+}
+
+
+proc computeHeight {path} {
+	return [expr {[::toolbar::totalHeight $path] + [::scrolledtable::computeHeight $path 0]}]
+}
+
+} ;# namespace annotatortable
 
 # vi:set ts=3 sw=3:

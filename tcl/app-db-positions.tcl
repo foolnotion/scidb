@@ -28,7 +28,7 @@
 
 namespace eval application {
 namespace eval database {
-namespace eval positions {
+namespace eval position {
 namespace eval mc {
 
 set NoCastle		"No castle"
@@ -86,11 +86,12 @@ proc build {parent} {
 	if {$twm ni $Tables} { lappend Tables $twm }
 
 	::application::twm::make $twm position \
-		[namespace current]::MakeFrame \
-		[namespace current]::BuildFrame \
 		[namespace current]::Prios \
 		[array get FrameOptions] \
 		$Layout \
+		-makepane [namespace current]::MakeFrame \
+		-buildpane [namespace current]::BuildFrame \
+		-adjustcmd [namespace parent]::event::adjustFrame \
 		;
 	::application::twm::load $twm
 	return $twm
@@ -105,7 +106,7 @@ proc activate {w flag} {
 	set base [::scidb::db::get name]
 	set variant [::scidb::app::variant]
 	set Vars($base:$variant:update:positions) 1
-	positions::UpdateTable $path $base $variant
+	position::UpdateTable $path $base $variant
 
 	if {[winfo toplevel $w] ne $w} {
 		::toolbar::activate $Vars(frame:position) $flag
@@ -121,7 +122,6 @@ proc overhang {parent} {
 }
 
 
-# XXX linespace not needed anymore?
 proc linespace {parent} {
 	set path $parent.twm
 	variable ${path}::Vars
@@ -160,21 +160,21 @@ proc BuildFrame {twm frame uid width height} {
 
 				if {$cid in {backRank frequency}} {
 					lappend menu [list command \
-						-command [namespace code [list positions::SortColumn $twm $cid ascending]] \
-						-labelvar ::gametable::mc::SortAscending \
+						-command [namespace code [list position::SortColumn $twm $cid ascending]] \
+						-labelvar ::gamestable::mc::SortAscending \
 					]
 					lappend menu [list command \
-						-command [namespace code [list positions::SortColumn $twm $cid descending]] \
-						-labelvar ::gametable::mc::SortDescending \
+						-command [namespace code [list position::SortColumn $twm $cid descending]] \
+						-labelvar ::gamestable::mc::SortDescending \
 					]
 					lappend menu [list command \
-						-command [namespace code [list positions::SortColumn $twm $cid reverse]] \
-						-labelvar ::gametable::mc::ReverseOrder \
+						-command [namespace code [list position::SortColumn $twm $cid reverse]] \
+						-labelvar ::gamestable::mc::ReverseOrder \
 					]
 				}
 				lappend menu [list command \
-					-command [namespace code [list positions::SortColumn $twm $cid cancel]] \
-					-labelvar ::gametable::mc::CancelSort \
+					-command [namespace code [list position::SortColumn $twm $cid cancel]] \
+					-labelvar ::gamestable::mc::CancelSort \
 				]
 
 				set opts {}
@@ -199,16 +199,16 @@ proc BuildFrame {twm frame uid width height} {
 			::scrolledtable::bind $frame <ButtonPress-2> [namespace code [list ShowBoard $twm %x %y]]
 			::scrolledtable::bind $frame <ButtonRelease-2> [namespace code [list HideBoard $twm]]
 
-			bind $frame <<TableFill>>			[namespace code [list positions::TableFill $twm %d]]
-			bind $frame <<TableSelected>>		[namespace code [list positions::TableSelected $twm %d]]
+			bind $frame <<TableFill>>			[namespace code [list position::TableFill $twm %d]]
+			bind $frame <<TableSelected>>		[namespace code [list position::TableSelected $twm %d]]
 			bind $frame <<LanguageChanged>>	[list ::scrolledtable::refresh $Vars(frame:position)]
 
-			::scidb::db::subscribe positionList [list [namespace current]::positions::Update $twm]
+			::scidb::db::subscribe positionList [list [namespace current]::position::Update $twm]
 			::scidb::db::subscribe dbInfo {} [list [namespace current]::Close $twm]
 		}
 		games {
 			set columns {white whiteElo black blackElo result event date length}
-			::gametable::build $frame [namespace code [list View $twm]] $columns -id db:positions:$id:$uid
+			::gamestable::build $frame [namespace code [list View $twm]] $columns -id db:positions:$id:$uid
 			::scidb::db::subscribe gameList [list [namespace current]::games::Update $twm]
 		}
 	}
@@ -281,9 +281,9 @@ proc Close {path base variant} {
 
 	array unset Vars $base:$variant:*
 	::scrolledtable::forget $Vars(frame:position) $base $variant
-	::gametable::forget $Vars(frame:games) $base $variant
+	::gamestable::forget $Vars(frame:games) $base $variant
 	if {$Vars(base) eq "$base:$variant"} { ::scrolledtable::clear $Vars(frame:position) }
-	if {$Vars(base) eq "$base:$variant"} { ::gametable::clear $Vars(frame:games) }
+	if {$Vars(base) eq "$base:$variant"} { ::gamestable::clear $Vars(frame:games) }
 }
 
 
@@ -318,13 +318,13 @@ proc Update2 {id path base variant} {
 		&& $lastChange < $Vars($base:$variant:lastChange)} {
 		set position [::scidb::db::find position $base $variant $Vars($base:$variant:position)]
 		if {$position >= 0} {
-			[namespace parent]::positions::TableSearch $path $base $variant $view
+			[namespace parent]::position::TableSearch $path $base $variant $view
 		} else {
-			[namespace parent]::positions::Reset $path $base $variant
+			[namespace parent]::position::Reset $path $base $variant
 		}
 	} else {
 		set n [::scidb::view::count games $base $variant $view]
-		after idle [list ::gametable::update $Vars(frame:games) $base $variant $n]
+		after idle [list ::gamestable::update $Vars(frame:games) $base $variant $n]
 	}
 }
 
@@ -335,12 +335,12 @@ proc TableOptions {path} {
 
 } ;# namespace games
 
-namespace eval positions {
+namespace eval position {
 
 proc Reset {path base variant} {
 	variable [namespace parent]::${path}::Vars
 
-	::gametable::clear $Vars(frame:games)
+	::gamestable::clear $Vars(frame:games)
 	::scrolledtable::select $Vars(frame:position) none
 	::scrolledtable::activate none
 	set Vars($base:$variant:position) ""
@@ -456,9 +456,9 @@ proc TableSearch {path base variant view} {
 	variable [namespace parent]::${path}::Vars
 
 	::widget::busyCursor on
-	::gametable::activate $Vars(frame:games) none
-	::gametable::select $Vars(frame:games) none
-	::gametable::scroll $Vars(frame:games) home
+	::gamestable::activate $Vars(frame:games) none
+	::gamestable::select $Vars(frame:games) none
+	::gamestable::scroll $Vars(frame:games) home
 	::scidb::view::search $base $variant $view null none [list position $Vars($base:$variant:position)]
 	::widget::busyCursor off
 }
@@ -495,7 +495,7 @@ proc SortColumn {path id dir} {
 	::scrolledtable::updateColumn $table $selection $see
 }
 
-} ;# namespace positions
+} ;# namespace position
 
 
 proc WriteTableOptions {chan variant {id "position"}} {
@@ -559,8 +559,21 @@ proc CompareOptions {twm variant} {
 	[namespace current]::CompareOptions \
 	;
 
-} ;# namespace positions
+} ;# namespace position
 } ;# namespace database
 } ;# namespace application
+
+namespace eval positiontable {
+
+proc linespace {path} {
+	return [::scrolledtable::linespace $path]
+}
+
+
+proc computeHeight {path} {
+	return [expr {[::toolbar::totalHeight $path] + [::scrolledtable::computeHeight $path 0]}]
+}
+
+} ;# namespace positiontable
 
 # vi:set ts=3 sw=3:

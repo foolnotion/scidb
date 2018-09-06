@@ -411,6 +411,10 @@ proc arrayListEqual {lhs rhs} {
 
 
 proc makeState {cond} {
+	if {[string index $cond 0] eq "!"} {
+		set cond [string range $cond 1 end]
+		return [expr {$cond ? "disabled" : "normal"}]
+	}
 	return [expr {$cond ? "normal" : "disabled"}]
 }
 

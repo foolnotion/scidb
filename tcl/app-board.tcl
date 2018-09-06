@@ -120,7 +120,7 @@ proc build {w width height} {
 		-bordersize $Dim(edgethickness) \
 		-bordertype lines \
 		-promosign $Options(promoted:mark) \
-		-targets $board $border $canv \
+		-targets [list $border $canv] \
 	]
 	set boardc [::board::diagram::canvas $board]
 	::variation::build $canv [namespace code SelectAlternative]
@@ -140,11 +140,13 @@ proc build {w width height} {
 		;
 	$canv create window 0 0 -anchor ne -window $canv.annotation -state hidden -tags annotation
 
-	set pieces {q r b n p}
-	set Vars(holding:w) \
-		[::board::holding::new $canv.holding-w w $Dim(squaresize) $pieces $boardc $border $canv]
-	set Vars(holding:b) \
-		[::board::holding::new $canv.holding-b b $Dim(squaresize) $pieces $boardc $border $canv]
+	set targets [list $boardc $border $canv]
+	foreach color {w b} {
+		set Vars(holding:$color) [::board::holding::new $canv.holding-$color $color $Dim(squaresize) \
+			-targets $targets \
+			-dragcursor hand2 \
+		]
+	}
 	::bind $Vars(holding:w) <<InHandSelection>> { ::move::inHandSelected %W %d }
 	::bind $Vars(holding:b) <<InHandSelection>> { ::move::inHandSelected %W %d }
 	::bind $Vars(holding:w) <<InHandPieceDrop>> { ::move::inHandPieceDrop %W %x %y %s %d }
@@ -467,6 +469,15 @@ proc setFocus {} {
 
 proc active? {} {
 	return [set [namespace current]::Vars(active)]
+}
+
+
+proc setCursor {{type crosshair}} {
+	variable board
+
+	if {[$board cget -cursor] ne $type} {
+		$board configure -cursor $type
+	}
 }
 
 

@@ -40,7 +40,7 @@ proc build {twm parent width height} {
 	set id [::application::twm::getId $twm]
 	set table $parent.treeGames
 	set columns {white whiteElo black blackElo event result date length}
-	set tb [::gametable::build $table [namespace code [list View $parent.treeGames]] $columns \
+	set tb [::gamestable::build $table [namespace code [list View $parent.treeGames]] $columns \
 		-id db:tree:games:$id \
 		-takefocus 0 \
 		-mode list \
@@ -53,14 +53,14 @@ proc build {twm parent width height} {
 	::bind $tb <<TableSelected>>	+[namespace code [list SwitchToEditorPane $twm %s]]
 
 	::bind [::scrolledtable::scrolledtablePath $tb] <<TableScroll>> \
-		+[namespace code [list ::gametable::doSelection $table]]
+		+[namespace code [list ::gamestable::doSelection $table]]
 
-	::gametable::bind $table <ButtonPress-1>		+[namespace code [list Press1 $table %x %y]]
-	::gametable::bind $table <Button1-Motion>		 [namespace code [list Motion1 $table %x %y]]
-	::gametable::bind $table <ButtonRelease-1>	+[namespace code [list Release1 $table]]
-	::gametable::bind $table <ButtonPress-2>		+[list set [namespace current]::Vars(button) 2]
-	::gametable::bind $table <ButtonRelease-2>	+[namespace code [list ReleaseButton $table]]
-	::gametable::bind $table <ButtonPress-3>		+[list set [namespace current]::Vars(button) 3]
+	::gamestable::bind $table <ButtonPress-1>		+[namespace code [list Press1 $table %x %y]]
+	::gamestable::bind $table <Button1-Motion>	 [namespace code [list Motion1 $table %x %y]]
+	::gamestable::bind $table <ButtonRelease-1>	+[namespace code [list Release1 $table]]
+	::gamestable::bind $table <ButtonPress-2>		+[list set [namespace current]::Vars(button) 2]
+	::gamestable::bind $table <ButtonRelease-2>	+[namespace code [list ReleaseButton $table]]
+	::gamestable::bind $table <ButtonPress-3>		+[list set [namespace current]::Vars(button) 3]
 
 	set Vars(after)  {}
 	set Vars(button) 0
@@ -113,7 +113,7 @@ proc clear {{parent ""}} {
 	variable Vars
 
 	if {[string length $parent] == 0} { set parent $Vars(parent) }
-	::gametable::clear $parent.treeGames
+	::gamestable::clear $parent.treeGames
 	set Vars(update) {}
 }
 
@@ -126,13 +126,13 @@ proc ReleaseButton {table} {
 	variable Vars
 
 	set Vars(button) 0
-	::gametable::doSelection $table
+	::gamestable::doSelection $table
 }
 
 
 proc Press1 {table x y} {
 	variable Vars
-	lassign [::gametable::identify $table $x $y] row column
+	lassign [::gamestable::identify $table $x $y] row column
 	set Vars(start) $row
 	set Vars(button) 1
 }
@@ -143,12 +143,12 @@ proc Motion1 {table x y} {
 
 	if {$Vars(start) < 0} { return }
 
-	lassign [::gametable::identify $table $x $y] row column
+	lassign [::gamestable::identify $table $x $y] row column
 
 	if {$row < 0} {
-#		::gametable::activate $table none
-#		::gametable::select $table none
-		set offs [::gametable::scrolldistance $table $y]
+#		::gamestable::activate $table none
+#		::gamestable::select $table none
+		set offs [::gamestable::scrolldistance $table $y]
 
 		if {$offs != 0} {
 			if {$offs < 0} {
@@ -182,7 +182,7 @@ proc Motion1 {table x y} {
 #		}
 	}
 
-	TreeCtrl::MotionInItems [::gametable::tablePath $table] $x $y
+	TreeCtrl::MotionInItems [::gamestable::tablePath $table] $x $y
 }
 
 
@@ -212,7 +212,7 @@ proc Scroll {table} {
 	variable Vars
 
 	if {[info exists Vars(dir)]} {
-		::gametable::scroll $table $Vars(dir)
+		::gamestable::scroll $table $Vars(dir)
 		set Vars(timer) [after $Vars(interval) [namespace code [list Scroll $table]]]
 	}
 }
@@ -224,7 +224,7 @@ proc TableVisit {table data} {
 	if {$Vars(button) >= 1} { return }
 	lassign $data mode id row
 	if {$mode eq "leave"} { set row none }
-	::gametable::activate $table $row
+	::gamestable::activate $table $row
 }
 
 
@@ -245,7 +245,7 @@ proc TableUpdate {table id base variant {view -1} {index -1}} {
 			if {$index == -1} {
 				set Vars(after) [after idle [namespace code [list UpdateTable $table $base $variant]]]
 			} else {
-				set Vars(after) [after idle [list ::gametable::fill $table $index [expr {$index + 1}]]]
+				set Vars(after) [after idle [list ::gamestable::fill $table $index [expr {$index + 1}]]]
 			}
 			set Vars(update) {}
 		}
@@ -256,7 +256,7 @@ proc TableUpdate {table id base variant {view -1} {index -1}} {
 proc UpdateTable {table base variant} {
 	set size [::scidb::view::count games $base $variant [::scidb::tree::view]]
 	::scrolledtable::select $table none
-	after idle [list ::gametable::update $table $base $variant $size]
+	after idle [list ::gamestable::update $table $base $variant $size]
 	after idle [list ::scrolledtable::scroll $table home]
 }
 
@@ -267,7 +267,7 @@ proc TableMinSize {table minsize} {
 
 
 proc Close {table base variant} {
-	::gametable::forget $table $base $variant
+	::gamestable::forget $table $base $variant
 }
 
 

@@ -125,7 +125,7 @@ proc openDialog {parent primary secondary} {
 
 		variable columns { number white black length eco }
 		set tb $control.table
-		set table [::gametable::build $tb       \
+		set table [::gamestable::build $tb      \
 			[namespace code View]                \
 			$columns                             \
 			-id game:merge                       \
@@ -278,11 +278,11 @@ proc openDialog {parent primary secondary} {
 		wm resizable $dlg true true
 		::util::place $dlg -parent $parent -position center
 		::widget::dialogRaise $dlg
-		::gametable::activate $Priv(table) 0
-		::gametable::focus $Priv(table)
+		::gamestable::activate $Priv(table) 0
+		::gamestable::focus $Priv(table)
 		set Priv(selection) 0
 
-		lappend Priv(script) [list gametable::select $Priv(table) 0]
+		lappend Priv(script) [list gamestable::select $Priv(table) 0]
 		lappend Priv(script) [namespace code [list ShowGame "" "" $number ""]]
 		lappend Priv(script) [namespace code UpdatePreview]
 	} elseif {$Priv(primary) != $primary} {
@@ -326,7 +326,7 @@ proc openDialog {parent primary secondary} {
 	::scidb::game::load $temporary $mergebaseName $variant $number
 	::scidb::game::langSet $temporary *
 	set Priv(used:$number) 1
-	set cmd [list ::gametable::setState $Priv(table) $number check]
+	set cmd [list ::gamestable::setState $Priv(table) $number check]
 	if {[llength $Priv(games)] > 1} { {*}$cmd } else { lappend Priv(script) $cmd }
 	lappend Priv(games) $temporary
 	lappend Priv(temporary) $temporary
@@ -407,9 +407,9 @@ proc Update {path id base variant {view -1} {index -1}} {
 
 	if {$base == $mergebaseName && $variant == $Priv(variant)} {
 		set n [::scidb::view::count games $base $variant $view]
-		set selection [gametable::selection $path]
-		gametable::update $path $base $variant $n
-		gametable::select $path $selection
+		set selection [gamestable::selection $path]
+		gamestable::update $path $base $variant $n
+		gamestable::select $path $selection
 	}
 }
 

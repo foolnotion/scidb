@@ -193,6 +193,13 @@ proc currentTime {} {
 }
 
 
+proc toNumber {formattedValue} {
+	variable Pattern
+	set mapping [list $Pattern(decimalPoint) "" $Pattern(thousandsSep) ""]
+	return [string trim [string map $mapping $formattedValue]]
+}
+
+
 proc toDouble {formattedValue} {
 	variable Pattern
 	return [string map [list $Pattern(decimalPoint) .] $formattedValue]

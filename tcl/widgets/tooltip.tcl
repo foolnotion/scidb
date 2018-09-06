@@ -113,7 +113,7 @@
 #------------------------------------------------------------------------
 
 # Some Tcl/Tk distributions do provide "tooltip 1.4.4".
-# We don't need this.
+# We don't need this package.
 catch { package forget tooltip }
 
 package require Tk 8.5
@@ -152,15 +152,13 @@ array set G {
 	last				-1
 	toplevel			.__tooltip__
 }
-# original background: lightyellow
 # alternative background: #ffffaa
 # alternative exposureTime: 4000
 # alternative delay: 750-1000
 
 switch [tk windowingsystem] {
-	x11	{ array set G { fade 0 fadestep 0.2 } }
-	win32	{ array set G { fade 1 fadestep 0.2 } }
-	aqua	{ array set G { fade 0 fadestep 0.2 } }
+	x11 - aqua	{ array set G { fade 0 fadestep 0.2 } }
+	win32			{ array set G { fade 1 fadestep 0.2 } }
 }
 
 
@@ -185,7 +183,9 @@ bind Tooltip <Enter> [namespace code {
 bind Menu <<MenuSelect>> [namespace code { MenuMotion %W }]
 bind Tooltip <Leave> [namespace code { hide 1 }] ;# fade ok
 bind Tooltip <Any-KeyPress> [namespace code hide]
-bind Tooltip <Any-Button> [namespace code hide]
+# NOTE: don't use this binding, because double clicks are not working anymore
+#bind Tooltip <Any-Button> [namespace code hide]
+bind . <Any-Button> [namespace code hide]
 
 
 proc init {} {
@@ -867,7 +867,8 @@ proc EnableListbox {w args} {
 	bind $w <Motion> +[namespace code [list ListItemMotion %W %x %y]]
 	bind $w <Leave> +[namespace code [list hide 1]] ; # fade ok
 	bind $w <Any-KeyPress> +[namespace code hide]
-	bind $w <Any-Button> +[namespace code hide]
+#	NOTE: don't use this binding, because double clicks are not working anymore
+#	bind $w <Any-Button> +[namespace code hide]
 }
 
 
@@ -877,7 +878,8 @@ proc EnableCanvas {w args} {
 	$w bind all <Enter> +[namespace code [list ItemTip $w]]
 	$w bind all <Leave> +[namespace code [list hide 1]] ;# fade ok
 	$w bind all <Any-KeyPress> +[namespace code hide]
-	$w bind all <Any-Button> +[namespace code hide]
+#	NOTE: don't use this binding, because double clicks are not working anymore
+#	$w bind all <Any-Button> +[namespace code hide]
 }
 
 
@@ -907,7 +909,8 @@ proc EnableTag {w tag} {
 	$w tag bind $tag <Enter> +[namespace code [list TagTip $w $tag]]
 	$w tag bind $tag <Leave> +[namespace code [list hide 1]] ;# fade ok
 	$w tag bind $tag <Any-KeyPress> +[namespace code hide]
-	$w tag bind $tag <Any-Button> +[namespace code hide]
+#	NOTE: don't use this binding, because double clicks are not working anymore
+#	$w tag bind $tag <Any-Button> +[namespace code hide]
 }
 
 } ;# namespace tooltip

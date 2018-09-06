@@ -36,6 +36,7 @@ set UnfoldAllTitleBars			"Unfold all Titlebars"
 set AmalgamateTitleBar			"Amalgamate Titlebar"
 set AmalgamateAllTitleBars		"Amalgamate all Titlebars"
 set SeparateAllTitleBars		"Separate all Titlebars"
+set AlignToLine					"Align to Line Space"
 set Notebook						"Notebook"
 set Multiwindow					"Multiwindow"
 set MoveWindow						"Move Window"
@@ -88,7 +89,6 @@ set UnsavedAction(retain)		"Retain changes, and do not disconnect"
 
 
 variable MaxPerPage 3
-variable SetupFunc {}
 
 foreach tab [concat board $::application::database::Tabs] {
 	set Options($tab:docking:showall)	no
@@ -100,15 +100,13 @@ unset tab
 variable layoutVariants $::layoutVariants
 
 
-proc make {twm id makePane buildPane prioArr options layout args} {
+proc make {twm id prioArr options layout args} {
 	variable [namespace parent]::Vars
 	variable Options
 
 	twm::twm $twm \
-		-makepane  $makePane \
-		-buildpane $buildPane \
-		-resizing  [namespace current]::resizing \
-		-workarea  [namespace current]::workArea \
+		-resizing [namespace current]::resizing \
+		-workarea [namespace current]::workArea \
 		-frameborderwidth 0 \
 		-panedwindowrelief raised \
 		{*}$args \
@@ -118,12 +116,14 @@ proc make {twm id makePane buildPane prioArr options layout args} {
 
 	if {$id eq "board"} { bind $twm <<TwmGeometry>> [namespace code [list geometry %d]] }
 	bind $twm <<TwmMenu>> [namespace code [list Menu $twm %d %x %y]]
+	bind $twm <<FontSizeChanged>> [list after idle [list $twm refresh]]
 
 	set Vars($id:prioArr) $prioArr
 	set Vars($id:init:options) $options
 	set Vars($id:init:layout:name) $layout
 	set Vars($twm:id) $id
 	set Vars($id:twm) $twm
+	set Vars($twm:afterid) {}
 	lappend Vars(twm) $twm
 
 	return $twm
@@ -256,6 +256,7 @@ proc workArea {twm} {
 proc resizing {twm toplevel width height} {
 	variable [namespace parent]::Vars
 
+return [list $width $height] ;# TODO seems too be superfluous
 	if {[::menu::fullscreen?]} {
 		set maxwidth [winfo screenwidth .application]
 		set maxheight [winfo screenheight .application]
@@ -504,12 +505,22 @@ proc inspectLayout {twm} {
 
 	set id $Vars($twm:id)
 	set list {}
-	if {$id eq "board"} { set list {Extent} }
+	if {$id eq "board"} { lappend list Extent }
 	return [$Vars($id:twm) inspect {*}$list]
 }
 
 
-proc currentLayout {twm} {
+proc savedLayout {twm} {
+	variable Options
+	variable [namespace parent]::Vars
+
+	set id $Vars($twm:id)
+	set layoutVariant $Vars($id:layout:variant)
+	return $Options($id:layout:saved:$layoutVariant)
+}
+
+
+proc currentLayoutName {twm} {
 	variable [namespace parent]::Vars
 	variable Options
 
@@ -596,6 +607,11 @@ proc deleteLayout {twm name parent layoutVariant} {
 	}
 
 	return 1
+}
+
+
+proc replaceLayout {twm layoutVariant name} {
+	LoadLayout $twm $layoutVariant $name replace
 }
 
 
@@ -691,14 +707,16 @@ proc makeLayoutMenu {twm menu {w ""}} {
 			set amalgamate_ 1
 		}
 		if {[string length $v]} {
-			if {$count && [$menu type end] ne "checkbutton"} { $menu add separator }
+			if {$count && [$menu type end] ne "checkbutton"} {
+				$menu add separator
+				set count 0
+			}
 			$menu add checkbutton \
 				-label " $mc::AmalgamateTitleBar" \
 				-variable [namespace current]::amalgamate_ \
 				-command [namespace code [list Amalgamate $twm $v]] \
 				;
 			::theme::configureCheckEntry $menu
-			incr count
 		}
 	}
 
@@ -802,6 +820,24 @@ proc makeLayoutMenu {twm menu {w ""}} {
 			}
 		}
 		incr count
+	}
+
+	if {$myID eq "board" && [string length $w]} {
+		set path [$twm collect visible $w]
+		if {[llength $path] == 1} {
+			set uid [$twm uid $path]
+			if {$Vars(align:$myID:$uid)} {
+				if {$count} { $menu add separator }
+				set height [ComputeAlignedHeight $twm $uid]
+				$menu add command \
+					-label " $mc::AlignToLine" \
+					-image $::icon::16x16::none \
+					-compound left \
+					-command [namespace code [list AlignToLine $twm $uid $height]] \
+					-state [::makeState $height] \
+					;
+			}
+		}
 	}
 
 	array set opts $Vars($myID:init:options)
@@ -965,10 +1001,8 @@ proc makeLayoutMenu {twm menu {w ""}} {
 	set n 0
 	lmap uid [$twm leaves] { expr {[$twm isundockable $uid] ? [incr n] : [continue]} }
 	if {$n > 0} {
-		set link ""
 		set cur $myName
-		if {[info exists Options($myID:$cur:link)]} { set link $Options($myID:$cur:link) }
-		set cmd [list [namespace parent]::layout::open $twm $myID $Vars($myID:layout:variant) $cur $link]
+		set cmd [list [namespace parent]::layout::open $twm $myID $Vars($myID:layout:variant) $cur]
 		$menu add command \
 			-label " $mc::ManageLayouts..." \
 			-image $::icon::16x16::setup \
@@ -985,7 +1019,6 @@ proc makeLayoutMenu {twm menu {w ""}} {
 			;
 		::theme::configureCheckEntry $menu
 
-		$menu add separator
 		menu $menu.size
 		$menu add cascade \
 			-menu $menu.size \
@@ -1011,6 +1044,14 @@ proc glob {id {layoutVariant normal}} {
 }
 
 
+proc getLink {id name} {
+	variable Options
+
+	if {![info exists Options($id:$name:link)]} { return "" }
+	return $Options($id:$name:link)
+}
+
+
 proc setLink {id name link} {
 	variable Options
 
@@ -1022,20 +1063,26 @@ proc setLink {id name link} {
 }
 
 
-proc restoreLayout {twm layoutVariant name list} {
+proc restoreLayout {twm layoutVariant name currenLayout savedLayout} {
 	variable [namespace parent]::Vars
 	variable Options
 
+	set rc 1
 	set id $Vars($twm:id)
 	set Vars(loading) 1
-	$Vars($id:twm) load $list
+	$Vars($id:twm) load $currenLayout
 	if {[info exists Vars($id:options:saved:$layoutVariant)]} {
 		::options::restore $twm $layoutVariant
 	}
 	set Vars(loading) 0
+	set filename [makeFilename $id $layoutVariant $name]
+	if {![file exists $filename]} { lassign {"" 0} name rc }
 	set Options($id:layout:name) $name
-	set Options($id:layout:list) $list
-	set Options($id:layout:list:$layoutVariant) $list
+	set Options($id:layout:list) $currenLayout
+	set Options($id:layout:list:$layoutVariant) $currenLayout
+	set Options($id:layout:saved:$layoutVariant) $savedLayout
+	LoadLinkedLayouts $twm $name
+	return $rc
 }
 
 
@@ -1058,10 +1105,10 @@ proc LoadLayout {twm layoutVariant name mode} {
 	if {[file exists $file]} {
 		if {[catch { ::load::source $file -encoding utf-8 -throw 1 } -> opts]} {
 			puts stderr "error while loading $file"
-			if {$mode eq "switch"} { return false }
+			if {$mode ne "load"} { return false }
 			return {*}$opts -rethrow 1
 		}
-	} elseif {$mode eq "switch"} {
+	} elseif {$mode ne "load"} {
 		return false
 	}
 
@@ -1069,16 +1116,29 @@ proc LoadLayout {twm layoutVariant name mode} {
 	set Vars($id:options:saved:$layoutVariant) 1
 	set Options($id:layout:saved:$layoutVariant) $Options($id:layout:list:$layoutVariant)
 	set Options($id:layout:changed:$layoutVariant) 0
-	set Options($id:layout:name) $name
-	array unset Vars $id:layout:changed:$layoutVariant
+	if {$mode eq "replace"} {
+		set Vars($id:layout:changed:$layoutVariant) 1
+	} else {
+		set Options($id:layout:name) $name
+		array unset Vars $id:layout:changed:$layoutVariant
+	}
 	set preserve {}
+	set unused ""
 
 	if {$id eq "board"} {
 		foreach uid [$twm leaves] {
-			if {[string match {analysis:*} $uid]} { lappend preserve $uid }
+			if {[string match {analysis:*} $uid]} {
+				set number [[namespace parent]::analysisNumberFromUid $uid]
+				if {[[namespace parent]::analysis::active? $number]} {
+					lappend preserve $uid
+				} elseif {[lindex [split $uid :] 1] == 1} {
+					set unused $uid
+				}
+			}
 		}
 		set preserve [lsub $preserve [::twm::extractLeaves $Options($id:layout:list)]]
-		if {$mode eq "load" && [llength $preserve] > 0} {
+		set preserve [lsort -dictionary $preserve]
+		if {$mode eq "load" && [llength $preserve] - [llength $unused] > 0} {
 			set reply [::dialog::question \
 				-parent .application \
 				-message $mc::KeepEnginesOpen \
@@ -1092,6 +1152,9 @@ proc LoadLayout {twm layoutVariant name mode} {
 	set Vars(loading) 1
 	$Vars($id:twm) load -preserve $preserve $Options($id:layout:list)
 	set Vars(loading) 0
+	if {[llength $unused] && [llength $preserve]} {
+		destroy [$twm leaf $unused]
+	}
 	after idle [list ::options::save $twm $layoutVariant]
 
 	if {$mode eq "load"} {
@@ -1103,7 +1166,10 @@ proc LoadLayout {twm layoutVariant name mode} {
 		}
 	}
 
-	LoadLinkedLayouts $twm $name
+	if {$mode ne "replace"} {
+		LoadLinkedLayouts $twm $name
+	}
+
 	return true
 }
 
@@ -1264,7 +1330,7 @@ proc PropagateSelection {w action unsaved} {
 	variable action_
 
 	if {!$Vars(first:selection)} { return }
-	if {[llength $unsaved] <= 1} { return }
+	if {[llength $unsaved] <= 2} { return }
 	set Vars(first:selection) 0
 
 	set reply [::dialog::question \
@@ -1314,7 +1380,7 @@ proc TestLayoutStatus {twm} {
 
 proc StayOnTop {twm w} {
 	variable stayontop_
-	$twm stayontop $v $stayontop_($w)
+	$twm stayontop $w $stayontop_($w)
 }
 
 
@@ -1324,11 +1390,10 @@ proc HideWhenLeavingTab {twm w} {
 }
 
 
-# NOTE: unused
-proc MoveWindow {twm w recv} {
-	$twm undock -temporary $w
-	$twm dock $w $recv left
-}
+# proc MoveWindow {twm w recv} {
+# 	$twm undock -temporary $w
+# 	$twm dock $w $recv left
+# }
 
 
 proc ChangeState {twm uid} {
@@ -1341,6 +1406,25 @@ proc ChangeState {twm uid} {
 		array set opts $Vars($id:init:options)
 		$twm new frame $uid $opts($uid)
 	}
+}
+
+
+proc ComputeAlignedHeight {twm uid} {
+	set frame [$twm leaf $uid]
+	lassign [$twm dimension $frame] - height - - - -
+	set linespace [[namespace parent]::${uid}::linespace $frame]
+	set overhang [expr {[[namespace parent]::${uid}::computeHeight $frame]}]
+	set newHeight [expr {(($height - $overhang)/$linespace)*$linespace + $overhang}]
+	if {$newHeight == $height} { return 0 }
+#	if {abs($newHeight + $linespace - $height) <= abs($newHeight - $height)} {
+	incr newHeight $linespace
+#	}
+	return $newHeight
+}
+
+
+proc AlignToLine {twm uid newHeight} {
+	$twm resize [$twm leaf $uid] 0 $newHeight
 }
 
 

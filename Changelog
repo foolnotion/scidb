@@ -1,9 +1,25 @@
+[September 2018] =============================================================
+
+------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #1517)
+------------------------------------------------------------------------------
+* Important fix in shadow.tcl, glitches have been gone.
+* Important fix in tooltip.tcl, now double click is properly working when
+tooltip is visible.
+* Important enhancement in TWM, now inside paned windows list widgets will
+be aligned.
+* panedwindow.tcl overworked:
+- option -state disabled is properly working
+- option -gridsize added
+* Layout manager enhanced.
+* Border of themes Elegant, and Military changed.
+
 [August 2018] ================================================================
 
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #1510)
 ------------------------------------------------------------------------------
-* New theme "Elegant"
+* New theme "Elegant".
 
 [July 2018] ==================================================================
 

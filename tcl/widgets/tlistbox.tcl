@@ -772,7 +772,6 @@ proc WidgetProc {w command args} {
 				} else {
 					incr index
 				}
-			} elseif {$Priv(selected) > 1} {
 			} elseif {[$t selection get] > 0} {
 				set index [$t selection get]
 			} else {

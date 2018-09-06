@@ -26,7 +26,7 @@
 
 ::util::source game-table
 
-namespace eval gametable {
+namespace eval gamestable {
 namespace eval mc {
 
 set DeleteGame				"Mark game as deleted"
@@ -420,7 +420,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 			whiteSex - blackSex {
 				lappend menu [list checkbutton \
 					-command [namespace code [list Refresh $path]] \
-					-labelvar ::gametable::mc::IncludePlayerType \
+					-labelvar ::gamestable::mc::IncludePlayerType \
 					-variable [namespace current]::${path}::Options(include-type) \
 				]
 				lappend menu { separator }
@@ -686,7 +686,7 @@ proc borderwidth {path} {
 }
 
 
-proc computeHeight {path nrows} {
+proc computeHeight {path {nrows 0}} {
 	return [::scrolledtable::computeHeight $path $nrows]
 }
 
@@ -1662,7 +1662,7 @@ proc TableVisit {table data} {
 
 		whiteSex - blackSex {
 			if {$item eq "program"} {
-				set tip $::gametable::mc::PlayerType(program)
+				set tip $::gamestable::mc::PlayerType(program)
 			} else {
 				set tip ""
 			}
@@ -2207,6 +2207,6 @@ set I_Added [::icon::makeGrayscale $Added 0.8]
 
 } ;# namespace 12x12
 } ;# namespace icon
-} ;# namespace gametable
+} ;# namespace gamestable
 
 # vi:set ts=3 sw=3:

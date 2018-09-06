@@ -232,6 +232,10 @@ array set Colors {
 	lite:comment,label:foreground			white
 
 	lite:eco,stripes							linen
+
+	lite:layout-manager:normal				black
+	lite:layout-manager:current			darkgreen
+	lite:layout-manager:changed			darkred
 }
 # mapped from #ebf4f5
 array set Colors {

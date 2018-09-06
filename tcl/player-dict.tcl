@@ -139,7 +139,7 @@ proc dialog {}				{ return [set [namespace current]::Priv(dialog)] }
 
 
 proc open {parent args} {
-	variable ::gametable::ratings
+	variable ::gamestable::ratings
 	variable Priv
 	variable DefaultFilter
 	variable Filter
@@ -247,19 +247,19 @@ proc open {parent args} {
 		if {$id ne "firstName"} {
 			lappend menu [list command \
 				-command [namespace code [list SortColumn $table $id ascending]] \
-				-labelvar ::gametable::mc::SortAscending] \
+				-labelvar ::gamestable::mc::SortAscending] \
 				;
 			lappend menu [list command \
 				-command [namespace code [list SortColumn $table $id descending]] \
-				-labelvar ::gametable::mc::SortDescending] \
+				-labelvar ::gamestable::mc::SortDescending] \
 				;
 			lappend menu [list command \
 				-command [namespace code [list SortColumn $table $id reverse]] \
-				-labelvar ::gametable::mc::ReverseOrder] \
+				-labelvar ::gamestable::mc::ReverseOrder] \
 				;
 			lappend menu [list command \
 				-command [namespace code [list SortColumn $table $id cancel]] \
-				-labelvar ::gametable::mc::CancelSort] \
+				-labelvar ::gamestable::mc::CancelSort] \
 				;
 			lappend menu { separator }
 		}
@@ -269,7 +269,7 @@ proc open {parent args} {
 				foreach {labelvar value} {Flags flags PGN_CountryCode PGN ISO_CountryCode ISO} {
 					lappend menu [list radiobutton \
 						-command [namespace code [list Refresh $table]] \
-						-labelvar ::gametable::mc::$labelvar \
+						-labelvar ::gamestable::mc::$labelvar \
 						-variable [namespace current]::Options(country-code) \
 						-value $value \
 					]

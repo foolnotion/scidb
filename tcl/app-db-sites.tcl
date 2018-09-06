@@ -28,7 +28,7 @@
 
 namespace eval application {
 namespace eval database {
-namespace eval sites {
+namespace eval site {
 
 array set Defaults {
 	sort:sites	{}
@@ -70,11 +70,12 @@ proc build {parent} {
 	set Vars(base) ""
 
 	::application::twm::make $twm site \
-		[namespace current]::MakeFrame \
-		[namespace current]::BuildFrame \
 		[namespace current]::Prios \
 		[array get FrameOptions] \
 		$Layout \
+		-makepane [namespace current]::MakeFrame \
+		-buildpane [namespace current]::BuildFrame \
+		-adjustcmd [namespace parent]::event::adjustFrame \
 		;
 	::application::twm::load $twm
 	return $twm
@@ -89,7 +90,7 @@ proc activate {w flag} {
 	set base [::scidb::db::get name]
 	set variant [::scidb::app::variant]
 	set Vars($base:$variant:update:sites) 1
-	sites::DoUpdate $path $base $variant
+	site::DoUpdate $path $base $variant
 
 	if {[winfo toplevel $w] ne $w} {
 		::toolbar::activate $Vars(frame:site) $flag
@@ -110,6 +111,14 @@ proc linespace {parent} {
 	variable ${path}::Vars
 
 	return [::sitetable::linespace $Vars(frame:site)]
+}
+
+
+proc computeHeight {parent} {
+	set path $parent.twm
+	variable ${path}::Vars
+
+	return [::sitetable::computeHeight $Vars(frame:site) 0]
 }
 
 
@@ -147,12 +156,12 @@ proc BuildFrame {twm frame uid width height} {
 	switch $uid {
 		site {
 			::sitetable::build $frame [namespace code [list View $twm]] {} \
-				-selectcmd [list [namespace current]::sites::Search $twm] \
+				-selectcmd [list [namespace current]::site::Search $twm] \
 				-id db:sites:$id:$uid \
 				-usefind 1 \
 				;
 			::scidb::db::subscribe siteList \
-				[list [namespace current]::sites::Update $twm] \
+				[list [namespace current]::site::Update $twm] \
 				[list [namespace current]::Close $twm] \
 				;
 		}
@@ -162,7 +171,7 @@ proc BuildFrame {twm frame uid width height} {
 				-selectcmd [namespace code [list SelectEvent $twm]] \
 				-id db:sites:$id:$uid \
 				;
-			::scidb::db::subscribe eventList [list [namespace current]::events::Update $twm]
+			::scidb::db::subscribe eventList [list [namespace current]::event::Update $twm]
 		}
 	}
 }
@@ -238,7 +247,7 @@ proc SelectEvent {path base variant view} {
 }
 
 
-namespace eval sites {
+namespace eval site {
 
 proc Reset {path base variant} {
 	variable [namespace parent]::${path}::Vars
@@ -315,7 +324,7 @@ proc DoUpdate {path base variant} {
 		if {$Vars($base:$variant:update:sites)} {
 			set n [::scidb::db::count sites $base $variant]
 			after idle [list ::sitetable::update $Vars(frame:site) $base $variant $n]
-			after idle [namespace code [list [namespace parent]::events::Update2 \
+			after idle [namespace code [list [namespace parent]::event::Update2 \
 				$Vars($base:$variant:sites:lastId) $path $base $variant]]
 			set Vars($base:$variant:update:sites) 0
 			if {$Vars($base:$variant:select) >= 0} {
@@ -327,9 +336,9 @@ proc DoUpdate {path base variant} {
 	}
 }
 
-} ;# namespace sites
+} ;# namespace site
 
-namespace eval events {
+namespace eval event {
 
 proc Update {path id base variant {view -1} {index -1}} {
 	variable [namespace parent]::${path}::Vars
@@ -368,7 +377,7 @@ proc DoUpdate {path base variant} {
 	}
 }
 
-} ;# namespace events
+} ;# namespace event
 
 
 proc WriteTableOptions {chan variant {id "site"}} {
@@ -432,7 +441,7 @@ proc CompareOptions {twm variant} {
 	[namespace current]::CompareOptions \
 	;
 
-} ;# namespace sites
+} ;# namespace site
 } ;# namespace database
 } ;# namespace application
 

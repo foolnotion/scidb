@@ -1160,7 +1160,7 @@ proc Mouse2Down {dlg nodes} {
 		set gameIndex [$node attribute -default {} game]
 		if {[string length $gameIndex]} {
 			MouseEnter $dlg $node
-			::gametable::showGame $dlg $Vars(base) $Vars(variant) -1 $gameIndex 
+			::gamestable::showGame $dlg $Vars(base) $Vars(variant) -1 $gameIndex 
 		} else {
 			set rank [$node attribute -default {} rank]
 			if {[string length $rank]} {
@@ -1180,7 +1180,7 @@ proc Mouse2Down {dlg nodes} {
 
 
 proc Mouse2Up {dlg nodes} {
-	::gametable::hideGame $dlg
+	::gamestable::hideGame $dlg
 	::playercard::popdownInfo $dlg
 	::eventtable::popdownInfo $dlg
 	MouseLeave $dlg $nodes 1

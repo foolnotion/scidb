@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2011-2013 Gregor Cramer
+# Copyright: (C) 2011-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -99,7 +99,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 				foreach {labelvar value} {Flags flags PGN_CountryCode PGN ISO_CountryCode ISO} {
 					lappend menu [list radiobutton \
 						-command [namespace code [list Refresh $path]] \
-						-labelvar ::gametable::mc::$labelvar \
+						-labelvar ::gamestable::mc::$labelvar \
 						-variable [namespace current]::${path}::Options(country-code) \
 						-value $value \
 					]
@@ -110,13 +110,13 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 			eventType {
 				lappend menu [list radiobutton \
 					-command [namespace code [list RefreshEventType $path]] \
-					-labelvar ::gametable::mc::Icons \
+					-labelvar ::gamestable::mc::Icons \
 					-variable [namespace current]::${path}::Options(eventtype-icon) \
 					-value 1 \
 				]
 				lappend menu [list radiobutton \
 					-command [namespace code [list RefreshEventType $path]] \
-					-labelvar ::gametable::mc::Abbreviations \
+					-labelvar ::gamestable::mc::Abbreviations \
 					-variable [namespace current]::${path}::Options(eventtype-icon) \
 					-value 0 \
 				]
@@ -126,19 +126,19 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 
 		lappend menu [list command \
 			-command [namespace code [list SortColumn $path $id ascending]] \
-			-labelvar ::gametable::mc::SortAscending \
+			-labelvar ::gamestable::mc::SortAscending \
 		]
 		lappend menu [list command \
 			-command [namespace code [list SortColumn $path $id descending]] \
-			-labelvar ::gametable::mc::SortDescending \
+			-labelvar ::gamestable::mc::SortDescending \
 		]
 		lappend menu [list command \
 			-command [namespace code [list SortColumn $path $id reverse]] \
-			-labelvar ::gametable::mc::ReverseOrder \
+			-labelvar ::gamestable::mc::ReverseOrder \
 		]
 		lappend menu [list command \
 			-command [namespace code [list SortColumn $path $id cancel]] \
-			-labelvar ::gametable::mc::CancelSort \
+			-labelvar ::gamestable::mc::CancelSort \
 		]
 		lappend menu { separator }
 
@@ -147,8 +147,8 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 			set fvar ::playertable::mc::F_Frequency
 			set tvar ::playertable::mc::T_Frequency
 		} else {
-			set fvar ::gametable::mc::F_[string toupper $id 0 0]
-			set tvar ::gametable::mc::T_[string toupper $id 0 0]
+			set fvar ::gamestable::mc::F_[string toupper $id 0 0]
+			set tvar ::gamestable::mc::T_[string toupper $id 0 0]
 		}
 		if {![info exists $tvar]} { set tvar {} }
 		if {![info exists $fvar]} { set fvar $tvar }
@@ -284,6 +284,11 @@ proc linespace {path} {
 }
 
 
+proc computeHeight {path} {
+	return [expr {[::toolbar::totalHeight $path] + [::scrolledtable::computeHeight $path 0]}]
+}
+
+
 proc borderwidth {path} {
 	return [::scrolledtable::borderwidth $path]
 }
@@ -373,8 +378,8 @@ proc popupInfo {path info} {
 			set value [set $var]
 			if {[string length $value] == 0 || $value == 0} { set value "\u2013" }
 			set attr [string toupper $var 0 0]
-			if {[info exists ::gametable::mc::F_$attr]} {
-				set text [set ::gametable::mc::F_$attr]
+			if {[info exists ::gamestable::mc::F_$attr]} {
+				set text [set ::gamestable::mc::F_$attr]
 			} elseif {[info exists ::dialog::save::mc::Label($var)]} {
 				set text [set ::dialog::save::mc::Label($var)]
 			} elseif {[info exists ::crosstable::mc::$attr]} {
@@ -415,11 +420,11 @@ proc popdownInfo {path} {
 
 
 proc popupMenu {parent menu base variant view index source} {
-	set accel $::gametable::mc::Accel(tourntable)
+	set accel $::gamestable::mc::Accel(tourntable)
 	$menu add command \
 		-compound left \
 		-image $::icon::16x16::crossTable \
-		-label " $::gametable::mc::ShowTournamentTable" \
+		-label " $::gamestable::mc::ShowTournamentTable" \
 		-accelerator $accel \
 		-command [namespace code [list OpenCrosstable $parent $source $base $variant $view $index]] \
 		;
@@ -513,7 +518,7 @@ proc TableFill {path args} {
 							if {$Options(eventtype-icon)} {
 								lappend text [list @ $::eventtypebox::icon::12x12::Type($item)]
 							} else {
-								lappend text $::gametable::mc::EventType($item)
+								lappend text $::gamestable::mc::EventType($item)
 							}
 						} elseif {$codec eq "si3" || $codec eq "si4"} {
 							lappend text $::mc::NotAvailableSign
@@ -664,10 +669,10 @@ proc PopupMenu {path menu base variant index} {
 	set visible [::scrolledtable::visibleColumns $path]
 	foreach dir {ascending descending} {
 		set m [menu $menu.$dir]
-		$menu add cascade -label [set ::gametable::mc::Sort[string toupper $dir 0 0]] -menu $m
+		$menu add cascade -label [set ::gamestable::mc::Sort[string toupper $dir 0 0]] -menu $m
 		foreach id $visible {
 			set idl [string toupper $id 0 0]
-			foreach ns { eventtable gametable playertable } {
+			foreach ns { eventtable gamestable playertable } {
 				set fvar ::${ns}::mc::F_$idl
 				set tvar ::${ns}::mc::T_$idl
 				if {[info exists $tvar]} {
@@ -690,7 +695,7 @@ proc PopupMenu {path menu base variant index} {
 proc BindAccelerators {path} {
 	variable ${path}::Vars
 
-	foreach {accel proc} [list $::gametable::mc::Accel(tourntable) OpenCrosstable] {
+	foreach {accel proc} [list $::gamestable::mc::Accel(tourntable) OpenCrosstable] {
 		set cmd [namespace code [list $proc $path event]]
 		bind $path <Key-[string toupper $accel]> [list ::util::doAccelCmd $accel %s $cmd]
 		bind $path <Key-[string tolower $accel]> [list ::util::doAccelCmd $accel %s $cmd]

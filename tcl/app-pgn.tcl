@@ -1409,7 +1409,7 @@ proc ProcessGoto {position key succKey} {
 			$w tag add h:next {*}[FindRange $w $k $position]
 		}
 		[namespace parent]::board::updateMarks [::scidb::game::query marks]
-		if {$position < 9} { ::annotation::update $key }
+		if {$position < 9} { ::annotation::update $key } ;# TODO should use subscriber
 	} elseif {$Vars(dirty:$position)} {
 		set Vars(dirty:$position) 0
 		See $position $key $succKey

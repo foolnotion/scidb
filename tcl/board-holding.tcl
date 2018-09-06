@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2012-2013 Gregor Cramer
+# Copyright: (C) 2012-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -39,26 +39,33 @@ proc computeHeight {size {numPieceTypes 5}} {
 }
 
 
-proc new {w color size pieceTypes args} {
+proc new {w color size args} {
 	namespace eval [namespace current]::${w} {}
 	variable ${w}::Vars
+	
+	array set opts {
+		-targets		{}
+		-piecetypes	{q r b n p}
+		-dragcursor	{}
+	}
+	array set opts $args
 
 	set Vars(width) [computeWidth $size]
-	set Vars(height) [computeHeight $size [llength $pieceTypes]]
+	set Vars(height) [computeHeight $size [llength $opts(-piecetypes)]]
 	set Vars(size) $size
-	set Vars(pieceTypes) $pieceTypes
+	set Vars(piecetypes) $opts(-piecetypes)
+	set Vars(dragcursor) $opts(-dragcursor)
 	set Vars(dist) 0
 	set Vars(color) $color
 	set Vars(selected) ""
 	set Vars(selection) ""
 	set Vars(afterid) {}
-	set Vars(pieces) [lrepeat [llength $pieceTypes] 0]
+	set Vars(pieces) [lrepeat [llength $opts(-piecetypes)] 0]
 	set Vars(piece) ""
-	set Vars(targets) $args
-	lappend Vars(targets) $w
+	lappend Vars(targets) {*}$opts(-targets) $w
 
 	set index -1
-	foreach piece $pieceTypes { set Vars(index,$piece) [incr index] }
+	foreach piece $opts(-piecetypes) { set Vars(index,$piece) [incr index] }
 
    tk::canvas $w \
 		-width $Vars(width) \
@@ -89,7 +96,7 @@ proc resize {w size} {
 	set oldSize $Vars(size)
 
 	set Vars(width) [computeWidth $size]
-	set Vars(height) [computeHeight $size [llength $Vars(pieceTypes)]]
+	set Vars(height) [computeHeight $size [llength $Vars(piecetypes)]]
 	set Vars(size) $size
 
 	$w configure -width $Vars(width) -height $Vars(height)
@@ -113,11 +120,11 @@ proc height {w}	{ return [set [namespace current]::${w}::Vars(height)] }
 proc setHeight {w height} {
 	variable ${w}::Vars
 
-	set minHeight [computeHeight $Vars(size) [llength $Vars(pieceTypes)]]
+	set minHeight [computeHeight $Vars(size) [llength $Vars(piecetypes)]]
 	set height [expr {max($minHeight, $height)}]
 	$w configure -height $height
 	set Vars(height) $height
-	set Vars(dist) [expr {($height - $minHeight)/([llength $Vars(pieceTypes)] - 1)}]
+	set Vars(dist) [expr {($height - $minHeight)/([llength $Vars(piecetypes)] - 1)}]
 	Configure $w
 }
 
@@ -173,7 +180,7 @@ proc update {w piecesInHand} {
 	if {$piecesInHand eq $Vars(pieces)} { return }
 	set Vars(pieces) $piecesInHand
 
-	foreach n $piecesInHand p $Vars(pieceTypes) {
+	foreach n $piecesInHand p $Vars(piecetypes) {
 		if {$n > 1} {
 			$w itemconfigure count-$p -state normal -text $n
 			$w itemconfigure shadow-$p -state normal -text $n
@@ -202,10 +209,10 @@ proc rebuild {w} {
 	variable Digit
 
 	set pieces $Vars(pieces)
-	set Vars(pieces) [lrepeat [llength $Vars(pieceTypes)] 0]
+	set Vars(pieces) [lrepeat [llength $Vars(piecetypes)] 0]
 	$w delete border
 	$w delete $Vars(selected)
-	foreach p $Vars(pieceTypes) { $w delete square-$p input-$p piece-$p count-$p shadow-$p }
+	foreach p $Vars(piecetypes) { $w delete square-$p input-$p piece-$p count-$p shadow-$p }
 	$w create rectangle 0 0 $Vars(width) $Vars(height) -tag border -width 0
 	set fontSize [expr {min(18, max(7, int(($Vars(size))/3.0 + 0.5) + 2))}]
 	array set fopts [font actual TkTextFont]
@@ -217,7 +224,7 @@ proc rebuild {w} {
 		lassign {lite red white} color fill shadow
 	}
 
-	foreach p $Vars(pieceTypes) {
+	foreach p $Vars(piecetypes) {
 		$w create image 1 1 -image photo_Square($color,$Vars(size)) -tags square-$p -anchor nw
 		$w create text 1 1 -tag shadow-$p -fill $shadow -font $font -anchor ne -state hidden
 		$w create text 1 1 -tag count-$p -fill $fill -font $font -anchor ne -state hidden
@@ -231,7 +238,7 @@ proc rebuild {w} {
 
 	Configure $w
 	set Vars(selected) [board::diagram::makeHiliteRect $w selected {} $Vars(size) 1 1]
-	foreach p $Vars(pieceTypes) { $w raise shadow-$p; $w raise count-$p; $w raise input-$p }
+	foreach p $Vars(piecetypes) { $w raise shadow-$p; $w raise count-$p; $w raise input-$p }
 	update $w $pieces
 }
 
@@ -248,7 +255,7 @@ proc Configure {w} {
 	}
 
 	set y 1
-	foreach p $Vars(pieceTypes) {
+	foreach p $Vars(piecetypes) {
 		$w coords square-$p 1 $y
 		$w coords input-$p 1 $y $Vars(size) [expr {$y + $Vars(size) - 1}] 
 		$w coords shadow-$p [expr {$Vars(size) + $tx}] [expr {$y + $ty - 1}]
@@ -264,8 +271,8 @@ proc StartDrag {w x y state piece} {
 	set Vars(dragging) 0
 	set Vars(n) 0
 
-	if {[llength $Vars(pieceTypes)] == 5 && [::scidb::pos::stm] ne $Vars(color)} { return }
-#	set Vars(cursor) [$w cget -cursor]
+	if {[llength $Vars(piecetypes)] == 5 && [::scidb::pos::stm] ne $Vars(color)} { return }
+	if {[llength $Vars(dragcursor)]} { $w configure -cursor $Vars(dragcursor) }
 	if {$Vars(color) eq "w"} { set piece [string toupper $piece] }
 
 	set Vars(x) $x
@@ -289,7 +296,6 @@ proc DragPiece {w x y state} {
 		if {[expr {abs($Vars(x) - $x)}] <= 3 && [expr {abs($Vars(y) - $y)}] <= 3} { return }
 
 		set Vars(dragging) 1
-#		$w configure -cursor hand2
 		set p [string tolower $Vars(piece)]
 		set img photo_Piece($Vars(color)$p,$Vars(size))
 		foreach t $Vars(targets) {
@@ -322,7 +328,7 @@ proc DragPiece {w x y state} {
 proc FinishDrag {w x y state} {
 	variable ${w}::Vars
 
-#	$w configure -cursor $Vars(cursor)
+	if {[llength $Vars(dragcursor)]} { $w configure -cursor "" }
 
 	if {$Vars(n) == 0} {
 		deselect $w
@@ -341,7 +347,7 @@ proc FinishDrag {w x y state} {
 			set x [expr {$x - $Vars(dx)}]
 			set y [expr {$y - $Vars(dy)}]
 			event generate $w <<InHandPieceDrop>> -x $x -y $y -state $state -data $Vars(piece)
-		} elseif {[llength $Vars(pieceTypes)] == 6 || [::scidb::pos::stm] eq $Vars(color)} {
+		} elseif {[llength $Vars(piecetypes)] == 6 || [::scidb::pos::stm] eq $Vars(color)} {
 			if {[string toupper $Vars(selection)] eq [string toupper $Vars(piece)]} {
 				deselect $w
 				event generate $w <<InHandSelection>> -data " "

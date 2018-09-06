@@ -102,7 +102,7 @@ proc open {parent base variant info view index {fen {}}} {
 		::board::registerSize $squareSize
 		set Priv(board:size) $squareSize
 	}
-	set number [::gametable::column $info number]
+	set number [::gamestable::column $info number]
 	set name [::util::databaseName $base]
 	if {[info exists Priv($base:$number:$variant:$view)]} {
 		set dlg [lindex $Priv($base:$variant:$number:$view) 0]
@@ -150,9 +150,8 @@ proc open {parent base variant info view index {fen {}}} {
 	grid $board -column 3 -row 1 -sticky nsew
 
 	if {$variant eq "Crazyhouse"} {
-		set pieces {q r b n p}
-		set Vars(holding:w) [::board::holding::new $lt.holding-w w $squareSize $pieces]
-		set Vars(holding:b) [::board::holding::new $lt.holding-b b $squareSize $pieces]
+		set Vars(holding:w) [::board::holding::new $lt.holding-w w $squareSize]
+		set Vars(holding:b) [::board::holding::new $lt.holding-b b $squareSize]
 		grid $Vars(holding:b) -column 1 -row 1 -sticky n
 		grid $Vars(holding:w) -column 5 -row 1 -sticky s
 		grid columnconfigure $lt {2 4} -minsize $Options(holding:distance)
@@ -772,8 +771,8 @@ proc NextGame {parent position {step 0}} {
 	if {$index < 0 || $index == $count} { return }
 	set Vars(index) $index
 	set Vars(info) [::scidb::db::get gameInfo $index $Vars(view) $Vars(base) $Vars(variant)]
-	set Vars(result) [list [::util::formatResult [::gametable::column $Vars(info) result]] ""]
-	set Vars(number) [::gametable::column $Vars(info) number]
+	set Vars(result) [list [::util::formatResult [::gamestable::column $Vars(info) result]] ""]
+	set Vars(number) [::gamestable::column $Vars(info) number]
 	set key "$Vars(base):$Vars(variant):$number:$Vars(view)"
 	set i [lsearch -exact $Priv($key) $parent]
 	if {$i >= 0} { set Priv($key) [lreplace $Priv($key) $i $i] }
@@ -890,7 +889,7 @@ proc UpdateHeader {position} {
 	$text delete 1.0 end
 
 	foreach id {white black event site date annotator} {
-		set $id [::gametable::column $Vars(info) $id]
+		set $id [::gamestable::column $Vars(info) $id]
 	}
 
 	set data $Vars(data)

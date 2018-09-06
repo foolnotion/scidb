@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2017 Gregor Cramer
+# Copyright: (C) 2009-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -241,7 +241,7 @@ proc update {w {board {}} {promoted {}}} {
 
 	set oldBoard $Board(data)
 	set redraw 0
-	
+
 	switch -- $board {
 		empty {
 			set board $emptyBoard
@@ -274,7 +274,7 @@ proc update {w {board {}} {promoted {}}} {
 				if {[string length $board] == 0} {
 					set board $standardBoard
 				}
-				set redraw 1
+				if {!$Board(empty)} { set redraw 1 }
 			}
 		}
 	}

@@ -23,12 +23,13 @@
 #	- Button-2 is unbound
 #	- option -gridsize added, global (will be applied to all childs),
 #	  and for specific childs (paneconfigure)
+#	- option -cursor added, global (will be applied to all childs)
+#	- option -state added, global, if set to "disabled" resizing is
+#	  not possible, and option -cursor will be ignored for panes
 #
 # Issues:
-#	- option "-opaqueresize" will be ignored (always on)
-#	- "-cursor" option should not be changed with "configure"
-#	- the cursor of the panes should not be set to "" after
-#	  they the pane is added to panedwindow
+#	- option "-opaqueresize" will be ignored (always on), because not
+#	  yet implemented
 #
 # Why not using ttk::panedwindow?
 #	- the design is quite halfhearted, for example no -minsize option,
@@ -38,7 +39,7 @@
 #	- the tk version looks better than the ttk version
 #
 # IMPORTANT NOTE:
-# This version of panedwindow is part of TWM (tiled window managemant).
+# This version of panedwindow is part of TWM (tiled window management).
 # ======================================================================
 
 package provide panedwindow 1.0
@@ -73,43 +74,35 @@ proc Build {w args} {
 		-borderwidth	0
 		-gridsize		0
 		-cursor			{}
-		-state			"normal"
+		-state			normal
 	}
 
 	namespace eval [namespace current]::$w {}
 	variable [namespace current]::${w}::
-	set (cursor) left_ptr
 
 	array set opts $args
-	array unset opts -opaqueresize
-	set (state) $opts(-state)
-	array unset opts -state
-	set (gridsize) $opts(-gridsize)
-	array unset opts -gridsize
-
-	tk::panedwindow_old $w {*}[array get opts] -opaqueresize 1
-	if {$(state) ne "disabled"} {
-		set cursor sb_[string index [$w cget -orient] 0]_double_arrow
-		if {[$w cget -cursor] ne $cursor} {
-			$w configure -cursor $cursor
-		}
+	foreach key [array names opts] {
+		set ([string range $key 1 end]) $opts($key)
 	}
-	
+	tk::panedwindow_old $w -opaqueresize yes
 	rename ::$w $w.__panedwindow__
 	proc ::$w {command args} "[namespace current]::WidgetProc $w \$command {*}\$args"
+	set (orient) [string index [$w cget -orient] 0]
+	$w configure {*}[array get opts]
 
 	return $w
 }
 
 
 proc WidgetProc {w command args} {
+	variable ${w}::
+
 	if {$command eq "add" || $command eq "paneconfigure"} {
 		if {[llength $args] % 2 == 0} {
 			error "value for \"[lindex $args end]\" missing"
 		}
 		set child [lindex $args 0]
 		array set opts [lrange $args 1 end]
-		variable [namespace current]::${w}::
 
 		if {![info exists (maxsize:$child)]} { set (maxsize:$child) 32000 }
 		if {![info exists (gridsize:$child)]} { set (gridsize:$child) 0 }
@@ -137,15 +130,7 @@ proc WidgetProc {w command args} {
 
 	switch -- $command {
 		add {
-			variable ${w}::
-
-			set child [lindex $args 0]
-			
-			if {	$(state) ne "disabled"
-				&& [llength [$child cget -cursor]] == 0
-				&& [$child cget -cursor] ne $(cursor)} {
-				$child configure -cursor $(cursor)
-			}
+			SetPaneCursor $w [lindex $args 0]
 		}
 
 		configure {
@@ -156,18 +141,17 @@ proc WidgetProc {w command args} {
 			foreach {key val} $args {
 				switch -- $key {
 					-cursor {
-						variable ${w}::
 						set (cursor) $val
 						if {[string length $(cursor)] == 0} { set (cursor) left_ptr }
+						foreach pane [$w.__panedwindow__ panes] {
+							SetPaneCursor $w $pane
+						}
 						unset opts($key)
 					}
 
 					-orient {
-						set cursor sb_[string index $val 0]_double_arrow
-						set child $w.__panedwindow__
-						if {[$child cget -cursor] ne $cursor} {
-							$child configure -cursor $cursor
-						}
+						set (orient) [string index $val 0]
+						SetupCursor $w
 					}
 
 					-opaqueresize {
@@ -176,7 +160,6 @@ proc WidgetProc {w command args} {
 
 					-gridsize {
 						if {[string is integer -strict $val]} {
-							variable ${w}::
 							set (gridsize) [expr {max(0, $val)}]
 						} else {
 							error "bad screen distance \"$opts(-gridsize)\""
@@ -185,15 +168,9 @@ proc WidgetProc {w command args} {
 					}
 
 					-state {
-						if {$state eq "disabled"} {
-							variable ${w}::
-							set cursor $(cursor)
-						} else {
-							set cursor sb_[string index [$w cget -orient] 0]_double_arrow
-						}
-						if {[$w cget -cursor] ne $cursor} {
-							$w configure -cursor $cursor
-						}
+						set (state) $val
+						SetupCursor $w
+						unset opts($key)
 					}
 				}
 			}
@@ -202,14 +179,9 @@ proc WidgetProc {w command args} {
 
 		cget {
 			switch -- [lindex $args 0] {
-				-cursor {
-					variable ${w}::
-					return $(cursor)
-				}
-				-gridsize {
-					variable ${w}::
-					return $(gridsize)
-				}
+				-cursor		{ return $(cursor) }
+				-gridsize	{ return $(gridsize) }
+				-state		{ return $(state) }
 			}
 		}
 
@@ -219,7 +191,6 @@ proc WidgetProc {w command args} {
 			}
 			lassign $args pane option
 			if {$option eq "-gridsize"} {
-				variable ${w}::
 				if {$pane ni [$w panes]} {
 					error "\"$pane\" is not child of panedwindow"
 				}
@@ -229,6 +200,31 @@ proc WidgetProc {w command args} {
 	}
 
 	return [$w.__panedwindow__ $command {*}$args]
+}
+
+
+proc SetupCursor {w} {
+	variable ${w}::
+
+	if {$(state) eq "disabled"} {
+		set cursor left_ptr
+	} else {
+		set cursor sb_${(orient)}_double_arrow
+	}
+	if {[$w.__panedwindow__ cget -cursor] ne $cursor} {
+		$w.__panedwindow__ configure -cursor $cursor
+	}
+}
+
+
+proc SetPaneCursor {w child} {
+	variable ${w}::
+
+	if {	$(state) ne "disabled"
+		&& [llength [$child cget -cursor]] == 0
+		&& [$child cget -cursor] ne $(cursor)} {
+		$child configure -cursor $(cursor)
+	}
 }
 
 
@@ -267,18 +263,30 @@ proc MarkSash {w x y} {
 
 	set panes [$w panes]
 	lassign {0 0 0 0} lhsMax rhsMax lhsMin rhsMin
-	set dimen [expr {[string match h* [$w cget -orient]] ? "width" : "height"}]
+	set dimen [expr {$(orient) eq "h" ? "width" : "height"}]
 	set npanes [llength $panes]
-	array unset {} gridsize
+	array unset {} my:*
+	set (my:gridsize) $(gridsize)
 
+	set i 0
 	foreach pane $panes {
 		set maxsize($pane) $(maxsize:$pane)
 		if {$(gridsize:$pane) > 1} {
-			set (gridsize) $(gridsize:$pane)
-			set minsize [$w panecget $pane -minsize]
-			set f [expr {($maxsize($pane) - $minsize)/$(gridsize)}]
-			set maxsize($pane) [expr {$f*$(gridsize) + $minsize}]
+			set (my:gridsize:$pane) $(gridsize:$pane)
+		} elseif {$(gridsize) > 1} {
+			set (my:gridsize:$pane) $(gridsize)
+		} else {
+			set (my:gridsize:$pane) 0
 		}
+		if {$(my:gridsize:$pane) > 1} {
+			if {$i == $index || $(my:gridsize) == 0} {
+				set (my:gridsize) $(my:gridsize:$pane)
+			}
+			set minsize [$w panecget $pane -minsize]
+			set f [expr {($maxsize($pane) - $minsize)/$(my:gridsize:$pane)}]
+			set maxsize($pane) [expr {$f*$(my:gridsize:$pane) + $minsize}]
+		}
+		incr i
 	}
 
 	for {set i 0} {$i <= $index} {incr i} {
@@ -306,14 +314,14 @@ proc MarkSash {w x y} {
 	set Priv(dx) [expr {$sx - $x}]
 	set Priv(dy) [expr {$sy - $y}]
 
-	set v [expr {[string match h* [$w cget -orient]] ? "x" : "y"}]
+	set v [expr {$(orient) eq "h" ? "x" : "y"}]
 	set Priv(min) [expr {max($lhsMin, [set s$v] - $rhsMax)}]
 	set Priv(max) [expr {min([winfo $dimen $w] - $rhsMin, [set s$v] + $lhsMax)}]
 
 	set Priv(min) [expr {$Priv(min) + $sashwidth}]
 	if {$Priv(min) >= $Priv(max)} { return }
 
-	if {[info exists (gridsize)]} {
+	if {[info exists (my:gridsize)]} {
 		set (mark) [set s$v]
 	}
 	for {set i 0} {$i < $npanes - 1} {incr i} {
@@ -321,7 +329,7 @@ proc MarkSash {w x y} {
 	}
 
 	set Priv(cursorList) {}
-	SetCursor [$w panes] sb_[string index [$w cget -orient] 0]_double_arrow
+	SetCursor [$w panes] sb_${(orient)}_double_arrow
 }
 
 
@@ -358,25 +366,25 @@ proc MoveSash {w index x y offs} {
 	variable ::panedwindow::${w}::
 	variable ::tk::Priv
 
+	set cx $x
+	set cy $y
+	set v [expr {$(orient) eq "h" ? "x" : "y"}]
 	set panes [$w panes]
-	set cx [expr {$x - $offs}]
-	set cy [expr {$y - $offs}]
-
 	set pane [lindex $panes $index]
-	set gridsize $(gridsize:$pane)
-	set v [expr {[string match h* [$w cget -orient]] ? "x" : "y"}]
+	set gridsize $(my:gridsize:$pane)
+	set c$v [expr {[set $v] - $offs}]
 
 	if {$gridsize > 1} {
 		lassign [$w sash coord $index] x1 y1
-		set f  [expr {([set c$v] - [set ${v}1] - $gridsize/2)/$gridsize}]
-		set cx [expr {[set ${v}1] + $f*$gridsize}]
+		set f [expr {([set c$v] - [set ${v}1] - $gridsize/2)/$gridsize}]
+		set c$v [expr {[set ${v}1] + $f*$gridsize}]
 	}
 
-	if {[info exists (gridsize)]} {
+	if {$(my:gridsize) > 1} {
 		if {[set c$v] > $(mark)} {
-			set c$v [expr {(([set c$v] - $(mark))/$(gridsize))*$(gridsize) + $(mark)}]
+			set c$v [expr {(([set c$v] - $(mark))/$(my:gridsize))*$(my:gridsize) + $(mark)}]
 		} else {
-			set c$v [expr {$(mark) - (($(mark) - [set c$v])/$(gridsize))*$(gridsize)}]
+			set c$v [expr {$(mark) - (($(mark) - [set c$v])/$(my:gridsize))*$(my:gridsize)}]
 		}
 	}
 

@@ -41,11 +41,11 @@ set F_Line			"Line"
 
 
 array set Defaults {
-	move:figurines	graphic
 	move:notation	san
 	move:mode		single
 	miniboard:size	30
 }
+#	move:figurines	graphic
 array set Options {}
 
 variable IdList {}
@@ -63,7 +63,7 @@ proc build {parent args} {
 		-fillcolumn end
 		-listmode yes
 		-sortable no
-		-hidebar yes
+		-hidebar no
 		-highlightcolor tree,emphasize
 		-stripes eco,stripes
 	}
@@ -121,14 +121,14 @@ proc build {parent args} {
 		lappend menu { separator }
 	}
 	lappend menu {*}[::notation::buildMenuForShortNotation \
-		[namespace code [list ::scrolledtable::refresh $tb]] \
+		[namespace code [list Update $parent]] \
 		[namespace current]::Options(move:notation) \
 	]
-	lappend menu { separator }
-	lappend menu [list command \
-		-command [namespace code [list SelectFigurines $tb]] \
-		-labelvar [namespace current]::MoveStyle \
-	]
+#	lappend menu { separator }
+#	lappend menu [list command \
+#		-command [namespace code [list SelectFigurines $tb]] \
+#		-labelvar [namespace current]::MoveStyle \
+#	]
 	lappend col1 -menu $menu
 	lappend columns line $col1
 	lappend col2 \
@@ -141,7 +141,7 @@ proc build {parent args} {
 		-ellipsis 0 \
 		-visible 1 \
 		-foreground darkgreen \
-		-textvar ::gametable::mc::F_Eco \
+		-textvar ::gamestable::mc::F_Eco \
 		;
 	lappend columns eco $col2
 	lappend col3 \
@@ -154,7 +154,7 @@ proc build {parent args} {
 		-ellipsis 0 \
 		-visible 0 \
 		-foreground magenta4 \
-		-textvar ::gametable::mc::F_Key \
+		-textvar ::gamestable::mc::F_Key \
 		;
 	lappend columns key $col3
 	lappend col4 \
@@ -167,7 +167,7 @@ proc build {parent args} {
 		-ellipsis 1 \
 		-visible 1 \
 		-foreground black \
-		-textvar ::gametable::mc::F_Opening \
+		-textvar ::gamestable::mc::F_Opening \
 		;
 	lappend columns opening $col4
 	::scrolledtable::build $tb $columns {*}[array get opts]
@@ -179,7 +179,7 @@ proc build {parent args} {
 	bind $tb <<TableFill>> [namespace code [list FillTable $tb %d]]
 	bind $tb <<TableVisit>>	[namespace code [list TableVisit $parent $tb %d]]
 	bind $tb <<TableSelected>>	[namespace code [list TableSelected $parent $tb %d]]
-	bind $tb <<LanguageChanged>> [namespace code [list FillTable $tb %d]]
+	bind $tb <<LanguageChanged>> [namespace code [list FillTable $tb]]
 	set path [::scrolledtable::tablePath $tb]
 	bind $path <ButtonPress-1> [namespace code [list TableShow $parent $tb %x %y %s]]
 	bind $path <Leave> +[namespace code [list HideBoard $parent]]
@@ -190,7 +190,9 @@ proc build {parent args} {
 	set (afterid) {}
 	set (locked) 0
 	set (update) [list [namespace current]::Update $parent]
+	set (board) [list [namespace current]::Deselect $parent]
 	set (listmode) $opts(-listmode)
+	set (selection:active) 0
 	return $tb
 }
 
@@ -224,6 +226,10 @@ proc open {parent args} {
 }
 
 
+proc linespace			{w} { return [::scrolledtable::linespace $w.eco.table] }
+proc computeHeight	{w} { return [::scrolledtable::computeHeight $w.eco.table 0] }
+
+
 proc activate {w flag} {
 	variable ${w}::
 
@@ -231,12 +237,17 @@ proc activate {w flag} {
 	set (active) $flag
 
 	if {$flag} {
-		::scidb::game::subscribe opening [::scidb::game::current] $(update)
+		set position [::scidb::game::current]
+		::scidb::game::subscribe opening $position $(update)
+		::scidb::game::subscribe board $position $(board)
 		::scidb::db::subscribe gameSwitch [list [namespace current]::GameSwitched $w]
 		Update $w
 	} else {
 		HideBoard $w
-		if {$(lastpos) >= 0} { ::scidb::game::unsubscribe opening $(lastpos) $(update) }
+		if {$(lastpos) >= 0} {
+			::scidb::game::unsubscribe board $(lastpos) $(board)
+			::scidb::game::unsubscribe opening $(lastpos) $(update)
+		}
 		::scidb::db::unsubscribe gameSwitch [list [namespace current]::GameSwitched $w]
 	}
 }
@@ -245,6 +256,15 @@ proc activate {w flag} {
 proc closed {w} {
 	variable ${w}::
 	if {$(active)} { activate $w false }
+}
+
+
+proc Deselect {w args} {
+	variable ${w}::
+
+	if {!$(selection:active)} {
+		::scrolledtable::select $w.table none
+	}
 }
 
 
@@ -300,8 +320,12 @@ proc GameSwitched {w oldPos newPos} {
 
 	HideBoard $w
 	set (lastpos) $oldPos
-	if {$oldPos >= 0} { ::scidb::game::unsubscribe opening $oldPos $(update) }
+	if {$oldPos >= 0} {
+		::scidb::game::unsubscribe opening $oldPos $(update)
+		::scidb::game::unsubscribe board $oldPos $(board)
+	}
 	::scidb::game::subscribe opening $newPos $(update)
+	::scidb::game::subscribe board $newPos $(board)
 	Update $w
 }
 
@@ -311,14 +335,14 @@ proc UpdateMoveStyleLabel {args} {
 }
 
 
-proc SelectFigurines {path} {
-	variable Options
-
-	set lang [::figurines::openDialog $path $Options(move:figurines)]
-	if {$lang eq $Options(move:figurines)} { return }
-	set Options(move:figurines) $lang
-	::scrolledtable::refresh $path
-}
+# proc SelectFigurines {path} {
+# 	variable Options
+# 
+# 	set lang [::figurines::openDialog $path $Options(move:figurines)]
+# 	if {$lang eq $Options(move:figurines)} { return }
+# 	set Options(move:figurines) $lang
+# 	::scrolledtable::refresh $path
+# }
 
 
 proc FillTable {path args} {
@@ -326,21 +350,28 @@ proc FillTable {path args} {
 	variable ${w}::
 	variable Options
 
-	if {$(data) eq $(oldData)} { return }
+	if {[llength $args] == 0} {
+		set table [::scrolledtable::table $path]
+		set base [::scrolledtable::base $path]
+		set variant [::scrolledtable::variant $path]
+		set start [::scrolledtable::firstRow $path]
+		set first 0
+		set last [llength $(data)]
+	} else {
+		lassign [lindex $args 0] table base variant start first last -
+	}
+
 	HideBoard $w
-	lassign [lindex $args 0] table base variant start first last columns
 	incr first $start
 	incr last $start
-	set lastRow [llength $(oldData)]
 
 	for {set row $first} {$row < $last} {incr row} {
 		set rowData [lindex $(data) $row]
-		if {$row >= $lastRow || $rowData ne [lindex $(oldData) $row]} {
-			lassign $rowData line eco key names
-			set line [::figurines::mapToLocal $line $Options(move:figurines)]
-			set index [expr {$row - $start}]
-			table::insert $table $index [list $line $eco $key [MakeOpening $names]]
-		}
+		lassign $rowData line eco key names
+		#set line [::figurines::mapToLocal $line $Options(move:figurines)]
+		set line [::font::translate $line]
+		set index [expr {$row - $start}]
+		table::insert $table $index [list $line $eco $key [MakeOpening $names]]
 	}
 
 	if {!$(listmode)} {
@@ -352,13 +383,16 @@ proc FillTable {path args} {
 
 proc MakeOpening {names} {
 	set opening ""
+	set count 0
 	set i 0
 	foreach name $names {
 		if {[incr i] == 2} { continue }
 		if {[string length $name] == 0} { break }
 		append opening [expr {$i > 1 ? ", " : ""}] [::mc::translateEco $name]
+		incr count
 	}
-	return $opening
+	if {$count > 1} { return $opening }
+	return [::mc::translateEco [lindex $names 1]]
 }
 
 
@@ -390,7 +424,9 @@ proc TableSelected {w table index} {
 	::scrolledtable::select $table none
 	::scrolledtable::select $table $row
 	set fen [::scidb::game::codeToFen [lindex $(data) $index 2]]
+	set (selection:active) 1
 	::scidb::game::go position $fen
+	set (selection:active) 0
 }
 
 

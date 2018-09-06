@@ -77,11 +77,11 @@ proc build {parent} {
 
 	if {$twm ni $Tables} { lappend Tables $twm }
 	::application::twm::make $twm games \
-		[namespace current]::MakePane \
-		[namespace current]::BuildPane \
 		[namespace current]::Prios \
 		[array get FrameOptions] \
 		$Layout \
+		-makepane [namespace current]::MakePane \
+		-buildpane [namespace current]::BuildPane \
 		-frameborderwidth 0 \
 		;
 	bind $twm <<TwmAfter>> [namespace code [list AfterTWM $twm]]
@@ -100,7 +100,7 @@ proc activate {w flag} {
 		::toolbar::activate $w $flag
 	}
 	if {$flag} {
-		::gametable::focus $w.twm.games.table
+		::gamestable::focus $w.twm.games.table
 		if {$Priv(layout)} {
 			set Priv(layout) 0
 			after idle [namespace code [list AfterTWM $twm]]
@@ -110,12 +110,12 @@ proc activate {w flag} {
 
 
 proc overhang {parent} {
-	return [::gametable::overhang $parent.twm.games.table]
+	return [::gamestable::overhang $parent.twm.games.table]
 }
 
 
 proc linespace {parent} {
-	return [::gametable::linespace $parent.twm.games.table]
+	return [::gamestable::linespace $parent.twm.games.table]
 }
 
 
@@ -123,7 +123,7 @@ proc computeHeight {parent {nrows -1}} {
 	set frame $parent.twm.games
 	set result [::toolbar::totalHeight $frame]
 	if {$nrows >= 0} {
-		incr result [::gametable::computeHeight $parent.twm.games.table $nrows]
+		incr result [::gamestable::computeHeight $parent.twm.games.table $nrows]
 	}
 	return $result
 }
@@ -140,7 +140,7 @@ proc setActive {flag} {
 
 
 proc borderwidth {parent} {
-	return [::gametable::borderwidth $parent.twm.games.table]
+	return [::gamestable::borderwidth $parent.twm.games.table]
 }
 
 
@@ -175,7 +175,7 @@ proc BuildPane {twm frame uid width height} {
 	}
 
 	set id [::application::twm::getId $twm]
-	::gametable::build $tb \
+	::gamestable::build $tb \
 		[namespace code [list View $tb]] \
 		$Columns \
 		-id db:games:$id \
@@ -310,16 +310,16 @@ proc Update {path id base variant {view -1} {index -1}} {
 
 		if {$index == -1} {
 			set n [::scidb::db::count games $base $variant]
-			set Vars(after) [after idle [list ::gametable::update $path $base $variant $n]]
+			set Vars(after) [after idle [list ::gamestable::update $path $base $variant $n]]
 		} else {
-			set Vars(after) [after idle [list ::gametable::fill $path $index [expr {$index + 1}]]]
+			set Vars(after) [after idle [list ::gamestable::fill $path $index [expr {$index + 1}]]]
 		}
 	}
 }
 
 
 proc Close {path base variant} {
-	::gametable::forget $path $base $variant
+	::gamestable::forget $path $base $variant
 }
 
 
@@ -328,9 +328,9 @@ proc CodecChanged {path newCodec} {
 
 	set Vars(codec) $newCodec
 	# we have to clear the country column if the codec is changing
-	::gametable::clearColumn $path whiteCountry
-	::gametable::clearColumn $path blackCountry
-	::gametable::clearColumn $path eventCountry
+	::gamestable::clearColumn $path whiteCountry
+	::gamestable::clearColumn $path blackCountry
+	::gamestable::clearColumn $path eventCountry
 }
 
 
@@ -350,7 +350,7 @@ proc ChangeLayout {table dir} {
 
 	if {$Options(layout) eq $dir} { return }
 	set Options(layout) [expr {$Options(layout) eq "right" ? "bottom" : "right"}]
-	lassign [::gametable::changeLayout $table $Options(layout)] width height
+	lassign [::gamestable::changeLayout $table $Options(layout)] width height
 
 	if {[llength $width]} {
 		lassign $Vars(minsize) minwidth minheight gridsize
@@ -403,11 +403,11 @@ proc Control {table action} {
 	::tooltip::hide
 
 	switch $action {
-		start		{ ::gametable::scroll $table home }
-		end		{ ::gametable::scroll $table end }
-		stop		{ ::gametable::scroll $table selection }
-		back		{ ::gametable::scroll $table back }
-		forward	{ ::gametable::scroll $table forward }
+		start		{ ::gamestable::scroll $table home }
+		end		{ ::gamestable::scroll $table end }
+		stop		{ ::gamestable::scroll $table selection }
+		back		{ ::gamestable::scroll $table back }
+		forward	{ ::gamestable::scroll $table forward }
 	}
 }
 
@@ -415,15 +415,21 @@ proc Control {table action} {
 proc Goto {table number} {
 	variable ${table}::Vars
 
-	set number [string trim [string map {. "" , ""} $number]]
+	set number [::locale::toNumber $number]
 
-	if {[string is integer -strict $number] && $number > 0} {
-		set index [::scidb::db::get gameIndex [expr {$number - 1}] 0]
-		if {$index >= 0} {
-			::gametable::see $table $index
-			::gametable::focus $table
-			::gametable::activate $table [::gametable::indexToRow $table $index]
+	if {[string is integer -strict $number]} {
+		if {$number > 0} {
+			set index [::scidb::db::get gameIndex [expr {$number - 1}] 0]
+			if {$index >= 0} {
+				::gamestable::see $table $index
+				::gamestable::focus $table
+				::gamestable::activate $table [::gamestable::indexToRow $table $index]
+				return
+			}
 		}
+		# TODO: error "No game number %d"
+	} else {
+		# TODO: error "Number expected"
 	}
 }
 

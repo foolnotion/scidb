@@ -59,11 +59,11 @@ namespace import ::tcl::mathfunc::max
 
 array set PaneOptions {
 	board		{ -width 500 -height 540 -minwidth 300 -minheight 300 -expand both }
-	tree		{ -width 500 -height 120 -minwidth 250 -minheight 120 -expand y }
-	editor	{ -width 500 -height 520 -minwidth 150 -minheight 250 -expand y }
-	games		{ -width 500 -height 520 -minwidth 300 -minheight 150 -expand both }
+	tree		{ -width 500 -height 120 -minwidth 250 -minheight 100 -expand y }
+	editor	{ -width 500 -height 520 -minwidth 150 -minheight 200 -expand y }
+	games		{ -width 500 -height 520 -minwidth 300 -minheight 100 -expand both }
 	analysis	{ -width 500 -height 120 -minwidth 300 -minheight 120 -expand x }
-	eco		{ -width 500 -height 520 -minwidth 150 -minheight 150 -expand both }
+	eco		{ -width 500 -height 520 -minwidth 150 -minheight 100 -expand both }
 }
 
 set BoardLayout {
@@ -166,11 +166,11 @@ proc open {} {
 
 	# IMPORTANT NOTE: this layout has to be loaded before any other layout will be loaded.
 	set twm [twm::make $nb.board board \
-		[namespace current]::MakePane \
-		[namespace current]::BuildPane \
 		[namespace current]::Prios \
 		[array get PaneOptions] \
 		$BoardLayout \
+		-makepane [namespace current]::MakePane \
+		-buildpane [namespace current]::BuildPane \
 	]
 	bind $twm <<TwmReady>> [namespace code [list Startup $twm %d]]
 	bind $twm <<TwmAfter>> [namespace code board::afterTWM]
@@ -200,6 +200,10 @@ proc open {} {
 	set incrFontSize { ::font::changeFontSize +1 }
 	set decrFontSize { ::font::changeFontSize -1 }
 
+	# TODO: Ctrl-Shift-minus is not working on most keyboards.
+	# NOTE: Ctrl-Alt is problematic and cannot be used.
+	# Possible workaround: Only bind Control-minus and test whether Caps Lock is on.
+	# Possible workaround: Bind function keys instead of Control-Shift.
 	bind .application <Control-Shift-plus>				$incrFontSize
 	bind .application <Control-Shift-KP_Add>			$incrFontSize
 	bind .application <Control-Shift-minus>			$decrFontSize
@@ -225,12 +229,10 @@ proc twm {{id ""}} {
 proc nameVarFromUid {uid} {
 	set name [NameFromUid $uid]
 	if {$name eq "analysis"} {
-		variable MapTerminalToAnalysis
 		variable NameVar
 		variable Vars
 
-		set terminalNumber [NumberFromUid $uid]
-		set analysisNumber $MapTerminalToAnalysis($terminalNumber)
+		set analysisNumber [analysisNumberFromUid $uid]
 		set nameVar [namespace current]::NameVar($analysisNumber)
 		trace add variable [namespace current]::twm::mc::Pane($name) write \
 			[namespace code [list UpdateNameVar $analysisNumber]]
@@ -239,6 +241,12 @@ proc nameVarFromUid {uid} {
 		set nameVar [namespace current]::twm::mc::Pane($name)
 	}
 	return $nameVar
+}
+
+
+proc analysisNumberFromUid {uid} {
+	variable MapTerminalToAnalysis
+	return $MapTerminalToAnalysis([NumberFromUid $uid])
 }
 
 
@@ -299,6 +307,7 @@ proc MakePane {twm parent type uid} {
 	bind $frame <Destroy> [list [namespace current]::${ns}::closed $frame]
 	bind $frame <Destroy> +[namespace code [list DestroyPane $twm $uid $analysisNumber]]
 	set Vars(frame:$uid) $frame
+	set Vars(align:board:$uid) 0
 	return $result
 }
 
@@ -322,16 +331,16 @@ proc BuildPane {twm frame uid width height} {
 			}
 			eco::build $frame -id board
 			$frame configure -width $width -height $height
+			set Vars(align:board:eco) 1
 		}
-		board			{ board::build $frame $width $height }
-		editor		{ pgn::build $frame $width $height }
-		games			{ tree::games::build $twm $frame $width $height }
-		tree			{ tree::build $twm $frame $width $height }
-		player		{ players::build $frame $width $height }
-		event			{ events::build $frame $width $height }
-		annotator	{ annotators::build $frame $width $height }
-		position		{ positions::build $frame $width $height }
-		default		{ return -code error "BuildPane: unknown pane $uid" }
+		tree {
+			tree::build $twm $frame $width $height
+			set Vars(align:board:tree) 1
+		}
+		board		{ board::build $frame $width $height }
+		editor	{ pgn::build $frame $width $height }
+		games		{ tree::games::build $twm $frame $width $height }
+		default	{ return -code error "BuildPane: unknown pane $uid" }
 	}
 }
 
@@ -352,6 +361,7 @@ proc DestroyPane {twm uid analysisNumber} {
 		for {set i [expr {$terminalNumber + 1}]} {$i <= $Vars(terminal:number)} {incr i} {
 			set newTerminalNumber [expr {$i - 1}]
 			set number $MapTerminalToAnalysis($i)
+			$twm set [$twm leaf analysis:$i] transient [expr {$newTerminalNumber != 1}]
 			$twm changeuid analysis:$i analysis:$newTerminalNumber
 			set MapTerminalToAnalysis($newTerminalNumber) $number
 			set MapAnalysisToTerminal($number) $newTerminalNumber
