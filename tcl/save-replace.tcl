@@ -991,6 +991,7 @@ proc Build {dlg base variant position number} {
 		-columnresizemode realtime \
 		-yscrollcommand [list $tags.vsb set] \
 		;
+	::widget::bindMouseWheel $t
 	$t column create \
 		-width 22 \
 		-justify center \

@@ -705,6 +705,7 @@ proc Update {table base variant} {
 if {[::scidb::game::query mainvariant?] eq "Normal"} {
 ::toolbar::childconfigure $Vars(switcher) -state readonly
 #################################################
+	if {![[namespace parent]::exists? tree]} { return }
 	if {[::scidb::tree::isUpToDate?]} { return }
 
 	if {[string length $base]} {
@@ -1012,6 +1013,10 @@ proc RefreshHeader {table} {
 
 
 proc RefreshRatings {table} {
+	variable Vars
+
+	if {![[namespace parent]::exists? tree]} { return }
+
 	RefreshHeader table
 	FetchResult $table true
 	RefreshRatingLabel
@@ -1021,6 +1026,8 @@ proc RefreshRatings {table} {
 proc RefreshRatingLabel {} {
 	variable Vars
 	variable Options
+
+	if {![[namespace parent]::exists? tree]} { return }
 
 	set side white
 	switch $Options(score:side) {

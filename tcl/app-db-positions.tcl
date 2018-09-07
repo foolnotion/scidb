@@ -56,8 +56,8 @@ unset col
 array set Prios { position 200 games 100 }
 
 array set FrameOptions {
-	position { -width 300 -height 100% -minwidth 100 -minheight 100 -expand both }
-	games    { -width 700 -height 100% -minwidth 200 -minheight 100 -expand both }
+	position { -width 300 -height 100% -minwidth 100 -minheight 4u -expand both }
+	games    { -width 700 -height 100% -minwidth 200 -minheight 4u -expand both }
 }
 
 variable Layout {

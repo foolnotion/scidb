@@ -54,7 +54,7 @@ variable Columns {
 }
 
 array set FrameOptions {
-	games { -width 1000 -height 100% -minwidth 200 -minheight 100 -expand both }
+	games { -width 1000 -height 100% -minwidth 200 -minheight 4u -expand both }
 }
 
 variable Layout {

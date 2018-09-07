@@ -54,8 +54,8 @@ array set Defaults {
 array set Prios { annotator 200 games 100 }
 
 array set FrameOptions {
-	annotator { -width 200 -height 100% -minwidth 200 -minheight 3u -expand both }
-	games     { -width 800 -height 100% -minwidth 200 -minheight 3u -expand both }
+	annotator { -width 200 -height 100% -minwidth 200 -minheight 4u -expand both }
+	games     { -width 800 -height 100% -minwidth 200 -minheight 4u -expand both }
 }
 
 variable Layout {

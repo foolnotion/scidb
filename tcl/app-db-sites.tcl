@@ -38,8 +38,8 @@ array set Defaults {
 array set Prios { site 200 event 100 }
 
 array set FrameOptions {
-	site  { -width 300 -height 100% -minwidth 200 -minheight 100 -expand both }
-	event { -width 700 -height 100% -minwidth 200 -minheight 100 -expand both }
+	site  { -width 300 -height 100% -minwidth 200 -minheight 4u -expand both }
+	event { -width 700 -height 100% -minwidth 200 -minheight 4u -expand both }
 }
 
 variable Layout {

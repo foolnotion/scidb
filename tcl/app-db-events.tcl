@@ -38,9 +38,9 @@ array set Defaults {
 array set Prios { event 300 games 200 player 100 }
 
 array set FrameOptions {
-	event	 { -width 400 -height 100% -minwidth 200 -minheight 3u -expand both }
-	games	 { -width 600 -height  50% -minwidth 200 -minheight 3u -expand both }
-	player { -width 600 -height  50% -minwidth 200 -minheight 3u -expand both }
+	event	 { -width 400 -height 100% -minwidth 200 -minheight 4u -expand both }
+	games	 { -width 600 -height  50% -minwidth 200 -minheight 4u -expand both }
+	player { -width 600 -height  50% -minwidth 200 -minheight 4u -expand both }
 }
 
 variable Layout {

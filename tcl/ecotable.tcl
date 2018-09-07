@@ -241,6 +241,7 @@ proc activate {w flag} {
 		::scidb::game::subscribe opening $position $(update)
 		::scidb::game::subscribe board $position $(board)
 		::scidb::db::subscribe gameSwitch [list [namespace current]::GameSwitched $w]
+		set (lastpos) $position
 		Update $w
 	} else {
 		HideBoard $w
