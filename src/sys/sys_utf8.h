@@ -37,11 +37,13 @@ bool isAlpha(uchar uc);
 bool isAlnum(uchar uc);
 bool isSpace(uchar uc);
 bool isPunct(uchar uc);
+bool isControl(uchar uc);
 
 bool isAlpha(char const* s);
 bool isAlnum(char const* s);
 bool isSpace(char const* s);
 bool isPunct(char const* s);
+bool isControl(char const* s);
 
 bool isAscii(char uc);
 

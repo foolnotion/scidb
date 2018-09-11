@@ -422,6 +422,7 @@ proc build {twm parent width height} {
 	$tb.t style elements styLine {rectDivider}
 	$tb.t style layout styLine rectDivider -pady {3 2} -iexpand x
 
+	::toolbar::setup $parent -id tree -layout board
 	set tbSwitcher [::toolbar::toolbar $parent \
 		-id tree-switcher \
 		-side top \
@@ -1890,7 +1891,7 @@ proc CompareOptions {twm variant} {
 	if {[::table::countOptions db:tree:$id] == 0} { return true }
 	set lhs $TableOptions($variant:$id)
 	set rhs [::table::getOptions db:tree:$id]
-	if {![::arrayListEqual $lhs $rhs]} { return false }
+	if {![::table::equal $lhs $rhs]} { return false }
 	return true
 }
 

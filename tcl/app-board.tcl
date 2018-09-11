@@ -50,7 +50,7 @@ set PromoSign(disk)			"Disk"
 
 set Tools						"Tools"
 set Control						"Control"
-set Game							"Game"
+set Database					"Database"
 set GoIntoNextVar				"Go into next variation"
 set GoIntPrevVar				"Go into previous variation"
 
@@ -215,6 +215,7 @@ proc build {w width height} {
 	::board::diagram::update $board standard
 	::board::unregisterSize $Dim(squaresize)
 
+	::toolbar::setup $w -id board -layout board
 	set tbTools		[::toolbar::toolbar $w \
 							-hide 1 \
 							-id board-tools \
@@ -232,10 +233,10 @@ proc build {w width height} {
 							-side bottom \
 							-alignment center \
 						]
-	set tbGame		[::toolbar::toolbar $w \
+	set tbDatabase	[::toolbar::toolbar $w \
 							-hide 1 \
-							-id board-game \
-							-tooltipvar [namespace current]::mc::Game \
+							-id board-database \
+							-tooltipvar [namespace current]::mc::Database \
 							-side top \
 						]
 
@@ -273,44 +274,44 @@ proc build {w width height} {
 		-command [namespace code Apply] \
 		;
 
-	set Vars(game:prev) [::toolbar::add $tbGame button \
+	set Vars(game:prev) [::toolbar::add $tbDatabase button \
 		-image $::icon::toolbarPrev \
 		-command [namespace code [list LoadGame(any) $w prev]] \
 		-state disabled \
 	]
-	set Vars(game:next) [::toolbar::add $tbGame button \
+	set Vars(game:next) [::toolbar::add $tbDatabase button \
 		-image $::icon::toolbarNext \
 		-command [namespace code [list LoadGame(any) $w next]] \
 		-state disabled \
 	]
-	set Vars(game:first) [::toolbar::add $tbGame button \
+	set Vars(game:first) [::toolbar::add $tbDatabase button \
 		-image $::icon::toolbarFront \
 		-command [namespace code [list LoadGame(any) $w first]] \
 		-state disabled \
 	]
-	set Vars(game:last) [::toolbar::add $tbGame button \
+	set Vars(game:last) [::toolbar::add $tbDatabase button \
 		-image $::icon::toolbarBack \
 		-command [namespace code [list LoadGame(any) $w last]] \
 		-state disabled \
 	]
-	set Vars(game:view) [::toolbar::add $tbGame button \
+	set Vars(game:view) [::toolbar::add $tbDatabase button \
 		-image $::icon::toolbarDatabase \
 		-command [namespace code SwitchGameButtons] \
 		-tooltipvar [namespace current]::mc::SwitchView(list) \
 	]
-	set Vars(game:random) [::toolbar::add $tbGame button \
+	set Vars(game:random) [::toolbar::add $tbDatabase button \
 		-image $::icon::toolbarDiceGreen \
 		-command [namespace code [list LoadGame(any) $w random]] \
 		-tooltipvar [namespace current]::mc::LoadRandomGame \
 		-state disabled \
 	]
-	::toolbar::addSeparator $tbGame
-	set Vars(game:replace) [::toolbar::add $tbGame button \
+	::toolbar::addSeparator $tbDatabase
+	set Vars(game:replace) [::toolbar::add $tbDatabase button \
 		-image $::icon::toolbarSave \
 		-command [namespace code [list SaveGame replace]] \
 		-state disabled \
 	]
-	set Vars(game:save) [::toolbar::add $tbGame dropdownbutton \
+	set Vars(game:save) [::toolbar::add $tbDatabase dropdownbutton \
 		-image $::icon::toolbarSaveAs \
 		-command [namespace code [list SaveGame add]] \
 		-arrowttipvar [namespace current]::mc::AddNewGame \

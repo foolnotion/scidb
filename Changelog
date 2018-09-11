@@ -1,6 +1,13 @@
 [September 2018] =============================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #1519)
+------------------------------------------------------------------------------
+* Layout now includes toolbar layout.
+* Layout now supports fullscreen mode.
+* Some themes changed, especially contour of some pieces sets removed.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #1517)
 ------------------------------------------------------------------------------
 * Important fix in shadow.tcl, glitches have been gone.

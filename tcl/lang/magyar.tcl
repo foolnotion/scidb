@@ -583,7 +583,7 @@
 
 ::application::board::mc::Tools				"Eszközök"
 ::application::board::mc::Control			"Kezelés"
-::application::board::mc::Game				"Játszma"
+::application::board::mc::Database			"Adatbázis"
 ::application::board::mc::GoIntoNextVar			"Következő variáció"
 ::application::board::mc::GoIntPrevVar			"Előző variáció"
 

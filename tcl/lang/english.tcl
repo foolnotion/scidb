@@ -580,7 +580,7 @@
 
 ::application::board::mc::Tools							"Tools"
 ::application::board::mc::Control						"Control"
-::application::board::mc::Game							"Game"
+::application::board::mc::Database						"Database"
 ::application::board::mc::GoIntoNextVar				"Go into next variation"
 ::application::board::mc::GoIntPrevVar					"Go into previous variation"
 

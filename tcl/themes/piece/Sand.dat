@@ -7,7 +7,7 @@
   color,w,fill       {}
   color,w,stroke     {}
   color,w,texture    {misc sand-yellow.png}
-  contour            {1.0}
+  contour            {0}
   diffusion          {linear}
   gradient,b,start   {}
   gradient,b,stop    {}

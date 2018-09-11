@@ -582,7 +582,7 @@
 
 ::application::board::mc::Tools							"Herramientas"
 ::application::board::mc::Control						"Control"
-::application::board::mc::Game							"Partida"
+::application::board::mc::Database						"Base"
 ::application::board::mc::GoIntoNextVar				"Ir a la próxima variante"
 ::application::board::mc::GoIntPrevVar					"Ir a la variante previa"
 
@@ -634,7 +634,7 @@
 ::application::database::mc::Small								"Pequeño"
 ::application::database::mc::Tiny								"Diminuto"
 ::application::database::mc::LoadMessage						"Abrir Base '%s'"
-::application::database::mc::UpgradeMessage					"Actualizando Database '%s'"
+::application::database::mc::UpgradeMessage					"Actualizando base '%s'"
 ::application::database::mc::CompactMessage					"Compactando base de datos '%s'" 
 ::application::database::mc::CannotOpenFile					"No se puede abrir el archivo '%s'."
 ::application::database::mc::EncodingFailed					"Fallo en la codificación de %s." ;# "Character decoding %s failed."

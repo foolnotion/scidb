@@ -2589,6 +2589,7 @@ proc Build {w path args} {
 	::tk::frame $path -borderwidth 0 -takefocus 0 -width $Options(pane:favorites)
 	pack propagate $path 0
 
+	::toolbar::setup $path -id fsbox-bookmarks
 	set tb [::toolbar::toolbar $path -id toolbar -hide 0 -side bottom]
 
 	set Vars(button:add) [::toolbar::add $tb button    \
@@ -3316,6 +3317,7 @@ proc Build {w path args} {
 	set sv $path.f.vscroll
 	set sh $path.f.hscroll
 	set t  $path.f.files
+	::toolbar::setup $path -id fsbox-files
 	set tb [::toolbar::toolbar $path -id toolbar -hide 0 -side left]
 
 	set Vars(toolbar:filelist) $tb

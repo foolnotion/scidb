@@ -11,7 +11,7 @@
   color,w,stop       {#f5bd42}
   color,w,stroke     {}
   color,w,texture    {}
-  contour            {1.0}
+  contour            {0}
   diffusion          {none}
   gradient,b,start   {#d6935c}
   gradient,b,stop    {#2a0100}

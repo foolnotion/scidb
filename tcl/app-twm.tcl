@@ -114,7 +114,12 @@ proc make {twm id prioArr options layout args} {
 	$twm showall $Options($id:docking:showall)
 	pack $twm -fill both -expand yes
 
-	if {$id eq "board"} { bind $twm <<TwmGeometry>> [namespace code [list geometry %d]] }
+	if {$id eq "board"} {
+		bind $twm <<TwmGeometry>> [namespace code [list geometry %d]]
+		bind $twm <<TwmFullscreen>> [namespace code [list Fullscreen $twm %d]]
+		bind $twm <<Fullscreen>> [namespace code geometry]
+	}
+
 	bind $twm <<TwmMenu>> [namespace code [list Menu $twm %d %x %y]]
 	bind $twm <<FontSizeChanged>> [list after idle [list $twm refresh]]
 
@@ -124,6 +129,7 @@ proc make {twm id prioArr options layout args} {
 	set Vars($twm:id) $id
 	set Vars($id:twm) $twm
 	set Vars($twm:afterid) {}
+	set Vars(fullscreen) [::menu::fullscreen?]
 	lappend Vars(twm) $twm
 
 	return $twm
@@ -144,6 +150,7 @@ proc load {twm} {
 		$twm load $layout
 		set Vars(loading) 0
 		after idle [list ::options::save $twm $layoutVariant]
+		after idle [list ::toolbar::save $id]
 		set Vars($id:options:saved:$layoutVariant) 1
 	}
 	return $twm
@@ -280,16 +287,20 @@ return [list $width $height] ;# TODO seems too be superfluous
 }
 
 
-proc geometry {data} {
+proc geometry {{data {}}} {
 	variable [namespace parent]::Vars
-	variable Geometry
 
-	if {[::menu::fullscreen?]} { return }
+	if {$Vars(fullscreen) && ![::menu::fullscreen?]} {
+		lassign [workArea $Vars(board:twm)] w h
+		$Vars(board:twm) resize $Vars(board:twm) $w $h
+		set data [list $w $h 0 0 0 0]
+		set Vars(fullscreen) 0
+	}
+	if {[llength $data] == 0} { return }
 
 	# TODO:
 	# Probably we should not resize the main pane after the theme has changed.
 
-	set Geometry $data
 	lassign $data width height minwidth minheight maxwidth maxheight expand
 
 	set bd [expr {2*[::theme::notebookBorderwidth]}]
@@ -325,7 +336,16 @@ proc geometry {data} {
 		wm maxsize .application $maxwidth $maxheight
 		set Vars(need:maxsize) 1
 	}
-	wm geometry .application ${width}x${height}
+
+	set geometry ${width}x${height}
+	if {$Vars(fullscreen) && ![::menu::fullscreen?]} {
+		incr incrH +4 ;# TODO why?
+		incr incrV -2 ;# TODO why?
+		set x [expr {([winfo screenwidth .application] - ($width + $incrH))/2}]
+		set y [expr {([winfo screenheight .application] - ($height + $incrV))/2}]
+		append geometry "+${x}+${y}"
+	}
+	wm geometry .application $geometry
 
 	set resizeW [expr {$minwidth == 0 || $minwidth != $maxwidth}]
 	set resizeH [expr {$minheight == 0 || $minheight != $maxheight}]
@@ -353,6 +373,7 @@ proc switchLayout {variant reason} {
 				TestLayoutStatus $twm
 				if {![compareTableOptions $twm $oldLayoutVariant]} {
 					::options::save $twm $oldLayoutVariant
+					::toolbar::save $id
 					set Vars($id:options:saved:$oldLayoutVariant) 1
 				}
 				set Options($id:layout:list:$oldLayoutVariant) [inspectLayout $twm]
@@ -377,8 +398,10 @@ proc switchLayout {variant reason} {
 					# load options before applying layout
 					if {[info exists Vars($id:options:saved:$newLayoutVariant)]} {
 						::options::restore $twm $newLayoutVariant
+						::toolbar::restore $id
 					} else {
 						after idle [list ::options::save $twm $newLayoutVariant]
+						after idle [list ::toolbar::save $id]
 						set Vars($id:options:saved:$newLayoutVariant) 1
 					}
 					if {![actualLayoutIsEqTo $twm $Options($id:layout:list) true]} {
@@ -503,10 +526,12 @@ proc loadLayout {twm name} {
 proc inspectLayout {twm} {
 	variable [namespace parent]::Vars
 
-	set id $Vars($twm:id)
 	set list {}
-	if {$id eq "board"} { lappend list Extent }
-	return [$Vars($id:twm) inspect {*}$list]
+	if {$Vars($twm:id) eq "board"} {
+		lappend list Extent
+		$twm set $twm fullscreen [::menu::fullscreen?]
+	}
+	return [$twm inspect {*}$list]
 }
 
 
@@ -556,8 +581,10 @@ proc actualLayoutIsEqTo {twm layout {ignoreCoords false}} {
 proc compareTableOptions {twm layoutVariant} {
 	variable [namespace parent]::Vars
 
-	if {![info exists Vars($Vars($twm:id):options:saved:$layoutVariant)]} { return true }
-	return [::options::compare $twm $layoutVariant]
+	set id $Vars($twm:id)
+	if {![info exists Vars($id:options:saved:$layoutVariant)]} { return true }
+	if {![::options::compare $twm $layoutVariant]} { return false }
+	return [::toolbar::compare $id]
 }
 
 
@@ -633,6 +660,7 @@ proc saveTableOptions {} {
 		set id $Vars($twm:id)
 		set layoutVariant $Vars($id:layout:variant)
 		::options::save $twm $layoutVariant
+		::toolbar::save $id
 		set Vars($id:options:saved:$layoutVariant) 1
 	}
 
@@ -1073,6 +1101,7 @@ proc restoreLayout {twm layoutVariant name currenLayout savedLayout} {
 	$Vars($id:twm) load $currenLayout
 	if {[info exists Vars($id:options:saved:$layoutVariant)]} {
 		::options::restore $twm $layoutVariant
+		::toolbar::restore $id
 	}
 	set Vars(loading) 0
 	set filename [makeFilename $id $layoutVariant $name]
@@ -1083,6 +1112,14 @@ proc restoreLayout {twm layoutVariant name currenLayout savedLayout} {
 	set Options($id:layout:saved:$layoutVariant) $savedLayout
 	LoadLinkedLayouts $twm $name
 	return $rc
+}
+
+
+proc Fullscreen {twm flag} {
+	variable [namespace parent]::Vars
+
+	::menu::setFullscreen $flag
+	update idletasks
 }
 
 
@@ -1156,6 +1193,7 @@ proc LoadLayout {twm layoutVariant name mode} {
 		destroy [$twm leaf $unused]
 	}
 	after idle [list ::options::save $twm $layoutVariant]
+	after idle [list ::toolbar::save $id]
 
 	if {$mode eq "load"} {
 		foreach v $layoutVariants {
@@ -1628,6 +1666,7 @@ proc CopyLayout {id layoutVariant name} {
 	} else {
 		set Options($id:layout:list:$myLayoutVariant) $Options($id:layout:list:$layoutVariant)
 		::options::restore $Vars($id:twm) $layoutVariant
+		::toolbar::restore $id
 	}
 
 	set Options($id:layout:list) $Options($id:layout:list:$layoutVariant)
@@ -1660,6 +1699,7 @@ proc WriteLayout {twm id name layoutVariant} {
 	array unset Vars $id:layout:changed:$layoutVariant
 	puts $fh "::application::twm::setup $layoutVariant $id {$Options($id:layout:list:$layoutVariant)}"
 	::options::save $twm $layoutVariant
+	::toolbar::save $id
 	set Vars($id:options:saved:$layoutVariant) 1
 	::options::writeTableOptions $fh $id $layoutVariant
 	close $fh

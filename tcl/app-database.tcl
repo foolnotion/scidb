@@ -270,6 +270,7 @@ proc build {tab width height} {
 	bind $main <Double-Button-2> { break }
 	bind $main <<FontSizeChanged>> [namespace code { FontSizeChanged %W }]
 
+	::toolbar::setup $switcher -id database
 	set tbFile [::toolbar::toolbar $switcher \
 		-hide 1 \
 		-id database-switcher \

@@ -138,6 +138,7 @@ static Tcl_Obj* m_objCmdDeiconify			= nullptr;
 static Tcl_Obj* m_objCmdDestroy				= nullptr;
 static Tcl_Obj* m_objCmdFrame2				= nullptr;
 static Tcl_Obj* m_objCmdFrameHdrSize		= nullptr;
+static Tcl_Obj* m_objCmdFullscreen			= nullptr;
 static Tcl_Obj* m_objCmdGeometry				= nullptr;
 static Tcl_Obj* m_objCmdHeader				= nullptr;
 static Tcl_Obj* m_objCmdNotebookHdrSize	= nullptr;
@@ -1361,6 +1362,7 @@ private:
 	template <Orient D,Quantity Q> void inspectDimen(Tcl_Obj* attr, tcl::DString& str, int gapSize) const;
 	void inspect(tcl::DString& str, Structures const& structures) const;
 	static void inspect(tcl::DString& str, SnapshotMap const& snapshots);
+	void removeAttr(char const* attribute);
 
 	template <Orient D> int computeGapRecursively() const;
 	template <Orient D> int computeGap() const;
@@ -1447,6 +1449,7 @@ private:
 	void performCreate();
 	void performDimensions(int horzGap, int vertGap);
 	void performFinalizeCreate();
+	void performFullscreen();
 	void performBuild();
 	void performReady();
 	void performPack();
@@ -1528,6 +1531,7 @@ private:
 	SnapshotMap	m_snapshotMap;
 	Structures	m_structures;
 	bool			m_amalgamate;
+	bool			m_fullscreen;
 	bool			m_initialStructure;
 	bool			m_isAmalgamated;
 	bool			m_wasAmalgamatable;
@@ -2287,6 +2291,7 @@ Node::Node(Node& parent, Type type, Tcl_Obj* uid)
 	,m_flags(0)
 	,m_alignTimeout(::kDefaultAlignTimeout)
 	,m_amalgamate(false)
+	,m_fullscreen(false)
 	,m_initialStructure(false)
 	,m_isAmalgamated(false)
 	,m_wasAmalgamatable(false)
@@ -2329,6 +2334,7 @@ Node::Node(Tcl_Obj* path, Node const* setup)
 	,m_flags(0)
 	,m_alignTimeout(::kDefaultAlignTimeout)
 	,m_amalgamate(false)
+	,m_fullscreen(false)
 	,m_initialStructure(false)
 	,m_isAmalgamated(false)
 	,m_wasAmalgamatable(false)
@@ -2386,6 +2392,7 @@ Node::Node(Node const& node)
 	,m_flags(0)
 	,m_alignTimeout(::kDefaultAlignTimeout)
 	,m_amalgamate(node.m_amalgamate)
+	,m_fullscreen(node.m_fullscreen)
 	,m_initialStructure(false)
 	,m_isAmalgamated(false)
 	,m_wasAmalgamatable(false)
@@ -2455,6 +2462,15 @@ Node::getJustCreated() const
 
 
 void
+Node::removeAttr(char const* attribute)
+{
+	AttrMap::iterator i = m_attrMap.find(attribute);
+	if (i != m_attrMap.end())
+		m_attrMap.erase(i);
+}
+
+
+void
 Node::setAttr(char const* attribute, Tcl_Obj* value, bool ignoreMeta)
 {
 	M_ASSERT(attribute);
@@ -2477,6 +2493,20 @@ Node::setAttr(char const* attribute, Tcl_Obj* value, bool ignoreMeta)
 						addFlag(F_Header);
 						findHeaderWindow()->addFlag(F_Header);
 					}
+
+					if (!m_amalgamate)
+						return removeAttr(attribute);
+				}
+			}
+			break;
+
+		case 'f':
+			if (tcl::equal(attribute, "fullscreen"))
+			{
+				if (tcl::isBoolean(value))
+				{
+					if (!(m_fullscreen = tcl::asBoolean(value)))
+						return removeAttr(attribute);
 				}
 			}
 			break;
@@ -2489,6 +2519,9 @@ Node::setAttr(char const* attribute, Tcl_Obj* value, bool ignoreMeta)
 					int size = tcl::asInt(value);
 					m_grid.set<Horz>(mstl::max(0, size == 1 ? 0 : size));
 					addFlag(F_Config);
+
+					if (size == 0)
+						return removeAttr(attribute);
 				}
 			}
 			break;
@@ -2505,7 +2538,10 @@ Node::setAttr(char const* attribute, Tcl_Obj* value, bool ignoreMeta)
 			if (tcl::equal(attribute, "transient"))
 			{
 				if (tcl::isBoolean(value))
-					m_isTransient = tcl::asBoolean(value);
+				{
+					if (!(m_isTransient = tcl::asBoolean(value)))
+						return removeAttr(attribute);
+				}
 			}
 			break;
 
@@ -2517,6 +2553,9 @@ Node::setAttr(char const* attribute, Tcl_Obj* value, bool ignoreMeta)
 					int size = tcl::asInt(value);
 					m_grid.set<Vert>(mstl::max(0, size == 1 ? 0 : size));
 					addFlag(F_Config);
+
+					if (size == 0)
+						return removeAttr(attribute);
 				}
 			}
 			break;
@@ -2539,6 +2578,7 @@ Node::getAttr(char const* attribute, bool ignoreMeta) const
 	switch (attribute[0])
 	{
 		case 'a': if (tcl::equal(attribute, "amalgamate")) return tcl::newObj(m_amalgamate); break;
+		case 'f': if (tcl::equal(attribute, "fullscreen")) return tcl::newObj(m_fullscreen); break;
 		case 'h': if (tcl::equal(attribute, "hgrid")) return tcl::newObj(m_grid.dimen<Horz>()); break;
 		case 'p': if (tcl::equal(attribute, "priority")) return tcl::newObj(m_priority); break;
 		case 't': if (tcl::equal(attribute, "transient")) return tcl::newObj(m_isTransient); break;
@@ -3861,6 +3901,7 @@ Node::clone(Node* parent, Tcl_Obj* uid) const
 	//node->m_priority = m_priority;
 	//node->m_isTransient = m_isTransient;
 	//node->m_amalgamate = m_amalgamate;
+	//node->m_fullscreen = m_fullscreen;
 	//node->m_grid = m_grid;
 	node->m_weight = m_weight;
 	node->m_sticky = m_sticky;
@@ -4000,6 +4041,7 @@ Node::unframe()
 	mstl::swap(m_priority, child->m_priority);
 	mstl::swap(m_isTransient, child->m_isTransient);
 	mstl::swap(m_amalgamate, child->m_amalgamate);
+	mstl::swap(m_fullscreen, child->m_fullscreen);
 	mstl::swap(m_childs, child->m_childs);
 	// child->m_root
 	child->m_parent = this;
@@ -4091,6 +4133,7 @@ Node::makeMetaFrame()
 	// child->m_priority
 	// child->m_isTransient
 	// child->m_amalgamate
+	// child->m_fullscreen
 	child->m_childs.swap(m_childs);
 	child->m_root = m_root;
 	child->m_parent = this;
@@ -4137,6 +4180,7 @@ Node::makeMetaFrame()
 	m_priority = 0;
 	m_isTransient = false;
 	m_amalgamate = false;
+	// m_fullscreen 
 	m_childs.push_back(child);
 	// m_root
 	// m_parent
@@ -5752,6 +5796,7 @@ Node::unfloat(Node* toplevel)
 
 	m_temporary = false;
 	m_amalgamate = false;
+	m_fullscreen = false;
 	performUnpackChildsRecursively();
 	::captureWindow(path(), toplevel->path());
 	setState(Withdrawn);
@@ -5826,7 +5871,7 @@ Node::inspect(tcl::DString& str, SnapshotMap const& snapshots)
 void
 Node::inspectAttrs(AttrSet const& exportList, tcl::DString& str) const
 {
-	str.startList();
+	bool first = true;
 
 	for (unsigned i = 0; i < exportList.size(); ++i)
 	{
@@ -5835,12 +5880,19 @@ Node::inspectAttrs(AttrSet const& exportList, tcl::DString& str) const
 
 		if (k != m_attrMap.end())
 		{
+			if (first)
+			{
+				str.append(m_objOptAttrs);
+				str.startList();
+				first = false;
+			}
 			str.append(k->first);
 			str.append(k->second);
 		}
 	}
 
-	str.endList();
+	if (!first)
+		str.endList();
 }
 
 
@@ -5955,7 +6007,6 @@ Node::inspect(AttrSet const& exportList, tcl::DString& str, int horzGap, int ver
 				inspectDimen<Horz,Actual>(m_objOptWidth, str, 0);
 			if (m_dimen.mode<Vert,Actual>() == Abs)
 				inspectDimen<Vert,Actual>(m_objOptHeight, str, 0);
-
 			str.append(m_objOptX);
 			str.append(x());
 			str.append(m_objOptY);
@@ -5964,18 +6015,17 @@ Node::inspect(AttrSet const& exportList, tcl::DString& str, int horzGap, int ver
 			str.append(::makeResizeOptionValue(m_shrink));
 			str.append(m_objOptGrow);
 			str.append(::makeResizeOptionValue(m_grow));
-
 			if (!m_snapshotMap.empty())
 			{
 				str.append(m_objOptSnapshots);
 				inspect(str, m_snapshotMap);
 			}
-
 			if (!m_structures.empty())
 			{
 				str.append(m_objOptStructures);
 				inspect(str, m_structures);
 			}
+			inspectAttrs(exportList, str);
 			break;
 
 		case Pane:
@@ -5996,7 +6046,6 @@ Node::inspect(AttrSet const& exportList, tcl::DString& str, int horzGap, int ver
 				str.append(m_objOptVWeight);
 				str.append(weight<Vert>());
 			}
-			str.append(m_objOptAttrs);
 			inspectAttrs(exportList, str);
 			break;
 
@@ -6574,6 +6623,7 @@ void
 Node::performFinalizeCreate()
 {
 	M_ASSERT(exists());
+	M_ASSERT(!isRoot());
 	M_ASSERT(!isMetaFrame() || child()->exists());
 
 	tcl::invoke(__func__,
@@ -6582,6 +6632,14 @@ Node::performFinalizeCreate()
 					pathObj(),
 					isMetaFrame() ? child()->m_path : m_uid,
 					nullptr);
+}
+
+
+void
+Node::performFullscreen()
+{
+	M_ASSERT(isToplevel());
+	tcl::invoke(__func__, pathObj(), m_objCmdFullscreen, tcl::newObj(m_fullscreen), nullptr);
 }
 
 
@@ -7207,6 +7265,9 @@ Node::performBuildRecursively()
 void
 Node::performFinalizeCreateRecursively()
 {
+	if (isToplevel())
+		performFullscreen();
+
 	for (unsigned i = 0; i < numChilds(); ++i)
 	{
 		if (child(i)->isPacked())
@@ -7794,6 +7855,7 @@ Node::initialize()
 	m_objCmdDestroy = tcl::incrRef(tcl::newObj("destroy"));
 	m_objCmdFrame2 = tcl::incrRef(tcl::newObj("frame2"));
 	m_objCmdFrameHdrSize = tcl::incrRef(tcl::newObj("framehdrsize"));
+	m_objCmdFullscreen = tcl::incrRef(tcl::newObj("fullscreen"));
 	m_objCmdGeometry = tcl::incrRef(tcl::newObj("geometry"));
 	m_objCmdHeader = tcl::incrRef(tcl::newObj("header"));
 	m_objCmdNotebookHdrSize = tcl::incrRef(tcl::newObj("nbhdrsize"));

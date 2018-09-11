@@ -1216,7 +1216,7 @@ proc SelectionExtend {w x y {node {}}} {
 		}
 
 		if {	$toNode != $Priv(sel:from:node)
-			|| $toIdx !=  $Priv(sel:from:index)
+			|| $toIdx  != $Priv(sel:from:index)
 			|| abs($x - $Priv(sel:x)) >= 3
 			|| abs($y - $Priv(sel:y)) >= 3} {
 			set Priv(sel:moved) 1

@@ -716,9 +716,6 @@ Pattern::normalize(char const* s, char const* e)
 
 	for ( ; s < e; )
 	{
-		if (*s < ' ')
-			continue; // ignore control characters
-
 		switch (*s)
 		{
 			case '*':
@@ -756,6 +753,11 @@ Pattern::normalize(char const* s, char const* e)
 				break;
 
 			default:
+				if (utf8::isControl(s))
+				{
+					s = utf8::nextChar(s);
+					continue; // ignore control characters
+				}
 				if (countMarks)
 				{
 					M_ASSERT(countSpaces == 0);

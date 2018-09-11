@@ -428,7 +428,7 @@ proc CompareOptions {twm variant} {
 		if {[::scrolledtable::countOptions db:sites:$id:$uid] > 0} {
 			set lhs $TableOptions($variant:$id:$uid)
 			set rhs [::scrolledtable::getOptions db:sites:$id:$uid]
-			if {![::arrayListEqual $lhs $rhs]} { return false }
+			if {![::table::equal $lhs $rhs]} { return false }
 		}
 	}
 	return true

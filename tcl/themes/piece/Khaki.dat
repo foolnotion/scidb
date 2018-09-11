@@ -11,7 +11,7 @@
   color,w,stop       {#aa905b}
   color,w,stroke     {}
   color,w,texture    {}
-  contour            {1.0}
+  contour            {0.0}
   diffuse            {quadratic}
   diffusion          {linear}
   gradient,b,contour {#0084c6}

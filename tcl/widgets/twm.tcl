@@ -133,6 +133,7 @@ proc twm {path args} {
 		-workarea {} \
 		-resizing {} \
 		-adjustcmd {} \
+		-fullscreencmd {} \
 		-borderwidth 0 \
 		-allowempty 0 \
 		-disableclose 0 \
@@ -149,6 +150,7 @@ proc twm {path args} {
 	set Vars(cmd:buildpane) $opts(-buildpane)
 	set Vars(cmd:workarea) $opts(-workarea)
 	set Vars(cmd:adjustcmd) $opts(-adjustcmd)
+	set Vars(cmd:fullscreencmd) $opts(-fullscreencmd)
 	set Vars(cmd:resizing) $opts(-resizing)
 	set Vars(allow:empty) $opts(-allowempty)
 	set Vars(disable:close) $opts(-disableclose)
@@ -299,14 +301,15 @@ proc CompareOptions {twm lhs rhs ignoreCoords level} {
 proc ArrayEqual {twm lhs rhs level} {
 	upvar 1 $lhs foo $rhs bar
 
-	if {[array size foo] != [array size bar]} { return false }
-	if {[array size foo] == 0} { return true }
-
-	set keys [lsort -unique [concat [array names foo] [array names bar]]]
-	if {[llength $keys] != [array size foo]} { return false }
-
-	foreach key $keys {
-		if {$key eq "-attrs" && $level > 0} {
+	foreach key [lsort -unique [concat [array names foo] [array names bar]]] {
+		if {![info exists foo($key)]} {
+			if {$key ne "-attrs"} { return false }
+			set foo($key) {}
+		} elseif {![info exists bar($key)]} {
+			if {$key ne "-attrs"} { return false }
+			set bar($key) {}
+		}
+		if {$key eq "-attrs"} {
 			array set a $foo($key)
 			array set b $bar($key)
 			array unset a hide; array unset a stayontop
@@ -315,6 +318,8 @@ proc ArrayEqual {twm lhs rhs level} {
 			if {[info exists b(flat)] && !$b(flat)} { array unset b flat }
 			if {[info exists a(amalgamate)] && !$a(amalgamate)} { array unset a amalgamate }
 			if {[info exists b(amalgamate)] && !$b(amalgamate)} { array unset b amalgamate }
+			if {[info exists a(fullscreen)] && !$a(fullscreen)} { array unset a fullscreen }
+			if {[info exists b(fullscreen)] && !$b(fullscreen)} { array unset b fullscreen }
 			if {![ArrayEqual $twm a b $level]} { return false }
 		} elseif {[string match {*%} $foo($key)] && [string match {*%} $bar($key)]} {
 			set orient [expr {[string match {*height} $key] ? "vert" : "horz"}]
@@ -323,6 +328,7 @@ proc ArrayEqual {twm lhs rhs level} {
 			return false
 		}
 	}
+
 	return true
 }
 
@@ -419,6 +425,7 @@ proc WidgetProc {twm command args} {
 		deiconify		{ return [Deiconify $twm {*}$args] }
 		destroy			{ DestroyPane $twm {*}$args }
 		dimension		{ return [::scidb::tk::twm dimension $twm {*}$args] }
+		fullscreen		{ return [Fullscreen $twm {*}$args] }
 		geometry			{ return [Geometry $twm {*}$args] }
 		dock				{ return [::scidb::tk::twm dock $twm {*}$args] }
 		dump				{ return [::scidb::tk::twm dump $twm {*}$args] }
@@ -441,7 +448,8 @@ proc WidgetProc {twm command args} {
 		hide				{ Hide $twm {*}$args }
 		id					{ return [::scidb::tk::twm id $twm {*}$args] }
 		init				{ ::scidb::tk::twm init $twm -aligntimeout $Vars(panedwindow:timeout) {*}$args }
-		inspect			{ return [::scidb::tk::twm inspect $twm flat hide stayontop amalgamate {*}$args] }
+		inspect			{ return [::scidb::tk::twm inspect $twm \
+											flat hide stayontop amalgamate fullscreen {*}$args] }
 		iscontainer		{ return [::scidb::tk::twm iscontainer $twm {*}$args] }
 		isdocked			{ return [::scidb::tk::twm isdocked $twm {*}$args] }
 		isfloat			{ return [expr {$args in [$twm floats]}] }
@@ -2327,6 +2335,11 @@ proc Resizing {twm toplevel width height} {
 		return [{*}$Vars(cmd:resizing) $twm $toplevel $width $height]
 	}
 	return [list $width $height]
+}
+
+
+proc Fullscreen {twm flag} {
+	event generate $twm <<TwmFullscreen>> -data $flag
 }
 
 

@@ -211,6 +211,7 @@ proc build {top width height} {
 	::pgn::setup::setupStyle editor {0 1 2 3 4 5 6 7 8}
 	::scidb::game::undoSetup 200 1
 
+	::toolbar::setup $top -id editor -layout board
 	set tbGame [::toolbar::toolbar $top \
 		-id editor-game \
 		-hide 1 \

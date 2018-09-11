@@ -312,7 +312,7 @@ proc CompareOptions {twm variant} {
 	if {[::scrolledtable::countOptions db:tree:games:$id] == 0} { return true }
 	set lhs $TableOptions($variant:$id)
 	set rhs [::scrolledtable::getOptions db:tree:games:$id]
-	return [::arrayListEqual $lhs $rhs]
+	return [::table::equal $lhs $rhs]
 }
 
 

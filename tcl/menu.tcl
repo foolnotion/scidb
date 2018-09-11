@@ -791,9 +791,27 @@ proc featureRequest {parent} {
 proc viewFullscreen {{toggle {}}} {
 	variable Fullscreen
 
-	if {[llength $toggle]} { set Fullscreen [expr {!$Fullscreen}] }
-	wm attributes .application -fullscreen $Fullscreen
-	event generate .application <<Fullscreen>> -data $Fullscreen
+	if {[llength $toggle]} {
+		set Fullscreen [expr {!$Fullscreen}]
+	}
+	if {[wm attributes .application -fullscreen] != $Fullscreen} {
+		wm attributes .application -fullscreen $Fullscreen
+		event generate .application <<Fullscreen>> -data $Fullscreen
+	}
+}
+
+
+proc setFullscreen {flag} {
+	variable Fullscreen
+
+	if {$Fullscreen != $flag} {
+		set Fullscreen $flag
+		if {[winfo ismapped .application]} {
+			viewFullscreen
+		} else {
+			bind .application <Map> [namespace code SetFullscreenMode]
+		}
+	}
 }
 
 
@@ -817,6 +835,12 @@ proc CheckFullscreen {app} {
 			if {$wd == [winfo screenwidth $app] && $ht == [winfo screenheight $app]} { set Fullscreen 1 }
 		}
 	}
+}
+
+
+proc SetFullscreenMode {} {
+	bind .application <Map> {#}
+	after idle [namespace code viewFullscreen]
 }
 
 

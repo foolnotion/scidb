@@ -468,7 +468,7 @@
 
 ### application ########################################################
 ::application::mc::Tab(information)			"&Information"
-::application::mc::Tab(database)				"Datenba&nk"
+::application::mc::Tab(database)				"&Datenbank"
 ::application::mc::Tab(board)					"&Brett"
 ::application::mc::Tab(games)					"&Partien"
 ::application::mc::Tab(player)				"&Spieler"
@@ -581,7 +581,7 @@
 
 ::application::board::mc::Tools							"Werkzeuge"
 ::application::board::mc::Control						"Steuerung"
-::application::board::mc::Game							"Partie"
+::application::board::mc::Database						"Datenbank"
 ::application::board::mc::GoIntoNextVar				"Zur nächsten Variante"
 ::application::board::mc::GoIntPrevVar					"Zur vorhergehenden Variante"
 

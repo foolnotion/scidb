@@ -249,6 +249,27 @@ proc gamestable::setOptions {id opts} { return [::scrolledtable::setOptions $id 
 proc eventtable::setOptions {id opts} { return [::scrolledtable::setOptions $id $opts] }
 proc playertable::setOptions {id opts} { return [::scrolledtable::setOptions $id $opts] }
 proc sitetable::setOptions {id opts} { return [::scrolledtable::setOptions $id $opts] }
+rename ::toolbar::setOptions ::toolbar::setOptions_
+# new option handling of toolbar
+proc ::toolbar::setOptions {id options} {
+	switch -glob $id {
+		*.fsbox.top.main.list	{ set id fsbox-list }
+		*.fsbox.top.main.fav		{ set id fsbox-bookmarks }
+		*.crosstable*				{ set id crosstable }
+		*.__comment__				{ set id comment }
+		*.analysis:1				{ set id analysis:1 }
+		*.analysis:2				{ set id analysis:2 }
+		*.player						{ set id playertable }
+		*.event						{ set id eventtable }
+		*.site						{ set id sitetable }
+		*.tree						{ set id tree }
+		*.editor						{ set id editor }
+		*.switcher					{ set id database }
+		*.games						{ set id games }
+		*.board						{ set id board }
+	}
+	if {[string first . $id] == -1} { ::toolbar::setOptions_ $id $options }
+}
 # END OF MIGRATION ##################################################################
 
 # prevent errors while parsing old config files (as long as we have a beta version)

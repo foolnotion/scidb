@@ -196,6 +196,7 @@ proc open {parent pos lang} {
 	$dlg.cancel	configure -command [namespace code [list Close $dlg]]
 	$dlg.hlp		configure -command [list ::help::open .application Comment-Editor-Dialog -parent $dlg]
 
+	::toolbar::setup $dlg -id comment
 	set tb [::toolbar::toolbar $dlg \
 		-id comment-languages \
 		-float 0 \

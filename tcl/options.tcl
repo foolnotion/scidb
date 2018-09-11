@@ -33,9 +33,9 @@ namespace import ::tcl::mathfunc::max
 array set WriteCallbacks {}
 array set TableCallbacks {}
 
-variable SaveCallbacks {}
-variable RestoreCallbacks {}
-variable CompareCallbacks {}
+variable TableSaveCallbacks {}
+variable TableRestoreCallbacks {}
+variable TableCompareCallbacks {}
 variable TempSuffix "927568377322.tmp"
 
 
@@ -139,18 +139,10 @@ proc saveOptionsFile {} {
 
 	foreach file [array names WriteCallbacks] {
 		set filename [set ::scidb::file::$file]
-		set chan [set fd_($filename) [set chan [open $filename.$TempSuffix w]]]
+		set fd_($filename) [set chan [open $filename.$TempSuffix w]]
 		fconfigure $chan -encoding utf-8
 		writeHeader $chan $file
-		foreach callback $WriteCallbacks($file) { $callback $chan }
-
-		if {$file eq "options"} {
-			foreach dialog [::toolbar::toolbarDialogs] {
-				puts $chan "::toolbar::setOptions $dialog {"
-				::options::writeArray $chan [::toolbar::getOptions $dialog]
-				puts $chan "}"
-			}
-		}
+		foreach callback $WriteCallbacks($file) { {*}$callback $chan }
 	}
 }
 
@@ -163,9 +155,10 @@ proc saveTableOptionsFile {variant} {
 	foreach file [array names TableCallbacks] {
 		set filename [MakeFilename $variant]
 		file mkdir [file dirname $filename]
-		set chan [set fd_($filename) [set chan [open $filename.$TempSuffix w]]]
+		set fd_($filename) [set chan [open $filename.$TempSuffix w]]
 		fconfigure $chan -encoding utf-8
-		foreach callback $TableCallbacks($file) { $callback $chan $variant }
+		foreach callback $TableCallbacks($file) { {*}$callback $chan $variant }
+		SaveToolbarOptions $chan $variant [::toolbar::toolbarIds]
 	}
 }
 
@@ -174,8 +167,9 @@ proc writeTableOptions {chan id variant} {
 	variable TableCallbacks
 
 	if {[info exists TableCallbacks(options)]} {
-		foreach callback $TableCallbacks(options) { $callback $chan $variant $id }
+		foreach callback $TableCallbacks(options) { {*}$callback $chan $variant $id }
 	}
+	SaveToolbarOptions $chan $variant [::toolbar::getIdsForLayout $id]
 }
 
 
@@ -233,35 +227,44 @@ proc writeArray {chan arr {lowercaseOnly 1}} {
 
 
 proc hookSaveOptions {saveCallback restoreCallback compareCallback} {
-	variable SaveCallbacks
-	variable RestoreCallbacks 
-	variable CompareCallbacks
+	variable TableSaveCallbacks
+	variable TableRestoreCallbacks 
+	variable TableCompareCallbacks
 
-	lappend SaveCallbacks $saveCallback
-	lappend RestoreCallbacks $restoreCallback
-	lappend CompareCallbacks $compareCallback
+	lappend TableSaveCallbacks $saveCallback
+	lappend TableRestoreCallbacks $restoreCallback
+	lappend TableCompareCallbacks $compareCallback
 }
 
 
 proc save {twm variant} {
-	variable SaveCallbacks
-	foreach callback $SaveCallbacks { $callback $twm $variant }
+	variable TableSaveCallbacks
+	foreach callback $TableSaveCallbacks { {*}$callback $twm $variant }
 }
 
 
 proc restore {twm variant} {
-	variable RestoreCallbacks
-	foreach callback $RestoreCallbacks { $callback $twm $variant }
+	variable TableRestoreCallbacks
+	foreach callback $TableRestoreCallbacks { {*}$callback $twm $variant }
 }
 
 
 proc compare {twm variant} {
-	variable CompareCallbacks
+	variable TableCompareCallbacks
 
-	foreach callback $CompareCallbacks {
-		if {![$callback $twm $variant]} { return false }
+	foreach callback $TableCompareCallbacks {
+		if {![{*}$callback $twm $variant]} { return false }
 	}
 	return true
+}
+
+
+proc SaveToolbarOptions {chan variant toolbarIds} {
+	foreach id $toolbarIds {
+		puts $chan "::toolbar::setOptions $id {"
+		writeArray $chan [::toolbar::getOptions $id]
+		puts $chan "}"
+	}
 }
 
 

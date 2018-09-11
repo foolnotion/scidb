@@ -581,7 +581,7 @@
 
 ::application::board::mc::Tools							"Verktyg"
 ::application::board::mc::Control						"Kontroll"
-::application::board::mc::Game							"Parti"
+::application::board::mc::Database						"Databas"
 ::application::board::mc::GoIntoNextVar				"Gå in i nästa variant"
 ::application::board::mc::GoIntPrevVar					"Gå in i föregående variant"
 

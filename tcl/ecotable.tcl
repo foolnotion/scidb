@@ -46,16 +46,15 @@ array set Defaults {
 	miniboard:size	30
 }
 #	move:figurines	graphic
-array set Options {}
 
-variable IdList {}
+variable IdList {board ecobox}
+foreach id $IdList { namespace eval eco:$id {} }
+unset id
 
 
 proc build {parent args} {
 	variable MoveStyle
 	variable Defaults
-	variable Options
-	variable IdList
 
 	array set opts {
 		-id "table"
@@ -70,11 +69,13 @@ proc build {parent args} {
 	array set opts $args
 
 	set id $opts(-id)
-	if {$id ni $IdList} { lappend IdList $id }
-	set opts(-id) eco:$id
+	set id eco:$id
+	set opts(-id) $id
 
 	namespace eval $parent {}
+	namespace eval $id {}
 	variable ${parent}::
+	variable ${id}::Options
 
 	if {![info exists MoveStyle]} {
 		trace add variable ::pgn::setup::mc::Setup(MoveStyle) write [namespace code UpdateMoveStyleLabel]
@@ -82,7 +83,7 @@ proc build {parent args} {
 	}
 
 	array set Options [array get Defaults]
-	::scrolledtable::bindOptions eco:$id [namespace current]::Options [array names Defaults]
+	::scrolledtable::bindOptions $id [namespace current]::${id}::Options [array names Defaults]
 	set tb $parent.table
 
 	if {[info exists opts(-mode)]} {
@@ -109,20 +110,20 @@ proc build {parent args} {
 		lappend menu [list radiobutton \
 			-command [namespace code [list Update $parent]] \
 			-labelvar [namespace current]::mc::Mode(single) \
-			-variable [namespace current]::Options(move:mode) \
+			-variable [namespace current]::${id}::Options(move:mode) \
 			-value single \
 		]
 		lappend menu [list radiobutton \
 			-command [namespace code [list Update $parent]] \
 			-labelvar [namespace current]::mc::Mode(compact) \
-			-variable [namespace current]::Options(move:mode) \
+			-variable [namespace current]::${id}::Options(move:mode) \
 			-value compact \
 		]
 		lappend menu { separator }
 	}
 	lappend menu {*}[::notation::buildMenuForShortNotation \
 		[namespace code [list Update $parent]] \
-		[namespace current]::Options(move:notation) \
+		[namespace current]::${id}::Options(move:notation) \
 	]
 #	lappend menu { separator }
 #	lappend menu [list command \
@@ -189,6 +190,7 @@ proc build {parent args} {
 	set (active) 0
 	set (afterid) {}
 	set (locked) 0
+	set (id) $id
 	set (update) [list [namespace current]::Update $parent]
 	set (board) [list [namespace current]::Deselect $parent]
 	set (listmode) $opts(-listmode)
@@ -198,8 +200,11 @@ proc build {parent args} {
 
 
 proc open {parent args} {
+	variable TableOptions
 	variable eco_
 
+	array set opts { -id "ecobox" }
+	array set opts $args
 	set dlg [tk::toplevel $parent.__eco__]
 	set tb [build $dlg -listmode no -takefocus 1 {*}$args]
 	::widget::dialogButtons $dlg {ok cancel}
@@ -210,9 +215,10 @@ proc open {parent args} {
 	bind $tb <<TableSelected>>	[namespace code [list SelectEco $dlg %d]]
 	bind $tb <<TableActivated>> [namespace code [list HandleSelection $dlg %d]]
 	bind $dlg <Escape> [list $dlg.cancel invoke]
-	::widget::dialogGeometry $dlg $parent 800x400
+	wm grid $dlg 400 [::scrolledtable::computeHeight $tb 1] 1 [::scrolledtable::linespace $tb]
+	wm minsize $dlg 400 6
+	::widget::dialogGeometry $dlg $parent -init 1000x30 -heightincr -1
 	wm transient $dlg [winfo toplevel $parent]
-	wm withdraw $dlg
 	wm title $dlg $mc::SelectEco
 	wm resizable $dlg true true
 	wm deiconify $dlg
@@ -221,6 +227,7 @@ proc open {parent args} {
 	::ttk::grabWindow $dlg
 	tkwait variable [namespace current]::eco_
 	::ttk::releaseGrab $dlg
+	set TableOptions(normal:$opts(-id)) [::scrolledtable::getOptions eco:$opts(-id)]
 	destroy $dlg
 	return $eco_
 }
@@ -295,8 +302,8 @@ proc CurrentSelection {w} {
 
 
 proc Update {w {force no}} {
-	variable Options
 	variable ${w}::
+	variable ${(id)}::Options
 
 	HideBoard $w
 	if {$(mode:fixed) || $(mode) eq $Options(move:mode)} {
@@ -308,7 +315,7 @@ proc Update {w {force no}} {
 		set (mode) $Options(move:mode)
 	}
 	set (data) [::scidb::game::ecotable -notation $Options(move:notation) -mode $(mode)]
-	if {$(active) || $force} {
+	if {$(active) || $force || $(id) ne "board"} {
 		set variant [::scidb::game::query variant]
 		set base [::scidb::game::query database]
 		::scrolledtable::update $w.table $base $variant [llength $(data)]
@@ -337,7 +344,7 @@ proc UpdateMoveStyleLabel {args} {
 
 
 # proc SelectFigurines {path} {
-# 	variable Options
+#	variable ${(id)}::Options
 # 
 # 	set lang [::figurines::openDialog $path $Options(move:figurines)]
 # 	if {$lang eq $Options(move:figurines)} { return }
@@ -349,7 +356,7 @@ proc UpdateMoveStyleLabel {args} {
 proc FillTable {path args} {
 	set w [winfo parent $path]
 	variable ${w}::
-	variable Options
+#	variable ${(id)}::Options
 
 	if {[llength $args] == 0} {
 		set table [::scrolledtable::table $path]
@@ -506,9 +513,9 @@ proc WriteTableOptions {chan variant {id "board"}} {
 	if {$id ne "board"} { return }
 
 	foreach uid $IdList {
-		if {[info exists TableOptions($variant:$id)]} {
+		if {[info exists TableOptions($variant:$uid)]} {
 			puts $chan "::scrolledtable::setOptions eco:$uid {"
-			::options::writeArray $chan $TableOptions($variant:$id)
+			::options::writeArray $chan $TableOptions($variant:$uid)
 			puts $chan "}"
 		}
 	}
@@ -517,7 +524,11 @@ proc WriteTableOptions {chan variant {id "board"}} {
 
 
 proc WriteOptions {chan} {
-	::options::writeItem $chan [namespace current]::Options
+	variable IdList
+
+	foreach uid $IdList {
+		::options::writeItem $chan [namespace current]::eco:${uid}::Options
+	}
 }
 ::options::hookWriter [namespace current]::WriteOptions
 
@@ -547,7 +558,7 @@ proc CompareOptions {twm variant} {
 	if {[::scrolledtable::countOptions eco:$id] == 0} { return true }
 	set lhs $TableOptions($variant:$id)
 	set rhs [::scrolledtable::getOptions eco:$id]
-	return [::arrayListEqual $lhs $rhs]
+	return [::table::equal $lhs $rhs]
 }
 
 

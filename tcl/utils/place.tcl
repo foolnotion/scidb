@@ -26,8 +26,10 @@ package provide place 2.0
 namespace eval util {
 
 proc place {path args} {
-	lassign [place::geometry $path {*}$args] x y w h
+	set geometry [place::geometry $path {*}$args]
+	lassign $geometry x y w h
 	wm geometry $path "${x}${y}"
+	return $geometry
 }
 
 

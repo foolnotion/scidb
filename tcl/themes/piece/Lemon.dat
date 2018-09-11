@@ -33,7 +33,7 @@
   gradient,w,tx      {0.1}
   gradient,w,ty      {0.1}
   texture,w,y1       {0}
-  contour            {1.0}
+  contour            {0}
   identifier         {Lemon|1251901475461|yellow.color|gregor}
   texture,w,y2       {0}
   gradient,w,stop    {#c7c2a3}

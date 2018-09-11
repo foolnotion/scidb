@@ -168,6 +168,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	set Vars(viewcmd) $getViewCmd
 
 	if {$Vars(usefind)} {
+		::toolbar::setup $path -id sitetable -layout site
 		set tbFind [::toolbar::toolbar $path \
 			-id sitetable-find \
 			-hide 1 \

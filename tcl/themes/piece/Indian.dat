@@ -9,7 +9,7 @@
   color,w,stop       {#dae4ff}
   color,w,stroke     {}
   color,w,texture    {}
-  contour            {1.0}
+  contour            {0}
   diffusion          {quadratic}
   gradient,b,fill    {#cc5251}
   gradient,b,start   {#b2b2b2}

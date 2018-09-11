@@ -1105,6 +1105,12 @@ proc setDefaultLayout {table id style} {
 }
 
 
+proc equal {lhs rhs} {
+	array set opts $lhs
+	return [ArrayEqual opts $rhs]
+}
+
+
 proc RestoreOptions {id options update} {
 	variable WidgetMap
 	variable Bindings
@@ -2749,7 +2755,13 @@ proc ArrayEqual {lhs rhs} {
 	if {[array size foo] == 0} { return 1 }
 	set keys [lsort -unique [concat [array names foo] [array names bar]]]
 	if {[llength $keys] != [array size foo]} { return 0 }
-	foreach key $keys { if {$foo($key) ne $bar($key)} { return 0 } }
+	foreach key $keys {
+		if {$foo($key) ne $bar($key)} {
+			if {![string match {-lastwidth:*} $key]} { return 0 }
+			# for some reasons we need a tolerance of two pixels for -lastwidth
+			if {abs($foo($key) - $bar($key)) > 2} { return 0 }
+		}
+	}
 	return 1
 }
 

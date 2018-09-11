@@ -174,6 +174,7 @@ proc update {} {
 			{Burly|1262881395698|yellow.color|gregor}
 			{Condal|1263914065014|yellow.color|gregor}
 			{Contrast|1322146529013|yellow.color|gregor}
+			{Contourless|1536512761722|purple|gregor}
 			{Emerald|1244127333315|yellow.color|gregor}
 			{Fritz|1422386484520|purple|gregor}
 			{Glass|1243791877212|yellow.color|gregor}

@@ -119,6 +119,14 @@ sys::utf8::countChars(char const* str, unsigned byteLength)
 
 inline
 bool
+sys::utf8::isControl(uchar uc)
+{
+	return Tcl_UniCharIsControl(uc);
+}
+
+
+inline
+bool
 sys::utf8::isAlpha(uchar uc)
 {
 	return Tcl_UniCharIsAlpha(uc);

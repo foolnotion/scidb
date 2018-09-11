@@ -291,6 +291,15 @@ sys::utf8::isAscii(mstl::string const& str)
 
 
 bool
+sys::utf8::isControl(char const* s)
+{
+	uchar u;
+	bits::toUniChar(s, u);
+	return isControl(u);
+}
+
+
+bool
 sys::utf8::isAlpha(char const* s)
 {
 	uchar u;

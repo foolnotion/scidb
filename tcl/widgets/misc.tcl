@@ -206,20 +206,23 @@ proc dialogWatch {dlg} {
 }
 
 
-proc dialogGeometry {dlg parent {initValue ""}} {
+proc dialogGeometry {dlg parent args} {
 	uplevel 1 { set ::widget::ns_ [namespace current] }
 	variable ns_
+	array set opts { -init "" -widthincr 0 -heightincr 0 }
+	array set opts $args
 	set gvar ${ns_}::widget:Geometry
 	if {![info exists $gvar]} {
-		if {[scan $initValue "%dx%d%d%d" tw th tx ty] == 4} {
+		if {[scan $opts(-init) "%dx%d%d%d" tw th tx ty] == 4} {
 			set $gvar [list $tx $ty $tw $th]
-		} elseif {[scan $initValue "%dx%d" tw th] == 2} {
+		} elseif {[scan $opts(-init) "%dx%d" tw th] == 2} {
 			set $gvar [list $tw $th]
 		} else {
 			set $gvar {}
 		}
 	}
-	bind $dlg <Configure> +[list ::widget::RecordGeometry $dlg [winfo toplevel $parent] $gvar]
+	bind $dlg <Configure> +[list ::widget::RecordGeometry $dlg \
+		[winfo toplevel $parent] $gvar $opts(-widthincr) $opts(-heightincr)]
 	if {[llength $gvar] == 0} { return }
 	if {[scan [wm geometry [winfo toplevel $parent]] "%dx%d%d%d" tw th tx ty] != 4} { return }
 	if {[llength [set $gvar]] == 4} {
@@ -638,10 +641,19 @@ proc menuItemHighlightSecond {menu} {
 }
 
 
-proc RecordGeometry {dlg parent gvar} {
+proc RecordGeometry {dlg parent gvar widthincr heightincr} {
 	if {[scan [wm geometry $dlg] "%dx%d%d%d" fw fh fx fy] == 4} {
 		if {[scan [wm geometry [winfo toplevel $parent]] "%dx%d%d%d" tw th tx ty] == 4} {
-			set $gvar [list [expr {max(0, $fx) - $tx}] [expr {max(0, $fy) - $ty}] $fw $fh]
+			incr fw $widthincr
+			incr fh $heightincr
+			if {$fx == 0 || $fy == 0} {
+				set tx [expr {[winfo rootx $dlg] - [winfo rootx $parent]}]
+				set ty [expr {[winfo rooty $dlg] - [winfo rooty $parent]}]
+			} else {
+				set tx [expr {$fx - $tx}]
+				set ty [expr {$fy - $ty}]
+			}
+			set $gvar [list $tx $ty $fw $fh]
 		}
 	}
 }

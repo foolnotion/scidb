@@ -581,7 +581,7 @@
 
 ::application::board::mc::Tools							"Strumenti"
 ::application::board::mc::Control						"Controllo"
-::application::board::mc::Game							"Partita"
+::application::board::mc::Database						"Database"
 ::application::board::mc::GoIntoNextVar				"Vai alla prossima variante"
 ::application::board::mc::GoIntPrevVar					"Vai alla precedente variante"
 

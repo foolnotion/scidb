@@ -300,6 +300,7 @@ proc open {parent base variant index view source} {
 	if {![info exists List(order)]} { MakeLists }
 	variable List
 
+	::toolbar::setup $dlg -id crosstable
 	set tb [::toolbar::toolbar $dlg \
 		-id crosstable-settings \
 		-allow {top bottom} \

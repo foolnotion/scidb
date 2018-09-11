@@ -293,6 +293,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 		;
 
 	if {$Vars(usefind)} {
+		::toolbar::setup $path -id playertable -layout player
 		set tbFind [::toolbar::toolbar $path \
 			-id playertable-find \
 			-hide 1 \

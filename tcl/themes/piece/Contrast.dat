@@ -7,7 +7,7 @@
   color,w,fill       {}
   color,w,stroke     {}
   color,w,texture    {}
-  contour            {1.7000000000000002}
+  contour            {0}
   diffusion          {quadratic}
   gradient,b,start   {#b2b2b2}
   gradient,b,stop    {#000000}

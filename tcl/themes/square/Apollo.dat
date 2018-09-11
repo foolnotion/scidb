@@ -10,8 +10,8 @@
   dark,x2                  {150}
   dark,y1                  {0}
   dark,y2                  {150}
-  hilite,selected          {#d1c773}
-  hilite,suggested         {#3bbdbe}
+  hilite,selected          {#7b9616}
+  hilite,suggested         {#940000}
   hint,background-color    {}
   hint,background-coords   {#000000}
   hint,background-rotation	{0}

@@ -6,7 +6,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2017 Gregor Cramer
+# Copyright: (C) 2009-2018 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -56,6 +56,7 @@ variable Map [dict create]
 
 set Specs(toolbars) {}
 set Specs(repeat) {}
+set Specs(setup) {}
 
 if {[catch {package require tooltip}]} { set HaveTooltips 0 }
 
@@ -65,7 +66,6 @@ array set Defaults {
 	toolbar:activebackground	#cfcfda
 	toolbar:overrelief			solid
 	toolbar:relief					flat
-	toolbarframe:forget			false
 	toolbarframe:alignment		left
 	toolbarframe:iconsize		false
 	toolbarframe:padding			1
@@ -95,7 +95,7 @@ if {[tk windowingsystem] eq "x11" && [info tclversion] <= "8.6"} {
 }
 
 array set Options {
-	icons:size						medium
+	icons:size medium
 }
 
 
@@ -111,6 +111,37 @@ proc mc {tok} { return [tk::msgcat::mc [set $tok]] }
 proc makeStateSpecificIcons {img} { return $img }
 proc configureCheckEntry {m} { return $m }
 proc configureRadioEntry {m} { return $m }
+
+
+proc setup {parent args} {
+	variable Specs
+
+	foreach {arg val} $args {
+		switch -- $arg {
+			-id {
+				set Specs(id:$parent) $val
+				set Specs(parent:$val) $parent
+				if {$val ni $Specs(setup)} {
+					lappend Specs(setup) $val
+				}
+			}
+			-layout {
+				if {![info exists Specs($val)] || $parent ni $Specs($val)} {
+					lappend Specs(layout:$val) $parent
+				}
+			}
+		}
+	}
+}
+
+
+proc removeFromLayout {id value} {
+	variable Specs
+
+	if {[info exists Specs($value)]} {
+		lremove Specs(layout:$value) $Specs(parent:$id)
+	}
+}
 
 
 proc toolbar {parent args} {
@@ -206,56 +237,21 @@ proc toolbar {parent args} {
 	}
 
 	if {!$haveId} { set Specs(keepoptions:$toolbar) 0 }
-	set parent [join [lrange [split $toolbar .] 0 end-1] .]
 	lappend Specs(count:$parent) $toolbar
 	lappend Specs(remember:$parent) $toolbar
 	if {$Specs(state:$toolbar) eq "hide"} { set Specs(hidden:$toolbar) 1 }
 	set Specs(children:$toolbar) {}
 
 	if {$haveId} {
-		dict set Lookup $parent:$Specs(id:$toolbar) $toolbar
+		dict set Lookup $Specs(id:$toolbar) $toolbar
 		dict set Map $toolbar $Specs(id:$toolbar)
+		set frameId $Specs(id:$parent)
+		if {![info exists Specs(idlist:$parent)]} {
+			PrepareFrameOptions $frameId
+		}
+		PrepareToolbarOptions $toolbar $frameId
 		lappend Specs(idlist:$parent) $id
-
-		if {[info exists Specs(options:$parent)]} {
-			if {![info exists Specs(idlist:$parent)]} {
-				setOptions $parent $Specs(options:$parent)
-				unset -nocomplain Specs(configure:$parent)
-			}
-			array set opts $Specs(options:$parent)
-			if {[info exists opts(state:$id)]} {
-				foreach key {iconsize position side state} {
-					set Specs($key:$toolbar) $opts($key:$id)
-				}
-			}
-			if {$Specs(state:$toolbar) eq "float"} {
-				set Specs(state:$toolbar) "hide"
-				set Specs(finish:$toolbar) 1
-			}
-			set dir $Specs(side:$toolbar)
-			set tbf [Join $parent __tbf__$Specs(side:$toolbar)]
-			if {[info exists Specs(childs:$tbf)]} {
-				set childs $Specs(childs:$tbf)
-			} else {
-				set childs {}
-			}
-			if {[info exists Specs(childs:id:$tbf)]} {
-				set index -1
-				foreach i $Specs(childs:id:$tbf) {
-					if {[dict exists $Lookup $parent:$i]} { 
-						set child [dict get $Lookup $parent:$i]
-						set order([incr index]) $child
-						if {$child ni $childs} { lappend childs $child }
-					}
-				}
-				set Specs(childs:$tbf) {}
-				set n [llength $Specs(childs:id:$tbf)]
-				for {set i 0} {$i < $n} {incr i} {
-					if {[info exists order($i)] && $order($i) in $childs} {
-						lappend Specs(childs:$tbf) $order($i)
-					}
-				}
-			}
+		if {[info exists Specs(options:$id)]} {
 			set alignment ""
 		}
 	}
@@ -531,12 +527,89 @@ proc activeParents {} {
 }
 
 
-proc getOptions {parent} {
+proc toolbarIds {} {
+	variable Specs
+	return $Specs(setup)
+}
+
+
+proc getIdsForLayout {layout} {
+	variable Specs
+
+	set result {}
+
+	if {[info exists Specs(layout:$layout)]} {
+		foreach parent $Specs(layout:$layout) {
+			if {[info exists Specs(id:$parent)]} {
+				lappend result $Specs(id:$parent)
+			}
+		}
+	}
+
+	return $result
+}
+
+
+proc compare {layout} {
+	variable Specs
+
+	if {[info exists Specs(layout:$layout)]} {
+		foreach parent $Specs(layout:$layout) {
+			if {[info exists Specs(id:$parent)]} {
+				set id $Specs(id:$parent)
+				if {![ArrayEqual $Specs(options:$id) [getOptions $id]]} {
+					return false
+				}
+			}
+		}
+	}
+
+	return true
+}
+
+
+proc save {layout} {
+	variable Specs
+
+	if {[info exists Specs(layout:$layout)]} {
+		foreach parent $Specs(layout:$layout) {
+			if {[info exists Specs(id:$parent)]} {
+				set id $Specs(id:$parent)
+				set Specs(options:$id) [getOptions $id]
+			}
+		}
+	}
+
+	return true
+}
+
+
+proc restore {layout} {
+	variable Specs
+
+	if {[info exists Specs(layout:$layout)]} {
+		foreach parent $Specs(layout:$layout) {
+			if {[info exists Specs(id:$parent)]} {
+				set id $Specs(id:$parent)
+				if {![compare $id]} {
+					setOptions $id $Specs(options:$id)
+				}
+			}
+		}
+	}
+
+	return true
+}
+
+
+proc getOptions {id} {
 	variable Specs
 	variable Lookup
 	variable Map
 
-	if {![info exists Specs(count:$parent)]} { return $Specs(options:$parent) }
+	if {![info exists Specs(parent:$id)]} { return $Specs(options:$id) }
+	set parent $Specs(parent:$id)
+	if {![info exists Specs(count:$parent)]} { return $Specs(options:$id) }
 	set options {}
 
 	if {[info exists Specs(frame:order:$parent)]} {
@@ -556,20 +629,20 @@ proc getOptions {parent} {
 	}
 
 	if {[info exists Specs(idlist:$parent)]} {
-		foreach id $Specs(idlist:$parent) {
-			set toolbar [dict get $Lookup $parent:$id]
+		foreach tbid $Specs(idlist:$parent) {
+			set toolbar [dict get $Lookup $tbid]
 			foreach {key val} [array get Specs *:$toolbar] {
 				if {![string match *:*:* $key]} {
 					switch -glob $key {
 						side:* - iconsize:* - position:* - justify:* {
 							set key [string range $key 0 [expr {[string first : $key] - 1}]]
-							lappend options $key:$id $val
+							lappend options $key:$tbid $val
 						}
 						state:* {
 							if {$Specs(finish:$toolbar)} {
-								lappend options state:$id float
+								lappend options state:$tbid float
 							} else {
-								lappend options state:$id $val
+								lappend options state:$tbid $val
 							}
 						}
 					}
@@ -582,28 +655,47 @@ proc getOptions {parent} {
 }
 
 
-proc setOptions {parent options} {
+proc setOptions {id options} {
 	variable Specs
+	variable Lookup
 
-	set Specs(options:$parent) $options
-	array set opts $options
+	set Specs(options:$id) $options
+	if {$id ni $Specs(setup)} { lappend Specs(setup) $id }
+	if {![info exists Specs(parent:$id)]} { return }
+	set parent $Specs(parent:$id)
 
-	if {[info exists opts(frame:order)]} {
-		set Specs(frame:order:$parent) $opts(frame:order)
-	}
+	if {[info exists Specs(idlist:$parent)]} {
+		PrepareFrameOptions $id
 
-	foreach dir {top left right bottom} {
-		if {[info exists opts(frame:childs:$dir)]} {
-			set tbf $parent.__tbf__$dir
-			set Specs(childs:id:$tbf) $opts(frame:childs:$dir)
-			set Specs(alignment:$tbf) $opts(alignment:$dir)
+		foreach tbId $Specs(idlist:$parent) {
+			set toolbar [dict get $Lookup $tbId]
+			if {$Specs(keepoptions:$toolbar)} {
+				if {$Specs(state:$toolbar) in {flat show}} {
+					RemoveFlatHandle $toolbar
+					Forget $toolbar
+				}
+			}
+		}
+
+		foreach dir {top left right bottom} {
+			set tbf [Join $parent __tbf__$dir]
+			catch { destroy $tbf }
+		}
+
+		foreach tbId $Specs(idlist:$parent) {
+			set toolbar [dict get $Lookup $tbId]
+			if {$Specs(keepoptions:$toolbar)} {
+				PrepareToolbarOptions $toolbar $id
+				ChangeIcons $toolbar
+				setState $toolbar $Specs(state:$toolbar)
+			}
 		}
 	}
 }
 
 
 proc show {toolbar} {
-	Show $toolbar ""
+	Show $toolbar
 }
 
 
@@ -633,7 +725,7 @@ proc setState {toolbar state} {
 
 			switch $state {
 				flat	{ Hide $toolbar flat }
-				show	{ show $toolbar }
+				show	{ Show $toolbar }
 				float	{
 					if {[info exists Specs(position:$toolbar)] && [llength $Specs(position:$toolbar)] == 2} {
 						set tl [winfo toplevel $toolbar]
@@ -805,20 +897,6 @@ proc totalWidth {parent} {
 	}
 
 	return $width
-}
-
-
-proc toolbarDialogs {} {
-	variable Specs
-
-	set result {}
-
-	foreach dlg [array names Specs options:*] {
-		set dlg [string range $dlg 8 end]
-		if {$dlg ni $result} { lappend result $dlg }
-	}
-
-	return $result
 }
 
 
@@ -1005,6 +1083,73 @@ proc Add {toolbar widgetCommand args} {
 }
 
 
+proc PrepareFrameOptions {id} {
+	variable Specs
+
+	if {![info exists Specs(options:$id)]} { return }
+	set parent $Specs(parent:$id)
+	array set opts $Specs(options:$id)
+
+	if {[info exists opts(frame:order)]} {
+		set Specs(frame:order:$parent) $opts(frame:order)
+	}
+
+	foreach dir {top left right bottom} {
+		if {[info exists opts(frame:childs:$dir)]} {
+			set tbf $parent.__tbf__$dir
+			set Specs(childs:id:$tbf) $opts(frame:childs:$dir)
+			set Specs(alignment:$tbf) $opts(alignment:$dir)
+		}
+	}
+}
+
+
+proc PrepareToolbarOptions {toolbar frameId} {
+	variable Specs
+	variable Lookup
+
+	if {![info exists Specs(options:$frameId)]} { return }
+
+	array set opts $Specs(options:$frameId)
+	set parent $Specs(parent:$frameId)
+	set id $Specs(id:$toolbar)
+
+	if {[info exists opts(state:$id)]} {
+		foreach key {iconsize position side state} {
+			set Specs($key:$toolbar) $opts($key:$id)
+		}
+	}
+	if {$Specs(state:$toolbar) eq "float"} {
+		set Specs(state:$toolbar) "hide"
+		set Specs(finish:$toolbar) 1
+	}
+	set dir $Specs(side:$toolbar)
+	set tbf [Join $parent __tbf__$Specs(side:$toolbar)]
+	if {[info exists Specs(childs:$tbf)]} {
+		set childs $Specs(childs:$tbf)
+	} else {
+		set childs {}
+	}
+	if {[info exists Specs(childs:id:$tbf)]} {
+		set index -1
+		foreach i $Specs(childs:id:$tbf) {
+			if {[dict exists $Lookup $i]} { 
+				set child [dict get $Lookup $i]
+				set order([incr index]) $child
+				if {$child ni $childs} { lappend childs $child }
+			}
+		}
+		set Specs(childs:$tbf) {}
+		set n [llength $Specs(childs:id:$tbf)]
+		for {set i 0} {$i < $n} {incr i} {
+			if {[info exists order($i)] && $order($i) in $childs} {
+				lappend Specs(childs:$tbf) $order($i)
+			}
+		}
+	}
+}
+
+
 proc SetIconSize {args} {
 	variable Specs
 	variable Options
@@ -1104,18 +1249,19 @@ proc Cleanup {toolbar} {
 	set i [lsearch -exact $Specs(count:$parent) $toolbar]
 	set Specs(count:$parent) [lreplace $Specs(count:$parent) $i $i]
 	if {[llength $Specs(count:$parent)] == 0} {
-		set keepoptions $Specs(keepoptions:$toolbar)
+		set id ""
+		if {$Specs(keepoptions:$toolbar) && [info exists Specs(id:$parent)]} { set id $Specs(id:$parent) }
 		if {[info exists Specs(idlist:$parent)]} {
 			set idlist $Specs(idlist:$parent)
 		}
-		if {$keepoptions} { set options [getOptions $parent] }
+		if {[string length $id]} { set options [getOptions $id] }
 		foreach tb $Specs(remember:$parent) { array unset Specs *:$tb }
 		set order {}
 		if {[info exists Specs(frame:order:$parent)]} { set order $Specs(frame:order:$parent) }
 		array unset Specs *:$parent
 		set Specs(frame:order:$parent) $order
-		if {$keepoptions} {
-			set Specs(options:$parent) $options
+		if {[string length $id]} {
+			set Specs(options:$id) $options
 			if {[info exists idlist]} {
 				set Specs(idlist:$parent) $idlist
 			}
@@ -1282,11 +1428,8 @@ proc PackToolbar {toolbar {before {}} {alignment {}}} {
 		set nextSlave $before
 	}
 
-	if {$Defaults(toolbarframe:forget) && [info exists Specs(frame:$toolbar)]} {
-		set index [lsearch -exact $Specs(childs:$Specs(frame:$toolbar)) $toolbar]
-		set Specs(childs:$Specs(frame:$toolbar)) \
-			[lreplace $Specs(childs:$Specs(frame:$toolbar)) $index $index]
-	}
+	set oldFrame ""
+	if {[info exists Specs(frame:$toolbar)]} { set oldFrame $Specs(frame:$toolbar) }
 
 	set index [lsearch -exact $Specs(childs:$tbf) $toolbar]
 	if {[llength $before]} {
@@ -1322,6 +1465,12 @@ proc PackToolbar {toolbar {before {}} {alignment {}}} {
 
 	set Specs(frame:$toolbar) $tbf
 	set Specs(packed:$toolbar) 1
+
+	if {[string length $oldFrame] && $oldFrame != $tbf} {
+		set index [lsearch -exact $Specs(childs:$oldFrame) $toolbar]
+		set Specs(childs:$oldFrame) [lreplace $Specs(childs:$oldFrame) $index $index]
+		if {[llength $Specs(childs:$oldFrame)] == 0} { array unset Specs childs:$oldFrame }
+	}
 
 	pack $toolbar -in $tbf.frame.scrolled {*}$options
 	raise $toolbar
@@ -2073,7 +2222,7 @@ proc SetVisibility {toolbar w val} {
 }
 
 
-proc Show {toolbar alignment} {
+proc Show {toolbar {alignment ""}} {
 	variable Specs
 
 	if {[winfo exists $toolbar.floating]} { return }
@@ -2502,14 +2651,10 @@ proc Repack {toolbar} {
 	variable Specs
 	variable Defaults
 
-	if {$Specs(side:$toolbar) eq "top" || $Specs(side:$toolbar) eq "bottom"} {
-		set orientation horz
-	} else {
-		set orientation vert
-	}
-
+	if {$Specs(side:$toolbar) in {top bottom}} { set orientation horz } else { set orientation vert }
 	if {$Specs(orientation:$toolbar) eq $orientation} { return }
 	set Specs(orientation:$toolbar) $orientation
+
 	switch $Specs(justify:$toolbar) {
 		left		{ set Specs(justify:$toolbar) top }
 		right		{ set Specs(justify:$toolbar) bottom }
@@ -2552,10 +2697,13 @@ proc RaiseArrows {toolbar} {
 	variable Specs
 
 	set tbf $Specs(frame:$toolbar)
-	set parent [winfo parent $tbf]
-	foreach dir {l r t b} {
-		set arrow $parent.${dir}arrow
-		if {[winfo exists $arrow]} { raise $arrow }
+
+	if {[winfo exists $tbf]} {
+		set parent [winfo parent $tbf]
+		foreach dir {l r t b} {
+			set arrow $parent.${dir}arrow
+			if {[winfo exists $arrow]} { raise $arrow }
+		}
 	}
 }
 
@@ -2865,7 +3013,7 @@ proc ChangeState {toolbar event {caller menu}} {
 		}
 
 		show {
-			show $toolbar
+			Show $toolbar
 		}
 	}
 }
@@ -3202,6 +3350,19 @@ proc Focus {win mode} {
 	}
 
 	$win.frame.decor configure -background $bg -foreground $fg
+}
+
+
+proc ArrayEqual {lhs rhs} {
+	array set bar $lhs
+	array set foo $rhs
+
+	if {[array size foo] != [array size bar]} { return 0 }
+	if {[array size foo] == 0} { return 1 }
+	set keys [lsort -unique [concat [array names foo] [array names bar]]]
+	if {[llength $keys] != [array size foo]} { return 0 }
+	foreach key $keys { if {$foo($key) ne $bar($key)} { return 0 } }
+	return 1
 }
 
 

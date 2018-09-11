@@ -487,10 +487,10 @@ namespace tag
 		FICSGamesDBGameNo,		///< FICS game identifier
 		Lag,							///< Time lag per move in milliseconds (used in BPGN)
 		WhiteDays, BlackDays,	///< Remaining days for white/black; used on myschach.de
+		WhiteRatingDiff,			///< Change in rating after this game
+		BlackRatingDiff,			///< Change in rating after this game
 
 		// Reserved
-		RESERVED_68 = 68,
-		RESERVED_69 = 69,
 		RESERVED_70 = 70,
 		RESERVED_71 = 71,
 		RESERVED_72 = 72,
@@ -533,7 +533,7 @@ namespace tag
 		BlackATeamCountry,	BlackBTeamCountry,
 
 		ExtraTag, // IMPORTANT NOTE: must have value <= TagSetSize
-		LastTag = BlackDays,
+		LastTag = BlackRatingDiff,
 		BughouseTag = BughouseDBGameNo,
 	};
 

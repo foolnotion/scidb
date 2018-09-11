@@ -2,7 +2,7 @@
   version            {1.0}
   identifier         {Lemon|1227320554192|yellow.color|gregor}
 
-  contour            {1.0}
+  contour            {0}
   shadow             {0.03}
   opacity            {0.5}
   zoom               {1.0}

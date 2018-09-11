@@ -195,6 +195,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	BindAccelerators $path
 
 	if {$Vars(usefind)} {
+		::toolbar::setup $path -id eventtable -layout event
 		set tbFind [::toolbar::toolbar $path \
 			-id eventtable-find \
 			-hide 1 \
