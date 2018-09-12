@@ -124,7 +124,6 @@ proc update {} {
 		{} {
 			{Akira|1386332524223|purple|gregor}
 			{Alpha|1295711284602|yellow.color|gregor}
-			{Antique|1263914483272|yellow.color|gregor}
 			{Apollo|1296050637190|yellow.color|gregor}
 			{Arena|1348599577049|yellow.color|gregor}
 			{Black & White|1322146556616|yellow.color|gregor}
@@ -143,26 +142,20 @@ proc update {} {
 			{José|1243683856813|yellow.color|gregor}
 			{Kitsch|1422390619103|purple|gregor}
 			{Kunterbunt|1250851039023|yellow.color|gregor}
-			{Magnetic|1243762798722|yellow.color|gregor}
 			{Marble - Brown|1243532376507|yellow.color|gregor}
 			{Marble - Red|1296049745744|yellow.color|gregor}
 			{Marmorate|1422460283732|purple|gregor}
-			{Mayan - Marble|1243775222632|yellow.color|gregor}
 			{Mayan - Wood|1244309428838|yellow.color|gregor}
 			{Melamine|1422439776799|purple|gregor}
 			{Military|1423693429142|purple|gregor}
 			{Mystic|1386288990195|purple|gregor}
 			{Modern Cheq|1244122899886|yellow.color|gregor}
-			{Motif|1262882557387|yellow.color|gregor}
 			{Navajo|1422301347006|purple|gregor}
 			{Ocean|1262882648418|yellow.color|gregor}
-			{Phoenix|1354101318690|purple|gregor}
 			{Primus|1368794511290|yellow.color|gregor}
 			{Sand|1228828282840|yellow.color|gregor}
 			{Scidb|1251901638256|yellow.color|gregor}
-			{Staidly|1326986145826|yellow.color|gregor}
 			{Staunton|1355510748081|yellow.color|gregor}
-			{Stone Floor|1244113337107|yellow.color|gregor}
 			{Virtual - Blue|1381593501788|purple|gregor}
 			{Virtual - Brown|1423390755270|purple|gregor}
 			{Winboard|1228820514841|yellow.color|gregor}
@@ -172,10 +165,8 @@ proc update {} {
 			{Akira|1386332239604|purple|gregor}
 			{Arena|1348599563208|yellow.color|gregor}
 			{Burly|1262881395698|yellow.color|gregor}
-			{Condal|1263914065014|yellow.color|gregor}
 			{Contrast|1322146529013|yellow.color|gregor}
 			{Contourless|1536512761722|purple|gregor}
-			{Emerald|1244127333315|yellow.color|gregor}
 			{Fritz|1422386484520|purple|gregor}
 			{Glass|1243791877212|yellow.color|gregor}
 			{Golden Creme|1422459733282|purple|gregor}
@@ -211,7 +202,6 @@ proc update {} {
 			{Burnt|1422299233126|purple|gregor}
 			{Contrast|1371196032342|purple|gregor}
 			{Country Style|1370798009651|INE543149|cmartins}
-			{Crater|1296048990606|yellow.color|gregor}
 			{Fritz|1422383955583|purple|gregor}
 			{Glass|1228820514871|yellow.color|gregor}
 			{Gray|1243532989423|yellow.color|gregor}
@@ -229,9 +219,7 @@ proc update {} {
 			{Sand|1228820287277|yellow.color|gregor}
 			{Scidb|1251901586671|yellow.color|gregor}
 			{Seagreen|1355510010833|yellow.color|gregor}
-			{Staidly|1326985703375|yellow.color|gregor}
 			{Stone|1243792087778|yellow.color|gregor}
-			{Stone Floor|1244113188050|yellow.color|gregor}
 			{Sycomore|1243762745547|yellow.color|gregor}
 			{Sycomore Gray|1244122565844|yellow.color|gregor}
 			{Vinyl|1422390355093|purple|gregor}
@@ -239,7 +227,6 @@ proc update {} {
 			{Winboard|1228820514851|yellow.color|gregor}
 			{Wood - Brown|1228820485412|yellow.color|gregor}
 			{Wood - Green|1244309414202|yellow.color|gregor}
-			{Wooden|1263914443955|yellow.color|gregor}
 			{Woodgrain|1296150231295|yellow.color|gregor}
 		}
 	}
@@ -247,8 +234,9 @@ proc update {} {
 	if {$Updated} { return }
 	set Updated 1
 
-	foreach dir {piece square {}} {
+	foreach dir {{} piece square} {
 		set themesDir [file join $::scidb::dir::user themes $dir]
+		file mkdir $themesDir
 		foreach file [glob -nocomplain -directory [file join $::scidb::dir::share themes $dir] *.dat] {
 			if {[::process::testOption update-themes]} {
 				set ignore 0

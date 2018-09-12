@@ -326,7 +326,13 @@ proc configureBackground {w} {
 
 
 proc notebookBorderwidth {} {
-	return [ttk::style lookup TNotebook -borderwidth]
+	switch [currentTheme] {
+		alt { return 1 }
+		clam - clearlooks - scidblue { return 2 }
+	}
+	set result [ttk::style lookup TNotebook -borderwidth]
+	if {[string is integer -strict $result]} { return $result }
+	return 1
 }
 
 

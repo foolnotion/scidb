@@ -1143,6 +1143,7 @@ proc LoadLayout {twm layoutVariant name mode} {
 		if {[catch { ::load::source $file -encoding utf-8 -throw 1 } -> opts]} {
 			puts stderr "error while loading $file"
 			if {$mode ne "load"} { return false }
+			puts stderr $opts
 			return {*}$opts -rethrow 1
 		}
 	} elseif {$mode ne "load"} {
@@ -1455,7 +1456,7 @@ proc ComputeAlignedHeight {twm uid} {
 	set newHeight [expr {(($height - $overhang)/$linespace)*$linespace + $overhang}]
 	if {$newHeight == $height} { return 0 }
 #	if {abs($newHeight + $linespace - $height) <= abs($newHeight - $height)} {
-	incr newHeight $linespace
+#		incr newHeight $linespace
 #	}
 	return $newHeight
 }

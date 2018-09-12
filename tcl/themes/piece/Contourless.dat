@@ -1,42 +1,42 @@
 ::board::addStyle piece {
   color,b,contour    {#ffffff}
   color,b,fill       {}
-  color,b,start      {#fd9e0f}
-  color,b,stop       {#0e0e0e}
+  color,b,start      {#2e31ba}
+  color,b,stop       {#07071b}
   color,b,stroke     {}
   color,b,texture    {}
   color,w,contour    {#ffffff}
   color,w,fill       {}
-  color,w,start      {#ffdccc}
-  color,w,stop       {#c7c2a3}
+  color,w,start      {#3c99ff}
+  color,w,stop       {#dae4ff}
   color,w,stroke     {}
   color,w,texture    {}
   contour            {0.0}
   diffusion          {none}
   gradient,b,contour {#000000}
   gradient,b,fill    {#cc5251}
-  gradient,b,start   {#fd9e0f}
-  gradient,b,stop    {#a9690a}
+  gradient,b,start   {}
+  gradient,b,stop    {}
   gradient,b,stroke  {#00067c}
-  gradient,b,tx      {0.06666666666666667}
-  gradient,b,ty      {0.06666666666666667}
-  gradient,b,use     {true}
-  gradient,b,x1      {0.40540540540540543}
+  gradient,b,tx      {0}
+  gradient,b,ty      {0}
+  gradient,b,use     {false}
+  gradient,b,x1      {0}
   gradient,b,x2      {1}
-  gradient,b,y1      {0.4189189189189189}
+  gradient,b,y1      {0}
   gradient,b,y2      {1}
   gradient,w,fill    {#ff6665}
-  gradient,w,start   {#fdf7d3}
-  gradient,w,stop    {#c7c2a3}
+  gradient,w,start   {}
+  gradient,w,stop    {}
   gradient,w,stroke  {#a149b4}
-  gradient,w,tx      {0.06666666666666667}
-  gradient,w,ty      {0.06666666666666667}
-  gradient,w,use     {true}
-  gradient,w,x1      {0.49324324324324326}
+  gradient,w,tx      {0}
+  gradient,w,ty      {0}
+  gradient,w,use     {false}
+  gradient,w,x1      {0}
   gradient,w,x2      {1}
-  gradient,w,y1      {0.5608108108108109}
+  gradient,w,y1      {0}
   gradient,w,y2      {1}
-  identifier         {Orange - Lemon|1243778153963|yellow.color|gregor}
+  identifier         {Contourless|1536512761722|purple|gregor}
   opacity            {0.5019607843137255}
   shadow             {0.03333333333333333}
   texture,b,rotation {0}
@@ -49,7 +49,7 @@
   texture,w,x2       {0}
   texture,w,y1       {0}
   texture,w,y2       {0}
-  useWhitePiece      {1}
+  useWhitePiece      {false}
   version            {1.0}
   zoom               {1.0}
 }

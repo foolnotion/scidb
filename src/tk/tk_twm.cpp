@@ -2648,12 +2648,52 @@ Node::resize(Quants const& quant, bool perform)
 			}
 		}
 
-		if (perform && testFlags(F_Config))
+		if (testFlags(F_Config))
 		{
-			Coord weight(m_weight);
-			m_weight.zero(); // don't resize this widget
-			m_root->perform(toplevel());
-			m_weight = weight;
+			Node* node = nullptr;
+
+			if (m_parent)
+			{
+				if (m_parent->isNotebookOrMultiWindow())
+				{
+					node = m_parent;
+				}
+				else if (	m_parent->isMetaFrame()
+							&& m_parent->m_parent
+							&& m_parent->m_parent->isNotebookOrMultiWindow())
+				{
+					node = m_parent->m_parent;
+				}
+
+				if (node)
+				{
+					for (unsigned i = 0; i < node->numChilds(); ++i)
+					{
+						Node* child = node->child(i);
+
+						if (	quant.actual.abs.width > 0
+							&& child->m_dimen.actual.abs.width != quant.actual.abs.width)
+						{
+							child->m_dimen.actual.abs.width = quant.actual.abs.width;
+							child->addFlag(F_Config);
+						}
+						if (	quant.actual.abs.height > 0
+							&& child->m_dimen.actual.abs.height != quant.actual.abs.height)
+						{
+							child->m_dimen.actual.abs.height = quant.actual.abs.height;
+							child->addFlag(F_Config);
+						}
+					}
+				}
+			}
+
+			if (perform)
+			{
+				Coord weight(m_weight);
+				m_weight.zero(); // don't resize this widget
+				m_root->perform(toplevel());
+				m_weight = weight;
+			}
 		}
 	}
 }

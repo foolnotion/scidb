@@ -183,7 +183,7 @@ proc writeItem {chan var {lowercaseOnly 1}} {
 		puts $chan "array set $var {"
 		writeArray $chan [array get $var] $lowercaseOnly
 		puts $chan "}"
-	} else {
+	} elseif {[info exists $var]} {
 		switch [llength [set $var]] {
 			0			{ puts $chan "set $var {}" }
 			1			{ puts $chan "set $var [set $var]" }

@@ -669,7 +669,7 @@ proc setOptions {id options} {
 
 		foreach tbId $Specs(idlist:$parent) {
 			set toolbar [dict get $Lookup $tbId]
-			if {$Specs(keepoptions:$toolbar)} {
+			if {[info exists Specs(keepoptions:$toolbar)] && $Specs(keepoptions:$toolbar)} {
 				if {$Specs(state:$toolbar) in {flat show}} {
 					RemoveFlatHandle $toolbar
 					Forget $toolbar
@@ -684,7 +684,7 @@ proc setOptions {id options} {
 
 		foreach tbId $Specs(idlist:$parent) {
 			set toolbar [dict get $Lookup $tbId]
-			if {$Specs(keepoptions:$toolbar)} {
+			if {[info exists Specs(keepoptions:$toolbar)] && $Specs(keepoptions:$toolbar)} {
 				PrepareToolbarOptions $toolbar $id
 				ChangeIcons $toolbar
 				setState $toolbar $Specs(state:$toolbar)
