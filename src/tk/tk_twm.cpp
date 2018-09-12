@@ -1341,6 +1341,7 @@ private:
 	bool fits(Size size, Position position) const;
 	template <Orient D,Quantity Q> bool canComputeDimensions() const;
 	bool isLastChild() const;
+	bool containsGrid() const;
 
 	Childs::const_iterator begin() const;
 	Childs::const_iterator end() const;
@@ -1709,6 +1710,22 @@ Node::isLastChild() const
 	M_ASSERT(m_parent->numChilds() > 0);
 
 	return m_parent->m_childs[m_parent->numChilds() - 1] == this;
+}
+
+
+bool
+Node::containsGrid() const
+{
+	if (gridSize<Horz>() || gridSize<Vert>())
+		return true;
+	
+	for (unsigned i = 0; i < numChilds(); ++i)
+	{
+		if (child(i)->isPacked() && child(i)->containsGrid())
+			return true;
+	}
+
+	return false;
 }
 
 
@@ -3254,7 +3271,7 @@ Node::updateDimen(int x, int y, int width, int height)
 						Tcl_CancelIdleCall(Perform, m_root);
 						Tcl_DoWhenIdle(Perform, m_root);
 					}
-					else if (isPanedWindow() && m_root->isReady())
+					else if (isPanedWindow() && m_root->isReady() && containsGrid())
 					{
 						if (width != oldWidth && hasOrientation<Horz>())
 							addFlag(F_Adjust);
