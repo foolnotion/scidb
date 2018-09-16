@@ -172,6 +172,7 @@ proc build {parent number patternNumber} {
 		state:paused		0
 		toolbar:childs		{}
 		toolbar:height		0
+		state:suspended	0
 	}
 
 	array set Options [array get ${patternNumber}::Options]
@@ -569,7 +570,7 @@ proc startAnalysis {number} {
 	set signalCmd [namespace current]::Signal
 	set updateCmd [namespace current]::UpdateInfo
 
-	DisplayStartOfMotor $tree $number
+	Display(start) $tree $number
 	set rc [::engine::startEngine $number $isReadyCmd $signalCmd $updateCmd $tree]
 
 	if {![string is integer -strict $rc] || $rc == -2} {
@@ -596,7 +597,7 @@ proc restartAnalysis {number} {
 	set tree [set NumberToTree($number)]
 	variable ${tree}::Vars
 	variable ${Vars(number)}::Options
-	
+
 	after cancel $Vars(after:id)
 	if {$Options(engine:singlePV)} { set multiPV 1 } else { set multiPV $Options(engine:multiPV) }
 	::engine::restartAnalysis $number $Vars(engine:opponent) [list multiPV $multiPV]
@@ -858,6 +859,7 @@ proc SetState {tree state} {
 	variable ${tree}::Vars
 
 	set Vars(state:paused) 0
+	$Vars(widget:mw) raise $Vars(widget:main)
 
 	if {![winfo exists $tree]} { return }
 	if {$Vars(engine:state) eq $state} { return }
@@ -1015,26 +1017,22 @@ proc Display(pv) {tree score mate depth seldepth time nodes nps tbhits line pv} 
 	variable ${tree}::Vars
 	variable ${Vars(number)}::Options
 
-	Display(time) $tree $time $depth $seldepth $nodes $nps $tbhits
+	if {$Vars(state:suspended)} {
+		set Vars(suspended,[lindex $args 6]) $args ;# XXX unused
+	} else {
+		Display(time) $tree $time $depth $seldepth $nodes $nps $tbhits
 
-	set evalTxt [::font::mapNagToSymbol [EvalText $score $mate]]
-	set scoreTxt [ScoreText $score $mate]
+		set evalTxt [::font::mapNagToSymbol [EvalText $score $mate]]
+		set scoreTxt [ScoreText $score $mate]
 
-	$tree item element configure Line$line Eval  elemTextSym -text $evalTxt
-	$tree item element configure Line$line Value elemTextFig -text $scoreTxt
-	$tree item element configure Line$line Moves elemTextFig -text [::font::translate $pv]
+		$tree item element configure Line$line Eval  elemTextSym -text $evalTxt
+		$tree item element configure Line$line Value elemTextFig -text $scoreTxt
+		$tree item element configure Line$line Moves elemTextFig -text [::font::translate $pv]
 
-	if {$line + 1 == $Vars(current:item)} {
-		$tree activate $Vars(current:item)
+		if {$line + 1 == $Vars(current:item)} {
+			$tree activate $Vars(current:item)
+		}
 	}
-}
-
-
-proc Display(suspended) {tree args} {
-	variable ${tree}::Vars
-
-	set line [lindex $args 6]
-	set Vars(suspended,$line) $args ;# XXX unused
 }
 
 
@@ -1071,7 +1069,7 @@ proc Display(bestscore) {tree score mate bestLines} {
 }
 
 
-proc DisplayStartOfMotor {tree number} {
+proc Display(start) {tree number} {
 	variable ${tree}::Vars
 
 	append msg "$mc::StartMotor \""
@@ -1501,8 +1499,7 @@ proc PopupMenu {tree number args} {
 		}
 
 		set Vars(keep:active) 1
-		rename [namespace current]::Display(pv) [namespace current]::Display_
-		rename [namespace current]::Display(suspended) [namespace current]::Display(pv)
+		set Vars(state:suspended) 1
 		::bind $menu <<MenuUnpost>> [namespace code [list RevertDisplay $tree]]
 	}
 
@@ -1513,8 +1510,7 @@ proc PopupMenu {tree number args} {
 proc RevertDisplay {tree} {
 	variable ${tree}::Vars
 
-	rename [namespace current]::Display(pv) [namespace current]::Display(suspended)
-	rename [namespace current]::Display_ [namespace current]::Display(pv)
+	set Vars(state:suspended) 0
 
 	foreach line [array names Vars suspended,*] {
 		Display(pv) $tree {*}$Vars($line)

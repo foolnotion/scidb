@@ -1089,7 +1089,15 @@ namespace format
 
 	bool isScidFormat(Type type);
 	bool isChessBaseFormat(Type type);
+	bool isPGNArchive(Type type);
 	bool isWritable(Type type);
+
+	bool isTextFile(mstl::string const& extension);
+	bool isZIPFile(mstl::string const& extension);
+	bool isGZIPFile(mstl::string const& extension);
+	bool isBPGNArchive(mstl::string const& extension);
+
+	Type fromString(mstl::string const& extension);
 }
 
 namespace encoding

@@ -1359,6 +1359,7 @@
 ::gamestable::mc::Accel(browse)			"R"
 ::gamestable::mc::Accel(overview)		"U"
 ::gamestable::mc::Accel(tourntable)		"T"
+::gamestable::mc::Accel(openurl)			"L"
 ::gamestable::mc::Space						"Leertaste"
 
 ::gamestable::mc::F_Number					"#"
@@ -1577,7 +1578,6 @@
 ::playercard::mc::WhiteMostPlayed			"Häufigste Eröffnungen mit Weiß"
 ::playercard::mc::BlackMostPlayed			"Häufigste Eröffnungen mit Schwarz"
 
-::playercard::mc::OpenInWebBrowser			"Im Web-Browser öffnen"
 ::playercard::mc::OpenPlayerCard				"%s-Spielerkartei"
 ::playercard::mc::OpenFileCard				"%s-Karteikarte"
 ::playercard::mc::OpenFideRatingHistory	"Fide-Wertungszahlentwicklung"

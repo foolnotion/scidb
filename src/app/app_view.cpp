@@ -758,13 +758,14 @@ View::exportGames(Database& destination,
 
 unsigned
 View::exportGames(Consumer& destination,
+						db::variant::Type variant,
 						unsigned* illegalRejected,
 						Log& log,
 						util::Progress& progress) const
 {
 	M_REQUIRE(isUsed(table::Games));
 
-	destination.setupVariant(m_cursor.m_db->variant());
+	destination.setupVariant(variant);
 
 	return m_cursor.m_db->exportGames(	destination,
 													m_filter[table::Games],
@@ -797,12 +798,11 @@ View::exportGames(mstl::string const& filename,
 	if (m_cursor.m_db->size() == 0)
 		return 0;
 
-	mstl::string	ext	= util::misc::file::suffix(filename);
-	unsigned			count	= 0;
+	mstl::string	ext		= util::misc::file::suffix(filename);
+	format::Type	format	= format::fromString(ext);
+	unsigned			count		= 0;
 
-	ext.tolower();
-
-	if (ext == "sci")
+	if (format == format::Scidb)
 	{
 		Database destination(filename,
 									sys::utf8::Codec::utf8(),
@@ -838,14 +838,14 @@ View::exportGames(mstl::string const& filename,
 											allowExtraTags,
 											languages,
 											significantLanguages);
-			count = exportGames(consumer, illegalRejected, log, progress);
+			count = exportGames(consumer, m_cursor.m_db->variant(), illegalRejected, log, progress);
 		}
 
 		progress.message("write-index");
 		destination.save(progress);
 		destination.close();
 	}
-	else if (ext == "si3" || ext == "si4")
+	else if (format::isScidFormat(format))
 	{
 		// NOTE: we cannot use storage class Temporary because si3/si4 is using
 		// a shadow namebase (index file must be written after namebase is written).
@@ -858,19 +858,18 @@ View::exportGames(mstl::string const& filename,
 
 		WriteGuard guard(m_app, destination);
 
-		if (m_cursor.m_db->variant() == variant::Normal)
+		if (m_cursor.m_db->variant() == variant::Normal || m_cursor.m_db->variant() == variant::ThreeCheck)
 		{
 //			We do not use speed up because the scid bases created with the Scid application
 //			may contain some broken data. The exporting will fix the data.
 //			if (	m_cursor.m_db->format() == format::Scid
 //				&& !languages
-//				&& (ext == "si4" || dynamic_cast<si3::Codec&>(m_cursor.m_db->codec()).isFormat3()))
+//				&& (format == format::Scid4||dynamic_cast<si3::Codec&>(m_cursor.m_db->codec()).isFormat3()))
 //			{
 //				count = exportGames(destination, illegalRejected, log, progress, "write-game");
 //			}
 //			else
 			{
-				format::Type format(ext == "si3" ? format::Scid3 : format::Scid4);
 				si3::Consumer consumer(	format,
 												dynamic_cast<si3::Codec&>(destination.codec()),
 												encoding,
@@ -879,7 +878,7 @@ View::exportGames(mstl::string const& filename,
 												languages,
 												significantLanguages);
 				progress.message("write-game");
-				count = exportGames(consumer, illegalRejected, log, progress);
+				count = exportGames(consumer, variant::Normal, illegalRejected, log, progress);
 			}
 		}
 
@@ -887,13 +886,16 @@ View::exportGames(mstl::string const& filename,
 		destination.save(progress);
 		destination.close();
 	}
-	else if (ext == "pgn" || ext == "gz" || ext == "zip")
+	else if (format::isPGNArchive(format))
 	{
 		util::ZStream::Type type;
 
-		if (ext == "gz")			type = util::ZStream::GZip;
-		else if (ext == "zip")	type = util::ZStream::Zip;
-		else							type = util::ZStream::Text;
+		if (format::isGZIPFile(ext))
+			type = util::ZStream::GZip;
+		else if (format::isZIPFile(ext))
+			type = util::ZStream::Zip;
+		else
+			type = util::ZStream::Text;
 
 		if (flags & (PgnWriter::Flag_Use_Scidb_Import_Format | PgnWriter::Flag_Use_ChessBase_Format))
 			flags |= PgnWriter::Flag_Use_UTF8;
@@ -942,7 +944,7 @@ View::exportGames(mstl::string const& filename,
 			PgnWriter writer(format::Pgn, strm, useEncoding, lineEnding, flags);
 			progress.message("write-game");
 			WriteGuard guard(m_app, filename);
-			count = exportGames(writer, illegalRejected, log, progress);
+			count = exportGames(writer, m_cursor.m_db->variant(), illegalRejected, log, progress);
 		}
 		catch (mstl::ios_base::failure const& exc)
 		{
@@ -991,7 +993,7 @@ View::printGames(	TeXt::Environment& environment,
 											environment);
 
 				progress.message("print-game");
-				count = exportGames(writer, illegalRejected, log, progress);
+				count = exportGames(writer, database().variant(), illegalRejected, log, progress);
 			}
 			break;
 

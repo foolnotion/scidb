@@ -178,6 +178,7 @@ proc build {top width height} {
 	set Vars(position) -1
 	set Vars(break) 0
 	set Vars(height) 0
+	set Vars(next:position) -1
 
 	for {set i 0} {$i < 9} {incr i} {
 		set pgn [::pgn::setup::buildText $edit.f$i editor]
@@ -432,6 +433,12 @@ proc replace {position base variant tags} {
 proc release {position} {
 	variable Vars
 	::gamebar::remove $Vars(gamebar) $position
+}
+
+
+proc nextPosition {pos} {
+	# prevent switch of layout until next game has been loaded
+	set [namespace current]::Vars(next:position) $pos
 }
 
 
@@ -1066,9 +1073,10 @@ proc UpdateLanguages {position languageSet} {
 proc GameSwitched {oldPos newPos} {
 	variable Vars
 
-	[namespace parent]::twm::switchLayout [::scidb::game::query $newPos variant] game
 	if {![info exists Vars(virgin:$newPos)]} { return }
-
+	if {$Vars(next:position) != -1 && $Vars(next:position) != $newPos} { return }
+	set Vars(next:position) -1
+	[namespace parent]::twm::switchLayout [::scidb::game::query $newPos variant] game
 	if {[info exists Vars(lang:set:$newPos)]} {
 		UpdateLanguages $newPos $Vars(lang:set:$newPos)
 	}

@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2012-2013 Gregor Cramer
+// Copyright: (C) 2012-2018 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -75,6 +75,7 @@ public:
 	bool exists(unsigned variantIndex) const;
 	bool isSingleBase() const;
 	bool isTextFile() const;
+	bool isPGNArchive() const;
 	bool descriptionHasChanged() const;
 
 	unsigned countGames(Mode mode) const;
@@ -85,6 +86,8 @@ public:
 	Type type() const;
 	/// Returns the (decoding) format of database
 	Format format() const;
+	/// Returns the original format of database
+	Format sourceFormat() const;
 	/// Returns the variant of the leading database.
 	variant::Type variant() const;
 	/// Returns the leading database
@@ -114,6 +117,8 @@ public:
 	file::State save(mstl::string const& encoding, unsigned flags, util::Progress& progress);
 	/// Reset status of databases.
 	void resetInitialSize();
+	/// Set/unset read-only flag.
+	bool setReadonly(bool flag = true);
 
 	/// Setup data for PGN files.
 	void setup(FileOffsets* fileOffsets);

@@ -529,6 +529,7 @@ private:
 	void exited();
 	void stopped();
 	void resumed();
+	void suspend(bool gameHasSwitched);
 
 	Concrete*				m_engine;
 	db::Game*				m_game;
@@ -603,6 +604,7 @@ private:
 	bool						m_useBestInfo;
 	bool						m_pausing;
 	bool						m_resumed;
+	bool						m_suspended;
 	bool						m_restart;
 	bool						m_clearHash;
 	Process*					m_process;

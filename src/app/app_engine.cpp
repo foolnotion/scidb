@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2017 Gregor Cramer
+// Copyright: (C) 2009-2018 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -447,6 +447,7 @@ Engine::Engine(Protocol protocol, Command const& command, mstl::string const& di
 	,m_useBestInfo(true)
 	,m_pausing(false)
 	,m_resumed(false)
+	,m_suspended(false)
 	,m_restart(false)
 	,m_clearHash(false)
 	,m_process(0)
@@ -997,6 +998,21 @@ Engine::fatal(mstl::string const& msg)
 
 
 void
+Engine::suspend(bool gameHasSwitched)
+{
+	if (!m_suspended && isAnalyzing())
+	{
+		m_suspended = true;
+
+		if (gameHasSwitched)
+			pause();
+		else
+			stopAnalysis();
+	}
+}
+
+
+void
 Engine::readyRead()
 {
 	M_REQUIRE(isConnected());
@@ -1107,7 +1123,9 @@ Engine::pause()
 
 	m_pausing = true;
 	m_resumed = false;
-	updateState(app::Engine::Pause);
+
+	if (!m_suspended)
+		updateState(app::Engine::Pause);
 
 	return true;
 }
@@ -1117,6 +1135,7 @@ bool
 Engine::resume()
 {
 	M_REQUIRE(isActive());
+	M_REQUIRE(!m_suspended || m_pausing);
 
 	if (!m_pausing)
 		return false;
@@ -1126,12 +1145,16 @@ Engine::resume()
 
 	m_pausing = false;
 	m_resumed = true;
-	updateState(app::Engine::Resume);
+
+	if (!m_suspended)
+		updateState(app::Engine::Resume);
+
+	m_suspended = false;
 
 	if (m_clearHash)
 		clearHash();
 
-	if (currentGame() == 0)
+	if (!currentGame())
 		return false;
 
 	if (m_restart)
@@ -1237,27 +1260,26 @@ Engine::startAnalysis(Game* game, analysis::Mode mode)
 
 	m_game = game;
 
-	if (m_pausing)
+	if (m_pausing && !m_suspended)
 	{
 		updateState(Pause);
 		m_restart = true;
 		return true;
 	}
 
-	m_restart = false;
-	m_clearHash = false;
-
 	bool isNew		= m_game ? game->id() != m_gameId : true;
 	bool restart	= mode != m_analysisMode;
 
 	m_analysisMode = mode;
+	m_restart = false;
+	m_clearHash = false;
 
 	if (isNew)
 	{
 		if (!(supportedVariants() & game->variant()))
 		{
+			suspend(isNew);
 			error(::toError(game->variant()));
-			m_gameId = unsigned(-1);
 			return false;
 		}
 
@@ -1271,8 +1293,8 @@ Engine::startAnalysis(Game* game, analysis::Mode mode)
 			{
 				if (!supportsChess960Positions())
 				{
+					suspend(isNew);
 					error(Chess_960_Not_Supported);
-					m_gameId = unsigned(-1);
 					return false;
 				}
 
@@ -1282,8 +1304,8 @@ Engine::startAnalysis(Game* game, analysis::Mode mode)
 
 		if (game->variant() == variant::Normal && !hasVariant(variant::Normal))
 		{
+			suspend(isNew);
 			error(Standard_Chess_Not_Supported);
-			m_gameId = unsigned(-1);
 			return false;
 		}
 
@@ -1298,7 +1320,7 @@ Engine::startAnalysis(Game* game, analysis::Mode mode)
 		if (m_originalBoard.isEqualZHPosition(game->currentBoard()))
 		{
 			m_engine->continueAnalysis();
-			return true;
+			return !m_suspended || resume();
 		}
 	}
 
@@ -1318,6 +1340,7 @@ Engine::startAnalysis(Game* game, analysis::Mode mode)
 		if (isAnalyzing() && !m_engine->stopAnalysis(true))
 		{
 			m_gameId = unsigned(-1);
+			m_suspended = false;
 			return false;
 		}
 
@@ -1345,7 +1368,7 @@ Engine::startAnalysis(Game* game, analysis::Mode mode)
 		if (	!variant::isAntichessExceptLosers(game->variant())
 			&& game->currentBoard().sideNotToMoveInCheck())
 		{
-			m_gameId = unsigned(-1);
+			suspend(isNew);
 			error(Illegal_Position);
 			return false;
 		}
@@ -1357,7 +1380,7 @@ Engine::startAnalysis(Game* game, analysis::Mode mode)
 
 		if (state & (Board::Checkmate|Board::Stalemate|Board::ThreeChecks|Board::Losing))
 		{
-			if (!isNew)
+			if (!isNew || m_suspended)
 				m_engine->stopAnalysis(false);
 
 			position::Status status = position::None; // satisfies the compiler
@@ -1378,7 +1401,7 @@ Engine::startAnalysis(Game* game, analysis::Mode mode)
 			updateInfo(m_originalBoard.sideToMove(), position::Check);
 			return true;
 		}
-		else if (!m_engine->startAnalysis(isNew))
+		else if (!(m_suspended && !isNew ? resume() : m_engine->startAnalysis(isNew)))
 		{
 			m_gameId = unsigned(-1);
 			return false;
@@ -1408,6 +1431,8 @@ Engine::stopAnalysis()
 	}
 
 	m_game = 0;
+	m_gameId = unsigned(-1);
+	m_suspended = false;
 	return rc;
 }
 

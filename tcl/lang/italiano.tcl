@@ -1370,6 +1370,7 @@
 ::gamestable::mc::Accel(browse)			"W"
 ::gamestable::mc::Accel(overview)		"O"
 ::gamestable::mc::Accel(tourntable)		"T"
+::gamestable::mc::Accel(openurl)			"U"
 ::gamestable::mc::Space						"Spazio"
 
 ::gamestable::mc::F_Number					"#"
@@ -1586,7 +1587,6 @@
 ::playercard::mc::WhiteMostPlayed			"Apertura più giocata da Bianco"
 ::playercard::mc::BlackMostPlayed			"Apertura più giocata da Nero"
 
-::playercard::mc::OpenInWebBrowser			"Apri nel browser"
 ::playercard::mc::OpenPlayerCard				"Apri profilo utente %s"
 ::playercard::mc::OpenFileCard				"Apri profilo file %s"
 ::playercard::mc::OpenFideRatingHistory	"Apri storia punteggio FIDE"

@@ -785,17 +785,17 @@ proc LoadGame(list) {w incr} {
 	variable Vars
 
 	if {[llength $Vars(current:game)] > 1} {
-		::widget::busyCursor on
+#		::widget::busyCursor on
 		set number [LoadGame(all) $w {*}$Vars(current:game) $incr]
 		lset Vars(current:game) 4 $number
 		UpdateGameButtonState(list) [lindex $Vars(current:game) 0]
-		::widget::busyCursor off
+#		::widget::busyCursor off
 	}
 }
 
 
 proc LoadGame(base) {w incr} {
-	::widget::busyCursor on
+#	::widget::busyCursor on
 	set position [::scidb::game::current]
 	lassign [::scidb::game::link? $position] base variant index
 	set variant [::util::toMainVariant $variant]
@@ -810,7 +810,7 @@ proc LoadGame(base) {w incr} {
 
 	set n [LoadGame(all) $w $position $currentBase $currentVariant -1 $number $incr]
 	UpdateGameButtonState(base) $currentBase $currentVariant
-	::widget::busyCursor off
+#	::widget::busyCursor off
 }
 
 
@@ -1196,7 +1196,7 @@ proc InsertNullMove {} {
 proc Apply {} {
 	variable Vars
 
-	if {[[namespace parent]::ready?]} {
+	if {$Vars(initialized) && [[namespace parent]::ready?]} {
 		RebuildBoard $Vars(widget:frame) $Vars(width) $Vars(height) true
 	}
 }
@@ -1955,6 +1955,7 @@ proc UpdateSaveButton {} {
 		::toolbar::childconfigure $Vars(game:save) -state disabled
 	} elseif {$position >= 0} {
 		set actual [lindex [::scidb::game::link?] 0]
+		set variant [::scidb::game::variant?]
 		set current [::scidb::db::get name]
 		set tip(replace) ""
 		set tip(save) ""
@@ -1976,8 +1977,16 @@ proc UpdateSaveButton {} {
 		} else {
 			set state(save) disabled
 		}
-		::toolbar::childconfigure $Vars(game:replace) -state $state(replace) -tooltip $tip(replace)
-		::toolbar::childconfigure $Vars(game:save) -state $state(save) -tooltip $tip(save)
+		::toolbar::childconfigure $Vars(game:replace) \
+			-state $state(replace) \
+			-tooltip $tip(replace) \
+			;
+		set arrowState [::makeState [expr {$Vars(variant) eq $variant}]]
+		::toolbar::childconfigure $Vars(game:save) \
+			-state $state(save) \
+			-arrowstate $arrowState \
+			-tooltip $tip(save) \
+			;
 	}
 }
 

@@ -85,6 +85,7 @@ public:
 	bool hasTreeView() const;
 
 	db::format::Type format() const;
+	db::format::Type sourceFormat() const;
 	db::variant::Type variant() const;
 
 	MultiCursor const& multiCursor() const;

@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2012-2013 Gregor Cramer
+// Copyright: (C) 2012-2018 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -90,18 +90,12 @@ MultiCursor::MultiCursor(Application& app, Type type)
 									variant::Undetermined,
 									storage::MemoryOnly,
 									type::Clipbase);
-
-	for (unsigned v = 0; v < variant::NumberOfVariants; ++v)
-	{
-		M_ASSERT(m_base->database(v));
-		m_cursor[v] = new Cursor(*this, m_base->database(v));
-	}
-
-	m_leader = m_cursor[variant::Index_Normal];
+	::memset(m_cursor, 0, sizeof(m_cursor));
+	setup();
 }
 
 
-MultiCursor::MultiCursor(Application& app, MultiBase*	base)
+MultiCursor::MultiCursor(Application& app, MultiBase*  base)
 	:m_app(app)
 	,m_base(base)
 	,m_leader(0)
@@ -111,21 +105,7 @@ MultiCursor::MultiCursor(Application& app, MultiBase*	base)
 	M_REQUIRE(base);
 
 	::memset(m_cursor, 0, sizeof(m_cursor));
-
-	if (base->isSingleBase())
-	{
-		m_cursor[variant::toIndex(m_base->variant())] = m_leader = new Cursor(*this, m_base->database());
-	}
-	else
-	{
-		for (unsigned v = 0; v < variant::NumberOfVariants; ++v)
-		{
-			M_ASSERT(m_base->database(v));
-			m_cursor[v] = new Cursor(*this, m_base->database(v));
-		}
-
-		m_leader = m_cursor[variant::Index_Normal];
-	}
+	setup();
 }
 
 
@@ -158,29 +138,7 @@ MultiCursor::MultiCursor(	Application& app,
 	base->resetInitialSize();
 	guard.release();
 	m_base = base.release();
-
-	if (n)
-	{
-		for (unsigned v = 0; v < variant::NumberOfVariants; ++v)
-		{
-			if (!m_base->isEmpty(v))
-			{
-				(m_cursor[v] = new Cursor(*this, m_base->database(v)))->base().setReadonly();
-
-				if (m_leader == 0)
-					m_leader = m_cursor[v];
-
-				if (producer.encoding() != sys::utf8::Codec::automatic())
-					m_base->database(v)->setUsedEncoding(producer.encoding());
-			}
-		}
-	}
-	else
-	{
-		m_leader = m_cursor[variant::Index_Normal] =
-			new Cursor(*this, m_base->database(variant::Index_Normal));
-		m_leader->base().setReadonly();
-	}
+	setup(&producer);
 }
 
 
@@ -193,11 +151,95 @@ MultiCursor::~MultiCursor()
 }
 
 
+void
+MultiCursor::setup(db::Producer const* producer)
+{
+	m_leader = nullptr;
+
+	for (unsigned v = 0; v < variant::NumberOfVariants; ++v)
+	{
+		if (m_base->exists(v))
+		{
+			if (!m_cursor[v])
+			{
+				m_cursor[v] = new Cursor(*this, m_base->database(v));
+
+				if (producer)
+				{
+					m_cursor[v]->base().setReadonly();
+
+					if (producer->encoding() != sys::utf8::Codec::automatic())
+						m_base->database(v)->setUsedEncoding(producer->encoding());
+				}
+			}
+
+			if (!m_leader)
+				m_leader = m_cursor[v];
+		}
+		else
+		{
+			delete m_cursor[v];
+			m_cursor[v] = nullptr;
+		}
+	}
+}
+
+
+unsigned
+MultiCursor::mapVariantIndex(unsigned variantIndex) const
+{
+	if (variantIndex == db::variant::Index_ThreeCheck && db::format::isScidFormat(cursor().format()))
+		return db::variant::Index_Normal;
+
+	return variantIndex;
+}
+
+
+db::variant::Type
+MultiCursor::map(db::variant::Type variant) const
+{
+	if (variant == db::variant::ThreeCheck && db::format::isScidFormat(cursor().format()))
+		return db::variant::Normal;
+
+	return variant;
+}
+
+
+Cursor*
+MultiCursor::operator[](db::variant::Type variant) const
+{
+	M_REQUIRE(variant == db::variant::Undetermined || db::variant::isMainVariant(variant));
+
+	if (!isOpen())
+		return nullptr;
+
+	if (variant == db::variant::Undetermined)
+		return m_leader;
+
+	return m_cursor[db::variant::toIndex(map(variant))];
+}
+
+
+Cursor*
+MultiCursor::operator[](unsigned variantIndex) const
+{
+	if (!isOpen())
+		return nullptr;
+
+	variantIndex = mapVariantIndex(variantIndex);
+
+	if (!exists(variantIndex))
+		return nullptr;
+
+	return m_cursor[variantIndex];
+}
+
+
 bool
 MultiCursor::isEmpty(unsigned variantIndex) const
 {
 	M_REQUIRE(isOpen());
-	return m_base->isEmpty(variantIndex);
+	return m_base->isEmpty(mapVariantIndex(variantIndex));
 }
 
 
@@ -240,7 +282,10 @@ MultiCursor::countGames() const
 bool
 MultiCursor::setReadonly(bool flag)
 {
-	return m_leader->base().setReadonly(flag);
+	if (!m_base->setReadonly(flag))
+		return false;
+	setup();
+	return true;
 }
 
 
@@ -256,8 +301,6 @@ MultiCursor::close()
 		}
 
 		m_base->close();
-		delete m_base;
-		m_base = 0;
 	}
 }
 
@@ -287,7 +330,7 @@ MultiCursor::copyGames(	MultiCursor& destination,
 				Cursor& cursor = *m_cursor[v];
 
 				count = cursor.base().copyGames(
-					destination.m_cursor[v]->base(),
+					destination.m_cursor[destination.mapVariantIndex(v)]->base(),
 					cursor.view(0).filter(table::Games),
 					cursor.view(0).selector(table::Games),
 					allowedTags,
@@ -301,6 +344,30 @@ MultiCursor::copyGames(	MultiCursor& destination,
 			}
 
 			rejected[v] += m_cursor[v]->count(table::Games) - count;
+		}
+	}
+
+	if (	::db::format::isScidFormat(m_base->sourceFormat())
+		&& !::db::format::isScidFormat(destination.m_base->sourceFormat())
+		&& rejected[::db::variant::Index_Normal] > 0)
+	{
+		unsigned v = ::db::variant::Index_ThreeCheck;
+
+		if (destination.m_cursor[v])
+		{
+			Cursor& cursor = *m_cursor[::db::variant::Index_Normal];
+			unsigned count = cursor.base().copyGames(
+										destination.m_cursor[v]->base(),
+										cursor.view(0).filter(table::Games),
+										cursor.view(0).selector(table::Games),
+										allowedTags,
+										allowExtraTags,
+										illegalRejected,
+										log,
+										progress);
+			accepted[v] += count;
+			rejected[::db::variant::Index_Normal] -= count;
+			total += count;
 		}
 	}
 
@@ -321,18 +388,9 @@ MultiCursor::changeVariant(::db::variant::Type variant)
 	if (m_leader->variant() != variant)
 	{
 		m_base->changeVariant(variant);
-
-		if (m_base->isSingleBase())
-		{
-			for (unsigned v = 0; v < variant::NumberOfVariants; ++v)
-				delete m_cursor[v];
-			::memset(m_cursor, 0, sizeof(m_cursor));
-			m_cursor[variant::toIndex(variant)] = new Cursor(*this, m_base->database());
-		}
-
-		M_ASSERT(m_cursor[variant::toIndex(variant)]);
-
+		setup();
 		m_leader = m_cursor[variant::toIndex(variant)];
+		M_ASSERT(m_leader);
 	}
 }
 

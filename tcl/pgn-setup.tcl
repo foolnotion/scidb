@@ -939,8 +939,8 @@ proc BuildFrame(topics) {w topic context position tree} {
 				-cursor {} \
 				-takefocus 0 \
 				;
-			bind $t <Any-Button> { break }
-			bind $t <Any-Key> { break }
+#			bind $t <Any-Button> { break }
+#			bind $t <Any-Key> { break }
 			$t tag configure link -foreground blue2
 			$t tag bind link <Enter> [list $t tag configure link -underline 1]
 			$t tag bind link <Leave> [list $t tag configure link -underline 0]

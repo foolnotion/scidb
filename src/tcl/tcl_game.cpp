@@ -136,6 +136,7 @@ static char const* CmdUndoSetup		= "::scidb::game::undoSetup";
 static char const* CmdUnsubscribe	= "::scidb::game::unsubscribe";
 static char const* CmdUpdate			= "::scidb::game::update";
 static char const* CmdValid			= "::scidb::game::valid?";
+static char const* CmdVariant			= "::scidb::game::variant?";
 static char const* CmdVariation		= "::scidb::game::variation";
 static char const* CmdVerify			= "::scidb::game::verify";
 static char const* CmdView				= "::scidb::game::view";
@@ -1716,6 +1717,14 @@ cmdValid(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	Game const& game = Scidb->game();
 	mstl::string san(stringFromObj(objc, objv, 1));
 	setResult(bool(game.currentBoard().parseMove(san, game.variant(), move::MustBeUnambiguous)));
+	return TCL_OK;
+}
+
+
+static int
+cmdVariant(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	setResult(::tcl::tree::variantToString(Scidb->game().variant()));
 	return TCL_OK;
 }
 
@@ -4141,6 +4150,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdUnsubscribe,	cmdUnsubscribe);
 	createCommand(ti, CmdUpdate,			cmdUpdate);
 	createCommand(ti, CmdValid,			cmdValid);
+	createCommand(ti, CmdVariant,			cmdVariant);
 	createCommand(ti, CmdVariation,		cmdVariation);
 	createCommand(ti, CmdVerify,			cmdVerify);
 	createCommand(ti, CmdView,				cmdView);

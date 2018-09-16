@@ -1,6 +1,17 @@
 [September 2018] =============================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #1521)
+------------------------------------------------------------------------------
+* New menu entry (and shortcut) in game/event/site table: opening URL if given
+in site.
+* Fix in chess variant support: Scid databases (.si3/4) may contain
+Three-check chess, and now it will be detected with the help of tag "Variant"
+whether a game belongs to Three-check. This supports correct displaying in
+game (notation) editor, and proper import into Three-check databases
+(.sci).
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #1520)
 ------------------------------------------------------------------------------
 * The following themes are removed: Antique, Magnetic, Mayan Marble, Motif,

@@ -323,7 +323,7 @@ proc openAdmininstration {parent} {
 	ttk::label			$setup.lparams -text $mc::Parameters
 	ttk::entry			$setup.eparams -textvar [namespace current]::Data(Parameters)
 
-	::tooltip::tooltip $setup.burl ::playercard::mc::OpenInWebBrowser
+	::tooltip::tooltip $setup.burl [namespace current]::mc::OpenUrl
 	::tooltip::tooltip $setup.blastused $::mc::Clear
 	::tooltip::tooltip $setup.blogo $mc::OpenFsbox
 	::tooltip::tooltip $setup.bdirectory $::dialog::fsbox::mc::Title(dir)

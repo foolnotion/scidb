@@ -133,7 +133,7 @@ proc build {path columns args} {
 		-takefocus 0     \
 		-command [namespace code [list Scroll $tb]] \
 		;
-	::bind $sb <Any-Button> [list ::tooltip::hide]
+#	::bind $sb <Any-Button> [list ::tooltip::hide]
 	::bind $sb <ButtonPress-1> [namespace code [list StopMouseWheel $tb]]
 	if {$(takefocus)} {
 		::bind $sb <ButtonPress-1> +[list ::table::focus $tb]
@@ -219,7 +219,7 @@ proc build {path columns args} {
 	}
 
 	if {[llength $(popupcmd)]} {
-		::table::bind $tb <ButtonPress-3> +[namespace code [list PopupMenu $tb %y]]
+		::table::bind $tb <ButtonPress-3> +[namespace code [list PopupMenu $tb %x %y]]
 	}
 
 	TableResized $tb 0
@@ -1126,12 +1126,13 @@ proc SetHighlighting {table} {
 }
 
 
-proc PopupMenu {table y} {
+proc PopupMenu {table x y} {
 	variable ${table}::
 
 	::tooltip::hide
 	if {![info exists (variant)]} { return }
-	set row [::table::at $table $y]
+	lassign [::table::identify $table $x $y] row col _ _
+	set columnName [lindex [::table::columns $table] $col]
 
 	switch $row {
 		none		{ return }
@@ -1155,7 +1156,7 @@ proc PopupMenu {table y} {
 	menu $menu -tearoff false
 	set base $(base)
 	set variant $(variant)
-	{*}$(popupcmd) [winfo parent [winfo parent $table]] $menu $base $variant $index
+	{*}$(popupcmd) [winfo parent [winfo parent $table]] $menu $base $variant $index $columnName
 
 	if {[$menu index 0] ne "none"} {
 		::table::keepFocus $table true

@@ -1100,8 +1100,10 @@ proc Startup2 {} {
 	database::preOpen $app
 
 	foreach file [::process::arguments] {
-		database::openBase .application [::util::databasePath $file] yes \
-			-encoding $::encoding::autoEncoding
+		set path [::util::databasePath $file]
+		if {![::scidb::db::get open? $path]} {
+			database::openBase .application $path yes -encoding $::encoding::autoEncoding
+		}
 	}
  
 	if {[::game::recover $app] + [::game::reopenLockedGames $app] > 0} {

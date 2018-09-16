@@ -241,6 +241,7 @@ public:
 private:
 
 	unsigned exportGames(db::Consumer& destination,
+								db::variant::Type variant,
 								unsigned* illegalRejected,
 								db::Log& log,
 								util::Progress& progress) const;

@@ -1371,6 +1371,7 @@
 ::gamestable::mc::Accel(browse)		"W"
 ::gamestable::mc::Accel(overview)	"O"
 ::gamestable::mc::Accel(tourntable)	"T"
+::gamestable::mc::Accel(openurl)	"U"
 ::gamestable::mc::Space			"Space"
 
 ::gamestable::mc::F_Number		"#"
@@ -1589,7 +1590,6 @@
 ::playercard::mc::WhiteMostPlayed	"Most common openings as White" ;# NEW
 ::playercard::mc::BlackMostPlayed	"Most common openings as Black" ;# NEW
 
-::playercard::mc::OpenInWebBrowser	"Mgnyitás böngészőben"
 ::playercard::mc::OpenPlayerCard	"%s játékos adatlapjának megynitása"
 ::playercard::mc::OpenFileCard		"%s fájl adatlapjának megnyitása"
 ::playercard::mc::OpenFideRatingHistory	"Fide értékszámának alakulása"

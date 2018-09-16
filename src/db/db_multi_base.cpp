@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2012-2013 Gregor Cramer
+// Copyright: (C) 2012-2018 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -121,18 +121,10 @@ MultiBase::MultiBase(mstl::string const& name,
 
 	if (variant == variant::Undetermined)
 	{
-		m_bases[variant::Index_Normal] = m_leader = new Database(
-			name, encoding, storage, variant::Normal, type);
-		m_bases[variant::Index_Crazyhouse] = new Database(
-			name, encoding, storage, variant::Crazyhouse, type);
-		m_bases[variant::Index_Bughouse] = new Database(
-			name, encoding, storage, variant::Bughouse, type);
-		m_bases[variant::Index_ThreeCheck] = new Database(
-			name, encoding, storage, variant::ThreeCheck, type);
-		m_bases[variant::Index_Antichess] = new Database(
-			name, encoding, storage, variant::Antichess, type);
-		m_bases[variant::Index_Losers] = new Database(
-			name, encoding, storage, variant::Losers, type);
+		for (unsigned v = 0; v < variant::NumberOfVariants; ++v)
+			m_bases[v] = new Database(name, encoding, storage, variant::fromIndex(v), type);
+
+		m_leader = m_bases[variant::Index_Normal];
 	}
 	else
 	{
@@ -267,6 +259,28 @@ MultiBase::format() const
 }
 
 
+MultiBase::Format
+MultiBase::sourceFormat() const
+{
+	M_ASSERT(m_leader);
+	return m_leader->sourceFormat();
+}
+
+
+bool
+MultiBase::isPGNArchive() const
+{
+	return format::isPGNArchive(sourceFormat());
+}
+
+
+bool
+MultiBase::isTextFile() const
+{
+	return format::isTextFile(misc::file::suffix(m_leader->name()));
+}
+
+
 variant::Type
 MultiBase::variant() const
 {
@@ -338,11 +352,11 @@ void
 MultiBase::setup(FileOffsets* fileOffsets)
 {
 	M_REQUIRE(fileOffsets);
+	M_ASSERT(m_leader);
 
-	mstl::string ext = util::misc::file::suffix(m_leader->name());
 	bool isReadonly = true;
 
-	if (ext == "pgn" || ext == "PGN" || ext == "gz")
+	if (format::isPGNArchive(sourceFormat()))
 	{
 		isReadonly = !sys::file::access(m_leader->name(), sys::file::Writeable);
 		delete m_fileOffsets;
@@ -350,7 +364,7 @@ MultiBase::setup(FileOffsets* fileOffsets)
 	}
 
 	m_leader->setReadonly(isReadonly);
-	m_leader->setWritable(!isReadonly && m_fileOffsets);
+	m_leader->setWritable(m_fileOffsets);
 }
 
 
@@ -470,10 +484,46 @@ MultiBase::save(util::Progress& progress)
 
 
 bool
-MultiBase::isTextFile() const
+MultiBase::setReadonly(bool flag)
 {
-	mstl::string ext(misc::file::suffix(m_leader->name()));
-	return ext == "pgn" || ext == "PGN" || ext == "gz";
+	M_ASSERT(m_leader);
+
+	if (!m_leader->setReadonly(flag))
+		return false;
+
+	if (format::isPGNArchive(sourceFormat()))
+	{
+		m_leader->setWritable(m_fileOffsets);
+
+		if (flag)
+		{
+			for (unsigned v = 0; v < variant::NumberOfVariants; ++v)
+			{
+				if (m_leader != m_bases[v] && m_bases[v] && m_bases[v]->isEmpty())
+				{
+					m_bases[v]->close();
+					delete m_bases[v];
+					m_bases[v] = nullptr;
+				}
+			}
+		}
+		else
+		{
+			mstl::string const& name		= m_leader->name();
+			mstl::string const& encoding	= m_leader->encoding();
+
+			storage::Type storage = m_leader->isMemoryOnly() ? storage::MemoryOnly : storage::OnDisk;
+			type::ID type = m_leader->type();
+
+			for (unsigned v = 0; v < variant::NumberOfVariants; ++v)
+			{
+				if (!m_bases[v])
+					m_bases[v] = new Database(name, encoding, storage, variant::fromIndex(v), type);
+			}
+		}
+	}
+
+	return true;
 }
 
 
@@ -522,8 +572,8 @@ MultiBase::save(mstl::string const& encoding, unsigned flags, util::Progress& pr
 	mstl::string ext(misc::file::suffix(m_leader->name()));
 	mstl::string myEncoding(encoding);
 	ext.tolower();
-	M_ASSERT(ext == "pgn" || ext == "PGN" || ext == "gz");
-	ZStream::Type fileType = ext == "gz" ? ZStream::GZip : ZStream::Text;
+	M_ASSERT(format::isTextFile(ext));
+	ZStream::Type fileType = format::isGZIPFile(ext) ? ZStream::GZip : ZStream::Text;
 
 	unsigned nextIndex[variant::NumberOfVariants];
 	::memset(nextIndex, 0, sizeof(nextIndex));

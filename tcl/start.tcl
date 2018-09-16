@@ -543,7 +543,7 @@ set SelectionOwnerDidntRespond   "Timeout during drop action: selection owner di
 
 }
 
-set Extensions		{.sci .si4 .si3 .cbh .cbf .CBF .pgn .PGN .zip}
+set Extensions		{.sci .scv .si4 .si3 .cbh .cbf .CBF .pgn .PGN .zip}
 set clipbaseName	Clipbase
 
 set shiftMask		[::scidb::tk::misc shiftMask?]
@@ -658,7 +658,7 @@ proc databasePath {file} {
 	set ext [file extension $file]
 	if {$ext ni $Extensions && ![string match -nocase {*.pgn.gz} $file]} {
 		foreach ext $Extensions {
-			set f "$file$ext"
+			set f ${file}${ext}
 			if {[file readable $f]} {
 				return $f
 			}

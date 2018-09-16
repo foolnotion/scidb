@@ -214,7 +214,6 @@ proc build {twm parent width height} {
 		-takefocus 0     \
 		-command [namespace code [list $tb.t yview]] \
 		;
-	bind $sb <Any-Button> [list ::tooltip::hide]
 	::ttk::frame $sq -borderwidth 1 -relief sunken
 
 	$tb.t state define next

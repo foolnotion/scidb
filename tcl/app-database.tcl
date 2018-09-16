@@ -461,8 +461,7 @@ proc openBase {parent file byUser args} {
 	set ext [string tolower $ext]
 
 	if {![file readable $file]} {
-		set i [FindRecentFile $file]
-		if {$i >= 0} { removeRecentFile $i }
+		removeRecentFile [FindRecentFile $file]
 		::dialog::error -parent $parent -message [format $mc::CannotOpenFile $file]
 		return 0
 	}
@@ -705,9 +704,11 @@ proc recentFiles {} {
 proc removeRecentFile {index} {
 	variable RecentFiles
 
-	set RecentFiles [lreplace $RecentFiles $index $index]
-	[namespace parent]::information::update
-#	::menu::configureOpenRecent [GetRecentState]
+	if {$index >= 0} {
+		set RecentFiles [lreplace $RecentFiles $index $index]
+		[namespace parent]::information::update
+#		::menu::configureOpenRecent [GetRecentState]
+	}
 }
 
 
@@ -914,8 +915,11 @@ proc CloseBase {parent file} {
 
 	if {[::game::releaseAll $parent $file]} {
 		::widget::busyCursor on
-		::scidb::db::close $file
 		$Vars(switcher) remove $file
+		::scidb::db::close $file
+		if {![file exists $file]} {
+			removeRecentFile [FindRecentFile $file]
+		}
 		[namespace parent]::information::update
 		::widget::busyCursor off
 	}
@@ -1050,22 +1054,12 @@ proc UpdateAfterSwitch {filename variant} {
 	if {$filename eq $clipbaseName} { set closeState disabled } else { set closeState normal }
 	if {$filename eq $clipbaseName || ![::scidb::db::get writable? $filename]} {
 		set roState disabled
-		set saveState disabled
 	} else {
 		switch [string tolower [file extension $filename]] {
-			.sci - .pgn - .pgn.gz {
-				if {[::scidb::db::get writable? $filename] && ![::scidb::db::get unsaved? $filename]} {
-					set roState normal
-				} else {
-					set roState disabled
-				}
-			}
-			default {
-				set roState disabled
-			}
+			.pgn - .pgn.gz	{ set roState [::makeState ![::scidb::db::get unsaved? $filename]] }
+			.sci				{ set roState normal }
+			default			{ set roState disabled }
 		}
-
-		::toolbar::childconfigure $Vars(button:readonly) -tooltip $roState
 	}
 
 	::toolbar::childconfigure $Vars(button:close) -state $closeState
@@ -1586,7 +1580,7 @@ proc ToggleReadOnly {var {base ""}} {
 	}
 
 	if {[::scidb::db::get name] eq $base} { set Vars(flag:readonly) $readonly }
-	$Vars(switcher) readonly $base $readonly
+	SwitchVariant [$Vars(switcher) readonly $base $readonly]
 
 	set k [FindRecentFile $base]
 	if {$k >= 0} { lset RecentFiles $k 3 $readonly }

@@ -76,6 +76,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 		}
 	}
 	set args [array get options]
+	lappend args -popupcmd [namespace code PopupMenu]
 	lappend args -id $Vars(id)
 
 	array set Options [array get Defaults]
@@ -164,8 +165,10 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	::bind $path <<TableFill>>			[namespace code [list TableFill $path %d]]
 	::bind $path <<TableSelected>>	[namespace code [list TableSelected $path %d]]
 	::bind $path <<TableVisit>>		[namespace code [list TableVisit $path %d]]
+	::bind $path <<LanguageChanged>> [namespace code [list BindAccelerators $path]]
 
 	set Vars(viewcmd) $getViewCmd
+	BindAccelerators $path
 
 	if {$Vars(usefind)} {
 		::toolbar::setup $path -id sitetable -layout site
@@ -325,6 +328,48 @@ proc see {path position} {
 }
 
 
+proc popupMenu {parent menu site} {
+	set accel [set [namespace parent]::gamestable::mc::Accel(openurl)]
+	set cmd [namespace code [list ::web::open $parent $site]]
+	$menu add command \
+		-compound left \
+		-image $::icon::16x16::internet \
+		-label " $::engine::mc::OpenUrl" \
+		-accelerator $accel \
+		-command $cmd \
+		;
+	::bind $menu <Key-$accel> $cmd
+	::bind $menu <Key-[string tolower $accel]> $cmd
+}
+
+
+proc BindAccelerators {path} {
+	variable ${path}::Vars
+
+	set cmd [namespace code [list OpenURL $path]]
+	set accel [set [namespace parent]::gamestable::mc::Accel(openurl)]
+	bind $path <Key-[string toupper $accel]> [list ::util::doAccelCmd $accel %s $cmd]
+	bind $path <Key-[string tolower $accel]> [list ::util::doAccelCmd $accel %s $cmd]
+}
+
+
+proc OpenURL {path} {
+	variable ${path}::Vars
+
+	set index [::scrolledtable::active $path]
+	if {$index == -1} { return }
+	set base [::scrolledtable::base $path]
+	set variant [::scrolledtable::variant $path]
+	set view [{*}$Vars(viewcmd) $base $variant]
+	set col  [lsearch -exact $Vars(columns) site]
+	set site [::scidb::db::get siteInfo $index $view $base $variant $col]
+
+	if {[::web::isWebLink $site]} {
+		::web::open $path $site
+	}
+}
+
+
 proc Refresh {path} {
 	::scrolledtable::refresh $path
 }
@@ -474,6 +519,37 @@ proc Find {path mode name} {
 	if {$i >= 0} {
 		::scrolledtable::see $path $i
 		::scrolledtable::activate $path $i
+	}
+}
+
+
+proc GetSite {path base variant view index} {
+	variable ${path}::Vars
+
+	if {$index == -1} { return "" }
+	set col [lsearch -exact $Vars(columns) site]
+	set site [::scidb::db::get siteInfo $index $view $base $variant $col]
+}
+
+
+proc PopupMenu {path menu base variant index column} {
+	variable ${path}::Vars
+
+	set view [{*}$Vars(viewcmd) $base $variant]
+	set site [GetSite $path $base $variant $view $index]
+
+	if {[::web::isWebLink $site]} {
+		set accel $::gamestable::mc::Accel(openurl)
+		$menu add command \
+			-compound left \
+			-image $::icon::16x16::internet \
+			-label " $::engine::mc::OpenUrl" \
+			-accelerator $accel \
+			-command [namespace code [list ::web::open $path $site]] \
+			;
+		set cmd [namespace code [list ::web::open $path $site]]
+		::bind $menu <Key-$accel> $cmd
+		::bind $menu <Key-[string tolower $accel]> $cmd
 	}
 }
 

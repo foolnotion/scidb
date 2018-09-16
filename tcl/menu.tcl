@@ -600,9 +600,10 @@ proc dbNew {parent variant} {
 	set FileSelBoxInUse 0
 
 	if {[llength $result] == 0} { return 0 }
-	set ext [file extension $result]
+	lassign $result base encoding
+	set ext [file extension $base]
 	if {$ext in {.pgn .gz}} { set variant Undetermined }
-	return [::application::database::newBase $parent $variant {*}$result]
+	return [::application::database::newBase $parent $variant $base $encoding]
 }
 
 

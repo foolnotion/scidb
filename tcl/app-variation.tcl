@@ -88,7 +88,7 @@ proc build {parent menu width height} {
 		-takefocus 0     \
 		-command [namespace code [list $tb.t yview]] \
 		;
-	bind $sb <Any-Button> [list ::tooltip::hide]
+#	bind $sb <Any-Button> [list ::tooltip::hide]
 	::ttk::frame $sq -borderwidth 1 -relief sunken
 
 	grid $tb -row 0 -column 0 -rowspan 2 -sticky nsew

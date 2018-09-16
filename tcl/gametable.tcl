@@ -68,6 +68,7 @@ set IncludeVars			"Include Variations"
 set Accel(browse)			"W"
 set Accel(overview)		"O"
 set Accel(tourntable)	"T"
+set Accel(openurl)		"U"
 set Space					"Space"
 
 set F_Number				"#"
@@ -1771,7 +1772,17 @@ proc ShowGame {path x y} {
 }
 
 
-proc PopupMenu {path menu base variant index} {
+proc GetSite {path base variant view index} {
+	variable ${path}::Vars
+
+	if {$index == -1} { return "" }
+	set line [::scidb::db::get gameInfo $index $view $base $variant]
+	set col [lsearch -exact $Vars(columns) site]
+	return [lindex $line $col]
+}
+
+
+proc PopupMenu {path menu base variant index column} {
 	variable ${path}::Vars
 	variable _Flags
 	variable columns
@@ -1822,6 +1833,15 @@ proc PopupMenu {path menu base variant index} {
 					-label " $mc::ShowTournamentTable..." \
 					-command [namespace code [list Open(tourntable) $path $index]] \
 					;
+				set site [GetSite $path $base $variant $view $index]
+				if {[::web::isWebLink $site]} {
+					$menu add command \
+						-compound left \
+						-image $::icon::16x16::internet \
+						-label " $::engine::mc::OpenUrl" \
+						-command [namespace code [list ::web::open $path $site]] \
+						;
+				}
 			}
 		} else {
 			$menu add command \
@@ -1873,6 +1893,19 @@ proc PopupMenu {path menu base variant index} {
 				set cmd [namespace code [list InvokeAction $menu tourntable $path $index]]
 				::bind $menu <Key-$mc::Accel(tourntable)> $cmd
 				::bind $menu <Key-[string tolower $mc::Accel(tourntable)]> $cmd
+				set site [GetSite $path $base $variant $view $index]
+				if {[::web::isWebLink $site]} {
+					set cmd [list ::web::open $path $site]
+					$menu add command \
+						-compound left \
+						-image $::icon::16x16::internet \
+						-label " $::engine::mc::OpenUrl" \
+						-accelerator $mc::Accel(openurl) \
+						-command $cmd \
+						;
+					::bind $menu <Key-$mc::Accel(openurl)> $cmd
+					::bind $menu <Key-[string tolower $mc::Accel(openurl)]> $cmd
+				}
 			}
 		}
 
@@ -2007,7 +2040,7 @@ proc SetFlag {base variant index view flag} {
 proc BindAccelerators {path} {
 	variable ${path}::Vars
 
-	foreach action {browse overview tourntable} {
+	foreach action [array names mc::Accel] {
 		if {[info exists Vars(accel:$action)]} {
 			bind $path <Key-[string toupper $Vars(accel:$action)]> {}
 			bind $path <Key-[string tolower $Vars(accel:$action)]> {}
@@ -2082,6 +2115,23 @@ proc Open(tourntable) {path {index -1}} {
 	set view [{*}$Vars(viewcmd) $base $variant]
 
 	::crosstable::open $path $base $variant $index $view game
+}
+
+
+proc Open(openurl) {path {index -1}} {
+	variable ${path}::Vars
+
+	if {$index == -1} { set index [::scrolledtable::active $path] }
+	if {$index == -1} { return }
+
+	set base [::scrolledtable::base $path]
+	set variant [::scrolledtable::variant $path]
+	set view [{*}$Vars(viewcmd) $base $variant]
+	set site [GetSite $path $base $variant $view $index]
+
+	if {[::web::isWebLink $site]} {
+		::web::open $path $site
+	}
 }
 
 

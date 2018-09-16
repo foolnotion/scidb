@@ -165,6 +165,8 @@ public:
 	variant::Type variant(unsigned index) const;
 	/// Returns the (decoding) format of database
 	Format format() const;
+	/// Returns the original format of database
+	Format sourceFormat() const;
 	/// Returns the encoding of database
 	mstl::string const& encoding() const;
 	/// Returns the encoding of database which is used for reading.

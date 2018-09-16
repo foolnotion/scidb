@@ -46,6 +46,7 @@ proc disabledforeground	{} { return [GetColor disabledforeground] }
 proc Build {w args} {
 	namespace eval [namespace current]::${w} {}
 	variable ${w}::Priv
+	variable ${w}::Rem
 	variable Options
 
 	array set opts {
@@ -64,6 +65,7 @@ proc Build {w args} {
 		-arrowoverrelief raised
 		-arrowborderwidth 1
 		-state normal
+		-arrowstate normal
 	}
 	array set opts $args
 
@@ -72,14 +74,27 @@ proc Build {w args} {
 
 	InitColors
 
-	foreach opt {activebackground activeforeground background foreground disabledforeground} {
+	foreach opt {activebackground activeforeground background foreground disabledforeground state} {
 		if {[string length $opts(-arrow$opt)] == 0} {
 			set opts(-arrow$opt) $Options(arrow$opt)
 		}
 	}
+	foreach opt {background arrowbackground activebackground \
+					arrowactivebackground arrowactiveforeground} {
+		set Priv($opt) $opts(-$opt)
+	}
+	set Rem(background) $Priv(background)
+	set Rem(arrowactivebackground) $Priv(arrowactivebackground)
 
 	tk::button $w.b -overrelief flat
 	tk::menubutton $w.m -padx 0 -pady 0
+
+	if {[string length $opts(-background)] == 0} {
+		set opts(-background) [$w.b cget -background]
+	}
+	if {[string length $opts(-arrowbackground)] == 0} {
+		set opts(-arrowbackground) [$w.m cget -background]
+	}
 
 	bind $w.m <Enter> [namespace code [list EnterArrow $w]]
 	bind $w.m <Leave> [namespace code [list LeaveArrow $w]]
@@ -90,12 +105,18 @@ proc Build {w args} {
 	grid $w.b -row 0 -column 0 -sticky ns
 	grid $w.m -row 0 -column 1 -sticky ns
 
-	set Priv(command) {}
-	set Priv(button1) {}
-	set Priv(arrow:size) 0
-	set Priv(arrow:state) normal
-	foreach opt {menucmd tooltip tooltipvar arrowttip arrowttipvar arrowrelief arrowoverrelief} {
-		set Priv($opt) ""
+	array set Priv {
+		command				{}
+		button1				{}
+		arrow:size			0
+		arrow:state			normal
+		menucmd				{}
+		tooltip				""
+		tooltipvar			""
+		arrowttip			""
+		arrowttipvar		""
+		arrowrelief			""
+		arrowoverrelief	""
 	}
 
 	bind $w <Destroy> [list catch [list namespace delete [namespace current]::${w}]]
@@ -115,6 +136,7 @@ proc Build {w args} {
 
 proc WidgetProc {w command args} {
 	variable ${w}::Priv
+	variable ${w}::Rem
 	variable Locked
 
 	switch -- $command {
@@ -140,14 +162,58 @@ proc WidgetProc {w command args} {
 				array unset opts -menucmd
 			}
 
-			if {[info exists opts(-background)]} {
-				set opts(-arrowbackground) $opts(-background)
-			}
-
 			if {[info exists opts(-command)]} {
 				set Priv(command) $opts(-command)
 				$w.b configure -command $Priv(command)
 				array unset opts -command
+			}
+
+			if {[info exists opts(-background)]} {
+				set background $opts(-background)
+				if {[string length $background] == 0} { set background $Priv(background) }
+				$w.b configure -background $background
+				set rem(-background) $background
+				array unset opts -background
+			}
+
+			if {[info exists opts(-arrowbackground)]} {
+				set background $opts(-arrowbackground)
+				if {[string length $background] == 0} { set background $Priv(arrowbackground) }
+				$w.m configure -background $background
+				array unset opts -arrowbackground
+			}
+
+			if {[info exists opts(-arrowforeground)]} {
+				set foreground $opts(-arrowforeground)
+				if {[string length $foreground] == 0} { set foreground $Priv(arrowforeground) }
+				$w.m configure -foreground $foreground
+				array unset opts -arrowforeground
+			}
+
+			if {[info exists opts(-activebackground)]} {
+				set background $opts(-activebackground)
+				if {[string length $background] == 0} { set background $Priv(activebackground) }
+				$w.b configure -activebackground $background
+				array unset opts -activebackground
+			}
+
+			if {[info exists opts(-arrowactivebackground)]} {
+				if {$Priv(arrow:state) eq "normal"} {
+					set background $opts(-arrowactivebackground)
+					if {[string length $background] == 0} { set background $Priv(arrowactivebackground) }
+				} else {
+					set background $Priv(background)
+				}
+				$w.m configure -activebackground $background
+				set rem(-arrowactivebackground) $background
+				array unset opts -arrowactivebackground
+			}
+
+			if {[info exists opts(-arrowactiveforeground)]} {
+				set foreground $opts(-arrowactiveforeground)
+				if {[string length $foreground] == 0} { set foreground $Priv(arrowactiveforeground) }
+				$w.b configure -activeforeground $foreground
+				array unset opts -arrowactiveforeground
 			}
 
 			if {[info exists opts(-arrowstate)]} {
@@ -164,7 +230,10 @@ proc WidgetProc {w command args} {
 					$w.b configure -command $Priv(command)
 					bind $w.b <ButtonPress-1> $Priv(button1)
 				}
-				$w.m configure -activebackground $Priv(${pref}background)
+				set background ""
+				if {[info exists rem(-${pref}background)]} { set background $rem(-${pref}background) }
+				if {[string length $background] == 0} { set background $Rem(${pref}background) }
+				$w.m configure -activebackground $background
 				array unset opts -arrowstate
 			}
 
@@ -219,19 +288,22 @@ proc WidgetProc {w command args} {
 
 proc Setup {w} {
 	variable ${w}::Priv
+	variable ${w}::Rem
 
 	set Priv(relief) [$w.b cget -relief]
 	set Priv(overrelief) [$w.b cget -overrelief]
 	set Priv(background) [$w.b cget -background]
 	set Priv(activebackground) [$w.b cget -activebackground]
 	set Priv(arrowactiveforeground) [$w.m cget -activeforeground]
+	set Priv(arrowactivebackground) [$w.m cget -activebackground]
 	set Priv(arrowdisabledforeground) [$w.m cget -disabledforeground]
 	set Priv(arrowforeground) [$w.m cget -foreground]
 	set Priv(arrowbackground) [$w.m cget -background]
 
 	if {$Priv(arrow:state) eq "normal"} {
-		set Priv(arrowactivebackground) [$w.m cget -activebackground]
+		set Rem(arrowactivebackground) $Priv(arrowactivebackground)
 	}
+	set Rem(background) $Priv(background)
 
 	SetTooltips $w
 }
@@ -327,9 +399,15 @@ proc BuildMenu {w} {
 		eval $Priv(menucmd) $w $m
 	}
 
+	if {[$w.m cget -state] eq "normal"} {
+		set background $Priv(arrowactivebackground)
+	} else {
+		set background $Priv(arrowbackground)
+	}
+
 	$w.m configure \
-		-background $Priv(arrowactivebackground) \
-		-activebackground $Priv(arrowactivebackground) \
+		-background $background \
+		-activebackground $background \
 		-image $Priv(arrow:icon:active) \
 		-menu $m \
 		-direction below \
@@ -357,9 +435,15 @@ proc ReleaseMenu {w unpost} {
 	# TODO: this only works with X11, so we need a platform independent proc.
 	if {$unpost} { ::tk::MenuUnpost $w.m.__dropdownbutton__ }
 
+	if {[$w.m cget -state] eq "normal"} {
+		set attr arrowactivebackground
+	} else {
+		set attr arrowbackground
+	}
+
 	$w.m configure \
 		-background $Priv(arrowbackground) \
-		-activebackground $Priv(arrowactivebackground) \
+		-activebackground $Priv($attr) \
 		-image $Priv(arrow:icon:normal) \
 		;
 	if {$Locked == 0 || [incr Locked -1] == 0} {

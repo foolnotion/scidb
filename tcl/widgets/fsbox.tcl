@@ -49,7 +49,7 @@ set NewFolder						"New Folder"
 set Layout							"Layout"
 set ListLayout						"List Layout"
 set DetailedLayout				"Detailed Layout"
-set ShowHiddenDirs				"Show Hidden Directories" ;# TODO unused
+set ShowHiddenDirs				"Show Hidden Directories"
 set ShowHiddenFiles				"Show Hidden Files and Directories"
 set AppendToExisitingFile		"&Append to an existing file"
 set Cancel							"&Cancel"
@@ -2330,7 +2330,7 @@ proc DoFileOperations {w action uriFiles destination trash} {
 		set deletionList {}
 		if {[file exists $dst]} {
 			if {[llength $Vars(deletecommand)]} {
-				foreach f [$Vars(deletecommand) $dst] { lappend deletionList $f }
+				foreach f [{*}$Vars(deletecommand) $w $dst] { lappend deletionList $f }
 			} else {
 				lappend deletionList $f
 			}
@@ -4562,7 +4562,7 @@ proc DeleteFile {w} {
 		set leader ""
 		if {[llength $Vars(deletecommand)] > 0} {
 			set files {}
-			foreach f [{*}$Vars(deletecommand) $file] {
+			foreach f [{*}$Vars(deletecommand) $w $file] {
 				if {[file exists $f]} {
 					if {[string length $leader] == 0} { set leader [file rootname $f] }
 					lappend extensions [file extension $f]
@@ -4869,7 +4869,7 @@ proc FinishRenameFile {w sel name} {
 	set ok 1
 	set files {}
 	if {$type eq "file" && [llength $Vars(renamecommand)] > 0} {
-		set files [{*}$Vars(renamecommand) $oldName $newName]
+		set files [{*}$Vars(renamecommand) $w $oldName $newName]
 		if {[llength $files] == 0} {
 			set ok 0
 			set new $newName
@@ -5350,7 +5350,7 @@ proc HandleDragEvent {w src types x y} {
 		set ext [string tolower [file extension $file]]
 
 		if {[string length $Vars(deletecommand)]} {
-			foreach f [{*}$Vars(deletecommand) $file] {
+			foreach f [{*}$Vars(deletecommand) $w $file] {
 				if {[file exists $f]} { lappend files $f }
 			}
 		} else {

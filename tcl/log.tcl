@@ -49,6 +49,7 @@ variable Log .application.log
 proc warning {args}	{ Print Warning 1 {*}$args }
 proc error {args}		{ Print Error 1 {*}$args }
 proc info {args}		{ Print Information 0 {*}$args }
+proc state {args}		{ Print Error 1 {*}$args }
 
 
 proc newline {} {

@@ -92,8 +92,8 @@ array set FileSizeCache {}
 array set LastFolders {}
 
 set FileIcons [list                           \
-	.bpgn.gz	$::icon::16x16::filetypeBPGN      \
 	.bpgn		$::icon::16x16::filetypeBPGN      \
+	.bpgn.gz	$::icon::16x16::filetypeBPGN      \
 	.cbf		$::icon::16x16::filetypeChessBase \
 	.CBF		$::icon::16x16::filetypeChessBase \
 	.cbh		$::icon::16x16::filetypeChessBase \
@@ -101,9 +101,9 @@ set FileIcons [list                           \
 	.html		$::icon::16x16::filetypeHTML      \
 	.ltx		$::icon::16x16::filetypeTeX       \
 	.pdf		$::icon::16x16::filetypePDF       \
-	.pgn.gz	$::icon::16x16::filetypePGN       \
 	.pgn		$::icon::16x16::filetypePGN       \
 	.PGN		$::icon::16x16::filetypePGN       \
+	.pgn.gz	$::icon::16x16::filetypePGN       \
 	.sci		$::icon::16x16::filetypeScidbBase \
 	.scv 		$::icon::16x16::filetypeArchive   \
 	.si3		$::icon::16x16::filetypeScid3Base \
@@ -558,7 +558,9 @@ proc TraceLastFolder {dlg dlg2 w class tag} {
 }
 
 
-proc DeleteFile {path} {
+proc DeleteFile {parent path} {
+	variable FileEncodings
+
 	set result {}
 	set file [file rootname $path]
 	foreach ext [::scidb::misc::suffixes $path] {
@@ -568,7 +570,7 @@ proc DeleteFile {path} {
 }
 
 
-proc RenameFile {oldName newName} {
+proc RenameFile {parent oldName newName} {
 	set oldExt [file extension $oldName]
 	set newExt [file extension $newName]
 	if {$oldExt ne $newExt} { return {} }

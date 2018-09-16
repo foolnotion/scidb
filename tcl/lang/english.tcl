@@ -328,7 +328,7 @@
 ::menu::mc::Data								"%s data"
 
 # Default Application
-::menu::mc::Assign							"assign" ;# NEW
+::menu::mc::Assign							"assign"
 ::menu::mc::FailedSettingDefaultApp		"Failed to set Scidb as a default application for %s."
 ::menu::mc::SuccessSettingDefaultApp	"Successfully set Scidb as a default application for %s."
 ::menu::mc::CommandFailed					"Command '%s' failed."
@@ -573,10 +573,10 @@
 ::application::board::mc::None							"None"
 
 ::application::board::mc::MarkPromotedPiece			"Mark promoted pieces"
-::application::board::mc::PromoSign(none)				"None" ;# NEW
-::application::board::mc::PromoSign(bullet)			"Bullet" ;# NEW
-::application::board::mc::PromoSign(star)				"Star" ;# NEW
-::application::board::mc::PromoSign(disk)				"Disk" ;# NEW
+::application::board::mc::PromoSign(none)				"None"
+::application::board::mc::PromoSign(bullet)			"Bullet"
+::application::board::mc::PromoSign(star)				"Star"
+::application::board::mc::PromoSign(disk)				"Disk"
 
 ::application::board::mc::Tools							"Tools"
 ::application::board::mc::Control						"Control"
@@ -730,8 +730,8 @@
 ::application::database::mc::OpenRecentDatabase				"Open Recent Database"
 ::application::database::mc::NewDatabase						"New Database"
 ::application::database::mc::CloseDatabase					"Close Database '%s'"
-::application::database::mc::SetReadonly						"Set Database '%s' readonly" ;# NEW
-::application::database::mc::SetWriteable						"Set Database '%s' writable" ;# NEW
+::application::database::mc::SetReadonly						"Set Database '%s' readonly"
+::application::database::mc::SetWriteable						"Set Database '%s' writable"
 
 ::application::database::mc::OpenReadonly						"Open readonly"
 ::application::database::mc::OpenWriteable					"Open writable"
@@ -917,7 +917,7 @@
 ::database::switcher::mc::UriRejectedDetail(import)	"Only Scidb databases, but no ChessBase databases, can be imported:"
 ::database::switcher::mc::EmptyUriList						"Drop content is empty."
 ::database::switcher::mc::CopyGames							"Copy games"
-::database::switcher::mc::CopyGamesFromTo					"Copy games from '%src' to '%dst'" ;# NEW
+::database::switcher::mc::CopyGamesFromTo					"Copy games from '%src' to '%dst'"
 ::database::switcher::mc::CopiedGames						"%s game(s) copied"
 ::database::switcher::mc::NoGamesCopied					"No games copied"
 ::database::switcher::mc::CopyGamesFrom					"Copy games from '%s'"
@@ -1358,6 +1358,7 @@
 ::gamestable::mc::Accel(browse)			"W"
 ::gamestable::mc::Accel(overview)		"O"
 ::gamestable::mc::Accel(tourntable)		"T"
+::gamestable::mc::Accel(openurl)			"U"
 ::gamestable::mc::Space						"Space"
 
 ::gamestable::mc::F_Number					"#"
@@ -1576,7 +1577,6 @@
 ::playercard::mc::WhiteMostPlayed			"Most common openings as White"
 ::playercard::mc::BlackMostPlayed			"Most common openings as Black"
 
-::playercard::mc::OpenInWebBrowser			"Open in web browser"
 ::playercard::mc::OpenPlayerCard				"Open %s player card"
 ::playercard::mc::OpenFileCard				"Open %s file card"
 ::playercard::mc::OpenFideRatingHistory	"Open Fide rating history"
@@ -1743,8 +1743,8 @@
 ::setup::board::mc::FICSPosition					"FICS Start Position..."
 ::setup::board::mc::StandardPosition			"Standard Position"
 ::setup::board::mc::Chess960Castling			"Chess 960 castling"
-::setup::board::mc::TooManyPiecesInHolding	"one extra piece|%d extra pieces" ;# NEW
-::setup::board::mc::TooFewPiecesInHolding		"one piece is missing|%d pieces are missing" ;# NEW
+::setup::board::mc::TooManyPiecesInHolding	"one extra piece|%d extra pieces"
+::setup::board::mc::TooFewPiecesInHolding		"one piece is missing|%d pieces are missing"
 
 ::setup::board::mc::ChangeToFormat(xfen)		"Change to X-Fen format"
 ::setup::board::mc::ChangeToFormat(shredder)	"Change to Shredder format"
@@ -2620,8 +2620,8 @@
 ::dialog::fsbox::mc::ImageFile				"Image File"
 ::dialog::fsbox::mc::TextFile					"Text File"
 ::dialog::fsbox::mc::BinaryFile				"Binary File"
-::dialog::fsbox::mc::ShellScript				"Shell Script" ;# NEW
-::dialog::fsbox::mc::Executable				"Executable" ;# NEW
+::dialog::fsbox::mc::ShellScript				"Shell Script"
+::dialog::fsbox::mc::Executable				"Executable"
 
 ::dialog::fsbox::mc::LinkTo					"Link to %s"
 ::dialog::fsbox::mc::LinkTarget				"Link target"

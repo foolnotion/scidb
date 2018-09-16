@@ -88,7 +88,7 @@ Decoder::Decoder(ByteStream& strm, sys::utf8::Codec& codec)
 	:m_strm(strm)
 	,m_givenCodec(&codec)
 	,m_codec(&codec)
-	,m_currentNode(0)
+	,m_currentNode(nullptr)
 	,m_hasVariantTag(false)
 {
 }
@@ -975,6 +975,20 @@ Decoder::doDecoding(db::Consumer& consumer, TagSet& tags)
 	}
 
 	decodeTags(tags);
+
+	if (	consumer.variant() == variant::ThreeCheck
+		&& (	!tags.contains(tag::Variant)
+			|| variant::fromString(tags.value(tag::Variant)) != variant::ThreeCheck))
+	{
+		return save::UnsupportedVariant;
+	}
+
+	if (	consumer.variant() == variant::Normal
+		&& tags.contains(tag::Variant)
+		&& variant::fromString(tags.value(tag::Variant)) == variant::ThreeCheck)
+	{
+		return save::UnsupportedVariant;
+	}
 
 	if (m_strm.get() & flags::Non_Standard_Start)
 	{

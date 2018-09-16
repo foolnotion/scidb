@@ -35,6 +35,11 @@ proc isExternalLink {url} {
 }
 
 
+proc isWebLink {url} {
+	return [regexp {^https?://[^\s]+$} $url]
+}
+
+
 proc open {parent url} {
 	set url [::scidb::misc::url escape $url]
 	::widget::busyCursor on

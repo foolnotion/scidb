@@ -596,18 +596,18 @@ Reader::getAttributes(mstl::string const& filename, int& numGames, mstl::string*
 	{
 		mstl::string ext(util::misc::file::suffix(filename));
 
-		if (ext == "zip" || ext == "ZIP")
+		if (format::isZIPFile(ext))
 		{
 			if (util::ZStream::containsSuffix(filename, "pgn"))
 				numGames = PgnReader::estimateNumberOfGames(numGames);
 			else
 				numGames = -1;
 		}
-		else if (ext == "gz" || ext == "pgn" || ext == "PGN")
+		else if (format::isTextFile(ext))
 		{
 			numGames = PgnReader::estimateNumberOfGames(numGames);
 		}
-		else if (ext == "bpgn")
+		else if (format::isBPGNArchive(ext))
 		{
 			numGames = BpgnReader::estimateNumberOfGames(numGames);
 		}

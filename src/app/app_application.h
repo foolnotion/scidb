@@ -84,12 +84,14 @@ class Application
 {
 public:
 
+	typedef db::tag::TagSet TagBits;
 	typedef util::crc::checksum_t checksum_t;
 	typedef mstl::bitfield<uint32_t> Variants;
 	typedef mstl::map<mstl::string,unsigned> TagMap;
 	typedef db::Byte NagMap[db::nag::Scidb_Last];
 	typedef mstl::vector<mstl::string> Languages;
 	typedef db::Comment::LanguageSet LanguageSet;
+	typedef unsigned GameCount[db::variant::NumberOfVariants];
 
 	static unsigned const InvalidPosition	= unsigned(-1);
 	static unsigned const ReservedPosition	= unsigned(-2);
@@ -302,6 +304,15 @@ public:
 	void viewClosed(Cursor const& cursor, unsigned viewId);
 	void swapGames(unsigned sourcePosition, unsigned destinationPosition);
 	void copyGame(MultiCursor& sink, unsigned position, ::db::copy::Source source);
+	unsigned copyGames(	MultiCursor const& source,
+								MultiCursor& destination,
+								GameCount& accepted,
+								GameCount& rejected,
+								TagBits const& allowedTags,
+								bool allowExtraTags,
+								unsigned* illegalRejected,
+								db::Log& log,
+								util::Progress& progress);
 	void duplicateGame(unsigned position, ::db::copy::Source source, unsigned destination);
 	void pasteLastClipbaseGame(unsigned position);
 	bool mergeGame(unsigned primary,

@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2012-2013 Gregor Cramer
+// Copyright: (C) 2012-2018 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -49,8 +49,8 @@ public:
 
 	enum Type { Clipbase, Scratchbase };
 
-	typedef ::db::tag::TagSet TagBits;
-	typedef unsigned GameCount[::db::variant::NumberOfVariants];
+	typedef db::tag::TagSet TagBits;
+	typedef unsigned GameCount[db::variant::NumberOfVariants];
 
 	MultiCursor(Application& app, Type type);
 	MultiCursor(Application& app, db::MultiBase* base);
@@ -107,7 +107,7 @@ public:
 	/// Close all databases.
 	void close();
 	/// Change the variant; requires an empty database.
-	void changeVariant(::db::variant::Type variant);
+	void changeVariant(db::variant::Type variant);
 	/// Replace database object.
 	void replace(db::Database* database);
 
@@ -119,6 +119,11 @@ public:
 	static mstl::string const& scratchbaseName();
 
 private:
+
+	unsigned mapVariantIndex(unsigned variantIndex) const;
+	db::variant::Type map(db::variant::Type variant) const;
+
+	void setup(db::Producer const* producer = nullptr);
 
 	Application&	m_app;
 	db::MultiBase*	m_base;

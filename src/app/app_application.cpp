@@ -411,6 +411,9 @@ Application::getAllVariants(mstl::string const& name) const
 			variants.set(v);
 	}
 
+	if (variants.none())
+		variants.set(variant::Index_Normal);
+
 	return variants;
 }
 
@@ -423,11 +426,13 @@ Application::getAllVariants() const
 
 	for (CursorMap::const_iterator i = m_cursorMap.begin(); i != m_cursorMap.end(); ++i)
 	{
-		if (!i->second->isScratchbase())
+		MultiCursor const& cursor = *i->second;
+
+		if (!cursor.isScratchbase() && !cursor.isClipbase())
 		{
 			for (unsigned v = 0; v < variant::NumberOfVariants; ++v)
 			{
-				if (i->second->exists(v) && (!i->second->isClipbase() || !i->second->isEmpty(v)))
+				if (cursor.exists(v) && (!cursor.isEmpty(v) || !cursor.multiBase().isPGNArchive()))
 					variants.set(v);
 			}
 		}
@@ -1094,9 +1099,15 @@ Application::setReadonly(MultiCursor& cursor, bool flag)
 {
 	if (flag != cursor.isReadonly())
 	{
+		MultiCursor const* currentCursor = &m_current->multiCursor();
+
 		// flag=true: may fail if the modification time of the database has changed
 		if (!cursor.setReadonly(flag))
 			return false;
+
+		// probably last action has changed cursor
+		if (&cursor == currentCursor)
+			m_current = &currentCursor->cursor();
 
 		if (m_subscriber)
 			m_subscriber->updateDatabaseInfo(cursor.name(), cursor.cursor().variant());
@@ -1767,9 +1778,7 @@ Application::writeGame(	unsigned position,
 								FileMode fmode)
 {
 	M_REQUIRE(containsGameAt(position));
-	M_REQUIRE(	util::misc::file::suffix(filename) == "pgn"
-				|| util::misc::file::suffix(filename) == "gz"
-				|| util::misc::file::suffix(filename) == "zip");
+	M_REQUIRE(format::isPGNArchive(format::fromString(util::misc::file::suffix(filename))));
 
 	if (position == InvalidPosition)
 		position = currentPosition();
@@ -3578,6 +3587,33 @@ Application::printGame(	unsigned position,
 		default:
 			M_RAISE("unsupported format");
 	}
+}
+
+
+unsigned
+Application::copyGames(	MultiCursor const& source,
+								MultiCursor& destination,
+								GameCount& accepted,
+								GameCount& rejected,
+								TagBits const& allowedTags,
+								bool allowExtraTags,
+								unsigned* illegalRejected,
+								db::Log& log,
+								util::Progress& progress)
+{
+	unsigned n = source.copyGames(destination,
+											accepted,
+											rejected,
+											allowedTags,
+											allowExtraTags,
+											illegalRejected,
+											log,
+											progress);
+
+	if (n && m_subscriber)
+		m_subscriber->updateDatabaseInfo(destination.name(), variant::Undetermined);
+	
+	return n;
 }
 
 

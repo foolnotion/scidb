@@ -353,7 +353,7 @@ proc table {args} {
 	ttk::scrollbar $table.sb -orient horizontal -command [list $table.t xview]
 	after idle [list $table.t xview moveto 0.0]
 	$table.t notify bind $table.sb <Scroll-x> [namespace code { SbSet %W %l %u }]
-	::bind $table.sb <Any-Button> [list ::tooltip::hide]
+#	::bind $table.sb <Any-Button> [list ::tooltip::hide]
 	if {$Options(-takefocus) eq 1} {
 		::bind $table.sb <Any-Button> +[namespace code [list focus $table]]
 	}

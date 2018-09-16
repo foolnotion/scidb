@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2009-2018 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -93,8 +93,9 @@ Cursor::~Cursor()
 Application& Cursor::app() const { return m_cursor.app(); }
 
 
-db::format::Type Cursor::format() const	{ return m_db->format(); }
-db::variant::Type Cursor::variant() const	{ return m_db->variant(); }
+db::format::Type Cursor::format() const			{ M_REQUIRE(isOpen()); return m_db->format(); }
+db::format::Type Cursor::sourceFormat() const	{ M_REQUIRE(isOpen()); return m_db->sourceFormat(); }
+db::variant::Type Cursor::variant() const			{ M_REQUIRE(isOpen()); return m_db->variant(); }
 
 
 void
@@ -219,7 +220,7 @@ Cursor::closeView(unsigned view, bool informUser)
 		if (m_treeView == int(view))
 			m_treeView = -1;
 
-		if (informUser && m_subscriber)
+		if (informUser && m_subscriber && isOpen())
 			m_subscriber->close(m_db->name(), m_db->variant(), view);
 	}
 }
@@ -279,6 +280,8 @@ Cursor::index(db::table::Type type, unsigned index, unsigned view) const
 Database&
 Cursor::getDatabase()
 {
+	M_REQUIRE(isOpen());
+
 	if (m_isRefBase)
 		m_cursor.app().stopUpdateTree();
 

@@ -1320,7 +1320,7 @@ proc Refresh {table} {
 }
 
 
-proc PopupMenu {table menu _ _ index} {
+proc PopupMenu {table menu _ _ index _} {
 	if {![string is digit -strict $index]} { return }
 	set info [scidb::player::info $index -web 1]
 	::playercard::buildWebMenu $table $menu $info

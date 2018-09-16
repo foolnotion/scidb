@@ -432,6 +432,22 @@ proc popupMenu {parent menu base variant view index source} {
 	set cmd [namespace code [list OpenCrosstable $parent $source $base $variant $view $index $menu]]
 	::bind $menu <Key-$accel> $cmd
 	::bind $menu <Key-[string tolower $accel]> $cmd
+
+	set accel $::gamestable::mc::Accel(openurl)
+	# XXX not working, because parent is not table
+	set site [GetSite $base $variant $view $index]
+	if {[::web::isWebLink $site]} {
+		set cmd [namespace code [list ::web::open $parent $site]]
+		$menu add command \
+			-compound left \
+			-image $::icon::16x16::internet \
+			-label " $::engine::mc::OpenUrl" \
+			-accelerator $accel \
+			-command $cmd \
+			;
+		::bind $menu <Key-$accel> $cmd
+		::bind $menu <Key-[string tolower $accel]> $cmd
+	}
 }
 
 
@@ -659,12 +675,18 @@ proc ShowInfo {path x y} {
 }
 
 
-proc PopupMenu {path menu base variant index} {
+proc GetSite {base variant view index} {
+	if {$index == -1} { return "" }
+	set line [::scidb::db::get eventInfo $index $view $base $variant]
+	return [lindex $line 0]
+}
+
+
+proc PopupMenu {path menu base variant index column} {
 	variable ${path}::Vars
 
 	if {$index eq "none" || $index eq "outside"} { return }
 	popupMenu $path $menu $base $variant [{*}$Vars(viewcmd) $base $variant] $index event
-
 	$menu add separator
 
 	set visible [::scrolledtable::visibleColumns $path]
@@ -696,7 +718,8 @@ proc PopupMenu {path menu base variant index} {
 proc BindAccelerators {path} {
 	variable ${path}::Vars
 
-	foreach {accel proc} [list $::gamestable::mc::Accel(tourntable) OpenCrosstable] {
+	foreach {accel proc} [list $::gamestable::mc::Accel(tourntable) OpenCrosstable \
+										$::gamestable::mc::Accel(openurl) OpenURL] {
 		set cmd [namespace code [list $proc $path event]]
 		bind $path <Key-[string toupper $accel]> [list ::util::doAccelCmd $accel %s $cmd]
 		bind $path <Key-[string tolower $accel]> [list ::util::doAccelCmd $accel %s $cmd]
@@ -720,6 +743,22 @@ proc OpenCrosstable {path source {base ""} {variant ""} {view -1} {index -1} {me
 	}
 
 	::crosstable::open $path $base $variant $index $view $source
+}
+
+
+proc OpenURL {path args} {
+	variable ${path}::Vars
+
+	set index [::scrolledtable::active $path]
+	if {$index == -1} { return }
+	set base [::scrolledtable::base $path]
+	set variant [::scrolledtable::variant $path]
+	set view [{*}$Vars(viewcmd) $base $variant]
+	set site [GetSite $base $variant $view $index]
+
+	if {[::web::isWebLink $site]} {
+		::web::open $path $site
+	}
 }
 
 

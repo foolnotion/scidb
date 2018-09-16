@@ -1362,6 +1362,7 @@
 ::gamestable::mc::Accel(browse)			"W"
 ::gamestable::mc::Accel(overview)		"O"
 ::gamestable::mc::Accel(tourntable)		"T"
+::gamestable::mc::Accel(openurl)			"U"
 ::gamestable::mc::Space						"Espacio"
 
 ::gamestable::mc::F_Number					"#"
@@ -1580,7 +1581,6 @@
 ::playercard::mc::WhiteMostPlayed			"Aperturas más comunes con blancas"
 ::playercard::mc::BlackMostPlayed			"Aperturas más comunes con negras"
 
-::playercard::mc::OpenInWebBrowser			"Abrir en un navegador"
 ::playercard::mc::OpenPlayerCard				"Abrir la tarjeta del jugador %s"
 ::playercard::mc::OpenFileCard				"Abrir la tarjeta del archivo %s"
 ::playercard::mc::OpenFideRatingHistory	"Abrir el historial de ratings de la Fide"

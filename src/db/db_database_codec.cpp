@@ -57,6 +57,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <ctype.h>
 
 using namespace db;
 using namespace util;
@@ -315,12 +316,8 @@ bool DatabaseCodec::upgradeIndexOnly() { return sci::Codec::upgradeIndexOnly(); 
 bool
 DatabaseCodec::hasCodecFor(mstl::string const& suffix)
 {
-	return	suffix == "sci"
-			|| suffix == "si3"
-			|| suffix == "si4"
-			|| suffix == "cbh"
-			|| suffix == "cbf"
-			|| suffix == "CBF";
+	format::Type format = format::fromString(suffix);
+	return format == format::Scidb || format::isScidFormat(format) || format::isChessBaseFormat(format);
 }
 
 
@@ -329,27 +326,25 @@ DatabaseCodec::makeCodec(mstl::string const& name, Mode mode)
 {
 	mstl::string ext(misc::file::suffix(name));
 
-	if (ext == "si4")
+	switch (format::fromString(ext))
 	{
-		CustomFlags* flags = new CustomFlags;
-		DatabaseCodec* codec = new si3::Codec(flags);
-		codec->m_customFlags = flags;
-		return codec;
+		case format::Scid4:
+		{
+			CustomFlags* flags = new CustomFlags;
+			DatabaseCodec* codec = new si3::Codec(flags);
+			codec->m_customFlags = flags;
+			return codec;
+		}
+
+		case format::ChessBase:		return new cbh::Codec;
+		case format::ChessBaseDOS:	return new cbf::Codec;
+		case format::Pgn:				return new sci::Codec;
+		case format::Scidb:			return mode == Existing ? sci::Codec::makeCodec(name) : new sci::Codec;
+		case format::Scid3:			return new si3::Codec;
+		case format::Invalid:		M_THROW(Exception("unexpected file format " + ext));
 	}
 
-	if (ext == "si3")
-		return new si3::Codec;
-
-	if (ext == "cbh")
-		return new cbh::Codec;
-
-	if (ext == "cbf" || ext == "CBF")
-		return new cbf::Codec;
-
-	if (ext == "sci" && mode == Existing)
-		return sci::Codec::makeCodec(name);
-
-	return new sci::Codec;
+	return nullptr; // unreachable
 }
 
 
@@ -361,8 +356,6 @@ DatabaseCodec::getAttributes(	mstl::string const& filename,
 										uint32_t& creationTime,
 										mstl::string* description)
 {
-	mstl::string ext(misc::file::suffix(filename));
-
 	type = type::Unspecific;
 	variant = variant::Normal;
 	creationTime = 0;
@@ -371,60 +364,55 @@ DatabaseCodec::getAttributes(	mstl::string const& filename,
 	if (description)
 		description->clear();
 
-	if (ext == "sci")
-		return sci::Codec::getAttributes(filename, numGames, type, variant, creationTime, description);
+	mstl::string ext(misc::file::suffix(filename));
 
-	if (ext == "cbh")
-		return cbh::Codec::getAttributes(filename, numGames, type, description);
+	switch (format::fromString(ext))
+	{
+		case format::Scidb:
+			return sci::Codec::getAttributes(filename, numGames, type, variant, creationTime, description);
 
-	if (ext == "cbf" || ext == "CBF")
-		return cbf::Codec::getAttributes(filename, numGames, type, description);
+		case format::ChessBase:
+			return cbh::Codec::getAttributes(filename, numGames, type, description);
 
-	if (ext == "si3" || ext == "si4")
-		return si3::Codec::getAttributes(filename, numGames, type, description);
+		case format::ChessBaseDOS:
+			return cbf::Codec::getAttributes(filename, numGames, type, description);
 
-	return Reader::getAttributes(filename, numGames, description);
+		case format::Scid3:
+		case format::Scid4:
+			return si3::Codec::getAttributes(filename, numGames, type, description);
+
+		case format::Pgn:
+			return Reader::getAttributes(filename, numGames, description);
+
+		case format::Invalid:
+			M_THROW(Exception("unexpected file format " + ext));
+	}
+
+	return false; // never reeached
 }
 
 
 void
 DatabaseCodec::getSuffixes(mstl::string const& filename, StringList& result)
 {
-	mstl::string ext;
+	mstl::string ext(misc::file::suffix(filename));
+	unsigned start(result.size());
 
-	if (filename.find('.') == mstl::string::npos)
-		ext = filename;
-	else
-		ext = misc::file::suffix(filename);
-
-	if (ext == "sci")
+	switch (format::fromString(ext))
 	{
-		sci::Codec::getSuffixes(filename, result);
+		case format::Scidb:			sci::Codec::getSuffixes(filename, result); break;
+		case format::ChessBase:		cbh::Codec::getSuffixes(filename, result); break;
+		case format::ChessBaseDOS:	cbf::Codec::getSuffixes(filename, result); break;
+		case format::Scid3:			// fallthru
+		case format::Scid4:			si3::Codec::getSuffixes(filename, result); break;
+		case format::Pgn:				result.push_back(ext); break;
+		case format::Invalid:		M_THROW(Exception("unexpected file format " + ext));
 	}
-	else if (ext == "cbh")
-	{
-		cbh::Codec::getSuffixes(filename, result);
-	}
-	else if (ext == "cbf")
-	{
-		cbf::Codec::getSuffixes(filename, result);
-	}
-	else if (ext == "CBF")
-	{
-		unsigned start = result.size();
 
-		cbf::Codec::getSuffixes(filename, result);
-
+	if (::isupper(ext.front()))
+	{
 		for (unsigned i = start; i < result.size(); ++i)
 			result[i].toupper();
-	}
-	else if (ext == "si3" || ext == "si4")
-	{
-		si3::Codec::getSuffixes(filename, result);
-	}
-	else
-	{
-		result.push_back(ext);
 	}
 }
 

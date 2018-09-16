@@ -1038,7 +1038,7 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	mstl::string	src(stringFromObj(objc, objv, 2));
 	mstl::string	ext(::util::misc::file::suffix(src));
 	Progress			progress(objv[5], objv[6]);
-	int				count = 0;
+	unsigned			count = 0;
 
 	if (ext == "sci" || ext == "si3" || ext == "si4")
 	{
@@ -1062,18 +1062,24 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				if (srcVariants.test(v) && dstVariants.test(v))
 				{
 					variant::Type variant = variant::fromIndex(v);
-					Cursor const& source(scidb->cursor(src, variant));
+					Cursor const& source(Scidb->cursor(src, variant));
 					Cursor& destination(const_cast<Cursor&>(Scidb->cursor(dst, variant)));
 					unsigned k = destination.database().countGames();
 					unsigned n = destination.importGames(source.database(), illegalPtr, log, progress);
 
 					count += n;
 					accepted[v] = n;
-					rejected[v] = source.database().countGames() - n - k;
+
+					if (!format::isScidFormat(source.sourceFormat()) || variant != variant::ThreeCheck)
+						rejected[v] = source.database().countGames() - n - k;
 				}
 				else if (srcVariants.test(v))
 				{
-					rejected[v] = scidb->cursor(src, variant::fromIndex(v)).database().countGames();
+					variant::Type variant = variant::fromIndex(v);
+					Cursor const& source(scidb->cursor(src, variant));
+
+					if (!format::isScidFormat(source.sourceFormat()) || variant != variant::Normal)
+						rejected[v] = source.database().countGames();
 				}
 			}
 		}
@@ -2353,6 +2359,10 @@ getSiteInfo(int index, int view, char const* database, variant::Type variant, un
 
 	switch (which)
 	{
+		case attribute::site::Site:
+			obj = Tcl_NewStringObj(site.name(), -1);
+			break;
+
 		case attribute::site::Country:
 			obj = Tcl_NewStringObj(country::toString(site.country()), -1);
 			break;
@@ -2964,7 +2974,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		Cmd_MinYear, Cmd_MaxYear, Cmd_MaxUsage, Cmd_Tags, Cmd_Checksum, Cmd_Idn, Cmd_Eco, Cmd_RatingTypes,
 		Cmd_LookupPlayer, Cmd_LookupEvent, Cmd_LookupSite, Cmd_LookupPosition, Cmd_Writable, Cmd_Upgrade,
 		Cmd_MemoryOnly, Cmd_Compact, Cmd_PlayerKey, Cmd_EventKey, Cmd_SiteKey, Cmd_Variants, Cmd_Changed,
-		Cmd_Unsaved, Cmd_Changes, Cmd_UsedEncoding,
+		Cmd_Unsaved, Cmd_Changes, Cmd_UsedEncoding
 	};
 
 	if (objc < 2)
@@ -3273,8 +3283,12 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			return getStats(stringFromObj(objc, objv, 2));
 
 		case Cmd_ReadOnly:
-			return getReadonly(	objc > 2 ? stringFromObj(objc, objv, 2) : 0,
-										tcl::game::variantFromObj(objc, objv, 3));
+		{
+			::db::variant::Type variant = ::db::variant::Undetermined;
+			if (objc > 3)
+				variant = tcl::game::variantFromObj(objc, objv, 3);
+			return getReadonly(objc > 2 ? stringFromObj(objc, objv, 2) : 0, variant);
+		}
 
 		case Cmd_Writable:
 			if (objc < 3)
@@ -4436,7 +4450,8 @@ cmdCopy(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	if (::db::format::isScidFormat(dst.multiBase().format()))
 		illegalPtr = &illegalRejected;
 
-	n = scidb->multiCursor(source).copyGames(
+	n = scidb->copyGames(
+			Scidb->multiCursor(source),
 			scidb->multiCursor(destination),
 			accepted,
 			rejected,

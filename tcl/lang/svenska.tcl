@@ -1369,6 +1369,7 @@
 ::gamestable::mc::Accel(browse)			"W"
 ::gamestable::mc::Accel(overview)		"O"
 ::gamestable::mc::Accel(tourntable)		"T"
+::gamestable::mc::Accel(openurl)			"U"
 ::gamestable::mc::Space						"Space"
 
 ::gamestable::mc::F_Number					"#"
@@ -1587,7 +1588,6 @@
 ::playercard::mc::WhiteMostPlayed			"Vanligaste öppning som vit"
 ::playercard::mc::BlackMostPlayed			"Vanligaste öppning som svart"
 
-::playercard::mc::OpenInWebBrowser			"Öppna i webbrowser"
 ::playercard::mc::OpenPlayerCard				"Öppna %s spelarkort"
 ::playercard::mc::OpenFileCard				"Öppna %s filkort"
 ::playercard::mc::OpenFideRatingHistory	"Öppna Fide ratinghistorik"

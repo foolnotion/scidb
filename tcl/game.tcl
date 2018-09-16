@@ -538,6 +538,11 @@ proc load {parent position base args} {
 		}
 	}
 
+	if {$rc == 1} {
+		# prevent switch of layout until next game has been loaded
+		::application::pgn::nextPosition $position
+	}
+
 	return $rc
 }
 

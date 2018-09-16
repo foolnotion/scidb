@@ -379,6 +379,7 @@ namespace eval si3 {
 	}
 }
 namespace eval sci {
+	# TODO: add White/BlackRatingDiff?
 	array set DefaultTags {
 		Board							1
 		BughouseDBGameNo			1

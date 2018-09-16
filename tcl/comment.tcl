@@ -307,7 +307,7 @@ proc MakeEditor {lang} {
 
 	bind $t <ButtonPress-3>	 [namespace code [list PopupMenu $t]]
 	bind $t <Any-Button>		 [list $t configure -cursor xterm]
-	bind $t <Any-Button>		+[list ::tooltip::tooltip hide]
+#	bind $t <Any-Button>		+[list ::tooltip::tooltip hide] ;# TODO: needed?
 
 	grid $t -row 1 -column 1 -sticky ewns
 	grid $s -row 1 -column 2 -sticky ns

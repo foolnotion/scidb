@@ -481,7 +481,7 @@ proc popupMenu {menu base variant info {playerCard {}}} {
 	set m [menu $menu.web -tearoff false]
 	$menu add cascade \
 		-menu $m \
-		-label " $::playercard::mc::OpenInWebBrowser" \
+		-label " $::engine::mc::OpenUrl" \
 		-image $::icon::16x16::internet \
 		-compound left \
 		;
@@ -832,7 +832,7 @@ proc HideInfo {path} {
 }
 
 
-proc PopupMenu {table menu base variant index} {
+proc PopupMenu {table menu base variant index column} {
 	set path [winfo parent $table]
 	variable ${path}::Vars
 

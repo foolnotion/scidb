@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2017 Gregor Cramer
+// Copyright: (C) 2009-2018 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -158,7 +158,7 @@ Database::Database(mstl::string const& name, mstl::string const& encoding)
 	m_temporary = true;
 	m_created = sys::time::time();
 	m_readOnly = true;
-	m_writable = false;
+	m_writable = m_codec->isWritable();
 	m_initialSize = m_size = m_codec->openProgressive(this, encoding);
 	m_namebases.setModified(true);
 }
@@ -186,7 +186,6 @@ Database::Database(	mstl::string const& name,
 	M_REQUIRE(storage != storage::Temporary);
 	M_REQUIRE(variant::isMainVariant(variant));
 	M_REQUIRE(encoding != sys::utf8::Codec::automatic());
-
 	M_ASSERT(m_codec);
 
 	// NOTE: we assume normalized (unique) file names.
@@ -198,17 +197,22 @@ Database::Database(	mstl::string const& name,
 
 	switch (m_codec->format())
 	{
-		case format::Scidb:			m_variant = variant; break;
-		case format::Scid3:			// fallthru
-		case format::Scid4:			// fallthru
-		case format::ChessBase:		// fallthru
-		case format::ChessBaseDOS:	m_variant = variant::Normal; break;
+		case format::Scidb:
+			m_variant = variant;
+			break;
+
+		case format::Scid3: // fallthru
+		case format::Scid4:
+		case format::ChessBase:	// fallthru
+		case format::ChessBaseDOS:
+			M_REQUIRE(variant == variant::Normal || variant == variant::ThreeCheck);
+			m_variant = variant::Normal;
+			break;
 
 		default: M_ASSERT(!"unexpected format");
 	}
 
-	if (!m_codec->isWritable())
-		m_writable = false;
+	m_writable = m_codec->isWritable();
 
 	try
 	{
@@ -244,7 +248,8 @@ Database::Database(	mstl::string const& name,
 	,m_descriptionHasChanged(false)
 {
 	M_REQUIRE(misc::file::hasSuffix(name));
-	M_REQUIRE(misc::file::suffix(m_name) == "sci" || mode == permission::ReadOnly);
+	M_REQUIRE(	format::fromString(misc::file::suffix(m_name)) == format::Scidb
+				|| mode == permission::ReadOnly);
 
 	// NOTE: we assume normalized (unique) file names.
 
@@ -260,8 +265,7 @@ Database::Database(	mstl::string const& name,
 		DB_RAISE("unknown file format (.%s)", m_suffix.c_str());
 	}
 
-	if (!m_codec->isWritable())
-		m_writable = false;
+	m_writable = m_codec->isWritable();
 
 	if (m_encoding == sys::utf8::Codec::automatic())
 		m_encoding = m_usedEncoding = m_codec->defaultEncoding();
@@ -339,6 +343,13 @@ Database::~Database() throw()
 	if (m_asyncReader)
 		closeAsyncTreeSearchReader();
 	delete m_codec;
+}
+
+
+format::Type
+Database::sourceFormat() const
+{
+	return format::fromString(misc::file::suffix(m_name));
 }
 
 
@@ -429,8 +440,7 @@ Database::attach(mstl::string const& filename, util::Progress& progress)
 	M_REQUIRE(isMemoryOnly());
 	M_REQUIRE(!usingAsyncReader());
 	M_REQUIRE(	misc::file::suffix(filename) == codec().extension()
-				|| misc::file::suffix(filename) == "pgn"
-				|| misc::file::suffix(filename) == "gz");
+				|| format::isTextFile(misc::file::suffix(filename)));
 
 	// NOTE: we assume normalized (unique) file names.
 
@@ -856,7 +866,7 @@ Database::computeChecksum(unsigned index) const
 
 	crc = ::util::crc::compute(crc, uint32_t(m_variant));
 
-	if (format::isScidFormat(format()))
+	if (isScidFormat(format()))
 	{
 		mstl::string const& round = static_cast<si3::Codec*>(m_codec)->getRoundEntry(index);
 		crc = ::util::crc::compute(crc, round, round.size());
@@ -920,6 +930,14 @@ Database::loadGame(unsigned index, Game& game, mstl::string* encoding, mstl::str
 	try
 	{
 		m_codec->decodeGame(game, info, index, encoding);
+
+		if (format::isScidFormat(sourceFormat()) && game.tags().contains(tag::Variant))
+		{
+			variant::Type v = variant::fromString(game.tags().value(tag::Variant));
+
+			if (v == variant::ThreeCheck)
+				variant = variant::ThreeCheck;
+		}
 	}
 	catch (DecodingFailedException const& exc)
 	{
@@ -1239,14 +1257,15 @@ Database::exportGame(unsigned index, Consumer& consumer) const
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(index < countGames());
-	M_REQUIRE(consumer.variant() == variant());
+	M_REQUIRE(	consumer.variant() == variant()
+				|| (isScidFormat(format()) && consumer.variant() == variant::ThreeCheck));
 
 	GameInfo const&	info = m_gameInfoList[index];
 	TagSet				tags;
 
 	setupTags(index, tags);
 
-	if (!format::isScidFormat(consumer.format()) && format::isScidFormat(format()))
+	if (!isScidFormat(consumer.format()) && isScidFormat(format()))
 	{
 		Reader::Tag tag;
 
@@ -1405,8 +1424,9 @@ Database::copyGames(	Database& destination,
 	M_REQUIRE(	destination.format() == format::Scidb
 				|| destination.format() == format::Scid3
 				|| destination.format() == format::Scid4);
-	M_REQUIRE(destination.variant() == variant());
-	M_REQUIRE(illegalRejected || !format::isScidFormat(destination.format()));
+	M_REQUIRE(	destination.variant() == variant()
+				|| (destination.variant() == variant::ThreeCheck && isScidFormat(format())));
+	M_REQUIRE(illegalRejected || !isScidFormat(destination.format()));
 
 	if (size() == 0)
 		return 0;
@@ -1419,7 +1439,7 @@ Database::copyGames(	Database& destination,
 	{
 		case format::Scid3:
 		case format::Scid4:
-			useConsumer = !format::isScidFormat(srcFormat);
+			useConsumer = !isScidFormat(srcFormat);
 			break;
 
 		case format::Scidb:
@@ -1440,36 +1460,33 @@ Database::copyGames(	Database& destination,
 									log,
 									progress);
 	}
-	else
+	else if (dstFormat == format::Scidb)
 	{
-		if (dstFormat == format::Scidb)
-		{
-			sci::Consumer::Codecs codecs(&dynamic_cast<sci::Codec&>(destination.codec()));
-			// XXX <we need the source encoding?
-			sci::Consumer consumer(srcFormat, codecs, allowedTags, allowExtraTags);
-			consumer.setupVariant(m_variant);
-			count = exportGames(	consumer,
-										gameFilter,
-										gameSelector,
-										illegalRejected,
-										log,
-										progress);
-		}
-		else // dstFormat == format::Scid3 || dstFormat == format::Scid4
-		{
-			si3::Consumer consumer(	srcFormat,
-											dynamic_cast<si3::Codec&>(destination.codec()),
-											encoding(), // XXX do we need the source encoding?
-											allowedTags,
-											allowExtraTags);
-			consumer.setupVariant(variant::Normal);
-			count = exportGames(	consumer,
-										gameFilter,
-										gameSelector,
-										illegalRejected,
-										log,
-										progress);
-		}
+		sci::Consumer::Codecs codecs(&dynamic_cast<sci::Codec&>(destination.codec()));
+		// XXX we need the source encoding?
+		sci::Consumer consumer(srcFormat, codecs, allowedTags, allowExtraTags);
+		consumer.setupVariant(destination.variant());
+		count = exportGames(	consumer,
+									gameFilter,
+									gameSelector,
+									illegalRejected,
+									log,
+									progress);
+	}
+	else // dstFormat == format::Scid3 || dstFormat == format::Scid4
+	{
+		si3::Consumer consumer(	srcFormat,
+										dynamic_cast<si3::Codec&>(destination.codec()),
+										encoding(), // XXX do we need the source encoding?
+										allowedTags,
+										allowExtraTags);
+		consumer.setupVariant(variant::Normal);
+		count = exportGames(	consumer,
+									gameFilter,
+									gameSelector,
+									illegalRejected,
+									log,
+									progress);
 	}
 
 	return count;
@@ -1486,8 +1503,9 @@ Database::exportGames(	Destination& destination,
 								util::Progress& progress) const
 {
 	M_REQUIRE(gameFilter.size() == size());
-	M_REQUIRE(destination.variant() == variant());
-	M_REQUIRE(!illegalRejected || !format::isScidFormat(destination.format()));
+	M_REQUIRE(	destination.variant() == variant()
+				|| (isScidFormat(format()) && destination.variant() == variant::ThreeCheck));
+	M_REQUIRE(!illegalRejected || !isScidFormat(destination.format()));
 
 	enum { MaxWarnings = 40 };
 
@@ -1544,7 +1562,7 @@ Database::exportGames(	Destination& destination,
 		{
 			save::State state = exportGame(infoIndex, destination);
 
-			if (dstFormat == format::Scidb && ::format::isScidFormat(srcFormat))
+			if (dstFormat == format::Scidb && isScidFormat(srcFormat))
 			{
 				unsigned unused;
 				mstl::string const& round = static_cast<si3::Codec const&>(codec()).getRoundEntry(index);
@@ -1558,9 +1576,14 @@ Database::exportGames(	Destination& destination,
 			}
 
 			if (save::isOk(state))
+			{
 				++numGames;
-			else if (!log.error(state, gameSelector.map(infoIndex)))
-				return numGames;
+			}
+			else if (!format::isScidFormat(srcFormat) || destination.variant() != variant::Normal)
+			{
+				if (!log.error(state, gameSelector.map(infoIndex)))
+					return numGames;
+			}
 		}
 		else
 		{
@@ -1639,7 +1662,8 @@ Database::importGames(	Database const& db,
 	M_REQUIRE(!isReadonly());
 	M_REQUIRE(isWritable());
 	M_REQUIRE(!usingAsyncReader());
-	M_REQUIRE(db.variant() == variant());
+	M_REQUIRE(	db.variant() == variant()
+				|| (isScidFormat(db.format()) && variant() == variant::ThreeCheck));
 	M_REQUIRE(illegalRejected || !isScidFormat(format()));
 
 	m_codec->reset();
@@ -1702,7 +1726,7 @@ Database::setupTags(unsigned index, TagSet& tags) const
 
 	gameInfo(index).setupTags(tags, m_variant);
 
-	if (format::isScidFormat(format()))
+	if (isScidFormat(format()))
 		tags.set(tag::Round, static_cast<si3::Codec*>(m_codec)->getRoundEntry(index));
 }
 

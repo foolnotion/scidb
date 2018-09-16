@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2012-2013 Gregor Cramer
+// Copyright: (C) 2012-2018 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -38,8 +38,6 @@ inline bool MultiCursor::isMemoryOnly() const	{ return m_leader->isMemoryOnly();
 inline bool MultiCursor::isClipbase() const		{ return m_isClipbase; }
 inline bool MultiCursor::isScratchbase() const	{ return m_isScratchbase; }
 
-inline bool MultiCursor::exists(unsigned variantIndex) const	{ return m_cursor[variantIndex]; }
-
 inline void MultiCursor::setClipbase()				{ m_isClipbase = true; }
 inline void MultiCursor::setScratchbase()			{ m_isScratchbase = true; }
 
@@ -55,22 +53,10 @@ inline db::MultiBase const& MultiCursor::multiBase() const { return *m_base; }
 
 
 inline
-Cursor*
-MultiCursor::operator[](unsigned variantIndex) const
+bool
+MultiCursor::exists(unsigned variantIndex) const
 {
-	return m_cursor[variantIndex];
-}
-
-inline
-Cursor*
-MultiCursor::operator[](db::variant::Type variant) const
-{
-	M_REQUIRE(variant == db::variant::Undetermined || db::variant::isMainVariant(variant));
-
-	if (variant == db::variant::Undetermined)
-		return m_leader;
-
-	return m_cursor[db::variant::toIndex(variant)];
+	return !isClosed() && m_cursor[mapVariantIndex(variantIndex)];
 }
 
 
@@ -79,7 +65,7 @@ Cursor&
 MultiCursor::cursor(unsigned variantIndex) const
 {
 	M_REQUIRE(exists(variantIndex));
-	return *m_cursor[variantIndex];
+	return *m_cursor[mapVariantIndex(variantIndex)];
 }
 
 
