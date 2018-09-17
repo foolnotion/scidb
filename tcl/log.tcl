@@ -57,9 +57,7 @@ proc newline {} {
 
 	if {[winfo exists $Log]} {
 		set t $Log.top.text
-		$t configure -state normal
 		$t insert end \n
-		$t configure -state disabled
 		$t yview moveto 1.0
 	}
 }
@@ -80,9 +78,7 @@ proc open {callee {show 1}} {
 	set t $Log.top.text
 
 	if {!$Priv(empty) && [$t count -chars 1.0 2.0] > 1} {
-		$t configure -state normal
 		$t insert end "\n"
-		$t configure -state disabled
 		$t yview moveto 1.0
 	}
 
@@ -97,9 +93,7 @@ proc close {} {
 	if {[incr Priv(open) -1] > 0} { return }
 
 	if {$Priv(newline)} {
-		$Log.top.text configure -state normal
 		$Log.top.text delete end-1c
-		$Log.top.text configure -state disabled
 	}
 
 	if {$Priv(hide)} {
@@ -211,7 +205,7 @@ proc Print {type show args} {
 		Warning - Error {
 			set Priv(force) 1
 			if {$show || $Priv(show)} {
-				Show
+				after 1 [namespace code Show]
 				set Priv(show) 0
 			}
 		}
@@ -220,7 +214,6 @@ proc Print {type show args} {
 	if {![winfo exists $Log]} { Open }
 
 	set t $Log.top.text
-	$t configure -state normal
 	if {[$t count -chars 1.0 2.0] > 1} { $t insert end "\n" }
 
 	if {[string length $Priv(callee)]} {
@@ -237,7 +230,6 @@ proc Print {type show args} {
 		$t insert end $msg $type
 	}
 
-	$t configure -state disabled
 	$t yview moveto 1.0
 	set Priv(newline) 0
 	set Priv(empty) 0
@@ -249,14 +241,18 @@ proc Clear {} {
 	variable Log
 
 	set t $Log.top.text
-	$t configure -state normal
 	$t delete 1.0 end
-	$t configure -state disabled
 }
 
 
 proc Visibility {state} {
 	set [namespace current]::Priv(visibility) $state
+}
+
+
+proc SetTitle {} {
+	variable Log
+	wm title $Log "$::scidb::app - $mc::LogTitle"
 }
 
 
@@ -272,7 +268,7 @@ proc Open {} {
 	pack $top -fill both -expand yes -padx $::theme::padx -pady $::theme::pady
 	set log [tk::text $top.text \
 		-wrap none \
-		-state disabled \
+		-state readonly \
 		-height 10 \
 		-width 70 \
 		-takefocus 0 \
@@ -284,7 +280,7 @@ proc Open {} {
 	bind $log <Visibility> [namespace code { Visibility %s }]
 	ttk::scrollbar $top.ybar -command [list $log yview] -takefocus 0 -orient vertical
 	ttk::scrollbar $top.xbar -command [list $log xview] -takefocus 0 -orient horizontal
-	grid $top.text  -row 0 -column 0 -sticky nsew
+	grid $top.text -row 0 -column 0 -sticky nsew
 	grid $top.xbar -row 1 -column 0 -sticky nsew
 	grid $top.ybar -row 0 -column 1 -sticky nsew
 	grid rowconfigure $top 0 -weight 1
@@ -298,7 +294,8 @@ proc Open {} {
 	widget::dialogButtons $Log {clear close} -default close -icons no
 	$Log.close configure -command [list wm withdraw $Log]
 	$Log.clear configure -command [namespace code Clear]
-	wm title $Log "$::scidb::app - $mc::LogTitle"
+	bind $Log <<LanguageChanged>> [namespace code SetTitle]
+	SetTitle
 	wm minsize $Log 50 5
 	set Priv(visibility) VisibilityFullyObscured
 	set Priv(show) 0

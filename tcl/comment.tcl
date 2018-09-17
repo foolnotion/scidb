@@ -2719,6 +2719,8 @@ switch -- [tk windowingsystem] {
 	}
 }
 
+::shadow::addBindings AddLanguagePopdown
+
 
 ttk::copyBindings Text Comment
 

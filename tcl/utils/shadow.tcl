@@ -29,9 +29,19 @@
 namespace eval shadow {
 
 set offset 5
+set size 5
 
 array set Used {}
 array set Prevent {}
+
+
+proc addBindings {class {mapShadowWhenMapped yes}} {
+	bind $class <Configure>	{+ shadow::prepare %W %x %y %w %h }
+	bind $class <Map>			+[list after idle [list shadow::map %W $mapShadowWhenMapped]]
+	bind $class <Unmap>		{+ shadow::unmap %W }
+	bind $class <Destroy>	{+ shadow::unmap %W }
+	bind $class <Destroy>	{+ array unset ::shadow::Geometry %W }
+}
 
 
 proc prevent {w} {
@@ -81,6 +91,7 @@ proc map {w {checkIfGrabbed 0}} {
 	variable Geometry
 	variable Mapped
 	variable offset
+	variable size
 
 	if {$checkIfGrabbed} {
 		# sometimes the order of map/unmap events is confused,
@@ -116,8 +127,8 @@ proc map {w {checkIfGrabbed 0}} {
 	::scidb::tk::x11 region $rx $ry $img
 	::scidb::tk::image shadow 1.0 y $img
 
-	wm geometry $b ${width}x5+${bx}+${by}
-	wm geometry $r 5x${height}+${rx}+${ry}
+	wm geometry $b ${width}x${size}+${bx}+${by}
+	wm geometry $r ${size}x${height}+${rx}+${ry}
 	wm deiconify $b
 	wm deiconify $r
 	raise $b
@@ -140,8 +151,6 @@ proc unmap {w} {
 	set r .__shadow__r__$id
 
 	if {[winfo exists $b]} {
-		# NOTE: it seem's that the override redirect option is causing problems with exposure events.
-		# NOTE: probably this is a local problem.
 		after idle [list wm withdraw $b]
 		after idle [list wm withdraw $r]
 	}
@@ -185,6 +194,9 @@ proc Create {} {
 			toplevel $w -background black -borderwidth 0 -relief flat -takefocus 0
 			wm withdraw $w
 			wm overrideredirect $w 1
+			# the following helps to avoid glitches with exposures
+			update idletasks
+			::scidb::tk::wm frameless $w
 			pack [tk::canvas $w.c -borderwidth 0] -fill both -expand yes
 			$w.c xview moveto 0
 			$w.c yview moveto 0
@@ -251,28 +263,5 @@ bind Menu <<MenuWillUnpost>> {+
 		shadow::unmap %W
 	}
 }
-
-###  C O M B O B O X  P O P D O W N #############################################################
-
-bind ComboboxPopdown <Configure>		{+ shadow::prepare %W %x %y %w %h }
-bind ComboboxPopdown <Map>				{+ after idle { shadow::map %W yes } }
-bind ComboboxPopdown <Unmap>			{+ shadow::unmap %W }
-bind ComboboxPopdown <Destroy>		{+ shadow::unmap %W }
-bind ComboboxPopdown <Destroy>		{+ array unset ::shadow::Geometry %W }
-
-###  A D D  L A N G U A G E  P O P D O W N ######################################################
-
-bind AddLanguagePopdown <Configure>	{+ shadow::prepare %W %x %y %w %h }
-bind AddLanguagePopdown <Map>			{+ after idle { shadow::map %W yes } }
-bind AddLanguagePopdown <Destroy>	{+ shadow::unmap %W }
-bind AddLanguagePopdown <Destroy>	{+ array unset ::shadow::Geometry %W }
-
-###  T O O L T I P  P O P U P ###################################################################
-
-bind TooltipPopup <Configure>			{+ shadow::prepare %W %x %y %w %h }
-bind TooltipPopup <Map>					{+ after idle { shadow::map %W no } }
-bind TooltipPopup <Unmap>				{+ shadow::unmap %W }
-bind TooltipPopup <Destroy>			{+ shadow::unmap %W }
-bind TooltipPopup <Destroy>			{+ array unset ::shadow::Geometry %W }
 
 # vi:set ts=3 sw=3:

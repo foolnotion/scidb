@@ -187,6 +187,8 @@ bind Tooltip <Any-KeyPress> [namespace code hide]
 #bind Tooltip <Any-Button> [namespace code hide]
 bind . <Any-Button> [namespace code hide]
 
+::shadow::addBindings TooltipPopup no
+
 
 proc init {} {
 	variable G

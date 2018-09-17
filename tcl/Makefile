@@ -25,28 +25,26 @@ SOURCES = \
 	colors.tcl \
 	utils/tcl_bugs.tcl \
 	splash.tcl \
+	utils/shadow.tcl \
+	widgets/theme.tcl \
+	widgets/misc.tcl \
 	log.tcl \
 	utils/archive.tcl \
+	contrib/tkmenu.tcl \
+	contrib/treectrl.tcl \
+	contrib/filelist-bindings.tcl \
+	contrib/http.tcl \
 	dialogs/messagebox.tcl \
 	dialogs/progressbar.tcl \
 	dialogs/choosecolor.tcl \
 	dialogs/choosecolor-cube.tcl \
 	dialogs/choosefont.tcl \
-	widgets/theme.tcl \
-	widgets/misc.tcl \
 	board-basic.tcl \
 	load.tcl \
 	i18n.tcl \
 	fonts.tcl \
 	icons.tcl \
 	encoding.tcl \
-	dialogs/fileselectionbox.tcl \
-	dialogs/help.tcl \
-	dialogs/tip-of-the-day.tcl \
-	contrib/tkmenu.tcl \
-	contrib/treectrl.tcl \
-	contrib/filelist-bindings.tcl \
-	contrib/http.tcl \
 	utils/locale.tcl \
 	utils/countries.tcl \
 	utils/web.tcl \
@@ -57,6 +55,9 @@ SOURCES = \
 	utils/trash.tcl \
 	dnd/tkdnd.tcl \
 	dnd/tkdnd_unix.tcl \
+	dialogs/fileselectionbox.tcl \
+	dialogs/help.tcl \
+	dialogs/tip-of-the-day.tcl \
 	widgets/tooltip.tcl \
 	widgets/toolbar.tcl \
 	widgets/validate.tcl \
@@ -153,7 +154,6 @@ SOURCES = \
 	info.tcl \
 	move.tcl \
 	game.tcl \
-	utils/shadow.tcl \
 	menu.tcl \
 	end.tcl \
 

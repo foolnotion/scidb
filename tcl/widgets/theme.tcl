@@ -1227,6 +1227,8 @@ bind ComboboxListbox <Any-Key> {
 bind ComboboxPopdown <ButtonPress-4> { %W.l yview scroll -1 units }
 bind ComboboxPopdown <ButtonPress-5> { %W.l yview scroll +1 units }
 
+::shadow::addBindings ComboboxPopdown
+
 }
 
 } ;# namespace combobox
