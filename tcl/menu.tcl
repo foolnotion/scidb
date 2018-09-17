@@ -582,7 +582,10 @@ proc dbNew {parent variant} {
 	if {$FileSelBoxInUse} { return 0 }
 	set FileSelBoxInUse 1
 
-	set filetypes [list [list $mc::ScidbBases {.sci}] [list $mc::PGNFilesArchives {.pgn .pgn.gz}]]
+	set filetypes [list [list $mc::ScidbBases {.sci}]]
+	if {$variant in {Normal Undetermined}} {
+		lappend filetypes [list $mc::PGNFilesArchives {.pgn .pgn.gz}]
+	}
 	set result [::dialog::saveFile \
 		-parent $parent \
 		-class database \

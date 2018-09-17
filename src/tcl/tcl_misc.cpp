@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2010-2013 Gregor Cramer
+// Copyright: (C) 2010-2018 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -41,16 +41,17 @@
 
 #include "nsUniversalDetector.h"
 
+#include "u_crc.h"
+#include "u_html.h"
+#include "u_zstream.h"
+#include "u_emoticons.h"
+#include "u_misc.h"
+
 #include "sys_utf8_codec.h"
 #include "sys_utf8.h"
 #include "sys_file.h"
 #include "sys_info.h"
 #include "sys_vfs.h"
-
-#include "u_crc.h"
-#include "u_html.h"
-#include "u_zstream.h"
-#include "u_emoticons.h"
 
 #include "m_backtrace.h"
 #include "m_string.h"
@@ -1162,19 +1163,7 @@ cmdLookup(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdSize(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	int		numGames;
-	uint32_t	creationTime;
-
-	::db::type::ID			type;
-	::db::variant::Type	variant;
-
-	::db::DatabaseCodec::getAttributes(	stringFromObj(objc, objv, 1),
-													numGames,
-													type,
-													variant,
-													creationTime);
-
-	setResult(numGames);
+	setResult(tcl::db::countNumGames(stringFromObj(objc, objv, 1)));
 	return TCL_OK;
 }
 
@@ -1235,8 +1224,14 @@ cmdZipContent(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdSuffixes(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
+	mstl::string filename(stringFromObj(objc, objv, 1));
+	mstl::string extension(::util::misc::file::suffix(filename));
 	::db::DatabaseCodec::StringList result;
-	::db::DatabaseCodec::getSuffixes(stringFromObj(objc, objv, 1), result);
+
+	if (extension == "scv")
+		result.push_back(extension);
+	else
+		::db::DatabaseCodec::getSuffixes(filename, result);
 
 	Tcl_Obj* objs[result.size()];
 

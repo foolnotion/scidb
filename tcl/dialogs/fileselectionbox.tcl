@@ -78,6 +78,7 @@ set Content							"Content"
 set Open								"Open"
 set OriginalPath					"Original Path"
 set DateOfDeletion				"Date of Deletion"
+set Readonly						"Readonly"
 
 set FileType(exe)					"Executables"
 set FileType(txt)					"Text files"
@@ -563,6 +564,7 @@ proc DeleteFile {parent path} {
 
 	set result {}
 	set file [file rootname $path]
+	::application::database::removeRecentFile $path
 	foreach ext [::scidb::misc::suffixes $path] {
 		lappend result "$file.$ext"
 	}
@@ -571,9 +573,11 @@ proc DeleteFile {parent path} {
 
 
 proc RenameFile {parent oldName newName} {
+	if {$oldName eq $newName} { return {} }
 	set oldExt [file extension $oldName]
 	set newExt [file extension $newName]
 	if {$oldExt ne $newExt} { return {} }
+	::application::database::renameRecentFile $oldName $newName
 	set result {}
 	set old [file rootname $oldName]
 	set new [file rootname $newName]
@@ -751,6 +755,10 @@ proc Inspect {parent {folder ""} {filename ""} {originalPath ""} {deletionDate "
 				set fileType [set mc::$FileType($ext)]
 				if {$type eq "link"} { set fileType [format $mc::LinkTo $fileType] }
 				if {$ext eq ".cbf"} { append fileType " (DOS)" }
+				set readonly no
+				foreach ext [::scidb::misc::suffixes $filename] {
+					if {[file exists $filename] && ![file writable $filename]} { set readonly yes }
+				}
 
 				tk::label $f.lname -text "$::fsbox::mc::Name:"
 				tk::label $f.tname -text [file tail $name]
@@ -764,6 +772,8 @@ proc Inspect {parent {folder ""} {filename ""} {originalPath ""} {deletionDate "
 				tk::label $f.tsize -text $size
 				tk::label $f.lcreated -text "$::database::switcher::mc::Created:"
 				tk::label $f.tcreated -text $ctime
+				tk::label $f.lreadonly -text "$mc::Readonly:"
+				tk::label $f.treadonly -text $readonly
 
 				switch $ext {
 					.sci - .si3 - .si4 - .cbh - .cbf - .pgn - .pgn.gz - .bpgn - .bpgn.gz - .zip {
@@ -840,7 +850,8 @@ proc Inspect {parent {folder ""} {filename ""} {originalPath ""} {deletionDate "
 			}
 
 			set r 1
-			foreach attr {name type target size created modified content ngames used variant descr} {
+			foreach attr {name type target size created modified \
+								readonly content ngames used variant descr} {
 				if {[winfo exists $f.l$attr]} {
 					$f.l$attr configure -background $bg
 					$f.t$attr configure -background $bg

@@ -1018,7 +1018,8 @@ proc Display(pv) {tree score mate depth seldepth time nodes nps tbhits line pv} 
 	variable ${Vars(number)}::Options
 
 	if {$Vars(state:suspended)} {
-		set Vars(suspended,[lindex $args 6]) $args ;# XXX unused
+		set args [list $score $mate $depth $seldepth $time $nodes $nps $tbhits $line $pv]
+		set Vars(suspended,[lindex $args 9]) $args
 	} else {
 		Display(time) $tree $time $depth $seldepth $nodes $nps $tbhits
 

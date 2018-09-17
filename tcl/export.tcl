@@ -101,6 +101,7 @@ set ResetDefaults				"Reset to defaults"
 set UnsupportedEncoding		"Cannot use encoding %s for PDF documents. You have to choose an alternative encoding."
 set DatabaseIsOpen			"The destination database '%s' is open, this means that the destination database will be emptied before the export is starting. Export anyway?"
 set DatabaseIsOpenDetail	"If you want to append instead you should use a Drag&Drop operation inside the database switcher."
+set DatabaseIsReadonly		"The destination database '%s' is already existing, and you don't have permissions for overwriting."
 set ExportGamesFromTo		"Export games from '%src' to '%dst'"
 set IllegalRejected			"%s game(s) rejected due to illegal moves"
 
@@ -3209,6 +3210,16 @@ proc DoExport {parent dlg file} {
 	set file [string trim $file]
 	if {[string length $file] == 0} { return }
 	set file [file normalize $file]
+
+	if {	([file exists $file] && ![file writable $file])
+		|| ([scidb::db::get open? $file] && [::scidb::db::get readonly? $file])} {
+		return [::dialog::error \
+			-parent $dlg \
+			-message [format $mc::DatabaseIsReadonly [::util::databaseName $file]] \
+			-title $mc::Export \
+		]
+	}
+
 	set useCopyOperation 0
 	set options 0
 
@@ -3231,7 +3242,7 @@ proc DoExport {parent dlg file} {
 	}
 
 	switch $Values(Type) {
-		scid - scidb {
+		scid - scidb - pgn {
 			if {[::scidb::db::get open? $file]} {
 				set reply [::dialog::question \
 					-parent $dlg \

@@ -1333,7 +1333,7 @@ PgnReader::finishGame(bool skip)
 
 	if (state == save::UnsupportedVariant)
 	{
-		if (m_countRejected == 0)
+		if (m_countRejected == 0 && m_fileOffsets)
 			m_fileOffsets->append(m_currentOffset);
 
 		++m_rejected[variantIndex];

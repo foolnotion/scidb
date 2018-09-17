@@ -51,6 +51,7 @@ namespace tcl
 			::db::move::Notation notation);
 		int getPlayerStats(::db::Database const& db, ::db::NamebasePlayer const& player);
 		int getTags(::db::TagSet const& tags, bool userSuppliedOnly);
+		int countNumGames(mstl::string const& filename);
 
 		char const* lookupType(::db::type::ID type);
 	}

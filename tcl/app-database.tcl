@@ -461,7 +461,7 @@ proc openBase {parent file byUser args} {
 	set ext [string tolower $ext]
 
 	if {![file readable $file]} {
-		removeRecentFile [FindRecentFile $file]
+		removeRecentFile $file
 		::dialog::error -parent $parent -message [format $mc::CannotOpenFile $file]
 		return 0
 	}
@@ -701,11 +701,24 @@ proc recentFiles {} {
 }
 
 
-proc removeRecentFile {index} {
+proc removeRecentFile {file} {
 	variable RecentFiles
 
-	if {$index >= 0} {
+	if {[set index [FindRecentFile $file]] >= 0} {
 		set RecentFiles [lreplace $RecentFiles $index $index]
+		[namespace parent]::information::update
+#		::menu::configureOpenRecent [GetRecentState]
+	}
+}
+
+
+proc renameRecentFile {oldName newName} {
+	variable RecentFiles
+
+	if {[set index [FindRecentFile $oldName]] >= 0} {
+		lassign [lindex $RecentFiles $index] type - encoding readonly
+		set entry [list $type $newName $encoding $readonly]
+		set RecentFiles [lreplace $RecentFiles $index $index $entry]
 		[namespace parent]::information::update
 #		::menu::configureOpenRecent [GetRecentState]
 	}
@@ -918,7 +931,7 @@ proc CloseBase {parent file} {
 		$Vars(switcher) remove $file
 		::scidb::db::close $file
 		if {![file exists $file]} {
-			removeRecentFile [FindRecentFile $file]
+			removeRecentFile $file
 		}
 		[namespace parent]::information::update
 		::widget::busyCursor off

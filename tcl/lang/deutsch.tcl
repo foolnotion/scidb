@@ -1974,8 +1974,9 @@
 ::export::mc::NoGamesForExport			"Keine Partie zum exportieren."
 ::export::mc::ResetDefaults				"Auf Standardwerte zurücksetzen"
 ::export::mc::UnsupportedEncoding		"Die Zeichenkodierung %s kann nicht für PDF-Dokumente benutzt werden. Wählen sie bitte eine alternative Zeichenkodierung."
-::export::mc::DatabaseIsOpen				"Die Zieldatenbank '%s' ist geöffnet, das bedeutet das die Zieldatenbank geleert wird bevor der Export startet. Trotzdem den Exportvorgang fortsetzen?"
+::export::mc::DatabaseIsOpen				"Die Zieldatenbank '%s' ist geöffnet, dies bedeutet daß die Zieldatenbank geleert wird, bevor der Export startet. Trotzdem den Exportvorgang fortsetzen?"
 ::export::mc::DatabaseIsOpenDetail		"Sollen die Partien stattdessen angehängt werden dann kann eine Drag&Drop-Operation im Datenbankumschalter verwendet werden."
+::export::mc::DatabaseIsReadonly			"Die Zieldatenbank '%s' existiert bereits, und es ist keine Berechtigung zum Überschreiben vorhanden."
 ::export::mc::ExportGamesFromTo			"Partien exportieren von '%src' nach '%dst'"
 ::export::mc::IllegalRejected				"%s Partie(n) zurückgewiesen aufgrund illegaler Züge"
 
@@ -2627,6 +2628,7 @@
 ::dialog::fsbox::mc::Open						"Geöffnet"
 ::dialog::fsbox::mc::OriginalPath			"Ursprungspfad"
 ::dialog::fsbox::mc::DateOfDeletion			"Löschdatum"
+::dialog::fsbox::mc::Readonly					"Schreibschutz"
 
 ::dialog::fsbox::mc::FileType(exe)			"Ausführbare Dateien"
 ::dialog::fsbox::mc::FileType(txt)			"Textdateien"

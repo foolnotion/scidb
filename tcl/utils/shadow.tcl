@@ -140,7 +140,8 @@ proc unmap {w} {
 	set r .__shadow__r__$id
 
 	if {[winfo exists $b]} {
-		# NOTE: destroying immediately is causing problems with exposures (Unix)
+		# NOTE: it seem's that the override redirect option is causing problems with exposure events.
+		# NOTE: probably this is a local problem.
 		after idle [list wm withdraw $b]
 		after idle [list wm withdraw $r]
 	}

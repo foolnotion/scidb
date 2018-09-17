@@ -1987,6 +1987,7 @@
 ::export::mc::UnsupportedEncoding		"Kan inte använda kodning %s för PDF-dokument. Välj en alternativ kodning."
 ::export::mc::DatabaseIsOpen				"Destinations databasen '%s' är öppen, this means that the destination database will be emptied before the export is starting. Export anyway?" ;# NEW
 ::export::mc::DatabaseIsOpenDetail		"If you want to append instead you should use a Drag&Drop operation inside the database switcher." ;# NEW
+::export::mc::DatabaseIsReadonly			"The destination database '%s' is already existing, and you don't have permissions for overwriting." ;# NEW
 ::export::mc::ExportGamesFromTo			"Exporta partier från '%src' till '%dst'"
 ::export::mc::IllegalRejected				"%s game(s) rejected due to illegal moves" ;# NEW
 
@@ -2640,6 +2641,7 @@
 ::dialog::fsbox::mc::Open						"Öppna"
 ::dialog::fsbox::mc::OriginalPath			"Ursprunglig sökväg"
 ::dialog::fsbox::mc::DateOfDeletion			"Datum för borttagning"
+::dialog::fsbox::mc::Readonly					"Readonly" ;# NEW
 
 ::dialog::fsbox::mc::FileType(exe)			"Körbara filer"
 ::dialog::fsbox::mc::FileType(txt)			"Textfiler"

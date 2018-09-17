@@ -1975,6 +1975,7 @@
 ::export::mc::UnsupportedEncoding		"Cannot use encoding %s for PDF documents. You have to choose an alternative encoding."
 ::export::mc::DatabaseIsOpen				"The destination database '%s' is open, this means that the destination database will be emptied before the export is starting. Export anyway?"
 ::export::mc::DatabaseIsOpenDetail		"If you want to append instead you should use a Drag&Drop operation inside the database switcher."
+::export::mc::DatabaseIsReadonly			"The destination database '%s' is already existing, and you don't have permissions for overwriting."
 ::export::mc::ExportGamesFromTo			"Export games from '%src' to '%dst'"
 ::export::mc::IllegalRejected				"%s game(s) rejected due to illegal moves"
 
@@ -2635,6 +2636,7 @@
 ::dialog::fsbox::mc::Open						"Open"
 ::dialog::fsbox::mc::OriginalPath			"Original Path"
 ::dialog::fsbox::mc::DateOfDeletion			"Date of Deletion"
+::dialog::fsbox::mc::Readonly					"Readonly"
 
 ::dialog::fsbox::mc::FileType(exe)			"Executables"
 ::dialog::fsbox::mc::FileType(txt)			"Text files"
