@@ -201,15 +201,16 @@ proc init {} {
 	if {[tk windowingsystem] eq "aqua"} {
 		::tk::unsupported::MacWindowStyle style $b help none
 	} else {
-		wm overrideredirect $b 1
+		wm overrideredirect $b yes
 	}
 
 	if {[tk windowingsystem] eq "win32"} {
 		# avoid the blink issue with 1 to <1 alpha on Windows
 		catch { wm attributes $b -alpha 0.99 }
 	}
-	catch { wm attributes $b -topmost 1 }
+	catch { wm attributes $b -topmost yes }
 	catch { wm attributes $b -type tooltip }
+	wm focusmodel $b passive
 	wm positionfrom $b program
 	wm withdraw $b
 

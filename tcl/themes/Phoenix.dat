@@ -1,7 +1,0 @@
-::board::addStyle theme {
-  identifier   {Phoenix|1354101318690|purple|gregor}
-  piece-set    {Good Companion}
-  piece-style  {Arena|1348599563208|yellow.color|gregor}
-  square-style {Crater|1296048990606|yellow.color|gregor}
-  version      {1.0}
-}

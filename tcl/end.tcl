@@ -180,7 +180,6 @@ proc keybar::tr {text} {
 	return $::mc::KeyDescr($text)
 }
 
-proc fsbox::makeStateSpecificIcons {img} { return [::icon::makeStateSpecificIcons $img] }
 proc fsbox::tooltip {args} { return [::tooltip::tooltip {*}$args] }
 proc fsbox::makeStateSpecificIcons {args} { return [::icon::makeStateSpecificIcons {*}$args] }
 proc fsbox::busy {args} { ::widget::busyCursor on }

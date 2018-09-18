@@ -218,7 +218,7 @@ proc toolbar {parent args} {
 			-tooltipvar		{ if {[llength $val]} { set Specs(tooltipvar:$handle:$toolbar) $val } }
 			-title			{ set Specs(title:$toolbar) $val }
 			-titlevar		{ set Specs(titlevar:$toolbar) $val }
-			-orientation	{ set Specs(side:$toolbar) $val }
+			-orientation	{ set Specs(orientation:$toolbar) $val }
 			-alignment		{ set alignment $val }
 			-iconsize		{ set Specs(iconsize:$toolbar) $val }
 			-state			{ set Specs(state:$toolbar) $val }

@@ -104,7 +104,7 @@ proc map {w {checkIfGrabbed 0}} {
 
 	if {![info exists Geometry($w)]} { return }
 	if {[info exists Mapped($w)]} { return }
-	set id [Create]
+	set id [Create $w]
 	lassign $Geometry($w) x y width height
 	set Mapped($w) $id
 
@@ -167,7 +167,7 @@ proc kill {} {
 }
 
 
-proc Create {} {
+proc Create {parent} {
 	variable Used
 	variable offset
 
@@ -192,12 +192,15 @@ proc Create {} {
 	if {![winfo exists $b]} {
 		foreach w [list $b $r] {
 			toplevel $w -background black -borderwidth 0 -relief flat -takefocus 0
+			wm attributes $w -topmost yes
+			wm focusmodel $w passive
+			catch { wm attributes $w -type tooltip }
 			wm withdraw $w
-			wm overrideredirect $w 1
-			# the following helps to avoid glitches with exposures
-			update idletasks
-			::scidb::tk::wm frameless $w
-			pack [tk::canvas $w.c -borderwidth 0] -fill both -expand yes
+			# TODO: For any reason setting overrideredirect is causing exposure problems when
+			# umapping the shadows. But w/o overrideredirect this window will take the focus.
+			wm overrideredirect $w yes
+			wm transient $w $parent ;# TODO required?
+			pack [tk::canvas $w.c -borderwidth 0 -takefocus 0] -fill both -expand yes
 			$w.c xview moveto 0
 			$w.c yview moveto 0
 		}
