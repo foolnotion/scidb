@@ -487,7 +487,7 @@ proc popdown {w} {
 	if {$w ne $G(toplevel)} { tooltip on }
 
 	if {[winfo exists $w]} {
-		update idletasks
+		#update idletasks
 		wm withdraw $w
 	}
 }

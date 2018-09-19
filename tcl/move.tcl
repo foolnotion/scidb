@@ -521,7 +521,7 @@ proc addActionsToMenu {m command {extraActions {}}} {
 	} else {
 		lappend actionList replace variation mainline
 	}
-	if {![::scidb::game::query trial]} {
+	if {![::scidb::game::query trial] && [::scidb::game::current] < 9} {
 		lappend actionList trial
 	}
 	if {!$atEnd} {
