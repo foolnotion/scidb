@@ -76,6 +76,7 @@
 ::mc::Edit			"Szerkeszt"
 ::mc::Empty			"Empty" ;# NEW
 ::mc::Enabled			"Enabled" ;# NEW
+::mc::Error			"Error" ;# NEW
 ::mc::File			"Fájl"
 ::mc::Filter			"Filter" ;# NEW
 ::mc::From			"From" ;# NEW

@@ -275,7 +275,7 @@ proc dragCursors {{ext ""}} {
 
 proc estimateNumberOfGames {filename} {
 	set count [NumGames $filename]
-	if {[string tolower [file extension $filename]] in {.pgn .pgn.gz .bpgn .bpgn.gz .zip}} {
+	if {$count > 0 && [string tolower [file extension $filename]] in {.pgn .pgn.gz .bpgn .bpgn.gz .zip}} {
 		set count [expr {-[RoundNumGames $count]}]
 	}
 	return $count
@@ -652,6 +652,7 @@ proc RoundNumGames {count} {
 
 
 proc FormatNumGames {filename count} {
+	if {$count < 0} { return $::mc::Error }
 	set result ""
 	if {$count > 0} {
 		switch [string tolower [file extension $filename]] {

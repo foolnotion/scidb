@@ -70,13 +70,13 @@ typedef bool (*TkQTreeCallback)(
 
 /*
  * Configure the dimensions of the given Q-Tree. A new tree will be created if
- * given tree (derefernced treePtr) is NULL. This function returns false if the
+ * given tree (dereferenced treePtr) is NULL. This function returns false if the
  * specified bounding box is empty, in this case the tree cannot be used.
  */
 bool TkQTreeConfigure(TkQTree *treePtr, const TkQTreeRect *rect);
 
 /*
- * Destroy the given tree. Will do nothing if given tree (derefernced treePtr)
+ * Destroy the given tree. Will do nothing if given tree (dereferenced treePtr)
  * is NULL.
  */
 void TkQTreeDestroy(TkQTree *treePtr);
@@ -90,7 +90,7 @@ const TkQTreeRect *TkQTreeGetBoundingBox(const TkQTree tree);
  * Insert a rectangle into the tree. Each rectangle must be associated with an
  * unique ID (argument 'uid'). This function returns whether the insertion was
  * successful. The insertion fails if the given rectangle is empty, or if it
- * does not overlap with the bounding box of the tree, in these case the
+ * does not overlap with the bounding box of the tree, in such cases the
  * return value will be false.
  */
 bool TkQTreeInsertRect(TkQTree tree, const TkQTreeRect *rect, TkQTreeUid uid, TkQTreeState initialState);
@@ -103,7 +103,7 @@ bool TkQTreeInsertRect(TkQTree tree, const TkQTreeRect *rect, TkQTreeUid uid, Tk
  * argument 'oldRect' must be NULL. This function returns whether the
  * insertion/update was successful. The insertion/update fails if the new
  * rectangle is empty, or if it does not overlap with the bounding box of
- * the tree, in these cases the return value will be false.
+ * the tree, in such cases the return value will be false.
  */
 bool TkQTreeUpdateRect(TkQTree tree, const TkQTreeRect *oldRect,
     const TkQTreeRect *newRect, TkQTreeUid uid, TkQTreeState newState);

@@ -77,6 +77,7 @@
 ::mc::Edit					"Redigera"
 ::mc::Empty					"Empty" ;# NEW
 ::mc::Enabled				"Enabled" ;# NEW
+::mc::Error					"Error" ;# NEW
 ::mc::File					"Arkiv"
 ::mc::Filter				"Filter" ;# NEW
 ::mc::From					"Från"

@@ -76,6 +76,7 @@
 ::mc::Edit					"Bearbeiten"
 ::mc::Empty					"Leer"
 ::mc::Enabled				"Eingeschaltet"
+::mc::Error					"Fehler"
 ::mc::File					"Datei"
 ::mc::Filter				"Filter"
 ::mc::From					"Von"

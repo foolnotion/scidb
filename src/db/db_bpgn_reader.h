@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2013 Gregor Cramer
+// Copyright: (C) 2013-2018 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -59,7 +59,7 @@ public:
 	unsigned process(util::Progress& progress) override;
 
 	unsigned estimateNumberOfGames() override;
-	static unsigned estimateNumberOfGames(unsigned fileSize);
+	static unsigned estimateNumberOfGames(uint64_t fileSize);
 
 private:
 

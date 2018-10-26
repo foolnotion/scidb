@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2013-2018 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -36,7 +36,7 @@ using namespace db;
 
 
 unsigned
-BpgnReader::estimateNumberOfGames(unsigned fileSize)
+BpgnReader::estimateNumberOfGames(uint64_t fileSize)
 {
 	if (fileSize == 0)
 		return 0;

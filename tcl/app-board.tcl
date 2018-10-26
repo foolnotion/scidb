@@ -116,7 +116,7 @@ proc build {w width height} {
 	$border xview moveto 0
 	$border yview moveto 0
 	Preload $width [expr {$height - [[winfo parent $w] get $w Extent 74]}]
-	set board [::board::diagram::new $border.diagram $Dim(squaresize) \
+	set board [::board::diagram::new $border.diagram $Dim(squaresize:Normal) \
 		-bordersize $Dim(edgethickness) \
 		-bordertype lines \
 		-promosign $Options(promoted:mark) \
@@ -142,7 +142,8 @@ proc build {w width height} {
 
 	set targets [list $boardc $border $canv]
 	foreach color {w b} {
-		set Vars(holding:$color) [::board::holding::new $canv.holding-$color $color $Dim(squaresize) \
+		set Vars(holding:$color) \
+			[::board::holding::new $canv.holding-$color $color $Dim(squaresize:Normal) \
 			-targets $targets \
 			-dragcursor hand2 \
 		]
@@ -213,7 +214,7 @@ proc build {w width height} {
 	::bind .application <FocusOut>		+[namespace code LostFocus]
 
 	::board::diagram::update $board standard
-	::board::unregisterSize $Dim(squaresize)
+	::board::unregisterSize $Dim(squaresize:Normal)
 
 	::toolbar::setup $w -id board -layout board
 	set tbTools		[::toolbar::toolbar $w \
@@ -952,9 +953,9 @@ proc Preload {width height} {
 	set Dim(fontsize) 0
 	ComputeLayout $width $height
 
-	::board::registerSize $Dim(squaresize)
-	::board::setupSquares $Dim(squaresize)
-	::board::setupPieces $Dim(squaresize)
+	::board::registerSize $Dim(squaresize:Normal)
+	::board::setupSquares $Dim(squaresize:Normal)
+	::board::setupPieces $Dim(squaresize:Normal)
 	::board::pieceset::registerFigurines $Dim(piece:size) $layout(material-bar)
 	::board::pieceset::registerFigurines $Dim(piece:size) 0
 }
@@ -1238,8 +1239,13 @@ proc RebuildBoard {canv width height {force false}} {
 	set dimensions ${width}x${height}
 	if {!$force && $dimensions eq $Vars(dimensions)} { return }
 	set Vars(dimensions) $dimensions
+	set sqsize squaresize:$Vars(layout)
 
-	set squareSize $Dim(squaresize)
+	if {[info exists Dim($sqsize)]} {
+		set squareSize $Dim($sqsize)
+	} else {
+		set squareSize $Dim(squaresize:Normal)
+	}
 	set edgeThickness $Dim(edgethickness)
 	ComputeLayout $width $height $Dim(bordersize)
 	SetBackground $canv window $width $height
@@ -1277,7 +1283,7 @@ proc RebuildBoard {canv width height {force false}} {
 		::board::pieceset::unregisterFigurines {*}$Vars(registered:1)
 	}
 
-	if {$squareSize != $Dim(squaresize) || $edgeThickness != $Dim(edgethickness)} {
+	if {$squareSize != $Dim($sqsize) || $edgeThickness != $Dim(edgethickness)} {
 		::update idletasks
 		foreach l $Layouts {
 			if {$l ne $Vars(layout) && [llength $Vars(inuse:$l)] && !$Vars(registered:$l)} {
@@ -1285,19 +1291,19 @@ proc RebuildBoard {canv width height {force false}} {
 				set Vars(registered:$l) 1
 			}
 		}
-		::board::diagram::resize $board $Dim(squaresize) -bordersize $Dim(edgethickness)
+		::board::diagram::resize $board $Dim($sqsize) -bordersize $Dim(edgethickness)
 		if {$Vars(registered:$Vars(layout))} {
 			::board::unregisterSize $Vars(inuse:$Vars(layout))
 			set Vars(registered:$Vars(layout)) 0
 		}
-		set Vars(inuse:$Vars(layout)) $Dim(squaresize)
+		set Vars(inuse:$Vars(layout)) $Dim($sqsize)
 	} else {
 		::board::diagram::rebuild $board
 	}
 
 	if {$Vars(layout) eq "Crazyhouse"} {
-		::board::holding::resize $Vars(holding:w) $Dim(squaresize)
-		::board::holding::resize $Vars(holding:b) $Dim(squaresize)
+		::board::holding::resize $Vars(holding:w) $Dim($sqsize)
+		::board::holding::resize $Vars(holding:b) $Dim($sqsize)
 	}
 
 	BuildBoard $canv
@@ -1411,6 +1417,7 @@ proc ComputeLayout {canvWidth canvHeight {bordersize -1}} {
 	set distance	[expr {max(1, min($canvWidth, $canvHeight)/150)}]
 	set width		[expr {$canvWidth - 2*$distance}]
 	set height		[expr {$canvHeight - 2*$distance}]
+	set sqsize		squaresize:$Vars(layout)
 	set stmsize		0
 
 	if {$layout(side-to-move) || ($layout(material-values) && $Vars(layout) ne "Crazyhouse")} {
@@ -1480,16 +1487,16 @@ proc ComputeLayout {canvWidth canvHeight {bordersize -1}} {
 		set Dim(distance)	[expr {round($squaresize/3.0)}]
 		if {$layout(side-to-move)} { set Dim(gap:x) $Dim(distance) }
 
-		set width				[expr {$width - 2*$Dim(distance) - 4}]
-		set squaresize1		[expr {($width - 2*$Dim(edgethickness))/10}]
-		set squaresize2		[expr {($height - 2*$Dim(edgethickness))/8}]
-		set Dim(squaresize)	[expr {min($squaresize1, $squaresize2)}]
-		set width				[expr {$width - 2*$Dim(squaresize)}]
+		set width			[expr {$width - 2*$Dim(distance) - 4}]
+		set squaresize1	[expr {($width - 2*$Dim(edgethickness))/10}]
+		set squaresize2	[expr {($height - 2*$Dim(edgethickness))/8}]
+		set Dim($sqsize)	[expr {min($squaresize1, $squaresize2)}]
+		set width			[expr {$width - 2*$Dim($sqsize)}]
 	} else {
-		set Dim(squaresize)	[expr {($boardsize - 2*$Dim(edgethickness))/8}]
+		set Dim($sqsize)	[expr {($boardsize - 2*$Dim(edgethickness))/8}]
 	}
 
-	set Dim(border:gap) [::board::computeGap $Dim(squaresize)]
+	set Dim(border:gap) [::board::computeGap $Dim($sqsize)]
 
 	if {$Dim(border:gap) > 0} {
 		if {[::board::borderlineGap] > 0 || $layout(border)} {
@@ -1498,12 +1505,12 @@ proc ComputeLayout {canvWidth canvHeight {bordersize -1}} {
 			set height					[expr {$height - $Dim(border:gap)}]
 			set width					[expr {$width - $Dim(border:gap)}]
 			set boardsize				[expr {min($width, $height)}]
-			set Dim(squaresize)		[expr {$boardsize/8}]
+			set Dim($sqsize)			[expr {$boardsize/8}]
 			set Dim(edgethickness)	0
 		}
 	}
 
-	set Dim(boardsize)	[expr {8*$Dim(squaresize) + 2*$Dim(edgethickness)}]
+	set Dim(boardsize)	[expr {8*$Dim($sqsize) + 2*$Dim(edgethickness)}]
 	set Dim(bordersize)	[expr {$Dim(boardsize) + 2*$Dim(borderthickness)}]
 	set Dim(border:x1)	[expr {($canvWidth - $Dim(bordersize) + $Dim(offset:coords))/2}]
 	set Dim(border:y1)	[expr {($canvHeight - $Dim(bordersize))/2}]
@@ -1537,6 +1544,7 @@ proc ConfigureBoard {canv} {
 	variable board
 
 	set border $Vars(widget:border)
+	set sqsize squaresize:$Vars(layout)
 
 	# configure border #############################
 	set state hidden
@@ -1667,10 +1675,10 @@ proc ConfigureBoard {canv} {
 		}
 		if {$layout(border)} {
 			set x [expr {$Dim(offset)/2 + 1}]
-			set y [expr {$Dim(offset) + $Dim(squaresize)/2}]
+			set y [expr {$Dim(offset) + $Dim($sqsize)/2}]
 		} else {
 			set x [expr {$Dim(border:x1) - $Dim(offset)/2 - $Dim(edgethickness)}]
-			set y [expr {$Dim(border:y1) + $Dim(edgethickness) + $Dim(squaresize)/2}]
+			set y [expr {$Dim(border:y1) + $Dim(edgethickness) + $Dim($sqsize)/2}]
 		}
 		set columns {8 7 6 5 4 3 2 1}
 		set rows {A B C D E F G H}
@@ -1682,20 +1690,20 @@ proc ConfigureBoard {canv} {
 			foreach {k offs} {w -1 b 1 {} 0} {
 				$w coords ${k}coord${r} [expr {$x + $offs}] [expr {$y + $offs}]
 			}
-			incr y $Dim(squaresize)
+			incr y $Dim($sqsize)
 		}
 		if {$layout(border)} {
-			set x [expr {$Dim(offset) + $Dim(squaresize)/2}]
+			set x [expr {$Dim(offset) + $Dim($sqsize)/2}]
 			set y [expr {$Dim(bordersize) - $Dim(offset)/2 - 2}]
 		} else {
-			set x [expr {$Dim(border:x1) + $Dim(edgethickness) + $Dim(squaresize)/2}]
+			set x [expr {$Dim(border:x1) + $Dim(edgethickness) + $Dim($sqsize)/2}]
 			set y [expr {$Dim(border:y2) + $Dim(edgethickness) + $Dim(offset)/2}]
 		}
 		foreach c $rows {
 			foreach {k offs} {w -1 b 1 {} 0} {
 				$w coords ${k}coord${c} [expr {$x + $offs}] [expr {$y + $offs}]
 			}
-			incr x $Dim(squaresize)
+			incr x $Dim($sqsize)
 		}
 	}
 }

@@ -78,6 +78,7 @@
 ::mc::Edit					"Editar"
 ::mc::Empty					"Empty" ;# NEW
 ::mc::Enabled				"Enabled" ;# NEW
+::mc::Error					"Error" ;# NEW
 ::mc::File					"Archivo"
 ::mc::Filter				"Filter" ;# NEW
 ::mc::From					"De"
