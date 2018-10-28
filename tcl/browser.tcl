@@ -586,7 +586,7 @@ if {0} {
 proc ShowPosition {parent position {state 0}} {
 	variable ${position}::Vars
 
-	if {[string length [set key [FindKey $w move]]]} {
+	if {[string length [set key [FindKey $parent move]]]} {
 		showPosition $parent $position [::board::diagram::rotated? $Vars(board)] $key $state
 	}
 }

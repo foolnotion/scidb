@@ -2663,7 +2663,7 @@ proc EnterSite {gamebar id} {
 	set sid $Specs(selected:$gamebar)
 
 	if {$id eq $sid || $id eq "-1"} {
-		set site [lindex $Specs(data:$id:$gamebar) 3]
+		set site [lindex $Specs(data:$sid:$gamebar) 3]
 		if {[::web::isWebLink $site]} {
 			Hilite $gamebar $id line2
 		}
