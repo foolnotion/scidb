@@ -6,8 +6,6 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2013 Gregor Cramer
-# ----------------------------------------------------------------------
 # - Made a fix (look for FIX)
 # - Important enhancement (look for FEATURE)
 # - Positioning of submenus modernized (look for MODERNIZE)
@@ -29,6 +27,7 @@
 # Copyright (c) 1994-1997 Sun Microsystems, Inc.
 # Copyright (c) 1998-1999 by Scriptics Corporation.
 # Copyright (c) 2007 Daniel A. Steffen <das@users.sourceforge.net>
+# Copyright (c) 2009-2018 Gregor Cramer
 #
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
@@ -1373,6 +1372,9 @@ proc ::tk::PostOverPoint {menu x y {entry {}}}  {
 	}
     }
     $menu post $x $y
+    ### FIX begin ################################################################
+    set tk::Priv(menu:window) $menu
+    ### FIX end ##################################################################
     if {$entry ne "" && [$menu entrycget $entry -state] ne "disabled"} {
 	$menu activate $entry
 	GenerateMenuSelect $menu
