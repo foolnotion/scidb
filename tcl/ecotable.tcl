@@ -98,7 +98,7 @@ proc build {parent args} {
 		-justify left \
 		-minwidth 5 \
 		-maxwidth 0 \
-		-width [expr {$(mode) eq "move" ? 10 : 50}] \
+		-width [expr {$(mode) eq "single" ? 10 : 50}] \
 		-stretch 0 \
 		-removable 0 \
 		-ellipsis 1 \
@@ -306,6 +306,8 @@ proc Update {w {force no}} {
 	variable ${(id)}::Options
 
 	HideBoard $w
+	Deselect $w
+
 	if {$(mode:fixed) || $(mode) eq $Options(move:mode)} {
 		set (oldData) $(data)
 	} else {
@@ -431,9 +433,13 @@ proc TableSelected {w table index} {
 	set row [::scrolledtable::indexToRow $table $index]
 	::scrolledtable::select $table none
 	::scrolledtable::select $table $row
-	set fen [::scidb::game::codeToFen [lindex $(data) $index 2]]
 	set (selection:active) 1
-	::scidb::game::go position $fen
+	if {$(mode) eq "single"} {
+		::scidb::game::go ply $index
+	} else {
+		set fen [::scidb::game::codeToFen [lindex $(data) $index 2]]
+		::scidb::game::go position $fen
+	}
 	set (selection:active) 0
 }
 

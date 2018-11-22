@@ -526,7 +526,7 @@ proc Find {path mode name} {
 proc GetSite {path base variant view index} {
 	variable ${path}::Vars
 
-	if {$index == -1} { return "" }
+	if {$index == "outside"} { return "" }
 	set col [lsearch -exact $Vars(columns) site]
 	set site [::scidb::db::get siteInfo $index $view $base $variant $col]
 }

@@ -2085,7 +2085,6 @@ proc PopupMenu {table x y X Y} {
 
 	::bind $menu <<MenuUnpost>> [list event generate $table <<TablePopdown>>]
 	tk_popup $menu $X $Y
-
 	keepFocus $table false
 }
 

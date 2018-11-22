@@ -1497,7 +1497,7 @@ proc FetchMoveList {path} {
 
 		for {} {$lower < $upper} {incr lower} {
 			if {[string length [set moves [::scidb::app::moveList fetch $path $lower]]]} {
-				if {$moves == "*"} {
+				if {$moves eq "*"} {
 					set moves $mc::NoMoves
 				} else {
 					set moves [::figurines::mapToLocal $moves $Options(move:figurines)]
@@ -1775,7 +1775,7 @@ proc ShowGame {path x y} {
 proc GetSite {path base variant view index} {
 	variable ${path}::Vars
 
-	if {$index == -1} { return "" }
+	if {$index eq "outside"} { return "" }
 	set line [::scidb::db::get gameInfo $index $view $base $variant]
 	set col [lsearch -exact $Vars(columns) site]
 	return [lindex $line $col]
@@ -2055,6 +2055,7 @@ proc BindAccelerators {path} {
 
 
 proc LoadGame {path index} {
+	if {$index eq "outside"} { return }
 	::scrolledtable::select $path [::scrolledtable::indexToRow $path $index]
 	TableSelected $path $index
 }

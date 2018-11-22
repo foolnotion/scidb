@@ -564,7 +564,9 @@ proc FrameHeaderSize {twm frame} {
 	} else {
 		lassign $Options(mtab:padding:selected) l t r b
 		set size  [expr {$t + $b + 2}] ;# 2 additional pixels (TODO: what's the reason?)
-		incr size [font metrics [ttk::style lookup twm.TLabel -font] -linespace]
+		set font [ttk::style lookup twm.TLabel -font]
+		if {[string length $font] == 0} { set font TkDefaultFont }
+		incr size [font metrics $font -linespace]
 		incr size [expr {$size % 2}] ;# we have even sized headers
 	}
 	incr size [expr {2*$Vars(header:borderwidth)}]
@@ -586,6 +588,11 @@ proc NotebookHeaderSize {twm {nb}} {
 		2 { incr size [expr {2*[lindex $padding 1]}] }
 		3 { incr size [lindex $padding 1] }
 		4 { incr size [lindex $padding 1]; incr size [lindex $padding 3] }
+	}
+	set font [ttk::style lookup TNotebook.Tab -font]
+	if {[string length $font] == 0} {
+		set font [ttk::style lookup TNotebook -font]
+		if {[string length $font] == 0} { set font TkDefaultFont }
 	}
 	set linespace [font metrics [ttk::style lookup TNotebook.Tab -font] -linespace]
 	set haveImage 0

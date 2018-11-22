@@ -348,7 +348,12 @@ proc notebookTabPaneSize {nb} {
 		3 { incr size [lindex $padding 1] }
 		4 { incr size [lindex $padding 1]; incr size [lindex $padding 3] }
 	}
-	set linespace [font metrics [ttk::style lookup TNotebook.Tab -font] -linespace]
+	set font [ttk::style lookup TNotebook.Tab -font]
+	if {[string length $font] == 0} {
+		set font [ttk::style lookup TNotebook -font]
+		if {[string length $font] == 0} { set font TkDefaultFont }
+	}
+	set linespace [font metrics $font -linespace]
 	set haveImage 0
 	foreach tab [$nb tabs] {
 		if {[string length [set img [$nb tab $tab -image]]]} {
@@ -540,7 +545,9 @@ proc ListboxNext {w} {
 	}
 	set index [$w nearest 0]
 	set active [$w index active]
-	set linespace [expr {[font metrics [$w cget -font] -linespace] + 1}]
+	set font [$w cget -font]
+	if {[string length $font] == 0} { set font TkDefaultFont }
+	set linespace [expr {[font metrics $font -linespace] + 1}]
 	set nrows [expr {[winfo height $w]/$linespace}]
 	set last [expr {$index + $nrows - 1}]
 	if {$last == $active} {

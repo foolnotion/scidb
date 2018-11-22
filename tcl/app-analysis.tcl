@@ -792,6 +792,7 @@ proc SetMultiPV {tree {number 0}} {
 
 
 proc SetLinesPerPV {tree} {
+	variable ${tree}::Vars
 	variable ${Vars(number)}::Options
 
 	set Options(engine:nlines) [$Vars(widget:linesPerPV) get]

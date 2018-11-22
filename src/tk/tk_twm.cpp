@@ -1337,7 +1337,7 @@ private:
 	Node(Node const& node);
 
 	bool finished() const;
-	bool containsDeadWindows() const;
+	bool containsDeadWindows(Node const* exceptThisOne = nullptr) const;
 	bool fits(Size size, Position position) const;
 	template <Orient D,Quantity Q> bool canComputeDimensions() const;
 	bool isLastChild() const;
@@ -1757,11 +1757,13 @@ Node::hasPackedChilds() const
 
 
 bool
-Node::containsDeadWindows() const
+Node::containsDeadWindows(Node const* exceptThisOne) const
 {
 	for (unsigned i = 0; i < numChilds(); ++i)
 	{
-		if (child(i)->isAlreadyDead())
+		Node const* node = child(i);
+
+		if ((!exceptThisOne || node != exceptThisOne) && node->isAlreadyDead())
 			return true;
 	}
 	return false;
@@ -3813,7 +3815,10 @@ Node::destroyed(bool finalize)
 		m_isDestroyed = true;
 		m_isDeleted = true;
 
-		if (toplevel() == m_root && m_parent && !m_parent->containsDeadWindows())
+		if (	m_parent
+			&& toplevel() == m_root
+			&& !m_root->isAlreadyDead()
+			&& !m_parent->containsDeadWindows(this))
 		{
 			m_parent->makeSnapshot();
 			m_root->makeStructure();
