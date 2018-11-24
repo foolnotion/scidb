@@ -6,8 +6,8 @@
 # ======================================================================
 
 # ======================================================================
-# - Made a fix (look for FIX)
-# - Important enhancement (look for FEATURE)
+# - Made some fixes (look for FIX)
+# - Important enhancements (look for FEATURE)
 # - Positioning of submenus modernized (look for MODERNIZE)
 # - Patch http://sourceforge.net/tracker/index.php?func=detail&aid=2920409&group_id=12997&atid=312997
 #  applied with major modifications (look for MODERNIZE)
@@ -210,8 +210,8 @@ if {[tk windowingsystem] eq "x11"} {
 ### MODERNIZE begin ##########################################################
 
 namespace eval tk {
-    set MenuDelay       0 ;# 250
-    set ShadowOffset    0
+    set MenuDelay        250
+    set MenuShadowOffset 0
 }
 
 ### MODERNIZE end ############################################################
@@ -224,7 +224,7 @@ namespace eval tk {
 # The procedure ::tk::MbB1Enter is invoked if the button is down.
 #
 # Arguments:
-# w -			The  name of the widget.
+# w -			The name of the widget.
 
 proc ::tk::MbEnter w {
     variable ::tk::Priv
@@ -243,7 +243,7 @@ proc ::tk::MbEnter w {
 # It de-activates the widget, if the widget still exists.
 #
 # Arguments:
-# w -			The  name of the widget.
+# w -			The name of the widget.
 
 proc ::tk::MbLeave w {
     variable ::tk::Priv
@@ -283,7 +283,7 @@ proc ::tk::MbPost {w {x {}} {y {}}} {
 
     if {[$w cget -state] eq "disabled" || $w eq $Priv(postedMb)} {
         ### FEATURE begin ############################################################
-        # give the user the chance to unpost
+        # give the user a chance to unpost
         if {[$w cget -state] ne "disabled"} {
             event generate $w <<MenuAlreadyPosted>>
         }
@@ -292,7 +292,7 @@ proc ::tk::MbPost {w {x {}} {y {}}} {
     }
 
     ### FEATURE begin ############################################################
-    # give the user the chance to build the menu
+    # give the user a chance to build the menu
     event generate $w <<MenuWillPost>>
     ### FEATURE end ##############################################################
 
@@ -463,15 +463,15 @@ proc ::tk::MenuUnpost menu {
 
     ### FIX begin ################################################################
     # It's important to invoke all pending mapping events, otherwise it may happen
-    # that an unmap event occurs before the corresponding map event occurs.
+    # that an unmap event occurs before the corresponding map event has been
+    # triggered.
     update idletasks
+    set Priv(menuActivated) 0
     ### FIX end ##################################################################
 
     if {$::tk::MenuDelay > 0} {
         after cancel [array get Priv menuActivatedTimer]
-        unset -nocomplain Priv(menuActivated)
         after cancel [array get Priv menuDeactivatedTimer]
-        unset -nocomplain Priv(menuDeactivated)
     }
 
     catch {
@@ -527,8 +527,8 @@ proc ::tk::MenuUnpost menu {
                 array unset Priv fix:*
                 ### FIX end ##########################################################
                 ### FEATURE begin ####################################################
-		# We need a message after the grab is released, and after any menu
-                # button is invoked.
+		# We need a message after the grab has been released, and after any
+                # menu button has been invoked.
                 # This (simple) feature provides the possiblity to have popup menus
                 # with modal behavior, and this is very, very useful.
                 set m $menu
@@ -641,9 +641,7 @@ proc ::tk::MenuMotion {menu x y state} {
 	}
         if {$::tk::MenuDelay > 0} {
             set index [$menu index @$x,$y]
-            if {[info exists Priv(menuActivated)] \
-                    && $index ne "none" \
-                    && $index ne $activeindex} {
+            if {$Priv(menuActivated) && $index ne "none" && $index ne $activeindex} {
                 set mode [option get $menu clickToFocus ClickToFocus]
                 if {[string is false $mode]} {
                     set delay [expr {[$menu cget -type] eq "menubar" ? 0 : 50}]
@@ -701,6 +699,7 @@ proc ::tk::MenuButtonDown menu {
         ### FIX begin ################################################################
         set Priv(fix:active) $menu
         set Priv(fix:popup) 0
+        set Priv(menuActivated) 1
         ### FIX end ##################################################################
 
 	while {[$menu cget -type] eq "normal" \
@@ -714,9 +713,6 @@ proc ::tk::MenuButtonDown menu {
 	    if {$::tk_strictMotif} {
 		set Priv(cursor) [$menu cget -cursor]
 		$menu configure -cursor arrow
-	    }
-	    if {$::tk::MenuDelay > 0 && [$menu type active] eq "cascade"} {
-		set Priv(menuActivated) 1
 	    }
         }
 
@@ -1461,13 +1457,13 @@ proc ::tk_popup {menu x y {entry {}}} {
     ### FIX begin ####################################################################
     set Priv(fix:active) $menu
     set Priv(fix:popup) 1
+    set Priv(menuActivated) 1
     ### FIX end ######################################################################
     tk::PostOverPoint $menu $x $y $entry 
     if {[tk windowingsystem] eq "x11" && [winfo viewable $menu]} {
         tk::SaveGrabInfo $menu
 	grab -global $menu
 	set Priv(popup) $menu
-	set Priv(menuActivated) 1
 	tk_menuSetFocus $menu
     }
     ### FIX begin ####################################################################
@@ -1492,7 +1488,6 @@ proc ::tk_popdown {menu parent} {
         tk::SaveGrabInfo $menu
 	grab -global $menu
 	set Priv(popup) $menu
-	set Priv(menuActivated) 1
 	tk_menuSetFocus $menu
     }
     # tk_menuSetFocus is not always sufficient
@@ -1541,7 +1536,7 @@ proc ::tk::menu::WidgetProc {m command args} {
                 set sw [winfo screenwidth $m]
 
                 if {$x1 + $mw >= $sw || $dir eq "left"} {
-                    set x1 [expr {$x0 - $mw - $::tk::ShadowOffset + [$w cget -borderwidth]}]
+                    set x1 [expr {$x0 - $mw - $::tk::MenuShadowOffset + [$w cget -borderwidth]}]
                     if {$x1 >= 0} {
                         set x $x1
                         set ::tk::Priv(sub:dir:$m) left
@@ -1549,7 +1544,8 @@ proc ::tk::menu::WidgetProc {m command args} {
                 }
             }
         } elseif {$countHashes == 0} {
-            set x1 [expr {min($x, [winfo screenwidth $m] - [winfo reqwidth $m] - $::tk::ShadowOffset)}]
+            set x1 [expr {min($x,
+                    [winfo screenwidth $m] - [winfo reqwidth $m] - $::tk::MenuShadowOffset)}]
             if {$x1 >= 0} { set x $x1 }
         }
 
@@ -1564,6 +1560,7 @@ proc ::tk::menu::WidgetProc {m command args} {
 
 ### FIX begin ####################################################################
 namespace eval tk { set Priv(menu:window) "" }
+namespace eval tk { set Priv(menuActivated) 0 }
 ### FIX end ######################################################################
 
 # vi:set et ts=8 sw=4:
