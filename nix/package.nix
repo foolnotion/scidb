@@ -117,8 +117,9 @@ stdenv.mkDerivation {
 <?xml version="1.0"?>
 <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
 <fontconfig>
+  <!-- Only Liberation fonts here; scidb's chess fonts are loaded directly
+       by Tk and must not be in the fontconfig path or they clobber text. -->
   <dir>${liberation_ttf}/share/fonts</dir>
-  <dir>$out/share/fonts</dir>
   <cachedir prefix="xdg">scidb-fonts</cachedir>
   <alias>
     <family>sans-serif</family>
@@ -132,8 +133,22 @@ stdenv.mkDerivation {
     <family>monospace</family>
     <prefer><family>Liberation Mono</family></prefer>
   </alias>
-  <!-- rendering hints -->
-  <include ignore_missing="yes">${fontconfig}/etc/fonts/conf.d</include>
+  <alias>
+    <family>Helvetica</family>
+    <prefer><family>Liberation Sans</family></prefer>
+  </alias>
+  <alias>
+    <family>Arial</family>
+    <prefer><family>Liberation Sans</family></prefer>
+  </alias>
+  <alias>
+    <family>Times</family>
+    <prefer><family>Liberation Serif</family></prefer>
+  </alias>
+  <alias>
+    <family>Courier</family>
+    <prefer><family>Liberation Mono</family></prefer>
+  </alias>
 </fontconfig>
 EOF
 
