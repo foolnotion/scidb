@@ -9,7 +9,7 @@
       pkgs = import nixpkgs { inherit system; config.allowUnfree = true; };
     in {
       packages.${system} = rec {
-        scidb = pkgs.callPackage ./nix/package.nix { src = self; };
+        scidb = pkgs.callPackage ./nix/package.nix { src = self; vistaFonts = pkgs."vista-fonts"; };
         default = scidb;
       };
     };

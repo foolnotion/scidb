@@ -18,7 +18,7 @@
   minizip,
   zlib,
   liberation_ttf,
-  vistafonts,
+  vistaFonts,
 }:
 
 stdenv.mkDerivation {
@@ -34,7 +34,7 @@ stdenv.mkDerivation {
     fontconfig freetype
     libX11 libSM libXcursor libICE xorgproto
     gdbm expat minizip zlib
-    liberation_ttf vistafonts
+    liberation_ttf vistaFonts
   ];
 
   configurePhase = ''
@@ -120,7 +120,7 @@ stdenv.mkDerivation {
 <fontconfig>
   <!-- Scidb's chess fonts are loaded directly by Tk and must not be in
        the fontconfig path or they clobber regular text rendering. -->
-  <dir>${vistafonts}/share/fonts</dir>
+  <dir>${vistaFonts}/share/fonts</dir>
   <dir>${liberation_ttf}/share/fonts</dir>
   <cachedir prefix="xdg">scidb-fonts</cachedir>
   <alias>
