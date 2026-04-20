@@ -107,7 +107,12 @@ stdenv.mkDerivation {
   postInstall = ''
     rm -f "$out/bin/sjeng-scidb" "$out/bin/stockfish-scidb"
     tkver="${lib.versions.majorMinor tk.version}"
-    wrapProgram "$out/bin/tkscidb-beta" \
+    # scidb-beta is a Tcl script that the polyglot shell header would normally
+    # pass as $1 to tkscidb-beta via dirname/basename — but those coreutils
+    # are absent in AppImage environments.  Create a single launcher with
+    # hard-coded paths that works everywhere.
+    makeWrapper "$out/bin/tkscidb-beta" "$out/bin/scidb" \
+      --add-flags "$out/bin/scidb-beta" \
       --set TK_LIBRARY "${tk}/lib/tk$tkver" \
       --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ tk tcl ]}"
   '';
@@ -117,6 +122,6 @@ stdenv.mkDerivation {
     homepage = "https://scidb.sourceforge.net/";
     license = licenses.gpl3;
     platforms = platforms.linux;
-    mainProgram = "scidb-beta";
+    mainProgram = "scidb";
   };
 }
