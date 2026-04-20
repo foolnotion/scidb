@@ -117,11 +117,23 @@ stdenv.mkDerivation {
 <?xml version="1.0"?>
 <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
 <fontconfig>
-  <!-- standard alias/substitution rules from the fontconfig package -->
-  <include>${fontconfig}/etc/fonts/conf.d</include>
   <dir>${liberation_ttf}/share/fonts</dir>
   <dir>$out/share/fonts</dir>
   <cachedir prefix="xdg">scidb-fonts</cachedir>
+  <alias>
+    <family>sans-serif</family>
+    <prefer><family>Liberation Sans</family></prefer>
+  </alias>
+  <alias>
+    <family>serif</family>
+    <prefer><family>Liberation Serif</family></prefer>
+  </alias>
+  <alias>
+    <family>monospace</family>
+    <prefer><family>Liberation Mono</family></prefer>
+  </alias>
+  <!-- rendering hints -->
+  <include ignore_missing="yes">${fontconfig}/etc/fonts/conf.d</include>
 </fontconfig>
 EOF
 
