@@ -17,6 +17,7 @@
   expat,
   minizip,
   zlib,
+  liberation_ttf,
 }:
 
 stdenv.mkDerivation {
@@ -32,6 +33,7 @@ stdenv.mkDerivation {
     fontconfig freetype
     libX11 libSM libXcursor libICE xorgproto
     gdbm expat minizip zlib
+    liberation_ttf
   ];
 
   configurePhase = ''
@@ -107,6 +109,20 @@ stdenv.mkDerivation {
   postInstall = ''
     rm -f "$out/bin/sjeng-scidb" "$out/bin/stockfish-scidb"
     tkver="${lib.versions.majorMinor tk.version}"
+
+    # Bundled fontconfig so the AppImage (and any sandbox) finds fonts
+    # without relying on the host system's font cache.
+    mkdir -p "$out/etc/fonts"
+    cat > "$out/etc/fonts/fonts.conf" <<EOF
+<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+<fontconfig>
+  <dir>${liberation_ttf}/share/fonts</dir>
+  <dir>$out/share/fonts</dir>
+  <cachedir prefix="xdg">scidb-fonts</cachedir>
+</fontconfig>
+EOF
+
     # scidb-beta is a Tcl script that the polyglot shell header would normally
     # pass as $1 to tkscidb-beta via dirname/basename — but those coreutils
     # are absent in AppImage environments.  Create a single launcher with
@@ -114,6 +130,7 @@ stdenv.mkDerivation {
     makeWrapper "$out/bin/tkscidb-beta" "$out/bin/scidb" \
       --add-flags "$out/bin/scidb-beta" \
       --set TK_LIBRARY "${tk}/lib/tk$tkver" \
+      --set FONTCONFIG_FILE "$out/etc/fonts/fonts.conf" \
       --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ tk tcl ]}"
   '';
 
