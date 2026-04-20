@@ -116,6 +116,7 @@ getRegion(char const* subcmd, Tcl_Interp *ti, int objc, Tcl_Obj* const objv[])
 			XUngrabPointer(display, CurrentTime);
 #endif
 
+			if (ximage) {
 			Tk_PhotoImageBlock block;
 
 			block.pixelSize = ximage->bits_per_pixel/8;
@@ -151,6 +152,7 @@ getRegion(char const* subcmd, Tcl_Interp *ti, int objc, Tcl_Obj* const objv[])
 			if (static_cast<void*>(ximage->data) != static_cast<void*>(block.pixelPtr))
 				delete [] block.pixelPtr;
 			XDestroyImage(ximage);
+			}
 		}
 	}
 
@@ -202,6 +204,8 @@ handleXErrorMessage(Display* dpy, XErrorEvent* event)
 {
 	// A BadWindow due to X_SendEvent is likely while XDND is active,
 	// for example if the source application is crashing.
+	if (event->error_code == BadMatch && event->request_code == 73 /* X_GetImage */)
+		return 0;
 	if (	event->error_code == BadWindow
 		&& (event->request_code == X_SendEvent || event->request_code == X_GetProperty))
 	{

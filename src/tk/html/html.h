@@ -864,7 +864,7 @@ char * HtmlMarkupArg(HtmlAttributes *, CONST char *, char *);
 
 void HtmlFloatListAdd(HtmlFloatList*, int, int, int, int);
 HtmlFloatList *HtmlFloatListNew();
-void HtmlFloatListDelete();
+void HtmlFloatListDelete(HtmlFloatList *);
 int HtmlFloatListPlace(HtmlFloatList*, int, int, int, int);
 int HtmlFloatListClear(HtmlFloatList*, int, int);
 int HtmlFloatListClearTop(HtmlFloatList*, int);

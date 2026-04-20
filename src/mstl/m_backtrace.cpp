@@ -49,7 +49,7 @@ backtrace::~backtrace() throw() {}
 
 backtrace const& backtrace::operator=(backtrace const&) { return *this; }
 bool backtrace::is_debug_mode() { return false; }
-void backtrace::text_write(ostringstream&, size_t) const {}
+void backtrace::text_write(ostringstream&, unsigned) const {}
 
 #else // __OPTIMIZE__
 

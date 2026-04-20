@@ -27,7 +27,9 @@
 # include <stdlib.h>
 # include <unistd.h>
 # include <sys/types.h>
+#ifndef __linux__
 # include <sys/sysctl.h>
+#endif
 
 #ifdef __hpux
 # include <sys/pstat.h>
