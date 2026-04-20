@@ -3985,7 +3985,19 @@ proc LoadSharedConfiguration {file} {
 		array unset engine
 		array set engine $entry
 
-		set engine(Command) "[file join $::scidb::dir::engines $engine(Command)]"
+
+		set command [file join $::scidb::dir::engines $engine(Command)]
+		if {![file executable $command]} {
+			set fallback [file tail $engine(Command)]
+			if {[string match *-scidb $fallback]} {
+				set fallback [string range $fallback 0 end-6]
+				set fallback [file join $::scidb::dir::engines $fallback]
+				if {[file executable $fallback]} {
+					set command $fallback
+				}
+			}
+		}
+		set engine(Command) $command
 
 		if {[file executable $engine(Command)]} {
 			set result [::scidb::engine::info $engine(Name)]

@@ -8,7 +8,7 @@ set ::engine::Engines {
 		Identifier "Stockfish 4 scidb"
 		Author "Tord Romstad, Marco Costalba & Joona Kiiski"
 		Url http://www.stockfishchess.com
-		Command stockfish-scidb
+		Command stockfish
 		Protocol UCI
 		Variants {standard chess960 3check}
 		Features:UCI {
