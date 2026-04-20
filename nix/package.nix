@@ -117,5 +117,6 @@ stdenv.mkDerivation {
     homepage = "https://scidb.sourceforge.net/";
     license = licenses.gpl3;
     platforms = platforms.linux;
+    mainProgram = "scidb-beta";
   };
 }
