@@ -117,6 +117,8 @@ stdenv.mkDerivation {
 <?xml version="1.0"?>
 <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
 <fontconfig>
+  <!-- standard alias/substitution rules from the fontconfig package -->
+  <include>${fontconfig}/etc/fonts/conf.d</include>
   <dir>${liberation_ttf}/share/fonts</dir>
   <dir>$out/share/fonts</dir>
   <cachedir prefix="xdg">scidb-fonts</cachedir>
