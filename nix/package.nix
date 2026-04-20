@@ -19,6 +19,7 @@
   zlib,
   liberation_ttf,
   vistaFonts,
+  stockfish,
 }:
 
 stdenv.mkDerivation {
@@ -109,6 +110,7 @@ stdenv.mkDerivation {
 
   postInstall = ''
     rm -f "$out/bin/sjeng-scidb" "$out/bin/stockfish-scidb"
+    ln -s ${stockfish}/bin/stockfish "$out/bin/stockfish"
     tkver="${lib.versions.majorMinor tk.version}"
 
     # Bundled fontconfig so the AppImage (and any sandbox) finds fonts
