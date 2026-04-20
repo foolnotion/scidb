@@ -18,6 +18,7 @@
   minizip,
   zlib,
   liberation_ttf,
+  vistafonts,
 }:
 
 stdenv.mkDerivation {
@@ -33,7 +34,7 @@ stdenv.mkDerivation {
     fontconfig freetype
     libX11 libSM libXcursor libICE xorgproto
     gdbm expat minizip zlib
-    liberation_ttf
+    liberation_ttf vistafonts
   ];
 
   configurePhase = ''
@@ -117,37 +118,38 @@ stdenv.mkDerivation {
 <?xml version="1.0"?>
 <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
 <fontconfig>
-  <!-- Only Liberation fonts here; scidb's chess fonts are loaded directly
-       by Tk and must not be in the fontconfig path or they clobber text. -->
+  <!-- Scidb's chess fonts are loaded directly by Tk and must not be in
+       the fontconfig path or they clobber regular text rendering. -->
+  <dir>${vistafonts}/share/fonts</dir>
   <dir>${liberation_ttf}/share/fonts</dir>
   <cachedir prefix="xdg">scidb-fonts</cachedir>
   <alias>
     <family>sans-serif</family>
-    <prefer><family>Liberation Sans</family></prefer>
+    <prefer><family>Calibri</family><family>Liberation Sans</family></prefer>
   </alias>
   <alias>
     <family>serif</family>
-    <prefer><family>Liberation Serif</family></prefer>
+    <prefer><family>Cambria</family><family>Liberation Serif</family></prefer>
   </alias>
   <alias>
     <family>monospace</family>
-    <prefer><family>Liberation Mono</family></prefer>
+    <prefer><family>Consolas</family><family>Liberation Mono</family></prefer>
   </alias>
   <alias>
     <family>Helvetica</family>
-    <prefer><family>Liberation Sans</family></prefer>
+    <prefer><family>Calibri</family><family>Liberation Sans</family></prefer>
   </alias>
   <alias>
     <family>Arial</family>
-    <prefer><family>Liberation Sans</family></prefer>
+    <prefer><family>Calibri</family><family>Liberation Sans</family></prefer>
   </alias>
   <alias>
     <family>Times</family>
-    <prefer><family>Liberation Serif</family></prefer>
+    <prefer><family>Cambria</family><family>Liberation Serif</family></prefer>
   </alias>
   <alias>
     <family>Courier</family>
-    <prefer><family>Liberation Mono</family></prefer>
+    <prefer><family>Consolas</family><family>Liberation Mono</family></prefer>
   </alias>
 </fontconfig>
 EOF
