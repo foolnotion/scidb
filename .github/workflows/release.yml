@@ -1,0 +1,38 @@
+name: Build AppImage
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  appimage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cachix/install-nix-action@v30
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - name: Build AppImage
+        run: |
+          nix bundle \
+            --bundler github:ralismark/nix-appimage \
+            .#default
+          # ralismark/nix-appimage outputs a symlink named after the package
+          ls -la *.AppImage || ls -la result*
+
+      - name: Rename AppImage
+        run: |
+          src=$(ls *.AppImage 2>/dev/null || readlink -f result)
+          cp "$src" "scidb-x86_64.AppImage"
+
+      - name: Create release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: scidb-x86_64.AppImage
+          generate_release_notes: true
